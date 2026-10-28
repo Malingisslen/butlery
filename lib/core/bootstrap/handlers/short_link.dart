@@ -3,7 +3,7 @@
 ///
 /// Any signed-in account can write a `deep_links` document with any
 /// `longUrl`, so the long link is a stranger's input: only a link back to our
-/// own share paths is followed.
+/// own host is followed.
 library;
 
 import 'package:butlery/services/deep_link_service.dart';

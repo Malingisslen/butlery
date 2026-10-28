@@ -13,7 +13,6 @@
 /// - **URL Shortening**: Internal and external URL shortening with comprehensive analytics and tracking
 /// - **Link Parsing**: Sophisticated URL parsing and validation with content type identification
 /// - **Navigation Handling**: Automatic navigation routing based on deep link content and user context
-/// - **Analytics Integration**: Comprehensive click tracking, usage analytics, and performance monitoring
 /// - **Expiration Management**: Time-based link expiration with configurable validity periods
 /// **Social Sharing and Distribution:**
 /// - **Friend Invitations**: Secure invitation link generation with user attribution and custom messaging
@@ -43,7 +42,6 @@ import 'package:butlery/core/base/base_service.dart';
 /// - Intelligent navigation routing based on content type and user context
 /// **Analytics and Performance Tracking:**
 /// Provides detailed tracking and monitoring including:
-/// - Click tracking and usage analytics for all generated URLs
 /// - Performance monitoring for URL resolution and navigation timing
 /// - Comprehensive metadata collection for usage pattern analysis
 /// - Integration with external analytics services for advanced insights

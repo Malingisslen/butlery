@@ -1,7 +1,7 @@
 /// BUT-2462: a short link is only followed when it is ours, and what it
 /// resolves to is a stranger's input (any signed-in account can write a
 /// `deep_links` document), so it is only routed when it points back at our own
-/// share paths.
+/// host.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
