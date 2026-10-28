@@ -13,7 +13,7 @@ import 'package:butlery/theme/components/button_themes.dart';
 
 void main() {
   group('global floatingActionButtonTheme (P7-U04)', () {
-    test('is a circle in both modes (Komponentark v1:665)', () {
+    test('is a circle in both modes', () {
       for (final brightness in Brightness.values) {
         final cs = ColorScheme.fromSeed(
           seedColor: Colors.green,

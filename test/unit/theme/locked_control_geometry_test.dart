@@ -39,7 +39,7 @@ void main() {
         .first;
 
     group(
-      'chip ($name) — tokens.json controls.chip, Komponentark v1:134-140',
+      'chip ($name) — tokens.json controls.chip',
       () {
         testWidgets('34 px visible inside a 48 dp hit area', (tester) async {
           await pump(

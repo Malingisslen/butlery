@@ -376,7 +376,7 @@ void main() {
     });
   });
 
-  group('ux-beslut D-03: no long wait and no background choice', () {
+  group('no long wait and no background choice', () {
     testWidgets('a planning that takes 40 s stays the same state in the same '
         'view, with no "Fortsätt i bakgrunden"', (tester) async {
       await runOnMonday(() async {

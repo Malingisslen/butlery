@@ -25,7 +25,7 @@ void main() {
           shape.borderRadius,
           const BorderRadius.all(Radius.circular(8)),
           reason:
-              'Komponentark v1:336 ($brightness): the dialog box is drawn '
+              '($brightness): the dialog box is drawn '
               'with border-radius 8px.',
         );
       }

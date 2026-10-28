@@ -1030,7 +1030,7 @@ void main() {
     });
 
     test('a failing pantry never blocks generation — the list is built '
-        'without deduction (produktregler.md:697)', () async {
+        'without deduction', () async {
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));

@@ -822,7 +822,7 @@ void main() {
             ConflictEntity.recipeOwn,
             reason:
                 'the owner edited their own recipe, so the model declares '
-                'recipeOwn (produktregler.md:102)',
+                'recipeOwn',
           );
           expect(
             events.single.remoteValue.editCount,

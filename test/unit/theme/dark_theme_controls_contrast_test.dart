@@ -295,7 +295,7 @@ void main() {
       expect(_contrast(chip.labelStyle!.color!, _ink), greaterThan(4.5));
     });
 
-    test('chip disabled: no fill, sage label (Komponentark v1:525)', () {
+    test('chip disabled: no fill, sage label', () {
       final chip = dark.chipTheme;
       const off = {WidgetState.disabled};
       expect(chip.disabledColor!.a, 0);
