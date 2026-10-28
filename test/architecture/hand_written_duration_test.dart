@@ -43,6 +43,7 @@ const _handWritten = <String, int>{
   'lib/widgets/common/profile/utils/result_displayer.dart': 1,
   'lib/widgets/common/state/delayed_skeleton.dart': 1,
   'lib/widgets/image/avatar_image_widget.dart': 1,
+  'lib/widgets/import/allergen_setup_banner.dart': 1,
   'lib/widgets/legal/legal_document.dart': 1,
   'lib/widgets/menu/calendar/calendar_drag.dart': 2,
   'lib/widgets/menu/group_menu_entry_button.dart': 1,
