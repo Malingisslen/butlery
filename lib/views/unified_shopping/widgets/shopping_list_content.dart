@@ -236,10 +236,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (!viewModel.hasItems) {
       // A list exists but is empty — distinct from "no list at all" above, so
       // the copy must say "list is empty", not "no list to derive from".
-      //
-      // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
-      // the week's dishes here, "Från veckomenyn" as the one saffron action
-      // and an outlined "Lägg till vara" beside it.
       return StateWidget(
         type: StateType.empty,
         title: context.l10n.shoppingEmptyTitle,
@@ -350,8 +346,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // #inkop: a plated band, the name in capitals and "N av M" at the
-        // right. Min 48px keeps the collapse toggle a full tap target.
+        // Min 48px keeps the collapse toggle a full tap target.
         KeyedSubtree(
           key: ValueKey('shopping-category-header-$category'),
           child: SectionBand(
@@ -421,9 +416,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     }
   }
 
-  /// "Köpt (N)" heading with the right-aligned "Rensa köpta" text action
-  /// (Skarmar v12 del 2 #inkop :915-916 light,
-  /// :1020-1021 dark). No icon, no subtitle line — the count lives in the
+  /// No icon, no subtitle line — the count lives in the
   /// heading itself, per the facit.
   Widget _buildCompletedItemsHeader(
     BuildContext context,

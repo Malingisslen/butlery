@@ -45,8 +45,8 @@ class FriendRequestCard {
 
     // PQ-18 = A (produktbeslut 2026-09-23, revised after the prototype):
     // every incoming row keeps a saffron "Acceptera", as drawn. This is a
-    // deliberate exception to one saffron action per view (Komponentark
-    // v1:843-844), for friend requests only.
+    // deliberate exception to one saffron action per view
+    // for friend requests only.
     final accept = HeroButton(
       key: ValueKey('friendRequest.accept.${request.id}'),
       label: context.l10n.commonAccept,
@@ -133,9 +133,6 @@ class FriendRequestCard {
           ],
           if (!selecting) ...[
             const SizedBox(height: AppDimensions.space12),
-            // Acceptera first, then the decline action, in the order drawn
-            // in Skarmar v12 del 3 #forfragningar, which labels the decline
-            // action "Avböj" (del 3:406, :420).
             isLargeText(context)
                 // Large text: one button to a line, so "Acceptera" is not
                 // broken in half by a button half the width.

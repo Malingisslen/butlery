@@ -3,9 +3,6 @@
 /// per behörighet").
 ///
 /// - [RecipeMenuRole.owner] edits: "Redigera", and the owner-only rows.
-/// - [RecipeMenuRole.member] of someone else's shared recipe cannot edit it
-///   (produktregler.md:241): "Redigera" shows as "Föreslå ändring" (:247),
-///   and the rows that write the recipe are not offered.
 /// - [RecipeMenuRole.other], anyone else, gets neither.
 ///
 /// A pure predicate so the view and its test share one rule. Identity comes

@@ -127,9 +127,8 @@ class RecipeDetailView extends StatefulWidget {
   /// entry point into recipe detail.
   final int? presentServings;
 
-  /// The name of the view the back button returns to. It gives the button
-  /// the name "Tillbaka till [backTo]" (Komponentark v1:74-78;
-  /// tillgänglighetshandoff:132). Null keeps "Tillbaka".
+  /// The name of the view the back button returns to.
+  /// Null keeps "Tillbaka".
   final String? backTo;
 
   /// BUT-1325: set when opened from a cookbook that keeps a note for this
@@ -321,9 +320,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
         final recipe = viewModel.recipe;
         final bottomPadding = MediaQuery.of(context).padding.bottom;
-        // Someone else's recipe: "Spara till mitt kök" is the one saffron
-        // action, and "Börja laga" steps down (Skarmar v12 etapp 11
-        // 'Receptet brett — någon annans').
         final isOthersRecipe = showForkInAppBar(
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
@@ -485,9 +481,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 // BUT-706: a SliverAppBar, because the hero image collapses
                 // into the bar. One bar on both platforms (B-45).
                 SliverAppBar(
-                  // Without a photo the media area collapses rather than
-                  // showing a stand-in (B-04; Komponentark v1 "fyra ytor, fyra
-                  // svar"): the title under the bar carries the head.
                   expandedHeight: recipe.imageUrls.isEmpty
                       ? null
                       : Breakpoints.isMobile(context)

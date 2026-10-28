@@ -1,13 +1,12 @@
 // lib/views/sync/sync_queue_row.dart
 //
-// P4-U19: one waiting change in "Väntar på synk", drawn in Skarmar v12 del 4
-// #synkko. A permanent failure is a card with its cause in words and its
+// A permanent failure is a card with its cause in words and its
 // actions; a queued change is a row with what it
 // concerns and its age.
 //
 // P6-U08b: a queued change that failed says when it is sent again ("nästa
-// försök om 8 s", #synkko), and a failure gets the actions produktregler.md
-// :188 and the drawing name: Försök igen or Försök mindre, Spara som kopia,
+// försök om 8 s"), and a failure gets the actions
+// Försök igen or Försök mindre, Spara som kopia,
 // Släng ändringen.
 library;
 
@@ -50,7 +49,7 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   };
 }
 
-/// Why [change] waits for the user, in the words produktregler.md:188 names.
+/// Why [change] waits for the user.
 String describeQueuedReason(AppLocalizations l10n, QueuedChange change) =>
     change.isCommentGroup
     ? l10n.syncQueueReasonCommentFailed
@@ -108,11 +107,9 @@ String describeQueuedAge(AppLocalizations l10n, QueuedChange change) {
   return l10n.syncQueueAgeDays(age.inDays);
 }
 
-/// A permanent failure (#synkko "Väntar på dig"): a card edged in
+/// A permanent failure ("Väntar på dig"): a card edged in
 /// text.danger with the cause in text.danger and its actions.
 ///
-/// The actions (produktregler.md:188 "Försök igen · Spara som kopia ·
-/// Släng"; #synkko draws "Försök mindre" for a too-large image):
 /// * the first is "Försök mindre" for a too-large image
 ///   ([QueuedChange.canTrySmaller]), else "Försök igen";
 /// * "Spara som kopia" for a recipe write ([QueuedChange.canSaveAsCopy]);

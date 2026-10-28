@@ -32,10 +32,6 @@ class PantryItemCard extends StatelessWidget {
   /// relative only for the latest days (`nu` · `5 min sedan` · `i dag 14:02`
   /// · `i går`), then the date (`9 juli`, with the year when it is not this
   /// year). Clock times are 24-hour with a colon (content-style-guide.md:30).
-  ///
-  /// Interpretation: produktregler.md:105 says the row's timestamp updates,
-  /// but no drawing shows the row with one, so the word "ändrad" names what
-  /// the time is.
   static String changedLabel(
     AppLocalizations l10n,
     DateTime changedAt,
@@ -66,7 +62,7 @@ class PantryItemCard extends StatelessWidget {
   /// The line under the name: the amount, and when the row last changed.
   String _metaLine(BuildContext context) {
     // An unknown amount says "har hemma" (Q5-03 = B, produktbeslut
-    // 2026-09-24; produktregler.md:148: "har hemma, vet inte hur mycket"),
+    // 2026-09-24),
     // never a unit on its own, with or without a change time.
     final amount = item.quantity == null
         ? context.l10n.pantryItemAmountUnknown

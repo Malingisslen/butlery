@@ -383,9 +383,6 @@ class _SkrivSjalvReceptViewContentState
         }
       },
       child: ButleryPage.undersida(
-        // "Skriv själv" is a subpage under Lägg till recept: back arrow and
-        // title in 14/700 (Skarmar v12 del 2 'Skriv
-        // själv').
         // `isEditing` (a stored recipe is loaded), not `isEditMode`, which is
         // the edit permission and is true for a new recipe too.
         title: viewModel.isEditing

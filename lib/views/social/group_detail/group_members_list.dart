@@ -114,8 +114,6 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     });
   }
 
-  /// "Välj" in the section's header row (B-46; Skarmar v12 etapp 9
-  /// #flervalingang: "sektionens rubrikrad").
   void _startSelection() {
     setState(() => _selectionMode = true);
   }
@@ -161,9 +159,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
       return;
     }
     if (outcome.isPartial) {
-      // The ones that did not go stay selected and the mode stays open, so
-      // the attempt can be made again (Skarmar
-      // v12 etapp 9 #flergrupp). Identity is the uid. The names of those who
+      // Identity is the uid. The names of those who
       // went are looked up by uid now, from the members as they were before
       // the removal: the refreshed list no longer has them.
       final removed = outcome.removedIds.toSet();
@@ -206,10 +202,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
             ),
           ),
-          // P5-U31: the list lives in the group view's scroll, so the
-          // section's header row carries "Välj", and Avbryt takes its
-          // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
-          // produktregler.md). text.primary on the page surface in
+          // text.primary on the page surface in
           // both modes (cs.onSurface; tokens.json).
           actions: [
             if (_selectionMode)
@@ -288,11 +281,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     );
   }
 
-  /// P5-U33: "En av två togs bort" below the rows (Skarmar v12 etapp 9
-  /// :390-393, #flergrupp): what went, who did not and why, and the way on.
   /// Those who did not go are still selected above.
   ///
-  /// The body names who went, as drawn at :391 ("Johan Lind är inte längre
+  /// The body names who went ("Johan Lind är inte längre
   /// med i Matlaget."), then says the rest stay selected.
   Widget _buildPartialOutcome(
     BuildContext context,

@@ -2,16 +2,6 @@
 //
 // P4-U19: "Väntar på synk", the user's view of the offline queue.
 //
-//   produktregler.md:190  "Mer → Väntar på synk: antal poster, vad de rör,
-//                          ålder, och de permanenta felen först. Nås även
-//                          från köindikatorn i toppfältet."
-//   produktregler.md:188  permanent failures go to "Väntar på dig" with the
-//                          cause in words, and each has an action.
-//   produktregler.md:192  nothing leaves the queue without the server's
-//                          confirmation or being shown here as a failure.
-//   Skarmar v12 del 4 #synkko (light and dark): the drawing.
-//   fas2/block288-uxfrysning.json TR::FLOW::08::kovy::vantar-pa-synk.
-//
 // The data is schema 3 (P5-U35) through SyncQueueSource.
 //
 // P6-U08b: a failed change says when it is sent again, and the line counts

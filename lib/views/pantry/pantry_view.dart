@@ -255,8 +255,6 @@ class _PantrySectionState extends State<_PantrySection> {
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) return const SizedBox.shrink();
 
-    // Skarmar v12 etapp 2 #skafferivyn: a group is a band with its rows
-    // under it, hairlines between them, never a card.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppDimensions.layoutMarginOf(context),

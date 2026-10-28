@@ -248,8 +248,6 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<CollaborativeShoppingViewModel>();
 
-    // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
-    // inköpslista'; Komponentark v1 §01 pattern 2).
     return ButleryPage.undersida(
       title: viewModel.listTitle,
       actions: actions.buildBarActions(context),
