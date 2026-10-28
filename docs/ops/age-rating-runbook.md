@@ -60,7 +60,7 @@ App Store Connect → My Apps → Butlery → **App Information** → **Age Rati
 | Alcohol, Tobacco, or Drug Use or References | **Infrequent / Mild** | Recipes may mention wine, beer, or spirits as ingredients (e.g., coq au vin, glögg). No promotion, no purchase flow, no content targeted at minors. |
 | Simulated Gambling | **None** | No gambling mechanics. |
 | Contests | **None** | No contests / sweepstakes / prizes. |
-| Unrestricted Web Access | **No** | App does not embed a web browser. External links open in OS browser and point only to `butlery.app`, `support@butlery.se`, privacy policy, community guidelines. |
+| Unrestricted Web Access | **No** | App does not embed a web browser. External links open in OS browser and point only to `butlery.se`, `support@butlery.se` and the privacy policy (`legal.butlery.se`). |
 | Gambling and Contests | **No** | None. |
 | User-Generated Content | **Yes** | Recipes (titles, ingredients, instructions, photos), comments, ratings, group messages, 1:1 pings. **Moderation:** report flow on every UGC surface; 24-h SLA; admin review screen at Settings → Review reports. **Block:** `lib/views/social/friend_profile_view.dart` exposes block on friend profiles. **Filter:** Community Guidelines + automated heuristics. This combination satisfies App Store Review Guideline 1.2. |
 | Made for Kids | **No** | App is 12+, not in the Kids category. Sign-up refuses under-15s server-side: `verifySignupAge` (`MIN_AGE_YEARS = 15`) is the only `birthYear` writer and sets the `ageCompliant` claim that `firestore.rules → isAgeCompliant()` requires on UGC write paths. |
@@ -113,8 +113,8 @@ These map to a Play Console minimum age of **13** (Play Families threshold), whi
 - [ ] Verify the resulting rating shown in the modal is **12+**. If higher, re-check the answer table — most likely cause: Profanity set to "Frequent" instead of "Infrequent".
 - [ ] Save.
 - [ ] **App Privacy** section: confirm cross-consistency with `docs/ops/play-data-safety-runbook.md` (the iOS PrivacyInfo manifest should already align — see `docs/ops/ios-privacy-manifest-audit.md`).
-- [ ] Attach **Community Guidelines URL** in **App Review Information** → **Notes** field as moderation policy reference: `https://butlery.app/community-guidelines` (or current hosting URL — confirm before submission).
-- [ ] Attach **Privacy Policy URL** in **App Privacy** → `https://butlery.app/privacy`.
+- [ ] **Community Guidelines:** no page is hosted yet (the URL returned 404 when measured 2026-10-28), so there is no URL to attach. Do not enter one. In **App Review Information** → **Notes**, point at the in-app copy (Sign-in screen → "Community Guidelines") instead, and attach a URL only once a page is hosted and returns 200.
+- [ ] Attach **Privacy Policy URL** in **App Privacy** → `https://legal.butlery.se/privacy-en.html` (returned 200 on 2026-10-28).
 - [ ] In **App Review Information** → **Notes**, paste the reviewer notes from `docs/ops/app-review-demo.md` §4.
 
 ### Google Play Console
@@ -129,7 +129,7 @@ These map to a Play Console minimum age of **13** (Play Families threshold), whi
 - [ ] **App content** → **COVID-19 contact tracing** → **No**.
 - [ ] **App content** → **Data safety** → confirm submission per `docs/ops/play-data-safety-runbook.md`.
 - [ ] In **Store listing** → **App access** → declare reviewer demo account from `docs/ops/app-review-demo.md` §2.
-- [ ] **Moderation policy URL** for UGC declaration: in **App content** → **User-generated content** declaration, link `https://butlery.app/community-guidelines` and reference `docs/ops/moderation-runbook.md` (host at a public URL or paste an excerpt — Play accepts either).
+- [ ] **Moderation policy URL** for UGC declaration: in **App content** → **User-generated content** declaration, no community-guidelines page is hosted yet (404 when measured 2026-10-28), so paste an excerpt and reference `docs/ops/moderation-runbook.md` (Play accepts a public URL or an excerpt). Add the URL only once a page is hosted and returns 200.
 
 ### Submission history log
 

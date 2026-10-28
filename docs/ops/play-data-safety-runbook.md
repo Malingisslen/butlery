@@ -229,10 +229,10 @@ Same answers regardless of data type — fill in the global section once.
 
 | Play Console question | Answer |
 |---|---|
-| External URL where users can request data deletion | `https://butlery.app/data-deletion` (planned — confirm hosting before submitting) OR `mailto:integritet@butlery.se` **(re-verified 2026-08-25 — was `privacy@`, which appears nowhere outside stale `build/` artefacts)** (acceptable per Play guidance for small apps). |
+| External URL where users can request data deletion | `mailto:integritet@butlery.se` **(re-verified 2026-08-25 — was `privacy@`, which appears nowhere outside stale `build/` artefacts)** (acceptable per Play guidance for small apps). |
 | In-app account deletion | **Yes** — settings deep-link path: `Profile > Account Management > Delete account`. |
 
-If `butlery.app/data-deletion` is not yet hosted at submission time, use the `mailto:integritet@butlery.se` link — Play accepts email-based deletion requests for apps with in-app deletion already available. Add the URL later as a non-blocking update.
+No data-deletion page is hosted (404 when measured 2026-10-28), so there is no URL to enter. Use the `mailto:integritet@butlery.se` link — Play accepts email-based deletion requests for apps with in-app deletion already available. A deletion-page URL can be added later as a non-blocking update, once a page is hosted and returns 200.
 
 ---
 
@@ -263,7 +263,7 @@ Google rejects ~30% of Data Safety submissions on first try. Common reasons + ho
 | "Shared with third parties" left blank when it should be No | §3 — explicitly tick No, with rationale. |
 | Encryption-in-transit declared No | §4 first row — Yes (TLS via Firebase SDK). |
 | Account deletion missing | §1 "Do you provide a way for users to request that their data is deleted?" — Yes. §5 must point to either in-app flow or `integritet@butlery.se`. |
-| Privacy policy URL doesn't load | Privacy policy is in `assets/legal/privacy_policy_en.md` — must be hosted at a public URL before Play submission. **TODO before submission:** confirm `butlery.app/privacy` (or wherever) returns 200 and matches the in-repo file. |
+| Privacy policy URL doesn't load | Privacy policy is in `assets/legal/privacy_policy_en.md` — the hosted copy is `https://legal.butlery.se/privacy-en.html` (200 when measured 2026-10-28). **TODO before submission:** confirm it still returns 200 and matches the in-repo file. |
 
 ---
 

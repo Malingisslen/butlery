@@ -31,8 +31,8 @@ A rejection on this basis costs **3–7 days** of the launch timeline (re-submis
 
 | Store | Email | Password | Display name | birthYear |
 |---|---|---|---|---|
-| App Store | `reviewer-apple@butlery.app` | `<REPLACE_WITH_GENERATED_PASSWORD_AT_SUBMISSION>` | `App Reviewer` | `1990` |
-| Play Store | `reviewer-google@butlery.app` | `<REPLACE_WITH_GENERATED_PASSWORD_AT_SUBMISSION>` | `Play Reviewer` | `1990` |
+| App Store | `reviewer-apple@butlery.se` | `<REPLACE_WITH_GENERATED_PASSWORD_AT_SUBMISSION>` | `App Reviewer` | `1990` |
+| Play Store | `reviewer-google@butlery.se` | `<REPLACE_WITH_GENERATED_PASSWORD_AT_SUBMISSION>` | `Play Reviewer` | `1990` |
 
 Generate fresh 24-char passwords (e.g. `openssl rand -base64 18 | tr -d '/+='`) at submission time. **Do not commit real passwords to this repo.** Store the generated values in 1Password / Bitwarden under `butlery-reviewer-credentials` and rotate after each review cycle completes.
 
@@ -42,11 +42,11 @@ These accounts exist solely to populate the reviewer's friend graph. They never 
 
 | Email | Display name | Role |
 |---|---|---|
-| `demo-friend-1@butlery.app` | `Anna Demo` | Friend (pre-accepted), member of Demo Group |
-| `demo-friend-2@butlery.app` | `Ben Demo` | Friend (pre-accepted), member of Demo Group |
-| `demo-admin@butlery.app` | `Demo Admin` | Optional moderator account for verifying admin flow — only seed if reviewer notes ask to demonstrate moderation actions |
+| `demo-friend-1@butlery.se` | `Anna Demo` | Friend (pre-accepted), member of Demo Group |
+| `demo-friend-2@butlery.se` | `Ben Demo` | Friend (pre-accepted), member of Demo Group |
+| `demo-admin@butlery.se` | `Demo Admin` | Optional moderator account for verifying admin flow — only seed if reviewer notes ask to demonstrate moderation actions |
 
-**Naming convention:** the `@butlery.app` suffix marks every demo account as non-production, makes them easy to grep in Firestore Auth, and isolates them from real-user emails (which live under `@gmail.com`, `@hotmail.com`, etc., per beta cohort).
+**Naming convention:** the `reviewer-` and `demo-` prefixes mark every account here as a demo account and make them easy to grep in Firestore Auth; real-user emails live under `@gmail.com`, `@hotmail.com`, etc., per beta cohort. The suffix is `@butlery.se` because Malin owns that domain (decision B3 in `tasks/butlery-domain-switch-plan.md`, 2026-10-27); a password reset reaches us only once the mail forwarding in that plan's step 8 is set up, which must be done before these accounts are created.
 
 ### Lifecycle rules
 
@@ -62,17 +62,17 @@ Run this before each submission. Total time: ~30 minutes the first time, ~10 min
 
 ### 3.1 Auth setup (Firebase Console → Authentication → Users)
 
-- [ ] Create / re-enable `reviewer-apple@butlery.app` with the freshly generated password.
-- [ ] Create / re-enable `reviewer-google@butlery.app` with the freshly generated password.
-- [ ] Create `demo-friend-1@butlery.app` and `demo-friend-2@butlery.app` if they don't exist (any password — they are not used for login).
+- [ ] Create / re-enable `reviewer-apple@butlery.se` with the freshly generated password.
+- [ ] Create / re-enable `reviewer-google@butlery.se` with the freshly generated password.
+- [ ] Create `demo-friend-1@butlery.se` and `demo-friend-2@butlery.se` if they don't exist (any password — they are not used for login).
 - [ ] For each, set Firestore `users/{uid}` document with `displayName`, `birthYear: 1990`, `acceptedTermsVersion: <current>`, `acceptedCommunityGuidelinesVersion: <current>`.
 
 ### 3.2 Friend graph
 
 For each reviewer account (`reviewer-apple@…` and `reviewer-google@…`):
 
-- [ ] Friend relationship with `demo-friend-1@butlery.app` — pre-accepted (status `accepted`, both directions).
-- [ ] Friend relationship with `demo-friend-2@butlery.app` — pre-accepted.
+- [ ] Friend relationship with `demo-friend-1@butlery.se` — pre-accepted (status `accepted`, both directions).
+- [ ] Friend relationship with `demo-friend-2@butlery.se` — pre-accepted.
 - [ ] No pending friend requests (so the reviewer sees a clean state and can manually trigger one if needed).
 
 ### 3.3 Recipes
@@ -83,7 +83,7 @@ For each reviewer account (`reviewer-apple@…` and `reviewer-google@…`):
 
 ### 3.4 Shared menu
 
-- [ ] One **weekly menu plan** authored by `demo-friend-1@butlery.app`, shared with the reviewer account. Plan contains **5+ recipes** spread across the week (mix of weekday dinners + weekend lunches). This exercises the menu-template + sharing flow without forcing the reviewer to author one from scratch.
+- [ ] One **weekly menu plan** authored by `demo-friend-1@butlery.se`, shared with the reviewer account. Plan contains **5+ recipes** spread across the week (mix of weekday dinners + weekend lunches). This exercises the menu-template + sharing flow without forcing the reviewer to author one from scratch.
 
 ### 3.5 Comments and ratings
 
@@ -92,7 +92,7 @@ For each reviewer account (`reviewer-apple@…` and `reviewer-google@…`):
 
 ### 3.6 Group
 
-- [ ] **One group** named `Demo Family` with the reviewer account + `demo-friend-1@butlery.app` + `demo-friend-2@butlery.app` as members.
+- [ ] **One group** named `Demo Family` with the reviewer account + `demo-friend-1@butlery.se` + `demo-friend-2@butlery.se` as members.
 - [ ] **3 sample messages** in the group chat (Swedish, recipe-related, friendly). Examples: `"Vad lagar ni på lördag?"`, `"Kan ni testa den nya pastan?"`, `"Jag lägger till en lunch."`
 - [ ] One shared menu attached to the group (re-use §3.4 menu).
 
@@ -120,8 +120,8 @@ BUTLERY — APP REVIEW NOTES
 
 SIGN-IN CREDENTIALS
 
-  Email:    reviewer-apple@butlery.app          (Apple)
-  Email:    reviewer-google@butlery.app         (Play)
+  Email:    reviewer-apple@butlery.se          (Apple)
+  Email:    reviewer-google@butlery.se         (Play)
   Password: <PASTE GENERATED PASSWORD HERE>
 
 The account is pre-populated with friends, a shared menu, sample
@@ -183,9 +183,10 @@ PRIVACY POLICY + TERMS (PRE-LOGIN)
   - Sign-in screen → bottom row → "Community Guidelines" →
     renders assets/legal/community_guidelines_{sv,en}.md.
   - Public hosted copies:
-      https://butlery.app/privacy
-      https://butlery.app/terms
-      https://butlery.app/community-guidelines
+      https://legal.butlery.se/privacy-en.html
+      https://legal.butlery.se/terms-en.html
+    (Community Guidelines has no hosted page yet; the in-app
+    copy above is the only one.)
 
 ----------------------------------------------------------------
 LANGUAGE
@@ -242,9 +243,9 @@ Run **immediately before** clicking Submit on Apple / Play.
 - [ ] At least one comment + one rating visible on the reviewer's recently shared recipe.
 - [ ] One sample report exists in `reports/` collection from the reviewer account.
 - [ ] **No production beta user data** has leaked into the reviewer account (search Firestore for any document referencing the reviewer UID with non-demo email addresses; should be zero).
-- [ ] Privacy policy URL (`https://butlery.app/privacy`) returns 200 and matches `assets/legal/privacy_policy_en.md` v1.2.0 or later.
-- [ ] Community Guidelines URL (`https://butlery.app/community-guidelines`) returns 200 and matches `assets/legal/community_guidelines_en.md`.
-- [ ] Terms URL (`https://butlery.app/terms`) returns 200 and matches `assets/legal/terms_of_service_en.md`.
+- [ ] Privacy policy URL (`https://legal.butlery.se/privacy-en.html`) returns 200 and matches `assets/legal/privacy_policy_en.md` v1.2.0 or later.
+- [ ] Community Guidelines: no page is hosted yet (404 when measured 2026-10-28), so the reviewer notes (§4) give no URL for it; the in-app copy is the reference. Once a page is hosted, check it returns 200 and matches `assets/legal/community_guidelines_en.md`.
+- [ ] Terms URL (`https://legal.butlery.se/terms-en.html`) returns 200 and matches `assets/legal/terms_of_service_en.md`.
 - [ ] Reviewer notes block (§4) pasted into both stores' fields, with the freshly generated password.
 - [ ] If admin-side moderation demo is requested: `admins/{reviewerUid}` doc created in Firestore. **Calendar reminder set to revoke admin within 7 days.**
 - [ ] Test sign-in with the reviewer credentials on a clean device or simulator one final time. Verify all six demo-flow steps work end-to-end.
