@@ -11399,3 +11399,7 @@ Trailing `//` comments on code lines (`expect(...); // (fas2/a.json)`) are untou
 is a line-start test, so failing closed. firestore.rules stays outside the paths; a rules-test `test("...")`
 title is not a comment line. Same Low residual as before: a multi-line string line starting with `//`/`*`
 is struck (`// (Skarmar v12) prompt` -> `// prompt` inside a backtick literal). The Dart test passed (38). Verdict pass.
+
+## 2026-10-26 — BUT-2452 re-review, `firebase_signup_allowlist_repository.dart` (comment-only delta)
+
+Two strikes in the library doc comment (the "no address in a log line or audit row ... gone within about 30 days" sentence, and "and the 30-day expiry bound", since the create rule allows `request.time + 30*24*60+1 min`). Surviving text checked against `match /signup_allowlist/{email}`: admin-only read/delete/create, `update: if false`, `hasOnly`+`hasAll` over the three fields, `invitedAt == request.time`, `invitedBy == request.auth.uid` — true. The struck "not audited / no address in logs" property is still recorded in `docs/security/signup-allowlist-retention.md` ("Not audited" row), so nothing was documented only by the deleted sentence. Info only: "The client checks only that someone is signed in" overclaims slightly (`validateUpdatePermission` returns false; `invite` pre-reads existence). Verdict pass. No new principle.
