@@ -25,7 +25,7 @@ const _residue = <String, int>{
   'lib/services/auth/sign_out_guard.dart': 2,
   'lib/services/backup_service.dart': 2,
   'lib/services/cook_snap_service.dart': 11,
-  'lib/services/deep_link_service.dart': 6,
+  'lib/services/deep_link_service.dart': 5,
   'lib/services/family/active_household.dart': 3,
   'lib/services/family/family_rating_service.dart': 4,
   'lib/services/family/household_roster_service.dart': 3,

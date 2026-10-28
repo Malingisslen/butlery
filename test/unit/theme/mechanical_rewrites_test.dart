@@ -106,6 +106,45 @@ void main() {
     }
   });
 
+  test(
+    'a comment-deletion rule stays off generated, guarded and non-Dart files',
+    () {
+      final config =
+          jsonDecode(File('.claude/shared-plugin.json').readAsStringSync())
+              as Map<String, dynamic>;
+      final deletions = [
+        for (final rule in config['mechanicalRewrites'] as List)
+          if ((rule as Map<String, dynamic>)['deletesComments'] == true) rule,
+      ];
+      expect(deletions, isNotEmpty);
+      const outside = [
+        'lib/theme/app_colors.dart',
+        'lib/theme/app_colors_dark.dart',
+        'lib/theme/app_text_styles.dart',
+        'lib/l10n/app_localizations_sv.dart',
+        'test/unit/theme/mechanical_rewrites_test.dart',
+        'functions/src/index.ts',
+        'tools/check_dead_surface.mjs',
+        'firestore.rules',
+      ];
+      for (final rule in deletions) {
+        expect(
+          rule.containsKey('pairs') || rule.containsKey('strips'),
+          isFalse,
+        );
+        for (final file in outside) {
+          for (final p in rule['paths'] as List) {
+            expect(
+              RegExp('^(?:$p)').hasMatch(file),
+              isFalse,
+              reason: '$p must not cover $file',
+            );
+          }
+        }
+      }
+    },
+  );
+
   test('this file is outside every rewrite path', () {
     final config =
         jsonDecode(File('.claude/shared-plugin.json').readAsStringSync())
