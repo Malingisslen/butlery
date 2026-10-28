@@ -1,0 +1,38 @@
+{
+  "form": "Instagram-inlägg kopierat med konto, följ-knapp, emoji, hashtags, gillningar och kommentarer.",
+  "title": "Fredagstacos fast godare",
+  "steps": 3,
+  "lastStepKey": "lägg upp allt på bordet",
+  "ingredients": [
+    {
+      "key": "nötfärs"
+    },
+    {
+      "key": "tacokrydda"
+    },
+    {
+      "key": "vatten"
+    },
+    {
+      "key": "tortillabröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "majs"
+    },
+    {
+      "key": "tomater"
+    },
+    {
+      "key": "gurka"
+    },
+    {
+      "key": "riven ost",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

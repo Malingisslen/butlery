@@ -1,0 +1,29 @@
+{
+  "form": "OCR av en kokbokssida: kapitelrubrik och sidnummer före titeln, faktaruta, näringsvärde och korshänvisning efter stegen.",
+  "title": "Potatis- och purjolökssoppa",
+  "steps": 5,
+  "lastStepKey": "rör ner grädden",
+  "portions": 4,
+  "ingredients": [
+    {
+      "key": "purjolökar"
+    },
+    {
+      "key": "potatisar"
+    },
+    {
+      "key": "grönsaksbuljong"
+    },
+    {
+      "key": "vispgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "vitpeppar"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

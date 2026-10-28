@@ -1,0 +1,41 @@
+{
+  "form": "ren text där ett ingrediensnamn ryms i ett annat (kokosmjölk/mjölk, jordnötssmör/smör, currypasta/pasta). Visar om dedupen slår ihop två olika varor.",
+  "title": "Jordnötscurry med kyckling",
+  "steps": 4,
+  "lastStepKey": "servera med lime",
+  "portions": 4,
+  "ingredients": [
+    {
+      "key": "kycklingfilé"
+    },
+    {
+      "key": "kokosmjölk"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "currypasta"
+    },
+    {
+      "key": "jordnötssmör",
+      "allergen": "jordnötter"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "pasta",
+      "allergen": "gluten"
+    },
+    {
+      "key": "lime"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

@@ -24,6 +24,10 @@ class GoldRecipe {
   final String id;
   final String title;
   final int steps;
+
+  /// A phrase from the last real step. A recipe-end rule that cuts too early
+  /// loses it, which the step count alone cannot show.
+  final String? lastStepKey;
   final int? portions;
   final int? timeMinutes;
   final List<GoldIngredient> ingredients;
@@ -35,6 +39,7 @@ class GoldRecipe {
     required this.steps,
     required this.ingredients,
     required this.headings,
+    this.lastStepKey,
     this.portions,
     this.timeMinutes,
   });
@@ -43,6 +48,7 @@ class GoldRecipe {
     id: id,
     title: j['title'] as String,
     steps: j['steps'] as int,
+    lastStepKey: j['lastStepKey'] as String?,
     portions: j['portions'] as int?,
     timeMinutes: j['timeMinutes'] as int?,
     ingredients: [
@@ -57,7 +63,7 @@ class GoldRecipe {
 class Produced {
   final String? title;
   final List<String> ingredientLines;
-  final int steps;
+  final List<String> stepLines;
   final int? portions;
   final int? timeMinutes;
   final int llmCalls;
@@ -66,12 +72,14 @@ class Produced {
   const Produced({
     required this.title,
     required this.ingredientLines,
-    required this.steps,
+    required this.stepLines,
     required this.llmCalls,
     this.portions,
     this.timeMinutes,
     this.failure,
   });
+
+  int get steps => stepLines.length;
 }
 
 /// Block markers that are never ingredients whatever the recipe, on top of
@@ -101,9 +109,29 @@ class RecipeScore {
   final List<GoldIngredient> dropped;
   final List<String> headingLeaks;
 
-  RecipeScore(this.gold, this.produced, this.dropped, this.headingLeaks);
+  /// Produced ingredient lines no gold line claimed: page junk, headings, or a
+  /// real line the gold keys do not name.
+  final int extraIngredients;
+
+  RecipeScore(
+    this.gold,
+    this.produced,
+    this.dropped,
+    this.headingLeaks,
+    this.extraIngredients,
+  );
 
   int get kept => gold.ingredients.length - dropped.length;
+
+  /// Steps are gold-counted, not gold-listed, so only the surplus is visible.
+  int get extraSteps =>
+      produced.steps > gold.steps ? produced.steps - gold.steps : 0;
+  bool? get lastStepKept {
+    final key = gold.lastStepKey;
+    if (key == null) return null;
+    return produced.stepLines.any((s) => _norm(s).contains(_norm(key)));
+  }
+
   bool get titleExact => _norm(produced.title ?? '') == _norm(gold.title);
   bool get stepsExact => produced.steps == gold.steps;
   bool? get portionsExact =>
@@ -148,7 +176,13 @@ RecipeScore scoreRecipe(GoldRecipe gold, Produced produced) {
     for (final l in produced.ingredientLines)
       if (headingSet.contains(_norm(l))) l,
   ];
-  return RecipeScore(gold, produced, dropped, leaks);
+  return RecipeScore(
+    gold,
+    produced,
+    dropped,
+    leaks,
+    used.where((u) => !u).length,
+  );
 }
 
 /// Aggregate over one corpus.
@@ -166,6 +200,12 @@ class CorpusScore {
   int get portionsExact => recipes.where((r) => r.portionsExact == true).length;
   int get timeExact => recipes.where((r) => r.timeExact == true).length;
   int get failures => recipes.where((r) => r.produced.failure != null).length;
+  int get extraIngredients => recipes.fold(0, (n, r) => n + r.extraIngredients);
+  int get extraSteps => recipes.fold(0, (n, r) => n + r.extraSteps);
+  List<RecipeScore> get lastStepLost => [
+    for (final r in recipes)
+      if (r.lastStepKept == false) r,
+  ];
   int get llmCalls => recipes.fold(0, (n, r) => n + r.produced.llmCalls);
   int get maxLlmCallsPerImport => recipes.fold(
     0,
@@ -247,6 +287,14 @@ List<String> checkFloors(
   atLeast('portionsExact', c.portionsExact);
   atLeast('timeExact', c.timeExact);
   atMost('failures', c.failures);
+  atMost('extraIngredients', c.extraIngredients);
+  atMost('extraSteps', c.extraSteps);
+  for (final r in c.lastStepLost) {
+    problems.add(
+      '${c.name}/${r.gold.id}: sista steget ("${r.gold.lastStepKey}") '
+      'saknas. Receptets slut har kapats för tidigt.',
+    );
+  }
 
   if (c.maxLlmCallsPerImport > 1) {
     problems.add(
@@ -332,6 +380,15 @@ String formatReport(
   row('Tid rätt', (c) => '${c.timeExact}${floor(c, 'timeExact')}');
   row('Misslyckade importer', (c) => '${c.failures}${floor(c, 'failures')}');
   row(
+    'Extra ingrediensrader (skräp)',
+    (c) => '${c.extraIngredients}${floor(c, 'extraIngredients')}',
+  );
+  row(
+    'Extra steg (skräp)',
+    (c) => '${c.extraSteps}${floor(c, 'extraSteps')}',
+  );
+  row('Sista steget saknas', (c) => '${c.lastStepLost.length}');
+  row(
     'AI-anrop (totalt / högst per import)',
     (c) => '${c.llmCalls} / ${c.maxLlmCallsPerImport}',
   );
@@ -364,6 +421,9 @@ String formatReport(
           'rubriker som ingredienser: ${r.headingLeaks.join(', ')}',
         if (!r.titleExact) 'titel: "${r.produced.title}"',
         if (!r.stepsExact) 'steg: ${r.produced.steps} av ${r.gold.steps}',
+        if (r.extraIngredients > 0)
+          'extra ingrediensrader: ${r.extraIngredients}',
+        if (r.lastStepKept == false) 'sista steget saknas',
       ];
       if (notes.isEmpty) continue;
       b.writeln('- ${c.name}/${r.gold.id}: ${notes.join('; ')}');

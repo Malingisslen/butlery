@@ -1,0 +1,28 @@
+{
+  "form": "inklistrad text utan rubriker, delningsuppmaning och fler recept efter stegen.",
+  "title": "Pannbiff med lök",
+  "steps": 4,
+  "lastStepKey": "potatis och lingon",
+  "portions": 2,
+  "ingredients": [
+    {
+      "key": "nötfärs"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "ströbröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "gula lökar"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": []
+}
