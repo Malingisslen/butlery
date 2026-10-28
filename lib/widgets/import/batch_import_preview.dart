@@ -30,7 +30,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 /// Shows parsed recipes as a selectable checklist before saving.
 ///
 /// A recipe with lines the reader could not read is never saved with the
-/// batch: it would save guessed text past the review (flows-roles-budget.md,
+/// batch: it would save guessed text past the review (
 /// BUT-2158). Its row says how many lines, and a tap opens it in the editor,
 /// where the review shows them.
 class BatchImportPreview extends StatefulWidget {

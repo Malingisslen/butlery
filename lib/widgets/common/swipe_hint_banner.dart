@@ -15,7 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 /// Self-contained: callers drop it in and it owns its own seen-state, so it
 /// adds no persistence logic to the host view. It stops for good once the
 /// gesture has been used ([markUsed]), once it is dismissed, or after
-/// [maxShows] visits (produktregler § 16.5). Renders nothing while the state
+/// [maxShows] visits. Renders nothing while the state
 /// loads.
 ///
 /// Defaults reproduce the original recipe-swipe hint (BUT-982) so existing
@@ -41,7 +41,7 @@ class SwipeHintBanner extends StatefulWidget {
   final String? message;
 
   /// Drawn on the ink base (cooking mode): a tonal on-ink surface with paper
-  /// text, as Skarmar v12 del 1 #lagastaende draws the tip.
+  /// text.
   final bool onInk;
 
   /// Visits after which the hint stays away on its own.

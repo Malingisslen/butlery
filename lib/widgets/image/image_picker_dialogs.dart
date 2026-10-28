@@ -140,8 +140,7 @@ class ImagePickerDialogs {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // The plate line with the real count (Komponentark
-                  // v1:303-309; P4-U07 test plan: no Material progress bar).
+                  // The plate line with the real count
                   PlateLine(
                     value: progress.total > 0
                         ? progress.completed / progress.total

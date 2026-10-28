@@ -1,19 +1,8 @@
 /// P3-U08: the week menu's conflict notice.
 ///
-/// produktregler.md:104: for a week menu the last save wins and the user sees
-/// the snackbar "*Namn* sparade veckan" for 30 s. ux-beslut.json D-04 keeps
-/// that 30 s window apart from the 7 s undo window: it belongs to conflict
-/// handling and is never reused elsewhere, so it has its own constant here and
-/// is not read from `undo_window.dart`.
-///
-/// The action rescues the overwritten version (produktregler.md:109, :1121:
-/// the other version can be rescued with one tap). Its label is "Behåll min",
-/// the words drawn for this rescue on the week menu: Skarmar v12 etapp 11
-/// breda vyer.dc.html:221 (#vmbkonflikt, the button in the conflicted cell,
-/// accessible name "Behåll min version, …") and produktregler.md:1119
-/// ("*Behåll min* i rutan"). produktregler.md:99 is the table's column
-/// header "Ångra", a category, not a label, so `commonUndo` is not used here.
-/// The window stays its own 30 s, never the 7 s undo one (D-04).
+/// The action rescues the overwritten version (
+/// the other version can be rescued with one tap).
+/// The window stays its own 30 s, never the 7 s undo one.
 ///
 /// Mounted by the week menu (veckomeny_view.dart, package 5 phase A, P5-U26a).
 library;
@@ -31,8 +20,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 
-/// How long the week-menu conflict snackbar stays (produktregler.md:104,
-/// ux-beslut.json D-04). Conflict handling only; never an undo window.
+/// Conflict handling only; never an undo window.
 const Duration kConflictNoticeWindow = Duration(seconds: 30);
 
 /// The week-menu conflict snackbar.

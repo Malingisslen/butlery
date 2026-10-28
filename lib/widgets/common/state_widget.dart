@@ -52,8 +52,7 @@ class StateWidget extends StatelessWidget {
     this.padding,
   });
 
-  /// Laddning: tallrikslinje + text (produktregler.md:163 och §6.6 :302-304,
-  /// B-18).
+  /// Laddning: tallrikslinje + text
   ///
   /// [message] säger vad som hämtas, till exempel "Hämtar veckomenyn …"
   /// (ellipsen är tecknet … med mellanslag före, content-style-guide.md:63).

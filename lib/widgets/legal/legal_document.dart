@@ -72,8 +72,6 @@ class _LegalDocumentState extends State<LegalDocument> {
         vertical: AppDimensions.space16,
       ),
       // Offline, web links cannot open, so they turn inactive and say why
-      // (Grafisk manual v6:665 'åtgärder som kräver nät blir inaktiva med
-      // förklarande text').
       child: SelectionArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

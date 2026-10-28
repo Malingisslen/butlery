@@ -1,9 +1,4 @@
 /// P6-U02: the merge sheet, the only way from the week menu to a list.
-///
-/// Skarmar v12 del 2 #inkopmerge and #inkopmergeoppen;
-/// flows-roles-budget.md:44-51 (flow 02); fas2/block288-uxfrysning.json
-/// TR::FLOW::02::veckomeny::till-inköpslistan, ::merge-ark::lägg-till-n-varor
-/// and ::merge-ark::ersätt-listan-på, all REQUIRED.
 library;
 
 import 'dart:async';

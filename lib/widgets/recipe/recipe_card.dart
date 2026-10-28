@@ -20,8 +20,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
 
-/// One recipe in a list or a grid, drawn as Komponentark v1 "Receptkort ·
-/// receptlistrad" (Malin chose the drawing as it stands, 2026-10-11).
+/// One recipe in a list or a grid
 ///
 /// The grid card is paper with an edge (the shared card surface) with the
 /// photo on top, the title and one line of metadata. The list row has no
@@ -81,15 +80,11 @@ class RecipeCard extends StatelessWidget {
     this.pooledStats,
   });
 
-  /// Komponentark v1 "Bild saknas, bild misslyckas": a recipe without a photo
-  /// gets a 36 dp initial plate, never an empty image box.
   static const double _initialPlateSize = 36;
 
-  /// Komponentark v1: the list row is at least 64 dp with a 48 dp thumbnail.
   static const double _rowMinHeight = 64;
   static const double _thumbnailSize = 48;
 
-  /// Komponentark v1: the grid card's photo is 16:9.
   static const double _gridPhotoAspectRatio = 16 / 9;
 
   /// The compact row draws no badge rows; it is a separate design call.
@@ -146,10 +141,7 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  /// The selected state is surface.selected with a real border, never a
-  /// tint: #flerbar draws the chosen row on the raised surface with a 1.5 px
-  /// ink border (Grafisk manual v6:209 "Vald =
-  /// riktig border"). colorScheme surfaceContainerHighest is surface.raised
+  /// colorScheme surfaceContainerHighest is surface.raised
   /// and onSurface is text.primary: ink on light, paper on dark.
   BoxDecoration _restDecoration(BuildContext context, {required bool grid}) {
     final cs = Theme.of(context).colorScheme;

@@ -1,19 +1,15 @@
 /// P5-U26b: "Återställ" for a version another person's save overwrote.
 ///
-/// produktregler.md:104: for the week menu the 30 s snackbar comes first,
-/// "därefter Återställ i 30 dagar"; produktregler.md:109 keeps every
-/// overwritten version 30 days behind Återställ; flows-roles-budget.md:36 says
-/// the overwritten version "nås i Återställ i 30 dagar". PQ-01 = A scopes it
+/// PQ-01 = A scopes it
 /// to the week menu and the user's own recipe.
 ///
 /// Interpretations, recorded here so the reader of the code sees them:
-/// - No drawing places the entry (Skarmar v12 has no Återställ for an
-///   overwritten version). It is a row in the surface's overflow menu, the
+///   It is a row in the surface's overflow menu, the
 ///   place CROSS_CUTTING_RULES.md §3 gives secondary actions, and the row is
 ///   there only while something can be restored, so no surface changes when
 ///   nothing is kept.
 /// - The row says "Återställ min version", after the drawn "Behåll min
-///   version" (Komponentark v1 conflict diff, app_sv.arb conflictDiffKeepMine).
+///   version" (app_sv.arb conflictDiffKeepMine).
 /// - Restoring replaces what someone else saved, which is gone once the undo
 ///   window closes: BUT-954 class 2 (.claude/rules/ui-conventions.md:137),
 ///   a confirmation and then Ångra for 7 s through the undo primitive.

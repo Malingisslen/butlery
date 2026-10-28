@@ -251,23 +251,20 @@ class SelectionActionBar extends StatelessWidget {
   }
 }
 
-/// P5-U23: the tray of recipes that did not fit (produktregler.md:1123-1127,
-/// § 22.6; drawn in Skarmar v12 etapp 11 breda vyer:233-242, #vmbdelvis, and
-/// etapp 2:681-686, #veckooverflow).
+/// P5-U23: the tray of recipes that did not fit
 ///
 /// It is a partial outcome of a bulk placement, so it takes the shared I-29
-/// form ([PartialOutcome]: surface.raised with a warning edge,
-/// produktregler.md:905-909, which names "massmenyläggning"). It
-/// - counts in recipes: "2 av 5 rätter placerade" (produktregler.md:206);
-/// - says why the rest did not fit (produktregler.md:1125) and that it stays
+/// form ([PartialOutcome]: surface.raised with a warning edge
+/// ). It
+/// - counts in recipes: "2 av 5 rätter placerade";
+/// - says why the rest did not fit and that it stays
 ///   until placed ("ett arbetsförråd, inte en notis");
-/// - names each recipe as written, never re-cased (produktregler.md:892: "De
-///   recept som inte får plats namnges");
-/// - offers next week as a choice in the tray (produktregler.md:1127), which
+/// - names each recipe as written, never re-cased
+/// - offers next week as a choice in the tray, which
 ///   makes a snackbar "next week" action unnecessary. The week menu has none;
 /// - comes back quietly after a restart and can be emptied with "Släng
 ///   resten" (Q5-01 = A, produktbeslut 2026-09-24), which the caller follows
-///   with a 7 s Ångra (produktregler.md:131).
+///   with a 7 s Ångra.
 ///
 /// The chips stay draggable into the week, as before (OverflowPayload).
 class OverflowTray extends StatelessWidget {
@@ -372,7 +369,7 @@ class OverflowTray extends StatelessWidget {
 }
 
 /// One recipe in the tray: its title as written, with a drag handle
-/// (Skarmar v12 etapp 11:237-239: 48 px high, 1 px border, 12.5/600).
+/// (48 px high, 1 px border, 12.5/600).
 ///
 /// Colours, both modes from the theme: surface.base (`colorScheme.surface`,
 /// #F5F4ED light, #17251D dark), border.control (`colorScheme.outline`,

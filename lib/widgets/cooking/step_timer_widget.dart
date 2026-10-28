@@ -53,10 +53,8 @@ class StepTimerWidget extends StatefulWidget {
   /// pulse.
   final VoidCallback? onExpired;
 
-  /// Awaited before a new timer starts. Cooking mode passes the notice that
-  /// a timer without notification permission only shows in the app, which
-  /// must come before the timer starts, never after (produktregler.md:423;
-  /// flows-roles-budget.md:70). Not called when re-attaching to a running or
+  /// Awaited before a new timer starts.
+  /// Not called when re-attaching to a running or
   /// paused timer.
   final Future<void> Function()? beforeStart;
 

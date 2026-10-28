@@ -9,8 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A photo that exists but failed to load. Unlike a recipe with no photo,
 /// which collapses its media area, this keeps the area so the layout does not
-/// jump when the network wavers, and says why it is empty (Komponentark v1
-/// "Bild saknas, bild misslyckas", case 4).
+/// jump when the network wavers, and says why it is empty
 class RecipeImageFailedPlate extends StatelessWidget {
   const RecipeImageFailedPlate({super.key});
 

@@ -1,8 +1,5 @@
 // lib/widgets/image/components/image_tile_row.dart
 //
-// The pictures of a recipe as small tiles in a row (Skarmar v12 'Skriv nytt
-// recept'): each picture a rounded square with its remove cross and, on the
-// one that heads the recipe, "primär"; a plus tile last while there is room.
 // Every form that edits a recipe's pictures draws them here, so none keeps
 // a carousel or a grid of its own.
 library;
