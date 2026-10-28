@@ -55,7 +55,7 @@ class CookingVoiceController extends ChangeNotifier with DisposalGuardMixin {
 
   /// Awaited before a voice-started timer starts: the notice that a timer
   /// without notification permission only shows in the app comes before the
-  /// timer, never after (produktregler.md:423; flows-roles-budget.md:70).
+  /// timer, never after.
   final Future<void> Function()? _beforeTimerStart;
 
   VoiceAssistState _state = VoiceAssistState.idle;

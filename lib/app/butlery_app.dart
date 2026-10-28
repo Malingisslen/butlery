@@ -387,7 +387,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   /// Show session timeout warning dialog.
   ///
   /// The queue is read first because the dialog has two modes
-  /// (produktregler.md:832): with changes waiting, Fortsätt is primary, the
+  /// with changes waiting, Fortsätt is primary, the
   /// changes are named, and "Logga ut nu" leads to the same confirmation as
   /// the manual sign-out (#utloggningko).
   Future<void> _showSessionTimeoutWarning() async {
@@ -906,7 +906,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: AppDimensions.space24),
                   // Plate line plus text, never a spinner
-                  // (produktregler.md:163, B-18).
+                  // (B-18).
                   PlateLineMessage(message: message),
                 ],
               ),

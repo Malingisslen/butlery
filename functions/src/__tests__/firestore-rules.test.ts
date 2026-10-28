@@ -503,7 +503,7 @@ test(
 );
 
 // ============================================================================
-// PANTRY PER-FIELD WRITES (P5-U28) — produktregler.md:105, :142-148
+// PANTRY PER-FIELD WRITES (P5-U28)
 // The app writes only the changed fields plus updatedAt/updatedBy, sends a
 // partial tick-off as an increment, and allows a null quantity ("har hemma").
 // The pantry is owner-only, so the conflict is one user on two devices.

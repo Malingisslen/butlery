@@ -51,7 +51,7 @@ class MfaFactorInfo {
 }
 
 /// The number of one-time backup codes a user gets when two-step
-/// verification is switched on (produktregler.md:748).
+/// verification is switched on.
 const int mfaBackupCodeCount = 10;
 
 /// How a backup-code recovery ended.

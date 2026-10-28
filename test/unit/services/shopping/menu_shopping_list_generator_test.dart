@@ -411,7 +411,7 @@ void main() {
       // Proves: re-running the week for the same week targets the existing
       // MARKED list (no "Inköpslista v.24 (2)" pile-up). The rows an earlier
       // merge put there are replaced; a row the user typed is always kept
-      // (flows-roles-budget.md:47; produktbeslut PQ-10 = A supersedes
+      // (produktbeslut PQ-10 = A supersedes
       // produktregler.md:704, where manual rows did not survive).
       seedTwoRecipePlan();
       final stale = UnifiedShoppingItem(

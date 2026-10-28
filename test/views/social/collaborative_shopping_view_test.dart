@@ -995,7 +995,7 @@ void main() {
     );
   });
 
-  // P6-U05 (flows-roles-budget.md:83, :132): the role on the list drops to
+  // P6-U05: the role on the list drops to
   // read-only while it is open. The add field goes at once; a snackbar says
   // why, and an item typed but not added is shown and can be copied, so it is
   // not lost without a word. Nothing is written to the list.
@@ -1165,7 +1165,7 @@ void main() {
     });
   });
 
-  // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+  // BUT-2187: "Listan uppdaterades av namn" — read
   // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName
   // ([UnifiedShoppingList]), no new Firestore field.
   group('CollaborativeShoppingView — updated-by notice (BUT-2187)', () {

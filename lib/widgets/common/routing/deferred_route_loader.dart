@@ -106,7 +106,7 @@ class ModuleLoadingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: cs.surface,
       body: Center(
-        // Plate line plus text, never a spinner (produktregler.md:163).
+        // Plate line plus text, never a spinner.
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.layoutMargin,

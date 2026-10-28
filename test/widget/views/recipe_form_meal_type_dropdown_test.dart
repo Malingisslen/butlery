@@ -57,7 +57,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // The editor writes a draft from the first edit (P6-U08a),
       // so the real auto-save manager reaches SharedPreferences in every test.
       SharedPreferences.setMockInitialValues({});
       // Both views build a real RecipeFormViewModel; EditRecipeView also
@@ -417,8 +417,8 @@ void main() {
     }
 
     // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
-    // has one green save, B-158 (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
-    // #editorutkast; Grafisk manual v6:219).
+    // has one green save, B-158 (Skarmar v12 etapp 4
+    // #editorutkast).
     int heroCount(WidgetTester tester) => tester
         .widgetList<FilledButton>(find.byType(FilledButton))
         .where(

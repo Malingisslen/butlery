@@ -4,7 +4,7 @@ part of 'shopping_merge_sheet.dart';
 
 /// "5 rätter ger 24 rader. Efter sammanslagning blir det **18 varor**."
 /// The line reads in text.secondary; the item count is bold in text.primary
-/// (Skarmar v12 del 2 #inkopmerge, lines 267 and 70).
+/// (lines 267 and 70).
 class _Summary extends StatelessWidget {
   const _Summary({required this.merge});
 
@@ -289,7 +289,7 @@ class _PantryUnavailable extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       key: ShoppingMergeSheet.pantryUnavailableKey,
-      // The partial-outcome form (produktregler.md:905-909): surface.raised
+      // The partial-outcome form: surface.raised
       // with a rust edge, #E6EAD9 / #2F4437 and cs.secondary in both modes.
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,

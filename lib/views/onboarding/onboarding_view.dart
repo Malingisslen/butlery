@@ -191,7 +191,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   }
 
   // Next / Complete is ink, square-cornered, as the bell sketch draws it
-  // (Skarmar v12 del 2 #onboarding). Before a birth year is chosen on the age
+  // Before a birth year is chosen on the age
   // gate it is an empty frame, never ink at 50 %. Completing keeps the name
   // and draws the plate line.
   Widget _buildNavigation(BuildContext context, OnboardingViewModel viewModel) {

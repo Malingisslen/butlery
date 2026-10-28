@@ -1,6 +1,6 @@
 // lib/widgets/legal/legal_link_foot.dart
 //
-// The foot of a legal document (Skärmar v12 #juridik): the other documents
+// The foot of a legal document: the other documents
 // and the contact address as saffron links on one line.
 library;
 

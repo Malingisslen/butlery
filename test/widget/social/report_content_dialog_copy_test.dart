@@ -155,7 +155,7 @@ void main() {
     await tester.tap(find.text(l10n.reportReasonOther));
     await tester.pumpAndSettle();
 
-    // #fbanmal:516, produktregler.md:938.
+    // #fbanmal:516.
     expect(find.text('Krävs när du väljer Annat.'), findsOneWidget);
     expect(find.text('0/500'), findsOneWidget);
   });

@@ -1,9 +1,9 @@
-/// BUT-2160 · flow 07 on recipe images (flows-roles-budget.md:98-106).
+/// BUT-2160 · flow 07 on recipe images.
 ///
 /// - The image manager keeps what the camera or library answered instead of
 ///   dropping a plain no, keeps limited access as its own state, and clears
 ///   the notice on a granted pick. "Fråga igen" asks without our
-///   explanation (produktregler.md:683).
+///   explanation.
 /// - The editor's notice offers "Fråga igen" on the source that was
 ///   refused, the library after a refused camera, and no fallback after a
 ///   refused library (decision A, 2026-10-07).

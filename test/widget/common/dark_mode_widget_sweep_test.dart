@@ -8,11 +8,11 @@
 /// - text and glyphs on the page are text.primary (onSurface): ink on light,
 ///   paper on dark (tokens.json semantic["text.primary"]);
 /// - a chosen chip is an ink fill with paper text, edged in text.primary
-///   (Komponentark v1:142, dark matrix v1:523);
+///   (dark matrix v1:523);
 /// - a chosen reaction is surface.selected with a real border, never an ink
 ///   tint (tokens.json:40-53 opacityLadder, semantic["surface.selected"]);
 /// - status snackbars are the ink snackbar, never a status fill
-///   (Komponentark v1:300, :745-750; PQ-09 = A).
+///   (PQ-09 = A).
 library;
 
 import 'package:flutter/material.dart';
@@ -114,7 +114,7 @@ void main() {
           expect(deco.color, cs.primary);
           expect((deco.border! as Border).top.color, cs.onSurface);
           if (isDark) {
-            // The paper edge of the dark drawing (Komponentark v1:523).
+            // The paper edge of the dark drawing.
             expect((deco.border! as Border).top.color, _paper);
           }
 

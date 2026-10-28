@@ -19,7 +19,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// Före tröskeln ritas ingenting och ingen semantiknod finns, så en snabb
 /// start varken blinkar eller läses upp. Efter tröskeln står skelettet
-/// stilla: ingen toning, ingen övergång (beslut B-18, beslutslogg.md:25).
+/// stilla: ingen toning, ingen övergång (beslut B-18).
 ///
 /// Tröskeln gäller hela skelettytan en gång, inte varje ruta för sig.
 ///

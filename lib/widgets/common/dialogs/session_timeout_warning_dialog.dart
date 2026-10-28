@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 /// Warning dialog shown before session timeout
 /// Provides user with option to extend session or logout immediately
 ///
-/// Two modes (produktregler.md:832, § 16.2). With an empty queue it is the
+/// Two modes. With an empty queue it is the
 /// plain question and "Logga ut nu" signs out at once. With changes waiting,
 /// Fortsätt is primary, the waiting changes are named, and "Logga ut nu"
 /// leads to the same confirmation as the manual sign-out (#utloggningko).
@@ -128,7 +128,7 @@ class _SessionTimeoutWarningDialogState
 
   /// The countdown ran out. Close whatever lies on top of this warning (the
   /// queue confirmation), then the warning itself. The sign-out is the
-  /// service's; the queue is never cleared by it (produktregler.md:833).
+  /// service's; the queue is never cleared by it.
   void _expire() {
     if (!mounted || _expired) return;
     _expired = true;
@@ -166,7 +166,7 @@ class _SessionTimeoutWarningDialogState
 
     // Queue mode: the same confirmation as the manual sign-out. The
     // countdown keeps running underneath; if it runs out, the automatic
-    // sign-out still never clears the queue (produktregler.md:833).
+    // sign-out still never clears the queue.
     final choice = await ProfileDialogs.showPendingChangesDialog(
       context,
       widget.pendingChanges,
@@ -190,7 +190,7 @@ class _SessionTimeoutWarningDialogState
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       scrollable: true,
-      // The clock is drawn in ink (Skarmar v12 etapp 9 #globsession, stroke
+      // The clock is drawn in ink (stroke
       // #24382c): onSurface in light and dark.
       icon: ButleryIcon(
         ButleryIcons.clock,
@@ -222,8 +222,8 @@ class _SessionTimeoutWarningDialogState
           ],
           const SizedBox(height: AppDimensions.space8),
           // Only the number updates, announced politely
-          // (produktregler.md:830). It carries no accent colour
-          // (produktregler.md:831): ink on surface.raised, radius 8, no
+          // It carries no accent colour
+          // ink on surface.raised, radius 8, no
           // border (Skarmar v12 etapp 9 globala tillstand och flerval:66,72).
           // onSurface on surfaceContainerHighest is text.primary on
           // surface.raised in both light and dark.

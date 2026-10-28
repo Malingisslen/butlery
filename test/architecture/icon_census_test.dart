@@ -1,4 +1,4 @@
-/// P7-U08 icon census (beslutslogg.md:9, B-02; Q16 / Q-P7-15).
+/// P7-U08 icon census (B-02; Q16 / Q-P7-15).
 ///
 /// Every icon in lib/ is a Butlery glyph (ButleryIcons, rendered by
 /// ButleryIcon) except the Material residue below: uses whose meaning has no

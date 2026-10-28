@@ -197,7 +197,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     }
   }
 
-  /// "Spara som kopia" (produktregler.md:188). Q6-14 = C: the copy's title
+  /// "Spara som kopia". Q6-14 = C: the copy's title
   /// gets "(kopia)", so the user sees which one is the copy.
   void _saveAsCopy(QueuedChange change) {
     final l10n = context.l10n;
@@ -219,7 +219,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     ),
   );
 
-  /// "Släng ändringen" is class 1 (produktregler.md:132, "omedelbar + 7 s
+  /// "Släng ändringen" is class 1 ("omedelbar + 7 s
   /// Ångra-snackbar"; :140 "Ångra finns där data försvinner"). The change
   /// leaves the list at once and is thrown away only when the Ångra window
   /// closes without Ångra; until then the queue is untouched.

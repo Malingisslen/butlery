@@ -2,7 +2,7 @@
 //
 // P6-U08b: "Konflikt i kön — Behandlas som § 2, inte som fel.
 // Konfliktbannern visas när kön töms, inte medan appen är offline."
-// (produktregler.md:189; fas2/block288-uxfrysning.json
+// (fas2/block288-uxfrysning.json
 // TR::FLOW::08::ko::toms::konfliktbanner).
 library;
 

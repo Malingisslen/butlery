@@ -1,7 +1,7 @@
 // lib/views/auth/mfa_challenge_view.dart
 //
 // P6-U09 — the second-factor challenge at sign-in (Skarmar v12 etapp 3
-// #authmfa; produktregler.md:745-749, § 14.2).
+// #authmfa).
 //
 // Before this view, nothing in the app handled Firebase's multi-factor
 // exception, so an account with two-step verification could not sign in.
@@ -336,7 +336,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         key: const ValueKey('mfaChallenge.verify'),
         label: l10n.mfaVerify,
         // "Verifiera, avstängd till dess sex siffror är ifyllda"
-        // (Skarmar v12 etapp 3 #authmfa, data-a11y-state disabled).
+        // (data-a11y-state disabled).
         onPressed: _busy || !_codeComplete ? null : _verify,
         busy: _busy,
         expand: true,

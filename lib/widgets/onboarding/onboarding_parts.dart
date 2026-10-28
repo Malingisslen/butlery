@@ -1,7 +1,7 @@
 // lib/widgets/onboarding/onboarding_parts.dart
 //
 // The pieces the onboarding screens share, drawn after the bell sketch
-// (Skarmar v12 del 2 #onboarding): paper all the way through, the cloche mark
+// paper all the way through, the cloche mark
 // at the top left with the plate line under it, square buttons, steps as
 // short dashes and lists as ruled rows with square-cornered ticks.
 library;

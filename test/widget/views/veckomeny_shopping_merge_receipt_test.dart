@@ -1,6 +1,6 @@
 /// BUT-2140: the receipt after a merge into the week's list. When the list had
 /// been changed on another device before the write, the receipt says so and
-/// that nothing was overwritten (flows-roles-budget.md:18, the user is always
+/// that nothing was overwritten (the user is always
 /// told about a conflict), and Ångra stays.
 library;
 

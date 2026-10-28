@@ -429,7 +429,6 @@ void main() {
   });
 
   // P5-U28: per-field writes and relative quantities
-  // (produktregler.md:105, :142-148).
   group('PantryService part A (P5-U28)', () {
     setUp(() {
       when(
@@ -508,7 +507,7 @@ void main() {
     });
 
     // Q5-02 = A: "har hemma" takes the bought amount, sent relatively
-    // (produktregler.md:146) so two purchases at once add up.
+    // so two purchases at once add up.
     test(
       'fillUnknownQuantity writes the unit, then the amount as a delta',
       () async {

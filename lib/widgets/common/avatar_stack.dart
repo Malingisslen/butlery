@@ -1,7 +1,7 @@
 // lib/widgets/common/avatar_stack.dart
 //
 // The overlapping initials a shared surface draws for the people on it
-// (Skarmar v12 del 2 #inkop, the shared list's header). The first name sits on ink;
+// (the shared list's header). The first name sits on ink;
 // the others take the tones the assignee badge
 // takes. A surplus past [maxShown] becomes one "+N".
 library;

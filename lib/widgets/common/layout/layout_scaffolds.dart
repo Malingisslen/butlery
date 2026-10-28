@@ -33,7 +33,7 @@ class LayoutScaffolds {
   /// Inköp (the shopping list).
   static const int shoppingTab = 2;
 
-  /// Mer (Skarmar v12 del 2 #mer).
+  /// Mer.
   static const int moreTab = 3;
 
   static const int _tabCount = 4;
@@ -79,7 +79,7 @@ class LayoutScaffolds {
 }
 
 /// The shell: IndexedStack keeps each tab's scroll position and filters
-/// "tills appen stängs" (Grafisk manual v6:619), and the chosen tab survives
+/// "tills appen stängs", and the chosen tab survives
 /// the OS killing the app (state restoration).
 class _MainMenuLayout extends StatefulWidget {
   final int initialIndex;

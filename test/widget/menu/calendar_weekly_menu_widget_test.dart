@@ -321,11 +321,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // P5-U23: the tray counts in dishes (produktregler.md:206): nothing
+      // P5-U23: the tray counts in dishes: nothing
       // was placed and two did not fit.
       expect(find.text('0 av 2 rätter placerade'), findsOneWidget);
       // Each overflow recipe is named as written, never lower-cased
-      // (produktregler.md:892).
       expect(find.text('Överflöd Ett'), findsOneWidget);
       expect(find.text('Överflöd Två'), findsOneWidget);
     });

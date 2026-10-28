@@ -1,5 +1,5 @@
 // Laddningstexterna som paket 2 lägger till (oanvända tills vyerna tar in dem
-// i paket 4). Varje text säger vad som hämtas (produktregler.md:304) och
+// i paket 4). Varje text säger vad som hämtas och
 // skrivs med tecknet … med mellanslag före (content-style-guide.md:63).
 
 import 'dart:convert';

@@ -2,7 +2,7 @@
  * Firestore rules tests for P5-U27b: recipe_suggestions/{id}.
  *
  * A change to someone else's shared recipe, kept 7 days as a suggestion the
- * owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A). Rules
+ * owner accepts or dismisses (PQ-02 = A). Rules
  * contract under test:
  *   - Only the suggester and the recipe's owner read a suggestion; a third
  *     member of the same recipe, another user and a signed-out client do not.

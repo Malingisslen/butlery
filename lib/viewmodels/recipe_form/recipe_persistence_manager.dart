@@ -376,7 +376,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// device) is logged and left: reporting "Kunde inte spara recept" for a
   /// recipe that exists invites "Försök igen" and a duplicate. The draft left
   /// behind is removed at the next clean save or expires after its 30 days
-  /// (produktregler.md:170, D-01).
+  /// (D-01).
   Future<void> _clearDraftAfterSave() async {
     try {
       await _state.clearCurrentDraft();

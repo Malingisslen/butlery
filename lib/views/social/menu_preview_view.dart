@@ -165,7 +165,7 @@ class MenuPreviewView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // The view's one primary action, "Spara till mina menyer" as
-              // drawn (Skarmar v12 del 3 #menyforhands). Imported, it takes
+              // drawn. Imported, it takes
               // the hero's disabled surface; importing keeps the name and
               // draws the plate line.
               FormButton(
@@ -257,7 +257,7 @@ class MenuPreviewView extends StatelessWidget {
       if (success && context.mounted) {
         // PQ-07 = A (produktbeslut 2026-09-23): the confirmation question
         // stays, and Ångra goes through the undo primitive with its 7 s
-        // window like every other undo (produktregler.md:131-132). The view
+        // window like every other undo. The view
         // pops right after, and SnackbarRouteObserver clears snackbars on
         // every pop, so the messenger is captured here and the snackbar is
         // shown once the route is gone.

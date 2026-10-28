@@ -124,7 +124,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
   Widget _buildContent() {
     // Loading state
     if (_isLoading) {
-      // The plate line with its text (produktregler.md:163).
+      // The plate line with its text.
       return Center(
         child: PlateLineMessage(message: context.l10n.menuLoadingSaved),
       );

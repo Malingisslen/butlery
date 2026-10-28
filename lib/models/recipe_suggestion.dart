@@ -39,7 +39,7 @@ class RecipeSuggestion {
     this.replacedAt,
   });
 
-  /// How long a suggestion is kept (produktregler.md:103, "ja, 7 dagar").
+  /// How long a suggestion is kept ("ja, 7 dagar").
   static const Duration keptFor = Duration(days: 7);
 
   /// Firestore document id. Empty until the repository has stored it.
@@ -142,7 +142,7 @@ class RecipeSuggestion {
   /// Q6-12 = B: this pending suggestion with [newSuggestion] in place of its
   /// content, replaced at [at]. Same document id, recipe, owner and
   /// suggester; kept [keptFor] from [at], since it is a new suggestion
-  /// (produktregler.md:103, "ja, 7 dagar").
+  /// ("ja, 7 dagar").
   RecipeSuggestion replacedWith(
     Map<String, dynamic> newSuggestion, {
     required DateTime at,

@@ -17,7 +17,7 @@ class DraftRecoveryDialog extends StatelessWidget {
   final List<DraftMetadata> availableDrafts;
 
   /// Shows "Släng" (one draft) or "Släng alla", the only choice that deletes
-  /// (produktregler.md:171-172). The dialog then pops with null, as
+  /// The dialog then pops with null, as
   /// "Börja om" does, which keeps the drafts.
   final VoidCallback? onDiscardAll;
 
@@ -158,7 +158,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       Text(
                         // How long the draft is kept, not only when it
                         // was written (Skarmar v12 etapp 4 #editorutkastval;
-                        // 30 days, ux-beslut.json D-01).
+                        // 30 days).
                         '${draft.timeAgo} · ${context.l10n.draftFieldsFilledCount(draft.fieldCount)} · ${draftTimeLeftLabel(context, draft.timeLeft)}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -193,7 +193,7 @@ extension DraftRecoveryDialogExtension on BuildContext {
 }
 
 /// "finns kvar i 23 dagar", or hours on the last day: the row says how long
-/// the draft is still kept (Skarmar v12 etapp 4 #editorutkastval).
+/// the draft is still kept.
 String draftTimeLeftLabel(BuildContext context, Duration left) {
   if (left.inDays >= 1) return context.l10n.draftTimeLeftDays(left.inDays);
   final hours = left.inHours < 1 ? 1 : left.inHours;

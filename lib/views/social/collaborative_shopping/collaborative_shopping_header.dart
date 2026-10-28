@@ -192,7 +192,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     Color progressColor,
   ) {
     // The list's progress is the determinate plate line: progressIndicator
-    // on progressTrack, per mode (Komponentark v1:305; B-18). The count next
+    // on progressTrack, per mode (B-18). The count next
     // to it carries the number, so the line is not read twice.
     return ExcludeSemantics(child: PlateLine(value: progress));
   }

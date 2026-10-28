@@ -337,7 +337,7 @@ class _SkrivSjalvReceptViewContentState
     _initializeControllersIfNeeded(viewModel);
     _resyncControllersAfterRestore(viewModel);
     // P6-U03: Spara waits for low- and failed-confidence import rows to be
-    // confirmed (flows-roles-budget.md:61).
+    // confirmed.
     final pendingConfirmations = viewModel.pendingParseConfirmations;
     final saveBlocked = !viewModel.isValid || pendingConfirmations > 0;
 
@@ -384,7 +384,7 @@ class _SkrivSjalvReceptViewContentState
       },
       child: ButleryPage.undersida(
         // "Skriv själv" is a subpage under Lägg till recept: back arrow and
-        // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
+        // title in 14/700 (Skarmar v12 del 2 'Skriv
         // själv').
         // `isEditing` (a stored recipe is loaded), not `isEditMode`, which is
         // the edit permission and is true for a new recipe too.
@@ -736,7 +736,6 @@ class _SkrivSjalvReceptViewContentState
             children: [
               // P6-U03: low- and failed-confidence rows must be confirmed
               // before Spara, and the line says how many are left
-              // (flows-roles-budget.md:61).
               if (pendingConfirmations > 0)
                 Padding(
                   padding: const EdgeInsets.only(

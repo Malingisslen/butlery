@@ -18,7 +18,7 @@
 // * "Dagens plats" and IKVÄLL are the dinner slot (MealSlot.middag):
 //   "ikväll" is the evening meal.
 // * Row 3 (a suggestion from the library) follows the allergy rules of § 1
-//   (produktregler.md § 1): it is drawn only from recipes that pass the menu's
+//   it is drawn only from recipes that pass the menu's
 //   allergen and dietary filter with unknown treated as unsafe, and not at
 //   all when the household's preferences cannot be resolved or its roster is
 //   incomplete. Absence of data is never a safe answer.
@@ -42,7 +42,7 @@ import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Where the week's plan is.
 enum HemPlanStatus {
-  /// The first read has not answered yet (Skarmar v12 del 4 #hemladdar).
+  /// The first read has not answered yet.
   loading,
 
   /// The plan was read (or is empty).
@@ -52,7 +52,7 @@ enum HemPlanStatus {
   failed,
 }
 
-/// The dish the hero card shows (produktregler.md § 6.1, rows 1 to 3).
+/// The dish the hero card shows (rows 1 to 3).
 class HemHero {
   const HemHero({
     required this.entry,
@@ -184,7 +184,7 @@ Future<UserAllergenPreferences?> hemHouseholdPrefs(
 /// Whether every normalised ingredient of [recipe] is among
 /// [pantryIngredientIds]. False when the recipe has no normalised
 /// ingredients: "Frånvaro av data är aldrig ett säkert svar"
-/// (produktregler.md:20) holds for the pantry claim too.
+/// holds for the pantry claim too.
 bool hemAllInPantry(Recipe recipe, Set<String> pantryIngredientIds) {
   final needed = recipe.core.ingredientsNormalized;
   if (needed == null || needed.isEmpty) return false;

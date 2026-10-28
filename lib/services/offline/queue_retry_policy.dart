@@ -1,6 +1,6 @@
 // lib/services/offline/queue_retry_policy.dart
 //
-// P6-U08b: the offline queue's retry rules (produktregler.md:182-188, § 3.1),
+// P6-U08b: the offline queue's retry rules,
 // as pure functions the sync manager and the queue view share.
 //
 //   :185  "FIFO per entitet, parallellt mellan entiteter."
@@ -79,11 +79,11 @@ final Random _random = Random();
 ///   (400/409) → [QueuedChangeReason.unknown] ("Servern tog inte emot
 ///   ändringen")
 /// * unauthenticated (401) is NOT permanent — the one exception to
-///   "4xx utom 408/429 försöks aldrig igen" (produktregler.md:188). For the
+///   "4xx utom 408/429 försöks aldrig igen". For the
 ///   signed-in user a 401 means the ID token is being refreshed, and the
 ///   next attempt carries the new token. It is retried like any transient
 ///   failure and still becomes a permanent failure when the 24 h run out
-///   (produktregler.md:187, [queueRetriesExhausted]). Decided by the package
+///   ([queueRetriesExhausted]). Decided by the package
 ///   6 lead (track P6-W4, QUEUE-401); permission-denied (403) stays
 ///   permanent.
 ///
@@ -156,13 +156,13 @@ class QueueEntryState {
     this.nextAttemptAt,
   });
 
-  /// The entry's identity (produktregler.md:185).
+  /// The entry's identity.
   final String opId;
 
   /// The entity it writes to; entries for one entity go in order.
   final String entityKey;
 
-  /// The opIds it waits for (produktregler.md:187).
+  /// The opIds it waits for.
   final List<String> dependsOn;
 
   /// When it may be sent again, or null to send now.
@@ -216,6 +216,6 @@ QueueEntryDecision decideQueueEntry(
 }
 
 /// Whether an entry whose first attempt failed at [firstFailedAt] has run
-/// out of time and becomes a permanent failure (produktregler.md:188).
+/// out of time and becomes a permanent failure.
 bool queueRetriesExhausted(DateTime firstFailedAt, DateTime now) =>
     now.difference(firstFailedAt) >= kQueueMaxRetryAge;

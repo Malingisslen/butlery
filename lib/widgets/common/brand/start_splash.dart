@@ -1,6 +1,6 @@
 // lib/widgets/common/brand/start_splash.dart
 //
-// The start screen (Skarmar v12 del 1 #start): the cloche on the green, its
+// The start screen: the cloche on the green, its
 // cover lifting to show the food and closing again, the word mark, the line
 // "Din butler i köket" and what the app is waiting for. The animation is
 // slow and repeats; with reduced motion the cover stays off and the food

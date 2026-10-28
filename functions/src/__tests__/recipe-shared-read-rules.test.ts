@@ -69,7 +69,7 @@ test("shared member CANNOT write the recipe", async () => {
     env.authenticatedContext(MEMBER).firestore().doc(DOC).update({ "core.title": "hacked" })
   );
 });
-// Q6-08 = A (produktregler.md:241): a member with edit permission still never
+// Q6-08 = A: a member with edit permission still never
 // writes the owner's recipe; their edit becomes a suggestion instead.
 async function seedRecipeWithEditor(): Promise<void> {
   await env.withSecurityRulesDisabled(async (ctx) => {

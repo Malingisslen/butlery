@@ -21,7 +21,6 @@ enum BadgeTone { neutral, success, warning, danger }
 
 /// Whether a counter asks for action. Ink is the norm; saffron only for
 /// something that needs the user, or it competes with the view's hero
-/// (Komponentark v1:741).
 enum CountEmphasis { ink, action }
 
 class UnifiedBadge extends StatelessWidget {
@@ -38,7 +37,7 @@ class UnifiedBadge extends StatelessWidget {
        emphasis = CountEmphasis.ink;
 
   /// A counter: a filled pill, 2 × 7 (tokens.json controls.badge). Above 99
-  /// it reads "99+" (Komponentark v1:741).
+  /// it reads "99+".
   const UnifiedBadge.count({
     required int this.count,
     this.emphasis = CountEmphasis.ink,

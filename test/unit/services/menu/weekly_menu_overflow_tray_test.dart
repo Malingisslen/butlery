@@ -1,11 +1,11 @@
 /// P5-U23/U24: the week menu's overflow tray at the service layer.
 ///
-/// U23 (produktregler.md:1125, § 22.6): the tray says WHY the rest did not
+/// U23: the tray says WHY the rest did not
 /// fit. The distribution result carries the reason (which week had no room,
 /// and whether passed days were skipped) and the meal type each overflowed
 /// recipe was generated for, so the tray can offer next week.
 ///
-/// U24 (produktregler.md:164-172; Q-A11): the tray is kept on the device, per
+/// U24 (Q-A11): the tray is kept on the device, per
 /// person, 30 days from its last change, and deleted when emptied or at a
 /// manual logout ([WeeklyMenuOverflowTrayStore.clearAll]; PQ-12 = A).
 library;

@@ -284,8 +284,8 @@ void main() {
       });
     });
 
-    // PQ-12 = A (fas2/produktbeslut-2026-09-23.json): the week tray is a
-    // device draft (produktregler.md:164-172). It goes when the user logs
+    // PQ-12 = A: the week tray is a
+    // device draft. It goes when the user logs
     // out herself, and survives an automatic logout.
     group('week tray at logout', () {
       final trayKey = WeeklyMenuOverflowTrayStore.keyFor('u1');

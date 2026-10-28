@@ -3,8 +3,8 @@
 // Flow 08 (P6-U08a): signing out with unsaved changes in the offline queue.
 // "Utloggning med kö — Blockeras med förklaring: ”N ändringar har inte
 // sparats.” Alternativ: Vänta på synk · Logga ut och släng. Aldrig tyst kast."
-// (produktregler.md:193). The same confirmation follows "Logga ut nu" in the
-// session-timeout warning (produktregler.md:832, § 16.2).
+// The same confirmation follows "Logga ut nu" in the
+// session-timeout warning.
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,7 +15,7 @@ import 'package:flutter/foundation.dart';
 /// The user's changes that have not reached the server, by what they concern.
 ///
 /// The drawing names what the changes are about, not only how many there
-/// are ("Antalet och vad det rör står i klartext", Skarmar v12 del 4
+/// are ("Antalet och vad det rör står i klartext"
 /// #utloggningko). The queues carry two kinds today: recipe writes in the
 /// sync queue and image uploads in the upload queue.
 @immutable
@@ -113,7 +113,6 @@ class OfflinePendingChangesSource implements PendingChangesSource {
 
 /// The one choke point every user-initiated sign-out asks first
 /// (Q-P6-E16). An automatic sign-out never asks and never clears the queue
-/// (produktregler.md:833).
 class SignOutGuard {
   SignOutGuard({
     required AuthService authService,

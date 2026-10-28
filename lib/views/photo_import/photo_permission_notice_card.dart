@@ -8,10 +8,9 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 
 /// The permission notice on photo import, per flow 07
-/// (flows-roles-budget.md): [MediaPermissionNoticeCard] with
+/// [MediaPermissionNoticeCard] with
 /// import's own words for a no and its fallbacks. No camera leads to the
 /// library, no library leads to writing the recipe yourself
-/// (flows-roles-budget.md).
 class PhotoPermissionNoticeCard extends StatelessWidget {
   const PhotoPermissionNoticeCard({
     super.key,

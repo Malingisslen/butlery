@@ -259,7 +259,7 @@ void main() {
   }
 
   // P5-U26b: Återställ in the owner's overflow menu, only while a version of
-  // this recipe is kept (produktregler.md:109; PQ-01 = A).
+  // this recipe is kept (PQ-01 = A).
   group('RecipeDetailView — Återställ (P5-U26b)', () {
     const restoreRow = ValueKey('test-recipe-detail-restore-version');
 

@@ -106,7 +106,7 @@ class HemEmptyState extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space16),
-                // The one saffron action (produktregler.md:286).
+                // The one saffron action.
                 Semantics(
                   identifier: 'btn-add-recipe',
                   child: HeroButton(

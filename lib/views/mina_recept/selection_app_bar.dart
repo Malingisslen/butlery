@@ -44,7 +44,7 @@ import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
-/// "Avbryt", which leaves selection mode (produktregler.md:873). Shared by
+/// "Avbryt", which leaves selection mode. Shared by
 /// the selection bar and Hem's library header row (Q6-16 = B).
 Widget buildMinaReceptSelectionCancel(
   BuildContext context,
@@ -66,7 +66,7 @@ List<Widget> buildMinaReceptSelectionActions(
 ) {
   // Interpretation: #flerbar is drawn at 412 dp. Below 360 dp the counter,
   // Avbryt and three actions plus the kebab do not fit one row, so share
-  // moves to the top of the kebab ("högst tre", produktregler.md:886).
+  // moves to the top of the kebab ("högst tre").
   final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
   // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
   // three actions in the bar, ordered by how often they are used and how
@@ -139,9 +139,9 @@ const double _narrowBar = 360;
 enum _BulkMoreAction { share, selectAll, export, delete }
 
 /// The kebab of #flerbar: select all, export, and delete last, alone,
-/// behind a line and in text.danger (produktregler.md:888; Skarmar v12
+/// behind a line and in text.danger (Skarmar v12
 /// etapp 9 #flerbar). Actions that need a selection are off at zero with
-/// the name still readable (produktregler.md:876).
+/// the name still readable.
 class _BulkMoreMenu extends StatelessWidget {
   const _BulkMoreMenu({required this.viewModel, required this.withShare});
 

@@ -1296,8 +1296,8 @@ void main() {
   });
 
   // P6-U04 (flow 04): leaving asks once more than one step is done
-  // (flows-roles-budget.md:71; Q-P6-E05), and the last step is where
-  // "Klart" goes (flows-roles-budget.md:72).
+  // (Q-P6-E05), and the last step is where
+  // "Klart" goes.
   group('CookingModeViewModel - flow 04 steps', () {
     test('maxVisitedIndex follows the furthest step, not the current', () {
       final vm = CookingModeViewModel(recipe: testRecipe);

@@ -184,7 +184,7 @@ void main() {
 
       test('switch on: opaque ink track with a paper knob', () {
         // tokens.json:145-152 control.checked, ink in both modes. Dark adds
-        // a 1 px paper edge (Komponentark v1:523, as the chosen chip).
+        // a 1 px paper edge (as the chosen chip).
         final light = m.name == 'light';
         final s = t.switchTheme;
         final track = s.trackColor!.resolve({WidgetState.selected})!;

@@ -6,7 +6,7 @@
 // - A2: the category swatches read ModeColors and keep the generated values
 //   of their mode (NULAGE.md:71-74; tokens.json:522).
 // - A3: busy buttons draw the plate line, work in progress is the plate line
-//   with its text, never a spinner (produktregler.md:163, :304; B-18).
+//   with its text, never a spinner (B-18).
 // - A4: state is a token, never an opacity (tokens.json:41).
 // - A5: a dialog button that only closes says "Stäng", never "OK"
 //   (content-style-guide.md:77, :96).

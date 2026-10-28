@@ -102,7 +102,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
               ),
             const SizedBox(height: AppDimensions.space16),
             // The plate line: determinate "10 av 16" when the total is
-            // known, else the still segment (Komponentark v1:305-306).
+            // known, else the still segment.
             PlateLine(
               value: _total > 0 ? _current / _total : null,
               semanticLabel: _total > 0

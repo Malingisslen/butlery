@@ -16,7 +16,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/delayed_skeleton.dart';
 
 /// #hemladdar: the plate line with what is being fetched, and after 300 ms a
-/// still skeleton of the card (produktregler.md:163; "Skelettet visas först
+/// still skeleton of the card ("Skelettet visas först
 /// efter 300 ms — en snabb start ska aldrig blinka").
 class HemPlanLoading extends StatelessWidget {
   const HemPlanLoading({super.key});

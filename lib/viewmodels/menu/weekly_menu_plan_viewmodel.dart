@@ -207,10 +207,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Stream<WeekConflict> get weekConflicts => _weekConflicts.stream;
 
   /// P5-U23/U24: the overflow tray, "ett arbetsförråd, inte en notis"
-  /// (produktregler.md:1123-1127). Its recipes, the meal type each was
+  /// Its recipes, the meal type each was
   /// generated for, why they did not fit, and how many recipes the
   /// distribution was given, so the tray can say "2 av 5 rätter placerade"
-  /// (produktregler.md:206).
   _OverflowTray _tray = _OverflowTray.empty;
 
   /// Counts every [_setTray], so [undoDiscardOverflow] can tell that the
@@ -234,7 +233,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   set _overflow(List<Recipe> recipes) => _setTray(_tray.withRecipes(recipes));
 
   /// P5-U23: the order the latest automatic placement followed, as entry
-  /// ids. Shown as numbers in the cells (produktregler.md:1126, :890).
+  /// ids. Shown as numbers in the cells.
   List<String> _placementOrder = const [];
 
   /// BUT-1975: an edit computed from `_plan` is being published.
@@ -309,7 +308,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// P5-U23: the 1-based place of [entryId] in the order the latest
   /// automatic placement followed, or null when it was not part of it.
   /// "Placeringsordningen visas som siffror i rutorna, så resultatet inte är
-  /// en gissning" (produktregler.md:1126; Skarmar v12 etapp 11:249-254).
+  /// en gissning".
   int? placementOrderOf(String entryId) {
     final index = _placementOrder.indexOf(entryId);
     return index < 0 ? null : index + 1;
@@ -1047,7 +1046,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// P6-U02: the visible week's placements for the merge sheet, or null
   /// when the week could not be read (a failure, never "nothing to
-  /// generate"; produktregler.md:705).
+  /// generate").
   Future<MenuShoppingSource?> shoppingSource() async {
     if (_readFailed) return null;
     return _shoppingListGenerator.sourceForWeek(currentWeekStart);
@@ -1077,7 +1076,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// the whole flow, not just the write: the reads before the sheet can take
   /// up to [MenuShoppingListGenerator.pantryReadTimeout], and a second tap
   /// then must not open a second sheet whose confirm adds the week's rows
-  /// again. A second call is silence, not an error (produktregler.md:705).
+  /// again. A second call is silence, not an error.
   Future<void> runShoppingFlow(Future<void> Function() flow) async {
     if (_shoppingFlowRunning) return;
     _shoppingFlowRunning = true;
@@ -1093,7 +1092,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// P6-U02: writes the merge the user confirmed in the sheet. Returns the
   /// receipt, null when nothing could be written, or
   /// [shoppingMergeAlreadyRunning] when a merge is already being written: a
-  /// double tap renders as silence, not an error (produktregler.md:705).
+  /// double tap renders as silence, not an error.
   Future<MenuShoppingMergeReceipt?> applyShoppingMerge(
     MenuShoppingMergePreview merge,
   ) async {
@@ -1111,7 +1110,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     }
   }
 
-  /// P6-U02: Ångra for a merge (produktregler.md:131, § 2.4).
+  /// P6-U02: Ångra for a merge.
   Future<bool> undoShoppingMerge(MenuShoppingMergeReceipt receipt) =>
       _shoppingListGenerator.undo(receipt);
 
@@ -1262,7 +1261,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// tray, and its copy on this device, goes.
   ///
   /// Data disappears, so it is class 1: immediate, with a 7 s Ångra
-  /// (produktregler.md:131-132, § 2.4). Returns the tray as it was, for
+  /// Returns the tray as it was, for
   /// [undoDiscardOverflow], or null when there was nothing to discard.
   OverflowTrayDiscard? discardOverflow() {
     if (_overflow.isEmpty && _tray.unresolvedIds.isEmpty) return null;

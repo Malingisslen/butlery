@@ -1,5 +1,5 @@
 /// Q6-08 = A (produktbeslut 2026-09-27): who the signed-in user is to a
-/// recipe, for the recipe detail menu (produktregler.md:244-252, "Kebabmenyn
+/// recipe, for the recipe detail menu ("Kebabmenyn
 /// per behörighet").
 ///
 /// - [RecipeMenuRole.owner] edits: "Redigera", and the owner-only rows.

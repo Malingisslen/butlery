@@ -202,7 +202,7 @@ void main() {
   });
 
   // P6-U04: a recipe without steps is not cooking — no "lagar just nu"
-  // signal about something that is not happening (produktregler.md:1227).
+  // signal about something that is not happening.
   group('CookingModeViewModel.onEnter · a recipe without steps', () {
     test('sends no broadcast', () async {
       final vm = CookingModeViewModel(

@@ -169,7 +169,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
         message: _state == _VoiceState.preparing
             ? context.l10n.voicePromptPreparing
             : context.l10n.voicePromptTranscribing,
-        // The plate line, not a spinner (Grafisk manual v6:209).
+        // The plate line, not a spinner.
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.space8),
           child: PlateLine(

@@ -418,8 +418,8 @@ void main() {
     });
   });
 
-  // P4-U05: the media hero (Komponentark v1:81-89) and the view's one
-  // saffron action (Grafisk manual v6:219; Skarmar v12 del 1 'Receptdetalj',
+  // P4-U05: the media hero and the view's one
+  // saffron action (Skarmar v12 del 1 'Receptdetalj',
   // etapp 11 'Receptet brett — någon annans').
   group('RecipeDetailView — media hero and action bar (P4-U05)', () {
     List<String> heroLabels(WidgetTester tester, Brightness b) => tester

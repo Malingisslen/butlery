@@ -166,7 +166,7 @@ void main() {
     });
   });
 
-  // P6-U08a / P6-U06 (produktregler.md:829-834, § 16.2; flow 06 session).
+  // P6-U08a / P6-U06 (flow 06 session).
   group('session end: queue untouched, notice, return path', () {
     const pending = PendingChanges(recipeChanges: 2, imageUploads: 1);
 
@@ -228,7 +228,7 @@ void main() {
 
     test('"Logga ut nu" is user_requested: queue kept, drafts go', () async {
       // PQ-12 = A: drafts go when the user signs out herself. The queue is
-      // never cleared by any timeout reason (produktregler.md:833); the
+      // never cleared by any timeout reason; the
       // service has no path to it at all, only to the pending COUNT.
       SharedPreferences.setMockInitialValues({
         'recipe_drafts_metadata': '[]',

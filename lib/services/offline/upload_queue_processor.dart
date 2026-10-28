@@ -3,7 +3,7 @@
 // BUT-2162: sends the upload queue. A recipe image the form could not put on
 // the server (offline, or the network failed) waits here, on the device,
 // and goes up when the network is back, under the same retry rules as the
-// sync queue (queue_retry_policy.dart, produktregler.md:185-192).
+// sync queue (queue_retry_policy.dart).
 library;
 
 import 'dart:math';

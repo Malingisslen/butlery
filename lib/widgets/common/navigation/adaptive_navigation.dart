@@ -1,8 +1,8 @@
 // lib/widgets/common/navigation/adaptive_navigation.dart
 //
-// PQ-17 = A (fas2/produktbeslut-2026-09-23.json): the shell has four
+// PQ-17 = A: the shell has four
 // destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till"
-// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667).
+// (tillganglighetshandoff 'Navigation & toppfält').
 // The bar, the plus and the rail live in butlery_bottom_navigation.dart.
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ export 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
 /// Whether the shell draws the rail rather than the bottom row:
 /// "Skena vid bredd ≥ 768 OCH höjd ≥ 500. Under 500 px höjd gäller en spalt
-/// och bottenrad oavsett bredd" (produktregler.md:1054).
+/// och bottenrad oavsett bredd".
 bool useNavigationRail(Size size) =>
     size.width >= Breakpoints.tablet && size.height >= _railMinHeight;
 
@@ -176,7 +176,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   /// The shell's four destinations, in the drawn order Hem · Meny · Inköp ·
   /// Mer (tillganglighetshandoff 'Navigation & toppfält'; Skarmar v12 del 1
   /// #hemrecept). "Lägg till" is not among them: it is the separate plus
-  /// (produktregler.md:1056). Labels are capitalised as drawn (Komponentark
+  /// Labels are capitalised as drawn (Komponentark
   /// v1:663-666; NAV-INK); the tab says "Meny", not "Veckomeny" (B-17).
   static List<AdaptiveNavigationItem> getNavigationItems(
     BuildContext context,
@@ -201,7 +201,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMore,
-      // Three lines, as drawn (Komponentark v1:666).
+      // Three lines, as drawn.
       icon: ButleryIcons.navMore,
       activeIcon: ButleryIcons.navMore,
       route: Routes.more,

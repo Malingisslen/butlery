@@ -229,7 +229,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   UserService? _userService;
 
   // P5-U26b: this recipe's versions of the owner's that another person's save
-  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109). Keyed
+  // overwrote, kept 30 days behind "Återställ". Keyed
   // by the recipe's id, as the ConflictBanner below is.
   late final RestorableVersionsWatcher _restorable;
 
@@ -323,13 +323,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         final bottomPadding = MediaQuery.of(context).padding.bottom;
         // Someone else's recipe: "Spara till mitt kök" is the one saffron
         // action, and "Börja laga" steps down (Skarmar v12 etapp 11
-        // 'Receptet brett — någon annans'; Grafisk manual v6:219).
+        // 'Receptet brett — någon annans').
         final isOthersRecipe = showForkInAppBar(
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
         // Q6-08 = A: the menu follows who the user is to the recipe
-        // (produktregler.md:244-252).
         final menuRole = recipeMenuRole(
           recipe,
           ServiceLocator.get<PermissionService>().currentUserId,
@@ -363,7 +362,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           if (!context.mounted) return;
           switch (exit) {
             // "Klart" counts the recipe as cooked and the chip shows the new
-            // count (flows-roles-budget.md:72). The per-day debounce stays:
+            // count. The per-day debounce stays:
             // a second Klart the same day leaves the count, and the chip
             // already says "Lagat idag". Klart never opens the who's-eating
             // picker, and cooking mode knows no member ids, so none are
@@ -408,7 +407,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 Navigator.of(context, rootNavigator: true),
               )
             : Navigator.pushNamed(context, navItems[index].route);
-        // The same rule as the shell (produktregler.md § 21.2), so the recipe
+        // The same rule as the shell, so the recipe
         // does not drop back to the bottom row on a width where Hem, Meny,
         // Inköp and Mer draw the rail.
         final inPane = DetailPane.isInside(context);
@@ -517,7 +516,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 : context.l10n.commonBackTo(widget.backTo!),
                           ),
                         ),
-                  // Mönster 3 · Mediehero (Komponentark v1:81-89): the title
+                  // Mönster 3 · Mediehero: the title
                   // stands under the hero, never on top of the food.
                   title: const SizedBox.shrink(),
                   flexibleSpace: recipe.imageUrls.isEmpty

@@ -77,7 +77,7 @@ class ConflictEvent {
   /// Which side the resolver picked.
   final ConflictResolutionStrategy chosenStrategy;
 
-  /// Which conflict rule applies (produktregler.md:97-107), as declared by the
+  /// Which conflict rule applies, as declared by the
   /// model through [RealtimeResource.conflictEntityFor]. Surfaces pick their
   /// notice from this, never from [collectionPath].
   final ConflictEntity entity;
@@ -88,7 +88,7 @@ class ConflictEvent {
 
   /// P5-U27b: the suggestion the losing edit was kept as, when [entity] is
   /// [ConflictEntity.recipeShared] and the suggestion was stored
-  /// (produktregler.md:103). Null otherwise: then the package 5 choice in
+  /// Null otherwise: then the package 5 choice in
   /// ConflictDiffView still applies (PQ-02 = A), so nothing is lost.
   final String? suggestionId;
 

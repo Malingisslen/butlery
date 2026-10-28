@@ -20,7 +20,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// The view's single saffron action (Komponentark v1:843-844).
+/// The view's single saffron action.
 ///
 /// Use it for the one action a view is about. Every other primary stays ink.
 class HeroButton extends StatelessWidget {
@@ -45,7 +45,7 @@ class HeroButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Whether the action is running. The button keeps its shape and gets the
-  /// plate line along its bottom edge (Komponentark v1:372).
+  /// plate line along its bottom edge.
   final bool busy;
 
   /// What the button says while it works, for example "Sparar …"
@@ -180,7 +180,7 @@ class _FilledAction extends StatelessWidget {
             busy ? (busyLabel ?? label) : label,
             semanticsLabel: busy ? null : semanticLabel,
             // BUT-2219: a label wraps rather than ellipsising; a button never
-            // cuts its name (plattformsmatris.md).
+            // cuts its name.
             textAlign: TextAlign.center,
           );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;

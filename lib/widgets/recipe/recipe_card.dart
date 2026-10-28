@@ -148,7 +148,7 @@ class RecipeCard extends StatelessWidget {
 
   /// The selected state is surface.selected with a real border, never a
   /// tint: #flerbar draws the chosen row on the raised surface with a 1.5 px
-  /// ink border (Skarmar v12 etapp 9 #flerbar; Grafisk manual v6:209 "Vald =
+  /// ink border (Grafisk manual v6:209 "Vald =
   /// riktig border"). colorScheme surfaceContainerHighest is surface.raised
   /// and onSurface is text.primary: ink on light, paper on dark.
   BoxDecoration _restDecoration(BuildContext context, {required bool grid}) {
@@ -413,7 +413,7 @@ class RecipeCard extends StatelessWidget {
   }
 
   /// The metadata as one line of text, the
-  /// rating a star and a data marker in text.accent (Komponentark v1, saffranshierarkin
+  /// rating a star and a data marker in text.accent (saffranshierarkin
   /// punkt 4), not a badge.
   Widget _buildMetadataRow(BuildContext context) {
     final brightness = Theme.of(context).brightness;

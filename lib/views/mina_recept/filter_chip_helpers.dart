@@ -95,7 +95,7 @@ class MinaReceptSortChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     // The shared grip: ring around the chip's 48 dp box, no saffron focus
-    // tint (Grafisk manual v6:209, :381).
+    // tint.
     return ButleryControlFocus(
       borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       child: ButleryMenu<SortCriteria>(

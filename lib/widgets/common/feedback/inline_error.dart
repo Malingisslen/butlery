@@ -5,7 +5,7 @@
 /// 2. What was kept ([preserved]), only when something was at stake.
 /// 3. What you can do ([actionLabel] / [onAction]), as a button.
 ///
-/// The anatomy is the drawn error boundary (Komponentark v1:755-758): a 1 px
+/// The anatomy is the drawn error boundary: a 1 px
 /// text.danger outline with the 8 px control radius, the triangle-alert
 /// glyph in text.danger, a bold title in text.primary and the body in
 /// text.body. Colours, both modes (tokens.json):

@@ -111,7 +111,7 @@ void main() {
     // BUT-2025: pins that this handler's error bar goes through
     // `SnackBarUtils.showFailure` rather than a raw `ScaffoldMessenger` call
     // with its own colour. The shared helper leaves the colour to the one
-    // ink snackbar theme (Komponentark v1:745-750, PQ-09 = A), so the same
+    // ink snackbar theme (PQ-09 = A), so the same
     // sentence never arrives in two different colours.
     final errorBar = tester.widget<SnackBar>(find.byType(SnackBar));
     expect(errorBar.backgroundColor, isNull);

@@ -35,7 +35,7 @@ void copyMfaSecret(String text) {
 }
 
 /// The ten backup codes, shown once, before the factor is enrolled
-/// (produktregler.md:748). "Fortsätt" stays off until the user says the
+/// "Fortsätt" stays off until the user says the
 /// codes are saved; closing without that enrolls nothing.
 class MfaBackupCodesDialog extends StatefulWidget {
   const MfaBackupCodesDialog({super.key, required this.codes});

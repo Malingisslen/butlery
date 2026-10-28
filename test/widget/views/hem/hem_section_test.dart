@@ -207,7 +207,7 @@ void main() {
         expect(pantry.data, 'allt i skafferiet');
         expect(pantry.style?.color, AppModeColors.textSecondaryOnInk());
 
-        // One saffron hero (Grafisk manual v6:219), "Börja laga".
+        // One saffron hero, "Börja laga".
         expect(_saffronCount(tester), 1);
         expect(
           find.descendant(

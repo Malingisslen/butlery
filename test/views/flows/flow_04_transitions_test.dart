@@ -1,6 +1,6 @@
 /// P8-U03 · flow 04, the transition that was built but had no test.
 ///
-/// TR::FLOW::04::avslutat::klart (fas2/block288-uxfrysning.json, REQUIRED;
+/// TR::FLOW::04::avslutat::klart (REQUIRED;
 /// flows-roles-budget.md:72): "Klart" in cooking mode returns to the recipe
 /// and "Lagat N gånger" counts up. The detail view handles the finished exit
 /// (lib/views/recipe_detail_view.dart:326-350) by counting the recipe as

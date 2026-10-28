@@ -232,7 +232,7 @@ abstract final class RecipeDetailSharedWidgets {
   }
 
   /// The brand line and the category heading above the title of a recipe
-  /// without a photo (Komponentark v1, "Utan foto · typografiskt huvud").
+  /// without a photo ("Utan foto · typografiskt huvud").
   static List<Widget> _typographicHeadLead(
     BuildContext context,
     Recipe recipe,

@@ -69,7 +69,7 @@ class RecipePermissionManager {
   /// P6-U05: set once the live role on this recipe dropped to read-only.
   /// From then on [canEdit] is false whatever any cache says, so the
   /// persistence manager refuses every save and nothing reaches the shared
-  /// recipe (flows-roles-budget.md:83, :132).
+  /// recipe.
   bool _editAccessLost = false;
 
   /// Records that the role dropped to read-only while the form was open.
@@ -102,7 +102,7 @@ class RecipePermissionManager {
         .distinct();
   }
 
-  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
+  /// Q6-08 = A (produktbeslut 2026-09-27): the
   /// owner of [recipe] when it is someone else's, or null when it is the
   /// signed-in user's own (or has no owner, as a local recipe).
   ///

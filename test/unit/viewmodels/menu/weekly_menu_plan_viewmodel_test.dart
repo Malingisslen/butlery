@@ -2219,7 +2219,7 @@ void main() {
     });
 
     // P6-U02: the merge sheet's write. Three outcomes stay apart
-    // (produktregler.md:705): a receipt, null for failure, and the
+    // a receipt, null for failure, and the
     // already-running sentinel, which the view renders as silence.
     group('applyShoppingMerge (P6-U02)', () {
       final merge = MenuShoppingListGenerator.preview(

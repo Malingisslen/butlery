@@ -1,6 +1,6 @@
 // lib/widgets/shopping/shopping_row.dart
 //
-// The one row of a shopping list (Skarmar v12 del 2 #inkop): a square box,
+// The one row of a shopping list: a square box,
 // the name with its amount in the muted tone beside it, whatever the list
 // needs at the right, and a hairline under. The personal list and the shared
 // list both draw it; neither sets its own box, type or rule.
@@ -146,7 +146,7 @@ class _ShoppingRowState extends State<ShoppingRow>
       child: DecoratedBox(
         decoration: BoxDecoration(
           // A chosen row is surface.selected with a 1.5 px text.primary edge
-          // (Skarmar v12 etapp 9 #flerbar); primaryContainer is
+          // primaryContainer is
           // surface.selected in both schemes.
           color: selected ? cs.primaryContainer : null,
           border: selected

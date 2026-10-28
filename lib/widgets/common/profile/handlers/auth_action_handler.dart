@@ -214,7 +214,7 @@ class AuthActionHandler {
 
     // The reason is asked first: "Ett skäl skickas med och hamnar i
     // revisionsraden. Det frågas före, för efteråt finns ingen kvar att
-    // fråga" (Skarmar v12 etapp 5-7 #kontoradera).
+    // fråga".
     final reason = await ProfileDialogs.showDeleteAccountDialog(
       context,
       mayHaveOpenReview: reportStatus == OwnReportStatus.reported,

@@ -239,7 +239,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  /// Mönster 4 · Modal (Komponentark v1:57, :91-97; Skarmar v12 etapp 4
+  /// Mönster 4 · Modal (Skarmar v12 etapp 4
   /// #editorutkast): the editor is a modal with X, never a back arrow. The
   /// bar is light, with the title in 14/700 and the draft state to the
   /// right. Closing goes through the same unsaved-changes guard as the
@@ -267,7 +267,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ),
     );
     // Q6-08 = A: someone else's recipe is not edited, a change is suggested
-    // (produktregler.md:247, the menu item's own words).
+    // (the menu item's own words).
     final suggests = context.select<RecipeFormViewModel, bool>(
       (vm) => vm.suggestsChange,
     );
@@ -342,7 +342,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (viewModel.editMode == null ||
         mode == EditMode.owner ||
         mode == EditMode.edit) {
-      // The view's one primary action (Grafisk manual v6:219; Skarmar v12
+      // The view's one primary action (Skarmar v12
       // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
       final blocker = viewModel.isValid ? null : viewModel.saveBlocker;
       return BottomActionContainer(

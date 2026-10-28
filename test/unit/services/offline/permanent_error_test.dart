@@ -1,4 +1,4 @@
-// P6-U08b: permanent errors (produktregler.md:189, TR::FLOW::08::ko::
+// P6-U08b: permanent errors (TR::FLOW::08::ko::
 // permanent-fel): "4xx utom 408/429 försöks aldrig igen. Posten flyttas till
 // Väntar på dig med orsak i ord." Classified from the error code, never from
 // the message text.

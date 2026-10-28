@@ -246,7 +246,7 @@ class MenuGenerator {
 
   /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
   /// from (the allergen-safe pool), so a result with no matches can say
-  /// "bland dina 84 recept" (Skarmar v12 del 1 #veckoingamatch).
+  /// "bland dina 84 recept".
   int lastPoolSize = 0;
 
   /// Async version of availableRecipes that supports household allergen aggregation.
@@ -499,7 +499,7 @@ class MenuGenerator {
 
     // P6-U01: nothing matched is an outcome, not an error. An empty menu
     // goes back to the caller, which shows "Inga recept matchar"
-    // (flows-roles-budget.md:32, "0 recept placerade -> inga matchningar";
+    // ("0 recept placerade -> inga matchningar";
     // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
     // REQUIRED). An empty LIBRARY is still the error above.
     _logHiddenByHouseholdEvent();

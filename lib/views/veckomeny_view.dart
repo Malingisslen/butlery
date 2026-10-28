@@ -206,7 +206,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
-    // P6-U01: offline, generation is switched off (produktregler.md:1131).
+    // P6-U01: offline, generation is switched off.
     // The button is already off with its reason; this keeps a stale tap from
     // starting anything.
     if (!VeckomenyConnectivity.isOnlineNow()) return;
@@ -237,7 +237,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
 
     // P6-U01: offline during generation. The flow's "avbrutet, tidigare
-    // vecka orörd" (flows-roles-budget.md:34): nothing is placed, the saved
+    // vecka orörd": nothing is placed, the saved
     // week stays as it was, and the suggestion waits in Lista.
     if (_viewMode == VeckomenyViewMode.kalender &&
         menuVm.hasMenu &&
@@ -505,7 +505,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
 
-    // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
+    // The root bar (Skarmar v12 del 1 #veckomeny,
     // #tomvecka): "Veckomeny" with the week and the number of dishes on the
     // line under it, and the Lista/Kalender tabs under the bar.
     //
@@ -589,7 +589,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// P6-U02: flow 02. Calendar mode merges the visible week's plan; list mode
   /// merges the generated menu into the current week's list.
   ///
-  /// Three outcomes stay apart (produktregler.md):
+  /// Three outcomes stay apart:
   /// nothing to generate (a warning), failed (what happened, what is kept,
   /// Försök igen) and already running (silence). A confirmed merge opens the
   /// list and offers Ångra for 7 s (produktregler.md, § 2.4).
@@ -903,7 +903,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 /// (produktregler.md:206: "1 ≤ n < begärt antal recept"). It says "Vi hittade
 /// n av m rätter" and names each meal type that is short (produktregler.md:
 /// 893: "Ett antal utan namn är ingen upplysning"), in the shared I-29 form
-/// (produktregler.md:905-909). Instead of looking complete, the result says
+/// Instead of looking complete, the result says
 /// what it is. The way on is the view's own Generera, which stays.
 class VeckomenyPartialResult extends StatelessWidget {
   const VeckomenyPartialResult({super.key, required this.outcome});
@@ -947,7 +947,7 @@ class VeckomenyPartialResult extends StatelessWidget {
 /// do yet, so the requirements are named as text and "Ändra beskrivningen"
 /// moves focus to the prompt. "Lägg dagarna själv" opens the calendar. Both
 /// are outlined, because the view's one primary action is Generera
-/// (Komponentark v1:843-844). The app has no cookbook illustration, so the
+/// The app has no cookbook illustration, so the
 /// empty state's no-search-results illustration stands in.
 class VeckomenyNoMatch extends StatelessWidget {
   const VeckomenyNoMatch({

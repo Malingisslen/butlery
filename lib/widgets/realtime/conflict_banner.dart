@@ -1,7 +1,7 @@
 /// BUT-1031: Banner widget that surfaces silent collaborative-edit conflict
 /// resolutions to the user.
 ///
-/// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
+/// P3-U08: the anatomy is the drawn conflict banner:
 /// the triangle-alert glyph, a bold
 /// title that names what has two versions, and body text saying who changed it
 /// and that the user's version is still there. No channel is chosen here: which
@@ -119,7 +119,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
       return;
     }
     // P5-U27b: the edit was kept as a suggestion, so "Se ditt förslag" opens
-    // it (produktregler.md:103). Without one the package 5 choice applies.
+    // it. Without one the package 5 choice applies.
     final suggestionId = event.suggestionId;
     if (suggestionId != null) {
       RecipeSuggestionNotice.openMine(
@@ -148,7 +148,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
   }
 
   /// P5-U27b: someone else's shared recipe whose owner's version stayed,
-  /// with this user's edit kept as a suggestion (produktregler.md:103).
+  /// with this user's edit kept as a suggestion.
   static bool _isSuggestion(ConflictEvent event) =>
       event.entity == ConflictEntity.recipeShared && event.suggestionId != null;
 

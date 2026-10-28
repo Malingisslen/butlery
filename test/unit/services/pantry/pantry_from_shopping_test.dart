@@ -88,7 +88,7 @@ void main() {
       );
 
       // P5-U28: what was bought is sent as a relative change (+3), never as
-      // a total computed on this device (produktregler.md:146).
+      // a total computed on this device.
       final captured =
           verify(
                 () => pantry.adjustQuantity('u1', captureAny(), 3),
@@ -206,7 +206,7 @@ void main() {
       ).thenAnswer((_) async => true);
     });
 
-    // Sent relatively (produktregler.md:146): two purchases landing on one
+    // Sent relatively: two purchases landing on one
     // "har hemma" row at once add up, none overwrites the other.
     test('takes the bought amount', () async {
       final row = atHome();

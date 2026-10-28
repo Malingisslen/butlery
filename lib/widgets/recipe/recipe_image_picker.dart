@@ -113,7 +113,7 @@ class RecipeImagePicker {
 
   /// Picks from [source]: several images from the library while more than
   /// one slot is free, otherwise one. [askAgain] is "Fråga igen" on the
-  /// permission notice, which skips our explanation (produktregler.md:683).
+  /// permission notice, which skips our explanation.
   static Future<void> pick(
     BuildContext context,
     RecipeFormViewModel viewModel,

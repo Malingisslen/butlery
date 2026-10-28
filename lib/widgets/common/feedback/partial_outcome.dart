@@ -120,7 +120,7 @@ class PartialOutcome extends StatelessWidget {
   static Key itemKey(String id) => ValueKey('partial-outcome-item-$id');
 
   /// Names what went as one phrase: "A", "A och B", "A, B och C"
-  /// (produktregler.md:906, "namnger vad som gick"). [and] is the localized
+  /// ("namnger vad som gick"). [and] is the localized
   /// word before the last name, spaces included. Names are shown as written.
   static String joinNames(List<String> names, String and) {
     if (names.length <= 1) return names.join();

@@ -88,7 +88,7 @@ class VoiceSectionCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(AppDimensions.space8),
                 // The plate line with its text, never a spinner
-                // (produktregler.md; B-18).
+                // (B-18).
                 child: Center(
                   child: PlateLineMessage(
                     message: state == VoiceSectionState.preparing

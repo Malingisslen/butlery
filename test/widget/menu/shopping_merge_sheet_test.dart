@@ -1,10 +1,10 @@
-/// P6-U02: the merge sheet (Skarmar v12 del 2 #inkopmerge, #inkopmergeoppen).
+/// P6-U02: the merge sheet (#inkopmergeoppen).
 ///
 /// Summary first: the line "N rätter ger M rader. Efter sammanslagning blir
 /// det K varor." and three figures. "Visa detaljer" opens all four switches;
 /// "Ersätt listan" is always off by default. The hero says what will be
 /// written, the pantry's degraded mode is said with a retry
-/// (produktregler.md:697), and nothing is written by the sheet itself.
+/// and nothing is written by the sheet itself.
 library;
 
 import 'package:flutter/material.dart';

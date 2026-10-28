@@ -1,6 +1,6 @@
 // lib/widgets/common/stat_row.dart
 //
-// The key-figure row of the drawn detail pages (Skarmar v12 del 3 #18): up to
+// The key-figure row of the drawn detail pages: up to
 // three figures, each with a hairline over it, the number above its label.
 library;
 

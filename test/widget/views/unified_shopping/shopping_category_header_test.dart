@@ -1,4 +1,4 @@
-// The shopping list's category heading (Skarmar v12 del 2 #inkop): a
+// The shopping list's category heading: a
 // SectionBand with the name in capitals, "N av M" at the right and a chevron,
 // that folds its category.
 

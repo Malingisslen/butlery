@@ -1,7 +1,7 @@
 // test/widget/common/indicators/progress_overlay_test.dart
 //
 // ProgressOverlay: text plus the plate line on a dark scrim, never a
-// spinner (produktregler.md:163, B-18).
+// spinner (B-18).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

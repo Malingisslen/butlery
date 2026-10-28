@@ -163,7 +163,7 @@ abstract final class PersonalTagBulkDialogs {
     final outcome = result;
     if (confirmed != true || outcome == null || !context.mounted) return;
 
-    // P5-U33 (produktregler.md): all went is a success; some went is
+    // P5-U33: all went is a success; some went is
     // the third outcome, shown by the list with the rest still selected; none
     // went is a failure that keeps the selection.
     if (outcome.isComplete) {

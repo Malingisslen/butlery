@@ -163,7 +163,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                         ButtonRow(
                           children: [
                             // Opening the chat keeps the name and draws
-                            // the plate line (Komponentark v1:365).
+                            // the plate line.
                             HeroButton(
                               key: const ValueKey(
                                 'friendProfile.sendMessage',

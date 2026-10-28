@@ -258,7 +258,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         // Image container
         ButleryOutlinedBox(
           paintOnly: true,
-          // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
+          // Chosen: the 2 px text.primary border.
           // Not chosen: border.subtle itself, never faded claim-lint:ok moved unchanged with its box
           // (tokens.json:40-53). claim-lint:ok moved unchanged with its box
           borderColor: isSelected ? cs.onSurface : cs.outlineVariant,

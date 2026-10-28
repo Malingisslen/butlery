@@ -98,7 +98,7 @@ class ButleryLockup extends StatelessWidget {
 }
 
 /// The word "Butlery" alone, in paper on the green of the start screen: the
-/// lockup's letters without its cloche (Skarmar v12 del 1 #start).
+/// lockup's letters without its cloche.
 class ButleryWordmark extends StatelessWidget {
   /// Creates a wordmark.
   const ButleryWordmark({super.key, this.width = 167});

@@ -134,7 +134,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         style: _isLoading
             ? PlateLineButton.busyStyle(ownStyle, theme.filledButtonTheme.style)
             : ownStyle,
-        // Busy: the words only, as drawn (Komponentark v1:372).
+        // Busy: the words only, as drawn.
         icon: _isLoading
             ? null
             : ButleryIcon(
@@ -432,7 +432,7 @@ class LoadingDialog extends StatelessWidget {
     return PopScope(
       canPop: canCancel,
       child: AlertDialog(
-        // Plate line plus text (produktregler.md:163, B-18): the text says
+        // Plate line plus text (B-18): the text says
         // what is being done, the line only that something is going on. The
         // line carries the message as its semantic label, so the text is
         // not read a second time.

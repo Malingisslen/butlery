@@ -46,7 +46,7 @@ class AppTheme {
         visualDensity: VisualDensity.standard,
 
         // P7-U08: the framework back and close buttons draw the Butlery
-        // glyphs (beslutslogg.md:9, B-02; plattformsmatris.md:75), in the
+        // glyphs (B-02), in the
         // ambient IconTheme colour of the bar they sit in.
         actionIconTheme: ActionIconThemeData(
           backButtonIconBuilder: (_) => const ButleryIcon(ButleryIcons.back),

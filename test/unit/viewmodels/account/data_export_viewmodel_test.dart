@@ -936,7 +936,7 @@ void main() {
     });
   });
 
-  // P6-U06 (produktregler.md:733-735; Skarmar v12 etapp 6 #dataexportfel):
+  // P6-U06:
   // three causes, three messages, and the file lives only in memory.
   group('P6-U06 export causes and memory', () {
     test('each cause is told apart', () {

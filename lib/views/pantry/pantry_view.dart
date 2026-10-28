@@ -29,7 +29,7 @@ class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
   /// tab, which then owns and disposes them. "Välj" and the selection
   /// counter sit in that view's own top bar, so it needs the row count and
-  /// the selection (produktregler.md:871-873). Without them the pantry makes
+  /// the selection. Without them the pantry makes
   /// and owns its own.
   const PantryView({super.key, this.viewModel, this.selection});
 

@@ -9,10 +9,10 @@
 /// and decides: "Använd förslaget" or "Avvisa förslaget".
 ///
 /// What is drawn and what is built: no drawing shows a suggestion. The field
-/// rows are the conflict view's (Skarmar v12 del 3 #konflikt), named "Förslaget"
+/// rows are the conflict view's, named "Förslaget"
 /// and "Nu"; the decision
 /// bar is the conflict view's bottom bar with the primary action first and
-/// the outlined one under it (Grafisk manual v6:219, one primary action per
+/// the outlined one under it (one primary action per
 /// view). Recorded as interpretations in the P5-U27b commit.
 library;
 
@@ -279,8 +279,8 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
             children: [
               _keptNote(context),
               const SizedBox(height: AppDimensions.space12),
-              // The view's one primary action (Grafisk manual v6:219). Busy
-              // keeps its name and draws the plate line (Komponentark v1:365).
+              // The view's one primary action. Busy
+              // keeps its name and draws the plate line.
               FormButton(
                 key: RecipeSuggestionView.acceptKey,
                 label: l.recipeSuggestionAccept,

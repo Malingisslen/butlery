@@ -66,7 +66,7 @@ class ImageAddTile extends StatelessWidget {
     return [
       Builder(
         builder: (context) {
-          // The plate line, not a spinner (Grafisk manual v6:209). The
+          // The plate line, not a spinner. The
           // text under it says what is happening.
           return const SizedBox(
             width: AppDimensions.iconSizeXl * 2,

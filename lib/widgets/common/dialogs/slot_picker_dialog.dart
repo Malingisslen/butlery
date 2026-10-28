@@ -289,7 +289,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
   Widget _buildBody(ScrollController scrollController) {
     if (_isLoading) {
       // The plate line with what is being fetched, never a spinner
-      // (produktregler.md:163, B-18; beslutslogg.md:25).
+      // (B-18).
       return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
     if (_loadFailed) {

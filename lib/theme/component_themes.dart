@@ -65,7 +65,7 @@ class ComponentThemes {
   );
 
   /// The other 6 of paddingX 13; also the gap between check, avatar or
-  /// delete icon and the label (Komponentark v1:142, `gap:6px` between check and label).
+  /// delete icon and the label (`gap:6px` between check and label).
   static const EdgeInsetsDirectional chipLabelPadding =
       EdgeInsetsDirectional.symmetric(horizontal: 6);
 

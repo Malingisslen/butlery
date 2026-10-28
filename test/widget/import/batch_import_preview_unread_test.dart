@@ -1,6 +1,5 @@
 // BUT-2158: a recipe with lines the reader could not read never rides the
 // batch save past the review; its row opens it in the editor instead
-// (flows-roles-budget.md).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';

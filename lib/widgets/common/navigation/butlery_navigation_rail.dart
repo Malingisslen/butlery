@@ -6,7 +6,7 @@
 // vänster om vald post", and "lägg till" is a round saffron button at the top.
 //
 // NAV-INK: the same ink surface as the bottom row in both modes (#bredskal
-// :72 `background:#24382c`; Komponentark v1:662), and the bottom row's
+// :72 `background:#24382c`), and the bottom row's
 // capitalised labels (see butlery_bottom_navigation.dart).
 library;
 
@@ -21,7 +21,7 @@ import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart
 import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// The rail at 768 dp and up (produktregler.md:1054): the bottom row's
+/// The rail at 768 dp and up: the bottom row's
 /// vocabulary standing up, drawn in Skarmar v12 etapp 10 #bredskal.
 class ButleryNavigationRail extends StatelessWidget {
   const ButleryNavigationRail({
@@ -117,8 +117,8 @@ class ButleryNavigationRail extends StatelessWidget {
 ///
 /// Interpretation: #bredskal draws the unchosen entries in #c9d3c4 at weight
 /// 400 with 1 px tracking. The rail takes the bottom row's vocabulary
-/// ("samma vokabulär", produktregler.md): navLabel 11/700
-/// (Komponentark v1:663; Grafisk manual v6:244 "Aldrig 400 under 12 px").
+/// ("samma vokabulär"): navLabel 11/700
+/// (Grafisk manual v6:244 "Aldrig 400 under 12 px").
 class _RailTab extends StatelessWidget {
   const _RailTab({
     required this.item,

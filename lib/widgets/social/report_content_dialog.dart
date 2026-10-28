@@ -213,7 +213,6 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
         children: [
           // The drawn intro under the title (Skarmar v12 etapp 9
           // #fbanmal): who reads the report, a person
-          // (produktregler.md).
           Text(
             l10n.reportDialogIntro,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -254,7 +253,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           ],
           const SizedBox(height: AppDimensions.space12),
           // "Vi bedömer mot våra riktlinjer — den version du ser nu är
-          // den vi dömer efter." (#fbanmal; produktregler.md).
+          // den vi dömer efter." (#fbanmal).
           _GuidelinesNote(
             prefix: l10n.reportDialogGuidelinesNotePrefix,
             linkText: l10n.reportDialogGuidelinesLink,

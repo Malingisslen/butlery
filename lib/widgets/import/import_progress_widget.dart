@@ -108,7 +108,7 @@ class ImportProgressWidget extends StatelessWidget {
             ),
 
             // Fetching and parsing: the plate line with text, never a
-            // spinner (produktregler.md:163, :304; Skarmar v12 etapp 4
+            // spinner (Skarmar v12 etapp 4
             // #imp2hamtar draws the line under "Hämtar recept").
             if (isLoading) ...[
               const SizedBox(height: AppDimensions.space12),
@@ -186,7 +186,7 @@ class _StepIndicator extends StatelessWidget {
           borderWidth: 2,
           child: Center(
             // The running step shows its number; the plate line under the
-            // steps says that it runs (B-18: no spinner, beslutslogg.md:25).
+            // steps says that it runs (B-18: no spinner).
             child: isComplete
                 ? ButleryIcon(
                     ButleryIcons.check,

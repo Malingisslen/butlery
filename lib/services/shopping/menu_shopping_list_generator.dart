@@ -43,7 +43,7 @@ class MenuShoppingGenerationResult {
 
   /// How many rows the pantry touched: left off because enough is at home,
   /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
-  /// (produktregler.md:224-234, § 4.2; produktbeslut PQ-11 = A). It replaced
+  /// (produktbeslut PQ-11 = A). It replaced
   /// the BUT-1279 count of whole staple rows.
   final int excludedStaples;
 
@@ -84,7 +84,7 @@ class MenuShoppingGenerationResult {
 ///   generated name but lacks the marker is never touched.
 ///
 /// P6-U02 changed what happens inside that list. Flow 02
-/// (flows-roles-budget.md:44-51) and the merge sheet (Skarmar v12 del 2
+/// and the merge sheet (Skarmar v12 del 2
 /// #inkopmerge) are the only way from the week menu to a list, and "Dina
 /// egna, manuellt tillagda varor behålls alltid". produktbeslut PQ-10 = A
 /// (2026-09-23) settled it: your own rows are always kept, and the rows land
@@ -130,7 +130,7 @@ class MenuShoppingListGenerator extends BaseService {
 
   /// The week's placements, or null when the week could not be read. An
   /// empty source means there is nothing to generate; the two outcomes stay
-  /// apart (produktregler.md:705).
+  /// apart.
   Future<MenuShoppingSource?> sourceForWeek(DateTime date) async {
     return executeServiceOperation<MenuShoppingSource?>(() async {
       final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
@@ -211,7 +211,7 @@ class MenuShoppingListGenerator extends BaseService {
   /// Reads the signed-in user's pantry. A failed or slow read gives
   /// [MenuShoppingPantry.unavailable]: the list is then made without pantry
   /// deduction, and the sheet says so with a way to try again
-  /// (produktregler.md:697). [PantryService.getAll] turns a failure into an
+  /// [PantryService.getAll] turns a failure into an
   /// empty pantry, which would hide exactly that, so this reads the stream.
   Future<MenuShoppingPantry> readPantry() async {
     try {

@@ -86,8 +86,8 @@ class _PhotoImportViewState extends State<PhotoImportView> {
 
   /// Flow 07 for camera and photos: our explanation, as drawn in Skarmar v12
   /// etapp 3 #behkamera, before the system prompt; the OS is asked only after
-  /// Tillåt (produktregler.md:682). "Fråga igen" goes straight to the system
-  /// prompt (produktregler.md:683).
+  /// Tillåt. "Fråga igen" goes straight to the system
+  /// prompt.
   Future<OsPermissionOutcome> _resolvePermission(
     ImageSource source,
     bool askAgain,
@@ -378,7 +378,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   const SizedBox(height: AppDimensions.space16),
 
                   // Flow 07: what the permission answer means here, and the
-                  // way on (flows-roles-budget.md).
+                  // way on.
                   if (viewModel.permissionNotice != null) ...[
                     PhotoPermissionNoticeCard(
                       notice: viewModel.permissionNotice!,
@@ -541,7 +541,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       ),
       // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
       // chosen first and the text is read only here, the view's one primary
-      // action (Skarmar v12 del 2 #fotoimport :704-706; Grafisk manual v6:219).
+      // action.
       bottomNavigationBar: readPages
           ? BottomActionContainer(
               child: FormButton(

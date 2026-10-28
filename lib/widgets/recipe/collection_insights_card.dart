@@ -194,7 +194,7 @@ class _DietaryBar extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.space4),
           // A measured share is the determinate plate line: progressIndicator
-          // on progressTrack, per mode (Komponentark v1:305; B-18). The text
+          // on progressTrack, per mode (B-18). The text
           // above carries the number, so the line is not read twice.
           ExcludeSemantics(child: PlateLine(value: fraction)),
         ],

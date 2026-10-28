@@ -1,4 +1,4 @@
-/// Malin's round-three decisions (fas2/produktbeslut-2026-09-27.json): the
+/// Malin's round-three decisions: the
 /// words the user sees, with their English equivalent under the same key.
 library;
 

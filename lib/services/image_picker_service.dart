@@ -68,9 +68,8 @@ export 'package:butlery/core/utils/os_permission_helper.dart'
 /// await imageService.debugPermissions();
 /// ```
 /// Our own explanation before the system prompt for camera or photos
-/// (flows-roles-budget.md:100; Skarmar v12 etapp 3 #behkamera). Returns true
+/// Returns true
 /// when the user tapped Tillåt. The OS is asked only then
-/// (produktregler.md:682).
 typedef MediaRationalePrompt = Future<bool> Function(ImageSource source);
 
 /// What a pick produced, with the permission outcome that decided it
@@ -95,7 +94,7 @@ class ImagePickOutcome {
 
 /// Our explanation before the system prompt for camera and photos on the
 /// surfaces other than recipe import (avatar, recipe images, comments).
-/// Recipe import has its own drawn copy (Skarmar v12 etapp 3 #behkamera).
+/// Recipe import has its own drawn copy.
 MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
     (source) async {
       if (!context.mounted) return false;
@@ -115,8 +114,8 @@ MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
 /// than recipe import (flow 07): a permanent no says so with "Öppna
 /// inställningar"; a device block says so without a button; a plain no is a
 /// silent skip — tapping the control again asks again
-/// (produktregler.md:683). These surfaces offer no invented alternative
-/// (Q-P6-E15; produktregler.md:535).
+/// These surfaces offer no invented alternative
+/// (Q-P6-E15).
 void explainMediaPermission(
   BuildContext context,
   OsPermissionOutcome outcome,
@@ -210,7 +209,7 @@ class ImagePickerService extends BaseService {
 
   /// [pickImage] with the typed permission outcome (flow 07). With a
   /// [rationale], our explanation comes before the system prompt and the OS
-  /// is asked only after Tillåt (produktregler.md:682). Without one, the
+  /// is asked only after Tillåt. Without one, the
   /// system prompt comes directly, as before.
   Future<ImagePickOutcome> pickImageWithOutcome(
     ImageSource source, {
@@ -485,7 +484,7 @@ class ImagePickerService extends BaseService {
   }
 
   /// Resolves the camera or photo-library permission to a typed outcome
-  /// (flow 07, flows-roles-budget.md:98-106; produktregler.md:680-687).
+  /// (flow 07).
   ///
   /// With a [rationale], our explanation comes first and the OS is asked only
   /// after Tillåt; "Inte nu" returns [OsPermissionOutcome.denied] without
@@ -538,7 +537,7 @@ class ImagePickerService extends BaseService {
 
   /// The storage route behind a permanent photos no. Our explanation is not
   /// shown here: the user has already said no to photos, and a second no is
-  /// a silent skip with no repeated explanation (produktregler.md:683). On
+  /// a silent skip with no repeated explanation. On
   /// Android 13+ storage reads as denied and a request is refused without a
   /// dialog, so this falls through to the permanent-no notice.
   Future<OsPermissionOutcome> _resolveLegacyStorage() async {

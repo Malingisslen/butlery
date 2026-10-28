@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// The form's one primary button, last on the page. While the view model
 /// works it keeps its name and gets the plate line along its bottom edge,
-/// never a spinner (Komponentark v1:365, :372); busy is not disabled, it
+/// never a spinner; busy is not disabled, it
 /// ignores presses instead (PlateLineButton.ignore).
 class AccountFormButton extends StatelessWidget {
   const AccountFormButton({

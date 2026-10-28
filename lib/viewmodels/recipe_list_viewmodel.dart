@@ -778,7 +778,7 @@ class RecipeListViewModel extends BaseViewModel {
   /// "Välj" in the top bar (B-46): selection mode with nothing selected.
   void startSelection() => _selectionManager.startSelection();
 
-  /// "Markera alla" as a toggle (produktregler.md:877): untick everything,
+  /// "Markera alla" as a toggle: untick everything,
   /// stay in selection mode.
   void deselectAll() => _selectionManager.deselectAll();
 

@@ -511,7 +511,6 @@ void main() {
       );
       // P6-U03: a failed line is never read out as guessed text; the label
       // says it could not be read, and the confidence word stays
-      // (flows-roles-budget.md:63; produktregler.md:564).
       final expectedLabel = l10n.a11yConfidenceFailed;
 
       expect(

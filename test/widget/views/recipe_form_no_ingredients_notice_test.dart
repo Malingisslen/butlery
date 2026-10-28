@@ -39,7 +39,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // The editor writes a draft from the first edit (P6-U08a),
       // so the real auto-save manager reaches SharedPreferences in every test.
       SharedPreferences.setMockInitialValues({});
       // Both views build a real RecipeFormViewModel; EditRecipeView also

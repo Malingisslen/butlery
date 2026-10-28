@@ -57,7 +57,6 @@ class PantryItem {
 
   /// The amount on hand, or null for "har hemma, vet inte hur mycket" — a
   /// value of its own that never overwrites a known amount
-  /// (produktregler.md:148, § 2.2).
   final double? quantity;
   final String unit;
   final PantryLocation location;
@@ -153,7 +152,7 @@ class PantryItem {
   /// vinner"). Two devices that change different fields of the same row no
   /// longer overwrite each other.
   ///
-  /// A null [quantity] never replaces a known amount (produktregler.md:148):
+  /// A null [quantity] never replaces a known amount:
   /// when [before] has one, the quantity is left out. A cleared optional
   /// field is deleted. [updatedAt] and [updatedBy] are the repository's to
   /// write, so they are never part of the result.

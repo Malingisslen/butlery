@@ -170,7 +170,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
         label = l10n.voicePromptStop;
       case VoiceAssistState.transcribing:
         background = cs.primary;
-        // The plate line, not a spinner (Grafisk manual v6:209). It stands
+        // The plate line, not a spinner. It stands
         // still under reduced motion (PlateLine).
         content = PlateLine(
           width: AppDimensions.iconSizeL,

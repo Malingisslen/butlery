@@ -115,7 +115,6 @@ class CollaborationModule implements DIModule {
         overwrittenVersions: container<OverwrittenVersionRepository>(),
         suggestions: container<RecipeSuggestionRepository>(),
         // P6-U08b: conflict notices wait for the offline queue to empty
-        // (produktregler.md:189).
         queueSettled: () => SyncQueueSource.resolve().watchSettled(),
         // BUT-2213: "Behåll min version" on a queued recipe edit.
         writeOwnRecipe: writeOwnRecipe,

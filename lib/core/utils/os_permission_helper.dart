@@ -70,11 +70,10 @@ typedef SettingsSnackbarPresenter =
     );
 
 /// What the OS answered, as the flow-07 states name it
-/// (flows-roles-budget.md:98-106; produktregler.md:680-687).
 ///
 /// - [granted]: the feature works (also iOS `provisional`).
 /// - [limited]: iOS "valda bilder" — usable, and its own state with a way to
-///   choose more, never an error (produktregler.md:684).
+///   choose more, never an error.
 /// - [denied]: no for now. The feature stays and can ask again.
 /// - [permanentlyDenied]: only the phone's settings can change it.
 /// - [restricted]: the device or MDM blocks it; there is nothing the user
@@ -90,7 +89,6 @@ enum OsPermissionOutcome {
 /// Convenience reads on [OsPermissionOutcome].
 extension OsPermissionOutcomeX on OsPermissionOutcome {
   /// `granted` and `limited` both let the feature run
-  /// (produktregler.md:684).
   bool get isUsable =>
       this == OsPermissionOutcome.granted ||
       this == OsPermissionOutcome.limited;
@@ -99,9 +97,9 @@ extension OsPermissionOutcomeX on OsPermissionOutcome {
 /// Pure helper encapsulating Butlery's OS-permission UX contract.
 ///
 /// Contract: explanation → OS prompt → settings link on a permanent no →
-/// never a hard-gated feature (produktregler.md:682). The OS is asked only
+/// never a hard-gated feature. The OS is asked only
 /// after the user tapped Tillåt in our dialog, and a second no is a silent
-/// skip (produktregler.md:683).
+/// skip.
 class OsPermissionHelper {
   OsPermissionHelper._();
 
@@ -127,10 +125,10 @@ class OsPermissionHelper {
   ///
   /// [skipRationale] is for an explicit "Fråga igen": the user has just asked
   /// for the OS prompt, so our explanation is not shown a second time
-  /// (produktregler.md:683). [restrictedMessage], when given, is shown
+  /// [restrictedMessage], when given, is shown
   /// without a button on a device-blocked permission
-  /// (flows-roles-budget.md:104). [rationaleConsequence] and [rationaleIcon]
-  /// feed the drawn explanation (Skarmar v12 etapp 3 #behkamera).
+  /// [rationaleConsequence] and [rationaleIcon]
+  /// feed the drawn explanation.
   static Future<OsPermissionOutcome> request({
     required BuildContext context,
     required Permission permission,
@@ -182,7 +180,7 @@ class OsPermissionHelper {
 
     if (current == OsPermissionOutcome.restricted) {
       // Blocked by the device or MDM: explain, offer no button — there is
-      // nothing the user can do (flows-roles-budget.md:104).
+      // nothing the user can do.
       if (restrictedMessage != null && context.mounted) {
         presentRestricted(context, restrictedMessage);
       }
@@ -310,7 +308,7 @@ class OsPermissionHelper {
   }
 
   /// Opens the phone's settings for this app. The one way back from a
-  /// permanent no (flows-roles-budget.md:103).
+  /// permanent no.
   static Future<bool> openSettings({
     PermissionGateway gateway = const DefaultPermissionGateway(),
   }) => gateway.openSettings();

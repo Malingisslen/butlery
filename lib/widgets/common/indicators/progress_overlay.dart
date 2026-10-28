@@ -61,7 +61,6 @@ class ProgressOverlay extends StatelessWidget {
         // B-18). They sit on an opaque paper card, because the scrim alone
         // cannot guarantee a reading colour over an arbitrary photo (B102).
         // The line takes the in-button form in the text's own colour
-        // (Komponentark v1:307).
         child: Center(
           child: Semantics(
             liveRegion: true,

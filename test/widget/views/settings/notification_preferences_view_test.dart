@@ -439,7 +439,6 @@ void main() {
 
     // P6-U07: notifications off in the phone — a row at the top leads to the
     // system settings and the switches stay visible but inactive
-    // (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
     testWidgets(
       'notifications off in the phone: top row, switches visible but inactive',
       (tester) async {

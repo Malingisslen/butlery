@@ -34,12 +34,12 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   final auth.AuthRepository _authRepository;
 
   /// P5-U26b: where a version the user loses to another person's save is kept
-  /// for 30 days (produktregler.md:109). Null keeps nothing (tests that do not
+  /// for 30 days. Null keeps nothing (tests that do not
   /// exercise it, and any build without the repository registered).
   final OverwrittenVersionRepository? _overwrittenVersions;
 
   /// P5-U27b: where a change to someone else's shared recipe is kept as a
-  /// suggestion for 7 days (produktregler.md:103). Null keeps none, and the
+  /// suggestion for 7 days. Null keeps none, and the
   /// package 5 choice applies instead (PQ-02 = A).
   final RecipeSuggestionRepository? _suggestions;
 
@@ -53,7 +53,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   late final QueuedRecipeConflicts _queuedRecipes;
 
   /// P6-U08b: conflict notices wait here until the offline queue has
-  /// emptied and the device is online (produktregler.md:189). Null lets
+  /// emptied and the device is online. Null lets
   /// every notice through at once.
   ConflictReleaseGate? _conflictGate;
 
@@ -134,7 +134,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       // BUT-1031: route resolved conflicts onto the broadcast stream so the
       // ConflictBanner widget can surface silent last-write-wins picks.
       // P6-U08b: through the gate, so the banner shows when the queue has
-      // emptied, not while the app is offline (produktregler.md:189).
+      // emptied, not while the app is offline.
       onConflict: (event) {
         final gate = _conflictGate;
         if (gate == null) {
@@ -311,7 +311,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         );
       }
 
-      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+      // Q6-08 = A (produktbeslut 2026-09-27): a member
       // never writes someone else's recipe, and firestore.rules lets only
       // the owner update it. So this user's edit of someone else's shared
       // recipe is never written here: outside a conflict it is refused
@@ -338,10 +338,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
         // The model declares which conflict rule applies to this user's
-        // edit (produktregler.md:97-107), for the user who started it.
+        // edit, for the user who started it.
         final entity = resource.conflictEntityFor(userId);
         // P5-U27b: someone else's shared recipe. The owner's version wins and
-        // this edit becomes a suggestion (produktregler.md:103, :241), so
+        // this edit becomes a suggestion, so
         // nothing is written to the shared recipe, whether or not the
         // suggestion could be stored (Q6-08 = A).
         final kept = isMemberOfShared
@@ -372,7 +372,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
             entity: entity,
           );
           // P5-U26b: the user's version lost, so keep it before the winner is
-          // written (produktregler.md:109). The resolver hands back the remote
+          // written. The resolver hands back the remote
           // instance itself when the remote wins, including on its error path.
           if (identical(persisted, remote)) {
             await _keepOverwritten(userId, entity, resource, remote);
@@ -435,7 +435,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     if (store == null) return;
     if (!OverwrittenVersion.keptEntities.contains(entity)) return;
     // The user's own save from another device is not another person's save
-    // overwriting theirs (produktregler.md:109), so there is nothing to keep.
+    // overwriting theirs, so there is nothing to keep.
     if (winner.lastEditedBy == userId) return;
     try {
       await store.keep(

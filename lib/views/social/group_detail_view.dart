@@ -365,7 +365,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // Show loading state while initial data loads
     if (_viewModel.isLoading && _viewModel.group == null) {
       // The bar names the page, not the loading; the body says what is
-      // fetched under the plate line (produktregler.md:163, B-18).
+      // fetched under the plate line (B-18).
       return ButleryPage.undersida(
         title: context.l10n.socialGroups,
         body: StateWidget.loading(message: context.l10n.groupLoadingInfo),

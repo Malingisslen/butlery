@@ -29,7 +29,7 @@ class MenuDraftRestore {
   final int dropped;
 }
 
-/// BUT-2157: the week generation's local draft (produktregler.md).
+/// BUT-2157: the week generation's local draft.
 ///
 /// Written after a generation that found dishes, and after a swap or section
 /// re-roll of such a menu; never for a loaded or shared menu, a no-match

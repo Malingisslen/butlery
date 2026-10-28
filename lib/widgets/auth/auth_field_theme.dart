@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// The fields of the sign-in screen: in dark mode they stand raised on the
-/// page (Skarmar v12 del 2 #inloggningmorkt, "upphöjda fält"), not paper
+/// page ("upphöjda fält"), not paper
 /// beside it. Light mode keeps the theme's own field.
 class AuthFieldTheme extends StatelessWidget {
   const AuthFieldTheme({required this.child, super.key});

@@ -222,7 +222,7 @@ class _VeckomenyGeneratingOverlayState
 /// .offlineIndicator) is the "banner" of the flow.
 ///
 /// While the week is planned it keeps its shape and gets the plate line along
-/// its bottom edge (Komponentark v1:372).
+/// its bottom edge.
 class VeckomenyGenerateButton extends StatelessWidget {
   const VeckomenyGenerateButton({
     super.key,

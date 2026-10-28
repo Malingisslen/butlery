@@ -46,7 +46,7 @@ class InlineTimerText extends StatelessWidget {
   final Color? chipForeground;
 
   /// A filled pill with no outline, as drawn in the cooking-mode step
-  /// (Skarmar v12 del 1 #lagastaende). False keeps the square outlined chip.
+  /// False keeps the square outlined chip.
   final bool pillChip;
 
   const InlineTimerText({

@@ -99,14 +99,14 @@ void main() {
             'that carries it is easy to lose in a refactor.',
       );
       // P4-U11: add is class 1, so the receipt is the undo snackbar, not a
-      // plain confirmation (produktregler.md:131).
+      // plain confirmation.
       expect(find.text('La till ”Mjölk”'), findsOneWidget);
       expect(find.text('Ångra'), findsOneWidget);
       expect(errors, isEmpty);
     });
 
     // P4-U11: "Ångra" after an add removes exactly the row that was added,
-    // by the id the service returned (produktregler.md:131).
+    // by the id the service returned.
     testWidgets('Ångra removes the added row by its id', (tester) async {
       await openAdd(tester);
 

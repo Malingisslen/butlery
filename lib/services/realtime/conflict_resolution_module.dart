@@ -123,7 +123,7 @@ class ConflictResolutionModule {
       // edit is overwritten exactly as in an ordinary remoteWon, so the user
       // gets the same notice and can rescue it with "Behåll min version"
       // (produktregler.md:109: no strategy may silently drop data that only
-      // exists locally; flows-roles-budget.md:18). A sink that throws never
+      // exists locally). A sink that throws never
       // reaches this branch: _emitConflict contains its own failure, so this
       // is the only emission for the call.
       AppLogger.warning(
@@ -141,7 +141,7 @@ class ConflictResolutionModule {
 
   /// P5-U27b: announces a conflict settled outside [resolveConflict]: on
   /// someone else's shared recipe the owner's version wins and the losing edit
-  /// is kept as the suggestion [suggestionId] (produktregler.md:103).
+  /// is kept as the suggestion [suggestionId].
   /// [replaced] when it replaced this user's waiting suggestion (Q6-12 = B).
   void announceSuggestion<T extends RealtimeResource>(
     T local,

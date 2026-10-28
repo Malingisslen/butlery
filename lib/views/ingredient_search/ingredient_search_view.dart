@@ -120,7 +120,7 @@ class _IngredientSearchContent extends StatelessWidget {
     final l10n = context.l10n;
 
     if (vm.isLoading) {
-      // The plate line says what it does (produktregler.md:163).
+      // The plate line says what it does.
       return StateWidget.loading(message: l10n.loadingIngredientSearch);
     }
 

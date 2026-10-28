@@ -82,7 +82,7 @@ class CollaborativeUnaddedTextNotice extends StatelessWidget {
   }
 }
 
-/// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
+/// BUT-2187: "Listan uppdaterades av namn" — shown in
 /// the header when someone else updates this shared list while it is open.
 ///
 /// Drawn as a list row (v10-2): a warning plate with the warning edge and a

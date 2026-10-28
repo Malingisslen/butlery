@@ -1,10 +1,10 @@
 // lib/widgets/common/sync/sync_queue_indicator.dart
 //
 // P4-U19: the queue indicator in the top bar. "Köindikator i toppfältet när
-// något väntar" (flows-roles-budget.md:111), and the queue view "Nås även från
-// köindikatorn i toppfältet" (produktregler.md:190).
+// något väntar", and the queue view "Nås även från
+// köindikatorn i toppfältet".
 //
-// PQ-04 = B (fas2/produktbeslut-2026-09-23.json): nothing while the queue
+// PQ-04 = B: nothing while the queue
 // drains by itself, and a saffron counter only when something needs the user
 // (a permanent failure). Offline, the banner carries the waiting count
 // (status_indicators.dart), so the bar adds nothing then either.
@@ -58,7 +58,7 @@ class _QueueCountsBuilderState extends State<QueueCountsBuilder> {
   Widget build(BuildContext context) => widget.builder(context, _counts);
 }
 
-/// The saffron count the Mer rows draw (Skarmar v12 del 2 #mer): changes
+/// The saffron count the Mer rows draw: changes
 /// waiting for the user, so the counter asks for action.
 class SaffronCount extends StatelessWidget {
   const SaffronCount({required this.count, super.key});
@@ -94,7 +94,7 @@ class SyncQueueIndicator extends StatelessWidget {
         tooltip: label,
         onPressed: () => Navigator.of(context).pushNamed(Routes.syncQueue),
         icon: Badge(
-          // The rail badge's colours (Skarmar v12 etapp 10 #bredskal :75):
+          // The rail badge's colours:
           // saffron with the count in ink. Its square 16 px geometry is not
           // followed; this is Material's rounded Badge (interpretation).
           backgroundColor: Theme.of(context).colorScheme.secondary,

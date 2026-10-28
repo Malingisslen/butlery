@@ -831,7 +831,7 @@ Blanda allt och rulla till bollar.''';
   });
 
   // BUT-2168: the most helpful route stands first, by cause
-  // (flows-roles-budget.md, flow 03 `hämtar`).
+  // (flow 03 `hämtar`).
   group('startImport — the first route follows the cause', () {
     const allStrategies = ['URL Import', 'Text Import', 'Photo Import'];
     final cases = <ImportErrorCode?, List<ImportRoute>>{

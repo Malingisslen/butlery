@@ -139,7 +139,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    // Never lower-cased (produktregler.md:892).
+    // Never lower-cased.
     expect(find.text('Ärtsoppa med Fläsk'), findsOneWidget);
     expect(find.text('ärtsoppa med fläsk'), findsNothing);
     for (final r in _recipes) {
@@ -329,7 +329,7 @@ void main() {
     });
 
     // Q5-01 = A (produktbeslut 2026-09-24): "Släng resten" empties the
-    // tray at once, and Ångra (7 s, produktregler.md:131) brings it back.
+    // tray at once, and Ångra (7 s) brings it back.
     testWidgets('Släng resten empties the tray, and Ångra brings it back', (
       tester,
     ) async {

@@ -67,7 +67,7 @@ class MenuShoppingSource {
 
 /// P6-U02: the pantry as read for one merge. [unavailable] means the read
 /// failed: the list is then made without pantry deduction, and the sheet
-/// says so (produktregler.md:697).
+/// says so.
 @immutable
 class MenuShoppingPantry {
   const MenuShoppingPantry.read(this.items) : unavailable = false;
@@ -77,7 +77,7 @@ class MenuShoppingPantry {
   final bool unavailable;
 }
 
-/// How the pantry marked a row (produktregler.md:228-232).
+/// How the pantry marked a row.
 enum MenuShoppingPantryMark {
   none,
 
@@ -150,7 +150,7 @@ class MenuShoppingMergePreview {
   final int atHomeCount;
 
   /// Rows left off because enough is at home, by name, so the deduction can
-  /// be seen (produktregler.md:234).
+  /// be seen.
   final List<String> coveredAtHome;
 
   /// The pantry could not be read, so nothing was subtracted.
@@ -198,7 +198,7 @@ class MenuShoppingMergeReceipt {
 class MenuShoppingMergePlanner {
   const MenuShoppingMergePlanner._();
 
-  /// Merge order (flows-roles-budget.md:51): duplicates are merged, units
+  /// Merge order: duplicates are merged, units
   /// are converted within one kind, then the pantry is subtracted. Pure:
   /// nothing is written.
   static MenuShoppingMergePreview preview(
@@ -279,7 +279,7 @@ class MenuShoppingMergePlanner {
   /// to buy: null when enough is at home, [amount] unchanged when nothing
   /// can be subtracted (no match, an unknown amount, another unit family,
   /// past its date), else the difference. [mark] is the row's "Kanske
-  /// hemma" or "Kolla datum" (produktregler.md:230-232), carried as a merge
+  /// hemma" or "Kolla datum", carried as a merge
   /// line carries it.
   static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
     required String name,

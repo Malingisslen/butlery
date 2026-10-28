@@ -101,7 +101,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     setState(() => _selectionMode = true);
   }
 
-  /// Taking the last tick off leaves selection mode (produktregler.md:878).
+  /// Taking the last tick off leaves selection mode.
   void _toggleSelection(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);

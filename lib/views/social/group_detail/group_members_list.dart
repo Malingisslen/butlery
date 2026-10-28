@@ -120,7 +120,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     setState(() => _selectionMode = true);
   }
 
-  /// Taking the last tick off leaves selection mode (produktregler.md:878).
+  /// Taking the last tick off leaves selection mode.
   void _toggle(String uid) {
     setState(() {
       if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
@@ -162,7 +162,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     }
     if (outcome.isPartial) {
       // The ones that did not go stay selected and the mode stays open, so
-      // the attempt can be made again (produktregler.md:908, :878; Skarmar
+      // the attempt can be made again (Skarmar
       // v12 etapp 9 #flergrupp). Identity is the uid. The names of those who
       // went are looked up by uid now, from the members as they were before
       // the removal: the refreshed list no longer has them.
@@ -184,7 +184,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   }
 
   /// "Klart" closes the outcome and leaves selection mode: the user's own
-  /// act (produktregler.md:878; Skarmar v12 etapp 9:392).
+  /// act.
   void _closePartial() => _cancelSelection();
 
   @override
@@ -360,7 +360,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         ),
       ),
       // The counter, "{n} valda" in tabular figures, and the action; Avbryt
-      // sits in the header row (produktregler.md:873, :876).
+      // sits in the header row.
       child: Row(
         children: [
           Padding(

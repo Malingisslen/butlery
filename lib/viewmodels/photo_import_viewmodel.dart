@@ -20,16 +20,15 @@ import 'package:butlery/core/utils/os_permission_helper.dart';
 
 /// Resolves the camera or photo-library permission for a pick (flow 07).
 /// The view supplies it, because our explanation before the system prompt
-/// needs a BuildContext (Skarmar v12 etapp 3 #behkamera).
+/// needs a BuildContext.
 ///
 /// [askAgain] is true after an explicit "Fråga igen": the user has just asked
 /// for the system prompt, so our explanation is not repeated
-/// (produktregler.md:683).
 typedef PhotoPermissionResolver =
     Future<OsPermissionOutcome> Function(ImageSource source, bool askAgain);
 
 /// The permission state the photo-import view explains inline: which source
-/// was asked for and what the OS answered (flows-roles-budget.md:98-106).
+/// was asked for and what the OS answered.
 @immutable
 class PhotoPermissionNotice {
   const PhotoPermissionNotice({
@@ -112,7 +111,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Null when there is nothing to say.
   PhotoPermissionNotice? get permissionNotice => _permissionNotice;
 
-  /// "Fråga igen" after a no (flows-roles-budget.md:102): asks the OS again
+  /// "Fråga igen" after a no: asks the OS again
   /// for the same source, without repeating our explanation, and picks on a
   /// yes.
   Future<void> askPermissionAgain() async {
@@ -126,7 +125,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   }
 
   /// "Välj ur bildbiblioteket" after the camera was refused
-  /// (flows-roles-budget.md:102). Keeps what the refused pick was for: a
+  /// Keeps what the refused pick was for: a
   /// refused add-page leads to adding a page from the library, so the pages
   /// already taken stay; a refused fresh import starts a fresh one.
   Future<void> chooseFromGalleryInstead() async {
@@ -217,7 +216,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   /// Q4-04 = A (produktbeslut-2026-09-24.json): pages are taken or chosen
   /// first, and the text is read only when the user presses "Läs av N
-  /// sidor" (Skarmar v12 del 2 #fotoimport). This counts the pages still
+  /// sidor". This counts the pages still
   /// waiting to be read.
   int get unreadPageCount => _pages.where((p) => !p.isRead).length;
 
@@ -611,7 +610,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
     // Flow 07: camera and photos go through the permission contract — our
     // explanation before the system prompt, and a typed answer the view
-    // explains (produktregler.md:680-687).
+    // explains.
     final resolver = permissionResolver;
     if (resolver != null) {
       final outcome = await resolver(source, askAgain);
@@ -626,7 +625,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         return;
       }
       // Limited photo access is its own state with a way to choose more
-      // (produktregler.md:684); anything else clears the notice.
+      // anything else clears the notice.
       _permissionNotice = outcome == OsPermissionOutcome.limited
           ? PhotoPermissionNotice(source: source, outcome: outcome)
           : null;

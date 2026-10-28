@@ -95,7 +95,7 @@ class CapturedSnackBars {
     );
   }
 
-  /// The one builder of the ink snackbar (Komponentark v1:745-750).
+  /// The one builder of the ink snackbar.
   ///
   /// [alert] gives it the alert role, for a failure. [persist] left out means
   /// a snackbar with an action stays until the user acts. [jumpQueue] removes

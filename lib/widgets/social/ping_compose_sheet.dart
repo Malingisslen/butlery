@@ -347,7 +347,7 @@ class _SendButton extends StatelessWidget {
         onTap: enabled ? onPressed : null,
         // Sending keeps the name; the plate line runs along the button's
         // bottom edge in its own text colour, never a spinner in its place
-        // (Komponentark v1:365, :372). The line is laid over the edge, so the
+        // The line is laid over the edge, so the
         // button keeps its height.
         child: Stack(
           children: [

@@ -892,7 +892,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 }
 
 /// Whether an error takes the whole view. "Fel i en sektion tömmer aldrig
-/// hela vyn" (produktregler.md): only a view with nothing fetched to
+/// hela vyn": only a view with nothing fetched to
 /// show gets the full-view error; with recipes the library stays and the
 /// section error box sits above it.
 @visibleForTesting

@@ -34,7 +34,7 @@ class WeeklyMenuDistributionResult {
   /// recipe id. The tray needs it to distribute the rest into next week.
   final Map<String, String> overflowMealTypes;
 
-  /// P5-U23 (produktregler.md:1125, § 22.6): why the rest did not fit. Null
+  /// P5-U23: why the rest did not fit. Null
   /// when nothing overflowed, or when the caller built the result by hand.
   final WeeklyMenuOverflowReason? overflowReason;
 
@@ -151,7 +151,7 @@ class WeeklyMenuOverflowTraySnapshot {
   /// How many recipes the distribution was given (placed plus overflow).
   final int total;
 
-  /// Last change. The tray lives 30 days from here (produktregler.md:169).
+  /// Last change. The tray lives 30 days from here.
   final DateTime savedAt;
 
   final WeeklyMenuOverflowReason? reason;
@@ -208,7 +208,7 @@ class WeeklyMenuOverflowTrayStore {
   /// Every key this store writes starts with this.
   static const String keyPrefix = 'weekly_menu_overflow_tray_v1:';
 
-  /// How long an untouched tray is kept (produktregler.md:169).
+  /// How long an untouched tray is kept.
   static const Duration lifetime = Duration(days: 30);
 
   static String keyFor(String userId) => '$keyPrefix$userId';

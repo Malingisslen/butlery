@@ -839,7 +839,7 @@ void main() {
   group('conflictStream entity (P3-U07)', () {
     /// The entity comes from the model for the signed-in user: a collaborator
     /// editing someone else's recipe follows the shared-recipe row
-    /// (produktregler.md:103), not the owner's.
+    /// not the owner's.
     test('a collaborator losing a recipe edit gets recipeShared', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
         when(() => mockAuth.currentUserId).thenReturn('editor_user');

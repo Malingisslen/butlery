@@ -55,7 +55,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Dialog.fullscreen(
-      // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
+      // A modal: X, never a back arrow (pattern 4).
       child: ButleryPage.undersida(
         ruleUnderBar: false,
         showTabBar: false,

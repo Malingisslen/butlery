@@ -1,5 +1,5 @@
-// PQ-17: the Mer tab (Skarmar v12 del 2 #mer), and "Mer → Väntar på synk"
-// (produktregler.md). The profile row leads to Profil, the sync band is
+// PQ-17: the Mer tab, and "Mer → Väntar på synk"
+// The profile row leads to Profil, the sync band is
 // there only while something waits, and every other row opens its own view,
 // identified by route. The friend-request count on Vänner & grupper is
 // pinned in friends_but2306_test.dart.

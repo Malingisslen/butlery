@@ -79,11 +79,11 @@ Widget navigationTabList({required Widget child}) => Semantics(
 /// * [surface]: surface.ink #24382C, colorScheme.primary in both schemes
 ///   (app_colors.dart lightColorScheme and darkColorScheme).
 /// * [selected]: paper #F5F4ED, colorScheme.onPrimary in both schemes; the
-///   chosen tab's glyph and label (Komponentark v1:663, `color:#F5F4ED`).
+///   chosen tab's glyph and label (`color:#F5F4ED`).
 /// * [unselected]: #A9B2A0, text.secondary (dark) (tokens.json); the
-///   other tabs (Komponentark v1:663-666, `color:#93a48d`).
+///   other tabs (`color:#93a48d`).
 /// * [marker]: action.primary saffron #D68523, colorScheme.secondary in both
-///   schemes; the plate line under the chosen label (Komponentark v1:663).
+///   schemes; the plate line under the chosen label.
 /// * [divider]: paper at the ladder's on-ink 0.18 step (tokens.json:40-53).
 ///   Interpretation: #bredskal draws border.onInk #3F5145
 ///   (tokens.json:223-227), which is not delivered to the app yet; the
@@ -151,7 +151,7 @@ class ButleryBottomNavigation extends StatelessWidget {
   final bool showAddAction;
 
   /// The row's height: the plus's 62 dp outer diameter plus 1 dp above and
-  /// below (Komponentark v1:667).
+  /// below.
   static const double barHeight = ButleryAddButton.outerDiameter + 2;
 
   @override
@@ -232,7 +232,7 @@ class _BottomNavTab extends StatelessWidget {
     final label = item.label;
     // navLabel 11/700 for every tab (tokens.json typography.roles.navLabel;
     // Grafisk manual v6:244 "Aldrig 400 under 12 px"), without tracking, as
-    // drawn (Komponentark v1:663). The chosen tab is told by colour, the line
+    // drawn. The chosen tab is told by colour, the line
     // and the selected state, never by weight alone.
     final style = AppTextStyles.navLabel.copyWith(color: color);
 
@@ -361,12 +361,12 @@ class NavBadgedIcon extends StatelessWidget {
 ///
 /// action.primary saffron (colorScheme.secondary, #D68523 in both modes) with
 /// the glyph in text.onActionPrimary (colorScheme.onSecondary, #17251D in both
-/// modes), as drawn (Komponentark v1:665). The ring is paper
+/// modes), as drawn. The ring is paper
 /// (colorScheme.onPrimary, #F5F4ED in both modes), drawn 3 px outside the
 /// 56 px surface; the rail draws it without a ring (#bredskal).
 ///
 /// NAV-INK: on the ink bar the paper ring is seen in both modes, as drawn
-/// (Komponentark v1:665; Skarmar v12 del 4 #hem). #hemmorkt draws the ring
+/// (Skarmar v12 del 4 #hem). #hemmorkt draws the ring
 /// in the dark page colour #17251D instead; the lead chose one ink bar for
 /// both modes, so the ring stays paper there too.
 class ButleryAddButton extends StatelessWidget {
@@ -381,10 +381,10 @@ class ButleryAddButton extends StatelessWidget {
   /// Whether the 3 px paper ring is drawn (the bottom row) or not (the rail).
   final bool ring;
 
-  /// The saffron surface (Komponentark v1:667).
+  /// The saffron surface.
   static const double surfaceDiameter = 56;
 
-  /// The ring's width on each side (Komponentark v1:667).
+  /// The ring's width on each side.
   static const double ringWidth = 3;
 
   /// Surface plus ring: the component's size and its hitbox (Komponentark

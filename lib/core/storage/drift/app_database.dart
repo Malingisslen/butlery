@@ -54,9 +54,9 @@ class AppDatabase extends _$AppDatabase {
   /// For testing: create an in-memory database
   AppDatabase.forTesting(super.e);
 
-  /// 3: the offline queue's schema (produktregler.md:183-193, § 3.1) —
+  /// 3: the offline queue's schema —
   /// opId, entity type, dependsOn and a permanent-failure flag.
-  /// 4: the retry schedule (produktregler.md:188) — when a sync entry may be
+  /// 4: the retry schedule — when a sync entry may be
   /// sent again, and when its first attempt failed.
   /// 5: the same two columns on the upload queue (BUT-2162).
   /// 6: the upload step's result on the upload queue, and the `uploaded`
@@ -143,8 +143,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Schema 3 → 4: two nullable columns for the retry schedule
-  /// (produktregler.md:188). Adding a column keeps every row as it is, so
-  /// no queued change is lost (produktregler.md:192); a migrated entry has
+  /// Adding a column keeps every row as it is, so
+  /// no queued change is lost; a migrated entry has
   /// never failed under the new schedule and is sent at the next pass.
   Future<void> _migrateSyncQueueToV4(Migrator m) async {
     await m.addColumn(syncQueueEntries, syncQueueEntries.nextAttemptAt);
@@ -192,7 +192,7 @@ class AppDatabase extends _$AppDatabase {
   /// is marked permanently failed: no caller yet passes a retry limit to
   /// [UploadQueueDao.getRetryableUploads], so the count cannot tell an
   /// upload with retries left from one that has run out (open question for
-  /// when the count is surfaced, produktregler.md:188-189).
+  /// when the count is surfaced).
   ///
   /// A cook snap's album counts once ([queueCountsSql]).
   Stream<QueueCounts> watchQueueCounts(String userId) {
@@ -216,7 +216,7 @@ class AppDatabase extends _$AppDatabase {
   /// Marks the operation [opId] and every entry that depends on it, directly
   /// or through another entry, as permanently failed — in both queues and
   /// in one transaction. "Om beroendet permanent misslyckas markeras hela
-  /// kedjan som misslyckad — aldrig halvvägs" (produktregler.md:187).
+  /// kedjan som misslyckad — aldrig halvvägs".
   ///
   /// Nothing is deleted. Returns the opIds that were marked (for an upload,
   /// its id).
@@ -317,7 +317,7 @@ class AppDatabase extends _$AppDatabase {
   /// The ids of the user's entries in both queues that have not reached the
   /// server: [waiting] are still sent by the queue, [failed] wait for the
   /// user. A sync entry is known by its opId, an upload by its id
-  /// (produktregler.md:185, :187). Completed and cancelled uploads are in
+  /// Completed and cancelled uploads are in
   /// neither set.
   Future<({Set<String> waiting, Set<String> failed})> queuedOpIds(
     String userId,

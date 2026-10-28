@@ -34,7 +34,7 @@ class BatchActivityBar extends StatelessWidget {
     if (!active) return const SizedBox.shrink();
 
     // The plate line, never a sliding bar (B-18): an indeterminate segment
-    // that pulses in place (Komponentark v1:306). It owns the live region
+    // that pulses in place. It owns the live region
     // and the label.
     return PlateLine(semanticLabel: semanticLabel ?? context.l10n.a11yLoading);
   }

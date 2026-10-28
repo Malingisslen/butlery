@@ -10,7 +10,7 @@ import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 
 /// The recipe editor's word on a camera or photo-library answer, under the
 /// image strip (flow 07, BUT-2160). A refused camera leads to the library
-/// (flows-roles-budget.md:105). A refused library has no fallback here:
+/// A refused library has no fallback here:
 /// writing the recipe yourself is offered in photo import (Malin, decision
 /// A, 2026-10-07).
 class RecipeImagePermissionNotice extends StatelessWidget {

@@ -189,7 +189,7 @@ void main() {
           expect(find.text('Laddar …'), findsNothing);
           expect(find.byType(CircularProgressIndicator), findsNothing);
           // Busy is not disabled: the button is enabled for Flutter, so it
-          // keeps its surface and colours (Komponentark v1:365).
+          // keeps its surface and colours.
           final b = tester.widget<ButtonStyleButton>(_anyButton);
           expect(b.enabled, isTrue);
         });
@@ -234,7 +234,7 @@ void main() {
     final data = tester
         .getSemantics(find.bySemanticsLabel('Spara recept'))
         .getSemanticsData();
-    // The busy state is machine-readable (Komponentark v1:365).
+    // The busy state is machine-readable.
     expect(data.value, 'Laddar');
     handle.dispose();
   });

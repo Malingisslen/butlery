@@ -73,7 +73,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   bool _showAppBar = true;
 
   /// Pages whose photo failed. A failed photo is retried silently when the
-  /// connection returns (Komponentark v1:839).
+  /// connection returns.
   final Set<int> _failedPages = {};
 
   /// Bumped on each silent retry so the failed images are resolved anew.
@@ -145,7 +145,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       backgroundColor: cs.primary,
       extendBodyBehindAppBar: true,
       // A modal over the photo: X with Stäng, never a back arrow
-      // (Komponentark v1:57, pattern 4); a tap on the photo still hides the
+      // (pattern 4); a tap on the photo still hides the
       // bar, and the X then stays on the photo on its own (Q7-03 = A).
       appBar: _showAppBar
           ? ButleryTopBar.undersida(
@@ -307,13 +307,13 @@ class FullscreenCloseButton extends StatelessWidget {
 
 /// A photo that exists but could not be loaded. Unlike a missing photo it
 /// keeps its surface and explains, so the layout does not jump when the
-/// network wavers (Komponentark v1:839; Skarmar v12 del 4 #receptbildfel).
+/// network wavers.
 /// No button is offered: the retry is silent (the drawing's own note).
 class ImageFailedPlate extends StatelessWidget {
   const ImageFailedPlate({super.key, this.retriesWhenOnline = true});
 
   /// Whether the second line "Försöker igen när nätet är tillbaka" shows.
-  /// The drawing's case is the network wavering (Komponentark v1:839); a
+  /// The drawing's case is the network wavering; a
   /// failure while online gets no retry, so the line is left out then.
   final bool retriesWhenOnline;
 
@@ -325,7 +325,7 @@ class ImageFailedPlate extends StatelessWidget {
     // surface.raised = colorScheme.surfaceContainerHighest (#E6EAD9 light,
     // #2F4437 dark; Komponentark v1:839 "ytan behålls i
     // surface.raised"). Interpretation: the token wins over the drawing's
-    // dark slot #24382C (Skarmar v12 del 4:887, --r04slot-834).
+    // dark slot #24382C (--r04slot-834).
     // The glyph and the second line are text.secondary.onRaised (#5B6959 /
     // #A9B2A0); the drawing's single #5b6959 literal
     // (del 4:888,890) is kept in light and replaced by the token in dark.

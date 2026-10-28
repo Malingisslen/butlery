@@ -25,7 +25,7 @@ class RepositoryException implements Exception {
 /// Deliberately neither a `FirebaseException` nor a `PermissionDeniedException`:
 /// the offline queue must not read a conflict as a failure
 /// (`permanentFailureReason`), since a conflict is shown to the user, not
-/// retried (produktregler.md:189).
+/// retried.
 class RecipeRevisionConflictException implements Exception {
   const RecipeRevisionConflictException(this.remote);
 

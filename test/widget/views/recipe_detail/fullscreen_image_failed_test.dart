@@ -252,7 +252,7 @@ void main() {
     });
 
     // P7-A3: a modal over the photo closes with X, never a back arrow
-    // (Komponentark v1:57, pattern 4). The bar is the
+    // (pattern 4). The bar is the
     // standard ButleryTopBar with the 'n / N' title; a tap hides it.
     for (final brightness in Brightness.values) {
       testWidgets('${brightness.name}: the bar is ButleryTopBar with an X '

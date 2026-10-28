@@ -94,7 +94,7 @@ class _GroupShoppingListSelectionDialogState
 
   Widget _buildContent() {
     if (_isLoading) {
-      // The plate line with its text (produktregler.md:163).
+      // The plate line with its text.
       return Center(
         child: PlateLineMessage(message: context.l10n.loadingShoppingLists),
       );

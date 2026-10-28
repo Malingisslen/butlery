@@ -11,13 +11,13 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A camera or photo-library answer explained where the image was wanted,
-/// per flow 07 (flows-roles-budget.md:98-106; produktregler.md:680-687):
+/// per flow 07:
 ///
 /// - denied: [deniedMessage], with "Fråga igen";
 /// - permanently denied: the same, with "Öppna inställningar" instead;
 /// - blocked by the device: says so, with no button to fix it;
 /// - limited ("valda bilder"): its own state with "Välj fler bilder", never
-///   an error (Skarmar v12 etapp 3 #behfoton).
+///   an error.
 ///
 /// When the answer stopped the pick, [fallbackLabel] and [onFallback] offer
 /// another way to the same result; they are left out where there is none.
