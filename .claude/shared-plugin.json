@@ -663,7 +663,7 @@
       "docs/org/role-paths\\.json$"
     ]
   },
-  "_mechanicalRewrites": "2026-10-11 (Malin, cards \"Byt med skript\" and \"Ja, ändra spärren\" in the thread Avsnittsrubriker): the review gates skip a file whose only change is these pairs swapped. test/unit/theme/mechanical_rewrites_test.dart fails when this list and its own list drift apart, so the paths leave that test, and the census test whose probe names an alias, out of the rename.",
+  "_mechanicalRewrites": "2026-10-11 (Malin, cards \"Byt med skript\" and \"Ja, ändra spärren\" in the thread Avsnittsrubriker): the review gates skip a file whose only change is these pairs swapped, or (rule struck-doc-references, Malin 2026-10-28, BUT-2397) whose only change is a reference to a deleted design document struck from a comment line. test/unit/theme/mechanical_rewrites_test.dart fails when this list and its own list drift apart, so the paths leave that test, and the census test whose probe names an alias, out of the rename.",
   "mechanicalRewrites": [
     {
       "id": "scale-aliases",
@@ -712,6 +712,18 @@
         ["widgets/styled/styled_input.dart", "widgets/common/input/styled_input.dart"],
         ["widgets/styled/styled_input_borders.dart", "widgets/common/input/styled_input_borders.dart"],
         ["widgets/styled/styled_card.dart", "widgets/common/cards/styled_card.dart"]
+      ]
+    },
+    {
+      "id": "struck-doc-references",
+      "paths": [
+        "^(?:lib|test|tools|functions/src)/(?!l10n/app_localizations)(?!unit/theme/mechanical_rewrites_test\\.dart$)"
+      ],
+      "strips": [
+        " \\((?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?\\)",
+        "(?<=\\() ?(?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?[;,] ",
+        "[;,] (?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?(?=\\))",
+        "(?:,| \\u00e2\\u0080\\u0094| \\u00e2\\u0080\\u0093) (?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?(?=[.:;,]?$)"
       ]
     }
   ]
