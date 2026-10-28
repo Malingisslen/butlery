@@ -167,6 +167,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     caseSensitive: false,
   );
 
+  // "Tid: 25 min", "Förberedelse: ca 10 min".
+  static final _timeMetadataLine = RegExp(
+    r'^(?:tid|total tid|förberedelse(?:stid)?)\s*:\s*(?:ca\.?\s*)?\d',
+    caseSensitive: false,
+  );
+
   // A measurement line ("100 g grönkål", "4 dl mjölk") — an ingredient, not a
   // title. Cookbook OCR routinely surfaces these as the first line.
   static final _measurementLine = RegExp(
@@ -789,6 +795,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       if (RecipeSectionDetector.isGarbage(line)) continue;
+      // "Tid: 25 min" is read into the time from the whole text, not a step.
+      if (_timeMetadataLine.hasMatch(line)) continue;
 
       if (RecipeSectionDetector.isSectionHeader(line)) {
         final headerKey = lowerLine.trim();
@@ -889,6 +897,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         }
       } else if (description.isEmpty && line.length > 10 && score < 1) {
         description = line;
+        afterIngredientRow = false;
+      } else if (!(startsBlock[i] && _shortPhrase.hasMatch(line.trim()))) {
+        // A line no rule claimed ends the list: a bare word after it is page
+        // text, not a row the writer left the quantity off. A short word
+        // opening a block ("Ostsås") does not end it.
         afterIngredientRow = false;
       }
     }

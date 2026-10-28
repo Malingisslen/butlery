@@ -56,6 +56,19 @@ void main() {
     });
   });
 
+  group('RecipeSectionDetector page text', () {
+    test('a rating is not a comma-separated ingredient list', () {
+      expect(RecipeSectionDetector.looksLikeIngredient('4,5 av 5'), isFalse);
+    });
+
+    test('a yield label is page text', () {
+      for (final line in ['4 port', '4 port.', '6 portioner']) {
+        expect(RecipeSectionDetector.isGarbage(line), isTrue, reason: line);
+      }
+      expect(RecipeSectionDetector.isGarbage('2 portvin'), isFalse);
+    });
+  });
+
   group('TextImportStrategy title and dedup', () {
     late TextImportStrategy strategy;
 
@@ -170,6 +183,81 @@ Koka allt i en gryta i tjugo minuter under omrörning.''');
       ]) {
         expect(hasRow(recipe, row), isTrue, reason: row);
       }
+    });
+
+    test('a headerless caption keeps bare rows after a quantity row', () async {
+      final recipe = await parse('''
+Krämig pasta
+400 g pasta
+2 dl grädde
+salt
+peppar
+Koka pastan enligt anvisningen på paketet och rör ner grädden.''');
+
+      expect(hasRow(recipe, 'salt'), isTrue);
+      expect(hasRow(recipe, 'peppar'), isTrue);
+    });
+
+    test('a line no rule claims ends the ingredient list', () async {
+      final recipe = await parse('''
+Pastasallad
+En enkel sallad till lunchlådan och picknicken.
+200 g pasta
+Den blir godare dagen efter om den får stå.
+riktigt gott
+Koka pastan enligt anvisningen på paketet och låt den svalna.''');
+
+      expect(hasRow(recipe, '200 g pasta'), isTrue);
+      expect(hasRow(recipe, 'riktigt gott'), isFalse);
+    });
+
+    test('a short word opening a block keeps the bare rows under it', () async {
+      final recipe = await parse('''
+Omelett
+400 g pasta
+
+Ostsås
+dill
+Koka pastan enligt anvisningen på paketet och rör ner smöret.''');
+
+      expect(hasRow(recipe, 'dill'), isTrue);
+    });
+
+    test('a rating and a yield are not ingredients', () async {
+      final recipe = await parse('''
+Pannkakor
+4,5 av 5 (23 röster)
+4 port
+1,5 dl mjölk
+2 ägg
+Vispa ihop allt och stek tunna pannkakor i smör.''');
+
+      expect(hasRow(recipe, '1,5 dl mjölk'), isTrue);
+      expect(
+        recipe.ingredients.where(
+          (i) => i.contains('av 5') || i.contains('röster') || i == '4 port',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('a labelled time is not a step', () async {
+      final recipe = await parse('''
+Laxpasta
+Tid: 25 min
+Förberedelse: ca 10 min
+400 g pasta
+300 g laxfilé
+Koka pastan enligt anvisningen på förpackningen.
+Stek laxen i en het panna ca 3 minuter.''');
+
+      expect(
+        recipe.instructions.where(
+          (s) => s.startsWith('Tid') || s.startsWith('Förberedelse'),
+        ),
+        isEmpty,
+      );
+      expect(recipe.instructions, hasLength(2));
     });
 
     test('a name cut at é is still one ingredient', () async {

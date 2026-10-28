@@ -229,7 +229,10 @@ class RecipeSectionDetector {
     if (isSectionHeader(clean) && clean.length < 20) return true;
 
     // "X portioner" should not be an ingredient
-    if (RegExp(r'^\d+\s*portioner?$', caseSensitive: false).hasMatch(clean)) {
+    if (RegExp(
+      r'^\d+\s*(?:portioner?|port\.?)$',
+      caseSensitive: false,
+    ).hasMatch(clean)) {
       return true;
     }
 
@@ -486,7 +489,12 @@ class RecipeSectionDetector {
     }
 
     // Short line with comma separators (common in ingredient lists like "Salt, peppar")
-    if (line.contains(',') && line.length > 3 && line.length < 80) return true;
+    if (line.contains(',') &&
+        line.length > 3 &&
+        line.length < 80 &&
+        !HeadingWordLists.isPageFurniture(line)) {
+      return true;
+    }
 
     // Starts with bullet point or dash
     if (_bulletPrefixPattern.hasMatch(line)) return true;

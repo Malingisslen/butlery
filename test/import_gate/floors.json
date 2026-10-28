@@ -15,23 +15,23 @@
       "recall": 0.9722,
       "headingLeaks": 3,
       "titleExact": 29,
-      "stepsExact": 11,
+      "stepsExact": 27,
       "portionsExact": 0,
       "timeExact": 0,
       "failures": 0,
-      "extraIngredients": 8,
-      "extraSteps": 4
+      "extraIngredients": 7,
+      "extraSteps": 2
     },
     "stokig": {
       "recall": 0.9531,
       "headingLeaks": 0,
       "titleExact": 9,
-      "stepsExact": 1,
+      "stepsExact": 5,
       "portionsExact": 6,
       "timeExact": 2,
       "failures": 0,
-      "extraIngredients": 4,
-      "extraSteps": 9
+      "extraIngredients": 3,
+      "extraSteps": 7
     }
   },
   "knownRed": [
