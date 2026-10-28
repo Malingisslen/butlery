@@ -359,7 +359,7 @@ void main() {
         expect(
           find.byKey(InkSnackBarAction.actionKey),
           findsNothing,
-          reason: 'there is nothing the user can do (flows-roles-budget:104)',
+          reason: 'there is nothing the user can do',
         );
       },
     );
@@ -398,7 +398,7 @@ void main() {
         gateway,
         skipRationale: true,
         rationale: (_, __, ___, ____) async =>
-            fail('a second explanation is not shown (produktregler:683)'),
+            fail('a second explanation is not shown'),
       );
 
       expect(outcome, OsPermissionOutcome.granted);

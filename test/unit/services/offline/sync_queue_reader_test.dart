@@ -670,7 +670,7 @@ void main() {
     }
   });
 
-  group('the recipe-image budget (flows-roles-budget.md:143)', () {
+  group('the recipe-image budget', () {
     // What flutter_image_compress does with minWidth/minHeight:
     // scale = max(1, min(w / minW, h / minH)); out = side / scale
     // (flutter_image_compress_common-1.1.1 BitmapCompressExt.kt:68-75).

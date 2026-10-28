@@ -27,7 +27,7 @@ final _retired = <String, RegExp>{
   'LoadingIndicator → PlateLine / StateWidget.loading (B-18)': RegExp(
     r'\bLoadingIndicator\b',
   ),
-  'PeaLoading* → PlateLine (produktregler.md:163)': RegExp(r'\bPeaLoading\w*'),
+  'PeaLoading* → PlateLine': RegExp(r'\bPeaLoading\w*'),
   'AdaptiveActivityIndicator → PlateLine (B-18)': RegExp(
     r'\bAdaptiveActivityIndicator\b',
   ),
@@ -43,7 +43,7 @@ final _retired = <String, RegExp>{
   'SyncIndicator (retired, package-3 A-03/A-09)': RegExp(
     r'\bSyncIndicator\b',
   ),
-  'SnackbarWidgets → SnackBarUtils (Komponentark v1:745-750)': RegExp(
+  'SnackbarWidgets → SnackBarUtils': RegExp(
     r'\bSnackbarWidgets\b',
   ),
   'SnackBarUtils.showCustom → SnackBarUtils.showSuccess/showFailure': RegExp(

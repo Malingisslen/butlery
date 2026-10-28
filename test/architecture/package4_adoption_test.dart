@@ -93,14 +93,14 @@ void main() {
     );
   });
 
-  test('no snackbar action says OK (Komponentark v1:750)', () {
+  test('no snackbar action says OK', () {
     final code = _code('lib/core/utils/snackbar_utils.dart');
     expect(code.contains("'OK'"), isFalse);
     expect(code.contains('commonOk'), isFalse);
   });
 
   group('package 4 census (P4-U18)', () {
-    test('no spinner or pea pod anywhere in lib (B-18, produktregler:163)', () {
+    test('no spinner or pea pod anywhere in lib (B-18)', () {
       expect(
         _offenders(
           _libFiles().where((f) => !_package7Components.contains(f)).toList(),
@@ -123,7 +123,7 @@ void main() {
       );
     });
 
-    test('every loading state says what is fetched (produktregler §6.6)', () {
+    test('every loading state says what is fetched', () {
       expect(
         _offenders(_libFiles(), RegExp(r'StateWidget\.loading\(\s*\)')),
         isEmpty,
@@ -174,7 +174,7 @@ void main() {
       expect(many, everyElement(isIn(_exclusiveHeroFiles)));
     });
 
-    test('no new ad-hoc snackbar colour (Komponentark v1:745-750)', () {
+    test('no new ad-hoc snackbar colour', () {
       expect(
         _offenders(
           _libFiles(),
@@ -186,7 +186,7 @@ void main() {
       );
     });
 
-    test('tabs carry the saffron plate line (Komponentark v1:106-112)', () {
+    test('tabs carry the saffron plate line', () {
       for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
         final tabs = theme.tabBarTheme;
         final indicator = tabs.indicator! as UnderlineTabIndicator;
@@ -201,7 +201,7 @@ void main() {
       }
     });
 
-    test('the theme draws no focus tint (Grafisk manual v6:209)', () {
+    test('the theme draws no focus tint', () {
       for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
         expect(theme.focusColor.a, 0);
       }

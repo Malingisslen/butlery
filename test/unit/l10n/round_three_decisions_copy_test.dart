@@ -32,7 +32,7 @@ void main() {
     expect(en.cookingNoStepsSaveCopy, 'Save my copy');
   });
 
-  test('Q6-08 = A: a member suggests a change (produktregler.md:247)', () {
+  test('Q6-08 = A: a member suggests a change', () {
     expect(sv.recipeSuggestChange, 'Föreslå ändring');
     expect(en.recipeSuggestChange, 'Suggest a change');
   });

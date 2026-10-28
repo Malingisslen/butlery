@@ -223,7 +223,7 @@ void main() {
     );
   });
 
-  group('the whole chain fails, never half of it (produktregler.md:187)', () {
+  group('the whole chain fails, never half of it', () {
     late AppDatabase db;
 
     setUp(() => db = AppDatabase.forTesting(NativeDatabase.memory()));

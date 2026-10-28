@@ -160,8 +160,7 @@ void main() {
     );
   });
 
-  test('no view builds its own snackbar in a status colour '
-      '(Komponentark v1:300, :745-750)', () {
+  test('no view builds its own snackbar in a status colour', () {
     expect(_snackBarsWithBackground(), isEmpty);
   });
 }

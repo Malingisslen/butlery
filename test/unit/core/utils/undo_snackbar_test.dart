@@ -128,7 +128,7 @@ void main() {
     expect(reason, SnackBarClosedReason.timeout);
   });
 
-  group('the ink snackbar (Komponentark v1:745-750, PQ-09 = A)', () {
+  group('the ink snackbar (PQ-09 = A)', () {
     for (final (mode, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
@@ -206,7 +206,7 @@ void main() {
     });
   });
 
-  group('the window pauses and extends (Grafisk manual v6:647)', () {
+  group('the window pauses and extends', () {
     Future<SnackBarClosedReason? Function()> showAndSettle(
       WidgetTester tester,
     ) async {
