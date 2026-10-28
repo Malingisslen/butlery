@@ -304,6 +304,64 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   static final _stepNumber = RegExp(r'^\d{1,2}[.)]$');
 
+  /// Which of [lines] belong to the recipe (BUT-2455). After a heading that
+  /// ends the recipe ("Kommentarer", "Fler recept") nothing is read; after a
+  /// box heading ("Näringsvärde", "Visste du att") nothing is read until a
+  /// step does. Neither counts before an ingredient row and a step have been
+  /// seen, so a nutrition box above the list stops nothing. An ingredient
+  /// header, or a component heading over a quantity row, opens the recipe
+  /// again: a second component, or a second recipe on the same page.
+  List<bool> _recipeLines(List<String> lines) {
+    final inRecipe = List<bool>.filled(lines.length, true);
+    var seenIngredient = false;
+    var seenStep = false;
+    RecipeTrailerKind? outside;
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      final opensIngredients =
+          _isIngredientMarker(line) ||
+          (_ingredientSubHeading(line) != null &&
+              i + 1 < lines.length &&
+              _isQuantityRow(lines[i + 1]));
+      final isStep = _looksLikeStep(line);
+      if (outside != null) {
+        if (HeadingWordLists.recipeTrailerKind(line) == RecipeTrailerKind.end) {
+          outside = RecipeTrailerKind.end;
+        }
+        final resumes =
+            opensIngredients || (outside == RecipeTrailerKind.box && isStep);
+        if (!resumes) {
+          inRecipe[i] = false;
+          continue;
+        }
+        outside = null;
+      }
+      if (seenIngredient && seenStep) {
+        outside = HeadingWordLists.recipeTrailerKind(line);
+        if (outside != null) {
+          inRecipe[i] = false;
+          continue;
+        }
+      }
+      if (opensIngredients || _isQuantityRow(line)) seenIngredient = true;
+      if (isStep) seenStep = true;
+    }
+    return inRecipe;
+  }
+
+  bool _isIngredientMarker(String line) {
+    final lower = line.toLowerCase();
+    return RecipeSectionDetector.isIngredientHeader(lower) ||
+        HeadingWordLists.ingredientBlockMarkers.contains(
+          lower.replaceFirst(RegExp(r'\s*:$'), ''),
+        );
+  }
+
+  bool _looksLikeStep(String line) =>
+      RecipeSectionDetector.isInstructionHeader(line.toLowerCase()) ||
+      _stepNumber.hasMatch(line) ||
+      RecipeSectionDetector.instructionScore(line) >= 2;
+
   // One word of letters (a hyphen allowed inside), no digit, no colon: the
   // shape of both a quantity-less ingredient row ("ägg", "sojasås") and a
   // colon-less component heading ("Ostsås"). The two are told apart by
@@ -458,18 +516,30 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // line that opens a block after a blank is how a colon-less heading
     // ("Ostsås", "Montering") tells itself apart from a quantity-less
     // ingredient row inside a block.
-    final lines = <String>[];
-    final startsBlock = <bool>[];
+    final pageLines = <String>[];
+    final pageStartsBlock = <bool>[];
     var afterBlank = true;
     for (final raw in text.split('\n')) {
       if (raw.trim().isEmpty) {
         afterBlank = true;
         continue;
       }
-      lines.add(raw);
-      startsBlock.add(afterBlank);
+      pageLines.add(raw);
+      pageStartsBlock.add(afterBlank);
       afterBlank = false;
     }
+
+    // Only ingredients and steps are read from the recipe's own lines.
+    // Portions, time and meal type still read the whole page.
+    final inRecipe = _recipeLines(pageLines);
+    final lines = [
+      for (var i = 0; i < pageLines.length; i++)
+        if (inRecipe[i]) pageLines[i],
+    ];
+    final startsBlock = [
+      for (var i = 0; i < pageLines.length; i++)
+        if (inRecipe[i]) pageStartsBlock[i],
+    ];
 
     if (lines.isEmpty) return null;
 
@@ -484,7 +554,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final List<String> instructions = [];
 
     // STAGE 1: MEASUREMENT-FIRST INGREDIENT EXTRACTION
-    final measurementIngredients = _extractIngredientsByMeasurement(text);
+    final measurementIngredients = _extractIngredientsByMeasurement(
+      lines.join('\n'),
+    );
     ingredients.addAll(measurementIngredients);
 
     final capturedAsIngredient = <String>{};
