@@ -96,11 +96,7 @@ class DataExportView extends StatelessWidget {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
 
-    // After the export the view's one primary action is "Spara filen", as
-    // drawn (Skarmar v12 etapp 6 'Dataexport — allt du lagt in', :130-156;
-    // Grafisk manual v6:219). The drawing shows only the finished state, so
-    // making the export itself the primary action before it is an
-    // interpretation, not drawn. While exporting the button keeps its
+    // While exporting the button keeps its
     // shape and says what it does, with the plate line.
     return FormButton(
       key: const ValueKey('dataExport.export'),
@@ -133,8 +129,8 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  /// Three causes, three messages (Skarmar v12
-  /// etapp 6 #dataexportfel): an expired sign-in leads to signing in, a
+  /// Three causes, three messages
+  /// : an expired sign-in leads to signing in, a
   /// refusal is our fault and asks for no retry, a dropped connection gets
   /// "Inte nu" and "Försök igen". Only the general case asks for a retry
   /// without saying why. No partial file is ever offered.
@@ -306,8 +302,7 @@ class DataExportView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space12),
             // The file lives only in memory and is cleared when the view is
-            // left, and the view says so (Skarmar v12
-            // etapp 6 #kontodataexport).
+            // left, and the view says so
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -403,8 +398,8 @@ class DataExportView extends StatelessWidget {
       await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
 
       if (context.mounted) {
-        // No "OK" action: a snackbar action is never OK (Komponentark
-        // v1:750), and this one did nothing.
+        // No "OK" action: a snackbar action is never OK
+        // and this one did nothing.
         SnackBarUtils.showSuccess(
           context,
           context.l10n.dataExportFileSaved(fileName),

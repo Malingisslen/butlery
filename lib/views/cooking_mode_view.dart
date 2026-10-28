@@ -57,12 +57,11 @@ import 'package:butlery/widgets/common/layout/word_fit.dart';
 /// pushed it.
 ///
 /// - [finished]: the user tapped "Klart" on the last step. The detail view
-///   counts the recipe as cooked (flows-roles-budget.md:72).
+///   counts the recipe as cooked.
 /// - [editRecipe]: "Skriv stegen" from a recipe without steps.
 /// - [saveCopy]: "Spara min kopia" from someone else's recipe without steps
 ///   (Q6-05 = C): the user's own copy, never an edit of theirs.
 /// - [toShoppingList]: "Till inköpslistan" from a recipe without steps
-///   (produktregler.md:1227; Skarmar v12 etapp 11 #lgbutan).
 enum CookingModeExit { finished, editRecipe, saveCopy, toShoppingList }
 
 /// The device effects a cooking session has. Injectable so the session
@@ -113,7 +112,7 @@ class DefaultCookingSessionEffects implements CookingSessionEffects {
 }
 
 /// Rotation is forced only under 768 px on the shortest side; above that the
-/// view follows the device (produktregler.md:1199).
+/// view follows the device.
 const double cookingLandscapeLockBelow = 768;
 
 /// True when a screen of [size] gets forced landscape in cooking mode.
@@ -124,8 +123,8 @@ bool cookingForcesLandscape(Size size) =>
 /// rules are testable.
 ///
 /// A recipe without steps is not a session: no forced rotation, no kept-awake
-/// screen and no "lagar just nu" signal (produktregler.md:1227). The screen
-/// is kept awake only while the view lives (produktregler.md:1201).
+/// screen and no "lagar just nu" signal. The screen
+/// is kept awake only while the view lives.
 class CookingSessionLifecycle {
   CookingSessionLifecycle({required this.vm, required this.effects});
 
@@ -181,8 +180,7 @@ class CookingSessionLifecycle {
   }
 }
 
-/// Asks before leaving once more than one step is done
-/// (flows-roles-budget.md:71). Returns true when the user may leave.
+/// Returns true when the user may leave.
 Future<bool> confirmCookingExit(
   BuildContext context,
   CookingModeViewModel vm,
@@ -216,7 +214,7 @@ Future<bool> confirmCookingExit(
 
 /// Full-screen cooking mode.
 /// Keeps the screen awake while it lives, and forces landscape on screens
-/// under 768 px (produktregler.md:1199-1201).
+/// under 768 px.
 class CookingModeView extends StatefulWidget {
   final Recipe recipe;
 
@@ -257,7 +255,7 @@ class _CookingModeViewState extends State<CookingModeView> {
   CookingVoiceController? _voiceController;
 
   // The timer notice is shown once per session: a notice repeated at every
-  // timer has not accepted the answer (produktregler.md:1221-1224 spirit).
+  // timer has not accepted the answer.
   bool _timerNoticeShown = false;
 
   @override
@@ -294,7 +292,7 @@ class _CookingModeViewState extends State<CookingModeView> {
   }
 
   /// The notice before a timer starts without notification permission
-  /// (P6-U07 mechanism; flows-roles-budget.md:70). Shared by the timer sheet
+  /// (P6-U07 mechanism). Shared by the timer sheet
   /// and the voice command.
   Future<void> _warnBeforeTimer() async {
     if (_timerNoticeShown || !mounted) return;
@@ -362,14 +360,14 @@ class CookingTimerGate {
   final Future<void> Function() beforeStart;
 }
 
-/// A recipe without steps, as drawn in Skarmar v12 etapp 11 #lgbutan: a
+/// A recipe without steps: a
 /// title, a line saying what is missing, "Skriv stegen" and — when there are
-/// ingredients — "Till inköpslistan" (produktregler.md:1227).
+/// ingredients — "Till inköpslistan".
 ///
 /// On someone else's recipe the first action is "Spara min kopia" in the
 /// same place and style (Q6-05 = C, produktbeslut 2026-09-27), and the line
 /// says the steps are written in the copy: the recipe itself is never the
-/// user's to edit (produktregler.md:241).
+/// user's to edit.
 ///
 /// Colours on the cooking base (ink #24382C light / #17251D dark, paper text
 /// on both): "Skriv stegen" is paper filled with ink text (cs.onPrimary /
@@ -525,9 +523,7 @@ class _CookingModeContent extends StatelessWidget {
 
     // Cooking mode stands on surface.ink in light mode and on dark-bg
     // #17251D in dark mode (_cookingBase), so every focus ring in it is paper
-    // (tokens.json:155-160; Komponentark v1:657).
-    // Back and close ask first once more than one step is done
-    // (flows-roles-budget.md:71); before that they leave at once.
+    // (tokens.json:155-160).
     return PopScope<Object?>(
       canPop: !vm.needsExitConfirmation,
       onPopInvokedWithResult: (didPop, _) async {
@@ -555,7 +551,7 @@ class _CookingModeContent extends StatelessWidget {
                         builder: (context, constraints) {
                           // Under 600 px wide (a phone that could not turn,
                           // a split screen, a narrow browser) the panels
-                          // stack, as Skarmar v12 del 1 #lagastaende draws:
+                          // stack:
                           // side by side the step row got about a third of
                           // the width and broke "Nästa steg" into letters
                           // (BUT-2261).
@@ -700,8 +696,8 @@ class _CookingModeContent extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.space8),
           ],
-          // Outlined on the ink, as Skarmar v12 del 1 #lagastaende draws
-          // them (B-49): the label is the NEXT action, so "A+" grows the text
+          // Outlined on the ink
+          // (B-49): the label is the NEXT action, so "A+" grows the text
           // and the last size says "A" for back to normal.
           _OutlinedBarButton(
             onTap: vm.cycleFontScale,
@@ -716,7 +712,7 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppDimensions.space8),
-          // Mönster 4 · Modal (Komponentark v1:57, :91-97): cooking mode
+          // Mönster 4 · Modal: cooking mode
           // closes with X and never shows a back arrow beside it.
           _OutlinedBarButton(
             onTap: () => Navigator.maybePop(context),
@@ -816,8 +812,8 @@ class _IngredientsPanel extends StatelessWidget {
             ),
             decoration: BoxDecoration(border: Border(bottom: line)),
             // On a portrait tablet the panel is 35 % of about 800 px, too
-            // narrow for label and stepper on one line (produktregler.md:1199
-            // no longer forces landscape there), so the stepper wraps under
+            // narrow for label and stepper on one line
+            // so the stepper wraps under
             // the label instead of overflowing.
             child: Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -1271,7 +1267,7 @@ class CookingStepNavigation extends StatelessWidget {
   final CookingModeViewModel vm;
 
   /// "Klart" on the last step: returns to the recipe, which counts it as
-  /// cooked (flows-roles-budget.md:72). Null keeps the last step's action
+  /// cooked. Null keeps the last step's action
   /// disabled.
   final VoidCallback? onFinish;
 
@@ -1295,10 +1291,8 @@ class CookingStepNavigation extends StatelessWidget {
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
           const SizedBox(width: AppDimensions.space8),
-          // The view's one saffron action (Komponentark v1 mönster 4;
-          // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
-          // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
-          // del 1 #lagastaende and #lagamorkt), with the arrow after the
+          // It fills the rest of the row,
+          // with the arrow after the
           // label. The finite minimum keeps it layoutable inside a Row.
           Expanded(
             child: vm.isOnLastStep && onFinish != null
@@ -1385,7 +1379,7 @@ const double _quantityColumnWidth = 84;
 
 /// The cooking-mode base. Light mode: surface.ink #24382C (cs.primary).
 /// Dark mode: dark-bg #17251D (cs.surface), "så skärmen inte lyser i ett
-/// släckt kök" (Skarmar v12 del 1 #lagamorkt). Paper (cs.onPrimary) reads
+/// släckt kök". Paper (cs.onPrimary) reads
 /// on both.
 Color _cookingBase(ColorScheme cs) =>
     cs.brightness == Brightness.dark ? cs.surface : cs.primary;

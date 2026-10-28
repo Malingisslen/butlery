@@ -61,7 +61,7 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // The chosen ingredients stand as chips inside the box, before the
-        // text (Komponentark v1 §07 "Tokeniserad").
+        // text.
         ButlerySearchBox(
           controller: _controller,
           focusNode: _focusNode,

@@ -1,7 +1,7 @@
 // lib/views/family/family_form_parts.dart
 //
-// The pieces of the family member form as the sketch draws it (Skärmar v12
-// #familjemedlem): sections told apart by a hairline with a bold title and
+// The pieces of the family member form
+// : sections told apart by a hairline with a bold title and
 // an outlined badge, tabs for the age band, rounded colour swatches, checkbox
 // rows and pill choices.
 library;

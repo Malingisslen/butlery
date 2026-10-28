@@ -114,9 +114,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
           Navigator.of(context).pop();
         }
       },
-      // A subpage of the week menu (Skarmar v12 del 2
-      // #placera draws the back arrow, the title and the "2 av 5 rätter
-      // placerade" pill).
+      // A subpage of the week menu
       child: ButleryPage.undersida(
         title: context.l10n.menuPlacementTitle,
         backTo: context.l10n.menuWeek,
@@ -407,8 +405,7 @@ class PlacementTray extends StatelessWidget {
                 const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   flex: 2,
-                  // "Klar" is the placement's one primary action (Skarmar
-                  // v12 del 2 #placera).
+                  // "Klar" is the placement's one primary action
                   child: FormButton(
                     key: const ValueKey('menu-placement-done'),
                     label: context.l10n.commonDone,

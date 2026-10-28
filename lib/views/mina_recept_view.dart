@@ -8,9 +8,8 @@
 /// - Multi-provider integration (RecipeListViewModel, FriendsViewModel, SharedContentCoordinatorViewModel)
 ///
 /// HEM-HERO (package 6): this view is the Hem tab. The greeting and the
-/// week's plan for tonight stand above the library (Skarmar v12 del 1
-/// #hemrecept: "hälsning + ikväll överst, receptbiblioteket direkt under"),
-/// in `lib/views/hem/`; an empty library is Hem's empty state (#hemtom).
+/// week's plan for tonight stand above the library
+/// in `lib/views/hem/`; an empty library is Hem's empty state.
 ///
 /// Q6-16 = B (produktbeslut 2026-09-27b): Hem has no top bar. The greeting
 /// is at the top, under the offline banner, and "Välj", the ingredient
@@ -423,7 +422,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
     final tagViewModel = context.watch<PersonalTagViewModel>();
     final personalTags = tagViewModel.tags;
-    // Row 4 of produktregler.md:271: an empty library is Hem's empty state.
     final libraryEmpty =
         !viewModel.isLoading &&
         !viewModel.hasError &&
@@ -446,7 +444,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           child: Column(
             children: [
               // The offline banner, with its count of waiting changes, is the
-              // one offline signal on Hem (Skarmar v12 del 4 #hemoffline;
+              // one offline signal on Hem (
               // package-3 answers A-03 and A-09). The separate sync icon went
               // in package 7.
               LayoutComponents.offlineIndicator(),
@@ -523,13 +521,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         // Q6-16 = B: the library's own header row under the Ikväll band,
         // "Dina recept · N" with Välj, the ingredient search and the
         // toggle; in selection mode the counter and Avbryt (B-46 on Hem).
-        // #hemtom draws no library header over an empty library.
         if (viewModel.isSelectionMode || !libraryEmpty)
           MinaReceptLibraryHeader(
             viewModel: viewModel,
             actions: minaReceptRootActions(context, viewModel),
           ),
-        // #hemtom draws no search or filters over an empty library.
         if (!viewModel.isSelectionMode && !libraryEmpty) ...[
           SearchFilterWidget(
             searchQuery: viewModel.searchQuery,
@@ -730,8 +726,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     final recipes = viewModel.recipes;
 
-    // P5-U05: an error in one section never empties the whole view
-    // (produktregler.md:297). With recipes already fetched, the library stays
+    // With recipes already fetched, the library stays
     // and the error is a box above it; only a view with nothing to show gets
     // the full-view error.
     if (minaReceptErrorEmptiesView(
@@ -841,7 +836,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               allergenPrefs: allergenPrefs,
             )
           else if (Breakpoints.isMobile(context))
-            // Rows draw their own hairline (Komponentark v1 receptlistrad), so
+            // Rows draw their own hairline, so
             // on a phone they stand edge to edge.
             SliverResponsiveListGrid<Recipe>(
               items: recipes,
@@ -917,8 +912,8 @@ Widget minaReceptSectionError(
 /// The library header row's actions outside selection mode (Q6-16 = B:
 /// they were the top bar's, and Hem has none).
 ///
-/// "Välj" comes first, as on the other five surfaces (B-46;
-/// produktregler.md:870-874; Skarmar v12 etapp 9 #flervalingang), and is
+/// "Välj" comes first, as on the other five surfaces
+/// and is
 /// left out under two recipes. Then the ingredient search and the grid/list
 /// toggle. The top bar's offline icon is not carried over: the offline
 /// banner at the top of Hem says the same.

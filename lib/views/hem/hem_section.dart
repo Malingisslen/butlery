@@ -2,38 +2,15 @@
 //
 // HEM-HERO (package 6): the top of Hem, above the recipe library.
 //
-//   Skarmar v12 del 1 #hemrecept (:124-150): "hälsning + ikväll överst,
-//       receptbiblioteket direkt under". The date line and the greeting, then
-//       the ink "Ikväll" band with "Börja laga" (saffron), "Byt rätt"
-//       (outlined in paper) and the pantry line "allt i skafferiet".
-//   produktregler.md § 6.1 row 3: with no dinner planned, a safe library
-//       recipe takes the band's place, marked "Förslag", "Byt rätt" reading
-//       "Byt förslag".
-//   Skarmar v12 del 4 #hemladdar (:616-650) and #hemfel (:704-742): in
-//       hem_plan_states.dart.
-//   Skarmar v12 del 4 #hemoffline (:651-703): the offline banner at the top
-//       (P3-U05, mounted by the view), the plan as usual, and under it
-//       "Planen hämtades 07:12 — kan ha ändrats av någon annan sedan dess."
-//   produktregler.md:276-280 (§ 6.2) the greeting by the clock and the date
-//       "Torsdag 9 juli", proportional, neither a control.
-//   Grafisk manual v6:219 and produktregler.md:292: one saffron action.
-//
 // Interpretations:
 // * "Byt rätt" and "Visa sparad plan" open the week menu (the Meny tab),
 //   where the dish is changed and the saved plan is shown; no drawing shows
 //   where they lead.
 // * The ink band takes surface.ink in both modes (tokens.json:112-115); what
 //   stands on it takes its on-ink values (see _TonightCard).
-// * The buttons keep the 48 dp touch target (tokens.json touchTarget.min);
-//   #hemrecept draws them 40 px tall.
+// * The buttons keep the 48 dp touch target (tokens.json touchTarget.min)
 // * The build differs from the drawings, for lack of a token
-//   that carries both drawn values (Skarmar v12 del 1 and del 4 slot values):
-//   - Muted text (the date line, #hemtom's body and "Snabbaste vägarna",
-//     #hemladdar's text, #hemoffline's "Planen hämtades") is drawn in
-//     --r04slot-620, #627061 light and #C9D3C4 dark. #C9D3C4 is
-//     text.bodyMuted dark (tokens.json:174-177), but text.bodyMuted light is
-//     #37453A, so it is built as text.secondary (onSurfaceVariant, #5B6959 /
-//     #A9B2A0, tokens.json).
+//   that carries both drawn values:
 //   - The #hemladdar skeleton and the #hemtom allergy note are drawn in
 //     --r04slot-836 / -832, #E6EAD9 light and #24382C dark. No token has
 //     that pair; they are built as surface.raised (primaryContainer, #E6EAD9
@@ -138,8 +115,6 @@ class HemSection extends StatelessWidget {
       case HemPlanStatus.loading:
         return const [HemPlanLoading()];
       case HemPlanStatus.failed:
-        // #hemfel: what happened, then "Försök igen" and
-        // "Visa sparad plan"; the library stays.
         // readWeek cannot tell offline from denied, so only what happened is
         // said (content-style-guide.md, the three-part error).
         return [
@@ -388,7 +363,6 @@ class HemTonightCard extends StatelessWidget {
 }
 
 /// "Planen hämtades 07:12 – kan ha ändrats av någon annan sedan dess."
-/// (#hemoffline :187; produktregler.md:294, a timestamp, never grey text).
 class HemFetchedAtLine extends StatelessWidget {
   const HemFetchedAtLine({required this.fetchedAt, super.key});
 
