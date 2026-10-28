@@ -590,8 +590,7 @@ void main() {
   });
 
   // P6-U04 / P6-U07: without notification permission the notice comes
-  // BEFORE the voice-started timer, never after (produktregler.md:423;
-  // flows-roles-budget.md:70).
+  // BEFORE the voice-started timer, never after
   group('timer notice before a voice-started timer', () {
     test(
       'beforeTimerStart runs, and finishes, before the timer starts',

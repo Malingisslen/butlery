@@ -1123,8 +1123,7 @@ void main() {
       });
     });
 
-    // P5-U33: bulk delete says per tag id what went (produktregler.md:
-    // 905-909). Each chunk of 100 is atomic; a failed chunk does not stop the
+    // Each chunk of 100 is atomic; a failed chunk does not stop the
     // next, and an earlier chunk that landed is never reported as nothing.
     group('bulkDeleteTags - per-id result (P5-U33)', () {
       late MockWriteBatch first;

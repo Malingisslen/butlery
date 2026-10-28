@@ -585,9 +585,6 @@ void main() {
     });
 
     // -- P5-U25: fewer dishes than asked is a partial outcome ------------------
-    //
-    // produktregler.md:206: "Ett delresultat är alltså 1 ≤ n < begärt antal
-    // recept." produktregler.md:893: what is missing is named.
     group('P5-U25 partial generation', () {
       ParsedMenuRequest request(Map<String, int> counts, {int pins = 0}) =>
           ParsedMenuRequest(
@@ -706,9 +703,7 @@ void main() {
 
     // -- P6-U01: no matches is an outcome, an empty library an error --------
     //
-    // flows-roles-budget.md:32 ("0 recept placerade -> inga matchningar");
-    // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
-    // REQUIRED. Before P6-U01 an empty result threw errorGeneric ("Ett fel
+    // Before P6-U01 an empty result threw errorGeneric ("Ett fel
     // uppstod").
     group('TR::FLOW::01::genererar::0-recept-placerade', () {
       test('an empty result is the no-match outcome, never an error', () async {

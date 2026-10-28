@@ -12,19 +12,18 @@
 ///   generated colour of its mode (tokens.json semantic, delivered as
 ///   lib/theme/app_colors.dart and app_colors_dark.dart), that colour at an
 ///   opacityLadder alpha (tokens.json:40-53) or fully transparent; at most one
-///   saffron-filled button (Komponentark v1:843 "en hero per vy";
+///   saffron-filled button (
 ///   app_colors.dart actionPrimary, "exakt en per vy").
 /// - LOADING: plate line plus text, no spinner, no shimmer, no skeleton
-///   before 300 ms (produktregler.md:163, :304; beslutslogg B-18).
+///   before 300 ms.
 /// - EMPTY: a text says what is empty, without error styling
-///   (produktregler.md:292; content-style-guide.md:87-97 keeps the error
+///   (content-style-guide.md:87-97 keeps the error
 ///   form for errors).
-/// - OFFLINE: the banner says "Ingen anslutning" (produktbeslut PQ-03 = A,
-///   fas2/produktbeslut-2026-09-23.json), is filled with the mode's
-///   surface.tint.warning or not at all (B83-2a, fas2/produktbeslut-2026-10-01.json,
+/// - OFFLINE: the banner says "Ingen anslutning" (produktbeslut PQ-03 = A
+///   ), is filled with the mode's
+///   surface.tint.warning or not at all (B83-2a,
 ///   which supersedes PQ-20a) and does not lock the content under it
-///   (produktregler.md).
-/// - CONFLICT: the own recipe offers both versions (produktregler.md:102);
+/// - CONFLICT: the own recipe offers both versions;
 ///   the shopping list takes the union and the notice says what the
 ///   other member did (PQ-20b = A).
 library;

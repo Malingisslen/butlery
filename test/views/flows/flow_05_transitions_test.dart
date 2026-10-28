@@ -1,6 +1,5 @@
 /// P8-U03 · flow 05, the two deep-link transitions that were built but had
-/// no test (flows-roles-budget.md:79 and :81; fas2/block288-uxfrysning.json
-/// overgangar, both REQUIRED).
+/// no test
 ///
 /// - TR::FLOW::05::deep-link::utloggad: a link opened while signed out waits
 ///   for the sign-in and then goes to the link's target

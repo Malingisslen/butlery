@@ -290,7 +290,6 @@ void main() {
         expect(moved, 1);
         expect(vm.overflow.map((r) => r.id), ['o2']);
         expect(vm.overflowReason!.weekStart, _nextMonday);
-        // produktregler.md:893: the two-week limit is visible, not silent.
         expect(vm.canPlaceOverflowInNextWeek, isFalse);
         expect(await vm.placeOverflowInNextWeek(), isNull);
       },

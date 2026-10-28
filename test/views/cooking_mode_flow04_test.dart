@@ -1,6 +1,4 @@
-/// P6-U04 · Flow 04, cooking mode (flows-roles-budget.md:66-73;
-/// produktregler.md:421-423, 1199-1201, 1227; Skarmar v12 etapp 11
-/// #lgbutan).
+/// P6-U04 · Flow 04, cooking mode
 ///
 /// - Back and close leave at once until more than one step is done; after
 ///   that they ask, and "Fortsätt laga" keeps the step.
@@ -350,8 +348,7 @@ void main() {
 
     // Q6-05 = C (produktbeslut 2026-09-27): on someone else's recipe the
     // first action is "Spara min kopia", and it leaves with saveCopy, which
-    // recipe detail turns into the user's own copy (never an edit of theirs,
-    // produktregler.md:241).
+    // recipe detail turns into the user's own copy
     testWidgets('someone else\'s recipe: "Spara min kopia" instead of '
         '"Skriv stegen", and it asks for a copy', (tester) async {
       final results = <Object?>[];

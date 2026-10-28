@@ -1,6 +1,6 @@
 /// BUT-1237 and P7-U04: pins the global dialog contract. The shape takes
-/// the control radius, 8 (Komponentark v1:336 draws the dialog box with
-/// border-radius 8px; tokens.json space.radius.control). Dialogs inherit it
+/// the control radius, 8 (
+/// tokens.json space.radius.control). Dialogs inherit it
 /// from the theme; no dialog sets its own `shape:`.
 library;
 

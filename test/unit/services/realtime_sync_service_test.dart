@@ -1054,8 +1054,7 @@ void main() {
   });
 
   group('conflictStream waits for the queue (P6-U08b)', () {
-    /// produktregler.md:189: "Konfliktbannern visas när kön töms, inte
-    /// medan appen är offline." The real resolver path, as above, with the
+    /// The real resolver path, as above, with the
     /// queue still holding changes: the notice reaches the banner only when
     /// the queue reports it has emptied.
     test('a conflict settled while the queue waits reaches the stream when '

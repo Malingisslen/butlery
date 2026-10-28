@@ -1,4 +1,4 @@
-/// The global snackbar theme is the ink snackbar (Komponentark v1:745-750;
+/// The global snackbar theme is the ink snackbar (
 /// produktbeslut PQ-09 = A, 2026-09-23). It replaces the square
 /// inverseSurface snackbar of BUT-1243: the drawing has radius 8.
 library;

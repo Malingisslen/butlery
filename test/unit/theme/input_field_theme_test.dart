@@ -1,4 +1,4 @@
-// The app's input theme draws the field Komponentark v1 §07 and §11 specify:
+// The app's input theme draws the field:
 // paper with a 1 px border.control edge at rest, surface.raised only when
 // disabled, a 1.5 px danger edge in error. The rest edge must clear 3:1
 // against the paper it sits on (WCAG 1.4.11), in both modes.
