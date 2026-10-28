@@ -53,10 +53,38 @@ void main() {
     final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
     final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
 
-    expect(sv, contains('Kortlänken raderas automatiskt efter 14 dagar'));
-    expect(sv, contains('| Kortlänkar när du delar eller bjuder in'));
-    expect(en, contains('The short link is deleted automatically after 14 days'));
-    expect(en, contains('| Short links when you share or invite'));
+    expect(
+      sv,
+      contains(
+        'Kortlänken raderas automatiskt efter 14 dagar, och när du raderar kontot. '
+        'Dina kortlänkar ingår i dataexporten. '
+        'En länk du redan har skickat kan vi inte ta tillbaka från mottagaren.',
+      ),
+    );
+    expect(
+      sv,
+      contains(
+        '| Kortlänkar när du delar eller bjuder in med en länk (ditt användar-id, '
+        'länkadressen och när den skapades) | 14 dagar efter att länken skapades, '
+        'eller tills du raderar kontot | Fullgörande av avtal |',
+      ),
+    );
+    expect(
+      en,
+      contains(
+        'The short link is deleted automatically after 14 days, and when you delete '
+        'your account. Your short links are included in the data export. '
+        'A link you have already sent cannot be taken back from the recipient.',
+      ),
+    );
+    expect(
+      en,
+      contains(
+        '| Short links when you share or invite with a link (your user id, the link '
+        'address and when it was created) | 14 days after the link was created, or '
+        'until you delete the account | Performance of contract |',
+      ),
+    );
   });
 
   // BUT-2452: no real invite is entered before these lines are published.

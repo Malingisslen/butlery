@@ -167,6 +167,22 @@ async function deletesOldLinksWithClicksAndKeepsYoungOnes(): Promise<void> {
   );
 }
 
+async function deletesClicksPastOnePage(): Promise<void> {
+  const store = new Store();
+  store.set("deep_links/big", { createdBy: "u1", createdAt: daysAgo(30) });
+  for (let i = 0; i < 1201; i++) {
+    store.set(`deep_links/big/clicks/c${String(i).padStart(4, "0")}`, { userId: "u2" });
+  }
+
+  await pruneExpiredDeepLinks(fakeDb(store) as never, { now: NOW });
+
+  record(
+    "a link with more clicks than one page holds loses all of them, then itself",
+    store.childrenOf("deep_links/big/clicks").length === 0 && !store.has("deep_links/big"),
+    `clicks left ${store.childrenOf("deep_links/big/clicks").length}`,
+  );
+}
+
 async function stopsAtTheRowCap(): Promise<void> {
   const store = new Store();
   for (let i = 0; i < 1200; i++) {
@@ -231,6 +247,7 @@ async function timeoutSecondsIsDeclared(): Promise<void> {
 async function runAll(): Promise<void> {
   console.log("deep_links retention tests (BUT-2463)\n");
   await deletesOldLinksWithClicksAndKeepsYoungOnes();
+  await deletesClicksPastOnePage();
   await stopsAtTheRowCap();
   await stopsAtTheDeadline();
   await timeoutSecondsIsDeclared();

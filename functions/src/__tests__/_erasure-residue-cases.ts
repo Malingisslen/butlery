@@ -214,6 +214,7 @@ export const CASES: SectionCase[] = [
     },
     check: ([row]) => {
       expect(row.createdAt === T0_ISO, "createdAt as ISO");
+      expect(row.longUrl === `https://butlery.se/recipe/r1?from=${UID}`, "longUrl kept");
       expect(!("createdBy" in row) && !("clickCount" in row), "createdBy and clickCount dropped");
       const metadata = row.metadata as Record<string, unknown>;
       expect(
