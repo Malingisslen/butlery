@@ -49,7 +49,7 @@ class HeroButton extends StatelessWidget {
   /// (content-style-guide.md:63). Null keeps [label].
   final String? busyLabel;
 
-  /// An optional leading icon. Hidden while busy, as drawn (v1:372).
+  /// An optional leading icon. Hidden while busy.
   final IconData? icon;
 
   /// Whether the button fills the available width.

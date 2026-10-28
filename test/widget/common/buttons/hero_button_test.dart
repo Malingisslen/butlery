@@ -1,5 +1,5 @@
 // The view's one saffron action and its busy
-// state (v1:365, :372): shape and name kept, the plate line along the
+// state: shape and name kept, the plate line along the
 // bottom edge, never disabled while it works.
 
 import 'package:flutter/material.dart';
@@ -88,7 +88,7 @@ void main() {
     );
     await tester.tap(find.byType(FilledButton), warnIfMissed: false);
     expect(taps, 0);
-    // Busy is not disabled: the button keeps its surface (v1:365).
+    // Busy is not disabled: the button keeps its surface.
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,

@@ -160,15 +160,14 @@ class InputThemes {
   /// On the dark base #17251D that fill is 1.27:1,
   /// so dark mode edges it the way the panel draws it:
   ///
-  /// * chosen: a 1 px paper edge and a paper check (v1:523; "Bocken i en
-  ///   bockad kontroll är alltid papper", v1:491);
+  /// * chosen: a 1 px paper edge and a paper check;
   /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
   ///   dark control outline (--ram-kontroll-a);
   /// * disabled: a 1 px surface.disabled #4A5C50 edge, no fill and a
-  ///   text.secondary label (v1:525).
+  ///   text.secondary label.
   ///
   /// Interpretation: the panel draws the resting edge at paper 35 %
-  /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
+  /// which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
   /// has a generated member, as for the outlined button.
   ///
   /// Light mode: a resting chip has a 1 px

@@ -86,7 +86,7 @@ void main() {
         expect(radius.bottomRight, Radius.zero);
       });
 
-      // P7-U04 (Q10): the drawings name these three radii.
+      // P7-U04 (Q10).
       test('dialogs take the control radius, 8', () {
         expect(_radiusOf(theme.dialogTheme.shape as OutlinedBorder?), control);
       });

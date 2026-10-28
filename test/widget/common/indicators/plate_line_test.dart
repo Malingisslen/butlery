@@ -60,7 +60,7 @@ void main() {
       );
     });
 
-    testWidgets('sits at 22 % and spans 34 % of the line (v1:306)', (
+    testWidgets('sits at 22 % and spans 34 % of the line', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(const PlateLine()));

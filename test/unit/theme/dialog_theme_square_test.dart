@@ -39,7 +39,7 @@ void main() {
         theme.backgroundColor,
         cs.surface,
         reason:
-            'Mockup spec §4.17: dialog box renders on cream — '
+            'dialog box renders on cream — '
             'cs.surface maps to cream in the app light scheme.',
       );
     });

@@ -24,7 +24,7 @@ const _out = 'lib/widgets/common/icons/butlery_icons.dart';
 /// that is not saved (icons.json contract.exceptions.bookmark).
 const _outlineVariants = ['bookmark', 'heart', 'star'];
 
-/// Semantic aliases (migration-gap.md:46, K-10: map the family onto the
+/// Semantic aliases (K-10: map the family onto the
 /// app's semantic aliases, not raw names). alias -> member.
 const _aliases = {
   'favourite': 'heart',

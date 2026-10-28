@@ -8,7 +8,6 @@
 /// - text and glyphs on the page are text.primary (onSurface): ink on light,
 ///   paper on dark (tokens.json semantic["text.primary"]);
 /// - a chosen chip is an ink fill with paper text, edged in text.primary
-///   (dark matrix v1:523);
 /// - a chosen reaction is surface.selected with a real border, never an ink
 ///   tint (tokens.json:40-53 opacityLadder, semantic["surface.selected"]);
 /// - status snackbars are the ink snackbar, never a status fill

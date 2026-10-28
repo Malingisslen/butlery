@@ -152,7 +152,7 @@ class FeedbackThemes {
   /// in BOTH modes (tokens.json:145-152). The dark panel draws exactly that,
   /// an ink box with no edge and a paper tick, and
   /// states the rule: "Bocken i en bockad kontroll är alltid papper — aldrig
-  /// ink på ink" (v1:491). So the fill stays cs.primary in dark as well; the
+  /// ink på ink". So the fill stays cs.primary in dark as well; the
   /// tick carries the state, 12.2:1 on the box (tokens.json:667-668 pair)
   /// and far above 3:1 on the dark base.
   static CheckboxThemeData checkboxTheme(ColorScheme cs) {
@@ -204,7 +204,7 @@ class FeedbackThemes {
   /// ink in both schemes, 1.27:1 on the dark base #17251D. Interpretation:
   /// no dark radio circle is drawn; the dark panel draws the chosen sort row
   /// with a paper check and names paper as the mode's
-  /// text and ring colour (v1:491). Light is unchanged: there
+  /// text and ring colour. Light is unchanged: there
   /// cs.onSurface == cs.primary.
   static RadioThemeData radioTheme(ColorScheme cs) {
     return RadioThemeData(

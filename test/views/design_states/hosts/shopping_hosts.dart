@@ -256,7 +256,7 @@ final shoppingHosts = <String, StateHost>{
       await tester.pump();
     },
   ),
-  // Produktregler: union of operations, and a banner saying what
+  // union of operations, and a banner saying what
   // the other member did. Per adds a row while Malin has the list open.
   'inköpslista::CONFLICT': StateHost(
     conflictItems: (local: 'Röda linser', remote: 'Vetemjöl'),

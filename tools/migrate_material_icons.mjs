@@ -16,8 +16,7 @@ import path from 'node:path';
 // Material name -> ButleryIcons member. Variants (_outlined, _rounded, ...)
 // are listed explicitly so nothing maps by accident.
 export const MAP = {
-  // x — Stäng (drawn for close, remove and stop sharing: Skarmar data-hit
-  // targets "ta-bort-…", "sluta-dela-med-…")
+  // x — Stäng
   close: 'x', clear: 'x', cancel: 'x',
   // check — Bockad / klar
   check: 'check',
@@ -101,8 +100,7 @@ export const MAP = {
   photo_outlined: 'image', photo_library: 'image',
   photo_library_outlined: 'image', collections: 'image',
   collections_outlined: 'image',
-  // camera — Kamera; "Lägg till foto" is drawn with camera (Skarmar v12
-  // del 1:317)
+  // camera — Kamera; "Lägg till foto" is drawn with camera
   camera: 'camera', camera_alt: 'camera', camera_alt_outlined: 'camera',
   photo_camera: 'camera', photo_camera_outlined: 'camera',
   add_a_photo: 'camera', add_photo_alternate: 'camera',
@@ -131,7 +129,7 @@ export const MAP = {
   drag_handle: 'drag', drag_indicator: 'drag',
   // pause / stop. play_arrow and play_circle_outline stay Material: the
   // play master (design/assets/icons/play.svg) fills the disc and the triangle in
-  // one colour, so it draws a solid dot (also in Skarmar v12 del 1:646), and
+  // one colour, so it draws a solid dot, and
   // no Material play use means "Starta matlagning" (icons.json).
   pause: 'pause', pause_circle: 'pause', pause_circle_outline: 'pause',
   stop: 'stop',
@@ -328,7 +326,7 @@ export const MAP = {
 // path (relative to repo) -> { materialName: member | null } ; null = keep
 // Material (residue).
 export const SITE = {
-  // Data export is export, not download (Grafisk manual v6:308: download and
+  // Data export is export, not download (download and
   // export are two glyphs with separate semantics).
   'lib/views/account/data_export_view.dart': {
     download_rounded: 'export', cloud_download_rounded: 'export',
@@ -374,7 +372,7 @@ export const SITE = {
   'lib/widgets/menu/calendar/presence_overview.dart': { home_outlined: 'house' },
   // Place manually: hand "Gör själv / placera manuellt".
   'lib/widgets/menu/menu_placement_footer.dart': { touch_app_outlined: 'hand' },
-  // The tab bar uses the nav family (Grafisk manual v6:322, 160 grid).
+  // The tab bar uses the nav family (160 grid).
   'lib/widgets/common/navigation/adaptive_navigation.dart': {
     home_outlined: 'navHome', calendar_today_outlined: 'navWeek',
     shopping_cart_outlined: 'navShopping', menu: 'navMore',
@@ -419,7 +417,7 @@ function adaptiveTables() {
   return { ctor, getter };
 }
 
-// K-10 (migration-gap.md:46): the semantic aliases map to semantic members.
+// K-10: the semantic aliases map to semantic members.
 const ALIAS = {
   favouriteFilled: 'ButleryIcons.favourite',
   favouriteOutline: 'ButleryIcons.favouriteOutline',
