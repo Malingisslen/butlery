@@ -308,7 +308,7 @@ class AuthViewModel extends ChangeNotifier
   /// Essential for secure authentication flows and proper user session lifecycle management.
   ///
   /// A user-initiated sign-out, so the queue guard runs first
-  /// (produktregler.md:193; Q-P6-E16). Returns the unsaved changes that
+  /// (Q-P6-E16). Returns the unsaved changes that
   /// blocked it; [PendingChanges.none] means the user was signed out. A
   /// blocked caller shows the confirmation (#utloggningko) and calls
   /// [discardPendingAndSignOut] only if the user chose to throw them away.

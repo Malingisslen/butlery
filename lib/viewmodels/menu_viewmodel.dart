@@ -87,7 +87,7 @@ class MenuPartialOutcome {
 }
 
 /// P6-U01: a generation where nothing matched ("0 recept placerade ->
-/// inga matchningar", flows-roles-budget.md:32).
+/// inga matchningar").
 ///
 /// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
 /// det och erbjuder minsta möjliga eftergift — inte en generisk feltext."
@@ -226,7 +226,7 @@ class MenuViewModel extends BaseViewModel {
   int get totalRecipeCount => _stateManager.totalRecipeCount;
 
   /// P5-U25: the generated menu has fewer dishes than the prompt asked for
-  /// (1 ≤ n < requested, produktregler.md:206), or null. Read from the menu
+  /// (1 ≤ n < requested), or null. Read from the menu
   /// as it is now, so a re-rolled section that filled the gap clears it.
   MenuPartialOutcome? get partialOutcome {
     if (_requestedByMealType.isEmpty || !hasMenu) return null;

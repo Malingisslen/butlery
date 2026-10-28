@@ -80,7 +80,7 @@ class ConsentViewModel extends ChangeNotifier
   bool get aiProcessing => _aiProcessing;
 
   /// What changed since the version the user accepted, for the renewal
-  /// (produktregler.md:731; Skarmar v12 etapp 6 #samtyckefornya).
+  /// (Skarmar v12 etapp 6 #samtyckefornya).
   List<ConsentChange> get renewalChanges =>
       ConsentService.changesSince(_currentConsent?.consentVersion);
 
@@ -134,7 +134,7 @@ class ConsentViewModel extends ChangeNotifier
         // Start from the consent that was READ and change only what the
         // user can touch here. Building a fresh object from a subset of the
         // purposes silently revoked AI processing on every save, because
-        // its default is no (produktregler.md:728; Skarmar v12 etapp 6
+        // its default is no (Skarmar v12 etapp 6
         // #samtyckeai).
         final base = _currentConsent?.purposes ?? ConsentPurposes.defaults();
         final purposes = base.copyWith(
@@ -204,7 +204,7 @@ class ConsentViewModel extends ChangeNotifier
 
   /// "Jag godkänner" in the renewal: the new version is accepted and every
   /// earlier choice stays as it was. "Befintliga val är förval, och att
-  /// avstå stänger aldrig av något" (produktregler.md:731).
+  /// avstå stänger aldrig av något".
   ///
   /// A purpose that is NEW since the accepted version keeps its earlier
   /// value (off for a consent saved before the purpose existed). Whether a

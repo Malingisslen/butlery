@@ -217,9 +217,9 @@ abstract class BaseActionHandler {
     return true;
   }
 
-  // Every snackbar is the ink snackbar (Komponentark v1:745-750, PQ-09 =
+  // Every snackbar is the ink snackbar (PQ-09 =
   // A). The status is carried by the message, never by a filled status
-  // colour (Komponentark v1:300).
+  // colour.
   void _showSuccessSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
     SnackBarUtils.showSuccess(context, message);

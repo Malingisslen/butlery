@@ -31,7 +31,7 @@ class WeeklyMenuDraft {
   final Map<String, List<String>> recipeIdsByMealType;
 
   /// Dishes the prompt asked for per meal type, so a restore that lost dishes
-  /// reads as a partial result (produktregler.md).
+  /// reads as a partial result.
   final Map<String, int> requestedByMealType;
 
   final DateTime lastModifiedAt;

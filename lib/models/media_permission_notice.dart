@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/core/utils/os_permission_helper.dart';
 
 /// What a camera or photo-library answer leaves to explain where an image
-/// is added (flow 07, flows-roles-budget.md:98-106): which source was asked
+/// is added (flow 07): which source was asked
 /// for and what the OS answered.
 @immutable
 class MediaPermissionNotice {

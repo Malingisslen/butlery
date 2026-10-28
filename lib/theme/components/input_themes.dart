@@ -58,7 +58,7 @@ class InputThemes {
       // field in the ring.
       focusedBorder: resting,
       // Error: 1.5 px status-danger; the error is also told in text under
-      // the field (Komponentark v1 §11).
+      // the field.
       errorBorder: error,
       focusedErrorBorder: error,
       // Disabled field: 1 px surface.disabled edge on surface.raised, never
@@ -119,7 +119,7 @@ class InputThemes {
   /// Interpretation: the screens' dark variable set draws standalone icons
   /// as --ikon-fristaende-a #C9D3C4, text.bodyMuted (Skarmar v12 del 4:30;
   /// tokens.json:174-177), which has no generated member; the dark panel
-  /// draws its list glyphs in paper (Komponentark v1:556), which stands.
+  /// draws its list glyphs in paper, which stands.
   static ListTileThemeData listTileTheme(ColorScheme cs) {
     return ListTileThemeData(
       tileColor: cs.surfaceContainerHighest,
@@ -177,7 +177,7 @@ class InputThemes {
   /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
   /// has a generated member, as for the outlined button.
   ///
-  /// Light mode (Komponentark v1:141-144): a resting chip has a 1 px
+  /// Light mode: a resting chip has a 1 px
   /// border-control edge (#7D897C), a disabled one a 1 px surface.disabled
   /// edge on surface.raised, and the chosen ink fill carries no edge of its
   /// own. Light sets no check colour.

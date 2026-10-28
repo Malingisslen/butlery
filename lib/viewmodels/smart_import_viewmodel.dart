@@ -103,7 +103,7 @@ class ImportFailed extends SmartImportResult {
 }
 
 /// P5-U06: another way to the same recipe after a failed import
-/// (produktregler.md:557; Skarmar v12 etapp 4 import #impinget, "Andra vägar
+/// (Skarmar v12 etapp 4 import #impinget, "Andra vägar
 /// till samma recept").
 enum ImportRoute {
   /// Photograph the screen: the photo import.
@@ -513,7 +513,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   /// P5-U06: a failed import, three-part (content-style-guide.md:87-97):
   /// [message] says what happened, [failurePreserved] what was kept, and the
-  /// routes are what you can do instead (produktregler.md:557).
+  /// routes are what you can do instead.
   ImportFailed _fail(
     String message, {
     List<String>? strategies,
@@ -537,7 +537,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// needs no strategy.
   ///
   /// The most helpful route stands first, by [errorCode]
-  /// (flows-roles-budget.md, flow 03 `hämtar`): a link that could not be
+  /// (flow 03 `hämtar`): a link that could not be
   /// read or sits behind a login offers pasting the text first, and a page
   /// without a recipe offers writing it in first. Any other cause keeps the
   /// order above.

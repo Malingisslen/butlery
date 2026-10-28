@@ -4,7 +4,7 @@
 // "Utloggning med kö — Blockeras med förklaring: ”N ändringar har inte
 // sparats.” Alternativ: Vänta på synk · Logga ut och släng. Aldrig tyst kast."
 // (produktregler.md:193). The same confirmation follows "Logga ut nu" in the
-// session-timeout warning (produktregler.md:832, § 16.2).
+// session-timeout warning.
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';

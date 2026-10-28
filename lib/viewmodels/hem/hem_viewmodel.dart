@@ -52,7 +52,7 @@ enum HemPlanStatus {
   failed,
 }
 
-/// The dish the hero card shows (produktregler.md § 6.1, rows 1 to 3).
+/// The dish the hero card shows (rows 1 to 3).
 class HemHero {
   const HemHero({
     required this.entry,

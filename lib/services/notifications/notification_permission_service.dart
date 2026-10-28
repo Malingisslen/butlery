@@ -98,7 +98,7 @@ class NotificationPermissionService extends BaseService {
   }
 
   /// Our explanation, then the OS prompt, then the settings link on a
-  /// permanent no (produktregler.md:682), with the typed answer.
+  /// permanent no, with the typed answer.
   Future<OsPermissionOutcome> _request(BuildContext context) {
     final l10n = context.l10n;
     return OsPermissionHelper.request(
@@ -130,7 +130,7 @@ class NotificationPermissionService extends BaseService {
       (await _timerPermissionOutcome()).isUsable;
 
   /// The notification answer as the timer notice needs it: granted on every
-  /// platform where the question is never asked (produktregler.md:685).
+  /// platform where the question is never asked.
   Future<OsPermissionOutcome> _timerPermissionOutcome() async {
     if (kIsWeb) return OsPermissionOutcome.granted;
     final sdk = await _sdkVersionProvider.sdkInt();
@@ -149,7 +149,7 @@ class NotificationPermissionService extends BaseService {
 
   /// True when notifications are switched off for Butlery in the phone's
   /// settings (a permanent no or a device block), so no switch in the app
-  /// means anything until that changes (produktregler.md:739; Skarmar v12
+  /// means anything until that changes (Skarmar v12
   /// etapp 3 #behnotiser). A not-yet-asked permission is not "off": the
   /// master switch still asks.
   Future<bool> blockedInSystem() async {
@@ -184,7 +184,7 @@ class NotificationPermissionService extends BaseService {
   ///   flows-roles-budget.md:104).
   ///
   /// Returns true when the user was told anything, so the caller does not
-  /// ask again in the same cooking session (produktregler.md:683).
+  /// ask again in the same cooking session.
   Future<bool> warnBeforeTimerIfNeeded(BuildContext context) async {
     final outcome = await _timerPermissionOutcome();
     if (outcome.isUsable || !context.mounted) return false;

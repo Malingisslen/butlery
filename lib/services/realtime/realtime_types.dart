@@ -77,7 +77,7 @@ class ConflictEvent {
   /// Which side the resolver picked.
   final ConflictResolutionStrategy chosenStrategy;
 
-  /// Which conflict rule applies (produktregler.md:97-107), as declared by the
+  /// Which conflict rule applies, as declared by the
   /// model through [RealtimeResource.conflictEntityFor]. Surfaces pick their
   /// notice from this, never from [collectionPath].
   final ConflictEntity entity;

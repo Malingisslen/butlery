@@ -135,7 +135,7 @@ class ShoppingItemManagementModule {
   /// when nothing was added.
   ///
   /// The id is what makes "Ångra" after an add possible: add is class 1 with
-  /// a 7 s undo (produktregler.md:131), and the undo removes exactly this
+  /// a 7 s undo, and the undo removes exactly this
   /// row, on a personal list and a shared one alike. Identity is the id,
   /// never the name or the position (a list can hold two "mjölk").
   Future<String?> addItemToActiveListWithId({

@@ -184,7 +184,7 @@ class AppTextStyles {
     fontFeatures: [FontFeature.proportionalFigures()],
   );
 
-  /// tokens: typography.roles.tab — 13/600 · flikens etikett i vila 13/600; vald flik bär boldWeight 700, alltså 13/700 (Komponentark v1:38, 106, 112-113). Tallrikslinjen under vald flik är ordets bredd + 5 px per sida, mätt. Radhöjd som listItem. BUT-2228.
+  /// tokens: typography.roles.tab — 13/600 · flikens etikett i vila 13/600; vald flik bär boldWeight 700, alltså 13/700. Tallrikslinjen under vald flik är ordets bredd + 5 px per sida, mätt. Radhöjd som listItem. BUT-2228.
   static TextStyle get tabText => const TextStyle(
     fontFamily: family,
     fontSize: 13,

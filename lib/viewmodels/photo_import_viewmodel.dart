@@ -29,7 +29,7 @@ typedef PhotoPermissionResolver =
     Future<OsPermissionOutcome> Function(ImageSource source, bool askAgain);
 
 /// The permission state the photo-import view explains inline: which source
-/// was asked for and what the OS answered (flows-roles-budget.md:98-106).
+/// was asked for and what the OS answered.
 @immutable
 class PhotoPermissionNotice {
   const PhotoPermissionNotice({
@@ -112,7 +112,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Null when there is nothing to say.
   PhotoPermissionNotice? get permissionNotice => _permissionNotice;
 
-  /// "Fråga igen" after a no (flows-roles-budget.md:102): asks the OS again
+  /// "Fråga igen" after a no: asks the OS again
   /// for the same source, without repeating our explanation, and picks on a
   /// yes.
   Future<void> askPermissionAgain() async {
@@ -611,7 +611,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
     // Flow 07: camera and photos go through the permission contract — our
     // explanation before the system prompt, and a typed answer the view
-    // explains (produktregler.md:680-687).
+    // explains.
     final resolver = permissionResolver;
     if (resolver != null) {
       final outcome = await resolver(source, askAgain);

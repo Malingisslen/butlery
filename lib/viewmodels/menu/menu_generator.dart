@@ -499,7 +499,7 @@ class MenuGenerator {
 
     // P6-U01: nothing matched is an outcome, not an error. An empty menu
     // goes back to the caller, which shows "Inga recept matchar"
-    // (flows-roles-budget.md:32, "0 recept placerade -> inga matchningar";
+    // ("0 recept placerade -> inga matchningar";
     // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
     // REQUIRED). An empty LIBRARY is still the error above.
     _logHiddenByHouseholdEvent();

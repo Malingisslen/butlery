@@ -52,7 +52,7 @@ enum RealtimeResourceType {
 /// the same time.
 ///
 /// produktregler.md:97-107 (section 2) has no generic rule: each entity has
-/// its own strategy and its own notice (beslutslogg.md:16, B-09). The model
+/// its own strategy and its own notice (B-09). The model
 /// declares which row of that table it is through
 /// [RealtimeResource.conflictEntityFor], so no caller has to guess the entity
 /// from a collection path or a document field. Only the entities the realtime
@@ -64,7 +64,7 @@ enum ConflictEntity {
   recipeOwn,
 
   /// "Recept (delat, andras)": the owner's version wins and the change becomes
-  /// a suggestion (produktregler.md:103), kept 7 days in `recipe_suggestions`
+  /// a suggestion, kept 7 days in `recipe_suggestions`
   /// (P5-U27b, RealtimeSyncService). Only when the suggestion cannot be stored
   /// does PQ-02 = A (2026-09-23) still apply: the non-owner gets the owner's
   /// notice and the same choice in ConflictDiffView, "Behåll min version" and
@@ -72,7 +72,7 @@ enum ConflictEntity {
   recipeShared,
 
   /// "Veckomeny": the last save wins, with a 30 s snackbar
-  /// (produktregler.md:104, ux-beslut.json D-04).
+  /// (ux-beslut.json D-04).
   weekMenu,
 }
 

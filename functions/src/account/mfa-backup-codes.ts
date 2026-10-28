@@ -3,7 +3,7 @@
  *
  * "Reservkoder hör i påslagningen — tio engångskoder innan skyddet gäller.
  * Utan reservväg och utan en utmaning i inloggningen (AU-10) får skyddet
- * inte gå att slå på" (produktregler.md:747-749; Skarmar v12 etapp 6
+ * inte gå att slå på" (Skarmar v12 etapp 6
  * #mfalagg #mfaaktiv).
  *
  * Firebase MFA has no backup codes, so they live here:

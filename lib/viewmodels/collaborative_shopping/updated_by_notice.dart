@@ -3,7 +3,7 @@ import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_list_change_summary.dart';
 
-/// BUT-2187: "Listan uppdaterades av namn" (produktregler.md). Shared by the
+/// BUT-2187: "Listan uppdaterades av namn". Shared by the
 /// full-screen shared list and the shopping tab, so a member sees the same
 /// notice wherever they have the list open.
 ///

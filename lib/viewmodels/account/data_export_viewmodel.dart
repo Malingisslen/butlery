@@ -12,7 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Why an export failed. "Tre felorsaker, tre besked: utgången inloggning
 /// leder till inloggningen, nekad behörighet är vårt fel och ber inte om ett
-/// nytt försök, nätavbrott får försök igen" (produktregler.md:735), plus the
+/// nytt försök, nätavbrott får försök igen", plus the
 /// general case, the only one that may ask for a retry without explaining
 /// (Skarmar v12 etapp 6 #dataexportfel).
 enum ExportFailure {

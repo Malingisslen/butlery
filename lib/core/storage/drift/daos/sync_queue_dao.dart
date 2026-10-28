@@ -22,7 +22,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   ) => e.userId.equals(userId) & e.permanentlyFailed.equals(false);
 
   /// Get all pending sync operations for a user, oldest first. Permanent
-  /// failures are left out: they are never retried (produktregler.md:189).
+  /// failures are left out: they are never retried.
   Future<List<SyncQueueEntry>> getPendingForUser(String userId) {
     return (select(syncQueueEntries)
           ..where((e) => _drainingFor(e, userId))
@@ -47,10 +47,10 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Add an operation to the queue.
   ///
-  /// [opId] is the operation's idempotency key (produktregler.md:185). Pass
+  /// [opId] is the operation's idempotency key. Pass
   /// one when a later entry must name this one in its [dependsOn]; otherwise
   /// a UUID v4 is created here. [dependsOn] lists the opIds this entry waits
-  /// for (produktregler.md:187).
+  /// for.
   Future<void> enqueue({
     required String userId,
     required String recipeId,
@@ -77,7 +77,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
       decodeDependsOn(entry.dependsOn);
 
   /// Marks one entry as a permanent failure, keeping it in the queue for the
-  /// user (produktregler.md:189, :192). [reason] is stored as the last error.
+  /// user. [reason] is stored as the last error.
   /// Returns whether an entry was marked.
   Future<bool> markPermanentlyFailed(String opId, {String? reason}) async {
     final written =
@@ -93,7 +93,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// The user's permanent failures, oldest first — "de permanenta felen
-  /// först" in the queue view (produktregler.md:191).
+  /// först" in the queue view.
   Future<List<SyncQueueEntry>> getPermanentFailures(String userId) {
     return (select(syncQueueEntries)
           ..where(
@@ -189,7 +189,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
     }
   }
 
-  /// A failed attempt the queue will retry by itself (produktregler.md:188):
+  /// A failed attempt the queue will retry by itself:
   /// counts it, keeps [errorCode] for diagnostics, and stores when the entry
   /// may be sent again. [firstFailedAt] is kept from the first failure on.
   Future<void> scheduleRetry(

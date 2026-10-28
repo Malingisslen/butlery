@@ -6,7 +6,7 @@
 /// non-owner's edit meets the owner's; this service lists the ones still kept
 /// and carries out the owner's decision.
 ///
-/// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a member
+/// Q6-08 = A (produktbeslut 2026-09-27): a member
 /// never writes someone else's recipe. Every edit a member saves in the
 /// recipe editor becomes a suggestion here ([suggestEdit]), not only the one
 /// that meets the owner's save. Q6-07 = B: a member has at most one pending

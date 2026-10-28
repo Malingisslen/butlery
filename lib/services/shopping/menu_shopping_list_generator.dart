@@ -43,7 +43,7 @@ class MenuShoppingGenerationResult {
 
   /// How many rows the pantry touched: left off because enough is at home,
   /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
-  /// (produktregler.md:224-234, § 4.2; produktbeslut PQ-11 = A). It replaced
+  /// (produktbeslut PQ-11 = A). It replaced
   /// the BUT-1279 count of whole staple rows.
   final int excludedStaples;
 
@@ -130,7 +130,7 @@ class MenuShoppingListGenerator extends BaseService {
 
   /// The week's placements, or null when the week could not be read. An
   /// empty source means there is nothing to generate; the two outcomes stay
-  /// apart (produktregler.md:705).
+  /// apart.
   Future<MenuShoppingSource?> sourceForWeek(DateTime date) async {
     return executeServiceOperation<MenuShoppingSource?>(() async {
       final menuService = ServiceLocator.get<WeeklyMenuPlanService>();

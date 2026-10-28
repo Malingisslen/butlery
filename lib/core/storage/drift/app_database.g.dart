@@ -801,7 +801,7 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
   final String? lastError;
 
   /// The operation's idempotency key. "Varje köpost bär `opId`. Servern
-  /// förkastar dubbletter" (produktregler.md:185). Created on the device
+  /// förkastar dubbletter". Created on the device
   /// when the entry is queued and never reused, so a retry after a crash
   /// mid-send is safe. Rows queued before schema 3 get a random 128-bit id
   /// in the migration (app_database.dart).
@@ -809,12 +809,12 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
 
   /// What kind of entity the operation writes to ("recipe" for every row
   /// queued before schema 3, since the queue then only carried recipes).
-  /// Ordering is FIFO per entity (produktregler.md:186), so the pair
+  /// Ordering is FIFO per entity, so the pair
   /// ([entityType], [recipeId]) is the entity.
   final String entityType;
 
   /// JSON array of the opIds this entry waits for, or null. "En post kan
-  /// deklarera `dependsOn: [opId]`" (produktregler.md:187).
+  /// deklarera `dependsOn: [opId]`".
   final String? dependsOn;
 
   /// Set when the entry will never be retried: a 4xx other than 408/429, 24 h
@@ -832,7 +832,7 @@ class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
   final DateTime? nextAttemptAt;
 
   /// When the first attempt failed, or null when none has. "Max 24 h,
-  /// därefter permanent fel" (produktregler.md:188) counts from here: a
+  /// därefter permanent fel" counts from here: a
   /// phone that is offline for a weekend has not been retrying.
   final DateTime? firstFailedAt;
   const SyncQueueEntry({
@@ -2577,7 +2577,7 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
 class UploadQueueEntry extends DataClass
     implements Insertable<UploadQueueEntry> {
   /// Unique upload ID (UUID from the upload request). It is also the
-  /// operation's idempotency key, its `opId` (produktregler.md:185): it is
+  /// operation's idempotency key, its `opId`: it is
   /// created on the device and never reused, so this table needs no separate
   /// column for it.
   final String id;
@@ -2628,7 +2628,7 @@ class UploadQueueEntry extends DataClass
 
   /// Set when the upload will never be retried ("Bilden är för stor",
   /// produktregler.md:189). It stays in the queue for the user to decide on
-  /// and is never deleted without her (produktregler.md:192).
+  /// and is never deleted without her.
   final bool permanentlyFailed;
 
   /// When the upload may be tried again, or null to try it at the next pass.

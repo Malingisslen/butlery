@@ -217,7 +217,7 @@ class CookingModeViewModel extends ChangeNotifier {
 
   /// A recipe without steps opens an empty state and is not a cooking
   /// session: no forced rotation, no kept-awake screen, no "lagar just nu"
-  /// signal (produktregler.md:1227; Skarmar v12 etapp 11 #lgbutan).
+  /// signal (Skarmar v12 etapp 11 #lgbutan).
   bool get hasSteps => totalSteps > 0;
 
   /// The last step is on screen, where "Klart" replaces "Nästa steg"
@@ -371,7 +371,7 @@ class CookingModeViewModel extends ChangeNotifier {
   // dropped broadcast must never interrupt the cook.
   Future<void> onEnter() async {
     // A recipe without steps is not cooking: announcing it would be a signal
-    // about something that is not happening (produktregler.md:1227).
+    // about something that is not happening.
     if (!hasSteps) return;
     // BUT-802 HIGH-PA4: generate session id + fire `cooking_session_started`.
     // Guarded against double-call so a re-entered widget tree doesn't restart

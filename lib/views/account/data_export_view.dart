@@ -101,7 +101,7 @@ class DataExportView extends StatelessWidget {
     // Grafisk manual v6:219). The drawing shows only the finished state, so
     // making the export itself the primary action before it is an
     // interpretation, not drawn. While exporting the button keeps its
-    // shape and says what it does, with the plate line (Komponentark v1:372).
+    // shape and says what it does, with the plate line.
     return FormButton(
       key: const ValueKey('dataExport.export'),
       label: context.l10n.dataExportTitle,
@@ -133,7 +133,7 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  /// Three causes, three messages (produktregler.md:735; Skarmar v12
+  /// Three causes, three messages (Skarmar v12
   /// etapp 6 #dataexportfel): an expired sign-in leads to signing in, a
   /// refusal is our fault and asks for no retry, a dropped connection gets
   /// "Inte nu" and "Försök igen". Only the general case asks for a retry
@@ -225,7 +225,7 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  /// "Utgången inloggning leder till inloggningen" (produktregler.md:735).
+  /// "Utgången inloggning leder till inloggningen".
   /// The session is no longer usable, so it is ended and the sign-in screen
   /// shown. It is not the user's own sign-out: nothing in the queue is
   /// touched.
@@ -306,7 +306,7 @@ class DataExportView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space12),
             // The file lives only in memory and is cleared when the view is
-            // left, and the view says so (produktregler.md:733; Skarmar v12
+            // left, and the view says so (Skarmar v12
             // etapp 6 #kontodataexport).
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

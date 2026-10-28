@@ -906,7 +906,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: AppDimensions.space24),
                   // Plate line plus text, never a spinner
-                  // (produktregler.md:163, B-18).
+                  // (B-18).
                   PlateLineMessage(message: message),
                 ],
               ),

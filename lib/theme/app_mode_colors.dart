@@ -122,7 +122,7 @@ abstract final class AppModeColors {
 
   /// semantic text.secondary (dark) #A9B2A0, delivered as the generated dark
   /// member greenMuted ("Nav ovald"), in both modes. The unchosen tabs of
-  /// the ink bar (Komponentark v1:663-666) and quiet text on an ink card
+  /// the ink bar and quiet text on an ink card
   /// (Skarmar v12 del 1 #hemrecept :137).
   static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
 

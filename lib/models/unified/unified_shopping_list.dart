@@ -207,7 +207,7 @@ class UnifiedShoppingList {
   /// row, because "Dina egna, manuellt tillagda varor behålls alltid"
   /// (Skarmar v12 del 2 #inkopmerge; flows-roles-budget.md:47; produktbeslut
   /// PQ-10 = A, 2026-09-23). A row is told apart by its id, never by its
-  /// name (produktregler.md:118, "Namn är aldrig identitet"). Null on lists
+  /// name ("Namn är aldrig identitet"). Null on lists
   /// written before this field existed: their rows cannot be told apart, so
   /// all of them are kept.
   final List<String>? menuItemIds;

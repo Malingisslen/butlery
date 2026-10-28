@@ -289,7 +289,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
     return child;
   }
 
-  /// Plate line plus text, never a spinner (produktregler.md:163, B-18).
+  /// Plate line plus text, never a spinner (B-18).
   /// The text is localized; it runs before the app's own Localizations may
   /// exist, so it falls back to the Swedish source text.
   Widget _buildDefaultLoadingWidget() {

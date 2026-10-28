@@ -368,7 +368,7 @@ class _AuthViewState extends State<AuthView> {
                 // The step's one saffron action, "Logga in" or "Skapa konto"
                 // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
                 // konto'; Grafisk manual v6:219). Working keeps the name and
-                // draws the plate line under it (Komponentark v1:372).
+                // draws the plate line under it.
                 HeroButton(
                   key: const ValueKey('auth.submit'),
                   label: viewModel.isLoginMode

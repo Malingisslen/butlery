@@ -1,7 +1,7 @@
 // lib/views/auth/mfa_challenge_view.dart
 //
 // P6-U09 — the second-factor challenge at sign-in (Skarmar v12 etapp 3
-// #authmfa; produktregler.md:745-749, § 14.2).
+// #authmfa).
 //
 // Before this view, nothing in the app handled Firebase's multi-factor
 // exception, so an account with two-step verification could not sign in.

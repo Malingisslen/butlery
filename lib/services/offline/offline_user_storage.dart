@@ -108,7 +108,7 @@ class OfflineUserStorage {
     final recipeJson = await _withRevisionBase(recipe, userId, operation);
     final opId = const Uuid().v4();
     // An edit of a recipe whose create has not reached the server goes
-    // down with that create if it fails for good (produktregler.md:187).
+    // down with that create if it fails for good.
     final createOpId = operation == SyncOperation.create
         ? null
         : await _syncQueueDao.pendingCreateOpId(userId, recipe.id);
@@ -150,7 +150,7 @@ class OfflineUserStorage {
   /// Removes the recipe from the device and queues its deletion on the
   /// server. A create of it that has not reached the server is named in
   /// `dependsOn`, so the server never deletes before it creates and a create
-  /// that fails for good takes the deletion with it (produktregler.md:187).
+  /// that fails for good takes the deletion with it.
   ///
   /// Returns false, and queues nothing, when its deletion is already queued.
   /// The recipe's images still waiting to go up are cancelled: there is no
@@ -182,7 +182,7 @@ class OfflineUserStorage {
   /// Keeps a copy of the image at [imagePath] on the device and queues its
   /// upload as an image of the recipe [recipeId] (BUT-2162). The upload waits for a create of
   /// the recipe that has not reached the server, so it goes down with that
-  /// create if it fails for good (produktregler.md:187). Returns the
+  /// create if it fails for good. Returns the
   /// upload's id.
   Future<String> queueRecipeImageForUser(
     String imagePath,

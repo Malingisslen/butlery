@@ -8,7 +8,7 @@
 /// 2026-09-23) scopes this to the week menu and the user's own recipe.
 ///
 /// Where it lives: `users/{uid}/overwritten_versions/{id}`, on the server and
-/// owned by the user whose version was overwritten (Q-A12, produktregler.md
+/// owned by the user whose version was overwritten (Q-A12
 /// :123 "Varje entitet har 30 dagars operationshistorik. Det är den som
 /// Återställ läser"). firestore.rules lets only that user read, create and
 /// delete it, and never update it. [expiresAt] is what the Firestore TTL policy
@@ -40,7 +40,7 @@ class OverwrittenVersion {
     required this.expiresAt,
   });
 
-  /// How long an overwritten version is kept (produktregler.md:104, :109).
+  /// How long an overwritten version is kept.
   static const Duration keptFor = Duration(days: 30);
 
   /// The entities whose overwritten versions are kept (PQ-01 = A): the week

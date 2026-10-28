@@ -74,7 +74,7 @@ class FirebasePantryRepository
     if (changes.isEmpty) return;
     try {
       // Only the changed fields: the whole item used to be written here, so
-      // the last device to save won every field (produktregler.md:105).
+      // the last device to save won every field.
       await awaitOrLeaveQueued(
         _col(userId).doc(itemId).update({
           ...changes,

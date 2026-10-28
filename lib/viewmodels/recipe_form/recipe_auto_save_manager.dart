@@ -60,7 +60,7 @@ class DraftMetadata {
   );
 
   /// When the draft stops being resumable: 30 days after the last change
-  /// (ux-beslut.json D-01; produktregler.md:170).
+  /// (ux-beslut.json D-01).
   DateTime get expiresAt =>
       lastModifiedAt.add(RecipeFormAutoSaveManager.draftLifetime);
 
@@ -99,7 +99,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   /// fält får fördröja den första persisteringen" (ux-beslut.json D-02).
   static const int _minFieldsForAutoSave = 1;
 
-  /// Five slots per account (produktregler.md:790; D-01 changed only the
+  /// Five slots per account (D-01 changed only the
   /// lifetime).
   static const int maxDrafts = 5;
 
@@ -125,7 +125,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   /// drafts on the same device stay: it may have kept them through its own
   /// automatic sign-out (PQ-12 = A).
   ///
-  /// Called on an explicit sign-out only (produktregler.md:171; PQ-12 = A in
+  /// Called on an explicit sign-out only (PQ-12 = A in
   /// produktbeslut-2026-09-23.json: an automatic sign-out keeps drafts).
   /// Best-effort: logs and never throws, so a sign-out cannot fail on it.
   static Future<void> clearDraftsFor(String? ownerId) async {

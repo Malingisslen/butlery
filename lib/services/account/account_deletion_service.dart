@@ -71,7 +71,7 @@ class AccountDeletionService extends BaseService {
   ///     still existing.
   ///
   /// [reason] is the user's own answer to "Varför raderar du kontot?", asked
-  /// before anything is deleted (produktregler.md:614); it reaches the audit
+  /// before anything is deleted; it reaches the audit
   /// row through the callable.
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,

@@ -115,7 +115,7 @@ class QueuedRecipeSend {
     return true;
   }
 
-  /// A conflict is not a failure (produktregler.md:189): the entry leaves
+  /// A conflict is not a failure: the entry leaves
   /// the queue. While the device still holds [sentJson], the copy the entry
   /// sent, it takes the server's recipe and the device's version goes to
   /// [_onRecipeConflict] for the user to choose. A copy saved while the

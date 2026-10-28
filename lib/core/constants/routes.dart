@@ -64,7 +64,7 @@ class Routes {
   static const String more = '/mer';
 
   /// "Väntar på synk", the user's view of the offline queue
-  /// (produktregler.md:190; P4-U19).
+  /// (P4-U19).
   static const String syncQueue = '/vantar-pa-synk';
 
   // Social routes

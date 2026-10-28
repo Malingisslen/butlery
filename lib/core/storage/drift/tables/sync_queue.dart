@@ -34,10 +34,10 @@ class SyncQueueEntries extends Table {
   /// Last error message if sync failed
   TextColumn get lastError => text().nullable()();
 
-  // ── Schema 3 (produktregler.md:183-193, § 3.1) ─────────────────────────
+  // ── Schema 3 ─────────────────────────
 
   /// The operation's idempotency key. "Varje köpost bär `opId`. Servern
-  /// förkastar dubbletter" (produktregler.md:185). Created on the device
+  /// förkastar dubbletter". Created on the device
   /// when the entry is queued and never reused, so a retry after a crash
   /// mid-send is safe. Rows queued before schema 3 get a random 128-bit id
   /// in the migration (app_database.dart).
@@ -46,13 +46,13 @@ class SyncQueueEntries extends Table {
 
   /// What kind of entity the operation writes to ("recipe" for every row
   /// queued before schema 3, since the queue then only carried recipes).
-  /// Ordering is FIFO per entity (produktregler.md:186), so the pair
+  /// Ordering is FIFO per entity, so the pair
   /// ([entityType], [recipeId]) is the entity.
   TextColumn get entityType =>
       text().withDefault(const Constant(SyncQueueEntityType.recipe))();
 
   /// JSON array of the opIds this entry waits for, or null. "En post kan
-  /// deklarera `dependsOn: [opId]`" (produktregler.md:187).
+  /// deklarera `dependsOn: [opId]`".
   TextColumn get dependsOn => text().nullable()();
 
   /// Set when the entry will never be retried: a 4xx other than 408/429, 24 h
@@ -63,7 +63,7 @@ class SyncQueueEntries extends Table {
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();
 
-  // ── Schema 4 (produktregler.md:188, the retry schedule) ─────────────────
+  // ── Schema 4 (the retry schedule) ─────────────────
 
   /// When the queue may send this entry again after a failed attempt, or
   /// null when it has never failed (send at once). "Exponentiell backoff
@@ -73,7 +73,7 @@ class SyncQueueEntries extends Table {
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
 
   /// When the first attempt failed, or null when none has. "Max 24 h,
-  /// därefter permanent fel" (produktregler.md:188) counts from here: a
+  /// därefter permanent fel" counts from here: a
   /// phone that is offline for a weekend has not been retrying.
   DateTimeColumn get firstFailedAt => dateTime().nullable()();
 }

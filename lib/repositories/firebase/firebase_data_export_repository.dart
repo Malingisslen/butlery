@@ -733,7 +733,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
 
   /// `users/{uid}/overwritten_versions` — the user's own week menus and
   /// recipes that another person's save overwrote, kept 30 days behind
-  /// "Återställ" (P5-U26b, produktregler.md:109).
+  /// "Återställ" (P5-U26b).
   ///
   /// The user's own content, so it is exported (Art. 15 ⊇ Art. 17: the
   /// deletion cascade erases it). Each row also names who saved over it,

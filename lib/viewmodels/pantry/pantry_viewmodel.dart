@@ -203,14 +203,14 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
       () async {
         final idx = _items.indexWhere((i) => i.id == item.id);
         final previous = idx >= 0 ? _items[idx] : null;
-        // Only what the user changed is written (produktregler.md:105).
+        // Only what the user changed is written.
         final kept = await _pantryService.updateItem(
           userId,
           item,
           previous: previous,
         );
         if (idx >= 0) {
-          // A missing amount never replaces a known one (produktregler.md:148),
+          // A missing amount never replaces a known one,
           // so the row keeps showing it, as the stored item does.
           final keepsQuantity = item.quantity == null && previous != null;
           _items = [..._items]

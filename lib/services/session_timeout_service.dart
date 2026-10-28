@@ -36,7 +36,7 @@ enum SessionEndReason {
   timeout,
 
   /// The timeout passed while the app was in the background; nothing could
-  /// warn (produktregler.md:834).
+  /// warn.
   backgroundTimeout,
 
   /// "Logga ut nu" in the timeout warning.
@@ -537,7 +537,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
       endedAt: clock.now(),
     );
     // Only the background timeout could not warn, so only it is explained on
-    // the sign-in screen (produktregler.md:834).
+    // the sign-in screen.
     if (end.reason == SessionEndReason.backgroundTimeout) {
       SessionEndNotice.record(end);
     }
