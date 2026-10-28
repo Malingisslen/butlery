@@ -194,7 +194,7 @@ class AppColorsDark {
   /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent (dark)
   static const Color textAccent = Color(0xFFDCA968);
 
-  /// Accenttext pa surface.ink: snackbarens atgard och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk (dark)
+  /// Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk (dark)
   static const Color textAccentOnInk = Color(0xFFDCA968);
 
   /// Avstangd text pa papper (BUT-2191). Ytbunden till surface.base: golvet ar 3:1 (contrastPolicy disabled), och det nas dar (3,32:1 ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1 morkt; dar galler textDisabled, som ar text.disabled.onRaised). Namnet textDisabled ar upptaget i det frysta kontraktet. Aldrig via opacitet. · semantic.text.disabled (dark)
