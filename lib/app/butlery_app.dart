@@ -64,13 +64,13 @@ import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/import/clipboard_url_banner.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/staging_banner.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// The app's bottom stays clear of the system navigation bar, and the text
 /// scale is clamped once for every descendant (BUT-800).
@@ -501,33 +501,17 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final messenger = ScaffoldMessenger.maybeOf(context);
       if (messenger == null) return;
 
-      messenger.showMaterialBanner(
-        MaterialBanner(
-          content: Text(l10n.importClipboardUrlDetected),
-          leading: const ButleryIcon(ButleryIcons.link),
-          actions: [
-            ButleryTextButton(
-              label: l10n.importClipboardUseUrl,
-              onPressed: () {
-                messenger.hideCurrentMaterialBanner();
-                if (!mounted) return;
-                Navigator.of(context).pushNamed(
-                  app_routes.Routes.smartImport,
-                  arguments: text,
-                );
-              },
-            ),
-            ButleryTextButton(
-              label: l10n.commonClose,
-              onPressed: () => messenger.hideCurrentMaterialBanner(),
-            ),
-          ],
-        ),
+      ClipboardUrlBanner.show(
+        messenger,
+        l10n,
+        onUse: () {
+          if (!mounted) return;
+          Navigator.of(context).pushNamed(
+            app_routes.Routes.smartImport,
+            arguments: text,
+          );
+        },
       );
-      // Auto-dismiss after 8 seconds to prevent stale banners
-      Future.delayed(const Duration(seconds: 8), () {
-        if (mounted) messenger.hideCurrentMaterialBanner();
-      });
     } catch (_) {
       // Clipboard access failed silently
     }
