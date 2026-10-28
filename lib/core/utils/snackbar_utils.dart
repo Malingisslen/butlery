@@ -22,7 +22,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/feedback/ink_snack_bar_action.dart';
 export 'package:butlery/widgets/common/feedback/ink_snack_bar_action.dart';
-import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
