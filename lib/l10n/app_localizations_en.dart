@@ -3947,20 +3947,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendRequestTitle => 'Friend request';
 
   @override
-  String imageAddCount(int count) {
-    return 'Add ($count)';
-  }
-
-  @override
-  String get imageAddImages => 'Add images';
-
-  @override
-  String get imageAdding => 'Adding …';
-
-  @override
-  String get imageAddingImage => 'Adding image …';
-
-  @override
   String imagePermissionMessage(String permission) {
     return 'Butlery needs access to your $permission to add images to recipes. Go to settings to grant permission.';
   }
@@ -3977,17 +3963,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSelectSource => 'Select image source';
-
-  @override
-  String imageTapToAddUpTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count images',
-      one: '1 image',
-    );
-    return 'Tap to add up to $_temp0';
-  }
 
   @override
   String get imageTapToLoad => 'Tap to load';
@@ -5214,12 +5189,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialTotalMembers => 'Total members';
-
-  @override
-  String get userNoUsers => 'No users';
-
-  @override
-  String get userNoUsersToShow => 'No users to show';
 
   @override
   String get chatCannotMessageNonFriend =>
@@ -7495,9 +7464,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageRemoveImage => 'Remove image';
-
-  @override
-  String get imageSetAsPrimary => 'Set as primary';
 
   @override
   String get imageSelectedImages => 'Selected images';
@@ -14482,11 +14448,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yLongPressCommentForReactions => 'Comment, long press to react';
-
-  @override
-  String a11yEditImageAction(String label) {
-    return '$label';
-  }
 
   @override
   String a11yImagePickerRemove(int index) {

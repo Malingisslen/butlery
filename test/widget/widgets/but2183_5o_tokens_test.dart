@@ -1,5 +1,5 @@
-// BUT-2183 5o: three small residues leave the old opacity steps. Secondary
-// text is onSurfaceVariant, an inline timer chip fills with the raised surface
+// BUT-2183 5o: small residues leave the old opacity steps. An inline timer
+// chip fills with the raised surface
 // of the page it stands on, and a clear glyph is onSurfaceVariant at full
 // strength. Each test runs in both modes.
 //
@@ -16,7 +16,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
@@ -36,20 +35,6 @@ void main() {
     ('dark', AppTheme.darkTheme, AppColors.darkColorScheme),
   ]) {
     group('5o residue tokens ($mode)', () {
-      testWidgets('the branding tagline is onSurfaceVariant, not translucent '
-          'ink', (tester) async {
-        await tester.pumpWidget(
-          _app(theme, const AppBranding.auth(tagline: 'Din tagline')),
-        );
-
-        final color = tester
-            .widget<Text>(find.text('Din tagline'))
-            .style!
-            .color;
-        expect(color, cs.onSurfaceVariant);
-        expect(color!.a, 1.0);
-      });
-
       testWidgets('the prompt clear glyph is onSurfaceVariant at full '
           'strength', (tester) async {
         final controller = TextEditingController(text: 'pasta');

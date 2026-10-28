@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/butlery_link.dart';
-import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -72,46 +71,6 @@ void main() {
     });
   });
 
-  group('UserDisplayWidgets.avatar', () {
-    Future<void> pumpRow(WidgetTester tester, {required bool announceName}) =>
-        tester.pumpWidget(
-          createLocalizedTestApp(
-            child: ListTile(
-              leading: UserDisplayWidgets.avatar(
-                displayName: 'Anna Lindgren',
-                announceName: announceName,
-              ),
-              title: const Text('Anna Lindgren'),
-            ),
-          ),
-        );
-
-    testWidgets('announceName: false reaches the avatar, so the visible name '
-        'is the only line', (tester) async {
-      final handle = tester.ensureSemantics();
-      await pumpRow(tester, announceName: false);
-
-      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
-      expect(announcedLines(tester, node), ['Anna Lindgren']);
-      handle.dispose();
-    });
-
-    testWidgets('by default the avatar announces whose picture it is', (
-      tester,
-    ) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: UserDisplayWidgets.avatar(displayName: 'Anna Lindgren'),
-        ),
-      );
-
-      final avatar = find.bySemanticsLabel(RegExp('Anna Lindgren'));
-      expect(announcedLines(tester, avatar), ['Profilbild för Anna Lindgren']);
-      handle.dispose();
-    });
-  });
-
   group('UserAvatar', () {
     Future<void> pumpRow(WidgetTester tester, {bool? announceName}) =>
         tester.pumpWidget(
@@ -149,45 +108,6 @@ void main() {
         announcedLines(tester, node),
         contains('Profilbild för Anna Lindgren'),
       );
-      handle.dispose();
-    });
-
-    testWidgets('announces whose picture it is by default', (tester) async {
-      final handle = tester.ensureSemantics();
-      await pumpRow(tester);
-
-      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
-      expect(
-        announcedLines(tester, node),
-        contains('Profilbild för Anna Lindgren'),
-      );
-      handle.dispose();
-    });
-  });
-
-  group('AvatarWidgets.avatar', () {
-    Future<void> pumpRow(WidgetTester tester, {bool? announceName}) =>
-        tester.pumpWidget(
-          createLocalizedTestApp(
-            child: ListTile(
-              leading: announceName == null
-                  ? AvatarWidgets.avatar(displayName: 'Anna Lindgren')
-                  : AvatarWidgets.avatar(
-                      displayName: 'Anna Lindgren',
-                      announceName: announceName,
-                    ),
-              title: const Text('Anna Lindgren'),
-            ),
-          ),
-        );
-
-    testWidgets('announceName: false leaves the visible name as the only '
-        'line', (tester) async {
-      final handle = tester.ensureSemantics();
-      await pumpRow(tester, announceName: false);
-
-      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
-      expect(announcedLines(tester, node), ['Anna Lindgren']);
       handle.dispose();
     });
 

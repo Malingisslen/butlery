@@ -2575,17 +2575,6 @@
   },
   "friendDecline": "Avböj",
   "friendRequestTitle": "Vänförfrågan",
-  "imageAddCount": "Lägg till ({count})",
-  "@imageAddCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "imageAddImages": "Lägg till bilder",
-  "imageAdding": "Lägger till …",
-  "imageAddingImage": "Lägger till bild …",
   "imagePermissionMessage": "Butlery behöver tillgång till din {permission} för att kunna lägga till bilder till recept. Gå till inställningar för att ge behörighet.",
   "@imagePermissionMessage": {
     "placeholders": {
@@ -2598,14 +2587,6 @@
   "imagePrimary": "Primär",
   "imageSelectExistingFromGallery": "Välj en befintlig bild från ditt galleri",
   "imageSelectSource": "Välj bildkälla",
-  "imageTapToAddUpTo": "Tryck för att lägga till upp till {count, plural, =1{1 bild} other{{count} bilder}}",
-  "@imageTapToAddUpTo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "imageTapToLoad": "Tryck för att ladda",
   "imageUploadingImages": "Laddar upp bilder",
   "imageUploadPreparing": "Förbereder …",
@@ -3394,8 +3375,6 @@
   "recipeUnsavedChangesTitle": "Osparade ändringar",
   "recipeWriteManually": "Skriv manuellt",
   "socialTotalMembers": "Totalt medlemmar",
-  "userNoUsers": "Inga användare",
-  "userNoUsersToShow": "Inga användare att visa",
   "chatCannotMessageNonFriend": "Du kan inte skicka meddelanden till denna person",
   "chatCouldNotSendMessage": "Kunde inte skicka meddelandet.",
   "chatSendFailedDeviceClockAhead": "Kunde inte skicka. Telefonens klocka ligger för långt fram – kontrollera datum och tid i inställningarna.",
@@ -4995,7 +4974,6 @@
   "imageWillAppearHere": "Bilder visas här",
   "imageNoImagesToDisplay": "Inga bilder att visa",
   "imageRemoveImage": "Ta bort bild",
-  "imageSetAsPrimary": "Ange som primär",
   "imageSelectedImages": "Valda bilder",
   "imageSelectImages": "Välj bilder",
   "imageSelectingImages": "Väljer bilder …",
@@ -9913,15 +9891,6 @@
   "a11yLongPressCommentForReactions": "Kommentar, långtryck för att reagera",
   "@a11yLongPressCommentForReactions": {
     "description": "Semantics label for the comment body long-press target."
-  },
-  "a11yEditImageAction": "{label}",
-  "@a11yEditImageAction": {
-    "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
   },
   "a11yImagePickerRemove": "Ta bort vald bild {index}",
   "@a11yImagePickerRemove": {

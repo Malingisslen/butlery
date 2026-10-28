@@ -13,14 +13,11 @@ final _fab = RegExp(r'(?<![\w.])FloatingActionButton(\.\w+)?\(');
 /// InkWells per file that carry no fill of their own.
 const _waiting = <String, int>{
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
-  'lib/widgets/image/components/image_add_tile.dart': 1,
   'lib/widgets/image/image_gallery_widget.dart': 1,
   'lib/widgets/image/image_picker_widget.dart': 1,
   'lib/widgets/social/groups/shared_content_card.dart': 1,
   // A tab with its own drawn press (paper at the on-ink 0.18 step).
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 1,
-  // Raised, or cs.error when the action is destructive (BUT-2232).
-  'lib/widgets/image/components/edit_actions_panel.dart': 1,
   // One on surface.raised.
   'lib/widgets/image/components/upload_progress_widgets.dart': 1,
   'lib/widgets/social/ping_compose_sheet.dart': 1,

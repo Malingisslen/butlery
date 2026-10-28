@@ -3903,20 +3903,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendRequestTitle => 'Vänförfrågan';
 
   @override
-  String imageAddCount(int count) {
-    return 'Lägg till ($count)';
-  }
-
-  @override
-  String get imageAddImages => 'Lägg till bilder';
-
-  @override
-  String get imageAdding => 'Lägger till …';
-
-  @override
-  String get imageAddingImage => 'Lägger till bild …';
-
-  @override
   String imagePermissionMessage(String permission) {
     return 'Butlery behöver tillgång till din $permission för att kunna lägga till bilder till recept. Gå till inställningar för att ge behörighet.';
   }
@@ -3933,17 +3919,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get imageSelectSource => 'Välj bildkälla';
-
-  @override
-  String imageTapToAddUpTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count bilder',
-      one: '1 bild',
-    );
-    return 'Tryck för att lägga till upp till $_temp0';
-  }
 
   @override
   String get imageTapToLoad => 'Tryck för att ladda';
@@ -5150,12 +5125,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialTotalMembers => 'Totalt medlemmar';
-
-  @override
-  String get userNoUsers => 'Inga användare';
-
-  @override
-  String get userNoUsersToShow => 'Inga användare att visa';
 
   @override
   String get chatCannotMessageNonFriend =>
@@ -7411,9 +7380,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get imageRemoveImage => 'Ta bort bild';
-
-  @override
-  String get imageSetAsPrimary => 'Ange som primär';
 
   @override
   String get imageSelectedImages => 'Valda bilder';
@@ -14385,11 +14351,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get a11yLongPressCommentForReactions =>
       'Kommentar, långtryck för att reagera';
-
-  @override
-  String a11yEditImageAction(String label) {
-    return '$label';
-  }
 
   @override
   String a11yImagePickerRemove(int index) {

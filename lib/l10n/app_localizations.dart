@@ -6074,30 +6074,6 @@ abstract class AppLocalizations {
   /// **'Vänförfrågan'**
   String get friendRequestTitle;
 
-  /// No description provided for @imageAddCount.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till ({count})'**
-  String imageAddCount(int count);
-
-  /// No description provided for @imageAddImages.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till bilder'**
-  String get imageAddImages;
-
-  /// No description provided for @imageAdding.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägger till …'**
-  String get imageAdding;
-
-  /// No description provided for @imageAddingImage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägger till bild …'**
-  String get imageAddingImage;
-
   /// No description provided for @imagePermissionMessage.
   ///
   /// In sv, this message translates to:
@@ -6127,12 +6103,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Välj bildkälla'**
   String get imageSelectSource;
-
-  /// No description provided for @imageTapToAddUpTo.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tryck för att lägga till upp till {count, plural, =1{1 bild} other{{count} bilder}}'**
-  String imageTapToAddUpTo(int count);
 
   /// No description provided for @imageTapToLoad.
   ///
@@ -8065,18 +8035,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Totalt medlemmar'**
   String get socialTotalMembers;
-
-  /// No description provided for @userNoUsers.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga användare'**
-  String get userNoUsers;
-
-  /// No description provided for @userNoUsersToShow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga användare att visa'**
-  String get userNoUsersToShow;
 
   /// No description provided for @chatCannotMessageNonFriend.
   ///
@@ -11533,12 +11491,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort bild'**
   String get imageRemoveImage;
-
-  /// No description provided for @imageSetAsPrimary.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange som primär'**
-  String get imageSetAsPrimary;
 
   /// No description provided for @imageSelectedImages.
   ///
@@ -22257,12 +22209,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kommentar, långtryck för att reagera'**
   String get a11yLongPressCommentForReactions;
-
-  /// Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).
-  ///
-  /// In sv, this message translates to:
-  /// **'{label}'**
-  String a11yEditImageAction(String label);
 
   /// Semantics label for removing a selected image preview by index.
   ///

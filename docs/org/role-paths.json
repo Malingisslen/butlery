@@ -599,8 +599,6 @@
       "lib/theme/components/button_themes.dart",
       "lib/views/recipe_detail/**",
       "lib/views/recipe_detail/recipe_detail_metadata.dart",
-      "lib/widgets/branding/**",
-      "lib/widgets/branding/app_logo.dart",
       "lib/widgets/common/illustrations/**",
       "lib/widgets/common/illustrations/vegetable_illustration.dart",
       "lib/widgets/recipe/**",

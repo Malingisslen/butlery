@@ -2569,17 +2569,6 @@
   },
   "friendDecline": "Decline",
   "friendRequestTitle": "Friend request",
-  "imageAddCount": "Add ({count})",
-  "@imageAddCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "imageAddImages": "Add images",
-  "imageAdding": "Adding …",
-  "imageAddingImage": "Adding image …",
   "imagePermissionMessage": "Butlery needs access to your {permission} to add images to recipes. Go to settings to grant permission.",
   "@imagePermissionMessage": {
     "placeholders": {
@@ -2592,14 +2581,6 @@
   "imagePrimary": "Primary",
   "imageSelectExistingFromGallery": "Select an existing image from your gallery",
   "imageSelectSource": "Select image source",
-  "imageTapToAddUpTo": "Tap to add up to {count, plural, =1{1 image} other{{count} images}}",
-  "@imageTapToAddUpTo": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "imageTapToLoad": "Tap to load",
   "imageUploadingImages": "Uploading images",
   "imageUploadPreparing": "Preparing …",
@@ -3388,8 +3369,6 @@
   "recipeUnsavedChangesTitle": "Unsaved changes",
   "recipeWriteManually": "Write manually",
   "socialTotalMembers": "Total members",
-  "userNoUsers": "No users",
-  "userNoUsersToShow": "No users to show",
   "chatCannotMessageNonFriend": "You cannot send messages to this person",
   "chatCouldNotSendMessage": "Could not send the message.",
   "chatSendFailedDeviceClockAhead": "Could not send. Your phone's clock is too far ahead – check the date and time in settings.",
@@ -4964,7 +4943,6 @@
   "imageWillAppearHere": "Images will appear here",
   "imageNoImagesToDisplay": "No images to display",
   "imageRemoveImage": "Remove image",
-  "imageSetAsPrimary": "Set as primary",
   "imageSelectedImages": "Selected images",
   "imageSelectImages": "Select images",
   "imageSelectingImages": "Selecting images …",
@@ -9797,15 +9775,6 @@
   "a11yLongPressCommentForReactions": "Comment, long press to react",
   "@a11yLongPressCommentForReactions": {
     "description": "Semantics label for the comment body long-press target."
-  },
-  "a11yEditImageAction": "{label}",
-  "@a11yEditImageAction": {
-    "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
   },
   "a11yImagePickerRemove": "Remove selected image {index}",
   "@a11yImagePickerRemove": {
