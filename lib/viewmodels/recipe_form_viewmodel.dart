@@ -316,6 +316,7 @@ class RecipeFormViewModel extends BaseViewModel
   }
 
   String get title => _state.title;
+  int get restoreRevision => _state.restoreRevision;
   String get description => _state.description;
   String get mealType => _state.mealType;
   int? get portions => _state.portions;

@@ -117,6 +117,7 @@ class _SkrivSjalvReceptViewContentState
   TextEditingController? _ratingController;
   TextEditingController? _sourceUrlController;
   bool _controllersInitialized = false;
+  int _syncedRestoreRevision = 0;
 
   @override
   void initState() {
@@ -156,6 +157,25 @@ class _SkrivSjalvReceptViewContentState
       text: viewModel.sourceUrl.orEmpty(),
     );
     _controllersInitialized = true;
+  }
+
+  // A restored draft changes the view model behind the controllers' backs;
+  // without this the fields look empty while the form is valid.
+  void _resyncControllersAfterRestore(RecipeFormViewModel viewModel) {
+    if (_syncedRestoreRevision == viewModel.restoreRevision) return;
+    _syncedRestoreRevision = viewModel.restoreRevision;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _titleController?.text = viewModel.title;
+      _descriptionController?.text = viewModel.description;
+      _portionsController?.text = (viewModel.portions?.toString()).orEmpty();
+      _timeMinutesController?.text = (viewModel.timeMinutes?.toString())
+          .orEmpty();
+      _ratingController?.text = viewModel.rating == null
+          ? ''
+          : formatSwedishDecimal(viewModel.rating!);
+      _sourceUrlController?.text = viewModel.sourceUrl.orEmpty();
+    });
   }
 
   /// Setup upload notification listener for background events
@@ -315,6 +335,7 @@ class _SkrivSjalvReceptViewContentState
 
     // CRITICAL FIX: Initialize controllers once on first build
     _initializeControllersIfNeeded(viewModel);
+    _resyncControllersAfterRestore(viewModel);
     // P6-U03: Spara waits for low- and failed-confidence import rows to be
     // confirmed (flows-roles-budget.md:61).
     final pendingConfirmations = viewModel.pendingParseConfirmations;
