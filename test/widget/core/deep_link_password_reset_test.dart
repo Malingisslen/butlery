@@ -118,7 +118,7 @@ void main() {
     final context = await pumpApp(tester);
     expect(
       DeepLinkHandler().handleAuthActionLink(
-        'https://butlery.app/recipe?id=1',
+        'https://butlery.se/recipe?id=1',
         context,
       ),
       isFalse,
@@ -155,7 +155,7 @@ void main() {
     ) async {
       await pumpApp(tester);
       DeepLinkHandler()
-        ..onLinkWhileRunning('https://butlery.app/recipe?id=1')
+        ..onLinkWhileRunning('https://butlery.se/recipe?id=1')
         ..onLinkWhileRunning(_resetLink('abc'));
       await tester.pumpAndSettle();
       expect(pushed.single.name, Routes.setNewPassword);
@@ -166,7 +166,7 @@ void main() {
       (
         tester,
       ) async {
-        DeepLinkHandler().onLinkWhileRunning('https://butlery.app/recipe?id=1');
+        DeepLinkHandler().onLinkWhileRunning('https://butlery.se/recipe?id=1');
         expect(DeepLinkHandler().debugInfo['has_pending_link'], isFalse);
       },
     );

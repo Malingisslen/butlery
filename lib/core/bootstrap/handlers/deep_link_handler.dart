@@ -136,7 +136,7 @@ class DeepLinkHandler {
   static bool isBlockedCustomSchemeHost(Uri uri) {
     if (uri.scheme != 'butlery') return false;
     if (uri.host.isEmpty) return false;
-    const recognisedHosts = {'butlery.app', 'import'};
+    const recognisedHosts = {'butlery.app', 'butlery.se', 'import'};
     return !recognisedHosts.contains(uri.host);
   }
 

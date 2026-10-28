@@ -244,7 +244,7 @@ void main() {
 
       test('should create short URL successfully', () async {
         // Arrange
-        const longUrl = 'https://butlery.app/recipe/12345';
+        const longUrl = 'https://butlery.se/recipe/12345';
         final metadata = {'title': 'Amazing Recipe', 'type': 'recipe'};
 
         // Act
@@ -271,7 +271,7 @@ void main() {
       test('should resolve short URL to long URL', () async {
         // Arrange
         const shortCode = 'abc12345';
-        const longUrl = 'https://butlery.app/recipe/12345';
+        const longUrl = 'https://butlery.se/recipe/12345';
         await _seedDeepLink(fakeFirestore, shortCode, {
           'id': shortCode,
           'longUrl': longUrl,

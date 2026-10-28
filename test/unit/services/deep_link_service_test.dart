@@ -9,8 +9,8 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
-/// Test helper that replicates the routing logic of the deprecated
-/// DeepLinkService.handleDeepLink using the non-deprecated static methods.
+/// Test helper that replicates the routing logic using the non-deprecated
+/// static methods.
 Future<void> processTestDeepLink(
   String url,
   Function(String) navigateToRoute,
@@ -95,7 +95,7 @@ void main() {
         );
 
         // Assert
-        expect(link, contains('https://butlery.app/invite'));
+        expect(link, contains('https://butlery.se/invite'));
         expect(link, contains('id=inv123'));
         expect(link, contains('type=friend'));
         expect(link, contains('from=user456'));
@@ -157,7 +157,7 @@ void main() {
         );
 
         // Assert
-        expect(link, contains('https://butlery.app/recipe'));
+        expect(link, contains('https://butlery.se/recipe'));
         expect(link, contains('id=recipe789'));
         expect(link, contains('type=recipe'));
         expect(link, contains('from=user456'));
@@ -189,7 +189,7 @@ void main() {
         );
 
         // Assert
-        expect(link, contains('https://butlery.app/menu'));
+        expect(link, contains('https://butlery.se/menu'));
         expect(link, contains('id=menu321'));
         expect(link, contains('type=menu'));
         expect(link, contains('from=user456'));
@@ -218,7 +218,7 @@ void main() {
         );
 
         // Assert
-        expect(link, contains('https://butlery.app/shopping'));
+        expect(link, contains('https://butlery.se/shopping'));
         expect(link, contains('id=list999'));
         expect(link, contains('type=shopping'));
         expect(link, contains('from=user456'));
@@ -257,7 +257,7 @@ void main() {
       test('should parse valid friend invitation link', () {
         // Arrange
         final link =
-            'https://butlery.app/invite?id=inv123&type=friend&from=user456&timestamp=1234567890000';
+            'https://butlery.se/invite?id=inv123&type=friend&from=user456&timestamp=1234567890000';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -273,7 +273,7 @@ void main() {
       test('should parse recipe share link with message', () {
         // Arrange
         final link =
-            'https://butlery.app/recipe?id=recipe789&type=recipe&from=user456&message=Try%20this!&timestamp=1234567890000';
+            'https://butlery.se/recipe?id=recipe789&type=recipe&from=user456&message=Try%20this!&timestamp=1234567890000';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -290,7 +290,7 @@ void main() {
       test('should parse menu share link', () {
         // Arrange
         final link =
-            'https://butlery.app/menu?id=menu321&type=menu&from=user456&timestamp=1234567890000';
+            'https://butlery.se/menu?id=menu321&type=menu&from=user456&timestamp=1234567890000';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -305,7 +305,7 @@ void main() {
       test('should parse shopping list share link', () {
         // Arrange
         final link =
-            'https://butlery.app/shopping?id=list999&type=shopping&from=user456&timestamp=1234567890000';
+            'https://butlery.se/shopping?id=list999&type=shopping&from=user456&timestamp=1234567890000';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -320,7 +320,7 @@ void main() {
       test('should handle www subdomain', () {
         // Arrange
         final link =
-            'https://www.butlery.app/invite?id=inv123&type=friend&from=user456';
+            'https://www.butlery.se/invite?id=inv123&type=friend&from=user456';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -354,7 +354,7 @@ void main() {
 
       test('should handle missing parameters gracefully', () {
         // Arrange
-        final link = 'https://butlery.app/invite?id=inv123';
+        final link = 'https://butlery.se/invite?id=inv123';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -370,7 +370,7 @@ void main() {
       test('should handle malformed timestamp', () {
         // Arrange
         final link =
-            'https://butlery.app/invite?id=inv123&timestamp=not-a-number';
+            'https://butlery.se/invite?id=inv123&timestamp=not-a-number';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -382,7 +382,7 @@ void main() {
 
       test('should handle unknown path', () {
         // Arrange
-        final link = 'https://butlery.app/unknown?id=123';
+        final link = 'https://butlery.se/unknown?id=123';
 
         // Act
         final data = DeepLinkService.parseDeepLink(link);
@@ -606,12 +606,12 @@ void main() {
         // Since the internal method requires authentication and service registration,
         // it will return the original URL as fallback
         final shortUrl = await DeepLinkService.generateShortUrl(
-          'https://butlery.app/recipe?id=123',
+          'https://butlery.se/recipe?id=123',
         );
 
         // Assert
         // Static methods can't use our mock properly, so it will return original URL
-        expect(shortUrl, equals('https://butlery.app/recipe?id=123'));
+        expect(shortUrl, equals('https://butlery.se/recipe?id=123'));
         // Cannot verify mock calls due to static method limitation
       });
 
@@ -622,7 +622,7 @@ void main() {
           currentUserId: null,
           isAuthenticated: false,
         );
-        final originalUrl = 'https://butlery.app/recipe?id=123';
+        final originalUrl = 'https://butlery.se/recipe?id=123';
 
         // Act
         final shortUrl = await DeepLinkService.generateShortUrl(originalUrl);
@@ -638,7 +638,7 @@ void main() {
         when(
           () => mockRepository.createShortUrl(any(), any()),
         ).thenAnswer((_) async => throw Exception('Database error'));
-        final originalUrl = 'https://butlery.app/recipe?id=123';
+        final originalUrl = 'https://butlery.se/recipe?id=123';
 
         // Act
         final shortUrl = await DeepLinkService.generateShortUrl(originalUrl);
@@ -662,7 +662,7 @@ void main() {
         // Act & Assert
         // Static method doesn't properly use DI, so metadata capture is limited
         await expectLater(
-          DeepLinkService.generateShortUrl('https://butlery.app/recipe?id=123'),
+          DeepLinkService.generateShortUrl('https://butlery.se/recipe?id=123'),
           completes,
         );
       });
@@ -673,7 +673,7 @@ void main() {
         // Arrange
         when(
           () => mockRepository.getLongUrl('abc123'),
-        ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+        ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
         when(
           () => mockRepository.trackUrlClick('abc123'),
         ).thenAnswer((_) async {});
@@ -721,7 +721,7 @@ void main() {
       test('should navigate to friend invitation route', () async {
         // Arrange
         final link =
-            'https://butlery.app/invite?id=inv123&type=friend&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
+            'https://butlery.se/invite?id=inv123&type=friend&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -736,7 +736,7 @@ void main() {
       test('should navigate to recipe share route', () async {
         // Arrange
         final link =
-            'https://butlery.app/recipe?id=recipe789&type=recipe&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
+            'https://butlery.se/recipe?id=recipe789&type=recipe&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -751,7 +751,7 @@ void main() {
       test('should navigate to menu share route', () async {
         // Arrange
         final link =
-            'https://butlery.app/menu?id=menu321&type=menu&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
+            'https://butlery.se/menu?id=menu321&type=menu&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -766,7 +766,7 @@ void main() {
       test('should navigate to shopping list share route', () async {
         // Arrange
         final link =
-            'https://butlery.app/shopping?id=list999&type=shopping&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
+            'https://butlery.se/shopping?id=list999&type=shopping&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -795,7 +795,7 @@ void main() {
       test('should not navigate for expired links', () async {
         // Arrange
         final link =
-            'https://butlery.app/invite?id=inv123&type=friend&from=user456&timestamp=${DateTime.now().subtract(Duration(days: 10)).millisecondsSinceEpoch}';
+            'https://butlery.se/invite?id=inv123&type=friend&from=user456&timestamp=${DateTime.now().subtract(Duration(days: 10)).millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -810,7 +810,7 @@ void main() {
       test('should not navigate when id is missing', () async {
         // Arrange
         final link =
-            'https://butlery.app/invite?type=friend&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
+            'https://butlery.se/invite?type=friend&from=user456&timestamp=${DateTime.now().millisecondsSinceEpoch}';
 
         // Act
         String? navigatedRoute;
@@ -837,7 +837,7 @@ void main() {
         ).thenAnswer((_) async => metadata);
         when(
           () => mockRepository.getLongUrl('abc123'),
-        ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+        ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
 
         // Act
         final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
@@ -942,10 +942,10 @@ void main() {
           // Arrange
           final malformedLinks = [
             'not://a//valid///uri',
-            'ht!tp://butlery.app/recipe',
+            'ht!tp://butlery.se/recipe',
             '://missing-scheme',
-            'butlery.app/recipe', // missing scheme
-            'https:/butlery.app/recipe', // missing slash
+            'butlery.se/recipe', // missing scheme
+            'https:/butlery.se/recipe', // missing slash
           ];
 
           // Act & Assert
@@ -958,7 +958,7 @@ void main() {
         test('should handle missing required parameters', () {
           // Arrange
           final link =
-              'https://butlery.app/invite'; // missing all query parameters
+              'https://butlery.se/invite'; // missing all query parameters
 
           // Act
           final data = DeepLinkService.parseDeepLink(link);
@@ -980,19 +980,19 @@ void main() {
           // Arrange
           // The implementation may be lenient with URL schemes for compatibility
           final testSchemes = [
-            'http://butlery.app/recipe?id=123',
-            'https://butlery.app/recipe?id=123',
-            'ftp://butlery.app/recipe?id=123',
-            'file://butlery.app/recipe?id=123',
+            'http://butlery.se/recipe?id=123',
+            'https://butlery.se/recipe?id=123',
+            'ftp://butlery.se/recipe?id=123',
+            'file://butlery.se/recipe?id=123',
             'butlery://recipe?id=123',
           ];
 
           // Act & Assert
           for (final link in testSchemes) {
             final data = DeepLinkService.parseDeepLink(link);
-            // Implementation may parse any scheme with butlery.app domain
+            // Implementation may parse any scheme with butlery.se domain
             // or may reject non-http(s) schemes
-            if (link.contains('butlery.app')) {
+            if (link.contains('butlery.se')) {
               // May parse if domain matches
               expect(
                 // ignore: unnecessary_null_comparison
@@ -1014,9 +1014,9 @@ void main() {
         test('should handle empty path segments', () {
           // Arrange
           final links = [
-            'https://butlery.app//recipe?id=123', // double slash
-            'https://butlery.app///invite?id=456', // triple slash
-            'https://butlery.app/?id=789', // no path
+            'https://butlery.se//recipe?id=123', // double slash
+            'https://butlery.se///invite?id=456', // triple slash
+            'https://butlery.se/?id=789', // no path
           ];
 
           // Act & Assert
@@ -1039,9 +1039,9 @@ void main() {
         test('should handle invalid character encoding', () {
           // Arrange
           final links = [
-            'https://butlery.app/recipe?id=%ZZ%XX', // invalid percent encoding
-            'https://butlery.app/recipe?message=\x00\x01', // null bytes
-            'https://butlery.app/recipe?from=user%', // incomplete encoding
+            'https://butlery.se/recipe?id=%ZZ%XX', // invalid percent encoding
+            'https://butlery.se/recipe?message=\x00\x01', // null bytes
+            'https://butlery.se/recipe?from=user%', // incomplete encoding
           ];
 
           // Act & Assert
@@ -1072,7 +1072,7 @@ void main() {
           // Act
           String? navigatedRoute;
           await processTestDeepLink(
-            'https://butlery.app/recipe?id=non_existent&type=recipe',
+            'https://butlery.se/recipe?id=non_existent&type=recipe',
             (route) {
               navigatedRoute = route;
             },
@@ -1085,7 +1085,7 @@ void main() {
 
         test('should parse profile deep link', () async {
           // Arrange
-          final link = 'https://butlery.app/profile?id=deleted_user';
+          final link = 'https://butlery.se/profile?id=deleted_user';
 
           // Act
           final data = DeepLinkService.parseDeepLink(link);
@@ -1105,7 +1105,7 @@ void main() {
           // Act
           String? navigatedRoute;
           await processTestDeepLink(
-            'https://butlery.app/menu?id=deleted_menu&type=menu',
+            'https://butlery.se/menu?id=deleted_menu&type=menu',
             (route) {
               navigatedRoute = route;
             },
@@ -1118,7 +1118,7 @@ void main() {
 
         test('should handle invalid resource type', () async {
           // Arrange
-          final link = 'https://butlery.app/invalid_type?id=123&type=unknown';
+          final link = 'https://butlery.se/invalid_type?id=123&type=unknown';
 
           // Act
           String? navigatedRoute;
@@ -1162,7 +1162,7 @@ void main() {
       group('Navigation Errors', () {
         test('should handle navigation to non-existent route', () async {
           // Arrange
-          final link = 'https://butlery.app/nonexistent?id=123';
+          final link = 'https://butlery.se/nonexistent?id=123';
 
           // Act
           String? navigatedRoute;
@@ -1188,7 +1188,7 @@ void main() {
 
         test('should handle missing required route parameters', () async {
           // Arrange
-          final link = 'https://butlery.app/recipe?type=recipe'; // missing id
+          final link = 'https://butlery.se/recipe?type=recipe'; // missing id
 
           // Act
           String? navigatedRoute;
@@ -1206,7 +1206,7 @@ void main() {
         test('should handle navigation while app not ready', () async {
           // Arrange
           final bool appReady = false;
-          final link = 'https://butlery.app/recipe?id=123&type=recipe';
+          final link = 'https://butlery.se/recipe?id=123&type=recipe';
 
           // Act
           String? navigatedRoute;
@@ -1228,7 +1228,7 @@ void main() {
         test('should prevent circular navigation', () async {
           // Arrange
           final visitedRoutes = <String>{};
-          final link = 'https://butlery.app/recipe?id=123&type=recipe';
+          final link = 'https://butlery.se/recipe?id=123&type=recipe';
 
           // Act
           String? lastRoute;
@@ -1270,7 +1270,7 @@ void main() {
             // Act
             for (int i = 0; i < 20; i++) {
               await processTestDeepLink(
-                'https://butlery.app/recipe?id=$i&type=recipe',
+                'https://butlery.se/recipe?id=$i&type=recipe',
                 (route) {
                   if (navigationCount >= maxNavigations) {
                     return; // Prevent stack overflow
@@ -1298,7 +1298,7 @@ void main() {
             // Act
             String? navigatedRoute;
             await processTestDeepLink(
-              'https://butlery.app/recipe?id=private123&type=recipe',
+              'https://butlery.se/recipe?id=private123&type=recipe',
               (route) async {
                 // Check permissions before navigation
                 final hasPermission = mockPermissionService.hasPermission(
@@ -1329,7 +1329,7 @@ void main() {
           // Act
           String? navigatedRoute;
           await processTestDeepLink(
-            'https://butlery.app/invite?id=inv123&from=blocked_user_id&type=friend',
+            'https://butlery.se/invite?id=inv123&from=blocked_user_id&type=friend',
             (route) async {
               // Check if user is blocked (no read permission)
               final hasPermission = mockPermissionService.hasPermission(
@@ -1377,7 +1377,7 @@ void main() {
           // Act
           String? navigatedRoute;
           await processTestDeepLink(
-            'https://butlery.app/shopping?id=list999&type=shopping',
+            'https://butlery.se/shopping?id=list999&type=shopping',
             (route) {
               if (!mockPermissionService.isAuthenticated) {
                 return; // Require authentication for shopping lists
@@ -1401,13 +1401,13 @@ void main() {
 
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
-            'https://butlery.app/recipe?id=123',
+            'https://butlery.se/recipe?id=123',
           );
 
           // Assert
           expect(
             shortUrl,
-            equals('https://butlery.app/recipe?id=123'),
+            equals('https://butlery.se/recipe?id=123'),
           ); // Fallback
         });
 
@@ -1419,13 +1419,13 @@ void main() {
 
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
-            'https://butlery.app/menu?id=456',
+            'https://butlery.se/menu?id=456',
           );
 
           // Assert
           expect(
             shortUrl,
-            equals('https://butlery.app/menu?id=456'),
+            equals('https://butlery.se/menu?id=456'),
           ); // Fallback
         });
 
@@ -1436,7 +1436,7 @@ void main() {
           ).thenAnswer((_) async => throw Exception('Analytics service error'));
           when(
             () => mockRepository.getLongUrl('abc123'),
-          ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+          ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
 
           // Act
           final longUrl = await DeepLinkService.resolveShortUrl('abc123');
@@ -1466,7 +1466,7 @@ void main() {
           final results = <String>[];
           for (int i = 0; i < 10; i++) {
             final url = await DeepLinkService.generateShortUrl(
-              'https://butlery.app/recipe?id=$i',
+              'https://butlery.se/recipe?id=$i',
             );
             results.add(url);
           }
@@ -1475,7 +1475,7 @@ void main() {
           // After rate limit, should return original URLs
           expect(
             results
-                .where((url) => url.startsWith('https://butlery.app'))
+                .where((url) => url.startsWith('https://butlery.se'))
                 .length,
             greaterThan(0),
           );
@@ -1494,7 +1494,7 @@ void main() {
           // Act
           String? navigatedRoute;
           await processTestDeepLink(
-            'https://butlery.app/recipe?id=123&type=recipe',
+            'https://butlery.se/recipe?id=123&type=recipe',
             (route) {
               if (!mockPermissionService.isAuthenticated) {
                 // Should queue or redirect to login
@@ -1516,7 +1516,7 @@ void main() {
 
           // Act
           await processTestDeepLink(
-            'https://butlery.app/recipe?id=123&type=recipe',
+            'https://butlery.se/recipe?id=123&type=recipe',
             (route) {
               if (!onboardingComplete) {
                 pendingLinks.add(route);
@@ -1539,7 +1539,7 @@ void main() {
 
           // Act
           await processTestDeepLink(
-            'https://butlery.app/recipe?id=123&type=recipe',
+            'https://butlery.se/recipe?id=123&type=recipe',
             (route) {
               if (currentState != 'resumed') {
                 queuedLinks.add(route);
@@ -1561,7 +1561,7 @@ void main() {
           // Act
           for (int i = 0; i < 10; i++) {
             await processTestDeepLink(
-              'https://butlery.app/recipe?id=$i&type=recipe',
+              'https://butlery.se/recipe?id=$i&type=recipe',
               (route) {
                 if (processedLinks.length >= memoryLimit) {
                   processedLinks.removeAt(0); // Remove oldest
@@ -1582,7 +1582,7 @@ void main() {
           // Arrange
           // Testing iOS-specific configuration file handling
           final link =
-              'https://butlery.app/.well-known/apple-app-site-association';
+              'https://butlery.se/.well-known/apple-app-site-association';
 
           // Act
           final data = DeepLinkService.parseDeepLink(link);
@@ -1594,7 +1594,7 @@ void main() {
         test('should handle Android App Links failure', () async {
           // Arrange
           // Testing Android-specific configuration file handling
-          final link = 'https://butlery.app/.well-known/assetlinks.json';
+          final link = 'https://butlery.se/.well-known/assetlinks.json';
 
           // Act
           final data = DeepLinkService.parseDeepLink(link);
@@ -1606,8 +1606,8 @@ void main() {
         test('should handle web URL routing errors', () async {
           // Arrange
           final webLinks = [
-            'https://butlery.app/#/recipe?id=123', // Hash routing
-            'https://butlery.app/#!/recipe?id=123', // Hashbang routing
+            'https://butlery.se/#/recipe?id=123', // Hash routing
+            'https://butlery.se/#!/recipe?id=123', // Hashbang routing
           ];
 
           // Act & Assert
@@ -1629,7 +1629,7 @@ void main() {
           String? error;
           try {
             await processTestDeepLink(
-              'https://butlery.app/recipe?id=123&type=recipe',
+              'https://butlery.se/recipe?id=123&type=recipe',
               (route) {
                 if (platform == 'fuchsia') {
                   throw UnsupportedError('Platform not supported');
@@ -1653,7 +1653,7 @@ void main() {
 
           // Act
           for (int i = 0; i < 20; i++) {
-            final link = 'https://butlery.app/recipe?id=$i&type=recipe';
+            final link = 'https://butlery.se/recipe?id=$i&type=recipe';
             if (linkQueue.length >= maxQueueSize) {
               // Queue overflow - drop oldest or reject new
               linkQueue.removeAt(0);
@@ -1678,7 +1678,7 @@ void main() {
             if (retryCount <= maxRetries) {
               throw Exception('Temporary failure');
             }
-            return 'https://butlery.app/recipe?id=123';
+            return 'https://butlery.se/recipe?id=123';
           });
 
           // Act
@@ -1708,15 +1708,15 @@ void main() {
           // Add links with timestamps
           queuedLinks.addAll([
             {
-              'link': 'https://butlery.app/recipe?id=1&type=recipe',
+              'link': 'https://butlery.se/recipe?id=1&type=recipe',
               'timestamp': now.subtract(Duration(hours: 2)),
             },
             {
-              'link': 'https://butlery.app/recipe?id=2&type=recipe',
+              'link': 'https://butlery.se/recipe?id=2&type=recipe',
               'timestamp': now.subtract(Duration(minutes: 30)),
             },
             {
-              'link': 'https://butlery.app/recipe?id=3&type=recipe',
+              'link': 'https://butlery.se/recipe?id=3&type=recipe',
               'timestamp': now,
             },
           ]);
@@ -1741,7 +1741,7 @@ void main() {
           final futures = <Future>[];
           for (int i = 0; i < 5; i++) {
             futures.add(() async {
-              final link = 'https://butlery.app/recipe?id=$i&type=recipe';
+              final link = 'https://butlery.se/recipe?id=$i&type=recipe';
 
               // Check if already processing
               if (processingLinks.contains(link)) {
@@ -1768,7 +1768,7 @@ void main() {
         test('should handle duplicate link prevention', () async {
           // Arrange
           final processedLinks = <String>{};
-          final link = 'https://butlery.app/recipe?id=123&type=recipe';
+          final link = 'https://butlery.se/recipe?id=123&type=recipe';
 
           // Act
           for (int i = 0; i < 3; i++) {

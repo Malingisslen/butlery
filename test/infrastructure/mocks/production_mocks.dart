@@ -1392,7 +1392,7 @@ class MockUnifiedFriendsService extends Mock
 
   @override
   Future<String> createInvitationLinkInternal(String invitationId) async =>
-      'https://butlery.app/invite/$invitationId';
+      'https://butlery.se/invite/$invitationId';
 
   @override
   Future<void> updateInvitationStatusInternal(

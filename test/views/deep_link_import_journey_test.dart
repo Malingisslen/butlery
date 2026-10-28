@@ -188,7 +188,7 @@ void main() {
       ),
       (
         'friend invite',
-        'https://butlery.app/invite?id=aaaaaaaaaaaaaaaaaaaa'
+        'https://butlery.se/invite?id=aaaaaaaaaaaaaaaaaaaa'
             '&from=bbbbbbbbbbbbbbbbbbbb&type=friend',
         Routes.friendRequests,
       ),
