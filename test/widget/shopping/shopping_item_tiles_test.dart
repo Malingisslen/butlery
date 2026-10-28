@@ -743,6 +743,37 @@ void main() {
     });
 
     group('Edge Cases', () {
+      testWidgets('a lower-case name is shown with a capital first letter', (
+        WidgetTester tester,
+      ) async {
+        final lowerCase = UnifiedShoppingItem(
+          id: 'lower',
+          name: 'citronsaft',
+          amount: 1,
+          unit: 'msk',
+          category: 'Övrigt',
+          bought: false,
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ShoppingItemTile(
+              item: lowerCase,
+              isCompleted: false,
+              onItemTap: (_) {},
+              onEditItem: (_) {},
+              onDeleteItem: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(rowText(lowerCase).replaceFirst('c', 'C')),
+          findsOneWidget,
+        );
+      });
+
       testWidgets('handles item with zero amount', (WidgetTester tester) async {
         final zeroItem = UnifiedShoppingItem(
           id: 'zero',
