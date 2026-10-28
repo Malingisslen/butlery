@@ -19,9 +19,9 @@ class LayoutComponents {
   /// Offline banner; [pendingCount] and [onTap] as on OfflineIndicator.
   ///
   /// P4-U19: "Offline är en banner … och den är en kontroll: den leder till
-  /// kövyn" (produktregler.md:300). Without [onTap] the banner opens
+  /// kövyn". Without [onTap] the banner opens
   /// "Väntar på synk", and without [pendingCount] it reads the queue's live
-  /// count (flows-roles-budget.md:111), the same number the queue view shows.
+  /// count, the same number the queue view shows.
   static Widget offlineIndicator({int? pendingCount, VoidCallback? onTap}) {
     return QueueCountsBuilder(
       builder: (context, counts) => StatusIndicators.offlineIndicator(

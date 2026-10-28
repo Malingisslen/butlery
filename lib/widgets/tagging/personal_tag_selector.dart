@@ -121,7 +121,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             builder: (context, viewModel, _) {
               if (viewModel.isLoading) {
                 // The plate line with what is being fetched, never a
-                // spinner (produktregler.md:163, B-18).
+                // spinner (B-18).
                 return Padding(
                   padding: const EdgeInsets.all(AppDimensions.space12),
                   child: PlateLineMessage(

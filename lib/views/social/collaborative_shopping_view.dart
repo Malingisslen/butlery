@@ -61,16 +61,16 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   /// P6-U05: what the user had typed but not added when the role on this
   /// list dropped to read-only. Kept on screen until they close it, so the
-  /// text is never lost to a timeout or cut off (produktregler.md:108).
+  /// text is never lost to a timeout or cut off.
   String? _unaddedText;
 
-  /// P6-U05 (flows-roles-budget.md:83, :132): the role on this list dropped
+  /// P6-U05: the role on this list dropped
   /// to read-only while it was open. The add field is gone at once (it is
   /// drawn only while the user can edit); a short snackbar says why, with
   /// "Stäng" (content-style-guide.md:97, :108). An item typed but not added
   /// is not written to the list; it stays in a notice in the view, with
   /// "Kopiera texten", until the user closes it ("osparat erbjuds som
-  /// kopia", flows-roles-budget.md:83).
+  /// kopia").
   void _onViewModelChanged() {
     if (!_vm.consumeEditAccessLost()) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {

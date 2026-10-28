@@ -101,7 +101,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
   }
 
   /// Deleting a template is class 1: it goes at once and "Ångra" brings it
-  /// back for 7 s (produktregler.md § 2.4), so there is no confirmation. The
+  /// back for 7 s, so there is no confirmation. The
   /// delete itself is written only once the snackbar closes without Ångra.
   void _deleteTemplate(String templateId) {
     final index = _templates.indexWhere((t) => t['id'] == templateId);
@@ -140,7 +140,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
     final cs = Theme.of(context).colorScheme;
 
     if (_isLoading) {
-      // The plate line says what it fetches (produktregler.md:163).
+      // The plate line says what it fetches.
       return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(

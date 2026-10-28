@@ -128,7 +128,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     // The notice's Fråga igen stays tappable while a post uploads the list.
     if (_atImageCap || _isBusy) return;
     final remaining = RecipeComment.maxImageUrls - _selectedImages.length;
-    // Flow 07: explanation before the system prompt (produktregler.md:682).
+    // Flow 07: explanation before the system prompt.
     final outcome = await _imagePicker.pickMultipleImagesWithOutcome(
       maxImages: remaining,
       rationale: askAgain ? null : mediaRationalePrompt(context),

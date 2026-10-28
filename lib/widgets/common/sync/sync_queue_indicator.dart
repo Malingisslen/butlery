@@ -1,8 +1,8 @@
 // lib/widgets/common/sync/sync_queue_indicator.dart
 //
 // P4-U19: the queue indicator in the top bar. "Köindikator i toppfältet när
-// något väntar" (flows-roles-budget.md:111), and the queue view "Nås även från
-// köindikatorn i toppfältet" (produktregler.md:190).
+// något väntar", and the queue view "Nås även från
+// köindikatorn i toppfältet".
 //
 // PQ-04 = B (fas2/produktbeslut-2026-09-23.json): nothing while the queue
 // drains by itself, and a saffron counter only when something needs the user

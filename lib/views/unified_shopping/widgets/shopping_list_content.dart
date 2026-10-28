@@ -71,7 +71,7 @@ class ShoppingListContentWidget extends StatefulWidget {
 
   /// The receipt after an item moved to [category].
   ///
-  /// A category move is class 3 (produktregler.md:133): no Ångra. The row
+  /// A category move is class 3: no Ångra. The row
   /// leaves the user's view, into a section that may be collapsed, so the
   /// receipt stays, and a snackbar with no possible follow-up action gets
   /// `Stäng` (content-style-guide.md:96-97). With an action Flutter would keep
@@ -239,7 +239,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       //
       // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
       // the week's dishes here, "Från veckomenyn" as the one saffron action
-      // and an outlined "Lägg till vara" beside it (Komponentark v1:843-844).
+      // and an outlined "Lägg till vara" beside it.
       return StateWidget(
         type: StateType.empty,
         title: context.l10n.shoppingEmptyTitle,

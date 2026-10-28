@@ -132,7 +132,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       controller: newItemController,
       hint: context.l10n.collaborativeAddItemHint,
       // Adding: the plate line in the field's end, named for the screen
-      // reader (produktregler.md, B-18).
+      // reader (B-18).
       suffixIcon: viewModel.isAddingItem
           ? Padding(
               padding: const EdgeInsets.all(AppDimensions.space4),

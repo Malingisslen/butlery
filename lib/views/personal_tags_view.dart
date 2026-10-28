@@ -254,7 +254,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     // samman taggar").
     return (
       leading: ButleryCancelSelectionButton(onPressed: selection.exitSelection),
-      // "{n} valda" in tabular figures (produktregler.md:876).
+      // "{n} valda" in tabular figures.
       title: context.l10n.bulkSelectedCount(count),
       titleStyle: ButleryTopBar.selectionCountStyle,
       actions: <Widget>[

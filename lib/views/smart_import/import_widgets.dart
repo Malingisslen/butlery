@@ -107,9 +107,9 @@ class ImportInputSection extends StatelessWidget {
 /// P5-U06: a failed import, in three parts (content-style-guide.md:87-97).
 ///
 /// The error line says what happened and what was kept ([InlineError], the
-/// drawn error boundary, Komponentark v1:755-758). Under it, "Andra vägar
+/// drawn error boundary). Under it, "Andra vägar
 /// till samma recept" draws the [routes] the failure carries: a failure is a
-/// fork, not a dead end (produktregler.md:557; Skarmar v12 etapp 4 import
+/// fork, not a dead end (Skarmar v12 etapp 4 import
 /// #impinget).
 ///
 /// Colours, both modes, from the theme: the heading is

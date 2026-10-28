@@ -1,5 +1,5 @@
 // A chip takes its colours, edge, shape and padding from the chip theme
-// (Komponentark v1 §03; BUT-2373), so a change in the component sheet
+// (BUT-2373), so a change in the component sheet
 // reaches every chip. The files below still give chips their own: each count
 // is pinned, so a new override reddens, and so does a move that forgets to
 // shrink the list.

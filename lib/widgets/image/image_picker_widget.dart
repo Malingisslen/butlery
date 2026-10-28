@@ -339,7 +339,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       List<File> results = [];
 
       // Flow 07: our explanation before the system prompt, and a word on a
-      // permanent no or a device block (produktregler.md:680-687).
+      // permanent no or a device block.
       final rationale = mediaRationalePrompt(context);
       final outcome = widget.allowMultiple
           ? await imagePickerService.pickMultipleImagesWithOutcome(

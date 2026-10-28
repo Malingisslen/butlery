@@ -61,7 +61,7 @@ class SelectionBulkBar extends StatelessWidget {
                 onPressed: count == 0 ? null : onDelete,
                 style: TextButton.styleFrom(
                   foregroundColor: cs.onPrimaryContainer,
-                  // Off at zero with the name readable (produktregler.md:876),
+                  // Off at zero with the name readable,
                   // in the disabled role on surface.raised rather than the
                   // 38 % fade styleFrom would give (tokens.json:71-74, :198):
                   // text.disabled.onRaised, #788477 light, #93A48D dark.

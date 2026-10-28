@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 /// Warning dialog shown before session timeout
 /// Provides user with option to extend session or logout immediately
 ///
-/// Two modes (produktregler.md:832, § 16.2). With an empty queue it is the
+/// Two modes. With an empty queue it is the
 /// plain question and "Logga ut nu" signs out at once. With changes waiting,
 /// Fortsätt is primary, the waiting changes are named, and "Logga ut nu"
 /// leads to the same confirmation as the manual sign-out (#utloggningko).
@@ -128,7 +128,7 @@ class _SessionTimeoutWarningDialogState
 
   /// The countdown ran out. Close whatever lies on top of this warning (the
   /// queue confirmation), then the warning itself. The sign-out is the
-  /// service's; the queue is never cleared by it (produktregler.md:833).
+  /// service's; the queue is never cleared by it.
   void _expire() {
     if (!mounted || _expired) return;
     _expired = true;
@@ -166,7 +166,7 @@ class _SessionTimeoutWarningDialogState
 
     // Queue mode: the same confirmation as the manual sign-out. The
     // countdown keeps running underneath; if it runs out, the automatic
-    // sign-out still never clears the queue (produktregler.md:833).
+    // sign-out still never clears the queue.
     final choice = await ProfileDialogs.showPendingChangesDialog(
       context,
       widget.pendingChanges,

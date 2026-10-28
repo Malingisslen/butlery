@@ -42,7 +42,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
 import 'package:butlery/views/unified_shopping/widgets/restore_items_sheet.dart';
 
-// The canonical top bar (Komponentark v1 §01)
+// The canonical top bar
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
@@ -71,7 +71,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   // so pantry data isn't loaded for users who only use shopping lists.
   bool _pantryTabVisited = false;
   // P5-U31: the pantry tab's "Välj" and selection counter sit in this
-  // view's own top bar, never in the shell's (produktregler.md:871), so the
+  // view's own top bar, never in the shell's, so the
   // view holds the pantry's rows and selection. Created on the first visit.
   PantryViewModel? _pantryViewModel;
   final PantrySelectionManager _pantrySelection = PantrySelectionManager();
@@ -144,7 +144,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
         ? itemCount
         : (_pantryViewModel?.items.length ?? 0);
 
-    // The root bar (Komponentark v1:60-68): "Inköp" with the list and
+    // The root bar: "Inköp" with the list and
     // how many of its items are done on the line under it, in tabular
     // figures (Skarmar v12 del 2 #inkop: "Veckans inköp · 4 av 16
     // klara"; #tominkop: "Veckans inköp · inga varor").
@@ -203,7 +203,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     // "Lägg till vara" is the list's one saffron action. An empty
     // list carries its own actions in the body, with "Från
     // veckomenyn" as the hero, so the button steps aside there
-    // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
+    // (Skarmar v12 del 2 #inkop, #tominkop).
     final fab = isShoppingTab && !inSelection && viewModel.hasItems
         ? ShoppingAppBar.buildFloatingActionButton(context, _showAddItemDialog)
         : null;

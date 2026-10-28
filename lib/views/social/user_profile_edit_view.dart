@@ -148,7 +148,7 @@ class _UserProfileEditViewContentState
       context: context,
       barrierDismissible: false,
       // The plate line with what is happening, never a spinner
-      // (produktregler.md:163, B-18).
+      // (B-18).
       builder: (context) =>
           ButleryProgressDialog(message: context.l10n.profileUploadingAvatar),
     );

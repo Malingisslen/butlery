@@ -235,7 +235,7 @@ class _PersonalTagFilterChip extends StatelessWidget {
           backgroundColor: colorScheme.surface,
           // Chosen is the drawn chip: an ink fill with paper text and check,
           // never an ink tint. The text.primary edge is the paper
-          // edge of the dark drawing (Komponentark v1:523).
+          // edge of the dark drawing.
           selectedColor: colorScheme.primary,
           checkmarkColor: colorScheme.onPrimary,
           side: BorderSide(

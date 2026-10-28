@@ -9,10 +9,10 @@
 /// - if their version won, put the other person's version back with one tap
 ///   ("Använd deras version").
 ///
-/// The choice is the decision (produktregler.md:102, "Recept (eget)": both
+/// The choice is the decision ("Recept (eget)": both
 /// versions are shown and the user chooses). Someone else's shared recipe
 /// ([ConflictEntity.recipeShared]) gets no choice here: Q6-08 = A
-/// (produktbeslut 2026-09-27; produktregler.md:241) means a member never
+/// (produktbeslut 2026-09-27) means a member never
 /// writes the owner's recipe, and firestore.rules refuses it, so both
 /// buttons would always fail. The member still sees both versions field by
 /// field. What else a member should be offered when a suggestion already
@@ -313,7 +313,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             // Saving keeps the button's name and draws the plate line along
             // its bottom edge, never a spinner in its place (Komponentark
-            // v1:365, :372; produktregler.md:902). What the button does is
+            // v1:365, :372). What the button does is
             // unchanged (P4-U19 owns the recovery path and its look).
             children: [
               FormButton(
@@ -345,7 +345,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
   /// "Använd deras version" as the drawing's outlined button (Skarmar v12
   /// del 3:1199, 1.5 px ink outline). Saving keeps the name and draws the
-  /// plate line, as the keep bar does (Komponentark v1:365, :372).
+  /// plate line, as the keep bar does.
   Widget _buildUseTheirsBar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Material(

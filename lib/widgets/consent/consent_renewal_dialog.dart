@@ -4,7 +4,7 @@
 /// what changed since the version the user accepted, one line per new or
 /// changed purpose, her earlier choices kept, and three answers — Jag
 /// godkänner · Låt mig välja själv · Inte nu. "Inte nu" keeps the old
-/// consent and switches nothing off (produktregler.md:731); the dialog comes
+/// consent and switches nothing off; the dialog comes
 /// back at the next launch until a new version is saved.
 ///
 /// Without a loaded consent (no consent document, or it could not be read)
@@ -49,7 +49,7 @@ class ConsentRenewalDialog extends StatefulWidget {
   /// The change's own sentence pair, or null when none is written yet.
   /// A version bump adds its own lines here and in the l10n files
   /// (Q-P6-A18). "Gränssnittet får inte påstå att något viktigt hänt utan
-  /// att säga vad" (produktregler.md:731), so a test requires a pair for
+  /// att säga vad", so a test requires a pair for
   /// every entry in ConsentService.changelog.
   static (String, String)? ownChangeLines(
     AppLocalizations l10n,

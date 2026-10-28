@@ -34,7 +34,7 @@ final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 /// The app's snackbar messenger. It counts the snackbars it holds, shown or
 /// queued, so the "!" can step aside while one is up: the button "viker för
-/// snackbaren" (produktregler.md § 18.1). Otherwise a floating snackbar's
+/// snackbaren". Otherwise a floating snackbar's
 /// action, such as "Stäng", lands under it at the bottom right.
 class FeedbackAwareScaffoldMessenger extends ScaffoldMessenger {
   const FeedbackAwareScaffoldMessenger({super.key, required super.child});
@@ -88,7 +88,7 @@ class _FeedbackAwareScaffoldMessengerState extends ScaffoldMessengerState {
 /// Square "!" button, bottom-right by default and draggable to either side
 /// edge, that opens a feedback form.
 /// Only visible when the user is authenticated, and hidden while a snackbar,
-/// dialog or sheet is up and in cooking mode (produktregler.md § 18.1).
+/// dialog or sheet is up and in cooking mode.
 class FeedbackFAB extends StatefulWidget {
   const FeedbackFAB({super.key, this.routeObserver});
 

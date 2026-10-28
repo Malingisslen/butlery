@@ -500,7 +500,7 @@ class _CollaborativeItemCard extends StatelessWidget {
       result.conflictingDisplayName,
       context.l10n.shoppingUnknownUser,
     );
-    // Informs, never Ångra (produktregler.md § 8.6).
+    // Informs, never Ångra.
     SnackBarUtils.showInfo(context, context.l10n.nagonAnnanTogDen(name));
   }
 }

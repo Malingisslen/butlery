@@ -206,7 +206,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
-    // P6-U01: offline, generation is switched off (produktregler.md:1131).
+    // P6-U01: offline, generation is switched off.
     // The button is already off with its reason; this keeps a stale tap from
     // starting anything.
     if (!VeckomenyConnectivity.isOnlineNow()) return;
@@ -237,7 +237,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
 
     // P6-U01: offline during generation. The flow's "avbrutet, tidigare
-    // vecka orörd" (flows-roles-budget.md:34): nothing is placed, the saved
+    // vecka orörd": nothing is placed, the saved
     // week stays as it was, and the suggestion waits in Lista.
     if (_viewMode == VeckomenyViewMode.kalender &&
         menuVm.hasMenu &&
@@ -505,7 +505,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
 
-    // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
+    // The root bar (Skarmar v12 del 1 #veckomeny,
     // #tomvecka): "Veckomeny" with the week and the number of dishes on the
     // line under it, and the Lista/Kalender tabs under the bar.
     //
@@ -589,7 +589,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// P6-U02: flow 02. Calendar mode merges the visible week's plan; list mode
   /// merges the generated menu into the current week's list.
   ///
-  /// Three outcomes stay apart (produktregler.md):
+  /// Three outcomes stay apart:
   /// nothing to generate (a warning), failed (what happened, what is kept,
   /// Försök igen) and already running (silence). A confirmed merge opens the
   /// list and offers Ångra for 7 s (produktregler.md, § 2.4).

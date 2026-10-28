@@ -24,7 +24,7 @@ class RecipeShoppingHandler {
   /// Q4-03 = A (produktbeslut 2026-09-24): the recipe at [portions]
   /// against a known [pantry] ([RecipePantryCheck.check]): what the button
   /// adds, and what the pantry covered or lessened, so the dialog can show
-  /// that a deduction happened (produktregler.md:233). Null with no known
+  /// that a deduction happened. Null with no known
   /// pantry: every ingredient is then added, as before, since nothing is
   /// left off on a guess.
   static RecipePantryResult? pantryCheck(
@@ -45,7 +45,7 @@ class RecipeShoppingHandler {
   /// Q4-03: the items the button adds, at [portions]. With a known
   /// [pantry], what it covers is left off or lessened and marked rows carry
   /// their mark; when it covers everything, this is empty and nothing is
-  /// added (produktregler.md:228). The button's count is its length.
+  /// added. The button's count is its length.
   static List<UnifiedShoppingItem> itemsToAdd(
     Recipe recipe, {
     required int portions,

@@ -413,7 +413,7 @@ class RecipeCard extends StatelessWidget {
   }
 
   /// The metadata as one line of text, the
-  /// rating a star and a data marker in text.accent (Komponentark v1, saffranshierarkin
+  /// rating a star and a data marker in text.accent (saffranshierarkin
   /// punkt 4), not a badge.
   Widget _buildMetadataRow(BuildContext context) {
     final brightness = Theme.of(context).brightness;

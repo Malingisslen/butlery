@@ -254,7 +254,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           ],
           const SizedBox(height: AppDimensions.space12),
           // "Vi bedömer mot våra riktlinjer — den version du ser nu är
-          // den vi dömer efter." (#fbanmal; produktregler.md).
+          // den vi dömer efter." (#fbanmal).
           _GuidelinesNote(
             prefix: l10n.reportDialogGuidelinesNotePrefix,
             linkText: l10n.reportDialogGuidelinesLink,

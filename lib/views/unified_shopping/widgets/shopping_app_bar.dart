@@ -27,7 +27,7 @@ enum _ShoppingRootAction {
 class ShoppingAppBar {
   /// The actions on the shopping list's root bar. The bar gives every icon
   /// its foreground, text.primary on the light root bar in both modes
-  /// (ButleryTopBar; Komponentark v1:62), so no icon sets its own colour.
+  /// (ButleryTopBar), so no icon sets its own colour.
   static List<Widget> buildHeaderActions(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -141,7 +141,7 @@ class ShoppingAppBar {
     return Semantics(
       identifier: 'btn-add-shopping-item',
       // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
-      // add button in saffron; Komponentark v1:843-844).
+      // add button in saffron).
       // The hero fills what its slot offers, so the margins are set here.
       child: LayoutBuilder(
         builder: (context, constraints) => SizedBox(

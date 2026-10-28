@@ -5,8 +5,8 @@ import 'package:butlery/core/utils/captured_snackbars.dart';
 
 /// Utility for displaying operation results via snackbars.
 ///
-/// Every result is the ink snackbar (Komponentark v1:745-750; produktbeslut
-/// PQ-09 = A): no green or red status fill (Komponentark v1:300), the
+/// Every result is the ink snackbar (produktbeslut
+/// PQ-09 = A): no green or red status fill, the
 /// message says what happened. A failure gets "Stäng" and stays until the
 /// user closes it, like every failure through SnackBarUtils.showFailure
 /// (content-style-guide.md:97; Komponentark v1:750, never "OK").

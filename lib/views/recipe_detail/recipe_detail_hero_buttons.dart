@@ -43,7 +43,7 @@ class RecipeHeroButton extends StatefulWidget {
 
   /// False on a page without a photo: the ring stands on a photo, and with
   /// none behind it the icons are drawn bare on the paper and the 48 dp
-  /// hitboxes abut (Komponentark v1, "Utan foto · typografiskt huvud").
+  /// hitboxes abut ("Utan foto · typografiskt huvud").
   final bool ringVisible;
 
   @override
@@ -143,7 +143,7 @@ class _PaperRing extends StatelessWidget {
 }
 
 /// The hero's popup menu button, in the same paper ring as
-/// [RecipeHeroButton] (Komponentark v1:81-89).
+/// [RecipeHeroButton].
 class RecipeHeroMenuButton<T> extends StatefulWidget {
   const RecipeHeroMenuButton({
     required this.icon,

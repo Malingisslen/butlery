@@ -195,7 +195,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
     final cs = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(AppDimensions.radiusControl);
     // The edge keeps its colour and width at focus; the ring outside the
-    // box shows focus (Komponentark v1:657). Fill, disabled edge and hover
+    // box shows focus. Fill, disabled edge and hover
     // come from the app's input theme.
     final edge = OutlineInputBorder(
       borderRadius: radius,
@@ -369,7 +369,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
 }
 
 /// A chosen term: ink pill with paper text and a remove glyph, the whole
-/// chip one remove button (Komponentark v1 §07; tokens.json
+/// chip one remove button (tokens.json
 /// controls.chipCompactInField).
 class _SearchTokenChip extends StatelessWidget {
   const _SearchTokenChip({required this.token, super.key});

@@ -59,7 +59,7 @@ import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 import 'package:butlery/widgets/guest/guest_hem_intro.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
-/// The greeting for the hour of [now] (produktregler.md:278): 05–11 "God
+/// The greeting for the hour of [now]: 05–11 "God
 /// morgon", 11–17 "Hej", 17–22 "God kväll", 22–05 "God natt".
 String hemGreeting(AppLocalizations l10n, DateTime now) {
   final h = now.hour;
@@ -70,7 +70,7 @@ String hemGreeting(AppLocalizations l10n, DateTime now) {
 }
 
 /// The first name out of a profile's display name, or null when there is
-/// none ("saknas det står bara hälsningen", produktregler.md:278).
+/// none ("saknas det står bara hälsningen").
 String? hemFirstName(String? displayName) {
   final trimmed = displayName.orEmpty().trim();
   if (trimmed.isEmpty) return null;
@@ -107,7 +107,7 @@ class HemSection extends StatelessWidget {
   final String? firstName;
 
   /// The library has no recipes: the greeting is "Välkommen" and the plan
-  /// is not shown (produktregler.md:271, row 4; #hemtom).
+  /// is not shown (row 4; #hemtom).
   final bool libraryEmpty;
 
   /// Whether the device is online; offline, the plan carries its fetch time.
@@ -140,7 +140,7 @@ class HemSection extends StatelessWidget {
         return const [HemPlanLoading()];
       case HemPlanStatus.failed:
         // #hemfel (Skarmar v12 del 4): what happened, then "Försök igen" and
-        // "Visa sparad plan"; the library stays (produktregler.md).
+        // "Visa sparad plan"; the library stays.
         // readWeek cannot tell offline from denied, so only what happened is
         // said (content-style-guide.md, the three-part error).
         return [

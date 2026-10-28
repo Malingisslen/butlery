@@ -47,7 +47,7 @@ class GroupDetailActions {
   /// independent so one failure doesn't strand the rest. Returns what
   /// happened per member (by uid), or null when the user cancelled.
   ///
-  /// P5-U33 (produktregler.md:905-909, § 17.6): a partial result is a third
+  /// P5-U33: a partial result is a third
   /// outcome, not a success and not an error, so this reports only the two
   /// whole outcomes: all removed (a success snackbar) and none removed (a
   /// failure that says the selection is kept). A partial result is shown by
@@ -237,6 +237,6 @@ class MemberRemovalOutcome {
   /// Everyone went.
   bool get isComplete => failed.isEmpty;
 
-  /// Some went and some did not: the third outcome (produktregler.md:907).
+  /// Some went and some did not: the third outcome.
   bool get isPartial => removedIds.isNotEmpty && failed.isNotEmpty;
 }

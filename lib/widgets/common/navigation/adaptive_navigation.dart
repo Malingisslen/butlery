@@ -2,7 +2,7 @@
 //
 // PQ-17 = A (fas2/produktbeslut-2026-09-23.json): the shell has four
 // destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till"
-// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667).
+// (tillganglighetshandoff 'Navigation & toppfält').
 // The bar, the plus and the rail live in butlery_bottom_navigation.dart.
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ export 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
 /// Whether the shell draws the rail rather than the bottom row:
 /// "Skena vid bredd ≥ 768 OCH höjd ≥ 500. Under 500 px höjd gäller en spalt
-/// och bottenrad oavsett bredd" (produktregler.md:1054).
+/// och bottenrad oavsett bredd".
 bool useNavigationRail(Size size) =>
     size.width >= Breakpoints.tablet && size.height >= _railMinHeight;
 
@@ -201,7 +201,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMore,
-      // Three lines, as drawn (Komponentark v1:666).
+      // Three lines, as drawn.
       icon: ButleryIcons.navMore,
       activeIcon: ButleryIcons.navMore,
       route: Routes.more,

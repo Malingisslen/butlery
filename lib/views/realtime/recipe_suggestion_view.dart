@@ -280,7 +280,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
               _keptNote(context),
               const SizedBox(height: AppDimensions.space12),
               // The view's one primary action (Grafisk manual v6:219). Busy
-              // keeps its name and draws the plate line (Komponentark v1:365).
+              // keeps its name and draws the plate line.
               FormButton(
                 key: RecipeSuggestionView.acceptKey,
                 label: l.recipeSuggestionAccept,

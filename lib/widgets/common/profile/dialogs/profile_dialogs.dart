@@ -35,7 +35,7 @@ class ProfileDialogs {
   ///
   /// "Visa vad som väntar" is drawn too. It opens the queue view, which does
   /// not exist yet (package 4), so it is left out rather than offered as a
-  /// button that cannot go anywhere (produktregler.md:535).
+  /// button that cannot go anywhere.
   ///
   /// Dismissing the dialog is waiting: nothing is thrown away unless the
   /// user presses the destructive button.
@@ -104,7 +104,7 @@ class ProfileDialogs {
 
   /// The deletion's waiting state: "Väntan är ett tillstånd, inte en
   /// spinner — och den kan inte avbrytas när den startat"
-  /// (produktregler.md:611; Skarmar v12 etapp 5-7 #kontovantan).
+  /// (Skarmar v12 etapp 5-7 #kontovantan).
   ///
   /// It cannot be closed: no barrier dismissal and no system back. The
   /// drawn step list is not built, because the callable reports nothing
@@ -168,7 +168,7 @@ class ProfileDialogs {
   }
 
   /// A partial deletion, its own outcome with its own words
-  /// (produktregler.md:613; Skarmar v12 etapp 5-7 #kontodelvis): the account
+  /// (Skarmar v12 etapp 5-7 #kontodelvis): the account
   /// is gone, [failedCount] parts remain, the audit id is shown so it can be
   /// quoted, and the way on is support with the id — never "Försök igen",
   /// because there is no sign-in left to try with.
@@ -278,7 +278,7 @@ class ProfileDialogs {
   /// Returns the reason the user gave, or null when she cancelled. The
   /// reason is asked here, BEFORE the password step: "Ett skäl skickas med
   /// och hamnar i revisionsraden. Det frågas före, för efteråt finns ingen
-  /// kvar att fråga" (produktregler.md:614). The drawing is a text box
+  /// kvar att fråga". The drawing is a text box
   /// (Skarmar v12 etapp 5-7 #kontoradera, `data-a11y-role="textbox"`).
   ///
   /// The field is optional. Erasure is a right, and a person who does not

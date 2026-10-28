@@ -31,7 +31,7 @@ class GroupMenuEntryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The icon takes the bar's foreground: it sits on the week menu's light
-    // root bar (Komponentark v1:62), where paper would not show.
+    // root bar, where paper would not show.
     return AppIconButton(
       icon: ButleryIcons.users,
       semanticLabel: context.l10n.groupMenuChatAction,

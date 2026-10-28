@@ -129,7 +129,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           // Saved menus content
           Flexible(
             child: _isLoading
-                // The plate line says what it fetches (produktregler.md:163).
+                // The plate line says what it fetches.
                 ? Center(
                     child: PlateLineMessage(
                       message: context.l10n.menuLoadingSaved,
@@ -265,7 +265,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     }
   }
 
-  // BUT-2145: deleting a saved menu is class 1 (produktregler.md § 2.4):
+  // BUT-2145: deleting a saved menu is class 1:
   // it happens at once with seven seconds of Ångra, no confirmation dialog.
   // The delete commits only when the snackbar closes without Ångra.
   void _deleteMenuWithUndo(dynamic menu) {

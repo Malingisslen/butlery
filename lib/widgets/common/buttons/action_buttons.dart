@@ -20,7 +20,7 @@ export 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 /// A busy button (`isLoading`) keeps its shape, its colours and its name, or
 /// says what it is doing (`loadingText`, the busy label, e.g. "Sparar …"),
 /// and gets the plate line along its bottom edge in its own text colour
-/// (Komponentark v1:307, :365, :372; Grafisk manual v6:423; B-18). It never
+/// (Grafisk manual v6:423; B-18). It never
 /// shows a spinner and never falls back to "Laddar...".
 class ActionButtons {
   /// The widest a button that does not fill its row grows, at normal text.

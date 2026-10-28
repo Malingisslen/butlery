@@ -289,7 +289,7 @@ class _PantryUnavailable extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       key: ShoppingMergeSheet.pantryUnavailableKey,
-      // The partial-outcome form (produktregler.md:905-909): surface.raised
+      // The partial-outcome form: surface.raised
       // with a rust edge, #E6EAD9 / #2F4437 and cs.secondary in both modes.
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,

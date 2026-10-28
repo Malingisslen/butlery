@@ -81,7 +81,7 @@ class ShareDialogStates {
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        // The plate line with what is happening (produktregler.md:163).
+        // The plate line with what is happening.
         children: [PlateLineMessage(message: message)],
       ),
     );
