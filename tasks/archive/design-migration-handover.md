@@ -1,5 +1,7 @@
 # Överlämning — designmigreringen (2026-10-05)
 
+> Avslutad 2026-10-28: migreringen är klar och Malin godkände telefonprovet. Texten nedan är historik från 2026-10-05–07; läget mäts i `docs/design-migration/census.md`.
+
 Designmigreringen flyttas till ett Claude-projekt. Den här filen visar var arbetet står när
 kodsessionen avslutas. Hela planen finns i `tasks/archive/design-migration-completion-plan.md`
 (faserna 0–8 och vad "klar" betyder). Arbetssättet framåt är en PR per biljett, automerge på
