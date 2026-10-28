@@ -210,6 +210,32 @@ void main() {
         expect(recipe!['image'], isNotNull);
         expect(recipe['image'], contains('pannkakor.jpg'));
       });
+
+      test('prefers the arla-image picture over the hero fallback', () {
+        const html = '''
+<html>
+<body>
+  <h1 class="recipe-title">Test Recipe</h1>
+  <div class="recipe-hero"><img src="https://example.com/hero.jpg"></div>
+  <div class="arla-image"><img src="https://example.com/arla.jpg"></div>
+  <ul class="ingredient-list">
+    <li>Ingredient 1</li>
+    <li>Ingredient 2</li>
+    <li>Ingredient 3</li>
+  </ul>
+  <ol class="recipe-instructions">
+    <li>Step 1</li>
+    <li>Step 2</li>
+  </ol>
+</body>
+</html>
+''';
+
+        final recipe = parser.parseRecipe(html);
+
+        expect(recipe, isNotNull);
+        expect(recipe!['image'], equals('https://example.com/arla.jpg'));
+      });
     });
 
     group('Error Recovery', () {
@@ -455,9 +481,7 @@ void main() {
 
         final recipe = parser.parseRecipe(html);
         expect(recipe, isNotNull);
-        if (recipe!['totalTime'] != null) {
-          expect(recipe['totalTime'], equals('PT30M'));
-        }
+        expect(recipe!['totalTime'], equals('PT30M'));
       });
 
       test('should convert "1 timme 15 min" to ISO 8601', () {
@@ -481,9 +505,7 @@ void main() {
 
         final recipe = parser.parseRecipe(html);
         expect(recipe, isNotNull);
-        if (recipe!['totalTime'] != null) {
-          expect(recipe['totalTime'], equals('PT1H15M'));
-        }
+        expect(recipe!['totalTime'], equals('PT1H15M'));
       });
     });
   });
