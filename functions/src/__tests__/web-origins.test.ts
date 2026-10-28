@@ -31,8 +31,8 @@ const cases: UnitCase[] = [
           "https://butlery-prod-admin.web.app",
           "https://butlery-prod.firebaseapp.com",
           "https://butlery-prod.web.app",
-          "https://butlery.app",
-          "https://www.butlery.app",
+          "https://butlery.se",
+          "https://www.butlery.se",
         ]),
         "WEB_CALLABLE_ORIGINS",
       );

@@ -681,7 +681,7 @@ guestPair("X1", "reports create", (uid, db) =>
 // X2: deep_links create.
 guestPair("X2", "deep_links create", (uid, db) =>
   db.doc(`deep_links/${uid}-link`).set({
-    longUrl: "https://butlery.app/recipe/r1",
+    longUrl: "https://butlery.se/recipe/r1",
     createdAt: new Date(),
     createdBy: uid,
   })
