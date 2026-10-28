@@ -80,7 +80,8 @@ class _FeedbackAwareScaffoldMessengerState extends ScaffoldMessengerState {
   }
 }
 
-/// Square "!" button positioned at bottom-right that opens a feedback form.
+/// Square "!" button, bottom-right by default and draggable to either side
+/// edge, that opens a feedback form.
 /// Only visible when the user is authenticated, and hidden while a snackbar,
 /// dialog or sheet is up and in cooking mode (produktregler.md § 18.1).
 class FeedbackFAB extends StatefulWidget {
@@ -95,6 +96,14 @@ class FeedbackFAB extends StatefulWidget {
 
 class _FeedbackFABState extends State<FeedbackFAB> {
   AuthService? _authService;
+
+  // The button floats over every screen, so it cannot know what it covers:
+  // the user moves it off the content instead. Only the side and the height
+  // are kept, so a narrower window or a rotation cannot strand it off screen.
+  static const double _edgeGap = 16;
+  bool _onRight = true;
+  double _bottom = AppDimensions.feedbackFabBottomOffset;
+  double? _dragLeft;
 
   @override
   void initState() {
@@ -134,47 +143,56 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         // (bottom: 16, 56px tall) and extended FABs at the same slot (e.g.
         // the shopping "Lägg till vara" and veckomeny "Till inköpslistan"
         // buttons).
+        final dragLeft = _dragLeft;
+        final maxBottom =
+            MediaQuery.sizeOf(context).height - AppDimensions.minTouchTarget;
         return Positioned(
-          bottom: AppDimensions.feedbackFabBottomOffset,
-          right: 16,
-          child: Semantics(
-            // BUT-1837: `container: true` is load-bearing, not decoration.
-            // Left at its default these annotations get no node of their own —
-            // they travel up the ancestor chain until some node accepts them,
-            // and the one that accepted them was the screen-sized root. That
-            // node then owned every other control on screen as a descendant
-            // and, since it is also what receives input once semantics are
-            // built (main.dart enables them by default on web), a tap aimed at
-            // any control opened the feedback form instead.
-            container: true,
-            label: context.l10n.feedbackSendLabel,
-            button: true,
-            // The button sits beside the Navigator, above every page's
-            // Material, so it brings its own: without one the "!" inherits
-            // the framework's fallback text style and its yellow double
-            // underline. Skarmar v12 etapp 9 #fbknapp: paper with a hairline
-            // edge, so the square still reads where it meets the page
-            // colour.
-            child: DecoratedBox(
-              decoration: BoxDecoration(boxShadow: AppShadows.card),
-              child: Material(
-                color: cs.surface,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: cs.outlineVariant),
-                ),
-                child: ButleryControlFocus(
-                  child: PressFill(
-                    surface: PressSurface.base,
-                    child: InkWell(
-                      onTap: _onTap,
-                      child: SizedBox(
-                        width: AppDimensions.minTouchTarget,
-                        height: AppDimensions.minTouchTarget,
-                        child: Center(
-                          child: Text(
-                            '!',
-                            style: AppTextStyles.headlineSmall.copyWith(
-                              color: cs.onSurface,
+          bottom: _bottom.clamp(0.0, maxBottom < 0 ? 0.0 : maxBottom),
+          left: dragLeft ?? (_onRight ? null : _edgeGap),
+          right: dragLeft == null && _onRight ? _edgeGap : null,
+          child: GestureDetector(
+            onPanUpdate: _onDrag,
+            onPanEnd: (_) => _snapToEdge(),
+            onPanCancel: _snapToEdge,
+            child: Semantics(
+              // BUT-1837: `container: true` is load-bearing, not decoration.
+              // Left at its default these annotations get no node of their own —
+              // they travel up the ancestor chain until some node accepts them,
+              // and the one that accepted them was the screen-sized root. That
+              // node then owned every other control on screen as a descendant
+              // and, since it is also what receives input once semantics are
+              // built (main.dart enables them by default on web), a tap aimed at
+              // any control opened the feedback form instead.
+              container: true,
+              label: context.l10n.feedbackSendLabel,
+              button: true,
+              // The button sits beside the Navigator, above every page's
+              // Material, so it brings its own: without one the "!" inherits
+              // the framework's fallback text style and its yellow double
+              // underline. Skarmar v12 etapp 9 #fbknapp: paper with a hairline
+              // edge, so the square still reads where it meets the page
+              // colour.
+              child: DecoratedBox(
+                decoration: BoxDecoration(boxShadow: AppShadows.card),
+                child: Material(
+                  color: cs.surface,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: cs.outlineVariant),
+                  ),
+                  child: ButleryControlFocus(
+                    child: PressFill(
+                      surface: PressSurface.base,
+                      child: InkWell(
+                        onTap: _onTap,
+                        child: SizedBox(
+                          width: AppDimensions.minTouchTarget,
+                          height: AppDimensions.minTouchTarget,
+                          child: Center(
+                            child: Text(
+                              '!',
+                              style: AppTextStyles.headlineSmall.copyWith(
+                                color: cs.onSurface,
+                              ),
                             ),
                           ),
                         ),
@@ -188,6 +206,36 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         );
       },
     );
+  }
+
+  Size _stackSize() {
+    final stack = context.findAncestorRenderObjectOfType<RenderStack>();
+    return stack?.size ?? MediaQuery.sizeOf(context);
+  }
+
+  void _onDrag(DragUpdateDetails details) {
+    final size = _stackSize();
+    const box = AppDimensions.minTouchTarget;
+    final left =
+        _dragLeft ?? (_onRight ? size.width - _edgeGap - box : _edgeGap);
+    final top = MediaQuery.paddingOf(context).top;
+    setState(() {
+      _dragLeft = (left + details.delta.dx).clamp(0.0, size.width - box);
+      _bottom = (_bottom - details.delta.dy).clamp(
+        0.0,
+        size.height - box - top,
+      );
+    });
+  }
+
+  void _snapToEdge() {
+    final left = _dragLeft;
+    if (left == null) return;
+    final size = _stackSize();
+    setState(() {
+      _onRight = left + AppDimensions.minTouchTarget / 2 > size.width / 2;
+      _dragLeft = null;
+    });
   }
 
   Future<void> _onTap() async {
