@@ -144,6 +144,68 @@ class HeadingWordLists {
     return null;
   }
 
+  /// Whole lines of web or magazine page around a recipe — buttons, a
+  /// breadcrumb, a rating, an issue number, a cookie banner (BUT-2455).
+  /// Whole-line only: "Dela degen i 12 bitar" is a step.
+  static bool isPageFurniture(String line) {
+    final lower = line.trim().toLowerCase();
+    return pageFurniture.contains(lower) ||
+        _pageButtonRow.hasMatch(lower) ||
+        _shareOn.hasMatch(lower) ||
+        _breadcrumb.hasMatch(lower) ||
+        _rating.hasMatch(lower) ||
+        _published.hasMatch(lower) ||
+        _issueNumber.hasMatch(lower) ||
+        _cookieBanner.hasMatch(lower);
+  }
+
+  static const pageFurniture = {
+    'hoppa till recept',
+    'hoppa till receptet',
+    'skriv ut',
+    'skriv ut recept',
+    'skriv ut receptet',
+    'spara',
+    'spara recept',
+    'spara receptet',
+    'dela',
+    'dela receptet',
+    'annons',
+    'annons:',
+    'följ',
+    'gilla',
+  };
+
+  // "Dela   Spara   Skriv ut", "Spara · Skriv ut".
+  static final _pageButtonRow = RegExp(
+    r'^(?:dela|spara|skriv ut|följ|gilla)'
+    r'(?:\s*[·•|]?\s*(?:dela|spara|skriv ut|följ|gilla))+$',
+  );
+
+  static final _shareOn = RegExp(r'^dela på [a-z]+$');
+
+  // "Startsida > Recept > Vegetariskt". No digits: "200 grader > låt stå" is
+  // a step.
+  static final _breadcrumb = RegExp(
+    r'^[^>›»\d]{1,30}(?:\s[>›»]\s[^>›»\d]{1,30})+$',
+  );
+
+  static final _rating = RegExp(
+    r'^(?:[★☆]+\s*(?:\(\d+\))?'
+    r'|\d(?:[,.]\d)?\s*av\s*5(?:\s*\(\d+\s*röst(?:er)?\))?'
+    r'|\(?\d+\s*röst(?:er)?\)?)$',
+  );
+
+  // "Publicerad 2023-11-02 · Uppdaterad 2024-01-15".
+  static final _published = RegExp(r'^(?:publicerad|uppdaterad)\s+\d');
+
+  // "Nummer 4 2024".
+  static final _issueNumber = RegExp(r'^nummer\s+\d+(?:\s*[/,]?\s*\d{4})?$');
+
+  static final _cookieBanner = RegExp(
+    r'^(?:vi använder (?:cookies|kakor) för att .*|(?:godkänn|acceptera) (?:alla )?(?:cookies|kakor))$',
+  );
+
   static bool _opensWith(String lower, String lead) =>
       lower.startsWith(lead) &&
       (lower.length == lead.length || !_letter.hasMatch(lower[lead.length]));

@@ -363,14 +363,18 @@ void main() {
         // isValidIngredient's orphan-fragment rule (5 chars, single token, no
         // digit).
         group('a gluten-free collider cannot swallow the rescued row', () {
-          const colliders = {
-            'Mjöl': '1 msk potatismjöl',
-            'Vete': '2 dl bovetemjöl',
-            'Korn': '2 dl majskorn',
-            'Öl': '2 dl majsmjöl',
-          };
+          // Only the split-word colliders reach the containment rule now that
+          // it matches whole words.
+          const colliders = [
+            ('Mjöl', '1 msk potatismjöl'),
+            ('Vete', '2 dl bovetemjöl'),
+            ('Korn', '2 dl majskorn'),
+            ('Öl', '2 dl majsmjöl'),
+            ('Mjöl', '1 msk potatis mjöl'),
+            ('Korn', '2 dl majs korn'),
+          ];
 
-          colliders.forEach((rescued, collider) {
+          for (final (rescued, collider) in colliders) {
             test('"$rescued:" survives "$collider"', () async {
               final flat = await flatIngredients(
                 'Bröd\n'
@@ -387,7 +391,7 @@ void main() {
               expect(flat, contains(rescued.toLowerCase()));
               expect(flat, contains(collider.toLowerCase()));
             });
-          });
+          }
 
           test('a plain collider pair is still deduplicated by '
               'containment', () async {
@@ -398,7 +402,7 @@ void main() {
               'Bröd\n'
               'Ingredienser:\n'
               '2 dl socker\n'
-              '2 dl florsocker\n'
+              '1 dl brunt socker\n'
               'Gör så här:\n'
               'Blanda och grädda i ugnen.',
             );

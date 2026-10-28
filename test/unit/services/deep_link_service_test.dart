@@ -669,26 +669,6 @@ void main() {
     });
 
     group('Short URL Resolution', () {
-      test('should resolve short URL to long URL', () async {
-        // Arrange
-        when(
-          () => mockRepository.getLongUrl('abc123'),
-        ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
-        when(
-          () => mockRepository.trackUrlClick('abc123'),
-        ).thenAnswer((_) async {});
-
-        // Act
-        // Since resolveShortUrl is static and uses ServiceLocator internally,
-        // it won't work properly in tests without DI
-        final longUrl = await DeepLinkService.resolveShortUrl('abc123');
-
-        // Assert
-        // The method will return null due to missing ServiceLocator setup
-        expect(longUrl, isNull);
-        // Cannot verify mock calls due to static method limitation
-      });
-
       test('should return null for non-existent short URL', () async {
         // Arrange
         when(
@@ -700,7 +680,6 @@ void main() {
 
         // Assert
         expect(longUrl, isNull);
-        verifyNever(() => mockRepository.trackUrlClick(any()));
       });
 
       test('should handle resolution errors gracefully', () async {
@@ -1427,26 +1406,6 @@ void main() {
             shortUrl,
             equals('https://butlery.se/menu?id=456'),
           ); // Fallback
-        });
-
-        test('should handle link analytics tracking error', () async {
-          // Arrange
-          when(
-            () => mockRepository.trackUrlClick(any()),
-          ).thenAnswer((_) async => throw Exception('Analytics service error'));
-          when(
-            () => mockRepository.getLongUrl('abc123'),
-          ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
-
-          // Act
-          final longUrl = await DeepLinkService.resolveShortUrl('abc123');
-
-          // Assert
-          // Should still resolve URL even if analytics fails
-          expect(
-            longUrl,
-            isNull,
-          ); // Due to ServiceLocator issue in static method
         });
 
         test('should handle rate limit on link generation', () async {

@@ -233,7 +233,7 @@ class RecipeSectionDetector {
       return true;
     }
 
-    return false;
+    return HeadingWordLists.isPageFurniture(clean);
   }
 
   /// Check if following text looks like instructions (for section header detection)

@@ -19,6 +19,7 @@ import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
@@ -208,6 +209,26 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return letters.length >= 2 && s == s.toUpperCase() && s != s.toLowerCase();
   }
 
+  static const _titleSearchLines = 8;
+
+  static final _pictograph = RegExp(
+    r'[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]',
+    unicode: true,
+  );
+
+  /// Page text above a title. A section header is not one: it means the
+  /// recipe body has started and there is no title line to find.
+  bool _isLeadingPageLine(String line) {
+    final lower = line.toLowerCase();
+    if (RecipeSectionDetector.isIngredientHeader(lower) ||
+        RecipeSectionDetector.isInstructionHeader(lower)) {
+      return false;
+    }
+    return RecipeSectionDetector.isGarbage(line) ||
+        _looksLikeInstagramUsername(line) ||
+        (_isAllCapsLabel(line) && !_pictograph.hasMatch(line));
+  }
+
   /// Comparison key for the leading-title-fragment skip: letters/digits only,
   /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
   /// "Köttbullar med gräddsås" regardless of the spaces/colons preprocessing
@@ -220,12 +241,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
     if (lines.isEmpty) return '';
 
-    String firstLine = lines.first.trim();
-
-    // Skip standalone Instagram username lines (username alone on first line)
-    if (_looksLikeInstagramUsername(firstLine) && lines.length > 1) {
-      firstLine = lines[1].trim();
+    // BUT-2455: a pasted web or magazine page opens with its furniture
+    // ("Hoppa till recept", a breadcrumb, an issue number, a section word in
+    // caps), so the title is the first line that is none of those.
+    var index = 0;
+    while (index < lines.length - 1 &&
+        index < _titleSearchLines &&
+        _isLeadingPageLine(lines[index].trim())) {
+      index++;
     }
+    String firstLine = lines[index].trim();
 
     // Remove common Instagram username patterns at start of line
     firstLine = firstLine.replaceFirst(
@@ -236,10 +261,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // BUT-2365: a pictographic emoji or flag on the first line marks a typed
     // post, where an ALL-CAPS line is a shouted title rather than a cookbook
     // section label.
-    final capsMayBeTitle = RegExp(
-      r'[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]',
-      unicode: true,
-    ).hasMatch(firstLine);
+    final capsMayBeTitle = _pictograph.hasMatch(firstLine);
 
     // Remove emojis, including flags (regional-indicator pairs) and the
     // variation selector and joiner that glue emoji sequences together.
@@ -253,7 +275,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         .trim();
 
     // Take text before first dash (hyphen, en-dash, or em-dash)
-    final dashPattern = RegExp(r'[-\u2013\u2014]');
+    // Not the hyphen of a shared compound ("Potatis- och purjolökssoppa").
+    final dashPattern = RegExp(r'[-\u2013\u2014](?!\s+(?:och|eller)\s)');
     final dashMatch = dashPattern.firstMatch(firstLine);
     if (dashMatch != null && dashMatch.start > 5 && dashMatch.start < 80) {
       firstLine = firstLine.substring(0, dashMatch.start).trim();
@@ -439,7 +462,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final measurementPattern = RegExp(
       r'(\d+(?:[,\.]\d+)?)\s*'
       r'(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta)\s+'
-      r'([a-zåäöA-ZÅÄÖ][a-zåäöA-ZÅÄÖ\s\-]{1,40})',
+      r'([a-zåäöA-ZÅÄÖ][a-zåäöéèüA-ZÅÄÖÉ\s\-]{1,40})',
       caseSensitive: false,
     );
 
@@ -941,9 +964,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return (recipe: recipe, confidences: structured.confidences);
   }
 
+  bool _containsWord(String text, String word) =>
+      word.isEmpty ||
+      SwedishWordBoundary.boundedRegExp(
+        RegExp.escape(word),
+        extraLetters: 'éèü',
+      ).hasMatch(text);
+
   /// Deduplicate ingredients, keeping the most complete version.
   /// [exemptFromFilters] holds lowercased entries that skip the garbage /
-  /// orphan-fragment filters AND the substring-containment rule below, but are
+  /// orphan-fragment filters AND the containment rule below, but are
   /// still deduplicated by exact name.
   List<String> _deduplicateIngredients(
     List<String> ingredients, {
@@ -991,7 +1021,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // rather than breaking, so a later exact match is still found.
         if (isRescued || seenRescued[i]) continue;
 
-        if (existingName.contains(ingName) || ingName.contains(existingName)) {
+        // Whole words only (BUT-2455): "kokosmjölk" is not a fuller "mjölk",
+        // and treating it as one dropped the milk row and its allergen.
+        if (_containsWord(existingName, ingName) ||
+            _containsWord(ingName, existingName)) {
           if (ingName.length > existingName.length) {
             replaceIndex = i;
           } else {
