@@ -53,6 +53,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   cook_snaps: [{ client: "cook_snaps" }],
   activity_events: [{ client: "activity_events" }],
   shopping_list_templates: [{ client: "shopping_list_templates" }],
+  deep_links: [{ residue: ["deep_links"] }],
   ingredient_suggestions: [{ client: "ingredient_suggestions" }],
   household_allergen_shares: [{ client: "household_allergen_shares" }],
   recipe_suggestions: [{ client: "recipe_suggestions" }],

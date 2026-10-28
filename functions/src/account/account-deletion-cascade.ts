@@ -45,6 +45,7 @@ export {
   deleteActivityEvents,
   TEMPLATE_SWEEP_PAGE,
   deleteShoppingListTemplates,
+  deleteDeepLinks,
   MAX_SUGGESTION_SWEEP_ROWS,
   deleteIngredientSuggestions,
   RECIPE_SUGGESTION_SWEEP_PAGE,

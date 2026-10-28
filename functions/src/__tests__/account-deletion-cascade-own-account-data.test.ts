@@ -989,6 +989,96 @@ async function scenario_householdAllergenSharesDeclineAboveCap(): Promise<void> 
   );
 }
 
+/**
+ * BUT-2463: the user's short links are erased with their `clicks`, another
+ * user's link stays, and the probe sees a leftover.
+ */
+async function scenario_deepLinksErasedWithClicksAndProbed(): Promise<void> {
+  const {
+    deleteDeepLinks,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set("deep_links/mine0001", {
+    longUrl: `https://butlery.se/recipe/r1?from=${UID}`,
+    createdBy: UID,
+  });
+  store.set("deep_links/mine0001/clicks/c1", { userId: OTHER });
+  store.set("deep_links/mine0001/clicks/c2", { userId: THIRD });
+  store.set("deep_links/mine0002", { longUrl: "x", createdBy: UID });
+  store.set("deep_links/theirs01", {
+    longUrl: `https://butlery.se/recipe/r2?from=${OTHER}`,
+    createdBy: OTHER,
+  });
+  store.set("deep_links/theirs01/clicks/c1", { userId: UID });
+
+  const ok = await deleteDeepLinks(asDb(store), UID);
+
+  check(
+    "the user's links are deleted",
+    ok === true &&
+      !store.has("deep_links/mine0001") &&
+      !store.has("deep_links/mine0002"),
+    `returned ${ok}; left: ${JSON.stringify(store.idsIn("deep_links"))}`,
+  );
+  check(
+    "their clicks are deleted with them",
+    store.pathsUnder("deep_links/mine0001/clicks").length === 0,
+    JSON.stringify(store.pathsUnder("deep_links/mine0001/clicks")),
+  );
+  check(
+    "another user's link and its clicks survive",
+    store.has("deep_links/theirs01") &&
+      store.has("deep_links/theirs01/clicks/c1"),
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only another user's link left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set("deep_links/left0001", { createdBy: UID });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving link is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2463: the sweep pages, so it finishes past one page of links.
+ */
+async function scenario_deepLinksArePaged(): Promise<void> {
+  const { deleteDeepLinks } = require("../account/account-deletion-cascade");
+  const { DEEP_LINK_PAGE } = require("../shared/deep-links");
+
+  const store = new FakeFirestore();
+  for (let i = 0; i < DEEP_LINK_PAGE * 2 + 3; i++) {
+    store.set(`deep_links/l-${i}`, { createdBy: UID });
+  }
+
+  const ok = await deleteDeepLinks(asDb(store), UID);
+
+  check(
+    "every page of links is deleted",
+    ok === true && store.idsIn("deep_links").length === 0,
+    `returned ${ok}; rows left: ${store.idsIn("deep_links").length}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_ownedGroupHouseholdIsTornDown();
   await scenario_featureRetentionRowsAreErased();
@@ -1007,6 +1097,8 @@ async function main(): Promise<void> {
   await scenario_activityEventsErasedByActorAndProbed();
   await scenario_shoppingListTemplatesErasedByOwnerAndProbed();
   await scenario_shoppingListTemplatesArePaged();
+  await scenario_deepLinksErasedWithClicksAndProbed();
+  await scenario_deepLinksArePaged();
 
   finishSuite("BUT-1766/BUT-1768 deletion cascade own account data");
 }

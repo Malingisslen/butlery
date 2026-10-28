@@ -48,6 +48,7 @@ import {
   deleteCookSnaps,
   deleteActivityEvents,
   deleteShoppingListTemplates,
+  deleteDeepLinks,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
@@ -361,6 +362,8 @@ export async function runAccountDeletionWithDeps(
       "shopping_list_templates",
       () => deleteShoppingListTemplates(database, uid),
     ],
+    // BUT-2463: the user's short links and their clicks. Ships with its probe leg.
+    ["deep_links", () => deleteDeepLinks(database, uid)],
     // BUT-2028: uid-keyed rows no erasure path reached. Ships with its probe
     // leg; may find zero rows until a client first writes one.
     [

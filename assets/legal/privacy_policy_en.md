@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 24, 2026
-**Version:** 1.22.0
+**Last updated:** October 28, 2026
+**Version:** 1.23.0
 
 ---
 
@@ -35,6 +35,7 @@ We collect the following types of personal data when you use Butlery:
 - **Profile information:** Display name, biography, food preferences
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
 - **Social features:** Friends, shares, messages
+- **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
 - **Communications:** Messages you send to us or other users
 
 ### 3.2 Information we collect automatically
@@ -263,6 +264,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
@@ -397,7 +399,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 24, 2026
+**Last change:** October 28, 2026
 **Version history:** Available upon request
 
 ---

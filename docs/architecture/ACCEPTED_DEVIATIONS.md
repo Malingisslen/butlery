@@ -6687,3 +6687,24 @@ Decided with the gate (ADR-0034; Malin 2026-10-24, "Lösenord med verifiering").
   (password, unverified) keeps the sign-up session on that one device; every later sign-in is
   refused until the address is verified. The real owner takes the address back with "Glömt
   lösenord" (or with Google for a Gmail address), which ends that session.
+
+## BUT-2463 — short links: retention, erasure and what neither reaches (2026-10-28)
+
+Decided by Malin 2026-10-28 (plan `tasks/but-2463-deep-links-gdpr-plan.md`, N = 14 days).
+
+- **Retention is 14 days.** `cleanupExpiredDeepLinks` (`functions/src/cleanup/cleanup-deep-links.ts`)
+  runs daily at 03:30 UTC and deletes every `deep_links` document whose `createdAt` is older than
+  `DEEP_LINK_RETENTION_DAYS`, with its `clicks`, at most `MAX_DEEP_LINKS_PER_RUN` per run; the
+  rest waits for the next run.
+- **Erasure.** Tier 1 step `deep_links` (`deleteDeepLinks`) deletes the user's links on
+  `createdBy == uid`, with their `clicks`, and the residual probe counts what is left. The
+  Art. 15 section `deep_links` reads the same predicate.
+- **Clicks are no longer recorded.** The app's click write and its readers are gone, the rules
+  refuse every read and write under `clicks` and every update of a link, and rows already written
+  go with their link.
+- **A link can be read by code, not listed.** Any signed-in account may `get` a link whose code
+  it holds; `list` is refused.
+- **A link already sent cannot be recalled.** Deleting the document does not reach the copy in
+  the recipient's hands.
+- **A document whose `createdAt` is not a Timestamp** never matches the retention query; only the
+  cascade reaches it, on its creator's erasure.

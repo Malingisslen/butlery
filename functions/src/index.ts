@@ -164,6 +164,8 @@ export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupExpiredSocialRequests } from "./cleanup/cleanup-expired-social-requests";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 export { cleanupOldSystemEvents } from "./cleanup/cleanup-system-events";
+// BUT-2463: short links older than 14 days are deleted with their clicks.
+export { cleanupExpiredDeepLinks } from "./cleanup/cleanup-deep-links";
 // BUT-920: guest accounts unused for 30 days are erased with everything in them.
 export { cleanupInactiveGuests } from "./cleanup/cleanup-inactive-guests";
 

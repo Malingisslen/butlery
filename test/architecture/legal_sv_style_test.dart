@@ -49,6 +49,16 @@ void main() {
     expect(en, contains('thrown away automatically after 30 days'));
   });
 
+  test('the privacy policy names share links and their 14 days', () {
+    final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
+    final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
+
+    expect(sv, contains('Kortlänken raderas automatiskt efter 14 dagar'));
+    expect(sv, contains('| Kortlänkar när du delar eller bjuder in'));
+    expect(en, contains('The short link is deleted automatically after 14 days'));
+    expect(en, contains('| Short links when you share or invite'));
+  });
+
   // BUT-2452: no real invite is entered before these lines are published.
   test('the privacy policy names the guest list, its basis and its retention', () {
     final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();

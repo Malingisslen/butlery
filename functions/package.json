@@ -133,6 +133,7 @@
     "test:purge-audit-logs": "ts-node src/__tests__/purge-audit-logs.test.ts",
     "test:cleanup-audit-logs": "ts-node src/__tests__/cleanup-audit-logs.test.ts",
     "test:cleanup-system-events": "ts-node src/__tests__/cleanup-system-events.test.ts",
+    "test:cleanup-deep-links": "ts-node src/__tests__/cleanup-deep-links.test.ts",
     "test:cleanup-recipe-storage": "ts-node src/__tests__/cleanup-recipe-storage.test.ts",
     "test:cleanup-trash-storage": "ts-node src/__tests__/cleanup-trash-storage.test.ts",
     "test:cleanup-row-images": "ts-node src/__tests__/cleanup-row-images.test.ts",
