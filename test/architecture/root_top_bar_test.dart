@@ -1,6 +1,5 @@
-// BUT-2368: the root bar belongs to the main tabs. Every other page is a
-// subpage and gets ButleryTopBar.undersida (Komponentark v1 §01: "Inga andra
-// varianter"). A new root bar means a new main tab, so it is added here on
+// BUT-2368: the root bar belongs to the main tabs.
+// A new root bar means a new main tab, so it is added here on
 // purpose or not at all.
 
 import 'dart:io';

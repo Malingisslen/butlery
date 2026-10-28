@@ -51,8 +51,8 @@ class AuthService extends ChangeNotifier
 
   bool _sessionExpired = false; // ignore: prefer_final_fields
 
-  /// A sign-in waiting for its second factor (P6-U09; Skarmar v12 etapp 3
-  /// #authmfa). The password was right; the account has two-step
+  /// A sign-in waiting for its second factor (P6-U09
+  /// ). The password was right; the account has two-step
   /// verification, so Firebase handed back a resolver instead of a user.
   MfaResolverInfo? _pendingMfa;
 

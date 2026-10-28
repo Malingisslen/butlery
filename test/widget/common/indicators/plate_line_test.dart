@@ -1,8 +1,4 @@
 /// Widget tests for PlateLine, the app's single loading indicator.
-///
-/// Komponentark v1:303-309 draws two free-standing forms: determinate fills
-/// left to right in saffron, indeterminate is a still segment that pulses in
-/// opacity in place and stands still under reduced motion.
 library;
 
 import 'package:flutter/material.dart';
@@ -64,7 +60,7 @@ void main() {
       );
     });
 
-    testWidgets('sits at 22 % and spans 34 % of the line (v1:306)', (
+    testWidgets('sits at 22 % and spans 34 % of the line', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(const PlateLine()));
@@ -170,7 +166,7 @@ void main() {
     });
   });
 
-  group('PlateLineMessage — plate line plus text (produktregler.md:163)', () {
+  group('PlateLineMessage — plate line plus text', () {
     testWidgets('lays out inside an AlertDialog, which measures intrinsics', (
       tester,
     ) async {

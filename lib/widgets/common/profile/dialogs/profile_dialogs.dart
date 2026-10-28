@@ -29,8 +29,8 @@ class ProfileDialogs {
   /// The longest deletion reason sent to the audit record.
   static const int deleteReasonMaxLength = 500;
 
-  /// Sign-out with unsaved changes (Skarmar v12 del 4 #utloggningko;
-  /// produktregler.md:193). The count and what the changes concern are said
+  /// Sign-out with unsaved changes
+  /// The count and what the changes concern are said
   /// in plain words; the destructive way out is named and never the default.
   ///
   /// "Visa vad som väntar" is drawn too. It opens the queue view, which does
@@ -140,8 +140,8 @@ class ProfileDialogs {
     );
   }
 
-  /// Re-authentication as a step, not an error (produktregler.md:612;
-  /// Skarmar v12 etapp 5-7 #kontoreauth). Returns true for "Logga in igen".
+  /// Re-authentication as a step, not an error
+  /// Returns true for "Logga in igen".
   static Future<bool> showDeletionReauthStep(BuildContext context) async {
     final l10n = context.l10n;
     final result = await showDialog<bool>(

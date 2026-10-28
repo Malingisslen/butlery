@@ -13,9 +13,6 @@ void main() {
 
   test('Q6-04 = C: the camera explanation says the photo is sent only to '
       'read the text, and never that it stays on the phone', () {
-    // Skarmar v12 etapp 3 #behkamera draws "Bilden stannar på telefonen om
-    // du inte själv delar den.", which is not true: the photo is sent to the
-    // service that reads the text.
     expect(
       sv.permImportCameraBody,
       'Vi läser texten ur bilden och fyller i receptet åt dig. '
@@ -35,7 +32,7 @@ void main() {
     expect(en.cookingNoStepsSaveCopy, 'Save my copy');
   });
 
-  test('Q6-08 = A: a member suggests a change (produktregler.md:247)', () {
+  test('Q6-08 = A: a member suggests a change', () {
     expect(sv.recipeSuggestChange, 'Föreslå ändring');
     expect(en.recipeSuggestChange, 'Suggest a change');
   });

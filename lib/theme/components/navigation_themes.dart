@@ -55,12 +55,8 @@ class NavigationThemes {
     );
   }
 
-  /// The selected tab's plate line: 3 px tall, radius 2 (Komponentark
-  /// v1:112, `height:3px;border-radius:2px`).
   static const double tabPlateLineHeight = 3.0;
 
-  /// The plate line runs 5 px past the word on each side (Komponentark
-  /// v1:106, "tallrikslinje = ordets bredd + 5 px per sida").
   static const double tabPlateLineOverhang = 5.0;
 
   /// Tab bar theme
@@ -71,10 +67,7 @@ class NavigationThemes {
   /// which is surface.ink in both schemes and vanished on the dark page
   /// (#17251D).
   ///
-  /// Labels: the selected word is text.primary (cs.onSurface: #24382C light,
-  /// #F5F4ED dark) at weight 700, the resting word text.secondary
-  /// (cs.onSurfaceVariant) at weight 600, as
-  /// drawn in Komponentark v1:106, :112-113. A view that
+  /// A view that
   /// sets its own labelColor (friends_list_view.dart,
   /// group_shared_content_section.dart) still overrides this.
   static TabBarThemeData tabBarTheme(ColorScheme cs) {
@@ -114,7 +107,7 @@ class NavigationThemes {
   /// border-radius 8px (tokens.json space.radius.control).
   /// Background is paper in light mode and surface.raised in dark mode.
   /// Like a sheet, the layer has no shadow: the scrim and a 1 px edge in
-  /// border-control separate it from the page (Komponentark §09). Dialogs
+  /// border-control separate it from the page. Dialogs
   /// must NOT hand-override shape/background (BUT-1237): the theme is the
   /// single source.
   static DialogThemeData dialogTheme(ColorScheme cs) {
@@ -142,12 +135,11 @@ class NavigationThemes {
   static BottomSheetThemeData bottomSheetTheme(ColorScheme cs) {
     return BottomSheetThemeData(
       backgroundColor: _layerSurface(cs),
-      // Komponentark §09: "Noll skugga. Scrim + 1 px kontrastkant." The
+      // The
       // layer is separated by the scrim and a border-control edge.
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      // Sheets round only their top edge, 12 (Komponentark: "Ark: 12 px
-      // överkant"). The bottom edge meets the screen edge and stays sharp.
+      // The bottom edge meets the screen edge and stays sharp.
       shape: RoundedRectangleBorder(
         side: BorderSide(color: cs.outline),
         borderRadius: const BorderRadius.vertical(
@@ -161,7 +153,7 @@ class NavigationThemes {
       constraints: const BoxConstraints(
         maxWidth: AppDimensions.dialogMaxWidthLarge,
       ),
-      // The handle is 44 × 4 in border-control (Komponentark §09). Only
+      // The handle is 44 × 4 in border-control. Only
       // showButlerySheet turns it on.
       dragHandleColor: cs.outline,
       dragHandleSize: const Size(44, 4),

@@ -433,7 +433,7 @@ void main() {
       expect(photo.width, greaterThan(0));
       // The LITERAL 9/16, not a constant the widget reads: dividing by the
       // same constant restates `AspectRatio`'s own guarantee and cannot fail.
-      // The number is the covered fact here (Komponentark v1: bild 16:9).
+      // The number is the covered fact here.
       expect(
         photo.height,
         closeTo(photo.width * 9 / 16, 0.5),

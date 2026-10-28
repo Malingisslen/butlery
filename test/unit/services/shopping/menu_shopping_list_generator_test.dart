@@ -411,8 +411,6 @@ void main() {
       // Proves: re-running the week for the same week targets the existing
       // MARKED list (no "Inköpslista v.24 (2)" pile-up). The rows an earlier
       // merge put there are replaced; a row the user typed is always kept
-      // (produktbeslut PQ-10 = A supersedes
-      // produktregler.md:704, where manual rows did not survive).
       seedTwoRecipePlan();
       final stale = UnifiedShoppingItem(
         id: 'stale-row',
@@ -942,8 +940,7 @@ void main() {
 
     test('PQ-11 = A: the pantry subtracts known amounts — enough at home '
         'leaves the row off, less adds the difference', () async {
-      // produktregler.md:224-234 (§ 4.2), which PQ-11 = A put in place of
-      // § 8.7's whole-staple-row exclusion: 5 dl needed, 2 dl at home -> 3
+      // 5 dl needed, 2 dl at home -> 3
       // dl on the list; 1 tsk salt needed, 1 dl at home -> not on the list.
       when(
         () => menuService.readWeek(any()),
@@ -1033,7 +1030,7 @@ void main() {
     });
 
     test('a failing pantry never blocks generation — the list is built '
-        'without deduction (produktregler.md:697)', () async {
+        'without deduction', () async {
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));

@@ -86,19 +86,19 @@ void main() {
         expect(radius.bottomRight, Radius.zero);
       });
 
-      // P7-U04 (Q10): the drawings name these three radii.
-      test('dialogs take the control radius, 8 (Komponentark v1:336)', () {
+      // P7-U04 (Q10).
+      test('dialogs take the control radius, 8', () {
         expect(_radiusOf(theme.dialogTheme.shape as OutlinedBorder?), control);
       });
 
-      test('snackbars take the control radius, 8 (Komponentark v1:746)', () {
+      test('snackbars take the control radius, 8', () {
         expect(
           _radiusOf(theme.snackBarTheme.shape as OutlinedBorder?),
           control,
         );
       });
 
-      test('the create button is round (Komponentark v1:665)', () {
+      test('the create button is round', () {
         expect(theme.floatingActionButtonTheme.shape, isA<CircleBorder>());
       });
 

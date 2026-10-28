@@ -1,5 +1,4 @@
-// Komponentark v1 has two badges, the status pill (§08) and the counter
-// (v1:741), and UnifiedBadge draws both (BUT-2373). A class under lib/ named
+// A class under lib/ named
 // like a badge or a pill builds a UnifiedBadge instead of drawing its own
 // box. The classes below still draw their own: each is pinned with the
 // reason it has not moved, so a new hand-drawn badge reddens, and so does a

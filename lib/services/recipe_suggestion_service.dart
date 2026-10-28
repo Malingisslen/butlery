@@ -1,8 +1,6 @@
 /// P5-U27b: suggestions to someone else's shared recipe, for 7 days.
 ///
-/// produktregler.md:103 (the owner's version wins, the change becomes a
-/// suggestion, "Se ditt förslag", 7 days) and :241 (the owner accepts or
-/// dismisses it). RealtimeSyncService stores the suggestion when a
+/// RealtimeSyncService stores the suggestion when a
 /// non-owner's edit meets the owner's; this service lists the ones still kept
 /// and carries out the owner's decision.
 ///

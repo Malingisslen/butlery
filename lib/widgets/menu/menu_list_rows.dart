@@ -317,7 +317,7 @@ class _SwapButton extends StatelessWidget {
   Future<void> _swap(BuildContext context) async {
     final result = await viewModel.swapRecipe(recipe, category);
     if (!context.mounted) return;
-    // The ink snackbar, never a saffron fill (Komponentark v1:745-750, :300;
+    // The ink snackbar, never a saffron fill (
     // PQ-09 = A).
     if (result.recipe == null) {
       SnackBarUtils.showInfo(

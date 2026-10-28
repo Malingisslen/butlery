@@ -1,7 +1,6 @@
 // P5-U34: locked control geometry.
 //
-// Komponentark v1:33 ("Låst geometri") and §03 :134-176 draw the controls
-// with fixed sizes, and tokens.json controls (:803-866) carries them. These
+// These
 // tests measure what the theme can lock and keep it from drifting.
 //
 // Not measured here, because Flutter's Material controls hard-code them and
@@ -40,7 +39,7 @@ void main() {
         .first;
 
     group(
-      'chip ($name) — tokens.json controls.chip, Komponentark v1:134-140',
+      'chip ($name) — tokens.json controls.chip',
       () {
         testWidgets('34 px visible inside a 48 dp hit area', (tester) async {
           await pump(

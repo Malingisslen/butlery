@@ -262,8 +262,7 @@ void main() {
     );
   });
 
-  // P6-U07 (flow 07): the typed outcome. flows-roles-budget.md:98-106;
-  // produktregler.md:680-687.
+  // P6-U07 (flow 07): the typed outcome.
   group('OsPermissionHelper.request — typed outcome', () {
     Future<OsPermissionOutcome> request(
       BuildContext context,
@@ -360,7 +359,7 @@ void main() {
         expect(
           find.byKey(InkSnackBarAction.actionKey),
           findsNothing,
-          reason: 'there is nothing the user can do (flows-roles-budget:104)',
+          reason: 'there is nothing the user can do',
         );
       },
     );
@@ -399,7 +398,7 @@ void main() {
         gateway,
         skipRationale: true,
         rationale: (_, __, ___, ____) async =>
-            fail('a second explanation is not shown (produktregler:683)'),
+            fail('a second explanation is not shown'),
       );
 
       expect(outcome, OsPermissionOutcome.granted);

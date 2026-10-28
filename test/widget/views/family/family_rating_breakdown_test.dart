@@ -1,6 +1,4 @@
-/// The family-rating breakdown in the recipe detail, drawn as Skarmar v12
-/// del 3 #betygsoversikt has it: the average as a pill, one row per diner
-/// with "★ 5,0", and the legend. Real repository stack on a fake store.
+/// Real repository stack on a fake store.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';

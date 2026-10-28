@@ -1,6 +1,3 @@
-/// Skarmar v12 'Importera från arkiv': ticking rows, "Välj alla", the "Fler"
-/// sheet and the restore button's count all drive the same view model the
-/// import runs from, so they are pinned against the real one.
 library;
 
 import 'package:flutter/material.dart';

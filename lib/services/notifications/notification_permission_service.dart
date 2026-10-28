@@ -123,7 +123,7 @@ class NotificationPermissionService extends BaseService {
 
   /// Whether the phone lets Butlery post notifications right now, read
   /// without asking. iOS and Android 12 or lower count as allowed: the
-  /// question is only asked on Android 13 and later (produktregler.md:685;
+  /// question is only asked on Android 13 and later (
   /// iOS permission is owned by `FCMService`). Plugin failures count as
   /// allowed, so no false warning is shown.
   Future<bool> notificationsAllowed() async =>
@@ -147,10 +147,7 @@ class NotificationPermissionService extends BaseService {
     }
   }
 
-  /// True when notifications are switched off for Butlery in the phone's
-  /// settings (a permanent no or a device block), so no switch in the app
-  /// means anything until that changes (Skarmar v12
-  /// etapp 3 #behnotiser). A not-yet-asked permission is not "off": the
+  /// A not-yet-asked permission is not "off": the
   /// master switch still asks.
   Future<bool> blockedInSystem() async {
     if (kIsWeb) return false;
@@ -169,9 +166,7 @@ class NotificationPermissionService extends BaseService {
   /// Opens the phone's settings for Butlery.
   Future<bool> openSystemSettings() => _gateway.openSettings();
 
-  /// What happens before a timer starts (flow 04 "app i bakgrunden", flow 07
-  /// "Notiser → timers syns bara i appen (sägs explicit)";
-  /// produktregler.md:682-685). The timer starts whatever the user picks —
+  /// The timer starts whatever the user picks —
   /// the feature is never hard-gated.
   ///
   /// - iOS, Android 12 or lower, or already allowed: nothing.
@@ -179,9 +174,7 @@ class NotificationPermissionService extends BaseService {
   ///   (`denied`): our explanation, then the OS prompt. A no there is said
   ///   in one line: the timer only shows in the app.
   /// - A permanent no or a device block: the notice that the timer only
-  ///   shows in the app, with the phone's settings as the way back (a
-  ///   permanent no only; a device block gets no button,
-  ///   flows-roles-budget.md:104).
+  ///   shows in the app
   ///
   /// Returns true when the user was told anything, so the caller does not
   /// ask again in the same cooking session.

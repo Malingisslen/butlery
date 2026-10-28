@@ -1,9 +1,5 @@
 /// P5-U27b: one suggestion to a shared recipe, field by field.
 ///
-/// produktregler.md:103: the owner's version wins and the other person's
-/// change is kept as a suggestion, reached through "Se ditt förslag", for 7
-/// days. produktregler.md:241: the owner accepts or dismisses it.
-///
 /// Two readers, one view. The suggester sees what they suggested against the
 /// recipe as it is now, and when it is kept until. The owner sees the same
 /// and decides: "Använd förslaget" or "Avvisa förslaget".

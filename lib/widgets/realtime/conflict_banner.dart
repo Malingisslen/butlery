@@ -152,8 +152,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
   static bool _isSuggestion(ConflictEvent event) =>
       event.entity == ConflictEntity.recipeShared && event.suggestionId != null;
 
-  /// The drawn title names what has two versions (Komponentark v1:756 draws
-  /// "Två versioner av listan"). P5-U27b: on someone else's shared recipe
+  /// P5-U27b: on someone else's shared recipe
   /// there are not two versions to choose between, so the title says the
   /// owner's version stays. Q6-08 = A: that holds without a stored
   /// suggestion too, since a member never writes the owner's recipe.
@@ -208,7 +207,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
 
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    // Komponentark v1:755-757. The glyph is text.danger (colorScheme.error:
+    // The glyph is text.danger (colorScheme.error:
     // #9C3B23 light, #DE9078 dark, tokens.json) and carries the kind in
     // dark mode, where every tint is the same colour. Title text.primary
     // (onSurface: #24382C / #F5F4ED, tokens.json), body text.body
@@ -230,7 +229,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
           ),
           child: Material(
             color: context.modeColors.surfaceTintDanger,
-            // Komponentark v1:755 border-radius:8px = radius.control
+            // border-radius:8px = radius.control
             // (tokens.json:479, :483 'control 8 = knappar, fält, brickor').
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(

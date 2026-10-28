@@ -1,7 +1,7 @@
 /// P4-U05, P4-U06, P4-U07: the recipe views and their image and cooking
 /// widgets load with the plate line or a still plate, never a spinner, and
-/// never with a textless StateWidget.loading() (Grafisk manual v6:209;
-/// Komponentark v1:303-309; the unit test plans: "ingen textlös
+/// never with a textless StateWidget.loading() (
+/// the unit test plans: "ingen textlös
 /// StateWidget.loading() och ingen LoadingIndicator", "ingen
 /// LinearProgressIndicator i image_picker_dialogs").
 ///

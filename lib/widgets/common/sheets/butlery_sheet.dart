@@ -1,8 +1,7 @@
 // lib/widgets/common/sheets/butlery_sheet.dart
 //
-// The one way a bottom sheet opens (BUT-2373). Komponentark §09 locks every
-// sheet to the same frame: 12 px top edge, a handle in border-control, a
-// sharp bottom edge, no shadow. The frame lives in the theme
+// The one way a bottom sheet opens (BUT-2373).
+// The frame lives in the theme
 // (NavigationThemes.bottomSheetTheme), so this helper takes no shape or
 // colour; test/architecture/bottom_sheet_helper_test.dart keeps raw
 // showModalBottomSheet calls out of lib/.

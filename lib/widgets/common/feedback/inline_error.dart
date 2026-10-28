@@ -90,7 +90,6 @@ class InlineError extends StatelessWidget {
       child: Material(
         key: boxKey,
         color: cs.surface,
-        // Komponentark v1:755 border-radius:8px = radius.control.
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           side: BorderSide(

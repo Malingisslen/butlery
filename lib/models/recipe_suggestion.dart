@@ -1,9 +1,7 @@
 /// P5-U27b: a change to someone else's shared recipe, kept as a suggestion.
 ///
-/// produktregler.md:103: "Recept (delat, andras) · Ägarens version vinner, din
+/// "Recept (delat, andras) · Ägarens version vinner, din
 /// ändring blir ett förslag · banner + 'Se ditt förslag' · ja, 7 dagar".
-/// produktregler.md:241: a member cannot edit a recipe someone else owns; the
-/// change is kept as a suggestion that the owner accepts or dismisses.
 /// PQ-02 = A (2026-09-23) put the store in package 6.
 ///
 /// Where it lives: the top-level `recipe_suggestions/{id}`, because two people

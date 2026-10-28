@@ -69,8 +69,8 @@ class UploadQueueEntries extends Table {
   /// the recipe create in the sync queue that the image belongs to
   TextColumn get dependsOn => text().nullable()();
 
-  /// Set when the upload will never be retried ("Bilden är för stor",
-  /// produktregler.md:189). It stays in the queue for the user to decide on
+  /// Set when the upload will never be retried ("Bilden är för stor"
+  /// ). It stays in the queue for the user to decide on
   /// and is never deleted without her.
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();

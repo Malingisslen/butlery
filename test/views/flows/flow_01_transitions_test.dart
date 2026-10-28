@@ -1,9 +1,8 @@
 /// P8-U03 · flow 01, the week menu transitions that only the view decides
-/// and that had no test (fas2/block288-
-/// uxfrysning.json overgangar; fas2/ux-beslut.json D-03 and D-04).
+/// and that had no test
 ///
 /// - TR::FLOW::01::tom-vecka::generera: an empty week, Generera, and the
-///   week is planned in the same view (#veckogenererar).
+///   week is planned in the same view.
 /// - TR::FLOW::01::vecka-med-rätter::generera: a week with dishes asks
 ///   "Skriv över" BEFORE anything is computed.
 /// - TR::FLOW::01::resultat::placera-i-veckan (D-04): the generated result
@@ -377,7 +376,7 @@ void main() {
     });
   });
 
-  group('ux-beslut D-03: no long wait and no background choice', () {
+  group('no long wait and no background choice', () {
     testWidgets('a planning that takes 40 s stays the same state in the same '
         'view, with no "Fortsätt i bakgrunden"', (tester) async {
       await runOnMonday(() async {

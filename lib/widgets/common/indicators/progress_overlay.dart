@@ -57,7 +57,7 @@ class ProgressOverlay extends StatelessWidget {
           shape: shape,
           color: backgroundColor ?? AppColors.overlayBlack60,
         ),
-        // Text plus the plate line, never a spinner (produktregler.md:163,
+        // Text plus the plate line, never a spinner (
         // B-18). They sit on an opaque paper card, because the scrim alone
         // cannot guarantee a reading colour over an arbitrary photo (B102).
         // The line takes the in-button form in the text's own colour

@@ -1,8 +1,8 @@
 /// Pins the hero (saffron) button style to its token pairs and guards the
 /// ink primaries against drifting to saffron (decision D4).
 ///
-/// Sources: Komponentark v1:370-373 and :843-844; tokens.json:81-91,
-/// :137-144 and the contrast pairs at :657-666; beslutslogg B-14.
+/// Sources: tokens.json:81-91,
+/// :137-144 and the contrast pairs at :657-666.
 library;
 
 import 'package:flutter/material.dart';

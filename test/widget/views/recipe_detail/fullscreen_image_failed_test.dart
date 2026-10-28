@@ -1,10 +1,7 @@
 // A photo that exists but failed to load (P5-U11).
 //
-// Sources: Komponentark v1:839 (case 4: keep the surface in surface.raised,
-// the image glyph in text.secondary, "Bilden kunde inte visas", a silent
-// retry when the network returns), Skarmar v12 del 4 #receptbildfel (the
-// second line "Försöker igen när nätet är tillbaka", and no button: the
-// user can do nothing about the network), tillganglighetshandoff:188 (role
+// Sources:
+// tillganglighetshandoff:188 (role
 // status, the text read once, the glyph decorative).
 import 'dart:io';
 

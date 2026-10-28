@@ -1,5 +1,5 @@
-/// BUT-2157: "Avbryt planeringen" under the planning panel (Skarmar v12 del
-/// 1 #veckogenererarpanel): an outlined 48 dp button with the note on what
+/// BUT-2157: "Avbryt planeringen" under the planning panel
+/// an outlined 48 dp button with the note on what
 /// cancelling keeps (Q1 = B).
 library;
 

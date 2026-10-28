@@ -1,10 +1,7 @@
 // lib/widgets/common/state/hem_empty_state.dart
 //
-// HEM-HERO: Hem with no recipes, Skarmar v12 del 4 #hemtom (:587-615) and
-// produktregler.md:284-288 (§ 6.4): "Beskriver läget, inte problemet, och har
-// en hjältehandling: Lägg till recept. Under den ligger högst tre genvägar
-// som förklarar sig med en rad var. Allergipåminnelsen ligger sist och är en
-// länk, inte en dialog." No illustration (B-19).
+// HEM-HERO: Hem with no recipes
+// No illustration (B-19).
 //
 // The greeting above it ("Välkommen, Maja") is HemGreeting in HemSection.
 //
@@ -31,7 +28,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
-/// Hem when the library is empty (#hemtom).
+/// Hem when the library is empty.
 class HemEmptyState extends StatelessWidget {
   const HemEmptyState({super.key});
 
@@ -173,7 +170,7 @@ class HemEmptyState extends StatelessWidget {
 }
 
 /// One shortcut: a title with its one-line explanation, 64 dp tall, a
-/// border.subtle rule under it (#hemtom :115).
+/// border.subtle rule under it.
 class _ShortcutRow extends StatelessWidget {
   const _ShortcutRow({
     required this.route,

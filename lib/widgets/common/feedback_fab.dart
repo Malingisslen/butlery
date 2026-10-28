@@ -238,9 +238,7 @@ class _FeedbackFABState extends State<FeedbackFAB>
                 // The button sits beside the Navigator, above every page's
                 // Material, so it brings its own: without one the "!" inherits
                 // the framework's fallback text style and its yellow double
-                // underline. Skarmar v12 etapp 9 #fbknapp: paper with a hairline
-                // edge, so the square still reads where it meets the page
-                // colour.
+                // underline.
                 child: DecoratedBox(
                   key: _fabKey,
                   decoration: BoxDecoration(boxShadow: AppShadows.card),

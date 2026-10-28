@@ -27,10 +27,8 @@ import 'package:butlery/widgets/common/layout/word_fit.dart';
 class MarkdownBody extends StatefulWidget {
   final String data;
 
-  /// False while the device is offline. Web links (http/https) then render
-  /// as plain text without the link role, and one line above the document
-  /// says why (Grafisk manual v6:665: actions that need the network become
-  /// inactive with an explanatory text, not only dimmed). Mail links stay
+  /// False while the device is offline.
+  /// Mail links stay
   /// active: opening the mail app needs no connection.
   final bool webLinksEnabled;
 

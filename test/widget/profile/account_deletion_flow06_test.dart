@@ -1,7 +1,4 @@
-// P6-U06 — flow 06 account deletion (produktregler.md:607-616, § 11;
-// Skarmar v12 etapp 5-7 #kontoradera #kontovantan #kontoreauth): the reason is
-// asked first and reaches the request, the waiting state cannot be cancelled,
-// re-authentication is a step. Since BUT-950 the confirmation schedules the
+// Since BUT-950 the confirmation schedules the
 // deletion and says when the account goes; the partial-deletion outcome now
 // belongs to the immediate deletion (see the pending-deletion view test).
 

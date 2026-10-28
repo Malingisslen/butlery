@@ -213,8 +213,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       leading: null,
       titleStyle: null,
       actions: <Widget>[
-        // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
-        // produktregler.md:870-874). Long-press stays as a shortcut.
+        // Long-press stays as a shortcut.
         if (ButlerySelectButton.shownFor(tagCount))
           ButlerySelectButton(
             key: const ValueKey('personal-tags-select-enter'),
@@ -248,10 +247,6 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         .whereType<PersonalTag>()
         .toList();
 
-    // Multi-select keeps the bar and changes its content: "Avbryt" on the
-    // left instead of an X, the count in tabular figures (produktregler.md
-    // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
-    // samman taggar").
     return (
       leading: ButleryCancelSelectionButton(onPressed: selection.exitSelection),
       // "{n} valda" in tabular figures.
@@ -385,8 +380,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
   }
 
-  /// P5-U33: a bulk delete where only some tags went (produktregler.md:
-  /// 905-909; the shared surface of Skarmar v12 etapp 9 :390-393). It says
+  /// It says
   /// how many of how many went, names the tags that went, names each tag
   /// that is still there with its reason, and those stay selected. "Klart"
   /// leaves selection mode.

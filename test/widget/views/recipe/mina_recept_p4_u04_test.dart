@@ -3,9 +3,8 @@
 /// - The selection mode shows the count and "Avbryt" in place of the back
 ///   arrow, never an X.
 /// - A chosen card is surface.selected with a real border, never a tint
-///   (tokens.json:116-119, opacityLadder :40-53; #flerbar).
-/// - The empty library has exactly one saffron action (produktregler.md:292;
-///   Grafisk manual v6:219; Skarmar v12 del 4 #hemtom).
+///   (tokens.json:116-119, opacityLadder :40-53).
+/// - The empty library has exactly one saffron action
 /// - The recipe card follows its own focus node for the ring.
 library;
 
@@ -118,8 +117,6 @@ void main() {
       verify(() => viewModel.clearSelection()).called(1);
     });
 
-    // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: three
-    // actions in the bar, the other three in a kebab with delete last.
     for (final width in [320.0, 390.0]) {
       testWidgets('fits a $width dp phone without overflow', (tester) async {
         tester.view.physicalSize = Size(width, 800);
@@ -188,7 +185,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('mina-recept-bulk-more')));
       await tester.pumpAndSettle();
-      // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle (P5-U31).
+      // "Markera alla 24", a toggle (P5-U31).
       expect(find.text('Markera alla 3'), findsOneWidget);
       expect(find.text('Exportera valda'), findsOneWidget);
       expect(find.byType(PopupMenuDivider), findsOneWidget);
@@ -300,8 +297,7 @@ void main() {
       ('dark', AppTheme.darkTheme),
     ]) {
       testWidgets('has exactly one saffron action ($mode)', (tester) async {
-        // HEM-HERO: the empty library is Hem's empty state (Skarmar v12
-        // del 4 #hemtom; produktregler.md:286 "en hjältehandling").
+        // HEM-HERO: the empty library is Hem's empty state
         await tester.pumpWidget(
           _app(const Scaffold(body: HemEmptyState()), theme: theme),
         );

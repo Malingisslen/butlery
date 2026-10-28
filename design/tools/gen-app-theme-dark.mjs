@@ -14,8 +14,7 @@
 // inte hemma här — de står kvar i AppColors.
 //
 // De fyra appspecifika dekorfärgerna (dryck, städ, snacks, konserv) hör INTE
-// hit. tokens.json säger dataScale.categorical = null och produktreglerna § 8.3b
-// säger att kategorin bärs av namnet och att färgrutan är dekor. De ägs av
+// hit. tokens.json säger dataScale.categorical = null. De ägs av
 // appen, inte av designsystemet.
 import { readFileSync } from 'node:fs';
 import { header } from './gen-header.mjs';
@@ -85,7 +84,7 @@ function render(rader) {
   L.push('// stället för att bära en egen mörk palett.');
   L.push('//');
   L.push('// Här finns inga appspecifika färger. Kategorifärgerna är dekor och ägs');
-  L.push('// av appen; se produktregler.md § 8.3b och tokens.json dataScale.');
+  L.push('// av appen; se tokens.json dataScale.');
   L.push("import 'package:flutter/material.dart';");
   L.push('');
   L.push('/// Det mörka lägets kanoniska färger, genererade ur tokens.json.');

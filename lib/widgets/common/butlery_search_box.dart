@@ -1,6 +1,5 @@
 /// The search field: paper with a 1 px border.control edge, radius 8, no
-/// shadow, and the focus ring outside it (Komponentark v1 §07 Sökfält:
-/// "Papper + border-control. Aldrig border-subtle, aldrig #FFF").
+/// shadow, and the focus ring outside it
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -41,8 +40,7 @@ class ButlerySearchBox extends StatefulWidget {
   });
 
   /// The box over an empty library: disabled, saying there is nothing to
-  /// search yet instead of inviting a search (Komponentark v1 §07
-  /// "Inaktiverad (tomt bibliotek)").
+  /// search yet instead of inviting a search
   const ButlerySearchBox.nothingToSearch({super.key})
     : controller = null,
       hintText = null,
@@ -92,7 +90,7 @@ class ButlerySearchBox extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// Chosen terms drawn as removable chips inside the box, before the
-  /// text (Komponentark v1 §07 "Tokeniserad"); the search glyph gives way
+  /// text; the search glyph gives way
   /// to them. A list, even an empty one, keeps the box in this layout, so
   /// the field keeps its focus as the first term is added or the last is
   /// removed.

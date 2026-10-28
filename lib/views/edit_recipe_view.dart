@@ -239,8 +239,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  /// Mönster 4 · Modal (Skarmar v12 etapp 4
-  /// #editorutkast): the editor is a modal with X, never a back arrow. The
+  /// Mönster 4 · Modal
+  /// : the editor is a modal with X, never a back arrow. The
   /// bar is light, with the title in 14/700 and the draft state to the
   /// right. Closing goes through the same unsaved-changes guard as the
   /// system back gesture (PopScope above).
@@ -342,8 +342,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (viewModel.editMode == null ||
         mode == EditMode.owner ||
         mode == EditMode.edit) {
-      // The view's one primary action (Skarmar v12
-      // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
+      // Busy keeps the name and draws the plate line.
       final blocker = viewModel.isValid ? null : viewModel.saveBlocker;
       return BottomActionContainer(
         child: Column(
@@ -756,9 +755,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     }
   }
 
-  /// P6-U05 (flows-roles-budget.md:83: "öppna redigeringsvyer stängs med
-  /// förklaring, osparat erbjuds som kopia"; :132: the drop takes effect at
-  /// once in open views).
+  /// P6-U05
   ///
   /// Nothing unsaved: the editor closes and a snackbar says why, with Stäng
   /// (content-style-guide.md:96-97). Unsaved edits: a dialog that cannot be

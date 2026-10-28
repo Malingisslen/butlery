@@ -10,7 +10,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/voice/voice_mic_button.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
 
-/// One part of the "Tala in recept" page (Skarmar v12 'Tala in recept'): the
+/// One part of the "Tala in recept" page: the
 /// numbered heading, its prompt, then the field with the microphone beside it
 /// and a hairline under. The field is ALWAYS typable — typing is the
 /// permission-denial and transcription-failure fallback, so a part never

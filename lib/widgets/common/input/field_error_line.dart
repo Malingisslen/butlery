@@ -5,7 +5,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// The line under a field in error: a status glyph and the message, both in
-/// danger, so the error never rests on colour alone (Komponentark v1 §11:
+/// danger, so the error never rests on colour alone (
 /// "Fel beskrivs alltid i text, aldrig bara med färg").
 class FieldErrorLine extends StatelessWidget {
   final String message;

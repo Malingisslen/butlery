@@ -1,5 +1,3 @@
-/// produktregler.md § 18.1: the "!" hides under a dialog or sheet and in
-/// cooking mode, and returns when they close.
 library;
 
 import 'package:flutter/material.dart';

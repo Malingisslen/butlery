@@ -160,8 +160,6 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  /// Skarmar v12 etapp 9 #globsessiontyst (globala tillstand och flerval:98)
-  /// draws the notice and its words.
   /// A background timeout could not warn, so it is explained here, calmly:
   /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
   /// skälet och antalet väntande ändringar. Aldrig som fel"
@@ -170,7 +168,7 @@ class _AuthViewState extends State<AuthView> {
   /// (app_colors.dart / app_colors_dark.dart).
   Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
     final l10n = context.l10n;
-    // The drawn body is secondary ink, bold parts in ink (#globsessiontyst):
+    // The drawn body is secondary ink, bold parts in ink:
     // semantic text.body, #37453A light / #F5F4ED dark (tokens.json:58-60).
     // The drawing's dark #C9D3C4 is the palette's bodyOnDark, which the
     // semantic token does not deliver; the token wins.
@@ -365,9 +363,7 @@ class _AuthViewState extends State<AuthView> {
                   const SizedBox(height: AppDimensions.space16),
                 ],
 
-                // The step's one saffron action, "Logga in" or "Skapa konto"
-                // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
-                // konto'). Working keeps the name and
+                // Working keeps the name and
                 // draws the plate line under it.
                 HeroButton(
                   key: const ValueKey('auth.submit'),

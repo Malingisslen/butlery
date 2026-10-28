@@ -17,9 +17,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// One slot's vote, drawn per Skärmar v12 etapp 2 (#veckorostning,
-/// #veckorostlagg, #veckorostavgor, #veckorostutgang). Counts only, never who
-/// voted for what (produktregler 4.8). A callback left null hides its action.
+/// Counts only, never who
+/// voted for what. A callback left null hides its action.
 class MenuVoteCard extends StatelessWidget {
   final MenuSlotVote vote;
   final String currentUserId;

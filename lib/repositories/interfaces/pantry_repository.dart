@@ -11,7 +11,7 @@ abstract class PantryRepository {
 
   /// Writes only [changes] to the item, plus who changed it and when
   /// (`updatedBy`, `updatedAt`). Per field, the latest change wins
-  /// (produktregler.md:105, :142), so a change to one field never overwrites
+  /// so a change to one field never overwrites
   /// another field changed on another device. [changes] comes from
   /// [PantryItem.changesFrom] or [PantryItem.editableFields]; an empty map
   /// writes nothing.
@@ -27,7 +27,7 @@ abstract class PantryRepository {
   });
 
   /// Changes the item's quantity by [delta], sent as a relative change
-  /// ("Bocka av 2 av 6 skickas som delta: -2", produktregler.md:146), so two
+  /// ("Bocka av 2 av 6 skickas som delta: -2"), so two
   /// devices that each take 2 end with 4 less, not 2.
   Future<void> adjustQuantity(String userId, String itemId, double delta);
 

@@ -23,8 +23,8 @@ import 'package:butlery/core/keyboard/app_actions.dart'
 /// Layout scaffold components for main navigation.
 /// This module provides the main menu with bottom navigation.
 class LayoutScaffolds {
-  /// Hem: the greeting and the recipe library (Skarmar v12 del 1
-  /// #hemrecept). Today the library.
+  /// Hem: the greeting and the recipe library
+  /// Today the library.
   static const int homeTab = 0;
 
   /// Meny (the week menu; the label is "Meny", beslut B-17).

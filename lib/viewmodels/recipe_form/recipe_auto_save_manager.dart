@@ -103,8 +103,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   static const int maxDrafts = 5;
 
   /// "Ett påbörjat recept är återupptagbart i 30 dagar sedan senaste
-  /// ändring" (superseding the 24 h of
-  /// produktregler.md:790).
+  /// ändring"
   static const Duration draftLifetime = Duration(days: 30);
 
   final String? Function() _ownerIdProvider;

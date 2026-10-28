@@ -35,9 +35,8 @@ class MessageStates {
   /// uttrycklig på den punkten, och en grönsak mellan användaren och beskedet
   /// gör beskedet svårare att läsa, inte vänligare.
   ///
-  /// **Men en ikon.** Över del 1 står felglyfen triangle-alert i
-  /// `colorScheme.error` (Komponentark v1: "triangle-alert fel och varning,
-  /// wifi-off offline"). [icon] byter glyf, till exempel wifi-off. Clochen
+  /// **Men en ikon.**
+  /// [icon] byter glyf, till exempel wifi-off. Clochen
   /// är aldrig statusbild (beslut B-19). Glyfen är utesluten ur semantiken:
   /// texten bär beskedet.
   static Widget buildErrorState(

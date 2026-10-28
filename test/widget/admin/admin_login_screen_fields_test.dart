@@ -1,6 +1,3 @@
-// The admin sign-in's fields follow Komponentark v1 §11: each label stands
-// above its box, and the address is not labelled optional.
-
 import 'package:butlery/admin_main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

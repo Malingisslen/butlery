@@ -18,8 +18,8 @@ import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 /// Header section with the list selector and its management buttons.
 ///
 /// The list's secondary actions (sort categories, uncheck all) live in the
-/// root bar's overflow menu (Skarmar v12 del 2 #inkop :862-870 draws only
-/// "mer" + "plus" in the header — see [ShoppingAppBar.buildHeaderActions]).
+/// root bar's overflow menu (
+/// see [ShoppingAppBar.buildHeaderActions]).
 class ShoppingListHeader {
   static Widget build(
     BuildContext context,

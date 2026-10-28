@@ -174,9 +174,6 @@ void main() {
     verifyNever(() => mockClient.send(any()));
   });
 
-  // Q4-04 = A (produktbeslut-2026-09-24.json; Skarmar v12 del 2
-  // #fotoimport): the pages come first, the reading only on "Läs av N
-  // sidor".
   test('shared pages wait unread until readPages, then read once', () async {
     await vm.loadImagesFromPaths([writeImage(21), writeImage(22)]);
 

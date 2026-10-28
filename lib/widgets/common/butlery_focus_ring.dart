@@ -4,8 +4,6 @@
 //
 // Kanon: 2 px ring, 3 px utanför kontrollen, ink på ljust och papper på
 // mörkt, aldrig saffran och aldrig en tjockare kant i stället för ringen
-// (tokens.json:155-160; Grafisk manual v6:209, :582; Komponentark v1:393,
-// :657).
 //
 // Ringen målas i närmaste Overlay (OverlayPortal), inte i kontrollens eget
 // träd. Därför klipps den inte av en ClipRRect, ett Card eller en ListView

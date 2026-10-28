@@ -1,5 +1,5 @@
 /// P5-U28: the pantry row shows when it was last changed
-/// (produktregler.md:105), in the relative forms of content-style-guide.md:34-36.
+/// in the relative forms of content-style-guide.md:34-36.
 library;
 
 import 'package:clock/clock.dart';

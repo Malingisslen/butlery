@@ -1,8 +1,5 @@
-// PQ-17: the shell's navigation. Four destinations in a tab list, Hem · Meny
-// · Inköp · Mer, and a separate "Lägg till" outside it
-// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667;
-// produktregler.md:1052-1058). The plus opens the add sheet (Skarmar v12 del
-// 1 #plussheet). From 768 dp wide and 500 dp tall the rail carries the same
+// PQ-17: the shell's navigation.
+// From 768 dp wide and 500 dp tall the rail carries the same
 // destinations.
 
 import 'dart:ui' show Tristate;
@@ -229,10 +226,6 @@ void main() {
     });
   });
 
-  // NAV-INK: one ink bar in both modes (Skarmar
-  // v12 etapp 10 #bredskal :72): surface.ink #24382C, the chosen tab in
-  // paper #F5F4ED with the saffron plate line, the others
-  // (text.secondary dark), and the plus's paper ring seen on ink.
   group('ink bar', () {
     const ink = Color(0xFF24382C);
     const paper = Color(0xFFF5F4ED);

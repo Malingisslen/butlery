@@ -142,7 +142,7 @@ void main() {
   });
 
   // P7-B4: a chosen line is surface.selected with a real border, never a
-  // tint (tokens.json:40-53, :116-119; Grafisk manual v6:209).
+  // tint (tokens.json:40-53, :116-119).
   for (final dark in [false, true]) {
     testWidgets('a chosen line is the solid surface.selected plate '
         '(${dark ? 'dark' : 'light'})', (tester) async {
@@ -182,7 +182,7 @@ void main() {
       );
 
       // The chosen line's edge is the drawn "Vald" border: 1.5 px
-      // text.primary (Grafisk manual v6:207).
+      // text.primary.
       final borders = tester
           .widgetList<Container>(
             find.descendant(

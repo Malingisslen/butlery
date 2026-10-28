@@ -3,9 +3,7 @@ import 'package:flutter/foundation.dart';
 /// What a bulk tag delete did, per tag id (P5-U33).
 ///
 /// The delete runs in chunks, each one atomic (BUT-994), so a later chunk can
-/// fail after an earlier one landed. produktregler.md:905-909 (§ 17.6) makes
-/// that a third outcome: the caller names what went and keeps the rest
-/// selected, so it needs the ids on both sides, never only a count.
+/// fail after an earlier one landed.
 @immutable
 class PersonalTagBulkDeleteResult {
   const PersonalTagBulkDeleteResult({

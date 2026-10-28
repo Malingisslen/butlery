@@ -1,9 +1,6 @@
 /// Re-consent renewal dialog (BUT-465).
 ///
-/// With a loaded consent it follows Skarmar v12 etapp 6 #samtyckefornya:
-/// what changed since the version the user accepted, one line per new or
-/// changed purpose, her earlier choices kept, and three answers — Jag
-/// godkänner · Låt mig välja själv · Inte nu. "Inte nu" keeps the old
+/// "Inte nu" keeps the old
 /// consent and switches nothing off; the dialog comes
 /// back at the next launch until a new version is saved.
 ///

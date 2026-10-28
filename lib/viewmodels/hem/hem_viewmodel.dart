@@ -2,18 +2,6 @@
 //
 // HEM-HERO (package 6): what Hem shows above the recipe library.
 //
-//   produktregler.md:263   "Hem … svarar på en fråga — vad äter vi ikväll".
-//   produktregler.md:265-274 (§ 6.1) the hero card's priority order, first
-//                          hit wins: (1) today's slot is filled → the planned
-//                          dish, marked IKVÄLL; (2) today is empty but the
-//                          week has dishes later → the next planned day,
-//                          marked with its weekday, never IKVÄLL; (3) the
-//                          week is empty and the library has recipes → a
-//                          suggestion; (4) the library is empty → the empty
-//                          state.
-//   produktregler.md:291-294 (§ 6.5) an error in the plan never empties the
-//                          view; cached content carries its fetch time.
-//
 // Interpretations:
 // * "Dagens plats" and IKVÄLL are the dinner slot (MealSlot.middag):
 //   "ikväll" is the evening meal.
@@ -88,7 +76,7 @@ class HemHero {
   final bool allInPantry;
 }
 
-/// Rows 1 and 2 of produktregler.md:268-269 for [plan] on the day of [now]:
+/// Rows 1 and 2 for [plan] on the day of [now]:
 /// today's dinner, else the first dinner planned later in the week, else
 /// null. Never an earlier day, and never a day outside [plan]'s week.
 ({WeeklyMenuPlanEntry entry, bool isTonight})? hemHeroEntry(

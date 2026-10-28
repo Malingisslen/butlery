@@ -277,8 +277,7 @@ void main() {
     });
 
     // B-46: the entry sits in Mina recept's own bar, first among its
-    // actions like on the other surfaces (Skarmar v12 etapp 9
-    // #flervalingang).
+    // actions like on the other surfaces
     Future<List<Widget>> rootActions(WidgetTester tester) async {
       late List<Widget> result;
       when(() => viewModel.isGridView).thenReturn(false);

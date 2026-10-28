@@ -2,7 +2,7 @@
 // and the loading line names what is loading (P5-U18).
 //
 // Sources: content-style-guide.md:89-94 (what happened, what you can do; no
-// error codes in user text), produktregler.md:163 (plate line + text),
+// error codes in user text),
 // state_widget.dart (the error state's default action is commonRetry).
 import 'dart:async';
 

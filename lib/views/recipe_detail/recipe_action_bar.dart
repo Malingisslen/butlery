@@ -5,10 +5,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/butlery_ink_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
-/// The sticky action bar over the bottom navigation (Komponentark v1
-/// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
-/// content's side margin; Skarmar v12 del 1 'Receptdetalj').
-///
 /// It holds the view's one saffron action: "Börja
 /// laga" on your own recipe, "Spara till mitt kök" on someone else's
 /// The other button is ink. Below 360 dp the

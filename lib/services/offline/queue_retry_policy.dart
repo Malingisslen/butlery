@@ -2,14 +2,6 @@
 //
 // P6-U08b: the offline queue's retry rules,
 // as pure functions the sync manager and the queue view share.
-//
-//   :185  "FIFO per entitet, parallellt mellan entiteter."
-//   :186  "En post kan deklarera `dependsOn: [opId]` … Om beroendet permanent
-//          misslyckas markeras hela kedjan som misslyckad — aldrig halvvägs."
-//   :187  "Exponentiell backoff 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med
-//          jitter. Max 24 h, därefter permanent fel. Ingen omförsöksstorm vid
-//          återkommande nät."
-//   :188  "4xx utom 408/429 försöks aldrig igen."
 library;
 
 import 'dart:math';
@@ -67,7 +59,7 @@ final Random _random = Random();
 /// when it may (a transient failure).
 ///
 /// Read from the error's code, never from its message text
-/// (produktregler.md:188 "4xx utom 408/429"). Firebase reports the HTTP
+/// ("4xx utom 408/429"). Firebase reports the HTTP
 /// class through gRPC-style codes, shared by Firestore, Functions
 /// (FirebaseFunctionsException extends FirebaseException) and Storage:
 ///

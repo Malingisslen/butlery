@@ -14,8 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 const _primitive = 'lib/core/utils/snackbar_utils.dart';
 
 // The week menu's 30 s conflict snackbar no longer reads `commonUndo`: its
-// action carries the drawn words "Behåll min" (Skarmar v12 etapp 11 breda
-// vyer.dc.html:221), so the primitive is the only reader left.
+// action carries the drawn words "Behåll min"
+// so the primitive is the only reader left.
 
 void main() {
   test('every undo label is read by the primitive alone', () {

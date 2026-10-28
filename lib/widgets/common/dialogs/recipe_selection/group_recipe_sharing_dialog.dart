@@ -57,8 +57,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
               if (viewModel.hasSelectedRecipes)
                 // The theme's ink filled button (onPrimary on primary in both
                 // schemes); sharing says so and draws the plate line along
-                // its bottom edge, never a spinner (Komponentark v1:365,
-                // :372).
+                // its bottom edge, never a spinner
                 BusyButtonSemantics(
                   busy: viewModel.isSharing,
                   name:

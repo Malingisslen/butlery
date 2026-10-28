@@ -1,8 +1,6 @@
 // lib/widgets/social/profile_header.dart
 //
-// The head of a person's page: an ink band with a round avatar beside the
-// name and one line under it and the bio, then the person's two figures (Skarmar v12
-// del 3 #publikprofil and etapp 5-7 #18). A friend's profile and a public
+// A friend's profile and a public
 // profile both draw it, so the two pages cannot drift apart.
 library;
 

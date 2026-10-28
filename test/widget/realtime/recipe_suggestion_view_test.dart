@@ -1,6 +1,6 @@
 // P5-U27b: one suggestion to a shared recipe, seen by the owner (who decides)
-// and by the suggester (who only looks). produktregler.md:103 (kept 7 days),
-// :241 (the owner accepts or dismisses); content-style-guide.md:87-97 (a
+// and by the suggester (who only looks).
+// content-style-guide.md:87-97 (a
 // failure says what did not happen, what is kept, and what to do).
 
 import 'package:flutter/material.dart';

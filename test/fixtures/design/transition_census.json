@@ -1324,7 +1324,7 @@
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
-          "name": "is the six steps of produktregler.md, in order"
+          "name": "is the six steps, in order"
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
@@ -1459,7 +1459,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: offline, Hem's plan carries \"Planen hämtades 07:12\" (HemFetchedAtLine), the one place the spec draws it (Skarmar v12 del 4, #hemoffline); a plan read offline gets no fetch time of its own."
+      "reason": "Existing tests: offline, Hem's plan carries \"Planen hämtades 07:12\" (HemFetchedAtLine), the one place the spec draws it; a plan read offline gets no fetch time of its own."
     },
     {
       "id": "TR::FLOW::08::utkast::aterupptagning",

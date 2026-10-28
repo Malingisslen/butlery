@@ -91,8 +91,6 @@ class ImportRateLimited extends SmartImportResult {
 class ImportFailed extends SmartImportResult {
   final String message;
 
-  /// The other ways to the same recipe the error draws
-  /// (produktregler.md:557, 9.2 Fel: "listan ritas").
   final List<ImportRoute> routes;
 
   /// The cause the import reported, when it reported one. [message] is the
@@ -103,8 +101,6 @@ class ImportFailed extends SmartImportResult {
 }
 
 /// P5-U06: another way to the same recipe after a failed import
-/// (Skarmar v12 etapp 4 import #impinget, "Andra vägar
-/// till samma recept").
 enum ImportRoute {
   /// Photograph the screen: the photo import.
   photo,

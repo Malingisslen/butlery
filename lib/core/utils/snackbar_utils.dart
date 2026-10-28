@@ -1,12 +1,11 @@
 /// Snackbar utilities for standardized user feedback (success, error, warning, info).
 ///
-/// Every snackbar has one look: the ink snackbar of Komponentark v1:745-750
+/// Every snackbar has one look: the ink snackbar
 /// (produktbeslut PQ-09 = A, 2026-09-23). The surface, text colour, radius
 /// and dark-mode edge come from the global snackBarTheme
 /// (lib/theme/components/feedback_themes.dart); this file builds the
 /// content: the message and, when there is one, the action with its own
-/// paper focus ring. The action is never "OK" (Komponentark
-/// v1:750): Ångra, Försök igen, Öppna inställningar or Stäng.
+/// paper focus ring.
 
 import 'dart:async';
 
@@ -23,7 +22,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/feedback/ink_snack_bar_action.dart';
 export 'package:butlery/widgets/common/feedback/ink_snack_bar_action.dart';
-import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
@@ -31,8 +29,8 @@ class SnackBarUtils {
   // Prevent instantiation
   SnackBarUtils._();
 
-  /// A confirmation. The ink look carries no status colour (Komponentark
-  /// v1:300, "Aldrig fylld yta i statusfärg"); the message says what
+  /// A confirmation. The ink look carries no status colour (
+  /// "Aldrig fylld yta i statusfärg"); the message says what
   /// happened.
   ///
   /// Without an action of its own it carries "Stäng" (content-style-guide
@@ -86,7 +84,7 @@ class SnackBarUtils {
   /// [what] says what happened ("Omröstningen kunde inte skapas."),
   /// [preserved] what was kept when something was at stake ("Din text ligger
   /// kvar.", content-style-guide.md:92), and [action] what you can do. The
-  /// action is never "OK" (content-style-guide.md:96; Komponentark v1:750):
+  /// action is never "OK" (content-style-guide.md:96):
   /// without one, or with one named OK, it is "Stäng".
   ///
   /// The snackbar has the alert role, so a screen reader reads it without
@@ -94,7 +92,7 @@ class SnackBarUtils {
   /// until the user acts, as every snackbar with an action does.
   ///
   /// Interpretation: the ink snackbar is drawn with one line of text
-  /// (Komponentark v1:746-748), so [what] and [preserved] are one paragraph,
+  /// so [what] and [preserved] are one paragraph,
   /// in that order.
   static void showFailure(
     BuildContext context, {
@@ -152,7 +150,7 @@ class SnackBarUtils {
   }
 
   /// No connection. The action is "Försök igen" with [onRetry], else
-  /// "Stäng" (Komponentark v1:750, never "OK").
+  /// "Stäng" (never "OK").
   static void showNetworkError(
     BuildContext context, {
     VoidCallback? onRetry,
@@ -216,7 +214,7 @@ class SnackBarUtils {
   }
 
   /// Work in progress: the message with the plate line under it in the
-  /// snackbar's own text colour, never a spinner (produktregler.md:163,
+  /// snackbar's own text colour, never a spinner (
   /// B-18). Interpretation: the drawing has no loading snackbar; the line
   /// takes the in-button form, in paper on ink.
   static void showLoading(
@@ -359,7 +357,7 @@ class SnackBarUtils {
     );
   }
 
-  /// The one undo primitive (produktregler.md:125-140, § 2.4).
+  /// The one undo primitive.
   ///
   /// Class 1 (`add`, `delete`: data disappears) calls this; class 3 (`update`,
   /// `check`, `assign`, `reorder`: a state flips) calls nothing at all on
@@ -398,7 +396,7 @@ class SnackBarUtils {
 /// What a failure offers: part three of the error (content-style-guide.md:93).
 ///
 /// The label names what the action does. "OK" is never one
-/// (content-style-guide.md:96; Komponentark v1:750): a [FailureAction.named]
+/// (content-style-guide.md:96): a [FailureAction.named]
 /// called OK is shown as "Stäng" and still runs its callback.
 class FailureAction {
   /// "Försök igen", which runs [onPressed].
@@ -424,14 +422,11 @@ class FailureAction {
   }
 }
 
-/// The content of the ink snackbar (Komponentark v1:745-750): the message,
+/// The content of the ink snackbar: the message,
 /// and the action to its right.
 ///
 /// The surface is the snackBarTheme's; the message takes its
-/// contentTextStyle. The action stands on ink in both modes, so its focus
-/// ring is paper in both ([FocusRingSurface] dark, tokens.json focusRing
-/// dark #F5F4ED; Komponentark v1:747, `outline:2px solid #F5F4ED;
-/// outline-offset:3px`).
+/// contentTextStyle.
 class InkSnackBar extends StatelessWidget {
   const InkSnackBar({required this.message, this.action, super.key});
 
@@ -441,7 +436,7 @@ class InkSnackBar extends StatelessWidget {
   /// The one action, or null.
   final InkSnackBarAction? action;
 
-  /// Komponentark v1:746: `padding:12px 14px`. 14 is not on the spacing
+  /// 14 is not on the spacing
   /// scale (tokens.json space.scale); interpretation: 12 on the scale's 12
   /// vertically and 16 horizontally.
   static const EdgeInsets padding = EdgeInsets.symmetric(
@@ -449,7 +444,6 @@ class InkSnackBar extends StatelessWidget {
     vertical: AppDimensions.space12,
   );
 
-  /// Komponentark v1:746: `gap:12px` between the message and the action.
   static const double gap = AppDimensions.space12;
 
   /// The message. The key is for tests, not identity.
@@ -506,16 +500,16 @@ class UndoSnackBar {
   /// 2026-09-23; option A as decided: "Står kvar tills man agerar när
   /// skärmläsare är på, 7 sekunder för alla andra"). Leaving the view also
   /// closes it: SnackbarRouteObserver calls `clearSnackBars` on every push,
-  /// pop and replace, which hides the current snackbar (Grafisk manual
-  /// v6:647, "tills vyn lämnas"). For everyone else the window is
+  /// pop and replace, which hides the current snackbar (
+  /// "tills vyn lämnas"). For everyone else the window is
   /// [kUndoWindow] and it pauses and extends ([UndoWindowTimer]).
   final bool _persist;
 
   /// Shows [message] with an "Ångra" action. Returns the controller so a
   /// deferred-commit caller can await `closed`.
   ///
-  /// The window is [kUndoWindow] (7 s, produktregler.md:131-132), and it is
-  /// not hard (Grafisk manual v6:647): it pauses while the snackbar has
+  /// The window is [kUndoWindow] (7 s), and it is
+  /// not hard: it pauses while the snackbar has
   /// focus, is hovered or has the screen reader's focus, and every new
   /// interaction with it starts the full window again. Flutter's own timer
   /// cannot pause, so the snackbar persists and [UndoWindowTimer] closes it
@@ -537,7 +531,6 @@ class UndoSnackBar {
 
   /// A receipt whose [actionLabel] is the flow's way back, on the same
   /// window as Ångra: the automatic placement's ÄNDRA, "kvitto i 7 sekunder"
-  /// (produktregler.md:202, ux-beslut D-04).
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showReceipt(
     String message, {
     required String actionLabel,
@@ -636,8 +629,7 @@ class UndoSnackBar {
   }
 }
 
-/// The undo window: [window] long, pausable and extendable (Grafisk manual
-/// v6:647).
+/// The undo window: [window] long, pausable and extendable
 ///
 /// It starts when the snackbar is on screen ([start]). [pause] stops it
 /// while the snackbar has focus, is hovered or has the screen reader's

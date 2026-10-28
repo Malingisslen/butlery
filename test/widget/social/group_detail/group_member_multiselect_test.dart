@@ -278,8 +278,8 @@ void main() {
     });
   });
 
-  // P5-U31 / P5-U32: "Välj" in the section's header row (B-46; Skarmar v12
-  // etapp 9 #flervalingang), shown from two selectable members; the remove
+  // P5-U31 / P5-U32: "Välj" in the section's header row
+  // shown from two selectable members; the remove
   // action off at zero in the disabled role.
   group('GroupMembersList — Välj in the header row (P5-U31, P5-U32)', () {
     Future<void> pumpList(

@@ -5,11 +5,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
-/// BUT-2157: "Avbryt planeringen" under the planning panel (Skarmar v12 del
-/// 1 #veckogenererarpanel): an outlined full-width 48 dp button over a top
+/// BUT-2157: "Avbryt planeringen" under the planning panel
+/// an outlined full-width 48 dp button over a top
 /// hairline, with the note on what cancelling keeps under it. Outlined,
-/// because the view's one saffron action is Generera (Komponentark
-/// v1:843-844).
+/// because the view's one saffron action is Generera
 class VeckomenyPlanningCancelFooter extends StatelessWidget {
   const VeckomenyPlanningCancelFooter({super.key, required this.onCancel});
 

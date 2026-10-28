@@ -132,9 +132,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
 
           const SizedBox(height: AppDimensions.space16),
 
-          // Importing says what it does and draws the plate line along the
-          // button's bottom edge, never a spinner (Komponentark v1:365,
-          // :372). The step's one filled action is "Klar" in the nav row.
+          // The step's one filled action is "Klar" in the nav row.
           ActionButtons.outlinedButton(
             context,
             label: l10n.importRecipeTitle,

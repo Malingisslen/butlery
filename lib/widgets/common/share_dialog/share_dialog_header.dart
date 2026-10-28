@@ -24,7 +24,7 @@ class ShareDialogHeader {
     );
 
     // The header stands on the sheet's own surface with the title in 14/700,
-    // as the share sheet draws it (Skarmar v12 del 3 'Dela-ark'); the
+    // as the share sheet draws it; the
     // subtitle is text.secondary, not the title colour at a lower opacity
     // (tokens.json:40-53).
     final cs = Theme.of(context).colorScheme;

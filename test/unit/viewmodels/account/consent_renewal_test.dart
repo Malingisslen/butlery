@@ -1,5 +1,4 @@
-// P6-U06 — consent (Skarmar v12 etapp 6
-// #samtyckefornya #samtyckeai #kontosamtycke).
+// P6-U06 — consent
 //
 // 1. Saving consent must start from the consent that was READ: the old save
 //    built a fresh object from five of seven purposes and silently revoked

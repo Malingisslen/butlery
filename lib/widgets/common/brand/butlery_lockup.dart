@@ -1,5 +1,5 @@
-/// B96-2: the locked logo lockup (Skarmar v12 del 2 #inloggning rad 1467-1490,
-/// #inloggningmorkt rad 1205-1228). The logo is never written as text
+/// B96-2: the locked logo lockup
+/// The logo is never written as text
 /// (beslut 2026-09-30, B96-2 = A) -- this widget paints the vendored SVG
 /// masters synchronously, the same approach `ButleryIcon` uses for glyphs
 /// (`lib/widgets/common/icons/butlery_glyph.dart`), so there is no asset

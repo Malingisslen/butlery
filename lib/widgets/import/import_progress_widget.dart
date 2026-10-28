@@ -108,8 +108,7 @@ class ImportProgressWidget extends StatelessWidget {
             ),
 
             // Fetching and parsing: the plate line with text, never a
-            // spinner (Skarmar v12 etapp 4
-            // #imp2hamtar draws the line under "Hämtar recept").
+            // spinner
             if (isLoading) ...[
               const SizedBox(height: AppDimensions.space12),
               ConstrainedBox(

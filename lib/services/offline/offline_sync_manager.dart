@@ -147,7 +147,7 @@ class OfflineSyncManager {
 
   /// Sends the queue: one pass over the user's entries, oldest first.
   ///
-  /// The rules are produktregler.md:186-189 (queue_retry_policy.dart): an
+  /// The rules are: an
   /// entry waits for its dependencies and for earlier entries to the same
   /// entity; a failed attempt is retried on the schedule 2 s → 4 s → 8 s →
   /// 30 s → 2 min → 10 min with jitter, for at most 24 h from the first

@@ -320,8 +320,6 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       _overflow.isEmpty ? null : _tray.reason;
 
   /// P5-U23: how many recipes the distribution behind the tray was given.
-  /// With [overflowPlacedCount] it reads "2 av 5 rätter placerade"
-  /// (produktregler.md:206: a partial result is counted in recipes).
   int get overflowTotal =>
       _tray.total < _overflow.length ? _overflow.length : _tray.total;
 
@@ -329,9 +327,6 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// from the tray counts it as placed.
   int get overflowPlacedCount => overflowTotal - _overflow.length;
 
-  /// P5-U23: whether the tray offers the following week (produktregler.md:
-  /// 1127: "nästa vecka är ett val i brickan").
-  ///
   /// A kept tray can outlive its week (P5-U24 keeps it 30 days): once the
   /// week it offers lies before the current week, the choice is not
   /// offered, so a past week is never filled.
@@ -1160,15 +1155,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// P5-U23: the tray's "Lägg i vecka N" (produktregler.md:1127: with the tray,
-  /// FL-11 is unnecessary; next week is a choice in the tray, not an action
-  /// in a snackbar. Skarmar v12 etapp 11 breda vyer:241).
-  ///
   /// Distributes the tray's recipes into the week after the one that had no
   /// room, the same way a generation is distributed (from Monday, occupied
-  /// places are left alone). What does not fit there either stays in the
-  /// tray, and the tray then offers no further week: produktregler.md:893
-  /// makes the two-week limit something the user sees.
+  /// places are left alone).
   ///
   /// Publish first, like every write here (BUT-1975): the tray changes at
   /// once and a refused save puts it back. Returns how many recipes moved,
@@ -1289,9 +1278,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     return true;
   }
 
-  /// P5-U24: brings back the tray this device kept for the signed-in user
-  /// (produktregler.md:1125: the tray "överlever omladdning, ligger kvar
-  /// tills den töms"). Does nothing when this session already changed the
+  /// Does nothing when this session already changed the
   /// tray, so a restore never overwrites a newer tray.
   ///
   /// An id the recipe list cannot answer for right now is NOT treated as a

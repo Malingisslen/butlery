@@ -432,8 +432,7 @@ String _oneDecimal(BuildContext context, double value) => NumberFormat(
   Localizations.localeOf(context).toString(),
 ).format(value);
 
-/// A rating as one star and the number ("★ 5,0"), as Skarmar v12 del 3
-/// #betygsoversikt draws a row's verdict.
+/// A rating as one star and the number ("★ 5,0")
 class _StarNumber extends StatelessWidget {
   const _StarNumber({required this.value});
 

@@ -1,5 +1,4 @@
-/// P5-U26b: the store behind "Återställ i 30 dagar" (produktregler.md:104,
-/// :109).
+/// P5-U26b: the store behind "Återställ i 30 dagar"
 ///
 /// Proves what the repository promises on its own side of the rules: a kept
 /// version lands under the signed-in user's own path and nowhere else, it is

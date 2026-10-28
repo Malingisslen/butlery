@@ -145,8 +145,6 @@ void main() {
 
   testWidgets('P4-U07: a subpage with one green save, named for its way '
       'back', (tester) async {
-    // Komponentark v1:71-78; Skarmar v12 del 1 'Snabbspara'; Grafisk manual
-    // v6:219.
     await openCapture(tester, _PopObserver());
 
     final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));

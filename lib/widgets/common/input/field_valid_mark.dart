@@ -7,7 +7,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// The validated state's mark at the end of the box: a check and a short
 /// word in text.success, while the edge keeps its resting colour
-/// (Komponentark v1 §11 "Validerad": "malin_lagar … ✓ Ledigt"). The word
+/// ("Validerad": "malin_lagar … ✓ Ledigt"). The word
 /// says it, so the state never rests on colour alone. It goes in the
 /// field's suffix, inside a Flexible, so a long word gives way to the typed
 /// text; its own live-region node reads it when it appears.

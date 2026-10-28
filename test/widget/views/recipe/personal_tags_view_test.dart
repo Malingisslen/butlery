@@ -192,8 +192,6 @@ void main() {
     expect(find.text('Snabbt'), findsWidgets);
   });
 
-  // P5-U31: "Välj" in the view's own bar from two tags (B-46;
-  // produktregler.md:870-876); the bar keeps its height in selection mode.
   group('Välj (P5-U31)', () {
     final enter = find.byKey(const ValueKey('personal-tags-select-enter'));
 

@@ -28,7 +28,7 @@ void main() {
       Duration(minutes: 10),
     ];
 
-    test('is the six steps of produktregler.md, in order', () {
+    test('is the six steps, in order', () {
       expect(kQueueRetrySchedule, steps);
       expect(kQueueMaxRetryAge, const Duration(hours: 24));
     });

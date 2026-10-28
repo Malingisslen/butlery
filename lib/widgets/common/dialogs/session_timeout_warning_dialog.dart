@@ -224,7 +224,7 @@ class _SessionTimeoutWarningDialogState
           // Only the number updates, announced politely
           // It carries no accent colour
           // ink on surface.raised, radius 8, no
-          // border (Skarmar v12 etapp 9 globala tillstand och flerval:66,72).
+          // border.
           // onSurface on surfaceContainerHighest is text.primary on
           // surface.raised in both light and dark.
           Center(

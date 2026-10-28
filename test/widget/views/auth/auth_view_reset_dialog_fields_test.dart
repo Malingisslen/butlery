@@ -1,6 +1,3 @@
-/// The "Glömt lösenord" dialog's address field follows Komponentark v1
-/// §11: the label stands above the box, and a malformed address shows its
-/// error with a glyph.
 library;
 
 import 'package:flutter/material.dart';

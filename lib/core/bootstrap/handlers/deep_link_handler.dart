@@ -173,9 +173,9 @@ class DeepLinkHandler {
   /// the old silent behaviour instead of throwing.
   ///
   /// P6-U05: the notice is a failure snackbar whose only action is "Stäng"
-  /// (content-style-guide.md:97, Komponentark v1:750). PQ-13 = A (2026-09-23):
+  /// (content-style-guide.md:97). PQ-13 = A (2026-09-23):
   /// the app has no way to ask for a new link, and it never offers what it
-  /// cannot do (produktregler.md:535), so the text itself says who to ask.
+  /// cannot do, so the text itself says who to ask.
   /// The request button is BUT-2143.
   @visibleForTesting
   static void showDeepLinkNotice(BuildContext context, String message) {
@@ -406,10 +406,6 @@ class DeepLinkHandler {
         );
       } else {
         // Link is valid but the recipe is gone or not shared with this user.
-        // The read cannot tell the two apart, so the notice says only that
-        // the content is no longer available: "ask for a new link" would not
-        // help when the recipe is deleted (flows-roles-budget.md:80 covers a
-        // revoked or expired link, which is the expiry gate above).
         _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }

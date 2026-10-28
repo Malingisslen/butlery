@@ -3,7 +3,7 @@
 
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
-/// The Butlery icon family (B-02).
+/// The Butlery icon family.
 ///
 /// Render with `ButleryIcon`, never with a plain `Icon`.
 abstract final class ButleryIcons {

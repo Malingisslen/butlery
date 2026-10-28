@@ -68,10 +68,7 @@ List<Widget> buildMinaReceptSelectionActions(
   // Avbryt and three actions plus the kebab do not fit one row, so share
   // moves to the top of the kebab ("högst tre").
   final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
-  // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
-  // three actions in the bar, ordered by how often they are used and how
-  // hard they are to undo (add to menu, tag, share), the rest in a kebab
-  // (select all, export, delete). Six 48 dp actions do not fit a phone.
+  // Six 48 dp actions do not fit a phone.
   return [
     // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
     // then loop selected recipes into chosen slot (single-slot
@@ -107,8 +104,7 @@ List<Widget> buildMinaReceptSelectionActions(
   ];
 }
 
-/// "Välj" for the recipe list's own top bar (B-46; produktregler.md:870-874;
-/// Skarmar v12 etapp 9 #flervalingang, data-a11y-name "Välj recept").
+/// "Välj" for the recipe list's own top bar
 ///
 /// Returns the action to put among the bar's actions, or nothing when the
 /// list has fewer than two recipes.
@@ -138,9 +134,7 @@ const double _narrowBar = 360;
 
 enum _BulkMoreAction { share, selectAll, export, delete }
 
-/// The kebab of #flerbar: select all, export, and delete last, alone,
-/// behind a line and in text.danger (Skarmar v12
-/// etapp 9 #flerbar). Actions that need a selection are off at zero with
+/// Actions that need a selection are off at zero with
 /// the name still readable.
 class _BulkMoreMenu extends StatelessWidget {
   const _BulkMoreMenu({required this.viewModel, required this.withShare});
@@ -179,7 +173,7 @@ class _BulkMoreMenu extends StatelessWidget {
             label: l10n.bulkShare,
             enabled: hasSelection,
           ),
-        // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
+        // "Markera alla 24", a toggle: when
         // every recipe is ticked it unticks them. Interpretation: the second
         // label is not drawn, so it takes the app's "Avmarkera alla".
         ButleryMenuChoice(
@@ -519,10 +513,6 @@ Future<void> _openBulkTagPicker(
     SnackBarUtils.showInfo(context, context.l10n.bulkTagAllAlreadyTagged);
     return;
   }
-  // Interpretation, not settled: applying a tag is not in the
-  // produktregler.md:129-136 table. It is neither `add` nor `delete`, and it
-  // sits closer to `assign` (class 3, no friction). The undo is kept as it was
-  // until the class is decided.
   SnackBarUtils.showUndo(
     context,
     context.l10n.bulkTagSuccess(modified),

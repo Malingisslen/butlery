@@ -114,7 +114,7 @@
   },
   "slotSpillBody": "{rest, plural, =1{Ett recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med det, sedan skriver vi.} other{{rest} recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med dem, sedan skriver vi.}}",
   "@slotSpillBody": {
-    "description": "BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)",
+    "description": "BUT-2153: names the recipes that do not fit, before anything is written",
     "placeholders": {
       "rest": {
         "type": "int"
@@ -1243,7 +1243,7 @@
   "commonBack": "Tillbaka",
   "commonBackTo": "Tillbaka till {destination}",
   "@commonBackTo": {
-    "description": "Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to (Komponentark v1 section 01, pattern 2; accessibility handoff, row Back)",
+    "description": "Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to",
     "placeholders": {
       "destination": {
         "type": "String"
@@ -3101,11 +3101,11 @@
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
   "indicatorOfflineMode": "Ingen anslutning",
   "@indicatorOfflineMode": {
-    "description": "Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value."
+    "description": "Offline banner title (P3-U05). Changing the wording is this one value."
   },
   "offlineBannerPending": "{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}",
   "@offlineBannerPending": {
-    "description": "Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).",
+    "description": "Offline banner queue count, shown only when count > 0.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -3114,7 +3114,7 @@
   },
   "offlineBannerWithPending": "{title} · {pending}",
   "@offlineBannerWithPending": {
-    "description": "Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).",
+    "description": "Visible offline banner line: title, middle dot, queue count.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -3126,7 +3126,7 @@
   },
   "offlineBannerWithPendingA11y": "{title}, {pending}",
   "@offlineBannerWithPendingA11y": {
-    "description": "Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).",
+    "description": "Screen-reader label for the offline banner with a count: a comma instead of the middle dot.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -3646,111 +3646,111 @@
   "loadingRecipes": "Laddar recept …",
   "loadingAdminAccess": "Hämtar din behörighet …",
   "@loadingAdminAccess": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingConsents": "Hämtar dina samtycken …",
   "@loadingConsents": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingFeedbackEntries": "Hämtar återkopplingen …",
   "@loadingFeedbackEntries": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingImage": "Hämtar bilden …",
   "@loadingImage": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingMetrics": "Hämtar mätvärdena …",
   "@loadingMetrics": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingReports": "Hämtar anmälningarna …",
   "@loadingReports": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingOpsLog": "Hämtar driftloggen …",
   "@loadingOpsLog": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingParsingStats": "Hämtar tolkningsstatistiken …",
   "@loadingParsingStats": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingFamily": "Hämtar hushållet …",
   "@loadingFamily": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingIngredientSearch": "Söker ingredienser …",
   "@loadingIngredientSearch": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingCommunityGuidelines": "Hämtar riktlinjerna …",
   "@loadingCommunityGuidelines": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingTerms": "Hämtar användarvillkoren …",
   "@loadingTerms": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingWeeklyMenu": "Hämtar veckomenyn …",
   "@loadingWeeklyMenu": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingNotifications": "Hämtar dina notiser …",
   "@loadingNotifications": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingPersonalTags": "Hämtar dina taggar …",
   "@loadingPersonalTags": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingAllergenPreferences": "Hämtar dina allergival …",
   "@loadingAllergenPreferences": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingMfaSettings": "Hämtar tvåstegsverifieringen …",
   "@loadingMfaSettings": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingMyReports": "Hämtar dina anmälningar …",
   "@loadingMyReports": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingNotificationPreferences": "Hämtar dina notisval …",
   "@loadingNotificationPreferences": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingTag": "Hämtar taggen …",
   "@loadingTag": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingShoppingList": "Hämtar inköpslistan …",
   "@loadingShoppingList": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingShoppingLists": "Hämtar dina inköpslistor …",
   "@loadingShoppingLists": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingGroupMembers": "Hämtar gruppens medlemmar …",
   "@loadingGroupMembers": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingProfile": "Hämtar profilen …",
   "@loadingProfile": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
   "loadingPantry": "Hämtar skafferiet …",
   "@loadingPantry": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk."
   },
   "loadingSharedShoppingLists": "Hämtar delade inköpslistor …",
   "@loadingSharedShoppingLists": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk."
   },
   "loadingFeed": "Hämtar flödet …",
   "@loadingFeed": {
-    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk."
+    "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk."
   },
   "menuConnectingCollaborative": "Ansluter till ”{title}” för samarbetsredigering …",
   "@menuConnectingCollaborative": {
@@ -5309,15 +5309,15 @@
   },
   "conflictBannerTitleRecipe": "Två versioner av receptet",
   "@conflictBannerTitleRecipe": {
-    "description": "P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103)."
+    "description": "P3-U08: conflict banner title for a recipe."
   },
   "conflictBannerTitleWeek": "Två versioner av veckan",
   "@conflictBannerTitleWeek": {
-    "description": "P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:104)."
+    "description": "P3-U08: conflict banner title for a week menu."
   },
   "conflictBannerBody": "{name} ändrade samtidigt. Din version finns kvar – välj vilken som gäller.",
   "@conflictBannerBody": {
-    "description": "P3-U08: conflict banner body; name = who made the other change (Komponentark v1:755-758).",
+    "description": "P3-U08: conflict banner body; name = who made the other change.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -5326,7 +5326,7 @@
   },
   "conflictBannerBodyUnnamed": "Någon annan ändrade samtidigt. Din version finns kvar – välj vilken som gäller.",
   "@conflictBannerBodyUnnamed": {
-    "description": "P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758)."
+    "description": "P3-U08: conflict banner body when the other editor's name is unknown."
   },
   "conflictBannerBodyOtherDevice": "Du ändrade receptet på en annan enhet. Din version finns kvar – välj vilken som gäller.",
   "@conflictBannerBodyOtherDevice": {
@@ -5334,7 +5334,7 @@
   },
   "conflictWeekSaved": "{name} sparade veckan",
   "@conflictWeekSaved": {
-    "description": "P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).",
+    "description": "P3-U08: week-menu conflict snackbar, 30 s.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -6723,7 +6723,7 @@
   },
   "shoppingListUpdatedByNotice": "Listan uppdaterades av {name}",
   "@shoppingListUpdatedByNotice": {
-    "description": "BUT-2187: header notice on a shared shopping list when someone else updates it while it is open (produktregler.md).",
+    "description": "BUT-2187: header notice on a shared shopping list when someone else updates it while it is open.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -8594,35 +8594,35 @@
   "passwordsMatch": "Lösenorden matchar",
   "selectionEnter": "Välj",
   "@selectionEnter": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterRecipes": "Välj recept",
   "@selectionEnterRecipes": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterShoppingItems": "Välj varor",
   "@selectionEnterShoppingItems": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterPantryItems": "Välj varor i skafferiet",
   "@selectionEnterPantryItems": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterTags": "Välj taggar",
   "@selectionEnterTags": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterMembers": "Välj medlemmar",
   "@selectionEnterMembers": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionEnterBlockedUsers": "Välj blockerade personer",
   "@selectionEnterBlockedUsers": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877)."
+    "description": "Multi-select entry in the top bar or section header (B-46)."
   },
   "selectionSelectAllCount": "Markera alla {count}",
   "@selectionSelectAllCount": {
-    "description": "Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as \"Markera alla 24\" (Skarmar v12 etapp 9 #flerbar).",
+    "description": "Multi-select entry in the top bar or section header (B-46). Drawn as \"Markera alla 24\".",
     "placeholders": {
       "count": {
         "type": "int"
@@ -8639,7 +8639,7 @@
   },
   "bulkMoreActions": "Fler åtgärder",
   "@bulkMoreActions": {
-    "description": "Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)"
+    "description": "Tooltip for the kebab in the recipe list selection bar"
   },
   "bulkDelete": "Radera valda",
   "bulkShare": "Dela valda",
@@ -8805,7 +8805,7 @@
   "emailVerificationResend": "Skicka igen",
   "emailVerificationResendCountdown": "Skicka igen ({seconds} s)",
   "@emailVerificationResendCountdown": {
-    "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
+    "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second.",
     "placeholders": {
       "seconds": {
         "type": "int"
@@ -9270,11 +9270,11 @@
   "pantryLocationLabel": "Plats",
   "pantryItemChangedNow": "ändrad nu",
   "@pantryItemChangedNow": {
-    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+    "description": "Pantry row: when the row was last changed."
   },
   "pantryItemChangedMinutesAgo": "ändrad {count} min sedan",
   "@pantryItemChangedMinutesAgo": {
-    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "description": "Pantry row: when the row was last changed.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -9283,7 +9283,7 @@
   },
   "pantryItemChangedToday": "ändrad i dag {time}",
   "@pantryItemChangedToday": {
-    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "description": "Pantry row: when the row was last changed.",
     "placeholders": {
       "time": {
         "type": "String",
@@ -9293,11 +9293,11 @@
   },
   "pantryItemChangedYesterday": "ändrad i går",
   "@pantryItemChangedYesterday": {
-    "description": "Pantry row: when the row was last changed (produktregler.md:105)."
+    "description": "Pantry row: when the row was last changed."
   },
   "pantryItemChangedOn": "ändrad {date}",
   "@pantryItemChangedOn": {
-    "description": "Pantry row: when the row was last changed (produktregler.md:105).",
+    "description": "Pantry row: when the row was last changed.",
     "placeholders": {
       "date": {
         "type": "String",
@@ -10165,7 +10165,7 @@
   },
   "shoppingCategoryProgress": "{completed} av {total}",
   "@shoppingCategoryProgress": {
-    "description": "The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).",
+    "description": "The count beside a shopping list category heading: items checked off of the category's items.",
     "placeholders": {
       "completed": {
         "type": "int"
@@ -10535,7 +10535,7 @@
   "a11yEditMemberRating": "Ändra betyg",
   "deepLinkExpired": "Länken gäller inte längre. Be den som delade om en ny.",
   "@deepLinkExpired": {
-    "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143)."
+    "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. PQ-13 = A: no request button, the text says who to ask (BUT-2143)."
   },
   "deepLinkUnavailable": "Innehållet är inte längre tillgängligt.",
   "@deepLinkUnavailable": {
@@ -10793,11 +10793,11 @@
   },
   "recipeEditorClose": "Stäng editorn",
   "@recipeEditorClose": {
-    "description": "The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast)."
+    "description": "The X that closes the recipe editor modal."
   },
   "menuWeekBadgeEmpty": "Vecka {week} · inget planerat",
   "@menuWeekBadgeEmpty": {
-    "description": "The empty week's line under \"Veckomeny\" on the root bar (Skarmar v12 del 1 #tomvecka).",
+    "description": "The empty week's line under \"Veckomeny\" on the root bar.",
     "placeholders": {
       "week": {
         "type": "int"
@@ -10815,11 +10815,11 @@
   },
   "rootBarMoreActions": "Fler åtgärder",
   "@rootBarMoreActions": {
-    "description": "Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop)."
+    "description": "Name of the one overflow button on the Inköp and Veckomeny root bars."
   },
   "weekMenuPlanningSlow": "Det tar längre tid än vanligt",
   "@weekMenuPlanningSlow": {
-    "description": "The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03)."
+    "description": "The planning panel's status after 6 s (TR::FLOW::01::genererar::6-10-s)."
   },
   "importBatchSaveFailed": "Recepten kunde inte sparas. Försök igen.",
   "@importBatchSaveFailed": {
@@ -10827,7 +10827,7 @@
   },
   "weekMenuPlanningTitle": "Planerar veckan …",
   "@weekMenuPlanningTitle": {
-    "description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel)."
+    "description": "What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09)."
   },
   "menuLoadingSaved": "Hämtar sparade menyer …",
   "@menuLoadingSaved": {
@@ -10835,11 +10835,11 @@
   },
   "shoppingRootTitle": "Inköp",
   "@shoppingRootTitle": {
-    "description": "The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62)."
+    "description": "The shopping root bar's title (P4-U10)."
   },
   "shoppingRootLine": "{listName} · {done} av {total, plural, =1{1 klar} other{{total} klara}}",
   "@shoppingRootLine": {
-    "description": "The line under the shopping root bar's title (P4-U10; Komponentark v1:64).",
+    "description": "The line under the shopping root bar's title (P4-U10).",
     "placeholders": {
       "listName": {
         "type": "String"
@@ -10854,7 +10854,7 @@
   },
   "shoppingRootLineEmpty": "{listName} · inga varor",
   "@shoppingRootLineEmpty": {
-    "description": "The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).",
+    "description": "The line under the root bar's title when the list is empty.",
     "placeholders": {
       "listName": {
         "type": "String"
@@ -10863,15 +10863,15 @@
   },
   "shoppingEmptyTitle": "Inget att handla",
   "@shoppingEmptyTitle": {
-    "description": "An empty shopping list's title (Skarmar v12 del 2 #tominkop)."
+    "description": "An empty shopping list's title."
   },
   "shoppingEmptyBody": "Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.",
   "@shoppingEmptyBody": {
-    "description": "An empty shopping list's body (Skarmar v12 del 2 #tominkop)."
+    "description": "An empty shopping list's body."
   },
   "shoppingFromWeekMenu": "Från veckomenyn",
   "@shoppingFromWeekMenu": {
-    "description": "The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop)."
+    "description": "The empty shopping list's saffron action."
   },
   "shoppingLoadingTemplates": "Hämtar mallarna …",
   "@shoppingLoadingTemplates": {
@@ -10879,7 +10879,7 @@
   },
   "importFetchingRecipe": "Hämtar receptet …",
   "@importFetchingRecipe": {
-    "description": "What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar)."
+    "description": "What an import says while it fetches and parses (P4-U08)."
   },
   "importReadingFile": "Läser filen …",
   "@importReadingFile": {
@@ -10891,7 +10891,7 @@
   },
   "consentSaveMyChoices": "Spara mina val",
   "@consentSaveMyChoices": {
-    "description": "The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål')."
+    "description": "The consent view's saffron save."
   },
   "loadingBlockedUsers": "Hämtar blockerade användare …",
   "@loadingBlockedUsers": {
@@ -10899,7 +10899,7 @@
   },
   "accountDeletingProgress": "Raderar kontot …",
   "@accountDeletingProgress": {
-    "description": "Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår')."
+    "description": "Shown under the plate line while the account is deleted."
   },
   "loadingParseEvents": "Hämtar tolkningshändelserna …",
   "@loadingParseEvents": {
@@ -10911,7 +10911,7 @@
   },
   "menuPreviewTitle": "Delad meny",
   "@menuPreviewTitle": {
-    "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
+    "description": "Top bar title of the shared menu preview."
   },
   "menuPreviewSharedLine": "{name} delade menyn {menu} med dig · bara läsning",
   "@menuPreviewSharedLine": {
@@ -10972,11 +10972,11 @@
   },
   "minaReceptRefreshFailed": "Recepten kunde inte uppdateras.",
   "@minaReceptRefreshFailed": {
-    "description": "P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown."
+    "description": "P5-T1: Section error on the start view: the refresh failed but recipes already fetched are still shown."
   },
   "minaReceptRefreshPreserved": "Dina sparade recept visas nedan.",
   "@minaReceptRefreshPreserved": {
-    "description": "P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298)."
+    "description": "P5-T1: Part 2: what was kept when the recipe refresh failed."
   },
   "shoppingLeaveListStillMember": "Du är fortfarande med i listan.",
   "@shoppingLeaveListStillMember": {
@@ -11054,11 +11054,11 @@
   },
   "legalLinksNeedConnection": "Webblänkarna öppnas när du är ansluten igen.",
   "@legalLinksNeedConnection": {
-    "description": "Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30)."
+    "description": "Offline, the web links in a legal document are inactive and this line says why (P5-U30)."
   },
   "imageCouldNotBeShown": "Bilden kunde inte visas",
   "@imageCouldNotBeShown": {
-    "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
+    "description": "A photo that exists but failed to load keeps its surface and explains."
   },
   "errorPartNotShown": "Den här delen kunde inte visas.",
   "@errorPartNotShown": {
@@ -11066,11 +11066,11 @@
   },
   "recipeAddPhoto": "Lägg till foto",
   "@recipeAddPhoto": {
-    "description": "BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added."
+    "description": "BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it. Opens the recipe editor, where the photo is added."
   },
   "imageRetriesWhenOnline": "Försöker igen när nätet är tillbaka",
   "@imageRetriesWhenOnline": {
-    "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."
+    "description": "Second line under a failed photo; the retry is silent."
   },
   "ingredientSearchAgain": "Sök igen",
   "@ingredientSearchAgain": {
@@ -11082,7 +11082,7 @@
   },
   "weeklyMenuOverflowPlacedCount": "{placed} av {total, plural, =1{1 rätt placerad} other{{total} rätter placerade}}",
   "@weeklyMenuOverflowPlacedCount": {
-    "description": "P5-U23: overflow tray title, counted in dishes (produktregler.md:206).",
+    "description": "P5-U23: overflow tray title, counted in dishes.",
     "placeholders": {
       "placed": {
         "type": "int"
@@ -11094,7 +11094,7 @@
   },
   "weeklyMenuOverflowReason": "Vecka {week} hade inga fler lediga platser för de här.",
   "@weeklyMenuOverflowReason": {
-    "description": "P5-U23: why the rest did not fit (produktregler.md:1125).",
+    "description": "P5-U23: why the rest did not fit.",
     "placeholders": {
       "week": {
         "type": "int"
@@ -11103,11 +11103,11 @@
   },
   "weeklyMenuOverflowPastDays": "Dagar som redan har passerat fylls aldrig.",
   "@weeklyMenuOverflowPastDays": {
-    "description": "P5-U23: part of the reason when the week is the current week (produktregler.md:201)."
+    "description": "P5-U23: part of the reason when the week is the current week."
   },
   "weeklyMenuOverflowKeepOrNextWeek": "De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.",
   "@weeklyMenuOverflowKeepOrNextWeek": {
-    "description": "P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).",
+    "description": "P5-U23: the tray is a working store, not a notice.",
     "placeholders": {
       "week": {
         "type": "int"
@@ -11116,11 +11116,11 @@
   },
   "weeklyMenuOverflowKeep": "De ligger kvar här tills du placerar dem.",
   "@weeklyMenuOverflowKeep": {
-    "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893)."
+    "description": "P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit)."
   },
   "weeklyMenuOverflowNextWeekAction": "Lägg i vecka {week}",
   "@weeklyMenuOverflowNextWeekAction": {
-    "description": "P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).",
+    "description": "P5-U23: the tray's next-week choice ('v.' is not an approved abbreviation, so the week is written out).",
     "placeholders": {
       "week": {
         "type": "int"
@@ -11129,7 +11129,7 @@
   },
   "weeklyMenuOverflowNextWeekA11y": "{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}",
   "@weeklyMenuOverflowNextWeekA11y": {
-    "description": "P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').",
+    "description": "P5-U23: accessible name of the next-week choice.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -11153,7 +11153,7 @@
   },
   "a11yWeeklyMenuPlacementOrder": "Placerad som nummer {order}",
   "@a11yWeeklyMenuPlacementOrder": {
-    "description": "P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).",
+    "description": "P5-U23: screen-reader value of the placement order number in a cell.",
     "placeholders": {
       "order": {
         "type": "int"
@@ -11162,7 +11162,7 @@
   },
   "menuPartialTitle": "Vi hittade {found} av {requested, plural, =1{1 rätt} other{{requested} rätter}}",
   "@menuPartialTitle": {
-    "description": "P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).",
+    "description": "P5-U25: a generation with fewer dishes than asked.",
     "placeholders": {
       "found": {
         "type": "int"
@@ -11174,11 +11174,11 @@
   },
   "menuPartialBody": "Det fanns inte fler recept som passar.",
   "@menuPartialBody": {
-    "description": "P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt."
+    "description": "P5-U25: why the menu is short. Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt."
   },
   "menuPartialMissing": "{found} av {requested}, {missing} saknas",
   "@menuPartialMissing": {
-    "description": "P5-U25: one short meal type (produktregler.md:893: what is missing is named).",
+    "description": "P5-U25: one short meal type (what is missing is named).",
     "placeholders": {
       "found": {
         "type": "int"
@@ -11214,11 +11214,11 @@
   "duplicateMergeFailedPreserved": "Det befintliga receptet är oförändrat.",
   "conflictDiffUseTheirs": "Använd deras version",
   "@conflictDiffUseTheirs": {
-    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
+    "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back."
   },
   "conflictDiffCloseWithoutOverwrite": "Stäng utan att skriva över",
   "@conflictDiffCloseWithoutOverwrite": {
-    "description": "Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict. BUT-2153 del 3, Skarmar v12 del 3 #konflikt :1164/:1199."
+    "description": "Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict."
   },
   "conflictDiffUsedTheirs": "Deras version gäller nu",
   "@conflictDiffUsedTheirs": {
@@ -11234,15 +11234,15 @@
   },
   "conflictWeekKeepMine": "Behåll min",
   "@conflictWeekKeepMine": {
-    "description": "Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119."
+    "description": "Action on the 30 s week-menu conflict snackbar."
   },
   "partialOutcomeDone": "Klart",
   "@partialOutcomeDone": {
-    "description": "P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392)."
+    "description": "P5-U33: closes a partial outcome and leaves multi-select."
   },
   "groupMembersPartialTitle": "{removed} av {total} togs bort",
   "@groupMembersPartialTitle": {
-    "description": "P5-U33: partial outcome title after bulk member removal (produktregler.md:907).",
+    "description": "P5-U33: partial outcome title after bulk member removal.",
     "placeholders": {
       "removed": {
         "type": "int"
@@ -11254,11 +11254,11 @@
   },
   "groupMembersPartialMessage": "De som inte kunde tas bort ligger kvar valda ovan.",
   "@groupMembersPartialMessage": {
-    "description": "P5-U33: partial outcome body after bulk member removal (produktregler.md:908)."
+    "description": "P5-U33: partial outcome body after bulk member removal."
   },
   "groupMembersPartialRemoved": "{names} är inte längre med i {group}.",
   "@groupMembersPartialRemoved": {
-    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).",
+    "description": "P5-U33: what went in a partial bulk member removal, naming each removed member.",
     "placeholders": {
       "names": {
         "type": "String"
@@ -11303,11 +11303,11 @@
   },
   "selectionFailedKept": "De ligger kvar valda.",
   "@selectionFailedKept": {
-    "description": "P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908)."
+    "description": "P5-U33: what was kept after a bulk action failed for every selected row."
   },
   "personalTagBulkDeletePartialTitle": "{deleted} av {total, plural, =1{1 tagg} other{{total} taggar}} togs bort",
   "@personalTagBulkDeletePartialTitle": {
-    "description": "P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).",
+    "description": "P5-U33: partial outcome title after bulk tag delete.",
     "placeholders": {
       "deleted": {
         "type": "int"
@@ -11319,11 +11319,11 @@
   },
   "personalTagBulkDeletePartialMessage": "De som inte kunde tas bort ligger kvar valda.",
   "@personalTagBulkDeletePartialMessage": {
-    "description": "P5-U33: partial outcome body after bulk tag delete (produktregler.md:908)."
+    "description": "P5-U33: partial outcome body after bulk tag delete."
   },
   "personalTagBulkDeletePartialDeleted": "{names} togs bort.",
   "@personalTagBulkDeletePartialDeleted": {
-    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).",
+    "description": "P5-U33: what went in a partial bulk tag delete, naming each deleted tag.",
     "placeholders": {
       "names": {
         "type": "String"
@@ -11340,7 +11340,7 @@
   },
   "overwrittenRestoreAction": "Återställ min version",
   "@overwrittenRestoreAction": {
-    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109)."
+    "description": "P5-U26b: overflow row and confirm button that restores a version another person's save overwrote."
   },
   "overwrittenPickTitle": "Vilken version vill du återställa?",
   "@overwrittenPickTitle": {
@@ -11455,11 +11455,11 @@
   "reportDescriptionRequiredHelper": "Krävs när du väljer Annat.",
   "menuNoMatchTitle": "Inga recept matchar",
   "@menuNoMatchTitle": {
-    "description": "P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch)."
+    "description": "P6-U01: zero matches."
   },
   "menuNoMatchBody": "{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.",
   "@menuNoMatchBody": {
-    "description": "P6-U01: what stopped it, and the smallest way on (#veckoingamatch).",
+    "description": "P6-U01: what stopped it, and the smallest way on.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -11481,11 +11481,11 @@
   },
   "menuNoMatchPlanYourself": "Lägg dagarna själv",
   "@menuNoMatchPlanYourself": {
-    "description": "P6-U01: opens the calendar to plan by hand (#veckoingamatch)."
+    "description": "P6-U01: opens the calendar to plan by hand."
   },
   "menuGenerateOfflineReason": "Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.",
   "@menuGenerateOfflineReason": {
-    "description": "P6-U01: why Generera is switched off offline (produktregler.md:1131)."
+    "description": "P6-U01: why Generera is switched off offline."
   },
   "menuGenerateOfflineStopped": "Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.",
   "@menuGenerateOfflineStopped": {
@@ -11493,7 +11493,7 @@
   },
   "shoppingMergeTitle": "Till inköpslistan",
   "@shoppingMergeTitle": {
-    "description": "P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge)."
+    "description": "P6-U02: the merge sheet title."
   },
   "shoppingMergeItemCount": "{count, plural, =1{1 vara} other{{count} varor}}",
   "@shoppingMergeItemCount": {
@@ -11541,11 +11541,11 @@
   },
   "shoppingMergeShowDetailsA11y": "Visa detaljer om sammanslagningen",
   "@shoppingMergeShowDetailsA11y": {
-    "description": "P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name)."
+    "description": "P6-U02: accessible name of Visa detaljer."
   },
   "shoppingMergeHideDetailsA11y": "Dölj detaljer om sammanslagningen",
   "@shoppingMergeHideDetailsA11y": {
-    "description": "P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name)."
+    "description": "P6-U02: accessible name of Dölj detaljer."
   },
   "shoppingMergeDuplicatesTitle": "Slå samman dubbletter",
   "@shoppingMergeDuplicatesTitle": {
@@ -11553,7 +11553,7 @@
   },
   "shoppingMergeDuplicatesBody": "Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
   "@shoppingMergeDuplicatesBody": {
-    "description": "P6-U02: switch description (#inkopmergeoppen)."
+    "description": "P6-U02: switch description."
   },
   "shoppingMergeConvertTitle": "Konvertera enheter",
   "@shoppingMergeConvertTitle": {
@@ -11561,7 +11561,7 @@
   },
   "shoppingMergeConvertBody": "2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.",
   "@shoppingMergeConvertBody": {
-    "description": "P6-U02: switch description (#inkopmergeoppen)."
+    "description": "P6-U02: switch description."
   },
   "shoppingMergePantryTitle": "Dra bort skafferivaror",
   "@shoppingMergePantryTitle": {
@@ -11569,7 +11569,7 @@
   },
   "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.",
   "@shoppingMergePantryBody": {
-    "description": "P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).",
+    "description": "P6-U02: switch description.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -11578,7 +11578,7 @@
   },
   "shoppingMergePantryCovered": "Finns hemma i tillräcklig mängd: {names}",
   "@shoppingMergePantryCovered": {
-    "description": "P6-U02: rows the pantry left off, named (produktregler.md:234).",
+    "description": "P6-U02: rows the pantry left off, named.",
     "placeholders": {
       "names": {
         "type": "String"
@@ -11587,15 +11587,15 @@
   },
   "shoppingMergePantryUnavailable": "Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.",
   "@shoppingMergePantryUnavailable": {
-    "description": "P6-U02: degraded mode (produktregler.md:697)."
+    "description": "P6-U02: degraded mode."
   },
   "shoppingMergeReplaceTitle": "Ersätt listan i stället för att lägga till",
   "@shoppingMergeReplaceTitle": {
-    "description": "P6-U02: switch, off by default (#inkopmerge)."
+    "description": "P6-U02: switch, off by default."
   },
   "shoppingMergeReplaceBody": "Dina egna, manuellt tillagda varor behålls alltid.",
   "@shoppingMergeReplaceBody": {
-    "description": "P6-U02: switch description (#inkopmerge; PQ-10 = A)."
+    "description": "P6-U02: switch description (PQ-10 = A)."
   },
   "shoppingMergeReplaceUnavailable": "Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.",
   "@shoppingMergeReplaceUnavailable": {
@@ -11603,7 +11603,7 @@
   },
   "shoppingMergeAdd": "{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}",
   "@shoppingMergeAdd": {
-    "description": "P6-U02: the sheet hero (#inkopmerge).",
+    "description": "P6-U02: the sheet hero.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -11671,11 +11671,11 @@
   },
   "shoppingMergeMarkMaybeHome": "Kanske hemma",
   "@shoppingMergeMarkMaybeHome": {
-    "description": "P6-U02: row mark (produktregler.md:230)."
+    "description": "P6-U02: row mark."
   },
   "shoppingMergeMarkCheckDate": "Kolla datum",
   "@shoppingMergeMarkCheckDate": {
-    "description": "P6-U02: row mark (produktregler.md:232)."
+    "description": "P6-U02: row mark."
   },
   "signOutPendingTitle": "{count, plural, =1{1 ändring har inte sparats} other{{count} ändringar har inte sparats}}",
   "@signOutPendingTitle": {
@@ -11970,11 +11970,11 @@
   },
   "roleLoweredRecipeTitle": "Du kan inte längre redigera receptet",
   "@roleLoweredRecipeTitle": {
-    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83)."
+    "description": "P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open."
   },
   "roleLoweredRecipeBody": "Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.",
   "@roleLoweredRecipeBody": {
-    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83)."
+    "description": "P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy."
   },
   "roleLoweredSaveCopy": "Spara som egen kopia",
   "@roleLoweredSaveCopy": {
@@ -12010,7 +12010,7 @@
   },
   "conflictBannerTitleSuggestion": "Ägarens version gäller",
   "@conflictBannerTitleSuggestion": {
-    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103)."
+    "description": "P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins."
   },
   "conflictBannerBodySuggestion": "{name} ändrade samtidigt. Din ändring är sparad som ett förslag i 7 dagar.",
   "@conflictBannerBodySuggestion": {
@@ -12040,7 +12040,7 @@
   },
   "recipeSuggestionSeeMine": "Se ditt förslag",
   "@recipeSuggestionSeeMine": {
-    "description": "P5-U27b: banner action, verbatim from produktregler.md:103."
+    "description": "P5-U27b: banner action."
   },
   "recipeSuggestionSee": "Se förslaget",
   "@recipeSuggestionSee": {
@@ -12125,11 +12125,11 @@
   },
   "recipeSuggestionAccept": "Använd förslaget",
   "@recipeSuggestionAccept": {
-    "description": "P5-U27b: the owner accepts the suggestion (produktregler.md:241)."
+    "description": "P5-U27b: the owner accepts the suggestion."
   },
   "recipeSuggestionDismiss": "Avvisa förslaget",
   "@recipeSuggestionDismiss": {
-    "description": "P5-U27b: the owner dismisses the suggestion (produktregler.md:241)."
+    "description": "P5-U27b: the owner dismisses the suggestion."
   },
   "recipeSuggestionAccepted": "Förslaget är nu en del av receptet.",
   "@recipeSuggestionAccepted": {
@@ -12183,7 +12183,7 @@
   },
   "weeklyMenuOverflowDiscardAction": "Släng resten",
   "@weeklyMenuOverflowDiscardAction": {
-    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131)."
+    "description": "Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows."
   },
   "weeklyMenuOverflowDiscarded": "{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}",
   "@weeklyMenuOverflowDiscarded": {
@@ -12196,11 +12196,11 @@
   },
   "pantryItemAmountUnknown": "har hemma",
   "@pantryItemAmountUnknown": {
-    "description": "Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148)."
+    "description": "Q5-03 = B: the meta line of a pantry row without an amount."
   },
   "recipePantryAllAtHome": "Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}",
   "@recipePantryAllAtHome": {
-    "description": "Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).",
+    "description": "Q4-03: the pantry covers every ingredient of the recipe; nothing is added.",
     "placeholders": {
       "names": {
         "type": "String"
@@ -12213,7 +12213,7 @@
   },
   "recipePantryLessened": "Mindre än i receptet, eftersom en del finns hemma: {names}",
   "@recipePantryLessened": {
-    "description": "Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).",
+    "description": "Q4-03: ingredients added with the difference only, because some is at home.",
     "placeholders": {
       "names": {
         "type": "String"
@@ -12222,19 +12222,19 @@
   },
   "navigationHome": "Hem",
   "@navigationHome": {
-    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055)."
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept). Lowercase like the other tabs."
   },
   "navigationMore": "Mer",
   "@navigationMore": {
-    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer)."
+    "description": "P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer."
   },
   "navigationAddAction": "Lägg till",
   "@navigationAddAction": {
-    "description": "P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält)."
+    "description": "P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list."
   },
   "moreTitle": "Mer",
   "@moreTitle": {
-    "description": "P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer)."
+    "description": "P6-T6 (PQ-17, P4-U19): title of the Mer destination."
   },
   "moreSectionTogether": "Tillsammans",
   "@moreSectionTogether": {
@@ -12266,19 +12266,19 @@
   },
   "addSheetQuickSaveTitle": "Snabbspara",
   "@addSheetQuickSaveTitle": {
-    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582)."
+    "description": "P6-T6 (PQ-17): the hero choice in the plus sheet."
   },
   "addSheetQuickSaveSubtitle": "Bara namn och måltid – importera detaljer senare",
   "@addSheetQuickSaveSubtitle": {
-    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583)."
+    "description": "P6-T6 (PQ-17): under Snabbspara in the plus sheet."
   },
   "syncQueueTitle": "Väntar på synk",
   "@syncQueueTitle": {
-    "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190)."
+    "description": "P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row."
   },
   "syncQueueNeedsYouHeader": "Väntar på dig · {count}",
   "@syncQueueNeedsYouHeader": {
-    "description": "P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).",
+    "description": "P6-T6 (PQ-17, P4-U19): heading over the permanent failures.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -12287,7 +12287,7 @@
   },
   "syncQueueNeedsYouHint": "Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.",
   "@syncQueueNeedsYouHint": {
-    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko."
+    "description": "P6-T6 (PQ-17, P4-U19)"
   },
   "syncQueueQueuedHeader": "I kö · {count}",
   "@syncQueueQueuedHeader": {
@@ -12300,7 +12300,7 @@
   },
   "syncQueueOrderNote": "Ordningen är först in, först ut per objekt, men parallellt mellan objekt.",
   "@syncQueueOrderNote": {
-    "description": "P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186."
+    "description": "P6-T6 (PQ-17, P4-U19)"
   },
   "syncQueueSyncNow": "Försök synka nu",
   "@syncQueueSyncNow": {
@@ -12312,7 +12312,7 @@
   },
   "syncQueueRetry": "Försök igen",
   "@syncQueueRetry": {
-    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189)."
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure."
   },
   "syncQueueRetryA11y": "Försök igen – {what}",
   "@syncQueueRetryA11y": {
@@ -12325,7 +12325,7 @@
   },
   "syncQueueDiscard": "Släng ändringen",
   "@syncQueueDiscard": {
-    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko)."
+    "description": "P6-T6 (PQ-17, P4-U19): action on a permanent failure."
   },
   "syncQueueDiscardA11y": "Släng ändringen {what}",
   "@syncQueueDiscardA11y": {
@@ -12338,11 +12338,11 @@
   },
   "syncQueueDiscarded": "Ändringen slängdes.",
   "@syncQueueDiscarded": {
-    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1)."
+    "description": "P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (class 1)."
   },
   "syncQueueRecipeDiscarded": "Receptet slängdes.",
   "@syncQueueRecipeDiscarded": {
-    "description": "Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132)."
+    "description": "Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s."
   },
   "syncQueueDiscardPhoneOnlyTitle": "Släng receptet?",
   "@syncQueueDiscardPhoneOnlyTitle": {
@@ -12388,7 +12388,7 @@
   },
   "syncQueueWaitsOnEarlier": "väntar på en tidigare ändring",
   "@syncQueueWaitsOnEarlier": {
-    "description": "P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187)."
+    "description": "P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn."
   },
   "syncQueueUnnamedRecipe": "Ett recept",
   "@syncQueueUnnamedRecipe": {
@@ -12432,7 +12432,7 @@
   },
   "syncQueueImageFor": "Bild till {title}",
   "@syncQueueImageFor": {
-    "description": "P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).",
+    "description": "P6-T6 (PQ-17, P4-U19): what a queued upload concerns.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -12475,19 +12475,19 @@
   },
   "syncQueueReasonNotFound": "Receptet finns inte längre",
   "@syncQueueReasonNotFound": {
-    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+    "description": "P6-T6 (PQ-17, P4-U19)"
   },
   "syncQueueReasonPermission": "Du har inte längre behörighet",
   "@syncQueueReasonPermission": {
-    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+    "description": "P6-T6 (PQ-17, P4-U19)"
   },
   "syncQueueReasonTooLarge": "Bilden är för stor",
   "@syncQueueReasonTooLarge": {
-    "description": "P6-T6 (PQ-17, P4-U19): produktregler.md:189."
+    "description": "P6-T6 (PQ-17, P4-U19)"
   },
   "syncQueueReasonDependency": "Den hänger på en ändring som inte gick att spara",
   "@syncQueueReasonDependency": {
-    "description": "P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187)."
+    "description": "P6-T6 (PQ-17, P4-U19): a chain marked as failed."
   },
   "syncQueueReasonUnknown": "Servern tog inte emot ändringen",
   "@syncQueueReasonUnknown": {
@@ -12495,11 +12495,11 @@
   },
   "syncQueueReasonExpired": "Gick inte att spara på 24 h",
   "@syncQueueReasonExpired": {
-    "description": "P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188)."
+    "description": "P6-U08b: the queue retried for 24 h without success and stopped."
   },
   "syncQueueSaveAsCopy": "Spara som kopia",
   "@syncQueueSaveAsCopy": {
-    "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188)."
+    "description": "P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own."
   },
   "syncQueueCopyTitle": "{title} (kopia)",
   "@syncQueueCopyTitle": {
@@ -12521,11 +12521,11 @@
   },
   "syncQueueTrySmaller": "Försök mindre",
   "@syncQueueTrySmaller": {
-    "description": "P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko)."
+    "description": "P6-U08b: action on an image the server refused as too large."
   },
   "syncQueueTrySmallerA11y": "Försök mindre – {what}",
   "@syncQueueTrySmallerA11y": {
-    "description": "P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).",
+    "description": "P6-U08b: accessible name of Försök mindre, naming the change.",
     "placeholders": {
       "what": {
         "type": "String"
@@ -12542,7 +12542,7 @@
   },
   "syncQueueNextAttemptSeconds": "nästa försök om {seconds} s",
   "@syncQueueNextAttemptSeconds": {
-    "description": "P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).",
+    "description": "P6-U08b: when a failed change is sent again, under a minute.",
     "placeholders": {
       "seconds": {
         "type": "int"
@@ -12621,7 +12621,7 @@
   },
   "recipeSuggestChange": "Föreslå ändring",
   "@recipeSuggestChange": {
-    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247)."
+    "description": "Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera."
   },
   "recipeSuggestionSend": "Skicka förslaget",
   "@recipeSuggestionSend": {
@@ -12724,27 +12724,27 @@
   },
   "hemGreetingMorning": "God morgon",
   "@hemGreetingMorning": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278)."
+    "description": "HEM-HERO: Hem. Greeting 05-11."
   },
   "hemGreetingDay": "Hej",
   "@hemGreetingDay": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278)."
+    "description": "HEM-HERO: Hem. Greeting 11-17."
   },
   "hemGreetingEvening": "God kväll",
   "@hemGreetingEvening": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278)."
+    "description": "HEM-HERO: Hem. Greeting 17-22."
   },
   "hemGreetingNight": "God natt",
   "@hemGreetingNight": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278)."
+    "description": "HEM-HERO: Hem. Greeting 22-05."
   },
   "hemGreetingWelcome": "Välkommen",
   "@hemGreetingWelcome": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom)."
+    "description": "HEM-HERO: Hem. Greeting in the empty state, a user with no recipes."
   },
   "hemGreetingWithName": "{greeting}, {name}",
   "@hemGreetingWithName": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.",
+    "description": "HEM-HERO: Hem. The greeting followed by the first name from the profile.",
     "placeholders": {
       "greeting": {
         "type": "String"
@@ -12756,7 +12756,7 @@
   },
   "hemTonight": "Ikväll",
   "@hemTonight": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268)."
+    "description": "HEM-HERO: Hem. Label of the hero card when today's dinner slot is filled."
   },
   "hemLibraryHeading": "Dina recept · {count}",
   "@hemLibraryHeading": {
@@ -12769,7 +12769,7 @@
   },
   "hemMetaMinutes": "{minutes} min",
   "@hemMetaMinutes": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.",
+    "description": "HEM-HERO: Hem. Card metadata: cooking time.",
     "placeholders": {
       "minutes": {
         "type": "int"
@@ -12778,7 +12778,7 @@
   },
   "hemMetaPortions": "{count} port.",
   "@hemMetaPortions": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).",
+    "description": "HEM-HERO: Hem. Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).",
     "placeholders": {
       "count": {
         "type": "int"
@@ -12787,39 +12787,39 @@
   },
   "hemStartCooking": "Börja laga",
   "@hemStartCooking": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+    "description": "HEM-HERO: Hem. The one saffron action on Hem: opens cooking mode for the planned dish."
   },
   "hemSuggestion": "Förslag",
   "@hemSuggestion": {
-    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3)."
+    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested."
   },
   "hemSwapSuggestion": "Byt förslag",
   "@hemSwapSuggestion": {
-    "description": "HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3)."
+    "description": "HEM-HERO: changes the suggested recipe to the next safe one."
   },
   "hemSwapDish": "Byt rätt",
   "@hemSwapDish": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish."
+    "description": "HEM-HERO: Hem. Opens the week menu to change the planned dish."
   },
   "hemAllInPantry": "allt i skafferiet",
   "@hemAllInPantry": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry."
+    "description": "HEM-HERO: Hem. Shown on the hero card only when every ingredient of the dish is in the pantry."
   },
   "hemLoadingPlan": "Hämtar veckomenyn …",
   "@hemLoadingPlan": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
+    "description": "HEM-HERO: Hem. Loading text beside the plate line."
   },
   "hemPlanErrorWhat": "Veckomenyn kunde inte hämtas.",
   "@hemPlanErrorWhat": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
+    "description": "HEM-HERO: Hem. Error, what happened."
   },
   "hemShowSavedPlan": "Öppna veckomenyn",
   "@hemShowSavedPlan": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel)."
+    "description": "HEM-HERO: Hem. Error, second action: opens the week menu."
   },
   "hemPlanFetchedAt": "Planen hämtades {time} – kan ha ändrats av någon annan sedan dess.",
   "@hemPlanFetchedAt": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).",
+    "description": "HEM-HERO: Hem. Offline: when the shown plan was fetched.",
     "placeholders": {
       "time": {
         "type": "String"
@@ -12828,47 +12828,47 @@
   },
   "hemEmptyTitle": "Butlery blir användbar med ett recept",
   "@hemEmptyTitle": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state title."
   },
   "hemEmptyBody": "Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.",
   "@hemEmptyBody": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state body."
   },
   "hemEmptyShortcuts": "Snabbaste vägarna",
   "@hemEmptyShortcuts": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state section label."
   },
   "hemEmptyLinkTitle": "Klistra in en länk",
   "@hemEmptyLinkTitle": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut."
   },
   "hemEmptyLinkBody": "från en receptsida, YouTube eller Instagram",
   "@hemEmptyLinkBody": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut explanation."
   },
   "hemEmptyPhotoTitle": "Fota en receptsida",
   "@hemEmptyPhotoTitle": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut."
   },
   "hemEmptyPhotoBody": "ur en kokbok eller ett urklipp",
   "@hemEmptyPhotoBody": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut explanation."
   },
   "hemEmptyWriteTitle": "Skriv själv",
   "@hemEmptyWriteTitle": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut."
   },
   "hemEmptyWriteBody": "för det du lagar utan recept",
   "@hemEmptyWriteBody": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state shortcut explanation."
   },
   "hemEmptyAllergyNote": "Har hushållet allergier? Ställ in dem först, så filtrerar Butlery bort dem ur veckomenyn. Kontrollera ändå alltid förpackningen.",
   "@hemEmptyAllergyNote": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288)."
+    "description": "HEM-HERO: Hem. Empty state allergy reminder."
   },
   "hemEmptyAllergyLink": "Ställ in allergener",
   "@hemEmptyAllergyLink": {
-    "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom)."
+    "description": "HEM-HERO: Hem. Empty state allergy link."
   },
   "bulkAddToMenuFailed": "Recepten kunde inte läggas till i veckomenyn.",
   "@bulkAddToMenuFailed": {
@@ -13100,7 +13100,7 @@
   },
   "draftDiscard": "Släng",
   "@draftDiscard": {
-    "description": "BUT-2175: the recipe form's draft question, one draft: Släng deletes it (produktregler.md:171-172)."
+    "description": "BUT-2175: the recipe form's draft question, one draft: Släng deletes it."
   },
   "draftsDiscarded": "{count, plural, =1{Utkastet slängdes} other{{count} utkast slängdes}}",
   "@draftsDiscarded": {
@@ -13224,7 +13224,7 @@
   },
   "setNewPasswordRepeat": "Upprepa nytt lösenord",
   "@setNewPasswordRepeat": {
-    "description": "BUT-2170: second password field, label from Skarmar v12 etapp 6."
+    "description": "BUT-2170: second password field."
   },
   "setNewPasswordSave": "Spara lösenordet",
   "@setNewPasswordSave": {
@@ -13430,7 +13430,7 @@
   },
   "weekMenuPlanningCancel": "Avbryt planeringen",
   "@weekMenuPlanningCancel": {
-    "description": "BUT-2157: outlined button under the planning panel that stops a week generation (Skarmar v12 del 1 #veckogenererarpanel)."
+    "description": "BUT-2157: outlined button under the planning panel that stops a week generation."
   },
   "weekMenuPlanningCancelNote": "Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.",
   "@weekMenuPlanningCancelNote": {

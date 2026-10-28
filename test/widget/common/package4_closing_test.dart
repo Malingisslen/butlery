@@ -4,8 +4,8 @@
 ///   above its label gets the 72 dp Material draws, not 48.
 /// * A TextButton among the subpage top bar's actions takes the bar's
 ///   foreground.
-/// * The selected tab carries the 3 px saffron plate line (Komponentark
-///   v1:106-112; tokens.json:165-168 progressIndicator), visible on the dark
+/// * The selected tab carries the 3 px saffron plate line
+///   visible on the dark
 ///   page too.
 library;
 

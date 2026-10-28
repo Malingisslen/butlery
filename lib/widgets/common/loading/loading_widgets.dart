@@ -37,7 +37,7 @@ class LoadingWidgets {
                   AppDimensions.radiusCard,
                 ),
               ),
-              // Plate line plus text, never a spinner (produktregler.md:163,
+              // Plate line plus text, never a spinner (
               // B-18). Without a message the generic one stands in: the line
               // never carries the news alone.
               child: PlateLineMessage(

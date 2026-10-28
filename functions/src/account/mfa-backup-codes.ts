@@ -1,11 +1,6 @@
 /**
  * P6-U09 — backup codes for two-step verification (flow 06).
  *
- * "Reservkoder hör i påslagningen — tio engångskoder innan skyddet gäller.
- * Utan reservväg och utan en utmaning i inloggningen (AU-10) får skyddet
- * inte gå att slå på" (Skarmar v12 etapp 6
- * #mfalagg #mfaaktiv).
- *
  * Firebase MFA has no backup codes, so they live here:
  *
  *  - `generateMfaBackupCodes` (signed in, sign-in at most five minutes old)

@@ -2,9 +2,8 @@
 // (produktbeslut 2026-09-27b): the recipe editor on someone else's shared
 // recipe.
 //
-// Sources: produktregler.md:241 (a member cannot edit a recipe someone else
-// owns; the change is kept as a suggestion the owner accepts or dismisses),
-// :247 (Redigera shows as "Föreslå ändring" for a member); Q6-07 = B (one
+// Sources:
+// Q6-07 = B (one
 // pending suggestion per member and recipe); Q6-12 = B (a new edit replaces
 // the waiting suggestion, and the member is told);
 // content-style-guide.md:87-97 (a failure says what happened, what is kept

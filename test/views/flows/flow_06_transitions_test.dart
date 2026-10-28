@@ -1,7 +1,5 @@
 /// P8-U03 · flow 06, the two e-mail verification transitions that were built
-/// but had no test (fas2/block288-uxfrysning.json
-/// overgangar, both REQUIRED; the rows in fas2/stateflow-applicability-0608
-/// .json name the visible effect).
+/// but had no test
 ///
 /// - TR::FLOW::06::verifiera-epost::klart: the link is opened, the account
 ///   is verified and the user is let in. The view polls every 5 s
@@ -145,10 +143,6 @@ void main() {
       expect(sends, 1, reason: 'no second link inside the 60 s');
     });
 
-    // produktregler.md 13.7: the seconds are drawn in the button, but its
-    // spoken name stays "Skicka igen", since a name that changes every second
-    // is never read out; the button comes back when the wait is over
-    // (BUT-2146, BUT-2172).
     testWidgets('the wait is drawn in the button, its name stays the same, '
         'and the button comes back after the 60 s', (tester) async {
       final handle = tester.ensureSemantics();

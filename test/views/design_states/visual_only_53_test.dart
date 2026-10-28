@@ -3,9 +3,7 @@
 ///
 /// The migration plan (2026-09-20) gave them their own verification post in
 /// package 8: "varje läge körs och jämförs mot designens regel". The rows are
-/// ux-beteende.json KLASS = VISUAL_ONLY_MIGRATION (53 rows over 18 views),
-/// and every one of them is a required state in
-/// fas2/block288-uxfrysning.json vytillstand.
+/// ux-beteende.json KLASS = VISUAL_ONLY_MIGRATION (53 rows over 18 views)
 ///
 /// A state that breaks its rule today is listed in known_state_findings.dart
 /// with its ticket. It is never fixed here and never hidden: an unlisted
@@ -29,7 +27,6 @@ import 'state_runner.dart';
 const _sourceSha256 =
     'fb0a1245d2cd5b14dad68d19b627fe9f081893b1ac135d34a3bf05f48cf0cdd8';
 
-/// fas2/block288-uxfrysning.json BINDNING.UX_STATE_SET_HASH.
 const _uxStateSetHash =
     '60e69697717610db907452b858d3535e94627eef3368fb2273544fa8aa08932a';
 

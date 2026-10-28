@@ -228,10 +228,6 @@ class CookingModeViewModel extends ChangeNotifier {
   int get maxVisitedIndex => _maxVisitedIndex;
   int _maxVisitedIndex = 0;
 
-  /// Leaving asks first once more than one step is done
-  /// (flows-roles-budget.md:71 "bekräfta avslut om mer än ett steg är
-  /// klart"): reaching step 3 means steps 1 and 2 are behind the user, so
-  /// the rule is maxVisitedIndex ≥ 2 (Q-P6-E05).
   bool get needsExitConfirmation => _maxVisitedIndex >= 2;
 
   void _recordVisit() {

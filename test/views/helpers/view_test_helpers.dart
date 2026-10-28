@@ -374,8 +374,8 @@ class ViewTestHelpers extends BaseWidgetTest {
 
   /// Expect loading state to be displayed.
   ///
-  /// `PlateLine` is the only loading indicator (decision B-18,
-  /// produktregler.md:163) and is what StateWidget.loading draws.
+  /// `PlateLine` is the only loading indicator
+  /// and is what StateWidget.loading draws.
   static void expectLoadingState(WidgetTester tester) {
     expect(
       tester.any(find.byType(PlateLine)),

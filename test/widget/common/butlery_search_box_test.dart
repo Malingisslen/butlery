@@ -244,9 +244,6 @@ void main() {
     });
   });
 
-  // Komponentark v1 §07 under the app's real themes: a 1 px border.control
-  // edge that keeps its width at focus, radius 8, the theme's fill, and icons
-  // in the scheme's colours.
   for (final (mode, theme) in [
     ('light', AppTheme.lightTheme),
     ('dark', AppTheme.darkTheme),

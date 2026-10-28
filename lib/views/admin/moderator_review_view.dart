@@ -371,7 +371,7 @@ class _ReportCard extends StatelessWidget {
 
   // A refused action is a failure snackbar with Försök igen, never the
   // queue's load-error state and never the method name
-  // (content-style-guide.md:87-97; Komponentark v1:750, never OK).
+  // (content-style-guide.md:87-97, never OK).
   Future<void> _advance(
     BuildContext context,
     ModeratorReviewViewModel vm,

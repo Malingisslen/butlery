@@ -37,7 +37,7 @@ const Set<String> imageGroupEntityTypes = {
 /// What a recipe write does, as the queue stores it (SyncOperation).
 enum QueuedOperation { create, update, delete, tag, upload }
 
-/// Why a change waits for the user, in the words produktregler.md:188 names.
+/// Why a change waits for the user.
 ///
 /// The queue stores the reason as text in `lastError`. The flow-08 classifier
 /// (P6-U08b) writes these codes; anything else reads as [unknown], which still
@@ -117,8 +117,7 @@ class QueuedChange {
   /// Why it waits for the user. Only meaningful when [needsUser].
   final QueuedChangeReason reason;
 
-  /// Whether it waits for another change still in the queue (dependsOn,
-  /// produktregler.md:187).
+  /// Whether it waits for another change still in the queue
   final bool waitsOnEarlier;
 
   /// When the queue sends it again after a failed attempt, or null when it

@@ -122,7 +122,7 @@ class ConflictResolutionModule {
       // On error, choose the remote version (safer), and say so. The local
       // edit is overwritten exactly as in an ordinary remoteWon, so the user
       // gets the same notice and can rescue it with "Behåll min version"
-      // (produktregler.md:109: no strategy may silently drop data that only
+      // (no strategy may silently drop data that only
       // exists locally). A sink that throws never
       // reaches this branch: _emitConflict contains its own failure, so this
       // is the only emission for the call.

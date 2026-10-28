@@ -157,7 +157,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       const SizedBox(height: AppDimensions.space4),
                       Text(
                         // How long the draft is kept, not only when it
-                        // was written (Skarmar v12 etapp 4 #editorutkastval;
+                        // was written (
                         // 30 days).
                         '${draft.timeAgo} · ${context.l10n.draftFieldsFilledCount(draft.fieldCount)} · ${draftTimeLeftLabel(context, draft.timeLeft)}',
                         style: AppTextStyles.bodySmall.copyWith(

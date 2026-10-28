@@ -1,7 +1,7 @@
 // lib/views/archive_import/archive_filter_sheet.dart
 //
 // The filters the archive page has no room for beside its three tag pills
-// (Skarmar v12 'Importera från arkiv', "Fler"): every tag and the time limit.
+// : every tag and the time limit.
 library;
 
 import 'package:flutter/material.dart';

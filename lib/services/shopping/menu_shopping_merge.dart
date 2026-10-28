@@ -11,8 +11,7 @@ import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 
-/// P6-U02: the merge sheet's four switches (Skarmar v12 del 2
-/// #inkopmergeoppen). "Ersätt listan" is always off by default ("Ersätt
+/// "Ersätt listan" is always off by default ("Ersätt
 /// listan är alltid av som standard"); the other three are drawn on.
 @immutable
 class MenuShoppingMergeOptions {
@@ -162,8 +161,6 @@ class MenuShoppingMergePreview {
   int get itemCount => lines.length;
 }
 
-/// P6-U02: what a merge wrote, so Ångra can take back exactly that
-/// (produktregler.md:131, § 2.4: `add` is class 1 with a 7 s Ångra).
 @immutable
 class MenuShoppingMergeReceipt {
   const MenuShoppingMergeReceipt({
@@ -322,11 +319,6 @@ class MenuShoppingMergePlanner {
     };
   }
 
-  /// produktregler.md:224-234 (§ 4.2): a known amount at home is subtracted
-  /// and only the difference goes on the list; enough at home leaves the row
-  /// off; an unknown amount, a unit that cannot be converted, or a row
-  /// without an amount gives no deduction and "Kanske hemma"; a row past its
-  /// date gives no deduction and "Kolla datum".
   static _Deduction _deduct(AggregatedShoppingItem row, List<PantryItem> at) {
     if (at.any((p) => p.expiryStatus == PantryExpiryStatus.expired)) {
       return const _Marked(MenuShoppingPantryMark.checkDate);

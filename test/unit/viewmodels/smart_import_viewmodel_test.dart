@@ -767,7 +767,6 @@ Blanda allt och rulla till bollar.''';
 
   // P5-U06 (import-av-recept ERROR): a failure is three-part
   // (content-style-guide.md:87-97) and draws the other routes it carries
-  // (produktregler.md:557, 9.2 Fel: availableStrategies "ritas").
   group('startImport — the three-part failure', () {
     void failWith(List<String>? strategies) {
       when(

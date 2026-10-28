@@ -296,8 +296,8 @@ void main() {
   });
 
   // PQ-18 = A (produktbeslut 2026-09-23, after the prototype): every
-  // incoming row keeps a saffron "Acceptera", as drawn in Skarmar v12 del 3
-  // #forfragningar. A deliberate exception to one saffron action per view.
+  // incoming row keeps a saffron "Acceptera"
+  // A deliberate exception to one saffron action per view.
   testWidgets('every incoming row offers the saffron Acceptera', (
     tester,
   ) async {

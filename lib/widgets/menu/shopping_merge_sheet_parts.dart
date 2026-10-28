@@ -273,8 +273,6 @@ class _SwitchRow extends StatelessWidget {
   }
 }
 
-/// produktregler.md:697: when the pantry cannot be read the list is made
-/// without deduction, the sheet says so, and there is a way to try again.
 /// The notice says what happened and what it means, and offers Försök igen
 /// (content-style-guide.md:87-97).
 class _PantryUnavailable extends StatelessWidget {

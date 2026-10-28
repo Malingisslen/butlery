@@ -6,8 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/feedback_themes.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
-/// The ink snackbar's action: 13/700 (text accent on ink; Komponentark
-/// v1:747), with its own paper focus ring.
+/// The ink snackbar's action: 13/700
+/// with its own paper focus ring.
 class InkSnackBarAction extends StatelessWidget {
   const InkSnackBarAction({
     required this.label,
@@ -24,7 +24,7 @@ class InkSnackBarAction extends StatelessWidget {
   /// The action. The key is for tests, not identity.
   static const Key actionKey = ValueKey<String>('inkSnackBar.action');
 
-  /// Komponentark v1:747: `border-radius:4px`. Interpretation: 4 is the
+  /// Interpretation: 4 is the
   /// spacing scale's smallest step; the radius scale has no 4.
   static const double radius = AppDimensions.space4;
 

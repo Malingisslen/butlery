@@ -43,7 +43,7 @@ class ShoppingItemDialogs {
         if (context.mounted) {
           if (id != null) {
             // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
-            // (produktregler.md:131; content-style-guide.md:96). Ångra
+            // (content-style-guide.md:96). Ångra
             // removes the row by the id the service returned, so it takes
             // away exactly this row, on a personal list and a shared one.
             SnackBarUtils.showUndo(
@@ -67,7 +67,7 @@ class ShoppingItemDialogs {
     }
   }
 
-  /// Editing is class 3 (produktregler.md:133): no receipt on success, so
+  /// Editing is class 3: no receipt on success, so
   /// only a failure is reported, through [onError].
   static Future<void> showEditItemDialog(
     BuildContext context,
@@ -102,7 +102,7 @@ class ShoppingItemDialogs {
         );
 
         // update{namn, mängd, enhet, kategori} is class 3: no friction on
-        // success (produktregler.md:133). The row changes on screen, and that
+        // success. The row changes on screen, and that
         // is the confirmation. Failures are still said.
         if (!success && context.mounted) {
           onError(context.l10n.shoppingCouldNotUpdateItem(result.name));

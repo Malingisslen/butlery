@@ -1,8 +1,6 @@
 // lib/widgets/voice/voice_mic_button.dart
 //
-// The 56 dp microphone that sits beside a field you can also dictate into
-// (Skarmar v12 'Tala in recept'): ink with a mic at rest, action.danger with a
-// stop square while it listens, and the state in words under it. One button
+// One button
 // for every dictated field, so none of them draws its own.
 library;
 

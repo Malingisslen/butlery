@@ -1,7 +1,7 @@
 // lib/widgets/common/badges/unified_badge.dart
 //
-// The app's one badge (BUT-2373). Komponentark v1 draws two kinds and no
-// others: the status pill (§08) and the counter (v1:34, v1:741). Every view
+// The app's one badge (BUT-2373).
+// Every view
 // that marks a state or a count uses this widget instead of drawing its own
 // box, so a change in the component sheet lands everywhere at once.
 library;
@@ -16,7 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// What a status pill says about its subject. The tone colours the word and
 /// the glyph only: "Aldrig fylld yta i statusfärg — success och danger är
-/// text- och ikonfärger" (Komponentark §08).
+/// text- och ikonfärger".
 enum BadgeTone { neutral, success, warning, danger }
 
 /// Whether a counter asks for action. Ink is the norm; saffron only for
@@ -26,7 +26,7 @@ enum CountEmphasis { ink, action }
 class UnifiedBadge extends StatelessWidget {
   /// A status pill: an outline pill in border-subtle with the word, and an
   /// optional glyph, in the tone's text colour. 10,5/700 uppercase, 3 × 9,
-  /// an 11 px glyph 5 px from the word (Komponentark §08,
+  /// an 11 px glyph 5 px from the word (
   /// tokens.json controls.statusPill).
   const UnifiedBadge.status({
     required String this.label,

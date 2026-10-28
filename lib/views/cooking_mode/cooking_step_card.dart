@@ -9,7 +9,7 @@ import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
-/// The current step as Skarmar v12 del 1 #lagastaende draws it: a step
+/// The current step: a step
 /// header with a progress line, the step text with its time as a saffron pill, and
 /// a line about the step after it.
 ///

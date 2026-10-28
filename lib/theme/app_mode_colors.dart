@@ -71,7 +71,7 @@ abstract final class AppModeColors {
       : AppColors.onActionPrimary;
 
   /// semantic text.onActionPrimaryPressed: paper #F5F4ED in both modes
-  /// (tokens.json:86-91; beslutslogg B-14). Only on actionPrimaryPressed.
+  /// (tokens.json:86-91). Only on actionPrimaryPressed.
   static Color onActionPrimaryPressed(Brightness brightness) =>
       _isDark(brightness)
       ? AppColorsDark.onActionPrimaryPressed
@@ -85,9 +85,7 @@ abstract final class AppModeColors {
       _isDark(brightness) ? AppColorsDark.textWarning : AppColors.textWarning;
 
   /// semantic overlay.paperWash: rgba(245,244,237,0.40) (tokens.json:263),
-  /// delivered as the generated member overlayWhite40. The drawn dark outline
-  /// of a secondary control, --ram-kontroll-a (Skarmar v12 etapp 4
-  /// import:28). Only meaningful in dark mode, where the outline is paper.
+  /// delivered as the generated member overlayWhite40.
   static Color paperWash(Brightness brightness) => _isDark(brightness)
       ? AppColorsDark.overlayWhite40
       : AppColors.overlayWhite40;

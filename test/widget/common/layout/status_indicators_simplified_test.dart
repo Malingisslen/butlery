@@ -1,10 +1,8 @@
 // The offline banner as a pattern (P3-U05).
 //
-// Sources: Komponentark v1:752-754 (light) and :570-572 (dark) for the
-// anatomy (the box is a borderless tint since B83-2 = A),
+// Sources:
 // tillganglighetshandoff:177 (role status, announced on transition, glyph
-// decorative), Skarmar v12 del 4 #hemoffline (single line, comma in the
-// screen-reader label).
+// decorative)
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';

@@ -92,7 +92,6 @@ class StateRow {
   /// Why the host differs from the evidence, when it does.
   final String? hostNote;
 
-  /// fas2/block288-uxfrysning.json vytillstand KATEGORI for (view, state).
   final String block288Category;
 
   /// The file that owns the state today, when it moved (the Hem rows).

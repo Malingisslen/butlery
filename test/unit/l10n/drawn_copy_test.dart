@@ -1,5 +1,5 @@
 /// P5-COPY-DRAWN: a visible label follows the drawing. Each value below is
-/// the text drawn in Butlery Skarmar v12 del 3 (anchor and line cited), with
+/// the text drawn, with
 /// its English equivalent under the same key.
 library;
 

@@ -213,8 +213,6 @@ class _CreateSharedShoppingListViewState
     CreateSharedListViewModel viewModel,
   ) {
     return BottomActionContainer(
-      // The view's one primary action (Skarmar v12 del 3 'Ny delad
-      // inköpslista', "Skapa och dela").
       child: FormButton(
         key: const ValueKey('createSharedList.create'),
         label: viewModel.createButtonText,

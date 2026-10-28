@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_text_styles.dart';
 
-/// What a recipe without a photo shows where the photo would be: the first
-/// letter of its title on surface.raised, in text.secondary (Komponentark v1,
-/// "Bild saknas, bild misslyckas — fyra ytor, fyra svar"). Illustrations are
+/// Illustrations are
 /// for empty states only, so a recipe never borrows a
 /// vegetable that has nothing to do with it.
 ///

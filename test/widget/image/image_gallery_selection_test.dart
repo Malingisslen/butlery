@@ -1,6 +1,6 @@
 // P7-B4: a chosen photo carries its choice with the 2 px text.primary border
 // and the ink check, never a tint or a faded plate (tokens.json:40-53;
-// Grafisk manual v6:209, "Vald = riktig border").
+// "Vald = riktig border").
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

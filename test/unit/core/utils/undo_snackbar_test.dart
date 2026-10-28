@@ -1,7 +1,7 @@
-// P3-U1: the one undo primitive (produktregler.md:125-140, § 2.4).
+// P3-U1: the one undo primitive.
 //
 // Class 1 (`add`, `delete`) carries a 7 s snackbar whose action is "Ångra"
-// (produktregler.md:131-132, content-style-guide.md:77). The primitive owns
+// (content-style-guide.md:77). The primitive owns
 // both numbers so no call site can drift to 4 or 5 seconds again.
 
 import 'dart:async';
@@ -74,7 +74,7 @@ void main() {
     final bar = shownSnackBar(tester);
     expect(bar.duration, kUndoWindow);
     // The window is UndoWindowTimer's, not Flutter's, so it can pause and
-    // extend (Grafisk manual v6:647). The timeout itself is proven below.
+    // extend. The timeout itself is proven below.
     expect(bar.persist, isTrue);
     // The action lives in the content, where it can carry its paper ring.
     expect(
@@ -128,7 +128,7 @@ void main() {
     expect(reason, SnackBarClosedReason.timeout);
   });
 
-  group('the ink snackbar (Komponentark v1:745-750, PQ-09 = A)', () {
+  group('the ink snackbar (PQ-09 = A)', () {
     for (final (mode, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
@@ -206,7 +206,7 @@ void main() {
     });
   });
 
-  group('the window pauses and extends (Grafisk manual v6:647)', () {
+  group('the window pauses and extends', () {
     Future<SnackBarClosedReason? Function()> showAndSettle(
       WidgetTester tester,
     ) async {
