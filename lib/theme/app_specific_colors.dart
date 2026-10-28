@@ -1,9 +1,5 @@
 /// APPSPECIFIKA dekorfärger.
 ///
-/// Designsystemet definierar med avsikt ingen kategorisk färgskala:
-/// `tokens.json` har `dataScale.categorical = null`, och produktreglerna
-/// § 8.3b säger att **kategorin bärs av namnet och att färgrutan är dekor**.
-///
 /// Därför är de här fyra färgerna appens egna. De är inte designtokens, de
 /// får inte växa till en andra palett, och varje tillägg kräver samma
 /// positiva produktbelägg som dessa fyra har.

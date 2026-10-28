@@ -19,8 +19,6 @@ class InputThemes {
 
   /// Input decoration theme
   ///
-  /// A field is paper with a 1 px border.control edge (Komponentark v1 §07
-  /// and §11; Grafisk manual v6:403 "Fält: papper + border-control").
   /// surface.raised is the DISABLED fill, so a resting field must not use it.
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
     // Fields take the control radius, 8 (tokens.json space.radius.control).
@@ -52,9 +50,7 @@ class InputThemes {
       hoverColor: cs.surfaceContainerHighest,
       border: resting,
       enabledBorder: resting,
-      // Focus is the ring outside the box (LabeledField, ButleryFocusRing),
-      // so the edge keeps its colour and width when focused (Komponentark
-      // v1:657); test/architecture/text_field_in_ring_test.dart keeps every
+      // test/architecture/text_field_in_ring_test.dart keeps every
       // field in the ring.
       focusedBorder: resting,
       // Error: 1.5 px status-danger; the error is also told in text under
@@ -62,7 +58,7 @@ class InputThemes {
       errorBorder: error,
       focusedErrorBorder: error,
       // Disabled field: 1 px surface.disabled edge on surface.raised, never
-      // opacity (Komponentark v1:423 light, :514 dark).
+      // opacity.
       disabledBorder: ButleryFieldBorder(
         borderRadius: radius,
         borderSide: BorderSide(
@@ -84,9 +80,7 @@ class InputThemes {
 
   /// Card theme
   static CardThemeData cardTheme(ColorScheme cs) {
-    // The one card (BUT-2370): paper with a 1 px border.subtle edge, the card
-    // radius 12 (tokens.json space.radius.card) and no shadow, as Komponentark
-    // v1:690 draws the recipe card. A press fills to surface.raised (B83-1).
+    // A press fills to surface.raised (B83-1).
     // Clipped, so a row inside a card fills to the rounded edge.
     return CardThemeData(
       color: cs.surface,
@@ -117,7 +111,7 @@ class InputThemes {
   /// unchanged: there cs.onSurface == cs.primary.
   ///
   /// Interpretation: the screens' dark variable set draws standalone icons
-  /// as --ikon-fristaende-a #C9D3C4, text.bodyMuted (Skarmar v12 del 4:30;
+  /// as --ikon-fristaende-a #C9D3C4, text.bodyMuted (
   /// tokens.json:174-177), which has no generated member; the dark panel
   /// draws its list glyphs in paper, which stands.
   static ListTileThemeData listTileTheme(ColorScheme cs) {
@@ -127,7 +121,7 @@ class InputThemes {
       iconColor: cs.onSurface,
       selectedColor: cs.onSurface,
       // A disabled row's label is secondary text, never opacity (decision
-      // D5; Komponentark v1:164 and :174, the disabled radio and switch
+      // D5, the disabled radio and switch
       // rows). Those rows are drawn on paper, but this theme paints every
       // tile surface.raised (tileColor above), and the row takes the role's
       // on-raised value, text.secondary.onRaised: #5B6959 light, #A9B2A0 dark

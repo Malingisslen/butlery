@@ -386,9 +386,7 @@ class AppDimensions {
     vertical: paddingM,
   );
 
-  /// A badge's padding: 2 px down and 7 px across (tokens.json
-  /// controls.badge paddingY 2 / paddingX 7; Komponentark v1:34 "badge
-  /// 2 × 7"). Locked control geometry, not a step on the spacing scale.
+  /// Locked control geometry, not a step on the spacing scale.
   static const double badgePaddingY = 2.0;
   static const double badgePaddingX = 7.0;
   static const EdgeInsets badgePadding = EdgeInsets.symmetric(
@@ -396,16 +394,14 @@ class AppDimensions {
     vertical: badgePaddingY,
   );
 
-  /// A compact chip inside a field: 6 px down and 11 px across (tokens.json
-  /// controls.chipCompactInField, "Enda undantaget från chip-padding";
-  /// Komponentark v1:34 "kompakt chip i fält 6 × 11"). Locked control
+  /// Locked control
   /// geometry, not a step on the spacing scale.
   static const EdgeInsets chipCompactInFieldPadding = EdgeInsets.symmetric(
     horizontal: 11,
     vertical: 6,
   );
 
-  /// Bottom navigation geometry, drawn in Komponentark v1:663: the icon,
+  /// Bottom navigation geometry: the icon,
   /// the label and the marker slot stack with `gap:2px`, and the saffron
   /// marker under the chosen label is `height:3px;border-radius:2px`.
   /// A drawn line thickness and a drawn component gap, not spacing steps.
@@ -431,13 +427,9 @@ class AppDimensions {
   /// The plus glyph in the saffron button (designlab choice 2026-10-23).
   static const double bottomNavAddIconSize = 30.0;
 
-  /// The root top bar's secondary line sits 2 px under the title
-  /// (Komponentark v1:64 `margin-top:2px`). Drawn component geometry.
+  /// Drawn component geometry.
   static const double topBarSecondaryGap = 2.0;
 
-  /// A status pill's padding: 3 px down and 9 px across (tokens.json
-  /// controls.statusPill paddingY 3 / paddingX 9; Komponentark v1:34
-  /// "statuspill 10,5/700 · 3 × 9").
   static const EdgeInsets statusPillPadding = EdgeInsets.symmetric(
     horizontal: 9,
     vertical: 3,

@@ -20,8 +20,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 class FeedbackThemes {
   FeedbackThemes._();
 
-  /// The ink snackbar's message: 13 px regular (Komponentark v1:747,
-  /// `font-size:13px`). Interpretation: the type scale has no 13/400 role,
+  /// Interpretation: the type scale has no 13/400 role,
   /// so it is listItem (13, tokens.json typography.roles) at the drawn
   /// weight.
   static TextStyle get inkSnackBarMessageStyle =>
@@ -32,8 +31,8 @@ class FeedbackThemes {
   static TextStyle get inkSnackBarActionStyle =>
       AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700);
 
-  /// Snackbar theme: the ink snackbar, the only snackbar look (Komponentark
-  /// v1:745-750; produktbeslut PQ-09 = A, 2026-09-23).
+  /// Snackbar theme: the ink snackbar, the only snackbar look (
+  /// produktbeslut PQ-09 = A, 2026-09-23).
   ///
   /// * Surface: surface.ink #24382C in both modes (tokens.json semantic
   ///   surface.ink; generated member forestGreen in AppColors and
@@ -42,7 +41,7 @@ class FeedbackThemes {
   ///   member textOnPrimary; 11.36:1 on ink).
   /// * Action: text.accent.onInk (member textAccentOnInk; produktbeslut
   ///   R7-5 = A).
-  /// * Radius 8 (radius.control; Komponentark v1:746 `border-radius:8px`).
+  /// * Radius 8 (radius.control).
   /// * Dark mode: a 1 px border.subtle edge (rgba(245,244,237,0.18)), since
   ///   ink on the dark page (#17251D) is only a small step. Interpretation;
   ///   the drawing is light mode only.
@@ -79,16 +78,14 @@ class FeedbackThemes {
 
   /// Switch theme
   ///
-  /// On, light: ink track with a paper knob, opaque (Komponentark v1:170-172,
-  /// :176 "Ink = på"; tokens.json:145-152 control.checked, carried by
+  /// On, light: ink track with a paper knob, opaque (
+  /// tokens.json:145-152 control.checked, carried by
   /// primary/onPrimary).
   ///
-  /// On, dark: the same ink track #24382C and paper knob, control.checked,
-  /// which tokens.json:145-152 keeps identical in dark ("Toggle: ink = på",
-  /// Grafisk manual v6:403). The ink track reads 1.27:1 on the dark base
+  /// The ink track reads 1.27:1 on the dark base
   /// #17251D, so dark mode edges it with 1 px paper, the way the dark panel
-  /// draws the chosen chip (Komponentark v1:523: background #24382c,
-  /// border 1px solid #F5F4ED). The paper edge reads 15.6:1 on the base and
+  /// draws the chosen chip
+  /// border 1px solid #F5F4ED. The paper edge reads 15.6:1 on the base and
   /// the paper knob 11.3:1 on the track.
   ///
   /// Interpretation, pending the product owner: one dark screen frame draws

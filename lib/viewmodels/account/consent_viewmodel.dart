@@ -131,10 +131,7 @@ class ConsentViewModel extends ChangeNotifier
         app_logger.AppLogger.info('[$_logTag] Saving user consent');
 
         // Start from the consent that was READ and change only what the
-        // user can touch here. Building a fresh object from a subset of the
-        // purposes silently revoked AI processing on every save, because
-        // its default is no (Skarmar v12 etapp 6
-        // #samtyckeai).
+        // user can touch here.
         final base = _currentConsent?.purposes ?? ConsentPurposes.defaults();
         final purposes = base.copyWith(
           essentialServices: true, // Always required
@@ -193,8 +190,7 @@ class ConsentViewModel extends ChangeNotifier
     app_logger.AppLogger.debug('[$_logTag] Push notifications consent: $value');
   }
 
-  /// Toggle AI interpretation consent ("AI-tolkning"
-  /// #kontosamtycke).
+  /// Toggle AI interpretation consent
   void setAiProcessing(bool value) {
     _aiProcessing = value;
     notifyListeners();
