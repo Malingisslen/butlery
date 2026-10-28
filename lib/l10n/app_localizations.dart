@@ -30709,13 +30709,13 @@ abstract class AppLocalizations {
   /// The permission line on the sheet for a shared recipe the user can only read
   ///
   /// In sv, this message translates to:
-  /// **'Du kan läsa receptet'**
+  /// **'Kan läsa'**
   String get sharedReceiveCanRead;
 
   /// The permission line on the sheet for a shared recipe the user may edit
   ///
   /// In sv, this message translates to:
-  /// **'Du kan redigera receptet'**
+  /// **'Kan redigera'**
   String get sharedReceiveCanEdit;
 
   /// Saves a shared recipe to the user's own; the sheet's one filled action

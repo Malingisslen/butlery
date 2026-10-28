@@ -127,7 +127,7 @@ void main() {
     await tester.tap(find.textContaining('Köttbullar'));
     await tester.pumpAndSettle();
     expect(find.byType(SharedReceiveSheet), findsOneWidget);
-    expect(find.text('Du kan läsa receptet'), findsOneWidget);
+    expect(find.text('KAN LÄSA'), findsOneWidget);
     expect(recipes.markedViewed, 1);
     expect(recipes.opens, 0);
   });
@@ -136,7 +136,7 @@ void main() {
     await _pump(tester, saved: false, allowCollaboration: true);
     await tester.tap(find.textContaining('Köttbullar'));
     await tester.pumpAndSettle();
-    expect(find.text('Du kan redigera receptet'), findsOneWidget);
+    expect(find.text('KAN REDIGERA'), findsOneWidget);
   });
 
   testWidgets('Acceptera imports and does not open the recipe', (tester) async {

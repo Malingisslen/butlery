@@ -16328,11 +16328,11 @@
   "@sharedSavedState": {
     "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved"
   },
-  "sharedReceiveCanRead": "Du kan läsa receptet",
+  "sharedReceiveCanRead": "Kan läsa",
   "@sharedReceiveCanRead": {
     "description": "The permission line on the sheet for a shared recipe the user can only read"
   },
-  "sharedReceiveCanEdit": "Du kan redigera receptet",
+  "sharedReceiveCanEdit": "Kan redigera",
   "@sharedReceiveCanEdit": {
     "description": "The permission line on the sheet for a shared recipe the user may edit"
   },

@@ -19994,10 +19994,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedSavedState => 'Sparad';
 
   @override
-  String get sharedReceiveCanRead => 'Du kan läsa receptet';
+  String get sharedReceiveCanRead => 'Kan läsa';
 
   @override
-  String get sharedReceiveCanEdit => 'Du kan redigera receptet';
+  String get sharedReceiveCanEdit => 'Kan redigera';
 
   @override
   String get sharedReceiveAccept => 'Acceptera';

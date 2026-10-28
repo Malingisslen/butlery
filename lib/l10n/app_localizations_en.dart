@@ -20157,10 +20157,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedSavedState => 'Saved';
 
   @override
-  String get sharedReceiveCanRead => 'You can read the recipe';
+  String get sharedReceiveCanRead => 'Can read';
 
   @override
-  String get sharedReceiveCanEdit => 'You can edit the recipe';
+  String get sharedReceiveCanEdit => 'Can edit';
 
   @override
   String get sharedReceiveAccept => 'Accept';

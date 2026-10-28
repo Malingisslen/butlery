@@ -58,8 +58,8 @@ void main() {
     );
     expect(find.text('Köttbullar'), findsOneWidget);
     expect(find.text('från Anna · igår'), findsOneWidget);
-    expect(find.text('Du kan läsa receptet'), findsOneWidget);
-    expect(find.text('Prova den här!'), findsOneWidget);
+    expect(find.text('KAN LÄSA'), findsOneWidget);
+    expect(find.text('”Prova den här!”'), findsOneWidget);
   });
 
   testWidgets('says when the receiver may edit', (tester) async {
@@ -68,8 +68,8 @@ void main() {
       permission: ResourcePermission.editor,
       onResult: (_) {},
     );
-    expect(find.text('Du kan redigera receptet'), findsOneWidget);
-    expect(find.text('Du kan läsa receptet'), findsNothing);
+    expect(find.text('KAN REDIGERA'), findsOneWidget);
+    expect(find.text('KAN LÄSA'), findsNothing);
   });
 
   testWidgets('Acceptera and Visa receptet each return their choice', (
