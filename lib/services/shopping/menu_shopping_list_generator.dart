@@ -84,18 +84,14 @@ class MenuShoppingGenerationResult {
 ///   generated name but lacks the marker is never touched.
 ///
 /// P6-U02 changed what happens inside that list. Flow 02
-/// and the merge sheet (Skarmar v12 del 2
-/// #inkopmerge) are the only way from the week menu to a list, and "Dina
+/// and the merge sheet
+/// are the only way from the week menu to a list, and "Dina
 /// egna, manuellt tillagda varor behålls alltid". produktbeslut PQ-10 = A
 /// (2026-09-23) settled it: your own rows are always kept, and the rows land
-/// in the week's generated list, created when missing. That SUPERSEDES
-/// produktregler.md:704 (§ 8.7, "manuella tillägg gör det inte"). Recipe
+/// in the week's generated list, created when missing.
+/// Recipe
 /// rows are known by their ids ([UnifiedShoppingList.menuItemIds]), never by
 /// name. Bought status still survives a replace by name and unit (§ 8.7).
-///
-/// produktbeslut PQ-11 = A: the pantry subtracts amounts (produktregler.md
-/// § 4.2, :224-234), which SUPERSEDES § 8.7's exclusion of whole staple rows
-/// (:695).
 class MenuShoppingListGenerator extends BaseService {
   @override
   String get serviceName => 'MenuShoppingListGenerator';

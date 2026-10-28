@@ -97,7 +97,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Schema 2 → 3. Both queue tables are rebuilt in place with
   /// [Migrator.alterTable], which copies every row, so no queued change is
-  /// lost (produktregler.md:192: the app never deletes a queue entry without
+  /// lost (the app never deletes a queue entry without
   /// a server confirmation or showing it to the user).
   ///
   /// Every existing sync entry gets a fresh random UUID v4 as its opId, the

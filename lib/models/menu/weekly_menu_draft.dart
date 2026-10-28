@@ -4,8 +4,7 @@ import 'package:flutter/foundation.dart';
 /// BUT-2157: the latest generated, unsaved week suggestion, kept on this
 /// device so a restart, an OS kill or an automatic sign-out does not lose it.
 ///
-/// produktregler.md: a week generation's local draft lives on the
-/// device only, 30 days since its last change. Dishes
+/// Dishes
 /// are kept by id and resolved again on restore through the allergen-safe
 /// pool, so a recipe deleted or made unsafe in the meantime does not come
 /// back. One slot per account; the owner is the store key, not a field.

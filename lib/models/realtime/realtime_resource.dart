@@ -51,11 +51,7 @@ enum RealtimeResourceType {
 /// Which conflict rule applies when two people change the same resource at
 /// the same time.
 ///
-/// produktregler.md:97-107 (section 2) has no generic rule: each entity has
-/// its own strategy and its own notice (B-09). The model
-/// declares which row of that table it is through
-/// [RealtimeResource.conflictEntityFor], so no caller has to guess the entity
-/// from a collection path or a document field. Only the entities the realtime
+/// Only the entities the realtime
 /// sync reaches today are listed; the others (shopping list, pantry, profile,
 /// chat) have their own mechanisms outside this service.
 enum ConflictEntity {

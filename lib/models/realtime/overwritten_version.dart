@@ -1,15 +1,15 @@
 /// P5-U26b: a version of the user's own that another person's save overwrote.
 ///
-/// produktregler.md:109: "ingen strategi får tyst kasta data som bara finns
+/// "ingen strategi får tyst kasta data som bara finns
 /// lokalt. Där strategin skriver över sparas den överskrivna versionen i 30
 /// dagar och nås via Återställ." The table row for the week menu
 /// gives it the 30 s snackbar first and "Återställ i
-/// 30 dagar" after; flows-roles-budget.md:36 repeats that. PQ-01 = A (Malin,
+/// 30 dagar" after. PQ-01 = A (Malin,
 /// 2026-09-23) scopes this to the week menu and the user's own recipe.
 ///
 /// Where it lives: `users/{uid}/overwritten_versions/{id}`, on the server and
 /// owned by the user whose version was overwritten (Q-A12
-/// :123 "Varje entitet har 30 dagars operationshistorik. Det är den som
+/// "Varje entitet har 30 dagars operationshistorik. Det är den som
 /// Återställ läser"). firestore.rules lets only that user read, create and
 /// delete it, and never update it. [expiresAt] is what the Firestore TTL policy
 /// deletes on (firestore.indexes.json), and it is also the line after which

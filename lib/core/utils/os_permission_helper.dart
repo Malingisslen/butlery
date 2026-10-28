@@ -248,7 +248,7 @@ class OsPermissionHelper {
     return outcome.isUsable;
   }
 
-  /// Shows our own explanation, as drawn in Skarmar v12 etapp 3 #behkamera,
+  /// Shows our own explanation
   /// and returns true when the user tapped the grant button. Dismissing the
   /// dialog counts as "Inte nu".
   static Future<bool> presentExplanation(
@@ -299,7 +299,7 @@ class OsPermissionHelper {
   }
 
   /// Shows [message] without a button, for a permission the device blocks
-  /// (flows-roles-budget.md:104: "Ingen knapp — det finns inget användaren
+  /// ("Ingen knapp — det finns inget användaren
   /// kan göra").
   static void presentRestricted(BuildContext context, String message) {
     CapturedSnackBars.capture(
@@ -360,12 +360,6 @@ class OsPermissionRationaleDialog extends StatelessWidget {
   );
 }
 
-/// The explanation before the system prompt, as drawn in Skarmar v12
-/// etapp 3 #behkamera (:530-547): radius 12, an icon beside a bold title, the
-/// body saying what the feature is used for, an optional line saying what
-/// still works after a no, and two equal buttons — "Inte nu" outlined and
-/// the grant action.
-///
 /// Colours, both modes:
 /// - Title and icon: #24382C light / #F5F4ED dark = cs.onSurface.
 /// - Body: slot 833 = text.bodyMuted, #37453A light / #C9D3C4 dark.

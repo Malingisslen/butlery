@@ -81,7 +81,7 @@ class MenuShoppingAggregator {
   /// numbers its summary shows.
   ///
   /// [mergeDuplicates] and [convertUnits] are the sheet's first two switches
-  /// (Skarmar v12 del 2 #inkopmergeoppen: "Slå samman dubbletter",
+  /// ("Slå samman dubbletter",
   /// "Konvertera enheter"). With [mergeDuplicates] off every ingredient line
   /// stays its own row, as written. Conversion only ever joins rows of the
   /// same ingredient, so with merging off it has nothing to join and does

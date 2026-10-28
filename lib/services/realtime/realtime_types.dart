@@ -36,8 +36,8 @@ class SyncError {
 /// Which side won during a collaborative-edit conflict resolution.
 ///
 /// Despite the name this is the OUTCOME of one resolution, not a strategy:
-/// the strategy belongs to the entity ([ConflictEntity],
-/// produktregler.md:97-107) and is declared by the model.
+/// the strategy belongs to the entity
+/// and is declared by the model.
 enum ConflictResolutionStrategy {
   localWon,
   remoteWon,

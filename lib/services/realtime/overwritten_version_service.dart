@@ -1,8 +1,6 @@
 /// P5-U26b: "Återställ" for an overwritten version, within 30 days.
 ///
-/// produktregler.md:104 (week menu: "30 s snackbar · därefter Återställ i 30
-/// dagar") and :109 (the overwritten version is kept for 30 days and reached
-/// through Återställ). RealtimeSyncService keeps the version when the user's
+/// RealtimeSyncService keeps the version when the user's
 /// save loses; this service lists what can still be restored and restores it.
 ///
 /// Restoring replaces what another person saved, which is content that is

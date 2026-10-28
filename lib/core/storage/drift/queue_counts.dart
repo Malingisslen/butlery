@@ -25,8 +25,7 @@ class QueueCounts {
   /// failed, even when its retries have run out.
   final int draining;
 
-  /// Permanent failures that wait for the user ("Väntar på dig",
-  /// produktregler.md:189).
+  /// Permanent failures that wait for the user
   final int needsUser;
 
   /// Every change that has not reached the server.

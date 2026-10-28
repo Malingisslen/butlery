@@ -70,7 +70,7 @@ class PantryItem {
   final bool isStaple;
 
   /// When the row was last changed, written by the server on every update
-  /// (produktregler.md:105: "radens tidsstämpel uppdateras"). Null for a row
+  /// ("radens tidsstämpel uppdateras"). Null for a row
   /// that has not been changed since it was added.
   final DateTime? updatedAt;
 
@@ -148,7 +148,7 @@ class PantryItem {
   }
 
   /// The fields a user edits, as a Firestore update of only what changed
-  /// since [before] (produktregler.md:105, :142: "per fält, senaste ändring
+  /// since [before] ("per fält, senaste ändring
   /// vinner"). Two devices that change different fields of the same row no
   /// longer overwrite each other.
   ///

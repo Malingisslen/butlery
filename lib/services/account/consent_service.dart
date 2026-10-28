@@ -39,8 +39,7 @@ class ConsentService extends BaseService implements Listenable {
 
   /// What each consent version changed, per purpose. A version bump adds
   /// its lines here in the same change, with one sentence per line in the
-  /// l10n files (Q-P6-A18; produktregler.md:731; Skarmar v12 etapp 6
-  /// #samtyckefornya).
+  /// l10n files
   static const List<ConsentChange> changelog = [
     ConsentChange(
       version: '1.1.0',

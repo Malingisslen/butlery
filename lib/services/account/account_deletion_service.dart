@@ -92,7 +92,7 @@ class AccountDeletionService extends BaseService {
       'retained': <RetainedRecord>[],
       // Whether the callable answered at all. Until it has, the account is
       // certainly NOT gone, so a failure before that point can never be
-      // described as a partial deletion (produktregler.md:613 — "kontot *är*
+      // described as a partial deletion ("kontot *är*
       // borta" is what makes an outcome partial rather than failed).
       'cfCompleted': false,
     };
