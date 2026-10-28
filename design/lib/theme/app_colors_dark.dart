@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:094f53b859fec87d471925dfe1afddbf66bb3430cb1a900b4afa2ee8955646fe (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:0f8afced62076b07051dc9d624c3a5b35adb82f7fa5b61ded898828214b02fcf (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -10,7 +10,7 @@
 // stället för att bära en egen mörk palett.
 //
 // Här finns inga appspecifika färger. Kategorifärgerna är dekor och ägs
-// av appen; se produktregler.md § 8.3b och tokens.json dataScale.
+// av appen; se tokens.json dataScale.
 import 'package:flutter/material.dart';
 
 /// Det mörka lägets kanoniska färger, genererade ur tokens.json.
@@ -103,13 +103,13 @@ class AppColorsDark {
   static const Color progressTrack = Color(0x2EF5F4ED);
   /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator (dark)
   static const Color progressIndicator = Color(0xFFD68523);
-  /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled (dark)
+  /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp. Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled (dark)
   static const Color surfaceDisabled = Color(0xFF4A5C50);
   /// Avstangd text. Ytsakert varde: text.disabled #7D897C ger 2,985:1 pa surface.raised och underkanns av det egna 3:1-golvet, och i morkt 2,0:1. .onRaised klarar papper och upphojd yta i bada lagen. · semantic.text.disabled.onRaised (dark)
   static const Color textDisabled = Color(0xFF93A48D);
   /// Fokusringen: 2 px med 3 px avstand (tokens focusRing.width/offset). Ink pa ljust, papper pa morkt, aldrig saffran. · semantic.focusRing (dark)
   static const Color focusRing = Color(0xFFF5F4ED);
-  /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary (dark)
+  /// Saffran - vyns enda hjaltehandling, exakt en per vy. Aldrig textfarg. · semantic.action.primary (dark)
   static const Color actionPrimary = Color(0xFFD68523);
   /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed (dark)
   static const Color actionPrimaryPressed = Color(0xFF9A5C14);
@@ -131,11 +131,11 @@ class AppColorsDark {
   static const Color onStatusFill = Color(0xFF17251D);
   /// Markerad text i falt. Bar text.primary. · semantic.surface.textSelection (dark)
   static const Color surfaceTextSelection = Color(0xFF4A5C50);
-  /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning (dark)
+  /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off. Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning (dark)
   static const Color textWarning = Color(0xFFDCA968);
-  /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent (dark)
+  /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink. Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent (dark)
   static const Color textAccent = Color(0xFFDCA968);
-  /// Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk (dark)
+  /// Accenttext pa surface.ink: snackbarens atgard och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk (dark)
   static const Color textAccentOnInk = Color(0xFFDCA968);
   /// Avstangd text pa papper (BUT-2191). Ytbunden till surface.base: golvet ar 3:1 (contrastPolicy disabled), och det nas dar (3,32:1 ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1 morkt; dar galler textDisabled, som ar text.disabled.onRaised). Namnet textDisabled ar upptaget i det frysta kontraktet. Aldrig via opacitet. · semantic.text.disabled (dark)
   static const Color textDisabledOnBase = Color(0xFF627061);
@@ -163,7 +163,7 @@ class AppColorsDark {
   static const Color textDisabledOnInk = Color(0xFF93A48D);
   /// Tryck och hover pa en rad som redan ligger pa surface.raised (BUT-2205; R7-1 = B, R7-2 = B). Ljust #B4BFA6, morkt #17251D. Overgaende lage: ljust ar golvet 3:1 for texten i raden (contrastPolicy-undantag, lagst text.secondary.onRaised 3,03); morkt klarar all text 4,5. Aldrig vilande yta. · semantic.surface.pressed.onRaised (dark)
   static const Color surfacePressedOnRaised = Color(0xFF17251D);
-  /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk (dark)
+  /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk (dark)
   static const Color surfacePressedOnInk = Color(0xFF17251D);
   /// Receptkortets vansterkant (BUT-2297): ink i ljust lage, salvia i morkt. · semantic.border.cardEdge (dark)
   static const Color recipeCardLeftBorder = Color(0xFFA9B2A0);

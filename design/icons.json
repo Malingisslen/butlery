@@ -3,7 +3,6 @@
   "version": "1.8",
   "date": "2026-08-03",
   "manual": "V6",
-  "screens": "Butlery Skarmar v12 · fem delfiler (se innehållsfilen)",
   "decision": {
     "track": "Butlery-ritad familj (alternativ 2 i granskningen)",
     "naming": "kebab-case semantiska nycklar. Namnen sammanfaller medvetet med vanliga bibliotekskonventioner för utvecklarnas läsbarhet — geometrin är Butlerys egen (24-rutnät, stroke 1,75, runda ändar).",
@@ -13,7 +12,7 @@
     "license": "Butlery, all rights reserved. Levereras som del av appens runtime-bundle; ingen tredjepartslicens gäller ikonerna.",
     "geometry": "24×24 rutnät, live area 20×20, stroke 1,75 vid ≥15 px och 2,2 vid ≤14 px, runda ändar och hörn (butt cap endast där två streck möts i rät vinkel), inga fyllningar utom där konventionen kräver (star, heart, more-vertical).",
     "new_icons": "Ny glyf godkänns i tre steg: (1) behovet kan inte lösas med befintlig glyf eller med ord, (2) glyfen ritas på rutnätet och granskas mot familjen i 16, 20 och 24 px, (3) den förs in här med namn, betydelse och kategori innan den används i en skärm. En glyf utan post i detta manifest är ett spec-lint-fel.",
-    "superseded": "Tidigare riktning ”Lucide” är formellt övergiven 2026-07-25. Se beslutslogg B-02 i beslutslogg.md."
+    "superseded": "Tidigare riktning ”Lucide” är formellt övergiven 2026-07-25."
   },
   "counts": {
     "ui": 120,

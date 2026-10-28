@@ -77,7 +77,7 @@ void main() {
       "import 'package:butlery/widgets/common/icons/butlery_glyph.dart';",
     )
     ..writeln()
-    ..writeln('/// The Butlery icon family (beslutslogg.md:9, B-02).')
+    ..writeln('/// The Butlery icon family.')
     ..writeln('///')
     ..writeln('/// Render with `ButleryIcon`, never with a plain `Icon`.')
     ..writeln('abstract final class ButleryIcons {');

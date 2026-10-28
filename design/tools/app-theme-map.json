@@ -322,7 +322,7 @@
   "surfaceDisabled": [
    "semantic",
    "surface.disabled",
-   "Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den."
+   "Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp. Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den."
   ],
   "textDisabled": [
    "semantic",
@@ -337,7 +337,7 @@
   "actionPrimary": [
    "semantic",
    "action.primary",
-   "Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg."
+   "Saffran - vyns enda hjaltehandling, exakt en per vy. Aldrig textfarg."
   ],
   "actionPrimaryPressed": [
    "semantic",
@@ -392,17 +392,17 @@
   "textWarning": [
    "semantic",
    "text.warning",
-   "Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token)."
+   "Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off. Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token)."
   ],
   "textAccent": [
    "semantic",
    "text.accent",
-   "Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk)."
+   "Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink. Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk)."
   ],
   "textAccentOnInk": [
    "semantic",
    "text.accent.onInk",
-   "Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52)."
+   "Accenttext pa surface.ink: snackbarens atgard och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52)."
   ],
   "textDisabledOnBase": [
    "semantic",
@@ -472,7 +472,7 @@
   "surfacePressedOnInk": [
    "semantic",
    "surface.pressed.onInk",
-   "Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck."
+   "Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena. Inte actionPrimaryPressed, som ar saffranknappens tryck."
   ],
   "recipeCardLeftBorder": [
    "semantic",
