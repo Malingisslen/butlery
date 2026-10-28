@@ -307,7 +307,7 @@ class FullscreenCloseButton extends StatelessWidget {
 
 /// A photo that exists but could not be loaded. Unlike a missing photo it
 /// keeps its surface and explains, so the layout does not jump when the
-/// network wavers (Skarmar v12 del 4 #receptbildfel).
+/// network wavers.
 /// No button is offered: the retry is silent (the drawing's own note).
 class ImageFailedPlate extends StatelessWidget {
   const ImageFailedPlate({super.key, this.retriesWhenOnline = true});
@@ -325,7 +325,7 @@ class ImageFailedPlate extends StatelessWidget {
     // surface.raised = colorScheme.surfaceContainerHighest (#E6EAD9 light,
     // #2F4437 dark; Komponentark v1:839 "ytan behålls i
     // surface.raised"). Interpretation: the token wins over the drawing's
-    // dark slot #24382C (Skarmar v12 del 4:887, --r04slot-834).
+    // dark slot #24382C (--r04slot-834).
     // The glyph and the second line are text.secondary.onRaised (#5B6959 /
     // #A9B2A0); the drawing's single #5b6959 literal
     // (del 4:888,890) is kept in light and replaced by the token in dark.

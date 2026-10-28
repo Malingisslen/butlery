@@ -257,7 +257,7 @@ class _AddTile extends StatelessWidget {
             height: ImageTileRow._tile,
             child: Center(
               child: isAdding
-                  // The plate line, not a spinner (Grafisk manual v6:209).
+                  // The plate line, not a spinner.
                   ? const SizedBox(
                       width: AppDimensions.iconSizeL,
                       child: ExcludeSemantics(child: PlateLine()),

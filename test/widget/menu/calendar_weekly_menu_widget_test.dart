@@ -325,7 +325,6 @@ void main() {
       // was placed and two did not fit.
       expect(find.text('0 av 2 rätter placerade'), findsOneWidget);
       // Each overflow recipe is named as written, never lower-cased
-      // (produktregler.md:892).
       expect(find.text('Överflöd Ett'), findsOneWidget);
       expect(find.text('Överflöd Två'), findsOneWidget);
     });

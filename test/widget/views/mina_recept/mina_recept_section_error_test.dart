@@ -1,5 +1,5 @@
 // P5-U05 (hem ERROR): an error in one section never empties the whole view
-// (produktregler.md:297). The recipe section's error box says what happened,
+// The recipe section's error box says what happened,
 // what was kept and offers Försök igen.
 
 import 'package:flutter/widgets.dart';

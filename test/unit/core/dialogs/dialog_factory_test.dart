@@ -301,7 +301,7 @@ void main() {
     });
 
     /// Proves: on iOS the error dialog is the Material dialog with "Stäng",
-    /// never the Cupertino alert (plattformsmatris.md:73-75).
+    /// never the Cupertino alert.
     testWidgets('iOS shows the Material error dialog with Stäng', (
       tester,
     ) async {

@@ -1,7 +1,7 @@
 // lib/widgets/common/dialogs/slot_spill_panel.dart
 //
 // BUT-2153: the slot picker's choice for recipes that do not fit, made
-// before anything is written (Skarmar v12 etapp 9 #flermeny). It replaces a
+// before anything is written. It replaces a
 // snackbar button that wrote a whole extra week, which broke produktregler
 // § 2.4: the snackbar is the undo channel, never the action channel.
 

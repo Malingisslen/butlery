@@ -2,7 +2,7 @@
 /// Sprint, Batch 13 — auto-save / data-loss terrain).
 ///
 /// Behaviours covered:
-///   * First persistence (ux-beslut.json D-02): the first edit is written
+///   * First persistence: the first edit is written
 ///     at once, with one filled field; after that, debounce timing is
 ///     regular = 3s, quickSave = 1s, and rapid reschedules coalesce into a
 ///     single write.

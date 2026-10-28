@@ -1,6 +1,6 @@
 // BUT-2162: the upload queue. A recipe image the form could not upload waits
 // on the device and goes up under the sync queue's rules
-// (produktregler.md:185-192); once it is up, its address reaches the recipe
+// once it is up, its address reaches the recipe
 // on the server through the sync queue.
 
 import 'dart:convert';

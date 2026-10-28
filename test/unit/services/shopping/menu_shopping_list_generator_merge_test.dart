@@ -1,5 +1,5 @@
 /// P6-U02: flow 02, the week menu to the shopping list through the merge
-/// sheet (Skarmar v12 del 2 #inkopmerge, #inkopmergeoppen;
+/// sheet (#inkopmergeoppen;
 /// flows-roles-budget.md:44-51).
 ///
 /// Pins what the sheet shows before anything is written (the preview), and

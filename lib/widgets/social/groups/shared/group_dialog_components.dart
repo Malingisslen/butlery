@@ -252,7 +252,6 @@ class DialogFooter extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         // The footer fills the dialog's bottom edge: dialog radius 8
-        // (Komponentark v1:336).
         borderRadius: const BorderRadius.vertical(
           bottom: Radius.circular(AppDimensions.radiusControl),
         ),

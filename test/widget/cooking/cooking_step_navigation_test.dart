@@ -1,7 +1,7 @@
 /// P4-U06: cooking mode's step row.
 ///
 /// - "Nästa steg" is the view's one saffron action (Komponentark v1
-///   mönster 4; Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
+///   mönster 4; Skarmar v12 del 1 'Matlagningsläge').
 /// - A disabled control on surface.ink is its own opaque colour, never paper
 ///   at an opacity, and reads at 4.5:1 or better (tokens.json:40-53,
 ///   :198-201; beslut-paket2 "disabled on surface.ink").

@@ -200,7 +200,7 @@ class _QuickChipState extends State<_QuickChip> {
             isSelected ? PressSurface.ink : PressSurface.raised,
           )
         : rest;
-    // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
+    // The shared grip: the InkWell fills a 48 dp box
     // around the visible chip, and the focus ring goes around that box.
     return ButleryControlFocus(
       borderRadius: BorderRadius.circular(AppDimensions.radiusPill),

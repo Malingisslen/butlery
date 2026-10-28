@@ -1,5 +1,5 @@
 // P6-U09 — the MFA challenge view and the backup-code gate
-// (Skarmar v12 etapp 3 #authmfa, etapp 6 #mfaaktiv).
+// (etapp 6 #mfaaktiv).
 
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';

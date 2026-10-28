@@ -190,7 +190,7 @@ class _SessionTimeoutWarningDialogState
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       scrollable: true,
-      // The clock is drawn in ink (Skarmar v12 etapp 9 #globsession, stroke
+      // The clock is drawn in ink (stroke
       // #24382c): onSurface in light and dark.
       icon: ButleryIcon(
         ButleryIcons.clock,
@@ -222,8 +222,8 @@ class _SessionTimeoutWarningDialogState
           ],
           const SizedBox(height: AppDimensions.space8),
           // Only the number updates, announced politely
-          // (produktregler.md:830). It carries no accent colour
-          // (produktregler.md:831): ink on surface.raised, radius 8, no
+          // It carries no accent colour
+          // ink on surface.raised, radius 8, no
           // border (Skarmar v12 etapp 9 globala tillstand och flerval:66,72).
           // onSurface on surfaceContainerHighest is text.primary on
           // surface.raised in both light and dark.

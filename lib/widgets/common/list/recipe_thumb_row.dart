@@ -2,7 +2,6 @@
 //
 // A recipe as one row of a plain list: a small photo, the title in bold and a
 // hairline under it, as the drawn cookbook and tag pages set their recipes
-// (Skarmar v12 del 3 #18).
 library;
 
 import 'package:flutter/material.dart';

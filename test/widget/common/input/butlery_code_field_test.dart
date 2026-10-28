@@ -1,6 +1,6 @@
 // The one-time code field: one logical field behind six boxes, so a code
 // can be pasted or autofilled whole and is read as one field (inmatningsfält
-// riktning A, del 4 "Kodfält"; Grafisk manual v6:587).
+// riktning A, del 4 "Kodfält").
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -5,7 +5,7 @@
 ///   entry's master exactly (the app-side counterpart of T-05), and every
 ///   icons.json entry has a member.
 /// - ButleryIcon paints in the ambient IconTheme colour and size, with the
-///   2.2 stroke at 14 px and below (Grafisk manual v6:322), and carries the
+///   2.2 stroke at 14 px and below, and carries the
 ///   same semantics as Icon.
 library;
 

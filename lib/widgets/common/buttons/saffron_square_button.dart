@@ -1,7 +1,7 @@
 // lib/widgets/common/buttons/saffron_square_button.dart
 //
 // The small saffron square with an ink plus that adds a row beside a field
-// (Skarmar v12 del 2 #inkop, "Lägg till vara"). One tap target of 48 dp; the
+// ("Lägg till vara"). One tap target of 48 dp; the
 // name a screen reader hears is the caller's, since the glyph says nothing.
 library;
 

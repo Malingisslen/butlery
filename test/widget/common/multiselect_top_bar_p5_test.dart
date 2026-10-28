@@ -1,12 +1,11 @@
 // P5-U31 / P5-U32: multi-select as a top-bar state.
 //
 // "Välj" is the visible way in (B-46), shown from two rows
-// (produktregler.md:874). In selection mode the counter replaces the title
+// In selection mode the counter replaces the title
 // and Avbryt the back arrow, and the bar changes content, not height
-// (produktregler.md:873). Actions that need a selection are off at zero with
+// Actions that need a selection are off at zero with
 // their names readable, in the disabled role and never
 // through opacity (tokens.json:71-74, :198). "Markera alla" is a toggle
-// (produktregler.md:877).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

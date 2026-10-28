@@ -26,10 +26,10 @@ import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 /// * **Bestämd** ([value] satt): fylls vänster till höger i accentorange
 ///   (token progressIndicator) på rännan (token progressTrack). v1:305.
 /// * **Obestämd** ([value] null): ett stillastående segment som pulserar i
-///   opacitet på plats (v1:306 och :309, Grafisk manual v6:209). Det rör sig
+///   opacitet på plats (v1:306 och :309). Det rör sig
 ///   aldrig i sidled, för rörelse ska inte simulera framsteg som inte mäts
 ///   (B-18). Vid reducerad rörelse står det still i full
-///   opacitet (v1:309, tillganglighetshandoff:179, Grafisk manual v6:589,
+///   opacitet (v1:309, tillganglighetshandoff:179,
 ///   tokens.json motion.reducedMotion).
 ///
 /// Har du ett verkligt mått, skicka det: en linje som visar riktig progress
@@ -66,7 +66,7 @@ class PlateLine extends StatefulWidget {
   static const double segmentWidth = 0.34;
 
   /// Pulsens nedre opacitet. Ritningen anger inte värdet; tolkning, vald så
-  /// att pulsen är lugn och inte drar uppmärksamhet (Grafisk manual v6:589).
+  /// att pulsen är lugn och inte drar uppmärksamhet.
   static const double pulseMinOpacity = 0.4;
 
   /// En halv puls (full opacitet till [pulseMinOpacity]).

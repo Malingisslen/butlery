@@ -3,7 +3,7 @@
 // produktregler.md:905-909 (§ 17.6, I-29): a partial result is a third
 // outcome. It names what went, what did not and why, and the ones that did
 // not go stay selected. Selection mode is never left automatically
-// (produktregler.md:878). Drawing: Skarmar v12 etapp 9 #flergrupp :361-393,
+// Drawing: Skarmar v12 etapp 9 #flergrupp :361-393,
 // "En av två togs bort" with "Klart".
 
 import 'package:flutter/material.dart';

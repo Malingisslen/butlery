@@ -123,7 +123,6 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
 
   /// [askAgain] is "Fråga igen" on the notice: the user asked for the
   /// system prompt, so our explanation is not repeated
-  /// (produktregler.md:683).
   Future<void> _pickImages({bool askAgain = false}) async {
     // The notice's Fråga igen stays tappable while a post uploads the list.
     if (_atImageCap || _isBusy) return;

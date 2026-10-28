@@ -438,7 +438,7 @@ void main() {
         expect(line, findsOneWidget);
         // text.secondary: #5B6959 light, #A9B2A0 dark (tokens.json semantic).
         // Interpretation: #synkko's slot for this line is #627061 light but
-        // #C9D3C4 dark (Skarmar v12 del 4:64).
+        // #C9D3C4 dark.
         expect(
           tester.widget<Text>(line).style!.color,
           mode.value.colorScheme.onSurfaceVariant,

@@ -71,7 +71,6 @@ class ProfileDialogs {
               label: l10n.signOutPendingDiscard,
             ),
             // The view's one primary action, so waiting is the obvious answer
-            // (Komponentark v1:843-844).
             FormButton(
               key: const ValueKey('signOut.pendingChanges.wait'),
               label: l10n.signOutPendingWait,
@@ -104,7 +103,6 @@ class ProfileDialogs {
 
   /// The deletion's waiting state: "Väntan är ett tillstånd, inte en
   /// spinner — och den kan inte avbrytas när den startat"
-  /// (Skarmar v12 etapp 5-7 #kontovantan).
   ///
   /// It cannot be closed: no barrier dismissal and no system back. The
   /// drawn step list is not built, because the callable reports nothing
@@ -168,7 +166,7 @@ class ProfileDialogs {
   }
 
   /// A partial deletion, its own outcome with its own words
-  /// (Skarmar v12 etapp 5-7 #kontodelvis): the account
+  /// the account
   /// is gone, [failedCount] parts remain, the audit id is shown so it can be
   /// quoted, and the way on is support with the id — never "Försök igen",
   /// because there is no sign-in left to try with.
@@ -279,7 +277,7 @@ class ProfileDialogs {
   /// reason is asked here, BEFORE the password step: "Ett skäl skickas med
   /// och hamnar i revisionsraden. Det frågas före, för efteråt finns ingen
   /// kvar att fråga". The drawing is a text box
-  /// (Skarmar v12 etapp 5-7 #kontoradera, `data-a11y-role="textbox"`).
+  /// (`data-a11y-role="textbox"`).
   ///
   /// The field is optional. Erasure is a right, and a person who does not
   /// want to say why must still be able to leave; an empty answer sends the

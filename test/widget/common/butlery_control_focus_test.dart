@@ -125,7 +125,7 @@ final _cases = <String, _Case>{
   ),
   'switch': _Case(
     // The shared grip around a plain Switch, as the retired AdaptiveSwitch
-    // drew it (Grafisk manual v6:209, :381).
+    // drew it.
     () => ButleryControlFocus(
       borderRadius: BorderRadius.circular(999),
       child: Switch(value: true, onChanged: (_) {}),
@@ -283,7 +283,7 @@ void main() {
   }
 
   // BUT-2228: the selected tab's plate line is the word plus 5 px a side
-  // (Komponentark v1:106), also for a word narrower than the 48 dp target.
+  // also for a word narrower than the 48 dp target.
   testWidgets('view tab: the plate line hugs a short word', (tester) async {
     await _pump(
       tester,

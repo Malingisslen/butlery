@@ -213,7 +213,6 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
         children: [
           // The drawn intro under the title (Skarmar v12 etapp 9
           // #fbanmal): who reads the report, a person
-          // (produktregler.md).
           Text(
             l10n.reportDialogIntro,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

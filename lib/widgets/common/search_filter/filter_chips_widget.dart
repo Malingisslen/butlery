@@ -57,7 +57,7 @@ class FilterChipsWidget extends StatelessWidget {
                 selected: isSelected,
                 button: true,
                 // The shared grip: ring around the chip's 48 dp target and
-                // no saffron focus tint (Grafisk manual v6:209, :381).
+                // no saffron focus tint.
                 child: ButleryControlFocus(
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusPill,

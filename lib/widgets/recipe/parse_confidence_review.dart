@@ -22,10 +22,10 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// the widget meets WCAG 2.1 (colour is not the only signal).
 ///
 /// P6-U03 (flow 03): a low or failed row must be confirmed before Spara
-/// (flows-roles-budget.md:61). Such a row carries "Stämmer" until it is
+/// Such a row carries "Stämmer" until it is
 /// confirmed. A line the reader could not interpret ([ParseConfidence.failed])
 /// is shown empty and marked, never as guessed text, and one tap shows the
-/// original line (flows-roles-budget.md:63; produktregler.md:566).
+/// original line.
 class ParseConfidenceReview extends StatefulWidget {
   /// Parsed ingredients with confidence — from [RecipeFormViewModel.parsedIngredients].
   final List<ParsedIngredient> ingredients;
@@ -45,7 +45,7 @@ class ParseConfidenceReview extends StatefulWidget {
   });
 
   /// Whether [row] must be confirmed before the recipe can be saved: low
-  /// and failed rows (flows-roles-budget.md:61).
+  /// and failed rows.
   static bool needsConfirmation(ParsedIngredient row) =>
       isShown(row) &&
       (row.confidence == ParseConfidence.low ||
@@ -226,7 +226,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
   }
 
   /// A line the reader could not interpret: shown empty and marked, never
-  /// as guessed text (flows-roles-budget.md:63).
+  /// as guessed text.
   bool get _unread => widget.ingredient.confidence == ParseConfidence.failed;
 
   static String _stripped(String s) => s.replaceAll(RegExp(r'\s+'), '');

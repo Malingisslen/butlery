@@ -1,6 +1,6 @@
 /// The cells of the week table: an empty place, a dish, and the Övrigt cell.
 ///
-/// Drawn after the sketch (Skarmar v12 del 1 #veckomeny, approved picture
+/// Drawn after the sketch (approved picture
 /// 21-veckomeny-v2-1): an empty place is a bare plus, a dish is a bordered
 /// 8 dp cell with its name and the marks of [calendar_markers.dart] in the
 /// corner. Who is home is not drawn as faces

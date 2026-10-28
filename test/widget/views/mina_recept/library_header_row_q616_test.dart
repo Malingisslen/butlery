@@ -1,4 +1,4 @@
-// Q6-16 = B (fas2/produktbeslut-2026-09-27b.json): Hem has no "Mina recept"
+// Q6-16 = B: Hem has no "Mina recept"
 // top bar. "Välj", the ingredient search and the grid/list toggle stand in
 // the library's header row, "Dina recept · N"; in selection mode the row
 // shows the counter and Avbryt instead, without changing height

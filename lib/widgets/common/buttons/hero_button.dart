@@ -180,7 +180,7 @@ class _FilledAction extends StatelessWidget {
             busy ? (busyLabel ?? label) : label,
             semanticsLabel: busy ? null : semanticLabel,
             // BUT-2219: a label wraps rather than ellipsising; a button never
-            // cuts its name (plattformsmatris.md).
+            // cuts its name.
             textAlign: TextAlign.center,
           );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;

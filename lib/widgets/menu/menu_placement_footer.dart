@@ -42,7 +42,6 @@ class VeckomenyFooterFrame extends StatelessWidget {
 }
 
 /// The calendar's footer: the one way from the week to the shopping list
-/// (Skarmar v12 del 2 #inkopmerge).
 class VeckomenyShoppingFooter extends StatelessWidget {
   const VeckomenyShoppingFooter({
     super.key,

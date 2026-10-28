@@ -4,7 +4,7 @@
 /// than asked says "Vi hittade n av m rätter" in the partial-outcome form and
 /// names each short meal type.
 ///
-/// U26a (ux-beslut.json D-04): the week menu mounts
+/// U26a: the week menu mounts
 /// P3-U08's conflict snackbar. It listens to the sync service's conflict
 /// stream while the week menu is open; the snackbar itself decides that only
 /// a week-menu conflict the user's edit lost is shown.
