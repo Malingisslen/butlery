@@ -412,7 +412,7 @@ void main() {
 
   // ── P6-U08b ────────────────────────────────────────────────────────────
 
-  group('nästa försök (#synkko; produktregler.md:188)', () {
+  group('nästa försök (#synkko)', () {
     for (final mode in {
       'light': AppTheme.lightTheme,
       'dark': AppTheme.darkTheme,
@@ -478,7 +478,7 @@ void main() {
     });
 
     testWidgets('offline the line is still shown, as #synkko draws it under '
-        'the offline banner (Skarmar v12 del 4:245, :271)', (tester) async {
+        'the offline banner', (tester) async {
       final now = clock.now();
       source
         ..online = false
@@ -498,7 +498,7 @@ void main() {
     });
   });
 
-  group('the actions of a failure (produktregler.md:188; #synkko)', () {
+  group('the actions of a failure (#synkko)', () {
     testWidgets('a changed recipe: Försök igen, Spara som kopia, Släng', (
       tester,
     ) async {

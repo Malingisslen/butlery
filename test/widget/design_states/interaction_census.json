@@ -19,7 +19,7 @@
     {
       "row_id": "CSR::ROLE::button::DEFAULT",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::DEFAULT (light)",
       "also": [
@@ -33,7 +33,7 @@
     {
       "row_id": "CSR::ROLE::button::DISABLED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::DISABLED (light)",
       "also": [
@@ -65,7 +65,7 @@
     {
       "row_id": "CSR::ROLE::button::FOCUSED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::FOCUSED (light)",
       "also": [
@@ -79,7 +79,7 @@
     {
       "row_id": "CSR::ROLE::button::PRESSED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::PRESSED (light)",
       "also": [
@@ -93,7 +93,7 @@
     {
       "row_id": "CSR::ROLE::button::SELECTED",
       "status": "TESTED",
-      "control": "a filter chip (FilterChipsWidget), a button that can be selected (Komponentark v1:139-146)",
+      "control": "a filter chip (FilterChipsWidget), a button that can be selected",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::SELECTED (light)",
       "also": [

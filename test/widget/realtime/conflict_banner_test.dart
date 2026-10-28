@@ -224,7 +224,7 @@ void main() {
     },
   );
 
-  group('P3-U08: drawn anatomy (Komponentark v1:755-758)', () {
+  group('P3-U08: drawn anatomy', () {
     testWidgets('title names the recipe and the body names the other editor', (
       tester,
     ) async {

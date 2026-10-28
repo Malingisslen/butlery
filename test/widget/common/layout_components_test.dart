@@ -371,7 +371,7 @@ void main() {
       expect(find.byType(NavigationRail), findsNothing);
     });
 
-    testWidgets('tablet width renders our rail (produktregler.md:1054)', (
+    testWidgets('tablet width renders our rail', (
       tester,
     ) async {
       await _pumpAtWidth(
@@ -468,7 +468,7 @@ void main() {
       expect(find.text('custom-title'), findsOneWidget);
     });
 
-    testWidgets('desktop width keeps the same rail (produktregler.md:1054)', (
+    testWidgets('desktop width keeps the same rail', (
       tester,
     ) async {
       await _pumpAtWidth(

@@ -483,7 +483,7 @@ void main() {
         findsNothing,
         reason:
             'update{namn, mängd, enhet, kategori} is class 3: no friction on '
-            'success (produktregler.md:133). The row changing is the receipt.',
+            'success. The row changing is the receipt.',
       );
       expect(errors, isEmpty);
     });

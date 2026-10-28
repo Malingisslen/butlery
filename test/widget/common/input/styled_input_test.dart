@@ -561,7 +561,7 @@ void main() {
     });
   });
 
-  group('StyledInput validated (Komponentark v1 §11 Validerad)', () {
+  group('StyledInput validated', () {
     Widget app(Widget child) => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

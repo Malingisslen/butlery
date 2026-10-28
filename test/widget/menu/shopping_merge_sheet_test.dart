@@ -226,7 +226,7 @@ void main() {
   });
 
   testWidgets('an unreadable pantry is said, with Försök igen that reads it '
-      'again (produktregler.md:697)', (tester) async {
+      'again', (tester) async {
     final harness = await _open(
       tester,
       pantry: const MenuShoppingPantry.unavailable(),

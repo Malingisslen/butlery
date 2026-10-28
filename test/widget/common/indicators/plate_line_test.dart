@@ -166,7 +166,7 @@ void main() {
     });
   });
 
-  group('PlateLineMessage — plate line plus text (produktregler.md:163)', () {
+  group('PlateLineMessage — plate line plus text', () {
     testWidgets('lays out inside an AlertDialog, which measures intrinsics', (
       tester,
     ) async {

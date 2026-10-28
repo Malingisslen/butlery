@@ -454,7 +454,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: LayoutComponents.offlineIndicator(),
                 ),
                 // A conflict on this recipe opens the drawn banner and, from  claim-lint:ok reindented only
-                // it, the two-column choice (produktregler.md:102: own  claim-lint:ok reindented only
+                // it, the two-column choice (own  claim-lint:ok reindented only
                 // recipe, both versions shown, the choice is the decision),
                 // mounted as edit_recipe_view does. Scoped by the recipe's id,
                 // never by position. On a shared recipe whose edit was kept as a
@@ -463,8 +463,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 SliverToBoxAdapter(
                   child: ConflictBanner(filterDocId: recipe.id),
                 ),
-                // P5-U27b: suggestions to this recipe, for their 7 days  claim-lint:ok reindented only
-                // (produktregler.md:103, :241). The owner is found from the  claim-lint:ok reindented only
+                // P5-U27b: suggestions to this recipe, for their 7 days.  claim-lint:ok reindented only
+                // The owner is found from the  claim-lint:ok reindented only
                 // recipe's owner id, never from what the page shows. Collapses
                 // when nothing is kept.
                 SliverToBoxAdapter(

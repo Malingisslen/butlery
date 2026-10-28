@@ -183,7 +183,7 @@ void main() {
 
   group('a quota stop', () {
     testWidgets('draws its suggested action, and no "Försök senare" unless '
-        'that is the suggestion (produktregler.md:560)', (tester) async {
+        'that is the suggestion', (tester) async {
       await tester.pumpWidget(
         _app(
           RateLimitDialog(

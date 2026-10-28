@@ -112,7 +112,7 @@ void main() {
       expect(
         rest.boxShadow,
         isNull,
-        reason: 'Cards carry no shadow (Komponentark: Noll skugga).',
+        reason: 'Cards carry no shadow.',
       );
     });
 
