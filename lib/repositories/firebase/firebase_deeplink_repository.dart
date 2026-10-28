@@ -52,7 +52,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// );
 /// // Create shareable short URL
 /// final shortCode = await deepLinkRepo.createShortUrl(
-///   'https://butlery.app/recipe/12345',
+///   'https://butlery.se/recipe/12345',
 ///   {'title': 'Amazing Pasta Recipe', 'type': 'recipe'},
 /// );
 /// // Resolve short URL

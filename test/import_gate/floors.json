@@ -30,8 +30,8 @@
       "portionsExact": 6,
       "timeExact": 2,
       "failures": 0,
-      "extraIngredients": 12,
-      "extraSteps": 45
+      "extraIngredients": 11,
+      "extraSteps": 9
     }
   },
   "knownRed": [

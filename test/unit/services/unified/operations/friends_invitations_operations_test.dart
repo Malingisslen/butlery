@@ -264,7 +264,7 @@ void main() {
 
         // Assert
         expect(link, isNotNull);
-        expect(link, contains('https://butlery.app/invite/'));
+        expect(link, contains('https://butlery.se/invite/'));
         expect(mockParentService.sentInvitationsList.length, equals(1));
 
         final invitation = mockParentService.sentInvitationsList.first;

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -270,7 +271,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   String get _shareUrl =>
-      'https://butlery.app/shopping?id=${Uri.encodeComponent(viewModel.listId)}';
+      '${DeepLinkService.baseUrl}/shopping?id=${Uri.encodeComponent(viewModel.listId)}';
 
   Future<void> _copyShareLink(BuildContext context) async {
     await executeAction(

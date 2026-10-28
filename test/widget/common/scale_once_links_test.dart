@@ -63,7 +63,7 @@ void main() {
   });
 
   testWidgets('a link in MarkdownBody scales once at 2x text', (tester) async {
-    const doc = 'Se [villkoren](https://butlery.app/villkor) för mer.';
+    const doc = 'Se [villkoren](https://butlery.se/villkor) för mer.';
     final at1 = await _linkWidth(
       tester,
       const MarkdownBody(data: doc),

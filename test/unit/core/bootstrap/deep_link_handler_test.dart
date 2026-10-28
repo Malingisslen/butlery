@@ -1,7 +1,7 @@
 /// BUT-1411: the custom-scheme host guard dropped `butlery://import?url=...`
 /// (web Share-Target import link) before it could reach the import branch,
 /// silently breaking the primary import funnel. These tests pin the guard
-/// predicate: recognised hosts (butlery.app, import) pass; unknown hosts are
+/// predicate: recognised hosts (butlery.app, butlery.se, import) pass; unknown hosts are
 /// blocked. The guard itself is the only thing that was preventing the
 /// already-correct import branch from routing to Smart Import.
 library;
@@ -26,6 +26,11 @@ void main() {
       expect(DeepLinkHandler.isBlockedCustomSchemeHost(uri), isFalse);
     });
 
+    test('does NOT block the butlery.se host', () {
+      final uri = Uri.parse('butlery://butlery.se/recipe?id=1');
+      expect(DeepLinkHandler.isBlockedCustomSchemeHost(uri), isFalse);
+    });
+
     test(
       'does NOT block a host-less custom link (path routing handles it)',
       () {
@@ -41,7 +46,7 @@ void main() {
     });
 
     test('does NOT block non-butlery schemes (handled elsewhere)', () {
-      final uri = Uri.parse('https://butlery.app/recipe?id=1');
+      final uri = Uri.parse('https://butlery.se/recipe?id=1');
       expect(DeepLinkHandler.isBlockedCustomSchemeHost(uri), isFalse);
     });
   });
@@ -65,7 +70,7 @@ void main() {
     for (final path in ['/recipe', '/menu', '/shopping']) {
       test('$path link older than 7 days is expired', () {
         final uri = Uri.parse(
-          'https://butlery.app$path?id=x&timestamp=$staleTs',
+          'https://butlery.se$path?id=x&timestamp=$staleTs',
         );
         expect(
           atFixedNow(() => DeepLinkHandler.isExpiredShareLink(uri)),
@@ -75,7 +80,7 @@ void main() {
 
       test('$path link with a fresh timestamp is not expired', () {
         final uri = Uri.parse(
-          'https://butlery.app$path?id=x&timestamp=${tsAged(const Duration(hours: 1))}',
+          'https://butlery.se$path?id=x&timestamp=${tsAged(const Duration(hours: 1))}',
         );
         expect(
           atFixedNow(() => DeepLinkHandler.isExpiredShareLink(uri)),
@@ -89,7 +94,7 @@ void main() {
     // comparison would get one of these wrong.
     test('a link 1 minute past 7 days is expired', () {
       final uri = Uri.parse(
-        'https://butlery.app/recipe?id=x'
+        'https://butlery.se/recipe?id=x'
         '&timestamp=${tsAged(const Duration(days: 7, minutes: 1))}',
       );
       expect(atFixedNow(() => DeepLinkHandler.isExpiredShareLink(uri)), isTrue);
@@ -97,7 +102,7 @@ void main() {
 
     test('a link 1 minute under 7 days is not expired', () {
       final uri = Uri.parse(
-        'https://butlery.app/recipe?id=x'
+        'https://butlery.se/recipe?id=x'
         '&timestamp=${tsAged(const Duration(days: 7) - const Duration(minutes: 1))}',
       );
       expect(
@@ -107,7 +112,7 @@ void main() {
     });
 
     test('fails open when the timestamp is absent (legacy link)', () {
-      final uri = Uri.parse('https://butlery.app/recipe?id=x');
+      final uri = Uri.parse('https://butlery.se/recipe?id=x');
       expect(
         atFixedNow(() => DeepLinkHandler.isExpiredShareLink(uri)),
         isFalse,
@@ -115,7 +120,7 @@ void main() {
     });
 
     test('fails open when the timestamp is non-numeric', () {
-      final uri = Uri.parse('https://butlery.app/menu?id=x&timestamp=abc');
+      final uri = Uri.parse('https://butlery.se/menu?id=x&timestamp=abc');
       expect(
         atFixedNow(() => DeepLinkHandler.isExpiredShareLink(uri)),
         isFalse,
@@ -124,9 +129,9 @@ void main() {
 
     test('non-expiring paths (invite/profile) are never expired here', () {
       final invite = Uri.parse(
-        'https://butlery.app/invite?id=x&timestamp=$staleTs',
+        'https://butlery.se/invite?id=x&timestamp=$staleTs',
       );
-      final profile = Uri.parse('https://butlery.app/profile?id=x');
+      final profile = Uri.parse('https://butlery.se/profile?id=x');
       expect(
         atFixedNow(() => DeepLinkHandler.isExpiredShareLink(invite)),
         isFalse,

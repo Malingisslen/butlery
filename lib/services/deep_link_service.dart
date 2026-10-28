@@ -64,7 +64,7 @@ class DeepLinkService extends BaseService {
   String get serviceName => 'DeepLinkService';
 
   final DeepLinkRepository _deepLinkRepository;
-  static const String _baseUrl = 'https://butlery.app';
+  static const String baseUrl = 'https://butlery.se';
   static const String _invitePath = '/invite';
   static const String _recipePath = '/recipe';
   static const String _menuPath = '/menu';
@@ -87,7 +87,7 @@ class DeepLinkService extends BaseService {
   /// - Timestamp inclusion for expiration validation and analytics
   /// - User attribution for security validation and social context
   /// **Generated URL Structure:**
-  /// - Base URL: https://butlery.app/invite
+  /// - Base URL: https://butlery.se/invite
   /// - Required parameters: id (invitation), from (user), timestamp
   /// - Optional parameters: message (URL-encoded custom message)
   static String generateFriendInvitationLink({
@@ -183,7 +183,7 @@ class DeepLinkService extends BaseService {
       final uri = Uri.parse(url);
 
       // Check if it's a Butlery deep link
-      if (uri.host != 'butlery.app' && uri.host != 'www.butlery.app') {
+      if (uri.host != 'butlery.se' && uri.host != 'www.butlery.se') {
         return null;
       }
 
@@ -277,7 +277,7 @@ class DeepLinkService extends BaseService {
 
   /// Build URL with parameters
   static String _buildUrl(String path, Map<String, String> params) {
-    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: params);
+    final uri = Uri.parse('$baseUrl$path').replace(queryParameters: params);
     return uri.toString();
   }
 
@@ -331,7 +331,7 @@ class DeepLinkService extends BaseService {
             metadata,
           );
 
-      return 'https://butlery.app/s/$shortCode';
+      return '$baseUrl/s/$shortCode';
     } catch (e) {
       AppLogger.error('Failed to create internal short URL: $e');
       return null;
@@ -397,65 +397,10 @@ class DeepLinkService extends BaseService {
   static void _registerUrlSchemeHandlers() {
     // This would register handlers for different URL schemes:
     // - butlery://
-    // - https://butlery.app/
+    // - https://butlery.se/
     // - Custom short URLs
 
     AppLogger.debug('URL scheme handlers registered');
-  }
-
-  /// Handle incoming deep link and navigate appropriately.
-  ///
-  /// Dead code — deep link handling is done by DeepLinkHandler
-  /// (in core/bootstrap/handlers). This method is never called at runtime.
-  @Deprecated('Use DeepLinkHandler.processDeepLink instead')
-  static Future<void> handleDeepLink(
-    String url,
-    Function(String) navigateToRoute,
-  ) async {
-    try {
-      final deepLinkData = parseDeepLink(url);
-      if (deepLinkData == null) {
-        AppLogger.warning('Invalid deep link received: $url');
-        return;
-      }
-
-      if (isLinkExpired(deepLinkData)) {
-        AppLogger.warning('Deep link expired: $url');
-        return;
-      }
-
-      switch (deepLinkData.type) {
-        case DeepLinkType.friendInvitation:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/friends?invitation=${deepLinkData.id}');
-          }
-          break;
-        case DeepLinkType.recipeShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/recipe/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.menuShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/menu/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.shoppingListShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.profileShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/public-profile/${deepLinkData.id}');
-          }
-          break;
-      }
-
-      AppLogger.info('Deep link handled successfully: ${deepLinkData.type}');
-    } catch (e) {
-      AppLogger.error('Failed to handle deep link: $e');
-    }
   }
 
   /// Check if a deep link is expired

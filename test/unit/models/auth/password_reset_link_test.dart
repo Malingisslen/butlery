@@ -97,7 +97,7 @@ void main() {
 
     test('leaves the app\'s own links alone', () {
       expect(
-        PasswordResetLink.parse('https://butlery.app/recipe?id=1'),
+        PasswordResetLink.parse('https://butlery.se/recipe?id=1'),
         isNull,
       );
       expect(

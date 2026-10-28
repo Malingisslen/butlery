@@ -855,7 +855,7 @@
   "recipePortionAbbreviation": "srv",
   "recipePortionSingular": "serving",
   "recipePortionsPlural": "servings",
-  "recipeCookedToday": "Cooked today",
+  "recipeCookedToday": "Mark as cooked",
   "recipeCookedCount": "{count, plural, =1{Cooked once} other{Cooked {count} times}}",
   "@recipeCookedCount": {
     "placeholders": {

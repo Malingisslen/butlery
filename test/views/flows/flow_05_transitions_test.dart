@@ -58,7 +58,7 @@ Widget _app(_SpyNavigatorObserver observer) => MaterialApp(
 const _recipeId = 'R3cipeSharedWithMe01';
 
 String _recipeLink() =>
-    'https://butlery.app/recipe?id=$_recipeId'
+    'https://butlery.se/recipe?id=$_recipeId'
     '&timestamp=${clock.now().millisecondsSinceEpoch}';
 
 void main() {
