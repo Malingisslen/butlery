@@ -163,8 +163,8 @@ void main() {
           ),
         );
 
-        // Busy is not disabled: the button keeps its surface (Komponentark
-        // v1:365, loading and disabled are two states), so it is enabled
+        // Busy is not disabled: the button keeps its surface
+        // so it is enabled
         // for Flutter, and the press does nothing.
         final button = tester.widget<ElevatedButton>(
           find.byType(ElevatedButton),
@@ -473,7 +473,7 @@ void main() {
         expect(button.onPressed, isNull);
       });
 
-      // BUT-2193: a button never cuts its label (plattformsmatris.md:
+      // BUT-2193: a button never cuts its label (
       // ellipsis is forbidden in buttons); a long one wraps.
       // actionButton and textButton each build their own label.
       for (final (name, build) in <(String, Widget Function(BuildContext))>[

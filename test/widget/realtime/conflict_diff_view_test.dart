@@ -384,9 +384,6 @@ void main() {
   }
 
   // PQ-02 = A (2026-09-23): the choice goes both ways on the owner's recipe
-  // (produktregler.md:102;
-  // Skarmar v12 del 3 #konflikt :1199 draws "Behåll min version" and
-  // "Använd Eriks version").
   group('the choice goes both ways (PQ-02 = A)', () {
     late String useTheirs;
     late String usedTheirs;

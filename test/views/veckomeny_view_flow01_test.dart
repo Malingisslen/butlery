@@ -1,7 +1,5 @@
 /// P6-U01: flow 01 on the week menu.
 ///
-/// Each group is named after its transition in
-/// fas2/block288-uxfrysning.json:
 /// - TR::FLOW::01::genererar::0-recept-placerade: nothing matched is its own
 ///   state, "Inga recept matchar", never
 ///   "Ett fel uppstod".

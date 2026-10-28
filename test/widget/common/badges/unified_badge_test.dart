@@ -1,6 +1,6 @@
-// UnifiedBadge draws the two badges Komponentark v1 has: the status pill
-// (§08: an outline pill, never a fill in a status colour) and the counter
-// (v1:741: ink as the norm, saffron only when it asks for action, "99+").
+// UnifiedBadge draws the two badges: the status pill
+// (an outline pill, never a fill in a status colour) and the counter
+// (ink as the norm, saffron only when it asks for action, "99+").
 library;
 
 import 'package:flutter/material.dart';

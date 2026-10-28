@@ -573,8 +573,7 @@ void main() {
   });
 
   // P6-U03 (flow 03): low confidence gates Spara, and an OCR line that
-  // cannot be read is an empty, marked row (flows-roles-budget.md:61,63;
-  // produktregler.md:562-566).
+  // cannot be read is an empty, marked row
   group('P6-U03 · confirm before Spara, unread lines', () {
     testWidgets('a low row carries Stämmer; confirming reports that row', (
       tester,

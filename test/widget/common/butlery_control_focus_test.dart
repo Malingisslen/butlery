@@ -4,8 +4,7 @@
 /// tab, view tab (TabBar) and menu item each get the canonical ring 3 px
 /// outside a box of at least 48 × 48 dp, ink on light and paper on dark,
 /// only for keyboard focus, and no focus tint under the ring
-/// (tokens.json:155-160, :485-492; Grafisk manual v6:209, :381;
-/// Komponentark v1:657, :667; fas2/block288-uxfrysning.json
+/// (tokens.json:155-160, :485-492;
 /// `CSR::ROLE::<roll>::FOCUSED`).
 ///
 /// The ring is read back from rendered pixels, with the same method as

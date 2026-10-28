@@ -1,9 +1,5 @@
 /// P5-U22: the shared partial-outcome surface (I-29).
 ///
-/// produktregler.md:905-909: "Formen är `surface.raised` med varningskant";
-/// it names what went, what did not and why. Drawn in Skarmar v12 etapp 9
-/// globala tillstand och flerval.dc.html:390-393.
-///
 /// Pins, in light AND dark: the surface is surface.raised (#E6EAD9 / #2F4437,
 /// tokens.json), the edge is 3 px #D68523 on the leading side only. Also the public API P5-T4 reads: items keyed by id,
 /// reasons shown, actions rendered, the title a live region.

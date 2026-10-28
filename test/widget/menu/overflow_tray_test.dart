@@ -1,8 +1,7 @@
 /// P5-U23: the week menu's tray of recipes that did not fit, and the
 /// placement order in the cells.
 ///
-/// produktregler.md:1123-1127 (§ 22.6), :206, :890-893; drawn in Skarmar v12
-/// etapp 11 breda vyer:233-254 (#vmbdelvis). Pins:
+/// Pins:
 /// - the tray is the shared partial outcome (surface.raised + warning edge,
 ///   I-29) in light and dark;
 /// - it counts in dishes, says why, and names each recipe as written;

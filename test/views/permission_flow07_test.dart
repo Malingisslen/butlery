@@ -1,5 +1,4 @@
-/// P6-U07 · Flow 07, permissions (flows-roles-budget.md:98-106;
-/// produktregler.md:423, 680-687, 738-740).
+/// P6-U07 · Flow 07, permissions
 ///
 /// - Photo import explains each permission answer inline: a no offers
 ///   "Fråga igen", a permanent no "Öppna inställningar", a device block no
@@ -192,7 +191,7 @@ void main() {
         final box = tester.widget<Container>(
           find.byKey(const ValueKey('photo-permission-notice-denied')),
         );
-        // #behfoton slot 834: #E6EAD9 light, #24382C dark.
+        // #E6EAD9 light, #24382C dark.
         expect(
           box.color,
           theme.brightness == Brightness.dark

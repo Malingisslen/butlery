@@ -1,5 +1,4 @@
-/// The busy button (P4-U01): Komponentark v1:307, :365, :372; Grafisk manual
-/// v6:423; produktregler.md:902.
+/// The busy button (P4-U01)
 ///
 /// A busy button keeps its surface and its name, or says what it does
 /// ("Sparar …"), and gets the plate line along its bottom edge: 4 px, the
@@ -172,7 +171,6 @@ void main() {
             expect(track, fg.withValues(alpha: ButtonPlateLine.trackAlpha));
           }
           if (v == _Variant.hero) {
-            // Komponentark v1:372: ink #17251D on saffron #CE7C1E.
             expect(fg, const Color(0xFF17251D));
             expect(
               tester.widget<Material>(_buttonMaterial()).color,

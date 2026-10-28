@@ -1,15 +1,13 @@
 /// P4-U06: cooking mode's step row.
 ///
-/// - "Nästa steg" is the view's one saffron action (Komponentark v1
-///   mönster 4; Skarmar v12 del 1 'Matlagningsläge').
+/// - "Nästa steg" is the view's one saffron action
 /// - A disabled control on surface.ink is its own opaque colour, never paper
 ///   at an opacity, and reads at 4.5:1 or better (tokens.json:40-53,
 ///   :198-201; beslut-paket2 "disabled on surface.ink").
 /// - The base is surface.ink in light mode and dark-bg #17251D in dark mode,
-///   "så skärmen inte lyser i ett släckt kök" (Skarmar v12 del 1
-///   #lagamorkt); both rules above hold on each base.
-/// - "Nästa steg" fills the rest of the row (flex:1 in #lagastaende and
-///   #lagamorkt).
+///   "så skärmen inte lyser i ett släckt kök"
+///   both rules above hold on each base.
+/// - "Nästa steg" fills the rest of the row
 library;
 
 import 'package:flutter/material.dart';

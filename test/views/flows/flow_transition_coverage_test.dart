@@ -1,8 +1,8 @@
 /// P8-U03: the census of the 81 REQUIRED flow transitions stays true.
 ///
 /// Sources: test/fixtures/design/block288-uxfrysning.json overgangar and its
-/// BINDNING.TRANSITION_SET_HASH, flows-roles-budget.md flows 01-08, and
-/// fas2/ux-beslut.json D-03 and D-04. The census is
+/// BINDNING.TRANSITION_SET_HASH
+/// The census is
 /// test/fixtures/design/transition_census.json.
 ///
 /// It checks:

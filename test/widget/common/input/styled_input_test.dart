@@ -760,9 +760,6 @@ void main() {
     });
   });
 
-  // Komponentark v1 §11 under the app's real themes: the theme owns the
-  // fill (paper at rest, surface.raised when disabled), and an error is a
-  // 1.5 px danger edge, focused or not.
   for (final (mode, theme) in [
     ('light', AppTheme.lightTheme),
     ('dark', AppTheme.darkTheme),

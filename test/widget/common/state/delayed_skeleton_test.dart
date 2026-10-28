@@ -1,5 +1,5 @@
 // Laddningens två former: tallrikslinjen med text direkt, skelettet först
-// efter 300 ms (produktregler.md:163 och :304, beslut B-18).
+// efter 300 ms.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
