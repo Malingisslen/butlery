@@ -24775,7 +24775,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekMenuDraftDaysDone.
   ///
   /// In sv, this message translates to:
-  /// **'{count} av 7 dagar klara'**
+  /// **'{count} av 7 dagar har förslag'**
   String weekMenuDraftDaysDone(int count);
 
   /// No description provided for @weekMenuDraftDayEmpty.

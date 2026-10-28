@@ -11410,7 +11410,7 @@
       }
     }
   },
-  "weekMenuDraftDaysDone": "{count} of 7 days done",
+  "weekMenuDraftDaysDone": "{count} of 7 days have a suggestion",
   "@weekMenuDraftDaysDone": {
     "placeholders": {
       "count": {

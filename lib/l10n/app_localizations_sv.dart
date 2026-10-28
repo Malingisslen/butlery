@@ -16096,7 +16096,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String weekMenuDraftDaysDone(int count) {
-    return '$count av 7 dagar klara';
+    return '$count av 7 dagar har förslag';
   }
 
   @override
