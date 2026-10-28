@@ -11738,7 +11738,7 @@
       }
     }
   },
-  "weekMenuDraftDaysDone": "{count} av 7 dagar klara",
+  "weekMenuDraftDaysDone": "{count} av 7 dagar har förslag",
   "@weekMenuDraftDaysDone": {
     "placeholders": {
       "count": {

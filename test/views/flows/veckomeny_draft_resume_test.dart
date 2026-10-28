@@ -88,7 +88,7 @@ void main() {
         expect(find.text('Påbörjad veckomeny från i går'), findsOneWidget);
         expect(find.text('Sparad dinner-1'), findsOneWidget);
         expect(find.text('Sparad dinner-3'), findsOneWidget);
-        expect(find.textContaining('3 av 7 dagar klara'), findsOneWidget);
+        expect(find.textContaining('3 av 7 dagar har förslag'), findsOneWidget);
       });
     }
 
