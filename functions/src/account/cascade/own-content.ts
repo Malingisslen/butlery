@@ -249,7 +249,7 @@ export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
 
 /**
  * P5-U27b: suggestions to someone else's shared recipe
- * (`recipe_suggestions`, produktregler.md:103, :241). claim-lint:ok moved unchanged, BUT-2113
+ * (`recipe_suggestions`). claim-lint:ok moved unchanged, BUT-2113
  *
  * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
  * (`ownerId`), and it is deleted with EITHER account: the suggester's change is

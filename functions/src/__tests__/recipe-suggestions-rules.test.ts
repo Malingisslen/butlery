@@ -117,7 +117,7 @@ test("a member suggests a change to the owner's shared recipe", async () => {
   await assertSucceeds(ctx.firestore().doc(doc(freshId())).set(suggestion(MEMBER)));
 });
 
-test("a read-only member may suggest too (produktregler.md:241)", async () => {
+test("a read-only member may suggest too", async () => {
   const ctx = env.authenticatedContext(THIRD_MEMBER);
   await assertSucceeds(
     ctx.firestore().doc(doc(freshId())).set(suggestion(THIRD_MEMBER)),

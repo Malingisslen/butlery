@@ -251,7 +251,7 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // local consts too, so the next one of this shape reddens.
   "acquisition",
   // P5-U26b: the user's own week menus and recipes that another person's save claim-lint:ok moved unchanged, BUT-2113
-  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109), written claim-lint:ok moved unchanged, BUT-2113
+  // overwrote, kept 30 days behind "Återställ", written claim-lint:ok moved unchanged, BUT-2113
   // by firebase_overwritten_version_repository.dart. A TTL policy on
   // `expiresAt` removes each row after 30 days; this entry erases them at
   // once when the account goes. Exported in the account-subcollections
