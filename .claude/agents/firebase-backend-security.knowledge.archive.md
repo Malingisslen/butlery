@@ -11363,3 +11363,39 @@ Staged in wt-hygiene: deletion of `lib/repositories/mixins/permission_caching_mi
 
 ## 2026-10-28 — code-hygiene sweep: PermissionCacheService + its three RC flags deleted (verified clean, archive only)
 Staged in wt-hygiene2: deletion of `lib/services/cache/permission_cache_service.dart` and its test, its `PerformanceModule.configureUserScope` registration / `provides` / `healthCheck` entries, the `enable_permission_caching` / `permission_cache_ttl_seconds` / `permission_cache_max_size` defaults and constants in `feature_flag_service.dart`, its `lib/services/CLAUDE.md` non-adopter line, two unimported widget files (`admin_help_text.dart`, `messaging_ui_components.dart`), and `orphanFiles` 2->0. Question: does it weaken a permission path? No. `git grep HEAD` shows the only readers of the service were the DI module and its own test, and the only readers of the three flags were the service and its test; the working tree has zero matches (case-insensitive, incl. `functions/`, `firestore.rules`, docs, workflow map). Repo not shallow. The service was a default-OFF TTL cache with no `get`/`set` caller (closing the residual from the 2026-10-27 mixin entry); a cache can only make a permission verdict staler, so removal cannot loosen anything. The user-scope `dispose: invalidateAll` leaves with the registration, so no cross-user state can outlive sign-out. Side effect: the constructor's `Timer.periodic` was never cancelled by that dispose (it called `invalidateAll`, not `dispose`), so removal also ends a per-session leaked timer. RC: no server template in the repo; a console value for the removed keys is now simply unread. `test/architecture/destructive_dialog_test.dart` matches the string `ErrorText(` by regex over `lib/` and does not need the deleted class.
+
+## 2026-10-28 — mechanicalRewrites strike rule `struck-doc-references` (BUT-2397), security pass
+
+Staged: `.claude/shared-plugin.json` (new strips rule, paths `^(?:lib|test|tools|functions/src)/...`) and
+`test/unit/theme/mechanical_rewrites_test.dart`. Gate code read: workflow-guards `_common.mjs`
+`parseMechanicalRewrites` / `isMechanicalRewrite` / `stripComments` / `textAt`. Exercised `stripComments`
+with the HEAD-shaped rule in node. Findings: the strike can only DELETE text the four regexes match
+(doc name + optional `:N`/`§N` refs), only on lines whose first non-space chars are `//`, `///` or `*`,
+never on DIRECTIVE lines, and is refused if it eats the marker; rules come from HEAD and a list change
+is gated. `textAt` reads latin1, so the `Â§` / `â\u0080\u0093` escapes in the strips are
+the UTF-8 bytes of `§`/`–` read one-per-char — correct, not mojibake. Residual (Low): COMMENT_LINE is a
+line-prefix test, so a line inside a multi-line string/template literal that starts with `//` or `*` is
+treated as a comment — verified in node: a backtick literal's `// rule (produktregler.md)` line lost its
+reference. Bounded to deleting a doc-reference shape, so no code can be introduced; today no such
+reference sits inside a string literal in functions/src (grep). firestore.rules is outside the paths;
+rules tests under functions/src/__tests__ are inside but only for comment-line strikes. Verdict pass.
+
+## 2026-10-28 — struck-doc-references follow-up (strips[0] lookbehind, strips[1] lookahead), security pass
+
+Staged: `.claude/shared-plugin.json` only. Both edits are zero-width assertions ANDed onto existing
+patterns, so the match set can only shrink. Verified in node through `parseMechanicalRewrites` (no errors)
+and `stripComments`: a reference that opens a comment is now left alone, and `(produktregler.md:103; :241 x)`
+is no longer cut into a dangling `:241` tail. `flutter test test/unit/theme/mechanical_rewrites_test.dart`
+passed 38/38, so Dart's RegExp compiles the variable-length lookbehind. The Low residual from the first
+pass (multi-line string lines that start with `//`/`*` are treated as comments) is unchanged. Verdict pass.
+
+## 2026-10-28 — struck-doc-references rebuilt to 5 strips (sketches, ux-beslut, fas2 json), security pass
+
+Staged: `.claude/shared-plugin.json` only (strips rebuilt; paths unchanged). Probed through the gate's own
+`parseMechanicalRewrites` (no errors) + `stripComments`. New strip 5 keeps the comment marker in a
+LOOKBEHIND, so it can never consume it; a line reduced to a bare marker is dropped. A list must start with a
+named document: `(del 3)`, `(see etapp 6)` and `(produktregler.md:103; something else)`'s tail all survive.
+Trailing `//` comments on code lines (`expect(...); // (fas2/a.json)`) are untouched because COMMENT_LINE
+is a line-start test, so failing closed. firestore.rules stays outside the paths; a rules-test `test("...")`
+title is not a comment line. Same Low residual as before: a multi-line string line starting with `//`/`*`
+is struck (`// (Skarmar v12) prompt` -> `// prompt` inside a backtick literal). The Dart test passed (38). Verdict pass.

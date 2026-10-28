@@ -56,6 +56,11 @@
   must be OPTIONAL with per-field fallback (a required-keys set reverts every
   live override), and mirroring a config field means grepping every test
   fixture, or a stale one flips to fallback and passes vacuously.
+- **A multi-line prompt template must never open a line with `*` or `//`.** The commit
+  gate's `struck-doc-references` strike rule (`stripComments` in the plugin `_common.mjs`)
+  treats any line matching `^\s*(?:\/\/\/?|\*)` as a comment, string literal or not, so a
+  doc-reference strip from such a prompt line would reach no reviewer. Prompts use `- `
+  bullets; flag a `* ` bullet in a template literal.
 
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores to test.
