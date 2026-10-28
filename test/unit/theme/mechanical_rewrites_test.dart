@@ -53,7 +53,8 @@ List<(String, String)> _declaredPairs() {
           as Map<String, dynamic>;
   return [
     for (final rule in config['mechanicalRewrites'] as List)
-      for (final pair in (rule as Map<String, dynamic>)['pairs'] as List)
+      for (final pair
+          in (rule as Map<String, dynamic>)['pairs'] as List? ?? const [])
         ((pair as List)[0] as String, pair[1] as String),
   ];
 }
@@ -89,6 +90,20 @@ void main() {
   test('no pair renames to a name another pair renames away', () {
     final froms = {for (final (a, _) in all) a};
     expect([for (final (_, b) in all) b].where(froms.contains), isEmpty);
+  });
+
+  test('a strike rule only names regexes that cannot match nothing', () {
+    final config =
+        jsonDecode(File('.claude/shared-plugin.json').readAsStringSync())
+            as Map<String, dynamic>;
+    final strikes = [
+      for (final rule in config['mechanicalRewrites'] as List)
+        ...(rule as Map<String, dynamic>)['strips'] as List? ?? const [],
+    ];
+    expect(strikes, isNotEmpty);
+    for (final source in strikes) {
+      expect(RegExp(source as String).hasMatch(''), isFalse, reason: source);
+    }
   });
 
   test('this file is outside every rewrite path', () {

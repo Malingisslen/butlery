@@ -1474,9 +1474,7 @@ void main() {
           // Assert
           // After rate limit, should return original URLs
           expect(
-            results
-                .where((url) => url.startsWith('https://butlery.se'))
-                .length,
+            results.where((url) => url.startsWith('https://butlery.se')).length,
             greaterThan(0),
           );
         });
