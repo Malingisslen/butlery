@@ -63,7 +63,8 @@ jobs:
              assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md \
              build/legal-site/assets/legal/
           cp web/favicon.png build/legal-site/favicon.png
-          for f in privacy-sv.html privacy-en.html terms-sv.html terms-en.html index.html legal.js legal.css \
+          for f in privacy-sv.html privacy-en.html terms-sv.html terms-en.html radera-konto.html delete-account.html \
+                   index.html legal.js legal.css \
                    assets/legal/privacy_policy_sv.md assets/legal/privacy_policy_en.md \
                    assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md; do
             test -s "build/legal-site/$f" || { echo "::error::build/legal-site/$f missing or empty" >&2; exit 1; }
