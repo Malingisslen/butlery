@@ -202,7 +202,7 @@ class _ShoppingRowState extends State<ShoppingRow>
                             WholeWordText.rich(
                               TextSpan(
                                 children: [
-                                  TextSpan(text: widget.name),
+                                  TextSpan(text: _startWithCapital(widget.name)),
                                   if (amount != null && amount.isNotEmpty)
                                     TextSpan(
                                       text: ' $amount',
@@ -310,3 +310,8 @@ class ShoppingRowMenu extends StatelessWidget {
     );
   }
 }
+
+// Rows show names alike whatever case they were stored in, without
+// rewriting the stored data.
+String _startWithCapital(String name) =>
+    name.isEmpty ? name : '${name[0].toUpperCase()}${name.substring(1)}';
