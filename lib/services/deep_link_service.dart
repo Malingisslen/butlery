@@ -436,10 +436,6 @@ class DeepLinkService extends BaseService {
         return null;
       }
 
-      // Track the click
-      await ServiceLocator.get<DeepLinkService>()._deepLinkRepository
-          .trackUrlClick(shortCode);
-
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
       return longUrl;
     } catch (e) {

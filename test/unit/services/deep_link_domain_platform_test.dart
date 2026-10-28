@@ -3,6 +3,7 @@
 /// ours, so no registration may claim it.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +35,57 @@ void main() {
         entitlements,
         isNot(contains('applinks:butlery.app<')),
         reason: path,
+      );
+    }
+  });
+
+  test('iOS opens every path the app builds, in the app', () {
+    final aasa =
+        jsonDecode(
+              File(
+                'web/.well-known/apple-app-site-association',
+              ).readAsStringSync(),
+            )
+            as Map<String, dynamic>;
+    final details =
+        (aasa['applinks'] as Map<String, dynamic>)['details'] as List<dynamic>;
+    final patterns = [
+      for (final d in details) ...(d as Map<String, dynamic>)['paths'] as List,
+    ].cast<String>();
+
+    // iOS matches a pattern against the path alone: `/recipe/*` does not
+    // match `/recipe`, which is what the app builds.
+    bool opensApp(String path) => patterns.any(
+      (p) => p.endsWith('*')
+          ? path.startsWith(p.substring(0, p.length - 1))
+          : path == p,
+    );
+
+    final built = {
+      'invitation': DeepLinkService.generateFriendInvitationLink(
+        invitationId: 'i',
+        fromUserId: 'u',
+      ),
+      'recipe': DeepLinkService.generateRecipeShareLink(
+        recipeId: 'r',
+        fromUserId: 'u',
+      ),
+      'menu': DeepLinkService.generateMenuShareLink(
+        menuId: 'm',
+        fromUserId: 'u',
+      ),
+      'shopping list': DeepLinkService.generateShoppingListShareLink(
+        listId: 'l',
+        fromUserId: 'u',
+      ),
+      'profile': DeepLinkService.generateProfileLink('u'),
+      'short link': '${DeepLinkService.baseUrl}/s/Ab3dE5gH',
+    };
+    for (final entry in built.entries) {
+      expect(
+        opensApp(Uri.parse(entry.value).path),
+        isTrue,
+        reason: '${entry.key} link ${entry.value} would open in Safari',
       );
     }
   });

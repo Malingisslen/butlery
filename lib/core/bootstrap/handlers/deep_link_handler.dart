@@ -7,6 +7,7 @@ library;
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:butlery/core/bootstrap/handlers/short_link.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -258,6 +259,16 @@ class DeepLinkHandler {
 
       if (!context.mounted) {
         return;
+      }
+
+      if (shortCodeOf(uri) != null) {
+        final longUrl = await resolveShortLink(uri);
+        if (!context.mounted) return;
+        if (longUrl == null) {
+          _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
+          return;
+        }
+        return processDeepLink(longUrl, context);
       }
 
       // BUT-1587: single expiry gate for the time-limited share links

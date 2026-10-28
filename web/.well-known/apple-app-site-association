@@ -7,11 +7,12 @@
         "paths": [
           "/__/auth/links",
           "/__/auth/links/*",
-          "/invite/*",
-          "/recipe/*",
-          "/menu/*",
-          "/shopping/*",
-          "/profile/*"
+          "/invite",
+          "/recipe",
+          "/menu",
+          "/shopping",
+          "/profile",
+          "/s/*"
         ]
       }
     ]
