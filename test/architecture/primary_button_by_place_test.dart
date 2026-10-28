@@ -34,9 +34,9 @@ const _friendButtons = <String, int>{
   'lib/widgets/social/public_profile_friend_button.dart': 2,
 };
 
-// The Inköp add button and its empty-state button are drawn saffron on the
-// shopping-list sketch frame, and a list is neither a form nor an account page,
-// so B-158 does not move them. They wait for Malin's call.
+// The Inköp add button and its empty-state button stay saffron: a list is
+// neither a form nor an account page, so Malin exempted them from B-158
+// (2026-10-28, .claude/rules/design-system.md "Primary button colour by place").
 const _shoppingButtons = <String, int>{
   'lib/views/unified_shopping/widgets/shopping_app_bar.dart': 1,
   'lib/views/unified_shopping/widgets/shopping_list_content.dart': 1,
