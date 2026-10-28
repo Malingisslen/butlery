@@ -1,4 +1,4 @@
-/// P7-U08: the Butlery icon family register (beslutslogg.md:9, B-02).
+/// P7-U08: the Butlery icon family register (B-02).
 ///
 /// - design/assets/icons holds exactly one master per icons.json entry.
 /// - Every ButleryIcons member maps to an icons.json entry and embeds that

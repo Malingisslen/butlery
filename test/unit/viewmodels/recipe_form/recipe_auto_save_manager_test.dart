@@ -214,7 +214,7 @@ void main() {
     });
 
     /// Proves: one filled field persists (D-02 superseded the old
-    /// two-field minimum, produktregler.md:789).
+    /// two-field minimum).
     test('persists with a single filled field', () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);

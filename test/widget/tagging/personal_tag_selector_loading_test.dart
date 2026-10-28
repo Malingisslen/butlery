@@ -1,5 +1,5 @@
 // P7-B4: while the tags load, the selector shows the plate line with what it
-// is fetching, never a spinner (produktregler.md:163, B-18;
+// is fetching, never a spinner (B-18;
 // beslutslogg.md:25).
 
 import 'package:flutter/material.dart';

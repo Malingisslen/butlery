@@ -417,7 +417,7 @@ void main() {
     }
 
     // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
-    // has one green save, B-158 (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
+    // has one green save, B-158 (Skarmar v12 etapp 4
     // #editorutkast; Grafisk manual v6:219).
     int heroCount(WidgetTester tester) => tester
         .widgetList<FilledButton>(find.byType(FilledButton))

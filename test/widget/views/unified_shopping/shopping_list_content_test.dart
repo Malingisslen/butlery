@@ -1,6 +1,6 @@
 // P3-U09: the category-move receipt.
 //
-// A category move is class 3 (produktregler.md:133): no Ångra. The row leaves
+// A category move is class 3: no Ångra. The row leaves
 // the user's view, so the receipt 'Flyttade till {kategori}' stays, and a
 // snackbar with no possible follow-up action gets `Stäng`
 // (content-style-guide.md:96-97), never `OK`. With an action Flutter keeps a

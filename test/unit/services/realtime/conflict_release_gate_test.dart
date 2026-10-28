@@ -1,5 +1,5 @@
 // P6-U08b: "Konfliktbannern visas när kön töms, inte medan appen är
-// offline" (produktregler.md:189; TR::FLOW::08::ko::toms::konfliktbanner).
+// offline" (TR::FLOW::08::ko::toms::konfliktbanner).
 
 import 'dart:async';
 

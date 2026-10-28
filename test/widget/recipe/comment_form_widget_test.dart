@@ -628,7 +628,7 @@ void main() {
   });
 
   // BUT-2160 · flow 07: a library answer is explained where the image was
-  // wanted (flows-roles-budget.md:98-106).
+  // wanted.
   group('photo library permission', () {
     late File tempImage;
     late List<OsPermissionOutcome> answers;

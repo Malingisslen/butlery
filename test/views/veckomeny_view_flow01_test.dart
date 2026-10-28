@@ -1,4 +1,4 @@
-/// P6-U01: flow 01 on the week menu (flows-roles-budget.md:24-38).
+/// P6-U01: flow 01 on the week menu.
 ///
 /// Each group is named after its transition in
 /// fas2/block288-uxfrysning.json:

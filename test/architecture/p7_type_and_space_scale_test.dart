@@ -7,7 +7,7 @@
 //   at 320 dp and 24 from 360 dp (tokens.json:463-475). The off-scale
 //   AppDimensions constants retired in package 7 may not come back.
 // - Control geometry: a badge is 2 × 7 and a status pill 3 × 9 (tokens.json
-//   controls.badge / controls.statusPill; Komponentark v1:34).
+//   controls.badge / controls.statusPill).
 
 import 'dart:io';
 

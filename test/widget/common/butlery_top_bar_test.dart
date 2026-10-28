@@ -1,5 +1,5 @@
 /// Widget tests for ButleryTopBar — the canonical top bar
-/// (Komponentark v1 §01, patterns 1 and 2; decision D2 of package 2).
+/// (patterns 1 and 2; decision D2 of package 2).
 library;
 
 import 'dart:ui' as ui;

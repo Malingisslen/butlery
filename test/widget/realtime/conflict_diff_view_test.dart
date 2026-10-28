@@ -344,7 +344,7 @@ void main() {
     },
   );
 
-  // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+  // Q6-08 = A (produktbeslut 2026-09-27): a member
   // never writes someone else's recipe, and firestore.rules refuses it, so
   // the view offers neither "Behåll min version" nor "Använd deras version"
   // there; both versions are still shown.

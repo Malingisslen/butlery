@@ -390,7 +390,7 @@ void main() {
         tester,
       ) async {
         // permission_handler reads a never-asked permission as denied; the
-        // question is only asked on Android 13+ (produktregler.md:685).
+        // question is only asked on Android 13+.
         final gateway = _Gateway(PermissionStatus.denied);
         final service = NotificationPermissionService(
           gateway: gateway,

@@ -258,7 +258,7 @@ void main() {
     );
   });
 
-  // P6-U08a (produktregler.md:832, § 16.2): two modes. With changes waiting,
+  // P6-U08a: two modes. With changes waiting,
   // the changes are named and "Logga ut nu" leads to the manual sign-out's
   // confirmation (#utloggningko); only its destructive choice signs out.
   group('queue mode', () {

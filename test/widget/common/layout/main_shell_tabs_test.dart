@@ -40,7 +40,7 @@ Widget _shellApp({int initialIndex = 0}) => MaterialApp(
 int _shown(WidgetTester tester) =>
     tester.widget<IndexedStack>(find.byType(IndexedStack)).index!;
 
-/// A phone: the bottom row, not the rail (produktregler.md:1054).
+/// A phone: the bottom row, not the rail.
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(412, 915);
   tester.view.devicePixelRatio = 1;

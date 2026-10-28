@@ -389,7 +389,7 @@ void main() {
   group('addItemToActiveList', () {
     /// P4-U11: the add returns the new row's id, and that id is the row the
     /// repository wrote and the one in local state. "Ångra" after the add
-    /// removes the row by this id (produktregler.md:131).
+    /// removes the row by this id.
     test('WithId returns the id of the row it wrote', () async {
       lists.add(_seedList(id: 'L'));
       activeListId = 'L';

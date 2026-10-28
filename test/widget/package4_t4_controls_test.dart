@@ -4,7 +4,7 @@
 /// - The report dialog's five reasons are 48 dp rows with the shared grip.
 /// - The week choice for sharing a menu uses the same grip on its radios.
 /// - The admin shell's six tabs ring on keyboard focus
-///   (produktregler.md:626; block288 CSR::ROLE::tab::FOCUSED).
+///   (block288 CSR::ROLE::tab::FOCUSED).
 library;
 
 import 'package:flutter/material.dart';

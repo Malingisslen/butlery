@@ -1,6 +1,6 @@
 /// Q4-03 = A (produktbeslut 2026-09-24): "Lägg {n} varor i inköpslistan"
 /// counts the recipe's items the pantry does not already cover, by the week
-/// merge's rule (produktregler.md:224-234).
+/// merge's rule.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

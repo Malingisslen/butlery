@@ -1,5 +1,5 @@
 // BUT-2145: deleting a shopping template is class 1 — it goes at once and
-// "Ångra" brings it back for 7 s (produktregler.md § 2.4). The delete is
+// "Ångra" brings it back for 7 s. The delete is
 // written only once the snackbar closes without Ångra.
 
 import 'package:flutter/material.dart';

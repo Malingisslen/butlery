@@ -1,5 +1,5 @@
 /// P8-U03 · flow 06, the two e-mail verification transitions that were built
-/// but had no test (flows-roles-budget.md:88; fas2/block288-uxfrysning.json
+/// but had no test (fas2/block288-uxfrysning.json
 /// overgangar, both REQUIRED; the rows in fas2/stateflow-applicability-0608
 /// .json name the visible effect).
 ///

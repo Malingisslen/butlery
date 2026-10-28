@@ -154,7 +154,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(ListView), findsOneWidget);
@@ -180,7 +180,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsNWidgets(customCount));
@@ -201,7 +201,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         final listView = tester.widget<ListView>(find.byType(ListView));
@@ -224,7 +224,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         final listView = tester.widget<ListView>(find.byType(ListView));
@@ -251,7 +251,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsOneWidget);
@@ -272,7 +272,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         // The skeleton rests on the theme's card surface, as the card it
@@ -297,7 +297,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         // Find the Padding widget inside the Card
@@ -318,7 +318,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Row), findsWidgets);
@@ -341,7 +341,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         // Should render something (exact implementation may vary)
@@ -363,7 +363,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         // Should render something (exact implementation may vary)
@@ -450,7 +450,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(ListView), findsOneWidget);
@@ -477,7 +477,7 @@ void main() {
             ),
           ),
         );
-        // Skelettet visas först efter 300 ms (produktregler.md:304).
+        // Skelettet visas först efter 300 ms.
         await tester.pump(const Duration(milliseconds: 301));
 
         expect(find.byType(Card), findsNWidgets(largeCount));

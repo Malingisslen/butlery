@@ -1,4 +1,4 @@
-// P6-U06 — consent (produktregler.md:724-731, § 14; Skarmar v12 etapp 6
+// P6-U06 — consent (Skarmar v12 etapp 6
 // #samtyckefornya #samtyckeai #kontosamtycke).
 //
 // 1. Saving consent must start from the consent that was READ: the old save

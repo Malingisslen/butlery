@@ -1,5 +1,5 @@
 // P5-U28: skafferi CONFLICT, part A — per-field writes, a nullable quantity,
-// and the row's timestamp (produktregler.md:105, :142-148).
+// and the row's timestamp.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';

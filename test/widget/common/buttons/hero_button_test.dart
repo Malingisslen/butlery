@@ -1,4 +1,4 @@
-// The view's one saffron action (Komponentark v1:843-844) and its busy
+// The view's one saffron action and its busy
 // state (v1:365, :372): shape and name kept, the plate line along the
 // bottom edge, never disabled while it works.
 

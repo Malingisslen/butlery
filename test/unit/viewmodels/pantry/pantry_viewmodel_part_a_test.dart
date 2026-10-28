@@ -1,6 +1,6 @@
 /// P5-U28: the ViewModel sends an edit as a change from the row it holds, so
-/// only the edited fields are written (produktregler.md:105), and a relative
-/// change as a delta (produktregler.md:146).
+/// only the edited fields are written, and a relative
+/// change as a delta.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

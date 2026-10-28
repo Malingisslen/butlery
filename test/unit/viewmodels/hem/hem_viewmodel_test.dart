@@ -2,8 +2,8 @@
 //
 // produktregler.md:265-271 (§ 6.1): today's dinner marked IKVÄLL, else the
 // next planned day marked with its weekday, never IKVÄLL; a failed read is
-// the error state (produktregler.md:291-293); a plan read offline has no
-// fetch time of its own (produktregler.md:294).
+// the error state; a plan read offline has no
+// fetch time of its own.
 
 import 'package:clock/clock.dart';
 import 'package:mocktail/mocktail.dart';

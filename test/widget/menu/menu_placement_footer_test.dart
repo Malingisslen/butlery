@@ -54,10 +54,10 @@ void main() {
     );
     // Stated as the contract rather than inferred from a tap that fired
     // nothing: a busy button is not activatable (P4-U01), although it keeps
-    // its enabled look (Komponentark v1:365, busy is not disabled).
+    // its enabled look (busy is not disabled).
     expect(find.byType(BusyButtonSemantics), findsOneWidget);
     // The same flag draws the plate line along the button's bottom edge,
-    // never a spinner (Komponentark v1:372, B-18).
+    // never a spinner (B-18).
     expect(find.byType(ButtonPlateLine), findsOneWidget);
   });
 

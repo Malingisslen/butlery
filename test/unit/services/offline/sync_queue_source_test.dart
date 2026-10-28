@@ -1,7 +1,7 @@
 // P4-U19: the real queue source finds the signed-in user the way the sync
 // manager does (AuthRepository.currentUserId), not through
 // OfflineService.currentUserId, which the app never sets. Otherwise the view
-// would say "Allt är sparat" while changes wait (produktregler.md:191).
+// would say "Allt är sparat" while changes wait.
 
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
@@ -170,7 +170,7 @@ class _Connectivity extends ChangeNotifier implements OfflineService {
 }
 
 void settledTests() {
-  // P6-U08b: conflict notices wait for this (produktregler.md:189).
+  // P6-U08b: conflict notices wait for this.
   group('watchSettled', () {
     late AppDatabase db;
     late _Connectivity connectivity;

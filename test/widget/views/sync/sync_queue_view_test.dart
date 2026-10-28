@@ -1,4 +1,4 @@
-// P4-U19: "Väntar på synk" (produktregler.md:189-192; Skarmar v12 del 4
+// P4-U19: "Väntar på synk" (Skarmar v12 del 4
 // #synkko, light and dark).
 
 import 'package:butlery/l10n/app_localizations.dart';
@@ -217,7 +217,7 @@ void main() {
     await tester.pump();
 
     expect(source.retried, [b]);
-    // Class 1 (produktregler.md:132): gone from the list at once, thrown
+    // Class 1: gone from the list at once, thrown
     // away only when the 7 s Ångra window closes.
     expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsNothing);
     expect(find.text(_sv.syncQueueDiscarded), findsOneWidget);

@@ -1,10 +1,10 @@
 // P5-U31 / P5-U32: multi-select as a top-bar state.
 //
-// "Välj" is the visible way in (B-46, beslutslogg.md:53), shown from two rows
+// "Välj" is the visible way in (B-46), shown from two rows
 // (produktregler.md:874). In selection mode the counter replaces the title
 // and Avbryt the back arrow, and the bar changes content, not height
 // (produktregler.md:873). Actions that need a selection are off at zero with
-// their names readable (produktregler.md:876), in the disabled role and never
+// their names readable, in the disabled role and never
 // through opacity (tokens.json:71-74, :198). "Markera alla" is a toggle
 // (produktregler.md:877).
 
@@ -279,7 +279,7 @@ void main() {
 
     // B-46: the entry sits in Mina recept's own bar, first among its
     // actions like on the other surfaces (Skarmar v12 etapp 9
-    // #flervalingang; produktregler.md:870-874).
+    // #flervalingang).
     Future<List<Widget>> rootActions(WidgetTester tester) async {
       late List<Widget> result;
       when(() => viewModel.isGridView).thenReturn(false);

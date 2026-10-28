@@ -177,7 +177,7 @@ void main() {
     });
 
     // P6-U01: nothing matched is its own outcome ("0 recept placerade ->
-    // inga matchningar", flows-roles-budget.md:32), not "Ett fel uppstod".
+    // inga matchningar"), not "Ett fel uppstod".
     test('returns the empty menu when nothing matched, with the pool size '
         'for the no-match state', () async {
       mockMenuService.setGenerateMenuResult(<String, List<Recipe>>{});

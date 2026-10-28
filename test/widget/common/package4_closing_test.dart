@@ -220,7 +220,7 @@ void main() {
           bar.bottom - NavigationThemes.tabPlateLineHeight / 2,
         );
         expect(await _pixel(tester, at), const Color(0xFFD68523));
-        // And 5 px past the word's edge (Komponentark v1:106).
+        // And 5 px past the word's edge.
         final edge = Offset(
           label.left - NavigationThemes.tabPlateLineOverhang + 1.5,
           at.dy,

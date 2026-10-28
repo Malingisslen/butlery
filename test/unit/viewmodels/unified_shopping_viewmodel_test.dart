@@ -397,7 +397,7 @@ void main() {
     });
 
     // P4-U11: the new row's id reaches the view, so its "Ångra" can remove
-    // exactly that row (produktregler.md:131).
+    // exactly that row.
     test('addItemWithId returns the id the service gave the row', () async {
       final id = await viewModel.addItemWithId(name: 'Mjölk', amount: 1);
       expect(id, 'new-row-1');

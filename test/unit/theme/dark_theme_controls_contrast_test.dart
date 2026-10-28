@@ -174,7 +174,7 @@ void main() {
       final knob = s.thumbColor!.resolve(_selected)!;
       final edge = s.trackOutlineColor!.resolve(_selected)!;
       // tokens.json:145-152 control.checked: ink in dark too; the paper
-      // edge carries it on the dark base (Komponentark v1:523).
+      // edge carries it on the dark base.
       expect(track, _ink);
       expect(knob, _paper);
       expect(edge, _paper);

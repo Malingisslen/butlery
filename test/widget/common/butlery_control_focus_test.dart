@@ -107,8 +107,8 @@ class _Case {
   final bool minTarget;
 
   /// The control stands on surface.ink in both modes (NAV-INK: the bottom
-  /// row, Komponentark v1:662), so its ring is paper in both ("papper på
-  /// mörkt", Komponentark v1:657).
+  /// row), so its ring is paper in both ("papper på
+  /// mörkt").
   final bool onInk;
 
   /// The control, as a view would place it.

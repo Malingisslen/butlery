@@ -1,10 +1,10 @@
 /// P5-U25 and P5-U26a on the week menu.
 ///
-/// U25 (produktregler.md:206, :893, :905-909): a generation with fewer dishes
+/// U25: a generation with fewer dishes
 /// than asked says "Vi hittade n av m rätter" in the partial-outcome form and
 /// names each short meal type.
 ///
-/// U26a (produktregler.md:104; ux-beslut.json D-04): the week menu mounts
+/// U26a (ux-beslut.json D-04): the week menu mounts
 /// P3-U08's conflict snackbar. It listens to the sync service's conflict
 /// stream while the week menu is open; the snackbar itself decides that only
 /// a week-menu conflict the user's edit lost is shown.

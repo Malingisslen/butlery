@@ -1231,7 +1231,7 @@ void main() {
 
     // P6-U03 (flow 03): low- and failed-confidence rows must be confirmed
     // before Spara, with a count of how many are left
-    // (flows-roles-budget.md:61; Q-P6-E03).
+    // (Q-P6-E03).
     group('P6-U03 import review gates Spara', () {
       ParsedRecipe parsedWith(List<ParsedIngredient> rows) => ParsedRecipe(
         title: FieldResult.success('Pannkakor'),
