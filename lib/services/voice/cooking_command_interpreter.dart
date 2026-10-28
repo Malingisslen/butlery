@@ -1,5 +1,5 @@
 /// Deterministic Swedish command interpreter for Köksbutlern (cooking-mode
-/// voice control — tasks/koksbutlern-plan.md, Batch B).
+/// voice control).
 ///
 /// Pure functions, zero IO, no LLM (cost rules): a transcribed utterance in,
 /// one [CookingCommand] out. Reuses the spoken-register cleanup from the

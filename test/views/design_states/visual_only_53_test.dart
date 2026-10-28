@@ -2,8 +2,7 @@
 /// pumped in light and dark and judged by its design rule.
 ///
 /// The migration plan (2026-09-20) gave them their own verification post in
-/// package 8: "varje läge körs och jämförs mot designens regel". The rows are
-/// ux-beteende.json KLASS = VISUAL_ONLY_MIGRATION (53 rows over 18 views)
+/// package 8: "varje läge körs och jämförs mot designens regel".
 ///
 /// A state that breaks its rule today is listed in known_state_findings.dart
 /// with its ticket. It is never fixed here and never hidden: an unlisted
@@ -23,7 +22,6 @@ import 'state_harness.dart';
 import 'state_hosts.dart';
 import 'state_runner.dart';
 
-/// ux-beteende.json as the package 8 plan re-hashed it.
 const _sourceSha256 =
     'fb0a1245d2cd5b14dad68d19b627fe9f081893b1ac135d34a3bf05f48cf0cdd8';
 

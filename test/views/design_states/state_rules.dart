@@ -7,20 +7,18 @@
 /// failure is red, and so is a fixed one that is still listed.
 ///
 /// Sources, per rule:
-/// - every state: no overflow (testmatris.md:60-63, "inget horisontellt
-///   scroll … ingen text klipps"); every painted text colour and fill is a
+/// - every state: no overflow; every painted text colour and fill is a
 ///   generated colour of its mode (tokens.json semantic, delivered as
 ///   lib/theme/app_colors.dart and app_colors_dark.dart), that colour at an
 ///   opacityLadder alpha (tokens.json:40-53) or fully transparent; at most one
-///   saffron-filled button (
-///   app_colors.dart actionPrimary, "exakt en per vy").
+///   saffron-filled button
+///   (app_colors.dart actionPrimary).
 /// - LOADING: plate line plus text, no spinner, no shimmer, no skeleton
 ///   before 300 ms.
 /// - EMPTY: a text says what is empty, without error styling
 ///   (content-style-guide.md:87-97 keeps the error
 ///   form for errors).
-/// - OFFLINE: the banner says "Ingen anslutning" (produktbeslut PQ-03 = A
-///   ), is filled with the mode's
+/// - OFFLINE: the banner says "Ingen anslutning" (PQ-03 = A), is filled with the mode's
 ///   surface.tint.warning or not at all (B83-2a,
 ///   which supersedes PQ-20a) and does not lock the content under it
 /// - CONFLICT: the own recipe offers both versions;

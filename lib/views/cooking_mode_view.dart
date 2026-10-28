@@ -249,7 +249,7 @@ class _CookingModeViewState extends State<CookingModeView> {
   late final CookingModeViewModel _vm;
   late final CookingSessionLifecycle _lifecycle;
 
-  // Köksbutlern (tasks/koksbutlern-plan.md, Batch D): the voice layer's
+  // Köksbutlern: the voice layer's
   // state machine, scoped to this cooking session exactly like `_vm`. Null
   // for a recipe without steps, which is not a cooking session.
   CookingVoiceController? _voiceController;
@@ -583,7 +583,7 @@ class _CookingModeContent extends StatelessWidget {
                           );
                         },
                       ),
-                      // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
+                      // Köksbutlern: mic control +
                       // heard-chip overlay the instructions panel, bottom-right.
                       Positioned(
                         right: AppDimensions.space16,

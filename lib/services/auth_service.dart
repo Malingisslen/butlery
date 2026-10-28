@@ -319,7 +319,7 @@ class AuthService extends ChangeNotifier
 
   /// The device drafts a sign-out the user made herself deletes.
   ///
-  /// PQ-12 = A (produktbeslut-2026-09-23.json): drafts go when the user logs
+  /// PQ-12 = A: drafts go when the user logs
   /// out herself, never at an automatic logout, so
   /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
   /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut

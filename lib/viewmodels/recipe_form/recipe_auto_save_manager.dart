@@ -123,8 +123,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   /// drafts on the same device stay: it may have kept them through its own
   /// automatic sign-out (PQ-12 = A).
   ///
-  /// Called on an explicit sign-out only (PQ-12 = A in
-  /// produktbeslut-2026-09-23.json: an automatic sign-out keeps drafts).
+  /// Called on an explicit sign-out only (PQ-12 = A:
+  /// an automatic sign-out keeps drafts).
   /// Best-effort: logs and never throws, so a sign-out cannot fail on it.
   static Future<void> clearDraftsFor(String? ownerId) async {
     try {

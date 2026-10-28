@@ -214,7 +214,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   bool get hasOcrResult => _ocrText.isNotEmpty;
 
-  /// Q4-04 = A (produktbeslut-2026-09-24.json): pages are taken or chosen
+  /// Q4-04 = A: pages are taken or chosen
   /// first, and the text is read only when the user presses "Läs av N
   /// sidor". This counts the pages still
   /// waiting to be read.

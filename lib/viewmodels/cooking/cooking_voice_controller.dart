@@ -20,7 +20,7 @@ enum VoiceListenSource { buttonTap, talkWindow }
 /// UI-facing assistant state (drives the mic button + indicator strip).
 enum VoiceAssistState { idle, listening, transcribing, speaking }
 
-/// Köksbutlern's conductor (tasks/koksbutlern-plan.md, Batch C): binds the
+/// Köksbutlern's conductor: binds the
 /// capture service, the TTS voice, the step timers and the cooking
 /// viewmodel into one state machine.
 ///

@@ -777,7 +777,7 @@
         }
       ],
       "ticket": null,
-      "reason": "BUT-2171 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): Firebase's flow is kept and the requirement changed. Only the new address confirms (verifyBeforeUpdateEmail after reauthentication); the current address is told once the change applies and can undo it. Kontosäkerhet says so before the change is asked for."
+      "reason": "BUT-2171 = A (Malin, 2026-10-07): Firebase's flow is kept and the requirement changed. Only the new address confirms (verifyBeforeUpdateEmail after reauthentication); the current address is told once the change applies and can undo it. Kontosäkerhet says so before the change is asked for."
     },
     {
       "id": "TR::FLOW::06::export::tre-felorsaker",
@@ -873,8 +873,8 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2340",
-      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10; Butlery design system fas2/produktbeslut-2026-10-10.json): the code comes from an authenticator app instead of SMS, so no code is sent and the phone cannot fill one in by itself. The requirement rests while two-step verification uses an app.",
-      "decision": "fas2/produktbeslut-2026-10-10.json BUT-2340-totp"
+      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10): the code comes from an authenticator app instead of SMS, so no code is sent and the phone cannot fill one in by itself. The requirement rests while two-step verification uses an app.",
+      "decision": "BUT-2340-totp"
     },
     {
       "id": "TR::FLOW::06::mfa::ominloggning-kravs",
@@ -930,8 +930,8 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2340",
-      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10; Butlery design system fas2/produktbeslut-2026-10-10.json): the code comes from an authenticator app instead of SMS, so there is no number to mask, no 60-second limit and nothing to send again. The requirement rests while two-step verification uses an app.",
-      "decision": "fas2/produktbeslut-2026-10-10.json BUT-2340-totp-ledtrad"
+      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10): the code comes from an authenticator app instead of SMS, so there is no number to mask, no 60-second limit and nothing to send again. The requirement rests while two-step verification uses an app.",
+      "decision": "BUT-2340-totp-ledtrad"
     },
     {
       "id": "TR::FLOW::06::radera-konto::delvis",
@@ -1402,8 +1402,8 @@
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2163",
-      "reason": "BUT-2163 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): the requirement rests until the app has a download the user starts. Today it has none, and it cannot read free disk space.",
-      "decision": "fas2/produktbeslut-2026-10-07.json BUT-2163"
+      "reason": "BUT-2163 = A (Malin, 2026-10-07): the requirement rests until the app has a download the user starts. Today it has none, and it cannot read free disk space.",
+      "decision": "BUT-2163"
     },
     {
       "id": "TR::FLOW::08::online::offline",

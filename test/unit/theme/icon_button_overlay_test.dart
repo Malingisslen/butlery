@@ -1,5 +1,5 @@
 /// Pins the icon-button overlay to surface.raised on pressed and hovered
-/// (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json): "Tryck och
+/// (B83-1 = A, BUT-2183): "Tryck och
 /// muspekare på rader, kort och ikonknappar ger samma upphöjda färg
 /// överallt, surface.raised ... Flutters genomskinliga gråton används inte."
 /// Filled/outlined/text/elevated buttons are NOT part of this decision and

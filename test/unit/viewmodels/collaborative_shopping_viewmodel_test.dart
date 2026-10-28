@@ -411,7 +411,7 @@ void main() {
       });
 
       // P7-C4: the progress colour reads the generated member for the
-      // mode (tokens.json:522; NULAGE.md:71-74), the same member the
+      // mode, the same member the
       // retired ButleryColors extension read, in both modes.
       test(
         'progress colour follows the mode: success, warning, text.primary',
