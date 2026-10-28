@@ -1,5 +1,7 @@
 # Plan — designmigreringen i mål
 
+Avslutad 2026-10-28: fas 0–7 är byggda och Malin godkände fas 8 (telefonprovet) efter eget bruk. Läget mäts i `docs/design-migration/census.md`; siffrorna nedan är från 2026-10-03.
+
 Skriven 2026-10-03 efter att PR #357 slagits ihop. Källor: `docs/design-migration/census.md`
 (genererad samma dag), Linear (team Butlery) och designrepot `C:\Butlery design system`
 (`NULAGE.md`, `blockerande.md`, `testmatris.md` § 4). Målet är det som Q8-01 = A sätter:

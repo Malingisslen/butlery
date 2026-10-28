@@ -1,7 +1,7 @@
 # Överlämning — designmigreringen (2026-10-05)
 
 Designmigreringen flyttas till ett Claude-projekt. Den här filen visar var arbetet står när
-kodsessionen avslutas. Hela planen finns i `tasks/design-migration-completion-plan.md`
+kodsessionen avslutas. Hela planen finns i `tasks/archive/design-migration-completion-plan.md`
 (faserna 0–8 och vad "klar" betyder). Arbetssättet framåt är en PR per biljett, automerge på
 grön CI och aldrig merge på rött.
 
@@ -57,7 +57,7 @@ Avsnitten nedan är läget 2026-10-05 och står kvar som historik.
 5. **BUT-2167: dokumentationsresterna.**
 6. **BUT-2235: startvyn kraschar i webbversionen** (`flutter run -d web-server
    --dart-define-from-file=.env`). Det stoppar webbkontrollen av vyerna.
-7. **Fas 2–8 enligt `tasks/design-migration-completion-plan.md`.**
+7. **Fas 2–8 enligt `tasks/archive/design-migration-completion-plan.md`.**
 
 ## Väntar på designrepot
 
