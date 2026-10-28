@@ -277,6 +277,7 @@ The size guard and `tools/count_large_files.sh` look at `lib/` Dart files only; 
 | File | Lines | Reason |
 |------|-------|--------|
 | `residual-probe.ts` | 1085 | `probeResidualData` moved whole from the deletion cascade (BUT-2113). One ordered sequence of legs whose order BUT-1822 and BUT-1838 froze, with tables that mix areas; splitting it means rewriting bodies. Follow-up: BUT-2408. |
+| `reset-collection-lists.ts` | 552 | Data, not logic: five exported collection lists for `reset-user-data.ts` and one predicate (`isKeptAnalyticsSeries`), each entry carrying the reason it sits in its list. A reviewer of a reset change reads where a collection went against where it could have gone, which a split across files would hide. (BUT-2475) |
 
 ## Categories
 
