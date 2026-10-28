@@ -157,7 +157,7 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <!-- Köksbutlern (tasks/koksbutlern-plan.md): without this, flutter_tts's
+        <!-- Köksbutlern: without this, flutter_tts's
              speak() silently no-ops on some Android 11+ OEM ROMs, because
              package visibility (API 30+) hides the installed TTS engine from
              the app unless it's declared here (vendor panel condition). -->

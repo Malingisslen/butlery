@@ -5,7 +5,7 @@
 // plate line plus text, never a spinner, a sliding bar or the animated pea
 // pod. D-03: generation has no long-wait state and no
 // "Fortsätt i bakgrunden". B-45: one top bar, so these
-// views draw ButleryTopBar. PQ-09 = A (produktbeslut-2026-09-23.json): a view
+// views draw ButleryTopBar. PQ-09 = A: a view
 // never builds its own SnackBar; every snackbar is the ink snackbar from
 // SnackBarUtils.
 //

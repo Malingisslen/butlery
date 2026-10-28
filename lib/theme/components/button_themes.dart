@@ -52,7 +52,7 @@ const BorderRadius _controlRadius = BorderRadius.all(
   Radius.circular(AppDimensions.radiusControl),
 );
 
-/// Icon-button overlay only (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json):
+/// Icon-button overlay only (B83-1 = A, BUT-2183):
 /// pressed and hovered resolve to surface.raised. The other themed buttons
 /// are not part of this decision and keep [_noFocusTint]. Focus is untouched: the ring alone carries focus, same as
 /// every other themed button.

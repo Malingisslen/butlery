@@ -539,7 +539,7 @@ class _PhotoImportViewContent extends StatelessWidget {
           ),
         ],
       ),
-      // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
+      // Q4-04 = A: the pages are taken or
       // chosen first and the text is read only here, the view's one primary
       // action.
       bottomNavigationBar: readPages

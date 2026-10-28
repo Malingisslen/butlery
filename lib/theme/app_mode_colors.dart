@@ -149,9 +149,8 @@ abstract final class AppModeColors {
 
 /// The mode-aware colour set for members that have no ColorScheme slot.
 ///
-/// It replaced the retired compatibility theme extension in package 7
-/// (NULAGE.md:71-74). It carries only a [Brightness] and no colour values of
-/// its own (tokens.json:522): every member picks the generated AppColors or
+/// It replaced the retired compatibility theme extension in package 7. It carries only a [Brightness] and no colour values of
+/// its own: every member picks the generated AppColors or
 /// AppColorsDark member for that brightness, and the four decorative
 /// category colours the app owns come from AppSpecificColors. It is not a
 /// ThemeExtension, so there is no override path; a theme's brightness is the

@@ -7,7 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 
-/// Transient «Hörde: "…"» chip (tasks/koksbutlern-plan.md, Batch D) —
+/// Transient «Hörde: "…"» chip —
 /// the misheard-debug aid that sits near [VoiceAssistButton]. Auto-relevance
 /// only: it renders [CookingVoiceController.lastHeard] whenever the
 /// controller is idle with something to show, and collapses to nothing the

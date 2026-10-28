@@ -8,7 +8,7 @@
 // (content-style-guide.md:87-97), "OK" as a label
 // (content-style-guide.md:77, :96), the Cupertino dialogs (B-45) and the
 // ButleryColors compatibility extension with its seasonal tint
-// (tokens.json:522; NULAGE.md:71-74; Q7-01 = A).
+// (Q7-01 = A).
 //
 // Every name below is matched on code only, so a comment that tells the
 // history is allowed. The patterns are word-bounded: showLoadingIndicator,

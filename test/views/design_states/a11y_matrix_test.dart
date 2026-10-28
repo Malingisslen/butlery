@@ -1,12 +1,9 @@
 /// P8-U02: the accessibility matrix over the U01 states.
 ///
 /// The 18 DEFAULT rows, in light and dark, at 320, 360 and 412 dp and at
-/// text scale 1.0, 1.5 and 2.0 (testmatris.md; syntes.json PAKET 8 "vid 1,5× och
-/// 2,0× textskala"). Each case must hold:
-/// - no overflow, and no horizontal scroll of the page itself
-///   (testmatris.md:60 "inget horisontellt scroll");
-/// - no button label cut to an ellipsis (testmatris.md:63 "radbrytning i
-///   stället för ellips", "inga trunkerade primärhandlingar");
+/// text scale 1.0, 1.5 and 2.0. Each case must hold:
+/// - no overflow, and no horizontal scroll of the page itself;
+/// - no button label cut to an ellipsis;
 /// - every tap target 48 dp (androidTapTargetGuideline; tokens.json
 ///   touchTarget.min 48) and labelled (labeledTapTargetGuideline).
 /// Text contrast as rendered (textContrastGuideline) is read once per row
@@ -47,7 +44,7 @@ String _scaleName(double s) => s.toStringAsFixed(1);
 
 /// A page-level horizontal scroll: a horizontal scrollable as wide as the
 /// screen and at least half as tall. A chip or tab row scrolls sideways by
-/// design (testmatris.md:63) and is shorter than that.
+/// design and is shorter than that.
 bool _pageScrollsSideways(WidgetTester tester) {
   final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
   for (final e in onstageElements()) {

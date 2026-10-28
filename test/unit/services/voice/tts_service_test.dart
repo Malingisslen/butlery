@@ -1,4 +1,4 @@
-/// TtsService behavioral tests (Köksbutlern, tasks/koksbutlern-plan.md).
+/// TtsService behavioral tests (Köksbutlern).
 ///
 /// Intention: prove the two contracts CookingVoiceController (Batch C) is
 /// built on — (1) the degrade contract: any failure to confirm a Swedish

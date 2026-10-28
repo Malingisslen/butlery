@@ -38,7 +38,6 @@ class StateHost {
   final ({String local, String remote})? conflictItems;
 
   /// Pumped with width and height swapped: cooking mode forces landscape on
-  /// a phone (cookingForcesLandscape, lib/views/cooking_mode_view.dart;
-  /// testmatris.md:64 "Landskap: endast matlagningsläge och video").
+  /// a phone (cookingForcesLandscape, lib/views/cooking_mode_view.dart).
   final bool landscape;
 }

@@ -3,7 +3,7 @@
 // - A1: a failure says what failed, never the exception, in the ink failure
 //   snackbar with the alert role and "Stäng" (content-style-guide.md).
 // - A2: the category swatches read ModeColors and keep the generated values
-//   of their mode (NULAGE.md:71-74; tokens.json:522).
+//   of their mode.
 // - A3: busy buttons draw the plate line, work in progress is the plate line
 //   with its text, never a spinner (B-18).
 // - A4: state is a token, never an opacity (tokens.json:41).
