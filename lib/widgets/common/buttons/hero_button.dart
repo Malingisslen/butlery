@@ -2,15 +2,12 @@
 //
 // The view's one saffron action.
 //
-// Komponentark v1:843-844 ("Saffranshierarki — en hero per vy"): the hero is
-// a filled saffron button, exactly one per view. Grafisk manual v6:219 says
-// the same ("max en"). The colours are the named hero style
+// The colours are the named hero style
 // (ButtonThemes.heroButtonStyle: action.primary behind text.onActionPrimary,
 // pressed action.primaryPressed behind text.onActionPrimaryPressed, in light
 // and dark alike).
 //
-// Busy follows Komponentark v1:365 and :372: the button keeps its shape and
-// its name and gets the plate line along its bottom edge. It is never
+// It is never
 // disabled while it works, because disabled is another state with another
 // surface.
 

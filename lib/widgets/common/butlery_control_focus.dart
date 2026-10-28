@@ -5,8 +5,7 @@
 //
 // Kanon:
 // - Fokus är en 2 px ring 3 px utanför, ink på ljust och papper på mörkt,
-//   aldrig saffran (tokens.json:155-160; Grafisk manual v6:209; Komponentark
-//   v1:657).
+//   aldrig saffran
 // - Synligt mindre kontroller får en 48 dp-wrapper som finns i koden, och
 //   fokusramen ritas runt hela wrappern, aldrig runt bara glyfen (Grafisk
 //   manual v6:381; tokens.json:485-492 touchTarget).

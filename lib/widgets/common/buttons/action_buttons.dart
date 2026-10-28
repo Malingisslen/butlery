@@ -89,8 +89,7 @@ class ActionButtons {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // A busy button shows its words only, as drawn (Komponentark
-          // v1:372).
+          // A busy button shows its words only
           if (icon != null && !isLoading)
             Padding(
               padding: const EdgeInsetsDirectional.only(
@@ -389,8 +388,7 @@ class ActionButtons {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // A busy button shows its words only, as drawn (Komponentark
-          // v1:372).
+          // A busy button shows its words only
           if (icon != null && !isLoading && !iconAtEnd)
             Padding(
               padding: const EdgeInsetsDirectional.only(

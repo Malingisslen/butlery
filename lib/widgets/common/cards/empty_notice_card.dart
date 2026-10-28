@@ -1,6 +1,5 @@
 /// The calm card an empty view shows in place of its list: an outline, a title
-/// and a line of what to do, drawn as Hem's empty state is (Skarmar v12 del 4
-/// #hemtom): 1 px border.subtle, 12 dp radius, no tint, no illustration (B-19).
+/// and a line of what to do
 library;
 
 import 'package:flutter/material.dart';

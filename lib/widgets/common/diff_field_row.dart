@@ -1,8 +1,6 @@
 // lib/widgets/common/diff_field_row.dart
 //
-// One changed field as the drawn conflict screen sets it (Skarmar v12 del 3
-// #28): the field's name in capitals, then one line per version with a square
-// marker, the version's name and its text. Shared by the edit conflict and
+// Shared by the edit conflict and
 // the suggestion view.
 library;
 

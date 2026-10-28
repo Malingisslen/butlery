@@ -117,8 +117,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   }
 
   /// The primary action. While it works it keeps its colours and its name
-  /// and gets the plate line along its bottom edge (Komponentark v1:365,
-  /// :372; produktregler.md:902, "Låsningen behåller knappens namn").
+  /// and gets the plate line along its bottom edge
   Widget _buildPrimaryButton() {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
@@ -351,8 +350,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
 
   /// The action. While it works it says what it does
   /// ([BaseActionDialog.loadingButtonLabel], e.g. "Skickar …") or keeps its
-  /// own name, and gets the plate line along its bottom edge (Komponentark
-  /// v1:365, :372; content-style-guide.md:63).
+  /// own name, and gets the plate line along its bottom edge (
+  /// content-style-guide.md:63).
   Widget _buildActionButton() {
     final theme = Theme.of(context);
     final name = widget.actionButtonLabel(context);
