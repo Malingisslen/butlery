@@ -121,7 +121,7 @@ class _OnboardingAgeGateBlockedViewState
                     ),
                   ),
                   // Signing out keeps the name and draws the plate line
-                  // (Komponentark v1:365, :372), never a spinner in its place.
+                  // never a spinner in its place.
                   OnboardingNavButtons(
                     nextKey: const Key('onboarding_age_gate_signout_button'),
                     nextLabel: l10n.onboardingAgeGateSignOut,

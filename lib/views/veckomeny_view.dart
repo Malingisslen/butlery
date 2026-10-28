@@ -903,7 +903,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 /// (produktregler.md:206: "1 ≤ n < begärt antal recept"). It says "Vi hittade
 /// n av m rätter" and names each meal type that is short (produktregler.md:
 /// 893: "Ett antal utan namn är ingen upplysning"), in the shared I-29 form
-/// (produktregler.md:905-909). Instead of looking complete, the result says
+/// Instead of looking complete, the result says
 /// what it is. The way on is the view's own Generera, which stays.
 class VeckomenyPartialResult extends StatelessWidget {
   const VeckomenyPartialResult({super.key, required this.outcome});
@@ -947,7 +947,7 @@ class VeckomenyPartialResult extends StatelessWidget {
 /// do yet, so the requirements are named as text and "Ändra beskrivningen"
 /// moves focus to the prompt. "Lägg dagarna själv" opens the calendar. Both
 /// are outlined, because the view's one primary action is Generera
-/// (Komponentark v1:843-844). The app has no cookbook illustration, so the
+/// The app has no cookbook illustration, so the
 /// empty state's no-search-results illustration stands in.
 class VeckomenyNoMatch extends StatelessWidget {
   const VeckomenyNoMatch({

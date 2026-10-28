@@ -57,7 +57,6 @@ class PantryItem {
 
   /// The amount on hand, or null for "har hemma, vet inte hur mycket" — a
   /// value of its own that never overwrites a known amount
-  /// (produktregler.md:148, § 2.2).
   final double? quantity;
   final String unit;
   final PantryLocation location;

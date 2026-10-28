@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 /// device so a restart, an OS kill or an automatic sign-out does not lose it.
 ///
 /// produktregler.md: a week generation's local draft lives on the
-/// device only, 30 days since its last change (ux-beslut.json D-01). Dishes
+/// device only, 30 days since its last change. Dishes
 /// are kept by id and resolved again on restore through the allergen-safe
 /// pool, so a recipe deleted or made unsafe in the meantime does not come
 /// back. One slot per account; the owner is the store key, not a field.
@@ -20,7 +20,7 @@ class WeeklyMenuDraft {
   });
 
   /// "Ett påbörjat utkast är återupptagbart i 30 dagar sedan senaste
-  /// ändring" (ux-beslut.json D-01).
+  /// ändring".
   static const Duration lifetime = Duration(days: 30);
 
   /// What the user asked for, so a restored menu re-rolls and places with the

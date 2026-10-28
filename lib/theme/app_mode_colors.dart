@@ -38,7 +38,6 @@ abstract final class AppModeColors {
   /// semantic text.body: #37453A light, #F5F4ED dark (tokens.json:58-60, delivered
   /// as the generated member textOnCream per tools/app-theme-map.json:97-100).
   /// Body text under a bold title, as in the conflict banner
-  /// (Komponentark v1:757).
   static Color textBody(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textOnCream : AppColors.textOnCream;
 
@@ -48,7 +47,7 @@ abstract final class AppModeColors {
       : AppColors.textBodyMuted;
 
   /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
-  /// Never saffron (Grafisk manual v6:209).
+  /// Never saffron.
   static Color focusRing(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.focusRing : AppColors.focusRing;
 
@@ -123,7 +122,6 @@ abstract final class AppModeColors {
   /// semantic text.secondary (dark) #A9B2A0, delivered as the generated dark
   /// member greenMuted ("Nav ovald"), in both modes. The unchosen tabs of
   /// the ink bar and quiet text on an ink card
-  /// (Skarmar v12 del 1 #hemrecept :137).
   static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
 
   /// palette.inkRaised #2F4437 in both modes: a raised surface on ink, such as
@@ -369,7 +367,7 @@ final class ModeColors {
       _isDark ? AppColorsDark.cardWhite54 : AppColors.cardWhite54;
 
   /// semantic text.accent on surface.base: #A15A0A light, #DCA968 dark
-  /// (Grafisk manual v6:524). Surface-bound: on surface.raised use
+  /// Surface-bound: on surface.raised use
   /// [AppColors.onWarningContainer] / [AppColorsDark.onWarningContainer]
   /// (text.accent.onRaised) instead, and on surface.ink use [accentOnInk].
   Color get textAccent =>

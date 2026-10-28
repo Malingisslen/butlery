@@ -14,7 +14,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// leder till inloggningen, nekad behörighet är vårt fel och ber inte om ett
 /// nytt försök, nätavbrott får försök igen", plus the
 /// general case, the only one that may ask for a retry without explaining
-/// (Skarmar v12 etapp 6 #dataexportfel).
 enum ExportFailure {
   /// The sign-in has expired or is gone: the way on is signing in.
   signedOut,
@@ -130,7 +129,6 @@ class DataExportViewModel extends ChangeNotifier
       // executeNamedOperation already set loading=false and hasError=true
       // Update error message to user-friendly format. No partial file is
       // ever kept: the bundle is only assigned on success
-      // (produktregler.md:734).
       _failure = classifyExportError(e);
       setError(_formatErrorMessage(e));
       return false;
@@ -220,7 +218,6 @@ class DataExportViewModel extends ChangeNotifier
   void dispose() {
     // Clear sensitive data from memory on dispose: the file lives only in
     // memory and is cleared when the view is left, which the view says
-    // (produktregler.md:733).
     _exportedData = null;
     _exportTimestamp = null;
     app_logger.AppLogger.debug('[$_logTag] ViewModel disposed');

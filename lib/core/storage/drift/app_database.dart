@@ -143,7 +143,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Schema 3 → 4: two nullable columns for the retry schedule
-  /// (produktregler.md:188). Adding a column keeps every row as it is, so
+  /// Adding a column keeps every row as it is, so
   /// no queued change is lost; a migrated entry has
   /// never failed under the new schedule and is sent at the next pass.
   Future<void> _migrateSyncQueueToV4(Migrator m) async {
@@ -317,7 +317,7 @@ class AppDatabase extends _$AppDatabase {
   /// The ids of the user's entries in both queues that have not reached the
   /// server: [waiting] are still sent by the queue, [failed] wait for the
   /// user. A sync entry is known by its opId, an upload by its id
-  /// (produktregler.md:185, :187). Completed and cancelled uploads are in
+  /// Completed and cancelled uploads are in
   /// neither set.
   Future<({Set<String> waiting, Set<String> failed})> queuedOpIds(
     String userId,

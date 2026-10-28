@@ -67,7 +67,6 @@ class UploadQueueEntries extends Table {
 
   /// JSON array of the opIds this upload waits for, or null — for example
   /// the recipe create in the sync queue that the image belongs to
-  /// (produktregler.md:187).
   TextColumn get dependsOn => text().nullable()();
 
   /// Set when the upload will never be retried ("Bilden är för stor",

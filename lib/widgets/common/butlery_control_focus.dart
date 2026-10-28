@@ -11,7 +11,7 @@
 //   fokusramen ritas runt hela wrappern, aldrig runt bara glyfen (Grafisk
 //   manual v6:381; tokens.json:485-492 touchTarget).
 // - Den frysta modellen kräver FOCUSED för checkbox, switch, radio, tab, link
-//   och menuitem (fas2/block288-uxfrysning.json, interaktion
+//   och menuitem (interaktion
 //   CSR::ROLE::<roll>::FOCUSED).
 //
 // Ringen bär fokus ensam. Därför tar greppet bort den fokuserade tonplattan

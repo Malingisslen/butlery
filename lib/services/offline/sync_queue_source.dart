@@ -3,7 +3,7 @@
 // P4-U19: what the "Väntar på synk" view and the top-bar queue indicator
 // read. "Mer → Väntar på synk: antal poster, vad de rör, ålder, och de
 // permanenta felen först. Nås även från köindikatorn i toppfältet."
-// (produktregler.md:190). The queue itself is schema 3 (P5-U35): both queues,
+// The queue itself is schema 3 (P5-U35): both queues,
 // one count (AppDatabase.watchQueueCounts).
 library;
 
@@ -72,7 +72,7 @@ abstract class SyncQueueSource {
     required String Function(String title) copyTitle,
   });
 
-  /// "Försök mindre" (Skarmar v12 del 4 #synkko): a too-large image is sent
+  /// "Försök mindre": a too-large image is sent
   /// again as a smaller copy. Only for [QueuedChange.canTrySmaller].
   Future<void> trySmaller(QueuedChange change);
 }

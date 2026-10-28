@@ -1,7 +1,7 @@
 // lib/widgets/common/butlery_link.dart
 //
 // Länken: 48 dp träffyta och tangentbordsfokus med den kanoniska ringen
-// (fas2/block288-uxfrysning.json, interaktion CSR::ROLE::link::DEFAULT och
+// (interaktion CSR::ROLE::link::DEFAULT och
 // CSR::ROLE::link::FOCUSED; tokens.json touchTarget och focusRing;
 // tillgänglighetshandoff HA285-A).
 //

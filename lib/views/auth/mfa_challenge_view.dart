@@ -336,7 +336,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         key: const ValueKey('mfaChallenge.verify'),
         label: l10n.mfaVerify,
         // "Verifiera, avstängd till dess sex siffror är ifyllda"
-        // (Skarmar v12 etapp 3 #authmfa, data-a11y-state disabled).
+        // (data-a11y-state disabled).
         onPressed: _busy || !_codeComplete ? null : _verify,
         busy: _busy,
         expand: true,

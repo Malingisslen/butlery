@@ -1,7 +1,7 @@
 // lib/services/offline/queued_change.dart
 //
 // P4-U19: one waiting change as the "Väntar på synk" view shows it
-// (produktregler.md:190), independent of the platform's database.
+// independent of the platform's database.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -228,7 +228,7 @@ class QueuedChange {
 }
 
 /// The queue as the view groups it: permanent failures first
-/// (produktregler.md:190), then the rest, each oldest first.
+/// then the rest, each oldest first.
 @immutable
 class QueueSnapshot {
   QueueSnapshot(Iterable<QueuedChange> changes)

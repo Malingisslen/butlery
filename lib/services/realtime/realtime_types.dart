@@ -88,7 +88,7 @@ class ConflictEvent {
 
   /// P5-U27b: the suggestion the losing edit was kept as, when [entity] is
   /// [ConflictEntity.recipeShared] and the suggestion was stored
-  /// (produktregler.md:103). Null otherwise: then the package 5 choice in
+  /// Null otherwise: then the package 5 choice in
   /// ConflictDiffView still applies (PQ-02 = A), so nothing is lost.
   final String? suggestionId;
 

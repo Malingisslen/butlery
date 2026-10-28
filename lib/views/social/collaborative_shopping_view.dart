@@ -170,7 +170,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     }
     _newItemController.clear();
     // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
-    // (produktregler.md § 2.4), the same as the personal list. Ångra removes
+    // the same as the personal list. Ångra removes
     // the row by its id, so it takes away exactly this row.
     final failure = context.l10n.shoppingItemRemoveError(itemName);
     SnackBarUtils.showUndo(

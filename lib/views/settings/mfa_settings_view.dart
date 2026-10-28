@@ -95,7 +95,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
     // Ten one-time codes BEFORE the protection applies: "Reservkoder hör i
     // påslagningen — tio engångskoder innan skyddet gäller"
-    // (Skarmar v12 etapp 6 #mfaaktiv). No codes, or
+    // No codes, or
     // codes not acknowledged, and nothing is enrolled.
     setState(() {
       _isLoading = true;

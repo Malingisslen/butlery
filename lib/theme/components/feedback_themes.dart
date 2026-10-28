@@ -92,8 +92,8 @@ class FeedbackThemes {
   /// the paper knob 11.3:1 on the track.
   ///
   /// Interpretation, pending the product owner: one dark screen frame draws
-  /// the on-switch saffron (Skarmar v12 del 4:104), but saffron is the
-  /// view's single hero action (Grafisk manual v6) and a settings list with
+  /// the on-switch saffron, but saffron is the
+  /// view's single hero action and a settings list with
   /// several switches would break that budget. Until that is decided the
   /// switch follows the tokens.
   ///
@@ -203,7 +203,7 @@ class FeedbackThemes {
   /// colours for ring and dot.
   ///
   /// Selected: text.primary through cs.onSurface, ink #24382C light as drawn
-  /// (Komponentark v1:162) and paper #F5F4ED dark. It used to be cs.primary,
+  /// and paper #F5F4ED dark. It used to be cs.primary,
   /// ink in both schemes, 1.27:1 on the dark base #17251D. Interpretation:
   /// no dark radio circle is drawn; the dark panel draws the chosen sort row
   /// with a paper check and names paper as the mode's

@@ -49,7 +49,7 @@ class RecipePantryCheck {
   const RecipePantryCheck._();
 
   /// [items] against [pantry] by the week merge's rule, in its order
-  /// (flows-roles-budget.md:51): duplicates are merged first, units are
+  /// duplicates are merged first, units are
   /// converted within one family, then the pantry is subtracted
   /// ([MenuShoppingMergePlanner.toBuy]). Enough at
   /// home leaves an item off, some at home leaves the difference, and an

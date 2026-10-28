@@ -21,7 +21,6 @@ enum BadgeTone { neutral, success, warning, danger }
 
 /// Whether a counter asks for action. Ink is the norm; saffron only for
 /// something that needs the user, or it competes with the view's hero
-/// (Komponentark v1:741).
 enum CountEmphasis { ink, action }
 
 class UnifiedBadge extends StatelessWidget {

@@ -43,7 +43,6 @@ class RecipeSelectionManager extends ChangeNotifier {
   /// "Välj" in the top bar: selection mode with nothing selected yet
   /// (B-46). The actions that need a selection stay
   /// off, their names readable, until something is ticked
-  /// (produktregler.md:876).
   void startSelection() {
     _isSelectionMode = true;
     notifyListeners();
@@ -51,7 +50,7 @@ class RecipeSelectionManager extends ChangeNotifier {
 
   /// The "Markera alla" toggle's second half: untick everything and stay in
   /// selection mode. Only the user leaves the mode
-  /// (produktregler.md:878); this is not the last tick being taken off a
+  /// this is not the last tick being taken off a
   /// row.
   void deselectAll() {
     _selectedIds.clear();

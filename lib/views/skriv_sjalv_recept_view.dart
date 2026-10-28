@@ -736,7 +736,6 @@ class _SkrivSjalvReceptViewContentState
             children: [
               // P6-U03: low- and failed-confidence rows must be confirmed
               // before Spara, and the line says how many are left
-              // (flows-roles-budget.md:61).
               if (pendingConfirmations > 0)
                 Padding(
                   padding: const EdgeInsets.only(

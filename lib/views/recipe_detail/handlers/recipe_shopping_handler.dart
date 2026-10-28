@@ -59,7 +59,7 @@ class RecipeShoppingHandler {
 
   /// Q6-09 = C (produktbeslut 2026-09-27b): whether the known pantry covers
   /// every ingredient at [portions], so nothing would be added
-  /// (produktregler.md:228). The recipe then says "Allt finns hemma" in
+  /// The recipe then says "Allt finns hemma" in
   /// place of its add-to-shopping-list button. False while the pantry is not
   /// known.
   static bool coversEverything(

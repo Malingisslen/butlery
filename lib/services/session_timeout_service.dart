@@ -45,7 +45,6 @@ enum SessionEndReason {
 
 /// One ended session: who, why, and how many changes still wait in the
 /// queue. The queue itself is untouched by every one of these endings
-/// (produktregler.md:833).
 @immutable
 class SessionEnd {
   const SessionEnd({
@@ -64,7 +63,6 @@ class SessionEnd {
 /// The calm notice the sign-in screen gives after a background timeout:
 /// "Beskedet ges i stället vid återkomsten, på inloggningsskärmen, som en
 /// lugn upplysning … med skälet och antalet väntande ändringar"
-/// (produktregler.md:834).
 ///
 /// Held in memory only. If the process died in the background there is no
 /// session to explain, and a stored notice could meet another person on a
@@ -398,7 +396,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// The user chose this, so her device drafts go as at any sign-out she
   /// makes herself (PQ-12 = A). The queue does not: "Kravet gäller alla tre
   /// skäl: timeout, background_timeout, user_requested"
-  /// (produktregler.md:833). When the queue has entries, the dialog asks
+  /// When the queue has entries, the dialog asks
   /// first, and only "Logga ut och släng ändringarna" empties it.
   Future<void> forceLogout() async {
     AppLogger.info('SessionTimeoutService: Force logout requested');

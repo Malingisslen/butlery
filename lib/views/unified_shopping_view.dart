@@ -203,7 +203,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     // "Lägg till vara" is the list's one saffron action. An empty
     // list carries its own actions in the body, with "Från
     // veckomenyn" as the hero, so the button steps aside there
-    // (Skarmar v12 del 2 #inkop, #tominkop).
+    // (#tominkop).
     final fab = isShoppingTab && !inSelection && viewModel.hasItems
         ? ShoppingAppBar.buildFloatingActionButton(context, _showAddItemDialog)
         : null;

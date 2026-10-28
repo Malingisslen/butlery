@@ -80,7 +80,7 @@ class ShoppingListContentWidget extends StatefulWidget {
   /// ([SnackBarConfig.normalDuration]). Under assistive navigation it stays
   /// until `Stäng`: the action must be a real focusable target
   /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
-  /// a screen reader reads it (Grafisk manual v6:647).
+  /// a screen reader reads it.
   static void showCategoryMoveReceipt(BuildContext context, String category) {
     SnackBarUtils.showInfo(
       context,
@@ -422,7 +422,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   }
 
   /// "Köpt (N)" heading with the right-aligned "Rensa köpta" text action
-  /// (Grafisk manual v6:524; Skarmar v12 del 2 #inkop :915-916 light,
+  /// (Skarmar v12 del 2 #inkop :915-916 light,
   /// :1020-1021 dark). No icon, no subtitle line — the count lives in the
   /// heading itself, per the facit.
   Widget _buildCompletedItemsHeader(

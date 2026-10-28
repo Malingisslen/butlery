@@ -60,7 +60,6 @@ enum RealtimeResourceType {
 /// chat) have their own mechanisms outside this service.
 enum ConflictEntity {
   /// "Recept (eget)": both versions are shown and the user chooses
-  /// (produktregler.md:102).
   recipeOwn,
 
   /// "Recept (delat, andras)": the owner's version wins and the change becomes
@@ -72,7 +71,6 @@ enum ConflictEntity {
   recipeShared,
 
   /// "Veckomeny": the last save wins, with a 30 s snackbar
-  /// (ux-beslut.json D-04).
   weekMenu,
 }
 
@@ -206,7 +204,7 @@ abstract class RealtimeResource {
   bool isOwner(String userId) => ownerId == userId;
 
   /// The conflict rule that applies to [userId]'s edit of this resource
-  /// (produktregler.md:97-107). Each model declares its own entity; the
+  /// Each model declares its own entity; the
   /// answer may depend on who is editing (an owner's recipe and someone
   /// else's shared recipe follow different rows).
   ConflictEntity conflictEntityFor(String userId);

@@ -373,7 +373,7 @@ class OfflineSyncManager {
 
   /// Starts a timer for the earliest retry time among the entries still
   /// waiting, so the queue sends them when their time comes
-  /// (produktregler.md:188). When the timer fires offline it does nothing;
+  /// When the timer fires offline it does nothing;
   /// coming back online starts a pass.
   Future<void> _scheduleNextAttempt(String userId) async {
     final remaining = await _syncQueueDao.getPendingForUser(userId);

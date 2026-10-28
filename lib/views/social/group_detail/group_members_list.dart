@@ -184,7 +184,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   }
 
   /// "Klart" closes the outcome and leaves selection mode: the user's own
-  /// act (Skarmar v12 etapp 9:392).
+  /// act.
   void _closePartial() => _cancelSelection();
 
   @override

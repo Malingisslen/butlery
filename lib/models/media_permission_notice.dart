@@ -12,7 +12,7 @@ class MediaPermissionNotice {
 
   /// The notice a pick's permission answer calls for, or null when it calls
   /// for none. Limited access is its own state with a way to choose more
-  /// (produktregler.md:684), so it is kept even though the pick went ahead.
+  /// so it is kept even though the pick went ahead.
   static MediaPermissionNotice? after(
     ImageSource source,
     OsPermissionOutcome outcome,

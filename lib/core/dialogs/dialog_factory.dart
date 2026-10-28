@@ -46,7 +46,6 @@ class DialogFactory {
   }
 
   /// Error dialog, one Material dialog on both platforms
-  /// (plattformsmatris.md:73-75).
   ///
   /// [buttonText] stays optional; without it the only button closes the
   /// dialog and says "Stäng" (commonClose), never "OK"

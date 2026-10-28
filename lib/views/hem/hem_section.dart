@@ -78,7 +78,6 @@ String? hemFirstName(String? displayName) {
 }
 
 /// "Torsdag 9 juli": the weekday written out, no full stop, no year
-/// (produktregler.md:279).
 String hemDate(BuildContext context, DateTime now) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   final text = DateFormat('EEEE d MMMM', locale).format(now);
@@ -139,7 +138,7 @@ class HemSection extends StatelessWidget {
       case HemPlanStatus.loading:
         return const [HemPlanLoading()];
       case HemPlanStatus.failed:
-        // #hemfel (Skarmar v12 del 4): what happened, then "Försök igen" and
+        // #hemfel: what happened, then "Försök igen" and
         // "Visa sparad plan"; the library stays.
         // readWeek cannot tell offline from denied, so only what happened is
         // said (content-style-guide.md, the three-part error).

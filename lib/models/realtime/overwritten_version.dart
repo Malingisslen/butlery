@@ -3,7 +3,7 @@
 /// produktregler.md:109: "ingen strategi får tyst kasta data som bara finns
 /// lokalt. Där strategin skriver över sparas den överskrivna versionen i 30
 /// dagar och nås via Återställ." The table row for the week menu
-/// (produktregler.md:104) gives it the 30 s snackbar first and "Återställ i
+/// gives it the 30 s snackbar first and "Återställ i
 /// 30 dagar" after; flows-roles-budget.md:36 repeats that. PQ-01 = A (Malin,
 /// 2026-09-23) scopes this to the week menu and the user's own recipe.
 ///

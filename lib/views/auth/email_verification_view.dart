@@ -284,7 +284,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
   }
 }
 
-/// The sentence with the address in bold, as drawn (Skarmar v12 #epostverifiering).
+/// The sentence with the address in bold, as drawn.
 class _VerificationMessage extends StatelessWidget {
   const _VerificationMessage({required this.text, required this.email});
 

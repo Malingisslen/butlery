@@ -80,7 +80,6 @@ class ConsentViewModel extends ChangeNotifier
   bool get aiProcessing => _aiProcessing;
 
   /// What changed since the version the user accepted, for the renewal
-  /// (Skarmar v12 etapp 6 #samtyckefornya).
   List<ConsentChange> get renewalChanges =>
       ConsentService.changesSince(_currentConsent?.consentVersion);
 
@@ -194,7 +193,7 @@ class ConsentViewModel extends ChangeNotifier
     app_logger.AppLogger.debug('[$_logTag] Push notifications consent: $value');
   }
 
-  /// Toggle AI interpretation consent ("AI-tolkning", Skarmar v12 etapp 6
+  /// Toggle AI interpretation consent ("AI-tolkning"
   /// #kontosamtycke).
   void setAiProcessing(bool value) {
     _aiProcessing = value;

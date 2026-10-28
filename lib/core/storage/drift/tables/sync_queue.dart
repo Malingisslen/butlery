@@ -57,9 +57,8 @@ class SyncQueueEntries extends Table {
 
   /// Set when the entry will never be retried: a 4xx other than 408/429, 24 h
   /// of retries, or a dependency that failed permanently
-  /// (produktregler.md:187-189). Such an entry is kept for the user to decide
+  /// Such an entry is kept for the user to decide
   /// on ("Väntar på dig") and is never deleted without her
-  /// (produktregler.md:192).
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();
 
@@ -68,8 +67,7 @@ class SyncQueueEntries extends Table {
   /// When the queue may send this entry again after a failed attempt, or
   /// null when it has never failed (send at once). "Exponentiell backoff
   /// 2 s → 4 s → 8 s → 30 s → 2 min → 10 min, med jitter"
-  /// (produktregler.md:188); the view shows it as "nästa försök om N s"
-  /// (Skarmar v12 del 4 #synkko).
+  /// the view shows it as "nästa försök om N s"
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
 
   /// When the first attempt failed, or null when none has. "Max 24 h,

@@ -293,13 +293,13 @@ class SyncQueueRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     // text.secondary (#5B6959 light, #A9B2A0 dark; tokens.json semantic).
     // Interpretation: #synkko's raw slot --r04slot-620 is #627061 light but
-    // #C9D3C4 (text.bodyMuted) dark (Skarmar v12 del 4:64); no token pairs
+    // #C9D3C4 (text.bodyMuted) dark; no token pairs
     // those two, so the token text.secondary decides the dark value.
     final secondary = AppTextStyles.captionBase.copyWith(
       color: cs.onSurfaceVariant,
     );
     // Shown offline too: #synkko draws "nästa försök om 8 s" under the
-    // offline banner (Skarmar v12 del 4:245, :271, :275).
+    // offline banner.
     final next = describeNextAttempt(l10n, change);
     return Container(
       key: rowKey(change),

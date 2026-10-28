@@ -1,6 +1,6 @@
 // lib/widgets/admin/admin_table.dart
 //
-// The admin table of the drawn admin panel (Skarmar v12 etapp 5-7 #9): a
+// The admin table of the drawn admin panel: a
 // tinted header row in capitals, hairline rows, and every column given room,
 // so nothing is clipped or broken mid-word.
 library;

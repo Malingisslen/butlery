@@ -78,7 +78,7 @@ class QueuedRecipeSend {
     AppLogger.info('📤 Synkar recept: ${recipe.id}');
 
     // One attempt: the queue's own schedule is the backoff
-    // (produktregler.md:188), so a failure goes back to the queue at once.
+    // so a failure goes back to the queue at once.
     final created = item.operation == SyncOperation.create.name;
     final int newRev;
     try {

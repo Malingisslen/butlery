@@ -362,7 +362,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             const SizedBox(height: AppDimensions.space8),
           ],
           // The view's one primary action, "Bjud in 1 vald" as drawn
-          // (Skarmar v12 del 3 #laggtillmedlemmar:562; Grafisk manual
+          // (Grafisk manual
           // v6:219). The count is a plural: "Bjud in 3 valda".
           FormButton(
             key: const ValueKey('addMembers.invite'),

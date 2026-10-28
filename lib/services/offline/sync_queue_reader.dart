@@ -6,7 +6,6 @@
 //
 // P6-U08b: schema 4's retry time, and the two actions a permanent failure
 // gains: "Spara som kopia" and "Försök mindre"
-// (Skarmar v12 del 4 #synkko).
 library;
 
 import 'dart:convert';

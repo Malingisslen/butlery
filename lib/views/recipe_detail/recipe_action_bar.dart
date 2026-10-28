@@ -9,9 +9,9 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 /// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
 /// content's side margin; Skarmar v12 del 1 'Receptdetalj').
 ///
-/// It holds the view's one saffron action (Grafisk manual v6:219): "Börja
+/// It holds the view's one saffron action: "Börja
 /// laga" on your own recipe, "Spara till mitt kök" on someone else's
-/// (Skarmar v12 etapp 11). The other button is ink. Below 360 dp the
+/// The other button is ink. Below 360 dp the
 /// buttons stack.
 class RecipeActionBar extends StatelessWidget {
   const RecipeActionBar({

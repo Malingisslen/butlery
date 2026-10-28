@@ -15,7 +15,6 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// The user's entries that the queue still sends by itself: everything
   /// except the permanent failures, which wait for the user
-  /// (produktregler.md:189).
   Expression<bool> _drainingFor(
     $SyncQueueEntriesTable e,
     String userId,
@@ -118,7 +117,6 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   /// The opId of the recipe's create that has not reached the server yet,
   /// or null. A later write of the recipe names it in `dependsOn`, so a
   /// create that fails for good takes the rest of the chain with it
-  /// (produktregler.md:187).
   Future<String?> pendingCreateOpId(String userId, String recipeId) async {
     final row =
         await (select(syncQueueEntries)

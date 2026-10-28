@@ -115,7 +115,7 @@ class AuthViewModel extends ChangeNotifier
 
   /// The second-factor challenge a sign-in is waiting for, or null. A
   /// sign-in that returns false with this set is not a failure: the view
-  /// shows the challenge (Skarmar v12 etapp 3 #authmfa).
+  /// shows the challenge.
   MfaResolverInfo? get pendingMfaChallenge => _authService.pendingMfaChallenge;
 
   /// Whether "Fortsätt med [provider]" is shown on this platform (BUT-916).

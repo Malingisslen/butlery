@@ -165,7 +165,7 @@ class MenuPreviewView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // The view's one primary action, "Spara till mina menyer" as
-              // drawn (Skarmar v12 del 3 #menyforhands). Imported, it takes
+              // drawn. Imported, it takes
               // the hero's disabled surface; importing keeps the name and
               // draws the plate line.
               FormButton(

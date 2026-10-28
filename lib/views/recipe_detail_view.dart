@@ -323,13 +323,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         final bottomPadding = MediaQuery.of(context).padding.bottom;
         // Someone else's recipe: "Spara till mitt kök" is the one saffron
         // action, and "Börja laga" steps down (Skarmar v12 etapp 11
-        // 'Receptet brett — någon annans'; Grafisk manual v6:219).
+        // 'Receptet brett — någon annans').
         final isOthersRecipe = showForkInAppBar(
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
         // Q6-08 = A: the menu follows who the user is to the recipe
-        // (produktregler.md:244-252).
         final menuRole = recipeMenuRole(
           recipe,
           ServiceLocator.get<PermissionService>().currentUserId,

@@ -259,7 +259,7 @@ const INGREDIENT_GROUP_RULE =
 
 // BUT-2158: an image reader never guesses text it cannot read. The app shows
 // an ingredient line carrying the marker empty and marked in its import review
-// (flows-roles-budget.md), so the marker must match
+// so the marker must match
 // UnreadLineDetector.unreadMarker in the app byte for byte.
 export const UNREADABLE_MARKER = "[oläsligt]";
 const UNREADABLE_RULE = `- Gissa aldrig en ingrediens du inte kan läsa. Går ett ord eller en hel ingrediensrad inte att läsa, skriv exakt ${UNREADABLE_MARKER} där det oläsliga står (bara "${UNREADABLE_MARKER}" som name för en hel rad). Är mängden oläslig: sätt amount till null och skriv ${UNREADABLE_MARKER} i preparation. Hoppa inte över raden`;

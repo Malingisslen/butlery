@@ -62,7 +62,7 @@ class InputThemes {
       errorBorder: error,
       focusedErrorBorder: error,
       // Disabled field: 1 px surface.disabled edge on surface.raised, never
-      // opacity (Grafisk manual v6:423; Komponentark v1:423 light, :514 dark).
+      // opacity (Komponentark v1:423 light, :514 dark).
       disabledBorder: ButleryFieldBorder(
         borderRadius: radius,
         borderSide: BorderSide(
@@ -163,13 +163,13 @@ class InputThemes {
   ///
   /// The chosen chip is an ink fill, control.checked.background #24382C in
   /// both modes (tokens.json:145-148), drawn so in the dark panel too
-  /// (Komponentark v1:523). On the dark base #17251D that fill is 1.27:1,
+  /// On the dark base #17251D that fill is 1.27:1,
   /// so dark mode edges it the way the panel draws it:
   ///
   /// * chosen: a 1 px paper edge and a paper check (v1:523; "Bocken i en
   ///   bockad kontroll är alltid papper", v1:491);
   /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
-  ///   dark control outline (Skarmar v12 etapp 2:37, --ram-kontroll-a);
+  ///   dark control outline (--ram-kontroll-a);
   /// * disabled: a 1 px surface.disabled #4A5C50 edge, no fill and a
   ///   text.secondary label (v1:525).
   ///

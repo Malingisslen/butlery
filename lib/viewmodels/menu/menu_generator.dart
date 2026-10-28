@@ -246,7 +246,7 @@ class MenuGenerator {
 
   /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
   /// from (the allergen-safe pool), so a result with no matches can say
-  /// "bland dina 84 recept" (Skarmar v12 del 1 #veckoingamatch).
+  /// "bland dina 84 recept".
   int lastPoolSize = 0;
 
   /// Async version of availableRecipes that supports household allergen aggregation.

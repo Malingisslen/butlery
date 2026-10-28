@@ -1,6 +1,6 @@
 // lib/widgets/common/brand/butlery_cloche.dart
 //
-// The cloche, painted from the locked drawing (Skarmar v12 del 1 #start, the
+// The cloche, painted from the locked drawing (the
 // 160 x 160 mark): a dome on a plate, saffron knob. [ButleryCloche] draws it
 // alone on the page background; [ButleryClocheMark] sets the same dome in
 // cream on the green app-icon plate, as the onboarding screens do.

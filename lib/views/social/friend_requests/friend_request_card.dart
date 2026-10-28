@@ -46,7 +46,7 @@ class FriendRequestCard {
     // PQ-18 = A (produktbeslut 2026-09-23, revised after the prototype):
     // every incoming row keeps a saffron "Acceptera", as drawn. This is a
     // deliberate exception to one saffron action per view (Komponentark
-    // v1:843-844; Grafisk manual v6:219), for friend requests only.
+    // v1:843-844), for friend requests only.
     final accept = HeroButton(
       key: ValueKey('friendRequest.accept.${request.id}'),
       label: context.l10n.commonAccept,

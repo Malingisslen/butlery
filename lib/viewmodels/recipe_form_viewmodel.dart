@@ -590,7 +590,6 @@ class RecipeFormViewModel extends BaseViewModel
         await _state.clearCurrentDraft();
       } catch (e) {
         // The suggestion is kept; a draft left behind expires on its own
-        // (produktregler.md:170).
         AppLogger.warning('Suggestion sent, draft not cleared: $e');
       }
       return edited;
@@ -653,7 +652,6 @@ class RecipeFormViewModel extends BaseViewModel
   }
 
   /// "Släng" in the draft question: the only choice that deletes a draft
-  /// (produktregler.md:171-172).
   Future<void> discardDrafts(Iterable<String> draftIds) {
     return _state.discardDrafts(draftIds);
   }

@@ -247,7 +247,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
   }
 
   /// Changes a known amount by [delta], sent as a relative change
-  /// (produktregler.md:146). An item without an amount is left as it is.
+  /// An item without an amount is left as it is.
   Future<void> adjustQuantity(PantryItem item, double delta) async {
     final userId = _currentUserId();
     if (userId == null) return;
