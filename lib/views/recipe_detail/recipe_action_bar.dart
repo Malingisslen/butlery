@@ -135,9 +135,15 @@ class RecipeActionBar extends StatelessWidget {
             }
             return Row(
               children: [
-                Expanded(flex: isOthersRecipe ? 1 : _ownRecipeFirstFlex, child: first),
+                Expanded(
+                  flex: isOthersRecipe ? 1 : _ownRecipeFirstFlex,
+                  child: first,
+                ),
                 const SizedBox(width: AppDimensions.space8),
-                Expanded(flex: isOthersRecipe ? 1 : _ownRecipeSecondFlex, child: second),
+                Expanded(
+                  flex: isOthersRecipe ? 1 : _ownRecipeSecondFlex,
+                  child: second,
+                ),
               ],
             );
           },
