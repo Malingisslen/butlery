@@ -11,6 +11,7 @@ import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart'
 import 'package:butlery/widgets/common/recipe_row_meta.dart';
 import 'package:butlery/widgets/common/recipe_thumb.dart';
 import 'package:butlery/widgets/social/shared_content_row.dart';
+import 'package:butlery/widgets/social/shared_receive_sheet.dart';
 
 /// A shared recipe as a [SharedContentRow]. On one friend's page the sharer
 /// is the heading, so the line under the name carries the time and the
@@ -30,18 +31,16 @@ class SharedRecipeCard {
       localeName: Localizations.localeOf(context).toString(),
     );
 
+    final saved = recipes.isRecipeImported(sharedRecipe);
+    final fromLine = l10n.sharedFromNameAgo(
+      storedNameOr(sharedRecipe.sharedByDisplayName, l10n.displayUnknownUser),
+      ago,
+    );
+
     return SharedContentRow(
       leading: RecipeThumb(imageUrl: sharedRecipe.recipeImageUrl),
       title: sharedRecipe.recipeTitle,
-      subtitle: byFriend
-          ? null
-          : l10n.sharedFromNameAgo(
-              storedNameOr(
-                sharedRecipe.sharedByDisplayName,
-                l10n.displayUnknownUser,
-              ),
-              ago,
-            ),
+      subtitle: byFriend ? null : fromLine,
       meta: byFriend
           ? RecipeRowMeta(
               lead: l10n.sharedSharedAgo(ago),
@@ -50,17 +49,43 @@ class SharedRecipeCard {
           : null,
       message: sharedRecipe.shareMessage,
       unread: !isRead,
-      saved: recipes.isRecipeImported(sharedRecipe),
+      saved: saved,
       saving: recipes.isOperating,
       framed: byFriend,
       onSave: () =>
           SharedContentActions.importRecipe(context, viewModel, sharedRecipe),
-      onOpen: () => SharedContentActions.viewRecipe(
-        context,
-        viewModel,
-        sharedRecipe,
-        isRead: isRead,
-      ),
+      onOpen: () async {
+        if (saved) {
+          return SharedContentActions.viewRecipe(
+            context,
+            viewModel,
+            sharedRecipe,
+            isRead: isRead,
+          );
+        }
+        if (!isRead) recipes.markAsViewed(sharedRecipe);
+        final choice = await showSharedReceiveSheet(
+          context,
+          title: sharedRecipe.recipeTitle,
+          fromLine: fromLine,
+          permission: sharedRecipe.permission,
+          message: sharedRecipe.shareMessage,
+        );
+        if (!context.mounted || choice == null) return;
+        return switch (choice) {
+          SharedReceiveChoice.accept => SharedContentActions.importRecipe(
+            context,
+            viewModel,
+            sharedRecipe,
+          ),
+          SharedReceiveChoice.view => SharedContentActions.viewRecipe(
+            context,
+            viewModel,
+            sharedRecipe,
+            isRead: isRead,
+          ),
+        };
+      },
       onActions: () => showSharedContentActions(
         context,
         title: sharedRecipe.recipeTitle,

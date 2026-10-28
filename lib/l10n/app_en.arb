@@ -15740,6 +15740,22 @@
   "@sharedSavedState": {
     "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved"
   },
+  "sharedReceiveCanRead": "You can read the recipe",
+  "@sharedReceiveCanRead": {
+    "description": "The permission line on the sheet for a shared recipe the user can only read"
+  },
+  "sharedReceiveCanEdit": "You can edit the recipe",
+  "@sharedReceiveCanEdit": {
+    "description": "The permission line on the sheet for a shared recipe the user may edit"
+  },
+  "sharedReceiveAccept": "Accept",
+  "@sharedReceiveAccept": {
+    "description": "Saves a shared recipe to the user's own; the sheet's one filled action"
+  },
+  "sharedReceiveView": "View the recipe",
+  "@sharedReceiveView": {
+    "description": "Opens a shared recipe without saving it"
+  },
   "sharedFromNameAgo": "from {name} · {time}",
   "@sharedFromNameAgo": {
     "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item",

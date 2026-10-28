@@ -19994,6 +19994,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedSavedState => 'Sparad';
 
   @override
+  String get sharedReceiveCanRead => 'Du kan läsa receptet';
+
+  @override
+  String get sharedReceiveCanEdit => 'Du kan redigera receptet';
+
+  @override
+  String get sharedReceiveAccept => 'Acceptera';
+
+  @override
+  String get sharedReceiveView => 'Visa receptet';
+
+  @override
   String sharedFromNameAgo(String name, String time) {
     return 'från $name · $time';
   }
