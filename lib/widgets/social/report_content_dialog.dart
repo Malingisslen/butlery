@@ -205,7 +205,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           : l10n.reportDialogTitle,
       // Five 48 dp reasons, the free-text field and the note do not fit
       // a short screen or large text, so the content scrolls rather
-      // than clipping (tillganglighetshandoff:85, 200 % text).
+      // than clipping.
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

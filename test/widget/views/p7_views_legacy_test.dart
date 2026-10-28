@@ -1,8 +1,7 @@
 // P7 track A: the legacy surface leaves lib/views.
 //
 // - A1: a failure says what failed, never the exception, in the ink failure
-//   snackbar with the alert role and "Stäng" (content-style-guide.md:87-97;
-//   tillganglighetshandoff:172).
+//   snackbar with the alert role and "Stäng" (content-style-guide.md).
 // - A2: the category swatches read ModeColors and keep the generated values
 //   of their mode (NULAGE.md:71-74; tokens.json:522).
 // - A3: busy buttons draw the plate line, work in progress is the plate line

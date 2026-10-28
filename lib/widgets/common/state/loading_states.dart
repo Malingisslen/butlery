@@ -46,8 +46,7 @@ class LoadingStates {
   /// Texten ar inte dekor. Regeln ar "tallrikslinje + text", och texten ska
   /// saga VAD som hamtas - en linje utan ord sager bara att appen ar upptagen.
   ///
-  /// Linjen bär texten som sitt tillgängliga namn (tillganglighetshandoff:179,
-  /// "etikett = vad som laddas"), så den synliga texten döljs för
+  /// Linjen bär texten som sitt tillgängliga namn, så den synliga texten döljs för
   /// skärmläsaren och läses inte två gånger.
   static Widget _buildPlateLineLoading(BuildContext context, String? message) {
     return Center(

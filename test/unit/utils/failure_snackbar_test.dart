@@ -4,7 +4,7 @@
 // and what you can do, as a button that is never "OK"
 // (content-style-guide.md:96). Screen readers hear it
 // without a focus move: the snackbar and the inline error both have the
-// alert role (Butlery tillganglighetshandoff.dc.html:172).
+// alert role.
 
 import 'dart:math' as math;
 

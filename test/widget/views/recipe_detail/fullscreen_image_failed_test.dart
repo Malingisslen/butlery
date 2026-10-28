@@ -1,8 +1,4 @@
 // A photo that exists but failed to load (P5-U11).
-//
-// Sources:
-// tillganglighetshandoff:188 (role
-// status, the text read once, the glyph decorative).
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';

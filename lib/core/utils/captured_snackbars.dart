@@ -137,8 +137,7 @@ class CapturedSnackBars {
     final Widget content = InkSnackBar(message: message, action: action);
     return messenger.showSnackBar(
       SnackBar(
-        // An error is an alert, everything else a status (Butlery
-        // tillganglighetshandoff.dc.html, "status (fel: alert)"). The
+        // An error is an alert, everything else a status. The
         // SnackBar's own node is the live region; Flutter forbids a role and
         // a live region on one node, so the role is a node of its own.
         content: alert

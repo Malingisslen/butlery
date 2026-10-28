@@ -47,7 +47,7 @@ class StatusIndicators {
 /// nothing is tappable.
 ///
 /// Screen readers hear it once per offline/online transition, not
-/// continuously, and the glyph is decorative (tillganglighetshandoff:177).
+/// continuously, and the glyph is decorative.
 /// Only a banner on the current route
 /// announces, and only one banner announces per transition app-wide.
 ///

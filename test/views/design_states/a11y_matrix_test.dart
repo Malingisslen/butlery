@@ -1,8 +1,7 @@
 /// P8-U02: the accessibility matrix over the U01 states.
 ///
 /// The 18 DEFAULT rows, in light and dark, at 320, 360 and 412 dp and at
-/// text scale 1.0, 1.5 and 2.0 (Butlery tillganglighetshandoff.dc.html:85: 412/360/320
-/// and 200 % text; testmatris.md:60-63; syntes.json PAKET 8 "vid 1,5× och
+/// text scale 1.0, 1.5 and 2.0 (testmatris.md; syntes.json PAKET 8 "vid 1,5× och
 /// 2,0× textskala"). Each case must hold:
 /// - no overflow, and no horizontal scroll of the page itself
 ///   (testmatris.md:60 "inget horisontellt scroll");

@@ -1,8 +1,7 @@
 // lib/widgets/common/navigation/adaptive_navigation.dart
 //
 // PQ-17 = A: the shell has four
-// destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till"
-// (tillganglighetshandoff 'Navigation & toppfält').
+// destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till".
 // The bar, the plus and the rail live in butlery_bottom_navigation.dart.
 
 import 'package:flutter/material.dart';
@@ -108,8 +107,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           );
         }
 
-        // The rail is read after the content, as the bottom row is
-        // (tillganglighetshandoff 'Navigation & toppfält').
+        // The rail is read after the content, as the bottom row is.
         return Scaffold(
           appBar: appBar,
           body: Row(

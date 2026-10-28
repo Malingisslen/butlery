@@ -24,9 +24,8 @@
 ///   1.3:1 on the dark surface.
 ///
 /// Screen readers: the box has the alert role and its text is a live
-/// region, so it is read when it appears without moving focus
-/// (Butlery tillganglighetshandoff.dc.html:172, "Läses upp utan
-/// fokusbyte"). Flutter does not allow both on one node, so the role sits on
+/// region, so it is read when it appears without moving focus.
+/// Flutter does not allow both on one node, so the role sits on
 /// the box and the live region on the text inside it.
 library;
 
