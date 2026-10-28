@@ -43,8 +43,10 @@ String? blockingRefusalMessage(FirebaseAuthException e) {
     return l.errorSignInEmailUnverified;
   }
   if (text.contains('SIGNUP_NOT_INVITED')) return l.errorSignupNotInvited;
+  // Without a marker nothing says the guest list refused: a blocking function
+  // that crashed or timed out arrives the same way (BUT-2471).
   if (e.code == 'blocking-function-error-response') {
-    return l.errorSignupNotInvited;
+    return l.errorSignupGateUnavailable;
   }
   return null;
 }

@@ -5664,8 +5664,6 @@
   "feedbackScreenshotLabel": "Screenshot",
   "feedbackRemoveScreenshot": "Remove screenshot",
   "feedbackSendButton": "Send",
-  "adminLoginButton": "Sign in",
-  "adminPasswordLabel": "Password",
   "adminLoginFailed": "Sign-in failed",
   "adminNotAuthorized": "You do not have access to the admin panel.",
   "adminBarTitle": "Butlery admin",

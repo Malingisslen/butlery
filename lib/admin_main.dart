@@ -9,7 +9,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -25,6 +24,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -34,7 +34,7 @@ import 'package:butlery/views/admin/admin_shell.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/input/labeled_field.dart';
+import 'package:butlery/widgets/common/brand/provider_button.dart';
 
 Future<void> main() async {
   runZonedGuarded(
@@ -159,30 +159,34 @@ class AdminLoginScreen extends StatefulWidget {
 }
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   bool _isSubmitting = false;
   String? _error;
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
+  Future<void> _signIn() async {
     setState(() {
       _isSubmitting = true;
       _error = null;
     });
     try {
-      final ok = await widget.authService.signInWithEmail(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+      final outcome = await widget.authService.signInWithProvider(
+        SignInProvider.google,
       );
       if (!mounted) return;
-      if (!ok) setState(() => _error = context.l10n.adminLoginFailed);
+      switch (outcome) {
+        case ProviderSignInOutcome.signedIn:
+        case ProviderSignInOutcome.cancelled:
+          break;
+        case ProviderSignInOutcome.failed:
+          setState(
+            () => _error =
+                widget.authService.errorMessage ??
+                context.l10n.adminLoginFailed,
+          );
+        // A second factor or a password link has no screen on the admin site.
+        case ProviderSignInOutcome.mfaRequired:
+        case ProviderSignInOutcome.linkNeedsPassword:
+          setState(() => _error = context.l10n.adminLoginFailed);
+      }
     } catch (_) {
       if (mounted) setState(() => _error = context.l10n.adminLoginFailed);
     } finally {
@@ -214,21 +218,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppDimensions.space24),
-                LabeledField(
-                  label: context.l10n.authEmail,
-                  child: TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.space16),
-                LabeledField(
-                  label: context.l10n.adminPasswordLabel,
-                  child: TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    onSubmitted: (_) => _submit(),
-                  ),
+                ProviderButton(
+                  provider: SignInProvider.google,
+                  onPressed: _isSubmitting ? null : _signIn,
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: AppDimensions.space16),
@@ -237,13 +229,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     style: AppTextStyles.bodyMedium.copyWith(color: cs.error),
                   ),
                 ],
-                const SizedBox(height: AppDimensions.space24),
-                ActionButtons.primaryButton(
-                  context,
-                  onPressed: _isSubmitting ? null : _submit,
-                  label: context.l10n.adminLoginButton,
-                  isExpanded: true,
-                ),
               ],
             ),
           ),

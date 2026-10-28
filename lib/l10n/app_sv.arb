@@ -5698,8 +5698,6 @@
   "feedbackScreenshotLabel": "Skärmavbild",
   "feedbackRemoveScreenshot": "Ta bort skärmbild",
   "feedbackSendButton": "Skicka",
-  "adminLoginButton": "Logga in",
-  "adminPasswordLabel": "Lösenord",
   "adminLoginFailed": "Inloggning misslyckades",
   "adminNotAuthorized": "Du har inte behörighet till adminpanelen.",
   "adminBarTitle": "Butlery Admin",

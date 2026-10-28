@@ -165,11 +165,12 @@ void main() {
     }
 
     test(
-      'blocking-function-error-response with a null message → not invited',
+      'blocking-function-error-response with a null message → try again, '
+      'not "not invited" (BUT-2471)',
       () {
         expect(
           mapAuthErrorToMessage(_err('blocking-function-error-response')),
-          l.errorSignupNotInvited,
+          l.errorSignupGateUnavailable,
         );
       },
     );

@@ -8608,12 +8608,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackSendButton => 'Skicka';
 
   @override
-  String get adminLoginButton => 'Logga in';
-
-  @override
-  String get adminPasswordLabel => 'Lösenord';
-
-  @override
   String get adminLoginFailed => 'Inloggning misslyckades';
 
   @override

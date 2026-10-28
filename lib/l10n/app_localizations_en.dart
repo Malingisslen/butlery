@@ -8643,12 +8643,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackSendButton => 'Send';
 
   @override
-  String get adminLoginButton => 'Sign in';
-
-  @override
-  String get adminPasswordLabel => 'Password';
-
-  @override
   String get adminLoginFailed => 'Sign-in failed';
 
   @override

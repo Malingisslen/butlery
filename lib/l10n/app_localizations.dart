@@ -13370,18 +13370,6 @@ abstract class AppLocalizations {
   /// **'Skicka'**
   String get feedbackSendButton;
 
-  /// No description provided for @adminLoginButton.
-  ///
-  /// In sv, this message translates to:
-  /// **'Logga in'**
-  String get adminLoginButton;
-
-  /// No description provided for @adminPasswordLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lösenord'**
-  String get adminPasswordLabel;
-
   /// No description provided for @adminLoginFailed.
   ///
   /// In sv, this message translates to:
