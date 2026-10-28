@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _handWritten = <String, int>{
   'lib/app/auth/auth_wrapper.dart': 1,
-  'lib/app/butlery_app.dart': 1,
   'lib/core/base/base_action_handler.dart': 2,
   'lib/core/utils/captured_snackbars.dart': 3,
   'lib/core/utils/connectivity_check.dart': 6,
@@ -44,6 +43,7 @@ const _handWritten = <String, int>{
   'lib/widgets/common/state/delayed_skeleton.dart': 1,
   'lib/widgets/image/avatar_image_widget.dart': 1,
   'lib/widgets/import/allergen_setup_banner.dart': 1,
+  'lib/widgets/import/clipboard_url_banner.dart': 1,
   'lib/widgets/legal/legal_document.dart': 1,
   'lib/widgets/menu/calendar/calendar_drag.dart': 2,
   'lib/widgets/menu/group_menu_entry_button.dart': 1,
