@@ -1,6 +1,3 @@
-// The edit-group dialog's fields follow Komponentark v1 §11: the label
-// stands above the box, and a refused name shows its error with a glyph.
-
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';

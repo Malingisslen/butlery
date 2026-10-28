@@ -1,8 +1,7 @@
 /// The Inköp and Veckomeny root bars leave the title and its line whole on a
 /// 320 and a 360 dp phone (P4-U09, P4-U10).
 ///
-/// Skarmar v12 del 2 #inkop draws one outlined "more" button on the root bar;
-/// del 1 #veckomeny draws none. Five 48 dp icons left "Inköp" about 0-32 dp,
+/// Five 48 dp icons left "Inköp" about 0-32 dp,
 /// so the secondary actions moved into one overflow menu. Veckomeny keeps the
 /// group-week icon beside it.
 library;

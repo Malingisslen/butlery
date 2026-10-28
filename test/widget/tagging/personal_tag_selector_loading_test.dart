@@ -1,6 +1,5 @@
 // P7-B4: while the tags load, the selector shows the plate line with what it
-// is fetching, never a spinner (B-18;
-// beslutslogg.md:25).
+// is fetching, never a spinner
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

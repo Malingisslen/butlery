@@ -1,10 +1,7 @@
 // P5-U33: bulk member removal reports a partial outcome.
 //
-// produktregler.md:905-909 (§ 17.6, I-29): a partial result is a third
-// outcome. It names what went, what did not and why, and the ones that did
+// It names what went, what did not and why, and the ones that did
 // not go stay selected. Selection mode is never left automatically
-// Drawing: Skarmar v12 etapp 9 #flergrupp :361-393,
-// "En av två togs bort" with "Klart".
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -165,8 +162,7 @@ void main() {
     expect(outcome, findsOneWidget);
     expect(find.byType(PartialOutcome), findsOneWidget);
     expect(find.text('1 av 2 togs bort'), findsOneWidget);
-    // What went is named, then what did not (produktregler.md:906;
-    // Skarmar v12 etapp 9 :391). The name comes from the uid lookup.
+    // The name comes from the uid lookup.
     expect(
       find.text(
         'Johan Lind är inte längre med i Matlaget. '

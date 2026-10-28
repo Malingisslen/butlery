@@ -1,7 +1,6 @@
 /// P5-U33: bulk tag delete reports a partial outcome.
 ///
-/// produktregler.md:905-909 (§ 17.6, I-29): a partial result is a third
-/// outcome. It names what went, what did not and why, and the ones that did
+/// It names what went, what did not and why, and the ones that did
 /// not go stay selected, with selection mode still on.
 /// The delete runs in atomic chunks of 100, so a later chunk can fail after
 /// an earlier one landed; the result says per tag id which.

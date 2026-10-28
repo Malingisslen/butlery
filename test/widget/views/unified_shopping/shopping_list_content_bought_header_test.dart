@@ -1,6 +1,5 @@
-// BUT-2201: the shopping list's bought-section heading, drawn per the facit
-// (Skarmar v12 del 2 #inkop :915-916 light, :1020-1021
-// dark) as "Köpt (N)" with a right-aligned "Rensa köpta" text action.
+// BUT-2201: the shopping list's bought-section heading
+// as "Köpt (N)" with a right-aligned "Rensa köpta" text action.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

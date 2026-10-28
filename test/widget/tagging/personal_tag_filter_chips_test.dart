@@ -261,7 +261,7 @@ void main() {
     });
   });
 
-  // P7-B4: the excluded chip as drawn in Skarmar v12 etapp 9 #sokpanel:
+  // P7-B4: the excluded chip:
   // no glyph, struck-through text.danger label, 1.5 px text.danger
   // edge; the off chip is a 1 px border.subtle outline with no glyph.
   for (final dark in [false, true]) {

@@ -2,8 +2,7 @@
 // top bar. "Välj", the ingredient search and the grid/list toggle stand in
 // the library's header row, "Dina recept · N"; in selection mode the row
 // shows the counter and Avbryt instead, without changing height
-// (B-46 on Hem). Drawn label: Skarmar v12
-// del 1 #hemrecept :152-155.
+// (B-46 on Hem).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

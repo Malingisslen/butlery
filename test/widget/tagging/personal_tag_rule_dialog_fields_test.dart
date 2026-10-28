@@ -1,7 +1,3 @@
-// The rule dialog's name field and tag dropdown follow Komponentark v1 §11:
-// each label stands above its box, and a refused form shows each error
-// with a glyph.
-
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';

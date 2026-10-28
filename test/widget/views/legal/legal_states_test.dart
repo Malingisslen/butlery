@@ -1,9 +1,6 @@
 // The legal documents' states (P5-U08, P5-U19, P5-U30).
 //
-// Sources: content-style-guide.md:87-95 (what happened, what you can do),
-// produktregler.md:162-163 (offline is a banner; loading is the plate line
-// plus text), Grafisk manual v6:665 (actions that need the network become
-// inactive with an explanatory text), Komponentark v1:753 (the banner).
+// Sources: content-style-guide.md:87-95 (what happened, what you can do)
 //
 // The documents ship with the app (assets/legal/), so offline they still
 // open, under the offline banner.

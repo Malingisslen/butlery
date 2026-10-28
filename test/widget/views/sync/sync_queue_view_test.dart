@@ -1,5 +1,4 @@
-// P4-U19: "Väntar på synk" (Skarmar v12 del 4
-// #synkko, light and dark).
+// P4-U19: "Väntar på synk"
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -437,8 +436,6 @@ void main() {
         final line = find.text(_sv.syncQueueNextAttemptSeconds(8));
         expect(line, findsOneWidget);
         // text.secondary: #5B6959 light, #A9B2A0 dark (tokens.json semantic).
-        // Interpretation: #synkko's slot for this line is #627061 light but
-        // #C9D3C4 dark.
         expect(
           tester.widget<Text>(line).style!.color,
           mode.value.colorScheme.onSurfaceVariant,
@@ -535,7 +532,7 @@ void main() {
 
     // Q6-11 = B (produktbeslut 2026-09-27b): the recipe exists only on this
     // phone, so Släng first says so; confirmed, it is class 1 like every
-    // Släng (produktregler.md:132, 7 s Ångra).
+    // Släng (7 s Ångra).
     testWidgets('Släng on a phone-only recipe asks first, and Avbryt keeps '
         'it', (tester) async {
       final c = _change(
@@ -704,8 +701,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      // #synkko data-a11y-name "Försök mindre – Bild till Sommarens
-      // grillmarinad".
       expect(
         find.bySemanticsLabel(
           'Försök mindre – Bild till Sommarens grillmarinad',

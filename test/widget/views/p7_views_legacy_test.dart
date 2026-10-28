@@ -2,7 +2,7 @@
 //
 // - A1: a failure says what failed, never the exception, in the ink failure
 //   snackbar with the alert role and "Stäng" (content-style-guide.md:87-97;
-//   Komponentark v1:750; tillganglighetshandoff:172).
+//   tillganglighetshandoff:172).
 // - A2: the category swatches read ModeColors and keep the generated values
 //   of their mode (NULAGE.md:71-74; tokens.json:522).
 // - A3: busy buttons draw the plate line, work in progress is the plate line
@@ -369,8 +369,8 @@ void main() {
 
   group('A4: state is a token, never an opacity (tokens.json:41)', () {
     // A state ternary over Opacity or an alpha is the old way. The on-ink
-    // step plate in cooking mode is drawn at 0.6 (Skarmar v12 del 1 #laga
-    // :277-288, tokens.json:47-51) and is the one allowed ladder step here.
+    // step plate in cooking mode is drawn at 0.6 (
+    // tokens.json:47-51) and is the one allowed ladder step here.
     const files = [
       'lib/views/family/family_member_form_view.dart',
       'lib/views/family/who_is_eating_sheet.dart',
