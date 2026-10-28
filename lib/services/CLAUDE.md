@@ -14,7 +14,6 @@ These services intentionally don't extend `BaseService` because they're pure-com
 
 - `lib/services/feature_flags/feature_flag_service.dart`
 - `lib/services/device_integrity_service.dart`
-- `lib/services/cache/permission_cache_service.dart`
 - `lib/services/theme_service.dart` (only ChangeNotifier — needs UI rebuild signal)
 - `lib/services/performance/firebase_performance_service.dart`
 - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`

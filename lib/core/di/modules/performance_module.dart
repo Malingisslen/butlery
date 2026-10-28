@@ -21,8 +21,6 @@ import 'package:butlery/services/monitoring/app_monitoring_service.dart';
 import 'package:butlery/services/monitoring/web_error_reporter.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:butlery/services/cache/permission_cache_service.dart';
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 // Dependencies from Core Module
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -51,7 +49,6 @@ class PerformanceModule implements DIModule {
     PerformanceMonitoringService,
     AppMonitoringService,
     JsonCacheHelper,
-    PermissionCacheService,
   ];
 
   @override
@@ -73,13 +70,6 @@ class PerformanceModule implements DIModule {
     container.registerLazySingleton<IntelligentCacheManager>(
       () => IntelligentCacheManager(),
       dispose: (s) => s.clearCache(),
-    );
-
-    container.registerLazySingleton<PermissionCacheService>(
-      () => PermissionCacheService(
-        featureFlags: app<FeatureFlagService>(),
-      ),
-      dispose: (s) => s.invalidateAll(),
     );
   }
 
@@ -171,10 +161,6 @@ class PerformanceModule implements DIModule {
       if (container.isRegistered<IntelligentCacheManager>()) {
         services['IntelligentCacheManager'] =
             container<IntelligentCacheManager>();
-      }
-      if (container.isRegistered<PermissionCacheService>()) {
-        services['PermissionCacheService'] =
-            container<PermissionCacheService>();
       }
 
       // Basic validation - services are not null
