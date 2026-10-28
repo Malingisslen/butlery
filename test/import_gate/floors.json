@@ -12,7 +12,7 @@
       "extraSteps": 1
     },
     "text": {
-      "recall": 0.9675,
+      "recall": 0.9722,
       "headingLeaks": 3,
       "titleExact": 29,
       "stepsExact": 11,
@@ -23,14 +23,14 @@
       "extraSteps": 4
     },
     "stokig": {
-      "recall": 0.8906,
+      "recall": 0.9531,
       "headingLeaks": 0,
-      "titleExact": 3,
+      "titleExact": 9,
       "stepsExact": 1,
       "portionsExact": 6,
       "timeExact": 2,
       "failures": 0,
-      "extraIngredients": 11,
+      "extraIngredients": 4,
       "extraSteps": 9
     }
   },
@@ -46,29 +46,9 @@
       "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
     },
     {
-      "fixture": "stokig/02-tidning-utan-rubriker",
-      "key": "pasta",
-      "reason": "Titeln hamnar bland ingredienserna och dedupen tar bort den äkta raden, eftersom titeln innehåller dess namn (BUT-2455)."
-    },
-    {
       "fixture": "stokig/03-ocr-avstavning-sidhuvud",
       "key": "smör",
       "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
-    },
-    {
-      "fixture": "stokig/09-inneslutna-namn",
-      "key": "mjölk",
-      "reason": "Dedupen låter ett längre namn som innehåller ett kortare ersätta det, så två olika varor blir en (BUT-2455)."
-    },
-    {
-      "fixture": "stokig/09-inneslutna-namn",
-      "key": "smör",
-      "reason": "Dedupen låter ett längre namn som innehåller ett kortare ersätta det, så två olika varor blir en (BUT-2455)."
-    },
-    {
-      "fixture": "stokig/09-inneslutna-namn",
-      "key": "pasta",
-      "reason": "Dedupen låter ett längre namn som innehåller ett kortare ersätta det, så två olika varor blir en (BUT-2455)."
     }
   ]
 }
