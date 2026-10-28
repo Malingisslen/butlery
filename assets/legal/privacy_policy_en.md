@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 28, 2026
-**Version:** 1.23.0
+**Version:** 1.23.1
 
 ---
 
@@ -299,12 +299,12 @@ You have the following rights under GDPR:
 
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
 - Delete your account and all your data
-- **How:** Profile > Account Management > Delete account
+- **How:** More > Account & security > Delete account permanently
 - **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
 
 ### 9.4 Right to data portability (Art. 20)
 - Export all your data in machine-readable format (JSON)
-- **How:** Profile > Account Management > Export my data
+- **How:** More > Privacy and data > Export my data
 - **Format:** JSON (universal format)
 - **Sign-in methods:** The export shows which sign-in methods are linked to the account (email and password, Google or Apple) and the email address from Google or Apple. Sign-in tokens and the profile picture link are not included.
 
@@ -314,7 +314,7 @@ You have the following rights under GDPR:
 
 ### 9.6 Right to withdraw consent (Art. 7.3)
 - Withdraw consent at any time
-- **How:** Profile > Account Management > Manage consents
+- **How:** More > Privacy and data > Consents
 - **Effect:** Only prospective, not retroactive
 
 ### 9.7 Right to object (Art. 21)
@@ -369,7 +369,7 @@ Butlery is a mobile application and does not use browser cookies. Instead, we us
 - **Secure storage:** Sensitive data (encryption keys) is stored in platform-provided secure storage (iOS Keychain / Android Keystore)
 - **Images waiting to be sent:** Images you take or choose while offline (food photos, comment photos, chat images and a profile picture) are kept temporarily in the app on your phone, without location data, until they have been sent or you throw them away. An image that has not been sent is thrown away automatically after 30 days. A chat image that is waiting appears to the recipient as an empty box until it has been sent. Other images are shown to others only after they have been sent.
 
-You can manage data processing consent in: **Profile > Account Management > Manage consents**
+You can manage data processing consent in: **More > Privacy and data > Consents**
 
 ---
 
@@ -442,10 +442,10 @@ To exercise your GDPR rights:
 |-------|---------------|--------------|
 | **Access** | See what data we have | Contact integritet@butlery.se |
 | **Rectification** | Correct errors | Settings or contact us |
-| **Erasure** | Delete everything | Profile > Delete account |
-| **Portability** | Export data | Profile > Export my data |
+| **Erasure** | Delete everything | More > Account & security > Delete account permanently |
+| **Portability** | Export data | More > Privacy and data > Export my data |
 | **Restriction** | Pause processing | Contact integritet@butlery.se |
-| **Withdraw consent** | Take back approval | Profile > Manage consents |
+| **Withdraw consent** | Take back approval | More > Privacy and data > Consents |
 | **Object** | Protest processing | Contact integritet@butlery.se |
 | **Complain** | Report to authority | Contact IMY (imy.se) |
 

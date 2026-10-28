@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 28 oktober 2026
-**Version:** 1.23.0
+**Version:** 1.23.1
 
 ---
 
@@ -300,12 +300,12 @@ Du har följande rättigheter enligt GDPR:
 
 ### 9.3 Rätt till radering (Art. 17 - ”Rätten att bli glömd”)
 - Radera ditt konto och alla dina uppgifter
-- **Hur:** Profil → Kontohantering → Radera konto
+- **Hur:** Mer → Konto & säkerhet → Radera konto permanent
 - **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt. Har du loggat in med Apple ångrar du raderingen genom att logga in med Apple igen. Apple frågar då på nytt om du vill använda Butlery med ditt Apple-konto.
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
 - Exportera alla dina uppgifter i maskinläsbart format (JSON)
-- **Hur:** Profil → Kontohantering → Exportera mina data
+- **Hur:** Mer → Integritet och data → Exportera mina data
 - **Format:** JSON (universellt format)
 - **Inloggningssätt:** Exporten visar vilka inloggningssätt som är kopplade till kontot (e-post och lösenord, Google eller Apple) och e-postadressen från Google eller Apple. Inloggningsnycklar (token) och länken till profilbilden ingår inte.
 
@@ -315,7 +315,7 @@ Du har följande rättigheter enligt GDPR:
 
 ### 9.6 Rätt att återkalla samtycke (Art. 7.3)
 - Återkalla samtycke när som helst
-- **Hur:** Profil → Kontohantering → Hantera samtycken
+- **Hur:** Mer → Integritet och data → Samtycken
 - **Påverkan:** Endast framåtriktat, inte retroaktivt
 
 ### 9.7 Rätt att invända (Art. 21)
@@ -370,7 +370,7 @@ Butlery är en mobilapplikation och använder inte webbläsarcookies. Istället 
 - **Säker lagring:** Känslig data (krypteringsnycklar) lagras i plattformens säkra lagring (iOS Keychain / Android Keystore)
 - **Bilder som väntar på att skickas:** Bilder du tar eller väljer utan uppkoppling (matbilder, kommentarsbilder, chattbilder och profilbild) sparas tillfälligt i appen på din telefon, utan platsuppgifter, tills de har skickats eller du slänger dem. En bild som inte har skickats slängs automatiskt efter 30 dagar. En chattbild som väntar syns för mottagaren som en ruta utan bild tills den har skickats. Övriga bilder syns för andra först när de har skickats.
 
-Du kan hantera samtycke för databehandling i: **Profil → Kontohantering → Hantera samtycken**
+Du kan hantera samtycke för databehandling i: **Mer → Integritet och data → Samtycken**
 
 ---
 
@@ -443,10 +443,10 @@ För att utöva dina GDPR-rättigheter:
 |-----------|-----------------|----------------|
 | **Tillgång** | Se vilka uppgifter vi har | Kontakta integritet@butlery.se |
 | **Rättelse** | Korrigera fel | Inställningar eller kontakta oss |
-| **Radering** | Radera allt | Profil → Radera konto |
-| **Portabilitet** | Exportera data | Profil → Exportera mina data |
+| **Radering** | Radera allt | Mer → Konto & säkerhet → Radera konto permanent |
+| **Portabilitet** | Exportera data | Mer → Integritet och data → Exportera mina data |
 | **Begränsning** | Pausa behandling | Kontakta integritet@butlery.se |
-| **Återkalla samtycke** | Ta tillbaka godkännande | Profil → Hantera samtycken |
+| **Återkalla samtycke** | Ta tillbaka godkännande | Mer → Integritet och data → Samtycken |
 | **Invända** | Protestera behandling | Kontakta integritet@butlery.se |
 | **Klaga** | Rapportera till myndighet | Kontakta IMY (imy.se) |
 
