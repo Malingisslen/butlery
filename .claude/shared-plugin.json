@@ -720,8 +720,8 @@
         "^(?:lib|test|tools|functions/src)/(?!l10n/app_localizations)(?!unit/theme/mechanical_rewrites_test\\.dart$)"
       ],
       "strips": [
-        " \\((?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?\\)",
-        "(?<=\\() ?(?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?[;,] ",
+        "(?<!^\\s*(?:\\/\\/\\/?|\\*)\\s*) \\((?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?\\)",
+        "(?<=\\() ?(?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?[;,] (?![:\\d]|\\u00c2\\u00a7)",
         "[;,] (?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?(?=\\))",
         "(?:,| \\u00e2\\u0080\\u0094| \\u00e2\\u0080\\u0093) (?:produktregler\\.md|beslutslogg\\.md|flows-roles-budget\\.md|Komponentark v\\d+)(?:\\s*(?::|\\u00c2\\u00a7)\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?(?:\\s*,\\s*(?::|\\u00c2\\u00a7)?\\s*\\d+(?:\\.\\d+)*(?:\\s*(?:-|\\u00e2\\u0080\\u0093)\\s*\\d+)?)*)?(?=[.:;,]?$)"
       ]
