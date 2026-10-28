@@ -40,6 +40,11 @@ class RecipeActionBar extends StatelessWidget {
 
   static const double _stackBelow = 360;
 
+  // "Lägg 7 varor i inköpslistan" is far longer than "Börja laga" and broke
+  // onto two lines at equal widths; the two own-recipe buttons share 2:3.
+  static const int _ownRecipeFirstFlex = 2;
+  static const int _ownRecipeSecondFlex = 3;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -130,9 +135,9 @@ class RecipeActionBar extends StatelessWidget {
             }
             return Row(
               children: [
-                Expanded(child: first),
+                Expanded(flex: isOthersRecipe ? 1 : _ownRecipeFirstFlex, child: first),
                 const SizedBox(width: AppDimensions.space8),
-                Expanded(child: second),
+                Expanded(flex: isOthersRecipe ? 1 : _ownRecipeSecondFlex, child: second),
               ],
             );
           },

@@ -861,7 +861,7 @@
   "recipePortionAbbreviation": "port",
   "recipePortionSingular": "portion",
   "recipePortionsPlural": "portioner",
-  "recipeCookedToday": "Lagat i dag",
+  "recipeCookedToday": "Markera som lagat",
   "recipeCookedCount": "{count, plural, =1{Lagat 1 gång} other{Lagat {count} gånger}}",
   "@recipeCookedCount": {
     "placeholders": {
@@ -4070,7 +4070,7 @@
   "shoppingSharedLists": "Delade inköpslistor",
   "sharedLoadingContent": "Laddar delat innehåll …",
   "sharedNoContentYet": "Inga delade recept än",
-  "sharedEmptyStateExplanation": "När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.",
+  "sharedEmptyStateExplanation": "När du eller dina vänner delar recept och menyer visas de här. Dela ett recept för att komma igång.",
   "taggingAnalyzingIngredients": "Analyserar ingredienser …",
   "taggingCouldNotAnalyze": "Kunde inte analysera recept",
   "taggingCouldNotSaveTags": "Kunde inte spara taggar",

@@ -1156,7 +1156,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipePortionsPlural => 'portioner';
 
   @override
-  String get recipeCookedToday => 'Lagat i dag';
+  String get recipeCookedToday => 'Markera som lagat';
 
   @override
   String recipeCookedCount(int count) {
@@ -6125,7 +6125,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sharedEmptyStateExplanation =>
-      'När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.';
+      'När du eller dina vänner delar recept och menyer visas de här. Dela ett recept för att komma igång.';
 
   @override
   String get taggingAnalyzingIngredients => 'Analyserar ingredienser …';

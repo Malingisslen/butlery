@@ -61,6 +61,34 @@ void main() {
     );
   });
 
+  testWidgets('own recipe: the long list label gets the wider button', (
+    tester,
+  ) async {
+    await pump(tester, isOthersRecipe: false, width: 411);
+
+    final start = tester.getSize(
+      find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+    );
+    final list = tester.getSize(
+      find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+    );
+    expect(list.width, greaterThan(start.width));
+  });
+
+  testWidgets("someone else's recipe: the two buttons are equally wide", (
+    tester,
+  ) async {
+    await pump(tester, isOthersRecipe: true, width: 411);
+
+    final save = tester.getSize(
+      find.byKey(const ValueKey('test-recipe-detail-save-copy')),
+    );
+    final start = tester.getSize(
+      find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+    );
+    expect(save.width, start.width);
+  });
+
   testWidgets("someone else's recipe: save leads, start cooking follows", (
     tester,
   ) async {

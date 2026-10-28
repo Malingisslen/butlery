@@ -1182,7 +1182,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipePortionsPlural => 'servings';
 
   @override
-  String get recipeCookedToday => 'Cooked today';
+  String get recipeCookedToday => 'Mark as cooked';
 
   @override
   String recipeCookedCount(int count) {
