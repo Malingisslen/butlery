@@ -26,12 +26,12 @@
       "recall": 0.9531,
       "headingLeaks": 0,
       "titleExact": 9,
-      "stepsExact": 5,
-      "portionsExact": 6,
+      "stepsExact": 6,
+      "portionsExact": 7,
       "timeExact": 2,
       "failures": 0,
       "extraIngredients": 3,
-      "extraSteps": 7
+      "extraSteps": 6
     }
   },
   "knownRed": [

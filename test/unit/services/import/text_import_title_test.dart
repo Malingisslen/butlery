@@ -260,6 +260,76 @@ Stek laxen i en het panna ca 3 minuter.''');
       expect(recipe.instructions, hasLength(2));
     });
 
+    test('a short yield label gives the portions', () async {
+      final recipe = await parse('Laxpasta\n4 port\n$body');
+      expect(recipe.portions, 4);
+    });
+
+    test('a shop offer is not a yield', () async {
+      final recipe = await parse('Laxpasta\n$body\nKöp 3 betala för 2');
+      expect(recipe.portions, isNull);
+    });
+
+    test('"för N personer" gives the portions', () async {
+      final recipe = await parse('Laxpasta\nRecept för 6 personer\n$body');
+      expect(recipe.portions, 6);
+    });
+
+    test('a timer inside a step is not the recipe time', () async {
+      final recipe = await parse('''
+Gryta
+Ingredienser
+500 g kycklingfilé
+1 burk kokosmjölk
+Gör så här
+Häll i kokosmjölken och låt sjuda i 15 minuter under lock.''');
+      expect(recipe.timeMinutes, isNull);
+    });
+
+    test('a time on its own line is the recipe time', () async {
+      final recipe = await parse('Gryta\n30 min\n$body');
+      expect(recipe.timeMinutes, 30);
+    });
+
+    test(
+      'a blog intro above the list is the description, not a step',
+      () async {
+        final recipe = await parse('''
+Kycklinggryta
+Barnen älskar den och den går snabbt att laga en vardagskväll när man kommer hem.
+$body''');
+        expect(recipe.description, startsWith('Barnen älskar den'));
+        expect(
+          recipe.instructions.where((s) => s.startsWith('Barnen')),
+          isEmpty,
+        );
+      },
+    );
+
+    test('steps with no list above or below them stay steps', () async {
+      final recipe = await parse('''
+Pannkakor
+Blanda mjöl och mjölk i en skål till en slät smet.
+Stek tunna pannkakor i smör tre minuter per sida.''');
+      expect(recipe.instructions, hasLength(2));
+    });
+
+    for (final (name, line) in [
+      ('a section label', 'MAT & DRYCK'),
+      ('a byline', 'Av Lisa Andersson | 12 mars 2024'),
+      ('a photo credit', 'Foto: Johan Berg'),
+      ('a yield label', 'Portioner: 4'),
+      ('a lone time', 'ca 30 minuter'),
+      ('an account name', 'mat_med_mia_123'),
+    ]) {
+      test('the description skips $name', () async {
+        final recipe = await parse(
+          'Krämig pasta\n$line\nEn enkel vardagsrätt som alla gillar.\n$body',
+        );
+        expect(recipe.description, 'En enkel vardagsrätt som alla gillar.');
+      });
+    }
+
     test('a name cut at é is still one ingredient', () async {
       final recipe = await parse('''
 Ugnslax

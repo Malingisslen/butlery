@@ -1543,10 +1543,18 @@ Koka potatisen i 20 minuter.
         // The other half of the `??`: the extractor returning null must not
         // blank out a time the old path could still find.
         const text =
+            'Pannkakor\n20 min\nIngredienser:\n3 dl mjöl\n'
+            'Gör så här:\nGrädda pannkakorna på medelvärme.';
+        final result = await strategy.import(text);
+        expect(result.recipe!.timeMinutes, equals(20));
+      });
+
+      test('a timer inside a step is not the recipe time', () async {
+        const text =
             'Pannkakor\nIngredienser:\n3 dl mjöl\n'
             'Gör så här:\nGrädda i 20 min på medelvärme.';
         final result = await strategy.import(text);
-        expect(result.recipe!.timeMinutes, equals(20));
+        expect(result.recipe!.timeMinutes, isNull);
       });
 
       test('should extract servings information', () async {

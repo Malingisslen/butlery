@@ -169,7 +169,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   // "Tid: 25 min", "Förberedelse: ca 10 min".
   static final _timeMetadataLine = RegExp(
-    r'^(?:tid|total tid|förberedelse(?:stid)?)\s*:\s*(?:ca\.?\s*)?\d',
+    r'^(?:tid|total tid|förberedelse(?:stid)?|tillagning(?:stid)?)\s*:\s*(?:ca\.?\s*)?\d',
     caseSensitive: false,
   );
 
@@ -452,6 +452,30 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return !startsBlock || t[0] == t[0].toLowerCase();
   }
 
+  // "Av Lisa Andersson | 12 mars 2024", "Recept: Maria Lind", "Foto: Johan
+  // Berg". Only the description skips these: an ingredient or step line is
+  // never matched against it.
+  static final _byline = RegExp(
+    r'^(?:[Aa]v|[Rr]ecept|[Tt]ext|[Ff]oto|[Bb]ild)\s*:?\s+[A-ZÅÄÖ][a-zåäöé]+(?:\s+[A-ZÅÄÖ][a-zåäöé]+)+\s*(?:[|·,–-].*)?$',
+  );
+
+  // "30 min" alone, or the ": 30 min" the splitter leaves of "Tillagning:
+  // 30 min".
+  static final _bareTimeLine = RegExp(
+    r'^[:\s]*(?:ca\.?\s*)?\d+\s*(?:min|timm|tim)\w*\.?$',
+    caseSensitive: false,
+  );
+
+  /// Page text that is never the recipe's description: a section label, an
+  /// account name, a yield or time line, a byline.
+  bool _isPageMetadata(String line) =>
+      _isAllCapsLabel(line) ||
+      _looksLikeInstagramUsername(line) ||
+      _yieldLabel.hasMatch(line) ||
+      _timeMetadataLine.hasMatch(line) ||
+      _bareTimeLine.hasMatch(line) ||
+      _byline.hasMatch(line);
+
   /// Check if a line looks like a standalone Instagram username
   bool _looksLikeInstagramUsername(String line) {
     // Instagram usernames: lowercase letters, numbers, underscores, dots
@@ -675,10 +699,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // right after one is a row whose quantity the writer left out, not a
     // heading and not noise.
     bool afterIngredientRow = false;
+    // Step-like prose above the first ingredient row or step marker is held
+    // back: the page's intro if a list follows it, the steps if none does.
+    bool listStarted = false;
+    final introLines = <String>[];
+    final stepLines = <String>{};
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
+      listStarted |= inIngredients || inInstructions || afterIngredientRow;
 
       if (line.isEmpty) continue;
       if (!titleIsAlsoGroup && line == recipeName) {
@@ -860,14 +890,18 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
+          stepLines.add(line);
         }
         continue;
       }
 
-      if (score >= 2) {
+      if (score >= 2 && !listStarted) {
+        introLines.add(line);
+      } else if (score >= 2) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
+          stepLines.add(line);
         }
         afterIngredientRow = false;
       } else if (RecipeSectionDetector.looksLikeIngredient(line) ||
@@ -895,7 +929,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
             );
           }
         }
-      } else if (description.isEmpty && line.length > 10 && score < 1) {
+      } else if (description.isEmpty &&
+          line.length > 10 &&
+          score < 1 &&
+          !_isPageMetadata(line)) {
         description = line;
         afterIngredientRow = false;
       } else if (!(startsBlock[i] && _shortPhrase.hasMatch(line.trim()))) {
@@ -904,6 +941,26 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // opening a block ("Ostsås") does not end it.
         afterIngredientRow = false;
       }
+    }
+
+    listStarted |= inIngredients || inInstructions || afterIngredientRow;
+    if (listStarted) {
+      if (description.isEmpty) {
+        description = introLines.firstWhere(
+          (l) => !_isPageMetadata(l),
+          orElse: () => '',
+        );
+      }
+    } else {
+      final introSteps = <String>[];
+      for (final line in introLines) {
+        final instruction = _parseInstructionLine(line);
+        if (instruction != null && instruction.length > 10) {
+          introSteps.add(instruction);
+          stepLines.add(line);
+        }
+      }
+      instructions.insertAll(0, introSteps);
     }
 
     // STAGE 4: FINAL CLEANUP
@@ -942,7 +999,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Deliberately NOT claiming a corpus delta here. The eval's time metric
     // moves on few pages, because most labelled lines were already read
     // correctly — see the class doc for what is genuinely new.
-    final timeMinutes = RecipeTimeExtractor.extract(text) ?? _extractTime(text);
+    final timeMinutes =
+        RecipeTimeExtractor.extract(text) ??
+        _extractTime(
+          text,
+          lines.where((l) => !stepLines.contains(l.trim())).join('\n'),
+        );
     final mealType = _guessMealType(text);
 
     final structured = await _structuredIngredients(
@@ -1254,8 +1316,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final patterns = [
       RegExp(r'portioner?\s*:\s*(\d+)', caseSensitive: false),
       RegExp(r'servings?\s*:\s*(\d+)', caseSensitive: false),
-      RegExp(r'(\d+)\s*portion'),
-      RegExp(r'för\s*(\d+)'),
+      RegExp(r'(\d+)\s*port(?:ion[a-zåäö]*)?(?![a-zåäö])'),
+      // A unit after the number, so a shop offer ("betala för 2") is not a
+      // yield.
+      RegExp(r'för\s*(\d+)\s*(?:pers|port)'),
       RegExp(r'(\d+)\s*pers'),
     ];
 
@@ -1269,17 +1333,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return null;
   }
 
-  int? _extractTime(String text) {
+  /// [scavengeFrom] is the text without its step lines: a timer inside a
+  /// step ("låt sjuda i 15 minuter") is not the recipe's time, so the
+  /// unlabelled patterns never read one.
+  int? _extractTime(String text, String scavengeFrom) {
     final patterns = [
-      RegExp(r'tid\s*:\s*(\d+)\s*min', caseSensitive: false),
-      RegExp(r'tid\s*:\s*(\d+)\s*timm?', caseSensitive: false),
-      RegExp(r'time\s*:\s*(\d+)\s*min', caseSensitive: false),
-      RegExp(r'(\d+)\s*min'),
-      RegExp(r'(\d+)\s*timm'),
+      (RegExp(r'tid\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'tillagning\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'tid\s*:\s*(\d+)\s*timm?', caseSensitive: false), text),
+      (RegExp(r'time\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'(\d+)\s*min'), scavengeFrom),
+      (RegExp(r'(\d+)\s*timm'), scavengeFrom),
     ];
 
-    for (final pattern in patterns) {
-      final match = pattern.firstMatch(text.toLowerCase());
+    for (final (pattern, source) in patterns) {
+      final match = pattern.firstMatch(source.toLowerCase());
       if (match != null) {
         final time = int.tryParse(match.group(1)!);
         if (pattern.pattern.contains('timm') && time != null) {
