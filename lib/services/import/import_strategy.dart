@@ -121,12 +121,20 @@ mixin ImportValidationMixin {
     return match != null ? int.tryParse(match.group(0)!) : null;
   }
 
+  // A reader count after the score marks the page's average from its
+  // readers, not the user's own rating.
+  static final _readerCount = RegExp(
+    r'^\s*\(?\s*\d+\s*(?:röster|betyg|omdömen|recensioner|votes|ratings|reviews)',
+    caseSensitive: false,
+  );
+
   double? extractRating(String text) {
     final match = RegExp(
-      r'(\d+(?:\.\d+)?)\s*(?:av\s*5|/5|\*|⭐|★)',
+      r'(\d+(?:[.,]\d+)?)\s*(?:av\s*5|/5|\*|⭐|★)',
     ).firstMatch(text);
     if (match != null) {
-      final rating = double.tryParse(match.group(1)!);
+      if (_readerCount.hasMatch(text.substring(match.end))) return null;
+      final rating = double.tryParse(match.group(1)!.replaceAll(',', '.'));
       return rating != null && rating >= 1.0 && rating <= 5.0 ? rating : null;
     }
     // ShareService writes a rating as one ★ per star ("★★★★"), no number.
