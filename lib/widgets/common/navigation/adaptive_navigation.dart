@@ -174,10 +174,8 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   });
 
   /// The shell's four destinations, in the drawn order Hem · Meny · Inköp ·
-  /// Mer (tillganglighetshandoff 'Navigation & toppfält'; Skarmar v12 del 1
-  /// #hemrecept). "Lägg till" is not among them: it is the separate plus
-  /// Labels are capitalised as drawn (Komponentark
-  /// v1:663-666; NAV-INK); the tab says "Meny", not "Veckomeny" (B-17).
+  /// Mer
+  /// "Lägg till" is not among them: it is the separate plus
   static List<AdaptiveNavigationItem> getNavigationItems(
     BuildContext context,
   ) => [

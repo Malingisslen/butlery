@@ -1,7 +1,7 @@
 // lib/widgets/common/navigation/underline_tabs.dart
 //
 // A row of text tabs over a hairline, the chosen one in ink with a bar under
-// it (Skarmar v12 #inkop: "Alla / Min del / Efter zon"). For choosing how one
+// it. For choosing how one
 // list is shown; the page-level tabs are the TabBar the theme draws.
 library;
 

@@ -78,8 +78,8 @@ class AuthActionHandler {
   ///
   /// With changes still in the queue, the sign-out is blocked with an
   /// explanation instead of the plain question: "N ändringar har inte
-  /// sparats", Vänta på synk · Logga ut och släng (produktregler.md:193,
-  /// Skarmar v12 del 4 #utloggningko). The queue is only emptied when the
+  /// sparats", Vänta på synk · Logga ut och släng
+  /// The queue is only emptied when the
   /// user picks the destructive choice; an ordinary sign-out leaves it on the
   /// device, where it syncs at this account's next sign-in.
   static Future<void> handleLogout(BuildContext context) async {
@@ -243,7 +243,7 @@ class AuthActionHandler {
 
       // The server wants a sign-in at most five minutes old. That is a step,
       // not an error: sign in again and the same request is made again
-      // (#kontoreauth). Nothing was scheduled yet.
+      // Nothing was scheduled yet.
       if (result.status == DeletionScheduleStatus.requiresReauth &&
           context.mounted) {
         Navigator.pop(context); // Close the waiting state

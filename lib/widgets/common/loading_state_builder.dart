@@ -72,8 +72,8 @@ class LoadingStateBuilder<T> extends StatelessWidget {
   /// Custom empty state widget builder
   final Widget Function(BuildContext context)? emptyBuilder;
 
-  /// What is being fetched, shown under the plate line (produktregler.md
-  /// §6.6, :302-304). Required: a loading state never shows without it.
+  /// What is being fetched, shown under the plate line
+  /// Required: a loading state never shows without it.
   final String loadingMessage;
 
   /// Loading variant to use (spinner, skeleton, etc.)

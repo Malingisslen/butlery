@@ -1,6 +1,6 @@
 // lib/widgets/common/list/check_row.dart
 //
-// One thing in a list you tick (Skarmar v12 'Importera från arkiv'): the square
+// One thing in a list you tick: the square
 // box first, then the name in bold with an optional muted line under it, and
 // a hairline under the row.
 library;

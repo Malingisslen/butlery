@@ -9,7 +9,7 @@ import 'package:butlery/core/utils/captured_snackbars.dart';
 /// PQ-09 = A): no green or red status fill, the
 /// message says what happened. A failure gets "Stäng" and stays until the
 /// user closes it, like every failure through SnackBarUtils.showFailure
-/// (content-style-guide.md:97; Komponentark v1:750, never "OK").
+/// (content-style-guide.md:97; never "OK").
 class ResultDisplayer {
   /// A wait, not motion (produktbeslut R8-9 = A).
   static const Duration afterDialogWait = Duration(milliseconds: 300);

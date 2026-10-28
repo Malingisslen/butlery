@@ -38,11 +38,11 @@ class StatusIndicators {
 /// Anatomy: a borderless tinted surface (surface.tint.warning, B83-2 = A), a
 /// wifi-off glyph in text.warning, and a bold 12.5 title in text.primary. It is a banner, never a dialog or an
 /// illustration, and the glyph is wifi-off, never the cloche
-/// (produktregler.md:162). The title is a single line, as in Skarmar v12
-/// del 4 #hemoffline: "Ingen anslutning", followed by " · N ändringar väntar"
-/// only when [pendingCount] is above zero (flows-roles-budget.md:111).
+/// The title is a single line
+/// "Ingen anslutning", followed by " · N ändringar väntar"
+/// only when [pendingCount] is above zero.
 ///
-/// With [onTap] the banner is a control (produktregler.md:300): button
+/// With [onTap] the banner is a control: button
 /// semantics, a chevron and a 48 dp floor. Without it, it is a status and
 /// nothing is tappable.
 ///
@@ -174,7 +174,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
       banner = _BannerFrame(
         key: const ValueKey('online'),
         // text.success (colorScheme.tertiary): circle-check is the "klart"
-        // status glyph (Komponentark v1:764).
+        // status glyph.
         tint: context.modeColors.surfaceTintSuccess,
         accent: cs.tertiary,
         icon: ButleryIcons.circleCheck,
@@ -310,7 +310,7 @@ class _BannerFrame extends StatelessWidget {
 }
 
 /// Small offline status icon for app bar: wifi-off in text.warning
-/// (Komponentark v1:764; tokens.json:92-95).
+/// (tokens.json:92-95).
 /// Uses ServiceLocator to access OfflineService directly so it works in any
 /// route without requiring a ChangeNotifierProvider ancestor.
 class OfflineStatusIcon extends StatelessWidget {

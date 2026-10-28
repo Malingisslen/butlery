@@ -21,15 +21,15 @@ import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 
 /// Tallrikslinjen: en vågrät progresslinje.
 ///
-/// Två former, båda ritade i Komponentark v1:303-309:
+/// Två former:
 ///
 /// * **Bestämd** ([value] satt): fylls vänster till höger i accentorange
-///   (token progressIndicator) på rännan (token progressTrack). v1:305.
+///   (token progressIndicator) på rännan (token progressTrack).
 /// * **Obestämd** ([value] null): ett stillastående segment som pulserar i
-///   opacitet på plats (v1:306 och :309). Det rör sig
+///   opacitet på plats. Det rör sig
 ///   aldrig i sidled, för rörelse ska inte simulera framsteg som inte mäts
 ///   (B-18). Vid reducerad rörelse står det still i full
-///   opacitet (v1:309, tillganglighetshandoff:179,
+///   opacitet (tillganglighetshandoff:179,
 ///   tokens.json motion.reducedMotion).
 ///
 /// Har du ett verkligt mått, skicka det: en linje som visar riktig progress
@@ -56,12 +56,12 @@ class PlateLine extends StatefulWidget {
   /// Vad som laddas, för skärmläsaren. Null ger `a11yLoading`.
   final String? semanticLabel;
 
-  /// Linjens tjocklek: 4 px i båda formerna (Komponentark v1:305-306,
+  /// Linjens tjocklek: 4 px i båda formerna (
   /// `height:4px`).
   static const double thickness = 4.0;
 
   /// Det obestämda segmentets läge och bredd som andel av linjen, avläst ur
-  /// ritningen (Komponentark v1:306: `left:22%`, `width:34%`).
+  /// ritningen (`left:22%`, `width:34%`).
   static const double segmentStart = 0.22;
   static const double segmentWidth = 0.34;
 
@@ -218,11 +218,11 @@ class _PlateLineState extends State<PlateLine>
 }
 
 /// Tallrikslinjen i en knapp: en upptagen knapp behåller sin form och sitt
-/// namn och får en linje längs sin nederkant (Komponentark v1:307, :365,
-/// :372; Grafisk manual v6:423, "tallrikslinje i underkanten, aldrig
+/// namn och får en linje längs sin nederkant (
+/// "tallrikslinje i underkanten, aldrig
 /// spinner").
 ///
-/// Ritningen (Komponentark v1:307 och :372) är 4 px hög och ligger kant i kant
+/// Ritningen är 4 px hög och ligger kant i kant
 /// med knappens nederkant. Rännan är knappens förgrund med 18 % (`rgba(23,37,
 /// 29,.18)` på saffran, tokens.json opacityLadder.onInk 0.18). Segmentet är
 /// förgrunden själv, börjar i vänsterkanten och är 58 % brett. Linjen är
@@ -260,7 +260,7 @@ class ButtonPlateLine extends StatefulWidget {
   /// Segmentets bredd som andel av knappen (`width:58%`).
   static const double segmentWidth = 0.58;
 
-  /// Rännans opacitet av förgrunden på en fylld knapp (Komponentark v1:372,
+  /// Rännans opacitet av förgrunden på en fylld knapp (
   /// `.18`; tokens.json opacityLadder.onInk).
   static const double trackAlpha = 0.18;
 
@@ -398,7 +398,7 @@ abstract final class PlateLineButton {
   }
 
   /// Gör ingenting. En upptagen knapp får inte vara avstängd, för då byter
-  /// den till den avstängda ytan (Komponentark v1:365: laddning och disabled
+  /// den till den avstängda ytan (laddning och disabled
   /// är två olika lägen). Den behåller sin tryckfunktion men gör inget.
   static void ignore() {}
 }
@@ -447,8 +447,8 @@ class BusyButtonSemantics extends StatelessWidget {
   }
 }
 
-/// Tallrikslinjen med sin text: "tallrikslinje + text" (produktregler.md:163,
-/// :304; B-18). Texten säger vad som hämtas, linjen bara att något pågår.
+/// Tallrikslinjen med sin text: "tallrikslinje + text" (
+/// B-18). Texten säger vad som hämtas, linjen bara att något pågår.
 ///
 /// Texten står ovanför linjen och läses inte upp för sig: linjen bär den som
 /// sin etikett, så att beskedet läses en gång. Linjen är högst [maxWidth]

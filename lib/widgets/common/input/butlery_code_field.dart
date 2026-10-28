@@ -10,8 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 
 /// The field for a one-time code: one logical text field shown as six boxes
 /// (mockup "Butlerys inmatningsfält", del 4 "Kodfält", chosen as direction A
-/// on 2026-10-10), six equal boxes with no divider (Skarmar v12 etapp 3
-/// #authmfa).
+/// on 2026-10-10), six equal boxes with no divider
 ///
 /// The boxes draw the digits. A transparent text field lies over them and
 /// takes the touches, the keyboard, paste and autofill, so a

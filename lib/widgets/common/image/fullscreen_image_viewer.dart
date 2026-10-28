@@ -322,13 +322,6 @@ class ImageFailedPlate extends StatelessWidget {
     final theme = Theme.of(context);
     final brightness = theme.brightness;
     final l10n = context.l10n;
-    // surface.raised = colorScheme.surfaceContainerHighest (#E6EAD9 light,
-    // #2F4437 dark; Komponentark v1:839 "ytan behålls i
-    // surface.raised"). Interpretation: the token wins over the drawing's
-    // dark slot #24382C (--r04slot-834).
-    // The glyph and the second line are text.secondary.onRaised (#5B6959 /
-    // #A9B2A0); the drawing's single #5b6959 literal
-    // (del 4:888,890) is kept in light and replaced by the token in dark.
     // The first line is drawn as text.bodyMuted (#37453A / #C9D3C4).
     final secondary = AppModeColors.textSecondaryOnRaised(brightness);
     // tillganglighetshandoff:188: role status, the text read once, the glyph
@@ -346,7 +339,7 @@ class ImageFailedPlate extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Drawn at 26 px (del 4:888); iconSizeL (24) is the nearest
+                // Drawn at 26 px; iconSizeL (24) is the nearest
                 // standard step.
                 ButleryIcon(
                   ButleryIcons.image,

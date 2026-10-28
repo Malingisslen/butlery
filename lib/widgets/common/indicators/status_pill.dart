@@ -21,7 +21,6 @@ class StatusPill extends StatelessWidget {
         color: cs.secondaryContainer,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      // Komponentark v1:297 draws the pill text at 0.5 px tracking.
       child: Text(
         label,
         style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),

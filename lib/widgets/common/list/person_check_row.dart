@@ -1,6 +1,6 @@
 // lib/widgets/common/list/person_check_row.dart
 //
-// One person in a list you tick people from (Skarmar v12 del 3 'Ny delad
+// One person in a list you tick people from ('Ny delad
 // inköpslista', "Dela med"): the avatar, the name with what it is beside it
 // in the muted tone, the square box at the end, and a hairline under. Every
 // picker that chooses people draws this row, so none of them sets its own box.

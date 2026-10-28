@@ -1,31 +1,18 @@
 // lib/widgets/common/navigation/butlery_bottom_navigation.dart
 //
-// PQ-17 = A (fas2/produktbeslut-2026-09-23.json): the shell's navigation is
+// PQ-17 = A: the shell's navigation is
 // four destinations in a tab list plus a separate round saffron "Lägg till".
 //
-//   Komponentark v1:661-667  "Bottennavigation · 4 destinationer + 1 knapp":
-//                             4 tabs in one tablist, the plus outside it,
-//                             56 px + 3 px ring = 62 px outer diameter,
-//                             62 dp hitbox; focus ring around the whole tab.
 //   tillganglighetshandoff 'Navigation & toppfält' (row 131): tablist with 4
 //                             tabs + a separate button named "Lägg till" with
 //                             its own focus stop; the selected tab is exposed
 //                             as selected, not only by the saffron line; the
 //                             tablist is read last.
-//   produktregler.md:1052-1058 (§ 21.2): the rail carries the bottom row's
-//                             vocabulary (same surface, the saffron marker as
-//                             a strip at the selected entry's start) and
-//                             "lägg till" is a round saffron button at the
-//                             top of the rail.
-//   Skarmar v12 etapp 10 #bredskal: the rail drawn at 104 dp, the plus on top,
-//                             a divider, the destinations, "mer" at the foot.
 //
 // NAV-INK (package 6, the lead's decision): the bar and the rail stand on
-// surface.ink #24382C in both modes, as Komponentark v1:662 and #bredskal
-// (Skarmar v12 etapp 10 :72) draw them; produktregler.md:1055 names no
-// colour. The labels are capitalised as the Komponentark draws them (Hem,
-// Meny, Inköp, Mer; B-17 "Meny"). produktregler.md:1055 still says "gemena
-// etiketter"; the lead chose the drawing.
+// surface.ink #24382C in both modes
+// The labels are capitalised (Hem,
+// Meny, Inköp, Mer; B-17 "Meny").
 //
 // Identity is the destination's route (`nav-{route}`), never its position.
 library;
@@ -85,9 +72,7 @@ Widget navigationTabList({required Widget child}) => Semantics(
 /// * [marker]: action.primary saffron #D68523, colorScheme.secondary in both
 ///   schemes; the plate line under the chosen label.
 /// * [divider]: paper at the ladder's on-ink 0.18 step (tokens.json:40-53).
-///   Interpretation: #bredskal draws border.onInk #3F5145
-///   (tokens.json:223-227), which is not delivered to the app yet; the
-///   ladder step (#4A5A4F on ink) is the nearest allowed value. Decorative,
+///   Decorative,
 ///   no contrast floor.
 @immutable
 class NavInkColors {
@@ -118,7 +103,7 @@ class NavInkColors {
 }
 
 /// Everything on the ink bar or rail: focus rings are paper, as on a dark
-/// surface ("papper på mörkt", Komponentark v1:657; tokens.json:155-160
+/// surface ("papper på mörkt", tokens.json:155-160
 /// focusRing dark), in both modes.
 Widget onInkSurface({required Widget child}) =>
     FocusRingSurface(brightness: Brightness.dark, child: child);
@@ -143,8 +128,7 @@ class ButleryBottomNavigation extends StatelessWidget {
   final List<AdaptiveNavigationItem> items;
   final ValueChanged<int> onTap;
 
-  /// What the plus does. Null opens the add sheet (Skarmar v12 del 1
-  /// #plussheet).
+  /// What the plus does. Null opens the add sheet
   final VoidCallback? onAdd;
 
   /// Whether the plus is drawn. The shell always draws it.
@@ -230,8 +214,8 @@ class _BottomNavTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isSelected ? ink.selected : ink.unselected;
     final label = item.label;
-    // navLabel 11/700 for every tab (tokens.json typography.roles.navLabel;
-    // Grafisk manual v6:244 "Aldrig 400 under 12 px"), without tracking, as
+    // navLabel 11/700 for every tab
+    // without tracking, as
     // drawn. The chosen tab is told by colour, the line
     // and the selected state, never by weight alone.
     final style = AppTextStyles.navLabel.copyWith(color: color);
@@ -243,7 +227,6 @@ class _BottomNavTab extends StatelessWidget {
       identifier: 'nav-${item.route}',
       label: item.accessibleLabel,
       selected: isSelected,
-      // Komponentark v1:667: the focus ring goes around the whole tab.
       child: ButleryControlFocus(
         child: Material(
           type: MaterialType.transparency,
@@ -312,9 +295,7 @@ class _BottomNavTab extends StatelessWidget {
 /// A destination icon with its optional count.
 ///
 /// Interpretation: the count is Material's rounded Badge with navLabel
-/// 11/700 figures, in the drawn colours (saffron, count in ink). #bredskal
-/// (Skarmar v12 etapp 10 :75) draws a square 16 px box with 10.5/700 tabular
-/// figures; that geometry is not built here.
+/// 11/700 figures, in the drawn colours (saffron, count in ink).
 class NavBadgedIcon extends StatelessWidget {
   const NavBadgedIcon({
     required this.icon,
@@ -357,18 +338,12 @@ class NavBadgedIcon extends StatelessWidget {
 }
 
 /// The round saffron "Lägg till": an action, never a destination
-/// (produktregler.md:1056).
 ///
 /// action.primary saffron (colorScheme.secondary, #D68523 in both modes) with
 /// the glyph in text.onActionPrimary (colorScheme.onSecondary, #17251D in both
 /// modes), as drawn. The ring is paper
 /// (colorScheme.onPrimary, #F5F4ED in both modes), drawn 3 px outside the
-/// 56 px surface; the rail draws it without a ring (#bredskal).
-///
-/// NAV-INK: on the ink bar the paper ring is seen in both modes, as drawn
-/// (Skarmar v12 del 4 #hem). #hemmorkt draws the ring
-/// in the dark page colour #17251D instead; the lead chose one ink bar for
-/// both modes, so the ring stays paper there too.
+/// 56 px surface; the rail draws it without a ring.
 class ButleryAddButton extends StatelessWidget {
   const ButleryAddButton({
     required this.onPressed,
@@ -387,8 +362,7 @@ class ButleryAddButton extends StatelessWidget {
   /// The ring's width on each side.
   static const double ringWidth = 3;
 
-  /// Surface plus ring: the component's size and its hitbox (Komponentark
-  /// v1:667, "hitbox 62 dp").
+  /// Surface plus ring: the component's size and its hitbox
   static const double outerDiameter = surfaceDiameter + 2 * ringWidth;
 
   static const Key buttonKey = ValueKey<String>('test-nav-add');
