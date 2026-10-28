@@ -42,7 +42,7 @@ enum ButleryTopBarPattern {
 /// ingen fri konstruktor, eftersom arket inte tillåter fler varianter.
 ///
 /// Höjden följer innehållet. [preferredSize] är taket Scaffold får: det som
-/// behövs vid 200 % text (tillgänglighetshandoff rad 85), så att ingenting
+/// behövs vid 200 % text, så att ingenting
 /// klipps när texten växer. Vid vanlig textstorlek tar fältet bara den plats
 /// innehållet kräver.
 class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
@@ -189,7 +189,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double subpageMinHeight =
       _subpagePadVertical + hitbox + _subpagePadVertical;
 
-  /// Textskalan taket räknas för (tillgänglighetshandoff rad 85: 200 %).
+  /// Textskalan taket räknas för.
   static const double _ceilingTextScale = 2.0;
 
   /// Rotnivåns titel får bryta på två rader innan den ellipseras.
@@ -315,8 +315,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
-        // Sidtiteln är vyns rubrik på nivå 1 (tillgänglighetshandoff
-        // rad 135), och den syns som den skrivs. `container` ger rubriken en
+        // Sidtiteln är vyns rubrik på nivå 1, och den syns som den skrivs. `container` ger rubriken en
         // egen nod; utan den vandrar rubrikflaggan uppåt till en förälder.
         Semantics(
           container: true,

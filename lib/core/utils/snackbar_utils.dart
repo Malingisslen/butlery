@@ -29,8 +29,7 @@ class SnackBarUtils {
   // Prevent instantiation
   SnackBarUtils._();
 
-  /// A confirmation. The ink look carries no status colour (
-  /// "Aldrig fylld yta i statusfärg"); the message says what
+  /// A confirmation. The message says what
   /// happened.
   ///
   /// Without an action of its own it carries "Stäng" (content-style-guide
@@ -88,7 +87,7 @@ class SnackBarUtils {
   /// without one, or with one named OK, it is "Stäng".
   ///
   /// The snackbar has the alert role, so a screen reader reads it without
-  /// moving focus (Butlery tillganglighetshandoff.dc.html:172). It stays
+  /// moving focus. It stays
   /// until the user acts, as every snackbar with an action does.
   ///
   /// Interpretation: the ink snackbar is drawn with one line of text
@@ -214,8 +213,7 @@ class SnackBarUtils {
   }
 
   /// Work in progress: the message with the plate line under it in the
-  /// snackbar's own text colour, never a spinner (
-  /// B-18). Interpretation: the drawing has no loading snackbar; the line
+  /// snackbar's own text colour, never a spinner. Interpretation: the drawing has no loading snackbar; the line
   /// takes the in-button form, in paper on ink.
   static void showLoading(
     BuildContext context,

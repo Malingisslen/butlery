@@ -848,8 +848,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  /// The rail beside the content, read after it as in the shell
-  /// (tillganglighetshandoff 'Navigation & toppfält').
+  /// The rail beside the content, read after it as in the shell.
   Widget _withRail({
     required bool show,
     required List<AdaptiveNavigationItem> items,

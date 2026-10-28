@@ -78,8 +78,8 @@ class ShoppingListContentWidget extends StatefulWidget {
   /// it until tapped, so for most users [SnackBar.persist] is false and it
   /// closes on its own after the app's normal snackbar time
   /// ([SnackBarConfig.normalDuration]). Under assistive navigation it stays
-  /// until `Stäng`: the action must be a real focusable target
-  /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
+  /// until `Stäng`: the action must be a real focusable target,
+  /// and Flutter's timeout does not pause while
   /// a screen reader reads it.
   static void showCategoryMoveReceipt(BuildContext context, String category) {
     SnackBarUtils.showInfo(

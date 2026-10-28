@@ -6,7 +6,7 @@
 // (content-style-guide.md:96-97), never `OK`. With an action Flutter keeps a
 // snackbar until tapped, so the receipt must close on its own, after the app's
 // normal snackbar time. Under assistive navigation it stays until Stäng: the
-// action is a real focusable target (tillganglighetshandoff:172).
+// action is a real focusable target.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -559,9 +559,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
-    // A
-    // failure carries Stäng and the alert role (content-style-guide.md:96;
-    // tillganglighetshandoff:172); a confirmation closes by itself after 4 s.
+    // A failure carries Stäng and the alert role (content-style-guide.md);
+    // a confirmation closes by itself after 4 s.
     if (isError) {
       SnackBarUtils.showFailure(context, what: message);
     } else {

@@ -2,7 +2,7 @@
 //
 // BUT-188: IndexedStack for tab state preservation
 // PQ-17: the shell's four tabs Hem · Meny · Inköp · Mer and the separate
-// plus (tillganglighetshandoff 'Navigation & toppfält').
+// plus.
 
 import 'dart:async';
 

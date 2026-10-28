@@ -39,7 +39,7 @@ class BatchImportPreview extends StatefulWidget {
   const BatchImportPreview({super.key, required this.recipes, this.backTo});
 
   /// The name of the import view that opened the preview, for the back
-  /// arrow's name "Tillbaka till …" (tillganglighetshandoff:132).
+  /// arrow's name "Tillbaka till …".
   final String? backTo;
 
   @override

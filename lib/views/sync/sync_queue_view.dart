@@ -33,7 +33,7 @@ class SyncQueueView extends StatefulWidget {
   const SyncQueueView({this.backTo, super.key});
 
   /// The name of the view Back returns to, when it is known ("Tillbaka till
-  /// Mer", #synkko; tillganglighetshandoff 'Navigation & toppfält').
+  /// Mer", #synkko).
   final String? backTo;
 
   static const Key syncNowKey = ValueKey<String>('sync-queue-sync-now');

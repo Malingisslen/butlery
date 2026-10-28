@@ -324,7 +324,7 @@ class ImageFailedPlate extends StatelessWidget {
     final l10n = context.l10n;
     // The first line is drawn as text.bodyMuted (#37453A / #C9D3C4).
     final secondary = AppModeColors.textSecondaryOnRaised(brightness);
-    // tillganglighetshandoff:188: role status, the text read once, the glyph
+    // Role status, the text read once, the glyph
     // decorative.
     return Semantics(
       container: true,

@@ -29,16 +29,13 @@ import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 ///   opacitet på plats. Det rör sig
 ///   aldrig i sidled, för rörelse ska inte simulera framsteg som inte mäts
 ///   (B-18). Vid reducerad rörelse står det still i full
-///   opacitet (tillganglighetshandoff:179,
-///   tokens.json motion.reducedMotion).
+///   opacitet (tokens.json motion.reducedMotion).
 ///
 /// Har du ett verkligt mått, skicka det: en linje som visar riktig progress
 /// är alltid bättre än en som bara säger att något pågår.
 ///
 /// Linjen bär sin egen semantik ([LoadingSemantics]): en live-region med
-/// [semanticLabel] som namn, eller procentvärdet när [value] är satt
-/// (Butlery tillganglighetshandoff.dc.html:179 — etiketten ska vara vad som
-/// laddas).
+/// [semanticLabel] som namn, eller procentvärdet när [value] är satt.
 class PlateLine extends StatefulWidget {
   const PlateLine({
     this.value,

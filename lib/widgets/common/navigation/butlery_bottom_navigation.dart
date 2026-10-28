@@ -3,7 +3,7 @@
 // PQ-17 = A: the shell's navigation is
 // four destinations in a tab list plus a separate round saffron "Lägg till".
 //
-//   tillganglighetshandoff 'Navigation & toppfält' (row 131): tablist with 4
+//   Tablist with 4
 //                             tabs + a separate button named "Lägg till" with
 //                             its own focus stop; the selected tab is exposed
 //                             as selected, not only by the saffron line; the
@@ -53,8 +53,7 @@ Widget navigationTabList({required Widget child}) => Semantics(
   role: SemanticsRole.tabBar,
   container: true,
   explicitChildNodes: true,
-  // Read after everything else in the bar, the plus included
-  // (tillganglighetshandoff 'Navigation & toppfält').
+  // Read after everything else in the bar, the plus included.
   sortKey: const OrdinalSortKey(1),
   child: child,
 );

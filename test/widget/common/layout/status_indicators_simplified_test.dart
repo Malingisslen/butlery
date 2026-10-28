@@ -1,8 +1,4 @@
 // The offline banner as a pattern (P3-U05).
-//
-// Sources:
-// tillganglighetshandoff:177 (role status, announced on transition, glyph
-// decorative)
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
