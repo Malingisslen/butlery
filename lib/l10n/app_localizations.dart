@@ -1847,7 +1847,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCookedToday.
   ///
   /// In sv, this message translates to:
-  /// **'Lagat i dag'**
+  /// **'Markera som lagat'**
   String get recipeCookedToday;
 
   /// No description provided for @recipeCookedCount.
@@ -9641,7 +9641,7 @@ abstract class AppLocalizations {
   /// No description provided for @sharedEmptyStateExplanation.
   ///
   /// In sv, this message translates to:
-  /// **'När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.'**
+  /// **'När du eller dina vänner delar recept och menyer visas de här. Dela ett recept för att komma igång.'**
   String get sharedEmptyStateExplanation;
 
   /// No description provided for @taggingAnalyzingIngredients.
