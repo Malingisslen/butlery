@@ -1,10 +1,9 @@
 // Package 4 (P4-U01, P4-U02): the shared components adopt the design system.
 //
-// B-18 (beslutslogg.md:25) and produktregler.md:163: no spinner, no sliding
-// bar; the plate line plus text. B-45 (beslutslogg.md:52): one top bar on
+// B-18: no spinner, no sliding
+// bar; the plate line plus text. B-45: one top bar on
 // both platforms, so the shared scaffolds draw ButleryTopBar, never a
-// Material AppBar, AdaptiveAppBar or ButleryHeader. Komponentark v1:750: a
-// snackbar action is never "OK".
+// Material AppBar, AdaptiveAppBar or ButleryHeader.
 //
 // This test reddens when a spinner or an old bar comes back into one of the
 // files these units cleaned.
@@ -197,7 +196,6 @@ void main() {
         expect(tabs.indicatorSize, TabBarIndicatorSize.label);
         expect(tabs.labelColor, theme.colorScheme.onSurface);
         expect(tabs.unselectedLabelColor, theme.colorScheme.onSurfaceVariant);
-        // Komponentark v1:112-113: selected 700, resting 600.
         expect(tabs.labelStyle!.fontWeight, FontWeight.w700);
         expect(tabs.unselectedLabelStyle!.fontWeight, FontWeight.w600);
       }

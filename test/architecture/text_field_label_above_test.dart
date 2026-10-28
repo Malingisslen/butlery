@@ -1,6 +1,4 @@
-// Komponentark v1 §11: a text field's label stands above the box
-// (LabeledField or StyledInput), never floating in its edge, and an error
-// carries a glyph. The first test counts the TextField and TextFormField
+// The first test counts the TextField and TextFormField
 // calls in lib/ whose own InputDecoration still sets labelText. The files
 // below have not moved yet; the count for each is pinned, so a new floating
 // label reddens, and so does a move that forgets to shrink the list.

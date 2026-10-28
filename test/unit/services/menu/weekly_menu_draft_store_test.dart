@@ -1,6 +1,6 @@
 /// BUT-2157: the week generation's draft is kept on this device, per
-/// account, for 30 days since its last change (produktregler.md;
-/// ux-beslut.json D-01), and a manual logout deletes the account's own draft
+/// account, for 30 days since its last change
+/// and a manual logout deletes the account's own draft
 /// only (PQ-12 = A).
 library;
 

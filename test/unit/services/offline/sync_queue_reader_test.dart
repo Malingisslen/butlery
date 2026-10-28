@@ -1,8 +1,4 @@
 // P4-U19: the queue view's read of schema 3 (P5-U35), and its two actions.
-//
-// produktregler.md:190: count, what the changes concern, their age, and the
-// permanent failures first. :187: a chain fails whole, never halfway. :192:
-// nothing leaves the queue without the server or the user.
 
 import 'dart:convert';
 import 'dart:io';
@@ -646,7 +642,6 @@ void main() {
       expect(row.localPath, '${dir.path}/foto.jpg');
     });
 
-    // flows-roles-budget.md:143: "≤ 250 kB, långsida ≤ 1600 px".
     for (final entry in {
       'a long side over 1600 px': _jpeg(1700, 10),
       'a file over 250 kB': Uint8List.fromList([

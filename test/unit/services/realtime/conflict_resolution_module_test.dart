@@ -342,9 +342,7 @@ void main() {
   });
 
   group('P3-U07: the resolver error branch is not silent', () {
-    // produktregler.md:109: no strategy may silently drop data that only
-    // exists locally; flows-roles-budget.md:18: the user always learns that a
-    // conflict happened. When the resolver throws, the remote is kept, so the
+    // When the resolver throws, the remote is kept, so the
     // local edit is overwritten exactly as in a remoteWon.
     test('emits exactly one remoteWon and returns the remote', () async {
       final local = _ThrowingResource('doc-err');
@@ -422,7 +420,7 @@ void main() {
   });
 
   group('P3-U07: the model declares its conflict entity', () {
-    // produktregler.md:97-107 and beslutslogg B-09: one rule per entity, no
+    // B-09: one rule per entity, no
     // generic rule. The model says which row applies; nothing reads the
     // collection path.
     test('a recipe is recipeOwn for its owner', () {

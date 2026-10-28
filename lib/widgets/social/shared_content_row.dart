@@ -1,8 +1,6 @@
 // lib/widgets/social/shared_content_row.dart
 //
-// One shared recipe, menu or shopping list as a row (Skarmar v12
-// #delat-med-mig): the picture, the name, who shared it and when, what they
-// wrote, and at the end "Spara" or the quiet "Sparad". Delat med mig and a
+// Delat med mig and a
 // friend's shared recipes draw it, so a shared thing looks the same on both.
 library;
 

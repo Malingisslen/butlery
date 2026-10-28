@@ -262,8 +262,7 @@ void main() {
     );
   });
 
-  // P6-U07 (flow 07): the typed outcome. flows-roles-budget.md:98-106;
-  // produktregler.md:680-687.
+  // P6-U07 (flow 07): the typed outcome.
   group('OsPermissionHelper.request — typed outcome', () {
     Future<OsPermissionOutcome> request(
       BuildContext context,

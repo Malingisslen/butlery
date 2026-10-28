@@ -1,6 +1,6 @@
 // BUT-2183: the old opacity steps (AppDimensions.opacity*) leave the app for
 // the design system's tokens, per the per-step mapping that Malin's B83
-// decisions settle (Butlery design system fas2/produktbeslut-2026-09-30.json).
+// decisions settle.
 // This ratchet holds the files that still use a step and how many times; a
 // file may not gain a use, and a file that drops one lowers its row in the
 // same change.

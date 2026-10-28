@@ -9,8 +9,7 @@
 /// code fails this test, so the list always states the truth.
 ///
 /// Also enforced: no CupertinoIcons and no AdaptiveIcon(s) anywhere in lib
-/// (plattformsmatris.md:75: the icon family is identical on both
-/// platforms), and every icon is built with ButleryIcon, never a plain Icon.
+/// and every icon is built with ButleryIcon, never a plain Icon.
 library;
 
 import 'dart:io';

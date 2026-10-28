@@ -2,10 +2,10 @@
 //
 // The migration plan (2026-09-20) says "Ingen permanent samexistens": once a
 // component has moved to the design system, the old one is deleted, not
-// kept beside it. Package 7 deleted the old bars (B-45, beslutslogg.md:52),
-// the spinners and the pea pod (B-18, beslutslogg.md:25; produktregler.md:163),
+// kept beside it. Package 7 deleted the old bars (B-45),
+// the spinners and the pea pod (B-18),
 // the coloured snackbars and their one-line error channel
-// (Komponentark v1:745-750; content-style-guide.md:87-97), "OK" as a label
+// (content-style-guide.md:87-97), "OK" as a label
 // (content-style-guide.md:77, :96), the Cupertino dialogs (B-45) and the
 // ButleryColors compatibility extension with its seasonal tint
 // (tokens.json:522; NULAGE.md:71-74; Q7-01 = A).

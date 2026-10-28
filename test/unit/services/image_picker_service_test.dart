@@ -418,8 +418,7 @@ void main() {
     });
   });
 
-  // P6-U07 (flow 07): a typed outcome instead of null or [] —
-  // flows-roles-budget.md:98-106; produktregler.md:680-687.
+  // P6-U07 (flow 07): a typed outcome instead of null or []
   group('typed permission outcome', () {
     test(
       'our explanation comes first; "Inte nu" never reaches the OS',

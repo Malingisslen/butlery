@@ -1,5 +1,4 @@
-// Komponentark v1:657: a text field shows focus with the ring outside the
-// box, and its edge never changes width. The ring comes from LabeledField
+// The ring comes from LabeledField
 // or ButleryFocusRing; the input theme draws no focus edge of its own. This
 // test finds every TextField and TextFormField call in lib/ that stands
 // outside both.

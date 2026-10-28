@@ -71,7 +71,7 @@ void main() {
     });
   });
 
-  // P5-U28: per field, the latest change wins (produktregler.md:105, :142).
+  // P5-U28: per field, the latest change wins.
   group('updateFields', () {
     Future<Map<String, dynamic>?> read(
       FakeFirebaseFirestore f,
@@ -158,7 +158,7 @@ void main() {
       final repo = _repo(firestore);
       await repo.add(_alice, _item(id: 'i1', qty: 6));
 
-      // "Bocka av 2 av 6" from two devices (produktregler.md:146).
+      // "Bocka av 2 av 6" from two devices.
       await repo.adjustQuantity(_alice, 'i1', -2);
       await repo.adjustQuantity(_alice, 'i1', -2);
 

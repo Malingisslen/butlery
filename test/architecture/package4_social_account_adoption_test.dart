@@ -2,13 +2,11 @@
 // messaging, settings, legal, auth, onboarding and admin views adopt the
 // design system.
 //
-// B-18 (beslutslogg.md:25) and produktregler.md:163: no spinner, no sliding
+// B-18: no spinner, no sliding
 // bar; the plate line plus text, so a page loading state names what it
-// fetches. B-45 (beslutslogg.md:52): one top bar on both platforms, so these
+// fetches. B-45: one top bar on both platforms, so these
 // views draw ButleryTopBar, never a Material AppBar, SliverAppBar or
-// AdaptiveAppBar. Komponentark v1:300 and :745-750: a snackbar is the ink
-// snackbar and never a filled status colour, so no view builds its own
-// SnackBar with a backgroundColor.
+// AdaptiveAppBar.
 //
 // This test reddens when one of those comes back into a file this track
 // cleaned.
