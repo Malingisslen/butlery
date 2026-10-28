@@ -162,6 +162,52 @@ void main() {
       expect(positioned.bottom, AppDimensions.feedbackFabBottomOffset);
     });
 
+    testWidgets('can be dragged off content and snaps to the nearest edge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const FeedbackFAB()));
+      await tester.pump();
+
+      final before = tester.getTopLeft(find.text('!'));
+      await tester.drag(find.text('!'), const Offset(-500, -120));
+      await tester.pumpAndSettle();
+
+      final after = tester.getTopLeft(find.text('!'));
+      expect(after.dx, lessThan(before.dx - 200));
+      expect(after.dy, lessThan(before.dy));
+      expect(after.dx, lessThan(AppDimensions.minTouchTarget + 32));
+    });
+
+    testWidgets('stays inside the screen however far it is dragged', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const FeedbackFAB()));
+      await tester.pump();
+
+      await tester.drag(find.text('!'), const Offset(-3000, -3000));
+      await tester.pumpAndSettle();
+
+      final screen = tester.getRect(find.byType(Scaffold));
+      final rect = tester.getRect(find.byType(InkWell));
+      expect(screen.contains(rect.topLeft), isTrue);
+      expect(screen.contains(rect.bottomRight - const Offset(1, 1)), isTrue);
+    });
+
+    testWidgets('snaps back to the right edge when dropped on the right half', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const FeedbackFAB()));
+      await tester.pump();
+
+      final before = tester.getTopLeft(find.byType(InkWell));
+      await tester.drag(find.text('!'), const Offset(-60, -120));
+      await tester.pumpAndSettle();
+
+      final after = tester.getTopLeft(find.byType(InkWell));
+      expect(after.dx, before.dx);
+      expect(after.dy, lessThan(before.dy));
+    });
+
     testWidgets('the tap surface is square at minTouchTarget size', (
       tester,
     ) async {
@@ -267,7 +313,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(FeedbackFAB),
-          matching: find.byType(GestureDetector),
+          matching: find.byType(InkWell),
         ),
       );
       await tester.pump();
