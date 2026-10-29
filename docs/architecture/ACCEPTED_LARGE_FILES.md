@@ -98,7 +98,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 547 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `user_service.dart` | 1255 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
-| `text_import_strategy.dart` | 1458 | Text-based recipe import strategy. Row refreshed 2026-10-29. |
+| `text_import_strategy.dart` | 1466 | Text-based recipe import strategy. Row refreshed 2026-10-29. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 607 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 681 | Friend category CRUD operations |
@@ -164,7 +164,7 @@ Intentionally centralized reference data.
 | `cuisine_config.dart` | 683 | Cuisine classification config — 22-cuisine data table; splitting harms lookup clarity |
 | `app_dimensions.dart` | 743 | Theme dimension constants — intentionally centralized |
 | `swedish_line_classifier.dart` | 676 | Swedish text line classification — enum + classification rules |
-| `recipe_section_detector.dart` | 554 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
+| `recipe_section_detector.dart` | 575 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
 | `html_sanitizer.dart` | 618 | HTML sanitizer rules — cleaning rules table |
 | `ingredient_normalizer.dart` | 536 | Ingredient name normalization — lookup tables |
 | `swedish_pluralization.dart` | 545 | Swedish pluralization rules |

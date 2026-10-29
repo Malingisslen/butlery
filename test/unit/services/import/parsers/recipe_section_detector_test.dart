@@ -523,6 +523,34 @@ void main() {
     }
   });
 
+  group('isValidIngredient — rows without a quantity', () {
+    test('a long bulleted row and a seasoning list are ingredients', () {
+      for (final row in [
+        '- Smör och olivolja till stekning',
+        'Salt, svartpeppar, paprikapulver, vitlökspulver, oregano',
+      ]) {
+        expect(
+          RecipeSectionDetector.isValidIngredient(row),
+          isTrue,
+          reason: row,
+        );
+      }
+    });
+
+    test('a bulleted sentence and a comma-joined step are not', () {
+      for (final row in [
+        '- Stek löken mjuk. Tillsätt grädden och låt koka',
+        'Hetta upp en panna med smör och olja, stek kycklingen, servera den',
+      ]) {
+        expect(
+          RecipeSectionDetector.isValidIngredient(row),
+          isFalse,
+          reason: row,
+        );
+      }
+    });
+  });
+
   group('isValidIngredient — lone unit tokens only', () {
     for (final unit in ['msk', 'dl', 'krm']) {
       test('a lone "$unit" is an OCR fragment, not an ingredient', () {
