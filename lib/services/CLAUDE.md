@@ -30,6 +30,9 @@ These services intentionally don't extend `BaseService` because they're pure-com
   off the FRONT of the first page, before the recipe starts; mirror of `orphan_tail.dart`)
 - `lib/services/import/layout/frame_trim.dart` (pure function — applies BOTH page-edge
   trims, each decided from the untouched page so neither can mislead the other)
+- `lib/services/import/layout/page_reflow.dart` (pure functions — strips a screenshot's
+  own chrome off each page and drops the lines two overlapping screenshots share, before
+  `frame_trim.dart` sees the page; same category)
 - `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; no Flutter
   and nothing third-party by design, so it runs under plain `dart test` and replays
   offline)

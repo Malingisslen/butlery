@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -830,20 +831,21 @@ class PhotoImportViewModel extends ImportBaseViewModel
       notifyListeners();
       return;
     }
-    // Blank-line separator so the parser/splitter treats page boundaries the
-    // same as the blank lines that already delimit sections within a page.
-    _ocrText = _pages.map((p) => p.text).join('\n\n');
-
-    // Built from the SAME list, in the same order, with the same separator the
-    // join above uses — `DocumentLayout` joins its pages with '\n\n' too, so
-    // the two strings agree row for row and the splitter's precondition can
-    // confirm it rather than assume it.
+    // BUT-2455: each page loses its screenshot chrome, a page loses the lines
+    // it shares with the page before it, and the pages are joined — with a
+    // blank line at every boundary when every page has geometry, so the text
+    // and `DocumentLayout` agree row for row and the splitter's precondition
+    // can confirm it rather than assume it.
     //
-    // Any page without geometry makes this incomplete, and the splitter then
-    // falls back to the text rules for the whole import. That is deliberate
-    // and it is checked there, not here: this method's job is to build the
-    // pair, never to decide whether it is trustworthy.
-    final layout = DocumentLayout([for (final p in _pages) p.layout]);
+    // Any page without geometry makes the layout incomplete, and the splitter
+    // then falls back to the text rules for the whole import. That is
+    // deliberate and it is checked there, not here: this method's job is to
+    // build the pair, never to decide whether it is trustworthy.
+    final prepared = prepareScreenPages([
+      for (final p in _pages) PageText(p.text, layout: p.layout),
+    ]);
+    _ocrText = prepared.text;
+    final layout = DocumentLayout(prepared.layouts);
 
     notifyListeners();
 

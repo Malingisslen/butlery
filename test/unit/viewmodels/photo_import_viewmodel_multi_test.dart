@@ -573,6 +573,66 @@ Stek små plättar i plättlagg.''';
           orderedEquals(['Fransk omelett', 'Italiensk frittata']),
         );
       });
+
+      test('a stripped status bar leaves the geometry in step', () async {
+        // BUT-2455: the clock row is cut from the page's text, and its
+        // geometry row must go with it — otherwise the layout no longer
+        // describes the text line for line, the splitter's precondition
+        // fails and the layout arm declines, which on this prose page means
+        // ONE recipe. The spread test above is the control for that outcome.
+        final page = PageLayout(
+          lines: [
+            row('10:55', 40),
+            row('Italiensk frittata', 167),
+            ...body('ratten'),
+            row('Fransk omelett', 167),
+            ...body('omeletten'),
+          ],
+        );
+        await vm.addPageForTesting(bytes(1), page.text, layout: page);
+
+        expect(vm.ocrText, isNot(contains('10:55')));
+        expect(
+          vm.parsedRecipes.map((r) => r.title),
+          orderedEquals(['Italiensk frittata', 'Fransk omelett']),
+        );
+      });
+    });
+
+    group('screenshot pages (BUT-2455)', () {
+      Uint8List bytes(int n) => Uint8List.fromList([n]);
+
+      test('two overlapping screenshots become one cleaned text', () async {
+        const steps = [
+          'Skär kycklingen i bitar och stek den gyllene i smör.',
+          'Häll i grädden och låt sjuda i tio minuter.',
+          'Smaka av med salt och peppar innan servering.',
+          'Servera med ris och en sallad.',
+        ];
+        final first = [
+          '10:55',
+          'd 5 g ll 66',
+          'matglad.anna',
+          'Krämig kycklinggryta',
+          'Gör så här',
+          ...steps.take(3),
+        ].join('\n');
+        final second = [
+          '10:56',
+          'd 5 g ll 66',
+          ...steps.skip(1),
+          'Gillas av anna_k och 12 andra',
+          'För 6 dagar sedan',
+        ].join('\n');
+
+        await vm.addPageForTesting(bytes(1), first);
+        await vm.addPageForTesting(bytes(2), second);
+
+        expect(
+          vm.ocrText,
+          ['Krämig kycklinggryta', 'Gör så här', ...steps].join('\n'),
+        );
+      });
     });
   });
 }
