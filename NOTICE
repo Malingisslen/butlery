@@ -59,7 +59,6 @@ Other licenses
   - record (BSD-3, Flutter ecosystem).
   - KB-Whisper Swedish speech model (Apache-2.0, KBLab / National Library of
     Sweden — downloaded at runtime, not bundled).
-  - freerasp (proprietary; see https://github.com/talsec/Free-RASP-Community).
   - http_certificate_pinning (Apache-2.0).
   - feature flags via GrowthBook SDK (MIT).
   - Algolia / algoliasearch_helper_flutter (MIT).

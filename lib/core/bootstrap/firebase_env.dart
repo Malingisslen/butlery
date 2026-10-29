@@ -81,7 +81,7 @@ class FirebaseEnv {
   /// the flavor's `authLinkHost` manifest placeholder.
   final String authLinkHost;
 
-  /// Must match the flavor's applicationId; freeRASP compares it at runtime.
+  /// Must match the flavor's applicationId.
   final String androidPackageName;
 
   bool get isStaging => environment == FirebaseEnvironment.staging;

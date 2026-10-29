@@ -30,7 +30,7 @@
 			NSUserDefaults directly; shared_preferences covers its own
 			usage via its bundled manifest. Reason CA92.1 retained
 			defensively in case first-party plugin code touches defaults
-			(e.g., freerasp state, image_cropper session flags).
+			(e.g., image_cropper session flags).
 		-->
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>

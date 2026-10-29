@@ -21,9 +21,6 @@
 #                                               AuthKey_<id>.p8 text)
 #   IOS_DIST_CERT_KEY                           PEM private key of the kept
 #                                               distribution certificate
-#   FREE_RASP_TEAM_ID                           Apple team id; a release build
-#                                               without it stops at startup
-#                                               (device_integrity_service.dart)
 #   OCR_API_KEY, OCR_API_URL                    same .env as build-validation.yml
 #
 # Firebase reads lib/firebase_options.dart, so no GoogleService-Info.plist is
@@ -65,10 +62,9 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-          FREE_RASP_TEAM_ID: ${{ secrets.FREE_RASP_TEAM_ID }}
         run: |
           missing=""
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY FREE_RASP_TEAM_ID; do
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then
@@ -90,7 +86,6 @@ jobs:
           ENV=production
           OCR_API_KEY=${{ secrets.OCR_API_KEY }}
           OCR_API_URL=${{ secrets.OCR_API_URL }}
-          FREE_RASP_TEAM_ID=${{ secrets.FREE_RASP_TEAM_ID }}
           ENVEOF
 
       - name: Write the App Store Connect key

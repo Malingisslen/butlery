@@ -5,7 +5,7 @@ name: Build Staging APK
 # production app.
 #
 # The APK is signed with the production UPLOAD key (same KEYSTORE_* secrets as
-# build-validation.yml), so freeRASP's pinned certificate hash matches. That
+# build-validation.yml). That
 # makes the artifact a prod-signed binary, which is why this workflow only runs
 # by hand, only from main, behind the `staging` environment, and keeps the
 # artifact for three days.
@@ -55,7 +55,6 @@ jobs:
         cat > .env << 'ENVEOF'
         OCR_API_KEY=${{ secrets.OCR_API_KEY }}
         OCR_API_URL=${{ secrets.OCR_API_URL }}
-        FREE_RASP_TEAM_ID=${{ secrets.FREE_RASP_TEAM_ID }}
         ENVEOF
 
     - name: Decode staging google-services.json

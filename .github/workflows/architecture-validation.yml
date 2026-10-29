@@ -74,9 +74,9 @@ jobs:
     - name: Forbid legacy friend_requests refs in functions/src/
       run: bash tools/check_no_friend_requests_refs.sh
 
-    # BUT-793: security-primitive deps (firebase_app_check, freerasp,
+    # BUT-793: security-primitive deps (firebase_app_check,
     # http_certificate_pinning) must stay pinned to exact versions so a
-    # silent `pub upgrade` can't change attestation / RASP / cert-pinning
+    # silent `pub upgrade` can't change attestation / cert-pinning
     # semantics without an explicit review.
     - name: Forbid caret-loose security-primitive deps
       run: bash tools/check_security_deps_pinned.sh
