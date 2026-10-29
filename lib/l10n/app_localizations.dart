@@ -25390,6 +25390,18 @@ abstract class AppLocalizations {
   /// **'Timern syns bara i appen.'**
   String get timerInAppOnly;
 
+  /// Play exact-alarm plan D1: title of the one-time offer, shown the first time a timer starts while Android's Alarms & reminders access is off.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ska timern ringa på sekunden?'**
+  String get timerExactAlarmTitle;
+
+  /// Play exact-alarm plan D1: body of the one-time offer; the button opens the Alarms & reminders setting.
+  ///
+  /// In sv, this message translates to:
+  /// **'När appen ligger i bakgrunden kan telefonen skjuta upp timerns larm några minuter. Slå på Alarm och påminnelser för Butlery så ringer den exakt i tid.'**
+  String get timerExactAlarmBody;
+
   /// No description provided for @notifSystemOffRow.
   ///
   /// In sv, this message translates to:
@@ -31869,6 +31881,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stegen slogs ihop'**
   String get stepsMerged;
+
+  /// BUT-2455: warning when two joined steps would exceed the 500-character step limit; nothing is merged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stegen blir för långa för att slås ihop'**
+  String get stepsTooLongToMerge;
 
   /// BUT-2455: screen-reader label of the merge link, naming both step numbers.
   ///

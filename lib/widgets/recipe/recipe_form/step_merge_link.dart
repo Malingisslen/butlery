@@ -20,6 +20,10 @@ class StepMergeLink extends StatelessWidget {
         controllers[next].text.trim().isNotEmpty;
   }
 
+  /// The instruction validator's limit in `RecipeFormState`: a longer merged
+  /// step would grey out Spara with no reason shown.
+  static const maxStepLength = 500;
+
   /// Joins step [index] with the next and offers the undo every reversible
   /// removal gets (ui-conventions, BUT-954 class 1).
   static void mergeWithUndo(
@@ -28,6 +32,12 @@ class StepMergeLink extends StatelessWidget {
     int index,
   ) {
     final before = viewModel.instructions;
+    if (index + 1 < before.length &&
+        before[index].trim().length + 1 + before[index + 1].trim().length >
+            maxStepLength) {
+      SnackBarUtils.showWarning(context, context.l10n.stepsTooLongToMerge);
+      return;
+    }
     final merged = viewModel.mergeInstructionWithNext(index);
     if (merged == null) return;
     SnackBarUtils.showSuccessWithAction(

@@ -16500,6 +16500,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get timerInAppOnly => 'Timern syns bara i appen.';
 
   @override
+  String get timerExactAlarmTitle => 'Ska timern ringa på sekunden?';
+
+  @override
+  String get timerExactAlarmBody =>
+      'När appen ligger i bakgrunden kan telefonen skjuta upp timerns larm några minuter. Slå på Alarm och påminnelser för Butlery så ringer den exakt i tid.';
+
+  @override
   String get notifSystemOffRow =>
       'Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.';
 
@@ -20735,6 +20742,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get stepsMerged => 'Stegen slogs ihop';
+
+  @override
+  String get stepsTooLongToMerge => 'Stegen blir för långa för att slås ihop';
 
   @override
   String a11yMergeSteps(int first, int second) {

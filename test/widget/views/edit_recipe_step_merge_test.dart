@@ -79,7 +79,14 @@ void main() {
         await BaseUnitTest.teardownUnit();
       });
 
-      Future<void> pumpForm(WidgetTester tester) async {
+      Future<void> pumpForm(
+        WidgetTester tester, {
+        List<String> instructions = const [
+          'Stek löken.',
+          'Häll i grädden.',
+          'Servera.',
+        ],
+      }) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: EditRecipeView(
@@ -88,11 +95,7 @@ void main() {
                 title: 'Krämig gryta',
                 createdBy: 'test-user-123',
                 ingredients: const ['2 dl grädde', '1 gul lök'],
-                instructions: const [
-                  'Stek löken.',
-                  'Häll i grädden.',
-                  'Servera.',
-                ],
+                instructions: instructions,
               ),
             ),
             wrapInScaffold: false,
@@ -124,6 +127,58 @@ void main() {
 
         expect(fieldTexts(tester), contains('Stek löken. Häll i grädden.'));
         expect(fieldTexts(tester), isNot(contains('Häll i grädden.')));
+        expect(find.text('Stegen slogs ihop'), findsOneWidget);
+      });
+
+      testWidgets('two steps too long together stay apart, and it says why', (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final first = 'a' * 250;
+        final second = 'b' * 250;
+        await pumpForm(tester, instructions: [first, second, 'Servera.']);
+
+        final link = find.byKey(const ValueKey('step-merge-0'));
+        await tester.scrollUntilVisible(
+          link,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(link);
+        await tester.pump();
+
+        expect(fieldTexts(tester), containsAllInOrder([first, second]));
+        expect(
+          find.text('Stegen blir för långa för att slås ihop'),
+          findsOneWidget,
+        );
+        expect(find.text('Stegen slogs ihop'), findsNothing);
+      });
+
+      testWidgets('two steps that make exactly 500 characters still join', (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final first = 'a' * 249;
+        final second = 'b' * 250;
+        await pumpForm(tester, instructions: [first, second, 'Servera.']);
+
+        final link = find.byKey(const ValueKey('step-merge-0'));
+        await tester.scrollUntilVisible(
+          link,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(link);
+        await tester.pump();
+
+        expect(fieldTexts(tester), contains('$first $second'));
         expect(find.text('Stegen slogs ihop'), findsOneWidget);
       });
     },

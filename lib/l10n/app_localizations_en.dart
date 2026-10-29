@@ -16618,6 +16618,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timerInAppOnly => 'The timer only shows in the app.';
 
   @override
+  String get timerExactAlarmTitle => 'Should the timer ring on the second?';
+
+  @override
+  String get timerExactAlarmBody =>
+      'While the app is in the background, the phone can delay the timer\'s alert by a few minutes. Turn on Alarms & reminders for Butlery and it rings exactly on time.';
+
+  @override
   String get notifSystemOffRow =>
       'Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.';
 
@@ -20903,6 +20910,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stepsMerged => 'Steps merged';
+
+  @override
+  String get stepsTooLongToMerge => 'The steps are too long to merge';
 
   @override
   String a11yMergeSteps(int first, int second) {

@@ -11557,6 +11557,14 @@
   "timerNotifDeniedBody": "Notifications are off for Butlery, so the timer cannot alert you while the app is in the background or the phone is locked.",
   "timerNotifDeniedStart": "Start the timer",
   "timerInAppOnly": "The timer only shows in the app.",
+  "timerExactAlarmTitle": "Should the timer ring on the second?",
+  "@timerExactAlarmTitle": {
+    "description": "Play exact-alarm plan D1: title of the one-time offer, shown the first time a timer starts while Android's Alarms & reminders access is off."
+  },
+  "timerExactAlarmBody": "While the app is in the background, the phone can delay the timer's alert by a few minutes. Turn on Alarms & reminders for Butlery and it rings exactly on time.",
+  "@timerExactAlarmBody": {
+    "description": "Play exact-alarm plan D1: body of the one-time offer; the button opens the Alarms & reminders setting."
+  },
   "notifSystemOffRow": "Notifications are off for Butlery in the system settings. Nothing below can be switched on until you change that there.",
   "a11yOpenSystemSettings": "Open the system settings",
   "cookingExitConfirmTitle": "Stop cooking?",
@@ -17183,6 +17191,10 @@
   "stepsMerged": "Steps merged",
   "@stepsMerged": {
     "description": "BUT-2455: snackbar after two steps were joined; pairs with commonUndo."
+  },
+  "stepsTooLongToMerge": "The steps are too long to merge",
+  "@stepsTooLongToMerge": {
+    "description": "BUT-2455: warning when two joined steps would exceed the 500-character step limit; nothing is merged."
   },
   "a11yMergeSteps": "Merge step {first} with step {second}",
   "@a11yMergeSteps": {

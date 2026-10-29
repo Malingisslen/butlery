@@ -11885,6 +11885,14 @@
   "timerNotifDeniedBody": "Notiser är avstängda för Butlery, så timern kan inte säga till när appen ligger i bakgrunden eller telefonen är låst.",
   "timerNotifDeniedStart": "Starta timern",
   "timerInAppOnly": "Timern syns bara i appen.",
+  "timerExactAlarmTitle": "Ska timern ringa på sekunden?",
+  "@timerExactAlarmTitle": {
+    "description": "Play exact-alarm plan D1: title of the one-time offer, shown the first time a timer starts while Android's Alarms & reminders access is off."
+  },
+  "timerExactAlarmBody": "När appen ligger i bakgrunden kan telefonen skjuta upp timerns larm några minuter. Slå på Alarm och påminnelser för Butlery så ringer den exakt i tid.",
+  "@timerExactAlarmBody": {
+    "description": "Play exact-alarm plan D1: body of the one-time offer; the button opens the Alarms & reminders setting."
+  },
   "notifSystemOffRow": "Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.",
   "a11yOpenSystemSettings": "Öppna systeminställningarna",
   "cookingExitConfirmTitle": "Avsluta matlagningen?",
@@ -17196,6 +17204,10 @@
   "stepsMerged": "Stegen slogs ihop",
   "@stepsMerged": {
     "description": "BUT-2455: snackbar after two steps were joined; pairs with commonUndo."
+  },
+  "stepsTooLongToMerge": "Stegen blir för långa för att slås ihop",
+  "@stepsTooLongToMerge": {
+    "description": "BUT-2455: warning when two joined steps would exceed the 500-character step limit; nothing is merged."
   },
   "a11yMergeSteps": "Slå ihop steg {first} med steg {second}",
   "@a11yMergeSteps": {
