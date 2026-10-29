@@ -163,7 +163,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   // A yield/portioning label ("2 PORTIONER", "12 STYCKEN") — never a title.
   static final _yieldLabel = RegExp(
-    r'^\s*\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
+    r'^\s*(?:\d+\s*[-–]\s*)?\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
     caseSensitive: false,
   );
 
@@ -463,7 +463,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   // "30 min" alone, or the ": 30 min" the splitter leaves of "Tillagning:
   // 30 min".
   static final _bareTimeLine = RegExp(
-    r'^[:\s]*(?:ca\.?\s*)?\d+\s*(?:min|timm|tim)\w*\.?$',
+    r'^[:\s]*(?:ca\.?\s*)?(?:\d+\s*[-–]\s*)?\d+\s*(?:min|timm|tim)\w*\.?$',
+    caseSensitive: false,
+  );
+
+  // A recipe card's field name on a line of its own ("Tillagningstid").
+  static final _metadataLabel = RegExp(
+    r'^(?:recept|tid|total tid|tillagningstid|förberedelsetid|portioner|'
+    r'svårighetsgrad)\s*:?$',
     caseSensitive: false,
   );
 
@@ -471,6 +478,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// account name, a yield or time line, a byline.
   bool _isPageMetadata(String line) =>
       _isAllCapsLabel(line) ||
+      _metadataLabel.hasMatch(line.trim()) ||
       HeadingWordLists.looksLikeHandle(line) ||
       _yieldLabel.hasMatch(line) ||
       _timeMetadataLine.hasMatch(line) ||
@@ -1270,6 +1278,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), '');
     cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), '');
     cleaned = IngredientProcessor.preprocessOnly(cleaned);
+    // Split "2dI" first, so the misread unit reaches the corrector as a token.
+    cleaned = cleaned.replaceAllMapped(
+      RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ|]+)'),
+      (match) => '${match.group(1)} ${match.group(2)}',
+    );
     // Repair systematic OCR misreads (e.g. "4 di" -> "4 dl"). Gate-safe: only
     // swaps a token when the result is a known unit/ingredient, so clean
     // manual/social input is left untouched.
@@ -1278,11 +1291,6 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     cleaned = cleaned.replaceAll('1/2', '½');
     cleaned = cleaned.replaceAll('1/4', '¼');
     cleaned = cleaned.replaceAll('3/4', '¾');
-
-    cleaned = cleaned.replaceAllMapped(
-      RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ]+)'),
-      (match) => '${match.group(1)} ${match.group(2)}',
-    );
 
     return cleaned;
   }

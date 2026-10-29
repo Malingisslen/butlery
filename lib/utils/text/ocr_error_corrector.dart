@@ -36,6 +36,7 @@ class OcrErrorCorrector {
     'S': ['5'], // S -> five
     '8': ['B'], // eight -> B
     'B': ['8'], // B -> eight
+    '|': ['l'], // a pipe for the l of "dl" on a phone screenshot
     '\u00e9': ['e'], // é -> e
     '\u00e8': ['e'], // è -> e
     '\u00ea': ['e'], // ê -> e
@@ -72,6 +73,8 @@ class OcrErrorCorrector {
 
   static String _correctWord(String word) {
     if (word.isEmpty) return word;
+    // A pipe on its own is a separator, never the l of a unit.
+    if (word == '|') return word;
 
     // Skip numeric tokens (quantities, fractions) -- not ingredient names
     if (_numericPattern.hasMatch(word)) return word;

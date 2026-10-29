@@ -488,6 +488,26 @@ Visa alla 12 kommentarer''');
       }
     });
 
+    test('a recipe card\'s labels never become the description', () async {
+      final recipe = await parse('''
+Krämig kycklinggryta
+RECEPT
+Tillagningstid
+15-20min
+4-5 portioner
+Ingredienser
+- Creme fraiche, 2dI
+- Parmesan, 1d|
+Gör så här
+Blanda allt i en kastrull och låt det småkoka i tio minuter.''');
+      expect(recipe.description, isEmpty);
+      expect(recipe.portions, 4);
+      expect(
+        recipe.ingredients,
+        containsAll(['creme fraiche, 2 dl', 'parmesan, 1 dl']),
+      );
+    });
+
     test('a name cut at é is still one ingredient', () async {
       final recipe = await parse('''
 Ugnslax
