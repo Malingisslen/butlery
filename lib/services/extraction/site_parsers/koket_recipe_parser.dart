@@ -12,7 +12,6 @@
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
-import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Parser for Köket.se recipes
 /// **Example URL:** https://www.koket.se/recept/klassiska-kottbullar/
@@ -39,7 +38,7 @@ class KoketRecipeParser extends RecipeSiteParser {
       }
 
       // Clean up formatting quirks
-      recipe = _cleanKoketFormatting(recipe);
+      recipe = cleanCirkaFormatting(recipe);
       return recipe;
     } catch (e) {
       // Enhancement failed, return recipe as-is
@@ -121,7 +120,10 @@ class KoketRecipeParser extends RecipeSiteParser {
       final description = _extractDescription(doc);
       final ingredients = _extractIngredients(doc);
       final instructions = _extractInstructions(doc);
-      final portions = _extractPortions(doc);
+      final portions = extractPortions(
+        doc,
+        sitePortionsSelector: '.koket-portions',
+      );
       final time = _extractTime(doc);
       final image = extractImage(doc, siteImageSelector: '.koket-image img');
 
@@ -152,47 +154,6 @@ class KoketRecipeParser extends RecipeSiteParser {
     } catch (e) {
       return null;
     }
-  }
-
-  /// Clean Köket-specific formatting quirks
-  Map<String, dynamic> _cleanKoketFormatting(Map<String, dynamic> recipe) {
-    // Köket sometimes includes "ca" (cirka/approximately) in portions
-    final yield_ = recipe['recipeYield'];
-    if (yield_ is String) {
-      recipe['recipeYield'] = yield_
-          .replaceAll('ca ', '')
-          .replaceAll('cirka ', '')
-          .trim();
-    }
-
-    // Clean ingredient formatting
-    if (recipe['recipeIngredient'] is List) {
-      final ingredients = recipe['recipeIngredient'] as List;
-      recipe['recipeIngredient'] = ingredients
-          .map((ing) {
-            String cleaned = cleanSwedishText(ing.toString());
-            // Remove "ca " and "cirka " prefixes from ingredients
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^ca\s+', caseSensitive: false),
-              '',
-            );
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^cirka\s+', caseSensitive: false),
-              '',
-            );
-            return cleaned.trim();
-          })
-          .where((ing) => ing.isNotEmpty)
-          .toList();
-    }
-
-    if (recipe['recipeInstructions'] is List) {
-      recipe['recipeInstructions'] = recipeInstructionTexts(
-        recipe['recipeInstructions'] as List,
-      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
-    }
-
-    return recipe;
   }
 
   // CSS SELECTOR EXTRACTION (Fallback Methods)
@@ -295,38 +256,6 @@ class KoketRecipeParser extends RecipeSiteParser {
     }
 
     return instructions;
-  }
-
-  String? _extractPortions(Document doc) {
-    final selectors = [
-      '.recipe-portions',
-      '.koket-portions',
-      '[itemprop="recipeYield"]',
-      '.recipe-servings',
-      '.portions',
-    ];
-
-    for (final selector in selectors) {
-      final element = doc.querySelector(selector);
-      if (element != null) {
-        final portions = element.text.trim();
-        if (portions.isNotEmpty) {
-          return cleanSwedishText(portions);
-        }
-      }
-    }
-
-    // Try finding "Portioner: X" in text
-    final bodyText = (doc.body?.text).orEmpty();
-    final portionMatch = RegExp(
-      r'Portioner?:\s*(\d+)',
-      caseSensitive: false,
-    ).firstMatch(bodyText);
-    if (portionMatch != null) {
-      return portionMatch.group(1);
-    }
-
-    return null;
   }
 
   String? _extractTime(Document doc) {

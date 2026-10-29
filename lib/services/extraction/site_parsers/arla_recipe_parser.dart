@@ -152,7 +152,10 @@ class ArlaRecipeParser extends RecipeSiteParser {
       final description = _extractDescription(doc);
       final ingredients = _extractIngredients(doc);
       final instructions = _extractInstructions(doc);
-      final portions = _extractPortions(doc);
+      final portions = extractPortions(
+        doc,
+        sitePortionsSelector: '.arla-portions',
+      );
       final time = _extractTime(doc);
       final image = extractImage(doc, siteImageSelector: '.arla-image img');
 
@@ -329,38 +332,6 @@ class ArlaRecipeParser extends RecipeSiteParser {
     }
 
     return instructions;
-  }
-
-  String? _extractPortions(Document doc) {
-    final selectors = [
-      '.recipe-portions',
-      '.arla-portions',
-      '[itemprop="recipeYield"]',
-      '.recipe-servings',
-      '.portions',
-    ];
-
-    for (final selector in selectors) {
-      final element = doc.querySelector(selector);
-      if (element != null) {
-        final portions = element.text.trim();
-        if (portions.isNotEmpty) {
-          return cleanSwedishText(portions);
-        }
-      }
-    }
-
-    // Try finding "Portioner: X" in text
-    final bodyText = (doc.body?.text).orEmpty();
-    final portionMatch = RegExp(
-      r'Portioner?:\s*(\d+)',
-      caseSensitive: false,
-    ).firstMatch(bodyText);
-    if (portionMatch != null) {
-      return portionMatch.group(1);
-    }
-
-    return null;
   }
 
   String? _extractTime(Document doc) {

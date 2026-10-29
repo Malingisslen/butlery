@@ -9,6 +9,7 @@
 
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_quality_scorer.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 
@@ -151,6 +152,75 @@ abstract class RecipeSiteParser {
         .replaceAll(RegExp(r'\s+'), ' ')
         .replaceAll(RegExp(r'[\u201C\u201D]'), '"') // Smart quotes
         .replaceAll(RegExp(r'[\u2013\u2014]'), '-'); // Em/en dashes
+  }
+
+  /// Helper: Strip "ca"/"cirka" from the portions and from the start of each
+  /// ingredient, and clean the ingredient and instruction text.
+  Map<String, dynamic> cleanCirkaFormatting(Map<String, dynamic> recipe) {
+    final yield_ = recipe['recipeYield'];
+    if (yield_ is String) {
+      recipe['recipeYield'] = yield_
+          .replaceAll('ca ', '')
+          .replaceAll('cirka ', '')
+          .trim();
+    }
+
+    if (recipe['recipeIngredient'] is List) {
+      final ingredients = recipe['recipeIngredient'] as List;
+      recipe['recipeIngredient'] = ingredients
+          .map((ing) {
+            String cleaned = cleanSwedishText(ing.toString());
+            cleaned = cleaned.replaceAll(
+              RegExp(r'^ca\s+', caseSensitive: false),
+              '',
+            );
+            cleaned = cleaned.replaceAll(
+              RegExp(r'^cirka\s+', caseSensitive: false),
+              '',
+            );
+            return cleaned.trim();
+          })
+          .where((ing) => ing.isNotEmpty)
+          .toList();
+    }
+
+    if (recipe['recipeInstructions'] is List) {
+      recipe['recipeInstructions'] = recipeInstructionTexts(
+        recipe['recipeInstructions'] as List,
+      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
+    }
+
+    return recipe;
+  }
+
+  /// Helper: Portions from the shared selectors, with the site's own
+  /// [sitePortionsSelector] tried after `.recipe-portions`; failing those, the
+  /// number after "Portioner:" anywhere on the page.
+  String? extractPortions(Document doc, {String? sitePortionsSelector}) {
+    final selectors = [
+      '.recipe-portions',
+      ?sitePortionsSelector,
+      '[itemprop="recipeYield"]',
+      '.recipe-servings',
+      '.portions',
+    ];
+
+    for (final selector in selectors) {
+      final element = doc.querySelector(selector);
+      if (element != null) {
+        final portions = element.text.trim();
+        if (portions.isNotEmpty) {
+          return cleanSwedishText(portions);
+        }
+      }
+    }
+
+    final bodyText = (doc.body?.text).orEmpty();
+    final portionMatch = RegExp(
+      r'Portioner?:\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(bodyText);
+    return portionMatch?.group(1);
   }
 
   /// Helper: First absolute image URL found by the shared selectors, with

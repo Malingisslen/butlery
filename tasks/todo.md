@@ -1,3 +1,24 @@
+# Kodhygien: tre duplicerade kluster i lib/ (Malin 2026-10-29)
+
+Malins uppdrag: en delad hjälpare per kluster som `node tools/code_hygiene.mjs` pekar ut,
+inget mer. Fortsättning på c53bc2f13 och 4aae2ac42, samma form: hjälparen tar rena värden
+(dialogerna har olika vy-modeller) och parsarhjälparna ligger på `RecipeSiteParser`.
+Beteendet ändras inte. Fas 2-planen nedan är en annan sessions och lämnas orörd.
+
+- [x] 1. `RecipeShareDialogFrame` (ny fil i `recipe_selection/`): AlertDialog-ramen med
+      titel, innehåll, Avbryt och Dela-knappen. Vän- och gruppdialogen bygger den med
+      värden ur sin vy-modell. Widgettest för ramen.
+- [x] 2. `RecipeSiteParser.cleanCirkaFormatting`: Köket och Recept har samma
+      `_clean…Formatting`; båda anropar basklassens. Enhetstest i basklassens svit.
+- [x] 3. `RecipeSiteParser.extractPortions(doc, siteSelector:)`: Arla, ICA, Köket och Recept
+      har samma `_extractPortions` utom en egen selektor på andra plats (ICA ingen), som
+      `extractImage`. Enhetstest som låser selektorordningen.
+- [x] 4. Bevis: `flutter analyze`, parsartesterna + dialogtesterna + nya tester,
+      `node tools/code_hygiene.mjs` visar att de tre klustren är borta (och inget nytt
+      kluster i filerna), `--update-baseline`, commit genom grindarna, push till main.
+
+Sammanfattning för Malin: ställen där samma kod låg kopierad får en gemensam version var. Appen beter sig likadant; nästa ändring görs på ett ställe.
+
 # Fas 2 (BUT-2430): repot byter till `butlery-prod`
 
 Genomför fas 2 i den godkända planen `tasks/new-prod-project-plan.md` (B, "Fas 2 — Repot";
