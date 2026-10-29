@@ -6713,3 +6713,17 @@ Decided by Malin 2026-10-28 (plan `tasks/but-2463-deep-links-gdpr-plan.md`, N = 
   the recipient's hands.
 - **A document whose `createdAt` is not a Timestamp** never matches the retention query; only the
   cascade reaches it, on its creator's erasure.
+
+## ADR-0038 — AI recipe-reading samples outlive account deletion by up to 30 days (2026-10-29)
+
+Decided by Malin 2026-10-29 with the policy 1.25 wording, which says the samples are deleted after
+30 days "även om du har raderat kontot".
+
+- **Not erased at account deletion.** `llm_response_samples` rows carry `authUidHash`
+  (`hashUid`, a pseudonym, not a uid) and go only through the TTL on `expireAt`
+  (`RETENTION_DAYS` in `llm-sample-capture.ts`). The cascade does not reach the collection.
+- **Not in the Art. 15 export.** No export section reads the collection.
+- **The reset does reach it** (`reset-collection-lists.ts`).
+- Writers: `ocr-recipe-image.ts` and `structure-recipe.ts` call `captureLlmSample`; the app sends
+  those calls only after `ConsentService.hasConsent(ConsentPurpose.aiProcessing)`
+  (`llm_service.dart`), a client-side check.

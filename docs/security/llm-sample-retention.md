@@ -79,3 +79,15 @@ Mining (cross-referencing with `parse_corrections_v2`, seeding a recorded-test
 corpus) is out of scope here. Any pipeline that *copies* sample content
 elsewhere must carry this retention/scrubbing forward — don't let a derived
 store outlive the 30-day window without a fresh DPO decision.
+
+## 2026-10-29 — policy 1.25 and the shadow comparison (ADR-0037, ADR-0038)
+
+Supersedes "Art 6(1)(f)" in the field table above, which reads: "| `authUidHash` | SHA-256 of uid
+(pseudonym) — dedup / abuse triage only | Art 6(1)(f) | 30d TTL |". The basis for every field is
+consent (Art 6(1)(a)): policy 1.25 section 5.2 names the samples as part of the AI processing the
+user has consented to, and the app sends these calls only after
+`ConsentService.hasConsent(ConsentPurpose.aiProcessing)` (`llm_service.dart`).
+
+New purpose and path: `shadowCompareImport` (planned, `tasks/parser-shadow-plan.md`) sends text
+from an import the parser already handled, originated by the client, and writes one row with
+`mode: 'shadow'`. The server re-reads AI consent before the call. Same scrubbing, same TTL.

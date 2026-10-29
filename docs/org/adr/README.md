@@ -50,6 +50,8 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0038](ADR-0038-llm-samples-keep-running-until-policy-1-25.md) — the existing `llm_response_samples` capture keeps running although policy 1.24 does not mention it; the DPO asked to switch it off until 1.25, Malin chose to keep it and order 1.25 first — escalated to Malin (parser-shadow plan, 2026-10-29).
+- [ADR-0037](ADR-0037-parser-shadow-ai-consent-only.md) — parser shadow sampling runs only for users with AI consent, not on legitimate interest — escalated to Malin (parser-shadow plan, 2026-10-29).
 - [ADR-0035](ADR-0035-short-links-kept-14-days.md) — how long `deep_links` short links are kept; the plan said 30 days, the DPO asked for 7–14, Malin chose 14 — escalated to Malin (BUT-2463, 2026-10-28).
 - [ADR-0036](ADR-0036-remove-freerasp.md) — freeRASP sent integrity data to Talsec, which also uses it for its own products; Legal Counsel escalated LEK 9:28 and Play "shared", Malin chose to remove the SDK — escalated to Malin (policy 1.24 plan, 2026-10-29).
 - [ADR-0034](ADR-0034-guest-list-password-sign-ups.md) — whether password sign-ups may use a guest-list invite, since they do not prove the address; Malin chose password sign-ups with the invite consumed on verification — escalated to Malin (BUT-2452, 2026-10-24).

@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 29 oktober 2026
-**Version:** 1.24
+**Version:** 1.25
 
 ---
 
@@ -79,6 +79,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
 | Gästlista för inbjudna under testperioden | Berättigat intresse (Art. 6.1.f) | Du har bett om att få prova; du kan invända (Art. 21) |
 | Importloggen (se avsnitt 3.2) | Berättigat intresse (Art. 6.1.f) | Få importen att fungera och rätta fel; du kan invända (Art. 21) |
+| Prov från AI:ns receptläsning (se avsnitt 5.2) | Samtycke (Art. 6.1.a) | Förbättra receptläsningen; du kan återkalla när som helst |
 | Feedback du skickar i appen | Berättigat intresse (Art. 6.1.f) | Svara på och åtgärda det du rapporterar; du kan invända (Art. 21) |
 
 ---
@@ -128,6 +129,8 @@ Vi använder dina personuppgifter för följande ändamål:
 - Föreslå veckomenyer och receptförbättringar
 
 Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
+
+**Prov från AI:ns receptläsning.** När AI läser ut ett recept från ett foto eller en webbsida sparar vi texten som skickades till AI:n och AI:ns svar, men aldrig själva bilden. E-postadresser, telefonnummer, personnummer, gatuadresser och namn tas bort först. För en liten andel av de recept du importerar med foto, länk eller inklistrad text kan vi också låta AI:n läsa receptet när vår egen tolkning redan lyckats, för att jämföra de två. Jämförelsen ändrar inte ditt recept. Det gör vi bara om du har samtyckt till AI-bearbetning. Proverna använder vi för att förbättra Butlerys egen receptläsning. De märks med en kod som räknas fram ur ditt användar-id, aldrig med ditt namn eller din e-post. Ingen kan läsa dem i appen, och de raderas automatiskt efter 30 dagar, även om du har raderat kontot. AI:n körs i Google Cloud Vertex AI inom EU (Nederländerna). Rättslig grund: ditt samtycke. Återkallar du AI-samtycket görs inga fler jämförelser.
 
 **Delade allergier i hushållet (om du har samtyckt):**
 
@@ -298,6 +301,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter det senaste beslutet. Omprövas ett beslut sparas även det tidigare beslutet i samma post | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 | En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
 | Importloggen (användar-id, sidans adress och hur importen gick) | Raderas automatiskt cirka 30 dagar efter importen, även om kontot redan är raderat | Berättigat intresse |
+| Prov från AI:ns receptläsning (text till och från AI:n, utan bilder och utan namn, e-post eller annat som pekar ut dig) | Raderas automatiskt efter 30 dagar, även om kontot redan är raderat | Samtycke |
 | Feedback du skickar i appen, med skärmbild | Tills du raderar kontot. Då raderas den med skärmbilderna | Berättigat intresse |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa.

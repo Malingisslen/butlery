@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 29, 2026
-**Version:** 1.24
+**Version:** 1.25
 
 ---
 
@@ -79,6 +79,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
 | Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f) | You asked to try Butlery; you can object (Art. 21) |
 | Import log (see section 3.2) | Legitimate interest (Art. 6.1.f) | Make import work and fix errors; you can object (Art. 21) |
+| Samples from AI recipe reading (see section 5.2) | Consent (Art. 6.1.a) | Improve recipe reading; you can withdraw at any time |
 | Feedback you send in the app | Legitimate interest (Art. 6.1.f) | Answer and act on what you report; you can object (Art. 21) |
 
 ---
@@ -128,6 +129,8 @@ We use your personal data for the following purposes:
 - Suggest weekly menus and recipe enhancements
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
+
+**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (the Netherlands). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
 
 **Shared allergies within your household (if you have consented):**
 
@@ -297,6 +300,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the latest decision. If a decision is reviewed, the earlier decision is kept in the same record | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 | Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, even if the account has already been deleted | Legitimate interest |
+| Samples from AI recipe reading (text to and from the AI, without images and without names, email or anything else that identifies you) | Deleted automatically after 30 days, even if the account has already been deleted | Consent |
 | Feedback you send in the app, with screenshot | Until you delete your account. It is then deleted with its screenshots | Legitimate interest |
 
 After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored.
