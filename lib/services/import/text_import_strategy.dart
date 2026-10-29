@@ -231,7 +231,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       return false;
     }
     return RecipeSectionDetector.isGarbage(line) ||
-        _looksLikeInstagramUsername(line) ||
+        HeadingWordLists.looksLikeHandle(line) ||
+        HeadingWordLists.isClockTime(line) ||
         (_isAllCapsLabel(line) && !_pictograph.hasMatch(line));
   }
 
@@ -470,20 +471,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// account name, a yield or time line, a byline.
   bool _isPageMetadata(String line) =>
       _isAllCapsLabel(line) ||
-      _looksLikeInstagramUsername(line) ||
+      HeadingWordLists.looksLikeHandle(line) ||
       _yieldLabel.hasMatch(line) ||
       _timeMetadataLine.hasMatch(line) ||
       _bareTimeLine.hasMatch(line) ||
       _byline.hasMatch(line);
-
-  /// Check if a line looks like a standalone Instagram username
-  bool _looksLikeInstagramUsername(String line) {
-    // Instagram usernames: lowercase letters, numbers, underscores, dots
-    // Max 30 chars, no spaces
-    return line.length <= 30 &&
-        !line.contains(' ') &&
-        RegExp(r'^[a-z_][a-z0-9_\.]*$', caseSensitive: true).hasMatch(line);
-  }
 
   /// Extract ingredients using measurement-first approach.
   List<String> _extractIngredientsByMeasurement(String text) {
@@ -632,7 +624,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final lowerLine = line.toLowerCase();
 
         if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
-        if (_looksLikeInstagramUsername(line)) continue;
+        if (HeadingWordLists.looksLikeHandle(line)) continue;
         if (RecipeSectionDetector.isIngredientHeader(lowerLine) ||
             RecipeSectionDetector.isInstructionHeader(lowerLine)) {
           break;
@@ -968,9 +960,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       ingredients,
       exemptFromFilters: rescuedRows,
     );
-    final cleanedInstructions = instructions
-        .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
-        .toList();
+    final cleanedInstructions = _dropRepeatedStepRuns(
+      instructions
+          .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
+          .toList(),
+    );
 
     // CRIT-12: Log warning when no ingredients/instructions found instead of
     // inserting placeholder strings that confuse the tagging system
@@ -1312,15 +1306,49 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return cleaned;
   }
 
+  /// Two overlapping screenshots of one post repeat the steps where the
+  /// pages meet. A run of two or more consecutive steps that recurs later,
+  /// each long enough not to be a stock phrase, is dropped at its second
+  /// occurrence; a lone repeated "Blanda väl." is kept.
+  List<String> _dropRepeatedStepRuns(List<String> steps) {
+    const minRun = 2;
+    const minLength = 25;
+    final keys = steps.map((s) => s.trim().toLowerCase()).toList();
+    final drop = List<bool>.filled(steps.length, false);
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = i + 1; j < keys.length; j++) {
+        if (drop[j]) continue;
+        var run = 0;
+        while (j + run < keys.length &&
+            i + run < j &&
+            keys[i + run] == keys[j + run] &&
+            keys[j + run].length >= minLength) {
+          run++;
+        }
+        if (run >= minRun) {
+          for (var k = 0; k < run; k++) {
+            drop[j + k] = true;
+          }
+        }
+      }
+    }
+    return [
+      for (var i = 0; i < steps.length; i++)
+        if (!drop[i]) steps[i],
+    ];
+  }
+
   int? _extractPortions(String text) {
+    // "4-5 portioner" is read as 4, the range's lower bound.
+    const range = r'(\d+)(?:\s*[-–]\s*\d+)?';
     final patterns = [
-      RegExp(r'portioner?\s*:\s*(\d+)', caseSensitive: false),
-      RegExp(r'servings?\s*:\s*(\d+)', caseSensitive: false),
-      RegExp(r'(\d+)\s*port(?:ion[a-zåäö]*)?(?![a-zåäö])'),
+      RegExp('portioner?\\s*:\\s*$range', caseSensitive: false),
+      RegExp('servings?\\s*:\\s*$range', caseSensitive: false),
+      RegExp('$range\\s*port(?:ion[a-zåäö]*)?(?![a-zåäö])'),
       // A unit after the number, so a shop offer ("betala för 2") is not a
       // yield.
-      RegExp(r'för\s*(\d+)\s*(?:pers|port)'),
-      RegExp(r'(\d+)\s*pers'),
+      RegExp('för\\s*$range\\s*(?:pers|port)'),
+      RegExp('$range\\s*pers'),
     ];
 
     for (final pattern in patterns) {

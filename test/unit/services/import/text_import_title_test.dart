@@ -56,6 +56,63 @@ void main() {
     });
   });
 
+  group('HeadingWordLists screenshot chrome', () {
+    test('social lines around a post', () {
+      for (final line in [
+        'Gillas av anna_k och 12 andra',
+        '1 234 gillningar',
+        'Följer',
+        'Följ',
+        'mindre',
+        'mer',
+        '… mer',
+        'För 6 dagar sedan',
+        '3 timmar sedan',
+        'Visa alla 12 kommentarer',
+        'Lägg till en kommentar…',
+        'Gilla · Kommentera · Dela',
+        'Gillas av anna_k',
+        '12 gilla-markeringar',
+        '3 veckor sedan',
+        'Visa 4 kommentarer',
+        'Läs mer',
+        'Originalljud',
+      ]) {
+        expect(HeadingWordLists.isSocialChrome(line), isTrue, reason: line);
+        expect(HeadingWordLists.isPageFurniture(line), isTrue, reason: line);
+      }
+    });
+
+    test('recipe lines that open with the same words', () {
+      for (final line in [
+        'mer smör',
+        'Mindre salt än vanligt',
+        'Följ anvisningen på paketet',
+        'Gillas av hela familjen, servera med ris',
+        'Låt vila i 6 dagar sedan servera',
+        '2 dl mjölk',
+      ]) {
+        expect(HeadingWordLists.isSocialChrome(line), isFalse, reason: line);
+      }
+    });
+
+    test('a handle is a lone lowercase account name', () {
+      expect(HeadingWordLists.looksLikeHandle('matglad.anna'), isTrue);
+      expect(HeadingWordLists.looksLikeHandle('@anna_k'), isTrue);
+      expect(HeadingWordLists.looksLikeHandle('Anna'), isFalse);
+      expect(HeadingWordLists.looksLikeHandle('anna k'), isFalse);
+      expect(HeadingWordLists.looksLikeHandle('anna@gmail.com'), isFalse);
+      expect(HeadingWordLists.looksLikeHandle('a' * 31), isFalse);
+    });
+
+    test('a clock is a whole-line time', () {
+      expect(HeadingWordLists.isClockTime('10:55'), isTrue);
+      expect(HeadingWordLists.isClockTime('9.41'), isTrue);
+      expect(HeadingWordLists.isClockTime('10:55 min'), isFalse);
+      expect(HeadingWordLists.isClockTime('1:30:00'), isFalse);
+    });
+  });
+
   group('RecipeSectionDetector page text', () {
     test('a rating is not a comma-separated ingredient list', () {
       expect(RecipeSectionDetector.looksLikeIngredient('4,5 av 5'), isFalse);
@@ -329,6 +386,107 @@ Stek tunna pannkakor i smör tre minuter per sida.''');
         expect(recipe.description, 'En enkel vardagsrätt som alla gillar.');
       });
     }
+
+    test('a screenshot clock is skipped above the title', () async {
+      final recipe = await parse('10:55\nmatglad.anna\nKrämig pasta\n$body');
+      expect(recipe.title, 'Krämig pasta');
+    });
+
+    test('a portion range reads its lower bound', () async {
+      final recipe = await parse('Krämig pasta\n4-5 portioner\n$body');
+      expect(recipe.portions, 4);
+    });
+
+    test('a repeated run of long steps is dropped once', () async {
+      final recipe = await parse('''
+Krämig pasta
+Ingredienser
+400 g pasta
+Gör så här
+1. Koka pastan enligt anvisningen på paketet tills den är al dente.
+2. Rör ner grädden och låt det bli varmt under omrörning.
+3. Smaka av med salt och svartpeppar innan servering.
+2. Rör ner grädden och låt det bli varmt under omrörning.
+3. Smaka av med salt och svartpeppar innan servering.
+4. Servera genast med riven parmesan.''');
+      expect(recipe.instructions, hasLength(4));
+      expect(recipe.instructions.last, startsWith('Servera'));
+    });
+
+    test('a lone repeated short step is kept', () async {
+      final recipe = await parse('''
+Krämig pasta
+Ingredienser
+400 g pasta
+Gör så här
+1. Koka pastan enligt anvisningen på paketet tills den är al dente.
+2. Blanda väl i kastrullen.
+3. Rör ner grädden och låt det bli varmt under omrörning.
+4. Blanda väl i kastrullen.''');
+      expect(recipe.instructions, hasLength(4));
+    });
+
+    test('a repeated pair of short steps is kept', () async {
+      final recipe = await parse('''
+Krämig pasta
+Ingredienser
+400 g pasta
+Gör så här
+1. Blanda väl i kastrullen.
+2. Salta och peppra.
+3. Rör ner grädden och låt det bli varmt under omrörning.
+4. Blanda väl i kastrullen.
+5. Salta och peppra.''');
+      expect(recipe.instructions, hasLength(5));
+    });
+
+    test('one long step repeated apart is kept', () async {
+      final recipe = await parse('''
+Krämig pasta
+Ingredienser
+400 g pasta
+Gör så här
+1. Rör ner grädden och låt det bli varmt under omrörning.
+2. Salta och peppra.
+3. Rör ner grädden och låt det bli varmt under omrörning.''');
+      expect(recipe.instructions, hasLength(3));
+    });
+
+    test('a portion range with an en dash or a label reads the same', () async {
+      for (final line in [
+        '4–5 portioner',
+        'Portioner: 4-5',
+        'För 4-5 personer',
+      ]) {
+        final recipe = await parse('Krämig pasta\n$line\n$body');
+        expect(recipe.portions, 4, reason: line);
+      }
+    });
+
+    test('a screenshot post keeps its chrome out of the recipe', () async {
+      final recipe = await parse('''
+matglad.anna
+Krämig pasta
+Gillas av anna_k och 12 andra
+Ingredienser
+400 g pasta
+2 dl grädde
+Gör så här
+Koka pastan enligt anvisningen på paketet.
+Rör ner grädden och låt det bli varmt.
+… mer
+För 6 dagar sedan
+Visa alla 12 kommentarer''');
+      expect(recipe.title, 'Krämig pasta');
+      final all = [
+        recipe.description,
+        ...recipe.ingredients,
+        ...recipe.instructions,
+      ].join('\n').toLowerCase();
+      for (final leak in ['gillas av', 'mer', 'dagar sedan', 'kommentarer']) {
+        expect(all, isNot(contains(leak)), reason: leak);
+      }
+    });
 
     test('a name cut at é is still one ingredient', () async {
       final recipe = await parse('''

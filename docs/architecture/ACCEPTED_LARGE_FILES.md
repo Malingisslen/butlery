@@ -98,7 +98,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 547 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `user_service.dart` | 1255 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
-| `text_import_strategy.dart` | 1430 | Text-based recipe import strategy. Row refreshed 2026-10-08: recorded 1038, measured 1156 before BUT-2158 and 1188 after it passed per-line confidences to the import snapshot. |
+| `text_import_strategy.dart` | 1458 | Text-based recipe import strategy. Row refreshed 2026-10-29. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 607 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 681 | Friend category CRUD operations |

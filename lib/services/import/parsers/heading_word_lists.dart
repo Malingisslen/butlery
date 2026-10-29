@@ -156,8 +156,75 @@ class HeadingWordLists {
         _rating.hasMatch(lower) ||
         _published.hasMatch(lower) ||
         _issueNumber.hasMatch(lower) ||
-        _cookieBanner.hasMatch(lower);
+        _cookieBanner.hasMatch(lower) ||
+        isSocialChrome(lower);
   }
+
+  /// Whole lines of a social-media screenshot around a post: the like row,
+  /// the follow button, the "more" toggle, the post's age, the comment
+  /// count, the action bar. Whole-line only: "mer smör" is a step.
+  static bool isSocialChrome(String line) {
+    final lower = line.trim().toLowerCase();
+    return socialChrome.contains(lower) ||
+        _likedBy.hasMatch(lower) ||
+        _likeCount.hasMatch(lower) ||
+        _postAge.hasMatch(lower) ||
+        _commentCount.hasMatch(lower) ||
+        _socialBar.hasMatch(lower);
+  }
+
+  static const socialChrome = {
+    'följ',
+    'följer',
+    'följ dig',
+    'följer dig',
+    'mer',
+    'mindre',
+    'visa mer',
+    'läs mer',
+    '… mer',
+    '... mer',
+    '...mer',
+    'visa alla kommentarer',
+    'lägg till en kommentar',
+    'lägg till en kommentar…',
+    'lägg till en kommentar...',
+    'originalljud',
+  };
+
+  // "Gillas av anna_k och 12 andra", "Gillas av anna_k". One handle, so
+  // "Gillas av hela familjen, servera med ris" is a line of the post.
+  static final _likedBy = RegExp(
+    r'^gillas av \S+(?: och (?:\S+|\d[\d\s]* andra))?$',
+  );
+
+  // "1 234 gillningar", "12 gilla-markeringar".
+  static final _likeCount = RegExp(
+    r'^\d[\d\s.]*\s*(?:gillningar|gilla-markeringar|likes)$',
+  );
+
+  // "För 6 dagar sedan", "3 timmar sedan".
+  static final _postAge = RegExp(
+    r'^(?:för\s+)?\d+\s*(?:sek|min|tim|dag|veck|månad|år)[a-zåäö]*\s+sedan$',
+  );
+
+  // "Visa alla 12 kommentarer".
+  static final _commentCount = RegExp(r'^visa (?:alla )?\d+ kommentarer$');
+
+  /// A lone lowercase account name ("anna_k", "@matglad.anna"): letters,
+  /// digits, underscores and dots, no spaces, at most 30 characters.
+  static bool looksLikeHandle(String line) {
+    var t = line.trim();
+    if (t.startsWith('@')) t = t.substring(1);
+    return t.length <= 30 && _handle.hasMatch(t);
+  }
+
+  static final _handle = RegExp(r'^[a-z_][a-z0-9_.]*$');
+
+  /// A status bar's clock ("10:55", "9.41") — whole line only.
+  static bool isClockTime(String line) => _clock.hasMatch(line.trim());
+
+  static final _clock = RegExp(r'^\d{1,2}[:.]\d{2}$');
 
   static const pageFurniture = {
     'hoppa till recept',
