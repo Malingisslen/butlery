@@ -294,9 +294,7 @@ function pathsUnder(workflow: string, trigger: string): string[] {
 }
 
 /**
- * Every workflow that runs in the `production` environment, sorted by whether
- * it reaches Google Cloud. A new production workflow fails the check below
- * until it is put in one of the two lists.
+ * Every workflow that runs in the `production` environment.
  */
 const PRODUCTION_CLOUD_WORKFLOWS = [
   "backfill-age-claim.yml",
@@ -307,8 +305,6 @@ const PRODUCTION_CLOUD_WORKFLOWS = [
   "migrate-meal-type.yml",
   "repair-feature-retention.yml",
 ];
-/** Uses the environment for Apple signing secrets only. */
-const PRODUCTION_NON_CLOUD_WORKFLOWS = ["ios-testflight.yml"];
 
 /** A job whose environment is, or can be, `production`. */
 const PRODUCTION_ENVIRONMENT =
@@ -327,12 +323,9 @@ function testProductionWorkflowsSignInWithWif(): void {
   const inProduction = files
     .filter(({ text }) => PRODUCTION_ENVIRONMENT.test(text))
     .map(({ name }) => name);
-  const classified = [
-    ...PRODUCTION_CLOUD_WORKFLOWS,
-    ...PRODUCTION_NON_CLOUD_WORKFLOWS,
-  ].sort();
+  const classified = [...PRODUCTION_CLOUD_WORKFLOWS].sort();
   record(
-    "every production workflow is listed as cloud or non-cloud",
+    "every production workflow is a listed cloud workflow",
     JSON.stringify(inProduction) === JSON.stringify(classified),
     `in production: ${inProduction.join(", ")}`,
   );
