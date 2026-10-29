@@ -48,7 +48,11 @@ bool _continues(String line, String next) {
   if (a.endsWith(',')) return true;
 
   // Out of a quantity row only through a comma or a hyphen, handled above.
-  if (RecipeSectionDetector.looksLikeIngredient(a)) return false;
+  // A numbered step is never one, however many "smör och olja" it carries.
+  if (!_stepMarker.hasMatch(a.trim()) &&
+      RecipeSectionDetector.looksLikeIngredient(a)) {
+    return false;
+  }
   if (_isListHeading(a)) return false;
   if (_terminal.hasMatch(a)) return false;
 
@@ -108,6 +112,11 @@ final _hyphenated = RegExp('[a-zA-ZåäöÅÄÖ]-\$');
 final _terminal = RegExp(r'[.!?:;]\s*$');
 final _stepNumber = RegExp(
   r'^(?:\d{1,2}[.):]|steg\s*\d|[0-9]️?⃣)',
+  caseSensitive: false,
+);
+// A step marker needs the space after it, so "1.5 dl" stays a quantity.
+final _stepMarker = RegExp(
+  r'^(?:\d{1,2}[.):]\s|steg\s*\d|[0-9]️?⃣)',
   caseSensitive: false,
 );
 final _coordinator = RegExp(r'^(?:och|eller|samt)(?:\s|$)');

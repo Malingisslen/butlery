@@ -9,6 +9,21 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('reflowWrappedLines', () {
+    test('a numbered step naming ingredients is still rejoined', () {
+      expect(
+        reflowWrappedLines(
+          '2. Hetta upp en panna med smör och olja och stek\n'
+          'kycklingen tills den tar färg.',
+        ),
+        '2. Hetta upp en panna med smör och olja och stek '
+        'kycklingen tills den tar färg.',
+      );
+    });
+
+    test('a decimal quantity is not a step number', () {
+      expect(reflowWrappedLines('1.5 dl grädde\nsalt'), '1.5 dl grädde\nsalt');
+    });
+
     test('a step broken after a dangling word is rejoined', () {
       expect(
         reflowWrappedLines(
