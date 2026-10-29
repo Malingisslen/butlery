@@ -51,8 +51,7 @@
 /// permanently, looking exactly like "geometry never helps".
 ///
 /// NO trim is applied to the LAYOUT string. `device_text_recognizer_mlkit`
-/// returns [PageLayout.text] verbatim — it trims only to TEST emptiness — and
-/// `photo_import_viewmodel._recombineAndParse` joins the pages as they are, so
+/// returns [PageLayout.text] verbatim — it trims only to TEST emptiness — so
 /// a page's leading and trailing blank rows survive and no index needs
 /// adjusting.
 ///

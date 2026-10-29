@@ -633,6 +633,32 @@ Stek små plättar i plättlagg.''';
           ['Krämig kycklinggryta', 'Gör så här', ...steps].join('\n'),
         );
       });
+
+      test(
+        'a step the OCR broke mid-sentence is one step in the recipe',
+        () async {
+          final page = [
+            'Krämig kycklinggryta',
+            'Ingredienser',
+            '500 g kycklingfilé',
+            '2 dl grädde',
+            'Gör så här',
+            'Smält ner',
+            'smöret i en kastrull på medelvärme.',
+            'Häll i grädden och låt sjuda i tio minuter.',
+          ].join('\n');
+
+          await vm.addPageForTesting(bytes(1), page);
+
+          // The text the user sees keeps the reader's line breaks; the recipe
+          // parsed from it does not.
+          expect(vm.ocrText, page);
+          expect(
+            vm.parsedRecipe?.instructions,
+            contains('Smält ner smöret i en kastrull på medelvärme.'),
+          );
+        },
+      );
     });
   });
 }

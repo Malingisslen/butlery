@@ -12,6 +12,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
+import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
@@ -805,12 +806,17 @@ class ImportManager {
   /// [channel] null means this parse belongs to an import that was already
   /// measured — a page added, removed or reordered, a restored draft, the
   /// text behind a handwritten photo — so it writes no event and uses no quota.
+  ///
+  /// [reflow] rejoins the lines a photo's OCR broke mid-sentence
+  /// (`reflowWrappedLines`). Only the photo path asks for it; pasted text and
+  /// the text behind a handwritten photo keep their line breaks.
   Future<BatchImportResult> autoParseMulti(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     DocumentLayout? layout,
     ImportChannel? channel = ImportChannel.text,
+    bool reflow = false,
   }) async {
     // Same limit as autoImport; an already measured import was checked when
     // it was counted.
@@ -835,6 +841,7 @@ class ImportManager {
       preferredStrategy: preferredStrategy,
       options: options,
       layout: layout,
+      reflow: reflow,
     );
     if (channel == null) return batch;
     // One page is one import, however many recipes it held: the event
@@ -855,10 +862,20 @@ class ImportManager {
 
   /// The recipe blocks [autoParseMulti] parses [input] as, one per recipe.
   /// Deterministic and free, so a caller can ask before choosing a path.
-  static List<String> recipeBlocks(String input, {DocumentLayout? layout}) {
+  static List<String> recipeBlocks(
+    String input, {
+    DocumentLayout? layout,
+    bool reflow = false,
+  }) {
     // [layout] is where the words sat on the page, when a reader measured
     // them. Only the photo path can supply it; the paste path never can, so it
     // stays optional and null reproduces today's behaviour exactly.
+    //
+    // With [reflow] and no usable layout, the wrapped lines are rejoined
+    // BEFORE the split: an unjoined fragment ("Smält ner") reads
+    // as a heading to the splitter and can cut one recipe in two. A usable
+    // layout describes the text row for row, so the lines must stay as they
+    // are until the split is done, and each block is rejoined after.
     //
     // Trim first, split second. A heading the frame cut off from its own
     // recipe is not this page's content, and removing it needs no split — so
@@ -875,8 +892,16 @@ class ImportManager {
     // appliers here — which these lines used to do — let the tail cut move the
     // page's median type size under the leading trim and cost a real recipe
     // title; `frame_trim.dart` carries the executed case.
+    final layoutUsable = layout?.matchesLineCountOf(input) ?? false;
+    if (reflow && !layoutUsable) {
+      return MultiRecipeSplitter().split(reflowWrappedLines(input));
+    }
     final trimmed = withoutFrameNoise(input, layout);
-    return MultiRecipeSplitter().split(trimmed.text, layout: trimmed.layout);
+    final blocks = MultiRecipeSplitter().split(
+      trimmed.text,
+      layout: trimmed.layout,
+    );
+    return reflow ? blocks.map(reflowWrappedLines).toList() : blocks;
   }
 
   Future<BatchImportResult> _autoParseMulti(
@@ -884,8 +909,9 @@ class ImportManager {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     DocumentLayout? layout,
+    bool reflow = false,
   }) async {
-    final blocks = recipeBlocks(input, layout: layout);
+    final blocks = recipeBlocks(input, layout: layout, reflow: reflow);
 
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];

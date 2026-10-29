@@ -580,7 +580,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     notifyListeners();
     // The draft's import was measured when it was first read.
     _measured = true;
-    await _autoParseOcrText(_ocrText);
+    await _autoParseOcrText(_ocrText, reflow: true);
     return true;
   }
 
@@ -854,7 +854,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // page's bytes (the draft schema stages one image) alongside the full text.
     unawaited(persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText));
 
-    await _autoParseOcrText(_ocrText, layout: layout);
+    await _autoParseOcrText(_ocrText, layout: layout, reflow: true);
   }
 
   /// Parse-only auto-parse: recipes exist in memory until the user explicitly
@@ -865,7 +865,14 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// image, never per-line boxes — and the handwriting path's
   /// needs-assistance branch, which never went near an OCR tier. Omitting it
   /// is not a degraded path; it is the path that ships today.
-  Future<void> _autoParseOcrText(String text, {DocumentLayout? layout}) async {
+  ///
+  /// [reflow] rejoins OCR-wrapped lines. The page paths ask for it; the
+  /// text behind a handwritten photo never had OCR line breaks and does not.
+  Future<void> _autoParseOcrText(
+    String text, {
+    DocumentLayout? layout,
+    bool reflow = false,
+  }) async {
     try {
       final channel = _measured ? null : ImportChannel.photo;
       _measured = true;
@@ -873,6 +880,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         text,
         layout: layout,
         channel: channel,
+        reflow: reflow,
       );
       final recipes = result.successfulRecipes;
       _parsedRecipes

@@ -90,7 +90,7 @@ Already modular services or well-organized modules within service facades. Furth
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,063 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1174 | Service facade coordinating 4 modules |
-| `import_manager.dart` | 1,089 | Import pipeline orchestrator — multi-format, multi-tier |
+| `import_manager.dart` | 1,115 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 680 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 665 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
@@ -240,7 +240,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `collaborative_shopping_items.dart` | 534 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
 | `tag_result_display.dart` | 605 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
 | `onboarding_viewmodel.dart` | 614 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
-| `photo_import_viewmodel.dart` | 998 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
+| `photo_import_viewmodel.dart` | 1,006 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 691 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 524 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 616 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
@@ -264,7 +264,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `collaborative_shopping_items.dart` | 534 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 605 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 614 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
-| `photo_import_viewmodel.dart` | 998 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
+| `photo_import_viewmodel.dart` | 1,006 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 691 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 738 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
 | `menu_generator.dart` | 922 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |

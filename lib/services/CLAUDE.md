@@ -33,6 +33,8 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/import/layout/page_reflow.dart` (pure functions — strips a screenshot's
   own chrome off each page and drops the lines two overlapping screenshots share, before
   `frame_trim.dart` sees the page; same category)
+- `lib/services/import/layout/line_reflow.dart` (pure function — rejoins the lines a
+  photo's OCR broke mid-sentence, before the splitter on the text path; same category)
 - `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; no Flutter
   and nothing third-party by design, so it runs under plain `dart test` and replays
   offline)
