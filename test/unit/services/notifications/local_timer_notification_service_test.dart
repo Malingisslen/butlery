@@ -71,6 +71,18 @@ class _FakeNotificationDetails extends Fake implements NotificationDetails {}
 
 class _FakeTZDateTime extends Fake implements tz.TZDateTime {}
 
+class _FixedExactAlarms implements ExactAlarmAccess {
+  _FixedExactAlarms({required this.isAllowed});
+
+  final bool isAllowed;
+
+  @override
+  Future<bool> allowed() async => isAllowed;
+
+  @override
+  Future<void> openSetting() async {}
+}
+
 /// BUT-1242: Unit coverage for the OS-level timer-expiry notification service.
 ///
 /// On a pure-Dart test VM `Platform.isAndroid`/`isIOS` are both false, so
@@ -254,5 +266,106 @@ void main() {
         );
       },
     );
+  });
+
+  group('LocalTimerNotificationService schedule mode (Play exact-alarm)', () {
+    setUpAll(() {
+      registerFallbackValue(_FakeInitializationSettings());
+      registerFallbackValue(_FakeNotificationDetails());
+      registerFallbackValue(_FakeTZDateTime());
+      registerFallbackValue(AndroidScheduleMode.exactAllowWhileIdle);
+    });
+
+    Future<AndroidScheduleMode> scheduledModeWith({
+      required bool exactAllowed,
+    }) async {
+      final plugin = _RecordingPlugin();
+      final service = LocalTimerNotificationService(
+        plugin: plugin,
+        isMobileOverride: () => true,
+        exactAlarms: _FixedExactAlarms(isAllowed: exactAllowed),
+      );
+
+      await service.schedule(
+        timerId: 'step-0',
+        duration: const Duration(minutes: 5),
+      );
+
+      return verify(
+            () => plugin.zonedSchedule(
+              id: any(named: 'id'),
+              scheduledDate: any(named: 'scheduledDate'),
+              notificationDetails: any(named: 'notificationDetails'),
+              androidScheduleMode: captureAny(named: 'androidScheduleMode'),
+              title: any(named: 'title'),
+              body: any(named: 'body'),
+              payload: any(named: 'payload'),
+              matchDateTimeComponents: any(
+                named: 'matchDateTimeComponents',
+              ),
+            ),
+          ).captured.single
+          as AndroidScheduleMode;
+    }
+
+    test('alerts at the exact second when exact alarms are allowed', () async {
+      expect(
+        await scheduledModeWith(exactAllowed: true),
+        AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    });
+
+    test(
+      'still schedules an alert, inexactly, when exact alarms are off',
+      () async {
+        expect(
+          await scheduledModeWith(exactAllowed: false),
+          AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      },
+    );
+
+    test('falls back to an inexact alert when the OS refuses exact', () async {
+      final plugin = _RecordingPlugin();
+      when(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        ),
+      ).thenThrow(Exception('exact_alarms_not_permitted'));
+      final service = LocalTimerNotificationService(
+        plugin: plugin,
+        isMobileOverride: () => true,
+        exactAlarms: _FixedExactAlarms(isAllowed: true),
+      );
+
+      await service.schedule(
+        timerId: 'step-0',
+        duration: const Duration(minutes: 5),
+      );
+
+      final modes = verify(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: captureAny(named: 'androidScheduleMode'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        ),
+      ).captured;
+      expect(modes, [
+        AndroidScheduleMode.exactAllowWhileIdle,
+        AndroidScheduleMode.inexactAllowWhileIdle,
+      ]);
+    });
   });
 }

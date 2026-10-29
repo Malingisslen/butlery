@@ -4,25 +4,18 @@
     <!-- PERMISSIONS för Internet och WebView -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
-    <!-- NYA PERMISSIONS för Fas 15: Kamera och Galleri -->
+    <!-- NYA PERMISSIONS för Fas 15: Kamera -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     
-    <!-- För nyare Android-versioner (API 33+) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
     <!-- BUT-414: Android 13+ runtime notification permission. Pre-13 devices ignore this. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- BUT-1242: scheduled cooking-timer expiry alerts (flutter_local_notifications
-         zonedSchedule with exactAllowWhileIdle). USE_EXACT_ALARM lets a backgrounded
-         timer fire at the exact wall-clock second without a runtime prompt — a cooking
-         timer is the sanctioned alarm/timer use case for this permission (targets API 33+).
+         zonedSchedule).
          RECEIVE_BOOT_COMPLETED + the two receivers below let the plugin re-arm pending
          alerts after the app is killed or the device reboots. -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 

@@ -556,5 +556,48 @@ void main() {
       expect(await service.pickImage(ImageSource.camera), isNull);
       expect(await service.pickMultipleImages(), isEmpty);
     });
+
+    test(
+      'the Android gallery opens without any permission check or rationale',
+      () async {
+        final android = ImagePickerService(
+          imagePickerProvider: mockPicker,
+          permissionProvider: mockPermission,
+          imageValidator: mockValidator,
+          isAndroidOverride: () => true,
+        );
+        var rationaleShown = false;
+
+        final outcome = await android.resolvePermission(
+          ImageSource.gallery,
+          rationale: (_) async {
+            rationaleShown = true;
+            return true;
+          },
+        );
+
+        expect(outcome, OsPermissionOutcome.granted);
+        expect(rationaleShown, isFalse);
+        verifyNever(() => mockPermission.checkPermission(any()));
+        verifyNever(() => mockPermission.requestPermission(any()));
+      },
+    );
+
+    test('the Android camera still asks for the camera permission', () async {
+      final android = ImagePickerService(
+        imagePickerProvider: mockPicker,
+        permissionProvider: mockPermission,
+        imageValidator: mockValidator,
+        isAndroidOverride: () => true,
+      );
+      when(
+        () => mockPermission.checkPermission(Permission.camera),
+      ).thenAnswer((_) async => PermissionStatus.granted);
+
+      final outcome = await android.resolvePermission(ImageSource.camera);
+
+      expect(outcome, OsPermissionOutcome.granted);
+      verify(() => mockPermission.checkPermission(Permission.camera)).called(1);
+    });
   });
 }

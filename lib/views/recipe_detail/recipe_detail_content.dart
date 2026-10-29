@@ -14,6 +14,8 @@ import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
@@ -538,6 +540,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         service: service,
         initialDuration: match.duration,
         sourcePhrase: instruction,
+        beforeStart: () => _offerExactAlarms(sheetContext),
         onExpired: () {
           HapticFeedback.mediumImpact();
           // The messenger is captured before the sheet opens.
@@ -545,6 +548,18 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         },
       ),
     );
+  }
+
+  /// Only when notifications can be shown: without them an exact alarm
+  /// alerts nobody.
+  Future<void> _offerExactAlarms(BuildContext context) async {
+    final permissions = ServiceLocator.tryGet<NotificationPermissionService>();
+    if (permissions != null && !await permissions.notificationsAllowed()) {
+      return;
+    }
+    if (!context.mounted) return;
+    await ServiceLocator.tryGet<LocalTimerNotificationService>()
+        ?.offerExactAlarmsOnce(context);
   }
 
   Widget _buildStepCheckbox(

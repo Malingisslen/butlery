@@ -23,6 +23,7 @@ import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -299,7 +300,13 @@ class _CookingModeViewState extends State<CookingModeView> {
     final service = ServiceLocator.tryGet<NotificationPermissionService>();
     if (service == null) return;
     final shown = await service.warnBeforeTimerIfNeeded(context);
-    if (shown) _timerNoticeShown = true;
+    if (shown) {
+      _timerNoticeShown = true;
+      return;
+    }
+    if (!mounted) return;
+    await ServiceLocator.tryGet<LocalTimerNotificationService>()
+        ?.offerExactAlarmsOnce(context);
   }
 
   @override
