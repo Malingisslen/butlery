@@ -49,7 +49,7 @@ bool _continues(String line, String next) {
 
   // Out of a quantity row only through a comma or a hyphen, handled above.
   // A numbered step is never one, however many "smör och olja" it carries.
-  if (!_stepMarker.hasMatch(a.trim()) &&
+  if (!stepMarker.hasMatch(a.trim()) &&
       RecipeSectionDetector.looksLikeIngredient(a)) {
     return false;
   }
@@ -115,7 +115,7 @@ final _stepNumber = RegExp(
   caseSensitive: false,
 );
 // A step marker needs the space after it, so "1.5 dl" stays a quantity.
-final _stepMarker = RegExp(
+final stepMarker = RegExp(
   r'^(?:\d{1,2}[.):]\s|steg\s*\d|[0-9]️?⃣)',
   caseSensitive: false,
 );

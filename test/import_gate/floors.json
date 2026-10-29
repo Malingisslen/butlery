@@ -4,7 +4,7 @@
       "recall": 1.0,
       "headingLeaks": 0,
       "titleExact": 13,
-      "stepsExact": 8,
+      "stepsExact": 10,
       "portionsExact": 10,
       "timeExact": 9,
       "failures": 0,
@@ -16,24 +16,24 @@
       "recall": 0.9722,
       "headingLeaks": 3,
       "titleExact": 29,
-      "stepsExact": 27,
+      "stepsExact": 28,
       "portionsExact": 0,
       "timeExact": 0,
       "failures": 0,
       "extraIngredients": 7,
-      "extraSteps": 2,
+      "extraSteps": 0,
       "chromeLeaks": 0
     },
     "stokig": {
       "recall": 0.9531,
       "headingLeaks": 0,
       "titleExact": 9,
-      "stepsExact": 6,
+      "stepsExact": 5,
       "portionsExact": 7,
       "timeExact": 2,
       "failures": 0,
       "extraIngredients": 3,
-      "extraSteps": 6,
+      "extraSteps": 7,
       "chromeLeaks": 0
     },
     "foto": {
@@ -46,7 +46,7 @@
       "timeExact": 0,
       "failures": 0,
       "extraIngredients": 2,
-      "extraSteps": 16
+      "extraSteps": 9
     }
   },
   "knownRed": [
