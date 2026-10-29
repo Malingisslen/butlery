@@ -50,6 +50,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -181,6 +182,7 @@ class ContentModule implements DIModule {
     UnifiedRecipeService,
     UnifiedMenuService,
     ImportManager,
+    ParserShadowSampler,
     RecipeCookingService,
     MenuService,
     WeeklyMenuPlanRepository,
@@ -321,6 +323,14 @@ class ContentModule implements DIModule {
         rateLimiter: app<ImportRateLimiter>(),
         consentService: container<ConsentService>(),
         guestSession: container<GuestImportSession>(),
+        isGuest: () => container<AuthService>().isGuest,
+      ),
+    );
+
+    container.registerLazySingleton<ParserShadowSampler>(
+      () => ParserShadowSampler(
+        consentService: container<ConsentService>(),
+        llmService: container<LlmService>(),
         isGuest: () => container<AuthService>().isGuest,
       ),
     );

@@ -281,6 +281,30 @@ class LlmService extends BaseService {
     return response;
   }
 
+  /// Parser shadow comparison (ADR-0037): sends one finished import to the
+  /// server, which may compare it with the AI. It skips the user's import
+  /// rate limiter and the backend breaker on purpose, because the server
+  /// spends its own bucket and budget, and a failed sample must never block
+  /// or slow the user's real imports. Never throws: returns whether the
+  /// server took a sample.
+  Future<bool> shadowCompareImport(Map<String, dynamic> payload) async {
+    try {
+      final callable = _functions.httpsCallable(
+        'shadowCompareImport',
+        options: HttpsCallableOptions(timeout: _shadowTimeout),
+      );
+      final result = await callable
+          .call<Map<String, dynamic>>(scrubPayload(payload))
+          .timeout(_shadowTimeout);
+      return result.data['sampled'] == true;
+    } catch (e) {
+      AppLogger.debug('LlmService: shadow comparison skipped - $e');
+      return false;
+    }
+  }
+
+  static const Duration _shadowTimeout = Duration(seconds: 30);
+
   /// Check if LLM service is available (not rate limited, not killed).
   ///
   /// BUT-439: dual-control kill switch on the client too:

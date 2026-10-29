@@ -25,6 +25,7 @@ import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
@@ -501,6 +502,12 @@ class ImportManager {
         elapsed: elapsed,
       ),
     );
+    // Not awaited: a sample must never delay or fail the import it describes.
+    if (result.isSuccess) {
+      unawaited(
+        ServiceLocator.tryGet<ParserShadowSampler>()?.sample(channel, result),
+      );
+    }
   }
 
   void _record(ImportEvent event) {
