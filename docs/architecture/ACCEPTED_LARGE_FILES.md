@@ -195,7 +195,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 846 | DI registrations for content layer |
 | `ui_module.dart` | 516 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |
-| `edit_recipe_view.dart` | 901 | Recipe editing screen. |
+| `edit_recipe_view.dart` | 847 | Recipe editing screen. |
 | `user_profile_edit_view.dart` | 353 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,256 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |

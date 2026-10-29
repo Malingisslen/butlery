@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/butlery_row_field.dart';
+import 'package:butlery/widgets/recipe/recipe_form/step_merge_link.dart';
 
 /// Builds a dynamic list of text fields with add/remove/reorder functionality.
 /// Used for ingredients, instructions, and tags in recipe forms.
@@ -24,6 +25,9 @@ class DynamicListBuilder extends StatelessWidget {
   final VoidCallback onLastFilled;
   final void Function(int index) onRemove;
   final void Function(int oldIndex, int newIndex)? onReorder;
+
+  /// When set, a [StepMergeLink] sits under every row but the last.
+  final void Function(int index)? onMergeWithNext;
   final int maxLength;
 
   const DynamicListBuilder({
@@ -35,6 +39,7 @@ class DynamicListBuilder extends StatelessWidget {
     required this.onLastFilled,
     required this.onRemove,
     this.onReorder,
+    this.onMergeWithNext,
     this.maxLength = 500,
   });
 
@@ -48,8 +53,10 @@ class DynamicListBuilder extends StatelessWidget {
         if (controllers.isNotEmpty && onReorder != null)
           _buildReorderableList(context)
         else ...[
-          for (int index = 0; index < controllers.length; index++)
+          for (int index = 0; index < controllers.length; index++) ...[
             _buildItemRow(context, index),
+            ?_mergeLink(index),
+          ],
         ],
         _buildAddButton(context),
       ],
@@ -92,8 +99,7 @@ class DynamicListBuilder extends StatelessWidget {
   }
 
   Widget _buildReorderableRow(BuildContext context, int index) {
-    return ButleryFieldRow(
-      key: ValueKey('${label}_$index'),
+    final row = ButleryFieldRow(
       children: [
         ReorderableDragStartListener(
           index: index,
@@ -114,6 +120,20 @@ class DynamicListBuilder extends StatelessWidget {
           ),
       ],
     );
+    final link = _mergeLink(index);
+    return Column(
+      key: ValueKey('${label}_$index'),
+      mainAxisSize: MainAxisSize.min,
+      children: [row, ?link],
+    );
+  }
+
+  Widget? _mergeLink(int index) {
+    final onMerge = onMergeWithNext;
+    if (onMerge == null || !StepMergeLink.showsUnder(controllers, index)) {
+      return null;
+    }
+    return StepMergeLink(index: index, onMerge: onMerge);
   }
 
   Widget _buildItemRow(BuildContext context, int index) {

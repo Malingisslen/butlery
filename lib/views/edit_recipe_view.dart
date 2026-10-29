@@ -39,6 +39,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/recipe/recipe_form/step_merge_link.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/recipe/unsaved_changes_dialog.dart';
@@ -559,6 +560,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onLastFilled: viewModel.ensureTrailingInstructionLine,
         onRemove: viewModel.removeInstruction,
         onReorder: viewModel.reorderInstruction,
+        onMergeWithNext: (i) =>
+            StepMergeLink.mergeWithUndo(context, viewModel, i),
       ),
       const SizedBox(height: AppDimensions.formBlockGap),
 
