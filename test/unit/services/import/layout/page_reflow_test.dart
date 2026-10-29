@@ -88,10 +88,59 @@ void main() {
 
     test('a handle-shaped word at the bottom stays even with evidence', () {
       final page = stripScreenChrome(
-        PageText('$post\nFör 6 dagar sedan\nsalt'),
+        PageText('$post\nGillas av anna_k\nsalt'),
       );
       expect(page.lines.last, 'salt');
       expect(page.text, startsWith('Krämig kycklinggryta'));
+    });
+
+    test('an icon row mid-page goes on a screenshot', () {
+      final withIcons = [...lines.take(4), '5Gtll 66', ...lines.skip(4)];
+      final page = stripScreenChrome(
+        PageText('10:55\n${withIcons.join('\n')}'),
+      );
+      expect(page.text, isNot(contains('5Gtll')));
+      expect(page.lines, contains('2 dl grädde'));
+    });
+
+    test('a unit glued to its number mid-page stays', () {
+      final rows = [...lines.take(4), '1tsk', '2 st', ...lines.skip(4)];
+      final page = stripScreenChrome(PageText('10:55\n${rows.join('\n')}'));
+      expect(page.lines, containsAll(['1tsk', '2 st']));
+    });
+
+    test('an icon row mid-page stays without a clock', () {
+      final withIcons = [...lines.take(4), '5Gtll 66', ...lines.skip(4)];
+      final page = stripScreenChrome(PageText(withIcons.join('\n')));
+      expect(page.lines, contains('5Gtll 66'));
+    });
+
+    test('everything below the post age is the next post', () {
+      final page = stripScreenChrome(
+        PageText('10:55\n$post\nFör 6 dagar sedan\nmat\nLETA\nMOZZARELI'),
+      );
+      expect(page.lines.last, 'Servera med ris och en sallad.');
+    });
+
+    test('the caption toggle glued to its last line goes', () {
+      final page = stripScreenChrome(PageText('10:55\n$post mindre'));
+      expect(page.lines.last, 'Servera med ris och en sallad.');
+    });
+
+    test('an account name before a capitals title goes', () {
+      final page = stripScreenChrome(
+        PageText(
+          '10:55\nmatglad.anna KRÄMIG KYCKLINGGRYTA\nMED TIMJAN\nRECEPT',
+        ),
+      );
+      expect(page.lines, ['Krämig kycklinggryta med timjan', 'RECEPT']);
+    });
+
+    test('a capitals title is left alone on a page without evidence', () {
+      final page = stripScreenChrome(
+        PageText('KRÄMIG KYCKLINGGRYTA\nMED TIMJAN\nRECEPT'),
+      );
+      expect(page.lines, ['KRÄMIG KYCKLINGGRYTA', 'MED TIMJAN', 'RECEPT']);
     });
 
     test('an icon row before the clock goes', () {
@@ -137,6 +186,22 @@ void main() {
   });
 
   group('dropPageOverlap', () {
+    test('a long shared run tolerates an unreadable cut last line', () {
+      final first = '${lines.take(10).join('\n')}\n2 DIondoi oramo frairha';
+      final second = '${lines.skip(4).join('\n')}\nNytt steg här.';
+      final result = dropPageOverlap([PageText(first), PageText(second)]);
+      expect(result.continuesPrevious[1], isTrue);
+      expect(result.pages[0].text, lines.take(10).join('\n'));
+      expect(result.pages[1].text, 'Nytt steg här.');
+    });
+
+    test('a short shared run still needs its cut line to match', () {
+      final first = '${lines.take(7).join('\n')}\n2 DIondoi oramo frairha';
+      final second = lines.skip(4).join('\n');
+      final result = dropPageOverlap([PageText(first), PageText(second)]);
+      expect(result.continuesPrevious[1], isFalse);
+    });
+
     test('three shared lines are dropped from the second page', () {
       final first = lines.take(7).join('\n');
       final second = lines.skip(4).join('\n');

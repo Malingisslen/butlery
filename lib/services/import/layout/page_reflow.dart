@@ -88,8 +88,7 @@ const _chromeLines = 4;
 /// Removes a phone screenshot's own lines: the status bar's clock and the
 /// icon row beside it in the top two lines, and a social app's like row,
 /// follow button, "more" toggle, post age and account name in the first and
-/// last four non-empty lines. Nothing in the middle of a page is touched —
-/// "1:30" on line five is the recipe's. The account name alone proves
+/// last four non-empty lines. The account name alone proves
 /// nothing: "salt" under a cookbook title is a bare lowercase line too, so
 /// it goes only on a page that also shows a clock or social chrome.
 PageText stripScreenChrome(PageText page) {
@@ -125,17 +124,100 @@ PageText stripScreenChrome(PageText page) {
       drop[i] = true;
     }
   }
+  final rewritten = List<String>.of(lines);
   if (screenshotEvidence) {
     for (final i in nonEmpty.take(_chromeLines)) {
-      if (HeadingWordLists.looksLikeHandle(lines[i])) drop[i] = true;
+      if (HeadingWordLists.looksLikeHandle(lines[i])) {
+        drop[i] = true;
+      } else {
+        rewritten[i] = _withoutLeadingHandle(lines[i]);
+      }
+    }
+    // ML Kit orders blocks by position, and a status bar's icons can land
+    // mid-page. Only the mixed shape ("5Gtll") counts here: a bare "2 st" is
+    // an ingredient row's opening.
+    for (final i in nonEmpty) {
+      if (_isMidPageIconRow(lines[i])) drop[i] = true;
+    }
+    // A post's age closes its caption; below it the reader is already in
+    // the next post, whose image text is no part of this recipe.
+    final tail = nonEmpty.skip(_chromeLines);
+    final age = tail.where((i) => HeadingWordLists.isPostAge(lines[i]));
+    if (age.isNotEmpty) {
+      for (var i = age.first; i < lines.length; i++) {
+        drop[i] = true;
+      }
+    }
+    _joinCapsTitle(rewritten, nonEmpty, drop);
+    final lastKept = nonEmpty.lastWhere((i) => !drop[i], orElse: () => -1);
+    if (lastKept >= 0) {
+      rewritten[lastKept] = rewritten[lastKept].replaceFirst(_moreToggle, '');
     }
   }
 
-  return page.keepingLines([
+  return PageText(rewritten.join('\n'), layout: page.layout).keepingLines([
     for (var i = 0; i < lines.length; i++)
       if (!drop[i]) i,
   ]);
 }
+
+/// A post's title set in capitals over several lines ("KRÄMIG
+/// KYCKLINGGRYTA" / "MED LJUVLIGA SMAKER AV VITLÖK, DIJON &" / "PARMESAN")
+/// becomes one sentence-case line. Only on a screenshot page: in a cookbook a
+/// line in capitals is a section label, and the parser treats it as one.
+void _joinCapsTitle(List<String> lines, List<int> nonEmpty, List<bool> drop) {
+  final kept = nonEmpty.where((i) => !drop[i]).toList();
+  if (kept.isEmpty || !_isCapsLine(lines[kept.first])) return;
+  final first = kept.first;
+  final parts = [lines[first].trim()];
+  if (parts.first.split(RegExp(r'\s+')).length < 2) return;
+  for (final i in kept.skip(1)) {
+    final next = lines[i].trim();
+    if (!_isCapsLine(next)) break;
+    if (!_capsContinues.hasMatch(parts.last) &&
+        !_capsOpensContinuation.hasMatch(next)) {
+      break;
+    }
+    parts.add(next);
+    drop[i] = true;
+  }
+  final lower = parts.join(' ').toLowerCase();
+  lines[first] = lower[0].toUpperCase() + lower.substring(1);
+}
+
+bool _isCapsLine(String line) {
+  final letters = line.replaceAll(RegExp(r'[^a-zåäöéA-ZÅÄÖÉ]'), '');
+  return letters.length >= 2 && line == line.toUpperCase();
+}
+
+final _capsContinues = RegExp(r'[&,]$|\s(?:MED|OCH|AV|I|PÅ|TILL)$');
+final _capsOpensContinuation = RegExp(r'^(?:MED|OCH|AV|I|PÅ|TILL|&)\s');
+
+/// The caption's own "mindre" / "… mer" toggle, glued to its last line.
+final _moreToggle = RegExp(r'\s+(?:mindre|(?:…|\.\.\.)\s?mer)$');
+
+/// "feliciaskitchenstories KRÄMIG KYCKLINGGRYTA" → the caption's title: a
+/// post opens with its account name on the same line, and a capital-letter
+/// title after it proves the first token is not a lowercase recipe word.
+String _withoutLeadingHandle(String line) {
+  final m = _handleThenCaps.firstMatch(line.trim());
+  if (m == null || !HeadingWordLists.looksLikeHandle(m.group(1)!)) return line;
+  return m.group(2)!;
+}
+
+final _handleThenCaps = RegExp(r'^(\S+)\s+([A-ZÅÄÖÉ0-9][^a-zåäöé]*)$');
+
+bool _isMidPageIconRow(String line) {
+  if (!isIconRow(line)) return false;
+  return line.trim().split(RegExp(r'\s+')).any((t) {
+    final m = _digitsThenLetters.firstMatch(t);
+    return m != null && !_units.contains(m.group(1)!.toLowerCase());
+  });
+}
+
+final _digitsThenLetters = RegExp(r'^\d+([a-zA-Z]{3,})$');
+
+const _units = {'tsk', 'msk', 'krm', 'pkt', 'st', 'dl', 'cl', 'ml', 'kg'};
 
 /// A status bar's icons as the reader spells them ("d 5 g ll 66"): letters
 /// are present, but no token of two or more letters holds a vowel. "2 st ägg"
@@ -161,6 +243,10 @@ const _minOverlapLines = 3;
 /// Two shared lines suffice when both are this long — a sentence, not a
 /// quantity row that any recipe repeats.
 const _longLineChars = 40;
+
+/// Shared lines that prove an overlap without checking the earlier page's
+/// half-visible last line.
+const _strongOverlapLines = 5;
 
 /// Edit similarity two OCR readings of one line must reach.
 const _minSimilarity = 0.85;
@@ -227,7 +313,11 @@ _Overlap? _findOverlap(PageText previous, PageText next) {
         // A skipped edge line must be the cut half of the line it stands in
         // for on the other page, or it is a line of its own — a title above
         // the shared lines — and this is not that overlap.
+        // A long shared run proves the overlap on its own, and the cut line
+        // at a screenshot's bottom edge can read as noise no fragment test
+        // recognises ("2 DIondoi oramo frairha" for "3. Blanda i crème").
         if (skipPrev > 0 &&
+            run < _strongOverlapLines &&
             !_isFragmentOf(
               prevKeys[tailEnd],
               skipNext + run < nextKeys.length ? nextKeys[skipNext + run] : '',
