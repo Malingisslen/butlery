@@ -236,6 +236,35 @@ void main() {
         expect(recipe, isNotNull);
         expect(recipe!['image'], equals('https://example.com/arla.jpg'));
       });
+
+      test(
+        'prefers the arla-portions count over the shared servings fallback',
+        () {
+          const html = '''
+<html>
+<body>
+  <h1 class="recipe-title">Test Recipe</h1>
+  <span class="recipe-servings">2</span>
+  <span class="arla-portions">6 portioner</span>
+  <ul class="ingredient-list">
+    <li>Ingredient 1</li>
+    <li>Ingredient 2</li>
+    <li>Ingredient 3</li>
+  </ul>
+  <ol class="recipe-instructions">
+    <li>Step 1</li>
+    <li>Step 2</li>
+  </ol>
+</body>
+</html>
+''';
+
+          final recipe = parser.parseRecipe(html);
+
+          expect(recipe, isNotNull);
+          expect(recipe!['recipeYield'], equals('6 portioner'));
+        },
+      );
     });
 
     group('Error Recovery', () {
