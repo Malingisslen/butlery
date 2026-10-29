@@ -1,13 +1,10 @@
 // lib/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -15,10 +12,10 @@ import 'package:butlery/viewmodels/group_recipe_selection_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_info_bar.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_dialog_frame.dart';
 
 /// Dialog for sharing recipes with group members
 class GroupRecipeSharingDialog extends StatelessWidget {
@@ -41,47 +38,13 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       )..loadRecipes(),
       child: Consumer<GroupRecipeSelectionViewModel>(
         builder: (context, viewModel, child) {
-          return AlertDialog(
-            title: Text(
-              context.l10n.dialogShareRecipesWith(group.name),
-              style: AppTextStyles.headlineSmall,
-            ),
-            contentPadding: EdgeInsets.zero,
-            content: SizedBox(
-              width: double.maxFinite,
-              height: MediaQuery.of(context).size.height * 0.6,
-              child: _buildContent(context, viewModel),
-            ),
-            actions: [
-              const DialogCancelButton(),
-              if (viewModel.hasSelectedRecipes)
-                // The theme's ink filled button (onPrimary on primary in both
-                // schemes); sharing says so and draws the plate line along
-                // its bottom edge, never a spinner
-                BusyButtonSemantics(
-                  busy: viewModel.isSharing,
-                  name:
-                      '${context.l10n.commonShare} (${viewModel.selectedCount})',
-                  busyLabel: context.l10n.dialogSharing,
-                  child: FilledButton.icon(
-                    onPressed: viewModel.isSharing
-                        ? PlateLineButton.ignore
-                        : () => _shareSelectedRecipes(context, viewModel),
-                    style: viewModel.isSharing
-                        ? PlateLineButton.busyStyle(
-                            null,
-                            Theme.of(context).filledButtonTheme.style,
-                          )
-                        : null,
-                    icon: const ButleryIcon(ButleryIcons.share2),
-                    label: Text(
-                      viewModel.isSharing
-                          ? context.l10n.dialogSharing
-                          : '${context.l10n.commonShare} (${viewModel.selectedCount})',
-                    ),
-                  ),
-                ),
-            ],
+          return RecipeShareDialogFrame(
+            recipientName: group.name,
+            content: _buildContent(context, viewModel),
+            hasSelectedRecipes: viewModel.hasSelectedRecipes,
+            selectedCount: viewModel.selectedCount,
+            isSharing: viewModel.isSharing,
+            onShare: () => _shareSelectedRecipes(context, viewModel),
           );
         },
       ),
