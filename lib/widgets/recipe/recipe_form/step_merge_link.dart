@@ -40,12 +40,10 @@ class StepMergeLink extends StatelessWidget {
     }
     final merged = viewModel.mergeInstructionWithNext(index);
     if (merged == null) return;
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       context.l10n.stepsMerged,
-      actionLabel: context.l10n.commonUndo,
-      duration: const Duration(seconds: 7),
-      onAction: () => viewModel.undoInstructionMerge(
+      onUndo: () => viewModel.undoInstructionMerge(
         index,
         merged,
         before[index],
