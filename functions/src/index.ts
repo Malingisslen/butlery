@@ -97,6 +97,7 @@ admin.initializeApp();
 
 // LLM Functions - Vertex AI / Gemini integration
 export { structureRecipe } from "./llm/structure-recipe";
+export { shadowCompareImport } from "./llm/shadow-compare-import";
 export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 
 // GDPR Article 15 Right of Access — server-side export of admin-only data

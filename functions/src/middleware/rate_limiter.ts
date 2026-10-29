@@ -116,6 +116,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
     dailyLimit: 50,
   },
+  // The parser shadow comparison spends its own bucket, so a sampled import
+  // never takes room from the user's real structureRecipe calls.
+  shadowCompareImport: {
+    maxTokens: 3,
+    refillRate: 1,
+    refillIntervalMs: 60000,
+    dailyLimit: 20,
+  },
 
   // BUT-1838: chat-group membership callables. These replace CLIENT writes whose
   // create rules carried `rateLimitWrite('conversations', 10)` and

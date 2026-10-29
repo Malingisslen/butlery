@@ -39,6 +39,7 @@ const SRC_ROOT = path.resolve(__dirname, "..");
  */
 const USER_FACING: ReadonlySet<string> = new Set([
   "structureRecipe", // llm/structure-recipe.ts — recipe parse/enhance
+  "shadowCompareImport", // llm/shadow-compare-import.ts — parser shadow comparison
   "ocrRecipeImage", // llm/ocr-recipe-image.ts — image OCR
   "logWebError", // events/log-web-error.ts — web error reporter
   "logParseEvent", // events/log-parse-event.ts — import telemetry

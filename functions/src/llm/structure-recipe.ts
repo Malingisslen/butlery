@@ -132,6 +132,11 @@ async function defaultLoadKillSwitch(): Promise<KillSwitchConfig | undefined> {
 export interface RunStructureRecipeDeps {
   /** Test seam for the kill-switch lookup. */
   loadKillSwitch?: LoadKillSwitch;
+  /**
+   * The shadow comparison writes its own `mode: 'shadow'` sample, so this
+   * call must not add a second one.
+   */
+  suppressSampleCapture?: boolean;
 }
 
 /**
@@ -354,7 +359,7 @@ export async function runStructureRecipe(
     // BUT-1451: capture the (scrubbed) input + raw output of this paid call
     // BEFORE parsing — so parse failures (the interesting cases) are sampled
     // too. Best-effort: never throws, awaited so the write lands before return.
-    await captureLlmSample({
+    if (!deps?.suppressSampleCapture) await captureLlmSample({
       mode,
       inputKind: "text",
       scrubbedInput: cleanText,
