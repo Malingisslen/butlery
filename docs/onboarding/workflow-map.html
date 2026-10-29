@@ -1818,6 +1818,12 @@
       "path": "lib/services/cooking/step_timer_service.dart"
     },
     {
+      "id": "svc-local-timer-notification",
+      "label": "Timer-larm-tjänst",
+      "context": "service",
+      "path": "lib/services/notifications/local_timer_notification_service.dart"
+    },
+    {
       "id": "w-active-timers-strip",
       "label": "Aktiva-timers-rad",
       "context": "view",
@@ -6541,8 +6547,24 @@
         },
         {
           "from": "v-cooking-mode",
+          "to": "svc-local-timer-notification",
+          "payload": "offerExactAlarmsOnce before the first timer: once per device, only when notifications are allowed and Alarm och påminnelser is off; the timer starts whatever the answer",
+          "transport": "service-call",
+          "verified": true,
+          "status": "live"
+        },
+        {
+          "from": "v-cooking-mode",
           "to": "svc-step-timer",
           "payload": "startTimer(id: step-N, duration)",
+          "transport": "service-call",
+          "verified": true,
+          "status": "live"
+        },
+        {
+          "from": "svc-step-timer",
+          "to": "svc-local-timer-notification",
+          "payload": "schedule(timerId, duration): exact alert when Alarm och påminnelser is allowed, inexact otherwise or when the OS refuses exact",
           "transport": "service-call",
           "verified": true,
           "status": "live"
