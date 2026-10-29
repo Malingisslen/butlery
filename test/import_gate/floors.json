@@ -9,7 +9,8 @@
       "timeExact": 9,
       "failures": 0,
       "extraIngredients": 1,
-      "extraSteps": 1
+      "extraSteps": 1,
+      "chromeLeaks": 0
     },
     "text": {
       "recall": 0.9722,
@@ -20,7 +21,8 @@
       "timeExact": 0,
       "failures": 0,
       "extraIngredients": 7,
-      "extraSteps": 2
+      "extraSteps": 2,
+      "chromeLeaks": 0
     },
     "stokig": {
       "recall": 0.9531,
@@ -31,7 +33,20 @@
       "timeExact": 2,
       "failures": 0,
       "extraIngredients": 3,
-      "extraSteps": 6
+      "extraSteps": 6,
+      "chromeLeaks": 0
+    },
+    "foto": {
+      "recall": 0.8,
+      "headingLeaks": 0,
+      "chromeLeaks": 0,
+      "titleExact": 2,
+      "stepsExact": 0,
+      "portionsExact": 0,
+      "timeExact": 0,
+      "failures": 0,
+      "extraIngredients": 4,
+      "extraSteps": 8
     }
   },
   "knownRed": [
@@ -47,6 +62,16 @@
     },
     {
       "fixture": "stokig/03-ocr-avstavning-sidhuvud",
+      "key": "smör",
+      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
+    },
+    {
+      "fixture": "foto/02-kanelbullar-tva-sidor",
+      "key": "smör",
+      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
+    },
+    {
+      "fixture": "foto/03-enkel-kokbokssida",
       "key": "smör",
       "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
     }

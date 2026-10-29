@@ -33,6 +33,11 @@ class GoldRecipe {
   final List<GoldIngredient> ingredients;
   final List<String> headings;
 
+  /// Text that stood on the page but is not the recipe's: a screenshot's
+  /// clock and icon row. None of it may reach the title, the description, an
+  /// ingredient or a step.
+  final List<String> absent;
+
   const GoldRecipe({
     required this.id,
     required this.title,
@@ -42,6 +47,7 @@ class GoldRecipe {
     this.lastStepKey,
     this.portions,
     this.timeMinutes,
+    this.absent = const [],
   });
 
   factory GoldRecipe.fromJson(String id, Map<String, dynamic> j) => GoldRecipe(
@@ -56,12 +62,14 @@ class GoldRecipe {
         GoldIngredient.fromJson(i as Map<String, dynamic>),
     ],
     headings: [for (final h in j['headings'] as List? ?? const []) h as String],
+    absent: [for (final a in j['absent'] as List? ?? const []) a as String],
   );
 }
 
 /// What one import produced, reduced to what the gate scores.
 class Produced {
   final String? title;
+  final String? description;
   final List<String> ingredientLines;
   final List<String> stepLines;
   final int? portions;
@@ -72,6 +80,7 @@ class Produced {
   const Produced({
     required this.title,
     required this.ingredientLines,
+    this.description,
     required this.stepLines,
     required this.llmCalls,
     this.portions,
@@ -113,12 +122,16 @@ class RecipeScore {
   /// real line the gold keys do not name.
   final int extraIngredients;
 
+  /// Gold `absent` phrases that reached the recipe anyway.
+  final List<String> chromeLeaks;
+
   RecipeScore(
     this.gold,
     this.produced,
     this.dropped,
     this.headingLeaks,
     this.extraIngredients,
+    this.chromeLeaks,
   );
 
   int get kept => gold.ingredients.length - dropped.length;
@@ -176,12 +189,23 @@ RecipeScore scoreRecipe(GoldRecipe gold, Produced produced) {
     for (final l in produced.ingredientLines)
       if (headingSet.contains(_norm(l))) l,
   ];
+  final fields = [
+    produced.title ?? '',
+    produced.description ?? '',
+    ...produced.ingredientLines,
+    ...produced.stepLines,
+  ].map(_norm).toList();
+  final chrome = [
+    for (final a in gold.absent)
+      if (fields.any((f) => f.contains(_norm(a)))) a,
+  ];
   return RecipeScore(
     gold,
     produced,
     dropped,
     leaks,
     used.where((u) => !u).length,
+    chrome,
   );
 }
 
@@ -195,6 +219,7 @@ class CorpusScore {
   int get keptLines => recipes.fold(0, (n, r) => n + r.kept);
   double get recall => goldLines == 0 ? 1 : keptLines / goldLines;
   int get headingLeaks => recipes.fold(0, (n, r) => n + r.headingLeaks.length);
+  int get chromeLeaks => recipes.fold(0, (n, r) => n + r.chromeLeaks.length);
   int get titleExact => recipes.where((r) => r.titleExact).length;
   int get stepsExact => recipes.where((r) => r.stepsExact).length;
   int get portionsExact => recipes.where((r) => r.portionsExact == true).length;
@@ -282,6 +307,7 @@ List<String> checkFloors(
 
   atLeast('recall', double.parse(c.recall.toStringAsFixed(4)));
   atMost('headingLeaks', c.headingLeaks);
+  atMost('chromeLeaks', c.chromeLeaks);
   atLeast('titleExact', c.titleExact);
   atLeast('stepsExact', c.stepsExact);
   atLeast('portionsExact', c.portionsExact);
@@ -371,6 +397,10 @@ String formatReport(
     'Rubriker i ingredienslistan',
     (c) => '${c.headingLeaks}${floor(c, 'headingLeaks')}',
   );
+  row(
+    'Skärmbildens egna rader i receptet',
+    (c) => '${c.chromeLeaks}${floor(c, 'chromeLeaks')}',
+  );
   row('Titel exakt rätt', (c) => '${c.titleExact}${floor(c, 'titleExact')}');
   row('Antal steg rätt', (c) => '${c.stepsExact}${floor(c, 'stepsExact')}');
   row(
@@ -419,6 +449,8 @@ String formatReport(
           'tappade: ${r.dropped.map((d) => d.key).join(', ')}',
         if (r.headingLeaks.isNotEmpty)
           'rubriker som ingredienser: ${r.headingLeaks.join(', ')}',
+        if (r.chromeLeaks.isNotEmpty)
+          'skärmbildens rader i receptet: ${r.chromeLeaks.join(', ')}',
         if (!r.titleExact) 'titel: "${r.produced.title}"',
         if (!r.stepsExact) 'steg: ${r.produced.steps} av ${r.gold.steps}',
         if (r.extraIngredients > 0)

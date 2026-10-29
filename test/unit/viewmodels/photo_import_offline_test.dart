@@ -65,13 +65,15 @@ void main() {
           () => mockImportManager.autoParseMulti(
             any(),
             layout: any(named: 'layout'),
+            channel: any(named: 'channel'),
+            reflow: any(named: 'reflow'),
           ),
         );
       },
     );
 
-    // NOTE (2026-08-07): every `verifyNever` below names `layout:`
-    // explicitly. mocktail matches on the named-argument KEY SET, so a
+    // NOTE (2026-08-07): every `verifyNever` below names `layout:`,
+    // `channel:` and `reflow:` explicitly. mocktail matches on the named-argument KEY SET, so a
     // bare `autoParseMulti(any())` stops matching the production call the
     // moment that call gains a named argument — and `verifyNever` passes
     // when nothing matches, so the suite stays green while the assertion
@@ -87,6 +89,8 @@ void main() {
         () => mockImportManager.autoParseMulti(
           any(),
           layout: any(named: 'layout'),
+          channel: any(named: 'channel'),
+          reflow: any(named: 'reflow'),
         ),
       );
     });
@@ -105,6 +109,8 @@ void main() {
           () => mockImportManager.autoParseMulti(
             any(),
             layout: any(named: 'layout'),
+            channel: any(named: 'channel'),
+            reflow: any(named: 'reflow'),
           ),
         );
       },

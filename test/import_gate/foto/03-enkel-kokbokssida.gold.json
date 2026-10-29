@@ -1,0 +1,47 @@
+{
+  "form": "Bakbokssidan ur stokig/03, graderad från sidan: fyra numrerade steg och två onumrerade raderna efter dem. Sidan stavar kardamumma.",
+  "title": "Kanelbullar",
+  "steps": 6,
+  "lastStepKey": "grädda i 250 grader",
+  "ingredients": [
+    {
+      "key": "jäst"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "kardamumma"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "rumsvarmt smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "kanel"
+    }
+  ],
+  "headings": [
+    "Deg",
+    "Fyllning"
+  ],
+  "absent": []
+}
