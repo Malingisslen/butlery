@@ -415,7 +415,6 @@ Vi kan uppdatera denna policy när:
 - Vår databehandling ändras
 
 Vid väsentliga ändringar:
-- Vi visar en notifikation i appen
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
 **Senaste ändring:** 29 oktober 2026

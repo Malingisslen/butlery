@@ -414,7 +414,6 @@ We may update this policy when:
 - Our data processing changes
 
 For significant changes:
-- We will show a notification in the app
 - We may request renewed consent (if applicable)
 
 **Last change:** October 29, 2026
