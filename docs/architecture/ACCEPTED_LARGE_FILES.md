@@ -180,7 +180,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,428 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 405 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 1050 | Recipe creation screen — refactored from 836. |
+| `skriv_sjalv_recept_view.dart` | 1005 | Recipe creation screen — refactored from 836. |
 | `personal_tag_rule_dialog.dart` | 834 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |

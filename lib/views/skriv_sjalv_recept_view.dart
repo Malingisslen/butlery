@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/recipe/recipe_form/save_blocked_hint.dart';
+import 'package:butlery/widgets/recipe/recipe_form/step_merge_link.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -640,6 +641,8 @@ class _SkrivSjalvReceptViewContentState
                         onAdd: viewModel.addInstruction,
                         onRemove: viewModel.removeInstruction,
                         onReorder: viewModel.reorderInstruction,
+                        onMergeWithNext: (i) =>
+                            StepMergeLink.mergeWithUndo(context, viewModel, i),
                         viewModel: viewModel,
                       ),
                       const SizedBox(height: AppDimensions.formBlockGap),
@@ -783,7 +786,12 @@ class _SkrivSjalvReceptViewContentState
     required Function(int) onRemove,
     required RecipeFormViewModel viewModel,
     void Function(int, int)? onReorder,
+    void Function(int)? onMergeWithNext,
   }) {
+    Widget? mergeLink(int index) =>
+        onMergeWithNext == null || !StepMergeLink.showsUnder(controllers, index)
+        ? null
+        : StepMergeLink(index: index, onMerge: onMergeWithNext);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -813,42 +821,48 @@ class _SkrivSjalvReceptViewContentState
               return Padding(
                 key: ValueKey('${label}_$index'),
                 padding: const EdgeInsets.only(bottom: AppDimensions.space4),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ReorderableDragStartListener(
-                      index: index,
-                      child: const Padding(
-                        padding: EdgeInsetsDirectional.only(
-                          end: AppDimensions.space4,
+                    Row(
+                      children: [
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: const Padding(
+                            padding: EdgeInsetsDirectional.only(
+                              end: AppDimensions.space4,
+                            ),
+                            child: ButleryIcon(
+                              ButleryIcons.drag,
+                              size: AppDimensions.iconSizeM,
+                            ),
+                          ),
                         ),
-                        child: ButleryIcon(
-                          ButleryIcons.drag,
-                          size: AppDimensions.iconSizeM,
+                        Expanded(
+                          child: StyledInput(
+                            controller: controllers[index],
+                            hint: '$label ${index + 1}',
+                            textInputAction: TextInputAction.next,
+                            maxLines: null,
+                            minLines: 1,
+                            keyboardType: TextInputType.multiline,
+                            // No auto-grow on the first character — it was jarring
+                            // (a new empty field popped in mid-type). Use the
+                            // explicit "+ Add" button below to add a row.
+                            onChanged: (value) => onUpdate(index, value),
+                          ),
                         ),
-                      ),
+                        if (controllers.length > 1)
+                          AppIconButton(
+                            icon: ButleryIcons.trash2,
+                            semanticLabel: context.l10n.commonRemoveLabel(
+                              '$label ${index + 1}',
+                            ),
+                            onPressed: () => onRemove(index),
+                          ),
+                      ],
                     ),
-                    Expanded(
-                      child: StyledInput(
-                        controller: controllers[index],
-                        hint: '$label ${index + 1}',
-                        textInputAction: TextInputAction.next,
-                        maxLines: null,
-                        minLines: 1,
-                        keyboardType: TextInputType.multiline,
-                        // No auto-grow on the first character — it was jarring
-                        // (a new empty field popped in mid-type). Use the
-                        // explicit "+ Add" button below to add a row.
-                        onChanged: (value) => onUpdate(index, value),
-                      ),
-                    ),
-                    if (controllers.length > 1)
-                      AppIconButton(
-                        icon: ButleryIcons.trash2,
-                        semanticLabel: context.l10n.commonRemoveLabel(
-                          '$label ${index + 1}',
-                        ),
-                        onPressed: () => onRemove(index),
-                      ),
+                    ?mergeLink(index),
                   ],
                 ),
               );
@@ -885,6 +899,7 @@ class _SkrivSjalvReceptViewContentState
                   ],
                 ),
                 const SizedBox(height: AppDimensions.space4),
+                ?mergeLink(index),
               ],
             ),
         ],
