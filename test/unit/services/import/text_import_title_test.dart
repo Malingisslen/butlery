@@ -508,6 +508,24 @@ Blanda allt i en kastrull och låt det småkoka i tio minuter.''');
       );
     });
 
+    test(
+      'a digit misread inside a name is repaired before the split',
+      () async {
+        final recipe = await parse('''
+Stekt lök
+Ingredienser
+1 msk 0lja
+3 st 1ök
+Gör så här
+Hacka löken och stek den i oljan tills den är mjuk och gyllene.''');
+        expect(recipe.ingredients, containsAll(['1 msk olja', '3 st lök']));
+        expect(
+          recipe.ingredients.where((i) => i.contains('0 lja')),
+          isEmpty,
+        );
+      },
+    );
+
     test('a name cut at é is still one ingredient', () async {
       final recipe = await parse('''
 Ugnslax

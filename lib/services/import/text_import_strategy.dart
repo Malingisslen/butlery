@@ -1278,14 +1278,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), '');
     cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), '');
     cleaned = IngredientProcessor.preprocessOnly(cleaned);
-    // Split "2dI" first, so the misread unit reaches the corrector as a token.
+    // Repair systematic OCR misreads (e.g. "4 di" -> "4 dl"). Gate-safe: only
+    // swaps a token when the result is a known unit/ingredient, so clean
+    // manual/social input is left untouched.
+    cleaned = OcrErrorCorrector.correctLine(cleaned);
+    // The first pass needs "0lja" whole to read it as olja; a glued "2dI" only
+    // becomes a unit token after the split, so it gets a second pass.
     cleaned = cleaned.replaceAllMapped(
       RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ|]+)'),
       (match) => '${match.group(1)} ${match.group(2)}',
     );
-    // Repair systematic OCR misreads (e.g. "4 di" -> "4 dl"). Gate-safe: only
-    // swaps a token when the result is a known unit/ingredient, so clean
-    // manual/social input is left untouched.
     cleaned = OcrErrorCorrector.correctLine(cleaned);
 
     cleaned = cleaned.replaceAll('1/2', '½');
