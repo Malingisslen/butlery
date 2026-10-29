@@ -17188,5 +17188,21 @@
   "decisionRevisedNoActionOutcome": "Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.",
   "@decisionRevisedNoActionOutcome": {
     "description": "BUT-1528: outcome of a revised no_action decision in the owner's list."
+  },
+  "mergeWithNextStep": "Slå ihop med nästa",
+  "@mergeWithNextStep": {
+    "description": "BUT-2455: link between two recipe steps that joins them into one."
+  },
+  "stepsMerged": "Stegen slogs ihop",
+  "@stepsMerged": {
+    "description": "BUT-2455: snackbar after two steps were joined; pairs with commonUndo."
+  },
+  "a11yMergeSteps": "Slå ihop steg {first} med steg {second}",
+  "@a11yMergeSteps": {
+    "description": "BUT-2455: screen-reader label of the merge link, naming both step numbers.",
+    "placeholders": {
+      "first": {"type": "int"},
+      "second": {"type": "int"}
+    }
   }
 }

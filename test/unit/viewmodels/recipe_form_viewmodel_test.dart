@@ -430,6 +430,39 @@ void main() {
         expect(viewModel.instructionsManager.values[0], equals('Step 2'));
       });
 
+      // BUT-2455: joining two steps notifies the form, and so does the undo.
+      test('merging two steps and undoing it leaves the steps as before', () {
+        viewModel.addInstruction();
+        viewModel.updateInstruction(0, 'Stek löken.');
+        viewModel.updateInstruction(1, 'Häll i grädden.');
+        final before = viewModel.instructions;
+        var notified = 0;
+        viewModel.addListener(() => notified++);
+
+        final merged = viewModel.mergeInstructionWithNext(0)!;
+        expect(merged, 'Stek löken. Häll i grädden.');
+        expect(viewModel.instructions, ['Stek löken. Häll i grädden.']);
+        expect(notified, 1);
+
+        viewModel.undoInstructionMerge(
+          0,
+          merged,
+          'Stek löken.',
+          'Häll i grädden.',
+        );
+        expect(viewModel.instructions, before);
+        expect(notified, 2);
+      });
+
+      test('merging the last step changes nothing and notifies no one', () {
+        var notified = 0;
+        viewModel.addListener(() => notified++);
+        final last = viewModel.instructionsManager.length - 1;
+
+        expect(viewModel.mergeInstructionWithNext(last), isNull);
+        expect(notified, 0);
+      });
+
       test('should add tag', () {
         // Arrange
         final initialLength = viewModel.tagsManager.length;

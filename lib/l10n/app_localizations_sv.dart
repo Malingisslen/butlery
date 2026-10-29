@@ -20729,4 +20729,15 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get decisionRevisedNoActionOutcome =>
       'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.';
+
+  @override
+  String get mergeWithNextStep => 'Slå ihop med nästa';
+
+  @override
+  String get stepsMerged => 'Stegen slogs ihop';
+
+  @override
+  String a11yMergeSteps(int first, int second) {
+    return 'Slå ihop steg $first med steg $second';
+  }
 }

@@ -31857,6 +31857,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.'**
   String get decisionRevisedNoActionOutcome;
+
+  /// BUT-2455: link between two recipe steps that joins them into one.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop med nästa'**
+  String get mergeWithNextStep;
+
+  /// BUT-2455: snackbar after two steps were joined; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stegen slogs ihop'**
+  String get stepsMerged;
+
+  /// BUT-2455: screen-reader label of the merge link, naming both step numbers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop steg {first} med steg {second}'**
+  String a11yMergeSteps(int first, int second);
 }
 
 class _AppLocalizationsDelegate

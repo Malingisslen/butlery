@@ -17175,5 +17175,21 @@
   "decisionRevisedNoActionOutcome": "No action. The decision was changed on review and the warning is removed.",
   "@decisionRevisedNoActionOutcome": {
     "description": "BUT-1528: outcome of a revised no_action decision in the owner's list."
+  },
+  "mergeWithNextStep": "Merge with next",
+  "@mergeWithNextStep": {
+    "description": "BUT-2455: link between two recipe steps that joins them into one."
+  },
+  "stepsMerged": "Steps merged",
+  "@stepsMerged": {
+    "description": "BUT-2455: snackbar after two steps were joined; pairs with commonUndo."
+  },
+  "a11yMergeSteps": "Merge step {first} with step {second}",
+  "@a11yMergeSteps": {
+    "description": "BUT-2455: screen-reader label of the merge link, naming both step numbers.",
+    "placeholders": {
+      "first": {"type": "int"},
+      "second": {"type": "int"}
+    }
   }
 }

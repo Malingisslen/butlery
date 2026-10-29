@@ -20897,4 +20897,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get decisionRevisedNoActionOutcome =>
       'No action. The decision was changed on review and the warning is removed.';
+
+  @override
+  String get mergeWithNextStep => 'Merge with next';
+
+  @override
+  String get stepsMerged => 'Steps merged';
+
+  @override
+  String a11yMergeSteps(int first, int second) {
+    return 'Merge step $first with step $second';
+  }
 }
