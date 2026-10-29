@@ -196,7 +196,7 @@ final _capsOpensContinuation = RegExp(r'^(?:MED|OCH|AV|I|PÅ|TILL|&)\s');
 /// The caption's own "mindre" / "… mer" toggle, glued to its last line.
 final _moreToggle = RegExp(r'\s+(?:mindre|(?:…|\.\.\.)\s?mer)$');
 
-/// "feliciaskitchenstories KRÄMIG KYCKLINGGRYTA" → the caption's title: a
+/// "matglad.anna KRÄMIG KYCKLINGGRYTA" → the caption's title: a
 /// post opens with its account name on the same line, and a capital-letter
 /// title after it proves the first token is not a lowercase recipe word.
 String _withoutLeadingHandle(String line) {

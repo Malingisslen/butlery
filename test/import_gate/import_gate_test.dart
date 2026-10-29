@@ -290,7 +290,7 @@ void main() {
       );
       scores.add(scoreRecipe(gold, produced(result, before)));
     }
-    expect(scores, hasLength(2), reason: 'provsamling 4 ska ha 2 recept');
+    expect(scores, hasLength(3), reason: 'provsamling 4 ska ha 3 recept');
     corpora.add(CorpusScore('foto', scores));
   });
 

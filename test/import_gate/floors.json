@@ -37,16 +37,16 @@
       "chromeLeaks": 0
     },
     "foto": {
-      "recall": 0.8,
+      "recall": 0.8709,
       "headingLeaks": 0,
       "chromeLeaks": 0,
-      "titleExact": 2,
+      "titleExact": 3,
       "stepsExact": 0,
-      "portionsExact": 0,
+      "portionsExact": 1,
       "timeExact": 0,
       "failures": 0,
-      "extraIngredients": 4,
-      "extraSteps": 8
+      "extraIngredients": 2,
+      "extraSteps": 16
     }
   },
   "knownRed": [
