@@ -1,8 +1,8 @@
 # Builds a signed iOS release and uploads it to App Store Connect, where it
 # appears under TestFlight for the closed test group (BUT-447).
 #
-# MANUAL ONLY (workflow_dispatch), behind the `production` environment's
-# reviewer gate like deploy-hosting.yml.
+# MANUAL ONLY (workflow_dispatch). tools/play_upload_internal.py starts it
+# after each Play internal upload, so both test tracks get the same code.
 #
 # Signing: Xcode's automatic signing archives with a development identity,
 # which needs a development profile (BUT-2333). So each run fetches App Store
@@ -48,7 +48,6 @@ env:
 jobs:
   upload:
     runs-on: macos-latest
-    environment: production
     timeout-minutes: 60
     steps:
       - name: Refuse without the confirmation word

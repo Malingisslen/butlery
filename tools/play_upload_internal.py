@@ -6,6 +6,10 @@ Takes a commit, never a file path: only CI writes the production .env
 (ENV=production), so a locally built bundle can carry the developer ENV and
 stop at startup (versionCode 6, 2026-10-27).
 Auth: impersonates play-uploader@butlery-prod via gcloud.
+
+Then starts ios-testflight.yml on main, so TestFlight gets the same code.
+A dispatch builds a branch tip, not a commit, so it is started only when
+the commit IS origin/main's tip; otherwise the script says so and stops.
 """
 import glob, json, os, subprocess, sys, tempfile, urllib.request
 
@@ -51,6 +55,17 @@ def call(method, url, tok, body=None, data=None, ctype="application/json"):
         return json.loads(raw) if raw else {}
 
 
+def testflight(full):
+    sh(["git", "fetch", "-q", "origin", "main"])
+    tip = sh(["git", "rev-parse", "origin/main"])
+    if tip != full:
+        print(f"TestFlight NOT started: origin/main is {tip[:9]}, not {full[:9]}")
+        return
+    sh(["gh", "workflow", "run", "ios-testflight.yml", "-R", REPO, "--ref", "main",
+        "-f", "confirm=UPLOAD"])
+    print("TestFlight build started on main (ios-testflight.yml)")
+
+
 def main():
     aab = ci_bundle(sys.argv[1])
     notes = sys.argv[2] if len(sys.argv) > 2 else None
@@ -66,6 +81,7 @@ def main():
     call("PUT", f"{BASE}/edits/{edit}/tracks/internal", tok, body={"track": "internal", "releases": [release]})
     call("POST", f"{BASE}/edits/{edit}:commit", tok)
     print(f"versionCode {vc} committed to internal track")
+    testflight(sh(["git", "rev-parse", sys.argv[1]]))
 
 
 main()
