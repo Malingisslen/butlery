@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 28, 2026
-**Version:** 1.23.1
+**Last updated:** October 29, 2026
+**Version:** 1.24
 
 ---
 
@@ -37,6 +37,7 @@ We collect the following types of personal data when you use Butlery:
 - **Social features:** Friends, shares, messages
 - **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
 - **Communications:** Messages you send to us or other users
+- **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone.
 
 ### 3.2 Information we collect automatically
 
@@ -45,6 +46,7 @@ We collect the following types of personal data when you use Butlery:
 - **Technical data:** IP address, connection type
 - **Analytics data:** Usage statistics (only with your consent)
 - **Notification records:** Delivery and engagement records for notifications — which notification was sent to you (or that you triggered to others), when, its delivery status, and whether you opened it
+- **Import log:** When you import a recipe, we store your user id, the page address (without certain parameters that can contain sign-in details), the website's name and how the import went, for example which import method you used, whether it succeeded, how long it took and whether AI was used. We use the log to see which websites import works on and to fix errors. The log is deleted automatically about 30 days after the import, even if the account has already been deleted.
 
 ### 3.3 Information from third parties
 
@@ -76,6 +78,8 @@ We process your personal data based on the following legal grounds under GDPR:
 | Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
 | Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
 | Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f) | You asked to try Butlery; you can object (Art. 21) |
+| Import log (see section 3.2) | Legitimate interest (Art. 6.1.f) | Make import work and fix errors; you can object (Art. 21) |
+| Feedback you send in the app | Legitimate interest (Art. 6.1.f) | Answer and act on what you report; you can object (Art. 21) |
 
 ---
 
@@ -209,7 +213,7 @@ We may share information if:
 
 ### 6.4 Data Processor Inventory (GDPR Art. 13.1.f)
 
-The following is a complete list of the data processors that receive your data, the categories of data they process, where processing takes place, and the legal basis for any third-country transfer (Chapter V GDPR).
+The following is a list of the data processors that receive your data, the categories of data they process, where processing takes place, and the legal basis for any third-country transfer (Chapter V GDPR).
 
 | Processor | Data received | Hosting region | Legal basis for transfer |
 |-----------|---------------|----------------|--------------------------|
@@ -219,7 +223,7 @@ The following is a complete list of the data processors that receive your data, 
 | **OCR.space** (a9t9 software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
 
-We do not engage any other data processors. This list is updated whenever our subprocessor chain changes.
+This list is updated whenever our subprocessor chain changes. Older versions of the app also sent data to Talsec, see section 6.6.
 
 ### 6.5 Sign-in with Google or Apple
 
@@ -241,15 +245,27 @@ We fill in the name for you when you create the account, and you can change it b
 
 **When you delete your account:** If you signed in with Apple and request deletion in the app on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account straight away, before the deletion starts. If Apple does not respond, the account is deleted anyway. On Android and the web we cannot ask Apple to do this yet; there you can remove Butlery yourself under Sign in with Apple in your Apple account settings. If you signed in with Google, you can remove Butlery's access yourself in your Google account settings.
 
+### 6.6 Security check in older app versions (Talsec)
+
+Versions of the app for Android and iPhone built before October 29, 2026 contained a security check, freeRASP from Talsec (Lynx SFT s.r.o., Czech Republic). Each time the app started, it sent information about the app's and the phone's security status, a device id and the phone's IP address to Talsec. Talsec can work out your approximate location (country, region, city) from the IP address. Together with the IP address, the device id is personal data.
+
+- **Purpose:** Detect tampered apps and phones to protect the service.
+- **Legal basis:** Legitimate interest (Art. 6.1.f). You can object (Art. 21).
+- **Talsec's own use:** Talsec also uses the data to improve its own products.
+- **Storage and transfer:** Talsec keeps the data for about 12 months, on servers inside and outside the EU, including in the USA. The transfer outside the EU uses Standard Contractual Clauses (SCCs). [Talsec's data processing agreement](https://www.talsec.app/data-processing-agreement)
+- **How it stops:** New versions of the app do not contain the check. Update the app and no more data is sent to Talsec.
+
 ---
 
 ## 7. Data transfers outside EU/EEA
 
-Some of our service providers (Google Firebase, Google Analytics) are located in the USA. We ensure that:
+Some of our service providers (Google Firebase, Google Analytics) are located in the USA. Older versions of the app also sent data to Talsec, which has servers in the USA (see section 6.6). We ensure that:
 
-- Transfers are made according to the EU-US Data Privacy Framework
+- Every transfer has a legal basis, given per provider in sections 6.4 and 6.6
 - Appropriate safeguards are in place
 - Your rights under GDPR are maintained
+
+If you want a copy of the safeguards for a transfer, write to integritet@butlery.se.
 
 If you sign in with Google or Apple, sign-in goes through Firebase Authentication, with the same safeguards (see section 6.5).
 
@@ -280,8 +296,10 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the latest decision. If a decision is reviewed, the earlier decision is kept in the same record | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
+| Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, even if the account has already been deleted | Legitimate interest |
+| Feedback you send in the app, with screenshot | Until you delete your account. It is then deleted with its screenshots | Legitimate interest |
 
-After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
+After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored.
 
 ---
 
@@ -298,15 +316,16 @@ You have the following rights under GDPR:
 - **How:** Update in the app settings or contact us
 
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
-- Delete your account and all your data
+- Delete your account and your data
 - **How:** More > Account & security > Delete account permanently
-- **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
+- **Note:** The account is deleted 7 days after your request. Which data is kept longer, and for how long, is set out in section 8. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
 
 ### 9.4 Right to data portability (Art. 20)
-- Export all your data in machine-readable format (JSON)
+- Export your data in machine-readable format (JSON)
 - **How:** More > Privacy and data > Export my data
 - **Format:** JSON (universal format)
 - **Sign-in methods:** The export shows which sign-in methods are linked to the account (email and password, Google or Apple) and the email address from Google or Apple. Sign-in tokens and the profile picture link are not included.
+- **The import log** is not included in the export. To see it, contact integritet@butlery.se.
 
 ### 9.5 Right to restriction (Art. 18)
 - Restrict processing of your data
@@ -396,10 +415,9 @@ We may update this policy when:
 
 For significant changes:
 - We will show a notification in the app
-- We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 28, 2026
+**Last change:** October 29, 2026
 **Version history:** Available upon request
 
 ---
@@ -442,7 +460,7 @@ To exercise your GDPR rights:
 |-------|---------------|--------------|
 | **Access** | See what data we have | Contact integritet@butlery.se |
 | **Rectification** | Correct errors | Settings or contact us |
-| **Erasure** | Delete everything | More > Account & security > Delete account permanently |
+| **Erasure** | Delete the account | More > Account & security > Delete account permanently |
 | **Portability** | Export data | More > Privacy and data > Export my data |
 | **Restriction** | Pause processing | Contact integritet@butlery.se |
 | **Withdraw consent** | Take back approval | More > Privacy and data > Consents |

@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 28 oktober 2026
-**Version:** 1.23.1
+**Senast uppdaterad:** 29 oktober 2026
+**Version:** 1.24
 
 ---
 
@@ -37,6 +37,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 - **Sociala funktioner:** Vänner, delningar, meddelanden
 - **Delningslänkar:** När du delar ett recept eller en inköpslista med en länk, eller bjuder in en vän med en länk, skapar vi en kortlänk. Den sparar ditt användar-id, länkadressen (som också innehåller ditt användar-id) och när länken skapades. Kortlänken raderas automatiskt efter 14 dagar, och när du raderar kontot. Dina kortlänkar ingår i dataexporten. En länk du redan har skickat kan vi inte ta tillbaka från mottagaren.
 - **Kommunikation:** Meddelanden du skickar till oss eller andra användare
+- **Feedback:** När du skickar feedback i appen sparar vi det du skriver, vilken sorts feedback det är, din e-postadress om du anger den och en skärmbild om du bifogar en. Vi sparar också de senaste 20 skärmar och åtgärder du gjorde i appen före feedbacken, med tidpunkt, och vilken plattform, appversion och tidszon du har.
 
 ### 3.2 Information vi samlar in automatiskt
 
@@ -45,6 +46,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 - **Teknisk data:** IP-adress, anslutningstyp
 - **Analyticsdata:** Användningsstatistik (endast om du har gett samtycke)
 - **Aviseringsuppgifter:** Leverans- och engagemangsuppgifter för aviseringar – vilken avisering som skickades till dig (eller som du utlöste till andra), när, dess leveransstatus och om du öppnade den
+- **Importloggen:** När du importerar ett recept sparar vi ditt användar-id, sidans adress (utan vissa parametrar som kan innehålla inloggningsuppgifter), webbplatsens namn och hur importen gick, till exempel vilket sätt du importerade på, om den lyckades, hur lång tid den tog och om AI användes. Vi använder loggen för att se vilka webbplatser importen fungerar på och rätta fel. Loggen raderas automatiskt cirka 30 dagar efter importen, även om kontot redan är raderat.
 
 ### 3.3 Information från tredje part
 
@@ -76,6 +78,8 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Gemensamma betyg (”Butlery-betyget”) | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
 | Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
 | Gästlista för inbjudna under testperioden | Berättigat intresse (Art. 6.1.f) | Du har bett om att få prova; du kan invända (Art. 21) |
+| Importloggen (se avsnitt 3.2) | Berättigat intresse (Art. 6.1.f) | Få importen att fungera och rätta fel; du kan invända (Art. 21) |
+| Feedback du skickar i appen | Berättigat intresse (Art. 6.1.f) | Svara på och åtgärda det du rapporterar; du kan invända (Art. 21) |
 
 ---
 
@@ -210,7 +214,7 @@ Vi kan dela information om:
 
 ### 6.4 Sammanställning av personuppgiftsbiträden (GDPR Art. 13.1.f)
 
-Nedan finns en fullständig förteckning över de personuppgiftsbiträden som tar emot dina uppgifter, vilka kategorier av data de behandlar, var behandlingen sker och rättslig grund för eventuell tredjelandsöverföring (Kapitel V GDPR).
+Nedan finns en förteckning över de personuppgiftsbiträden som tar emot dina uppgifter, vilka kategorier av data de behandlar, var behandlingen sker och rättslig grund för eventuell tredjelandsöverföring (Kapitel V GDPR).
 
 | Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
 |---------|---------------|---------------|-------------------------------|
@@ -220,7 +224,7 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 | **OCR.space** (a9t9 software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) – ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
 
-Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje förändring av vår leverantörskedja.
+Listan uppdateras vid varje förändring av vår leverantörskedja. Äldre versioner av appen skickade också uppgifter till Talsec, se avsnitt 6.6.
 
 ### 6.5 Inloggning med Google eller Apple
 
@@ -242,15 +246,27 @@ Namnet fyller vi i åt dig när du skapar kontot, och du kan ändra det innan ko
 
 **När du raderar ditt konto:** Har du loggat in med Apple och begär radering i appen på iPhone eller iPad ber vi Apple att ta bort Butlerys koppling till ditt Apple-konto direkt, innan raderingen påbörjas. Om Apple inte svarar raderas kontot ändå. På Android och webben kan vi inte be Apple om det ännu; där kan du själv ta bort Butlery under Logga in med Apple i inställningarna för ditt Apple-konto. Har du loggat in med Google kan du själv ta bort Butlerys åtkomst i inställningarna för ditt Google-konto.
 
+### 6.6 Säkerhetskontroll i äldre appversioner (Talsec)
+
+Versioner av appen för Android och iPhone som byggdes före den 29 oktober 2026 innehöll en säkerhetskontroll, freeRASP från Talsec (Lynx SFT s.r.o., Tjeckien). Vid varje start av appen skickade den uppgifter om appens och telefonens säkerhetsstatus, ett enhets-id och telefonens IP-adress till Talsec. Talsec kan räkna fram ungefär var du befinner dig (land, region, stad) från IP-adressen. Enhets-id:t är en personuppgift tillsammans med IP-adressen.
+
+- **Syfte:** Upptäcka manipulerade appar och telefoner för att skydda tjänsten.
+- **Rättslig grund:** Berättigat intresse (Art. 6.1.f). Du kan invända (Art. 21).
+- **Talsecs egen användning:** Talsec använder också uppgifterna för att förbättra sina egna produkter.
+- **Lagring och överföring:** Talsec sparar uppgifterna i cirka 12 månader, på servrar inom och utanför EU, bland annat i USA. Överföringen utanför EU sker med standardavtalsklausuler (SCC). [Talsecs biträdesavtal](https://www.talsec.app/data-processing-agreement)
+- **Hur det upphör:** Nya versioner av appen innehåller inte kontrollen. Uppdatera appen så skickas inga fler uppgifter till Talsec.
+
 ---
 
 ## 7. Dataöverföringar utanför EU/EES
 
-Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är belägna i USA. Vi säkerställer att:
+Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är belägna i USA. Äldre versioner av appen skickade också uppgifter till Talsec, som har servrar i USA (se avsnitt 6.6). Vi säkerställer att:
 
-- Överföringar sker enligt EU-USA Data Privacy Framework
+- Varje överföring har en rättslig grund, som står per leverantör i avsnitt 6.4 och 6.6
 - Lämpliga skyddsåtgärder finns på plats
 - Dina rättigheter enligt GDPR upprätthålls
+
+Vill du ha en kopia av skyddsåtgärderna för en överföring, skriv till integritet@butlery.se.
 
 Loggar du in med Google eller Apple går inloggningen genom Firebase Authentication, med samma skydd (se avsnitt 6.5).
 
@@ -281,8 +297,10 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 | Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter det senaste beslutet. Omprövas ett beslut sparas även det tidigare beslutet i samma post | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 | En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
+| Importloggen (användar-id, sidans adress och hur importen gick) | Raderas automatiskt cirka 30 dagar efter importen, även om kontot redan är raderat | Berättigat intresse |
+| Feedback du skickar i appen, med skärmbild | Tills du raderar kontot. Då raderas den med skärmbilderna | Berättigat intresse |
 
-Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
+Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa.
 
 ---
 
@@ -299,15 +317,16 @@ Du har följande rättigheter enligt GDPR:
 - **Hur:** Uppdatera i appens inställningar eller kontakta oss
 
 ### 9.3 Rätt till radering (Art. 17 - ”Rätten att bli glömd”)
-- Radera ditt konto och alla dina uppgifter
+- Radera ditt konto och dina uppgifter
 - **Hur:** Mer → Konto & säkerhet → Radera konto permanent
-- **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt. Har du loggat in med Apple ångrar du raderingen genom att logga in med Apple igen. Apple frågar då på nytt om du vill använda Butlery med ditt Apple-konto.
+- **Obs:** Kontot raderas 7 dagar efter din begäran. Vilka uppgifter som sparas längre, och hur länge, står i avsnitt 8. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt. Har du loggat in med Apple ångrar du raderingen genom att logga in med Apple igen. Apple frågar då på nytt om du vill använda Butlery med ditt Apple-konto.
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
-- Exportera alla dina uppgifter i maskinläsbart format (JSON)
+- Exportera dina uppgifter i maskinläsbart format (JSON)
 - **Hur:** Mer → Integritet och data → Exportera mina data
 - **Format:** JSON (universellt format)
 - **Inloggningssätt:** Exporten visar vilka inloggningssätt som är kopplade till kontot (e-post och lösenord, Google eller Apple) och e-postadressen från Google eller Apple. Inloggningsnycklar (token) och länken till profilbilden ingår inte.
+- **Importloggen** ingår inte i exporten. Vill du se den, kontakta integritet@butlery.se.
 
 ### 9.5 Rätt till begränsning (Art. 18)
 - Begränsa behandling av dina uppgifter
@@ -397,10 +416,9 @@ Vi kan uppdatera denna policy när:
 
 Vid väsentliga ändringar:
 - Vi visar en notifikation i appen
-- Vi meddelar dig via push-notis (om aktiverad)
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 28 oktober 2026
+**Senaste ändring:** 29 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---
@@ -443,7 +461,7 @@ För att utöva dina GDPR-rättigheter:
 |-----------|-----------------|----------------|
 | **Tillgång** | Se vilka uppgifter vi har | Kontakta integritet@butlery.se |
 | **Rättelse** | Korrigera fel | Inställningar eller kontakta oss |
-| **Radering** | Radera allt | Mer → Konto & säkerhet → Radera konto permanent |
+| **Radering** | Radera kontot | Mer → Konto & säkerhet → Radera konto permanent |
 | **Portabilitet** | Exportera data | Mer → Integritet och data → Exportera mina data |
 | **Begränsning** | Pausa behandling | Kontakta integritet@butlery.se |
 | **Återkalla samtycke** | Ta tillbaka godkännande | Mer → Integritet och data → Samtycken |
