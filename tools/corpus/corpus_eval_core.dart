@@ -290,6 +290,46 @@ File writeReportJson(
   return file;
 }
 
+/// Appends one line per run to `_reports/trend.jsonl`. Unlike the per-run
+/// `eval-*.json` files, this is the series a parser change is judged against, so
+/// it carries only what is comparable between runs. [date] and [parserVersion]
+/// are injected so this stays deterministic.
+File appendTrendLine(
+  CorpusPaths paths,
+  CorpusSummary summary, {
+  required String date,
+  required String parserVersion,
+}) {
+  Directory(paths.reportsDir()).createSync(recursive: true);
+  final file = File('${paths.reportsDir()}/trend.jsonl');
+  final line = jsonEncode({
+    'date': date,
+    'parserVersion': parserVersion,
+    'verified': summary.count,
+    'ingredientNameF1': _round(summary.meanIngredientNameF1),
+    'ingredientFullF1': _round(summary.meanIngredientFullF1),
+    'instructionF1': _round(summary.meanInstructionF1),
+    'ocrRecall': _round(summary.meanOcrRecall),
+  });
+  file.writeAsStringSync('$line\n', mode: FileMode.append);
+  return file;
+}
+
+/// Reads `parserVersion` out of the parser service's source. The constant lives
+/// in a file that imports Flutter, which `dart run` cannot load, so the tool
+/// reads the text instead of importing it. Null when the declaration is gone.
+String? readParserVersion(String repoRoot) {
+  final file = File(
+    '$repoRoot/lib/services/parsing/recipe_parser_service.dart',
+  );
+  if (!file.existsSync()) return null;
+  return parseParserVersion(file.readAsStringSync());
+}
+
+String? parseParserVersion(String source) => RegExp(
+  '''const String parserVersion = ['"]([^'"]+)['"];''',
+).firstMatch(source)?.group(1);
+
 GoldRecipe? _readRecipe(File file) {
   if (!file.existsSync()) return null;
   try {
