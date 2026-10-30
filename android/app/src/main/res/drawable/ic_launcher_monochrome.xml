@@ -12,7 +12,7 @@
         android:scaleX="0.4125"
         android:scaleY="0.4125">
         <path
-            android:pathData="M80 55V60"
+            android:pathData="M80 55V64"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="3.5"
             android:strokeLineCap="round"/>
