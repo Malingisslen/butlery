@@ -77,6 +77,15 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll(fields);
     }
     
+    // The TTL stamp on a correction-log row: a timestamp ahead of now and at
+    // most a year plus a week (a device clock may run ahead). A row without one
+    // would never be deleted, so create requires it.
+    function hasRetentionStamp() {
+      return request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt <= request.time + duration.value(372, 'd');
+    }
+
     // Check if timestamp is server timestamp
     function isServerTimestamp(field) {
       return request.resource.data[field] == request.time;
@@ -3879,6 +3888,9 @@ service cloud.firestore {
     }
 
     // PARSING CORRECTIONS - Parser improvement analytics
+    // Purpose: improving the recipe parser from the edits users make to an import.
+    // Rows hold text the user typed (scrubbed client-side) and are deleted with
+    // the account.
 
     match /parsing_corrections/{correctionId} {
       // Users can only read their own corrections (GDPR). Admins read across
@@ -3891,7 +3903,8 @@ service cloud.firestore {
       // SECURITY: Prevents data poisoning attacks
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['id', 'userId', 'source', 'timestamp']);
+        && hasRequiredFields(['id', 'userId', 'source', 'timestamp', 'expireAt'])
+        && hasRetentionStamp();
 
       // No updates allowed - corrections are immutable
       allow update: if false;
@@ -3919,7 +3932,8 @@ service cloud.firestore {
       // SECURITY: prevents cross-user data-poisoning of the learning loop.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['id', 'userId', 'recipeId', 'type', 'tag', 'direction', 'timestamp']);
+        && hasRequiredFields(['id', 'userId', 'recipeId', 'type', 'tag', 'direction', 'timestamp', 'expireAt'])
+        && hasRetentionStamp();
 
       // Immutable — corrections are an append-only log.
       allow update: if false;

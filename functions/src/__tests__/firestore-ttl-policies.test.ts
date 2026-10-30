@@ -262,6 +262,22 @@ const TARGETS: {
     writer: "lib/repositories/firebase/firebase_menu_voting_repository.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
   },
+  // Parser-correction log rows hold text a user typed. One writer per group:
+  // the model's `toFirestore`; firestore.rules caps it at 372 days ahead.
+  {
+    group: "parsing_corrections",
+    field: "expireAt",
+    retention: "365d",
+    writer: "lib/models/parsing/parsing_correction.dart",
+    stamp: /'expireAt':\s*correctionExpireAt\(\)/,
+  },
+  {
+    group: "tag_overrides_log",
+    field: "expireAt",
+    retention: "365d",
+    writer: "lib/models/tagging/tag_override_log_entry.dart",
+    stamp: /'expireAt':\s*correctionExpireAt\(\)/,
+  },
   // BUT-2452 — an unused guest-list invite. One writer: the admin repository's
   // `toFirestore`; firestore.rules caps it at 30 days ahead.
   {
@@ -306,6 +322,7 @@ const EXPECTED_TTL_GROUPS = [
   "notification_send_events",
   "overwritten_versions",
   "parse_events",
+  "parsing_corrections",
   "report_evidence",
   "report_history",
   "report_processing_markers",
@@ -314,6 +331,7 @@ const EXPECTED_TTL_GROUPS = [
   "scheduled_notifications",
   "signup_allowlist",
   "system_ip_audit_caps",
+  "tag_overrides_log",
   "trash",
   "views",
   "votes",

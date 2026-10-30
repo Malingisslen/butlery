@@ -111,8 +111,6 @@ export async function deleteTagOverridesLog(
 ): Promise<boolean> {
   // BUT-1473: top-level, userId-keyed allergen tag-override corrections
   // (linked PII: userId, recipeId, tag, direction, triggeringIngredients).
-  // No TTL, so GDPR Art. 17 needs an explicit cascade delete — analogous to
-  // the other top-level userId-scoped own-data collections above.
   const snap = await db
     .collection("tag_overrides_log")
     .where("userId", "==", uid)

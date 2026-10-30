@@ -5,9 +5,8 @@
  * feed the tagging learning loop. Contract (mirrors parsing_corrections):
  *
  *   create — allowed only when authenticated AND
- *            request.resource.data.userId == auth.uid AND all required fields
- *            ['id','userId','recipeId','type','tag','direction','timestamp']
- *            are present. Cross-user userId or a missing field DENIES.
+ *            request.resource.data.userId == auth.uid. A cross-user userId, a
+ *            missing required field or an invalid expireAt DENIES.
  *   read   — allowed for the owner (userId == auth.uid) and for admins
  *            (isAdmin()); a different non-admin user DENIES.
  *   update — always denied (immutable / append-only).
@@ -40,6 +39,10 @@ const RUN = Date.now().toString(36);
 
 let env: RulesTestEnvironment;
 
+function daysFromNow(days: number): Date {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
 /** Minimal-but-valid tag_overrides_log document for `userId`. */
 function validEntryBody(
   userId: string,
@@ -54,6 +57,7 @@ function validEntryBody(
     direction: "toFree",
     triggeringIngredients: ["vetemjöl", "korn"],
     timestamp: Date.now(),
+    expireAt: daysFromNow(365),
     ...extra,
   };
 }
@@ -93,7 +97,7 @@ function test(name: string, fn: TestFn): void {
 }
 
 // ====================================================================
-// CREATE (5 assertions)
+// CREATE
 // ====================================================================
 
 // TOL1: owner-allow — authenticated caller writes their OWN entry with all
@@ -149,6 +153,47 @@ test("tag_overrides_log: owner CANNOT create an entry missing a required field (
   const ctx = env.authenticatedContext(OWNER);
   await assertFails(
     ctx.firestore().doc(`tag_overrides_log/create-nodir-${RUN}`).set(body)
+  );
+});
+
+// TOL-TTL: the TTL stamp is required, a timestamp, in the future and at most
+// 372 days ahead. A row without one would never be deleted.
+test("tag_overrides_log: owner CANNOT create an entry without expireAt", async () => {
+  const body = validEntryBody(OWNER, { id: `create-noexp-${RUN}` });
+  delete (body as Record<string, unknown>).expireAt;
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`tag_overrides_log/create-noexp-${RUN}`).set(body)
+  );
+});
+
+test("tag_overrides_log: owner CANNOT create an entry whose expireAt is not a timestamp", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`tag_overrides_log/create-strexp-${RUN}`)
+      .set(validEntryBody(OWNER, { id: `create-strexp-${RUN}`, expireAt: "2027-01-01" }))
+  );
+});
+
+test("tag_overrides_log: owner CANNOT create an entry whose expireAt is already past", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`tag_overrides_log/create-pastexp-${RUN}`)
+      .set(validEntryBody(OWNER, { id: `create-pastexp-${RUN}`, expireAt: daysFromNow(-1) }))
+  );
+});
+
+test("tag_overrides_log: owner CANNOT create an entry whose expireAt is beyond the ceiling", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`tag_overrides_log/create-farexp-${RUN}`)
+      .set(validEntryBody(OWNER, { id: `create-farexp-${RUN}`, expireAt: daysFromNow(400) }))
   );
 });
 
