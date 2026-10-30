@@ -9,6 +9,7 @@
 library;
 
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/parsing/field_correction.dart';
@@ -139,6 +140,37 @@ void main() {
       expect(json['originalQuality'], 0.8);
       expect(json.containsKey('titleCorrection'), isFalse);
       expect(json['ingredientCorrections'], isEmpty);
+    });
+
+    test('toFirestore stamps expireAt a year after the write', () {
+      withClock(Clock.fixed(DateTime.utc(2026, 10, 30)), () {
+        final json = make().toFirestore();
+        expect(
+          (json['expireAt'] as Timestamp).toDate().toUtc(),
+          DateTime.utc(2027, 10, 30),
+        );
+      });
+    });
+
+    test('toFirestore scrubs typed text but leaves the enum type alone', () {
+      final json = make(
+        title: const FieldCorrection(
+          originalValue: 'Anna anna@example.com',
+          correctedValue: 'Pannkakor',
+        ),
+        ingredients: [
+          IngredientCorrection.added(
+            correctedIndex: 0,
+            correctedLine: 'ring 070-123 45 67 för 2 dl mjölk',
+          ),
+        ],
+      ).toFirestore();
+      final text = json.toString();
+      expect(text, isNot(contains('anna@example.com')));
+      expect(text, isNot(contains('070-123 45 67')));
+      final line = (json['ingredientCorrections'] as List).single as Map;
+      expect(line['type'], 'added');
+      expect(line['correctedLine'], contains('2 dl mjölk'));
     });
 
     test('toFirestore → fromJson round-trips', () {

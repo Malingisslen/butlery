@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/parsing/correction_retention.dart';
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/ingredient_correction.dart';
 import 'package:butlery/models/parsing/instruction_correction.dart';
@@ -178,17 +179,22 @@ class ParsingCorrection {
     if (domain != null) 'domain': domain,
     if (successfulTier != null) 'successfulTier': successfulTier,
     'originalQuality': originalQuality,
-    if (titleCorrection != null) 'titleCorrection': titleCorrection!.toJson(),
+    if (titleCorrection != null)
+      'titleCorrection': scrubCorrectionStrings(titleCorrection!.toJson()),
     if (portionsCorrection != null)
-      'portionsCorrection': portionsCorrection!.toJson(),
-    if (timeCorrection != null) 'timeCorrection': timeCorrection!.toJson(),
+      'portionsCorrection': scrubCorrectionStrings(
+        portionsCorrection!.toJson(),
+      ),
+    if (timeCorrection != null)
+      'timeCorrection': scrubCorrectionStrings(timeCorrection!.toJson()),
     'ingredientCorrections': ingredientCorrections
-        .map((c) => c.toJson())
+        .map((c) => scrubCorrectionStrings(c.toJson()))
         .toList(),
     'instructionCorrections': instructionCorrections
-        .map((c) => c.toJson())
+        .map((c) => scrubCorrectionStrings(c.toJson()))
         .toList(),
     'totalCorrections': totalCorrections,
+    'expireAt': correctionExpireAt(),
   };
 
   factory ParsingCorrection.fromFirestore(DocumentSnapshot doc) {

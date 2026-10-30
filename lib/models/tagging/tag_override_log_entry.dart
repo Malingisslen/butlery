@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/models/parsing/correction_retention.dart';
+import 'package:butlery/services/llm/pii_scrubber.dart';
+
 /// BUT-1473: one captured allergen tag-override correction, feeding the tagging
 /// learning loop.
 ///
@@ -52,7 +55,8 @@ class TagOverrideLogEntry {
     'type': type,
     'tag': tag,
     'direction': direction,
-    'triggeringIngredients': triggeringIngredients,
+    'triggeringIngredients': triggeringIngredients.map(scrubPii).toList(),
     'timestamp': Timestamp.fromDate(timestamp),
+    'expireAt': correctionExpireAt(),
   };
 }
