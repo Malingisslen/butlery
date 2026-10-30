@@ -241,6 +241,7 @@
     "test:winback-context": "ts-node src/__tests__/winback-context.test.ts",
     "test:dead-share-collections": "ts-node src/__tests__/dead-share-collections.test.ts",
     "test:erasure-export-coverage": "ts-node src/__tests__/erasure-export-coverage.test.ts",
+    "test:erasure-collection-coverage": "ts-node src/__tests__/erasure-collection-coverage.test.ts",
     "test:rules:acquisition": "ts-node src/__tests__/acquisition-rules.test.ts",
     "test:rules:overwritten-versions": "ts-node src/__tests__/overwritten-versions-rules.test.ts",
     "test:rules:recipe-suggestions": "ts-node src/__tests__/recipe-suggestions-rules.test.ts",
