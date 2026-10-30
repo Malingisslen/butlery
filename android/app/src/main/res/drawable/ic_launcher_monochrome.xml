@@ -8,7 +8,7 @@
          tints this from the user's wallpaper, so every shape is solid white. -->
     <group
         android:translateX="21"
-        android:translateY="21"
+        android:translateY="18.154"
         android:scaleX="0.4125"
         android:scaleY="0.4125">
         <path
