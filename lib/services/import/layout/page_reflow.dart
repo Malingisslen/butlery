@@ -97,7 +97,7 @@ PageText stripScreenChrome(PageText page) {
   var screenshotEvidence = false;
 
   for (var i = 0; i < lines.length && i < _statusBarLines; i++) {
-    if (!HeadingWordLists.isClockTime(lines[i])) continue;
+    if (!_isStatusClock(lines[i])) continue;
     screenshotEvidence = true;
     drop[i] = true;
     for (final j in [i - 1, i + 1]) {
@@ -200,12 +200,31 @@ final _moreToggle = RegExp(r'\s+(?:mindre|(?:…|\.\.\.)\s?mer)$');
 /// post opens with its account name on the same line, and a capital-letter
 /// title after it proves the first token is not a lowercase recipe word.
 String _withoutLeadingHandle(String line) {
-  final m = _handleThenCaps.firstMatch(line.trim());
+  final m =
+      _handleThenCaps.firstMatch(line.trim()) ??
+      _handleThenSentence.firstMatch(line.trim());
   if (m == null || !HeadingWordLists.looksLikeHandle(m.group(1)!)) return line;
   return m.group(2)!;
 }
 
 final _handleThenCaps = RegExp(r'^(\S+)\s+([A-ZÅÄÖÉ0-9][^a-zåäöé]*)$');
+
+// "matmodig Medelhavsbiffar med soltorkade": the handle is lowercase, so a
+// capital right after it starts the caption.
+final _handleThenSentence = RegExp(r'^(\S+)\s+([A-ZÅÄÖÉ].*)$');
+
+/// "10:55", or the clock with the reader's spelling of the icons beside it
+/// ("20:43 A", where the A is a warning triangle).
+bool _isStatusClock(String line) {
+  if (HeadingWordLists.isClockTime(line)) return true;
+  final t = line.trim();
+  final space = t.indexOf(' ');
+  // A colon, so a dot-decimal row ("2.25 kg") is not read as the clock.
+  return space > 0 &&
+      t.substring(0, space).contains(':') &&
+      HeadingWordLists.isClockTime(t.substring(0, space)) &&
+      isIconRow(t.substring(space + 1));
+}
 
 bool _isMidPageIconRow(String line) {
   if (!isIconRow(line)) return false;

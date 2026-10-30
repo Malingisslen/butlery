@@ -19,7 +19,6 @@ import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
-import 'package:butlery/utils/text/swedish_word_boundary.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
@@ -153,7 +152,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   String _extractIngredientNameOnly(String ingredient) {
     final withoutMeasure = ingredient.replaceFirst(
       RegExp(
-        r'^\d+(?:[,\.]\d+)?\s*(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|nypa)?\s*',
+        r'^\d+(?:[,\.]\d+)?(?:\s*[-–]\s*\d+(?:[,\.]\d+)?)?\s*'
+        r'(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|nypa)?\s*',
         caseSensitive: false,
       ),
       '',
@@ -163,7 +163,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   // A yield/portioning label ("2 PORTIONER", "12 STYCKEN") — never a title.
   static final _yieldLabel = RegExp(
-    r'^\s*(?:\d+\s*[-–]\s*)?\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
+    r'^\s*(?:ca\.?\s*)?(?:\d+\s*[-–]\s*)?\d*\s*'
+    r'(portion\w*|port\b|stycken\w*|pers\w*|bitar|skivor)\b',
     caseSensitive: false,
   );
 
@@ -233,8 +234,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return RecipeSectionDetector.isGarbage(line) ||
         HeadingWordLists.looksLikeHandle(line) ||
         HeadingWordLists.isClockTime(line) ||
+        // A like count left over from a screenshot ("155").
+        !_letter.hasMatch(line) ||
         (_isAllCapsLabel(line) && !_pictograph.hasMatch(line));
   }
+
+  static final _letter = RegExp(r'[A-Za-zÅÄÖåäöÉé]');
 
   /// Comparison key for the leading-title-fragment skip: letters/digits only,
   /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
@@ -485,12 +490,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       _bareTimeLine.hasMatch(line) ||
       _byline.hasMatch(line);
 
-  /// Extract ingredients using measurement-first approach.
-  List<String> _extractIngredientsByMeasurement(String text) {
-    final ingredients = <String>[];
+  /// Extract ingredients using measurement-first approach, each tagged with
+  /// the index in [lines] it was read from.
+  List<_IngredientRow> _extractIngredientsByMeasurement(List<String> lines) {
+    final ingredients = <_IngredientRow>[];
 
     final measurementPattern = RegExp(
-      r'(\d+(?:[,\.]\d+)?)\s*'
+      r'(\d+(?:[,\.]\d+)?(?:\s*[-–]\s*\d+(?:[,\.]\d+)?)?)\s*'
       r'(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta)\s+'
       r'([a-zåäöA-ZÅÄÖ][a-zåäöéèüA-ZÅÄÖÉ\s\-]{1,40})',
       caseSensitive: false,
@@ -504,17 +510,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     //      grötbas per portion med 2 1/2 dl vatten") is not an ingredient.
     //      Correcting the unit un-blocks those too, so without this skip the
     //      fix above would just trade missed ingredients for hallucinated ones.
-    for (final raw in text.split('\n')) {
-      final line = OcrErrorCorrector.correctLine(raw.trim());
+    for (var i = 0; i < lines.length; i++) {
+      final line = OcrErrorCorrector.correctLine(lines[i].trim());
       if (line.isEmpty) continue;
       if (RecipeSectionDetector.instructionScore(line) >= 2) continue;
 
       for (final match in measurementPattern.allMatches(line)) {
-        final quantity = match.group(1);
+        final quantity = match.group(1)!.replaceAll(RegExp(r'\s'), '');
         final unit = match.group(2);
         final name = _cleanIngredientName(match.group(3)!.trim());
         if (name.isNotEmpty) {
-          ingredients.add('$quantity $unit $name');
+          ingredients.add(_IngredientRow(i, '$quantity $unit $name'));
         }
       }
     }
@@ -603,19 +609,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     String recipeName = '';
     String description = '';
-    final List<String> ingredients = [];
     final List<String> instructions = [];
 
     // STAGE 1: MEASUREMENT-FIRST INGREDIENT EXTRACTION
-    final measurementIngredients = _extractIngredientsByMeasurement(
-      lines.join('\n'),
-    );
-    ingredients.addAll(measurementIngredients);
-
-    final capturedAsIngredient = <String>{};
-    for (final ing in measurementIngredients) {
-      capturedAsIngredient.add(ing.toLowerCase());
-    }
+    final ingredients = _extractIngredientsByMeasurement(lines);
 
     // STAGE 2: EXTRACT TITLE (from titleSource — the un-mangled original)
     recipeName = _extractTitleFromText(titleSource);
@@ -672,15 +669,37 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     bool inInstructions = false;
     final seenIngredientSections = <String>{};
 
-    // Current ingredient sub-group heading ("Deg", "Fyllning") and the section
-    // each captured ingredient sits under, joined back by ingredient string in
-    // STAGE 4. Heading text lives ONLY here / on the structured entry, never in
-    // the flat `ingredients` list that allergen tagging reads (safety invariant).
+    // Current ingredient sub-group heading ("Deg", "Fyllning"), stamped on
+    // each row taken under it. Heading text lives ONLY here / on the
+    // structured entry, never in the flat `ingredients` list that allergen
+    // tagging reads (safety invariant).
     String? currentSection;
-    final sectionByKey = <String, String>{};
-    // BUT-1727: lowercased rows kept by the bare-gluten carve-out, so STAGE 4's
-    // orphan-fragment filter doesn't discard what STAGE 3 deliberately rescued.
-    final rescuedRows = <String>{};
+
+    // One row per source line, so a line is never counted twice. The
+    // whole-line reading replaces what STAGE 1's pattern cut out of it,
+    // unless that was the same ingredient: STAGE 1 keeps a written range
+    // ("0,5-1 dl") that the line parser's preprocessing narrows.
+    void takeIngredient(int line, String text, {bool rescued = false}) {
+      final measured = [
+        for (final r in ingredients)
+          if (r.line == line) r,
+      ];
+      if (measured.length == 1 &&
+          _extractIngredientNameOnly(measured.single.text.toLowerCase()) ==
+              _extractIngredientNameOnly(text.toLowerCase().trim())) {
+        ingredients[ingredients.indexOf(measured.single)] = _IngredientRow(
+          line,
+          measured.single.text,
+          section: currentSection,
+        );
+        return;
+      }
+      ingredients
+        ..removeWhere((r) => r.line == line)
+        ..add(
+          _IngredientRow(line, text, section: currentSection, rescued: rescued),
+        );
+    }
 
     // The title now comes from the un-mangled `titleSource`, but the body still
     // carries the preprocessed title — possibly split into fragments
@@ -704,6 +723,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     bool listStarted = false;
     final introLines = <String>[];
     final stepLines = <String>{};
+    // Whether the last classified line was taken as a step: the sentence
+    // splitter cuts one step into several, and a plain sentence right after
+    // a step ("Forma till biffar och stek hastigt för yta.") is more of it.
+    var afterStep = false;
+    void takeStep(String line, String instruction) {
+      instructions.add(instruction);
+      stepLines.add(line);
+      afterStep = true;
+      // A heading over the ingredient rows does not reach past the method.
+      currentSection = null;
+    }
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
@@ -799,15 +829,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // row; guessing "heading" loses the gluten from the tagging input.
         final colonIngredient = _colonIngredient(line);
         if (colonIngredient != null) {
-          final key = colonIngredient.toLowerCase();
-          if (!capturedAsIngredient.contains(key)) {
-            ingredients.add(colonIngredient);
-            capturedAsIngredient.add(key);
-            rescuedRows.add(key);
-          }
-          if (currentSection != null) {
-            sectionByKey.putIfAbsent(key, () => currentSection!);
-          }
+          takeIngredient(i, colonIngredient, rescued: true);
           afterIngredientRow = true;
           continue;
         }
@@ -860,27 +882,19 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       final score = RecipeSectionDetector.instructionScore(line);
+      final stepGoesOn =
+          afterStep &&
+          score >= 1 &&
+          !RecipeSectionDetector.looksLikeIngredient(line) &&
+          !_isQuantityRow(line);
+      afterStep = false;
 
       if (inIngredients) {
         if (RecipeSectionDetector.isValidIngredient(line)) {
           final ingredient = _parseIngredientLine(line);
           if (ingredient != null) {
-            if (!capturedAsIngredient.contains(lowerLine)) {
-              ingredients.add(ingredient);
-              capturedAsIngredient.add(ingredient.toLowerCase());
-            }
+            takeIngredient(i, ingredient);
             afterIngredientRow = true;
-            // Record the current sub-group for this line's STRUCTURED entry.
-            // Lines already captured measurement-first in STAGE 1 still get
-            // their section here; the flat list is left untouched. Two
-            // identical lines under different headings take the first
-            // (putIfAbsent) — cosmetic only, sections never touch tagging.
-            if (currentSection != null) {
-              sectionByKey.putIfAbsent(
-                ingredient.toLowerCase(),
-                () => currentSection!,
-              );
-            }
           }
         }
         continue;
@@ -889,19 +903,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (inInstructions) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
-          instructions.add(instruction);
-          stepLines.add(line);
+          takeStep(line, instruction);
         }
         continue;
       }
 
       if (score >= 2 && !listStarted) {
         introLines.add(line);
-      } else if (score >= 2) {
+      } else if (score >= 2 || stepGoesOn) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
-          instructions.add(instruction);
-          stepLines.add(line);
+          takeStep(line, instruction);
         }
         afterIngredientRow = false;
       } else if (RecipeSectionDetector.looksLikeIngredient(line) ||
@@ -915,19 +927,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final ingredient = _parseIngredientLine(line);
         if (ingredient != null &&
             RecipeSectionDetector.isValidIngredient(ingredient)) {
-          if (!capturedAsIngredient.contains(lowerLine)) {
-            ingredients.add(ingredient);
-            capturedAsIngredient.add(ingredient.toLowerCase());
-          }
+          takeIngredient(i, ingredient);
           afterIngredientRow = true;
-          // Stamp the current sub-group even for lines already captured
-          // measurement-first in STAGE 1 (the common headerless-caption path).
-          if (currentSection != null) {
-            sectionByKey.putIfAbsent(
-              ingredient.toLowerCase(),
-              () => currentSection!,
-            );
-          }
         }
       } else if (description.isEmpty &&
           line.length > 10 &&
@@ -964,10 +965,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     // STAGE 4: FINAL CLEANUP
-    final cleanedIngredients = _deduplicateIngredients(
-      ingredients,
-      exemptFromFilters: rescuedRows,
+    // STAGE 1 read the measured rows ahead of the rest; the page's order is
+    // the recipe's.
+    ingredients.sort(
+      (a, b) => a.line != b.line ? a.line - b.line : a.seq - b.seq,
     );
+    final keptRows = _deduplicateIngredients(ingredients);
+    final cleanedIngredients = [for (final row in keptRows) row.text];
+    final sections = [for (final row in keptRows) row.section];
     final cleanedInstructions = _dropRepeatedStepRuns(
       instructions
           .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
@@ -1011,7 +1016,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     final structured = await _structuredIngredients(
       cleanedIngredients,
-      sectionByKey,
+      sections.any((s) => s != null) ? sections : null,
     );
     final structuredIngredients = structured.ingredients;
 
@@ -1041,90 +1046,40 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return (recipe: recipe, confidences: structured.confidences);
   }
 
-  bool _containsWord(String text, String word) =>
-      word.isEmpty ||
-      SwedishWordBoundary.boundedRegExp(
-        RegExp.escape(word),
-        extraLetters: 'éèü',
-      ).hasMatch(text);
+  /// Drops filtered-out rows and repeats of a row, keeping the fuller one.
+  /// Only rows under the same heading are compared: a sauce's "Salt" and
+  /// "1 tsk timjan" are not the patties' "salt o peppar" and "0,5 tsk
+  /// timjan". Names must match whole — "Salt" is not a shorter "salt o
+  /// peppar", and BUT-1727's rescued "Mjöl" is not a shorter "potatismjöl".
+  /// A rescued row ([_IngredientRow.rescued]) also skips the garbage and
+  /// orphan-fragment filters, so a bare gluten row survives them.
+  List<_IngredientRow> _deduplicateIngredients(List<_IngredientRow> rows) {
+    final kept = <_IngredientRow>[];
+    final keptNames = <String>[];
 
-  /// Deduplicate ingredients, keeping the most complete version.
-  /// [exemptFromFilters] holds lowercased entries that skip the garbage /
-  /// orphan-fragment filters AND the containment rule below, but are
-  /// still deduplicated by exact name.
-  List<String> _deduplicateIngredients(
-    List<String> ingredients, {
-    Set<String> exemptFromFilters = const {},
-  }) {
-    final cleanedIngredients = <String>[];
-    final seenNames = <String>[];
-    // Index-aligned with [seenNames]: whether that kept row was rescued.
-    final seenRescued = <bool>[];
-
-    for (final ing in ingredients) {
-      // BUT-1727: a rescued bare gluten row ("Råg") is exempt from the two
-      // filters below — but not from exact-name dedup, so a fuller "2 dl råg"
-      // row still wins.
-      final isRescued = exemptFromFilters.contains(ing.toLowerCase());
-      if (!isRescued &&
-          (RecipeSectionDetector.isGarbage(ing) ||
-              !RecipeSectionDetector.isValidIngredient(ing))) {
+    for (final row in rows) {
+      if (!row.rescued &&
+          (RecipeSectionDetector.isGarbage(row.text) ||
+              !RecipeSectionDetector.isValidIngredient(row.text))) {
         continue;
       }
 
-      final normalized = ing.toLowerCase().trim();
-      final ingName = _extractIngredientNameOnly(normalized);
-
-      var isDuplicate = false;
-      var replaceIndex = -1;
-
-      for (var i = 0; i < seenNames.length; i++) {
-        final existingName = seenNames[i];
-
-        if (existingName == ingName) {
-          isDuplicate = true;
-          break;
-        }
-
-        // BUT-1727 review: containment was the second half of the swallow the
-        // rescue exists to stop. The rescued row is a bare stem, so ANY longer
-        // ingredient name containing it — "potatismjöl" over "Mjöl",
-        // "bovetemjöl" over "Vete", "majskorn" over "Korn" — deleted the gluten
-        // row while the swallower is itself gluten-FREE, moving the recipe from
-        // UNKNOWN to a false-negative FREE. Skipping the branch in BOTH
-        // directions (the rescued row can be either side, since STAGE 3 rows
-        // interleave with STAGE 1 rows) is the whole fix; exact-name dedup
-        // above still collapses "Råg:" into "2 dl råg". Scanning continues
-        // rather than breaking, so a later exact match is still found.
-        if (isRescued || seenRescued[i]) continue;
-
-        // Whole words only (BUT-2455): "kokosmjölk" is not a fuller "mjölk",
-        // and treating it as one dropped the milk row and its allergen.
-        if (_containsWord(existingName, ingName) ||
-            _containsWord(ingName, existingName)) {
-          if (ingName.length > existingName.length) {
-            replaceIndex = i;
-          } else {
-            isDuplicate = true;
-          }
-          break;
-        }
-      }
-
-      if (!isDuplicate) {
-        if (replaceIndex >= 0) {
-          cleanedIngredients[replaceIndex] = ing;
-          seenNames[replaceIndex] = ingName;
-          seenRescued[replaceIndex] = isRescued;
-        } else {
-          cleanedIngredients.add(ing);
-          seenNames.add(ingName);
-          seenRescued.add(isRescued);
-        }
+      final name = _extractIngredientNameOnly(row.text.toLowerCase().trim());
+      // An amount with nothing named after it ("30 st" from "ca 30 st").
+      if (name.isEmpty) continue;
+      final at = [
+        for (var i = 0; i < kept.length; i++)
+          if (keptNames[i] == name && kept[i].section == row.section) i,
+      ];
+      if (at.isEmpty) {
+        kept.add(row);
+        keptNames.add(name);
+      } else if (row.text.length > kept[at.first].text.length) {
+        kept[at.first] = row;
       }
     }
 
-    return cleanedIngredients;
+    return kept;
   }
 
   /// A colon-terminated ingredient sub-group heading ("Deg:", "Fyllning:",
@@ -1163,25 +1118,6 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return role.kind == LineRoleKind.ingredient ? role.label : null;
   }
 
-  /// Section labels index-aligned with [ingredients] for
-  /// `StructuredIngredientDeriver.deriveAll`, or null when no line was grouped
-  /// (so the deriver skips the section pass entirely). Joined by the parsed
-  /// ingredient string; an unmatched line degrades to no section, never a
-  /// wrong one. The join lands only when STAGE 1's measurement-first string and
-  /// STAGE 3's `_parseIngredientLine` output render identically for the same
-  /// source line (they do for clean caption lines); on divergence the section
-  /// is silently dropped for that line — safe, since it can never mislabel.
-  List<String?>? _sectionsFor(
-    List<String> ingredients,
-    Map<String, String> sectionByKey,
-  ) {
-    if (sectionByKey.isEmpty) return null;
-    final sections = [
-      for (final ing in ingredients) sectionByKey[ing.toLowerCase()],
-    ];
-    return sections.any((s) => s != null) ? sections : null;
-  }
-
   /// BUT-1501: structured (amount/unit/name) form for the final cleaned
   /// ingredient strings. Runs the shared CRF → BERT NER cascade — the SAME
   /// parser URL imports get (BUT-1216) — when [IngredientParsingStrategy] is
@@ -1203,13 +1139,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   Future<
     ({List<RecipeIngredient>? ingredients, List<ParseConfidence>? confidences})
   >
-  _structuredIngredients(
-    List<String> cleaned,
-    Map<String, String> sectionByKey,
-  ) async {
+  _structuredIngredients(List<String> cleaned, List<String?>? sections) async {
     if (cleaned.isEmpty) return (ingredients: null, confidences: null);
-
-    final sections = _sectionsFor(cleaned, sectionByKey);
 
     final strategy = _ingredientStrategy;
     if (strategy != null) {
@@ -1465,4 +1396,23 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     return tags;
   }
+}
+
+/// An ingredient row and the source line it was read from.
+class _IngredientRow {
+  _IngredientRow(this.line, this.text, {this.section, this.rescued = false})
+    : seq = _next++;
+
+  static var _next = 0;
+
+  final int line;
+  final String text;
+  final String? section;
+
+  /// BUT-1727: a bare gluten row kept by the colon carve-out.
+  final bool rescued;
+
+  /// Insertion order: `List.sort` is not stable, and rows from one line keep
+  /// the order they were read in.
+  final int seq;
 }

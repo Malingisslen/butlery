@@ -221,9 +221,17 @@ class HeadingWordLists {
 
   static final _handle = RegExp(r'^[a-z_][a-z0-9_.]*$');
 
-  /// "För 6 dagar sedan" — the line a social app prints under a caption.
-  static bool isPostAge(String line) =>
-      _postAge.hasMatch(line.trim().toLowerCase());
+  /// "För 6 dagar sedan", "26 juli" — the line a social app prints under a
+  /// caption.
+  static bool isPostAge(String line) {
+    final lower = line.trim().toLowerCase();
+    return _postAge.hasMatch(lower) || _postDate.hasMatch(lower);
+  }
+
+  static final _postDate = RegExp(
+    r'^\d{1,2}\s+(?:januari|februari|mars|april|maj|juni|juli|augusti|'
+    r'september|oktober|november|december)(?:\s+\d{4})?$',
+  );
 
   /// A status bar's clock ("10:55", "9.41") — whole line only.
   static bool isClockTime(String line) => _clock.hasMatch(line.trim());

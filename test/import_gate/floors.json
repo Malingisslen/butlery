@@ -13,7 +13,7 @@
       "chromeLeaks": 0
     },
     "text": {
-      "recall": 0.9722,
+      "recall": 0.9861,
       "headingLeaks": 3,
       "titleExact": 29,
       "stepsExact": 28,
@@ -25,10 +25,10 @@
       "chromeLeaks": 0
     },
     "stokig": {
-      "recall": 0.9531,
+      "recall": 0.9843,
       "headingLeaks": 0,
       "titleExact": 9,
-      "stepsExact": 5,
+      "stepsExact": 6,
       "portionsExact": 7,
       "timeExact": 2,
       "failures": 0,
@@ -37,43 +37,17 @@
       "chromeLeaks": 0
     },
     "foto": {
-      "recall": 0.8709,
+      "recall": 1.0,
       "headingLeaks": 0,
       "chromeLeaks": 0,
-      "titleExact": 3,
-      "stepsExact": 0,
-      "portionsExact": 1,
+      "titleExact": 4,
+      "stepsExact": 1,
+      "portionsExact": 2,
       "timeExact": 0,
       "failures": 0,
       "extraIngredients": 2,
-      "extraSteps": 9
+      "extraSteps": 5
     }
   },
-  "knownRed": [
-    {
-      "fixture": "text/21-kanelbullar",
-      "key": "smör",
-      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
-    },
-    {
-      "fixture": "text/26-sockerkaka-formen",
-      "key": "smör",
-      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
-    },
-    {
-      "fixture": "stokig/03-ocr-avstavning-sidhuvud",
-      "key": "smör",
-      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
-    },
-    {
-      "fixture": "foto/02-kanelbullar-tva-sidor",
-      "key": "smör",
-      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
-    },
-    {
-      "fixture": "foto/03-enkel-kokbokssida",
-      "key": "smör",
-      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
-    }
-  ]
+  "knownRed": []
 }

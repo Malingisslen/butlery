@@ -394,6 +394,56 @@ void main() {
     });
   });
 
+  // BUT-2455: the row shows its amount the way the recipe page does.
+  group('ParseConfidenceReview — amount as the recipe page writes it', () {
+    testWidgets('a decimal amount reads with a comma and offers no original', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'ströbröd',
+                confidence: ParseConfidence.medium,
+                originalLine: '0,75 dl ströbröd',
+                quantity: '0.75',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('0,75 dl ströbröd'), findsOneWidget);
+      expect(find.textContaining('0.75'), findsNothing);
+      // Only the decimal mark differed, so there is no original to reveal.
+      expect(find.byIcon(ButleryIcons.chevronDown), findsNothing);
+    });
+
+    testWidgets('a written range stays a range', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'chilisås',
+                confidence: ParseConfidence.medium,
+                originalLine: '0,5-1 dl chilisås',
+                quantity: '1',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('0,5-1 dl chilisås'), findsOneWidget);
+    });
+  });
+
   group('Accessibility — semantics label includes confidence word', () {
     testWidgets('high-confidence row semantics include confidence word', (
       tester,

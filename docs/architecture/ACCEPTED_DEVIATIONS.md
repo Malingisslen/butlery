@@ -546,6 +546,11 @@ stem, so "potatismjöl" swallowed "Mjöl", "bovetemjöl" swallowed "Vete" and "m
 FREE. Rescued rows are therefore exempt from the CONTAINMENT branch in both directions, but not
 from exact-name dedup ("Råg:" still collapses into "2 dl råg"). Do not "simplify" that back to one
 exemption flag covering the whole loop.
+**SUPERSEDES "Rescued rows are therefore exempt from the CONTAINMENT branch … Do not "simplify"
+that back to one exemption flag covering the whole loop." (BUT-2455, 2026-10-30):**
+`_deduplicateIngredients` has no containment branch; it merges only rows whose whole names match
+under the same heading. A rescued row (`_IngredientRow.rescued`) skips the garbage and
+orphan-fragment filters and goes through the exact-name merge like any other row.
 
 ### [Privacy/GDPR] Feature-retention DAILY AGGREGATES keep a deleted user's contribution; the per-user rows are erased (BUT-1789)
 `compute-feature-retention.ts` writes two things per run. The per-user-per-day rows,

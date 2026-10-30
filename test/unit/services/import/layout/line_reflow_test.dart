@@ -79,6 +79,32 @@ void main() {
       });
     });
 
+    // BUT-2455: a step that names ingredients still reads as a step.
+    test('a step naming ingredients is rejoined across its wrap', () {
+      expect(
+        reflowWrappedLines(
+          'Blanda ingredienserna till biffarna, hacka de\n'
+          'soltorkade tomaterna väl.',
+        ),
+        'Blanda ingredienserna till biffarna, hacka de soltorkade tomaterna väl.',
+      );
+      expect(
+        reflowWrappedLines(
+          'Gratinera på 225 grader i ca 20 min. Efter ca 10 min\n'
+          'lägg på mozzarella, tomat och basilika.',
+        ),
+        'Gratinera på 225 grader i ca 20 min. Efter ca 10 min '
+        'lägg på mozzarella, tomat och basilika.',
+      );
+    });
+
+    test('a post date is never joined onto a step', () {
+      expect(
+        reflowWrappedLines('1. Servera med ris och\n26 juli'),
+        '1. Servera med ris och\n26 juli',
+      );
+    });
+
     test('a decimal quantity is not a step number', () {
       expect(reflowWrappedLines('1.5 dl grädde\nsalt'), '1.5 dl grädde\nsalt');
     });

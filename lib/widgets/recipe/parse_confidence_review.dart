@@ -7,6 +7,8 @@ import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -222,7 +224,20 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
     if (original.trim().isEmpty) return false;
     // An unread line shows no text, so its original always differs.
     if (_unread) return true;
-    return _stripped(original) != _stripped(widget.ingredient.displayString);
+    return _stripped(original) != _stripped(_shown);
+  }
+
+  /// The line with its amount written the way the recipe page writes it:
+  /// "0,75 dl", not the parser's "0.75 dl", and "2-3" or "ca 2" as written.
+  String get _shown {
+    final ingredient = widget.ingredient;
+    final quantity = ingredient.quantity;
+    if (quantity == null || quantity.isEmpty) return ingredient.displayString;
+    final value = double.tryParse(quantity);
+    final amount =
+        IngredientParser.writtenAmount(ingredient.originalLine) ??
+        (value == null ? quantity : TextFormatting.formatFractional(value));
+    return ingredient.copyWith(quantity: amount).displayString;
   }
 
   /// A line the reader could not interpret: shown empty and marked, never
@@ -290,7 +305,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                                   ),
                                 )
                               : Text(
-                                  widget.ingredient.displayString,
+                                  _shown,
                                   style: AppTextStyles.bodyMedium,
                                 ),
                         ),

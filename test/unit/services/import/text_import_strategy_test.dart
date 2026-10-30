@@ -348,7 +348,7 @@ void main() {
           // That reasoning only held for this fixture: the same rule let
           // gluten-FREE names swallow the rescued row on a real recipe (see
           // the collider group below), which is a false-negative FREE verdict
-          // on a coeliac path. Containment is now skipped for rescued rows.
+          // on a coeliac path.
           expect(
             flat,
             containsAll(<String>['råg', 'öl', 'vete', 'havre', 'mjöl']),
@@ -363,8 +363,6 @@ void main() {
         // isValidIngredient's orphan-fragment rule (5 chars, single token, no
         // digit).
         group('a gluten-free collider cannot swallow the rescued row', () {
-          // Only the split-word colliders reach the containment rule now that
-          // it matches whole words.
           const colliders = [
             ('Mjöl', '1 msk potatismjöl'),
             ('Vete', '2 dl bovetemjöl'),
@@ -393,11 +391,9 @@ void main() {
             });
           }
 
-          test('a plain collider pair is still deduplicated by '
-              'containment', () async {
-            // The containment rule is untouched for every non-rescued row —
-            // narrowing it to "skip when either side was rescued" must not
-            // quietly disable it for the rest of the import.
+          test('two rows whose names only overlap are both kept', () async {
+            // BUT-2455: "brunt socker" is a second ingredient, not a fuller
+            // "socker".
             final flat = await flatIngredients(
               'Bröd\n'
               'Ingredienser:\n'
@@ -407,7 +403,20 @@ void main() {
               'Blanda och grädda i ugnen.',
             );
 
-            expect(flat.where((e) => e.contains('socker')).length, 1);
+            expect(flat, containsAll(['2 dl socker', '1 dl brunt socker']));
+          });
+
+          test('a row repeated under the same heading is kept once', () async {
+            final flat = await flatIngredients(
+              'Bröd\n'
+              'Ingredienser:\n'
+              'Råg:\n'
+              '2 dl råg\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            expect(flat.where((e) => e.contains('råg')), ['2 dl råg']);
           });
         });
 
@@ -515,6 +524,126 @@ void main() {
           expect(flat, contains('2 dl råg'));
         });
       });
+    });
+
+    // BUT-2455: an Instagram caption whose sauce repeats the patties' timjan
+    // and salt, with a range amount and steps that open on a plain sentence.
+    group('Instagram caption with a sauce block', () {
+      const text =
+          'Medelhavsbiffar med soltorkade tomater, tips inför veckan\n'
+          'Ca 4-5 port.\n'
+          'Recept\n'
+          '500g köttfärs\n'
+          '3/4 dl ströbröd\n'
+          '1,5 dl mjölk\n'
+          '1 ägg\n'
+          '5 soltorkade tomater\n'
+          '0,5 tsk timjan\n'
+          'Salt o peppar\n'
+          'Mozzarella\n'
+          'Färsk Basilika\n'
+          'Skivad tomat\n'
+          'Sås:\n'
+          '3dl grädde\n'
+          '1msk mjöl\n'
+          '1tsk timjan\n'
+          '0,5-1dl chilisås\n'
+          'Salt\n'
+          'Blanda ingredienserna till biffarna, hacka de soltorkade tomaterna väl. Forma till biffar och stek hastigt för yta. Lägg i form.\n'
+          'Blanda ingredienserna till såsen och häll runt biffarna.\n'
+          'Gratinera på 225 grader i ca 20min. Efter ca 10 min lägg på mozzarella, tomat och basilikablad.';
+
+      test('keeps every row in caption order, the sauce under its '
+          'heading', () async {
+        final recipe = (await strategy.import(text)).recipe!;
+        final rows = recipe.structuredIngredients;
+
+        expect(recipe.ingredients, [
+          '500 g köttfärs',
+          '¾ dl ströbröd',
+          '1,5 dl mjölk',
+          '1 ägg',
+          '5 soltorkade tomater',
+          '0,5 tsk timjan',
+          'salt o peppar',
+          'mozzarella',
+          'färsk basilika',
+          'skivad tomat',
+          '3 dl grädde',
+          '1 msk mjöl',
+          '1 tsk timjan',
+          '0,5-1 dl chilisås',
+          'salt',
+        ]);
+        expect(
+          [for (final r in rows) r.section],
+          [
+            ...List.filled(10, null),
+            ...List.filled(5, 'Sås'),
+          ],
+        );
+      });
+
+      test('takes the sentence after a step as a step', () async {
+        final recipe = (await strategy.import(text)).recipe!;
+
+        expect(recipe.instructions.join(' '), contains('Forma till biffar'));
+        expect(recipe.instructions.join(' '), contains('Lägg i form.'));
+      });
+
+      test('reads "Ca 4-5 port." as the yield, not the description', () async {
+        final recipe = (await strategy.import(text)).recipe!;
+
+        expect(recipe.description, isNot(contains('port')));
+        expect(recipe.portions, 4);
+      });
+    });
+
+    test('keeps both amounts of a repeated ingredient and drops an amount '
+        'that names nothing', () async {
+      const text =
+          'Kanelbullar\n'
+          'ca 30 st\n'
+          'Deg:\n'
+          '150 g smör\n'
+          '1 dl socker\n'
+          'Fyllning:\n'
+          '100 g smör\n'
+          '½ dl socker\n'
+          'Gör så här:\n'
+          'Blanda och grädda i 20 min.';
+      final ingredients = (await strategy.import(text)).recipe!.ingredients;
+
+      expect(ingredients, contains('150 g smör'));
+      expect(ingredients, contains('100 g smör'));
+      expect(ingredients, isNot(contains('30 st')));
+    });
+
+    test('a measured line below the method stays below the list', () async {
+      const text =
+          'Biffar\n'
+          'Ingredienser:\n'
+          '500 g färs\n'
+          '1 ägg\n'
+          'Gör så här:\n'
+          'Stek biffarna i smör.\n'
+          'Tips: 2 dl gräddfil passar';
+      final ingredients = (await strategy.import(text)).recipe!.ingredients;
+
+      expect(ingredients.first, '500 g färs');
+    });
+
+    test('a heading does not reach a row after the method', () async {
+      const text =
+          'Biffar\n'
+          'Sås:\n'
+          '3 dl grädde\n'
+          '1 tsk timjan\n'
+          'Blanda såsen och koka upp i 5 minuter.\n'
+          '2 dl ris';
+      final rows = (await strategy.import(text)).recipe!.structuredIngredients;
+
+      expect(rows.firstWhere((r) => r.raw.contains('ris')).section, isNull);
     });
 
     group('Cookbook title guards (corpus-found)', () {

@@ -37,6 +37,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Inside a shared shopping list's nested `listData` copy, other members' DISPLAY NAMES are stripped; their UIDs and permission levels are KEPT (BUT-1798, 2026-08-01)
 - Other participants' `perUserSettings` are STRIPPED from the conversations export; `lastReadTimestamps` are KEPT … Do not propose stripping `lastReadTimestamps` "for consistency" (BUT-1774, 2026-07-30)
 - A colon-terminated bare GLUTEN word rescued into the flat ingredient list must ALSO be exempted … Do not "simplify" the three exemptions back into one flag (BUT-1727, 2026-07-30)
+- SUPERSEDES "Do not "simplify" the three exemptions back into one flag" in the BUT-1727 line: the text path has no containment merge; `_IngredientRow.rescued` skips the garbage and orphan-fragment filters, and rows merge only on a whole name under the same heading (BUT-2455, 2026-10-30)
 - A household member whose profile cannot be READ widens the allergen union with a common-allergen floor … instead of being SKIPPED — and that floor is ALLERGENS ONLY, never `defaults.trackedDietary`. (BUT-1663, BUT-1693, 2026-09-16)
   - the floor is CONDITIONAL on opt-in
   - Three parts survive deliberately: a member who has not shared is unchanged; the signed-in user is never read from a share; and a READ FAILURE still degrades the roster even when they shared

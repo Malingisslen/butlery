@@ -5,10 +5,6 @@
 /// Pure function, no Flutter imports, same category as `page_reflow.dart`
 /// (see `lib/services/CLAUDE.md`). Text rules only: it runs where no
 /// geometry reaches the parser.
-///
-/// A line that carries a quantity is never joined to the line after it unless it ends
-/// in a comma or a hyphen, because two ingredient rows that read as prose
-/// ("salt och vitpeppar" over "Gör så här") would otherwise fold into one.
 library;
 
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
@@ -60,9 +56,12 @@ bool _continues(String line, String next, {required bool inStep}) {
   if (a.endsWith(',')) return true;
 
   // Out of a quantity row only through a comma or a hyphen, handled above.
-  // A numbered step is never one, however many "smör och olja" it carries.
+  // A numbered step is never one, however many "smör och olja" it carries,
+  // and neither is a line that reads as a step: "Gratinera på 225 grader"
+  // holds a "225 g".
   if (!stepMarker.hasMatch(a.trim()) &&
-      RecipeSectionDetector.looksLikeIngredient(a)) {
+      RecipeSectionDetector.looksLikeIngredient(a) &&
+      RecipeSectionDetector.instructionScore(a) < 2) {
     return false;
   }
   if (_isListHeading(a)) return false;
