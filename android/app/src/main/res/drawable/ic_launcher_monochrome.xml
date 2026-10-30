@@ -12,6 +12,11 @@
         android:scaleX="0.4125"
         android:scaleY="0.4125">
         <path
+            android:pathData="M80 55V60"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3.5"
+            android:strokeLineCap="round"/>
+        <path
             android:pathData="M40.5 104C40.5 81.09 57.88 64.5 80 64.5C102.12 64.5 119.5 81.09 119.5 104"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="7"
@@ -20,11 +25,6 @@
             android:pathData="M28 113H132"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="7"
-            android:strokeLineCap="round"/>
-        <path
-            android:pathData="M80 55V60"
-            android:strokeColor="#FFFFFF"
-            android:strokeWidth="3.5"
             android:strokeLineCap="round"/>
         <path
             android:fillColor="#FFFFFF"

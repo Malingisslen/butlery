@@ -3,9 +3,9 @@
   <defs id="defs20"></defs>
   <rect width="560" height="200" fill="#24382C" id="rect2"></rect>
   <g transform="matrix(0.96153846,0,0,0.96153846,37.576923,21.846154)" id="g12">
+    <path d="m 80,55 v 5" stroke="#D68523" stroke-width="3.5" stroke-linecap="round" id="path8"></path>
     <path d="m 37,104 c 2,-25 18.92,-43 43,-43 24.08,0 41,18 43,43 z" fill="#D68523" id="path4"></path>
     <path d="M 28,113 H 132" stroke="#f5f4ed" stroke-width="7" stroke-linecap="round" id="path6"></path>
-    <path d="m 80,55 v 5" stroke="#D68523" stroke-width="3.5" stroke-linecap="round" id="path8"></path>
     <path id="rect10" style="fill:#D68523" d="m 76,48 h 8 c 2.216,0 4,1.784 4,4 0,2.216 -1.784,4 -4,4 h -8 c -2.216,0 -4,-1.784 -4,-4 0,-2.216 1.784,-4 4,-4 z"></path>
   </g>
   <g aria-label="Butlery" id="text14" style="font-weight:600;font-size:92px;font-family:&#39;Butlery Sans&#39;;letter-spacing:-1.35;fill:#f5f4ed">
