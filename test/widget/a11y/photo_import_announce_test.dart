@@ -56,6 +56,9 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   bool get isProcessing => _isProcessing;
 
   @override
+  String? consumeInfoMessage() => null;
+
+  @override
   bool get hasImage => false;
 
   @override

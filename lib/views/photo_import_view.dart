@@ -169,6 +169,10 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   /// BUT-1201: announce the extracting→review transition to screen readers.
   /// The visual appearance of the interpreted-text card isn't read otherwise.
   void _announceOcrCompletion() {
+    // A gallery pick over the page cap is trimmed; say so instead of dropping
+    // photos silently.
+    final info = _viewModel.consumeInfoMessage();
+    if (info != null && mounted) SnackBarUtils.showInfo(context, info);
     if (_viewModel.hasOcrResult && !_viewModel.isProcessing) {
       if (!_announcedOcr && mounted) {
         _announcedOcr = true;

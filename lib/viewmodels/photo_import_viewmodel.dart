@@ -638,45 +638,91 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
 
     await executeAsyncVoid(() async {
-      // Pick image
-      final picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(
-        source: source,
-        maxWidth: 2048, // Limit width to reduce file size
-        maxHeight: 2048, // Limit height to reduce file size
-        imageQuality:
-            85, // Compress image to reduce file size while maintaining OCR quality
-      );
+      final remaining = addAsPage ? maxPages - _pages.length : maxPages;
+      final multi =
+          source == ImageSource.gallery && !_isHandwritten && remaining > 1;
+      final List<XFile> picked = multi
+          ? await _pickGalleryImages(remaining)
+          : await _pickSingleImage(source);
 
-      if (picked == null) {
+      if (picked.isEmpty) {
         throw Exception(AppLocale.current.errorNoImageSelected);
       }
 
-      // Validate image format
-      final fileName = picked.name.toLowerCase();
-      if (!fileName.endsWith('.jpg') &&
-          !fileName.endsWith('.jpeg') &&
-          !fileName.endsWith('.png')) {
-        throw Exception(AppLocale.current.errorImageFormatUnsupported);
+      // Picks arrive in selection order, which becomes the page order. The
+      // cap counts valid photos, so a bad one never costs a good one its slot.
+      final staged = <Uint8List>[];
+      Object? firstError;
+      var overCap = false;
+      for (final file in picked) {
+        if (staged.length == remaining) {
+          overCap = true;
+          break;
+        }
+        try {
+          staged.add(await _validatedBytes(file));
+        } catch (e) {
+          firstError ??= e;
+        }
       }
+      // A single pick keeps its specific error; a batch only fails when no
+      // page survived, so one bad photo never discards the others.
+      if (staged.isEmpty) throw firstError!;
 
-      // Read image bytes
-      final bytes = await picked.readAsBytes();
-
-      // Validate image size (max maxPageSizeMb after compression)
-      final sizeInMB = bytes.length / (1024 * 1024);
-      if (sizeInMB > maxPageSizeMb) {
-        throw Exception(
-          AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
-        );
-      }
-
-      // Q4-04: the page waits here until "Läs av N sidor". Handwritten mode
-      // is a single-image flow, so a new pick replaces the page (BUT-1460).
+      // Q4-04: pages wait here until "Läs av N sidor". Handwritten mode is a
+      // single-image flow, so a new pick replaces the page (BUT-1460).
       if (_isHandwritten) _pages.clear();
       _lastPickSource = source;
-      _stagePage(bytes);
+      for (final bytes in staged) {
+        _stagePage(bytes, notify: false);
+      }
+      notifyListeners();
+      if (overCap) {
+        _infoMessage = AppLocale.current.importPhotoPagesMaxReached(maxPages);
+      }
     }, errorPrefix: AppLocale.current.errorGeneric);
+  }
+
+  /// Test seam: the real gallery picker needs a platform channel.
+  @visibleForTesting
+  Future<List<XFile>> Function(int limit)? galleryPickerOverride;
+
+  Future<List<XFile>> _pickGalleryImages(int limit) async {
+    final override = galleryPickerOverride;
+    if (override != null) return override(limit);
+    return ImagePicker().pickMultiImage(
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+      limit: limit,
+    );
+  }
+
+  Future<List<XFile>> _pickSingleImage(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+    );
+    return picked == null ? const [] : [picked];
+  }
+
+  Future<Uint8List> _validatedBytes(XFile picked) async {
+    final fileName = picked.name.toLowerCase();
+    if (!fileName.endsWith('.jpg') &&
+        !fileName.endsWith('.jpeg') &&
+        !fileName.endsWith('.png')) {
+      throw Exception(AppLocale.current.errorImageFormatUnsupported);
+    }
+    final bytes = await picked.readAsBytes();
+    final sizeInMB = bytes.length / (1024 * 1024);
+    if (sizeInMB > maxPageSizeMb) {
+      throw Exception(
+        AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
+      );
+    }
+    return bytes;
   }
 
   /// Adds [bytes] as the next page, unread, and drops any combined text and
