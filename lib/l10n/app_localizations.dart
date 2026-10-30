@@ -2696,6 +2696,48 @@ abstract class AppLocalizations {
   /// **'Från {host}'**
   String recipeSourceFrom(String host);
 
+  /// No description provided for @recipeSourceCardTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtat från {site}'**
+  String recipeSourceCardTitle(String site);
+
+  /// No description provided for @recipeSourceAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Av {author}'**
+  String recipeSourceAuthor(String author);
+
+  /// No description provided for @recipeSourceOpenOriginal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna originalet'**
+  String get recipeSourceOpenOriginal;
+
+  /// No description provided for @recipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild: {site}'**
+  String recipeBorrowedImageCredit(String site);
+
+  /// No description provided for @a11yRecipeSourceCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}'**
+  String a11yRecipeSourceCard(String site);
+
+  /// No description provided for @a11yRecipeSourceCardWithAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}, av {author}'**
+  String a11yRecipeSourceCardWithAuthor(String site, String author);
+
+  /// No description provided for @a11yRecipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden visas från {site}'**
+  String a11yRecipeBorrowedImageCredit(String site);
+
   /// No description provided for @errorCouldNotOpenLink.
   ///
   /// In sv, this message translates to:

@@ -1219,6 +1219,58 @@
       }
     }
   },
+  "recipeSourceCardTitle": "Hämtat från {site}",
+  "@recipeSourceCardTitle": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceAuthor": "Av {author}",
+  "@recipeSourceAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceOpenOriginal": "Öppna originalet",
+  "recipeBorrowedImageCredit": "Bild: {site}",
+  "@recipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCard": "Receptet är hämtat från {site}",
+  "@a11yRecipeSourceCard": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCardWithAuthor": "Receptet är hämtat från {site}, av {author}",
+  "@a11yRecipeSourceCardWithAuthor": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeBorrowedImageCredit": "Bilden visas från {site}",
+  "@a11yRecipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
   "errorCouldNotOpenLink": "Kunde inte öppna länk",
   "errorInvalidLink": "Ogiltig länk",
   "shoppingItemRemoved": "{name} är borttagen.",
