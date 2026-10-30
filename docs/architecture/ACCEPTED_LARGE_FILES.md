@@ -113,7 +113,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `deep_link_service.dart` | 566 | Deep link routing service |
 | `llm_tier.dart` | 732 | LLM-based recipe parsing tier |
 | `unified_shopping_service.dart` | 864 | Shopping service facade. BUT-2140 added the restore module's wiring and two delegates; the restore logic lives in `shopping_restore_module.dart`. |
-| `shopping_item_management_module.dart` | 588 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
+| `shopping_item_management_module.dart` | 589 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
 | `realtime_menu_service.dart` | 534 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `search_service.dart` | 538 | Recipe/content search service |
 | `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |

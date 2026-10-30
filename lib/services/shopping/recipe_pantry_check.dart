@@ -20,6 +20,7 @@ import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// Q4-03: what a recipe's items come to against the pantry.
 @immutable
@@ -150,12 +151,12 @@ class RecipePantryCheck {
         result.add((item: item, unconvertible: false));
         continue;
       }
-      final unit = item.unit.toLowerCase().trim();
+      final unit = UnitDefinitions.canonical(item.unit);
       final base = SmartUnitConverter.toCanonicalBase(item.amount, unit);
       var sum = 0.0;
       var joined = true;
       for (final row in rows) {
-        final rowUnit = row.unit.toLowerCase().trim();
+        final rowUnit = UnitDefinitions.canonical(row.unit);
         if (rowUnit == unit) {
           sum += row.amount;
           continue;

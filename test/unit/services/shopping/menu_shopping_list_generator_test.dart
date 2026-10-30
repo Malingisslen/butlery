@@ -750,6 +750,63 @@ void main() {
       );
     });
 
+    test('bought-status survives when the old row spells the unit differently '
+        'from the fresh canonical one', () async {
+      // Proves: a row ticked off under "matsked" (how older lists stored it)
+      // is still recognised against the fresh "msk" row, so the replace does
+      // not silently un-tick something already bought.
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(
+              amount: 1,
+              unit: 'msk',
+              name: 'salt',
+              raw: '1 msk salt',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      final existing = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: [
+          UnifiedShoppingItem(
+            id: 'old-salt',
+            name: 'salt',
+            amount: 1,
+            unit: 'matsked',
+            bought: true,
+          ),
+        ],
+        menuItemIds: const ['old-salt'],
+      );
+      shoppingService.setShoppingState(
+        lists: [existing],
+        personalLists: [existing],
+      );
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(
+        result,
+        isNotNull,
+        reason: 'regeneration must reach the merge write',
+      );
+      final written = capturedUpdate();
+      expect(
+        written.items.single.unit,
+        'msk',
+        reason: 'premise: the fresh row carries the canonical spelling',
+      );
+      expect(written.items.single.bought, isTrue);
+    });
+
     test('unresolved plan recipe: counted in the result, list still '
         'generated from the rest', () async {
       // Proves: a deleted/uncached recipe on the plan degrades honestly —

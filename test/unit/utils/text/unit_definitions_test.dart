@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 void main() {
@@ -86,5 +87,59 @@ void main() {
     ]) {
       expect(UnitDefinitions.isKnownUnit(unit), isTrue, reason: unit);
     }
+  });
+
+  group('canonical (kärnflöde steg 3, p09)', () {
+    test('every spelling of a unit becomes its short form', () {
+      for (final MapEntry(key: written, value: short) in {
+        'Matsked': 'msk',
+        'matskedar': 'msk',
+        'MSK': 'msk',
+        'teskedar': 'tsk',
+        'kryddmått': 'krm',
+        'styck': 'st',
+        'stycken': 'st',
+        'deciliter': 'dl',
+        'gram': 'g',
+        'kilo': 'kg',
+        'klyftor': 'klyfta',
+        'förpackning': 'förp',
+        ' dl ': 'dl',
+      }.entries) {
+        expect(UnitDefinitions.canonical(written), short, reason: written);
+      }
+    });
+
+    test('a count noun keeps its plural for the list to show', () {
+      expect(UnitDefinitions.canonical('skivor'), 'skivor');
+      expect(UnitDefinitions.canonical('kvistar'), 'kvistar');
+    });
+
+    test('an unknown unit comes back lowercased, unchanged', () {
+      expect(UnitDefinitions.canonical('Näve2'), 'näve2');
+      expect(UnitDefinitions.canonical(''), '');
+    });
+
+    test('every short form is itself a known unit', () {
+      for (final written in UnitDefinitions.standaloneUnits) {
+        final short = UnitDefinitions.canonical(written);
+        expect(UnitDefinitions.isKnownUnit(short), isTrue, reason: written);
+        expect(UnitDefinitions.canonical(short), short, reason: written);
+      }
+    });
+
+    test("the parsing pipeline's unit list is known here too", () {
+      for (final unit in kSwedishUnits) {
+        expect(UnitDefinitions.isKnownUnit(unit), isTrue, reason: unit);
+      }
+    });
+
+    test('every spelling of a spoon converts the same', () {
+      expect(UnitDefinitions.baseFactor('matsked'), (15.0, 'ml'));
+      expect(UnitDefinitions.baseFactor('msk'), (15.0, 'ml'));
+      expect(UnitDefinitions.baseFactor('Deciliter'), (100.0, 'ml'));
+      expect(UnitDefinitions.baseFactor('kilo'), (1000.0, 'g'));
+      expect(UnitDefinitions.baseFactor('st'), isNull);
+    });
   });
 }

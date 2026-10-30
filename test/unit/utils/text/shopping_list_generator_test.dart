@@ -68,6 +68,15 @@ void main() {
 
         expect(items.map((i) => i.amount), [6, 6]);
       });
+
+      test('a unit written out in full is listed as its short form', () {
+        // The list sums rows by unit, so "matsked" and "msk" must meet.
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          _makeRecipe(['1 matsked olja', '2 styck ägg']),
+        );
+
+        expect(items.map((i) => i.unit), ['msk', 'st']);
+      });
     });
 
     group('non-finite quantities never reach amount (BUT-2067)', () {

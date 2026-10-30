@@ -22,6 +22,7 @@ import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 export 'package:butlery/services/shopping/menu_shopping_merge.dart';
 
@@ -385,7 +386,7 @@ class MenuShoppingListGenerator extends BaseService {
   ) {
     String boughtKey(String name, String unit) =>
         '${SwedishCharacterNormalizer.normalize(name)}|'
-        '${unit.toLowerCase().trim()}';
+        '${UnitDefinitions.canonical(unit)}';
     final wasBought = {
       for (final item in removed)
         if (item.bought) boughtKey(item.name, item.unit),

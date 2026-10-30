@@ -10,6 +10,7 @@
 /// group pins the scaling itself.
 library;
 
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
@@ -763,6 +764,40 @@ void main() {
       ]);
       expect(agg.mergedCount, 1);
       expect(agg.convertedCount, 0);
+    });
+  });
+
+  group('one spelling per unit (kärnflöde steg 3, p09/i08/i09)', () {
+    List<AggregatedShoppingItem> aggregate(List<String> lines) =>
+        MenuShoppingAggregator.aggregate([
+          for (final (i, line) in lines.indexed)
+            _p(_recipe('r$i', [StructuredIngredientDeriver.derive(line)])),
+        ]);
+
+    test('"matsked" and "msk" are one unit and sum', () {
+      final items = aggregate(['1 matsked olja', '1 msk olja']);
+      expect(items, hasLength(1));
+      expect(items.single.amount, 2);
+      expect(items.single.unit, 'msk');
+    });
+
+    test('"styck" and "st" are one unit and sum', () {
+      final items = aggregate(['2 styck ägg', '3 st ägg']);
+      expect(items, hasLength(1));
+      expect(items.single.amount, 5);
+      expect(items.single.unit, 'st');
+    });
+
+    test('a small amount written in one spoon stays in that spoon', () {
+      final items = aggregate(['¼ tsk salt']);
+      expect(items.single.amount, 0.25);
+      expect(items.single.unit, 'tsk');
+    });
+
+    test('mixed spoons still join', () {
+      final items = aggregate(['1 tsk kanel', '1 msk kanel']);
+      expect(items.single.amount, 4);
+      expect(items.single.unit, 'tsk');
     });
   });
 }

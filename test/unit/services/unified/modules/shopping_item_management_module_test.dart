@@ -635,6 +635,35 @@ void main() {
       expect(notifyCalls, 0);
     });
 
+    /// Proves: two spellings of one unit ("styck" stored, "st" incoming) are
+    /// the same unit, so the batch merges into the existing row rather than
+    /// leaving two rows for one ingredient.
+    test(
+      'merges rows whose units are different spellings of one unit',
+      () async {
+        final existing = UnifiedShoppingItem(
+          name: 'Ägg',
+          amount: 2,
+          unit: 'styck',
+        );
+        lists.add(_seedList(id: 'L', items: [existing]));
+        activeListId = 'L';
+
+        final incoming = UnifiedShoppingItem(
+          name: 'Ägg',
+          amount: 3,
+          unit: 'st',
+        );
+        final ok = await buildModule().addItemsBatchToActiveList([incoming]);
+
+        expect(ok, isTrue);
+        expect(fakeRepo.batchedItems, isEmpty);
+        expect(fakeRepo.updatedItems.single.amount, 5);
+        expect(lists.first.items, hasLength(1));
+        expect(lists.first.items.single.amount, 5);
+      },
+    );
+
     /// Proves: SAME NAME + DIFFERENT UNIT → no merge. A naive name-only
     /// dedup would silently collapse "1 dl mjölk" and "1 ml mjölk" into a
     /// single bogus row with garbage units.
