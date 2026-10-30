@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` lists the files over 500 lines. Some of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, session_timeout_service.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
+**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` lists the files over 500 lines. Some of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -153,7 +153,7 @@ Must be self-contained.
 | File | Lines | Reason |
 |------|-------|--------|
 | `main.dart` | 337 | App entry point — bootstrap sequence only. BUT-530 (2026-06-14) extracted `ButleryApp`/shell → `lib/app/butlery_app.dart` and the auth-routing subtree → `lib/app/auth/auth_wrapper.dart`, bringing this from 1,395 back under the historical 954 ceiling. |
-| `lib/app/butlery_app.dart` | 904 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, session timeout, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
+| `lib/app/butlery_app.dart` | 836 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
 
 ## Config / Constants / Data
 

@@ -65,7 +65,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | AUTH-01 | Email/password sign-in | Verified |
 | AUTH-02 | Email/password registration | Verified |
 | AUTH-03 | Password reset email | Partial |
-| AUTH-04 | Sign-out (manual / inactivity / forced) | Verified |
+| AUTH-04 | Sign-out (manual / forced) | Verified |
 | AUTH-05 | Email-verification gate | Untested |
 | AUTH-06 | GDPR age gate (under-15 block) | Verified |
 | AUTH-07 | Onboarding allergen selection | Verified |
@@ -270,10 +270,10 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Validation:** Email non-empty + regex; trimmed.
 - **Test coverage:** Partial — exercised via `auth_viewmodel_test.dart` and `auth_service_test.dart`; no dedicated reset-flow widget test.
 
-#### AUTH-04: Sign-out (manual, inactivity, forced session-expiry)
-- **Entry:** Profile/settings (manual); SessionTimeoutService (inactivity); auth-state stream on fatal error (forced).
-- **User story:** As a user, I want to be securely signed out — by my own action, after inactivity, or when my session is invalid — so that my account stays protected.
-- **Expected behavior:** `signOut` pops the user DI scope, signs out, clears the user, logs `logout`. Inactivity logout also clears consent cache. A fatal auth-stream error (user-disabled, token-expired, etc.) forces sign-out, sets `sessionExpired`, surfaces `errorSessionExpired`.
+#### AUTH-04: Sign-out (manual, forced session-expiry)
+- **Entry:** Profile/settings (manual); auth-state stream on fatal error (forced).
+- **User story:** As a user, I want to be securely signed out — by my own action or when my session is invalid — so that my account stays protected.
+- **Expected behavior:** `signOut` pops the user DI scope, signs out, clears the user, logs `logout`. A fatal auth-stream error (user-disabled, token-expired, etc.) forces sign-out, sets `sessionExpired`, surfaces `errorSessionExpired`.
 - **Edge cases:** Transient/non-fatal stream errors keep the session (BUG-31). signOut failure → `errorCouldNotLogOut`. forceSignOut always clears state in `finally`.
 - **Test coverage:** Verified — `test/unit/services/auth_service_test.dart`.
 
@@ -332,7 +332,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Entry:** ConsentManagementView; also a consent-renewal dialog.
 - **User story:** As a user, I want to grant or revoke consent for analytics, marketing, social, and push so that I control how my data is used.
 - **Expected behavior:** Loads current consent; four user-controllable toggles + two always-on required purposes. Save persists + reloads timestamps. Analytics observers honor the analytics consent.
-- **Edge cases:** No stored consent → optional default false, `needsRenewal` true. Save false → `errorGeneric`. No user → must-be-logged-in error. Cache cleared on sign-out/inactivity.
+- **Edge cases:** No stored consent → optional default false, `needsRenewal` true. Save false → `errorGeneric`. No user → must-be-logged-in error. Cache cleared on sign-out.
 - **Validation:** Essential services + data processing hard-coded true.
 - **Test coverage:** Verified — `consent_viewmodel_test.dart`, `consent_service_test.dart`, `user_consent_test.dart`, `firebase_consent_repository_test.dart`, `consent_renewal_dialog_test.dart`, plus analytics-gate tests.
 

@@ -86,7 +86,6 @@
       "lib/services/menu/menu_scoring.dart",
       "lib/services/security/**",
       "lib/services/security/cert_pin_config.dart",
-      "lib/services/session_timeout_service.dart",
       "storage.rules"
     ],
     "Privacy / Data Protection Officer (GDPR)": [

@@ -1,4 +1,3 @@
-import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -320,11 +319,8 @@ class AuthService extends ChangeNotifier
   /// The device drafts a sign-out the user made herself deletes.
   ///
   /// PQ-12 = A: drafts go when the user logs
-  /// out herself, never at an automatic logout, so
-  /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
-  /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut
-  /// nu" in the timeout warning, calls it separately
-  /// (SessionTimeoutService.forceLogout). No store here is the offline queue,
+  /// out herself, never at an automatic logout, so [forceSignOut] does not
+  /// call this. No store here is the offline queue,
   /// which no sign-out clears by itself.
   /// Best-effort: every store logs and never throws.
   static Future<void> clearDeviceDraftsOnExplicitSignOut(
@@ -333,33 +329,6 @@ class AuthService extends ChangeNotifier
     await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
     await WeeklyMenuDraftStore.clearAll(userId: userId);
     await RecipeFormAutoSaveManager.clearDraftsFor(userId);
-  }
-
-  /// Logout for session timeout - tracks separately for security monitoring.
-  ///
-  /// Never touches the offline queue or the device drafts: "En utloggning på
-  /// grund av timeout får aldrig rensa kön", and PQ-12
-  /// = A keeps the drafts.
-  Future<void> logoutDueToInactivity() async {
-    await executeAsync(() async {
-      _clearConsentCacheIfAvailable();
-      await DIContainer().popUserScope();
-
-      await _authRepository.signOut();
-      await _providerSignIn?.signOut();
-      _currentUser = null;
-      AppLogger.info('User logged out due to session inactivity');
-      await _analyticsService.logEvent(
-        name: AnalyticsEvents.logoutInactivity,
-        parameters: {
-          'reason': 'session_timeout',
-          'timestamp': clock.now().toIso8601String(),
-        },
-      );
-    }).catchError((e) {
-      AppLogger.error('Session timeout logout failed', e);
-      setError(AppLocale.current.errorCouldNotLogOut);
-    });
   }
 
   /// BUT-966: surface the auth-stream error to the user, then complete the
@@ -387,7 +356,7 @@ class AuthService extends ChangeNotifier
       setError(AppLocale.current.errorSessionExpired);
       notifyListeners();
       await _analyticsService.logEvent(
-        name: AnalyticsEvents.sessionTimeoutLogout,
+        name: AnalyticsEvents.sessionInvalidatedLogout,
         parameters: {
           'reason': 'auth_stream_error',
           'error_code': code,

@@ -2,7 +2,7 @@ Feature ID,Feature Name,Area,Test Coverage,User Story,Notes
 AUTH-01,Email/password sign-in,Auth & Onboarding,Verified,"Returning user logs in with email + password to reach their account",
 AUTH-02,Email/password registration,Auth & Onboarding,Verified,"New user creates an account with email, password and display name",
 AUTH-03,Password reset email,Auth & Onboarding,Partial,"User who forgot their password requests a reset link by email","No dedicated reset-flow widget test"
-AUTH-04,Sign-out (manual/inactivity/forced),Auth & Onboarding,Verified,"User is securely signed out by action, inactivity, or invalid session",
+AUTH-04,Sign-out (manual/forced),Auth & Onboarding,Verified,"User is securely signed out by action or invalid session",
 AUTH-05,Email-verification gate,Auth & Onboarding,Untested,"New user verifies their email (and can resend) to unlock the app","Gate UI untested"
 AUTH-06,GDPR age gate (under-15 block),Auth & Onboarding,Verified,"Minors under 15 are blocked at signup for GDPR Art. 8 compliance",
 AUTH-07,Onboarding allergen & dietary selection,Auth & Onboarding,Verified,"New user picks allergens/diets so recipes are filtered from day one",
