@@ -9,7 +9,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -20,7 +19,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/views/auth/password_reset_done_notice.dart';
 import 'package:butlery/views/auth/post_sign_in_navigation.dart';
@@ -34,7 +32,6 @@ import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/views/auth/guest_start_view.dart';
 import 'package:butlery/widgets/auth/guest_entry_button.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
-import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -133,11 +130,6 @@ class _AuthViewState extends State<AuthView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (SessionEndNotice.pending != null)
-                              _buildSessionEndNotice(
-                                cs,
-                                SessionEndNotice.pending!,
-                              ),
                             if (PasswordResetHandoff.pending
                                 is PasswordResetDone)
                               PasswordResetDoneNotice(
@@ -156,67 +148,6 @@ class _AuthViewState extends State<AuthView> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  /// A background timeout could not warn, so it is explained here, calmly:
-  /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
-  /// skälet och antalet väntande ändringar. Aldrig som fel"
-  /// `surface.raised` is `surfaceContainerHighest`
-  /// and `text.success` is `modeColors.success`, in both modes
-  /// (app_colors.dart / app_colors_dark.dart).
-  Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
-    final l10n = context.l10n;
-    // The drawn body is secondary ink, bold parts in ink:
-    // semantic text.body, #37453A light / #F5F4ED dark (tokens.json:58-60).
-    // The drawing's dark #C9D3C4 is the palette's bodyOnDark, which the
-    // semantic token does not deliver; the token wins.
-    final bodyColor = AppModeColors.textBody(cs.brightness);
-    return Container(
-      key: const ValueKey('auth.sessionEndNotice'),
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space32),
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ButleryIcon(
-            ButleryIcons.circleCheck,
-            color: context.modeColors.success,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.space8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.sessionEndedBackgroundTitle,
-                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
-                ),
-                const SizedBox(height: AppDimensions.space4),
-                Text(
-                  l10n.sessionEndedBackgroundReason,
-                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
-                ),
-                const SizedBox(height: AppDimensions.space4),
-                Text(
-                  l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
-                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
-                ),
-              ],
-            ),
-          ),
-          ButleryCloseButton(
-            semanticLabel: l10n.commonClose,
-            color: cs.onSurfaceVariant,
-            onPressed: () => setState(SessionEndNotice.clear),
-          ),
-        ],
       ),
     );
   }

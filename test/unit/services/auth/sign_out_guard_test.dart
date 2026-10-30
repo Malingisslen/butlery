@@ -128,28 +128,4 @@ void main() {
       await offline.discard('user-1');
     });
   });
-
-  group('BUT-2296: discardAndEndSession', () {
-    test('discards, then ends the session', () async {
-      when(() => auth.currentUserId).thenReturn('anna');
-      final order = <String>[];
-
-      await guard.discardAndEndSession(() async {
-        order.add('end:${source.discards.length}');
-      });
-
-      expect(source.discards, ['anna']);
-      expect(order, ['end:1']);
-    });
-
-    test('a failed discard still ends the session', () async {
-      when(() => auth.currentUserId).thenReturn('anna');
-      source.discardError = StateError('disk full');
-      var ended = false;
-
-      await guard.discardAndEndSession(() async => ended = true);
-
-      expect(ended, isTrue);
-    });
-  });
 }

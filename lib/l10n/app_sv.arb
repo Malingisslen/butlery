@@ -1427,7 +1427,6 @@
     "description": "BUT-1322: tooltip/semantics for the household-size plus button"
   },
   "settingsLanguageTitle": "Språk",
-  "commonLogoutNow": "Logga ut nu",
   "commonTakePhoto": "Ta foto",
   "commonSelectFromGallery": "Välj från galleri",
   "commonSelectFriends": "Välj vänner",
@@ -2445,10 +2444,6 @@
   "rateLimitAiLimit": "AI-gräns nådd",
   "rateLimitDailyQuota": "Dagskvot uppnådd",
   "rateLimitSlowDown": "Sakta ner lite",
-  "sessionContinue": "Fortsätt session",
-  "sessionContinueOrLogout": "Vill du fortsätta din session eller logga ut nu?",
-  "sessionExpiringMessage": "Din session kommer att avslutas om:",
-  "sessionExpiringTitle": "Session utgår snart",
   "shareContentTypeMenu": "menyer",
   "shareContentTypeRecipe": "recept",
   "shareContentTypeShoppingList": "inköpslistor",
@@ -11723,24 +11718,6 @@
   },
   "signOutPendingWait": "Vänta på synk",
   "signOutPendingDiscard": "Logga ut och släng ändringarna",
-  "sessionPendingChangesIntro": "{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}",
-  "@sessionPendingChangesIntro": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "sessionEndedBackgroundTitle": "Du loggades ut medan appen låg still.",
-  "sessionEndedBackgroundReason": "Det händer efter 45 minuter utan aktivitet, och det är meningen.",
-  "sessionEndedBackgroundPending": "{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.}}",
-  "@sessionEndedBackgroundPending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "draftTimeLeftDays": "{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}",
   "@draftTimeLeftDays": {
     "placeholders": {

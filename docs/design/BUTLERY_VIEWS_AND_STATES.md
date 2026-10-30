@@ -1044,7 +1044,6 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 | **Unknown Ingredient** | Recipe tagging | Wizard for defining unknown ingredients' allergen/dietary properties. Step-through with "Hoppa över", "Spara och nästa" |
 | **Rate Limit** | AI import quota exceeded | Shows limit type + countdown timer. Options: "Försök senare", "Importera utan AI", "Manuell import" |
 | **Assisted Import** | Smart import fallback | Step-by-step form for manual recipe extraction when AI fails |
-| **Session Timeout** | Session expiring | Countdown timer (MM:SS). Options: "Fortsätt session", "Logga ut nu" |
 | **MFA Challenge** | Login with MFA | Phone hint + 6-digit code input. Options: "Verifiera", "Avbryt" |
 | **Ownership Transfer** | Transfer group ownership | Member selector dropdown. Options: "Överför ägande", "Avbryt" |
 | **Universal Share** | Share recipe/menu/list | Tabbed interface (Friends/Groups/Permissions) with multi-select and permission levels |

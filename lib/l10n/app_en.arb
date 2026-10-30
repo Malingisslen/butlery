@@ -1421,7 +1421,6 @@
     "description": "BUT-1322: tooltip/semantics for the household-size plus button"
   },
   "settingsLanguageTitle": "Language",
-  "commonLogoutNow": "Sign out now",
   "commonTakePhoto": "Take photo",
   "commonSelectFromGallery": "Select from gallery",
   "commonSelectFriends": "Select friends",
@@ -2439,10 +2438,6 @@
   "rateLimitAiLimit": "AI limit reached",
   "rateLimitDailyQuota": "Daily quota reached",
   "rateLimitSlowDown": "Slow down a bit",
-  "sessionContinue": "Continue session",
-  "sessionContinueOrLogout": "Do you want to continue your session or sign out now?",
-  "sessionExpiringMessage": "Your session will expire in:",
-  "sessionExpiringTitle": "Session expiring soon",
   "shareContentTypeMenu": "menus",
   "shareContentTypeRecipe": "recipes",
   "shareContentTypeShoppingList": "shopping lists",
@@ -11395,24 +11390,6 @@
   },
   "signOutPendingWait": "Wait for sync",
   "signOutPendingDiscard": "Sign out and discard the changes",
-  "sessionPendingChangesIntro": "{count, plural, =1{1 change has not been saved yet:} other{{count} changes have not been saved yet:}}",
-  "@sessionPendingChangesIntro": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "sessionEndedBackgroundTitle": "You were signed out while the app lay still.",
-  "sessionEndedBackgroundReason": "That happens after 45 minutes without activity, and it is meant to.",
-  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is still on the phone and is sent as soon as you are back in – nothing you did is lost.} other{{count} changes are still on the phone and are sent as soon as you are back in – nothing you did is lost.}}",
-  "@sessionEndedBackgroundPending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "draftTimeLeftDays": "{count, plural, =1{kept for 1 more day} other{kept for {count} more days}}",
   "@draftTimeLeftDays": {
     "placeholders": {

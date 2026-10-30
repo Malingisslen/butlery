@@ -1932,9 +1932,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsLanguageTitle => 'Språk';
 
   @override
-  String get commonLogoutNow => 'Logga ut nu';
-
-  @override
   String get commonTakePhoto => 'Ta foto';
 
   @override
@@ -3658,19 +3655,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get rateLimitSlowDown => 'Sakta ner lite';
-
-  @override
-  String get sessionContinue => 'Fortsätt session';
-
-  @override
-  String get sessionContinueOrLogout =>
-      'Vill du fortsätta din session eller logga ut nu?';
-
-  @override
-  String get sessionExpiringMessage => 'Din session kommer att avslutas om:';
-
-  @override
-  String get sessionExpiringTitle => 'Session utgår snart';
 
   @override
   String get shareContentTypeMenu => 'menyer';
@@ -16032,39 +16016,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get signOutPendingDiscard => 'Logga ut och släng ändringarna';
-
-  @override
-  String sessionPendingChangesIntro(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ändringar har inte sparats än:',
-      one: '1 ändring har inte sparats än:',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get sessionEndedBackgroundTitle =>
-      'Du loggades ut medan appen låg still.';
-
-  @override
-  String get sessionEndedBackgroundReason =>
-      'Det händer efter 45 minuter utan aktivitet, och det är meningen.';
-
-  @override
-  String sessionEndedBackgroundPending(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count ändringar ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.',
-      one:
-          '1 ändring ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.',
-      zero: 'Inga ändringar väntar.',
-    );
-    return '$_temp0';
-  }
 
   @override
   String draftTimeLeftDays(int count) {
