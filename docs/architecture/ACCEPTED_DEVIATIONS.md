@@ -6727,3 +6727,20 @@ Decided by Malin 2026-10-29 with the policy 1.25 wording, which says the samples
 - Writers: `ocr-recipe-image.ts` and `structure-recipe.ts` call `captureLlmSample`; the app sends
   those calls only after `ConsentService.hasConsent(ConsentPurpose.aiProcessing)`
   (`llm_service.dart`), a client-side check.
+
+## ADR-0039 — Firestore's on-device cache is emptied only at a later cold start, and not always (2026-10-30)
+
+Decided by Malin 2026-10-30. After an explicit sign-out, `FirestoreCacheWipe` records a request and
+`FirestoreBootstrap.configure` runs `clearPersistence` at a cold start with nobody signed in. The
+wipe also deletes writes never sent, so it is only requested once the signing-out user's pending
+writes have reached the server, and any other sign-out or any sign-in withdraws it.
+
+- **A second account in the same session can still read the first account's cached documents.**
+  The SDK serves cached documents without asking the rules again, `terminate` would leave
+  Firestore unusable until restart, and that sign-in withdraws the request, so the cache is
+  emptied only after a later explicit sign-out with all writes sent and a cold start with
+  nobody signed in.
+- **A sign-out with no connection leaves the cache.** `waitForPendingWrites` does not finish
+  offline, so the request is not made (2 s limit) rather than risk deleting unsent writes.
+- **Not run on a device:** native `clearPersistence` after the settings are applied, and web with
+  several tabs open (the flag then stays set for the next start).
