@@ -64,9 +64,9 @@ String _svgForeground() {
   final d = _num(_d(_android['canvas']));
   return '<svg xmlns="http://www.w3.org/2000/svg" width="$d" height="$d" viewBox="0 0 $d $d">'
       '<g transform="${_androidGroup('filled')}">'
+      '<path d="${_shapes['stem']}" stroke="${_hex('saffron')}" stroke-width="${_strokes['stem']}" stroke-linecap="round" fill="none"></path>'
       '<path d="${_shapes['domeFilled']}" fill="${_hex('saffron')}"></path>'
       '<path d="${_shapes['plate']}" stroke="${_hex('cream')}" stroke-width="${_strokes['plate']}" stroke-linecap="round" fill="none"></path>'
-      '<path d="${_shapes['stem']}" stroke="${_hex('saffron')}" stroke-width="${_strokes['stem']}" stroke-linecap="round" fill="none"></path>'
       '<path d="${_knobPath()}" fill="${_hex('saffron')}"></path>'
       '</g></svg>';
 }
@@ -75,9 +75,9 @@ String _svgMonochrome() {
   final d = _num(_d(_android['canvas']));
   return '<svg xmlns="http://www.w3.org/2000/svg" width="$d" height="$d" viewBox="0 0 $d $d">'
       '<g transform="${_androidGroup('outline')}" fill="none" stroke="#000000" stroke-width="${_strokes['dome']}">'
+      '<path d="${_shapes['stem']}" stroke-width="${_strokes['stem']}" stroke-linecap="round"></path>'
       '<path d="${_shapes['domeOutline']}" stroke-linecap="butt"></path>'
       '<path d="${_shapes['plate']}" stroke-linecap="round"></path>'
-      '<path d="${_shapes['stem']}" stroke-width="${_strokes['stem']}" stroke-linecap="round"></path>'
       '<path d="${_knobPath()}" fill="#000000" stroke="none"></path>'
       '</g></svg>';
 }
@@ -94,9 +94,9 @@ String _svgIosMaster() {
       '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 $v $v">'
       '<rect width="$v" height="$v" fill="${_hex('ground')}"></rect>'
       '<g transform="translate(0,${_num(-_d(_lift['filled']))})">'
+      '<path d="${_shapes['stem']}" stroke="${_hex('saffron')}" stroke-width="${_strokes['stem']}" stroke-linecap="round"></path>'
       '<path d="${_shapes['domeFilled']}" fill="${_hex('saffron')}"></path>'
       '<path d="${_shapes['plate']}" stroke="${_hex('cream')}" stroke-width="${_strokes['plate']}" stroke-linecap="round"></path>'
-      '<path d="${_shapes['stem']}" stroke="${_hex('saffron')}" stroke-width="${_strokes['stem']}" stroke-linecap="round"></path>'
       '<path d="${_knobPath()}" fill="${_hex('saffron')}"></path>'
       '</g></svg>';
 }
@@ -124,12 +124,12 @@ String _xmlVector(String kind) {
       '        android:translateX="${_num(_d(_android['offset']))}"\n'
       '        android:translateY="${_num(_groupTy(kind))}"\n'
       '        android:scaleX="${_d(_android['scale'])}"\n        android:scaleY="${_d(_android['scale'])}">\n'
+      '        <path\n            android:pathData="${_shapes['stem']}"\n'
+      '            android:strokeColor="${col('saffron')}"\n            android:strokeWidth="${_strokes['stem']}"\n'
+      '            android:strokeLineCap="round"/>\n'
       '$dome'
       '        <path\n            android:pathData="${_shapes['plate']}"\n'
       '            android:strokeColor="${col('cream')}"\n            android:strokeWidth="${_strokes['plate']}"\n'
-      '            android:strokeLineCap="round"/>\n'
-      '        <path\n            android:pathData="${_shapes['stem']}"\n'
-      '            android:strokeColor="${col('saffron')}"\n            android:strokeWidth="${_strokes['stem']}"\n'
       '            android:strokeLineCap="round"/>\n'
       '        <path\n            android:fillColor="${col('saffron')}"\n'
       '            android:pathData="${_knobPath()}"/>\n'
@@ -331,13 +331,13 @@ void _drawMark(_Canvas cv, double left, double top, double size, String kind) {
   final dy = -_d(_lift[kind]);
   _Pt t(_Pt p) => (left + p.$1 * s, top + (p.$2 + dy) * s);
   final saffron = _rgb(_hex('saffron')), cream = _rgb(_hex('cream'));
+  final stem = _parsePath(_shapes['stem'] as String);
+  cv.line(t(stem[0]), t(stem[1]), _d(_strokes['stem']) * s, saffron);
   cv.poly([
     for (final p in _parsePath(_shapes['domeFilled'] as String)) t(p),
   ], saffron);
   final plate = _parsePath(_shapes['plate'] as String);
   cv.line(t(plate[0]), t(plate[1]), _d(_strokes['plate']) * s, cream);
-  final stem = _parsePath(_shapes['stem'] as String);
-  cv.line(t(stem[0]), t(stem[1]), _d(_strokes['stem']) * s, saffron);
   final k = _shapes['knob'] as Map;
   final x = _d(k['x']),
       y = _d(k['y']),

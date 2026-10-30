@@ -48,6 +48,11 @@ void main() {
         final dome = entry.value == 'filled' ? 'domeFilled' : 'domeOutline';
         expect(xml, contains('android:pathData="${shapes[dome]}"'));
         expect(xml, contains('android:pathData="${shapes['plate']}"'));
+        expect(
+          xml.indexOf(shapes['stem'] as String),
+          lessThan(xml.indexOf(shapes[dome] as String)),
+          reason: 'the dome must cover the foot of the stem',
+        );
         expect(xml, contains('android:pathData="${shapes['stem']}"'));
         final strokes = m['strokes'] as Map<String, dynamic>;
         expect(xml, contains('android:strokeWidth="${strokes['plate']}"'));
@@ -75,6 +80,11 @@ void main() {
         );
         final dome = entry.value == 'filled' ? 'domeFilled' : 'domeOutline';
         expect(svg, contains('d="${shapes[dome]}"'));
+        expect(
+          svg.indexOf(shapes['stem'] as String),
+          lessThan(svg.indexOf(shapes[dome] as String)),
+          reason: 'the dome must cover the foot of the stem',
+        );
       });
     }
 
@@ -85,6 +95,10 @@ void main() {
         contains('translate(0,${_fmt(-(lift['filled'] as num).toDouble())})'),
       );
       expect(svg, contains('d="${shapes['domeFilled']}"'));
+      expect(
+        svg.indexOf(shapes['stem'] as String),
+        lessThan(svg.indexOf(shapes['domeFilled'] as String)),
+      );
     });
   });
 
@@ -130,6 +144,11 @@ void main() {
       expect(cloche, contains('parseSvgPath(brandPlatePath)'));
       expect(cloche, contains('brandOpticalLiftOutline'));
       expect(cloche, isNot(contains('_opticalLift')));
+      expect(
+        cloche.indexOf('_stem,'),
+        lessThan(cloche.indexOf('_dome,')),
+        reason: 'the stem is drawn before the dome',
+      );
       for (final name in [
         'brandStemPath',
         'brandKnobLeft',

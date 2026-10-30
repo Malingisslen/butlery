@@ -2,9 +2,9 @@
 <svg width="560" height="200" viewBox="0 0 560 200" version="1.1" id="svg14" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
   <defs id="defs18"></defs>
   <g transform="matrix(0.96153846,0,0,0.96153846,37.576923,21.846154)" id="g10">
+    <path d="m 80,55 v 9" stroke="#F5F4ED" stroke-width="3.5" stroke-linecap="round" id="path6"></path>
     <path d="M 40.5,104 C 40.5,81.09 57.88,64.5 80,64.5 c 22.12,0 39.5,16.59 39.5,39.5" fill="none" stroke="#F5F4ED" stroke-width="7" stroke-linecap="butt" id="path2"></path>
     <path d="M 28,113 H 132" stroke="#F5F4ED" stroke-width="7" stroke-linecap="round" id="path4"></path>
-    <path d="m 80,55 v 5" stroke="#F5F4ED" stroke-width="3.5" stroke-linecap="round" id="path6"></path>
     <path id="rect8" style="fill:#F5F4ED" d="m 76,48 h 8 c 2.216,0 4,1.784 4,4 0,2.216 -1.784,4 -4,4 h -8 c -2.216,0 -4,-1.784 -4,-4 0,-2.216 1.784,-4 4,-4 z"></path>
   </g>
   <g aria-label="Butlery" id="text12" style="font-weight:600;font-size:92px;font-family:&#39;Butlery Sans&#39;;letter-spacing:-1.35;fill:#F5F4ED">

@@ -5,7 +5,7 @@ library;
 const String brandDomeOutlinePath =
     'M40.5 104C40.5 81.09 57.88 64.5 80 64.5C102.12 64.5 119.5 81.09 119.5 104';
 const String brandPlatePath = 'M28 113H132';
-const String brandStemPath = 'M80 55V60';
+const String brandStemPath = 'M80 55V64';
 const double brandKnobLeft = 72.0;
 const double brandKnobTop = 48.0;
 const double brandKnobWidth = 16.0;

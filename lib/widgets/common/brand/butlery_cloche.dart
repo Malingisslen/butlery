@@ -255,15 +255,8 @@ class _ClochePainter extends CustomPainter {
       canvas.rotate(pose.coverTurn * math.pi / 180);
       canvas.translate(-43 + pose.coverDx, -104 + pose.coverDy);
       final a = pose.coverOpacity;
-      canvas.drawPath(
-        _dome,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = brandDomeStroke
-          ..strokeCap = StrokeCap.butt
-          ..color = ink.withValues(alpha: a),
-      );
       final saffron = BrandColors.markAccent.withValues(alpha: a);
+      // The stem goes first so the dome covers its foot.
       canvas.drawPath(
         _stem,
         Paint()
@@ -271,6 +264,14 @@ class _ClochePainter extends CustomPainter {
           ..strokeWidth = brandStemStroke
           ..strokeCap = StrokeCap.round
           ..color = saffron,
+      );
+      canvas.drawPath(
+        _dome,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = brandDomeStroke
+          ..strokeCap = StrokeCap.butt
+          ..color = ink.withValues(alpha: a),
       );
       canvas.drawRRect(_knob, Paint()..color = saffron);
       canvas.restore();
