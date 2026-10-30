@@ -6,13 +6,9 @@ library;
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -88,23 +84,9 @@ void main() {
   setUp(() {
     ops = MockPersonalRecipeOperations();
     spy = _SpySampler();
-    final getIt = GetIt.instance;
-    if (getIt.isRegistered<ParserShadowSampler>()) {
-      getIt.unregister<ParserShadowSampler>();
-    }
-    getIt.registerSingleton<ParserShadowSampler>(spy);
-    // Without this, tryGet finds nothing and every "never" below would pass
-    // for free.
-    app_provider.ServiceLocator.reset();
-    app_provider.ServiceLocator.initialize(DIContainer());
   });
 
   tearDown(() async {
-    final getIt = GetIt.instance;
-    if (getIt.isRegistered<ParserShadowSampler>()) {
-      getIt.unregister<ParserShadowSampler>();
-    }
-    app_provider.ServiceLocator.reset();
     BaseUnitTest.resetMocks();
     await TestServiceLocator.reset();
   });
@@ -117,6 +99,7 @@ void main() {
     ops,
     [_Strategy(recipe)],
     eventLogger: _QuietParseEventLogger(),
+    shadowSampler: spy,
   );
 
   final recipe = RecipeFactory.build(id: 'r1', title: 'Pannkakor');

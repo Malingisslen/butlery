@@ -278,7 +278,10 @@ class ContentModule implements DIModule {
     );
 
     container.registerLazySingleton<ImportManager>(
-      () => ImportManager(container<UnifiedRecipeService>().personal),
+      () => ImportManager(
+        container<UnifiedRecipeService>().personal,
+        shadowSampler: container<ParserShadowSampler>(),
+      ),
     );
 
     // BUT-941: native photo-share bridge. No deps; the bootstrap

@@ -48,8 +48,14 @@ class ImportManager {
   /// at construction (see ParseEventLogger), so the default is test-safe too.
   final ParseEventLogger _eventLogger;
 
-  ImportManager(this._personalOperations, {ParseEventLogger? eventLogger})
-    : _eventLogger = eventLogger ?? ParseEventLogger() {
+  final ParserShadowSampler? _shadowSampler;
+
+  ImportManager(
+    this._personalOperations, {
+    ParseEventLogger? eventLogger,
+    ParserShadowSampler? shadowSampler,
+  }) : _eventLogger = eventLogger ?? ParseEventLogger(),
+       _shadowSampler = shadowSampler {
     _initializeStrategies();
   }
 
@@ -60,7 +66,9 @@ class ImportManager {
     this._personalOperations,
     List<ImportStrategy> strategies, {
     ParseEventLogger? eventLogger,
-  }) : _eventLogger = eventLogger ?? ParseEventLogger() {
+    ParserShadowSampler? shadowSampler,
+  }) : _eventLogger = eventLogger ?? ParseEventLogger(),
+       _shadowSampler = shadowSampler {
     _strategies.addAll(strategies);
   }
 
@@ -504,9 +512,7 @@ class ImportManager {
     );
     // Not awaited: a sample must never delay or fail the import it describes.
     if (result.isSuccess) {
-      unawaited(
-        ServiceLocator.tryGet<ParserShadowSampler>()?.sample(channel, result),
-      );
+      unawaited(_shadowSampler?.sample(channel, result));
     }
   }
 
