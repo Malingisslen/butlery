@@ -130,6 +130,38 @@ void main() {
     await service.dispose();
   });
 
+  testWidgets('expired: "Starta timer" runs it again and it expires again', (
+    tester,
+  ) async {
+    var expiredCount = 0;
+    final service = StepTimerService();
+
+    await tester.pumpWidget(
+      harness(
+        service,
+        initialDuration: const Duration(seconds: 1),
+        onExpired: () => expiredCount++,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump();
+    expect(expiredCount, 1);
+
+    await tester.tap(find.byTooltip('Starta timer'));
+    await tester.pump();
+    expect(service.isRunning, isTrue);
+    expect(find.text('Pausa'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump();
+    expect(expiredCount, 2);
+
+    service.reset();
+    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+    await service.dispose();
+  });
+
   testWidgets('expired: the pulse loops at AppMotion.pulseHalf each way', (
     tester,
   ) async {
@@ -278,4 +310,44 @@ void main() {
       await service.dispose();
     },
   );
+
+  for (final timerId in ['step-0', StepTimerService.defaultTimerId]) {
+    testWidgets(
+      'reset ($timerId): back to the start time, and it starts again',
+      (
+        tester,
+      ) async {
+        final service = StepTimerService();
+        var expiredCalls = 0;
+
+        await tester.pumpWidget(
+          harness(
+            service,
+            timerId: timerId,
+            initialDuration: const Duration(minutes: 3),
+            onExpired: () => expiredCalls++,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 2));
+
+        await tester.tap(find.byTooltip('Återställ'));
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.text('03:00'), findsOneWidget);
+        expect(expiredCalls, 0);
+        expect(service.isRunningFor(timerId), isFalse);
+
+        await tester.tap(find.byTooltip('Starta timer'));
+        await tester.pump();
+
+        expect(service.isRunningFor(timerId), isTrue);
+        expect(find.text('Pausa'), findsOneWidget);
+
+        service.reset();
+        await service.dispose();
+      },
+    );
+  }
 }
