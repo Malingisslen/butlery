@@ -52,6 +52,30 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
+    testWidgets('carries its own Material so its text is not underlined', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const StartSplash(message: 'Väntar'),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.descendant(
+          of: find.byType(StartSplash),
+          matching: find.byType(Material),
+        ),
+        findsOneWidget,
+      );
+      final style = DefaultTextStyle.of(
+        tester.element(find.text('Väntar')),
+      ).style;
+      expect(style.decoration, isNot(TextDecoration.underline));
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('with reduced motion the cloche stands still', (tester) async {
       await tester.pumpWidget(
         MediaQuery(
