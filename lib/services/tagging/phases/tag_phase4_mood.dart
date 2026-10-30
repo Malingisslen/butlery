@@ -1,9 +1,16 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/tagging/config/generated/occasion_vocabulary.g.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 
 /// Phase 4: Mood and occasion tags requiring all previous phases.
+///
+/// The holiday, season and luxury WORDS come from `OccasionVocabulary`,
+/// generated from `config/data/occasions.json`. The rules that combine them
+/// stay here: how many matches a tag needs, the season threshold, the grill
+/// and game bonuses, the Easter and midsummer combinations, and every time
+/// and mood tag.
 ///
 /// Generates:
 /// - Time-based occasions (weeknight, weekend, quick-fix)
@@ -135,47 +142,52 @@ class TagPhase4Mood {
   Set<String> _calculateSwedishHolidayTags(Phase1Result p1, Recipe recipe) {
     final tags = <String>{};
     final title = recipe.core.title.toLowerCase();
+    bool titleHasAny(List<String> words) => words.any(title.contains);
 
-    // Christmas (Jul)
-    // Exclude false positives like "julienne" (French cooking technique)
-    final christmasKeywords = ['julskinka', 'lutfisk', 'jansson', 'julbord'];
-    final julFalsePositives = ['julienne'];
+    // The bare stem also sits inside words like "julienne", so only the stem
+    // checks the false positives; a full title word does not.
     final hasTrueJul =
-        title.contains('jul') &&
-        !julFalsePositives.any((fp) => title.contains(fp));
+        title.contains(OccasionVocabulary.christmasTitleStem) &&
+        !titleHasAny(OccasionVocabulary.christmasTitleStemFalsePositives);
     if (hasTrueJul ||
-        christmasKeywords.any((k) => title.contains(k)) ||
-        _hasChristmasIngredients(p1)) {
-      tags.add('jul');
+        titleHasAny(OccasionVocabulary.christmasTitleWords) ||
+        _countMatching(p1, OccasionVocabulary.christmasIngredients) >= 2) {
+      tags.add(OccasionVocabulary.christmasTag);
     }
 
-    // Lucia
-    if (title.contains('lucia') ||
-        title.contains('lussebulle') ||
-        title.contains('lussekatt')) {
-      tags.add('lucia');
+    if (titleHasAny(OccasionVocabulary.luciaTitleWords)) {
+      tags.add(OccasionVocabulary.luciaTag);
     }
 
-    // Easter (Påsk)
-    if (title.contains('påsk') || _hasEasterIngredients(p1, title)) {
-      tags.add('påsk');
+    // Lamb, or an egg dish that says so in its title.
+    if (titleHasAny(OccasionVocabulary.easterTitleWords) ||
+        p1.hasTag('lamm') ||
+        (p1.hasTag('ägg') &&
+            titleHasAny(OccasionVocabulary.easterEggTitleWords))) {
+      tags.add(OccasionVocabulary.easterTag);
     }
 
-    // Midsummer (Midsommar)
-    if (title.contains('midsommar') || _hasMidsummerIngredients(p1)) {
-      tags.add('midsommar');
+    // Herring with new potatoes, or strawberries with something dairy.
+    final midsummerPlate =
+        (_anyMatching(p1, OccasionVocabulary.midsummerHerringIngredients) &&
+            _anyMatching(
+              p1,
+              OccasionVocabulary.midsummerNewPotatoIngredients,
+            )) ||
+        (_anyMatching(p1, OccasionVocabulary.midsummerStrawberryIngredients) &&
+            p1.hasProperty('dairy'));
+    if (titleHasAny(OccasionVocabulary.midsummerTitleWords) || midsummerPlate) {
+      tags.add(OccasionVocabulary.midsummerTag);
     }
 
-    // Crayfish party (Kräftskiva)
-    if (title.contains('kräftskiva') ||
-        title.contains('kräftkalas') ||
-        _hasCrawfishIngredients(p1)) {
-      tags.add('kräftskiva');
+    if (titleHasAny(OccasionVocabulary.crayfishTitleWords) ||
+        _anyMatching(p1, OccasionVocabulary.crayfishIngredients)) {
+      tags.add(OccasionVocabulary.crayfishTag);
     }
 
-    // New Year's (Nyår)
-    if (title.contains('nyår') || _hasNewYearsIngredients(p1)) {
-      tags.add('nyår');
+    if (titleHasAny(OccasionVocabulary.newYearTitleWords) ||
+        _anyMatching(p1, OccasionVocabulary.newYearIngredients)) {
+      tags.add(OccasionVocabulary.newYearTag);
     }
 
     return tags;
@@ -187,10 +199,10 @@ class TagPhase4Mood {
 
     // First, collect season data from seasonAvailability field
     final seasonCounts = <String, int>{
-      'vår': 0,
-      'sommar': 0,
-      'höst': 0,
-      'vinter': 0,
+      OccasionVocabulary.springTag: 0,
+      OccasionVocabulary.summerTag: 0,
+      OccasionVocabulary.autumnTag: 0,
+      OccasionVocabulary.winterTag: 0,
     };
 
     // Count ingredients with seasonAvailability data
@@ -217,11 +229,27 @@ class TagPhase4Mood {
         }
       }
     } else {
-      // Fallback: Name-based inference (original logic)
-      if (_hasSpringIngredients(p1)) tags.add('vår');
-      if (_hasSummerIngredients(p1)) tags.add('sommar');
-      if (_hasAutumnIngredients(p1)) tags.add('höst');
-      if (_hasWinterIngredients(p1)) tags.add('vinter');
+      // Grilling counts as one summer ingredient, game as one autumn one.
+      final grillBonus = p1.hasTag('grillad') ? 1 : 0;
+      final gameBonus = p1.hasTag('vilt') ? 1 : 0;
+      if (_countMatching(p1, OccasionVocabulary.springIngredients) >=
+          seasonThreshold) {
+        tags.add(OccasionVocabulary.springTag);
+      }
+      if (_countMatching(p1, OccasionVocabulary.summerIngredients) +
+              grillBonus >=
+          seasonThreshold) {
+        tags.add(OccasionVocabulary.summerTag);
+      }
+      if (_countMatching(p1, OccasionVocabulary.autumnIngredients) +
+              gameBonus >=
+          seasonThreshold) {
+        tags.add(OccasionVocabulary.autumnTag);
+      }
+      if (_countMatching(p1, OccasionVocabulary.winterIngredients) >=
+          seasonThreshold) {
+        tags.add(OccasionVocabulary.winterTag);
+      }
     }
 
     // Note: No 'året-runt' default tag - absence of season tags already
@@ -230,170 +258,17 @@ class TagPhase4Mood {
     return tags;
   }
 
-  bool _hasLuxuryIngredients(Phase1Result p1) {
-    final luxuryKeywords = [
-      'oxfilé',
-      'entrecôte',
-      'hummer',
-      'kräftor',
-      'tryffel',
-      'kaviar',
-      'foie gras',
-      'wagyu',
-      'kalvfilé',
-    ];
+  bool _hasLuxuryIngredients(Phase1Result p1) =>
+      _anyMatching(p1, OccasionVocabulary.luxuryIngredients);
 
-    return p1.lookup.matched.any((i) {
-      final name = i.swedish.toLowerCase();
-      return luxuryKeywords.any((k) => name.contains(k));
-    });
-  }
+  /// How many matched ingredients contain one of [words]; an ingredient that
+  /// contains several still counts once.
+  int _countMatching(Phase1Result p1, List<String> words) => p1.lookup.matched
+      .where((i) => words.any(i.swedish.toLowerCase().contains))
+      .length;
 
-  bool _hasChristmasIngredients(Phase1Result p1) {
-    final christmasIngredients = [
-      'rödbeta',
-      'sill',
-      'julkorv',
-      'prinskorv',
-      'kål',
-    ];
-
-    final matchCount = p1.lookup.matched.where((i) {
-      final name = i.swedish.toLowerCase();
-      return christmasIngredients.any((k) => name.contains(k));
-    }).length;
-
-    return matchCount >= 2;
-  }
-
-  bool _hasEasterIngredients(Phase1Result p1, String title) {
-    // Lamb as main OR egg dishes
-    return (p1.hasTag('lamm') ||
-        (p1.hasTag('ägg') && (title.contains('ägg') || title.contains('egg'))));
-  }
-
-  bool _hasMidsummerIngredients(Phase1Result p1) {
-    final hasSill = p1.lookup.matched.any(
-      (i) => i.swedish.toLowerCase().contains('sill'),
-    );
-    final hasNewPotatoes = p1.lookup.matched.any(
-      (i) =>
-          i.swedish.toLowerCase().contains('färskpotatis') ||
-          i.swedish.toLowerCase().contains('nypotatis'),
-    );
-    final hasStrawberries = p1.lookup.matched.any(
-      (i) => i.swedish.toLowerCase().contains('jordgubb'),
-    );
-
-    return (hasSill && hasNewPotatoes) ||
-        (hasStrawberries && p1.hasProperty('dairy'));
-  }
-
-  bool _hasCrawfishIngredients(Phase1Result p1) {
-    return p1.lookup.matched.any(
-      (i) => i.swedish.toLowerCase().contains('kräft'),
-    );
-  }
-
-  bool _hasNewYearsIngredients(Phase1Result p1) {
-    final luxurySeafood = ['hummer', 'ostron', 'kaviar'];
-    return p1.lookup.matched.any((i) {
-      final name = i.swedish.toLowerCase();
-      return luxurySeafood.any((k) => name.contains(k));
-    });
-  }
-
-  bool _hasSpringIngredients(Phase1Result p1) {
-    // L3: Expanded spring ingredient list
-    final springIngredients = [
-      'sparris',
-      'rabarber',
-      'rädisor',
-      'vårlök',
-      'ärtor',
-      'nässla',
-      'färskpotatis',
-      'nypotatis',
-      'purjolök',
-      'dill',
-    ];
-    final matchCount = p1.lookup.matched.where((i) {
-      final name = i.swedish.toLowerCase();
-      return springIngredients.any((k) => name.contains(k));
-    }).length;
-    return matchCount >= seasonThreshold;
-  }
-
-  bool _hasSummerIngredients(Phase1Result p1) {
-    // L3: Expanded summer ingredient list
-    final summerIngredients = [
-      'jordgubb',
-      'hallon',
-      'blåbär',
-      'lingon',
-      'björnbär',
-      'sallad',
-      'gurka',
-      'tomat',
-      'zucchini',
-      'squash',
-      'basilika',
-      'majs',
-      'paprika',
-    ];
-    final matchCount = p1.lookup.matched.where((i) {
-      final name = i.swedish.toLowerCase();
-      return summerIngredients.any((k) => name.contains(k));
-    }).length;
-    // Grillad counts as one seasonal indicator
-    final grillBonus = p1.hasTag('grillad') ? 1 : 0;
-    return matchCount + grillBonus >= seasonThreshold;
-  }
-
-  bool _hasAutumnIngredients(Phase1Result p1) {
-    // L3: Expanded autumn ingredient list
-    final autumnIngredients = [
-      'svamp',
-      'kantarell',
-      'trattkantarell',
-      'äpple',
-      'päron',
-      'plommon',
-      'pumpa',
-      'kål',
-      'rödkål',
-      'brysselkål',
-      'vitkål',
-    ];
-    final matchCount = p1.lookup.matched.where((i) {
-      final name = i.swedish.toLowerCase();
-      return autumnIngredients.any((k) => name.contains(k));
-    }).length;
-    // Vilt (game) counts as one seasonal indicator
-    final gameBonus = p1.hasTag('vilt') ? 1 : 0;
-    return matchCount + gameBonus >= seasonThreshold;
-  }
-
-  bool _hasWinterIngredients(Phase1Result p1) {
-    // L3: Expanded winter ingredient list
-    final winterIngredients = [
-      'rotfrukt',
-      'morot',
-      'palsternacka',
-      'kålrot',
-      'grönkål',
-      'selleri',
-      'rödbetor',
-      'rödbeta',
-      'vitkål',
-      'persilja', // Winter herb available year-round
-    ];
-    final matchCount = p1.lookup.matched.where((i) {
-      final name = i.swedish.toLowerCase();
-      return winterIngredients.any((k) => name.contains(k));
-    }).length;
-    return matchCount >= seasonThreshold;
-  }
+  bool _anyMatching(Phase1Result p1, List<String> words) =>
+      p1.lookup.matched.any((i) => words.any(i.swedish.toLowerCase().contains));
 }
 
 /// Result of Phase 4 calculation.
