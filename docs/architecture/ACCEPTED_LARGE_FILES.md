@@ -187,7 +187,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_detail_view.dart` | 1339 | Recipe detail screen (source-artefact sheet in recipe_detail/recipe_source_artefact_sheet.dart, sticky action bar in recipe_detail/recipe_action_bar.dart) |
 | `weekly_menu_plan_viewmodel.dart` | 1652 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
-| `recipe_detail_content.dart` | 974 | Body content widget for recipe detail |
+| `recipe_detail_content.dart` | 980 | Body content widget for recipe detail |
 | `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |

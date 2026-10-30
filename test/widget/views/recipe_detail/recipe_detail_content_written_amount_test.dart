@@ -1,5 +1,6 @@
 // The amount column shows "2-3" and "ca 500 g" as the recipe wrote them,
-// not only the number the parser reads from them.
+// not only the number the parser reads from them, and nothing for a line
+// that names no amount.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,7 +23,10 @@ import '../../../views/helpers/view_test_helpers.dart';
 
 const _ingredients = ['2-3 tomater', 'ca 500 g potatis', '2 dl mjölk'];
 
-Future<void> _pump(WidgetTester tester) async {
+Future<void> _pump(
+  WidgetTester tester, {
+  List<String> ingredients = _ingredients,
+}) async {
   tester.view.physicalSize = const Size(420, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(() {
@@ -32,7 +36,7 @@ Future<void> _pump(WidgetTester tester) async {
 
   final recipe = RecipeFactory.build(
     id: 'allergen-line-1',
-    ingredients: _ingredients,
+    ingredients: ingredients,
     instructions: ['Blanda.'],
   );
   final service = MockUnifiedRecipeService();
@@ -62,7 +66,7 @@ Future<void> _pump(WidgetTester tester) async {
         body: SingleChildScrollView(
           child: RecipeDetailContent(
             viewModel: viewModel,
-            scaledIngredients: _ingredients,
+            scaledIngredients: ingredients,
             currentPortions: 4,
             onPortionChanged: (_, _) {},
             onImageTap: (_, _) {},
@@ -96,5 +100,20 @@ void main() {
     expect(find.text('2-3'), findsOneWidget);
     expect(find.text('ca 500 g'), findsOneWidget);
     expect(find.text('2 dl'), findsOneWidget);
+  });
+
+  testWidgets('a line without an amount shows no "1"', (tester) async {
+    await _pump(tester, ingredients: ['salt', '1 ägg']);
+
+    Finder amountIn(String name) => find.descendant(
+      of: find
+          .ancestor(of: find.text(name), matching: find.byType(LayoutBuilder))
+          .first,
+      matching: find.text('1'),
+    );
+
+    expect(find.text('salt'), findsOneWidget);
+    expect(amountIn('salt'), findsNothing);
+    expect(amountIn('ägg'), findsOneWidget);
   });
 }

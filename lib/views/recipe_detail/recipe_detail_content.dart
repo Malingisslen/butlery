@@ -350,19 +350,25 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       // so the rows read the same instead of switching layout
                       // from one ingredient to the next.
                       final stacked = isLargeText(context);
+                      // "salt" parses as 1, but the recipe never said 1.
                       final hasAmount =
-                          parsed.unit.isNotEmpty || parsed.quantity > 0;
+                          parsed.unit.isNotEmpty ||
+                          IngredientParser.statedQuantity(
+                                ingredient,
+                                parsed.quantity,
+                              ) !=
+                              null;
                       // "ca 2 dl", "2-3 tomater": the written amount says
                       // more than the number read from it.
                       final quantity =
                           IngredientParser.writtenAmount(ingredient) ??
                           _formatQuantity(parsed.quantity);
                       final amount = Text(
-                        parsed.unit.isNotEmpty
+                        !hasAmount
+                            ? ''
+                            : parsed.unit.isNotEmpty
                             ? '$quantity ${parsed.unit}'
-                            : parsed.quantity > 0
-                            ? quantity
-                            : '',
+                            : quantity,
                         style: AppTextStyles.bodyBold.copyWith(
                           color: cs.onSurface,
                           fontFeatures: const [FontFeature.tabularFigures()],
