@@ -57,6 +57,7 @@
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
@@ -528,7 +529,8 @@ class RecipeDetailViewModel extends BaseViewModel {
     return updateRecipeTagOverrides(
       current.withoutAllergenOverride(
         allergenKey,
-        editedBy: ServiceLocator.tryGet<UserService>()?.currentUserId ?? '',
+        editedBy: (ServiceLocator.tryGet<UserService>()?.currentUserId)
+            .orEmpty(),
       ),
     );
   }
