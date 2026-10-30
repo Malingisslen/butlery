@@ -675,4 +675,25 @@ void main() {
       });
     });
   });
+
+  group('IngredientParser.statedQuantity', () {
+    String? stated(String line) => IngredientParser.statedQuantity(
+      line,
+      IngredientParser.parseIngredient(line).quantity,
+    );
+
+    test('a line without an amount states none', () {
+      expect(stated('salt och peppar'), isNull);
+      expect(stated('creme fraiche naturell'), isNull);
+    });
+
+    test('written and spoken amounts are kept, whole ones without .0', () {
+      expect(stated('2 dl mjölk'), '2');
+      expect(stated('1 msk smör'), '1');
+      expect(stated('1,5 dl grädde'), '1.5');
+      expect(stated('½ tsk salt'), '0.5');
+      expect(stated('en lök'), '1');
+      expect(stated('tre ägg'), '3');
+    });
+  });
 }

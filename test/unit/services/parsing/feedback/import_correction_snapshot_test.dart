@@ -388,4 +388,61 @@ void main() {
       );
     });
   });
+
+  group('review rows show only the amount a line states', () {
+    test('no amount is null, a whole amount has no decimals', () {
+      final snapshot = ImportCorrectionSnapshot.build(
+        makeRecipe(
+          ingredients: const [
+            'salt och peppar',
+            '2 dl mjölk',
+            '1,5 dl grädde',
+            'en lök',
+          ],
+        ),
+        source: ImportSource.photo,
+      );
+
+      final rows = snapshot.ingredients.value!;
+      expect(rows.map((r) => r.quantity), [null, '2', '1.5', '1']);
+      expect(rows.first.displayString, isNot(startsWith('1')));
+    });
+
+    test('an unedited save with amount-less lines yields NO corrections', () {
+      final recipe = makeRecipe(
+        ingredients: const ['salt och peppar', '2 dl mjölk'],
+      );
+      final snapshot = ImportCorrectionSnapshot.build(
+        recipe,
+        source: ImportSource.photo,
+      );
+
+      expect(
+        calculator.calculateDiff(
+          original: snapshot,
+          corrected: recipe,
+          userId: 'u1',
+        ),
+        isNull,
+      );
+    });
+
+    test('adding an amount of 1 to an amount-less line is a correction', () {
+      final imported = makeRecipe(ingredients: const ['smör', '2 dl mjölk']);
+      final snapshot = ImportCorrectionSnapshot.build(
+        imported,
+        source: ImportSource.photo,
+      );
+
+      final correction = calculator.calculateDiff(
+        original: snapshot,
+        corrected: imported.copyWith(
+          ingredients: const ['1 smör', '2 dl mjölk'],
+        ),
+        userId: 'u1',
+      );
+
+      expect(correction, isNotNull);
+    });
+  });
 }

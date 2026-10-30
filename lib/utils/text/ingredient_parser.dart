@@ -100,6 +100,28 @@ class IngredientParser {
   static double parseQuantity(String qtyString) =>
       QuantityParser.parse(qtyString);
 
+  static final RegExp _writtenAmountRe = RegExp(r'[\d½¼¾⅓⅔⅛⅜⅝⅞]');
+  static final RegExp _spokenOneRe = RegExp(
+    r'^(en|ett)\s',
+    caseSensitive: false,
+  );
+
+  /// The amount [line] states, as shown to the user: "2" rather than "2.0",
+  /// and null when the line names none — [parseIngredient] answers 1 for
+  /// those, and that 1 is not something the recipe said.
+  static String? statedQuantity(String line, double quantity) {
+    if (quantity <= 0) return null;
+    final trimmed = line.trim();
+    if (quantity == 1 &&
+        !_writtenAmountRe.hasMatch(trimmed) &&
+        !_spokenOneRe.hasMatch(trimmed)) {
+      return null;
+    }
+    return quantity % 1 == 0
+        ? quantity.toInt().toString()
+        : quantity.toString();
+  }
+
   /// Parses an ingredient string into structured components.
   static RegexParseResult parseIngredient(String rawIngredient) {
     if (rawIngredient.isEmpty) {
