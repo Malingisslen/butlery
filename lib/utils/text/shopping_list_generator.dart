@@ -41,6 +41,7 @@ import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
+import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -314,15 +315,20 @@ class ShoppingListGenerator {
         // MODUL1 Pattern B: Parse + Normalize for better categorization
         // Normalized name improves category detection accuracy
         final processed = IngredientProcessor.parseAndNormalize(rawIngredient);
+        final stated = IngredientQuantity.read(rawIngredient);
 
         // BUT-2067: the PRODUCT, not the input. `QuantityParser.parse`
         // bounds `processed.quantity`, but `scalingFactor` comes from a
         // portion count the user types, and two finite doubles multiply to
         // Infinity.
-        final scaledQuantity = QuantityParser.finiteQuantityOr1(
-          processed.quantity * scalingFactor,
-          'shopping_list_generator portion scaling',
-        );
+        // A line stating no amount ("salt") gets 0, which shows the name
+        // alone, and is not scaled.
+        final scaledQuantity = stated.isUnknown
+            ? 0.0
+            : QuantityParser.finiteQuantityOr1(
+                (stated.forShopping ?? processed.quantity) * scalingFactor,
+                'shopping_list_generator portion scaling',
+              );
 
         // Determine category using normalized name for better accuracy
         // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable
@@ -335,7 +341,7 @@ class ShoppingListGenerator {
         final shoppingItem = UnifiedShoppingItem(
           name: processed.originalName.trim(), // Display original
           amount: scaledQuantity,
-          unit: processed.unit,
+          unit: stated.isUnknown ? '' : processed.unit,
           category: category,
           bought: false,
           note: '', // No notes from recipe ingredients
@@ -347,8 +353,8 @@ class ShoppingListGenerator {
         // Handle parsing errors gracefully - create basic item
         final fallbackItem = UnifiedShoppingItem(
           name: rawIngredient.trim(),
-          amount: 1.0,
-          unit: 'st',
+          amount: 0,
+          unit: '',
           category: ShoppingCategory.other,
           bought: false,
           note: AppLocale.current.ingredientParseError,

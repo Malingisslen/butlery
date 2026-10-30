@@ -42,6 +42,34 @@ void main() {
     // "Infinity" through `formatSwedishDecimal` and then `parseSwedishDecimal`
     // refuses to read it back, so the user cannot edit their way out of the
     // field.
+    group('the amount a recipe line states (kärnflöde steg 3)', () {
+      test('a line stating no amount gets none, and is not scaled', () {
+        final recipe = _makeRecipe(['salt', 'peppar efter smak', 'nypa salt'])
+          ..core.portions = 2;
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+          portions: 4,
+        );
+
+        expect(items.map((i) => i.amount), [0, 0, 0]);
+        expect(items.map((i) => i.unit), ['', '', '']);
+        expect(items.map((i) => i.quantityText), ['', '', '']);
+      });
+
+      test('a range is bought at its highest value, scaled', () {
+        final recipe = _makeRecipe(['2-3 dl mjölk', '2-3 tomater'])
+          ..core.portions = 2;
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+          portions: 4,
+        );
+
+        expect(items.map((i) => i.amount), [6, 6]);
+      });
+    });
+
     group('non-finite quantities never reach amount (BUT-2067)', () {
       test('a portion scale that overflows falls back to 1.0', () {
         final recipe = _makeRecipe(['$_nearMaxQuantity dl mjölk'])
@@ -55,8 +83,6 @@ void main() {
         expect(items, hasLength(1));
         expect(items.first.amount.isFinite, isTrue);
         expect(items.first.amount, 1.0);
-        // Discriminates the guard from the method's own catch, which builds a
-        // fallback row that also carries amount 1.0 — but with unit 'st'.
         expect(items.first.unit, 'dl');
       });
 

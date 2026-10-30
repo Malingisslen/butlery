@@ -1,8 +1,8 @@
 // lib/services/shopping/menu_shopping_aggregator.dart
 
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
+import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
@@ -12,8 +12,7 @@ class AggregatedShoppingItem {
   /// Display name — the first-seen original casing of the ingredient name.
   final String name;
 
-  /// Summed amount, or null when the source lines carry no usable quantity
-  /// (raw-only entries — they still land on the list, never dropped).
+  /// Summed amount, or null when the source lines carry no usable quantity.
   final double? amount;
 
   /// Unit as written (post lowercase/trim). Empty for unit-less lines.
@@ -60,8 +59,9 @@ typedef ScaledRecipe = ({Recipe recipe, double factor});
 ///   scale one to zero or drop it — they always pass through present and
 ///   un-summed. A positive amount times a positive factor stays positive, so a
 ///   real ingredient never becomes a zero-quantity line.
-/// - Entries without a usable amount (ranges, "efter smak", legacy raw-only)
-///   aggregate by name into a single amount-less line — present, un-summed.
+/// - [IngredientQuantity.shoppingLine] reads each line's amount: a range
+///   counts at its highest value, and a line stating no amount aggregates by
+///   name into a single amount-less line — present, un-summed.
 /// - Name key: [SwedishCharacterNormalizer] + lowercase/trim, so "Mjöl" and
 ///   "mjol" merge; display keeps the first-seen casing.
 class MenuShoppingAggregator {
@@ -94,8 +94,7 @@ class MenuShoppingAggregator {
     bool convertUnits = true,
   }) {
     // Keyed by "<normalizedName>|<normalizedUnit>"; amount-less entries use
-    // the unit-less key so "1-2 vitlöksklyftor" and "vitlök efter smak"
-    // don't multiply into near-duplicate lines per recipe.
+    // the unit-less key.
     final byKey = <String, _Accumulator>{};
     var rawRows = 0;
 
@@ -104,13 +103,15 @@ class MenuShoppingAggregator {
       // One entry per ingredient line, structured or raw-only — the facade
       // getter guarantees alignment and fallback.
       for (final entry in placement.recipe.structuredIngredients) {
-        final displayName = entry.name.trim();
+        final line = IngredientQuantity.shoppingLine(entry);
+        final displayName = line.name;
         if (displayName.isEmpty) continue;
         final nameKey = SwedishCharacterNormalizer.normalize(displayName);
         if (excludeNames.contains(nameKey)) continue;
         rawRows++;
-        final hasAmount = entry.amount != null;
-        final unit = hasAmount ? entry.unit.orEmpty().toLowerCase().trim() : '';
+        final amount = line.amount;
+        final hasAmount = amount != null;
+        final unit = line.unit;
         // Merging off: the row counter keeps every line apart.
         final key = mergeDuplicates ? '$nameKey|$unit' : '$rawRows';
 
@@ -134,7 +135,7 @@ class MenuShoppingAggregator {
           // rather than on the operands, because both can be finite while the
           // total is not.
           acc.sum = QuantityParser.finiteQuantityOr1(
-            acc.sum + entry.amount!.toDouble() * factor,
+            acc.sum + amount * factor,
             'menu_shopping_aggregator week scaling',
           );
           acc.hasAmount = true;

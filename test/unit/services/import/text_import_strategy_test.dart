@@ -1696,6 +1696,10 @@ Koka potatisen i 20 minuter.
           'Recipe\nFor 6 people\nIngredients:\n- Item': null,
           'Recipe\n4 portioner\nIngredients:\n- Item': 4,
           'Recipe\nYield: 8 servings\nIngredients:\n- Item': null,
+          'Recipe\n4 pers\nIngredients:\n- Item': 4,
+          'Recipe\nFör 3 personer\nIngredients:\n- Item': 3,
+          // An ingredient that starts with "pers" is not a yield (p05).
+          'Recipe\nIngredients:\n- 2 persiljekvistar': null,
         };
 
         // Act & Assert

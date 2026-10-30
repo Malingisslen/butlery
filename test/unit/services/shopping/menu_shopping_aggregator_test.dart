@@ -6,10 +6,8 @@
 ///
 /// BUT-1613 layered presence-driven QUANTITY SCALING on top: each recipe
 /// placement carries a `factor` (present-count / authored-portions) that scales
-/// its numeric amounts BEFORE the shared name|unit merge sums them. The
-/// factor-1.0 tests below are the original BUT-956/BUT-1278/BUT-1279 contracts,
-/// unchanged in expectation — proving scaling is a pure superset (factor 1.0 ==
-/// old behaviour). The new group pins the scaling itself.
+/// its numeric amounts BEFORE the shared name|unit merge sums them. The new
+/// group pins the scaling itself.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -380,7 +378,7 @@ void main() {
       },
     );
 
-    test('raw-only lines (no amount) land on the list, un-summed, never '
+    test('raw-only lines land on the list with the amount they state, never '
         'dropped', () {
       final items = MenuShoppingAggregator.aggregate([
         _p(_recipe('r1', [RecipeIngredient.rawOnly('en nypa salt')])),
@@ -391,7 +389,12 @@ void main() {
         ),
       ]);
       expect(items, hasLength(2));
-      expect(items.every((i) => i.amount == null), isTrue);
+      // "en nypa" states one pinch; "1-2" is bought at its top (Malin
+      // 2026-10-30), however the line was stored.
+      final byName = {for (final i in items) i.name: i};
+      expect(byName['salt']?.amount, 1);
+      expect(byName['salt']?.unit, 'nypa');
+      expect(byName['vitlöksklyftor']?.amount, 2);
     });
 
     test('amount-less duplicates collapse to one line by name', () {
@@ -420,11 +423,9 @@ void main() {
       );
       final items = MenuShoppingAggregator.aggregate([_p(legacy)]);
       expect(items, hasLength(1));
-      expect(
-        items.single.amount,
-        isNull,
-        reason: 'no derivation here — raw-only lands as amount-less',
-      );
+      expect(items.single.name, 'mjölk');
+      expect(items.single.amount, 2);
+      expect(items.single.unit, 'dl');
     });
 
     test('output is grouped by category then name (stable shopping order)', () {

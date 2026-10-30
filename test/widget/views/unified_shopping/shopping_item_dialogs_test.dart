@@ -464,6 +464,14 @@ void main() {
       expect(textIn(tester, 'Anteckning (valfritt)'), 'Ekologisk');
     });
 
+    testWidgets('an item with no amount opens with an empty amount', (
+      tester,
+    ) async {
+      await openEdit(tester, existing(amount: 0));
+
+      expect(textIn(tester, 'Mängd'), '');
+    });
+
     testWidgets('an edited name and note reach the save', (tester) async {
       await openEdit(tester, existing(note: 'Ekologisk'));
 
