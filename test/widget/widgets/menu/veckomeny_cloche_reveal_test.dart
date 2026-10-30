@@ -11,6 +11,8 @@ void main() {
   testWidgets('lifts the cover, holds, then hands the week back', (
     tester,
   ) async {
+    // props-only: the lift value is the animation's state; the painter draws
+    // straight from it and has no semantics or text to find.
     var done = false;
     await tester.pumpWidget(
       createLocalizedTestApp(
