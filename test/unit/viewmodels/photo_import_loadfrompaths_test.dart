@@ -10,6 +10,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -228,5 +229,64 @@ void main() {
     expect(offlineVm.hasError, isTrue);
     expect(offlineVm.unreadPageCount, 1);
     verifyNever(() => mockClient.send(any()));
+  });
+
+  group('gallery multi-select', () {
+    XFile pick(int seed, {String ext = 'jpg'}) {
+      final path = writeImage(seed);
+      if (ext == 'jpg') return XFile(path);
+      return XFile(File(path).renameSync('${tmpDir.path}/img_$seed.$ext').path);
+    }
+
+    test('several photos picked at once become pages in pick order', () async {
+      vm.galleryPickerOverride = (_) async => [pick(3), pick(1), pick(2)];
+      await vm.pickImageFromGallery();
+      expect(vm.pageCount, 3);
+      expect(
+        vm.pageImages.first,
+        File('${tmpDir.path}/img_3.jpg').readAsBytesSync(),
+      );
+    });
+
+    test('adding pages appends and trims to the remaining slots', () async {
+      vm.galleryPickerOverride = (_) async => [pick(1), pick(2), pick(3)];
+      await vm.pickImageFromGallery();
+      vm.galleryPickerOverride = (limit) async {
+        expect(limit, PhotoImportViewModel.maxPages - 3);
+        return [pick(4), pick(5), pick(6)];
+      };
+      await vm.addPageFromGallery();
+      expect(vm.pageCount, PhotoImportViewModel.maxPages);
+      expect(vm.consumeInfoMessage(), isNotNull);
+    });
+
+    test('one unsupported file does not discard the others', () async {
+      vm.galleryPickerOverride = (_) async => [pick(1), pick(2, ext: 'gif')];
+      await vm.pickImageFromGallery();
+      expect(vm.pageCount, 1);
+    });
+
+    test('a bad photo never costs a good one its slot', () async {
+      vm.galleryPickerOverride = (_) async => [pick(1), pick(2)];
+      await vm.pickImageFromGallery();
+      vm.galleryPickerOverride = (_) async => [
+        pick(3, ext: 'gif'),
+        pick(4),
+        pick(5),
+        pick(6),
+      ];
+      await vm.addPageFromGallery();
+      expect(vm.pageCount, 5);
+      expect(vm.consumeInfoMessage(), isNull);
+    });
+
+    test('cancelling the picker adds nothing', () async {
+      vm.galleryPickerOverride = (_) async => [pick(1), pick(2)];
+      await vm.pickImageFromGallery();
+      vm.galleryPickerOverride = (_) async => [];
+      await vm.addPageFromGallery();
+      expect(vm.pageCount, 2);
+      expect(vm.hasError, isTrue);
+    });
   });
 }
