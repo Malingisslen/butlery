@@ -41,6 +41,29 @@ export const TAG_OVERRIDE_KEYS: Allowlist = {
   triggeringIngredients: "strings",
 };
 
+/** `ParsingCorrection.toFirestore` (`lib/models/parsing/parsing_correction.dart`) and the three correction models it nests. */
+export const PARSING_CORRECTION_KEYS: Allowlist = {
+  ...scalars(
+    "id", "recipeId", "userId", "timestamp", "source", "domain",
+    "successfulTier", "originalQuality", "totalCorrections",
+  ),
+  titleCorrection: { map: scalars("original", "corrected") },
+  portionsCorrection: { map: scalars("original", "corrected") },
+  timeCorrection: { map: scalars("original", "corrected") },
+  ingredientCorrections: {
+    list: scalars(
+      "type", "originalIndex", "correctedIndex", "originalLine",
+      "originalQuantity", "originalUnit", "originalName", "correctedLine",
+      "correctedName", "quantityChanged", "unitChanged", "nameChanged",
+    ),
+  },
+  instructionCorrections: {
+    list: scalars(
+      "type", "originalIndex", "correctedIndex", "originalText", "correctedText",
+    ),
+  },
+};
+
 /** What `consumeGuestCall` and `refundGuestCall` write (`llm/guest-import-quota.ts`). */
 export const GUEST_QUOTA_KEYS: Allowlist = {
   importIds: "strings",
@@ -218,6 +241,8 @@ function ownSubcollection(name: string, keys: Allowlist): SectionDef["read"] {
 export const ACCOUNT_SECTIONS: readonly SectionDef[] = [
   // deleteTagOverridesLog
   { name: "tag_overrides_log", read: byUserId("tag_overrides_log", TAG_OVERRIDE_KEYS) },
+  // deleteParsingCorrections
+  { name: "parsing_corrections", read: byUserId("parsing_corrections", PARSING_CORRECTION_KEYS) },
   {
     // deleteGuestQuota
     name: "guest_quota",

@@ -45,6 +45,7 @@ import {
   deletePersonalTags,
   deletePersonalTagGroups,
   deleteTagOverridesLog,
+  deleteParsingCorrections,
   deleteCookSnaps,
   deleteActivityEvents,
   deleteShoppingListTemplates,
@@ -356,6 +357,7 @@ export async function runAccountDeletionWithDeps(
     ["personal_tags", () => deletePersonalTags(database, uid)],
     ["personal_tag_groups", () => deletePersonalTagGroups(database, uid)],
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
+    ["parsing_corrections", () => deleteParsingCorrections(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
     [

@@ -121,6 +121,43 @@ export async function deleteTagOverridesLog(
   return true;
 }
 
+// A user's own correction log can run past one batch; paging keeps each read
+// small and a re-run after a partial failure simply finds what is left.
+export const PARSING_CORRECTIONS_PAGE = 500;
+
+export async function deleteParsingCorrections(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  // Linked PII: userId plus the raw ingredient and instruction lines the user
+  // typed, written straight from the client. Nothing else erased this
+  // collection on account deletion.
+  let previous: Set<string> | null = null;
+  for (;;) {
+    const snap = await db
+      .collection("parsing_corrections")
+      .where("userId", "==", uid)
+      .limit(PARSING_CORRECTIONS_PAGE)
+      .get();
+    if (snap.empty) return true;
+    const paths = new Set(snap.docs.map((d) => d.ref.path));
+    const prior: Set<string> | null = previous;
+    // batchDeleteAll swallows a failed chunk, so a full page that cannot be
+    // deleted comes back unchanged; without this the loop re-reads it until
+    // the callable times out and the later cascade steps never run.
+    if (prior !== null && [...paths].every((p) => prior.has(p))) {
+      logger.error("[deletion-cascade] parsing-correction page did not shrink; stopping", {
+        uid_prefix: uid.slice(0, 6),
+        rows: snap.size,
+      });
+      return false;
+    }
+    previous = paths;
+    await batchDeleteAll(db, snap.docs);
+    if (snap.size < PARSING_CORRECTIONS_PAGE) return true;
+  }
+}
+
 export async function deleteCookSnaps(
   db: admin.firestore.Firestore,
   uid: string,
