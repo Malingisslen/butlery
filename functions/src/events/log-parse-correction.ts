@@ -64,7 +64,7 @@ export const HASH_REGEX = /^[a-f0-9]{16,128}$/i;
 export const HEAVY_REDACTION_THRESHOLD = 0.5;
 
 // The TTL policy on `expireAt` deletes the row after this.
-const CORRECTION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+export const CORRECTION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 
 export interface ParseCorrectionData {
   correctedField?: string;

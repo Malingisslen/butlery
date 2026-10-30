@@ -242,6 +242,7 @@
     "test:dead-share-collections": "ts-node src/__tests__/dead-share-collections.test.ts",
     "test:erasure-export-coverage": "ts-node src/__tests__/erasure-export-coverage.test.ts",
     "test:erasure-collection-coverage": "ts-node src/__tests__/erasure-collection-coverage.test.ts",
+    "test:backfill-retention-expiry": "ts-node src/__tests__/backfill-retention-expiry.test.ts",
     "test:rules:acquisition": "ts-node src/__tests__/acquisition-rules.test.ts",
     "test:rules:overwritten-versions": "ts-node src/__tests__/overwritten-versions-rules.test.ts",
     "test:rules:recipe-suggestions": "ts-node src/__tests__/recipe-suggestions-rules.test.ts",
@@ -253,7 +254,8 @@
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run",
     "backfill-parse-event-expiry": "ts-node src/admin/backfill-parse-event-expiry.ts",
-    "backfill-parse-event-expiry:dry-run": "ts-node src/admin/backfill-parse-event-expiry.ts --dry-run"
+    "backfill-parse-event-expiry:dry-run": "ts-node src/admin/backfill-parse-event-expiry.ts --dry-run",
+    "backfill-retention-expiry": "ts-node src/admin/backfill-retention-expiry.ts"
   },
   "engines": {
     "node": "22"
