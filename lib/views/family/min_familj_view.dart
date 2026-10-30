@@ -70,7 +70,7 @@ class _MinFamiljContent extends StatelessWidget {
       title: l10n.familyTitle,
       backTo: backTo,
       body: vm.isLoading
-          // The plate line says what it fetches (produktregler.md:163).
+          // The plate line says what it fetches.
           ? StateWidget.loading(message: l10n.loadingFamily)
           : (vm.hasError && vm.householdId == null)
           ? StateWidget.error(

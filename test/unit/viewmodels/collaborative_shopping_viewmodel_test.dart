@@ -411,7 +411,7 @@ void main() {
       });
 
       // P7-C4: the progress colour reads the generated member for the
-      // mode (tokens.json:522; NULAGE.md:71-74), the same member the
+      // mode, the same member the
       // retired ButleryColors extension read, in both modes.
       test(
         'progress colour follows the mode: success, warning, text.primary',
@@ -646,7 +646,7 @@ void main() {
       });
     });
 
-    // P6-U05 (flows-roles-budget.md:83, :132): a drop to read-only while the
+    // P6-U05: a drop to read-only while the
     // list is open is told once; a list that was read-only from the start is
     // not a drop.
     group('role lowered while open (P6-U05)', () {
@@ -685,7 +685,7 @@ void main() {
       });
     });
 
-    // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+    // BUT-2187: "Listan uppdaterades av namn" — read
     // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName.
     // No new Firestore field, no rules change.
     group('updated-by notice (BUT-2187)', () {

@@ -2,7 +2,7 @@
 //
 // A failure says what happened, what was kept when something was at stake,
 // and what you can do, as a button that is never "OK"
-// (content-style-guide.md:96; Komponentark v1:750). Code shows it with
+// (content-style-guide.md:96). Code shows it with
 // SnackBarUtils.showFailure or the InlineError widget; both always carry
 // that structure.
 //

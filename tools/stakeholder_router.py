@@ -43,7 +43,6 @@ HIGH_STAKES_PATTERNS = [
     "firestore.rules", "storage.rules",
     "lib/services/auth/**", "lib/services/security/**",
     "lib/services/session_timeout_service.dart",
-    "lib/services/device_integrity_service.dart",
     "lib/services/llm/**", "functions/src/llm/**",
     "lib/services/account/**",
     "functions/src/account/**", "functions/src/audit_logs/**",

@@ -5,13 +5,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/butlery_ink_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
-/// The sticky action bar over the bottom navigation (Komponentark v1
-/// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
-/// content's side margin; Skarmar v12 del 1 'Receptdetalj').
-///
-/// It holds the view's one saffron action (Grafisk manual v6:219): "Börja
+/// It holds the view's one saffron action: "Börja
 /// laga" on your own recipe, "Spara till mitt kök" on someone else's
-/// (Skarmar v12 etapp 11). The other button is ink. Below 360 dp the
+/// The other button is ink. Below 360 dp the
 /// buttons stack.
 class RecipeActionBar extends StatelessWidget {
   const RecipeActionBar({
@@ -39,6 +35,11 @@ class RecipeActionBar extends StatelessWidget {
   static const allAtHomeKey = ValueKey('test-recipe-detail-all-at-home');
 
   static const double _stackBelow = 360;
+
+  // "Lägg 7 varor i inköpslistan" is far longer than "Börja laga" and broke
+  // onto two lines at equal widths; the two own-recipe buttons share 2:3.
+  static const int _ownRecipeFirstFlex = 2;
+  static const int _ownRecipeSecondFlex = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -130,9 +131,15 @@ class RecipeActionBar extends StatelessWidget {
             }
             return Row(
               children: [
-                Expanded(child: first),
+                Expanded(
+                  flex: isOthersRecipe ? 1 : _ownRecipeFirstFlex,
+                  child: first,
+                ),
                 const SizedBox(width: AppDimensions.space8),
-                Expanded(child: second),
+                Expanded(
+                  flex: isOthersRecipe ? 1 : _ownRecipeSecondFlex,
+                  child: second,
+                ),
               ],
             );
           },

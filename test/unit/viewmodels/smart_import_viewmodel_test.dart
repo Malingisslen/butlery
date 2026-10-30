@@ -767,7 +767,6 @@ Blanda allt och rulla till bollar.''';
 
   // P5-U06 (import-av-recept ERROR): a failure is three-part
   // (content-style-guide.md:87-97) and draws the other routes it carries
-  // (produktregler.md:557, 9.2 Fel: availableStrategies "ritas").
   group('startImport — the three-part failure', () {
     void failWith(List<String>? strategies) {
       when(
@@ -831,7 +830,7 @@ Blanda allt och rulla till bollar.''';
   });
 
   // BUT-2168: the most helpful route stands first, by cause
-  // (flows-roles-budget.md, flow 03 `hämtar`).
+  // (flow 03 `hämtar`).
   group('startImport — the first route follows the cause', () {
     const allStrategies = ['URL Import', 'Text Import', 'Photo Import'];
     final cases = <ImportErrorCode?, List<ImportRoute>>{

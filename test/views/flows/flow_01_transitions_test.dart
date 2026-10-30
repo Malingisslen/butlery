@@ -1,11 +1,10 @@
 /// P8-U03 · flow 01, the week menu transitions that only the view decides
-/// and that had no test (flows-roles-budget.md; fas2/block288-
-/// uxfrysning.json overgangar; fas2/ux-beslut.json D-03 and D-04).
+/// and that had no test
 ///
 /// - TR::FLOW::01::tom-vecka::generera: an empty week, Generera, and the
-///   week is planned in the same view (#veckogenererar).
+///   week is planned in the same view.
 /// - TR::FLOW::01::vecka-med-rätter::generera: a week with dishes asks
-///   "Skriv över" BEFORE anything is computed (flows-roles-budget.md).
+///   "Skriv över" BEFORE anything is computed.
 /// - TR::FLOW::01::resultat::placera-i-veckan (D-04): the generated result
 ///   is not in the week; placing it is its own step, with two ways.
 /// - TR::FLOW::01::placering::kvitto-7-s-andra (D-04): after the automatic
@@ -112,7 +111,7 @@ void main() {
   group('TR::FLOW::01::genererar::offline', () {
     // veckomeny_view_flow01_test.dart pins the button while offline; this is
     // the connection going away WHILE the week is planned
-    // (flows-roles-budget.md, "avbrutet + banner, tidigare vecka orörd";
+    // ("avbrutet + banner, tidigare vecka orörd";
     // veckomeny_view.dart:186-199).
     testWidgets('the connection goes during the planning: nothing is placed, '
         'the saved week stays, and the view says it stopped', (tester) async {
@@ -316,7 +315,7 @@ void main() {
     });
   });
 
-  // BUT-2157 (flows-roles-budget.md): Avbryt keeps the earlier
+  // BUT-2157: Avbryt keeps the earlier
   // suggestion and never writes the week. No REQUIRED transition names it,
   // so it carries no census id.
   group('BUT-2157 Avbryt planeringen', () {
@@ -377,7 +376,7 @@ void main() {
     });
   });
 
-  group('ux-beslut D-03: no long wait and no background choice', () {
+  group('no long wait and no background choice', () {
     testWidgets('a planning that takes 40 s stays the same state in the same '
         'view, with no "Fortsätt i bakgrunden"', (tester) async {
       await runOnMonday(() async {

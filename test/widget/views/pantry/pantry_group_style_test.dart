@@ -1,5 +1,5 @@
-/// The pantry's place groups and its add button as drawn in Skarmar v12
-/// etapp 2 #skafferivyn, in the dark theme where the phone test found them
+/// The pantry's place groups and its add button
+/// in the dark theme where the phone test found them
 /// off: a paper bar on each group band, a saffron bar on "går ut snart", and
 /// an ink add button on the dark page.
 library;

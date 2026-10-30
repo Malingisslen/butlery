@@ -69,7 +69,7 @@ class ConfirmationDialogs {
               children: [
                 Text(message, style: AppTextStyles.bodyLarge),
                 const SizedBox(height: AppDimensions.space32),
-                // Plate line plus text, never a spinner (produktregler.md:163,
+                // Plate line plus text, never a spinner (
                 // B-18). The line carries the text as its semantic label.
                 ExcludeSemantics(
                   child: Text(

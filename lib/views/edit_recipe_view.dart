@@ -39,6 +39,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/recipe/recipe_form/step_merge_link.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/recipe/unsaved_changes_dialog.dart';
@@ -239,8 +240,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  /// Mönster 4 · Modal (Komponentark v1:57, :91-97; Skarmar v12 etapp 4
-  /// #editorutkast): the editor is a modal with X, never a back arrow. The
+  /// Mönster 4 · Modal
+  /// : the editor is a modal with X, never a back arrow. The
   /// bar is light, with the title in 14/700 and the draft state to the
   /// right. Closing goes through the same unsaved-changes guard as the
   /// system back gesture (PopScope above).
@@ -267,7 +268,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ),
     );
     // Q6-08 = A: someone else's recipe is not edited, a change is suggested
-    // (produktregler.md:247, the menu item's own words).
+    // (the menu item's own words).
     final suggests = context.select<RecipeFormViewModel, bool>(
       (vm) => vm.suggestsChange,
     );
@@ -342,8 +343,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (viewModel.editMode == null ||
         mode == EditMode.owner ||
         mode == EditMode.edit) {
-      // The view's one primary action (Grafisk manual v6:219; Skarmar v12
-      // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
+      // Busy keeps the name and draws the plate line.
       final blocker = viewModel.isValid ? null : viewModel.saveBlocker;
       return BottomActionContainer(
         child: Column(
@@ -405,7 +405,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.formBlockGap),
       ],
       // BUT-1845: options and value must come from ONE read of the
       // stored value — the dropdown's constructor assert re-checks the
@@ -420,7 +420,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         ],
         onChanged: viewModel.setMealType,
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Image management
       if (!suggests) ...[
@@ -442,7 +442,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           isLoading: viewModel.isUploadingImage,
         ),
         RecipeImagePermissionNotice(viewModel: viewModel),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.formBlockGap),
       ],
 
       // Title field
@@ -463,7 +463,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ]),
         ),
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Description field
       LabeledField(
@@ -482,7 +482,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ]),
         ),
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Portions field
       LabeledField(
@@ -497,7 +497,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           validator: FormValidators.portions(),
         ),
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Time field
       LabeledField(
@@ -512,7 +512,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           validator: FormValidators.cookingTime(),
         ),
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Portion scaler — scale ingredients when portions change.
       // Uses immutable original recipe data as base to prevent compounding
@@ -522,7 +522,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           widget.recipe.core.portions != null &&
           widget.recipe.core.portions! > 0)
         Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.space32),
+          padding: const EdgeInsets.only(bottom: AppDimensions.formBlockGap),
           child: PortionScaler(
             originalPortions: widget.recipe.core.portions!,
             originalIngredients: widget.recipe.ingredients
@@ -549,7 +549,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onMoveLineToSection: viewModel.moveIngredientLineToSection,
         canAddHeading: viewModel.state.ingredientSectionState.canAddHeading,
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Instructions dynamic list
       DynamicListBuilder(
@@ -560,8 +560,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onLastFilled: viewModel.ensureTrailingInstructionLine,
         onRemove: viewModel.removeInstruction,
         onReorder: viewModel.reorderInstruction,
+        onMergeWithNext: (i) =>
+            StepMergeLink.mergeWithUndo(context, viewModel, i),
       ),
-      const SizedBox(height: AppDimensions.space32),
+      const SizedBox(height: AppDimensions.formBlockGap),
 
       // Personal tags selector (select from predefined tags)
       // Users can create new tags via the "Hantera" button
@@ -576,7 +578,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
         // Auto-generated tags management (allergens, dietary, etc.)
         _buildManageTagsButton(context, viewModel),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.formBlockGap),
 
         // Rating field
         LabeledField(
@@ -598,7 +600,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             validator: FormValidators.rating(),
           ),
         ),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.formBlockGap),
 
         // Source URL field
         StyledInput(
@@ -616,7 +618,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           onChanged: viewModel.setSourceUrl,
           validator: FormValidators.recipeSourceUrl(),
         ),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.formBlockGap),
 
         // BUT-1057: Related recipes section — link/unlink other recipes.
         // Only shown when editing an existing recipe (originalRecipe != null).
@@ -756,9 +758,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     }
   }
 
-  /// P6-U05 (flows-roles-budget.md:83: "öppna redigeringsvyer stängs med
-  /// förklaring, osparat erbjuds som kopia"; :132: the drop takes effect at
-  /// once in open views).
+  /// P6-U05
   ///
   /// Nothing unsaved: the editor closes and a snackbar says why, with Stäng
   /// (content-style-guide.md:96-97). Unsaved edits: a dialog that cannot be

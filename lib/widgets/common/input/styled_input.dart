@@ -405,14 +405,13 @@ class StyledInput extends StatelessWidget {
         // Focus is the ring outside the box (ButleryFocusRing below); the
         // edge keeps its resting width and colour, focused or not, with or
         // without an error: "fokus är ringen (2 px/3 px offset), kanten
-        // byter aldrig tjocklek" (Grafisk manual v6:423; Komponentark
-        // v1:657). This replaces BUT-533's 3 px saffron edge.
+        // byter aldrig tjocklek"
+        // This replaces BUT-533's 3 px saffron edge.
         focusedBorder: borders.resting,
         errorBorder: borders.error,
         focusedErrorBorder: borders.error,
         // Disabled: 1 px surface.disabled edge on surface.raised, never
-        // opacity (Grafisk manual v6:423; Komponentark v1:423
-        // light, :514 dark).
+        // opacity
         disabledBorder: borders.disabled,
       ),
     );

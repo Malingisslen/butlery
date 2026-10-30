@@ -127,7 +127,7 @@ void main() {
 
     // P7-A4: with the master toggle off the category rows are disabled, drawn
     // in text.disabled and never faded (tokens.json:41 "Opacitet är aldrig
-    // ett tillstånd", :198; Butlery tillganglighetshandoff).
+    // ett tillstånd", :198).
     for (final dark in [false, true]) {
       testWidgets('${dark ? 'dark' : 'light'}: master off draws the categories '
           'disabled, with no Opacity', (tester) async {
@@ -439,7 +439,6 @@ void main() {
 
     // P6-U07: notifications off in the phone — a row at the top leads to the
     // system settings and the switches stay visible but inactive
-    // (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
     testWidgets(
       'notifications off in the phone: top row, switches visible but inactive',
       (tester) async {

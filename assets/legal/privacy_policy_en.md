@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 20, 2026
-**Version:** 1.19.0
+**Last updated:** October 29, 2026
+**Version:** 1.25
 
 ---
 
@@ -35,7 +35,9 @@ We collect the following types of personal data when you use Butlery:
 - **Profile information:** Display name, biography, food preferences
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
 - **Social features:** Friends, shares, messages
+- **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
 - **Communications:** Messages you send to us or other users
+- **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone.
 
 ### 3.2 Information we collect automatically
 
@@ -44,11 +46,13 @@ We collect the following types of personal data when you use Butlery:
 - **Technical data:** IP address, connection type
 - **Analytics data:** Usage statistics (only with your consent)
 - **Notification records:** Delivery and engagement records for notifications — which notification was sent to you (or that you triggered to others), when, its delivery status, and whether you opened it
+- **Import log:** When you import a recipe, we store your user id, the page address (without certain parameters that can contain sign-in details), the website's name and how the import went, for example which import method you used, whether it succeeded, how long it took and whether AI was used. We use the log to see which websites import works on and to fix errors. The log is deleted automatically about 30 days after the import, even if the account has already been deleted.
 
 ### 3.3 Information from third parties
 
 - **Imported recipes:** Recipes you import from external websites
 - **Sign-in with Google or Apple:** If you choose "Continue with Google" or "Continue with Apple", we receive your name, your email address and your user ID at Google or Apple. See section 6.5.
+- **The guest list during the test period:** If you have asked to try Butlery before the app is open to everyone, we put your email address on a guest list so that you can create an account. Only those of us who run Butlery can see the list, and we use the address for nothing else. It is removed once you have created the account and confirmed the email address. An invitation you do not use stops being valid after 30 days and is deleted automatically shortly after. If you want us to remove it sooner, write to integritet@butlery.se.
 
 ### 3.4 If you try Butlery as a guest
 
@@ -73,6 +77,10 @@ We process your personal data based on the following legal grounds under GDPR:
 | Security and fraud prevention | Legitimate interest (Art. 6.1.f) | Protect the service |
 | Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
 | Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
+| Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f) | You asked to try Butlery; you can object (Art. 21) |
+| Import log (see section 3.2) | Legitimate interest (Art. 6.1.f) | Make import work and fix errors; you can object (Art. 21) |
+| Samples from AI recipe reading (see section 5.2) | Consent (Art. 6.1.a) | Improve recipe reading; you can withdraw at any time |
+| Feedback you send in the app | Legitimate interest (Art. 6.1.f) | Answer and act on what you report; you can object (Art. 21) |
 
 ---
 
@@ -121,6 +129,8 @@ We use your personal data for the following purposes:
 - Suggest weekly menus and recipe enhancements
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
+
+**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (the Netherlands). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
 
 **Shared allergies within your household (if you have consented):**
 
@@ -174,7 +184,7 @@ We share your personal data with the following third parties:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
 - **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis) via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's EU multi-region (`eu`). No transfer to the USA.
+- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's `europe-west4` region (the Netherlands). No transfer to the USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** Images submitted for OCR processing may contain personal information visible in the photograph. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
@@ -206,17 +216,17 @@ We may share information if:
 
 ### 6.4 Data Processor Inventory (GDPR Art. 13.1.f)
 
-The following is a complete list of the data processors that receive your data, the categories of data they process, where processing takes place, and the legal basis for any third-country transfer (Chapter V GDPR).
+The following is a list of the data processors that receive your data, the categories of data they process, where processing takes place, and the legal basis for any third-country transfer (Chapter V GDPR).
 
 | Processor | Data received | Hosting region | Legal basis for transfer |
 |-----------|---------------|----------------|--------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | EU multi-region (`eu`) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a9t9 software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
 
-We do not engage any other data processors. This list is updated whenever our subprocessor chain changes.
+This list is updated whenever our subprocessor chain changes. Older versions of the app also sent data to Talsec, see section 6.6.
 
 ### 6.5 Sign-in with Google or Apple
 
@@ -238,15 +248,27 @@ We fill in the name for you when you create the account, and you can change it b
 
 **When you delete your account:** If you signed in with Apple and request deletion in the app on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account straight away, before the deletion starts. If Apple does not respond, the account is deleted anyway. On Android and the web we cannot ask Apple to do this yet; there you can remove Butlery yourself under Sign in with Apple in your Apple account settings. If you signed in with Google, you can remove Butlery's access yourself in your Google account settings.
 
+### 6.6 Security check in older app versions (Talsec)
+
+Versions of the app for Android and iPhone built before October 29, 2026 contained a security check, freeRASP from Talsec (Lynx SFT s.r.o., Czech Republic). Each time the app started, it sent information about the app's and the phone's security status, a device id and the phone's IP address to Talsec. Talsec can work out your approximate location (country, region, city) from the IP address. Together with the IP address, the device id is personal data.
+
+- **Purpose:** Detect tampered apps and phones to protect the service.
+- **Legal basis:** Legitimate interest (Art. 6.1.f). You can object (Art. 21).
+- **Talsec's own use:** Talsec also uses the data to improve its own products.
+- **Storage and transfer:** Talsec keeps the data for about 12 months, on servers inside and outside the EU, including in the USA. The transfer outside the EU uses Standard Contractual Clauses (SCCs). [Talsec's data processing agreement](https://www.talsec.app/data-processing-agreement)
+- **How it stops:** New versions of the app do not contain the check. Update the app and no more data is sent to Talsec.
+
 ---
 
 ## 7. Data transfers outside EU/EEA
 
-Some of our service providers (Google Firebase, Google Analytics) are located in the USA. We ensure that:
+Some of our service providers (Google Firebase, Google Analytics) are located in the USA. Older versions of the app also sent data to Talsec, which has servers in the USA (see section 6.6). We ensure that:
 
-- Transfers are made according to the EU-US Data Privacy Framework
+- Every transfer has a legal basis, given per provider in sections 6.4 and 6.6
 - Appropriate safeguards are in place
 - Your rights under GDPR are maintained
+
+If you want a copy of the safeguards for a transfer, write to integritet@butlery.se.
 
 If you sign in with Google or Apple, sign-in goes through Firebase Authentication, with the same safeguards (see section 6.5).
 
@@ -257,9 +279,11 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
+| Email address on the guest list (an invitation to create an account) | Until the account is created and the email address confirmed. An unused invitation stops being valid after 30 days and is deleted automatically shortly after | Legitimate interest |
 | Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
@@ -275,8 +299,11 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the latest decision. If a decision is reviewed, the earlier decision is kept in the same record | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
+| Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, even if the account has already been deleted | Legitimate interest |
+| Samples from AI recipe reading (text to and from the AI, without images and without names, email or anything else that identifies you) | Deleted automatically after 30 days, even if the account has already been deleted | Consent |
+| Feedback you send in the app, with screenshot | Until you delete your account. It is then deleted with its screenshots | Legitimate interest |
 
-After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
+After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored.
 
 ---
 
@@ -293,15 +320,16 @@ You have the following rights under GDPR:
 - **How:** Update in the app settings or contact us
 
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
-- Delete your account and all your data
-- **How:** Profile > Account Management > Delete account
-- **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
+- Delete your account and your data
+- **How:** More > Account & security > Delete account permanently
+- **Note:** The account is deleted 7 days after your request. Which data is kept longer, and for how long, is set out in section 8. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
 
 ### 9.4 Right to data portability (Art. 20)
-- Export all your data in machine-readable format (JSON)
-- **How:** Profile > Account Management > Export my data
+- Export your data in machine-readable format (JSON)
+- **How:** More > Privacy and data > Export my data
 - **Format:** JSON (universal format)
 - **Sign-in methods:** The export shows which sign-in methods are linked to the account (email and password, Google or Apple) and the email address from Google or Apple. Sign-in tokens and the profile picture link are not included.
+- **The import log** is not included in the export. To see it, contact integritet@butlery.se.
 
 ### 9.5 Right to restriction (Art. 18)
 - Restrict processing of your data
@@ -309,7 +337,7 @@ You have the following rights under GDPR:
 
 ### 9.6 Right to withdraw consent (Art. 7.3)
 - Withdraw consent at any time
-- **How:** Profile > Account Management > Manage consents
+- **How:** More > Privacy and data > Consents
 - **Effect:** Only prospective, not retroactive
 
 ### 9.7 Right to object (Art. 21)
@@ -362,9 +390,9 @@ Butlery is a mobile application and does not use browser cookies. Instead, we us
 - **Authentication tokens:** Secure tokens managed by Firebase Auth to keep you logged in
 - **Encrypted local database:** Your recipes and data are cached locally using AES-256 encrypted storage (SQLCipher) for offline access
 - **Secure storage:** Sensitive data (encryption keys) is stored in platform-provided secure storage (iOS Keychain / Android Keystore)
-- **Food photos waiting to be sent:** Photos you take while offline are kept temporarily on your phone until they have been sent or you throw them away. A photo that has not been sent is thrown away automatically after 30 days. The photo is shown to others only after it has been sent.
+- **Images waiting to be sent:** Images you take or choose while offline (food photos, comment photos, chat images and a profile picture) are kept temporarily in the app on your phone, without location data, until they have been sent or you throw them away. An image that has not been sent is thrown away automatically after 30 days. A chat image that is waiting appears to the recipient as an empty box until it has been sent. Other images are shown to others only after they have been sent.
 
-You can manage data processing consent in: **Profile > Account Management > Manage consents**
+You can manage data processing consent in: **More > Privacy and data > Consents**
 
 ---
 
@@ -390,11 +418,9 @@ We may update this policy when:
 - Our data processing changes
 
 For significant changes:
-- We will show a notification in the app
-- We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 11, 2026
+**Last change:** October 29, 2026
 **Version history:** Available upon request
 
 ---
@@ -437,10 +463,10 @@ To exercise your GDPR rights:
 |-------|---------------|--------------|
 | **Access** | See what data we have | Contact integritet@butlery.se |
 | **Rectification** | Correct errors | Settings or contact us |
-| **Erasure** | Delete everything | Profile > Delete account |
-| **Portability** | Export data | Profile > Export my data |
+| **Erasure** | Delete the account | More > Account & security > Delete account permanently |
+| **Portability** | Export data | More > Privacy and data > Export my data |
 | **Restriction** | Pause processing | Contact integritet@butlery.se |
-| **Withdraw consent** | Take back approval | Profile > Manage consents |
+| **Withdraw consent** | Take back approval | More > Privacy and data > Consents |
 | **Object** | Protest processing | Contact integritet@butlery.se |
 | **Complain** | Report to authority | Contact IMY (imy.se) |
 

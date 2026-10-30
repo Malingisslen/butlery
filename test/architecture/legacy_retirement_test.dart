@@ -2,13 +2,13 @@
 //
 // The migration plan (2026-09-20) says "Ingen permanent samexistens": once a
 // component has moved to the design system, the old one is deleted, not
-// kept beside it. Package 7 deleted the old bars (B-45, beslutslogg.md:52),
-// the spinners and the pea pod (B-18, beslutslogg.md:25; produktregler.md:163),
+// kept beside it. Package 7 deleted the old bars (B-45),
+// the spinners and the pea pod (B-18),
 // the coloured snackbars and their one-line error channel
-// (Komponentark v1:745-750; content-style-guide.md:87-97), "OK" as a label
+// (content-style-guide.md:87-97), "OK" as a label
 // (content-style-guide.md:77, :96), the Cupertino dialogs (B-45) and the
 // ButleryColors compatibility extension with its seasonal tint
-// (tokens.json:522; NULAGE.md:71-74; Q7-01 = A).
+// (Q7-01 = A).
 //
 // Every name below is matched on code only, so a comment that tells the
 // history is allowed. The patterns are word-bounded: showLoadingIndicator,
@@ -27,7 +27,7 @@ final _retired = <String, RegExp>{
   'LoadingIndicator → PlateLine / StateWidget.loading (B-18)': RegExp(
     r'\bLoadingIndicator\b',
   ),
-  'PeaLoading* → PlateLine (produktregler.md:163)': RegExp(r'\bPeaLoading\w*'),
+  'PeaLoading* → PlateLine': RegExp(r'\bPeaLoading\w*'),
   'AdaptiveActivityIndicator → PlateLine (B-18)': RegExp(
     r'\bAdaptiveActivityIndicator\b',
   ),
@@ -43,7 +43,7 @@ final _retired = <String, RegExp>{
   'SyncIndicator (retired, package-3 A-03/A-09)': RegExp(
     r'\bSyncIndicator\b',
   ),
-  'SnackbarWidgets → SnackBarUtils (Komponentark v1:745-750)': RegExp(
+  'SnackbarWidgets → SnackBarUtils': RegExp(
     r'\bSnackbarWidgets\b',
   ),
   'SnackBarUtils.showCustom → SnackBarUtils.showSuccess/showFailure': RegExp(

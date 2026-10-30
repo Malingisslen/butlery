@@ -1412,7 +1412,7 @@ void main() {
     });
   });
 
-  // P6-U05 (flows-roles-budget.md:83, :132): the live week drops this user
+  // P6-U05: the live week drops this user
   // to read-only. The controls follow canEdit; the notice says why.
   group('role lowered while open (P6-U05)', () {
     test('editor to read-only on the same week raises the notice', () async {

@@ -19,6 +19,7 @@ import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
+import { signalIfCrossed } from "../middleware/ai_cap_signal";
 
 export const GUEST_IMPORT_LIMIT = 3;
 export const GUEST_CALL_LIMIT = 12;
@@ -115,7 +116,9 @@ export async function consumeGuestCall(
   const quotaRef = deps.db.collection(Collections.guestQuotas).doc(uid);
   const dailyRef = deps.db.doc("system/guestImportLimits");
 
-  return deps.db.runTransaction(async (tx) => {
+  let shared: { count: number; limit: number } | null = null;
+  const charge = await deps.db.runTransaction(async (tx) => {
+    shared = null;
     const quotaSnap = await tx.get(quotaRef);
     const { ids, held, calls } = readQuota(quotaSnap);
     if (calls >= GUEST_CALL_LIMIT) throw limitReached("guest-call-limit");
@@ -142,6 +145,7 @@ export async function consumeGuestCall(
         dailyCount: dailyCount + 1,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      shared = { count: dailyCount + 1, limit: dailyLimit };
       held[importId] = { open: 1, day, spent: false };
     } else {
       const entry = held[importId] ?? { open: 0, day: null, spent: false };
@@ -155,6 +159,10 @@ export async function consumeGuestCall(
     });
     return { newImport, importId };
   });
+  // After the transaction, which may run its callback more than once.
+  const crossed = shared as { count: number; limit: number } | null;
+  if (crossed) signalIfCrossed({ cap: "guest_day", ...crossed });
+  return charge;
 }
 
 /**

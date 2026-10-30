@@ -1,5 +1,5 @@
-/// B96-2: the locked logo lockup (Skarmar v12 del 2 #inloggning,
-/// #inloggningmorkt). The masters embedded in [kButleryLockupLightSvg] and
+/// B96-2: the locked logo lockup
+/// The masters embedded in [kButleryLockupLightSvg] and
 /// [kButleryLockupDarkSvg] must stay byte-identical to the vendored files in
 /// `assets/brand/`, and the widget must pick the dark variant by theme
 /// brightness, paint without error, and size to the viewBox aspect ratio.

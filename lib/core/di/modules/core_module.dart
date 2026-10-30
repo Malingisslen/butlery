@@ -67,8 +67,6 @@ import 'package:butlery/services/account/export/erasure_residue_export_manager.d
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
-// Device security
-import 'package:butlery/services/device_integrity_service.dart';
 // Feature flags
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
@@ -137,11 +135,10 @@ class CoreModule implements DIModule {
       FeedbackRepository,
       InteractionLogger,
       FeedbackService,
-      // Auth MFA and device integrity
+      // Auth MFA
       AuthMfaService,
       ProviderSignInService,
       PasswordResetService,
-      DeviceIntegrityService,
       // Onboarding progress (BUT-743)
       OnboardingProgressService,
     ];
@@ -430,11 +427,6 @@ class CoreModule implements DIModule {
 
       // Consent service for GDPR Article 7 (Consent Management)
       // ConsentService: registered in configureUserScope
-
-      // Device integrity service for root/jailbreak detection
-      container.registerLazySingleton<DeviceIntegrityService>(
-        () => DeviceIntegrityService(),
-      );
 
       // PWA install service (web only, lazy)
       container.registerLazySingleton<PwaInstallService>(

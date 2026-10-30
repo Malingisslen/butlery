@@ -22,6 +22,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const db = admin.firestore();
 
@@ -79,7 +80,7 @@ export const exportAuditLogs = onCall<ExportAuditLogsRequest>(
   {
     memory: "512MiB",
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<ExportAuditLogsResponse> => {

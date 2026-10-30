@@ -1,27 +1,21 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     
     <!-- PERMISSIONS för Internet och WebView -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
-    <!-- NYA PERMISSIONS för Fas 15: Kamera och Galleri -->
+    <!-- NYA PERMISSIONS för Fas 15: Kamera -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     
-    <!-- För nyare Android-versioner (API 33+) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
     <!-- BUT-414: Android 13+ runtime notification permission. Pre-13 devices ignore this. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- BUT-1242: scheduled cooking-timer expiry alerts (flutter_local_notifications
-         zonedSchedule with exactAllowWhileIdle). USE_EXACT_ALARM lets a backgrounded
-         timer fire at the exact wall-clock second without a runtime prompt — a cooking
-         timer is the sanctioned alarm/timer use case for this permission (targets API 33+).
+         zonedSchedule).
          RECEIVE_BOOT_COMPLETED + the two receivers below let the plugin re-arm pending
          alerts after the app is killed or the device reboots. -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -31,6 +25,11 @@
          Console declaration at submission time must state this same use
          (see STORE_SUBMISSION_CHECKLIST.md). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- The app shows no ads; firebase_analytics merges these in, and Play's
+         advertising-ID declaration answers "no" (Malin 2026-10-29). -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
 
     <application
         android:label="Butlery"
@@ -104,7 +103,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="butlery.app" />
+                <data android:scheme="https" android:host="butlery.se" />
             </intent-filter>
             
             <intent-filter>
@@ -149,6 +148,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
     </application>
     
     <!-- Required to query activities that can process text, see:
@@ -157,7 +159,7 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <!-- Köksbutlern (tasks/koksbutlern-plan.md): without this, flutter_tts's
+        <!-- Köksbutlern: without this, flutter_tts's
              speak() silently no-ops on some Android 11+ OEM ROMs, because
              package visibility (API 30+) hides the installed TTS engine from
              the app unless it's declared here (vendor panel condition). -->

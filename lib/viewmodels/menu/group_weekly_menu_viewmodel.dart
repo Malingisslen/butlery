@@ -28,7 +28,7 @@ enum GroupMenuEditProblem {
   undoFailed,
 
   /// P6-U05: the user's role dropped to read-only while the week was open
-  /// (flows-roles-budget.md:83, :132). Not a failed edit: the notice says why
+  /// Not a failed edit: the notice says why
   /// the edit controls just went away.
   roleLowered,
 }

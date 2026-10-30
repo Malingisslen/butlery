@@ -69,4 +69,56 @@ void main() {
       addTearDown(m.dispose);
     });
   });
+
+  // BUT-2455: an import can cut one step in two; the form joins them back.
+  group('mergeWithNext and splitAt', () {
+    test('joins a line with the next one, separated by a space', () {
+      final m = mgr(['Smält smöret. ', ' Häll i grädden.', 'Servera.']);
+      addTearDown(m.dispose);
+      expect(m.mergeWithNext(0), 'Smält smöret. Häll i grädden.');
+      expect(m.values, ['Smält smöret. Häll i grädden.', 'Servera.']);
+    });
+
+    test('an empty side just drops out', () {
+      final m = mgr(['Smält smöret.', '', 'Servera.']);
+      addTearDown(m.dispose);
+      expect(m.mergeWithNext(0), 'Smält smöret.');
+      expect(m.values, ['Smält smöret.', 'Servera.']);
+    });
+
+    test('the last line has nothing to merge with', () {
+      final m = mgr(['a', 'b']);
+      addTearDown(m.dispose);
+      expect(m.mergeWithNext(1), isNull);
+      expect(m.mergeWithNext(-1), isNull);
+      expect(m.values, ['a', 'b']);
+    });
+
+    test('splitAt puts both original lines back in place', () {
+      final m = mgr(['a', ' b ', 'c', 'd']);
+      addTearDown(m.dispose);
+      final merged = m.mergeWithNext(1)!;
+      expect(m.splitAt(1, merged, ' b ', 'c'), isTrue);
+      expect(m.values, ['a', ' b ', 'c', 'd']);
+    });
+
+    test('splitAt does nothing once the merged line has moved', () {
+      final m = mgr(['a', 'b', 'c']);
+      addTearDown(m.dispose);
+      final merged = m.mergeWithNext(0)!; // a b, c
+      m.moveAt(0, 1); // c, a b
+      expect(m.splitAt(0, merged, 'a', 'b'), isFalse);
+      expect(m.values, ['c', 'a b']);
+    });
+
+    test('controllers show the merged and restored text at each index', () {
+      final m = mgr(['a', 'b', 'c']);
+      addTearDown(m.dispose);
+      expect(m.controllers.map((c) => c.text), ['a', 'b', 'c']);
+      final merged = m.mergeWithNext(0)!;
+      expect(m.controllers.map((c) => c.text), ['a b', 'c']);
+      m.splitAt(0, merged, 'a', 'b');
+      expect(m.controllers.map((c) => c.text), ['a', 'b', 'c']);
+    });
+  });
 }

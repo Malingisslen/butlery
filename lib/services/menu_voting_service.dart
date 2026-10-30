@@ -78,7 +78,6 @@ class MenuVotingService extends BaseService {
       });
 
   /// Casts the user's ballot, or moves it while the vote is open
-  /// (produktregler 4.8).
   Future<bool> castVote(String menuId, MenuSlotVote vote, String optionId) =>
       _write(menuId, 'castVote', (ballot) {
         if (!vote.isActive ||

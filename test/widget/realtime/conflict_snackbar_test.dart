@@ -1,10 +1,9 @@
-/// P3-U08: the week menu's conflict snackbar (produktregler.md:104,
-/// ux-beslut.json D-04, block288-uxfrysning.json
+/// P3-U08: the week menu's conflict snackbar (
+/// block288-uxfrysning.json
 /// TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar).
 ///
 /// Pins: it fires only when the user's week edit lost; it stays exactly
 /// kConflictNoticeWindow (30 s), apart from the 7 s undo window; "Behåll min"
-/// (Skarmar v12 etapp 11 breda vyer.dc.html:221, produktregler.md:1119)
 /// re-applies the lost version once; and it persists under assistive
 /// navigation, as the undo primitive does until PQ-05.
 library;
@@ -115,8 +114,8 @@ void main() {
     await show(tester);
 
     expect(saved, 'Johan sparade veckan');
-    // The drawn label (Skarmar v12 etapp 11 #vmbkonflikt :221), not the
-    // column header "Ångra" (produktregler.md:99), which is a category.
+    // The drawn label, not the
+    // column header "Ångra", which is a category.
     expect(keepMine, 'Behåll min');
     expect(find.text(saved), findsOneWidget);
     expect(find.widgetWithText(InkSnackBarAction, keepMine), findsOneWidget);

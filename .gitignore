@@ -122,6 +122,8 @@ nul
 !tools/gen_role_paths.py
 # Role-org Phase-2 stakeholder router (committed tooling)
 !tools/stakeholder_router.py
+# Play internal-track upload from CI's bundle (committed tooling)
+!tools/play_upload_internal.py
 # Opus-vs-Sonnet review trial (committed tooling)
 !.claude/hooks/review_trial.py
 
@@ -221,3 +223,8 @@ brag-output-*/
 # consumed + deleted by /refresh-dossiers or the weekly /janitor — never committed)
 docs/org/dossier-staleness/*.stale
 test/views/design_states/shots/
+
+# JVM heap dumps can hold in-memory secrets such as signing passwords
+*.hprof
+*.keystore
+.claude/settings.local.json

@@ -120,8 +120,8 @@ Future<void> main() async {
           // so web App Check is not activated against staging.
           if (!EmulatorBootstrap.enabled && !(kIsWeb && firebaseEnv.isStaging))
             FirebaseAppCheck.instance.activate(
-              providerWeb: ReCaptchaV3Provider(
-                '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+              providerWeb: ReCaptchaEnterpriseProvider(
+                '6LdbQ_ktAAAAAIjXisgl2KfO2JmV-7uEUk4G68lw',
               ),
               providerAndroid: kDebugMode
                   ? const AndroidDebugProvider()

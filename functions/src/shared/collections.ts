@@ -114,4 +114,7 @@ export const Collections = {
   // BUT-920: one document per guest (anonymous) uid counting its AI imports.
   // Admin SDK only; firestore.rules denies every client read and write.
   guestQuotas: "guest_quotas",
+  // BUT-2463: the short links `createShortUrl` stores, keyed on the short code
+  // and carrying the creator's uid in `createdBy` and in `longUrl`.
+  deepLinks: "deep_links",
 } as const;

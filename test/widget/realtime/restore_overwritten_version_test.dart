@@ -1,5 +1,5 @@
 /// P5-U26b: "Återställ" for an overwritten week or own recipe, within 30 days
-/// (produktregler.md:104, :109; flows-roles-budget.md:36; PQ-01 = A).
+/// (PQ-01 = A).
 ///
 /// Pins the flow: one kept version goes straight to the confirmation, more
 /// than one are picked by their own id; the confirmation names what is

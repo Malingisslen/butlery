@@ -178,7 +178,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             if (!didPop) _confirmLeave();
           },
           child: ButleryPage.undersida(
-            // A subpage of Mitt hushåll (Komponentark v1:71-78). A form is a
+            // A subpage of Mitt hushåll. A form is a
             // focus mode, so the tab bar is not drawn (B-54).
             title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
             backTo: l10n.familyTitle,

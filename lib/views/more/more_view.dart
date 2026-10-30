@@ -95,7 +95,7 @@ class MoreView extends StatelessWidget {
             )
           else
             const _ProfileRow(),
-          // "Mer → Väntar på synk" (produktregler.md), only while
+          // "Mer → Väntar på synk", only while
           // something is waiting.
           QueueCountsBuilder(
             builder: (context, counts) => counts.waiting > 0

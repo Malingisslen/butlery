@@ -13,8 +13,6 @@ class XxxService extends BaseService {
 These services intentionally don't extend `BaseService` because they're pure-compute, ChangeNotifier-only, or 3rd-party wrappers without async Firebase ops:
 
 - `lib/services/feature_flags/feature_flag_service.dart`
-- `lib/services/device_integrity_service.dart`
-- `lib/services/cache/permission_cache_service.dart`
 - `lib/services/theme_service.dart` (only ChangeNotifier — needs UI rebuild signal)
 - `lib/services/performance/firebase_performance_service.dart`
 - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
@@ -31,6 +29,11 @@ These services intentionally don't extend `BaseService` because they're pure-com
   off the FRONT of the first page, before the recipe starts; mirror of `orphan_tail.dart`)
 - `lib/services/import/layout/frame_trim.dart` (pure function — applies BOTH page-edge
   trims, each decided from the untouched page so neither can mislead the other)
+- `lib/services/import/layout/page_reflow.dart` (pure functions — strips a screenshot's
+  own chrome off each page and drops the lines two overlapping screenshots share, before
+  `frame_trim.dart` sees the page; same category)
+- `lib/services/import/layout/line_reflow.dart` (pure function — rejoins the lines a
+  photo's OCR broke mid-sentence, before the splitter on the text path; same category)
 - `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; no Flutter
   and nothing third-party by design, so it runs under plain `dart test` and replays
   offline)

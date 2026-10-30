@@ -97,6 +97,7 @@ admin.initializeApp();
 
 // LLM Functions - Vertex AI / Gemini integration
 export { structureRecipe } from "./llm/structure-recipe";
+export { shadowCompareImport } from "./llm/shadow-compare-import";
 export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 
 // GDPR Article 15 Right of Access — server-side export of admin-only data
@@ -164,6 +165,8 @@ export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupExpiredSocialRequests } from "./cleanup/cleanup-expired-social-requests";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 export { cleanupOldSystemEvents } from "./cleanup/cleanup-system-events";
+// BUT-2463: short links older than 14 days are deleted with their clicks.
+export { cleanupExpiredDeepLinks } from "./cleanup/cleanup-deep-links";
 // BUT-920: guest accounts unused for 30 days are erased with everything in them.
 export { cleanupInactiveGuests } from "./cleanup/cleanup-inactive-guests";
 
@@ -187,6 +190,12 @@ export { verifySignupAge } from "./account/verify-signup-age";
 // BUT-920: sets the claim verifySignupAge withholds from a guest, once the
 // guest has linked a password to the same uid.
 export { finishGuestUpgrade } from "./account/finish-guest-upgrade";
+// BUT-2452 (ADR-0034): the guest list. Identity Platform blocking functions;
+// the CLI registers them as the project's beforeCreate/beforeSignIn triggers.
+export {
+  beforeCreateAllowlist,
+  beforeSignInAllowlist,
+} from "./account/signup-allowlist";
 
 // P6-U09: backup codes for two-step verification. Hashes only, server-only
 // collection; recovery proves the password server-side before any code.

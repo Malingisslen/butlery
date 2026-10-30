@@ -105,7 +105,6 @@ void main() {
         expect(find.text('Klassisk svensk husmanskost'), findsNothing);
 
         // Metadata and the rating are one line of text
-        // (Komponentark v1 receptlistrad)
         expect(_meta('45 min \u00B7 4 port \u00B7 \uFFFC4,5'), findsOneWidget);
       });
 

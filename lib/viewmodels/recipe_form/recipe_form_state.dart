@@ -59,6 +59,11 @@ class RecipeFormState extends ChangeNotifier {
   bool _isForking = false;
   String? _error;
 
+  // Bumped when the fields are replaced from outside the text inputs, so a
+  // view holding its own controllers knows to re-read them.
+  int _restoreRevision = 0;
+  int get restoreRevision => _restoreRevision;
+
   // Form data
   String _title = '';
   String _description = '';
@@ -801,6 +806,7 @@ class RecipeFormState extends ChangeNotifier {
         _ingredientsManager.values.length,
       );
 
+      _restoreRevision++;
       notifyListeners();
       return true;
     } catch (e) {

@@ -2984,6 +2984,11 @@ neither passed an `auditRepository` at all.
   **The same reading applies to the shopping-list precedent** (`exportSharedShoppingListsAsContributor`),
   whose contributor branch therefore also never returns a row and whose note also always fires.
   Pre-existing, not introduced here, and its own ticket.
+  **Superseded 2026-10-27:** the shopping-list precedent named above,
+  "`exportSharedShoppingListsAsContributor`", no longer exists (removed in BUT-1747, 2026-10-08).
+  `SharedShoppingListExport.export` queries `exportSharedShoppingListsOwned` and
+  `exportSharedShoppingListsAsMember`; `SocialExportManager` queries
+  `exportSharedShoppingListsReceived`. None of them queries `contributorUserIds`.
   Residual, named rather than discovered: a leaver's contribution can vanish from the export
   entirely if the dish is later displaced and the trail row ages past the 50-row cap. That is the
   already-accepted displacement gap, but it weighs more here — the leaver has no in-app fallback.
@@ -6669,3 +6674,64 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   then waits for the user as "Ny profilbild" with "Profilbilden kunde inte bytas.".
 - The previous picture's Storage object is still not removed when it is replaced, online or
   queued. Separate ticket.
+
+## BUT-2452 — the guest list: what the sign-up gate does not stop (2026-10-24)
+
+Decided with the gate (ADR-0034; Malin 2026-10-24, "Lösenord med verifiering"). The gate is
+`beforeCreateAllowlist` and `beforeSignInAllowlist` in `functions/src/account/signup-allowlist.ts`.
+
+- **An invite is spent before Firebase confirms the account when the address is already
+  verified.** For such a sign-up the function deletes the entry in the same transaction that
+  allows it. If Firebase then fails to create the account, the
+  invite is gone and an admin adds it again. Accepted: rare, visible to the invitee, and it is
+  what keeps two racing sign-ups from both using one invite.
+- **Guest upgrade is not gated.** Linking a credential to an anonymous account does not run
+  `beforeUserCreated`. Anonymous sign-in is off on butlery-prod, and the deploy read-back checks
+  that it still is. If it is ever turned on while the gate is on, this gap opens; re-check it when
+  the gate is switched off.
+- **Accounts created through the Admin SDK are not gated.** Blocking functions do not run for
+  them. Intended: only server code with project credentials can do it.
+- **A squatter keeps one session.** Someone who signs up with an invited address they do not own
+  (password, unverified) keeps the sign-up session on that one device; every later sign-in is
+  refused until the address is verified. The real owner takes the address back with "Glömt
+  lösenord" (or with Google for a Gmail address), which ends that session.
+- **An erased admin's uid stays on their invites until the invites expire** (BUT-2474, Malin
+  2026-10-28). Each `signup_allowlist` document carries the inviting admin's uid in `invitedBy`,
+  and the deletion cascade does not reach the collection. The document goes when it is used, when
+  an admin removes it, or when the Firestore TTL on `expireAt` removes it; the app sets `expireAt`
+  29 days 23 hours after the invite, and the TTL can run later than that.
+
+## BUT-2463 — short links: retention, erasure and what neither reaches (2026-10-28)
+
+Decided by Malin 2026-10-28 (plan `tasks/but-2463-deep-links-gdpr-plan.md`, N = 14 days).
+
+- **Retention is 14 days.** `cleanupExpiredDeepLinks` (`functions/src/cleanup/cleanup-deep-links.ts`)
+  runs daily at 03:30 UTC and deletes every `deep_links` document whose `createdAt` is older than
+  `DEEP_LINK_RETENTION_DAYS`, with its `clicks`, at most `MAX_DEEP_LINKS_PER_RUN` per run; the
+  rest waits for the next run.
+- **Erasure.** Tier 1 step `deep_links` (`deleteDeepLinks`) deletes the user's links on
+  `createdBy == uid`, with their `clicks`, and the residual probe counts what is left. The
+  Art. 15 section `deep_links` reads the same predicate.
+- **Clicks are no longer recorded.** The app's click write and its readers are gone, the rules
+  refuse every read and write under `clicks` and every update of a link, and rows already written
+  go with their link.
+- **A link can be read by code, not listed.** Any signed-in account may `get` a link whose code
+  it holds; `list` is refused.
+- **A link already sent cannot be recalled.** Deleting the document does not reach the copy in
+  the recipient's hands.
+- **A document whose `createdAt` is not a Timestamp** never matches the retention query; only the
+  cascade reaches it, on its creator's erasure.
+
+## ADR-0038 — AI recipe-reading samples outlive account deletion by up to 30 days (2026-10-29)
+
+Decided by Malin 2026-10-29 with the policy 1.25 wording, which says the samples are deleted after
+30 days "även om du har raderat kontot".
+
+- **Not erased at account deletion.** `llm_response_samples` rows carry `authUidHash`
+  (`hashUid`, a pseudonym, not a uid) and go only through the TTL on `expireAt`
+  (`RETENTION_DAYS` in `llm-sample-capture.ts`). The cascade does not reach the collection.
+- **Not in the Art. 15 export.** No export section reads the collection.
+- **The reset does reach it** (`reset-collection-lists.ts`).
+- Writers: `ocr-recipe-image.ts` and `structure-recipe.ts` call `captureLlmSample`; the app sends
+  those calls only after `ConsentService.hasConsent(ConsentPurpose.aiProcessing)`
+  (`llm_service.dart`), a client-side check.

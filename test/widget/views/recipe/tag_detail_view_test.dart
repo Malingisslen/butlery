@@ -131,7 +131,7 @@ void main() {
     tester,
   ) async {
     // Proves: the isLoading && tag==null branch shows the plate line with
-    // "Hämtar taggen …" (produktregler.md:163, P4-U16) rather than
+    // "Hämtar taggen …" (P4-U16) rather than
     // prematurely flashing the not-found error.
     fakeVm.setState(tags: const [], isLoading: true);
     await pumpView(tester, 'pending-id');

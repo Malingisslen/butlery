@@ -2,7 +2,7 @@
 ///
 /// Time comes only from tester.pump (scripts/check_test_real_time.sh). A
 /// LOADING state is read twice: 299 ms after it began, when no skeleton may
-/// show (DelayedSkeleton.threshold, produktregler.md:304), and just after the
+/// show (DelayedSkeleton.threshold), and just after the
 /// threshold for the rest of the rule.
 ///
 /// The clock is fixed too ([atFixedClock]): the week menu reads clock.now()

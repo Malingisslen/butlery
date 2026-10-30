@@ -35,6 +35,7 @@ class IncomingShareHandler {
   IncomingShareHandler._internal();
 
   bool _isInitialized = false;
+  Future<void>? _initializing;
   List<String>? _pendingPaths;
   String? _pendingText;
   StreamSubscription<List<String>>? _warmSub;
@@ -73,8 +74,15 @@ class IncomingShareHandler {
   ///
   /// [service] is injectable for tests; production resolves it from the
   /// service locator.
-  Future<void> initialize({IncomingShareService? service}) async {
-    if (_isInitialized) return;
+  ///
+  /// Startup can call this again while an earlier call is still awaiting the
+  /// native side, which hands the launch share over only once, so every call
+  /// shares the first run: a second run would read nothing and overwrite the
+  /// share the first one got.
+  Future<void> initialize({IncomingShareService? service}) =>
+      _initializing ??= _initialize(service);
+
+  Future<void> _initialize(IncomingShareService? service) async {
     try {
       service ??= ServiceLocator.tryGet<IncomingShareService>();
       if (service != null) {
@@ -145,6 +153,7 @@ class IncomingShareHandler {
   @visibleForTesting
   void reset() {
     _isInitialized = false;
+    _initializing = null;
     _pendingPaths = null;
     _pendingText = null;
     _warmSub?.cancel();

@@ -2,13 +2,63 @@ import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+
+/// Android's "Alarm och påminnelser" access. Without USE_EXACT_ALARM, Android
+/// 14+ grants exact alarms only after the user turns this on, so a timer
+/// asks before choosing how to schedule.
+abstract class ExactAlarmAccess {
+  Future<bool> allowed();
+  Future<void> openSetting();
+}
+
+class _PluginExactAlarmAccess implements ExactAlarmAccess {
+  const _PluginExactAlarmAccess(this._plugin);
+
+  final FlutterLocalNotificationsPlugin _plugin;
+
+  AndroidFlutterLocalNotificationsPlugin? get _android {
+    if (kIsWeb || !Platform.isAndroid) return null;
+    return _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+  }
+
+  // A failed lookup counts as allowed so no false offer is shown; the
+  // schedule call's own catch covers an OS that then refuses.
+  @override
+  Future<bool> allowed() async {
+    final android = _android;
+    if (android == null) return true;
+    try {
+      return await android.canScheduleExactNotifications() ?? true;
+    } catch (e) {
+      AppLogger.warning('ExactAlarmAccess: lookup failed: $e');
+      return true;
+    }
+  }
+
+  @override
+  Future<void> openSetting() async {
+    try {
+      await _android?.requestExactAlarmsPermission();
+    } catch (e) {
+      AppLogger.warning('ExactAlarmAccess: could not open the setting: $e');
+    }
+  }
+}
 
 /// BUT-1242: Schedules an OS-level local notification for a cooking step timer
 /// so the user is alerted on expiry even when the app is backgrounded (the
@@ -20,20 +70,33 @@ import 'package:butlery/core/utils/logger.dart';
 /// in-memory timer state — a paused timer must never fire a phantom alert.
 ///
 /// Local-only: no Firestore/FCM. Uses `flutter_local_notifications`'
-/// `zonedSchedule` (exact wall-clock delivery). The timezone database is
+/// `zonedSchedule`. The timezone database is
 /// initialised lazily on first schedule so the service is self-contained and
 /// doesn't depend on app bootstrap ordering.
 class LocalTimerNotificationService extends BaseService {
   LocalTimerNotificationService({
     FlutterLocalNotificationsPlugin? plugin,
     bool Function()? isMobileOverride,
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
-       _isMobileOverride = isMobileOverride;
+    ExactAlarmAccess? exactAlarms,
+  }) : this._(
+         plugin ?? FlutterLocalNotificationsPlugin(),
+         isMobileOverride,
+         exactAlarms,
+       );
+
+  LocalTimerNotificationService._(
+    this._plugin,
+    this._isMobileOverride,
+    ExactAlarmAccess? exactAlarms,
+  ) : _exactAlarms = exactAlarms ?? _PluginExactAlarmAccess(_plugin);
 
   @override
   String get serviceName => 'LocalTimerNotificationService';
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final ExactAlarmAccess _exactAlarms;
+
+  static const String exactAlarmOfferShownKey = 'exact_alarm_offer_shown';
 
   /// Test-only seam for the platform gate. `Platform.isAndroid/isIOS` are both
   /// false on a pure-Dart test VM, so without this `schedule` would always take
@@ -97,23 +160,69 @@ class LocalTimerNotificationService extends BaseService {
       ),
     );
 
+    Future<void> scheduleWith(AndroidScheduleMode mode) =>
+        _plugin.zonedSchedule(
+          id: notificationIdFor(timerId),
+          title: AppLocale.current.timerNotificationTitle,
+          body: body,
+          scheduledDate: fireAt,
+          notificationDetails: details,
+          androidScheduleMode: mode,
+          // No matchDateTimeComponents → fires once, not recurring.
+        );
+
+    final exact = await _exactAlarms.allowed();
     try {
-      await _plugin.zonedSchedule(
-        id: notificationIdFor(timerId),
-        title: AppLocale.current.timerNotificationTitle,
-        body: body,
-        scheduledDate: fireAt,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // No matchDateTimeComponents → fires once, not recurring.
+      await scheduleWith(
+        exact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
       );
     } catch (e) {
-      // Exact-alarm permission can be revoked on Android 14+; degrade to the
-      // in-app pulse rather than crashing the timer flow.
       AppLogger.warning(
         'LocalTimerNotificationService: schedule failed for $timerId: $e',
       );
+      // The OS can refuse an exact alarm the check allowed (access revoked
+      // in between); an inexact alert still alerts.
+      if (!exact) return;
+      try {
+        await scheduleWith(AndroidScheduleMode.inexactAllowWhileIdle);
+      } catch (e) {
+        AppLogger.warning(
+          'LocalTimerNotificationService: inexact fallback failed for '
+          '$timerId: $e',
+        );
+      }
     }
+  }
+
+  /// Decision D1 (Malin 2026-10-29): the first timer started while exact
+  /// alarms are off offers the "Alarm och påminnelser" setting, once per
+  /// device. The timer starts whatever the answer.
+  Future<void> offerExactAlarmsOnce(BuildContext context) async {
+    if (kIsWeb || !_isMobile) return;
+    if (await _exactAlarms.allowed()) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(exactAlarmOfferShownKey) ?? false) return;
+      await prefs.setBool(exactAlarmOfferShownKey, true);
+    } catch (e) {
+      AppLogger.warning(
+        'LocalTimerNotificationService: offer flag unavailable: $e',
+      );
+      return;
+    }
+    if (!context.mounted) return;
+    final l10n = context.l10n;
+    final open = await OsPermissionHelper.presentExplanation(
+      context,
+      title: l10n.timerExactAlarmTitle,
+      body: l10n.timerExactAlarmBody,
+      grantLabel: l10n.permOpenSettings,
+      declineLabel: l10n.permNotNow,
+      icon: ButleryIcons.bell,
+    );
+    if (open) await _exactAlarms.openSetting();
   }
 
   /// Cancels the pending alert for [timerId]. Safe to call when none exists.

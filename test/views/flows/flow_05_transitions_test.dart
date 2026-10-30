@@ -1,6 +1,5 @@
 /// P8-U03 · flow 05, the two deep-link transitions that were built but had
-/// no test (flows-roles-budget.md:79 and :81; fas2/block288-uxfrysning.json
-/// overgangar, both REQUIRED).
+/// no test
 ///
 /// - TR::FLOW::05::deep-link::utloggad: a link opened while signed out waits
 ///   for the sign-in and then goes to the link's target
@@ -58,7 +57,7 @@ Widget _app(_SpyNavigatorObserver observer) => MaterialApp(
 const _recipeId = 'R3cipeSharedWithMe01';
 
 String _recipeLink() =>
-    'https://butlery.app/recipe?id=$_recipeId'
+    'https://butlery.se/recipe?id=$_recipeId'
     '&timestamp=${clock.now().millisecondsSinceEpoch}';
 
 void main() {

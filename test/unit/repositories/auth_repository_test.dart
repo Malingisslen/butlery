@@ -293,10 +293,10 @@ void main() {
                 ).captured.single
                 as ActionCodeSettings;
         expect(settings.handleCodeInApp, isTrue);
-        expect(settings.linkDomain, 'butlery-app-1.firebaseapp.com');
+        expect(settings.linkDomain, 'butlery-prod.firebaseapp.com');
         expect(settings.androidPackageName, 'se.butlery.app');
         expect(settings.iOSBundleId, 'se.butlery.app');
-        expect(Uri.parse(settings.url).host, 'butlery-app-1.firebaseapp.com');
+        expect(Uri.parse(settings.url).host, 'butlery-prod.firebaseapp.com');
       });
 
       test('passes a reset code and new password through', () async {

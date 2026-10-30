@@ -1,5 +1,5 @@
 # Publishes the legal pages (privacy policy + terms, sv/en) to their OWN hosting
-# site, butlery-legal.web.app, by hand.
+# site by hand.
 #
 # MANUAL ONLY (workflow_dispatch), behind the `production` environment's
 # reviewer gate like deploy-firebase.yml. Nothing else deploys hosting.
@@ -11,9 +11,7 @@
 # assets/legal/, the same bytes the app bundles — so the hosted text and the
 # in-app text cannot drift. No build step, no Flutter, no .env.
 #
-# Secrets used: FIREBASE_SERVICE_ACCOUNT (see deploy-firebase.yml header).
-#
-# First run: the site `butlery-legal` must exist in the project. The job tries
+# First run: the legal site must exist in the project. The job tries
 # to create it and carries on if it already exists; if the id is taken by
 # another Firebase project the create step fails loudly — pick another id in
 # .firebaserc (`targets.<project id>.hosting.legal`) and rerun.
@@ -23,7 +21,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Type DEPLOY to publish the current ref to butlery-legal.web.app"
+        description: "Type DEPLOY to publish the current ref to the legal site"
         type: string
         default: ""
 
@@ -38,6 +36,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      id-token: write
     env:
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 10
@@ -62,7 +63,8 @@ jobs:
              assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md \
              build/legal-site/assets/legal/
           cp web/favicon.png build/legal-site/favicon.png
-          for f in privacy-sv.html privacy-en.html terms-sv.html terms-en.html index.html legal.js legal.css \
+          for f in privacy-sv.html privacy-en.html terms-sv.html terms-en.html radera-konto.html delete-account.html \
+                   index.html legal.js legal.css \
                    assets/legal/privacy_policy_sv.md assets/legal/privacy_policy_en.md \
                    assets/legal/terms_of_service_sv.md assets/legal/terms_of_service_en.md; do
             test -s "build/legal-site/$f" || { echo "::error::build/legal-site/$f missing or empty" >&2; exit 1; }
@@ -77,23 +79,25 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@15.13.0
 
-      - name: Authenticate to Firebase
+      # Short-lived token from Workload Identity Federation, no stored key. The
+      # action exports GOOGLE_APPLICATION_CREDENTIALS for firebase and
+      # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE for gcloud.
+      - name: Authenticate to Google Cloud (WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — project matches the environment
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured (see deploy-firebase.yml header)." >&2
-            exit 1
-          fi
           # The environment's variable, the `.firebaserc` production alias and
-          # the key must all name the same project before anything runs.
+          # the WIF token must all name the same project before anything runs.
           [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
-          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
-            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
-          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
-            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ]             || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ]             || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'." >&2; exit 1; }
 
       - name: Ensure the legal site exists
         run: |

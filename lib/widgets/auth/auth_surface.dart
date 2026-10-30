@@ -7,7 +7,7 @@ import 'package:butlery/widgets/common/brand/butlery_lockup.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 
 /// The locked logo lockup on the page background with one line under it
-/// (Skarmar v12 del 2 #inloggning): a centred 148 px lockup in a
+/// a centred 148 px lockup in a
 /// `padding:56px 28px 0` block, no divider underneath. The logo is never
 /// written as text.
 class AuthWordmarkHeader extends StatelessWidget {

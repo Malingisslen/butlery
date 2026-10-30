@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.util.Base64
 
 plugins {
     id("com.android.application")
@@ -41,7 +42,7 @@ android {
         multiDexEnabled = true
     }
 
-    // `prod` is the store app on butlery-app-1. `staging` installs beside it
+    // `prod` is the store app on butlery-prod. `staging` installs beside it
     // and talks to butlery-app-staging; build it with
     // `--flavor staging --dart-define=ENV=staging` (lib/core/bootstrap/firebase_env.dart).
     // Each flavor's google-services.json: prod's at android/app/, staging's
@@ -51,7 +52,7 @@ android {
         create("prod") {
             dimension = "env"
             isDefault = true
-            manifestPlaceholders["authLinkHost"] = "butlery-app-1.firebaseapp.com"
+            manifestPlaceholders["authLinkHost"] = "butlery-prod.firebaseapp.com"
         }
         create("staging") {
             dimension = "env"
@@ -128,6 +129,30 @@ if (!flavorRequested) {
                 if (prodApk.exists()) prodApk.copyTo(dir.resolve("app-$mode.apk"), overwrite = true)
             }
         }
+}
+
+// firebase_env.dart throws at startup on an ENV its flavor does not expect, so
+// a release with the wrong ENV installs fine and then cannot open. Refuse it
+// here instead. Flutter passes defines as base64 entries, file ones first, so
+// the last ENV is the one the app sees.
+val releaseTasks = gradle.startParameter.taskNames.filter { it.contains("Release", ignoreCase = true) }
+if (releaseTasks.isNotEmpty()) {
+    val dartEnv = (findProperty("dart-defines") as String?).orEmpty()
+        .split(",").filter { it.isNotBlank() }
+        .map { String(Base64.getDecoder().decode(it)) }
+        .lastOrNull { it.startsWith("ENV=") }?.removePrefix("ENV=") ?: ""
+    for (task in releaseTasks) {
+        val staging = task.contains("staging", ignoreCase = true)
+        val allowed = if (staging) setOf("staging") else setOf("", "production")
+        if (dartEnv !in allowed) {
+            throw GradleException(
+                "$task: ENV=\"$dartEnv\" does not match the " +
+                (if (staging) "staging" else "prod") + " flavor (expected " +
+                allowed.joinToString(" or ") { if (it.isEmpty()) "no ENV" else it } +
+                "). A local .env is the developer one; release bundles come from CI."
+            )
+        }
+    }
 }
 
 flutter {

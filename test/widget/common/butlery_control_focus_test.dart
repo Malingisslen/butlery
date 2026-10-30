@@ -4,8 +4,7 @@
 /// tab, view tab (TabBar) and menu item each get the canonical ring 3 px
 /// outside a box of at least 48 × 48 dp, ink on light and paper on dark,
 /// only for keyboard focus, and no focus tint under the ring
-/// (tokens.json:155-160, :485-492; Grafisk manual v6:209, :381;
-/// Komponentark v1:657, :667; fas2/block288-uxfrysning.json
+/// (tokens.json:155-160, :485-492;
 /// `CSR::ROLE::<roll>::FOCUSED`).
 ///
 /// The ring is read back from rendered pixels, with the same method as
@@ -107,8 +106,8 @@ class _Case {
   final bool minTarget;
 
   /// The control stands on surface.ink in both modes (NAV-INK: the bottom
-  /// row, Komponentark v1:662), so its ring is paper in both ("papper på
-  /// mörkt", Komponentark v1:657).
+  /// row), so its ring is paper in both ("papper på
+  /// mörkt").
   final bool onInk;
 
   /// The control, as a view would place it.
@@ -125,7 +124,7 @@ final _cases = <String, _Case>{
   ),
   'switch': _Case(
     // The shared grip around a plain Switch, as the retired AdaptiveSwitch
-    // drew it (Grafisk manual v6:209, :381).
+    // drew it.
     () => ButleryControlFocus(
       borderRadius: BorderRadius.circular(999),
       child: Switch(value: true, onChanged: (_) {}),
@@ -283,7 +282,7 @@ void main() {
   }
 
   // BUT-2228: the selected tab's plate line is the word plus 5 px a side
-  // (Komponentark v1:106), also for a word narrower than the 48 dp target.
+  // also for a word narrower than the 48 dp target.
   testWidgets('view tab: the plate line hugs a short word', (tester) async {
     await _pump(
       tester,

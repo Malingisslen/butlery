@@ -1,7 +1,7 @@
 /// P3-U10 (PQ-07 = A, produktbeslut 2026-09-23): "Dölj delat innehåll" keeps
 /// its confirmation question and its Ångra, but Ångra goes through the undo
 /// primitive and leaves after the 7 s window like every other undo
-/// (produktregler.md:131-132; SnackBarUtils.showUndo / UndoSnackBar).
+/// (SnackBarUtils.showUndo / UndoSnackBar).
 ///
 /// Pinned on both call sites: the shared-with-me actions (the snackbar stays
 /// on the same view) and the shared menu preview (the view pops right after,

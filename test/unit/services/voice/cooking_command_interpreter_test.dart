@@ -1,5 +1,4 @@
-/// Golden transcript suite for the Köksbutlern command interpreter
-/// (Batch B, tasks/koksbutlern-plan.md).
+/// Golden transcript suite for the Köksbutlern command interpreter.
 ///
 /// Intention: prove that realistic KB-Whisper renderings of spoken kitchen
 /// Swedish — capitals, punctuation, fillers, digits vs number words,

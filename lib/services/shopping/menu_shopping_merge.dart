@@ -11,8 +11,7 @@ import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 
-/// P6-U02: the merge sheet's four switches (Skarmar v12 del 2
-/// #inkopmergeoppen). "Ersätt listan" is always off by default ("Ersätt
+/// "Ersätt listan" is always off by default ("Ersätt
 /// listan är alltid av som standard"); the other three are drawn on.
 @immutable
 class MenuShoppingMergeOptions {
@@ -67,7 +66,7 @@ class MenuShoppingSource {
 
 /// P6-U02: the pantry as read for one merge. [unavailable] means the read
 /// failed: the list is then made without pantry deduction, and the sheet
-/// says so (produktregler.md:697).
+/// says so.
 @immutable
 class MenuShoppingPantry {
   const MenuShoppingPantry.read(this.items) : unavailable = false;
@@ -77,7 +76,7 @@ class MenuShoppingPantry {
   final bool unavailable;
 }
 
-/// How the pantry marked a row (produktregler.md:228-232).
+/// How the pantry marked a row.
 enum MenuShoppingPantryMark {
   none,
 
@@ -150,7 +149,7 @@ class MenuShoppingMergePreview {
   final int atHomeCount;
 
   /// Rows left off because enough is at home, by name, so the deduction can
-  /// be seen (produktregler.md:234).
+  /// be seen.
   final List<String> coveredAtHome;
 
   /// The pantry could not be read, so nothing was subtracted.
@@ -162,8 +161,6 @@ class MenuShoppingMergePreview {
   int get itemCount => lines.length;
 }
 
-/// P6-U02: what a merge wrote, so Ångra can take back exactly that
-/// (produktregler.md:131, § 2.4: `add` is class 1 with a 7 s Ångra).
 @immutable
 class MenuShoppingMergeReceipt {
   const MenuShoppingMergeReceipt({
@@ -198,7 +195,7 @@ class MenuShoppingMergeReceipt {
 class MenuShoppingMergePlanner {
   const MenuShoppingMergePlanner._();
 
-  /// Merge order (flows-roles-budget.md:51): duplicates are merged, units
+  /// Merge order: duplicates are merged, units
   /// are converted within one kind, then the pantry is subtracted. Pure:
   /// nothing is written.
   static MenuShoppingMergePreview preview(
@@ -279,7 +276,7 @@ class MenuShoppingMergePlanner {
   /// to buy: null when enough is at home, [amount] unchanged when nothing
   /// can be subtracted (no match, an unknown amount, another unit family,
   /// past its date), else the difference. [mark] is the row's "Kanske
-  /// hemma" or "Kolla datum" (produktregler.md:230-232), carried as a merge
+  /// hemma" or "Kolla datum", carried as a merge
   /// line carries it.
   static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
     required String name,
@@ -322,11 +319,6 @@ class MenuShoppingMergePlanner {
     };
   }
 
-  /// produktregler.md:224-234 (§ 4.2): a known amount at home is subtracted
-  /// and only the difference goes on the list; enough at home leaves the row
-  /// off; an unknown amount, a unit that cannot be converted, or a row
-  /// without an amount gives no deduction and "Kanske hemma"; a row past its
-  /// date gives no deduction and "Kolla datum".
   static _Deduction _deduct(AggregatedShoppingItem row, List<PantryItem> at) {
     if (at.any((p) => p.expiryStatus == PantryExpiryStatus.expired)) {
       return const _Marked(MenuShoppingPantryMark.checkDate);

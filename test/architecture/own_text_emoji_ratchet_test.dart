@@ -18,7 +18,6 @@ const _pinned = <String, int>{
   'lib/views/social/user_profile_edit_view.dart': 6,
   'lib/widgets/common/dialogs/menu_selection_dialog.dart': 7,
   'lib/widgets/common/share_dialog/share_target_selection_enhanced.dart': 1,
-  'lib/widgets/image/components/image_grid_widgets.dart': 4,
   'lib/widgets/image/image_components.dart': 2,
   'lib/widgets/image/image_picker_dialogs.dart': 6,
   'lib/widgets/image/universal_image_manager.dart': 1,

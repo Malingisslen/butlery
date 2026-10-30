@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
+import 'package:butlery/widgets/import/recipe_form_handoff.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
@@ -27,6 +28,7 @@ import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
@@ -83,10 +85,10 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     });
   }
 
-  /// Flow 07 for camera and photos: our explanation, as drawn in Skarmar v12
-  /// etapp 3 #behkamera, before the system prompt; the OS is asked only after
-  /// Tillåt (produktregler.md:682). "Fråga igen" goes straight to the system
-  /// prompt (produktregler.md:683).
+  /// Flow 07 for camera and photos: our explanation,
+  /// before the system prompt; the OS is asked only after
+  /// Tillåt. "Fråga igen" goes straight to the system
+  /// prompt.
   Future<OsPermissionOutcome> _resolvePermission(
     ImageSource source,
     bool askAgain,
@@ -168,6 +170,10 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   /// BUT-1201: announce the extracting→review transition to screen readers.
   /// The visual appearance of the interpreted-text card isn't read otherwise.
   void _announceOcrCompletion() {
+    // A gallery pick over the page cap is trimmed; say so instead of dropping
+    // photos silently.
+    final info = _viewModel.consumeInfoMessage();
+    if (info != null && mounted) SnackBarUtils.showInfo(context, info);
     if (_viewModel.hasOcrResult && !_viewModel.isProcessing) {
       if (!_announcedOcr && mounted) {
         _announcedOcr = true;
@@ -215,19 +221,28 @@ class _PhotoImportViewContent extends StatelessWidget {
     BuildContext context,
     PhotoImportViewModel viewModel,
   ) {
-    if (viewModel.hasOcrResult) {
-      _stashHeirloomDraftIfActive(viewModel);
-      // BUT-928: carry the OCR confidence across the handoff so the badge
-      // the user saw on the preview step doesn't vanish on the next screen.
-      Navigator.pushNamed(
-        context,
-        '/franSocialaMedier',
-        arguments: {
-          'text': viewModel.ocrText,
-          'ocrConfidence': viewModel.confidence,
-        },
-      );
+    if (!viewModel.hasOcrResult) return;
+    _stashHeirloomDraftIfActive(viewModel);
+    final recipes = viewModel.parsedRecipes;
+    if (recipes.length == 1) {
+      // The reading already produced the recipe, with line joining and step
+      // numbers handled; parsing its text again would lose both and count the
+      // import twice.
+      ServiceLocator.tryGet<HeirloomBridge>()?.bindToAll([recipes.first.id]);
+      handOffRecipeToForm(context, recipes.first, replace: false);
+      return;
     }
+    // Reading failed to give a recipe: let the user fix the text by hand.
+    // BUT-928: carry the OCR confidence across the handoff so the badge
+    // the user saw on the preview step doesn't vanish on the next screen.
+    Navigator.pushNamed(
+      context,
+      '/franSocialaMedier',
+      arguments: {
+        'text': viewModel.ocrText,
+        'ocrConfidence': viewModel.confidence,
+      },
+    );
   }
 
   /// Multi-recipe page → let the user tick which recipes to add, reusing the
@@ -278,10 +293,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       viewModel.clearPhoto();
       // BUT-900 follow-on: land on the recipe list so the user sees the batch
       // they just imported, instead of bouncing back to the import screen.
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        Routes.home,
-        (route) => false,
-      );
+      AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
     }
   }
 
@@ -380,7 +392,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   const SizedBox(height: AppDimensions.space16),
 
                   // Flow 07: what the permission answer means here, and the
-                  // way on (flows-roles-budget.md).
+                  // way on.
                   if (viewModel.permissionNotice != null) ...[
                     PhotoPermissionNoticeCard(
                       notice: viewModel.permissionNotice!,
@@ -541,9 +553,9 @@ class _PhotoImportViewContent extends StatelessWidget {
           ),
         ],
       ),
-      // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
+      // Q4-04 = A: the pages are taken or
       // chosen first and the text is read only here, the view's one primary
-      // action (Skarmar v12 del 2 #fotoimport :704-706; Grafisk manual v6:219).
+      // action.
       bottomNavigationBar: readPages
           ? BottomActionContainer(
               child: FormButton(

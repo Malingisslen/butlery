@@ -2,7 +2,7 @@
 /// Sprint, Batch 13 — auto-save / data-loss terrain).
 ///
 /// Behaviours covered:
-///   * First persistence (ux-beslut.json D-02): the first edit is written
+///   * First persistence: the first edit is written
 ///     at once, with one filled field; after that, debounce timing is
 ///     regular = 3s, quickSave = 1s, and rapid reschedules coalesce into a
 ///     single write.
@@ -214,7 +214,7 @@ void main() {
     });
 
     /// Proves: one filled field persists (D-02 superseded the old
-    /// two-field minimum, produktregler.md:789).
+    /// two-field minimum).
     test('persists with a single filled field', () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);

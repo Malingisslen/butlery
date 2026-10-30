@@ -42,7 +42,7 @@ class ComponentThemes {
 
   /// The chip with its locked geometry (P5-U34): 13 px across and 7 px
   /// down inside a 1 px edge, and a pill (tokens.json controls.chip,
-  /// :824-832; Komponentark v1:33 "Låst geometri" and §03 :134-140,
+  /// :824-832,
   /// `padding:7px 13px`). That makes the visible chip 34 px high, as drawn
   /// ("Synlig 80 × 34"), inside the 48 dp hit area.
   ///
@@ -65,7 +65,7 @@ class ComponentThemes {
   );
 
   /// The other 6 of paddingX 13; also the gap between check, avatar or
-  /// delete icon and the label (Komponentark v1:142, `gap:6px` between check and label).
+  /// delete icon and the label (`gap:6px` between check and label).
   static const EdgeInsetsDirectional chipLabelPadding =
       EdgeInsetsDirectional.symmetric(horizontal: 6);
 

@@ -1,0 +1,42 @@
+{
+  "form": "matblogg kopierad med webbläsarens markera allt: knappar, cookie-rad, betyg och annons före listan; näringsvärde, kommentarer och fler recept efter stegen. Tipsraden hör till receptet.",
+  "title": "Krämig kycklinggryta med soltorkade tomater",
+  "steps": 5,
+  "lastStepKey": "går bra att frysa",
+  "portions": 4,
+  "timeMinutes": 30,
+  "ingredients": [
+    {
+      "key": "kycklingfilé"
+    },
+    {
+      "key": "gul lök"
+    },
+    {
+      "key": "vitlöksklyftor"
+    },
+    {
+      "key": "olivolja"
+    },
+    {
+      "key": "matlagningsgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "soltorkade tomater"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "svartpeppar"
+    },
+    {
+      "key": "spenat"
+    }
+  ],
+  "headings": [
+    "Ingredienser",
+    "Gör så här"
+  ]
+}

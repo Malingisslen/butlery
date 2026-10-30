@@ -1,4 +1,4 @@
-// P6-U08b: order and dependencies (produktregler.md:186-187,
+// P6-U08b: order and dependencies (
 // TR::FLOW::08::ko::beroendekedja-misslyckas): "FIFO per entitet, parallellt
 // mellan entiteter." "En post kan deklarera dependsOn: [opId] … Om beroendet
 // permanent misslyckas markeras hela kedjan som misslyckad — aldrig

@@ -1,9 +1,8 @@
 /// Pins the disabled state of the themed controls to the canonical tokens,
 /// in both modes, and checks that no disabled colour is carried by opacity.
 ///
-/// Sources: Komponentark v1:164 (radio), :174 (switch), :373 (filled
-/// button), :383 (outlined button), :423 and :514 (field); Grafisk manual
-/// v6:167 and :423; tokens.json surface.disabled, surface.raised,
+/// Sources:
+/// tokens.json surface.disabled, surface.raised,
 /// text.secondary, text.secondary.onRaised (tokens.json:184-187),
 /// text.disabled.onRaised.
 library;
@@ -184,7 +183,7 @@ void main() {
 
       test('switch on: opaque ink track with a paper knob', () {
         // tokens.json:145-152 control.checked, ink in both modes. Dark adds
-        // a 1 px paper edge (Komponentark v1:523, as the chosen chip).
+        // a 1 px paper edge (as the chosen chip).
         final light = m.name == 'light';
         final s = t.switchTheme;
         final track = s.trackColor!.resolve({WidgetState.selected})!;

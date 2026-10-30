@@ -1,5 +1,7 @@
 # ADR-001: Single retry layer for Gemini API calls — client-side only
 
+> Three-digit technical series (`docs/architecture/`). Not `ADR-0001`, the age floor in `docs/org/adr/`.
+
 **Status:** Accepted (2026-05-02)
 **Ticket:** BUT-566
 **Supersedes:** none

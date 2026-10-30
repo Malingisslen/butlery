@@ -1,6 +1,6 @@
 // lib/widgets/shopping/shopping_row.dart
 //
-// The one row of a shopping list (Skarmar v12 del 2 #inkop): a square box,
+// The one row of a shopping list: a square box,
 // the name with its amount in the muted tone beside it, whatever the list
 // needs at the right, and a hairline under. The personal list and the shared
 // list both draw it; neither sets its own box, type or rule.
@@ -146,7 +146,7 @@ class _ShoppingRowState extends State<ShoppingRow>
       child: DecoratedBox(
         decoration: BoxDecoration(
           // A chosen row is surface.selected with a 1.5 px text.primary edge
-          // (Skarmar v12 etapp 9 #flerbar); primaryContainer is
+          // primaryContainer is
           // surface.selected in both schemes.
           color: selected ? cs.primaryContainer : null,
           border: selected
@@ -181,71 +181,66 @@ class _ShoppingRowState extends State<ShoppingRow>
                   constraints: const BoxConstraints(
                     minHeight: AppDimensions.minTouchTarget,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.space8,
-                    ),
-                    child: Row(
-                      children: [
-                        if (widget.selectionMode) ...[
-                          ButleryIcon(
-                            selected
-                                ? ButleryIcons.circleCheck
-                                : ButleryIcons.circle,
-                            color: selected
-                                ? cs.onSurface
-                                : cs.onSurfaceVariant,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                          const SizedBox(width: AppDimensions.space12),
-                        ],
-                        _box(context, cs),
+                  child: Row(
+                    children: [
+                      if (widget.selectionMode) ...[
+                        ButleryIcon(
+                          selected
+                              ? ButleryIcons.circleCheck
+                              : ButleryIcons.circle,
+                          color: selected ? cs.onSurface : cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
                         const SizedBox(width: AppDimensions.space12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              WholeWordText.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(text: widget.name),
-                                    if (amount != null && amount.isNotEmpty)
-                                      TextSpan(
-                                        text: ' $amount',
-                                        style: SpanStyles.colour(
-                                          cs.onSurfaceVariant,
-                                        ),
+                      ],
+                      _box(context, cs),
+                      const SizedBox(width: AppDimensions.space12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WholeWordText.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: _startWithCapital(widget.name),
+                                  ),
+                                  if (amount != null && amount.isNotEmpty)
+                                    TextSpan(
+                                      text: ' $amount',
+                                      style: SpanStyles.colour(
+                                        cs.onSurfaceVariant,
                                       ),
-                                  ],
-                                ),
-                                style: AppTextStyles.contentTitle.copyWith(
-                                  color: nameColor,
+                                    ),
+                                ],
+                              ),
+                              style: AppTextStyles.contentTitle.copyWith(
+                                color: nameColor,
+                                decoration: decoration,
+                              ),
+                              // BUT-2193 (Malin, 2026-10-03): a row may cut a
+                              // long name at the normal text size.
+                              maxLines: largeText ? null : 2,
+                            ),
+                            if (widget.note?.isNotEmpty == true) ...[
+                              const SizedBox(height: AppDimensions.space4),
+                              Text(
+                                widget.note!,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: cs.onSurfaceVariant,
                                   decoration: decoration,
                                 ),
-                                // BUT-2193 (Malin, 2026-10-03): a row may cut a
-                                // long name at the normal text size.
-                                maxLines: largeText ? null : 2,
+                                maxLines: largeText ? null : 1,
+                                overflow: largeText
+                                    ? null
+                                    : TextOverflow.ellipsis,
                               ),
-                              if (widget.note?.isNotEmpty == true) ...[
-                                const SizedBox(height: AppDimensions.space4),
-                                Text(
-                                  widget.note!,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: cs.onSurfaceVariant,
-                                    decoration: decoration,
-                                  ),
-                                  maxLines: largeText ? null : 1,
-                                  overflow: largeText
-                                      ? null
-                                      : TextOverflow.ellipsis,
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
-                        if (widget.trailing != null) widget.trailing!,
-                      ],
-                    ),
+                      ),
+                      if (widget.trailing != null) widget.trailing!,
+                    ],
                   ),
                 ),
               ),
@@ -317,3 +312,8 @@ class ShoppingRowMenu extends StatelessWidget {
     );
   }
 }
+
+// Rows show names alike whatever case they were stored in, without
+// rewriting the stored data.
+String _startWithCapital(String name) =>
+    name.isEmpty ? name : '${name[0].toUpperCase()}${name.substring(1)}';

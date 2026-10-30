@@ -1,8 +1,8 @@
 /// P8-U03 · flow 02, the step from the week menu into the merge sheet.
 ///
-/// TR::FLOW::02::veckomeny::till-inköpslistan (fas2/block288-uxfrysning.json,
-/// REQUIRED; flows-roles-budget.md:44): "Till inköpslistan" on the week menu
-/// opens the merge sheet (#inkopmerge), and nothing is written before the
+/// TR::FLOW::02::veckomeny::till-inköpslistan (
+/// REQUIRED): "Till inköpslistan" on the week menu
+/// opens the merge sheet, and nothing is written before the
 /// sheet is answered. test/widget/menu/shopping_merge_sheet_test.dart pins
 /// the sheet itself; this drives the tap on the real VeckomenyView
 /// (veckomeny_view.dart:401-460).

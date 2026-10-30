@@ -5,7 +5,7 @@
  *
  * Privacy posture (the design's load-bearing constraints):
  *  - Inputs are already PII-scrubbed by `scrubPii` at the call site; the output
- *    is scrubbed again HERE before it's stored, so nothing un-scrubbed lands.
+ *    is scrubbed again HERE before it's stored.
  *  - Image bytes are never stored — the OCR path stores only the model's text.
  *  - Every doc carries `expireAt`; enable a Firestore TTL policy on that field
  *    for this collection so docs are reaped. Retention defaults to 30 days
@@ -55,7 +55,7 @@ export function resetSampleCaptureCacheForTest(): void {
 }
 
 export interface LlmSampleInput {
-  /** 'extract' | 'enhance' | 'spoken' | 'ingredientLines' | 'ocr'. */
+  /** 'extract' | 'enhance' | 'spoken' | 'ingredientLines' | 'ocr' | 'shadow'. */
   mode: string;
   /** 'text' (URL/scrape/transcript) or 'image' (OCR — bytes NOT stored). */
   inputKind: "text" | "image";
@@ -75,6 +75,14 @@ export interface LlmSampleInput {
   modelId: string;
   promptTokenCount?: number;
   candidatesTokenCount?: number;
+  /** Shadow rows only: the app's own parse of the same input, already scrubbed. */
+  parserOutput?: Record<string, unknown>;
+  /** Shadow rows only: 'photo' | 'link' | 'text'. */
+  channel?: string;
+  successfulTier?: string;
+  parserVersion?: string;
+  /** Shadow rows only: the photo import already fell back to the AI. */
+  photoAiFallback?: boolean;
 }
 
 const truncate = (s: string): string =>
@@ -113,7 +121,7 @@ export async function captureLlmSample(
             ? truncate(sample.scrubbedInput)
             : null,
         scrubbedInputLength: sample.scrubbedInput?.length ?? null,
-        // Output: scrubbed here so nothing un-scrubbed is ever persisted.
+        // Output: scrubbed here.
         scrubbedOutput: truncate(scrubbedOutput),
         outputLength: sample.rawLlmResponse.length,
         promptVersion: orNull(sample.promptVersion),
@@ -125,6 +133,15 @@ export async function captureLlmSample(
         modelId: sample.modelId,
         promptTokenCount: orNull(sample.promptTokenCount),
         candidatesTokenCount: orNull(sample.candidatesTokenCount),
+        ...(sample.mode === "shadow"
+          ? {
+              parserOutput: orNull(sample.parserOutput),
+              channel: orNull(sample.channel),
+              successfulTier: orNull(sample.successfulTier),
+              parserVersion: orNull(sample.parserVersion),
+              photoAiFallback: orNull(sample.photoAiFallback),
+            }
+          : {}),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         expireAt,
       });

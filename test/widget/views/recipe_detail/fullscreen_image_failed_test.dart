@@ -1,11 +1,4 @@
 // A photo that exists but failed to load (P5-U11).
-//
-// Sources: Komponentark v1:839 (case 4: keep the surface in surface.raised,
-// the image glyph in text.secondary, "Bilden kunde inte visas", a silent
-// retry when the network returns), Skarmar v12 del 4 #receptbildfel (the
-// second line "Försöker igen när nätet är tillbaka", and no button: the
-// user can do nothing about the network), tillganglighetshandoff:188 (role
-// status, the text read once, the glyph decorative).
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -252,7 +245,7 @@ void main() {
     });
 
     // P7-A3: a modal over the photo closes with X, never a back arrow
-    // (Komponentark v1:57, pattern 4). The bar is the
+    // (pattern 4). The bar is the
     // standard ButleryTopBar with the 'n / N' title; a tap hides it.
     for (final brightness in Brightness.values) {
       testWidgets('${brightness.name}: the bar is ButleryTopBar with an X '

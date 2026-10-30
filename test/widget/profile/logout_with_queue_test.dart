@@ -1,5 +1,5 @@
-// P6-U08a — sign-out with a queue (produktregler.md:193; Skarmar v12 del 4
-// #utloggningko). Every user-initiated sign-out with N > 0 pending changes
+// P6-U08a — sign-out with a queue
+// Every user-initiated sign-out with N > 0 pending changes
 // is blocked with an explanation, and nothing is thrown away unless the user
 // picks "Logga ut och släng ändringarna".
 

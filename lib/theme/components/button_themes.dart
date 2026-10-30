@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
 /// Focus on every themed button is the canonical ring: 2 px, 3 px outside
 /// the button, ink on light and paper on dark, never saffron, identical on
-/// all variants (Komponentark v1:393, :657; Grafisk manual v6:209, :582;
+/// all variants (
 /// tokens.json:155-160). The theme inserts it through backgroundBuilder, and
 /// ButleryFocusRing paints it in the Overlay so no clip around the button
 /// cuts it off. It shows for keyboard focus, like CSS :focus-visible.
@@ -52,7 +52,7 @@ const BorderRadius _controlRadius = BorderRadius.all(
   Radius.circular(AppDimensions.radiusControl),
 );
 
-/// Icon-button overlay only (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json):
+/// Icon-button overlay only (B83-1 = A, BUT-2183):
 /// pressed and hovered resolve to surface.raised. The other themed buttons
 /// are not part of this decision and keep [_noFocusTint]. Focus is untouched: the ring alone carries focus, same as
 /// every other themed button.
@@ -68,7 +68,7 @@ WidgetStateProperty<Color?> _iconButtonOverlay(ColorScheme cs) {
 }
 
 /// Disabled filled button: surface.disabled with readable ink text, never
-/// opacity (Komponentark v1:365, :373; Grafisk manual v6:167, :423).
+/// opacity.
 /// Light: #A9B2A0 behind #24382C. Dark: #4A5C50 behind paper #F5F4ED.
 WidgetStateProperty<Color?> _filledBackground(ColorScheme cs, Color enabled) {
   return WidgetStateProperty.resolveWith<Color?>((states) {
@@ -88,50 +88,36 @@ WidgetStateProperty<Color?> _filledForeground(ColorScheme cs, Color enabled) {
   });
 }
 
-/// onSurface carries text.primary: #24382C light, the drawn "brand-ink text"
-/// (Komponentark v1:373), and #F5F4ED dark (tokens.json:54-57).
-///
-/// The dark value is NOT the drawn one. Komponentark v1:500 draws #93A48D,
-/// and no token pairs the light ink with that dark value, so the dark text
-/// is an open decision. Until it is taken, dark mode keeps paper: the value
-/// the ink filled buttons already show today, 6.5:1 on #4A5C50.
+/// onSurface carries text.primary: #24382C light
+/// and #F5F4ED dark (tokens.json:54-57).
 Color _filledDisabledForeground(ColorScheme cs) => cs.onSurface;
 
 /// Foreground of every unfilled button (outlined, text, secondary): the
 /// text.primary role through cs.onSurface, #24382C light and paper #F5F4ED
 /// dark (tokens.json:54-57). It used to be cs.primary, which is surface.ink
-/// #24382C in BOTH schemes and so read 1.27:1 on the dark base #17251D. The
-/// dark panel draws the outlined button's text in paper (Komponentark
-/// v1:499) and names paper as the text colour of the mode (v1:491). Light
+/// #24382C in BOTH schemes and so read 1.27:1 on the dark base #17251D.
+/// Light
 /// is unchanged: there cs.onSurface == cs.primary.
 ///
 /// Interpretation: the screens' dark variable set gives secondary-control
-/// text as --text-kontroll-a #C9D3C4, text.bodyMuted (Skarmar v12 etapp 4
-/// import:28; tokens.json:174-177), which has no generated member. Paper,
-/// the value the Komponentark draws, stands until one is delivered.
+/// text as --text-kontroll-a #C9D3C4, text.bodyMuted (
+/// tokens.json:174-177), which has no generated member. Paper
+/// stands until one is delivered.
 Color _unfilledForeground(ColorScheme cs) => cs.onSurface;
 
 /// The 1.5 px outline of an unfilled button. Light: ink #24382C, as before.
-/// Dark: overlay.paperWash rgba(245,244,237,0.40), the screens' dark
-/// outline of a secondary control, --ram-kontroll-a (Skarmar v12 etapp 4
-/// import:28, etapp 2:37), 3.5:1 on #17251D.
-///
-/// Interpretation: the Komponentark's dark rule says paper 35 % on every
-/// control (v1:491), and its one drawn outlined button, the focused row,
-/// has a full paper edge (v1:499). The screen frames' 40 % is the drawn rest
-/// value, has a generated member, and clears 3:1 where 35 % falls just
-/// short of it (2.98:1); the edge keeps the same colour at focus, as in
-/// light, and the ring outside it carries focus.
+/// Dark: overlay.paperWash rgba(245,244,237,0.40),
+/// 3.5:1 on #17251D.
 Color _unfilledOutline(ColorScheme cs) => cs.brightness == Brightness.dark
     ? AppModeColors.paperWash(cs.brightness)
     : cs.onSurface;
 
-/// Disabled outlined button text: text.secondary (Komponentark v1,
+/// Disabled outlined button text: text.secondary (
 /// tokens.json), through onSurfaceVariant, which carries
 /// text.secondary in both schemes.
 Color _outlinedDisabledForeground(ColorScheme cs) => cs.onSurfaceVariant;
 
-/// Disabled outlined border: 1.5 px surface.disabled (Komponentark v1:383).
+/// Disabled outlined border: 1.5 px surface.disabled.
 BorderSide _outlinedDisabledSide(ColorScheme cs) => BorderSide(
   color: AppModeColors.surfaceDisabled(cs.brightness),
   width: 1.5,
@@ -176,7 +162,7 @@ WidgetStateProperty<Color?> _withDisabled(Color enabled, Color disabled) {
 /// All methods accept [ColorScheme] for dark/light mode awareness.
 ///
 /// Radius: every button takes the control radius, 8 (tokens.json
-/// space.radius.control; Grafisk manual v6, "8 control knappar/fält"). The
+/// space.radius.control). The
 /// FAB and the extended FAB keep their square shape: no canonical source
 /// names a radius for them.
 class ButtonThemes {
@@ -321,11 +307,6 @@ class ButtonThemes {
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
         overlayColor: _iconButtonOverlay(cs),
         // The ring goes round the whole 48 dp button, not the glyph.
-        // Interpretation: Komponentark v1:679-682 draws two icon-button
-        // forms, a bordered one at radius 8 (rest :679, focused :681,
-        // disabled :682) and a round one (:680). This theme's IconButton is borderless with
-        // Flutter's circular ink, the round form, so its ring is round too.
-        // Which form a view's icon buttons take is left to a later unit.
         backgroundBuilder: _focusRing(
           const BorderRadius.all(Radius.circular(AppDimensions.radiusPill)),
         ),
@@ -347,7 +328,7 @@ class ButtonThemes {
       elevation: 4,
       highlightElevation: 6,
       // The create button is round: the central plus in the bottom row is a
-      // 56 dp circle, border-radius 999 (Komponentark v1:665; tokens.json
+      // 56 dp circle, border-radius 999 (tokens.json
       // space.radius.pill). Interpretation of an unlabelled drawing (Q10).
       shape: const CircleBorder(),
       iconSize: AppDimensions.iconSizeL,
@@ -371,25 +352,23 @@ class ButtonThemes {
         ),
       );
 
-  /// The hero style: the view's single saffron action, exactly one per view
-  /// (Komponentark v1:843-844, "Saffranshierarki — en hero per vy"). Every
+  /// Every
   /// other primary stays ink. Views choose their hero in package 4; nothing
   /// uses this style yet.
   ///
   /// Rest: action.primary behind text.onActionPrimary, #D68523 / #17251D.
   /// Pressed: action.primaryPressed behind text.onActionPrimaryPressed,
-  /// #9A5C14 / #F5F4ED, 4.84:1 (Komponentark v1:370-371; tokens.json:81-91,
+  /// #9A5C14 / #F5F4ED, 4.84:1 (tokens.json:81-91,
   /// :137-144; contrast pairs tokens.json:657-666). Paper on pressed saffron,
-  /// never ink: ink there is 2.97:1 (beslutslogg B-14). The same values in
-  /// both modes (Grafisk manual v6:561).
+  /// never ink: ink there is 2.97:1. The same values in
+  /// both modes.
   ///
   /// Background and foreground switch as a pair: both resolve from the same
   /// state, and animationDuration is zero so the background does not fade
   /// under text that has already switched. Pressed gets no Material overlay,
   /// so no ink tint competes with the pressed saffron.
   ///
-  /// Disabled is the filled button's disabled state, the row drawn in the
-  /// saffron panel itself (Komponentark v1:373). Focus is the shared ring.
+  /// Focus is the shared ring.
   static ButtonStyle heroButtonStyle(ColorScheme cs) {
     final b = cs.brightness;
     return ButtonStyle(
@@ -459,9 +438,8 @@ class ButtonThemes {
         backgroundColor: cs.surfaceContainerHighest,
         foregroundColor: _unfilledForeground(cs),
         // The surface stays surface.raised when disabled; only the text and
-        // the outline change, like the outlined button. Interpretation: the
-        // secondary button's disabled state is not drawn (Komponentark
-        // v1:383 draws the outlined one, on paper). The text is the same
+        // the outline change, like the outlined button.
+        // The text is the same
         // role's on-raised value, text.secondary.onRaised: #5B6959 light,
         // #A9B2A0 dark (tokens.json).
         disabledBackgroundColor: cs.surfaceContainerHighest,
@@ -575,7 +553,7 @@ class ButtonThemes {
           vertical: AppDimensions.space12,
         ),
         // An extended create button is the round plus stretched to fit its
-        // label: a pill (tokens.json space.radius.pill; Komponentark v1:665).
+        // label: a pill (tokens.json space.radius.pill).
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(AppDimensions.radiusPill),

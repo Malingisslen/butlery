@@ -18,7 +18,7 @@ enum UploadQueueStatus {
 /// Ensures uploads survive app restarts and are resumed on reconnection
 class UploadQueueEntries extends Table {
   /// Unique upload ID (UUID from the upload request). It is also the
-  /// operation's idempotency key, its `opId` (produktregler.md:185): it is
+  /// operation's idempotency key, its `opId`: it is
   /// created on the device and never reused, so this table needs no separate
   /// column for it.
   TextColumn get id => text()();
@@ -63,20 +63,19 @@ class UploadQueueEntries extends Table {
   /// Additional metadata as JSON string
   TextColumn get metadata => text().nullable()();
 
-  // ── Schema 3 (produktregler.md:183-193, § 3.1) ─────────────────────────
+  // ── Schema 3 ─────────────────────────
 
   /// JSON array of the opIds this upload waits for, or null — for example
   /// the recipe create in the sync queue that the image belongs to
-  /// (produktregler.md:187).
   TextColumn get dependsOn => text().nullable()();
 
-  /// Set when the upload will never be retried ("Bilden är för stor",
-  /// produktregler.md:189). It stays in the queue for the user to decide on
-  /// and is never deleted without her (produktregler.md:192).
+  /// Set when the upload will never be retried ("Bilden är för stor").
+  /// It stays in the queue for the user to decide on
+  /// and is never deleted without her.
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();
 
-  // ── Schema 5: the retry schedule (produktregler.md:188), as on the sync
+  // ── Schema 5: the retry schedule, as on the sync
   // queue in schema 4.
 
   /// When the upload may be tried again, or null to try it at the next pass.

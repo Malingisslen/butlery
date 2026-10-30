@@ -1,12 +1,12 @@
 // P3-U09: the category-move receipt.
 //
-// A category move is class 3 (produktregler.md:133): no Ångra. The row leaves
+// A category move is class 3: no Ångra. The row leaves
 // the user's view, so the receipt 'Flyttade till {kategori}' stays, and a
 // snackbar with no possible follow-up action gets `Stäng`
 // (content-style-guide.md:96-97), never `OK`. With an action Flutter keeps a
 // snackbar until tapped, so the receipt must close on its own, after the app's
 // normal snackbar time. Under assistive navigation it stays until Stäng: the
-// action is a real focusable target (tillganglighetshandoff:172).
+// action is a real focusable target.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

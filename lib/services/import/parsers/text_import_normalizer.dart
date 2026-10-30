@@ -1,6 +1,7 @@
 /// Text Import Normalizer - Text preprocessing utilities for recipe import.
 /// Extracted from text_import_strategy.dart for better organization.
 
+import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Provides text normalization, decimal protection, sentence splitting,
@@ -16,6 +17,15 @@ class TextImportNormalizer {
   static const _paragraphMarker = '\uE002';
   static const _abbreviationMarker =
       '\uE001'; // PUA char for abbreviation protection
+  // One PUA char per numbered step whose text is set aside while the
+  // splitters run.
+  static const _stepTextBase = 0xE100;
+  static const _stepTextLimit = 0x800;
+  static final _stepTextSlot = RegExp('[\uE100-\uE8FF]');
+  // A step kept whole still gets the space OCR dropped after a period.
+  static final _gluedSentence = RegExp(
+    r'([a-z\u00E5\u00E4\u00F6])\.([A-Z\u00C5\u00C4\u00D6])',
+  );
 
   /// Protect decimal numbers from being corrupted by sentence splitting.
   /// Example: "0.75 dl" → "0[PUA]75 dl" (protected)
@@ -179,6 +189,30 @@ class TextImportNormalizer {
       '\n$_paragraphMarker\n',
     );
 
+    // A numbered step ("1. Smält smöret. Häll i grädden.") stays one step, so
+    // its text sits out the splitters below. The marker keeps the line it
+    // had: "1." still goes on its own line before a capital, as the sentence
+    // split always put it. A pasted icon-font glyph in the slot range would be
+    // read back as a step, so the range is cleared first.
+    final steps = <String>[];
+    processed = processed
+        .replaceAll(_stepTextSlot, '')
+        .split('\n')
+        .map((line) {
+          final text = line.trimLeft();
+          final marker = stepMarker.matchAsPrefix(text);
+          if (marker == null || steps.length >= _stepTextLimit) return line;
+          final body = text.substring(marker.end).trim();
+          if (body.isEmpty) return line;
+          final head = text.substring(0, marker.end).trim();
+          final gap = head.endsWith('.') && RegExp(r'^[A-ZÅÄÖ]').hasMatch(body)
+              ? '\n'
+              : ' ';
+          steps.add(body);
+          return '$head$gap${String.fromCharCode(_stepTextBase + steps.length - 1)}';
+        })
+        .join('\n');
+
     // Stage 1: Smart sentence splitting with decimal protection
     processed = smartSentenceSplit(processed);
 
@@ -263,6 +297,13 @@ class TextImportNormalizer {
         r'Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Start by|Preheat|Cook|Fry|Mix|Pour|Add|Cut|Serve|Heat|Stir',
       ),
       (match) => '\n${match.group(0)}',
+    );
+
+    processed = processed.replaceAllMapped(
+      _stepTextSlot,
+      (m) => cleanSocialMediaFormatting(
+        steps[m.group(0)!.codeUnitAt(0) - _stepTextBase],
+      ).replaceAllMapped(_gluedSentence, (g) => '${g[1]}. ${g[2]}'),
     );
 
     // Fix measurement formatting (e.g., "2dl" -> "2 dl")

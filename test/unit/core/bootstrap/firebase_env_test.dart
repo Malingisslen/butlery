@@ -9,7 +9,7 @@ void main() {
     test('no ENV means production', () {
       final env = FirebaseEnv.resolve('', emulator: false);
       expect(env.environment, FirebaseEnvironment.production);
-      expect(env.projectId, 'butlery-app-1');
+      expect(env.projectId, 'butlery-prod');
     });
 
     test(
@@ -17,7 +17,7 @@ void main() {
       () {
         expect(
           FirebaseEnv.resolve('production', emulator: false).projectId,
-          'butlery-app-1',
+          'butlery-prod',
         );
       },
     );
@@ -74,7 +74,7 @@ void main() {
     });
 
     test('the auth link host is the project\'s own Hosting domain', () {
-      expect(production.authLinkHost, 'butlery-app-1.firebaseapp.com');
+      expect(production.authLinkHost, 'butlery-prod.firebaseapp.com');
       expect(staging.authLinkHost, 'butlery-app-staging.firebaseapp.com');
       expect(emulator.authLinkHost, production.authLinkHost);
     });

@@ -2,7 +2,7 @@
 //
 // Laddningens semantik (BUT-895, BUT-1173), som tallrikslinjen bär.
 //
-// Butlery tillganglighetshandoff.dc.html:179 — Tallrikslinje-progress:
+// Tallrikslinje-progress:
 // roll progressbar, etikett "= vad som laddas", tillstånd "värde eller
 // obestämd".
 

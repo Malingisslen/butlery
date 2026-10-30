@@ -1,8 +1,8 @@
 // lib/widgets/common/recipe_thumb.dart
 //
 // The small square picture at the start of a recipe row: the recipe's photo,
-// or a green-tinted plate when it has none (Skarmar v12 #publikprofil,
-// #delat-med-mig). A row of recipes someone else shared or made public draws
+// or a green-tinted plate when it has none
+// A row of recipes someone else shared or made public draws
 // it, so the pictures cannot differ from page to page.
 library;
 

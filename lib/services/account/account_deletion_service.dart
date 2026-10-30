@@ -71,7 +71,7 @@ class AccountDeletionService extends BaseService {
   ///     still existing.
   ///
   /// [reason] is the user's own answer to "Varför raderar du kontot?", asked
-  /// before anything is deleted (produktregler.md:614); it reaches the audit
+  /// before anything is deleted; it reaches the audit
   /// row through the callable.
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
@@ -92,7 +92,7 @@ class AccountDeletionService extends BaseService {
       'retained': <RetainedRecord>[],
       // Whether the callable answered at all. Until it has, the account is
       // certainly NOT gone, so a failure before that point can never be
-      // described as a partial deletion (produktregler.md:613 — "kontot *är*
+      // described as a partial deletion ("kontot *är*
       // borta" is what makes an outcome partial rather than failed).
       'cfCompleted': false,
     };

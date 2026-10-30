@@ -48,6 +48,7 @@ import {
   deleteCookSnaps,
   deleteActivityEvents,
   deleteShoppingListTemplates,
+  deleteDeepLinks,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
@@ -100,6 +101,7 @@ import {
   REPORTER_RETENTION_BASIS,
   REPORTS,
 } from "../moderation/report-status";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const db = admin.firestore();
 
@@ -152,7 +154,7 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
     memory: "512MiB",
     timeoutSeconds: 540,
     // CORS allowlist mirrors exportAuditLogs (BUT-770) — same app origins.
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     // BUT-760: user-facing account callable — App Check defense-in-depth.
     // Inert until App Check flipped to Enforce in console.
     enforceAppCheck: true,
@@ -360,6 +362,8 @@ export async function runAccountDeletionWithDeps(
       "shopping_list_templates",
       () => deleteShoppingListTemplates(database, uid),
     ],
+    // BUT-2463: the user's short links and their clicks. Ships with its probe leg.
+    ["deep_links", () => deleteDeepLinks(database, uid)],
     // BUT-2028: uid-keyed rows no erasure path reached. Ships with its probe
     // leg; may find zero rows until a client first writes one.
     [

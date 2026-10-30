@@ -229,11 +229,14 @@ class RecipeSectionDetector {
     if (isSectionHeader(clean) && clean.length < 20) return true;
 
     // "X portioner" should not be an ingredient
-    if (RegExp(r'^\d+\s*portioner?$', caseSensitive: false).hasMatch(clean)) {
+    if (RegExp(
+      r'^\d+\s*(?:portioner?|port\.?)$',
+      caseSensitive: false,
+    ).hasMatch(clean)) {
       return true;
     }
 
-    return false;
+    return HeadingWordLists.isPageFurniture(clean);
   }
 
   /// Check if following text looks like instructions (for section header detection)
@@ -365,8 +368,29 @@ class RecipeSectionDetector {
     final isSimpleIngredient =
         text.length < 30 && !text.contains('. ') && !isSectionHeader(text);
 
-    return hasMeasurement || isSimpleIngredient;
+    // A bulleted row with no quantity ("- Smör och olivolja till stekning")
+    // is a list item whatever its length; dropping it drops its allergen.
+    final isBulletedRow =
+        _bulletedRow.hasMatch(text) &&
+        !text.contains('. ') &&
+        !text.trimRight().endsWith('.');
+
+    // "Salt, svartpeppar, paprikapulver, oregano": a seasoning list, every
+    // item a word or two. The parser checks rows again after stripping the
+    // bullet, so this is what keeps such a row past the second check.
+    final parts = text.split(',');
+    final isItemList =
+        parts.length >= 3 &&
+        !text.contains('.') &&
+        parts.every((p) {
+          final words = p.trim().split(RegExp(r'\s+'));
+          return p.trim().isNotEmpty && words.length <= 2;
+        });
+
+    return hasMeasurement || isSimpleIngredient || isBulletedRow || isItemList;
   }
+
+  static final _bulletedRow = RegExp(r'^\s*[-•–*]\s+\S');
 
   /// Check if line looks like an ingredient header
   static bool isIngredientHeader(String line) {
@@ -486,7 +510,12 @@ class RecipeSectionDetector {
     }
 
     // Short line with comma separators (common in ingredient lists like "Salt, peppar")
-    if (line.contains(',') && line.length > 3 && line.length < 80) return true;
+    if (line.contains(',') &&
+        line.length > 3 &&
+        line.length < 80 &&
+        !HeadingWordLists.isPageFurniture(line)) {
+      return true;
+    }
 
     // Starts with bullet point or dash
     if (_bulletPrefixPattern.hasMatch(line)) return true;

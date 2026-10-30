@@ -2,9 +2,9 @@
 //
 // A failure says what happened, what was kept when something was at stake,
 // and what you can do, as a button that is never "OK"
-// (content-style-guide.md:96; Komponentark v1:750). Screen readers hear it
+// (content-style-guide.md:96). Screen readers hear it
 // without a focus move: the snackbar and the inline error both have the
-// alert role (Butlery tillganglighetshandoff.dc.html:172).
+// alert role.
 
 import 'dart:math' as math;
 
@@ -251,8 +251,6 @@ void main() {
       handle.dispose();
     });
 
-    // Komponentark v1:755: the outline is text.danger in both modes
-    // (tokens.json:96-98), the title text.primary (tokens.json:54-56).
     for (final (name, theme, danger, title) in [
       (
         'light',

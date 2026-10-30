@@ -1,8 +1,6 @@
 // lib/widgets/common/badges/match_percent_pill.dart
 //
-// How much of a recipe a search matched, as the outlined figure pill drawn in
-// Skarmar v12 del 3 #ingredienssok: "100 %" in the success colour, "67 %" in
-// the accent, anything lower quiet. A figure to read, so it is larger than the
+// A figure to read, so it is larger than the
 // status pill of UnifiedBadge.
 library;
 

@@ -198,22 +198,19 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
         _selectedReason != null && (!isOther || descriptionFilled);
 
     return ButleryDialog(
-      // "Anmäl det här receptet" for a recipe, as drawn (Skarmar v12
-      // etapp 9 #fbanmal:507). Interpretation: the other content types
+      // Interpretation: the other content types
       // have no drawn title and say "Anmäl innehåll".
       title: widget.contentType == ContentType.recipe
           ? l10n.reportDialogTitleRecipe
           : l10n.reportDialogTitle,
       // Five 48 dp reasons, the free-text field and the note do not fit
       // a short screen or large text, so the content scrolls rather
-      // than clipping (tillganglighetshandoff:85, 200 % text).
+      // than clipping.
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // The drawn intro under the title (Skarmar v12 etapp 9
-          // #fbanmal): who reads the report, a person
-          // (produktregler.md).
+          // The drawn intro under the title
           Text(
             l10n.reportDialogIntro,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -245,16 +242,14 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
               maxLines: 3,
               onChanged: (_) => setState(() {}),
               hint: l10n.reportDescriptionHint,
-              // "Krävs när du väljer Annat." with the 0 / 500 counter
-              // beside it, as drawn (#fbanmal:516;
-              // produktregler.md). Interpretation: the drawn bold
+              // Interpretation: the drawn bold
               // on "Krävs" is left out; the helper is plain text.
               helperText: l10n.reportDescriptionRequiredHelper,
             ),
           ],
           const SizedBox(height: AppDimensions.space12),
           // "Vi bedömer mot våra riktlinjer — den version du ser nu är
-          // den vi dömer efter." (#fbanmal; produktregler.md).
+          // den vi dömer efter." (#fbanmal).
           _GuidelinesNote(
             prefix: l10n.reportDialogGuidelinesNotePrefix,
             linkText: l10n.reportDialogGuidelinesLink,

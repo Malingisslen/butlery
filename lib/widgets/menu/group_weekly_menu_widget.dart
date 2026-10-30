@@ -54,7 +54,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     final vm = context.watch<GroupWeeklyMenuViewModel>();
     _surfaceEditNotice(vm);
 
-    // A subpage (Komponentark v1:71-78): the group's week is opened from
+    // A subpage: the group's week is opened from
     // the group chat, so the back arrow returns there.
     return ButleryPage.undersida(
       title: widget.groupName,
@@ -129,7 +129,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     }
 
     if (vm.isLoading) {
-      // The plate line says what it fetches (produktregler.md:163, :304).
+      // The plate line says what it fetches.
       return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
 

@@ -1,6 +1,6 @@
 // lib/widgets/common/list/status_row.dart
 //
-// A row that says how one thing came out (Skarmar v12 'Från fil', result
+// A row that says how one thing came out ('Från fil', result
 // mode): a status glyph first, the name, an optional line under it in the
 // tone of the status, and a hairline under the row. Rows that can be ticked
 // pass [checked] so a screen reader hears the state the glyph draws.

@@ -2,8 +2,7 @@
  * Firestore rules tests for P5-U26b: users/{uid}/overwritten_versions.
  *
  * A version of the user's own week menu or recipe that another person's save
- * overwrote, kept 30 days behind "Återställ" (produktregler.md:104, :109;
- * PQ-01 = A). Rules contract under test:
+ * overwrote, kept 30 days behind "Återställ" (PQ-01 = A). Rules contract under test:
  *   - Only the owner reads, creates and deletes; nobody updates.
  *   - Another user, and a signed-out client, can do none of it.
  *   - A create must carry exactly the model's fields, name the owner, be a

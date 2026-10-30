@@ -1,14 +1,14 @@
 // HEM-HERO: Hem as drawn, in its five states.
 //
-//   default   Skarmar v12 del 1 #hemrecept (:124-150): date, greeting, the
+//   default   date, greeting, the
 //             ink "Ikväll" band with "Börja laga", "Byt rätt" and the pantry
 //             line.
-//   empty     del 4 #hemtom (:587-615): "Välkommen", one saffron action,
+//   empty     "Välkommen", one saffron action,
 //             three shortcuts, the allergy link.
-//   loading   del 4 #hemladdar (:616-650): plate line and text, a still
+//   loading   plate line and text, a still
 //             skeleton only after 300 ms.
-//   offline   del 4 #hemoffline (:651-703): the plan with its fetch time.
-//   error     del 4 #hemfel (:704-742): what happened, what was kept,
+//   offline   the plan with its fetch time.
+//   error     what happened, what was kept,
 //             Försök igen, Öppna veckomenyn.
 //
 // Each in light and dark, at 320 dp and at 200 % text.
@@ -172,7 +172,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // produktregler.md:278-279.
         expect(find.text('God kväll, Malin'), findsOneWidget);
         expect(find.text('TORSDAG 9 JULI'), findsOneWidget);
         expect(find.bySemanticsLabel('Torsdag 9 juli'), findsOneWidget);
@@ -190,7 +189,7 @@ void main() {
         final eyebrow = tester.widget<Text>(
           find.text('IKVÄLL · 45 MIN · 4 PORT.'),
         );
-        // Skarmar v12 del 1:47 (--r04slot-765): #e09d50 light, #dca968
+        // #e09d50 light, #dca968
         // dark, which is text.accent (produktbeslut R6-01 = A, BUT-2197).
         expect(
           eyebrow.style?.color,
@@ -207,7 +206,7 @@ void main() {
         expect(pantry.data, 'allt i skafferiet');
         expect(pantry.style?.color, AppModeColors.textSecondaryOnInk());
 
-        // One saffron hero (Grafisk manual v6:219), "Börja laga".
+        // One saffron hero, "Börja laga".
         expect(_saffronCount(tester), 1);
         expect(
           find.descendant(

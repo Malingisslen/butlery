@@ -16,8 +16,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// "Välj nytt lösenord", opened by the link in the "glömt lösenord" mail
-/// (BUT-2170; flow 06 `återställ → sätt nytt`). The two fields follow the
-/// Kontosäkerhet password fields in Skarmar v12 etapp 6.
+/// (BUT-2170; flow 06 `återställ → sätt nytt`).
 class SetNewPasswordView extends StatefulWidget {
   const SetNewPasswordView({super.key, required this.code});
 

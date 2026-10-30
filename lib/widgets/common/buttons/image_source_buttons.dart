@@ -1,8 +1,6 @@
 // lib/widgets/common/buttons/image_source_buttons.dart
 //
-// The two big buttons that start any picture import (Skarmar v12 'Importera
-// från bild'): take the photo now (ink) or choose it from the library
-// (outlined). Both are at least 88 dp high with the glyph over the word and
+// Both are at least 88 dp high with the glyph over the word and
 // grow with the text, so an import that takes pictures draws them once.
 library;
 

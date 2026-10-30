@@ -590,9 +590,13 @@ void main() {
     // affectedKeys().hasOnly(['metadata']) over the message's diff and one
     // affectedKeys().hasOnly(['imageUrl', 'pendingImage']) over the metadata
     // map's diff, both diff restrictions outside the payload comparison.
+    // BUT-2452 added signup_allowlist: one keys().hasOnly on create, guarded
+    // in allowlists.
+    // BUT-2463 removed two on deep_links: the clicks create's keys().hasOnly
+    // (guarded in allowlists) and the update's affectedKeys().hasOnly.
     expect(
       'hasOnly('.allMatches(rules).length,
-      61,
+      60,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

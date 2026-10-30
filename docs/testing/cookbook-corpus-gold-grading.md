@@ -12,6 +12,32 @@ TEXT.** The first (BUT-1818, 2026-08-09) hand-graded what a word-shape screen su
 second (BUT-1847, 2026-08-19) opened all 181 pages as images and found nine more. Anyone
 re-grading must read this first, or they will re-derive the same floor and call it a count.
 
+## The routine: adding pages and tracking the parser
+
+New scans go through five steps. The point is a trend line for the deterministic parser
+(`parserVersion`), so every step ends in a file, not a memory.
+
+1. **Scan.** Malin photographs the pages into `butlery-corpus/<book>/inbox/`.
+2. **Prelabel.** The harness reads the pages (OCR reuses any stored `ocr.txt`, so only new
+   pages cost anything) and writes `draft.json` (what the parser says now) plus a
+   `gold.json` seed with `verified: false`. Its header in `test/corpus/corpus_prelabel_test.dart`
+   has the command and env vars.
+3. **Claude proposes the gold.** Claude opens each page as an IMAGE (the procedure below,
+   never `ocr.txt`) and corrects the seed to what the photograph shows, adding `frameCut`
+   where the rubric says so. The proposal stays `verified: false`.
+4. **Malin approves.** Only Malin flips `verified: true`. An entry nobody approved is
+   skipped by the eval and listed as such, so it can never move the trend.
+5. **Eval.** `dart run tools/corpus_eval.dart` scores the verified entries and appends ONE
+   line to `butlery-corpus/_reports/trend.jsonl`:
+   `date`, `parserVersion` (read from `recipe_parser_service.dart`), `verified` (entries
+   scored), `ingredientNameF1`, `ingredientFullF1`, `instructionF1`, `ocrRecall`.
+
+Reading the trend: lines are comparable only while the verified set is the same size, so
+compare `verified` before reading a movement in the F1s. After a parser change, re-run step 2
+(free, OCR is cached) before step 5, or `draft.json` still holds the old parser's answer.
+The file lives outside the repo and outside `llm_response_samples`, so a BUT-2028 reset does
+not wipe it.
+
 ## The unit of grading
 
 One `gold.json` ENTRY, not one page. A page holds one entry (flat layout) or several

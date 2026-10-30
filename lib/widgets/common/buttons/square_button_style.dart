@@ -1,7 +1,7 @@
 // lib/widgets/common/buttons/square_button_style.dart
 //
 // The onboarding button: square corners and a taller box; the outlined one
-// takes an ink edge (Skärmar v12 del 2 #onboarding). A disabled outlined
+// takes an ink edge. A disabled outlined
 // button keeps the theme's disabled edge.
 library;
 

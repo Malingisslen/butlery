@@ -1,5 +1,5 @@
 // P3-U1: undo belongs to the operation, classed by recoverability
-// (produktregler.md:125-140, § 2.4, BUT-954).
+// (BUT-954).
 //
 // Every class-1 undo goes through SnackBarUtils.showUndo / UndoSnackBar, which
 // own the 7 s window and the "Ångra" label. A hand-rolled SnackBarAction with
@@ -14,8 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 const _primitive = 'lib/core/utils/snackbar_utils.dart';
 
 // The week menu's 30 s conflict snackbar no longer reads `commonUndo`: its
-// action carries the drawn words "Behåll min" (Skarmar v12 etapp 11 breda
-// vyer.dc.html:221), so the primitive is the only reader left.
+// action carries the drawn words "Behåll min"
+// so the primitive is the only reader left.
 
 void main() {
   test('every undo label is read by the primitive alone', () {
@@ -82,7 +82,7 @@ void main() {
   });
 
   test('an add to the shopping list is undone by its row id', () {
-    // P4-U11: add is class 1 with a 7 s "Ångra" (produktregler.md:131). The
+    // P4-U11: add is class 1 with a 7 s "Ångra". The
     // add dialog asks for the new row's id and hands Ångra a removal of
     // exactly that row, through the primitive, never by name or position.
     final source = File(

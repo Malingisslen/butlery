@@ -9,12 +9,12 @@
 #
 # Prerequisites:
 # - gcloud CLI installed and authenticated (`gcloud auth login`)
-# - Project ID set: `gcloud config set project butlery-app-1`
+# - Project ID set: `gcloud config set project butlery-prod`
 # - STORAGE_BUCKET env var exported with the Firebase Storage bucket name
-#   (looks like `butlery-app-1.appspot.com` — see Firebase Console → Storage)
+#   (looks like `butlery-prod.firebasestorage.app` — see Firebase Console → Storage)
 #
 # Usage:
-#   export STORAGE_BUCKET=butlery-app-1.appspot.com
+#   export STORAGE_BUCKET=butlery-prod.firebasestorage.app
 #   ./infrastructure/storage/setup-storage-versioning.sh
 #
 # Reference: docs/ops/storage-lifecycle-runbook.md

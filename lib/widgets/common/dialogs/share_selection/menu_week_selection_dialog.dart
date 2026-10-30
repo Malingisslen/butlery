@@ -62,8 +62,8 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
             children: _weekStarts
                 .map(
                   // Each week is a 48 dp row with the canonical focus ring
-                  // around it, never a saffron tint (Grafisk manual v6:209,
-                  // :381; block288 CSR::ROLE::radio::FOCUSED).
+                  // around it, never a saffron tint (
+                  // block288 CSR::ROLE::radio::FOCUSED).
                   (weekStart) => ButleryControlFocus(
                     child: RadioListTile<DateTime>(
                       value: weekStart,

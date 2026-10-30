@@ -379,7 +379,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Pick single image from camera directly (no dialog)
   /// [askAgain] is "Fråga igen" on the notice: the user asked for the
   /// system prompt, so our explanation is not repeated
-  /// (produktregler.md:683). The same holds for the gallery picks below.
+  /// The same holds for the gallery picks below.
   Future<void> pickImageFromCamera(
     BuildContext context, {
     String? recipeId,

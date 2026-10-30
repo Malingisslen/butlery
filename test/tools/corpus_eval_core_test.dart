@@ -1,6 +1,9 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/corpus/corpus_eval_core.dart';
@@ -78,6 +81,67 @@ void main() {
       expect(summary.timeAsserted, 2);
       expect(summary.meanIngredientNameF1, 1.0);
       expect(summary.meanIngredientFullF1, lessThan(1.0));
+    });
+  });
+
+  group('appendTrendLine', () {
+    late Directory tmp;
+    setUp(() => tmp = Directory.systemTemp.createTempSync('corpus_trend'));
+    tearDown(() => tmp.deleteSync(recursive: true));
+
+    test('each run adds a line and never rewrites the earlier ones', () {
+      final summary = summarize(
+        loadEntries(paths).entries.map(scoreEntry).toList(),
+      );
+      final target = CorpusPaths('${tmp.path}/corpus');
+
+      appendTrendLine(
+        target,
+        summary,
+        date: '2026-10-29T10:00:00',
+        parserVersion: '2.0.0',
+      );
+      final file = appendTrendLine(
+        target,
+        summary,
+        date: '2026-10-30T10:00:00',
+        parserVersion: '2.1.0',
+      );
+
+      final lines = file.readAsLinesSync();
+      expect(file.path, endsWith('_reports/trend.jsonl'));
+      expect(lines, hasLength(2));
+      final first = jsonDecode(lines.first) as Map<String, dynamic>;
+      final second = jsonDecode(lines.last) as Map<String, dynamic>;
+      expect(first['parserVersion'], '2.0.0');
+      expect(second['parserVersion'], '2.1.0');
+      expect(second['date'], '2026-10-30T10:00:00');
+      expect(second['verified'], 2);
+      expect(second['ingredientNameF1'], 1.0);
+      expect(
+        second['ingredientFullF1'],
+        closeTo(summary.meanIngredientFullF1, 0.0001),
+      );
+      expect(second.keys, containsAll(['instructionF1', 'ocrRecall']));
+    });
+  });
+
+  group('parseParserVersion', () {
+    test('reads the constant from the parser service source', () {
+      expect(
+        parseParserVersion(
+          "/// doc\nconst String parserVersion = '2.4.1';\n",
+        ),
+        '2.4.1',
+      );
+    });
+
+    test('is null when the declaration is gone', () {
+      expect(parseParserVersion('const int other = 1;'), isNull);
+    });
+
+    test('finds the real constant in this checkout', () {
+      expect(readParserVersion('.'), matches(RegExp(r'^\d+\.\d+\.\d+$')));
     });
   });
 }

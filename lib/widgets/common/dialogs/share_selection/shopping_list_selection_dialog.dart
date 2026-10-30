@@ -95,9 +95,7 @@ class _ShoppingListSelectionDialogState
     }
 
     // A list is chosen by its id, never by its row or its name (identity
-    // rule). Each row carries the focus ring and at least 48 dp
-    // (ButleryControlFocus; tokens.json:155-160, :485-492; Grafisk manual
-    // v6:381).
+    // rule).
     return RadioGroup<String>(
       groupValue: _selected?.id,
       onChanged: (id) {

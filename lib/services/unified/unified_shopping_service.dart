@@ -644,7 +644,6 @@ class UnifiedShoppingService
 
   /// [addItemToActiveList] that returns the new row's id, or null when
   /// nothing was added. The id is what an undo after the add removes
-  /// (produktregler.md:131).
   Future<String?> addItemToActiveListWithId({
     required String name,
     double? amount,

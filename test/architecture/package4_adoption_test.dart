@@ -1,10 +1,9 @@
 // Package 4 (P4-U01, P4-U02): the shared components adopt the design system.
 //
-// B-18 (beslutslogg.md:25) and produktregler.md:163: no spinner, no sliding
-// bar; the plate line plus text. B-45 (beslutslogg.md:52): one top bar on
+// B-18: no spinner, no sliding
+// bar; the plate line plus text. B-45: one top bar on
 // both platforms, so the shared scaffolds draw ButleryTopBar, never a
-// Material AppBar, AdaptiveAppBar or ButleryHeader. Komponentark v1:750: a
-// snackbar action is never "OK".
+// Material AppBar, AdaptiveAppBar or ButleryHeader.
 //
 // This test reddens when a spinner or an old bar comes back into one of the
 // files these units cleaned.
@@ -94,14 +93,14 @@ void main() {
     );
   });
 
-  test('no snackbar action says OK (Komponentark v1:750)', () {
+  test('no snackbar action says OK', () {
     final code = _code('lib/core/utils/snackbar_utils.dart');
     expect(code.contains("'OK'"), isFalse);
     expect(code.contains('commonOk'), isFalse);
   });
 
   group('package 4 census (P4-U18)', () {
-    test('no spinner or pea pod anywhere in lib (B-18, produktregler:163)', () {
+    test('no spinner or pea pod anywhere in lib (B-18)', () {
       expect(
         _offenders(
           _libFiles().where((f) => !_package7Components.contains(f)).toList(),
@@ -124,7 +123,7 @@ void main() {
       );
     });
 
-    test('every loading state says what is fetched (produktregler §6.6)', () {
+    test('every loading state says what is fetched', () {
       expect(
         _offenders(_libFiles(), RegExp(r'StateWidget\.loading\(\s*\)')),
         isEmpty,
@@ -175,7 +174,7 @@ void main() {
       expect(many, everyElement(isIn(_exclusiveHeroFiles)));
     });
 
-    test('no new ad-hoc snackbar colour (Komponentark v1:745-750)', () {
+    test('no new ad-hoc snackbar colour', () {
       expect(
         _offenders(
           _libFiles(),
@@ -187,7 +186,7 @@ void main() {
       );
     });
 
-    test('tabs carry the saffron plate line (Komponentark v1:106-112)', () {
+    test('tabs carry the saffron plate line', () {
       for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
         final tabs = theme.tabBarTheme;
         final indicator = tabs.indicator! as UnderlineTabIndicator;
@@ -197,13 +196,12 @@ void main() {
         expect(tabs.indicatorSize, TabBarIndicatorSize.label);
         expect(tabs.labelColor, theme.colorScheme.onSurface);
         expect(tabs.unselectedLabelColor, theme.colorScheme.onSurfaceVariant);
-        // Komponentark v1:112-113: selected 700, resting 600.
         expect(tabs.labelStyle!.fontWeight, FontWeight.w700);
         expect(tabs.unselectedLabelStyle!.fontWeight, FontWeight.w600);
       }
     });
 
-    test('the theme draws no focus tint (Grafisk manual v6:209)', () {
+    test('the theme draws no focus tint', () {
       for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
         expect(theme.focusColor.a, 0);
       }

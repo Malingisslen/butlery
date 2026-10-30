@@ -54,3 +54,13 @@ light bar (B-60), the tab bar shows on every page reached from a tab (B-54).
   `ButleryTopBar.selectionCountStyle`, for the count while a list is in selection mode.
 - `test/architecture/top_bar_choice_test.dart` lists the files that still construct
   `ButleryTopBar` themselves. The list only shrinks: a new view uses `ButleryPage`.
+
+## Primary button colour by place
+
+Decided by Malin (megagenomgången, B-158): saffron (`HeroButton`) opens a flow; dark green
+(`FormButton`) is the primary on forms and account pages.
+`test/architecture/primary_button_by_place_test.dart` pins where saffron may be drawn.
+
+- **Exception, Malin 2026-10-28:** the Inköp add button and its empty-state button stay
+  saffron (`HeroButton`) as drawn, because a list is neither a form nor an account page.
+  They are pinned as `_shoppingButtons` in that test.

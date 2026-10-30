@@ -319,7 +319,7 @@ class MessageContentBuilder {
           : cs.surface,
       child: Center(
         // An image that loads is a still plate, never a spinner
-        // (produktregler.md:163, B-18; same as the recipe images in P4-U05).
+        // (B-18; same as the recipe images in P4-U05).
         // The plate carries what is loading for the screen reader.
         child: isLoading
             ? Semantics(

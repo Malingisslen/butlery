@@ -1,0 +1,27 @@
+{
+  "form": "OCR av ett receptkort utan rubriker: kategori före titeln, faktamening och sidnummer efter stegen. Titeln innehåller ingrediensorden citron och smör.",
+  "title": "Ugnsbakad torsk med citronsmör",
+  "steps": 4,
+  "lastStepKey": "baka i 15 minuter",
+  "portions": 4,
+  "ingredients": [
+    {
+      "key": "torskfilé",
+      "allergen": "fisk"
+    },
+    {
+      "key": "citron"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "persilja"
+    },
+    {
+      "key": "salt och peppar"
+    }
+  ],
+  "headings": []
+}

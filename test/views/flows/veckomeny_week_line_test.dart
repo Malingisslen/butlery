@@ -1,6 +1,5 @@
 /// The line under "Veckomeny" on the root bar counts the dishes SAVED in the
-/// week (Skarmar v12 del 1 #veckomeny "Vecka 28 · 5 rätter", #tomvecka
-/// "Vecka 28 · inget planerat").
+/// week
 ///
 /// The two-device run on 2026-10-08 found it saying "inget planerat" over a
 /// week with seven dishes: it counted only the menu generated in this

@@ -373,11 +373,12 @@
 .b-bottomnav .tab.active .marker { background: var(--cs-saffron); }
 .b-bottomnav .add { flex: 1; display: flex; align-items: center; justify-content: center; }
 .b-bottomnav .add span {
-  width: 56px; height: 56px; border-radius: 50%; margin-top: -14px;
+  width: 62px; height: 62px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: var(--cs-saffron); color: var(--cs-on-saffron);
   box-shadow: inset 0 0 0 3px var(--cs-on-ink);
 }
+.b-bottomnav .add .i { width: 30px; height: 30px; }
 
 /* ---------- List (ButleryListSection / ButleryListRow) ---------- */
 /* Flat on the page: no card, 1 px divider between rows, none after the last. */
@@ -559,7 +560,7 @@
 /* ---------- Stepper ---------- */
 .b-stepper { display: inline-flex; align-items: center; gap: 16px; }
 .b-stepper button {
-  width: 48px; height: 48px; border: 1.5px solid var(--cs-on-surface); border-radius: 2px;
+  width: 48px; height: 48px; border: 2px solid var(--cs-on-surface); border-radius: 0;
   background: var(--cs-raised); color: var(--cs-on-surface);
   display: inline-flex; align-items: center; justify-content: center;
 }
@@ -680,11 +681,11 @@
 <symbol id="i-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,1.75)"><path d="M19.5 14.4A7.8 7.8 0 1 1 9.6 4.5a6.2 6.2 0 0 0 9.9 9.9z"></path></g></symbol>
 <symbol id="i-more-vertical" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="12" cy="5.6" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="18.4" r="1.5"></circle></g></symbol>
 <symbol id="i-move" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,1.75)"><path d="M12 4.5v15"></path><path d="M4.5 12h15"></path><path d="M9.4 7.1L12 4.5l2.6 2.6"></path><path d="M9.4 16.9L12 19.5l2.6-2.6"></path><path d="M7.1 9.4L4.5 12l2.6 2.6"></path><path d="M16.9 9.4L19.5 12l-2.6 2.6"></path></g></symbol>
-<symbol id="i-nav-add" viewBox="0 0 160 160"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.35)*6.6667)"><path d="M80 43v74M43 80h74"></path></g></symbol>
-<symbol id="i-nav-home" viewBox="0 0 160 160"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.20)*6.6667)"><path d="M40.5 104 C40.5 81.09 57.88 64.5 80 64.5 C102.12 64.5 119.5 81.09 119.5 104" stroke-linecap="butt"></path><path d="M28 113H132"></path><path d="M80 55V60"></path><rect x="72" y="48" width="16" height="8" rx="4" fill="currentColor" stroke="none"></rect></g></symbol>
-<symbol id="i-nav-more" viewBox="0 0 160 160"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.05)*6.6667)"><path d="M40 52H120"></path><path d="M40 80H120"></path><path d="M40 108H120"></path></g></symbol>
-<symbol id="i-nav-shopping" viewBox="0 0 160 160"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.05)*6.6667)"><path d="M30 41H43L62 104H118L134 60H50"></path><circle cx="63" cy="123" r="9"></circle><circle cx="112" cy="123" r="9"></circle></g></symbol>
-<symbol id="i-nav-week" viewBox="0 0 160 160"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.05)*6.6667)"><rect x="31" y="40" width="98" height="88" rx="15"></rect><path d="M31 66H129"></path><path d="M57 27V49M103 27V49"></path><path d="M61 106 C61 93 69 86 80 86 C91 86 99 93 99 106" stroke-linecap="butt"></path><path d="M56 111H104"></path><path d="M80 82V85"></path><rect x="74" y="77" width="12" height="6" rx="3" fill="currentColor" stroke="none"></rect></g></symbol>
+<symbol id="i-nav-add" viewBox="22 22 116 116"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.76)*4.8333)"><path d="M80 43v74M43 80h74"></path></g></symbol>
+<symbol id="i-nav-home" viewBox="22 22 116 116"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.66)*4.8333)"><path d="M40.5 104 C40.5 81.09 57.88 64.5 80 64.5 C102.12 64.5 119.5 81.09 119.5 104" stroke-linecap="butt"></path><path d="M28 113H132"></path><path d="M80 55V60"></path><rect x="72" y="48" width="16" height="8" rx="4" fill="currentColor" stroke="none"></rect></g></symbol>
+<symbol id="i-nav-more" viewBox="22 22 116 116"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.45)*4.8333)"><path d="M40 52H120"></path><path d="M40 80H120"></path><path d="M40 108H120"></path></g></symbol>
+<symbol id="i-nav-shopping" viewBox="22 22 116 116"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.45)*4.8333)"><path d="M30 41H43L62 104H118L134 60H50"></path><circle cx="63" cy="123" r="9"></circle><circle cx="112" cy="123" r="9"></circle></g></symbol>
+<symbol id="i-nav-week" viewBox="22 22 116 116"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:calc(var(--icon-stroke,1.45)*4.8333)"><rect x="31" y="40" width="98" height="88" rx="15"></rect><path d="M31 66H129"></path><path d="M57 27V49M103 27V49"></path><path d="M61 106 C61 93 69 86 80 86 C91 86 99 93 99 106" stroke-linecap="butt"></path><path d="M56 111H104"></path><path d="M80 82V85"></path><rect x="74" y="77" width="12" height="6" rx="3" fill="currentColor" stroke="none"></rect></g></symbol>
 <symbol id="i-paperclip" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,1.75)"><path d="M13.7 7.1L7.7 13.1a3.4 3.4 0 0 0 4.8 4.8l6.4-6.4a4.9 4.9 0 0 0-6.9-6.9L6 10.6"></path></g></symbol>
 <symbol id="i-pause" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,2)"><path d="M9.5 5.5v13M14.5 5.5v13"></path></g></symbol>
 <symbol id="i-pencil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,1.75)"><path d="M4.5 19.5l1-4.4L15.9 4.7l3.4 3.4L8.9 18.5z"></path><path d="M13.6 7l3.4 3.4"></path></g></symbol>
@@ -849,106 +850,75 @@
     <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 24 september</div>
     <div class="t-display-compact" style="margin-top:6px">God kväll</div>
   </div>
-  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:12px;flex:none">
+  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:16px;flex:none">
     <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
     <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
     <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:9px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:9px 0;font-size:15px">Byt rätt</button></div>
   </div>
   <div class="b-scroll"><div style="padding:0">
-    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:7px 5px 11px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
-    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:4px;height:48px">
+    <div class="b-tabs mr-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:17px 5px 9px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:18px 5px 10px;font-size:14px">Kökböcker</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:7px;height:48px">
       <div class="b-overline" style="flex:1;padding:0;color:var(--cs-on-surface-variant)">Dina recept · 4</div>
       <span style="font-size:14px;font-weight:600;padding:0 8px">Välj</span>
       <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-refrigerator"/></svg></button>
       <button class="b-iconbtn" style="color:var(--cs-on-surface);margin-left:-8px"><svg class="i"><use href="#i-list"/></svg></button>
     </div>
-    <div class="b-input search" style="margin:10px 12px 0 16px;min-height:48px"><svg class="i" style="color:var(--cs-on-surface-variant)"><use href="#i-search"/></svg><span class="hint" style="margin-left:-4px">Sök bland recepten ...</span><svg class="i i-m" style="color:var(--cs-on-surface);margin-right:8px"><use href="#i-mic"/></svg><svg class="i i-m" style="color:var(--cs-on-surface-variant);margin-right:12px"><use href="#i-filter"/></svg></div>
-    <div class="mr-chips" style="margin-top:20px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
-    <div class="b-band mr-tip" style="margin-top:18px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:500">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-m"><use href="#i-x"/></svg></div>
-    <div class="mr-grid" style="margin-top:26px">
+    <div class="b-input search" style="margin:7px 12px 0 12px;padding-left:12px;min-height:47px"><svg class="i i-m" style="color:var(--cs-on-surface-variant)"><use href="#i-search"/></svg><span class="hint" style="margin-left:0">Sök bland recepten ...</span><svg class="i i-m" style="color:var(--cs-on-surface);margin-right:15px"><use href="#i-mic"/></svg><svg class="i i-m" style="color:var(--cs-on-surface-variant);margin-right:10px"><use href="#i-filter"/></svg></div>
+    <div class="mr-chips" style="margin-top:10px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
+    <div class="b-band mr-tip" style="margin-top:7px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:600">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-s"><use href="#i-x"/></svg></div>
+    <div class="mr-grid" style="margin-top:15px">
       <div class="mr-card"><div class="top"><span class="tile">K</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
       <div class="mr-card"><div class="top"><span class="tile">L</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
       <div class="mr-card"><div class="top"><span class="tile">C</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
       <div class="mr-card"><div class="top"><span class="tile">R</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
     </div>
   </div></div>
-  <nav class="b-bottomnav">
-    <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
+  
 </div>
 </figure>
 
 <figure data-views="lib/views/mina_recept_view.dart lib/views/mina_recept lib/views/hem">
 <div class="phone">
   <div style="padding:24px 24px 0;flex:none">
-    <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 24 september</div>
-    <div class="t-display-compact" style="margin-top:6px">God kväll</div>
+    <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 9 juli</div>
+    <div class="t-display-compact" style="margin-top:6px">God kväll, Malin</div>
   </div>
-  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:12px;flex:none">
+  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:16px;flex:none">
     <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
     <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
     <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:9px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:9px 0;font-size:15px">Byt rätt</button></div>
+    <div style="margin-top:12px;font-size:13px;font-weight:600;color:var(--cs-on-ink-variant, rgba(255,255,255,.65))">allt i skafferiet</div>
   </div>
-  <div class="b-scroll"><div style="padding:0">
-    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:7px 5px 11px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
-    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:4px;height:48px">
-      <div class="b-overline" style="flex:1;padding:0;color:var(--cs-on-surface-variant)">Dina recept · 4</div>
-      <span style="font-size:14px;font-weight:600;padding:0 8px">Välj</span>
-      <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-refrigerator"/></svg></button>
-      <button class="b-iconbtn" style="color:var(--cs-on-surface);margin-left:-8px"><svg class="i"><use href="#i-grid"/></svg></button>
-    </div>
-    <div class="b-input search" style="margin:10px 12px 0 16px;min-height:48px"><svg class="i" style="color:var(--cs-on-surface-variant)"><use href="#i-search"/></svg><span class="hint" style="margin-left:-4px">Sök bland recepten ...</span><svg class="i i-m" style="color:var(--cs-on-surface);margin-right:8px"><use href="#i-mic"/></svg><svg class="i i-m" style="color:var(--cs-on-surface-variant);margin-right:12px"><use href="#i-filter"/></svg></div>
-    <div class="mr-chips" style="margin-top:20px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
-    <div class="b-band mr-tip" style="margin-top:18px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:500">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-m"><use href="#i-x"/></svg></div>
-    <div class="mr-list" style="margin-top:26px"><div class="mr-item"><span class="tile">K</span><div class="txt"><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">L</span><div class="txt"><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">C</span><div class="txt"><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">R</span><div class="txt"><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div></div>
-  </div></div>
-  <nav class="b-bottomnav">
-    <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
+  <div class="b-overline" style="padding:25px 24px 0;color:var(--cs-on-surface-variant)">Dina recept · 1</div>
 </div>
 </figure>
 
 <figure data-views="lib/views/recipe_detail_view.dart lib/views/recipe_detail">
 <div class="phone">
   <div style="display:flex;align-items:center;padding:4px 8px 0 4px;flex:none">
-    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-chevron-left"/></svg></button><span style="flex:1"></span>
-    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i" viewBox="0 0 24 24"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></button>
-    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-users"/></svg></button>
-    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-external-link"/></svg></button>
-    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-more-vertical"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i i-m"><use href="#i-chevron-left"/></svg></button><span style="flex:1"></span>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i i-m" viewBox="0 0 24 24"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i i-m"><use href="#i-users"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i i-m"><use href="#i-external-link"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i i-m"><use href="#i-more-vertical"/></svg></button>
   </div>
   <div class="b-scroll"><div class="b-body" style="padding:0 16px 24px">
     <div style="display:flex;align-items:center;gap:12px;margin:18px 0 16px"><span style="width:22px;height:4px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:1px;background:var(--cs-outline-variant)"></span></div>
-    <div class="t-overline accent" style="text-transform:uppercase">Lunch</div>
-    <div class="t-display-compact" style="margin-top:6px;line-height:1.1">Linsgryta med kokos och koriander</div>
-    <div style="display:flex;gap:16px;margin-top:10px;font-size:13px;font-weight:600"><span><svg class="i i-s"><use href="#i-clock"/></svg> 30 min</span><span><svg class="i i-s"><use href="#i-user"/></svg> 4 port</span></div>
-    <div style="display:flex;align-items:center;margin-top:8px;color:var(--cs-saffron)">
-      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
-      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
-      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
-      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
-      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star-half"/></svg></span>
-      <span style="margin-left:6px;font-size:12px;font-weight:700;color:var(--cs-on-surface)">4,5</span></div>
-    <div style="display:flex;gap:16px;margin-top:20px"><span class="rd-tag ok"><svg class="i i-s"><use href="#i-circle-check"/></svg>Lagat i dag</span><span class="rd-tag house"><svg class="i i-s"><use href="#i-users"/></svg>Betygsatt som hushåll</span></div>
-    <div style="margin-top:22px"><button class="b-btn outlined hug" style="border-radius:999px;padding:12px 16px;font-size:13px"><svg class="i i-s"><use href="#i-camera"/></svg>Lägg till foto</button></div>
-    <div style="margin-top:10px"><button class="b-btn outlined hug rd-btn">Näringsvärden</button></div>
-    <div style="margin-top:14px"><span style="display:inline-flex;align-items:center;gap:8px;padding:3px 10px;border-radius:2px;background:var(--cs-raised);color:var(--cs-on-surface-variant);font-size:13px;font-weight:600"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
-    <div class="muted" style="margin-top:8px;font-size:13px;font-weight:600;line-height:1.25">Allergenerna är inte kontrollerade för det här receptet. Läs ingredienserna själv.</div>
-    <div class="muted" style="margin-top:6px;font-size:15px;line-height:1.5">Test recipe description</div>
-    <div style="margin-top:32px;font-size:15px;font-weight:700;line-height:1.3">Ingredienser</div>
-    <div style="display:flex;align-items:center;margin-top:27px;padding-left:16px"><span class="muted" style="width:87px;font-size:14px">Portioner</span><div class="b-stepper" style="gap:16px"><button><svg class="i"><use href="#i-minus"/></svg></button><span class="n">4</span><button><svg class="i"><use href="#i-plus"/></svg></button></div></div>
+    <div style="padding-top:3px"><div class="t-overline accent" style="text-transform:uppercase">Lunch</div></div>
+    <div class="t-display-compact" style="margin-top:7px;line-height:1.14">Linsgryta med kokos och koriander</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:20px;font-size:13px;font-weight:600"><span><svg class="i i-s"><use href="#i-clock"/></svg> 30 min</span><span><svg class="i i-s"><use href="#i-user"/></svg> 4 port</span><span style="display:inline-flex;align-items:center;gap:4px"><svg class="i i-s" style="color:var(--cs-saffron)"><use href="#i-star"/></svg>4,5<svg class="i i-xs" style="color:var(--cs-on-surface-variant)"><use href="#i-chevron-right"/></svg></span><span class="rd-tag ok" style="margin-left:auto"><svg class="i i-s"><use href="#i-circle-check"/></svg>Lagat i dag</span></div>
+    <div style="margin-top:35px"><span class="rd-tag house"><svg class="i i-s"><use href="#i-users"/></svg>Betygsatt som hushåll</span></div>
+    <div style="margin-top:17px;display:flex;align-items:center;gap:12px"><button class="b-btn outlined rd-btn" style="flex:1">Näringsvärden</button><button class="b-iconbtn" aria-label="Lägg till foto" style="width:48px;height:48px;border-radius:999px;border:1px solid var(--cs-outline-variant);color:var(--cs-on-surface)"><svg class="i i-m"><use href="#i-camera"/></svg></button></div>
+    <div style="margin-top:10px"><span style="display:inline-flex;align-items:center;gap:8px;padding:3px 10px;border-radius:2px;background:var(--cs-raised);color:var(--cs-on-surface-variant);font-size:13px;font-weight:600"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+    <div class="muted" style="margin-top:6px;font-size:13px;font-weight:600;line-height:1.25">Allergenerna är inte kontrollerade för det här receptet. Läs ingredienserna själv.</div>
+    <div class="muted" style="margin-top:9px;font-size:15px;line-height:1.5">Test recipe description</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:31px;font-size:15px;font-weight:700;line-height:1.3"><span>Ingredienser</span><span class="muted" style="font-size:15px;font-weight:700">Portioner:</span><div class="b-stepper" style="gap:0;margin-left:auto;margin-right:8px"><button style="width:30px;height:30px;margin:9px"><svg class="i i-m"><use href="#i-minus"/></svg></button><span class="n" style="min-width:36px">4</span><button style="width:30px;height:30px;margin:9px"><svg class="i i-m"><use href="#i-plus"/></svg></button></div></div>
+    <div style="display:flex;align-items:center;gap:32px;min-height:48px;margin-top:13px;font-size:14px"><b style="width:70px;text-align:right">3 dl</b><span style="flex:1">röda linser</span><svg class="i i-s" style="color:var(--cs-on-surface-variant)"><use href="#i-swap-horizontal"/></svg></div>
+    <div style="display:flex;align-items:center;gap:32px;min-height:48px;border-top:1px solid var(--cs-outline-variant);font-size:14px"><b style="width:70px;text-align:right">1 burk</b><span style="flex:1">kokosmjölk</span><svg class="i i-s" style="color:var(--cs-on-surface-variant)"><use href="#i-swap-horizontal"/></svg></div>
   </div></div>
-  <div style="padding:11px 12px 10px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
-    <button class="b-btn hero rd-btn">Börja laga</button>
-    <button class="b-btn ink rd-btn">Lägg i inköpslistan</button>
+  <div style="padding:9px 12px 12px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
+    <button class="b-btn hero rd-btn" style="height:40px">Börja laga</button>
+    <button class="b-btn ink rd-btn" style="height:40px">Lägg i inköpslistan</button>
   </div>
   <nav class="b-bottomnav">
     <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
@@ -967,11 +937,11 @@
   <div class="b-scroll"><div class="b-body" style="padding:14px 16px 24px">
     <div class="b-band" style="margin:0 -12px;min-height:48px;border-radius:12px;background:var(--cs-raised);font-size:15px;font-weight:400;padding-left:12px"><svg class="i i-m"><use href="#i-pencil"/></svg><span class="text">Redigeringsläge</span></div>
     <div class="b-field re-field" style="margin-top:20px"><span class="label">Måltidstyp</span><div class="b-input"><span class="val">Lunch</span><svg class="i i-m" style="color:var(--cs-on-surface)"><use href="#i-chevron-down"/></svg></div></div>
-    <div style="margin-top:37px;width:96px;height:96px;border:1px solid var(--cs-outline-variant);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--cs-on-surface-variant)"><svg class="i"><use href="#i-plus"/></svg></div>
-    <div class="b-field re-field" style="margin-top:32px"><span class="label">Titel</span><div class="b-input"><span class="val">Linsgryta med kokos och koriander</span></div></div>
-    <div class="b-field re-field"><span class="label">Beskrivning</span><div class="b-input" style="align-items:flex-start;min-height:53px"><span class="val">Test recipe description</span></div></div>
-    <div class="b-field re-field" style="margin-top:33px"><span class="label">Portioner</span><div class="b-input"><span class="val">4</span></div></div>
-    <div class="b-field re-field"><span class="label">Tid (min)</span><div class="b-input"><span class="val">30</span></div></div>
+    <div style="margin-top:47px;width:96px;height:96px;border:1px solid var(--cs-outline-variant);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--cs-on-surface-variant)"><svg class="i"><use href="#i-plus"/></svg></div>
+    <div class="b-field re-field" style="margin-top:42px"><span class="label">Titel</span><div class="b-input"><span class="val">Linsgryta med kokos och koriander</span></div></div>
+    <div class="b-field re-field" style="margin-top:48px"><span class="label">Beskrivning</span><div class="b-input" style="align-items:flex-start;min-height:53px"><span class="val">Test recipe description</span></div></div>
+    <div class="b-field re-field" style="margin-top:42px"><span class="label">Portioner</span><div class="b-input"><span class="val">4</span></div></div>
+    <div class="b-field re-field" style="margin-top:42px"><span class="label">Tid (min)</span><div class="b-input"><span class="val">30</span></div></div>
   </div></div>
   <div style="padding:21px 16px 20px;flex:none;border-top:1px solid var(--cs-outline-variant)">
     <button class="b-btn" style="min-height:40px;padding:8px 24px;font-size:13px;font-weight:700;background:var(--butlery-action-fill);color:var(--butlery-text-on-action-fill)">Spara ändringar</button>
@@ -980,34 +950,34 @@
 </figure>
 
 <figure data-views="lib/views/cooking_mode_view.dart lib/views/cooking_mode">
-<div class="phone" style="width:800px;height:360px;border-radius:0;background:var(--cs-ink);color:var(--cs-on-ink)">
-  <div style="display:flex;align-items:center;gap:12px;padding:0 16px;height:64px;flex:none;border-bottom:1px solid var(--butlery-border-on-ink)">
+<div class="phone ml-phone" style="width:800px;height:360px;border-radius:0;background:var(--cs-ink);color:var(--cs-on-ink)">
+  <div style="display:flex;align-items:center;gap:10px;padding:0 16px;height:64px;flex:none;border-bottom:1px solid var(--butlery-border-on-ink)">
     <div style="flex:1;font-size:20px;font-weight:700;letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Krämig svamppasta med timjan</div>
-    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-smartphone"/></svg></button>
-    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);font-size:14px;font-weight:700">A+</button>
-    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-x"/></svg></button>
+    <button class="b-iconbtn" style="width:46px;height:46px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-smartphone"/></svg></button>
+    <button class="b-iconbtn" style="width:46px;height:46px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);font-size:14px;font-weight:700">A+</button>
+    <button class="b-iconbtn" style="width:46px;height:46px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-x"/></svg></button>
   </div>
   <div style="flex:1;display:flex;min-height:0">
-    <div style="width:280px;flex:none;padding:16px 16px 0;border-right:1px solid var(--butlery-border-on-ink);overflow:hidden">
-      <div style="display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;color:var(--butlery-palette-sage-muted)">Portioner
-        <span style="margin-left:0;display:inline-flex;align-items:center;gap:28px;padding:0 16px;height:46px;border-radius:24px;background:var(--butlery-palette-ink-raised);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-minus"/></svg><b style="font-size:20px;min-width:16px;text-align:center">4</b><svg class="i i-m"><use href="#i-plus"/></svg></span></div>
-      <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--butlery-palette-sage-muted)"><span>Ingredienser</span><span>5 rader</span></div>
-      <div style="margin-top:12px;font-size:15px">
+    <div style="width:280px;flex:none;padding:14px 16px 0;border-right:1px solid var(--butlery-border-on-ink);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:16px;font-size:15px;font-weight:600;color:var(--butlery-palette-sage-muted);padding-bottom:13px;margin:0 -16px;padding-left:16px;border-bottom:1px solid var(--butlery-border-on-ink)">Portioner
+        <span style="margin-left:0;display:inline-flex;align-items:center;gap:22px;padding:0 9px;height:46px;border-radius:24px;background:var(--butlery-palette-ink-raised);color:var(--cs-on-ink)"><svg class="i" style="width:28px;height:28px"><use href="#i-minus"/></svg><b style="font-size:22px;min-width:16px;text-align:center">4</b><svg class="i" style="width:28px;height:28px"><use href="#i-plus"/></svg></span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--butlery-palette-sage-muted)"><span>Ingredienser</span><span style="text-transform:none;letter-spacing:0;font-size:13px">5 rader</span></div>
+      <div style="margin-top:7px;font-size:16px;line-height:1.3">
         <div style="display:flex;gap:16px;padding:13px 0"><b style="width:68px">400 g</b><span>färska champinjoner</span></div>
         <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">3 dl</b><span>grädde</span></div>
         <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">400 g</b><span>pasta</span></div>
         <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">2 st</b><span>vitlöksklyftor</span></div>
       </div>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column;padding:8px 16px 8px 8px;min-width:0">
-      <div style="display:flex;align-items:center;gap:12px;min-height:62px;margin-top:8px;padding:0 12px;border-radius:8px;background:var(--butlery-palette-ink-raised);font-size:12px;font-weight:700"><svg class="i i-s"><use href="#i-hand"/></svg><span style="flex:1">Tips: håll inne ett steg för att starta en timer</span><svg class="i i-s"><use href="#i-x"/></svg></div>
-      <div style="margin-top:26px;border-radius:8px;padding:16px 8px 0 16px;flex:1;min-height:0;overflow:hidden;position:relative" class="ml-step">
+    <div style="flex:1;display:flex;flex-direction:column;padding:5px 16px 8px 9px;min-width:0">
+      <div style="display:flex;align-items:center;gap:9px;min-height:52px;margin:0 -8px 0 0;padding:0 18px 0 7px;border-radius:8px;background:var(--butlery-palette-ink-raised);font-size:13px;font-weight:700"><svg class="i i-m"><use href="#i-hand"/></svg><span style="flex:1">Tips: håll inne ett steg för att starta en timer</span><svg class="i i-m"><use href="#i-x"/></svg></div>
+      <div style="margin:25px 0 0 8px;border-radius:8px;padding:16px 0 0 16px;flex:none;height:151px;overflow:hidden;position:relative" class="ml-step">
         <div style="display:flex;align-items:center;gap:12px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--butlery-palette-sage-muted)"><span>Steg 1 av 6</span><span style="flex:1;height:4px;border-radius:2px;background:var(--butlery-border-on-ink);position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:15%;border-radius:2px;background:var(--cs-saffron)"></span></span></div>
-        <div style="display:flex;gap:12px;margin-top:16px"><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:700;line-height:1.4">Skiva svampen och stek den gyllene i smör.</div>
-        <div style="font-size:15px;line-height:1.4;margin-top:16px;color:var(--butlery-palette-sage-muted)">Nästa: Tillsätt grädden och låt sjuda 15 min under omrörning.</div></div>
-        <span style="align-self:center;width:44px;height:56px;display:flex;align-items:center;justify-content:center"><svg class="i"><use href="#i-mic"/></svg></span></div>
+        <div style="display:flex;gap:12px;margin-top:16px"><div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:700;line-height:1.4">Skiva svampen och stek den gyllene i smör.</div>
+        <div style="font-size:16px;line-height:1.5;margin-top:16px;color:var(--butlery-palette-sage-muted)">Nästa: Tillsätt grädden och låt sjuda 15 min under omrörning.</div></div>
+        <span class="ml-mic" style="align-self:center;width:57px;height:56px;display:flex;align-items:center;justify-content:center"><svg class="i" style="width:28px;height:28px"><use href="#i-mic"/></svg></span></div>
       </div>
-      <div style="display:flex;gap:8px;margin:-8px 0 0 8px;position:relative"><button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);background:var(--cs-ink)"><svg class="i i-m"><use href="#i-chevron-left"/></svg></button><button class="b-btn hero" style="flex:1;min-height:48px;border-radius:4px">Nästa steg<svg class="i i-s"><use href="#i-arrow-right"/></svg></button></div>
+      <div style="display:flex;gap:8px;margin:8px 0 0 8px;position:relative"><button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);background:var(--cs-ink)"><svg class="i i-m"><use href="#i-chevron-left"/></svg></button><button class="b-btn hero" style="flex:1;min-height:48px;border-radius:4px">Nästa steg<svg class="i i-s"><use href="#i-arrow-right"/></svg></button></div>
     </div>
   </div>
 </div>
@@ -1035,13 +1005,13 @@
 <div class="phone">
   <div class="b-topbar-root" style="padding-top:16px">
     <div style="flex:1"><div class="title">Mer</div></div>
-    <div class="actions" style="position:relative"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-triangle-alert"/></svg></button><span class="b-count" style="position:absolute;top:2px;right:8px;padding:0 5px;line-height:1.3">1</span></div>
+    <div class="actions" style="position:relative;margin-right:0px"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-triangle-alert"/></svg></button><span class="b-count" style="position:absolute;top:8px;right:9px;padding:0 5px;line-height:1.3">1</span></div>
   </div>
-  <div class="b-scroll"><div class="b-body" style="padding-top:8px">
+  <div class="b-scroll"><div class="b-body mer-rows" style="padding-top:8px">
     <div class="b-row" style="padding:12px 0"><span class="b-avatar" style="width:56px;height:56px;border-radius:50%;background:var(--cs-ink);color:var(--cs-on-ink);font-size:20px">DP</span>
       <div class="text"><div class="t-card-title" style="font-size:15px;font-weight:600;line-height:1.3">Din profil</div><div class="subtitle">Profil och synlighet</div></div>
       <svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-    <div class="b-band" style="margin-top:8px"><svg class="i i-m"><use href="#i-refresh-cw"/></svg><span class="text">2 ändringar väntar på synk</span><span class="b-count">1</span><svg class="i i-s" style="color:var(--cs-on-surface-variant)"><use href="#i-chevron-right"/></svg></div>
+    <div class="b-band" style="margin-top:8px"><svg class="i"><use href="#i-refresh-cw"/></svg><span class="text">2 ändringar väntar på synk</span><span class="b-count">1</span><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
     <section class="b-section"><div class="b-overline">Tillsammans</div>
       <div class="b-row"><div class="text"><div class="label">Notiser</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
       <div class="b-row"><div class="text"><div class="label">Meddelanden</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
@@ -1064,14 +1034,7 @@
       <div class="b-row"><div class="text"><div class="label">Hjälp &amp; om</div><div class="subtitle">Frågor, villkor, rapporter</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
     </section>
   </div></div>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
+  </div>
 </figure>
 
 <figure data-views="lib/views/unified_shopping_view.dart lib/views/unified_shopping">
@@ -1098,36 +1061,22 @@
     <div class="ik-item"><span class="b-checkbox"></span><span class="nm">Havremjölk <small>1 l</small></span><svg class="i"><use href="#i-more-vertical"/></svg></div>
   </div>
   <button class="b-btn hero ik-add"><svg class="i i-m"><use href="#i-plus"/></svg>Lägg till vara</button>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
 </div>
 </figure>
 
 <figure data-views="lib/views/pantry/pantry_view.dart">
 <div class="phone">
-  <div class="b-topbar-root" style="padding-top:17px">
+  <div class="b-topbar-root" style="padding-top:17px;margin-bottom:-2px">
     <div style="flex:1"><div class="title">Inköp</div></div>
     <div class="actions" style="align-items:center;margin-right:0"><span style="font-size:14px;font-weight:600;padding:0 12px;height:48px;display:inline-flex;align-items:center">Välj</span></div>
   </div>
-  <div class="sk-tabs"><div class="tab"><svg class="i"><use href="#i-shopping-cart"/></svg><span>Inköpslistor</span></div><div class="tab active"><svg class="i"><use href="#i-refrigerator"/></svg><span>Skafferiet</span></div></div>
+  <div class="sk-tabs"><div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><span>Inköpslistor</span></div><div class="tab active"><svg class="i"><use href="#i-refrigerator"/></svg><span>Skafferiet</span></div></div>
   <div class="b-scroll">
     <div class="sk-sec"><span class="name">Går ut snart</span><span class="cnt">2</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
     <div class="sk-item"><div class="tx" style="flex:none">Havremjölk<small>1 l</small></div><span class="tag">Utgår 30 september</span></div>
     <div class="sk-item"><div class="tx" style="flex:none">Röda linser<small>500 g</small></div><span class="tag">Utgår 29 september</span></div>
   </div>
   <span class="sk-fab"><svg class="i"><use href="#i-plus"/></svg></span>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
 </div>
 </figure>
 
@@ -1178,40 +1127,33 @@
     <button class="b-btn outlined vg-cancel">Avbryt planeringen</button>
     <div class="vg-note">Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.</div>
   </div>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
+  </div>
 </figure>
 
 <figure data-views="lib/views/sync/sync_queue_view.dart">
 <div class="phone">
-  <div style="display:flex;align-items:center;padding:16px 24px 0;font-size:15px;font-weight:700"><span style="flex:1">Väntar på synk</span><span class="muted tabular" style="font-size:12px;font-weight:600;margin-right:4px">2</span></div>
-  <div style="display:flex;gap:0;padding:18px 24px 0;align-items:center"><span style="width:24px;height:3px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:2px;margin-left:12px;background:var(--cs-outline)"></span></div>
-  <div class="b-scroll"><div class="b-body" style="padding-top:26px">
-    <div class="b-overline" style="color:var(--cs-error);padding-bottom:4px">Väntar på dig · 1</div>
-    <div class="muted" style="font-size:12.5px;line-height:1.45;margin-bottom:12px">Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.</div>
-    <div style="border:1.5px solid var(--cs-error);border-radius:4px;padding:16px 12px 12px">
+  <div style="display:flex;align-items:center;padding:18px 24px 0;font-size:15px;font-weight:700"><span style="flex:1">Väntar på synk</span><span class="muted tabular" style="font-size:12px;font-weight:600;margin-right:4px">2</span></div>
+  <div style="display:flex;gap:0;padding:22px 24px 0;align-items:center"><span style="width:24px;height:3px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:2px;margin-left:12px;background:var(--cs-outline)"></span></div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:18px">
+    <div class="b-overline" style="color:var(--cs-error);padding-bottom:4px;margin-top:5px">Väntar på dig · 1</div>
+    <div class="muted" style="font-size:12.5px;line-height:1.45;margin-bottom:5px">Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.</div>
+    <div style="border:1.5px solid var(--cs-error);border-radius:4px;padding:14px 12px 14px">
       <div style="font-size:13px;font-weight:600">Citronrisotto · ändrat</div>
-      <div style="font-size:13px;font-weight:600;color:var(--cs-error);margin-top:8px">Du har inte längre behörighet</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--cs-error);margin-top:4px">Du har inte längre behörighet</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:7px">
         <button class="b-btn outlined hug" style="min-height:40px;padding:8px 28px;border-radius:4px">Försök igen</button>
         <button class="b-btn outlined hug" style="min-height:40px;padding:8px 28px;border-radius:4px">Spara som kopia</button>
         <button class="b-btn text hug" style="min-height:40px;padding:8px 20px;color:var(--cs-error)">Släng ändringen</button>
       </div>
     </div>
-    <div class="b-overline" style="margin-top:32px">I kö · 1</div>
+    <div class="b-overline" style="margin-top:29px">I kö · 1</div>
     <div class="b-row" style="padding:12px 0;min-height:0"><div class="text"><div style="font-size:15px">Linsgryta med kokos · ändrat</div></div><span class="muted tabular" style="font-size:13px">12 min</span></div>
     <div class="muted" style="font-size:13px;line-height:1.45;margin-top:4px">Ordningen är först in, först ut per objekt, men parallellt mellan objekt.</div>
   </div></div>
   <div style="flex:none;border-top:1px solid var(--cs-outline-variant);padding:16px 24px 20px">
     <button class="b-btn outlined" style="min-height:40px;padding:8px 24px;border-radius:4px"><svg class="i i-s"><use href="#i-refresh-cw"/></svg>Försök synka nu</button>
   </div>
-  <nav class="b-bottomnav">
+  <nav class="b-bottomnav nav-all">
     <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
     <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
     <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
@@ -1305,7 +1247,10 @@
 <script src="designlabb-advice.js"></script>
 <script src="designlabb-advice-more.js"></script>
 <script src="designlabb-advice-ui.js"></script>
+<script src="designlabb-shots.js"></script>
 <script src="designlabb-claude.js"></script>
 <script src="designlabb-ui.js"></script>
+<script src="designlabb-nudges.js"></script>
+<script src="designlabb-golden.js"></script>
 </body>
 </html>

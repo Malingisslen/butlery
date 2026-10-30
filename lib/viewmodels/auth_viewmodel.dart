@@ -115,7 +115,7 @@ class AuthViewModel extends ChangeNotifier
 
   /// The second-factor challenge a sign-in is waiting for, or null. A
   /// sign-in that returns false with this set is not a failure: the view
-  /// shows the challenge (Skarmar v12 etapp 3 #authmfa).
+  /// shows the challenge.
   MfaResolverInfo? get pendingMfaChallenge => _authService.pendingMfaChallenge;
 
   /// Whether "Fortsätt med [provider]" is shown on this platform (BUT-916).
@@ -308,7 +308,7 @@ class AuthViewModel extends ChangeNotifier
   /// Essential for secure authentication flows and proper user session lifecycle management.
   ///
   /// A user-initiated sign-out, so the queue guard runs first
-  /// (produktregler.md:193; Q-P6-E16). Returns the unsaved changes that
+  /// (Q-P6-E16). Returns the unsaved changes that
   /// blocked it; [PendingChanges.none] means the user was signed out. A
   /// blocked caller shows the confirmation (#utloggningko) and calls
   /// [discardPendingAndSignOut] only if the user chose to throw them away.

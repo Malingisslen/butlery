@@ -1,0 +1,52 @@
+{
+  "form": "Två skärmbilder av bakbokssidan ur stokig/03 med statusfält och tre raders överlapp; klockan och ikonraden får aldrig nå receptet. Sidan stavar kardamumma.",
+  "title": "Kanelbullar",
+  "steps": 6,
+  "lastStepKey": "grädda i 250 grader",
+  "ingredients": [
+    {
+      "key": "jäst"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "kardamumma"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "rumsvarmt smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "kanel"
+    }
+  ],
+  "headings": [
+    "Deg",
+    "Fyllning"
+  ],
+  "absent": [
+    "10:55",
+    "10:56",
+    "d 5 g ll 66",
+    "d 5 g ll 65"
+  ]
+}

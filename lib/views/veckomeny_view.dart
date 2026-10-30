@@ -206,7 +206,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
-    // P6-U01: offline, generation is switched off (produktregler.md:1131).
+    // P6-U01: offline, generation is switched off.
     // The button is already off with its reason; this keeps a stale tap from
     // starting anything.
     if (!VeckomenyConnectivity.isOnlineNow()) return;
@@ -227,8 +227,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final end = await menuVm.generateMenu(_promptController.text);
     if (!mounted || end != MenuGenerationEnd.completed) return;
 
-    // P6-U01: "Inga recept matchar" is drawn in Lista (Skarmar v12 del 1
-    // #veckoingamatch), so a calendar-mode generation that matched nothing
+    // P6-U01: "Inga recept matchar" is drawn in Lista
+    // so a calendar-mode generation that matched nothing
     // goes there to say so. The week is untouched.
     if (_viewMode == VeckomenyViewMode.kalender &&
         menuVm.noMatchOutcome != null) {
@@ -237,7 +237,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
 
     // P6-U01: offline during generation. The flow's "avbrutet, tidigare
-    // vecka orörd" (flows-roles-budget.md:34): nothing is placed, the saved
+    // vecka orörd": nothing is placed, the saved
     // week stays as it was, and the suggestion waits in Lista.
     if (_viewMode == VeckomenyViewMode.kalender &&
         menuVm.hasMenu &&
@@ -505,10 +505,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
 
-    // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
-    // #tomvecka): "Veckomeny" with the week and the number of dishes on the
-    // line under it, and the Lista/Kalender tabs under the bar.
-    //
     // P5-U26a: the week menu listens for "{namn} sparade veckan", and
     // BUT-2215 for its own week saved on another device.
     final planVm = context.watch<WeeklyMenuPlanViewModel>();
@@ -589,10 +585,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// P6-U02: flow 02. Calendar mode merges the visible week's plan; list mode
   /// merges the generated menu into the current week's list.
   ///
-  /// Three outcomes stay apart (produktregler.md):
+  /// Three outcomes stay apart:
   /// nothing to generate (a warning), failed (what happened, what is kept,
   /// Försök igen) and already running (silence). A confirmed merge opens the
-  /// list and offers Ångra for 7 s (produktregler.md, § 2.4).
+  /// list and offers Ångra for 7 s.
   ///
   /// One flow at a time, from the tap until the sheet has closed and the
   /// write has finished (WeeklyMenuPlanViewModel.runShoppingFlow): a second
@@ -675,9 +671,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // The bar gives the icons its own foreground: text.primary on the light
     // root bar in both modes (ButleryTopBar).
     //
-    // Skarmar v12 del 1 #veckomeny draws no icons on the root bar, and four
-    // 48 dp icons would leave "Veckomeny" too little width on a 320 dp
-    // phone. The group week keeps its icon (it is reached from here and from
+    // The group week keeps its icon (it is reached from here and from
     // the group chat, BUT-1971); load, save and clear share one overflow
     // menu, so the title always has room.
     return [
@@ -825,10 +819,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             child: Padding(
               padding: AppDimensions.responsiveHorizontalPadding(context),
               child: viewModel.isGenerating
-                  // The week while it is planned: the plate line with
-                  // text in the content area, never an overlay over the
-                  // view (Skarmar v12 del 1 #veckogenererarpanel;
-                  // ux-beslut.json D-03).
                   ? SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -899,11 +889,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 }
 
-/// P5-U25: a generation that found fewer dishes than were asked for
-/// (produktregler.md:206: "1 ≤ n < begärt antal recept"). It says "Vi hittade
-/// n av m rätter" and names each meal type that is short (produktregler.md:
-/// 893: "Ett antal utan namn är ingen upplysning"), in the shared I-29 form
-/// (produktregler.md:905-909). Instead of looking complete, the result says
+/// Instead of looking complete, the result says
 /// what it is. The way on is the view's own Generera, which stays.
 class VeckomenyPartialResult extends StatelessWidget {
   const VeckomenyPartialResult({super.key, required this.outcome});
@@ -932,13 +918,7 @@ class VeckomenyPartialResult extends StatelessWidget {
   }
 }
 
-/// P6-U01: a generation where nothing matched (flows-roles-budget.md:32;
-/// fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
-/// REQUIRED).
-///
-/// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
-/// det och erbjuder minsta möjliga eftergift — inte en generisk feltext.
-/// Illustration, inte felikon: ingenting har gått sönder." The title "Inga
+/// The title "Inga
 /// recept matchar", a line with the size of the library, the requirements
 /// the prompt was read as, and two ways on.
 ///
@@ -947,7 +927,7 @@ class VeckomenyPartialResult extends StatelessWidget {
 /// do yet, so the requirements are named as text and "Ändra beskrivningen"
 /// moves focus to the prompt. "Lägg dagarna själv" opens the calendar. Both
 /// are outlined, because the view's one primary action is Generera
-/// (Komponentark v1:843-844). The app has no cookbook illustration, so the
+/// The app has no cookbook illustration, so the
 /// empty state's no-search-results illustration stands in.
 class VeckomenyNoMatch extends StatelessWidget {
   const VeckomenyNoMatch({
@@ -1010,9 +990,7 @@ class VeckomenyNoMatch extends StatelessWidget {
 
 /// P5-U26a: mounts P3-U08's week conflict snackbar on the week menu.
 ///
-/// produktregler.md:104: for the week menu the last save wins and the user
-/// sees "*Namn* sparade veckan" for 30 s; ux-beslut.json D-04 keeps that 30 s
-/// window apart from the 7 s undo. [ConflictSnackBar.showWeekSaved] owns the
+/// [ConflictSnackBar.showWeekSaved] owns the
 /// text, the window, the action and the filter (only a week-menu conflict the
 /// user's edit lost); this widget only listens to
 /// [RealtimeSyncService.conflictStream] while the week menu is open. Without
@@ -1092,9 +1070,7 @@ class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
 /// one message of BUT-2132), what was kept, and Försök igen, which places the
 /// same menu again. The week is said to be unchanged only when
 /// [weekUnchanged] is true: the rollback may have been skipped, and a message
-/// claims only an undo that happened. The generated menu is always kept
-/// (produktregler.md:201: a generated result is not in the week until it is
-/// placed).
+/// claims only an undo that happened.
 ///
 /// The publish-first path may already have put the success toast on screen,
 /// with an ÄNDRA that opens placement. A queued error would sit behind it for
@@ -1118,10 +1094,7 @@ void showWeekPlacementFailure(
   );
 }
 
-/// P6-U02: the receipt after a merge, with Ångra. When the list had been
-/// changed on another device before the write, it says so and that nothing
-/// was overwritten (BUT-2140; flows-roles-budget.md:18, the user is always
-/// told about a conflict).
+/// P6-U02: the receipt after a merge, with Ångra.
 void showShoppingMergeReceipt(
   BuildContext context,
   MenuShoppingMergeReceipt receipt, {

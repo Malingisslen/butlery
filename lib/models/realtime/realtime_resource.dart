@@ -51,20 +51,15 @@ enum RealtimeResourceType {
 /// Which conflict rule applies when two people change the same resource at
 /// the same time.
 ///
-/// produktregler.md:97-107 (section 2) has no generic rule: each entity has
-/// its own strategy and its own notice (beslutslogg.md:16, B-09). The model
-/// declares which row of that table it is through
-/// [RealtimeResource.conflictEntityFor], so no caller has to guess the entity
-/// from a collection path or a document field. Only the entities the realtime
+/// Only the entities the realtime
 /// sync reaches today are listed; the others (shopping list, pantry, profile,
 /// chat) have their own mechanisms outside this service.
 enum ConflictEntity {
   /// "Recept (eget)": both versions are shown and the user chooses
-  /// (produktregler.md:102).
   recipeOwn,
 
   /// "Recept (delat, andras)": the owner's version wins and the change becomes
-  /// a suggestion (produktregler.md:103), kept 7 days in `recipe_suggestions`
+  /// a suggestion, kept 7 days in `recipe_suggestions`
   /// (P5-U27b, RealtimeSyncService). Only when the suggestion cannot be stored
   /// does PQ-02 = A (2026-09-23) still apply: the non-owner gets the owner's
   /// notice and the same choice in ConflictDiffView, "Behåll min version" and
@@ -72,7 +67,6 @@ enum ConflictEntity {
   recipeShared,
 
   /// "Veckomeny": the last save wins, with a 30 s snackbar
-  /// (produktregler.md:104, ux-beslut.json D-04).
   weekMenu,
 }
 
@@ -206,7 +200,7 @@ abstract class RealtimeResource {
   bool isOwner(String userId) => ownerId == userId;
 
   /// The conflict rule that applies to [userId]'s edit of this resource
-  /// (produktregler.md:97-107). Each model declares its own entity; the
+  /// Each model declares its own entity; the
   /// answer may depend on who is editing (an owner's recipe and someone
   /// else's shared recipe follow different rows).
   ConflictEntity conflictEntityFor(String userId);

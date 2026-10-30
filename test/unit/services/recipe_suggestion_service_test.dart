@@ -1,7 +1,3 @@
-/// P5-U27b: a change to someone else's shared recipe becomes a suggestion,
-/// kept 7 days, that the owner accepts or dismisses (produktregler.md:103,
-/// :241; PQ-02 = A).
-///
 /// Driven through the real RealtimeSyncService conflict path (updateResource →
 /// shouldResolveConflict → the recipeShared branch), with the real Firebase
 /// repository on fake_cloud_firestore, as overwritten_version_service_test

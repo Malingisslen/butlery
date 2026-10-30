@@ -1,24 +1,22 @@
-/// Comprehensive deep link service providing URL generation, parsing, and navigation management with analytics.
+/// Comprehensive deep link service providing URL generation, parsing, and navigation management.
 /// This service implements sophisticated deep linking functionality supporting invitation sharing, content
-/// distribution, and app navigation through URL-based routing. It provides URL shortening capabilities,
-/// comprehensive analytics tracking, and flexible navigation patterns that integrate seamlessly with
+/// distribution, and app navigation through URL-based routing. It provides URL shortening capabilities
+/// and flexible navigation patterns that integrate seamlessly with
 /// social sharing workflows and content distribution strategies throughout the application.
 /// **Architecture Integration:**
 /// - Uses [DeepLinkRepository] interface for flexible backend storage and URL management
 /// - Integrates with [PermissionService] for secure authenticated operations and access control
 /// - Coordinates with navigation systems for seamless app routing and user experience
-/// - Implements comprehensive analytics tracking for URL performance and usage insights
 /// **Deep Link Capabilities:**
 /// - **URL Generation**: Comprehensive URL generation for friend invitations, recipe sharing, menu distribution
-/// - **URL Shortening**: Internal and external URL shortening with comprehensive analytics and tracking
+/// - **URL Shortening**: Internal and external URL shortening
 /// - **Link Parsing**: Sophisticated URL parsing and validation with content type identification
 /// - **Navigation Handling**: Automatic navigation routing based on deep link content and user context
-/// - **Analytics Integration**: Comprehensive click tracking, usage analytics, and performance monitoring
 /// - **Expiration Management**: Time-based link expiration with configurable validity periods
 /// **Social Sharing and Distribution:**
 /// - **Friend Invitations**: Secure invitation link generation with user attribution and custom messaging
 /// - **Content Sharing**: Recipe, menu, and shopping list sharing with comprehensive metadata preservation
-/// - **Short URL Management**: Internal URL shortening service with analytics and performance tracking
+/// - **Short URL Management**: Internal URL shortening service
 /// - **External Integration**: Extensible framework supporting external URL shortening services
 /// - **Security Features**: Timestamp validation, expiration checking, and secure parameter encoding
 
@@ -30,23 +28,16 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 
-/// Deep link service providing comprehensive URL management, navigation routing, and analytics tracking.
+/// Deep link service providing comprehensive URL management and navigation routing.
 /// This service manages complete deep linking workflows including URL generation for social sharing,
-/// comprehensive URL parsing and validation, intelligent navigation routing, and detailed analytics
-/// tracking. It implements both internal URL shortening capabilities and external service integration
-/// to provide optimal sharing experiences with comprehensive performance monitoring.
+/// comprehensive URL parsing and validation, and intelligent navigation routing. It implements both internal URL shortening
+/// capabilities and external service integration.
 /// **URL Management Architecture:**
 /// Implements multi-layered URL management including:
 /// - Static URL generation methods for consistent link formatting
 /// - Dynamic parameter encoding with secure message handling
 /// - Comprehensive URL parsing with validation and error handling
 /// - Intelligent navigation routing based on content type and user context
-/// **Analytics and Performance Tracking:**
-/// Provides detailed tracking and monitoring including:
-/// - Click tracking and usage analytics for all generated URLs
-/// - Performance monitoring for URL resolution and navigation timing
-/// - Comprehensive metadata collection for usage pattern analysis
-/// - Integration with external analytics services for advanced insights
 /// **Usage Examples:**
 /// ```dart
 /// // Generate friend invitation link
@@ -64,7 +55,7 @@ class DeepLinkService extends BaseService {
   String get serviceName => 'DeepLinkService';
 
   final DeepLinkRepository _deepLinkRepository;
-  static const String _baseUrl = 'https://butlery.app';
+  static const String baseUrl = 'https://butlery.se';
   static const String _invitePath = '/invite';
   static const String _recipePath = '/recipe';
   static const String _menuPath = '/menu';
@@ -74,20 +65,20 @@ class DeepLinkService extends BaseService {
   DeepLinkService({required DeepLinkRepository deepLinkRepository})
     : _deepLinkRepository = deepLinkRepository;
 
-  /// Generates a secure deep link for friend invitation sharing with comprehensive metadata and tracking.
+  /// Generates a secure deep link for friend invitation sharing.
   /// This method creates a properly formatted invitation URL with secure parameter encoding and comprehensive
   /// metadata including user attribution, timestamps, and optional custom messaging. The generated link
-  /// integrates with the application's invitation system and provides tracking capabilities for analytics.
+  /// integrates with the application's invitation system.
   /// [invitationId] Unique identifier for the friend invitation record
   /// [fromUserId] User ID of the person sending the invitation for attribution and security
   /// [customMessage] Optional personalized message to include with the invitation
   /// Returns formatted deep link URL ready for sharing through various channels
   /// **Security Features:**
   /// - Secure parameter encoding for user messages and sensitive data
-  /// - Timestamp inclusion for expiration validation and analytics
+  /// - Timestamp inclusion for expiration validation
   /// - User attribution for security validation and social context
   /// **Generated URL Structure:**
-  /// - Base URL: https://butlery.app/invite
+  /// - Base URL: https://butlery.se/invite
   /// - Required parameters: id (invitation), from (user), timestamp
   /// - Optional parameters: message (URL-encoded custom message)
   static String generateFriendInvitationLink({
@@ -183,7 +174,7 @@ class DeepLinkService extends BaseService {
       final uri = Uri.parse(url);
 
       // Check if it's a Butlery deep link
-      if (uri.host != 'butlery.app' && uri.host != 'www.butlery.app') {
+      if (uri.host != 'butlery.se' && uri.host != 'www.butlery.se') {
         return null;
       }
 
@@ -277,7 +268,7 @@ class DeepLinkService extends BaseService {
 
   /// Build URL with parameters
   static String _buildUrl(String path, Map<String, String> params) {
-    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: params);
+    final uri = Uri.parse('$baseUrl$path').replace(queryParameters: params);
     return uri.toString();
   }
 
@@ -331,7 +322,7 @@ class DeepLinkService extends BaseService {
             metadata,
           );
 
-      return 'https://butlery.app/s/$shortCode';
+      return '$baseUrl/s/$shortCode';
     } catch (e) {
       AppLogger.error('Failed to create internal short URL: $e');
       return null;
@@ -397,65 +388,10 @@ class DeepLinkService extends BaseService {
   static void _registerUrlSchemeHandlers() {
     // This would register handlers for different URL schemes:
     // - butlery://
-    // - https://butlery.app/
+    // - https://butlery.se/
     // - Custom short URLs
 
     AppLogger.debug('URL scheme handlers registered');
-  }
-
-  /// Handle incoming deep link and navigate appropriately.
-  ///
-  /// Dead code — deep link handling is done by DeepLinkHandler
-  /// (in core/bootstrap/handlers). This method is never called at runtime.
-  @Deprecated('Use DeepLinkHandler.processDeepLink instead')
-  static Future<void> handleDeepLink(
-    String url,
-    Function(String) navigateToRoute,
-  ) async {
-    try {
-      final deepLinkData = parseDeepLink(url);
-      if (deepLinkData == null) {
-        AppLogger.warning('Invalid deep link received: $url');
-        return;
-      }
-
-      if (isLinkExpired(deepLinkData)) {
-        AppLogger.warning('Deep link expired: $url');
-        return;
-      }
-
-      switch (deepLinkData.type) {
-        case DeepLinkType.friendInvitation:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/friends?invitation=${deepLinkData.id}');
-          }
-          break;
-        case DeepLinkType.recipeShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/recipe/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.menuShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/menu/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.shoppingListShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
-          }
-          break;
-        case DeepLinkType.profileShare:
-          if (deepLinkData.id != null) {
-            navigateToRoute('/public-profile/${deepLinkData.id}');
-          }
-          break;
-      }
-
-      AppLogger.info('Deep link handled successfully: ${deepLinkData.type}');
-    } catch (e) {
-      AppLogger.error('Failed to handle deep link: $e');
-    }
   }
 
   /// Check if a deep link is expired
@@ -491,45 +427,11 @@ class DeepLinkService extends BaseService {
         return null;
       }
 
-      // Track the click
-      await ServiceLocator.get<DeepLinkService>()._deepLinkRepository
-          .trackUrlClick(shortCode);
-
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
       return longUrl;
     } catch (e) {
       AppLogger.error('Failed to resolve short URL: $e');
       return null;
-    }
-  }
-
-  /// Get analytics for short URLs
-  static Future<Map<String, dynamic>> getShortUrlAnalytics(
-    String shortCode,
-  ) async {
-    try {
-      // Get metadata from repository
-      final metadata = await ServiceLocator.get<DeepLinkService>()
-          ._deepLinkRepository
-          .getDeepLinkMetadata(shortCode);
-
-      if (metadata == null) {
-        return {'error': 'Short URL not found'};
-      }
-
-      // Get the long URL
-      final longUrl = await ServiceLocator.get<DeepLinkService>()
-          ._deepLinkRepository
-          .getLongUrl(shortCode);
-
-      return {
-        'shortCode': shortCode,
-        'longUrl': longUrl,
-        'metadata': metadata,
-      };
-    } catch (e) {
-      AppLogger.error('Failed to get short URL analytics: $e');
-      return {'error': e.toString()};
     }
   }
 }

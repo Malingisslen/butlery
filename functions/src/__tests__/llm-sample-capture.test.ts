@@ -137,6 +137,35 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "shadow fields are written on shadow rows only",
+    fn: async () => {
+      const shadowKeys = ["parserOutput", "channel", "successfulTier", "parserVersion", "photoAiFallback"];
+      const extra = {
+        parserOutput: { title: "Pannkakor", ingredients: [], instructions: [] },
+        channel: "photo",
+        successfulTier: "rules",
+        parserVersion: "2.0.0",
+        photoAiFallback: true,
+      };
+      resetSampleCaptureCacheForTest();
+      const { db, added } = fakeDb({});
+      await captureLlmSample(
+        { mode: "extract", inputKind: "text", rawLlmResponse: "{}", modelId: "gemini-x", ...extra },
+        db
+      );
+      await captureLlmSample(
+        { mode: "shadow", inputKind: "text", rawLlmResponse: "{}", modelId: "gemini-x", ...extra },
+        db
+      );
+      assertEqual(added.length, 2, "two docs written");
+      for (const k of shadowKeys) {
+        assertEqual(k in added[0], false, `extract row has no ${k}`);
+        assertEqual(k in added[1], true, `shadow row has ${k}`);
+      }
+      assertEqual(added[1].channel, "photo", "shadow channel stored");
+    },
+  },
+  {
     name: "disabled flag suppresses the write",
     fn: async () => {
       resetSampleCaptureCacheForTest();

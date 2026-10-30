@@ -1,0 +1,37 @@
+{
+  "form": "matblogg: brödsmulor, publiceringsdatum, spara/skriv ut/dela och stjärnor före listan; näringstabell, författare, relaterade recept och kommentarsfält efter stegen. Titeln innehåller ingrediensordet kokosmjölk.",
+  "title": "Linsgryta med kokosmjölk",
+  "steps": 5,
+  "lastStepKey": "smaka av med salt",
+  "portions": 4,
+  "ingredients": [
+    {
+      "key": "röda linser"
+    },
+    {
+      "key": "kokosmjölk"
+    },
+    {
+      "key": "krossade tomater"
+    },
+    {
+      "key": "gul lök"
+    },
+    {
+      "key": "currypasta"
+    },
+    {
+      "key": "spiskummin"
+    },
+    {
+      "key": "vatten"
+    },
+    {
+      "key": "buljongtärning"
+    }
+  ],
+  "headings": [
+    "Det här behöver du",
+    "Så gör du"
+  ]
+}

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -279,6 +280,6 @@ abstract final class ImportResultHandler {
       context,
       context.l10n.importComplete(selected.length, 0),
     );
-    Navigator.of(context).pushNamedAndRemoveUntil(Routes.home, (_) => false);
+    AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
   }
 }

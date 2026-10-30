@@ -418,9 +418,8 @@ void main() {
     });
   });
 
-  // P4-U05: the media hero (Komponentark v1:81-89) and the view's one
-  // saffron action (Grafisk manual v6:219; Skarmar v12 del 1 'Receptdetalj',
-  // etapp 11 'Receptet brett — någon annans').
+  // P4-U05: the media hero and the view's one
+  // saffron action
   group('RecipeDetailView — media hero and action bar (P4-U05)', () {
     List<String> heroLabels(WidgetTester tester, Brightness b) => tester
         .widgetList<FilledButton>(find.byType(FilledButton))
@@ -636,9 +635,6 @@ void main() {
       expect(find.byTooltip('Lägg i inköpslistan'), findsNothing);
     });
 
-    // Skarmar v12 del 1 'Receptdetalj' draws the shopping-list action with
-    // an ink fill; 'Receptdetalj — mörkt läge' draws it with no fill, a
-    // 1.5 px paper outline and paper text.
     testWidgets('the shopping-list action is ink in light mode', (
       tester,
     ) async {

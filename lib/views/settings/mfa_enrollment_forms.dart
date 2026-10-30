@@ -161,8 +161,6 @@ class MfaTotpSetupForm extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space12),
-                // The view's one primary action (Skarmar v12 del 3 #mfa;
-                // Grafisk manual v6:219).
                 Expanded(
                   child: FormButton(
                     key: const ValueKey('mfa.confirm'),

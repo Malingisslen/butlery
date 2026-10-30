@@ -128,6 +128,11 @@ const EXPORTED_KEYS = [
   "modelId",
   "promptTokenCount",
   "candidatesTokenCount",
+  "parserOutput",
+  "channel",
+  "successfulTier",
+  "parserVersion",
+  "photoAiFallback",
   "createdAt",
 ].sort();
 
@@ -197,6 +202,62 @@ test("BUT-1659: mode filter narrows the export", async () => {
   if (ids.join(",") !== "e1,e2") {
     throw new Error(`mode filter wrong: ${ids.join(",")}`);
   }
+});
+
+// Shadow rows are a different experiment from prompt mining: an unfiltered
+// export leaves them out, and `--mode shadow` returns them alone with their
+// comparison fields.
+test("shadow rows: excluded without --mode, alone with --mode shadow", async () => {
+  const store: FakeStore = {
+    docs: [
+      { id: "e1", mode: "extract", createdAtMs: 100 },
+      {
+        id: "s1",
+        mode: "shadow",
+        createdAtMs: 200,
+        extra: {
+          parserOutput: { title: "Pannkakor", ingredients: [], instructions: [] },
+          channel: "photo",
+          successfulTier: "tier3",
+          parserVersion: "2.1.0",
+          photoAiFallback: false,
+        },
+      },
+    ],
+  };
+  const all = await runExportLlmSamplesWithDb(makeFakeDb(store), {});
+  const allIds = all.map((r: { id: string }) => r.id).join(",");
+  if (allIds !== "e1") throw new Error(`unfiltered export should drop shadow rows, got ${allIds}`);
+
+  const shadow = await runExportLlmSamplesWithDb(makeFakeDb(store), { mode: "shadow" });
+  if (shadow.length !== 1 || shadow[0].id !== "s1") {
+    throw new Error(`--mode shadow should return s1 alone, got ${shadow.map((r: { id: string }) => r.id).join(",")}`);
+  }
+  const row = shadow[0];
+  if (row.channel !== "photo") throw new Error(`channel not exported: ${row.channel}`);
+  if (row.successfulTier !== "tier3") throw new Error("successfulTier not exported");
+  if (row.parserVersion !== "2.1.0") throw new Error("parserVersion not exported");
+  if (row.photoAiFallback !== false) throw new Error("photoAiFallback not exported");
+  if ((row.parserOutput as { title?: string } | null)?.title !== "Pannkakor") {
+    throw new Error("parserOutput not exported");
+  }
+});
+
+test("shadow rows: parserOutput keeps only its allowlisted keys at every level", async () => {
+  const row = projectSample("s1", {
+    mode: "shadow",
+    parserOutput: {
+      title: "Pannkakor",
+      apiKey: "k",
+      ingredients: [{ name: "mjölk", originalLine: "6 dl mjölk", rawUid: "u" }],
+      instructions: ["Vispa."],
+    },
+  });
+  const out = row.parserOutput as { ingredients: Array<Record<string, unknown>> } | null;
+  if (!out) throw new Error("parserOutput dropped whole");
+  if ("apiKey" in out) throw new Error("top-level unknown key exported");
+  if ("rawUid" in out.ingredients[0]) throw new Error("nested unknown key exported");
+  if (out.ingredients[0].name !== "mjölk") throw new Error("allowlisted nested key lost");
 });
 
 // Test 4: createdAt is emitted as an ISO string (Timestamp → ISO), and a

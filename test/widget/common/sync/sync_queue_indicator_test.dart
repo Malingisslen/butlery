@@ -1,7 +1,6 @@
 // P4-U19, PQ-04 = B: the top bar's queue counter. Nothing while the queue
 // drains by itself; a saffron counter only when something needs the user;
-// tapping it opens "Väntar på synk" (produktregler.md:190;
-// flows-roles-budget.md:111).
+// tapping it opens "Väntar på synk"
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations.dart';

@@ -1,5 +1,5 @@
 // The page shown when a deferred module fails to load draws the one shared
-// top bar (beslutslogg.md:52, B-45), not the retired AdaptiveAppBar
+// top bar (B-45), not the retired AdaptiveAppBar
 // (package 7, P7-B1).
 
 import 'package:flutter_test/flutter_test.dart';

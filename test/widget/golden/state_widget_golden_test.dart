@@ -37,12 +37,11 @@ void main() {
       'loading state matches golden',
       file: 'goldens/state_widget_loading.png',
       // Laddning är tallrikslinje + text som säger vad som hämtas
-      // (produktregler.md:304).
       build: () => StateWidget.loading(message: 'Hämtar recepten …'),
     );
 
     // The determinate form, so the saffron fill is in a snapshot
-    // (Komponentark v1:305). The loading golden above shows the indeterminate
+    // The loading golden above shows the indeterminate
     // segment at its first frame, full opacity.
     butleryGolden(
       'determinate plate line matches golden',

@@ -60,6 +60,7 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
@@ -126,9 +127,8 @@ class RecipeDetailView extends StatefulWidget {
   /// entry point into recipe detail.
   final int? presentServings;
 
-  /// The name of the view the back button returns to. It gives the button
-  /// the name "Tillbaka till [backTo]" (Komponentark v1:74-78;
-  /// tillgänglighetshandoff:132). Null keeps "Tillbaka".
+  /// The name of the view the back button returns to.
+  /// Null keeps "Tillbaka".
   final String? backTo;
 
   /// BUT-1325: set when opened from a cookbook that keeps a note for this
@@ -228,7 +228,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   UserService? _userService;
 
   // P5-U26b: this recipe's versions of the owner's that another person's save
-  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109). Keyed
+  // overwrote, kept 30 days behind "Återställ". Keyed
   // by the recipe's id, as the ConflictBanner below is.
   late final RestorableVersionsWatcher _restorable;
 
@@ -320,15 +320,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
         final recipe = viewModel.recipe;
         final bottomPadding = MediaQuery.of(context).padding.bottom;
-        // Someone else's recipe: "Spara till mitt kök" is the one saffron
-        // action, and "Börja laga" steps down (Skarmar v12 etapp 11
-        // 'Receptet brett — någon annans'; Grafisk manual v6:219).
         final isOthersRecipe = showForkInAppBar(
           recipe.createdBy,
           ServiceLocator.get<PermissionService>().currentUserId,
         );
         // Q6-08 = A: the menu follows who the user is to the recipe
-        // (produktregler.md:244-252).
         final menuRole = recipeMenuRole(
           recipe,
           ServiceLocator.get<PermissionService>().currentUserId,
@@ -362,7 +358,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           if (!context.mounted) return;
           switch (exit) {
             // "Klart" counts the recipe as cooked and the chip shows the new
-            // count (flows-roles-budget.md:72). The per-day debounce stays:
+            // count. The per-day debounce stays:
             // a second Klart the same day leaves the count, and the chip
             // already says "Lagat idag". Klart never opens the who's-eating
             // picker, and cooking mode knows no member ids, so none are
@@ -402,9 +398,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
 
         final navItems = ButleryAdaptiveNavigation.getNavigationItems(context);
-        void openDestination(int index) =>
-            Navigator.pushNamed(context, navItems[index].route);
-        // The same rule as the shell (produktregler.md § 21.2), so the recipe
+        void openDestination(int index) => navItems[index].route == Routes.home
+            ? AppActions.returnToHome(
+                Navigator.of(context, rootNavigator: true),
+              )
+            : Navigator.pushNamed(context, navItems[index].route);
+        // The same rule as the shell, so the recipe
         // does not drop back to the bottom row on a width where Hem, Meny,
         // Inköp and Mer draw the rail.
         final inPane = DetailPane.isInside(context);
@@ -455,7 +454,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: LayoutComponents.offlineIndicator(),
                 ),
                 // A conflict on this recipe opens the drawn banner and, from  claim-lint:ok reindented only
-                // it, the two-column choice (produktregler.md:102: own  claim-lint:ok reindented only
+                // it, the two-column choice (own  claim-lint:ok reindented only
                 // recipe, both versions shown, the choice is the decision),
                 // mounted as edit_recipe_view does. Scoped by the recipe's id,
                 // never by position. On a shared recipe whose edit was kept as a
@@ -464,8 +463,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 SliverToBoxAdapter(
                   child: ConflictBanner(filterDocId: recipe.id),
                 ),
-                // P5-U27b: suggestions to this recipe, for their 7 days  claim-lint:ok reindented only
-                // (produktregler.md:103, :241). The owner is found from the  claim-lint:ok reindented only
+                // P5-U27b: suggestions to this recipe, for their 7 days.  claim-lint:ok reindented only
+                // The owner is found from the  claim-lint:ok reindented only
                 // recipe's owner id, never from what the page shows. Collapses
                 // when nothing is kept.
                 SliverToBoxAdapter(
@@ -482,9 +481,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 // BUT-706: a SliverAppBar, because the hero image collapses
                 // into the bar. One bar on both platforms (B-45).
                 SliverAppBar(
-                  // Without a photo the media area collapses rather than
-                  // showing a stand-in (B-04; Komponentark v1 "fyra ytor, fyra
-                  // svar"): the title under the bar carries the head.
                   expandedHeight: recipe.imageUrls.isEmpty
                       ? null
                       : Breakpoints.isMobile(context)
@@ -513,7 +509,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 : context.l10n.commonBackTo(widget.backTo!),
                           ),
                         ),
-                  // Mönster 3 · Mediehero (Komponentark v1:81-89): the title
+                  // Mönster 3 · Mediehero: the title
                   // stands under the hero, never on top of the food.
                   title: const SizedBox.shrink(),
                   flexibleSpace: recipe.imageUrls.isEmpty
@@ -852,8 +848,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  /// The rail beside the content, read after it as in the shell
-  /// (tillganglighetshandoff 'Navigation & toppfält').
+  /// The rail beside the content, read after it as in the shell.
   Widget _withRail({
     required bool show,
     required List<AdaptiveNavigationItem> items,

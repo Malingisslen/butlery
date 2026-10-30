@@ -59,6 +59,11 @@ void main() {
         expect(OcrErrorCorrector.correctLine('1 kruka dill'), '1 kruka dill');
         expect(OcrErrorCorrector.correctLine('dijonsenap'), 'dijonsenap');
       });
+
+      test('reads a pipe glued to a unit as l, never a lone pipe', () {
+        expect(OcrErrorCorrector.correctLine('2 d|'), '2 dl');
+        expect(OcrErrorCorrector.correctLine('2 dl | grädde'), '2 dl | grädde');
+      });
     });
 
     group('correctLines', () {

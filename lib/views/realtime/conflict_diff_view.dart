@@ -9,26 +9,16 @@
 /// - if their version won, put the other person's version back with one tap
 ///   ("Använd deras version").
 ///
-/// The choice is the decision (produktregler.md:102, "Recept (eget)": both
+/// The choice is the decision ("Recept (eget)": both
 /// versions are shown and the user chooses). Someone else's shared recipe
 /// ([ConflictEntity.recipeShared]) gets no choice here: Q6-08 = A
-/// (produktbeslut 2026-09-27; produktregler.md:241) means a member never
+/// (produktbeslut 2026-09-27) means a member never
 /// writes the owner's recipe, and firestore.rules refuses it, so both
 /// buttons would always fail. The member still sees both versions field by
 /// field. What else a member should be offered when a suggestion already
 /// waits (Q6-07 = B) is an open question to the product owner.
 ///
-/// What is drawn and what is built: Skarmar v12 del 3 #konflikt (:1164,
-/// :1169, :1199) draws only the state where the OTHER version won ("Eriks
-/// version gäller just nu") with three equal exits: "Behåll min version",
-/// "Använd Eriks version" and "Stäng utan att skriva över". Here that state
-/// (remoteWon) offers all three: "Behåll min version", "Använd deras version"
-/// (the other version already applies, so it writes nothing and settles the
-/// conflict) and "Stäng utan att skriva över" (settles nothing). "Använd
-/// deras version" is also offered in the state where MY version won
-/// (localWon), which is not drawn: it rests on
-/// produktregler.md:102 and PQ-02 = A (an interpretation), styled as the
-/// drawing's outlined button. The label is name-free ("Använd deras
+/// The label is name-free ("Använd deras
 /// version"), matching the column label "Deras version", because a {name}s
 /// genitive breaks on names ending in s, x or z (app_localizations.dart,
 /// BUT-1797 note).
@@ -311,9 +301,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            // Saving keeps the button's name and draws the plate line along
-            // its bottom edge, never a spinner in its place (Komponentark
-            // v1:365, :372; produktregler.md:902). What the button does is
+            // What the button does is
             // unchanged (P4-U19 owns the recovery path and its look).
             children: [
               FormButton(
@@ -343,9 +331,8 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
     );
   }
 
-  /// "Använd deras version" as the drawing's outlined button (Skarmar v12
-  /// del 3:1199, 1.5 px ink outline). Saving keeps the name and draws the
-  /// plate line, as the keep bar does (Komponentark v1:365, :372).
+  /// Saving keeps the name and draws the
+  /// plate line, as the keep bar does.
   Widget _buildUseTheirsBar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Material(

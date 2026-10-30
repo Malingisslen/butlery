@@ -16,6 +16,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/recipe_serialization.dart';
 import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -112,9 +113,34 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
     uid,
   ).orderBy('deletedAt', descending: true).limit(TrashRepository.listLimit);
 
-  static List<TrashItem> _parse(QuerySnapshot<Map<String, dynamic>> snap) => [
-    for (final doc in snap.docs) ?TrashItem.fromFirestore(doc.id, doc.data()),
-  ];
+  static String? _lastUnreadable;
+
+  // A row that cannot be read cannot be restored, so it is not offered. It is
+  // reported, or the user and we see only an empty trash. The error object
+  // makes it a Crashlytics report rather than a breadcrumb; it carries no ids.
+  // The open trash re-parses on every update, so the same rows report once.
+  static List<TrashItem> _parse(QuerySnapshot<Map<String, dynamic>> snap) {
+    final items = <TrashItem>[];
+    final unreadable = <String>[];
+    for (final doc in snap.docs) {
+      final item = TrashItem.fromFirestore(doc.id, doc.data());
+      if (item == null) {
+        unreadable.add(doc.id);
+      } else {
+        items.add(item);
+      }
+    }
+    final key = unreadable.join(',');
+    if (unreadable.isNotEmpty && key != _lastUnreadable) {
+      AppLogger.error(
+        'Trash: ${unreadable.length} of ${snap.docs.length} rows unreadable, '
+        'first: ${unreadable.take(5).join(', ')}',
+        StateError('trash rows unreadable'),
+      );
+    }
+    _lastUnreadable = key;
+    return items;
+  }
 
   Future<void> _require(
     bool allowed,

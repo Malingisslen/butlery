@@ -28,6 +28,7 @@ import {
   isAppealRole,
   isSafeDocId,
 } from "./appeals";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "submitAppeal";
 
@@ -81,7 +82,7 @@ export async function handleSubmitAppeal(
 export const submitAppeal = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

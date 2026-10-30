@@ -1,6 +1,6 @@
 /// The generated menu as a list: "Din veckomeny" and the count, then each meal
 /// as a section whose rows are a picture, the dish, its time and portions, and
-/// the swap (Skarmar v12 del 1 #veckomeny, approved picture 21-veckomeny-v2-3).
+/// the swap (approved picture 21-veckomeny-v2-3).
 ///
 /// Extracted from `menu_content_widgets.dart`. A row is a hairline-separated
 /// line, not a card: the list sits on the page's own paper.
@@ -317,7 +317,7 @@ class _SwapButton extends StatelessWidget {
   Future<void> _swap(BuildContext context) async {
     final result = await viewModel.swapRecipe(recipe, category);
     if (!context.mounted) return;
-    // The ink snackbar, never a saffron fill (Komponentark v1:745-750, :300;
+    // The ink snackbar, never a saffron fill (
     // PQ-09 = A).
     if (result.recipe == null) {
       SnackBarUtils.showInfo(

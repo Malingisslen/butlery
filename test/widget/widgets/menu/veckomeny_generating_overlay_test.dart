@@ -1,9 +1,8 @@
 /// The week while it is planned (P4-U09).
 ///
-/// ux-beslut.json D-03 and B-18 (beslutslogg.md:25): the plate line with
+/// B-18: the plate line with
 /// text replaces the animated pea pod, and there is no "Fortsätt i
-/// bakgrunden". Skarmar v12 del 1 #veckogenererarpanel draws a bordered
-/// panel with the step, the indeterminate line and a line on what is done.
+/// bakgrunden".
 library;
 
 import 'package:flutter/material.dart';

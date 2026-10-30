@@ -57,6 +57,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:butlery/widgets/shopping/shopping_row.dart';
 
@@ -994,7 +995,7 @@ void main() {
     );
   });
 
-  // P6-U05 (flows-roles-budget.md:83, :132): the role on the list drops to
+  // P6-U05: the role on the list drops to
   // read-only while it is open. The add field goes at once; a snackbar says
   // why, and an item typed but not added is shown and can be copied, so it is
   // not lost without a word. Nothing is written to the list.
@@ -1164,7 +1165,7 @@ void main() {
     });
   });
 
-  // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+  // BUT-2187: "Listan uppdaterades av namn" — read
   // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName
   // ([UnifiedShoppingList]), no new Firestore field.
   group('CollaborativeShoppingView — updated-by notice (BUT-2187)', () {
@@ -1423,6 +1424,64 @@ void main() {
       expect(find.text('Smör'), findsOneWidget);
       expect(find.text('Köpt (1)'), findsOneWidget);
       expect(find.text('Rensa köpta'), findsNothing);
+    });
+  });
+
+  // A shared link only opens the app when it sits on the host the phone
+  // verifies, so what "Kopiera länk" puts on the clipboard has to name it.
+  group('CollaborativeShoppingView — copying the list link', () {
+    testWidgets('puts the list link on butlery.se on the clipboard', (
+      tester,
+    ) async {
+      final copied = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map)['text'] as String);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Mjölk')]),
+        ],
+        isInitialized: true,
+      );
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      await tester.tap(
+        find.byWidgetPredicate(
+          (w) =>
+              w is AppIconButton &&
+              w.semanticLabel == l10n.collaborativeShareList,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.collaborativeCopyLink));
+      await tester.pumpAndSettle();
+
+      expect(copied, ['https://butlery.se/shopping?id=$_testListId']);
     });
   });
 

@@ -8,7 +8,7 @@ import 'package:butlery/models/realtime/menu_ballot.dart';
 export 'package:butlery/models/realtime/menu_ballot.dart';
 
 /// Where a vote stands. A vote that ran out is NOT settled: nothing decides
-/// at the deadline (produktregler 4.8), so the two expired states are their
+/// at the deadline, so the two expired states are their
 /// own states, waiting for the person who started it.
 enum SlotVoteState { open, expiredWithVotes, expiredEmpty, decided, released }
 

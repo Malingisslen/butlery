@@ -29,6 +29,7 @@ import { revisionOf, roundOf, stageModerationAudit } from "./decision-revision";
 import { MODERATION_DECISIONS, MODERATOR_ACTIONS } from "./report-decision";
 import { captureReportEvidence, REPORT_EVIDENCE } from "./report-evidence";
 import { isClosedReportStatus, REPORTS } from "./report-status";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "reopenReport";
 
@@ -65,7 +66,7 @@ export async function handleReopenReport(
 export const reopenReport = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) => {

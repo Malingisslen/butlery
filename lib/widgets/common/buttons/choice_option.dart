@@ -1,6 +1,6 @@
 // lib/widgets/common/buttons/choice_option.dart
 //
-// A pill for picking one value out of a few (Skarmar v12 del 1 #snabbspara:
+// A pill for picking one value out of a few (
 // the meal types). Outlined at rest, ink with paper text when chosen, 48 dp
 // high. A group is a [ChoiceOptionWrap], so no view lays pills out itself.
 library;

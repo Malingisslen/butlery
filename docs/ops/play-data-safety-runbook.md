@@ -229,10 +229,10 @@ Same answers regardless of data type — fill in the global section once.
 
 | Play Console question | Answer |
 |---|---|
-| External URL where users can request data deletion | `https://butlery.app/data-deletion` (planned — confirm hosting before submitting) OR `mailto:integritet@butlery.se` **(re-verified 2026-08-25 — was `privacy@`, which appears nowhere outside stale `build/` artefacts)** (acceptable per Play guidance for small apps). |
+| External URL where users can request data deletion | `mailto:integritet@butlery.se` **(re-verified 2026-08-25 — was `privacy@`, which appears nowhere outside stale `build/` artefacts)** (acceptable per Play guidance for small apps). |
 | In-app account deletion | **Yes** — settings deep-link path: `Profile > Account Management > Delete account`. |
 
-If `butlery.app/data-deletion` is not yet hosted at submission time, use the `mailto:integritet@butlery.se` link — Play accepts email-based deletion requests for apps with in-app deletion already available. Add the URL later as a non-blocking update.
+No data-deletion page is hosted (404 when measured 2026-10-28), so there is no URL to enter. Use the `mailto:integritet@butlery.se` link — Play accepts email-based deletion requests for apps with in-app deletion already available. A deletion-page URL can be added later as a non-blocking update, once a page is hosted and returns 200.
 
 ---
 
@@ -240,7 +240,7 @@ If `butlery.app/data-deletion` is not yet hosted at submission time, use the `ma
 
 - [ ] **Re-read** `ios/Runner/PrivacyInfo.xcprivacy` to confirm no new `NSPrivacyCollectedDataType` entries since last audit (`docs/ops/ios-privacy-manifest-audit.md`). If any are new, add them to §2 here and to the Play Console form.
 - [ ] **Re-read** `assets/legal/privacy_policy_en.md` and confirm §6.1 third-party processor list matches §3 of this runbook.
-- [ ] **Verify** the Firestore region against `docs/ops/backups.md` (recorded region is `europe-west3`, Frankfurt; compute stays on `europe-west1`). Run `gcloud firestore backups list --location=europe-west3 --project=butlery-app-1` to confirm the live database matches — `--location=eur3` returns an empty list and looks exactly like "no backups exist". If non-EU, declare cross-border transfer in §3.
+- [ ] **Verify** the Firestore region against `docs/ops/backups.md` (recorded region is `europe-west3`, Frankfurt; compute stays on `europe-west1`). Run `gcloud firestore backups list --location=europe-west3 --project=butlery-prod` to confirm the live database matches — `--location=eur3` returns an empty list and looks exactly like "no backups exist". If non-EU, declare cross-border transfer in §3.
 - [ ] **Verify** Algolia is still inactive (`enable_algolia_search` in `lib/services/feature_flags/feature_flag_service.dart`, plus the Remote Config value). If activated since last submission, set Algolia search-context purpose in §2.10 "In-app search history".
 - [ ] **Verify** the OCR fallback tiers (§3): confirm `GOOGLE_VISION_API_KEY` and `TESSERACT_API_URL` are still undefined in the release build's `--dart-define` set. If either is configured, the privacy policy must name that processor **before** the form is submitted.
 - [ ] **Cross-check** Play Console field labels against this runbook — Google occasionally renames categories (e.g., "Other in-app messages" was "Messages" before 2025). If a label has changed, look at the field's tooltip rather than the column header.
@@ -263,7 +263,7 @@ Google rejects ~30% of Data Safety submissions on first try. Common reasons + ho
 | "Shared with third parties" left blank when it should be No | §3 — explicitly tick No, with rationale. |
 | Encryption-in-transit declared No | §4 first row — Yes (TLS via Firebase SDK). |
 | Account deletion missing | §1 "Do you provide a way for users to request that their data is deleted?" — Yes. §5 must point to either in-app flow or `integritet@butlery.se`. |
-| Privacy policy URL doesn't load | Privacy policy is in `assets/legal/privacy_policy_en.md` — must be hosted at a public URL before Play submission. **TODO before submission:** confirm `butlery.app/privacy` (or wherever) returns 200 and matches the in-repo file. |
+| Privacy policy URL doesn't load | Privacy policy is in `assets/legal/privacy_policy_en.md` — the hosted copy is `https://legal.butlery.se/privacy-en.html` (200 when measured 2026-10-28). **TODO before submission:** confirm it still returns 200 and matches the in-repo file. |
 
 ---
 

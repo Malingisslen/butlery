@@ -152,7 +152,10 @@ void main() {
     await pumpView(tester);
     await openRemovalFor(tester, 'Anna Lindqvist');
 
-    await tester.tap(find.text('Avbryt'));
+    final cancel = find.widgetWithText(TextButton, 'Avbryt');
+    await tester.ensureVisible(cancel);
+    await tester.pumpAndSettle();
+    await tester.tap(cancel);
     await tester.pumpAndSettle();
 
     expect(find.text('Ta bort Anna Lindqvist ur samtalet?'), findsNothing);

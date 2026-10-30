@@ -28,6 +28,11 @@
   stored FIXTURE: a seeded row that breaks two conjuncts of one predicate pins neither
   (`isPendingImage` on `messages`: a row with `imageUrl` set AND no `pendingImage` flag).
   Seed one row per conjunct, each breaking only that one.
+- **A BATCH deny is green when ANY write in it is refused**, so it pins nothing about the
+  write its name is about. `shared_content` update admits any `isSharedMember`, so a
+  recipient's solo `arrayRemove` of ANOTHER recipient SUCCEEDS; a recipient's trim batch
+  fails only on the `members/{other}` delete. A deny naming one document's protection is
+  the SOLO write to that document; keep the batch only for the ALLOW and end-state check.
 - **An `is string` deny needs a payload only that conjunct refuses.** Beside
   `x.size() <= N`, a NUMBER is refused by `size()`'s evaluation error too, so deleting
   `is string` stays green; a one-element LIST passes `size()` and isolates it.

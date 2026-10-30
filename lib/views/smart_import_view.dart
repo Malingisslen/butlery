@@ -246,7 +246,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   }
 
   /// P5-U06: the error's other ways to the same recipe
-  /// (produktregler.md:557).
   void _openRoute(
     BuildContext context,
     SmartImportViewModel viewModel,

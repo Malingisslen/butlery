@@ -122,6 +122,12 @@ void main() {
         final veg = DietaryConfig.getByKey('vegetarisk')!;
         expect(veg.tagSv, 'vegetarisk');
       });
+
+      test('beef-free shows correct spelling but keeps persisted key', () {
+        final entry = DietaryConfig.getByKey('nötkötsfri')!;
+        expect(entry.key, 'nötkötsfri');
+        expect(entry.tagSv, 'nötköttsfri');
+      });
     });
   });
 }

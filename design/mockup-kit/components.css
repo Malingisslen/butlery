@@ -106,11 +106,12 @@
 .b-bottomnav .tab.active .marker { background: var(--cs-saffron); }
 .b-bottomnav .add { flex: 1; display: flex; align-items: center; justify-content: center; }
 .b-bottomnav .add span {
-  width: 56px; height: 56px; border-radius: 50%; margin-top: -14px;
+  width: 62px; height: 62px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: var(--cs-saffron); color: var(--cs-on-saffron);
   box-shadow: inset 0 0 0 3px var(--cs-on-ink);
 }
+.b-bottomnav .add .i { width: 30px; height: 30px; }
 
 /* ---------- List (ButleryListSection / ButleryListRow) ---------- */
 /* Flat on the page: no card, 1 px divider between rows, none after the last. */
@@ -292,7 +293,7 @@
 /* ---------- Stepper ---------- */
 .b-stepper { display: inline-flex; align-items: center; gap: 16px; }
 .b-stepper button {
-  width: 48px; height: 48px; border: 1.5px solid var(--cs-on-surface); border-radius: 2px;
+  width: 48px; height: 48px; border: 2px solid var(--cs-on-surface); border-radius: 0;
   background: var(--cs-raised); color: var(--cs-on-surface);
   display: inline-flex; align-items: center; justify-content: center;
 }

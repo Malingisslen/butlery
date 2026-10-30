@@ -19,6 +19,7 @@ import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
@@ -162,7 +163,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   // A yield/portioning label ("2 PORTIONER", "12 STYCKEN") — never a title.
   static final _yieldLabel = RegExp(
-    r'^\s*\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
+    r'^\s*(?:\d+\s*[-–]\s*)?\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
+    caseSensitive: false,
+  );
+
+  // "Tid: 25 min", "Förberedelse: ca 10 min".
+  static final _timeMetadataLine = RegExp(
+    r'^(?:tid|total tid|förberedelse(?:stid)?|tillagning(?:stid)?)\s*:\s*(?:ca\.?\s*)?\d',
     caseSensitive: false,
   );
 
@@ -208,6 +215,27 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return letters.length >= 2 && s == s.toUpperCase() && s != s.toLowerCase();
   }
 
+  static const _titleSearchLines = 8;
+
+  static final _pictograph = RegExp(
+    r'[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]',
+    unicode: true,
+  );
+
+  /// Page text above a title. A section header is not one: it means the
+  /// recipe body has started and there is no title line to find.
+  bool _isLeadingPageLine(String line) {
+    final lower = line.toLowerCase();
+    if (RecipeSectionDetector.isIngredientHeader(lower) ||
+        RecipeSectionDetector.isInstructionHeader(lower)) {
+      return false;
+    }
+    return RecipeSectionDetector.isGarbage(line) ||
+        HeadingWordLists.looksLikeHandle(line) ||
+        HeadingWordLists.isClockTime(line) ||
+        (_isAllCapsLabel(line) && !_pictograph.hasMatch(line));
+  }
+
   /// Comparison key for the leading-title-fragment skip: letters/digits only,
   /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
   /// "Köttbullar med gräddsås" regardless of the spaces/colons preprocessing
@@ -220,12 +248,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
     if (lines.isEmpty) return '';
 
-    String firstLine = lines.first.trim();
-
-    // Skip standalone Instagram username lines (username alone on first line)
-    if (_looksLikeInstagramUsername(firstLine) && lines.length > 1) {
-      firstLine = lines[1].trim();
+    // BUT-2455: a pasted web or magazine page opens with its furniture
+    // ("Hoppa till recept", a breadcrumb, an issue number, a section word in
+    // caps), so the title is the first line that is none of those.
+    var index = 0;
+    while (index < lines.length - 1 &&
+        index < _titleSearchLines &&
+        _isLeadingPageLine(lines[index].trim())) {
+      index++;
     }
+    String firstLine = lines[index].trim();
 
     // Remove common Instagram username patterns at start of line
     firstLine = firstLine.replaceFirst(
@@ -236,10 +268,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // BUT-2365: a pictographic emoji or flag on the first line marks a typed
     // post, where an ALL-CAPS line is a shouted title rather than a cookbook
     // section label.
-    final capsMayBeTitle = RegExp(
-      r'[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]',
-      unicode: true,
-    ).hasMatch(firstLine);
+    final capsMayBeTitle = _pictograph.hasMatch(firstLine);
 
     // Remove emojis, including flags (regional-indicator pairs) and the
     // variation selector and joiner that glue emoji sequences together.
@@ -253,7 +282,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         .trim();
 
     // Take text before first dash (hyphen, en-dash, or em-dash)
-    final dashPattern = RegExp(r'[-\u2013\u2014]');
+    // Not the hyphen of a shared compound ("Potatis- och purjolökssoppa").
+    final dashPattern = RegExp(r'[-\u2013\u2014](?!\s+(?:och|eller)\s)');
     final dashMatch = dashPattern.firstMatch(firstLine);
     if (dashMatch != null && dashMatch.start > 5 && dashMatch.start < 80) {
       firstLine = firstLine.substring(0, dashMatch.start).trim();
@@ -303,6 +333,64 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   static final _stepNumber = RegExp(r'^\d{1,2}[.)]$');
+
+  /// Which of [lines] belong to the recipe (BUT-2455). After a heading that
+  /// ends the recipe ("Kommentarer", "Fler recept") nothing is read; after a
+  /// box heading ("Näringsvärde", "Visste du att") nothing is read until a
+  /// step does. Neither counts before an ingredient row and a step have been
+  /// seen, so a nutrition box above the list stops nothing. An ingredient
+  /// header, or a component heading over a quantity row, opens the recipe
+  /// again: a second component, or a second recipe on the same page.
+  List<bool> _recipeLines(List<String> lines) {
+    final inRecipe = List<bool>.filled(lines.length, true);
+    var seenIngredient = false;
+    var seenStep = false;
+    RecipeTrailerKind? outside;
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      final opensIngredients =
+          _isIngredientMarker(line) ||
+          (_ingredientSubHeading(line) != null &&
+              i + 1 < lines.length &&
+              _isQuantityRow(lines[i + 1]));
+      final isStep = _looksLikeStep(line);
+      if (outside != null) {
+        if (HeadingWordLists.recipeTrailerKind(line) == RecipeTrailerKind.end) {
+          outside = RecipeTrailerKind.end;
+        }
+        final resumes =
+            opensIngredients || (outside == RecipeTrailerKind.box && isStep);
+        if (!resumes) {
+          inRecipe[i] = false;
+          continue;
+        }
+        outside = null;
+      }
+      if (seenIngredient && seenStep) {
+        outside = HeadingWordLists.recipeTrailerKind(line);
+        if (outside != null) {
+          inRecipe[i] = false;
+          continue;
+        }
+      }
+      if (opensIngredients || _isQuantityRow(line)) seenIngredient = true;
+      if (isStep) seenStep = true;
+    }
+    return inRecipe;
+  }
+
+  bool _isIngredientMarker(String line) {
+    final lower = line.toLowerCase();
+    return RecipeSectionDetector.isIngredientHeader(lower) ||
+        HeadingWordLists.ingredientBlockMarkers.contains(
+          lower.replaceFirst(RegExp(r'\s*:$'), ''),
+        );
+  }
+
+  bool _looksLikeStep(String line) =>
+      RecipeSectionDetector.isInstructionHeader(line.toLowerCase()) ||
+      _stepNumber.hasMatch(line) ||
+      RecipeSectionDetector.instructionScore(line) >= 2;
 
   // One word of letters (a hyphen allowed inside), no digit, no colon: the
   // shape of both a quantity-less ingredient row ("ägg", "sojasås") and a
@@ -365,14 +453,37 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return !startsBlock || t[0] == t[0].toLowerCase();
   }
 
-  /// Check if a line looks like a standalone Instagram username
-  bool _looksLikeInstagramUsername(String line) {
-    // Instagram usernames: lowercase letters, numbers, underscores, dots
-    // Max 30 chars, no spaces
-    return line.length <= 30 &&
-        !line.contains(' ') &&
-        RegExp(r'^[a-z_][a-z0-9_\.]*$', caseSensitive: true).hasMatch(line);
-  }
+  // "Av Lisa Andersson | 12 mars 2024", "Recept: Maria Lind", "Foto: Johan
+  // Berg". Only the description skips these: an ingredient or step line is
+  // never matched against it.
+  static final _byline = RegExp(
+    r'^(?:[Aa]v|[Rr]ecept|[Tt]ext|[Ff]oto|[Bb]ild)\s*:?\s+[A-ZÅÄÖ][a-zåäöé]+(?:\s+[A-ZÅÄÖ][a-zåäöé]+)+\s*(?:[|·,–-].*)?$',
+  );
+
+  // "30 min" alone, or the ": 30 min" the splitter leaves of "Tillagning:
+  // 30 min".
+  static final _bareTimeLine = RegExp(
+    r'^[:\s]*(?:ca\.?\s*)?(?:\d+\s*[-–]\s*)?\d+\s*(?:min|timm|tim)\w*\.?$',
+    caseSensitive: false,
+  );
+
+  // A recipe card's field name on a line of its own ("Tillagningstid").
+  static final _metadataLabel = RegExp(
+    r'^(?:recept|tid|total tid|tillagningstid|förberedelsetid|portioner|'
+    r'svårighetsgrad)\s*:?$',
+    caseSensitive: false,
+  );
+
+  /// Page text that is never the recipe's description: a section label, an
+  /// account name, a yield or time line, a byline.
+  bool _isPageMetadata(String line) =>
+      _isAllCapsLabel(line) ||
+      _metadataLabel.hasMatch(line.trim()) ||
+      HeadingWordLists.looksLikeHandle(line) ||
+      _yieldLabel.hasMatch(line) ||
+      _timeMetadataLine.hasMatch(line) ||
+      _bareTimeLine.hasMatch(line) ||
+      _byline.hasMatch(line);
 
   /// Extract ingredients using measurement-first approach.
   List<String> _extractIngredientsByMeasurement(String text) {
@@ -381,7 +492,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final measurementPattern = RegExp(
       r'(\d+(?:[,\.]\d+)?)\s*'
       r'(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta)\s+'
-      r'([a-zåäöA-ZÅÄÖ][a-zåäöA-ZÅÄÖ\s\-]{1,40})',
+      r'([a-zåäöA-ZÅÄÖ][a-zåäöéèüA-ZÅÄÖÉ\s\-]{1,40})',
       caseSensitive: false,
     );
 
@@ -458,18 +569,30 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // line that opens a block after a blank is how a colon-less heading
     // ("Ostsås", "Montering") tells itself apart from a quantity-less
     // ingredient row inside a block.
-    final lines = <String>[];
-    final startsBlock = <bool>[];
+    final pageLines = <String>[];
+    final pageStartsBlock = <bool>[];
     var afterBlank = true;
     for (final raw in text.split('\n')) {
       if (raw.trim().isEmpty) {
         afterBlank = true;
         continue;
       }
-      lines.add(raw);
-      startsBlock.add(afterBlank);
+      pageLines.add(raw);
+      pageStartsBlock.add(afterBlank);
       afterBlank = false;
     }
+
+    // Only ingredients and steps are read from the recipe's own lines.
+    // Portions, time and meal type still read the whole page.
+    final inRecipe = _recipeLines(pageLines);
+    final lines = [
+      for (var i = 0; i < pageLines.length; i++)
+        if (inRecipe[i]) pageLines[i],
+    ];
+    final startsBlock = [
+      for (var i = 0; i < pageLines.length; i++)
+        if (inRecipe[i]) pageStartsBlock[i],
+    ];
 
     if (lines.isEmpty) return null;
 
@@ -484,7 +607,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final List<String> instructions = [];
 
     // STAGE 1: MEASUREMENT-FIRST INGREDIENT EXTRACTION
-    final measurementIngredients = _extractIngredientsByMeasurement(text);
+    final measurementIngredients = _extractIngredientsByMeasurement(
+      lines.join('\n'),
+    );
     ingredients.addAll(measurementIngredients);
 
     final capturedAsIngredient = <String>{};
@@ -507,7 +632,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final lowerLine = line.toLowerCase();
 
         if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
-        if (_looksLikeInstagramUsername(line)) continue;
+        if (HeadingWordLists.looksLikeHandle(line)) continue;
         if (RecipeSectionDetector.isIngredientHeader(lowerLine) ||
             RecipeSectionDetector.isInstructionHeader(lowerLine)) {
           break;
@@ -574,10 +699,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // right after one is a row whose quantity the writer left out, not a
     // heading and not noise.
     bool afterIngredientRow = false;
+    // Step-like prose above the first ingredient row or step marker is held
+    // back: the page's intro if a list follows it, the steps if none does.
+    bool listStarted = false;
+    final introLines = <String>[];
+    final stepLines = <String>{};
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
+      listStarted |= inIngredients || inInstructions || afterIngredientRow;
 
       if (line.isEmpty) continue;
       if (!titleIsAlsoGroup && line == recipeName) {
@@ -694,6 +825,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       if (RecipeSectionDetector.isGarbage(line)) continue;
+      // "Tid: 25 min" is read into the time from the whole text, not a step.
+      if (_timeMetadataLine.hasMatch(line)) continue;
 
       if (RecipeSectionDetector.isSectionHeader(line)) {
         final headerKey = lowerLine.trim();
@@ -757,14 +890,18 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
+          stepLines.add(line);
         }
         continue;
       }
 
-      if (score >= 2) {
+      if (score >= 2 && !listStarted) {
+        introLines.add(line);
+      } else if (score >= 2) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
+          stepLines.add(line);
         }
         afterIngredientRow = false;
       } else if (RecipeSectionDetector.looksLikeIngredient(line) ||
@@ -792,10 +929,38 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
             );
           }
         }
-      } else if (description.isEmpty && line.length > 10 && score < 1) {
+      } else if (description.isEmpty &&
+          line.length > 10 &&
+          score < 1 &&
+          !_isPageMetadata(line)) {
         description = line;
         afterIngredientRow = false;
+      } else if (!(startsBlock[i] && _shortPhrase.hasMatch(line.trim()))) {
+        // A line no rule claimed ends the list: a bare word after it is page
+        // text, not a row the writer left the quantity off. A short word
+        // opening a block ("Ostsås") does not end it.
+        afterIngredientRow = false;
       }
+    }
+
+    listStarted |= inIngredients || inInstructions || afterIngredientRow;
+    if (listStarted) {
+      if (description.isEmpty) {
+        description = introLines.firstWhere(
+          (l) => !_isPageMetadata(l),
+          orElse: () => '',
+        );
+      }
+    } else {
+      final introSteps = <String>[];
+      for (final line in introLines) {
+        final instruction = _parseInstructionLine(line);
+        if (instruction != null && instruction.length > 10) {
+          introSteps.add(instruction);
+          stepLines.add(line);
+        }
+      }
+      instructions.insertAll(0, introSteps);
     }
 
     // STAGE 4: FINAL CLEANUP
@@ -803,9 +968,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       ingredients,
       exemptFromFilters: rescuedRows,
     );
-    final cleanedInstructions = instructions
-        .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
-        .toList();
+    final cleanedInstructions = _dropRepeatedStepRuns(
+      instructions
+          .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
+          .toList(),
+    );
 
     // CRIT-12: Log warning when no ingredients/instructions found instead of
     // inserting placeholder strings that confuse the tagging system
@@ -834,7 +1001,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Deliberately NOT claiming a corpus delta here. The eval's time metric
     // moves on few pages, because most labelled lines were already read
     // correctly — see the class doc for what is genuinely new.
-    final timeMinutes = RecipeTimeExtractor.extract(text) ?? _extractTime(text);
+    final timeMinutes =
+        RecipeTimeExtractor.extract(text) ??
+        _extractTime(
+          text,
+          lines.where((l) => !stepLines.contains(l.trim())).join('\n'),
+        );
     final mealType = _guessMealType(text);
 
     final structured = await _structuredIngredients(
@@ -869,9 +1041,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return (recipe: recipe, confidences: structured.confidences);
   }
 
+  bool _containsWord(String text, String word) =>
+      word.isEmpty ||
+      SwedishWordBoundary.boundedRegExp(
+        RegExp.escape(word),
+        extraLetters: 'éèü',
+      ).hasMatch(text);
+
   /// Deduplicate ingredients, keeping the most complete version.
   /// [exemptFromFilters] holds lowercased entries that skip the garbage /
-  /// orphan-fragment filters AND the substring-containment rule below, but are
+  /// orphan-fragment filters AND the containment rule below, but are
   /// still deduplicated by exact name.
   List<String> _deduplicateIngredients(
     List<String> ingredients, {
@@ -919,7 +1098,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // rather than breaking, so a later exact match is still found.
         if (isRescued || seenRescued[i]) continue;
 
-        if (existingName.contains(ingName) || ingName.contains(existingName)) {
+        // Whole words only (BUT-2455): "kokosmjölk" is not a fuller "mjölk",
+        // and treating it as one dropped the milk row and its allergen.
+        if (_containsWord(existingName, ingName) ||
+            _containsWord(ingName, existingName)) {
           if (ingName.length > existingName.length) {
             replaceIndex = i;
           } else {
@@ -1100,15 +1282,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // swaps a token when the result is a known unit/ingredient, so clean
     // manual/social input is left untouched.
     cleaned = OcrErrorCorrector.correctLine(cleaned);
+    // The first pass needs "0lja" whole to read it as olja; a glued "2dI" only
+    // becomes a unit token after the split, so it gets a second pass.
+    cleaned = cleaned.replaceAllMapped(
+      RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ|]+)'),
+      (match) => '${match.group(1)} ${match.group(2)}',
+    );
+    cleaned = OcrErrorCorrector.correctLine(cleaned);
 
     cleaned = cleaned.replaceAll('1/2', '½');
     cleaned = cleaned.replaceAll('1/4', '¼');
     cleaned = cleaned.replaceAll('3/4', '¾');
-
-    cleaned = cleaned.replaceAllMapped(
-      RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ]+)'),
-      (match) => '${match.group(1)} ${match.group(2)}',
-    );
 
     return cleaned;
   }
@@ -1132,13 +1316,49 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return cleaned;
   }
 
+  /// Two overlapping screenshots of one post repeat the steps where the
+  /// pages meet. A run of two or more consecutive steps that recurs later,
+  /// each long enough not to be a stock phrase, is dropped at its second
+  /// occurrence; a lone repeated "Blanda väl." is kept.
+  List<String> _dropRepeatedStepRuns(List<String> steps) {
+    const minRun = 2;
+    const minLength = 25;
+    final keys = steps.map((s) => s.trim().toLowerCase()).toList();
+    final drop = List<bool>.filled(steps.length, false);
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = i + 1; j < keys.length; j++) {
+        if (drop[j]) continue;
+        var run = 0;
+        while (j + run < keys.length &&
+            i + run < j &&
+            keys[i + run] == keys[j + run] &&
+            keys[j + run].length >= minLength) {
+          run++;
+        }
+        if (run >= minRun) {
+          for (var k = 0; k < run; k++) {
+            drop[j + k] = true;
+          }
+        }
+      }
+    }
+    return [
+      for (var i = 0; i < steps.length; i++)
+        if (!drop[i]) steps[i],
+    ];
+  }
+
   int? _extractPortions(String text) {
+    // "4-5 portioner" is read as 4, the range's lower bound.
+    const range = r'(\d+)(?:\s*[-–]\s*\d+)?';
     final patterns = [
-      RegExp(r'portioner?\s*:\s*(\d+)', caseSensitive: false),
-      RegExp(r'servings?\s*:\s*(\d+)', caseSensitive: false),
-      RegExp(r'(\d+)\s*portion'),
-      RegExp(r'för\s*(\d+)'),
-      RegExp(r'(\d+)\s*pers'),
+      RegExp('portioner?\\s*:\\s*$range', caseSensitive: false),
+      RegExp('servings?\\s*:\\s*$range', caseSensitive: false),
+      RegExp('$range\\s*port(?:ion[a-zåäö]*)?(?![a-zåäö])'),
+      // A unit after the number, so a shop offer ("betala för 2") is not a
+      // yield.
+      RegExp('för\\s*$range\\s*(?:pers|port)'),
+      RegExp('$range\\s*pers'),
     ];
 
     for (final pattern in patterns) {
@@ -1151,17 +1371,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return null;
   }
 
-  int? _extractTime(String text) {
+  /// [scavengeFrom] is the text without its step lines: a timer inside a
+  /// step ("låt sjuda i 15 minuter") is not the recipe's time, so the
+  /// unlabelled patterns never read one.
+  int? _extractTime(String text, String scavengeFrom) {
     final patterns = [
-      RegExp(r'tid\s*:\s*(\d+)\s*min', caseSensitive: false),
-      RegExp(r'tid\s*:\s*(\d+)\s*timm?', caseSensitive: false),
-      RegExp(r'time\s*:\s*(\d+)\s*min', caseSensitive: false),
-      RegExp(r'(\d+)\s*min'),
-      RegExp(r'(\d+)\s*timm'),
+      (RegExp(r'tid\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'tillagning\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'tid\s*:\s*(\d+)\s*timm?', caseSensitive: false), text),
+      (RegExp(r'time\s*:\s*(\d+)\s*min', caseSensitive: false), text),
+      (RegExp(r'(\d+)\s*min'), scavengeFrom),
+      (RegExp(r'(\d+)\s*timm'), scavengeFrom),
     ];
 
-    for (final pattern in patterns) {
-      final match = pattern.firstMatch(text.toLowerCase());
+    for (final (pattern, source) in patterns) {
+      final match = pattern.firstMatch(source.toLowerCase());
       if (match != null) {
         final time = int.tryParse(match.group(1)!);
         if (pattern.pattern.contains('timm') && time != null) {

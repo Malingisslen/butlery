@@ -2,21 +2,15 @@
 //
 // Toppfältet — ett gemensamt fält på båda plattformarna.
 //
-// Komponentark v1 §01 (rad 55–99) ritar fyra giltiga mönster och säger
-// "Inga andra varianter. Aldrig X och bakåtpil i samma vy." (rad 57). Två av
-// dem är Scaffold.appBar-formade och byggs här:
-//
 //   1 · Rotnivå   — ButleryTopBar.rot:      ingen bakåtpil, titel i Display
 //                   kompakt, sekundärrad under, åtgärder med 48 dp hitbox
-//                   (Komponentark rad 68; Grafisk manual v6 rad 422).
 //   2 · Undersida — ButleryTopBar.undersida: bakåtpil + titel i 14/700,
-//                   bakåtpilens namn "Tillbaka till <vy>" (Komponentark
-//                   rad 74–78; tillgänglighetshandoff rad 132).
+//                   bakåtpilens namn "Tillbaka till <vy>"
 //
 // Mönster 3 (mediehero) och 4 (modal/ark) är inte fält ovanför innehållet
 // utan delar av bilden respektive arket, och byggs med vyerna i paket 4.
 //
-// Beslut B-45 (beslutslogg.md rad 52): ingen Cupertino-gren. Plattformskänslan
+// Beslut B-45: ingen Cupertino-gren. Plattformskänslan
 // sitter i rörelse och gest, inte i fältets form.
 
 import 'dart:math' as math;
@@ -34,7 +28,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
-/// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
 enum ButleryTopBarPattern {
   /// Mönster 1 · Rotnivå. Aldrig en bakåtpil.
   rot,
@@ -49,11 +42,11 @@ enum ButleryTopBarPattern {
 /// ingen fri konstruktor, eftersom arket inte tillåter fler varianter.
 ///
 /// Höjden följer innehållet. [preferredSize] är taket Scaffold får: det som
-/// behövs vid 200 % text (tillgänglighetshandoff rad 85), så att ingenting
+/// behövs vid 200 % text, så att ingenting
 /// klipps när texten växer. Vid vanlig textstorlek tar fältet bara den plats
 /// innehållet kräver.
 class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
-  /// Mönster 1 · Rotnivå (Komponentark v1 rad 60–68).
+  /// Mönster 1 · Rotnivå.
   ///
   /// Ingen bakåtpil, inte ens när rutten går att poppa. [leading] finns för
   /// vytillstånd som byter ut fältets vänstra del (till exempel flervalsläget i
@@ -79,7 +72,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
        implyBack = false,
        accentRule = false;
 
-  /// Mönster 2 · Undersida (Komponentark v1 rad 71–78).
+  /// Mönster 2 · Undersida.
   ///
   /// [backTo] är namnet på vyn bakåtpilen leder till, och ger det
   /// tillgängliga namnet "Tillbaka till [backTo]". Utan det heter pilen
@@ -190,15 +183,13 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Avstånd mellan åtgärder (tokens.json touchTarget.minGap, rad 488).
   static const double actionGap = AppDimensions.space8;
 
-  /// Undersidans lägsta höjd, 56 dp. Komponentark rad 73–74 ritar 58 px:
-  /// 16 px ovan och 14 px under, men bakåtpilens 48 px hitbox sticker ut
-  /// 10 px åt båda hållen, så det står 6 px ovan och 4 px under hitboxen.
+  /// Undersidans lägsta höjd, 56 dp.
   /// På skalan (tokens.json space.scale, rad 468–475) blir det 4 + 48 + 4 =
   /// 56. Tolkning: 6 px läggs på 4, inte på 8.
   static const double subpageMinHeight =
       _subpagePadVertical + hitbox + _subpagePadVertical;
 
-  /// Textskalan taket räknas för (tillgänglighetshandoff rad 85: 200 %).
+  /// Textskalan taket räknas för.
   static const double _ceilingTextScale = 2.0;
 
   /// Rotnivåns titel får bryta på två rader innan den ellipseras.
@@ -207,8 +198,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Sekundärraden får bryta på två rader innan den ellipseras.
   static const int _secondaryMaxLines = 2;
 
-  // Komponentark rad 62 ritar rotnivån med 16 px ovan, 18 px i sidled och
-  // 14 px under innehållet. Ovan och under läggs på skalan i tokens.json
+  // Ovan och under läggs på skalan i tokens.json
   // space.scale (rad 468–475): 16 ovan, 12 under.
   //
   // Sidmarginalen följer tokens.json space.layoutMargin (rad 464–467: 20 vid
@@ -227,19 +217,16 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// [subpageMinHeight] för hur 6/4 px ur ritningen blir 4/4.
   static const double _subpagePadVertical = AppDimensions.space4;
 
-  /// Komponentark rad 74: bakåtpilens hitbox sticker ut 10 px åt vänster ur
-  /// 18 px kant, så hitboxen börjar 8 px in. Samma inset gäller varje
+  /// Samma inset gäller varje
   /// [leading] med 48 dp hitbox, även på rotnivån (tolkning: arket ritar
   /// ingen leading på rotnivån, men en hitbox ska stå lika långt in var den
   /// än står).
   static const double _subpageLeadingInset = AppDimensions.space8;
 
-  /// Komponentark rad 73 ritar 10 px mellan bakåtpilens hitbox och titeln.
   /// Tolkning: 10 läggs på 8, samma som minsta avståndet mellan träffytor
   /// (tokens.json touchTarget.minGap, rad 488), inte på 12.
   static const double _leadingGap = actionGap;
 
-  /// Komponentark rad 64: sekundärraden står 2 px under titeln.
   static const double _secondaryGap = AppDimensions.topBarSecondaryGap;
 
   /// Strecket är 4 dp högt och står 4 dp under fältet, med 8 dp luft under.
@@ -259,7 +246,6 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           .merge(titleStyle);
 
   static TextStyle get _secondaryStyle => AppTextStyles.captionBase.copyWith(
-    // Komponentark rad 64: font-variant-numeric: tabular-nums.
     fontFeatures: const [FontFeature.tabularFigures()],
   );
 
@@ -304,7 +290,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     final secondary = foregroundColor ?? cs.onSurfaceVariant;
 
     // An action that needs a selection is off at zero with its name still
-    // readable (produktregler.md:876), in the disabled role and never
+    // readable, in the disabled role and never
     // through opacity (tokens.json:71-74). IconButton.styleFrom would
     // otherwise fade the foreground to 38 %. text.disabled.onRaised
     // (#788477 light, #93A48D dark; tokens.json:198) is the surface-safe
@@ -329,8 +315,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
-        // Sidtiteln är vyns rubrik på nivå 1 (tillgänglighetshandoff
-        // rad 135), och den syns som den skrivs. `container` ger rubriken en
+        // Sidtiteln är vyns rubrik på nivå 1, och den syns som den skrivs. `container` ger rubriken en
         // egen nod; utan den vandrar rubrikflaggan uppåt till en förälder.
         Semantics(
           container: true,
@@ -399,7 +384,6 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
         Expanded(child: titleColumn),
         // P4-U19, PQ-04 = B: a root bar puts the queue counter in front of
         // its actions, only while something needs the user
-        // (flows-roles-budget.md:111; produktregler.md:190).
         if (_isRoot)
           QueueAwareActions(
             rowKey: const ValueKey('butleryTopBar.actions'),
@@ -525,7 +509,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Bakåtpilen, eller null när fältet inte ska ha någon.
   ///
-  /// Rotnivån har aldrig en (Komponentark rad 68). Undersidan har en när
+  /// Rotnivån har aldrig en. Undersidan har en när
   /// [onBack] är satt eller rutten går att poppa.
   Widget? _backButton(BuildContext context) {
     if (_isRoot) return null;
@@ -538,7 +522,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     return IconButton(
       key: const ValueKey('butleryTopBar.back'),
       // Ikonen är arrow-left, betydelse "Tillbaka" (icons.json rad 76–78).
-      // Dess glyf är en vinkel, samma som Komponentark rad 74 ritar, och
+      // Dess glyf är en vinkel, och
       // den är densamma på båda plattformarna (B-45).
       //
       // Tolkning: ritningen visar glyfen i 17 px. Här gäller appens
@@ -551,8 +535,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-/// "Välj" — flervalets synliga ingång (B-46, beslutslogg.md:53;
-/// produktregler.md:870-874; Skarmar v12 etapp 9 #flervalingang).
+/// "Välj" — flervalets synliga ingång
 ///
 /// Samma ord på samma plats på de sex ytorna: i vyns eget toppfält, eller i
 /// sektionens rubrikrad där listan ligger i en inställningsvy. En yta med
@@ -570,7 +553,7 @@ class ButlerySelectButton extends StatelessWidget {
   });
 
   /// Färre rader än så ger ingen ingång: "ett flerval av ett är ingen
-  /// funktion" (produktregler.md:874).
+  /// funktion".
   static const int minRows = 2;
 
   /// Om ingången visas för en lista med [rowCount] valbara rader.
@@ -598,7 +581,7 @@ class ButlerySelectButton extends StatelessWidget {
 
 /// "Avbryt" — lämnar flervalet. I toppfältet ersätter den bakåtpilen och
 /// står där "Välj" stod i en sektions rubrikrad, så att fältet byter
-/// innehåll men inte höjd (produktregler.md:873).
+/// innehåll men inte höjd.
 class ButleryCancelSelectionButton extends StatelessWidget {
   const ButleryCancelSelectionButton({
     required this.onPressed,
@@ -624,7 +607,7 @@ class ButleryCancelSelectionButton extends StatelessWidget {
 
 ButtonStyle _selectionTextStyle(Color? foregroundColor) => TextButton.styleFrom(
   foregroundColor: foregroundColor,
-  // Ritningen: 12 px sidluft (Skarmar v12 etapp 9 #flervalingang).
+  // Ritningen: 12 px sidluft.
   padding: const EdgeInsets.symmetric(
     horizontal: AppDimensions.space8 + AppDimensions.space4,
   ),

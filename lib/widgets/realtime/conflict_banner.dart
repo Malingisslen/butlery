@@ -1,7 +1,7 @@
 /// BUT-1031: Banner widget that surfaces silent collaborative-edit conflict
 /// resolutions to the user.
 ///
-/// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
+/// P3-U08: the anatomy is the drawn conflict banner:
 /// the triangle-alert glyph, a bold
 /// title that names what has two versions, and body text saying who changed it
 /// and that the user's version is still there. No channel is chosen here: which
@@ -119,7 +119,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
       return;
     }
     // P5-U27b: the edit was kept as a suggestion, so "Se ditt förslag" opens
-    // it (produktregler.md:103). Without one the package 5 choice applies.
+    // it. Without one the package 5 choice applies.
     final suggestionId = event.suggestionId;
     if (suggestionId != null) {
       RecipeSuggestionNotice.openMine(
@@ -148,12 +148,11 @@ class _ConflictBannerState extends State<ConflictBanner> {
   }
 
   /// P5-U27b: someone else's shared recipe whose owner's version stayed,
-  /// with this user's edit kept as a suggestion (produktregler.md:103).
+  /// with this user's edit kept as a suggestion.
   static bool _isSuggestion(ConflictEvent event) =>
       event.entity == ConflictEntity.recipeShared && event.suggestionId != null;
 
-  /// The drawn title names what has two versions (Komponentark v1:756 draws
-  /// "Två versioner av listan"). P5-U27b: on someone else's shared recipe
+  /// P5-U27b: on someone else's shared recipe
   /// there are not two versions to choose between, so the title says the
   /// owner's version stays. Q6-08 = A: that holds without a stored
   /// suggestion too, since a member never writes the owner's recipe.
@@ -208,7 +207,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
 
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    // Komponentark v1:755-757. The glyph is text.danger (colorScheme.error:
+    // The glyph is text.danger (colorScheme.error:
     // #9C3B23 light, #DE9078 dark, tokens.json) and carries the kind in
     // dark mode, where every tint is the same colour. Title text.primary
     // (onSurface: #24382C / #F5F4ED, tokens.json), body text.body
@@ -230,7 +229,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
           ),
           child: Material(
             color: context.modeColors.surfaceTintDanger,
-            // Komponentark v1:755 border-radius:8px = radius.control
+            // border-radius:8px = radius.control
             // (tokens.json:479, :483 'control 8 = knappar, fält, brickor').
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(

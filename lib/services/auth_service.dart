@@ -51,8 +51,8 @@ class AuthService extends ChangeNotifier
 
   bool _sessionExpired = false; // ignore: prefer_final_fields
 
-  /// A sign-in waiting for its second factor (P6-U09; Skarmar v12 etapp 3
-  /// #authmfa). The password was right; the account has two-step
+  /// A sign-in waiting for its second factor (P6-U09
+  /// ). The password was right; the account has two-step
   /// verification, so Firebase handed back a resolver instead of a user.
   MfaResolverInfo? _pendingMfa;
 
@@ -319,13 +319,13 @@ class AuthService extends ChangeNotifier
 
   /// The device drafts a sign-out the user made herself deletes.
   ///
-  /// PQ-12 = A (produktbeslut-2026-09-23.json): drafts go when the user logs
-  /// out herself (produktregler.md:164-172), never at an automatic logout, so
+  /// PQ-12 = A: drafts go when the user logs
+  /// out herself, never at an automatic logout, so
   /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
   /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut
   /// nu" in the timeout warning, calls it separately
   /// (SessionTimeoutService.forceLogout). No store here is the offline queue,
-  /// which no sign-out clears by itself (produktregler.md:193, :833).
+  /// which no sign-out clears by itself.
   /// Best-effort: every store logs and never throws.
   static Future<void> clearDeviceDraftsOnExplicitSignOut(
     String? userId,
@@ -338,7 +338,7 @@ class AuthService extends ChangeNotifier
   /// Logout for session timeout - tracks separately for security monitoring.
   ///
   /// Never touches the offline queue or the device drafts: "En utloggning på
-  /// grund av timeout får aldrig rensa kön" (produktregler.md:833), and PQ-12
+  /// grund av timeout får aldrig rensa kön", and PQ-12
   /// = A keeps the drafts.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {

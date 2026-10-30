@@ -1,6 +1,5 @@
 /// The search field: paper with a 1 px border.control edge, radius 8, no
-/// shadow, and the focus ring outside it (Komponentark v1 §07 Sökfält:
-/// "Papper + border-control. Aldrig border-subtle, aldrig #FFF").
+/// shadow, and the focus ring outside it
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -41,8 +40,7 @@ class ButlerySearchBox extends StatefulWidget {
   });
 
   /// The box over an empty library: disabled, saying there is nothing to
-  /// search yet instead of inviting a search (Komponentark v1 §07
-  /// "Inaktiverad (tomt bibliotek)").
+  /// search yet instead of inviting a search
   const ButlerySearchBox.nothingToSearch({super.key})
     : controller = null,
       hintText = null,
@@ -92,7 +90,7 @@ class ButlerySearchBox extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// Chosen terms drawn as removable chips inside the box, before the
-  /// text (Komponentark v1 §07 "Tokeniserad"); the search glyph gives way
+  /// text; the search glyph gives way
   /// to them. A list, even an empty one, keeps the box in this layout, so
   /// the field keeps its focus as the first term is added or the last is
   /// removed.
@@ -195,7 +193,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
     final cs = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(AppDimensions.radiusControl);
     // The edge keeps its colour and width at focus; the ring outside the
-    // box shows focus (Komponentark v1:657). Fill, disabled edge and hover
+    // box shows focus. Fill, disabled edge and hover
     // come from the app's input theme.
     final edge = OutlineInputBorder(
       borderRadius: radius,
@@ -369,7 +367,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
 }
 
 /// A chosen term: ink pill with paper text and a remove glyph, the whole
-/// chip one remove button (Komponentark v1 §07; tokens.json
+/// chip one remove button (tokens.json
 /// controls.chipCompactInField).
 class _SearchTokenChip extends StatelessWidget {
   const _SearchTokenChip({required this.token, super.key});

@@ -1,9 +1,9 @@
 /// P5-U23/U24: the overflow tray in the week-menu view model.
 ///
-/// U23 (produktregler.md:206, :890, :1123-1127): the tray counts in dishes
+/// U23: the tray counts in dishes
 /// ("2 av 5 rätter placerade"), says why the rest did not fit, offers next
 /// week as a choice in the tray, and the cells show the placement order.
-/// U24 (produktregler.md:164-172, :1125; Q-A11): the tray survives a reload
+/// U24 (Q-A11): the tray survives a reload
 /// on the device of the person who generated it, lives 30 days, and is gone
 /// once emptied.
 library;
@@ -290,7 +290,6 @@ void main() {
         expect(moved, 1);
         expect(vm.overflow.map((r) => r.id), ['o2']);
         expect(vm.overflowReason!.weekStart, _nextMonday);
-        // produktregler.md:893: the two-week limit is visible, not silent.
         expect(vm.canPlaceOverflowInNextWeek, isFalse);
         expect(await vm.placeOverflowInNextWeek(), isNull);
       },
@@ -454,7 +453,7 @@ void main() {
         expect(reopened.overflow.map((r) => r.id), ['o1']);
 
         // Placing the only visible chip empties the tray the user can see,
-        // and an emptied tray is gone (produktregler.md:171).
+        // and an emptied tray is gone.
         await reopened.assignFromOverflow(
           recipe: pannkaka,
           day: DayOfWeek.sun,
@@ -556,7 +555,7 @@ void main() {
     });
   });
   // Q5-01 = A (produktbeslut 2026-09-24): the tray comes back quietly and
-  // "Släng resten" empties it, with a 7 s Ångra (produktregler.md:131).
+  // "Släng resten" empties it, with a 7 s Ångra.
   group('Q5-01: Släng resten', () {
     wedTest('empties the tray and its copy on this device', () async {
       final vm = await generated();

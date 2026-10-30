@@ -1,5 +1,5 @@
 /// BUT-2168: a link that fails on the real Smart import screen says why and
-/// offers the most helpful route first (flows-roles-budget.md, flow 03
+/// offers the most helpful route first (flow 03
 /// `hämtar`): a broken link or a login wall → "Klistra in texten själv", a
 /// page without a recipe → "Skriv själv".
 library;

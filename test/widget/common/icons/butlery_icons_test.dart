@@ -1,11 +1,11 @@
-/// P7-U08: the Butlery icon family register (beslutslogg.md:9, B-02).
+/// P7-U08: the Butlery icon family register (B-02).
 ///
 /// - design/assets/icons holds exactly one master per icons.json entry.
 /// - Every ButleryIcons member maps to an icons.json entry and embeds that
 ///   entry's master exactly (the app-side counterpart of T-05), and every
 ///   icons.json entry has a member.
 /// - ButleryIcon paints in the ambient IconTheme colour and size, with the
-///   2.2 stroke at 14 px and below (Grafisk manual v6:322), and carries the
+///   2.2 stroke at 14 px and below, and carries the
 ///   same semantics as Icon.
 library;
 

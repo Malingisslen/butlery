@@ -12,7 +12,6 @@
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
-import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Parser for Köket.se recipes
 /// **Example URL:** https://www.koket.se/recept/klassiska-kottbullar/
@@ -39,7 +38,7 @@ class KoketRecipeParser extends RecipeSiteParser {
       }
 
       // Clean up formatting quirks
-      recipe = _cleanKoketFormatting(recipe);
+      recipe = cleanCirkaFormatting(recipe);
       return recipe;
     } catch (e) {
       // Enhancement failed, return recipe as-is
@@ -121,9 +120,12 @@ class KoketRecipeParser extends RecipeSiteParser {
       final description = _extractDescription(doc);
       final ingredients = _extractIngredients(doc);
       final instructions = _extractInstructions(doc);
-      final portions = _extractPortions(doc);
+      final portions = extractPortions(
+        doc,
+        sitePortionsSelector: '.koket-portions',
+      );
       final time = _extractTime(doc);
-      final image = _extractImage(doc);
+      final image = extractImage(doc, siteImageSelector: '.koket-image img');
 
       // Must have at least title and ingredients
       if (title == null || ingredients.isEmpty) {
@@ -152,47 +154,6 @@ class KoketRecipeParser extends RecipeSiteParser {
     } catch (e) {
       return null;
     }
-  }
-
-  /// Clean Köket-specific formatting quirks
-  Map<String, dynamic> _cleanKoketFormatting(Map<String, dynamic> recipe) {
-    // Köket sometimes includes "ca" (cirka/approximately) in portions
-    final yield_ = recipe['recipeYield'];
-    if (yield_ is String) {
-      recipe['recipeYield'] = yield_
-          .replaceAll('ca ', '')
-          .replaceAll('cirka ', '')
-          .trim();
-    }
-
-    // Clean ingredient formatting
-    if (recipe['recipeIngredient'] is List) {
-      final ingredients = recipe['recipeIngredient'] as List;
-      recipe['recipeIngredient'] = ingredients
-          .map((ing) {
-            String cleaned = cleanSwedishText(ing.toString());
-            // Remove "ca " and "cirka " prefixes from ingredients
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^ca\s+', caseSensitive: false),
-              '',
-            );
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^cirka\s+', caseSensitive: false),
-              '',
-            );
-            return cleaned.trim();
-          })
-          .where((ing) => ing.isNotEmpty)
-          .toList();
-    }
-
-    if (recipe['recipeInstructions'] is List) {
-      recipe['recipeInstructions'] = recipeInstructionTexts(
-        recipe['recipeInstructions'] as List,
-      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
-    }
-
-    return recipe;
   }
 
   // CSS SELECTOR EXTRACTION (Fallback Methods)
@@ -297,38 +258,6 @@ class KoketRecipeParser extends RecipeSiteParser {
     return instructions;
   }
 
-  String? _extractPortions(Document doc) {
-    final selectors = [
-      '.recipe-portions',
-      '.koket-portions',
-      '[itemprop="recipeYield"]',
-      '.recipe-servings',
-      '.portions',
-    ];
-
-    for (final selector in selectors) {
-      final element = doc.querySelector(selector);
-      if (element != null) {
-        final portions = element.text.trim();
-        if (portions.isNotEmpty) {
-          return cleanSwedishText(portions);
-        }
-      }
-    }
-
-    // Try finding "Portioner: X" in text
-    final bodyText = (doc.body?.text).orEmpty();
-    final portionMatch = RegExp(
-      r'Portioner?:\s*(\d+)',
-      caseSensitive: false,
-    ).firstMatch(bodyText);
-    if (portionMatch != null) {
-      return portionMatch.group(1);
-    }
-
-    return null;
-  }
-
   String? _extractTime(Document doc) {
     final selectors = [
       '[itemprop="totalTime"]',
@@ -350,68 +279,11 @@ class KoketRecipeParser extends RecipeSiteParser {
         final timeText = element.text.trim();
         if (timeText.isNotEmpty) {
           // Try to convert to ISO 8601
-          return _convertToIso8601(timeText);
+          return swedishTimeToIso8601(timeText);
         }
       }
     }
 
     return null;
-  }
-
-  String? _extractImage(Document doc) {
-    final selectors = [
-      '[itemprop="image"]',
-      '.recipe-image img',
-      '.koket-image img',
-      '.recipe-hero img',
-      'article img',
-    ];
-
-    for (final selector in selectors) {
-      final element = doc.querySelector(selector);
-      if (element != null) {
-        final src = element.attributes['src'] ?? element.attributes['data-src'];
-        if (src != null && src.startsWith('http')) {
-          return src;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /// Convert Swedish time text to ISO 8601 duration
-  /// Examples:
-  /// - "30 minuter" → "PT30M"
-  /// - "1 timme 30 min" → "PT1H30M"
-  /// - "45 min" → "PT45M"
-  String? _convertToIso8601(String timeText) {
-    final lowerText = timeText.toLowerCase();
-
-    // Extract hours
-    final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
-    final hours = hoursMatch != null
-        ? int.tryParse(hoursMatch.group(1)!)
-        : null;
-
-    // Extract minutes
-    final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
-    final minutes = minutesMatch != null
-        ? int.tryParse(minutesMatch.group(1)!)
-        : null;
-
-    if (hours == null && minutes == null) {
-      return null;
-    }
-
-    final buffer = StringBuffer('PT');
-    if (hours != null && hours > 0) {
-      buffer.write('${hours}H');
-    }
-    if (minutes != null && minutes > 0) {
-      buffer.write('${minutes}M');
-    }
-
-    return buffer.toString();
   }
 }

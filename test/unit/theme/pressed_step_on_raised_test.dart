@@ -16,7 +16,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -267,48 +266,6 @@ void main() {
       if (theme.brightness == Brightness.light) {
         expect(paintsInkFill(tester, glyph, step), isFalse);
       }
-      await gesture.up();
-      await tester.pumpAndSettle();
-    });
-  }
-
-  for (final (mode, theme) in [
-    ('light', AppTheme.lightTheme),
-    ('dark', AppTheme.darkTheme),
-  ]) {
-    // The image actions rest on surface.raised, but the destructive one rests
-    // on the error colour and keeps its old press (BUT-2232).
-    testWidgets('the image actions press by their surface ($mode)', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Theme(
-            data: theme,
-            child: Stack(
-              children: [
-                EditActionsPanel(onAddImage: () {}, onRemoveImage: () {}),
-              ],
-            ),
-          ),
-        ),
-      );
-      Finder icon(IconData data) =>
-          find.byWidgetPredicate((w) => w is Icon && w.icon == data);
-      final old = AppColors.rust.withValues(alpha: 0.12);
-      final step = ModeColors.of(theme.brightness).pressedOnRaised;
-
-      final add = icon(ButleryIcons.camera);
-      var gesture = await holdPress(tester, add);
-      expect(paintsInkFill(tester, add, step), isTrue);
-      expect(paintsInkFill(tester, add, old), isFalse);
-      await gesture.up();
-      await tester.pumpAndSettle();
-
-      final remove = icon(ButleryIcons.trash2);
-      gesture = await holdPress(tester, remove);
-      expect(paintsInkFill(tester, remove, old), isTrue);
-      expect(paintsInkFill(tester, remove, step), isFalse);
       await gesture.up();
       await tester.pumpAndSettle();
     });

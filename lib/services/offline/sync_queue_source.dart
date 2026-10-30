@@ -3,7 +3,7 @@
 // P4-U19: what the "Väntar på synk" view and the top-bar queue indicator
 // read. "Mer → Väntar på synk: antal poster, vad de rör, ålder, och de
 // permanenta felen först. Nås även från köindikatorn i toppfältet."
-// (produktregler.md:190). The queue itself is schema 3 (P5-U35): both queues,
+// The queue itself is schema 3 (P5-U35): both queues,
 // one count (AppDatabase.watchQueueCounts).
 library;
 
@@ -48,7 +48,7 @@ abstract class SyncQueueSource {
   /// Whether the queue has emptied and the device is online, live: true
   /// when nothing is left for the queue to send by itself. Permanent
   /// failures do not count, since they never leave without the user.
-  /// Conflict notices wait for this (produktregler.md:189, "Konfliktbannern
+  /// Conflict notices wait for this ("Konfliktbannern
   /// visas när kön töms, inte medan appen är offline").
   Stream<bool> watchSettled() =>
       watchCounts().map((c) => c.draining == 0 && isOnline).distinct();
@@ -60,10 +60,10 @@ abstract class SyncQueueSource {
   Future<void> retry(QueuedChange change);
 
   /// "Släng ändringen": only ever called after the user chose it and let the
-  /// 7 s Ångra window close (produktregler.md:132).
+  /// 7 s Ångra window close.
   Future<void> discard(QueuedChange change);
 
-  /// "Spara som kopia" (produktregler.md:188): the recipe's content on the
+  /// "Spara som kopia": the recipe's content on the
   /// device becomes a new recipe of the user's own, queued to be saved, and
   /// the failure leaves the queue. Only for [QueuedChange.canSaveAsCopy].
   /// The copy's title is [copyTitle] of the original's (Q6-14 = C).
@@ -72,7 +72,7 @@ abstract class SyncQueueSource {
     required String Function(String title) copyTitle,
   });
 
-  /// "Försök mindre" (Skarmar v12 del 4 #synkko): a too-large image is sent
+  /// "Försök mindre": a too-large image is sent
   /// again as a smaller copy. Only for [QueuedChange.canTrySmaller].
   Future<void> trySmaller(QueuedChange change);
 }

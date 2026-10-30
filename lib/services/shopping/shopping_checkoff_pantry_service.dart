@@ -57,13 +57,13 @@ class ShoppingCheckoffPantryService {
 
     if (match != null && match.quantity != null) {
       // What was bought is added as a relative change, never as a new total
-      // computed here (produktregler.md:146): a tick on another device in
+      // computed here: a tick on another device in
       // the meantime is kept.
       await _pantryService.adjustQuantity(userId, match, item.amount);
       return;
     }
 
-    // A row without an amount ("har hemma", produktregler.md:148) has
+    // A row without an amount ("har hemma") has
     // nothing to add to. Q5-02 = A (produktbeslut 2026-09-24): it takes the
     // bought amount, in the bought unit, since "har hemma" named no unit to
     // keep. Interpretation: that holds for a same-name row in any unit; a
@@ -73,7 +73,7 @@ class ShoppingCheckoffPantryService {
     if (unknown != null) {
       // Nothing known was bought: "har hemma" stays as it is. Otherwise the
       // amount goes relatively, so a second purchase on another device at
-      // the same time is added, not lost (produktregler.md:146).
+      // the same time is added, not lost.
       if (item.amount <= 0) return;
       await _pantryService.fillUnknownQuantity(
         userId,

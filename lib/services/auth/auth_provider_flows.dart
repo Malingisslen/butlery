@@ -101,6 +101,11 @@ mixin AuthProviderFlows on ChangeNotifier, StateNotifierMixin {
     final error = attempt.error;
     final l10n = AppLocale.current;
     final name = providerName(provider);
+    final blocked = error == null ? null : blockingRefusalMessage(error);
+    if (blocked != null) {
+      setError(blocked);
+      return;
+    }
     setError(switch (error?.code) {
       null => l10n.authProviderFailed(name),
       'account-exists-with-different-credential' =>

@@ -109,7 +109,7 @@ class DietaryConfig {
     ),
     DietaryEntry(
       key: 'nötkötsfri',
-      tagSv: 'nötkötsfri',
+      tagSv: 'nötköttsfri',
       excludedProperties: ['beef'],
       description: 'Ej nötkött',
     ),

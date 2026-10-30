@@ -193,6 +193,18 @@ void main() {
         expect(viewModel.canDeleteGroup, isTrue);
       });
 
+      test('hasOtherMembers is false for a group holding only the user, '
+          'true once someone else is in it', () {
+        final alone = testGroup.copyWith(friendUserIds: [testUserId]);
+
+        expect(viewModel.hasOtherMembers(alone), isFalse);
+        expect(viewModel.hasOtherMembers(testGroup), isTrue);
+        expect(
+          viewModel.hasOtherMembers(testGroup.copyWith(friendUserIds: [])),
+          isFalse,
+        );
+      });
+
       test('canLeaveGroup returns true when user is a member', () async {
         await Future.delayed(const Duration(milliseconds: 100));
 

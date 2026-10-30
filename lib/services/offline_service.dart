@@ -327,7 +327,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       },
       // BUT-2213: a queued edit the server's newer version stopped becomes
       // the conflict banner, through the gate that holds it until the queue
-      // has emptied (produktregler.md:189).
+      // has emptied.
       onRecipeConflict: (local, remote) =>
           ServiceLocator.tryGet<RealtimeSyncService>()
               ?.announceQueuedRecipeConflict(local, remote),

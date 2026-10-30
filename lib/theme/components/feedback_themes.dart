@@ -6,7 +6,7 @@
 ///   ink fill would vanish on the dark base
 /// - Marks drawn straight on the page (radio, slider, scrollbar) use
 ///   text.primary: ink in light, paper in dark
-/// - Snackbar: the ink snackbar (Komponentark v1:745-750)
+/// - Snackbar: the ink snackbar
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -20,20 +20,19 @@ import 'package:butlery/theme/app_mode_colors.dart';
 class FeedbackThemes {
   FeedbackThemes._();
 
-  /// The ink snackbar's message: 13 px regular (Komponentark v1:747,
-  /// `font-size:13px`). Interpretation: the type scale has no 13/400 role,
+  /// Interpretation: the type scale has no 13/400 role,
   /// so it is listItem (13, tokens.json typography.roles) at the drawn
   /// weight.
   static TextStyle get inkSnackBarMessageStyle =>
       AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w400);
 
-  /// The ink snackbar's action: 13/700 (Komponentark v1:747). Same
+  /// The ink snackbar's action: 13/700. Same
   /// interpretation as the message.
   static TextStyle get inkSnackBarActionStyle =>
       AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700);
 
-  /// Snackbar theme: the ink snackbar, the only snackbar look (Komponentark
-  /// v1:745-750; produktbeslut PQ-09 = A, 2026-09-23).
+  /// Snackbar theme: the ink snackbar, the only snackbar look (
+  /// produktbeslut PQ-09 = A, 2026-09-23).
   ///
   /// * Surface: surface.ink #24382C in both modes (tokens.json semantic
   ///   surface.ink; generated member forestGreen in AppColors and
@@ -42,7 +41,7 @@ class FeedbackThemes {
   ///   member textOnPrimary; 11.36:1 on ink).
   /// * Action: text.accent.onInk (member textAccentOnInk; produktbeslut
   ///   R7-5 = A).
-  /// * Radius 8 (radius.control; Komponentark v1:746 `border-radius:8px`).
+  /// * Radius 8 (radius.control).
   /// * Dark mode: a 1 px border.subtle edge (rgba(245,244,237,0.18)), since
   ///   ink on the dark page (#17251D) is only a small step. Interpretation;
   ///   the drawing is light mode only.
@@ -79,26 +78,24 @@ class FeedbackThemes {
 
   /// Switch theme
   ///
-  /// On, light: ink track with a paper knob, opaque (Komponentark v1:170-172,
-  /// :176 "Ink = på"; tokens.json:145-152 control.checked, carried by
+  /// On, light: ink track with a paper knob, opaque (
+  /// tokens.json:145-152 control.checked, carried by
   /// primary/onPrimary).
   ///
-  /// On, dark: the same ink track #24382C and paper knob, control.checked,
-  /// which tokens.json:145-152 keeps identical in dark ("Toggle: ink = på",
-  /// Grafisk manual v6:403). The ink track reads 1.27:1 on the dark base
+  /// The ink track reads 1.27:1 on the dark base
   /// #17251D, so dark mode edges it with 1 px paper, the way the dark panel
-  /// draws the chosen chip (Komponentark v1:523: background #24382c,
-  /// border 1px solid #F5F4ED). The paper edge reads 15.6:1 on the base and
+  /// draws the chosen chip
+  /// border 1px solid #F5F4ED. The paper edge reads 15.6:1 on the base and
   /// the paper knob 11.3:1 on the track.
   ///
   /// Interpretation, pending the product owner: one dark screen frame draws
-  /// the on-switch saffron (Skarmar v12 del 4:104), but saffron is the
-  /// view's single hero action (Grafisk manual v6) and a settings list with
+  /// the on-switch saffron, but saffron is the
+  /// view's single hero action and a settings list with
   /// several switches would break that budget. Until that is decided the
   /// switch follows the tokens.
   ///
   /// Disabled: surface.raised track with a 1 px surface.disabled edge and a
-  /// surface.disabled knob, never opacity (Komponentark v1:174). Light
+  /// surface.disabled knob, never opacity. Light
   /// #E6EAD9 / #A9B2A0, dark #2F4437 / #4A5C50 (tokens.json:108-123).
   /// Interpretation: the drawing shows the disabled switch only in the off
   /// position; an on-and-disabled switch takes the same colours and keeps
@@ -153,9 +150,9 @@ class FeedbackThemes {
   ///
   /// Checked: control.checked, an ink #24382C box with a paper #F5F4ED tick
   /// in BOTH modes (tokens.json:145-152). The dark panel draws exactly that,
-  /// an ink box with no edge and a paper tick (Komponentark v1:532), and
+  /// an ink box with no edge and a paper tick, and
   /// states the rule: "Bocken i en bockad kontroll är alltid papper — aldrig
-  /// ink på ink" (v1:491). So the fill stays cs.primary in dark as well; the
+  /// ink på ink". So the fill stays cs.primary in dark as well; the
   /// tick carries the state, 12.2:1 on the box (tokens.json:667-668 pair)
   /// and far above 3:1 on the dark base.
   static CheckboxThemeData checkboxTheme(ColorScheme cs) {
@@ -197,17 +194,17 @@ class FeedbackThemes {
   /// Radio theme
   ///
   /// Disabled: surface.disabled ring on a surface.raised fill, never
-  /// opacity (Komponentark v1:164). Light #A9B2A0 / #E6EAD9, dark
+  /// opacity. Light #A9B2A0 / #E6EAD9, dark
   /// #4A5C50 / #2F4437 (tokens.json:108-123). Interpretation: the drawing
   /// shows only the unselected disabled radio; a selected one takes the same
   /// colours for ring and dot.
   ///
   /// Selected: text.primary through cs.onSurface, ink #24382C light as drawn
-  /// (Komponentark v1:162) and paper #F5F4ED dark. It used to be cs.primary,
+  /// and paper #F5F4ED dark. It used to be cs.primary,
   /// ink in both schemes, 1.27:1 on the dark base #17251D. Interpretation:
   /// no dark radio circle is drawn; the dark panel draws the chosen sort row
-  /// with a paper check (Komponentark v1:556) and names paper as the mode's
-  /// text and ring colour (v1:491). Light is unchanged: there
+  /// with a paper check and names paper as the mode's
+  /// text and ring colour. Light is unchanged: there
   /// cs.onSurface == cs.primary.
   static RadioThemeData radioTheme(ColorScheme cs) {
     return RadioThemeData(
@@ -235,7 +232,7 @@ class FeedbackThemes {
   /// and paper dark (tokens.json:54-57). They used to be cs.primary, ink in
   /// both schemes and 1.27:1 on the dark base #17251D. Light is unchanged.
   /// Interpretation: no slider is drawn in either mode; paper is the dark
-  /// panel's colour for controls and text (Komponentark v1:491). The value
+  /// panel's colour for controls and text. The value
   /// bubble stays an ink fill with paper text, like the ink snackbar.
   static SliderThemeData sliderTheme(ColorScheme cs) {
     return SliderThemeData(

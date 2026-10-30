@@ -1,7 +1,7 @@
 // lib/services/offline/queued_change.dart
 //
 // P4-U19: one waiting change as the "Väntar på synk" view shows it
-// (produktregler.md:190), independent of the platform's database.
+// independent of the platform's database.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -37,7 +37,7 @@ const Set<String> imageGroupEntityTypes = {
 /// What a recipe write does, as the queue stores it (SyncOperation).
 enum QueuedOperation { create, update, delete, tag, upload }
 
-/// Why a change waits for the user, in the words produktregler.md:188 names.
+/// Why a change waits for the user.
 ///
 /// The queue stores the reason as text in `lastError`. The flow-08 classifier
 /// (P6-U08b) writes these codes; anything else reads as [unknown], which still
@@ -48,7 +48,7 @@ enum QueuedChangeReason {
   tooLarge,
   dependencyFailed,
 
-  /// The queue retried for 24 h without success (produktregler.md:188).
+  /// The queue retried for 24 h without success.
   retriesExhausted,
   unknown
   ;
@@ -117,12 +117,11 @@ class QueuedChange {
   /// Why it waits for the user. Only meaningful when [needsUser].
   final QueuedChangeReason reason;
 
-  /// Whether it waits for another change still in the queue (dependsOn,
-  /// produktregler.md:187).
+  /// Whether it waits for another change still in the queue
   final bool waitsOnEarlier;
 
   /// When the queue sends it again after a failed attempt, or null when it
-  /// has not failed (produktregler.md:188; #synkko "nästa försök om 8 s").
+  /// has not failed (#synkko "nästa försök om 8 s").
   final DateTime? nextAttemptAt;
 
   /// What an image row belongs to (SyncQueueEntityType), so the view can name
@@ -167,7 +166,7 @@ class QueuedChange {
   bool get isNeverSyncedRecipe =>
       kind == QueuedChangeKind.recipe && operation == QueuedOperation.create;
 
-  /// "Spara som kopia" (produktregler.md:188): the device's content is kept
+  /// "Spara som kopia": the device's content is kept
   /// as a new recipe of the user's own. Only a recipe write carries content.
   bool get canSaveAsCopy =>
       needsUser &&
@@ -183,7 +182,7 @@ class QueuedChange {
       !isImageGroup &&
       reason == QueuedChangeReason.tooLarge;
 
-  /// "Släng ändringen" (produktregler.md:188), on every permanent failure.
+  /// "Släng ändringen", on every permanent failure.
   /// Q6-11 = B (produktbeslut 2026-09-27b): a recipe the server has never had
   /// can be thrown away too, after a confirmation ([discardAsksFirst]).
   bool get canDiscard => needsUser;
@@ -228,7 +227,7 @@ class QueuedChange {
 }
 
 /// The queue as the view groups it: permanent failures first
-/// (produktregler.md:190), then the rest, each oldest first.
+/// then the rest, each oldest first.
 @immutable
 class QueueSnapshot {
   QueueSnapshot(Iterable<QueuedChange> changes)

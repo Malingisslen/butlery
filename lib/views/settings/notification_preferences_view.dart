@@ -46,7 +46,6 @@ class _NotificationPreferencesViewState
   /// Notifications are off for Butlery in the phone's settings. Then no
   /// choice here means anything: a row at the top leads to the system
   /// settings, and the switches stay visible but inactive
-  /// (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
   bool _systemOff = false;
 
   @override

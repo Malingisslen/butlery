@@ -1,7 +1,7 @@
 name: butlery
 description: "Smart receptapp som automatiserar receptflödet - från import/skapande av recept till veckomeny-generering och automatisk inköpslista."
 publish_to: 'none'
-version: 0.9.0+1
+version: 0.9.0+18
 
 environment:
   sdk: ^3.10.0
@@ -34,7 +34,6 @@ dependencies:
   flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
   timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
-  freerasp: 8.0.0  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds. 8.0.0 reviewed (BUT-1218): its 5 breaking changes (onAllChecksDone→onAllChecksFinished, installerStore, reasons-list, blocklist, SuspiciousAppDetectionConfig) are all on surfaces we don't use; root/hook/tamper callbacks unchanged.
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.5+1
@@ -97,7 +96,7 @@ dependencies:
   # mono WAV whisper.cpp expects.
   whisper_ggml_plus: 1.5.2
   record: ^6.1.1
-  # Köksbutlern (tasks/koksbutlern-plan.md): OS-native text-to-speech
+  # Köksbutlern: OS-native text-to-speech
   # passthrough (Android TextToSpeech / iOS AVSpeechSynthesizer) for cooking-
   # mode readouts. Caret pin deliberately — unlike whisper_ggml_plus, this
   # bundles no native inference engine or model weights, just a Dart→OS

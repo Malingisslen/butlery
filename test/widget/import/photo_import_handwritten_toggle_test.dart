@@ -55,6 +55,9 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   }
 
   @override
+  String? consumeInfoMessage() => null;
+
+  @override
   int pageCount = 0;
 
   int picks = 0;

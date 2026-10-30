@@ -194,6 +194,19 @@ void main() {
     expect(legacy.total.kcal, closeTo(structured.total.kcal, 1e-9));
   });
 
+  test('1,5 dl strösocker weighs 127.5 g (85 g/dl), as a raw line too', () {
+    final summary = NutritionCalculator(table: _table).calculate(
+      ingredients: [
+        RecipeIngredient.rawOnly('1,5 dl strösocker'),
+        _ing(1.5, 'dl', 'strösocker'),
+      ],
+      portions: 4,
+    );
+    for (final line in summary.lines) {
+      expect(line.grams, closeTo(127.5, 1e-9));
+    }
+  });
+
   test('a recipe line spelled without accents finds the curated entry', () {
     final summary = NutritionCalculator(table: _table).calculate(
       ingredients: [_ing(2, 'st', 'Kycklingfile')],

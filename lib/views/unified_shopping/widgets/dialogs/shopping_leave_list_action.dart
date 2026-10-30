@@ -89,7 +89,7 @@ class ShoppingLeaveListAction {
   }) {
     if (target == null) return;
 
-    // The ink snackbar (Komponentark v1:745-750; PQ-09 = A): views never
+    // The ink snackbar (PQ-09 = A): views never
     // build their own SnackBar or colour it by status.
     final l10n = target.l10n;
     if (left) {

@@ -1,6 +1,6 @@
 // lib/widgets/admin/admin_table.dart
 //
-// The admin table of the drawn admin panel (Skarmar v12 etapp 5-7 #9): a
+// The admin table of the drawn admin panel: a
 // tinted header row in capitals, hairline rows, and every column given room,
 // so nothing is clipped or broken mid-word.
 library;
@@ -25,7 +25,12 @@ class AdminTableColumn {
 }
 
 class AdminTableRow {
-  const AdminTableRow({required this.cells, this.onTap, this.cellColors});
+  const AdminTableRow({
+    required this.cells,
+    this.onTap,
+    this.cellColors,
+    this.cellWidgets,
+  });
 
   /// One text per column.
   final List<String> cells;
@@ -33,6 +38,10 @@ class AdminTableRow {
 
   /// Optional text colour per column; null keeps the default.
   final List<Color?>? cellColors;
+
+  /// Optional widget per column, drawn instead of that column's text, for a
+  /// per-row action such as the guest list's "Ta bort".
+  final List<Widget?>? cellWidgets;
 }
 
 class AdminTable extends StatelessWidget {
@@ -112,13 +121,16 @@ class AdminTable extends StatelessWidget {
       ),
       child: _line([
         for (var i = 0; i < columns.length; i++)
-          WholeWordText(
-            i < row.cells.length ? row.cells[i] : '',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: row.cellColors?[i] ?? cs.onSurface,
-            ),
-            textAlign: columns[i].alignEnd ? TextAlign.end : TextAlign.start,
-          ),
+          row.cellWidgets?[i] ??
+              WholeWordText(
+                i < row.cells.length ? row.cells[i] : '',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: row.cellColors?[i] ?? cs.onSurface,
+                ),
+                textAlign: columns[i].alignEnd
+                    ? TextAlign.end
+                    : TextAlign.start,
+              ),
       ]),
     );
     if (row.onTap == null) return content;

@@ -148,6 +148,31 @@ export async function probeResidualData(
       },
     );
   }
+  // BUT-2463: short links are keyed on `createdBy`.
+  try {
+    const snap = await db
+      .collection(Collections.deepLinks)
+      .where("createdBy", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(
+        `[deletion-cascade] residual in ${Collections.deepLinks}: ${count} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      `[deletion-cascade] residual probe failed: ${Collections.deepLinks}`,
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+  }
   // BUT-1801: recipes are a SUBCOLLECTION, so they need a path-scoped probe
   // rather than a userId-field filter. Counted directly under the user document:
   // no index is required for a bare `count()`, and it makes no assumption about

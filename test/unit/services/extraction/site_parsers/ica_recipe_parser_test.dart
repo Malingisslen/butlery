@@ -402,7 +402,7 @@ void main() {
 
     group('Time Conversion', () {
       test('should convert "30 minuter" to ISO 8601', () {
-        // This is tested via CSS fallback which uses _convertToIso8601
+        // This is tested via CSS fallback
         const html = '''
 <html>
 <body>
@@ -423,9 +423,7 @@ void main() {
 
         final recipe = parser.parseRecipe(html);
         expect(recipe, isNotNull);
-        if (recipe!['totalTime'] != null) {
-          expect(recipe['totalTime'], equals('PT30M'));
-        }
+        expect(recipe!['totalTime'], equals('PT30M'));
       });
 
       test('should convert "1 timme 30 min" to ISO 8601', () {
@@ -449,9 +447,7 @@ void main() {
 
         final recipe = parser.parseRecipe(html);
         expect(recipe, isNotNull);
-        if (recipe!['totalTime'] != null) {
-          expect(recipe['totalTime'], equals('PT1H30M'));
-        }
+        expect(recipe!['totalTime'], equals('PT1H30M'));
       });
     });
   });

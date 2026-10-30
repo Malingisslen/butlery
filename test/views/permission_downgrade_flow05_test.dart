@@ -1,11 +1,8 @@
 // P6-U05: flow 05, a role lowered to read-only while an editor is open, and
 // the revoked or expired link notice.
 //
-// Sources: flows-roles-budget.md:83 ("behörighet sänks till endast läsa →
-// öppna redigeringsvyer stängs med förklaring, osparat erbjuds som kopia"),
-// :132 (the drop takes effect at once in open views), :80 ("Länken gäller
-// inte längre"); PQ-13 = A (no request button, BUT-2143); produktregler.md
-// :535 (never offer what the app cannot do).
+// Sources:
+// PQ-13 = A (no request button, BUT-2143)
 //
 // The live role comes from the owner's recipe document
 // (RecipePermissionManager.watchCanEdit), faked here as a stream.

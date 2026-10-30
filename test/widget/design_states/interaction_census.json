@@ -1,5 +1,5 @@
 {
-  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion. TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
+  "$om": "P8-U06: the 33 REQUIRED control states of test/fixtures/design/block288-uxfrysning.json interaktion. TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
   "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
   "entries": [
     {
@@ -19,7 +19,7 @@
     {
       "row_id": "CSR::ROLE::button::DEFAULT",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::DEFAULT (light)",
       "also": [
@@ -33,7 +33,7 @@
     {
       "row_id": "CSR::ROLE::button::DISABLED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::DISABLED (light)",
       "also": [
@@ -65,7 +65,7 @@
     {
       "row_id": "CSR::ROLE::button::FOCUSED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::FOCUSED (light)",
       "also": [
@@ -79,7 +79,7 @@
     {
       "row_id": "CSR::ROLE::button::PRESSED",
       "status": "TESTED",
-      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state (Komponentark v1:370-373)",
+      "control": "HeroButton (lib/widgets/common/buttons/hero_button.dart), the view's saffron action with the drawn pressed state",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::PRESSED (light)",
       "also": [
@@ -93,7 +93,7 @@
     {
       "row_id": "CSR::ROLE::button::SELECTED",
       "status": "TESTED",
-      "control": "a filter chip (FilterChipsWidget), a button that can be selected (Komponentark v1:139-146)",
+      "control": "a filter chip (FilterChipsWidget), a button that can be selected",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::button::SELECTED (light)",
       "also": [

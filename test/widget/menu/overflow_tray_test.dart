@@ -1,8 +1,7 @@
 /// P5-U23: the week menu's tray of recipes that did not fit, and the
 /// placement order in the cells.
 ///
-/// produktregler.md:1123-1127 (§ 22.6), :206, :890-893; drawn in Skarmar v12
-/// etapp 11 breda vyer:233-254 (#vmbdelvis). Pins:
+/// Pins:
 /// - the tray is the shared partial outcome (surface.raised + warning edge,
 ///   I-29) in light and dark;
 /// - it counts in dishes, says why, and names each recipe as written;
@@ -139,7 +138,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    // Never lower-cased (produktregler.md:892).
+    // Never lower-cased.
     expect(find.text('Ärtsoppa med Fläsk'), findsOneWidget);
     expect(find.text('ärtsoppa med fläsk'), findsNothing);
     for (final r in _recipes) {
@@ -329,7 +328,7 @@ void main() {
     });
 
     // Q5-01 = A (produktbeslut 2026-09-24): "Släng resten" empties the
-    // tray at once, and Ångra (7 s, produktregler.md:131) brings it back.
+    // tray at once, and Ångra (7 s) brings it back.
     testWidgets('Släng resten empties the tray, and Ångra brings it back', (
       tester,
     ) async {

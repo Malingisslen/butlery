@@ -107,6 +107,12 @@ final _requiredLists = <_Required>[
     mustContain: 'consentVersion',
     writer: 'HouseholdAllergenShare.toFirestore',
   ),
+  const _Required(
+    label: 'signup_allowlist create',
+    anchor: 'match /signup_allowlist/{email}',
+    mustContain: 'invitedBy',
+    writer: 'FirebaseSignupAllowlistRepository.toFirestore',
+  ),
   _Required(
     label: 'feedback',
     anchor: 'match /feedback/{feedbackId}',

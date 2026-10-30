@@ -344,7 +344,7 @@ void main() {
     },
   );
 
-  // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+  // Q6-08 = A (produktbeslut 2026-09-27): a member
   // never writes someone else's recipe, and firestore.rules refuses it, so
   // the view offers neither "Behåll min version" nor "Använd deras version"
   // there; both versions are still shown.
@@ -384,9 +384,6 @@ void main() {
   }
 
   // PQ-02 = A (2026-09-23): the choice goes both ways on the owner's recipe
-  // (produktregler.md:102;
-  // Skarmar v12 del 3 #konflikt :1199 draws "Behåll min version" and
-  // "Använd Eriks version").
   group('the choice goes both ways (PQ-02 = A)', () {
     late String useTheirs;
     late String usedTheirs;

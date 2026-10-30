@@ -37,12 +37,12 @@ Sister runbooks for the same DR tier:
 - `gcloud` CLI installed and authenticated:
   ```bash
   gcloud auth login
-  gcloud config set project butlery-app-1
+  gcloud config set project butlery-prod
   ```
 - The bucket name. Open Firebase Console → Storage; the **Files** tab shows
   the canonical bucket reference. Newer Firebase projects (created after
   late 2024) use the `<project>.firebasestorage.app` domain — for Butlery
-  this is `butlery-app-1.firebasestorage.app`. Older projects still use
+  this is `butlery-prod.firebasestorage.app`. Older projects still use
   `<project>.appspot.com`. Confirm against `lib/firebase_options.dart`
   (`storageBucket` field) — the live bucket name is whatever the SDK uses.
   Do NOT use the project ID by itself.
@@ -55,7 +55,7 @@ Sister runbooks for the same DR tier:
 
 ```bash
 # From repo root, on a maintainer workstation with gcloud authenticated.
-export STORAGE_BUCKET=butlery-app-1.firebasestorage.app
+export STORAGE_BUCKET=butlery-prod.firebasestorage.app
 ./infrastructure/storage/setup-storage-versioning.sh
 ```
 

@@ -1,7 +1,7 @@
 // lib/widgets/common/list/section_band.dart
 //
 // The one heading that opens a group of rows in the shopping lists and the
-// pantry (Skarmar v12 del 2 #inkop, etapp 2 #skafferivyn): a bar on the
+// pantry: a bar on the
 // left, the title in capitals, a count at the right and, when the group
 // folds, a chevron. A view names the group and what to count; it never draws
 // its own bar, plate or chevron.
@@ -72,7 +72,7 @@ class SectionBand extends StatelessWidget {
 
     final band = Container(
       constraints: const BoxConstraints(
-        minHeight: AppDimensions.minTouchTarget,
+        minHeight: AppDimensions.sectionBandHeight,
       ),
       decoration: BoxDecoration(
         color: plate
@@ -130,7 +130,15 @@ class SectionBand extends StatelessWidget {
       excludeSemantics: true,
       child: PressFill(
         surface: PressSurface.base,
-        child: InkWell(onTap: onTap, child: band),
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
+            ),
+            child: Center(child: band),
+          ),
+        ),
       ),
     );
   }

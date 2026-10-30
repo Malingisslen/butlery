@@ -1,13 +1,8 @@
 /// The partial outcome: the third outcome, beside success and failure (I-29).
 ///
-/// produktregler.md:905-909 (§ 17.6): "Delvis utfall är ett tredje utfall,
-/// inte ett lyckat och inte ett fel. Formen är `surface.raised` med
-/// varningskant." It names what went, what did not and why, and the failed
-/// ones stay where the user can try again. produktregler.md:588 adds that
-/// "sju av nio" must never be reported as nine.
+/// It names what went, what did not and why, and the failed
+/// ones stay where the user can try again.
 ///
-/// The drawing is Skarmar v12 etapp 9 globala tillstand och flerval.dc.html
-/// :390-393 (#flergrupp, "En av två togs bort") and :317-319 (#flermeny):
 /// - surface `surface.raised` (tokens.json: #E6EAD9 light, #2F4437 dark),
 ///   read as `ColorScheme.surfaceContainerHighest`, which carries that token
 ///   in both schemes;
@@ -45,8 +40,7 @@
 /// ```
 ///
 /// Each item is keyed `PartialOutcome.itemKey(id)`. The title is a live
-/// region, so the outcome is announced without moving focus (Grafisk manual
-/// v6:586, "Status som annonseras").
+/// region, so the outcome is announced without moving focus
 library;
 
 import 'package:flutter/material.dart';
@@ -107,10 +101,10 @@ class PartialOutcome extends StatelessWidget {
   /// Optional content below the message (for example draggable chips).
   final Widget? child;
 
-  /// Width of the warning edge (Skarmar v12 etapp 9:390, 3 px).
+  /// Width of the warning edge (3 px).
   static const double edgeWidth = 3;
 
-  /// Trailing corner radius (Skarmar v12 etapp 9:390, 8 px).
+  /// Trailing corner radius (8 px).
   static const double cornerRadius = AppDimensions.radiusControl;
 
   /// Key on the surface that carries the colour and the edge.
@@ -120,7 +114,7 @@ class PartialOutcome extends StatelessWidget {
   static Key itemKey(String id) => ValueKey('partial-outcome-item-$id');
 
   /// Names what went as one phrase: "A", "A och B", "A, B och C"
-  /// (produktregler.md:906, "namnger vad som gick"). [and] is the localized
+  /// ("namnger vad som gick"). [and] is the localized
   /// word before the last name, spaces included. Names are shown as written.
   static String joinNames(List<String> names, String and) {
     if (names.length <= 1) return names.join();

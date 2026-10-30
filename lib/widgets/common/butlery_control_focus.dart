@@ -5,13 +5,12 @@
 //
 // Kanon:
 // - Fokus är en 2 px ring 3 px utanför, ink på ljust och papper på mörkt,
-//   aldrig saffran (tokens.json:155-160; Grafisk manual v6:209; Komponentark
-//   v1:657).
+//   aldrig saffran
 // - Synligt mindre kontroller får en 48 dp-wrapper som finns i koden, och
 //   fokusramen ritas runt hela wrappern, aldrig runt bara glyfen (Grafisk
 //   manual v6:381; tokens.json:485-492 touchTarget).
 // - Den frysta modellen kräver FOCUSED för checkbox, switch, radio, tab, link
-//   och menuitem (fas2/block288-uxfrysning.json, interaktion
+//   och menuitem (interaktion
 //   CSR::ROLE::<roll>::FOCUSED).
 //
 // Ringen bär fokus ensam. Därför tar greppet bort den fokuserade tonplattan
@@ -208,7 +207,7 @@ class ButleryTab extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     // The tab is laid out at its label's width, so the TabBar's label-sized
-    // plate line is the word plus its overhang (Komponentark v1:106).
+    // plate line is the word plus its overhang.
     return ButleryAncestorFocusRing(
       bounds: FocusRingBounds.minTouchTarget,
       child: ConstrainedBox(

@@ -19,14 +19,12 @@ import 'dart:io';
 
 const _out = 'lib/widgets/common/icons/butlery_icons.dart';
 
-/// Filled masters that also have an outline state. The outline is the same
-/// geometry drawn as a 1.75 stroke: Skarmar v12 del 1:311 draws the heart
-/// that way (not yet a favourite), and the star is drawn with fill none in
-/// two places in the screen files. The bookmark's outline is the template
+/// Filled masters that also have an outline state.
+/// The bookmark's outline is the template
 /// that is not saved (icons.json contract.exceptions.bookmark).
 const _outlineVariants = ['bookmark', 'heart', 'star'];
 
-/// Semantic aliases (migration-gap.md:46, K-10: map the family onto the
+/// Semantic aliases (K-10: map the family onto the
 /// app's semantic aliases, not raw names). alias -> member.
 const _aliases = {
   'favourite': 'heart',
@@ -79,7 +77,7 @@ void main() {
       "import 'package:butlery/widgets/common/icons/butlery_glyph.dart';",
     )
     ..writeln()
-    ..writeln('/// The Butlery icon family (beslutslogg.md:9, B-02).')
+    ..writeln('/// The Butlery icon family.')
     ..writeln('///')
     ..writeln('/// Render with `ButleryIcon`, never with a plain `Icon`.')
     ..writeln('abstract final class ButleryIcons {');

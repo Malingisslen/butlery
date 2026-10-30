@@ -200,6 +200,31 @@ export const CASES: SectionCase[] = [
     overCap: (db) => many(db, ROWS, (i) => `users/${UID}/recentContentHashes/d${i}`, {}),
   },
   {
+    section: "deep_links",
+    idKey: "id",
+    rows: ["abc12345"],
+    seed: (db) => {
+      db.seed("deep_links/abc12345", {
+        id: "abc12345", longUrl: `https://butlery.se/recipe/r1?from=${UID}`, createdAt: T0,
+        createdBy: UID, clickCount: 0, ...STRAY,
+        metadata: { isActive: true, expiresAt: "2026-11-27T10:00:00.000", ...STRAY },
+      });
+      db.seed("deep_links/abc12345/clicks/c1", { userId: OTHER, timestamp: T0 });
+      db.seed("deep_links/theirs01", { createdBy: OTHER, longUrl: "x" });
+    },
+    check: ([row]) => {
+      expect(row.createdAt === T0_ISO, "createdAt as ISO");
+      expect(row.longUrl === `https://butlery.se/recipe/r1?from=${UID}`, "longUrl kept");
+      expect(!("createdBy" in row) && !("clickCount" in row), "createdBy and clickCount dropped");
+      const metadata = row.metadata as Record<string, unknown>;
+      expect(
+        JSON.stringify(metadata) === '{"isActive":true,"expiresAt":"2026-11-27T10:00:00.000"}',
+        "only the metadata keys the app writes",
+      );
+    },
+    overCap: (db) => many(db, ROWS, (i) => `deep_links/x${i}`, { createdBy: UID }),
+  },
+  {
     section: "shares_sent",
     idKey: "shareId",
     rows: ["S1"],

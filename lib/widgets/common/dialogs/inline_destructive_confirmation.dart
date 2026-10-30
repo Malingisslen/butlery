@@ -1,7 +1,7 @@
 // lib/widgets/common/dialogs/inline_destructive_confirmation.dart
 //
 // The confirmation that opens under the row it is about, instead of a dialog
-// over the page (Skarmar v12 etapp 9 #9, "Ta bort Johan Lind ur samtalet?"): a
+// over the page ("Ta bort Johan Lind ur samtalet?"): a
 // tinted note with the question, what is kept and what is not, Avbryt and a
 // red button that names the action. For removing someone from a list the
 // person can be invited back to, where a dialog is more than the question

@@ -1,13 +1,10 @@
-/// P6-U01: flow 01 on the week menu (flows-roles-budget.md:24-38).
+/// P6-U01: flow 01 on the week menu.
 ///
-/// Each group is named after its transition in
-/// fas2/block288-uxfrysning.json:
 /// - TR::FLOW::01::genererar::0-recept-placerade: nothing matched is its own
-///   state, "Inga recept matchar" (Skarmar v12 del 1 #veckoingamatch), never
+///   state, "Inga recept matchar", never
 ///   "Ett fel uppstod".
 /// - TR::FLOW::01::genererar::offline: Generera is switched off with the
 ///   reason in text; nothing starts, so nothing is saved
-///   (produktregler.md:1131).
 ///
 /// The 6 s subtitle (TR::FLOW::01::genererar::6-10-s) is pinned in
 /// test/widget/widgets/menu/veckomeny_generating_overlay_test.dart, the

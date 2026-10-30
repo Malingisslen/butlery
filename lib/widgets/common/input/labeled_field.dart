@@ -3,7 +3,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 
-/// The frame every text field stands in (Komponentark v1 §11): the label
+/// The frame every text field stands in: the label
 /// above the box, not floating in its edge, and the focus ring around the
 /// box. [child] is a TextField or TextFormField whose decoration carries no
 /// labelText; give a TextFormField `errorBuilder: FieldErrorLine.builder` so

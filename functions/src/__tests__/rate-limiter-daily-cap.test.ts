@@ -20,8 +20,7 @@
  * `if (!dailyCap.allowed)` block in checkRateLimit turns these cases red.
  *
  * BUT-1573/BUT-1692 tail: it also pins the production config values that are
- * one decision shared with another file — every `dailyLimit` (three LLM-spend,
- * one write-amplified), and the `sendNotificationBatch` bucket versus the batch
+ * one decision shared with another file — every `dailyLimit`, and the `sendNotificationBatch` bucket versus the batch
  * callable's own size cap.
  *
  * Run with: npx ts-node src/__tests__/rate-limiter-daily-cap.test.ts
@@ -44,6 +43,7 @@ import { RATE_LIMIT_KEY as MY_CONTENT_DECISIONS_KEY } from "../moderation/my-con
 import { RATE_LIMIT_KEY as MY_REPORT_OUTCOMES_KEY } from "../moderation/my-report-outcomes";
 import { RATE_LIMIT_KEY as REOPEN_REPORT_KEY } from "../moderation/reopen-report";
 import { RATE_LIMIT_KEY as SUBMIT_APPEAL_KEY } from "../moderation/submit-appeal";
+import { SHADOW_OPERATION } from "../llm/shadow-compare-import";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
 const cappedConfig: RateLimitConfig = {
@@ -75,6 +75,17 @@ const cases: UnitCase[] = [
       ]) {
         assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
       }
+    },
+  },
+  {
+    // Passed as a constant, so the literal pin below would not see a misspelling.
+    name: "the shadow comparison's SHADOW_OPERATION has its own config",
+    fn: async () => {
+      assertEqual(
+        Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, SHADOW_OPERATION),
+        true,
+        SHADOW_OPERATION
+      );
     },
   },
   {
@@ -291,6 +302,16 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "RATE_LIMIT_CONFIGS: shadowCompareImport daily cap is 20",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.shadowCompareImport.dailyLimit,
+        20,
+        "shadowCompareImport.dailyLimit"
+      );
+    },
+  },
+  {
     name: "RATE_LIMIT_CONFIGS: importRecipe daily cap is 100",
     fn: async () => {
       assertEqual(
@@ -463,6 +484,7 @@ const cases: UnitCase[] = [
       const pinned = [
         "structureRecipe",
         "ocrRecipeImage",
+        "shadowCompareImport",
         "importRecipe",
         "createChatGroup",
         "ensureCategoryChat",

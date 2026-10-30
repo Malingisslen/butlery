@@ -80,7 +80,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.976357691692-7d79qbq7lm5q6okuohsv4pmrreka8mtd</string>
+				<string>com.googleusercontent.apps.85515349890-m9d61ua5rdp9512u9l4kf033s36rqus9</string>
 			</array>
 		</dict>
 	</array>
@@ -88,6 +88,6 @@
 	     lib/firebase_options.dart), so Google sign-in takes its iOS OAuth client
 	     id from here (BUT-916). -->
 	<key>GIDClientID</key>
-	<string>976357691692-7d79qbq7lm5q6okuohsv4pmrreka8mtd.apps.googleusercontent.com</string>
+	<string>85515349890-m9d61ua5rdp9512u9l4kf033s36rqus9.apps.googleusercontent.com</string>
 </dict>
 </plist>

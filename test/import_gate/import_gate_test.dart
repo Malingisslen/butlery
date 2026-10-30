@@ -1,4 +1,4 @@
-/// The import gate (BUT-2236): two corpora kept in the repo, run through the
+/// The import gate (BUT-2236): corpora kept in the repo, run through the
 /// real import strategies with no network and no AI, scored against gold and
 /// held to the floors in `floors.json`.
 ///
@@ -8,8 +8,15 @@
 ///   ingredient rows, placeholder title and steps), fed to [UrlImportStrategy]
 ///   through a [MockClient]. The parser service is wired as the app wires it,
 ///   with the built-in site configs (Firestore is a fake, so no stored ones).
-/// - `text/`: thirty pasted Swedish recipes fed to [TextImportStrategy], the
+/// - `text/`: pasted Swedish recipes fed to [TextImportStrategy], the
 ///   parser photo and voice end in too.
+/// - `stokig/`: the same strategy over text that still carries the page around
+///   the recipe (menus, ratings, nutrition, comments, OCR page furniture), so
+///   junk that rides along is counted (BUT-2455).
+/// - `foto/`: OCR pages as the photo path hands them on, run in that path's
+///   order: the page preparation the viewmodel does, the block split with the
+///   line reflow the photo path asks for, then [TextImportStrategy]. The gold
+///   also names what must stay ABSENT (a screenshot's clock and icon row).
 ///
 /// Every AI seam is a counting fake and every real socket is refused and
 /// counted, so "no AI" and "no network" are measured, not assumed.
@@ -31,11 +38,14 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
+import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 
@@ -135,8 +145,9 @@ void main() {
     final Recipe? recipe = result.recipe;
     return Produced(
       title: recipe?.title,
+      description: recipe?.description,
       ingredientLines: recipe?.ingredients ?? const [],
-      steps: recipe?.instructions.length ?? 0,
+      stepLines: recipe?.instructions ?? const [],
       portions: recipe?.portions,
       timeMinutes: recipe?.timeMinutes,
       llmCalls: llmCallsNow() - llmBefore,
@@ -184,21 +195,21 @@ void main() {
     corpora.add(CorpusScore('sites', scores));
   });
 
-  test('text: TextImportStrategy over the pasted-text corpus', () async {
+  Future<CorpusScore> runTextCorpus(String name) async {
     final files =
-        Directory('$_gateDir/text')
+        Directory('$_gateDir/$name')
             .listSync()
             .whereType<File>()
             .where((f) => f.path.endsWith('.txt'))
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
-    expect(files, hasLength(30), reason: 'provsamling 2 ska ha 30 recept');
 
     final strategy = TextImportStrategy();
     final scores = <RecipeScore>[];
     for (final f in files) {
       final stem = f.path.substring(0, f.path.length - '.txt'.length);
-      final id = stem.split('/').last;
+      final fileName = f.uri.pathSegments.last;
+      final id = fileName.substring(0, fileName.length - '.txt'.length);
       final gold = GoldRecipe.fromJson(
         id,
         jsonDecode(File('$stem.gold.json').readAsStringSync())
@@ -208,11 +219,83 @@ void main() {
       final result = await strategy.import(f.readAsStringSync());
       scores.add(scoreRecipe(gold, produced(result, before)));
     }
-    corpora.add(CorpusScore('text', scores));
+    return CorpusScore(name, scores);
+  }
+
+  test('text: TextImportStrategy over the pasted-text corpus', () async {
+    final score = await runTextCorpus('text');
+    expect(
+      score.recipes,
+      hasLength(30),
+      reason: 'provsamling 2 ska ha 30 recept',
+    );
+    corpora.add(score);
+  });
+
+  test(
+    'stokig: TextImportStrategy over pages with junk around the recipe',
+    () async {
+      final score = await runTextCorpus('stokig');
+      expect(
+        score.recipes,
+        hasLength(9),
+        reason: 'provsamling 3 ska ha 9 recept',
+      );
+      corpora.add(score);
+    },
+  );
+
+  test('foto: the photo path over OCR pages', () async {
+    final files =
+        Directory('$_gateDir/foto')
+            .listSync()
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.pages.json'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+    final strategy = TextImportStrategy();
+    final scores = <RecipeScore>[];
+    for (final f in files) {
+      final stem = f.path.substring(0, f.path.length - '.pages.json'.length);
+      final fileName = f.uri.pathSegments.last;
+      final id = fileName.substring(0, fileName.length - '.pages.json'.length);
+      final gold = GoldRecipe.fromJson(
+        id,
+        jsonDecode(File('$stem.gold.json').readAsStringSync())
+            as Map<String, dynamic>,
+      );
+      final pagesJson =
+          jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
+      final pages = [
+        for (final p in pagesJson['pages'] as List)
+          PageText(
+            (p as Map<String, dynamic>)['providerText'] as String,
+            layout: p['layout'] == null
+                ? null
+                : PageLayout.fromJson(p['layout'] as Map<String, dynamic>),
+          ),
+      ];
+      // `PhotoImportViewModel._recombineAndParse` then
+      // `ImportManager.autoParseMulti(reflow: true)`: the first block is the
+      // recipe the gold describes.
+      final prepared = prepareScreenPages(pages);
+      final blocks = ImportManager.recipeBlocks(
+        prepared.text,
+        layout: DocumentLayout(prepared.layouts),
+        reflow: true,
+      );
+      final before = llmCallsNow();
+      final result = await strategy.import(
+        blocks.isEmpty ? prepared.text : blocks.first,
+      );
+      scores.add(scoreRecipe(gold, produced(result, before)));
+    }
+    expect(scores, hasLength(3), reason: 'provsamling 4 ska ha 3 recept');
+    corpora.add(CorpusScore('foto', scores));
   });
 
   test('floors hold', () {
-    expect(corpora, hasLength(2), reason: 'båda provsamlingarna ska ha körts');
+    expect(corpora, hasLength(4), reason: 'alla provsamlingar ska ha körts');
     final floors = Floors.read(File('$_gateDir/floors.json'));
     final report = formatReport(corpora, floors, network.attempts);
     // ignore: avoid_print

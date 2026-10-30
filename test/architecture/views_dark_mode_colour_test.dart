@@ -9,7 +9,7 @@
 // with ink: filled buttons, ink bars and badges, and checked controls
 // (tokens.json:145-148 control.checked.background).
 //
-// Every snackbar is the ink snackbar (PQ-09 = A; Komponentark v1:745-750):
+// Every snackbar is the ink snackbar (PQ-09 = A):
 // a SnackBar in a view or widget never sets its own backgroundColor.
 //
 // This test reddens when either comes back.

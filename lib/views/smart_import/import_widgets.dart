@@ -107,17 +107,14 @@ class ImportInputSection extends StatelessWidget {
 /// P5-U06: a failed import, in three parts (content-style-guide.md:87-97).
 ///
 /// The error line says what happened and what was kept ([InlineError], the
-/// drawn error boundary, Komponentark v1:755-758). Under it, "Andra vägar
-/// till samma recept" draws the [routes] the failure carries: a failure is a
-/// fork, not a dead end (produktregler.md:557; Skarmar v12 etapp 4 import
-/// #impinget).
+/// drawn error boundary).
 ///
 /// Colours, both modes, from the theme: the heading is
 /// colorScheme.onSurfaceVariant = text.secondary, #5B6959 light and #A9B2A0
 /// dark (tokens.json:62-65). The drawing's dark heading is #C9D3C4
 /// (text.bodyMuted). The first route takes the app's
 /// filled button theme. The outlined routes are drawn with --text-kontroll-a
-/// and a 1.5 px --ram-kontroll-a outline (Skarmar v12 etapp 4 import:27-28):
+/// and a 1.5 px --ram-kontroll-a outline:
 /// #24382C text and outline in light (colorScheme.onSurface, equal to ink there); in dark a paper
 /// outline at 40 % (overlay.paperWash, tokens.json:263) and text in
 /// colorScheme.onSurface (#F5F4ED, text.primary). The drawn dark text is

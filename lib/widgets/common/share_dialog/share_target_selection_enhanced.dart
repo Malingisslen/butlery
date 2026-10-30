@@ -231,7 +231,7 @@ class ShareTargetSelectionEnhanced {
 
         // An existing collaborator is disabled: text.disabled.onRaised on the
         // name and a disabled checkbox, never the row at half opacity
-        // (tokens.json:40-53; Grafisk manual v6:423).
+        // (tokens.json:40-53).
         return ListTile(
           contentPadding: EdgeInsets.zero,
           enabled:

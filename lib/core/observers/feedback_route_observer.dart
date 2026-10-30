@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 /// Tells the feedback "!" whether the screen on top is one it must stay off
-/// (produktregler.md § 18.1): it never competes with the screen's primary
+/// it never competes with the screen's primary
 /// action, so it hides under a dialog or sheet and in cooking mode.
 ///
 /// The button is built in `MaterialApp.builder`, outside the Navigator, so it

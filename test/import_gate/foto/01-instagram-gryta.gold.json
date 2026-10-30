@@ -1,0 +1,34 @@
+{
+  "form": "Malins två Instagramskärmbilder 2026-10-29 (krämig kycklinggryta), facit graderat från bilderna: elva ingrediensrader varav två utan mängd, tre numrerade steg, \"4-5 portioner\". Statusfältet, gillningsraden, kontonamnet, \"mindre\", inläggsåldern och nästa inläggs bildtext får aldrig nå receptet.",
+  "title": "Krämig kycklinggryta med smak av vitlök, dijon & parmesan",
+  "steps": 3,
+  "lastStepKey": "servera med ris",
+  "portions": 4,
+  "ingredients": [
+    { "key": "smör", "allergen": "mjölk" },
+    { "key": "kycklingfilé" },
+    { "key": "salt" },
+    { "key": "schalottenlök" },
+    { "key": "vitlöksklyftor" },
+    { "key": "buljongtärning" },
+    { "key": "vatten" },
+    { "key": "creme fraiche", "allergen": "mjölk" },
+    { "key": "kycklingfond" },
+    { "key": "dijonsenap", "allergen": "senap" },
+    { "key": "parmesan", "allergen": "mjölk" }
+  ],
+  "headings": [],
+  "absent": [
+    "10:55",
+    "5Gtll",
+    "d 5 g ll",
+    "5Gll",
+    "Gillas av",
+    "matglad.anna",
+    "mindre",
+    "dagar sedan",
+    "Följer",
+    "MOZZARELI",
+    "Uorebro"
+  ]
+}

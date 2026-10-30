@@ -33,3 +33,9 @@
 -dontwarn com.google.mlkit.vision.text.devanagari.**
 -dontwarn com.google.mlkit.vision.text.japanese.**
 -dontwarn com.google.mlkit.vision.text.korean.**
+
+# ONNX Runtime's native library looks up its Java classes by name over JNI
+# (FindClass/GetMethodID), and its AAR ships no consumer rules. Renamed by R8,
+# the lookup returns null and ART aborts the whole process on the first
+# OrtSession.run (BUT-2432: photo import -> edit closed the Play build).
+-keep class ai.onnxruntime.** { *; }

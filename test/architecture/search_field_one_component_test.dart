@@ -1,5 +1,4 @@
-// Komponentark v1 §07: every search field is ButlerySearchBox, so the edge,
-// the focus ring and the clear button live in one widget. A field that draws
+// A field that draws
 // the search glyph as its own prefix, or uses StyledInput.search, is a search
 // field built by hand, and none is left.
 

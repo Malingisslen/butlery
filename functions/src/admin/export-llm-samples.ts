@@ -22,7 +22,9 @@
  *   npx ts-node src/admin/export-llm-samples.ts --project <id> [--mode extract] [--output path/to/output.json]
  *
  * --mode narrows to a single call type ('extract' | 'enhance' | 'spoken' |
- *        'ingredientLines' | 'ocr'); omitted exports every mode.
+ *        'ingredientLines' | 'ocr' | 'shadow'); omitted exports every mode
+ *        except 'shadow', so prompt mining never mixes in the shadow
+ *        comparison's rows. `--mode shadow` exports those rows alone.
  *
  * Default output: ../scripts/llm-samples/data/llm_response_samples.json
  */
@@ -33,6 +35,7 @@ import * as path from "path";
 
 import { initializeAdminApp } from "./admin-init";
 import { GOLDEN_CI_UID_HASH } from "./golden-recipe-from-url-core";
+import { normalizeParserOutput } from "../llm/shadow-compare-import";
 
 export interface ExportedSample {
   id: string;
@@ -51,6 +54,11 @@ export interface ExportedSample {
   modelId: string | null;
   promptTokenCount: number | null;
   candidatesTokenCount: number | null;
+  parserOutput: Record<string, unknown> | null;
+  channel: string | null;
+  successfulTier: string | null;
+  parserVersion: string | null;
+  photoAiFallback: boolean | null;
   createdAt: string | null;
 }
 
@@ -97,6 +105,14 @@ export function projectSample(
     candidatesTokenCount: orNull(
       data.candidatesTokenCount as number | undefined
     ),
+    // The writer's own allowlist, applied again at every nesting level.
+    parserOutput: normalizeParserOutput(data.parserOutput) as
+      | Record<string, unknown>
+      | null,
+    channel: orNull(data.channel as string | undefined),
+    successfulTier: orNull(data.successfulTier as string | undefined),
+    parserVersion: orNull(data.parserVersion as string | undefined),
+    photoAiFallback: orNull(data.photoAiFallback as boolean | undefined),
     createdAt: toIso(data.createdAt),
   };
 }
@@ -128,6 +144,7 @@ export async function runExportLlmSamplesWithDb(
   const snapshot = await query.get();
   const samples = snapshot.docs
     .filter((doc) => doc.data().authUidHash !== GOLDEN_CI_UID_HASH)
+    .filter((doc) => opts.mode || doc.data().mode !== "shadow")
     .map((doc) => projectSample(doc.id, doc.data()));
   return sortSamples(samples);
 }

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
+import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -131,7 +132,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       controller: newItemController,
       hint: context.l10n.collaborativeAddItemHint,
       // Adding: the plate line in the field's end, named for the screen
-      // reader (produktregler.md, B-18).
+      // reader (B-18).
       suffixIcon: viewModel.isAddingItem
           ? Padding(
               padding: const EdgeInsets.all(AppDimensions.space4),
@@ -270,7 +271,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   String get _shareUrl =>
-      'https://butlery.app/shopping?id=${Uri.encodeComponent(viewModel.listId)}';
+      '${DeepLinkService.baseUrl}/shopping?id=${Uri.encodeComponent(viewModel.listId)}';
 
   Future<void> _copyShareLink(BuildContext context) async {
     await executeAction(

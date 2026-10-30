@@ -1,22 +1,21 @@
-/// Q6-16 = B (fas2/produktbeslut-2026-09-27b.json, after the prototype
-/// 2026-09-27-prototyp-hem.html): Hem has no "Mina recept" top bar. The
+/// Q6-16 = B
+/// : Hem has no "Mina recept" top bar. The
 /// greeting stands at the top, and "Välj", the ingredient search and the
 /// grid/list toggle sit in the library's own header row, "Dina recept · N",
 /// under the Ikväll band.
 ///
-/// B-46 on Hem (beslutslogg.md:53; produktregler.md:870-874): "Välj" is the
+/// B-46 on Hem: "Välj" is the
 /// multi-select entry "i toppfältet" on the six surfaces. On Hem it stands
 /// in this row instead, the library's own header, since Hem has no top bar
 /// (Q6-16 = B; B-46 is to get a line saying so). The rule behind it holds
 /// here: the row changes content, not height. In selection mode the counter
 /// replaces the heading and Avbryt comes first, with the same bulk actions
-/// the selection bar has (produktregler.md:873, :876, :886-889; Skarmar v12
-/// etapp 9 #flervalingang, #flerbar).
+/// the selection bar has
 ///
 /// The label is the shared
 /// [SectionHeading] (Malin 2026-10-11: only this label on Hem takes heading
-/// style). The row says "Dina recept · N": Hem's section label as drawn in
-/// Skarmar v12 del 4 :729, with the count the removed top bar carried.
+/// style). The row says "Dina recept · N": Hem's section label
+/// with the count the removed top bar carried.
 library;
 
 import 'package:flutter/material.dart';
@@ -55,7 +54,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
     final selecting = viewModel.isSelectionMode;
     // The actions take the ink the top bar gave them: text.primary, and an
     // action off at zero in the disabled role, never faded
-    // (produktregler.md:876; tokens.json:71-74, :198).
+    // (tokens.json:71-74, :198).
     final foreground = cs.onSurface;
 
     final selectionRow = Row(
@@ -110,7 +109,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
       child: ButleryIconButtonScope(
         foreground: foreground,
         // One height in both modes, so entering selection does not move
-        // the library (produktregler.md): both contents are laid
+        // the library: both contents are laid
         // out and the row takes the taller one's height, at any text
         // size. The hidden one takes no pointer, focus or semantics.
         child: ConstrainedBox(

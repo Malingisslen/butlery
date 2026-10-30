@@ -29,7 +29,7 @@ class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
   /// tab, which then owns and disposes them. "Välj" and the selection
   /// counter sit in that view's own top bar, so it needs the row count and
-  /// the selection (produktregler.md:871-873). Without them the pantry makes
+  /// the selection. Without them the pantry makes
   /// and owns its own.
   const PantryView({super.key, this.viewModel, this.selection});
 
@@ -255,8 +255,6 @@ class _PantrySectionState extends State<_PantrySection> {
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) return const SizedBox.shrink();
 
-    // Skarmar v12 etapp 2 #skafferivyn: a group is a band with its rows
-    // under it, hairlines between them, never a card.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppDimensions.layoutMarginOf(context),

@@ -77,7 +77,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier
   }
 
   /// Returns the new row's id, or null when nothing was added. Add is class
-  /// 1 with a 7 s "Ångra" (produktregler.md § 2.4), which removes the row
+  /// 1 with a 7 s "Ångra", which removes the row
   /// by this id.
   Future<String?> addItem(
     String itemName,

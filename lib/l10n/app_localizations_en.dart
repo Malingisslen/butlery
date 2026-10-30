@@ -520,6 +520,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Authentication error. Please sign in again.';
 
   @override
+  String get errorSignupNotInvited =>
+      'Butlery is open to invited people only right now.';
+
+  @override
+  String get errorSignupGateUnavailable =>
+      'The account could not be created right now. Please try again in a moment.';
+
+  @override
+  String get errorSignInEmailUnverified =>
+      'Confirm your email through the link we sent. Can\'t find it? Choose Forgot password.';
+
+  @override
   String get errorPermissionDenied =>
       'You don\'t have permission to perform this action.';
 
@@ -1170,7 +1182,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipePortionsPlural => 'servings';
 
   @override
-  String get recipeCookedToday => 'Cooked today';
+  String get recipeCookedToday => 'Mark as cooked';
 
   @override
   String recipeCookedCount(int count) {
@@ -3935,20 +3947,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendRequestTitle => 'Friend request';
 
   @override
-  String imageAddCount(int count) {
-    return 'Add ($count)';
-  }
-
-  @override
-  String get imageAddImages => 'Add images';
-
-  @override
-  String get imageAdding => 'Adding …';
-
-  @override
-  String get imageAddingImage => 'Adding image …';
-
-  @override
   String imagePermissionMessage(String permission) {
     return 'Butlery needs access to your $permission to add images to recipes. Go to settings to grant permission.';
   }
@@ -3965,17 +3963,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSelectSource => 'Select image source';
-
-  @override
-  String imageTapToAddUpTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count images',
-      one: '1 image',
-    );
-    return 'Tap to add up to $_temp0';
-  }
 
   @override
   String get imageTapToLoad => 'Tap to load';
@@ -5202,12 +5189,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialTotalMembers => 'Total members';
-
-  @override
-  String get userNoUsers => 'No users';
-
-  @override
-  String get userNoUsersToShow => 'No users to show';
 
   @override
   String get chatCannotMessageNonFriend =>
@@ -7485,9 +7466,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageRemoveImage => 'Remove image';
 
   @override
-  String get imageSetAsPrimary => 'Set as primary';
-
-  @override
   String get imageSelectedImages => 'Selected images';
 
   @override
@@ -8188,6 +8166,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipeRatingSheetTitle => 'Rate this recipe';
+
+  @override
+  String get recipeRatingUnrated => 'Rate';
+
+  @override
   String get messagingSending => 'Sending …';
 
   @override
@@ -8625,12 +8609,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackSendButton => 'Send';
 
   @override
-  String get adminLoginButton => 'Sign in';
-
-  @override
-  String get adminPasswordLabel => 'Password';
-
-  @override
   String get adminLoginFailed => 'Sign-in failed';
 
   @override
@@ -8814,6 +8792,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminNavOps => 'Ops';
+
+  @override
+  String get adminNavGuestList => 'Guest list';
+
+  @override
+  String get adminGuestListTitle => 'Guest list';
+
+  @override
+  String get adminGuestListLoading => 'Loading the guest list …';
+
+  @override
+  String get adminGuestListLoadFailed => 'Couldn\'t load the guest list';
+
+  @override
+  String get adminGuestListEmpty => 'Nobody is invited yet';
+
+  @override
+  String get adminGuestListColEmail => 'Email';
+
+  @override
+  String get adminGuestListColInvited => 'Invited';
+
+  @override
+  String get adminGuestListExpired => 'expired';
+
+  @override
+  String get adminGuestListRemove => 'Remove';
+
+  @override
+  String get adminGuestListRemoveTitle => 'Remove invitation?';
+
+  @override
+  String adminGuestListRemoveMessage(String email) {
+    return '$email will then not be able to create an account.';
+  }
+
+  @override
+  String get adminGuestListEmailLabel => 'Exact email address';
+
+  @override
+  String get adminGuestListInvite => 'Invite';
+
+  @override
+  String get adminGuestListHelp =>
+      'An invitation lasts 30 days and is removed once the account is created and the email is confirmed.';
+
+  @override
+  String get adminGuestListInvalidEmail =>
+      'Enter a full email address, for example name@example.com.';
+
+  @override
+  String get adminGuestListDuplicate => 'That address is already invited.';
+
+  @override
+  String get adminGuestListSaveFailed => 'Couldn\'t save. Try again.';
 
   @override
   String get adminOpsTitle => 'Operations';
@@ -13984,7 +14017,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recipeCardPantryMatchA11y(int percent) {
-    return 'Matches $percent% of your ingredients';
+    return 'You have $percent% of the recipe\'s ingredients';
   }
 
   @override
@@ -14415,11 +14448,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yLongPressCommentForReactions => 'Comment, long press to react';
-
-  @override
-  String a11yEditImageAction(String label) {
-    return '$label';
-  }
 
   @override
   String a11yImagePickerRemove(int index) {
@@ -16140,7 +16168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String weekMenuDraftDaysDone(int count) {
-    return '$count of 7 days done';
+    return '$count of 7 days have a suggestion';
   }
 
   @override
@@ -16588,6 +16616,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timerInAppOnly => 'The timer only shows in the app.';
+
+  @override
+  String get timerExactAlarmTitle => 'Should the timer ring on the second?';
+
+  @override
+  String get timerExactAlarmBody =>
+      'While the app is in the background, the phone can delay the timer\'s alert by a few minutes. Turn on Alarms & reminders for Butlery and it rings exactly on time.';
 
   @override
   String get notifSystemOffRow =>
@@ -20084,6 +20119,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedSavedState => 'Saved';
 
   @override
+  String get sharedReceiveCanRead => 'Can read';
+
+  @override
+  String get sharedReceiveCanEdit => 'Can edit';
+
+  @override
+  String get sharedReceiveAccept => 'Accept';
+
+  @override
+  String get sharedReceiveView => 'View the recipe';
+
+  @override
   String sharedFromNameAgo(String name, String time) {
     return 'from $name · $time';
   }
@@ -20857,4 +20904,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get decisionRevisedNoActionOutcome =>
       'No action. The decision was changed on review and the warning is removed.';
+
+  @override
+  String get mergeWithNextStep => 'Merge with next';
+
+  @override
+  String get stepsMerged => 'Steps merged';
+
+  @override
+  String get stepsTooLongToMerge => 'The steps are too long to merge';
+
+  @override
+  String a11yMergeSteps(int first, int second) {
+    return 'Merge step $first with step $second';
+  }
 }

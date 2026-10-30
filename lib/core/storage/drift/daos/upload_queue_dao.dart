@@ -189,7 +189,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Marks an upload as a permanent failure. It stays in the queue for the
-  /// user to decide on (produktregler.md:189, :192). Returns whether an
+  /// user to decide on. Returns whether an
   /// upload was marked.
   Future<bool> markPermanentlyFailed(String id, {String? reason}) async {
     final written =

@@ -213,11 +213,11 @@ class AccountDeletionOutcome {
   final List<String> failedCollections;
 
   /// The id of the deletion's audit row — the "revisions-id" the partial
-  /// outcome shows so support can find it (produktregler.md:613).
+  /// outcome shows so support can find it.
   final String? auditLogId;
 
   /// The server refused because the sign-in was older than five minutes.
-  /// That is a step in the flow, not an error (produktregler.md:612).
+  /// That is a step in the flow, not an error.
   final bool requiresReauth;
 
   /// The step a provisional hold reports as failed. It is not data left
@@ -235,7 +235,7 @@ class AccountDeletionOutcome {
       .toList();
 
   /// "Raderingen kan lyckas delvis … Delvis är ett eget utfall med egna
-  /// ord" (produktregler.md:613): the account is gone and something else was
+  /// ord": the account is gone and something else was
   /// not removed.
   bool get isPartial => accountDeleted && genuinelyFailed.isNotEmpty;
 

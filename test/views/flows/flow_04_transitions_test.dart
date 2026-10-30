@@ -1,7 +1,7 @@
 /// P8-U03 · flow 04, the transition that was built but had no test.
 ///
-/// TR::FLOW::04::avslutat::klart (fas2/block288-uxfrysning.json, REQUIRED;
-/// flows-roles-budget.md:72): "Klart" in cooking mode returns to the recipe
+/// TR::FLOW::04::avslutat::klart (REQUIRED
+/// ): "Klart" in cooking mode returns to the recipe
 /// and "Lagat N gånger" counts up. The detail view handles the finished exit
 /// (lib/views/recipe_detail_view.dart:326-350) by counting the recipe as
 /// cooked, and the chip shows the new count
@@ -205,7 +205,7 @@ void main() {
 
     testWidgets('the chip counts up as Lagat N gånger', (tester) async {
       await pumpDetail(tester);
-      expect(find.text('Lagat i dag'), findsOneWidget);
+      expect(find.text('Markera som lagat'), findsOneWidget);
 
       await cookAndLeaveWith(tester, 'stub Klart');
 
@@ -242,7 +242,7 @@ void main() {
           attendeeMemberIds: any(named: 'attendeeMemberIds'),
         ),
       );
-      expect(find.text('Lagat i dag'), findsOneWidget);
+      expect(find.text('Markera som lagat'), findsOneWidget);
     });
   });
 }

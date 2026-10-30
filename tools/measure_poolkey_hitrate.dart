@@ -21,7 +21,7 @@
 // measures production, not a stale copy".
 //
 // DATA HONESTY: the sample set below is hand-built (real cookbook scans are
-// pending per memory/project_cookbook_gold_corpus.md). OCR/Instagram variants
+// pending). OCR/Instagram variants
 // are modeled on real failure modes (a-ring/umlaut misreads, l<->1 / O<->0
 // confusion, emoji + hashtags + missing amounts) but they are synthetic. Treat
 // the cross-method number as an indicative prior, not a production metric — the
@@ -496,8 +496,8 @@ void main(List<String> args) {
     );
   }
   stdout.writeln(
-    '\n  NOTE: sample set is synthetic (real scans pending, see '
-    'memory/project_cookbook_gold_corpus.md). C6/C7: replace _cases with a real '
+    '\n  NOTE: sample set is synthetic (real scans pending). '
+    'C6/C7: replace _cases with a real '
     'corpus batch (>=20-30 scans) and re-run — the harness does not change.',
   );
 }

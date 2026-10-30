@@ -11,14 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
 import 'package:butlery/widgets/image/components/upload_progress_widgets.dart';
-import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
-import 'package:butlery/widgets/image/components/image_add_tile.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
@@ -223,76 +220,6 @@ void main() {
     );
 
     testWidgets(
-      'edit_actions_panel — every action button forwards tooltip as label',
-      (tester) async {
-        final handle = tester.ensureSemantics();
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: const Stack(
-              children: [
-                EditActionsPanel(
-                  canAddImage: true,
-                  canSetPrimary: true,
-                ),
-              ],
-            ),
-          ),
-        );
-
-        // Three buttons rendered: Add, Set primary, Remove.
-        expect(find.bySemanticsLabel(RegExp(r'Lägg till bild')), findsWidgets);
-        expect(find.bySemanticsLabel(RegExp(r'Ange som primär')), findsWidgets);
-        expect(find.bySemanticsLabel(RegExp(r'Ta bort bild')), findsWidgets);
-        handle.dispose();
-      },
-    );
-
-    testWidgets('image_add_tile — idle empty state exposes add label', (
-      tester,
-    ) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: ImageAddTile(
-            onTap: () {},
-            isLoading: false,
-            maxImages: 5,
-          ),
-        ),
-      );
-
-      final add = find.bySemanticsLabel(RegExp(r'^Lägg till bilder'));
-      expect(add, findsOneWidget);
-      expectNothingAnnouncedTwice(tester, add);
-      expectActivatable(tester, add);
-      handle.dispose();
-    });
-
-    testWidgets('image_add_tile — loading state says it once, as a live '
-        'region', (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: ImageAddTile(onTap: () {}, isLoading: true),
-        ),
-      );
-
-      final loading = find.bySemanticsLabel(RegExp('^Lägger till bild'));
-      expect(loading, findsOneWidget);
-      expect(announcedLines(tester, loading), ['Lägger till bild …']);
-      expectNothingAnnouncedTwice(tester, loading);
-      expect(
-        tester
-            .getSemantics(loading)
-            .getSemanticsData()
-            .flagsCollection
-            .isLiveRegion,
-        isTrue,
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
       'upload_progress_widgets — overlay retry button surfaces retry label',
       (tester) async {
         final handle = tester.ensureSemantics();
@@ -399,40 +326,6 @@ void main() {
         expect(box.border, isNull);
         expect(
           _textColor(tester, find.text('50 % klart')),
-          cs.onSurfaceVariant,
-        );
-      });
-
-      testWidgets('empty state: border.subtle, a plain disc and secondary '
-          'text', (tester) async {
-        await tester.pumpWidget(
-          _themed(theme, const SizedBox(height: 300, child: ImageAddTile())),
-        );
-
-        final frame = tester
-            .widgetList<DecoratedBox>(
-              find.descendant(
-                of: find.byType(ImageAddTile),
-                matching: find.byType(DecoratedBox),
-              ),
-            )
-            .map((d) => d.decoration)
-            .whereType<BoxDecoration>()
-            .firstWhere(
-              (d) => d.border != null && d.shape == BoxShape.rectangle,
-            );
-        expect((frame.border! as Border).top.color, cs.outlineVariant);
-
-        final disc = _fillAround(
-          tester,
-          find.byWidgetPredicate(
-            (w) => w is ButleryIcon && w.icon == ButleryIcons.camera,
-          ),
-        );
-        expect(disc.shape, BoxShape.circle);
-        expect(disc.color, cs.surface);
-        expect(
-          _textColor(tester, find.textContaining('upp till 5 bilder')),
           cs.onSurfaceVariant,
         );
       });

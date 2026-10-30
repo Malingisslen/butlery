@@ -33,6 +33,7 @@ import {
 } from "./moderation-notices";
 import { applyReversal, readReversal, ReversalEffects } from "./appeal-reversal";
 import { stageModerationAudit } from "./decision-revision";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "answerAppeal";
 
@@ -85,7 +86,7 @@ export async function handleAnswerAppeal(
 export const answerAppeal = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) => {

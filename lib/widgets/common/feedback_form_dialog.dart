@@ -55,7 +55,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Dialog.fullscreen(
-      // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
+      // A modal: X, never a back arrow (pattern 4).
       child: ButleryPage.undersida(
         ruleUnderBar: false,
         showTabBar: false,
@@ -179,8 +179,8 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 const SizedBox(height: AppDimensions.space16),
               ],
 
-              // The form's one primary action (Skarmar v12 etapp 9
-              // #fbformular, "Skicka"). Sending keeps the name and draws the
+              // The form's one primary action (
+              // "Skicka"). Sending keeps the name and draws the
               // plate line under it, never a spinner in its place (K-06).
               FormButton(
                 key: const ValueKey('feedback.submit'),

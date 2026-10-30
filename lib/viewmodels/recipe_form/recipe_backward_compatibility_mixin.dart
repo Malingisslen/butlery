@@ -229,6 +229,25 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  /// Joins step [index] with the next one; returns the joined text for the undo.
+  String? mergeInstructionWithNext(int index) {
+    final merged = state.instructionsManager.mergeWithNext(index);
+    if (merged != null) notifyListeners();
+    return merged;
+  }
+
+  /// Undoes [mergeInstructionWithNext]; a no-op once the steps have moved.
+  void undoInstructionMerge(
+    int index,
+    String merged,
+    String first,
+    String second,
+  ) {
+    if (state.instructionsManager.splitAt(index, merged, first, second)) {
+      notifyListeners();
+    }
+  }
+
   /// Reorder instruction from [oldIndex] to [newIndex]
   void reorderInstruction(int oldIndex, int newIndex) {
     state.instructionsManager.reorderAt(oldIndex, newIndex);

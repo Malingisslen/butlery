@@ -61,7 +61,7 @@
           "type": "release-notes"
         }
       ],
-      "lastScan": "2026-10-19",
+      "lastScan": "2026-10-26",
       "snapshot": {
         "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "2026-09-07: direct fetch succeeded — new release v8.2.2 (2026-08-26): 'addressed reporting issues in root and hook detection for Android' — a fix to detection-result reporting, not a threshold, attack-coverage, or callback-API change. pubspec.yaml stays PINNED at 8.0.0 (BUT-1218 review). Not filed — bug-fix release, no CVE, no breaking change.",
         "https://github.com/OWASP/owasp-mastg/releases.atom": "2026-09-07: direct fetch succeeded — still v2.0.0 (2026-06-30) as latest, no new release since baseline. No change.",
@@ -103,6 +103,11 @@
           "date": "2026-10-19",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass covering 2026-10-08 to 2026-10-19. No new freeRASP Flutter release found past v8.2.2/8.2.3 (no dated changelog surfaced). No new Dart/pub-ecosystem CVE beyond standing CVE-2026-27704 (Low, already below patched SDK). whisper.cpp still shows v1.9.3 (Aug 20) as latest per secondary trackers — the v1.9.4 mention from the 2026-10-08 cycle not independently reconfirmed this pass; issue #234 still open and current either way. No new issues filed."
+        },
+        {
+          "date": "2026-10-26",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch/WebFetch pass covering 2026-10-19 to 2026-10-26 (weekly janitor sweep, cloud sandbox, no Linear). Security Architect: freeRASP Flutter still shows no release past 8.2.2/8.2.3 with no dated changelog surfaced; no new Dart/pub-ecosystem CVE beyond the standing CVE-2026-27704 (Low, already below patched SDK); whisper.cpp not independently re-checked this cycle. Release/App-Store Compliance: Apple published an Oct 16 2026 App Review Guidelines revision (nonconsensual-intimate-imagery ban, 2.5.19 hidden-features restatement, UGC definition widened to name 'AI content creation apps') -- reviewed and judged NOT material to Butlery today (no nudify/explicit-image feature; existing AI use is recipe-import parsing, not AI content generation); awareness-only, no ticket, consistent with how similar Apple UGC-wording updates were handled on 2026-06-27/2026-08-31. Google Play's Oct 28 2026 Child Safety/Contacts-Permissions items reconfirmed still inapplicable (not a chat app, no broad contacts access); issue #223 remains the live tracked item. No new issues filed this cycle."
         }
       ]
     },
@@ -233,7 +238,7 @@
           "type": "rss"
         }
       ],
-      "lastScan": "2026-10-19",
+      "lastScan": "2026-10-26",
       "snapshot": {
         "https://developer.apple.com/news/rss/news.rss": "2026-09-07: direct WebFetch succeeded — new items since 08-24: Hello Developer Sep2026 (Sep2), Rosetta-for-Intel-macOS deprecation timeline (Sep1, N/A — no macOS/Intel distribution), tax/VAT updates for Morocco/Congo/Tanzania (Aug27, N/A — Butlery pricing unaffected by these specific markets today), Apple Event announcement (Aug26, N/A). No new UGC/age-rating/privacy/DPLA item beyond the already-filed issue #235 (EU business terms/DPLA Attachment 14, still the live gate on the next submission) and issue #215 (age-rating questionnaire). No new material item.",
         "https://developer.apple.com/news/upcoming-requirements/": "2026-09-07: direct WebFetch succeeded — unchanged: SDK minimum (Xcode 26+, since 2026-04-28), age-rating migration (deadline 2026-01-31, passed). No new hard gate.",
@@ -274,6 +279,11 @@
           "date": "2026-10-19",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass covering 2026-10-08 to 2026-10-19. No new Apple App Review Guidelines revision found since the June 8 2026 rewrite (an Oct 14 AppleWorld Today post appears to restate the Feb 2026 UGC language, not a new change). Google Play: the Oct 28 2026 Contacts/Location Permissions and expanded Child Safety Standards (anonymous/random-chat) policies confirmed still inapplicable — Butlery is not a chat app and does not request broad contacts access; Android Developer Verification (Sep 30 2026) remains tracked as issue #223. No new material item beyond issues #215/#220/#223/#235."
+        },
+        {
+          "date": "2026-10-26",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch/WebFetch pass covering 2026-10-19 to 2026-10-26 (weekly janitor sweep, cloud sandbox, no Linear). Security Architect: freeRASP Flutter still shows no release past 8.2.2/8.2.3 with no dated changelog surfaced; no new Dart/pub-ecosystem CVE beyond the standing CVE-2026-27704 (Low, already below patched SDK); whisper.cpp not independently re-checked this cycle. Release/App-Store Compliance: Apple published an Oct 16 2026 App Review Guidelines revision (nonconsensual-intimate-imagery ban, 2.5.19 hidden-features restatement, UGC definition widened to name 'AI content creation apps') -- reviewed and judged NOT material to Butlery today (no nudify/explicit-image feature; existing AI use is recipe-import parsing, not AI content generation); awareness-only, no ticket, consistent with how similar Apple UGC-wording updates were handled on 2026-06-27/2026-08-31. Google Play's Oct 28 2026 Child Safety/Contacts-Permissions items reconfirmed still inapplicable (not a chat app, no broad contacts access); issue #223 remains the live tracked item. No new issues filed this cycle."
         }
       ]
     }

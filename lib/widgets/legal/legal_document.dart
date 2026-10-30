@@ -1,6 +1,6 @@
 // lib/widgets/legal/legal_document.dart
 //
-// The document reader as the sketch draws it (Skärmar v12 #juridik): the date
+// The document reader as the sketch draws it: the date
 // and version line, a table of contents whose rows scroll to the sections,
 // the sections, and a foot of links. The privacy policy, the terms and the
 // community guidelines share it, so they cannot drift apart.
@@ -72,8 +72,6 @@ class _LegalDocumentState extends State<LegalDocument> {
         vertical: AppDimensions.space16,
       ),
       // Offline, web links cannot open, so they turn inactive and say why
-      // (Grafisk manual v6:665 'åtgärder som kräver nät blir inaktiva med
-      // förklarande text').
       child: SelectionArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

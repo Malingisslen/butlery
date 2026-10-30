@@ -116,7 +116,7 @@ function fakeAuth(existing) {
       [],
       ["--project"],
       ["--project", ""],
-      ["--project", "butlery-app-1"],
+      ["--project", "butlery-prod"],
       ["--project", "demo-butlery"],
       ["--project", "butlery-app-staging-2"],
     ]) {
@@ -131,15 +131,15 @@ function fakeAuth(existing) {
   await test("target check: an environment or key naming production is refused", () => {
     const argv = ["--project", STAGING];
     assert.throws(
-      () => checkStagingTarget({ argv, env: { GCLOUD_PROJECT: "butlery-app-1" } }),
+      () => checkStagingTarget({ argv, env: { GCLOUD_PROJECT: "butlery-prod" } }),
       /GCLOUD_PROJECT/,
     );
     assert.throws(
-      () => checkStagingTarget({ argv, env: { GOOGLE_CLOUD_PROJECT: "butlery-app-1" } }),
+      () => checkStagingTarget({ argv, env: { GOOGLE_CLOUD_PROJECT: "butlery-prod" } }),
       /GOOGLE_CLOUD_PROJECT/,
     );
     const readFile = keyFiles({
-      "prod.json": JSON.stringify({ type: "service_account", project_id: "butlery-app-1" }),
+      "prod.json": JSON.stringify({ type: "service_account", project_id: "butlery-prod" }),
       "staging.json": JSON.stringify({ type: "service_account", project_id: STAGING }),
     });
     assert.throws(
@@ -149,7 +149,7 @@ function fakeAuth(existing) {
           env: { GOOGLE_APPLICATION_CREDENTIALS: "prod.json" },
           readFile,
         }),
-      /key for "butlery-app-1"/,
+      /key for "butlery-prod"/,
     );
     assert.strictEqual(
       checkStagingTarget({
@@ -164,7 +164,7 @@ function fakeAuth(existing) {
   await test("the script refuses before initializing anything", () => {
     for (const [args, reason] of [
       [[], /REFUSED: pass the target explicitly/],
-      [["--project", "butlery-app-1"], /REFUSED: "butlery-app-1" is not a project/],
+      [["--project", "butlery-prod"], /REFUSED: "butlery-prod" is not a project/],
       [["--project", "demo-butlery"], /REFUSED: "demo-butlery" is not a project/],
       [["--project", ""], /REFUSED: --project was given without a project id/],
     ]) {
@@ -180,7 +180,7 @@ function fakeAuth(existing) {
 
   await test("the script refuses staging when GCLOUD_PROJECT names production", () => {
     const run = runScript(["--project", STAGING], {
-      GCLOUD_PROJECT: "butlery-app-1",
+      GCLOUD_PROJECT: "butlery-prod",
       STAGING_TEST_PASSWORD: "long-enough-password",
     });
     assert.strictEqual(run.status, 1);

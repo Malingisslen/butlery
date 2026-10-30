@@ -173,7 +173,7 @@ class RecipeFormViewModel extends BaseViewModel
     WidgetsBinding.instance.addObserver(this);
 
     // P6-U05: a shared recipe's editor follows the live role, so a drop to
-    // read-only is seen while the form is open (flows-roles-budget.md:83).
+    // read-only is seen while the form is open.
     if (initialRecipe != null && !isTemplate) {
       _editAccessSub = _permissionManager
           .watchCanEdit(initialRecipe)
@@ -215,7 +215,7 @@ class RecipeFormViewModel extends BaseViewModel
 
   /// Hands the snapshot's lines to the review and empties each editor line
   /// the reader could not read: the line is shown empty and marked, never as
-  /// guessed text (flows-roles-budget.md). The snapshot's rows are the
+  /// guessed text. The snapshot's rows are the
   /// non-empty lines of [recipe], in order; a snapshot that no longer matches
   /// them is not shown, so a mismatch can never empty the wrong line.
   void _showImportReview(Recipe recipe, ParsedRecipe parsed) {
@@ -316,6 +316,7 @@ class RecipeFormViewModel extends BaseViewModel
   }
 
   String get title => _state.title;
+  int get restoreRevision => _state.restoreRevision;
   String get description => _state.description;
   String get mealType => _state.mealType;
   int? get portions => _state.portions;
@@ -363,7 +364,7 @@ class RecipeFormViewModel extends BaseViewModel
     return _confirmedParseRows.contains(row);
   }
 
-  /// Confirms a low- or failed-confidence row (flows-roles-budget.md:61).
+  /// Confirms a low- or failed-confidence row.
   void confirmParseRow(ParsedIngredient row) {
     _syncConfirmedParseRows();
     if (_confirmedParseRows.add(row)) notifyListeners();
@@ -371,7 +372,7 @@ class RecipeFormViewModel extends BaseViewModel
 
   /// Low- and failed-confidence rows still waiting for confirmation. Spara
   /// stays disabled while this is above zero, and the view says how many
-  /// are left (flows-roles-budget.md:61; Q-P6-E03).
+  /// are left (Q-P6-E03).
   int get pendingParseConfirmations {
     _syncConfirmedParseRows();
     final rows = parsedIngredients;
@@ -522,7 +523,7 @@ class RecipeFormViewModel extends BaseViewModel
     notifyListeners();
   }
 
-  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
+  /// Q6-08 = A (produktbeslut 2026-09-27): the
   /// owner of the recipe being edited when it is someone else's. Set once,
   /// from the recipe's owner id, when the form opens.
   String? _suggestionOwnerId;
@@ -589,7 +590,6 @@ class RecipeFormViewModel extends BaseViewModel
         await _state.clearCurrentDraft();
       } catch (e) {
         // The suggestion is kept; a draft left behind expires on its own
-        // (produktregler.md:170).
         AppLogger.warning('Suggestion sent, draft not cleared: $e');
       }
       return edited;
@@ -652,7 +652,6 @@ class RecipeFormViewModel extends BaseViewModel
   }
 
   /// "Släng" in the draft question: the only choice that deletes a draft
-  /// (produktregler.md:171-172).
   Future<void> discardDrafts(Iterable<String> draftIds) {
     return _state.discardDrafts(draftIds);
   }

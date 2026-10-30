@@ -117,20 +117,15 @@ class _VeckomenyCookingSessionCardState
 }
 
 /// The week while it is being planned: the plate line with text, never the
-/// animated pea pod (ux-beslut.json D-03; produktregler.md:163, :304;
-/// beslutslogg.md:25 B-18).
+/// animated pea pod
 ///
-/// Skarmar v12 del 1 #veckogenererarpanel draws a panel with a 1 px
-/// text.primary border: the step in 13/700, the indeterminate plate line,
-/// and a line on what is being done. There is no "Fortsätt i bakgrunden":
-/// D-03 removes the long-wait state, so generation stays here until it is
+/// There is no "Fortsätt i bakgrunden":
+/// generation stays here until it is
 /// done. The line is a live region, so the status is read without moving
-/// focus (#veckogenererarpanel: "Statusen annonseras utan fokusbyte").
+/// focus.
 ///
 /// After [slowAfter] (6 s) the status line changes to "Det tar längre tid än
-/// vanligt" in the same view (flows-roles-budget.md:33;
-/// fas2/block288-uxfrysning.json TR::FLOW::01::genererar::6-10-s REQUIRED;
-/// ux-beslut.json D-03, "$bevarat").
+/// vanligt" in the same view
 class VeckomenyGeneratingOverlay extends StatefulWidget {
   const VeckomenyGeneratingOverlay({
     super.key,
@@ -198,8 +193,7 @@ class _VeckomenyGeneratingOverlayState
                   ? context.l10n.weekMenuPlanningSlow
                   : context.l10n.menuGeneratingSubtitle,
               key: const ValueKey('veckomeny-generating-status'),
-              // #veckogenererarpanel draws the status in text.body (#37453A
-              // light, #F5F4ED dark). No scheme slot carries text.body; the
+              // No scheme slot carries text.body; the
               // dark value is onSurface exactly and light is the nearer ink.
               style: AppTextStyles.captionBase.copyWith(color: cs.onSurface),
             ),
@@ -213,16 +207,8 @@ class _VeckomenyGeneratingOverlayState
 /// P6-U01: the week menu's Generera, switched off offline with the reason
 /// in text.
 ///
-/// produktregler.md:1131 and flows-roles-budget.md:34 ("genererar | offline
-/// | avbrutet + banner, tidigare vecka orörd"; fas2/block288-uxfrysning.json
-/// TR::FLOW::01::genererar::offline REQUIRED): offline does not lock the
-/// calendar, only generation is switched off, and the reason is said in
-/// plain words next to the switched-off button, never by the button's look
-/// alone. The offline banner above the view (LayoutComponents
-/// .offlineIndicator) is the "banner" of the flow.
-///
 /// While the week is planned it keeps its shape and gets the plate line along
-/// its bottom edge (Komponentark v1:372).
+/// its bottom edge.
 class VeckomenyGenerateButton extends StatelessWidget {
   const VeckomenyGenerateButton({
     super.key,

@@ -87,7 +87,10 @@ void main() {
   // same way `_buildReservedSet` does, so subtracting them from ReservedTags.all
   // leaves exactly the hand-maintained auto-generated subset.
   final configDerived = <String>{
-    for (final e in DietaryConfig.all) e.tagSv.toLowerCase(),
+    for (final e in DietaryConfig.all) ...[
+      e.tagSv.toLowerCase(),
+      e.key.toLowerCase(),
+    ],
     for (final e in AllergenConfig.all) ...[
       e.containsTag.toLowerCase(),
       if (e.freeTag != null) e.freeTag!.toLowerCase(),
@@ -157,6 +160,12 @@ void main() {
       expect(ReservedTags.isReserved('Kyckling'), isTrue); // case-insensitive
       // A name no phase emits stays available for personal tags.
       expect(ReservedTags.isReserved('mormors-favorit'), isFalse);
+    });
+
+    test('the beef-free tag is reserved in both spellings', () {
+      // The stored dietary key keeps the old spelling; the shown tag is new.
+      expect(ReservedTags.isReserved('nötköttsfri'), isTrue);
+      expect(ReservedTags.isReserved('nötkötsfri'), isTrue);
     });
   });
 }

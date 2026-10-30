@@ -19,6 +19,9 @@ jobs:
     name: Read-only counts
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      id-token: write
     env:
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 15
@@ -38,23 +41,25 @@ jobs:
         working-directory: functions
         run: npm ci
 
-      - name: Authenticate
+      # Short-lived token from Workload Identity Federation, no stored key. The
+      # action exports GOOGLE_APPLICATION_CREDENTIALS for firebase and
+      # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE for gcloud.
+      - name: Authenticate to Google Cloud (WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — project matches the environment
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
-            exit 1
-          fi
           # The environment's variable, the `.firebaserc` production alias and
-          # the key must all name the same project before anything runs.
+          # the WIF token must all name the same project before anything runs.
           [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
-          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
-            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
-          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
-            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ]             || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ]             || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'." >&2; exit 1; }
           echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
 
       - name: "BUT-2278, BUT-2260 and BUT-2332: minor profiles, recipe cache, group owners"
@@ -64,7 +69,6 @@ jobs:
       - name: "BUT-2031: onUserDeleted social cleanup failures"
         run: |
           set -uo pipefail
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
           # Only timestamps are read; the message text names the deleted user.
           if out=$(gcloud logging read '"Social cleanup failed for user"' \
                 --project "$FIREBASE_PROJECT_ID" --freshness=3650d \
@@ -85,7 +89,6 @@ jobs:
       - name: "BUT-1814: maintenance chain task durations, last 30 days"
         run: |
           set -uo pipefail
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
           # These log lines carry chain, task, durationMs and error codes only.
           if gcloud logging read \
                 'jsonPayload.message=("maintenance.task_complete" OR "maintenance.task_failed" OR "maintenance.task_skipped" OR "maintenance.chain_complete")' \

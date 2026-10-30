@@ -379,6 +379,23 @@ void main() {
 
       expect(items.map((i) => i.id), ['new', 'mid', 'old']);
     });
+
+    test('a row that cannot be read is left out, and the rest are '
+        'still offered', () async {
+      await trashOf(_me)
+          .doc('ok')
+          .set(
+            TrashItem.fromRecipe(_ownRecipe('ok'), ownerId: _me).toFirestore(),
+          );
+      await trashOf(_me).doc('broken').set({
+        'deletedAt': Timestamp.fromDate(clock.now()),
+        'ownerId': _me,
+      });
+
+      final items = await repository.listTrash();
+
+      expect(items.map((i) => i.id), ['ok']);
+    });
   });
 
   group('deleteForever and emptyTrash', () {

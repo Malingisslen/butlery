@@ -1,13 +1,13 @@
 // lib/widgets/common/navigation/adaptive_navigation.dart
 //
-// PQ-17 = A (fas2/produktbeslut-2026-09-23.json): the shell has four
-// destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till"
-// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667).
+// PQ-17 = A: the shell has four
+// destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till".
 // The bar, the plus and the rail live in butlery_bottom_navigation.dart.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -25,11 +25,17 @@ export 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
 /// Whether the shell draws the rail rather than the bottom row:
 /// "Skena vid bredd ≥ 768 OCH höjd ≥ 500. Under 500 px höjd gäller en spalt
-/// och bottenrad oavsett bredd" (produktregler.md:1054).
+/// och bottenrad oavsett bredd".
 bool useNavigationRail(Size size) =>
     size.width >= Breakpoints.tablet && size.height >= _railMinHeight;
 
 const double _railMinHeight = 500;
+
+// Hem is `/`, i.e. MaterialApp.home: replacing a route with it would build a
+// second copy of the app's start screen, so Hem unwinds to the existing one.
+void _open(BuildContext context, String route) => route == Routes.home
+    ? AppActions.returnToHome(Navigator.of(context, rootNavigator: true))
+    : Navigator.pushReplacementNamed(context, route);
 
 /// The shell's scaffold: the bottom row on a phone, the rail from 768 dp.
 ///
@@ -101,8 +107,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           );
         }
 
-        // The rail is read after the content, as the bottom row is
-        // (tillganglighetshandoff 'Navigation & toppfält').
+        // The rail is read after the content, as the bottom row is.
         return Scaffold(
           appBar: appBar,
           body: Row(
@@ -140,7 +145,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     }
     // Don't navigate if already on that page
     if (index == currentIndex) return;
-    Navigator.pushReplacementNamed(context, items[index].route);
+    _open(context, items[index].route);
   }
 }
 
@@ -167,10 +172,8 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   });
 
   /// The shell's four destinations, in the drawn order Hem · Meny · Inköp ·
-  /// Mer (tillganglighetshandoff 'Navigation & toppfält'; Skarmar v12 del 1
-  /// #hemrecept). "Lägg till" is not among them: it is the separate plus
-  /// (produktregler.md:1056). Labels are capitalised as drawn (Komponentark
-  /// v1:663-666; NAV-INK); the tab says "Meny", not "Veckomeny" (B-17).
+  /// Mer
+  /// "Lägg till" is not among them: it is the separate plus
   static List<AdaptiveNavigationItem> getNavigationItems(
     BuildContext context,
   ) => [
@@ -194,7 +197,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMore,
-      // Three lines, as drawn (Komponentark v1:666).
+      // Three lines, as drawn.
       icon: ButleryIcons.navMore,
       activeIcon: ButleryIcons.navMore,
       route: Routes.more,
@@ -312,7 +315,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
                     if (onNavigationChanged != null) {
                       onNavigationChanged!(index);
                     } else {
-                      Navigator.pushReplacementNamed(context, item.route);
+                      _open(context, item.route);
                     }
                   },
                 ),

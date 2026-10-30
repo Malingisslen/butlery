@@ -68,7 +68,6 @@ void main() {
       expect(offered, contains(viewModel.mealType));
       expect(RecipeFormState.mealTypes, containsAll(offered));
 
-      // Komponentark v1 §11: each review field's label stands above its box.
       for (final (label, type) in [
         ('Receptnamn *', TextFormField),
         ('Beskrivning', TextFormField),

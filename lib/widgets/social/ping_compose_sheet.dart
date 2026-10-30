@@ -256,10 +256,6 @@ class _TypeChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final fg = selected ? cs.onPrimary : cs.onPrimaryContainer;
     final bg = selected ? cs.primary : cs.surfaceContainer;
-    // Komponentark v1:141-142 and the dark matrix v1:523: a chip at rest
-    // has a border.control edge (outline); a chosen chip is an ink fill
-    // with paper text, edged in text.primary (onSurface), which is the
-    // paper edge the dark drawing gives it and invisible ink-on-ink in light.
     final border = selected ? cs.onSurface : cs.outline;
 
     return Semantics(
@@ -347,7 +343,7 @@ class _SendButton extends StatelessWidget {
         onTap: enabled ? onPressed : null,
         // Sending keeps the name; the plate line runs along the button's
         // bottom edge in its own text colour, never a spinner in its place
-        // (Komponentark v1:365, :372). The line is laid over the edge, so the
+        // The line is laid over the edge, so the
         // button keeps its height.
         child: Stack(
           children: [

@@ -3,9 +3,6 @@
 // HEM-HERO (package 6): Hem's greeting and tonight band above the recipe
 // library, scrolling as one.
 //
-//   Skarmar v12 del 1 #hemrecept (:124-150): "hälsning + ikväll överst,
-//       receptbiblioteket direkt under".
-//
 // The header sits in a NestedScrollView and the library in its body. The
 // library's scrollable must attach to the PrimaryScrollController the
 // NestedScrollView provides (primary: true, no controller of its own):

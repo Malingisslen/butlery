@@ -137,7 +137,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   bool _editAccessLost = false;
 
   /// The role on this list dropped to read-only while it was open
-  /// (flows-roles-budget.md:83, :132). The view says why once and calls
+  /// The view says why once and calls
   /// [consumeEditAccessLost]; the add field is already gone, because it is
   /// drawn only while [canEdit] holds.
   bool get editAccessLost => _editAccessLost;

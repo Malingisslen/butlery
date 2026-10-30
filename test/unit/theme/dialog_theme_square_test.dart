@@ -1,6 +1,6 @@
 /// BUT-1237 and P7-U04: pins the global dialog contract. The shape takes
-/// the control radius, 8 (Komponentark v1:336 draws the dialog box with
-/// border-radius 8px; tokens.json space.radius.control). Dialogs inherit it
+/// the control radius, 8
+/// (tokens.json space.radius.control). Dialogs inherit it
 /// from the theme; no dialog sets its own `shape:`.
 library;
 
@@ -24,9 +24,7 @@ void main() {
         expect(
           shape.borderRadius,
           const BorderRadius.all(Radius.circular(8)),
-          reason:
-              'Komponentark v1:336 ($brightness): the dialog box is drawn '
-              'with border-radius 8px.',
+          reason: '($brightness): the dialog box has border-radius 8px.',
         );
       }
     });
@@ -39,7 +37,7 @@ void main() {
         theme.backgroundColor,
         cs.surface,
         reason:
-            'Mockup spec §4.17: dialog box renders on cream — '
+            'dialog box renders on cream — '
             'cs.surface maps to cream in the app light scheme.',
       );
     });

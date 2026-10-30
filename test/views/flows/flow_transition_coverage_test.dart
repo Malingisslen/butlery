@@ -1,8 +1,8 @@
 /// P8-U03: the census of the 81 REQUIRED flow transitions stays true.
 ///
 /// Sources: test/fixtures/design/block288-uxfrysning.json overgangar and its
-/// BINDNING.TRANSITION_SET_HASH, flows-roles-budget.md flows 01-08, and
-/// fas2/ux-beslut.json D-03 and D-04. The census is
+/// BINDNING.TRANSITION_SET_HASH
+/// The census is
 /// test/fixtures/design/transition_census.json.
 ///
 /// It checks:
@@ -212,7 +212,7 @@ void main() {
       File('test/views/flows/flow_01_transitions_test.dart').readAsStringSync(),
     );
     // D-03: no long-wait state and no "Fortsätt i bakgrunden".
-    expect(flow01, contains('ux-beslut D-03: no long wait and no background'));
+    expect(flow01, contains('no long wait and no background'));
     expect(flow01, contains("find.textContaining('bakgrund'), findsNothing"));
     // D-04: no undo on the result, and the receipt's way back is Ändra.
     expect(flow01, contains('D-04: no undo on the result'));

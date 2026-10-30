@@ -208,8 +208,8 @@ void main() {
   });
 
   // P5-U02 (auth-otp ERROR): a failed resend is the three-part inline error
-  // (content-style-guide.md:87-97) in a live region with the alert role
-  // (Butlery tillganglighetshandoff.dc.html:156, :172). The service's own
+  // (content-style-guide.md) in a live region with the alert role.
+  // The service's own
   // text is never shown on its own.
   group('a failed resend', () {
     Future<void> failResend(

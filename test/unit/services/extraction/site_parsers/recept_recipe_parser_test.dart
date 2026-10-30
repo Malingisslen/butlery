@@ -266,6 +266,61 @@ void main() {
         expect(recipe['difficulty'], equals('Enkel'));
         expect(recipe['category'], equals('Frukost'));
       });
+
+      test('prefers the recept-image picture over the hero fallback', () {
+        const html = '''
+<html>
+<body>
+  <h1 class="recipe-title">Test Recipe</h1>
+  <div class="recipe-hero"><img src="https://example.com/hero.jpg"></div>
+  <div class="recept-image"><img src="https://example.com/recept.jpg"></div>
+  <ul class="ingredient-list">
+    <li>Ingredient 1</li>
+    <li>Ingredient 2</li>
+    <li>Ingredient 3</li>
+  </ul>
+  <ol class="recipe-instructions">
+    <li>Step 1</li>
+    <li>Step 2</li>
+  </ol>
+</body>
+</html>
+''';
+
+        final recipe = parser.parseRecipe(html);
+
+        expect(recipe, isNotNull);
+        expect(recipe!['image'], equals('https://example.com/recept.jpg'));
+      });
+
+      test(
+        'prefers the recept-portions count over the shared servings fallback',
+        () {
+          const html = '''
+<html>
+<body>
+  <h1 class="recipe-title">Test Recipe</h1>
+  <span class="recipe-servings">2</span>
+  <span class="recept-portions">6 portioner</span>
+  <ul class="ingredient-list">
+    <li>Ingredient 1</li>
+    <li>Ingredient 2</li>
+    <li>Ingredient 3</li>
+  </ul>
+  <ol class="recipe-instructions">
+    <li>Step 1</li>
+    <li>Step 2</li>
+  </ol>
+</body>
+</html>
+''';
+
+          final recipe = parser.parseRecipe(html);
+
+          expect(recipe, isNotNull);
+          expect(recipe!['recipeYield'], equals('6 portioner'));
+        },
+      );
     });
 
     // ============================================================================

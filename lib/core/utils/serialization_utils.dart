@@ -1,6 +1,7 @@
 /// Serialization utilities for safe data transformation
 
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SerializationUtils {
   SerializationUtils._(); // Private constructor - utility class
@@ -95,7 +96,7 @@ class SerializationUtils {
   // Date/time serialization
 
   /// Parse a raw dynamic value to DateTime.
-  /// Handles: DateTime, String (ISO), int (epoch millis), Timestamp (duck-typed),
+  /// Handles: DateTime, String (ISO), int (epoch millis), Timestamp,
   /// Map with seconds/nanoseconds keys (Firestore raw + JS SDK _seconds variant).
   static DateTime? parseDateTimeValue(dynamic value) {
     if (value == null) return null;
@@ -103,14 +104,9 @@ class SerializationUtils {
     if (value is String) return DateTime.tryParse(value);
     if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
 
-    // Firebase Timestamp (duck-typed to avoid cloud_firestore import)
-    if (value.runtimeType.toString() == 'Timestamp') {
-      try {
-        return (value as dynamic).toDate() as DateTime;
-      } catch (_) {
-        return null;
-      }
-    }
+    // A type test, not a class-name compare: release builds are obfuscated and
+    // rename Timestamp, so a name compare silently parsed every date to null.
+    if (value is Timestamp) return value.toDate();
 
     // Raw Firestore Map {seconds, nanoseconds} or JS SDK {_seconds, _nanoseconds}
     if (value is Map) {

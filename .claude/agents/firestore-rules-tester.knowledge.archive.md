@@ -6316,3 +6316,10 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Regex now pins `butlery-app-(1|staging).firebasestorage.app`; the `is string` conjunct is gone. Runs (real rules): conversations 181/181, poll-votes 62/62, cook-snaps-and-message-mod 51/51.
 - imgnull mutant: 180/181, killing only "a picture cannot be re-pointed even after the sender re-arms the placeholder flag".
 - Bucket mutant `butlery-app-(1|staging)` -> `[A-Za-z0-9._-]+` (suffix `.firebasestorage.app` kept): 181/181, NOT killed. The foreign-bucket test uses `evil-bucket.appspot.com`, which fails the kept suffix either way. JS regex check: `evil-proj.firebasestorage.app` false on real, true on the mutant.
+
+## 2026-10-26 — BUT-2452 `signup_allowlist/{email}` commit-gate review (read-only, no probes)
+- Suite `signup-allowlist-rules.test.ts` 20/20 under `firebase emulators:exec --only firestore --project demo-test` (no emulator was up on 8080).
+- Admin data-conjunct denies (forged invitedBy, client-clock invitedAt, past/31-day/non-timestamp expireAt) print `evaluation error at L4312:24` (the `allow create` expression start), not `false`; the id-shape denies print `false`. Not investigated; each such deny differs from the ALLOW control in one payload field, so attribution rests on that, not on the text.
+- Masked by construction, not probed: `email == email.trim()` beside a regex excluding `\s` (ASCII whitespace); `hasAll` beside per-key `==`/`is timestamp` conjuncts; `expireAt is timestamp` beside timestamp comparisons that CEL-error on other types.
+- Regex sub-parts with no deny: domain without a dot (`a@example`), two `@`.
+- Map row for this suite NOT added to the core card: card at 14,993 chars of 15,000; adding it needs a principle moved to a chapter first.

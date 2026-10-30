@@ -25,7 +25,7 @@ class DraftMetadata {
 
   /// The account that wrote the draft, or null for a draft written before
   /// drafts carried an owner. Drafts live on the device, not on the account
-  /// (produktregler.md:169), and an automatic sign-out keeps them (PQ-12 = A),
+  /// and an automatic sign-out keeps them (PQ-12 = A),
   /// so a draft is only offered to the account that wrote it.
   final String? ownerId;
 
@@ -60,12 +60,11 @@ class DraftMetadata {
   );
 
   /// When the draft stops being resumable: 30 days after the last change
-  /// (ux-beslut.json D-01; produktregler.md:170).
   DateTime get expiresAt =>
       lastModifiedAt.add(RecipeFormAutoSaveManager.draftLifetime);
 
   /// How long the draft is still kept. The list says this rather than when
-  /// the draft was written (Skarmar v12 etapp 4 #editorutkastval).
+  /// the draft was written.
   Duration get timeLeft {
     final left = expiresAt.difference(clock.now());
     return left.isNegative ? Duration.zero : left;
@@ -96,16 +95,15 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
 
   /// One filled field is enough: "Utkastet persisteras från det första
   /// tecken användaren skriver. Ingen tidsgräns och inget krav på ifyllda
-  /// fält får fördröja den första persisteringen" (ux-beslut.json D-02).
+  /// fält får fördröja den första persisteringen".
   static const int _minFieldsForAutoSave = 1;
 
-  /// Five slots per account (produktregler.md:790; D-01 changed only the
+  /// Five slots per account (D-01 changed only the
   /// lifetime).
   static const int maxDrafts = 5;
 
   /// "Ett påbörjat recept är återupptagbart i 30 dagar sedan senaste
-  /// ändring" (ux-beslut.json D-01, superseding the 24 h of
-  /// produktregler.md:790).
+  /// ändring"
   static const Duration draftLifetime = Duration(days: 30);
 
   final String? Function() _ownerIdProvider;
@@ -125,8 +123,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   /// drafts on the same device stay: it may have kept them through its own
   /// automatic sign-out (PQ-12 = A).
   ///
-  /// Called on an explicit sign-out only (produktregler.md:171; PQ-12 = A in
-  /// produktbeslut-2026-09-23.json: an automatic sign-out keeps drafts).
+  /// Called on an explicit sign-out only (PQ-12 = A:
+  /// an automatic sign-out keeps drafts).
   /// Best-effort: logs and never throws, so a sign-out cannot fail on it.
   static Future<void> clearDraftsFor(String? ownerId) async {
     try {

@@ -2,10 +2,7 @@
 /// the other routes.
 ///
 /// Sources: content-style-guide.md:87-97 (what happened, what was kept, what
-/// you can do; never OK), produktregler.md:555-561 (9.2: Fel carries
-/// availableStrategies and the list is drawn; Kvot slut draws its suggested
-/// action, not "försök senare"), Skarmar v12 etapp 4 import #impinget ("Andra
-/// vägar till samma recept").
+/// you can do; never OK)
 library;
 
 import 'package:flutter/material.dart';
@@ -85,8 +82,8 @@ void main() {
         expect(find.text(_sv.importAddManually), findsOneWidget);
         expect(find.text('OK'), findsNothing);
 
-        // The outlined routes as drawn (Skarmar v12 etapp 4 import:27-28,
-        // --text-kontroll-a / --ram-kontroll-a): #24382C text and outline in
+        // The outlined routes as drawn
+        // #24382C text and outline in
         // light; in dark a paper outline at 40 % (overlay.paperWash)
         // and paper text (text.primary). Never primary on the dark surface,
         // which is 1.3:1.
@@ -186,7 +183,7 @@ void main() {
 
   group('a quota stop', () {
     testWidgets('draws its suggested action, and no "Försök senare" unless '
-        'that is the suggestion (produktregler.md:560)', (tester) async {
+        'that is the suggestion', (tester) async {
       await tester.pumpWidget(
         _app(
           RateLimitDialog(

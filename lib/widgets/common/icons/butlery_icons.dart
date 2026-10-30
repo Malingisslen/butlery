@@ -3,7 +3,7 @@
 
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
-/// The Butlery icon family (beslutslogg.md:9, B-02).
+/// The Butlery icon family.
 ///
 /// Render with `ButleryIcon`, never with a plain `Icon`.
 abstract final class ButleryIcons {
@@ -1111,7 +1111,7 @@ abstract final class ButleryIcons {
     name: 'nav-add',
     meaning: 'nav-add',
     svg:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">\n  <title>nav-add</title>\n  <path d="M80 43v74M43 80h74"></path>\n</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round">\n  <title>nav-add</title>\n  <path d="M80 43v74M43 80h74"></path>\n</svg>',
   );
 
   /// `nav-shopping`: nav-shopping.

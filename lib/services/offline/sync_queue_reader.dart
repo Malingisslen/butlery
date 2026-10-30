@@ -5,8 +5,7 @@
 // no offline queue (sync_queue_reader_web.dart).
 //
 // P6-U08b: schema 4's retry time, and the two actions a permanent failure
-// gains: "Spara som kopia" (produktregler.md:188) and "Försök mindre"
-// (Skarmar v12 del 4 #synkko).
+// gains: "Spara som kopia" and "Försök mindre"
 library;
 
 import 'dart:convert';
@@ -77,7 +76,7 @@ Future<List<QueuedChange>> readQueuedChanges(
   final titles = await _recipeTitles(db, userId, recipeIds);
 
   // An entry waits on an earlier one when one of its dependsOn opIds is still
-  // in either queue (produktregler.md:187).
+  // in either queue.
   final queuedIds = <String>{
     for (final row in syncRows) row.opId,
     for (final row in uploadRows) row.id,
@@ -168,9 +167,9 @@ Future<void> retryQueuedChange(
 }
 
 /// "Släng ändringen", chosen by the user and not undone within the Ångra
-/// window (produktregler.md:132, class 1). What depended on the change can
+/// window (class 1). What depended on the change can
 /// never be sent without it, so its dependants are marked as failed and stay
-/// for her to decide on ("aldrig halvvägs", produktregler.md:187). Only the
+/// for her to decide on ("aldrig halvvägs"). Only the
 /// chosen entry itself goes.
 ///
 /// One transaction: either the chain is marked and the entry is gone, or
@@ -283,7 +282,7 @@ Future<void> _deleteQuietly(String path) async {
 }
 
 /// The recipe-image budget: "Receptbild, komprimerad ≤ 250 kB, långsida
-/// ≤ 1600 px" (flows-roles-budget.md:143).
+/// ≤ 1600 px".
 const int kRecipeImageMaxBytes = 250 * 1024;
 const int kRecipeImageMaxSide = 1600;
 
@@ -305,7 +304,7 @@ typedef ImageShrinker = Future<Uint8List?> Function(String path);
 }
 
 /// Whether [bytes] is an image within the recipe-image budget: at most
-/// 250 kB and a long side of at most 1600 px (flows-roles-budget.md:143).
+/// 250 kB and a long side of at most 1600 px.
 bool fitsRecipeImageBudget(Uint8List bytes) {
   if (bytes.length > kRecipeImageMaxBytes) return false;
   final size = recipeImageSize(bytes);

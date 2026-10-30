@@ -53,9 +53,6 @@ class FeatureFlagService {
     'enable_friend_category_subcollection': false,
     'max_inline_category_members': 50,
     'enable_activity_visibility_enum': true,
-    'enable_permission_caching': false,
-    'permission_cache_ttl_seconds': 300,
-    'permission_cache_max_size': 1000,
 
     // Operational Flags
     // BUT-1560: `audit_log_retention_days` removed — it was a dead RC default (90)
@@ -495,9 +492,6 @@ abstract final class FeatureFlags {
       'enable_friend_category_subcollection';
   static const maxInlineCategoryMembers = 'max_inline_category_members';
   static const enableActivityVisibilityEnum = 'enable_activity_visibility_enum';
-  static const enablePermissionCaching = 'enable_permission_caching';
-  static const permissionCacheTtlSeconds = 'permission_cache_ttl_seconds';
-  static const permissionCacheMaxSize = 'permission_cache_max_size';
 
   // Operational Flags
   // BUT-1560: `auditLogRetentionDays` removed — see the defaults map above. Audit

@@ -301,7 +301,12 @@ class FormFieldsManager {
     if (from == to) return;
     final item = _values.removeAt(from);
     _values.insert(to, item);
-    // Clear cached controllers so they rebuild with correct indices.
+    _resetControllers();
+  }
+
+  // Controllers are keyed by index, and the getter would otherwise rewrite a
+  // shifted controller's text during build, which notifies mid-build.
+  void _resetControllers() {
     for (final entry in _controllers.entries) {
       final listener = _controllerListeners[entry.key];
       if (listener != null) entry.value.removeListener(listener);
@@ -309,6 +314,31 @@ class FormFieldsManager {
     }
     _controllers.clear();
     _controllerListeners.clear();
+  }
+
+  /// Joins the line at [index] with the one after it and returns the joined
+  /// text, or null when there is no next line. An empty side just drops out.
+  String? mergeWithNext(int index) {
+    if (index < 0 || index + 1 >= _values.length) return null;
+    final merged = [
+      _values[index].trim(),
+      _values[index + 1].trim(),
+    ].where((s) => s.isNotEmpty).join(' ');
+    _values[index] = merged;
+    _values.removeAt(index + 1);
+    _resetControllers();
+    return merged;
+  }
+
+  /// Undoes [mergeWithNext], but only while the line still holds [merged]:
+  /// after a move or a removal the index no longer names the merged line.
+  bool splitAt(int index, String merged, String first, String second) {
+    if (index < 0 || index >= _values.length) return false;
+    if (_values[index] != merged) return false;
+    _values[index] = first;
+    _values.insert(index + 1, second);
+    _resetControllers();
+    return true;
   }
 
   /// Get controllers property - creates controllers for current internal values

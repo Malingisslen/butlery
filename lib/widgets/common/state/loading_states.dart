@@ -1,7 +1,6 @@
 // lib/widgets/common/state/loading_states.dart
 //
-// Laddning är tallrikslinje + text (produktregler.md:163 och :304, beslut
-// B-18). Skelett står stilla och visas först efter 300 ms.
+// Skelett står stilla och visas först efter 300 ms.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -19,10 +18,6 @@ import 'package:butlery/widgets/common/state/skeleton_components.dart';
 /// eftersom 300 ms-tröskeln i källan gäller skelettet och inte linjen.
 class LoadingStates {
   /// Build loading state based on variant.
-  ///
-  /// produktregler.md:163 och :304 definierar laddning uttömmande som
-  /// tallrikslinje + text, och B-18 stryker rörelse som simulerar framsteg
-  /// som inte mäts.
   static Widget buildLoadingState(
     BuildContext context, {
     required LoadingVariant? variant,
@@ -51,8 +46,7 @@ class LoadingStates {
   /// Texten ar inte dekor. Regeln ar "tallrikslinje + text", och texten ska
   /// saga VAD som hamtas - en linje utan ord sager bara att appen ar upptagen.
   ///
-  /// Linjen bär texten som sitt tillgängliga namn (tillganglighetshandoff:179,
-  /// "etikett = vad som laddas"), så den synliga texten döljs för
+  /// Linjen bär texten som sitt tillgängliga namn, så den synliga texten döljs för
   /// skärmläsaren och läses inte två gånger.
   static Widget _buildPlateLineLoading(BuildContext context, String? message) {
     return Center(

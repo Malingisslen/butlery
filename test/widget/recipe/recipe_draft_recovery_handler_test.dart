@@ -1,4 +1,4 @@
-/// BUT-2175 · the recipe form's draft question (produktregler.md:171-173;
+/// BUT-2175 · the recipe form's draft question (
 /// TR::FLOW::08::utkast::aterupptagning and ::slang-raderar).
 ///
 /// The real RecipeDraftRecoveryHandler, DraftRecoveryDialog and

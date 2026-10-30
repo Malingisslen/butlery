@@ -26,7 +26,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 /// The widget has three visible states:
 /// - **running** — shows remaining `mm:ss`, "Pausa" + "Återställ" buttons.
 /// - **paused** — shows frozen remaining, "Återuppta" + "Återställ" buttons.
-/// - **expired** — shows `00:00`, pulses gold, only "Återställ" is enabled.
+/// - **expired** — shows `00:00`, pulses gold.
 class StepTimerWidget extends StatefulWidget {
   /// Service driving this widget. Must outlive the widget — reusing the DI
   /// singleton is the expected pattern so a running timer survives sheet
@@ -53,10 +53,8 @@ class StepTimerWidget extends StatefulWidget {
   /// pulse.
   final VoidCallback? onExpired;
 
-  /// Awaited before a new timer starts. Cooking mode passes the notice that
-  /// a timer without notification permission only shows in the app, which
-  /// must come before the timer starts, never after (produktregler.md:423;
-  /// flows-roles-budget.md:70). Not called when re-attaching to a running or
+  /// Awaited before a new timer starts.
+  /// Not called when re-attaching to a running or
   /// paused timer.
   final Future<void> Function()? beforeStart;
 
@@ -78,6 +76,10 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
   bool _hasFiredExpired = false;
+
+  // After a reset the service forgets the timer, which reads the same as an
+  // expired one (zero remaining); this keeps the sheet at its start state.
+  bool _reset = false;
 
   @override
   void initState() {
@@ -137,10 +139,16 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
           ? widget.initialDuration
           : widget.service.currentRemainingFor(widget.timerId),
       builder: (context, snapshot) {
-        final remaining = snapshot.data ?? widget.initialDuration;
         final isRunning = widget.service.isRunningFor(widget.timerId);
         final isPaused = widget.service.isPausedFor(widget.timerId);
-        final isExpired = !isRunning && !isPaused && remaining == Duration.zero;
+        if (isRunning || isPaused) _reset = false;
+        final isIdle = _reset && !isRunning && !isPaused;
+
+        final remaining = isIdle
+            ? widget.initialDuration
+            : snapshot.data ?? widget.initialDuration;
+        final isExpired =
+            !isIdle && !isRunning && !isPaused && remaining == Duration.zero;
 
         // Only schedule the expiry post-frame on the first expired frame —
         // `_handleExpiry` self-guards via `_hasFiredExpired` anyway, so
@@ -160,6 +168,19 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
           isExpired: isExpired,
         );
       },
+    );
+  }
+
+  void _restart() {
+    _pulseController
+      ..stop()
+      ..value = 0;
+    _hasFiredExpired = false;
+    setState(() => _reset = false);
+    widget.service.startTimer(
+      id: widget.timerId,
+      duration: widget.initialDuration,
+      label: widget.sourcePhrase.orEmpty(),
     );
   }
 
@@ -201,9 +222,11 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
               isExpired: isExpired,
               onPause: () => widget.service.pauseTimer(widget.timerId),
               onResume: () => widget.service.resumeTimer(widget.timerId),
+              onStart: _restart,
               onReset: () {
                 _pulseController.stop();
                 _hasFiredExpired = false;
+                setState(() => _reset = true);
                 widget.service.resetTimer(widget.timerId);
               },
             ),
@@ -267,6 +290,7 @@ class _TimerControls extends StatelessWidget {
   final bool isExpired;
   final VoidCallback onPause;
   final VoidCallback onResume;
+  final VoidCallback onStart;
   final VoidCallback onReset;
 
   const _TimerControls({
@@ -275,6 +299,7 @@ class _TimerControls extends StatelessWidget {
     required this.isExpired,
     required this.onPause,
     required this.onResume,
+    required this.onStart,
     required this.onReset,
   });
 
@@ -301,8 +326,8 @@ class _TimerControls extends StatelessWidget {
           _controlButton(
             context: context,
             icon: ButleryIcons.playOutline,
-            label: context.l10n.resumeTimer,
-            onPressed: null,
+            label: context.l10n.startTimer,
+            onPressed: onStart,
           ),
         _controlButton(
           context: context,

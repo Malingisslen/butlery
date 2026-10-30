@@ -1,7 +1,7 @@
 /// P4-U05, P4-U06, P4-U07: the recipe views and their image and cooking
 /// widgets load with the plate line or a still plate, never a spinner, and
-/// never with a textless StateWidget.loading() (Grafisk manual v6:209;
-/// Komponentark v1:303-309; the unit test plans: "ingen textlös
+/// never with a textless StateWidget.loading() (
+/// the unit test plans: "ingen textlös
 /// StateWidget.loading() och ingen LoadingIndicator", "ingen
 /// LinearProgressIndicator i image_picker_dialogs").
 ///
@@ -31,8 +31,6 @@ const _files = [
   'lib/views/skriv_sjalv_recept_view.dart',
   'lib/views/quick_capture_view.dart',
   'lib/widgets/image/avatar_image_widget.dart',
-  'lib/widgets/image/components/image_add_tile.dart',
-  'lib/widgets/image/components/image_grid_widgets.dart',
   'lib/widgets/image/components/upload_progress_widgets.dart',
   'lib/widgets/image/editable_image_widget.dart',
   'lib/widgets/image/image_components.dart',

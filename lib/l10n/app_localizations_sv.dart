@@ -489,6 +489,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorAuthentication => 'Autentiseringsfel. Logga in igen.';
 
   @override
+  String get errorSignupNotInvited =>
+      'Butlery är bara öppet för inbjudna just nu.';
+
+  @override
+  String get errorSignupGateUnavailable =>
+      'Det gick inte att skapa kontot just nu. Försök igen om en stund.';
+
+  @override
+  String get errorSignInEmailUnverified =>
+      'Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.';
+
+  @override
   String get errorPermissionDenied =>
       'Du har inte behörighet för denna åtgärd.';
 
@@ -1144,7 +1156,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipePortionsPlural => 'portioner';
 
   @override
-  String get recipeCookedToday => 'Lagat i dag';
+  String get recipeCookedToday => 'Markera som lagat';
 
   @override
   String recipeCookedCount(int count) {
@@ -3891,20 +3903,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendRequestTitle => 'Vänförfrågan';
 
   @override
-  String imageAddCount(int count) {
-    return 'Lägg till ($count)';
-  }
-
-  @override
-  String get imageAddImages => 'Lägg till bilder';
-
-  @override
-  String get imageAdding => 'Lägger till …';
-
-  @override
-  String get imageAddingImage => 'Lägger till bild …';
-
-  @override
   String imagePermissionMessage(String permission) {
     return 'Butlery behöver tillgång till din $permission för att kunna lägga till bilder till recept. Gå till inställningar för att ge behörighet.';
   }
@@ -3921,17 +3919,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get imageSelectSource => 'Välj bildkälla';
-
-  @override
-  String imageTapToAddUpTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count bilder',
-      one: '1 bild',
-    );
-    return 'Tryck för att lägga till upp till $_temp0';
-  }
 
   @override
   String get imageTapToLoad => 'Tryck för att ladda';
@@ -5140,12 +5127,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialTotalMembers => 'Totalt medlemmar';
 
   @override
-  String get userNoUsers => 'Inga användare';
-
-  @override
-  String get userNoUsersToShow => 'Inga användare att visa';
-
-  @override
   String get chatCannotMessageNonFriend =>
       'Du kan inte skicka meddelanden till denna person';
 
@@ -6113,7 +6094,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sharedEmptyStateExplanation =>
-      'När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.';
+      'När du eller dina vänner delar recept och menyer visas de här. Dela ett recept för att komma igång.';
 
   @override
   String get taggingAnalyzingIngredients => 'Analyserar ingredienser …';
@@ -7401,9 +7382,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageRemoveImage => 'Ta bort bild';
 
   @override
-  String get imageSetAsPrimary => 'Ange som primär';
-
-  @override
   String get imageSelectedImages => 'Valda bilder';
 
   @override
@@ -8113,6 +8091,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipeRatingSheetTitle => 'Betygsätt receptet';
+
+  @override
+  String get recipeRatingUnrated => 'Betygsätt';
+
+  @override
   String get messagingSending => 'Skickar …';
 
   @override
@@ -8590,12 +8574,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackSendButton => 'Skicka';
 
   @override
-  String get adminLoginButton => 'Logga in';
-
-  @override
-  String get adminPasswordLabel => 'Lösenord';
-
-  @override
   String get adminLoginFailed => 'Inloggning misslyckades';
 
   @override
@@ -8780,6 +8758,62 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminNavOps => 'Drift';
+
+  @override
+  String get adminNavGuestList => 'Gästlista';
+
+  @override
+  String get adminGuestListTitle => 'Gästlista';
+
+  @override
+  String get adminGuestListLoading => 'Laddar gästlistan …';
+
+  @override
+  String get adminGuestListLoadFailed => 'Kunde inte ladda gästlistan';
+
+  @override
+  String get adminGuestListEmpty => 'Ingen är inbjuden än';
+
+  @override
+  String get adminGuestListColEmail => 'E-post';
+
+  @override
+  String get adminGuestListColInvited => 'Inbjuden';
+
+  @override
+  String get adminGuestListExpired => 'utgången';
+
+  @override
+  String get adminGuestListRemove => 'Ta bort';
+
+  @override
+  String get adminGuestListRemoveTitle => 'Ta bort inbjudan?';
+
+  @override
+  String adminGuestListRemoveMessage(String email) {
+    return '$email kan då inte skapa ett konto.';
+  }
+
+  @override
+  String get adminGuestListEmailLabel => 'Exakt e-postadress';
+
+  @override
+  String get adminGuestListInvite => 'Bjud in';
+
+  @override
+  String get adminGuestListHelp =>
+      'Inbjudan gäller i 30 dagar och tas bort när kontot skapas och e-posten är bekräftad.';
+
+  @override
+  String get adminGuestListInvalidEmail =>
+      'Skriv en hel e-postadress, till exempel namn@exempel.se.';
+
+  @override
+  String get adminGuestListDuplicate => 'Den adressen är redan inbjuden.';
+
+  @override
+  String get adminGuestListSaveFailed =>
+      'Det gick inte att spara. Försök igen.';
 
   @override
   String get adminOpsTitle => 'Drift';
@@ -13883,7 +13917,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipeCardPantryMatchA11y(int percent) {
-    return 'Matchar $percent% av dina ingredienser';
+    return 'Du har $percent % av receptets ingredienser';
   }
 
   @override
@@ -14317,11 +14351,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get a11yLongPressCommentForReactions =>
       'Kommentar, långtryck för att reagera';
-
-  @override
-  String a11yEditImageAction(String label) {
-    return '$label';
-  }
 
   @override
   String a11yImagePickerRemove(int index) {
@@ -16022,7 +16051,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String weekMenuDraftDaysDone(int count) {
-    return '$count av 7 dagar klara';
+    return '$count av 7 dagar har förslag';
   }
 
   @override
@@ -16469,6 +16498,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get timerInAppOnly => 'Timern syns bara i appen.';
+
+  @override
+  String get timerExactAlarmTitle => 'Ska timern ringa på sekunden?';
+
+  @override
+  String get timerExactAlarmBody =>
+      'När appen ligger i bakgrunden kan telefonen skjuta upp timerns larm några minuter. Slå på Alarm och påminnelser för Butlery så ringer den exakt i tid.';
 
   @override
   String get notifSystemOffRow =>
@@ -19920,6 +19956,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedSavedState => 'Sparad';
 
   @override
+  String get sharedReceiveCanRead => 'Kan läsa';
+
+  @override
+  String get sharedReceiveCanEdit => 'Kan redigera';
+
+  @override
+  String get sharedReceiveAccept => 'Acceptera';
+
+  @override
+  String get sharedReceiveView => 'Visa receptet';
+
+  @override
   String sharedFromNameAgo(String name, String time) {
     return 'från $name · $time';
   }
@@ -20688,4 +20736,18 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get decisionRevisedNoActionOutcome =>
       'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.';
+
+  @override
+  String get mergeWithNextStep => 'Slå ihop med nästa';
+
+  @override
+  String get stepsMerged => 'Stegen slogs ihop';
+
+  @override
+  String get stepsTooLongToMerge => 'Stegen blir för långa för att slås ihop';
+
+  @override
+  String a11yMergeSteps(int first, int second) {
+    return 'Slå ihop steg $first med steg $second';
+  }
 }

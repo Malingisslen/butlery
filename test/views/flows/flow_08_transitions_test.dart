@@ -1,8 +1,8 @@
 /// P8-U03 · flow 08, the draft transition that was built but had no test.
 ///
-/// TR::FLOW::08::utkast::avbryt-behaller (fas2/block288-uxfrysning.json,
-/// REQUIRED; produktregler.md § 3, the row "Avbryt"; flows-roles-budget.md
-/// :38 "Avbryt lämnar vyn men behåller det lokala utkastet"): leaving the
+/// TR::FLOW::08::utkast::avbryt-behaller (
+/// REQUIRED
+/// ): leaving the
 /// editor without saving keeps the draft, and the next opening finds it.
 ///
 /// The recipe editor leaves through its PopScope and "Lämna utan att spara"

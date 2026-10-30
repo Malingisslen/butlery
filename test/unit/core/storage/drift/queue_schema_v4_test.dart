@@ -1,10 +1,10 @@
-// P6-U08b: schema 4, the offline queue's retry schedule (produktregler.md:188).
+// P6-U08b: schema 4, the offline queue's retry schedule.
 //
 // The migration test opens a database written by schema 3 — the exact CREATE
 // statements drift emitted for schemaVersion 3, dumped from the code at
 // b9379f0c6 — with queued rows, and checks that schema 4 keeps every row as
 // it was, adds the two retry columns empty, and ends up with the same tables
-// as a fresh install. Queue data is user data (produktregler.md:192).
+// as a fresh install. Queue data is user data.
 
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';

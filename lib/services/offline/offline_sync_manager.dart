@@ -147,18 +147,18 @@ class OfflineSyncManager {
 
   /// Sends the queue: one pass over the user's entries, oldest first.
   ///
-  /// The rules are produktregler.md:186-189 (queue_retry_policy.dart): an
+  /// The rules are: an
   /// entry waits for its dependencies and for earlier entries to the same
   /// entity; a failed attempt is retried on the schedule 2 s → 4 s → 8 s →
   /// 30 s → 2 min → 10 min with jitter, for at most 24 h from the first
   /// failure; an error the server will always give again (4xx other than
   /// 408/429) makes the entry and everything that depends on it a permanent
   /// failure that waits for the user. Nothing is deleted without the
-  /// server's confirmation (produktregler.md:192).
+  /// server's confirmation.
   ///
   /// Coming back online runs a pass, but an entry whose retry time has not
   /// come is left for its timer: "Ingen omförsöksstorm vid återkommande
-  /// nät" (produktregler.md:188). [force] ("Försök synka nu") ignores the
+  /// nät". [force] ("Försök synka nu") ignores the
   /// retry times, never the order or the dependencies.
   ///
   /// Uses an async lock to prevent concurrent sync operations.
@@ -269,7 +269,7 @@ class OfflineSyncManager {
       );
       switch (decision) {
         case QueueEntryDecision.dependencyFailed:
-          // "aldrig halvvägs" (produktregler.md:187).
+          // "aldrig halvvägs".
           _moveToFailed(
             await _database.markChainPermanentlyFailed(
               userId,
@@ -373,7 +373,7 @@ class OfflineSyncManager {
 
   /// Starts a timer for the earliest retry time among the entries still
   /// waiting, so the queue sends them when their time comes
-  /// (produktregler.md:188). When the timer fires offline it does nothing;
+  /// When the timer fires offline it does nothing;
   /// coming back online starts a pass.
   Future<void> _scheduleNextAttempt(String userId) async {
     final remaining = await _syncQueueDao.getPendingForUser(userId);

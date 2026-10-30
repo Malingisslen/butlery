@@ -26,6 +26,9 @@ class SocialOpsContext {
   /// parent service's error sink so they reach the UI.
   final void Function(String)? onShareError;
 
+  final Future<void> Function(String recipeId, List<String> userIds)?
+  removeRecipientsFromOwnShares;
+
   const SocialOpsContext({
     required this.getCurrentUserId,
     required this.getCurrentUserDisplayName,
@@ -34,6 +37,7 @@ class SocialOpsContext {
     required this.createCollaborativeRecipe,
     required this.createPersonalRecipe,
     this.onShareError,
+    this.removeRecipientsFromOwnShares,
   });
 }
 
@@ -66,6 +70,7 @@ class SocialOperationsInitializer {
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
           onShareError: ctx.onShareError,
+          removeRecipientsFromOwnShares: ctx.removeRecipientsFromOwnShares,
         );
       }
 
@@ -110,6 +115,7 @@ class SocialOperationsInitializer {
       ratingsRepository: ratingsRepo,
       firestoreRepository: firestoreRepo,
       onShareError: ctx.onShareError,
+      removeRecipientsFromOwnShares: ctx.removeRecipientsFromOwnShares,
     );
   }
 
@@ -137,6 +143,7 @@ class SocialOperationsInitializer {
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
           onShareError: ctx.onShareError,
+          removeRecipientsFromOwnShares: ctx.removeRecipientsFromOwnShares,
         );
       }
 

@@ -2,9 +2,6 @@
 //
 // HEM-HERO: the week's plan while it loads, on Hem above the library (see
 // hem_section.dart for the sources).
-//
-//   Skarmar v12 del 4 #hemladdar (:616-650): the plate line with "Hämtar
-//       veckans plan …", and a still skeleton only after 300 ms.
 library;
 
 import 'package:flutter/material.dart';
@@ -15,9 +12,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state/delayed_skeleton.dart';
 
-/// #hemladdar: the plate line with what is being fetched, and after 300 ms a
-/// still skeleton of the card (produktregler.md:163; "Skelettet visas först
-/// efter 300 ms — en snabb start ska aldrig blinka").
 class HemPlanLoading extends StatelessWidget {
   const HemPlanLoading({super.key});
 

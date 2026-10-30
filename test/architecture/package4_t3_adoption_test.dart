@@ -1,11 +1,11 @@
 // Package 4, track T3 (P4-U08, U09, U10, U11, U16): the week menu, the
 // shopping list, the import family, family and tags adopt the design system.
 //
-// B-18 (beslutslogg.md:25) and produktregler.md:163, :304: loading is the
+// B-18: loading is the
 // plate line plus text, never a spinner, a sliding bar or the animated pea
-// pod. ux-beslut.json D-03: generation has no long-wait state and no
-// "Fortsätt i bakgrunden". B-45 (beslutslogg.md:52): one top bar, so these
-// views draw ButleryTopBar. PQ-09 = A (produktbeslut-2026-09-23.json): a view
+// pod. D-03: generation has no long-wait state and no
+// "Fortsätt i bakgrunden". B-45: one top bar, so these
+// views draw ButleryTopBar. PQ-09 = A: a view
 // never builds its own SnackBar; every snackbar is the ink snackbar from
 // SnackBarUtils.
 //

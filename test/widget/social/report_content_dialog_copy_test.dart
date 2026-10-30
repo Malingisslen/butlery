@@ -1,6 +1,5 @@
-/// P5-COPY-DRAWN: the report dialog says "anmälan" throughout, as drawn in
-/// Skarmar v12 etapp 9 #fbanmal (title "Anmäl det här receptet" at :507,
-/// "Skicka anmälan" at :523). It confirms with "Anmälan har skickats"; a
+/// P5-COPY-DRAWN: the report dialog says "anmälan" throughout
+/// It confirms with "Anmälan har skickats"; a
 /// failure is the three-part failure snackbar (content-style-guide.md:87-97)
 /// that says what did not happen and offers Försök igen, which sends the
 /// same report again.
@@ -121,7 +120,6 @@ void main() {
   ) async {
     await open(tester, ContentType.recipe);
 
-    // #fbanmal:508 and :518.
     expect(
       find.text(
         'Berätta vad som är fel. En människa i teamet läser din anmälan.',
@@ -155,7 +153,6 @@ void main() {
     await tester.tap(find.text(l10n.reportReasonOther));
     await tester.pumpAndSettle();
 
-    // #fbanmal:516, produktregler.md:938.
     expect(find.text('Krävs när du väljer Annat.'), findsOneWidget);
     expect(find.text('0/500'), findsOneWidget);
   });

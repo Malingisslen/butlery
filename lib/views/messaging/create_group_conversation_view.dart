@@ -260,7 +260,6 @@ class _CreateGroupConversationViewState
               ),
             ),
           // The view's one primary action, "Skapa konversation" as drawn
-          // (Skarmar v12 del 3 #nygruppchatt:602; Grafisk manual v6:219).
           FormButton(
             key: const ValueKey('createGroupConversation.create'),
             label: context.l10n.messagingCreateConversation,

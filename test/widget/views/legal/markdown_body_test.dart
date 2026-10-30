@@ -129,7 +129,7 @@ void main() {
     handle.dispose();
   });
 
-  group('offline (P5-U30, Grafisk manual v6:665)', () {
+  group('offline (P5-U30)', () {
     Future<void> pumpOffline(WidgetTester tester, String data) async {
       await tester.pumpWidget(
         createLocalizedTestApp(

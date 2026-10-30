@@ -259,7 +259,7 @@ class PersonalTagCrudService extends BaseService {
   /// cascaded recipes each = ~400 ops, comfortably under 500).
   ///
   /// P5-U33: a chunk that fails does not stop the next one, and the result
-  /// says per tag id what went and what did not (produktregler.md:905-909).
+  /// says per tag id what went and what did not.
   /// Before this, a failure anywhere was swallowed by the base service and
   /// reported as "0 deleted", even after an earlier chunk had landed.
   Future<PersonalTagBulkDeleteResult> bulkDeleteTags(

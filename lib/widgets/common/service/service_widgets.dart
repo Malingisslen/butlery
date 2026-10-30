@@ -59,7 +59,7 @@ class ServiceWidgets {
 
   // Private helper methods
   static Widget _buildDefaultServiceLoading() {
-    // Plate line plus text, never a spinner (produktregler.md:163, B-18).
+    // Plate line plus text, never a spinner (B-18).
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(

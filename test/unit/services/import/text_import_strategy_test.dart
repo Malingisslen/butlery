@@ -363,14 +363,18 @@ void main() {
         // isValidIngredient's orphan-fragment rule (5 chars, single token, no
         // digit).
         group('a gluten-free collider cannot swallow the rescued row', () {
-          const colliders = {
-            'Mjöl': '1 msk potatismjöl',
-            'Vete': '2 dl bovetemjöl',
-            'Korn': '2 dl majskorn',
-            'Öl': '2 dl majsmjöl',
-          };
+          // Only the split-word colliders reach the containment rule now that
+          // it matches whole words.
+          const colliders = [
+            ('Mjöl', '1 msk potatismjöl'),
+            ('Vete', '2 dl bovetemjöl'),
+            ('Korn', '2 dl majskorn'),
+            ('Öl', '2 dl majsmjöl'),
+            ('Mjöl', '1 msk potatis mjöl'),
+            ('Korn', '2 dl majs korn'),
+          ];
 
-          colliders.forEach((rescued, collider) {
+          for (final (rescued, collider) in colliders) {
             test('"$rescued:" survives "$collider"', () async {
               final flat = await flatIngredients(
                 'Bröd\n'
@@ -387,7 +391,7 @@ void main() {
               expect(flat, contains(rescued.toLowerCase()));
               expect(flat, contains(collider.toLowerCase()));
             });
-          });
+          }
 
           test('a plain collider pair is still deduplicated by '
               'containment', () async {
@@ -398,7 +402,7 @@ void main() {
               'Bröd\n'
               'Ingredienser:\n'
               '2 dl socker\n'
-              '2 dl florsocker\n'
+              '1 dl brunt socker\n'
               'Gör så här:\n'
               'Blanda och grädda i ugnen.',
             );
@@ -1539,10 +1543,18 @@ Koka potatisen i 20 minuter.
         // The other half of the `??`: the extractor returning null must not
         // blank out a time the old path could still find.
         const text =
+            'Pannkakor\n20 min\nIngredienser:\n3 dl mjöl\n'
+            'Gör så här:\nGrädda pannkakorna på medelvärme.';
+        final result = await strategy.import(text);
+        expect(result.recipe!.timeMinutes, equals(20));
+      });
+
+      test('a timer inside a step is not the recipe time', () async {
+        const text =
             'Pannkakor\nIngredienser:\n3 dl mjöl\n'
             'Gör så här:\nGrädda i 20 min på medelvärme.';
         final result = await strategy.import(text);
-        expect(result.recipe!.timeMinutes, equals(20));
+        expect(result.recipe!.timeMinutes, isNull);
       });
 
       test('should extract servings information', () async {

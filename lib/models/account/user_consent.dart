@@ -261,7 +261,7 @@ enum ConsentChangeKind {
 ///
 /// "Förnyelse visar vad som ändrats. `needsRenewal` är enbart en
 /// versionsjämförelse, så gränssnittet får inte påstå att något viktigt
-/// hänt utan att säga vad" (produktregler.md:731). Whoever bumps the consent
+/// hänt utan att säga vad". Whoever bumps the consent
 /// version adds its lines to `ConsentService.changelog` in the same change
 /// (Q-P6-A18); the sentence shown for each line lives in the l10n files.
 class ConsentChange {

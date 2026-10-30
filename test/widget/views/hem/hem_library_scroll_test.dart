@@ -1,7 +1,6 @@
 // HEM-HERO: Hem's header and the recipe library scroll as one.
 //
-// Skarmar v12 del 1 #hemrecept (:124-150): "hälsning + ikväll överst,
-// receptbiblioteket direkt under". At 320 x 568 dp with 200 %
+// At 320 x 568 dp with 200 %
 // text the header is at its tallest; scrolling the library must take it off
 // the screen and leave every recipe reachable.
 

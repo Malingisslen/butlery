@@ -1,5 +1,4 @@
-// Komponentark §09 locks every sheet to one frame: 12 px top edge, a handle
-// in border-control, a sharp bottom edge. The frame is the theme's and the
+// The frame is the theme's and the
 // handle is showButlerySheet's (BUT-2373), so a sheet opened any other way
 // drops the handle and can set its own corners. Outside the helper,
 // showModalBottomSheet is not called.

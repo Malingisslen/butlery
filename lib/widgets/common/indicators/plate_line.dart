@@ -21,24 +21,21 @@ import 'package:butlery/widgets/common/indicators/loading_semantics.dart';
 
 /// Tallrikslinjen: en vågrät progresslinje.
 ///
-/// Två former, båda ritade i Komponentark v1:303-309:
+/// Två former:
 ///
 /// * **Bestämd** ([value] satt): fylls vänster till höger i accentorange
-///   (token progressIndicator) på rännan (token progressTrack). v1:305.
+///   (token progressIndicator) på rännan (token progressTrack).
 /// * **Obestämd** ([value] null): ett stillastående segment som pulserar i
-///   opacitet på plats (v1:306 och :309, Grafisk manual v6:209). Det rör sig
+///   opacitet på plats. Det rör sig
 ///   aldrig i sidled, för rörelse ska inte simulera framsteg som inte mäts
-///   (B-18, beslutslogg.md:25). Vid reducerad rörelse står det still i full
-///   opacitet (v1:309, tillganglighetshandoff:179, Grafisk manual v6:589,
-///   tokens.json motion.reducedMotion).
+///   (B-18). Vid reducerad rörelse står det still i full
+///   opacitet (tokens.json motion.reducedMotion).
 ///
 /// Har du ett verkligt mått, skicka det: en linje som visar riktig progress
 /// är alltid bättre än en som bara säger att något pågår.
 ///
 /// Linjen bär sin egen semantik ([LoadingSemantics]): en live-region med
-/// [semanticLabel] som namn, eller procentvärdet när [value] är satt
-/// (Butlery tillganglighetshandoff.dc.html:179 — etiketten ska vara vad som
-/// laddas).
+/// [semanticLabel] som namn, eller procentvärdet när [value] är satt.
 class PlateLine extends StatefulWidget {
   const PlateLine({
     this.value,
@@ -56,17 +53,17 @@ class PlateLine extends StatefulWidget {
   /// Vad som laddas, för skärmläsaren. Null ger `a11yLoading`.
   final String? semanticLabel;
 
-  /// Linjens tjocklek: 4 px i båda formerna (Komponentark v1:305-306,
+  /// Linjens tjocklek: 4 px i båda formerna (
   /// `height:4px`).
   static const double thickness = 4.0;
 
   /// Det obestämda segmentets läge och bredd som andel av linjen, avläst ur
-  /// ritningen (Komponentark v1:306: `left:22%`, `width:34%`).
+  /// ritningen (`left:22%`, `width:34%`).
   static const double segmentStart = 0.22;
   static const double segmentWidth = 0.34;
 
   /// Pulsens nedre opacitet. Ritningen anger inte värdet; tolkning, vald så
-  /// att pulsen är lugn och inte drar uppmärksamhet (Grafisk manual v6:589).
+  /// att pulsen är lugn och inte drar uppmärksamhet.
   static const double pulseMinOpacity = 0.4;
 
   /// En halv puls (full opacitet till [pulseMinOpacity]).
@@ -164,7 +161,7 @@ class _PlateLineState extends State<PlateLine>
         ),
       );
     } else {
-      // Obestämd: ritningens segment är #A9B2A0 (Komponentark v1:306). Token
+      // Obestämd: ritningens segment är #A9B2A0. Token
       // surface.disabled bär det värdet i ljust; i mörkt tar vi samma tokens
       // mörka värde, #4A5C50. Tolkning: ritningen har ingen egen token för
       // segmentet.
@@ -179,7 +176,7 @@ class _PlateLineState extends State<PlateLine>
             color: ranna,
             // Flex, not a LayoutBuilder: a dialog measures its content's
             // intrinsic width, which a LayoutBuilder cannot answer. 22 / 34 /
-            // 44 is the drawn segment (Komponentark v1:306).
+            // 44 is the drawn segment.
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -218,16 +215,16 @@ class _PlateLineState extends State<PlateLine>
 }
 
 /// Tallrikslinjen i en knapp: en upptagen knapp behåller sin form och sitt
-/// namn och får en linje längs sin nederkant (Komponentark v1:307, :365,
-/// :372; Grafisk manual v6:423, "tallrikslinje i underkanten, aldrig
+/// namn och får en linje längs sin nederkant (
+/// "tallrikslinje i underkanten, aldrig
 /// spinner").
 ///
-/// Ritningen (Komponentark v1:307 och :372) är 4 px hög och ligger kant i kant
+/// Ritningen är 4 px hög och ligger kant i kant
 /// med knappens nederkant. Rännan är knappens förgrund med 18 % (`rgba(23,37,
 /// 29,.18)` på saffran, tokens.json opacityLadder.onInk 0.18). Segmentet är
 /// förgrunden själv, börjar i vänsterkanten och är 58 % brett. Linjen är
 /// obestämd: den pulserar i opacitet på plats och står still vid reducerad
-/// rörelse, som [PlateLine] (Komponentark v1:309).
+/// rörelse, som [PlateLine].
 ///
 /// Färgen är knappens egen textfärg. Ritningen visar bara saffranshjälten
 /// (ink #17251D på saffran); att ink-primären får sin egen förgrund på
@@ -257,10 +254,10 @@ class ButtonPlateLine extends StatefulWidget {
   /// förgrunden på [trackAlpha].
   final bool onFill;
 
-  /// Segmentets bredd som andel av knappen (Komponentark v1:372, `width:58%`).
+  /// Segmentets bredd som andel av knappen (`width:58%`).
   static const double segmentWidth = 0.58;
 
-  /// Rännans opacitet av förgrunden på en fylld knapp (Komponentark v1:372,
+  /// Rännans opacitet av förgrunden på en fylld knapp (
   /// `.18`; tokens.json opacityLadder.onInk).
   static const double trackAlpha = 0.18;
 
@@ -398,7 +395,7 @@ abstract final class PlateLineButton {
   }
 
   /// Gör ingenting. En upptagen knapp får inte vara avstängd, för då byter
-  /// den till den avstängda ytan (Komponentark v1:365: laddning och disabled
+  /// den till den avstängda ytan (laddning och disabled
   /// är två olika lägen). Den behåller sin tryckfunktion men gör inget.
   static void ignore() {}
 }
@@ -407,9 +404,9 @@ abstract final class PlateLineButton {
 ///
 /// Etiketten är [busyLabel] när knappen säger vad den gör ("Sparar …",
 /// content-style-guide.md:63), annars knappens eget namn [name]
-/// (produktregler.md:902, "Låsningen behåller knappens namn"). Utan
+/// ("Låsningen behåller knappens namn"). Utan
 /// [busyLabel] bär värdet att knappen arbetar (a11yLoading), så att läget
-/// finns maskinläsbart (Komponentark v1:365, "levereras även som
+/// finns maskinläsbart ("levereras även som
 /// maskinläsbart tillstånd"). Knappen är inte aktiverbar medan den arbetar.
 class BusyButtonSemantics extends StatelessWidget {
   const BusyButtonSemantics({
@@ -447,12 +444,12 @@ class BusyButtonSemantics extends StatelessWidget {
   }
 }
 
-/// Tallrikslinjen med sin text: "tallrikslinje + text" (produktregler.md:163,
-/// :304; B-18). Texten säger vad som hämtas, linjen bara att något pågår.
+/// Tallrikslinjen med sin text: "tallrikslinje + text" (
+/// B-18). Texten säger vad som hämtas, linjen bara att något pågår.
 ///
 /// Texten står ovanför linjen och läses inte upp för sig: linjen bär den som
 /// sin etikett, så att beskedet läses en gång. Linjen är högst [maxWidth]
-/// bred, ritningens 300 px (Komponentark v1:304).
+/// bred, ritningens 300 px.
 class PlateLineMessage extends StatelessWidget {
   const PlateLineMessage({
     required this.message,
@@ -470,7 +467,7 @@ class PlateLineMessage extends StatelessWidget {
   /// Textens justering.
   final TextAlign textAlign;
 
-  /// Ritningens bredd (Komponentark v1:304, `width:300px`).
+  /// Ritningens bredd (`width:300px`).
   static const double maxWidth = 300;
 
   @override

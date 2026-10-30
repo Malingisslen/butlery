@@ -100,7 +100,7 @@ void main() {
       }
       expect(find.text('–'), findsNWidgets(2));
       expect(
-        find.text('5 av 7 dagar klara · finns kvar i 29 dagar'),
+        find.text('5 av 7 dagar har förslag · finns kvar i 29 dagar'),
         findsOneWidget,
       );
     });
@@ -142,7 +142,7 @@ void main() {
       expect(find.text('Ärtsoppa'), findsOneWidget);
       expect(find.text('Sallad'), findsNothing);
       expect(find.text('Wrap'), findsNothing);
-      expect(find.textContaining('3 av 7 dagar klara'), findsOneWidget);
+      expect(find.textContaining('3 av 7 dagar har förslag'), findsOneWidget);
     });
 
     testWidgets('more than seven dishes show the first seven and "7 av 7"', (
@@ -163,7 +163,7 @@ void main() {
       expect(find.text('Rätt d7'), findsNothing);
       expect(find.text('Rätt d8'), findsNothing);
       expect(find.text('–'), findsNothing);
-      expect(find.textContaining('7 av 7 dagar klara'), findsOneWidget);
+      expect(find.textContaining('7 av 7 dagar har förslag'), findsOneWidget);
     });
 
     testWidgets('a dish whose name was not kept still fills its day', (
@@ -182,8 +182,16 @@ void main() {
       );
 
       expect(find.text('–'), findsNWidgets(2), reason: 'only days 6 and 7');
-      expect(find.textContaining('5 av 7 dagar klara'), findsOneWidget);
+      expect(find.textContaining('5 av 7 dagar har förslag'), findsOneWidget);
       expect(find.text('Ärtsoppa'), findsNothing);
+    });
+
+    // The week badge says "inget planerat" while this card is up, so the
+    // card must not call the draft's days "klara".
+    testWidgets('never describes unplaced draft days as done', (tester) async {
+      await pumpCard(tester, _draft());
+
+      expect(find.textContaining('klara'), findsNothing);
     });
   });
 

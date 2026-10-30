@@ -141,7 +141,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildLoadingState() {
-    // Plate line + what is being fetched (produktregler.md:163, B-18).
+    // Plate line + what is being fetched (B-18).
     return StateWidget.loading(message: context.l10n.privacyLoading);
   }
 

@@ -11,7 +11,7 @@ import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 
-/// Köksbutlern's mic control (tasks/koksbutlern-plan.md, Batch D) — the big,
+/// Köksbutlern's mic control — the big,
 /// knuckle-friendly button bottom-right of the instructions panel that
 /// drives a [CookingVoiceController]. Icon/color track the controller's
 /// state; the button owns nothing of the voice logic itself.
@@ -170,7 +170,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
         label = l10n.voicePromptStop;
       case VoiceAssistState.transcribing:
         background = cs.primary;
-        // The plate line, not a spinner (Grafisk manual v6:209). It stands
+        // The plate line, not a spinner. It stands
         // still under reduced motion (PlateLine).
         content = PlateLine(
           width: AppDimensions.iconSizeL,

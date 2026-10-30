@@ -822,7 +822,7 @@ void main() {
             ConflictEntity.recipeOwn,
             reason:
                 'the owner edited their own recipe, so the model declares '
-                'recipeOwn (produktregler.md:102)',
+                'recipeOwn',
           );
           expect(
             events.single.remoteValue.editCount,
@@ -839,7 +839,7 @@ void main() {
   group('conflictStream entity (P3-U07)', () {
     /// The entity comes from the model for the signed-in user: a collaborator
     /// editing someone else's recipe follows the shared-recipe row
-    /// (produktregler.md:103), not the owner's.
+    /// not the owner's.
     test('a collaborator losing a recipe edit gets recipeShared', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
         when(() => mockAuth.currentUserId).thenReturn('editor_user');
@@ -1054,8 +1054,7 @@ void main() {
   });
 
   group('conflictStream waits for the queue (P6-U08b)', () {
-    /// produktregler.md:189: "Konfliktbannern visas när kön töms, inte
-    /// medan appen är offline." The real resolver path, as above, with the
+    /// The real resolver path, as above, with the
     /// queue still holding changes: the notice reaches the banner only when
     /// the queue reports it has emptied.
     test('a conflict settled while the queue waits reaches the stream when '

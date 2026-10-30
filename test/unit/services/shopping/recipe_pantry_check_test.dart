@@ -1,6 +1,6 @@
 /// Q4-03 = A (produktbeslut 2026-09-24): "Lägg {n} varor i inköpslistan"
 /// counts the recipe's items the pantry does not already cover, by the week
-/// merge's rule (produktregler.md:224-234).
+/// merge's rule.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -59,8 +59,6 @@ void main() {
     expect(left, hasLength(4));
   });
 
-  // produktregler.md:230-232: no deduction, and the row is marked as a week
-  // merge row is.
   test('har hemma (no amount) subtracts nothing and marks Kanske hemma', () {
     final left = RecipePantryCheck.toBuy(items, [_pantry('Salt')]);
 
@@ -94,7 +92,6 @@ void main() {
     expect(left.singleWhere((i) => i.name == 'Vetemjöl').note, 'Kanske hemma');
   });
 
-  // produktregler.md:228, 233: what the pantry took is named.
   test('names what is covered and what is lessened', () {
     final result = RecipePantryCheck.check(items, [
       _pantry('ägg', quantity: 6),
@@ -106,8 +103,6 @@ void main() {
     expect(result.toBuy.map((i) => i.name), ['Mjölk', 'Vetemjöl', 'Salt']);
   });
 
-  // flows-roles-budget.md:51: duplicates are merged before the pantry is
-  // subtracted, so one stock is not counted against two lines.
   test('one ingredient on two lines is counted against the pantry once', () {
     final twice = [
       _item('Mjölk', 2, 'dl'),
@@ -188,8 +183,6 @@ void main() {
       expect(added.map((i) => i.name.toLowerCase()), isNot(contains('ägg')));
     });
 
-    // produktregler.md:228: enough at home keeps an item off the list, so
-    // nothing is added; the button text for zero is open (Q4-03).
     test('everything at home: no count, and nothing is added', () {
       final pantry = [
         _pantry('ägg', quantity: 10, unit: ''),

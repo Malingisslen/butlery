@@ -72,7 +72,7 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
         // BUT-403: `btn-quick-save` identifier for browser a11y.
         child: Semantics(
           identifier: 'btn-quick-save',
-          // The view's one primary action (Grafisk manual v6:219). Busy keeps
+          // The view's one primary action. Busy keeps
           // the name and draws the plate line.
           child: FormButton(
             key: const ValueKey('test-quick-capture-save'),

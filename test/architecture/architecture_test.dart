@@ -665,7 +665,7 @@ void main() {
       );
     });
 
-    // B-18 (beslutslogg.md:25) and produktregler.md:163: loading is the
+    // B-18: loading is the
     // plate line plus text, never a spinner. The BUT-885 / BUT-1168 guard
     // once routed every spinner in lib/widgets/ through LoadingIndicator;
     // package 7 (P7-Z) deleted LoadingIndicator and AdaptiveActivityIndicator,

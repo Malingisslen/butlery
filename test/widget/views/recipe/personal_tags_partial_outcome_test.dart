@@ -1,8 +1,7 @@
 /// P5-U33: bulk tag delete reports a partial outcome.
 ///
-/// produktregler.md:905-909 (§ 17.6, I-29): a partial result is a third
-/// outcome. It names what went, what did not and why, and the ones that did
-/// not go stay selected, with selection mode still on (produktregler.md:878).
+/// It names what went, what did not and why, and the ones that did
+/// not go stay selected, with selection mode still on.
 /// The delete runs in atomic chunks of 100, so a later chunk can fail after
 /// an earlier one landed; the result says per tag id which.
 library;
@@ -148,7 +147,7 @@ void main() {
 
     expect(outcome, findsOneWidget);
     expect(find.text('1 av 3 taggar togs bort'), findsOneWidget);
-    // What went is named by the tag id's name (produktregler.md:906).
+    // What went is named by the tag id's name.
     expect(
       find.text(
         'Snabbt togs bort. De som inte kunde tas bort ligger kvar valda.',

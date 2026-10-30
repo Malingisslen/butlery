@@ -64,13 +64,30 @@ import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/import/clipboard_url_banner.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/staging_banner.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+
+/// The app's bottom stays clear of the system navigation bar, and the text
+/// scale is clamped once for every descendant (BUT-800).
+///
+/// The clamp reads the MediaQuery INSIDE the SafeArea. Copied from above it,
+/// the bottom padding the SafeArea already used comes back, and every bar that
+/// pads for the system bar pads a second time.
+@visibleForTesting
+Widget appRootInsets(Widget child) => SafeArea(
+  top: false,
+  left: false,
+  right: false,
+  child: MediaQuery.withClampedTextScaling(
+    maxScaleFactor: AccessibilityUtils.maxTextScale,
+    child: child,
+  ),
+);
 
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
 /// "Starta om" button calls [onRestart] (wired to `main` in `main.dart`) so
@@ -370,7 +387,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   /// Show session timeout warning dialog.
   ///
   /// The queue is read first because the dialog has two modes
-  /// (produktregler.md:832): with changes waiting, Fortsätt is primary, the
+  /// with changes waiting, Fortsätt is primary, the
   /// changes are named, and "Logga ut nu" leads to the same confirmation as
   /// the manual sign-out (#utloggningko).
   Future<void> _showSessionTimeoutWarning() async {
@@ -484,33 +501,17 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final messenger = ScaffoldMessenger.maybeOf(context);
       if (messenger == null) return;
 
-      messenger.showMaterialBanner(
-        MaterialBanner(
-          content: Text(l10n.importClipboardUrlDetected),
-          leading: const ButleryIcon(ButleryIcons.link),
-          actions: [
-            ButleryTextButton(
-              label: l10n.importClipboardUseUrl,
-              onPressed: () {
-                messenger.hideCurrentMaterialBanner();
-                if (!mounted) return;
-                Navigator.of(context).pushNamed(
-                  app_routes.Routes.smartImport,
-                  arguments: text,
-                );
-              },
-            ),
-            ButleryTextButton(
-              label: l10n.commonClose,
-              onPressed: () => messenger.hideCurrentMaterialBanner(),
-            ),
-          ],
-        ),
+      ClipboardUrlBanner.show(
+        messenger,
+        l10n,
+        onUse: () {
+          if (!mounted) return;
+          Navigator.of(context).pushNamed(
+            app_routes.Routes.smartImport,
+            arguments: text,
+          );
+        },
       );
-      // Auto-dismiss after 8 seconds to prevent stale banners
-      Future.delayed(const Duration(seconds: 8), () {
-        if (mounted) messenger.hideCurrentMaterialBanner();
-      });
     } catch (_) {
       // Clipboard access failed silently
     }
@@ -824,17 +825,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // Universal fix for Android nav bar overlay + beta feedback FAB overlay
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();
-          // BUT-800: clamp `textScaler` once at the MaterialApp root so every
-          // descendant widget inherits the clamped MediaQuery automatically.
-          final mq = MediaQuery.of(context);
-          final clampedChild = MediaQuery(
-            data: mq.copyWith(
-              textScaler: mq.textScaler.clamp(
-                maxScaleFactor: AccessibilityUtils.maxTextScale,
-              ),
-            ),
-            child: child,
-          );
           // Keyboard layer (BUT-521).
           //
           // Must stay INSIDE this builder. Being here puts it below
@@ -848,17 +838,13 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             child: ButleryAppFocusRing(
               child: MaintenanceModeGate(
                 child: AppKeyboardLayer(
-                  child: SafeArea(
-                    top: false, // Let AppBar handle top
-                    bottom: true, // Always protect bottom from system nav bar
-                    left: false,
-                    right: false,
-                    child: FeedbackAwareScaffoldMessenger(
+                  child: appRootInsets(
+                    FeedbackAwareScaffoldMessenger(
                       child: Stack(
                         children: [
                           RepaintBoundary(
                             key: feedbackRepaintBoundaryKey,
-                            child: clampedChild,
+                            child: child,
                           ),
                           const FeedbackFAB(),
                         ],
@@ -904,7 +890,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: AppDimensions.space24),
                   // Plate line plus text, never a spinner
-                  // (produktregler.md:163, B-18).
+                  // (B-18).
                   PlateLineMessage(message: message),
                 ],
               ),

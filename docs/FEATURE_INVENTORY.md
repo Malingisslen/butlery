@@ -801,7 +801,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **User story:** As a user, I want to organize friends into named groups so that I can share content with a subset at once.
 - **Expected behavior:** Create a group (name, emoji, members), search groups, view friends in a group, see a friend's groups.
 - **Edge cases:** Duplicate name guarded; empty groups filtered; group-creation error surfaced separately.
-- **Test coverage:** Verified — `friend_category_test.dart`, `friend_category_member_test.dart`, `friend_categories_operations_test.dart`, `friend_category_manager_test.dart`, `friend_category_repository_test.dart`.
+- **Test coverage:** Verified — `friend_category_test.dart`, `friend_categories_operations_test.dart`, `friend_category_manager_test.dart`, `friend_category_repository_test.dart`.
 
 #### SOC-06: View public profile
 - **Entry:** `/public-profile`.
@@ -1337,7 +1337,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **User story:** As a user, I want recipe images to load fast and smoothly so that browsing feels responsive and doesn't blow my data/memory.
 - **Expected behavior:** Blur-up progressive loading, DPR-aware cache sizing, fade-in (respecting reduce-motion), stable cache keys. Memory cache capped at 100MB, LRU eviction under pressure with hit/miss stats.
 - **Edge cases:** Local vs network handled separately; Storage has no URL transforms so pre-generated thumbnails used; broken images → error widget.
-- **Test coverage:** Partial — `image_factory_test.dart`, format util tests; no dedicated OptimizedImageLoader test.
+- **Test coverage:** Partial — format util tests; no dedicated OptimizedImageLoader test.
 
 #### ENG-15: Intelligent predictive cache / prefetch
 - **Entry:** Fully background; no user-visible entry.
@@ -1356,7 +1356,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### ENG-17: LLM recipe extraction service (server fallback)
 - **Entry:** Automatic — last parsing tier; also powers OCR image import + video-transcript import.
 - **User story:** As a user, I want even messy or unstructured recipe sources to import cleanly so that I can save anything I find.
-- **Expected behavior:** `structureRecipe` callable sends PII-scrubbed text to Vertex AI Gemini (`gemini-2.5-flash-lite`, EU multi-region for GDPR) in four modes (extract/enhance/spoken/ingredientLines), returns schema-validated JSON with a salvage path for truncated long recipes.
+- **Expected behavior:** `structureRecipe` callable sends PII-scrubbed text to Vertex AI Gemini (`gemini-2.5-flash-lite`, `europe-west4` for GDPR) in four modes (extract/enhance/spoken/ingredientLines), returns schema-validated JSON with a salvage path for truncated long recipes.
 - **Edge cases:** Truncated responses salvaged; PII scrubbed pre-send; per-call cost estimate returned.
 - **Validation:** Two fail-open kill switches (`aiEnabled`, `llmParserEnabled`) + rate-limit middleware. Prompts hot-reloaded with SHA-256 A/B bucketing.
 - **Test coverage:** Verified — `llm-kill-switch.test.ts`, `prompts-config.test.ts`, `structure-recipe-empty.test.ts`, `parse-recipe-response-*.test.ts`, `parse-ingredient-lines.test.ts`, `ocr-validation.test.ts`, `pii-scrubber.test.ts`, `prompt-ab-bucket.test.ts`, `gemini-cache-telemetry.test.ts`. *(The single biggest running-cost surface — guarded by kill switches, rate limits, smallest model, prompt-caching telemetry.)*

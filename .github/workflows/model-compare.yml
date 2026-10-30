@@ -1,0 +1,68 @@
+name: Model comparison (recipe import)
+
+# One-off, manual only: runs the recipe_from_url golden pages through Claude
+# models with the production prompt and scores them against the gold. Uses the
+# ANTHROPIC_API_KEY repository secret; nothing here touches the app.
+
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: 'Comma-separated Claude model ids'
+        required: false
+        default: 'claude-haiku-5-5,claude-sonnet-5-5'
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build the page inputs
+        run: flutter test test/golden/llm/recipe_from_url_inputs_test.dart
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        working-directory: functions
+        run: |
+          npm ci
+          npm install --no-save @anthropic-ai/sdk@0.137.0
+
+      - name: Run the comparison
+        working-directory: functions
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MODELS: ${{ inputs.models }}
+          NODE_PATH: ${{ github.workspace }}/functions/node_modules
+          REPO_ROOT: ${{ github.workspace }}
+          TS_NODE_PROJECT: ${{ github.workspace }}/functions/tsconfig.json
+        run: |
+          npx ts-node --transpile-only ../tools/model-compare/recipe-import.ts \
+            ../build/golden-llm/recipe_from_url_inputs.json \
+            ../model-compare-result.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-compare-${{ github.run_id }}
+          path: model-compare-result.json
+          if-no-files-found: ignore

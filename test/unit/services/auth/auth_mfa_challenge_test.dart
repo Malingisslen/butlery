@@ -1,5 +1,5 @@
 // P6-U09 — the MFA sign-in challenge and backup codes, service level
-// (produktregler.md:745-749; Skarmar v12 etapp 3 #authmfa, etapp 6 #mfaaktiv).
+// (etapp 6 #mfaaktiv).
 //
 // Before P6-U09 nothing caught Firebase's multi-factor exception, so an
 // account with two-step verification could not sign in at all.

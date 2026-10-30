@@ -141,6 +141,16 @@ class ImportManagerResult {
       ? this
       : ImportManagerResult._withMetadata(this, {...?metadata, ...llmUse});
 
+  /// This result without the page text a link import carries for the parser
+  /// shadow comparison.
+  ImportManagerResult withoutPageText() =>
+      metadata?.containsKey('pageText') != true
+      ? this
+      : ImportManagerResult._withMetadata(
+          this,
+          {...metadata!}..remove('pageText'),
+        );
+
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
 

@@ -1,8 +1,11 @@
 // BUT-2285: an import that found no ingredients explains the empty list.
 // The same harness pins that both recipe editors say why Spara is greyed.
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -16,6 +19,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 
@@ -35,7 +39,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // The editor writes a draft from the first edit (P6-U08a),
       // so the real auto-save manager reaches SharedPreferences in every test.
       SharedPreferences.setMockInitialValues({});
       // Both views build a real RecipeFormViewModel; EditRecipeView also
@@ -186,6 +190,72 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(hint, findsNothing);
+      });
+
+      testWidgets('skriv själv: an empty title is named before the missing '
+          'ingredient', (tester) async {
+        await pumpEditor(
+          tester,
+          child: SkrivSjalvReceptView(
+            initialRecipe: RecipeFactory.build(
+              id: 'recipe-hint-empty-title',
+              title: '',
+              ingredients: const [],
+              instructions: const [],
+            ),
+            isTemplate: true,
+          ),
+        );
+
+        expect(hint, findsOneWidget);
+        expect(
+          tester.widget<Text>(hint).data,
+          'Skriv en titel för att kunna spara.',
+        );
+      });
+
+      testWidgets('skriv själv: a restored draft shows its title in the '
+          'field the hint is judging', (tester) async {
+        await pumpEditor(
+          tester,
+          child: SkrivSjalvReceptView(
+            initialRecipe: RecipeFactory.build(
+              id: 'recipe-hint-restore',
+              title: '',
+              ingredients: const [],
+              instructions: const [],
+            ),
+            isTemplate: true,
+          ),
+        );
+        expect(
+          tester.widget<Text>(hint).data,
+          'Skriv en titel för att kunna spara.',
+        );
+
+        SharedPreferences.setMockInitialValues({
+          'recipe_draft_d1': jsonEncode({
+            'title': 'Köttbullar',
+            'ingredients': [''],
+            'instructions': [''],
+            'tags': <String>[],
+          }),
+        });
+        final viewModel = Provider.of<RecipeFormViewModel>(
+          tester.element(find.byType(TextFormField).first),
+          listen: false,
+        );
+        expect(await viewModel.loadFromDraft('d1'), isTrue);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.widgetWithText(TextFormField, 'Köttbullar'),
+          findsOneWidget,
+        );
+        expect(
+          tester.widget<Text>(hint).data,
+          'Lägg till minst en ingrediens för att kunna spara.',
+        );
       });
 
       testWidgets('skriv själv: a valid recipe shows no hint', (tester) async {

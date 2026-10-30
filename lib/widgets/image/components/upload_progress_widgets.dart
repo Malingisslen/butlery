@@ -96,7 +96,7 @@ class UploadProgressWidgets {
       return Builder(
         builder: (context) {
           // The plate line with the real progress when there is one
-          // (Grafisk manual v6:209; PlateLine).
+          // (PlateLine).
           return SizedBox(
             width: AppDimensions.iconSizeL,
             child: PlateLine(
@@ -387,7 +387,7 @@ class UploadProgressWidgets {
           case ImageUploadState.uploading:
           case ImageUploadState.retrying:
             // An upload shows a line with its progress, never a spinner
-            // (P4-U07; Grafisk manual v6:209).
+            // (P4-U07).
             return SizedBox(
               width: 60,
               child: PlateLine(

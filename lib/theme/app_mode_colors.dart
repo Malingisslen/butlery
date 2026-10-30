@@ -38,7 +38,6 @@ abstract final class AppModeColors {
   /// semantic text.body: #37453A light, #F5F4ED dark (tokens.json:58-60, delivered
   /// as the generated member textOnCream per tools/app-theme-map.json:97-100).
   /// Body text under a bold title, as in the conflict banner
-  /// (Komponentark v1:757).
   static Color textBody(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.textOnCream : AppColors.textOnCream;
 
@@ -48,7 +47,7 @@ abstract final class AppModeColors {
       : AppColors.textBodyMuted;
 
   /// semantic focusRing: #24382C light, #F5F4ED dark (tokens.json:155-160).
-  /// Never saffron (Grafisk manual v6:209).
+  /// Never saffron.
   static Color focusRing(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.focusRing : AppColors.focusRing;
 
@@ -72,7 +71,7 @@ abstract final class AppModeColors {
       : AppColors.onActionPrimary;
 
   /// semantic text.onActionPrimaryPressed: paper #F5F4ED in both modes
-  /// (tokens.json:86-91; beslutslogg B-14). Only on actionPrimaryPressed.
+  /// (tokens.json:86-91). Only on actionPrimaryPressed.
   static Color onActionPrimaryPressed(Brightness brightness) =>
       _isDark(brightness)
       ? AppColorsDark.onActionPrimaryPressed
@@ -86,9 +85,7 @@ abstract final class AppModeColors {
       _isDark(brightness) ? AppColorsDark.textWarning : AppColors.textWarning;
 
   /// semantic overlay.paperWash: rgba(245,244,237,0.40) (tokens.json:263),
-  /// delivered as the generated member overlayWhite40. The drawn dark outline
-  /// of a secondary control, --ram-kontroll-a (Skarmar v12 etapp 4
-  /// import:28). Only meaningful in dark mode, where the outline is paper.
+  /// delivered as the generated member overlayWhite40.
   static Color paperWash(Brightness brightness) => _isDark(brightness)
       ? AppColorsDark.overlayWhite40
       : AppColors.overlayWhite40;
@@ -122,8 +119,7 @@ abstract final class AppModeColors {
 
   /// semantic text.secondary (dark) #A9B2A0, delivered as the generated dark
   /// member greenMuted ("Nav ovald"), in both modes. The unchosen tabs of
-  /// the ink bar (Komponentark v1:663-666) and quiet text on an ink card
-  /// (Skarmar v12 del 1 #hemrecept :137).
+  /// the ink bar and quiet text on an ink card
   static Color textSecondaryOnInk() => AppColorsDark.greenMuted;
 
   /// palette.inkRaised #2F4437 in both modes: a raised surface on ink, such as
@@ -153,9 +149,8 @@ abstract final class AppModeColors {
 
 /// The mode-aware colour set for members that have no ColorScheme slot.
 ///
-/// It replaced the retired compatibility theme extension in package 7
-/// (NULAGE.md:71-74). It carries only a [Brightness] and no colour values of
-/// its own (tokens.json:522): every member picks the generated AppColors or
+/// It replaced the retired compatibility theme extension in package 7. It carries only a [Brightness] and no colour values of
+/// its own: every member picks the generated AppColors or
 /// AppColorsDark member for that brightness, and the four decorative
 /// category colours the app owns come from AppSpecificColors. It is not a
 /// ThemeExtension, so there is no override path; a theme's brightness is the
@@ -369,7 +364,7 @@ final class ModeColors {
       _isDark ? AppColorsDark.cardWhite54 : AppColors.cardWhite54;
 
   /// semantic text.accent on surface.base: #A15A0A light, #DCA968 dark
-  /// (Grafisk manual v6:524). Surface-bound: on surface.raised use
+  /// Surface-bound: on surface.raised use
   /// [AppColors.onWarningContainer] / [AppColorsDark.onWarningContainer]
   /// (text.accent.onRaised) instead, and on surface.ink use [accentOnInk].
   Color get textAccent =>

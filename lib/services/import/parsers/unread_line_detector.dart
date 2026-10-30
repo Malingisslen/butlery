@@ -1,6 +1,6 @@
 /// Decides whether an imported ingredient line could not be read, so the
 /// review shows it empty and marked instead of as guessed text
-/// (flows-roles-budget.md, BUT-2158).
+/// (BUT-2158).
 ///
 /// Two shapes count as unread:
 /// - the marker the image reader writes where it could not read a line

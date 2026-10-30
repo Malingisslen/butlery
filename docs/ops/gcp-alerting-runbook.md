@@ -2,7 +2,7 @@
 
 **Status: ACTIVE — 2 alert policies live in `butlery-app-1` as of 2026-04-26.**
 
-Operational runbook for Google Cloud Monitoring alerts in `butlery-app-1`.
+Operational runbook for Google Cloud Monitoring alerts in `butlery-prod`.
 Companion to `infrastructure/alerting/setup-gcp-alerts.sh`, which is
 idempotent and applies the policies directly via `gcloud`.
 
@@ -84,9 +84,9 @@ config dir and breaks `gcloud auth application-default login`.
 
 ```bash
 gcloud auth login
-gcloud config set project butlery-app-1
+gcloud config set project butlery-prod
 
-# Verify you can see the project — should print "butlery-app-1".
+# Verify you can see the project — should print "butlery-prod".
 gcloud config get-value project
 ```
 
@@ -94,7 +94,7 @@ If `gcloud auth login` fails with a quota project warning, also run:
 
 ```bash
 gcloud auth application-default login
-gcloud auth application-default set-quota-project butlery-app-1
+gcloud auth application-default set-quota-project butlery-prod
 ```
 
 ### 3. Create the email notification channel
@@ -104,19 +104,19 @@ the project ops alias (`info@butlery.se`) until the team grows.
 
 ```bash
 gcloud alpha monitoring channels create \
-  --project=butlery-app-1 \
+  --project=butlery-prod \
   --type=email \
   --display-name="Butlery Alerts" \
   --channel-labels=email_address=info@butlery.se
 ```
 
 Capture the channel resource name from the output — it looks like
-`projects/butlery-app-1/notificationChannels/1234567890123456789`. If you
+`projects/butlery-prod/notificationChannels/1234567890123456789`. If you
 miss it, list and pick:
 
 ```bash
 gcloud alpha monitoring channels list \
-  --project=butlery-app-1 \
+  --project=butlery-prod \
   --format='value(name)'
 ```
 
@@ -165,7 +165,7 @@ the GCP Console:
 1. <https://console.cloud.google.com/billing> — pick the Butlery billing
    account.
 2. Budgets & alerts > Create budget.
-3. Scope: `butlery-app-1`. Amount: a monthly figure you can absorb if
+3. Scope: `butlery-prod`. Amount: a monthly figure you can absorb if
    things go wrong (a few hundred SEK is usually enough at this stage).
 4. Thresholds: 50% (email), 80% (email), 100% (email). Add Slack /
    PagerDuty later if the team grows.

@@ -6,8 +6,7 @@
 /// the service, clock and permission edges. What the host looks like in that
 /// state is left to the app; the harness never paints anything itself.
 ///
-/// The rows come from test/fixtures/design/ux-beteende-53.json, vendored from
-/// the design session's ux-beteende.json (KLASS = VISUAL_ONLY_MIGRATION) with
+/// The rows come from test/fixtures/design/ux-beteende-53.json, vendored with
 /// its sha256. Each row names the file the state was evidenced in (BEVIS) and
 /// the widget the harness pumps (HOST). The HOST is an interpretation, made
 /// here and recorded next to BEVIS, which is never rewritten.
@@ -77,10 +76,10 @@ class StateRow {
   /// DEFAULT, LOADING, EMPTY, OFFLINE or CONFLICT.
   final String state;
 
-  /// PRESENT or ABSENT in the drawings (ux-beteende.json RITNING).
+  /// PRESENT or ABSENT in the drawings.
   final String drawing;
 
-  /// Where the state was evidenced (ux-beteende.json BEVIS), unchanged.
+  /// Where the state was evidenced, unchanged.
   final String evidence;
 
   /// The class the harness pumps.
@@ -92,7 +91,6 @@ class StateRow {
   /// Why the host differs from the evidence, when it does.
   final String? hostNote;
 
-  /// fas2/block288-uxfrysning.json vytillstand KATEGORI for (view, state).
   final String block288Category;
 
   /// The file that owns the state today, when it moved (the Hem rows).

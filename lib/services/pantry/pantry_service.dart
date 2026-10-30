@@ -132,9 +132,9 @@ class PantryService extends BaseService {
   }
 
   /// Saves an edited item, writing only the fields that differ from
-  /// [previous] (produktregler.md:105, :142). Without [previous] every
+  /// [previous]. Without [previous] every
   /// editable field is written, but a missing amount still never wipes a
-  /// known one (produktregler.md:148).
+  /// known one.
   ///
   /// With [previous], the values it replaces are kept for Återställ
   /// (BUT-2140) and returned; without it there is nothing to keep, and the
@@ -197,7 +197,7 @@ class PantryService extends BaseService {
   }
 
   /// Changes a known amount by [delta] — a relative change, never a new
-  /// total (produktregler.md:146). An item without an amount ("har hemma")
+  /// total. An item without an amount ("har hemma")
   /// has nothing to count from, so it is left as it is. Returns whether the
   /// change was written; false also for a zero [delta] and a failed write.
   Future<bool> adjustQuantity(
@@ -219,7 +219,7 @@ class PantryService extends BaseService {
 
   /// Q5-02 = A (produktbeslut 2026-09-24): a row without an amount ("har
   /// hemma") takes a bought [amount] in [unit]. The amount is sent as a
-  /// relative change (produktregler.md:146): the store's increment starts a
+  /// relative change: the store's increment starts a
   /// missing amount at the delta, so two purchases that land on the same
   /// row at once add up instead of one overwriting the other. The unit is
   /// written first; if the amount then fails, the row is still "har hemma".

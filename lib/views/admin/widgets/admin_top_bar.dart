@@ -9,7 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// The admin panel's one dark bar: the name, the tabs and who is signed in
-/// (Skarmar v12 del 3 #29). The tabs are a [TabBar] of [ButleryTab]s, so they
+/// The tabs are a [TabBar] of [ButleryTab]s, so they
 /// carry the canonical focus ring and scroll sideways when the window is narrow.
 class AdminTopBar extends StatelessWidget {
   const AdminTopBar({

@@ -67,10 +67,6 @@ class MenuMissingMeal {
 }
 
 /// P5-U25: a generation that found fewer dishes than were asked for.
-///
-/// produktregler.md:206: "Delresultat mäts i recept, inte i dagar ... Ett
-/// delresultat är alltså 1 ≤ n < begärt antal recept." produktregler.md:893:
-/// what is missing is named, "ett antal utan namn är ingen upplysning".
 @immutable
 class MenuPartialOutcome {
   const MenuPartialOutcome({
@@ -87,10 +83,8 @@ class MenuPartialOutcome {
 }
 
 /// P6-U01: a generation where nothing matched ("0 recept placerade ->
-/// inga matchningar", flows-roles-budget.md:32).
+/// inga matchningar").
 ///
-/// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
-/// det och erbjuder minsta möjliga eftergift — inte en generisk feltext."
 /// It is its own outcome and never an error; an empty library stays the
 /// error errorNoRecipesAvailable.
 @immutable
@@ -226,7 +220,7 @@ class MenuViewModel extends BaseViewModel {
   int get totalRecipeCount => _stateManager.totalRecipeCount;
 
   /// P5-U25: the generated menu has fewer dishes than the prompt asked for
-  /// (1 ≤ n < requested, produktregler.md:206), or null. Read from the menu
+  /// (1 ≤ n < requested), or null. Read from the menu
   /// as it is now, so a re-rolled section that filled the gap clears it.
   MenuPartialOutcome? get partialOutcome {
     if (_requestedByMealType.isEmpty || !hasMenu) return null;

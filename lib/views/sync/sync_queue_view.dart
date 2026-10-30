@@ -2,16 +2,6 @@
 //
 // P4-U19: "Väntar på synk", the user's view of the offline queue.
 //
-//   produktregler.md:190  "Mer → Väntar på synk: antal poster, vad de rör,
-//                          ålder, och de permanenta felen först. Nås även
-//                          från köindikatorn i toppfältet."
-//   produktregler.md:188  permanent failures go to "Väntar på dig" with the
-//                          cause in words, and each has an action.
-//   produktregler.md:192  nothing leaves the queue without the server's
-//                          confirmation or being shown here as a failure.
-//   Skarmar v12 del 4 #synkko (light and dark): the drawing.
-//   fas2/block288-uxfrysning.json TR::FLOW::08::kovy::vantar-pa-synk.
-//
 // The data is schema 3 (P5-U35) through SyncQueueSource.
 //
 // P6-U08b: a failed change says when it is sent again, and the line counts
@@ -43,7 +33,7 @@ class SyncQueueView extends StatefulWidget {
   const SyncQueueView({this.backTo, super.key});
 
   /// The name of the view Back returns to, when it is known ("Tillbaka till
-  /// Mer", #synkko; tillganglighetshandoff 'Navigation & toppfält').
+  /// Mer", #synkko).
   final String? backTo;
 
   static const Key syncNowKey = ValueKey<String>('sync-queue-sync-now');
@@ -197,7 +187,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     }
   }
 
-  /// "Spara som kopia" (produktregler.md:188). Q6-14 = C: the copy's title
+  /// "Spara som kopia". Q6-14 = C: the copy's title
   /// gets "(kopia)", so the user sees which one is the copy.
   void _saveAsCopy(QueuedChange change) {
     final l10n = context.l10n;
@@ -219,7 +209,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     ),
   );
 
-  /// "Släng ändringen" is class 1 (produktregler.md:132, "omedelbar + 7 s
+  /// "Släng ändringen" is class 1 ("omedelbar + 7 s
   /// Ångra-snackbar"; :140 "Ångra finns där data försvinner"). The change
   /// leaves the list at once and is thrown away only when the Ångra window
   /// closes without Ångra; until then the queue is untouched.

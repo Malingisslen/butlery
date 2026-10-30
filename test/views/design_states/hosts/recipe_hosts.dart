@@ -217,7 +217,7 @@ final recipeHosts = <String, StateHost>{
     build: (ctx) async => _editor(ctx),
   ),
   // Own recipe: "Båda versionerna visas, användaren väljer"
-  // (produktregler.md:102). The banner's Visa opens the two versions.
+  // The banner's Visa opens the two versions.
   'recepteditor::CONFLICT': StateHost(
     build: (ctx) async => _editor(ctx),
     reach: (tester, ctx) async {

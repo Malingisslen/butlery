@@ -1,12 +1,11 @@
 // P7 track A: the legacy surface leaves lib/views.
 //
 // - A1: a failure says what failed, never the exception, in the ink failure
-//   snackbar with the alert role and "Stäng" (content-style-guide.md:87-97;
-//   Komponentark v1:750; tillganglighetshandoff:172).
+//   snackbar with the alert role and "Stäng" (content-style-guide.md).
 // - A2: the category swatches read ModeColors and keep the generated values
-//   of their mode (NULAGE.md:71-74; tokens.json:522).
+//   of their mode.
 // - A3: busy buttons draw the plate line, work in progress is the plate line
-//   with its text, never a spinner (produktregler.md:163, :304; B-18).
+//   with its text, never a spinner (B-18).
 // - A4: state is a token, never an opacity (tokens.json:41).
 // - A5: a dialog button that only closes says "Stäng", never "OK"
 //   (content-style-guide.md:77, :96).
@@ -369,8 +368,8 @@ void main() {
 
   group('A4: state is a token, never an opacity (tokens.json:41)', () {
     // A state ternary over Opacity or an alpha is the old way. The on-ink
-    // step plate in cooking mode is drawn at 0.6 (Skarmar v12 del 1 #laga
-    // :277-288, tokens.json:47-51) and is the one allowed ladder step here.
+    // step plate in cooking mode is drawn at 0.6 (
+    // tokens.json:47-51) and is the one allowed ladder step here.
     const files = [
       'lib/views/family/family_member_form_view.dart',
       'lib/views/family/who_is_eating_sheet.dart',

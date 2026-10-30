@@ -342,8 +342,7 @@ class TagResultDisplay extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              // Coverage as the determinate plate line (Komponentark v1:305;
-              // B-18). The percentage beside it keeps its status colour, so
+              // The percentage beside it keeps its status colour, so
               // colour is never the only signal; the line is not read out
               // on its own.
               child: ExcludeSemantics(

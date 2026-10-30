@@ -265,7 +265,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   }
 
   /// Q5-01: "Släng resten" empties the tray at once, with the 7 s Ångra of
-  /// a class-1 delete (produktregler.md:131-132).
+  /// a class-1 delete.
   void _onDiscardOverflow(BuildContext context, WeeklyMenuPlanViewModel vm) {
     final discarded = vm.discardOverflow();
     if (discarded == null) return;

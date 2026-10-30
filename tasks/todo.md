@@ -1,81 +1,58 @@
-# BUT-2413: poll votes are erased but not exported (2026-10-19)
+# Kodhygien: tre duplicerade kluster i lib/ (Malin 2026-10-29)
 
-GDPR Art. 15/17. Split out of BUT-1919 point 4 (Malin: "Ja, eget ärende", 2026-10-19).
-Router: `python tools/stakeholder_router.py --json firestore.rules
-lib/repositories/firebase/firebase_data_export_repository.dart
-lib/services/account/export/social_export_manager.dart` → `full-panel` (high-stakes hits:
-`firestore.rules`, `social_export_manager.dart`). Not convened as eleven parallel seats (the
-model-choice rule forbids parallel agents); the Privacy/DPO and Security Architect stakes are
-carried by the `firebase-backend-security` and `firestore-rules-tester` gates (Opus), which read
-this plan beside the staged diff.
+Malins uppdrag: en delad hjälpare per kluster som `node tools/code_hygiene.mjs` pekar ut,
+inget mer. Fortsättning på c53bc2f13 och 4aae2ac42, samma form: hjälparen tar rena värden
+(dialogerna har olika vy-modeller) och parsarhjälparna ligger på `RecipeSiteParser`.
+Beteendet ändras inte. Fas 2-planen nedan är en annan sessions och lämnas orörd.
 
-## Goal beyond the ticket
+- [x] 1. `RecipeShareDialogFrame` (ny fil i `recipe_selection/`): AlertDialog-ramen med
+      titel, innehåll, Avbryt och Dela-knappen. Vän- och gruppdialogen bygger den med
+      värden ur sin vy-modell. Widgettest för ramen.
+- [x] 2. `RecipeSiteParser.cleanCirkaFormatting`: Köket och Recept har samma
+      `_clean…Formatting`; båda anropar basklassens. Enhetstest i basklassens svit.
+- [x] 3. `RecipeSiteParser.extractPortions(doc, siteSelector:)`: Arla, ICA, Köket och Recept
+      har samma `_extractPortions` utom en egen selektor på andra plats (ICA ingen), som
+      `extractImage`. Enhetstest som låser selektorordningen.
+- [x] 4. Bevis: `flutter analyze`, parsartesterna + dialogtesterna + nya tester,
+      `node tools/code_hygiene.mjs` visar att de tre klustren är borta (och inget nytt
+      kluster i filerna), `--update-baseline`, commit genom grindarna, push till main.
 
-Cause: the erasure (`deletePollVotes`) and the export pick the requester's vote rows by two
-different predicates. Erasure: `collectionGroup('poll_votes').where('voterId', ==, uid)`, every
-row. Export: one probe per exported message that has `metadata.poll`, after the `memberSince`
-filter. Every row the second predicate misses is erased without ever being shown. Repair: the
-export reads with the erasure's predicate, so the two sets are the same by construction.
-Siblings: an audit of every cascade step against its export leg (separate Explore pass; findings
-reported to Malin, fixed here only if they are the same one-query shape). Guard: tests that pin
-both of the ticket's holes and a rules test for the new read.
+Sammanfattning för Malin: ställen där samma kod låg kopierad får en gemensam version var. Appen beter sig likadant; nästa ändring görs på ett ställe.
 
-## Design
+# Fas 2 (BUT-2430): repot byter till `butlery-prod`
 
-1. `firestore.rules`: a read-only collection-group block, same shape as BUT-2114 `likes` and
-   BUT-2118 `votes`:
-   `match /{path=**}/poll_votes/{voterId} { allow read: if isAuthenticated() &&
-   resource.data.voterId == request.auth.uid; }`
-   `voterId` is pinned to the doc id and to `request.auth.uid` on every write limb
-   (`isValidVote()`), so the row is the caller's own. No write verb is added. The nested block's
-   sentence saying no collection-group match is added is struck.
-2. Repository: `exportPollVotesByUser(userId, {maxDocuments})` →
-   `[{message_id, data}]` via that query (index exists: `poll_votes.voterId` COLLECTION_GROUP).
-   The per-message probe, `_hasPoll` and `maxPollVoteLookupsPerConversation` are removed:
-   one read per vote row replaces about three reads per poll message.
-3. `SocialExportManager.exportMessages`: reads the votes once (capped through
-   `ExportPaginationHelper.fetchCapped`, type `poll_votes`, cap 2000 = `MAX_POLL_VOTE_SWEEP_ROWS`
-   so the export reaches as far as the erasure does), then:
-   - a vote whose message is exported rides beside it as `your_poll_vote` (as today);
-   - a vote on a withheld duplicate-guard row stays in `your_poll_votes_on_withheld_messages`
-     (BUT-1955, unchanged);
-   - every other vote (message without `poll`, message before `memberSince`, past the message
-     cap, a chat the user left, a message deleted) goes to a section-level
-     `your_poll_votes_on_other_messages: [{message_id, your_poll_vote}]`.
-   Past the cap: `poll_votes_truncated: true` at section level (the nested walk lifts it).
-   Read failure: `poll_votes_error_code: 'poll-votes-read-failed'`, `error_code ??=` the same;
-   the conversations still export without votes.
-   `data_minimisation` gains one sentence about where votes are, conditional on the read
-   having succeeded (the BUT-2014 rule).
-4. Records: dated SUPERSEDES line for the export half of the BUT-1832 entry in
-   `.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md`;
-   refresh the two `ACCEPTED_LARGE_FILES.md` rows. The write-side gaps of BUT-1832 (a vote on a
-   non-poll, a late joiner voting) are NOT in this ticket and stay as recorded.
+Genomför fas 2 i den godkända planen `tasks/new-prod-project-plan.md` (B, "Fas 2 — Repot";
+Malin godkände planen 2026-10-20 och sa "Ja, starta Fas 2" 2026-10-21). Inga nya beslut här;
+det här är bara körlistan. Mätta fakta från fas 1: BUT-2429-kommentarerna.
 
-No new personal data, no new writer, no policy text: the export only shows rows that already
-exist and are already named as the user's poll votes.
+No architecture-changing unknowns — assumptions: the plan's literal list plus a repo-wide grep is
+the universe; butlery.app ownership is unverified, so nothing new depends on it and the CORS
+lists are left as they are.
 
-## Acceptance criteria / verification
+## Commits, en per grind-familj
+- [x] Arbetsflöden (inga grindar): WIF i alla sju prod-flöden (`measure-production.yml` är
+      det sjunde, saknas i planens lista), taggtriggern bort, `_EU`-hemligheten i
+      build-validation + emulator-lane, `patch_live_files.py` tar token från gcloud.
+- [x] functions (cloud-functions-specialist): `require-project.ts` (+ test),
+      `deploy-project-guard.test.ts` (WIF-kontroller), övriga literaler under functions/src.
+- [x] Regler (firestore-rules-tester + cloud-functions-specialist): chattbildens
+      bucket-regex i `firestore.rules` släpper bara `butlery-app-(1|staging)` — saknas i
+      planens lista; utan bytet nekas varje offline-chattbild på butlery-prod.
+- [x] Dart (code-reviewer, testing-specialist, integration-reviewer; max 3 filer per runda):
+      `firebase_options.dart`, `firebase_env.dart`, `main.dart`, `admin_main.dart`
+      (reCAPTCHA Enterprise), tester, `scripts/crf/*.dart`.
+- [x] Native + konfig (inga grindar): `.firebaserc`, `firebase.json`, `build.gradle.kts`,
+      `Info.plist`, entitlements, `security.txt`, skript, `check_model_versions.py`.
+- [x] Docs och runbooks.
 
-- [ ] Rules test (`collection-group-wildcards-rules.test.ts`): own filtered query succeeds and
-      returns only own rows across two messages; filter on another uid refused; unfiltered
-      refused; a row lacking `voterId` denied; the catch-all is read-only (write refused).
-      Emulator run green.
-- [ ] Repo test: `exportPollVotesByUser` returns own rows only, with `message_id`, including a
-      row under a message with no `poll` and one under a message before `memberSince`.
-- [ ] Manager tests: hole 1 (vote on a non-poll message is exported), hole 2 (vote on a message
-      filtered by `memberSince` is exported under `your_poll_votes_on_other_messages`), overlay
-      beside an exported message, withheld-row list unchanged, cap → `poll_votes_truncated`,
-      failure → error code and conversations still present, note conditional.
-- [ ] Each new test reddens when its fix is reverted (revert probe, then restore).
-- [ ] `flutter analyze` clean; every suite that grep finds for `FirebaseDataExportRepository`
-      fakes and the changed methods is green.
-- [ ] Separate reviewers per `reviewGates` on the final staged diff, then PR, CI green, merge,
-      rules deploy after taking main in.
-
-## Summary for Malin
-
-Röster i omröstningar raderas när någon tar bort sitt konto, men exporten "Ladda ner min data"
-visade bara en del av dem. Nu hämtar exporten rösterna på exakt samma sätt som raderingen gör,
-så allt som raderas också syns i exporten. Det blir dessutom billigare: en läsning per röst i
-stället för ungefär tre per omröstning. Ingen ny text i integritetspolicyn behövs.
+## Bevis
+- [x] Repo-vid grep på `butlery-app-1` (utom `.dart_tool`, `__pycache__`,
+      `functions/fnlist.tmp.json`, `.claude/state`): bara avsiktliga träffar kvar.
+- [x] `flutter analyze --fatal-infos`, functions unit-svit, `flutter build apk --flavor prod`
+      med oförändrad signatur (F12).
+      Lokalt rött i `test:reset-analytics-prune` och `test:erasure-export-coverage`,
+      inga fas 2-filer; CI cloud-functions-unit grönt på main.
+- [x] F4: `firebase use production` → `butlery-prod`; vakttestet grönt.
+- [x] F15a: avkodad `GOOGLE_SERVICES_JSON_BASE64_EU` innehåller `butlery-prod`.
+- [ ] Push, sedan Malins byte av miljövariablerna i `production` steg för steg.
+- [ ] Bevis på BUT-2430, kort svensk rapport.

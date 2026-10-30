@@ -134,9 +134,7 @@ abstract final class RecipeDetailSharedWidgets {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!hasPhoto) ..._typographicHeadLead(context, recipe),
-          // The recipe's title under the media hero, as the view's heading,
-          // written as the user wrote it (Komponentark v1:81-89 "Titeln står
-          // under heron"; Skarmar v12 del 1 'Receptdetalj'). text.primary so
+          // text.primary so
           // it reads on surface.raised in dark mode too; primary is ink in
           // both modes.
           Semantics(
@@ -168,14 +166,14 @@ abstract final class RecipeDetailSharedWidgets {
             viewModel: viewModel,
             currentPortions: actions.currentPortions,
             isScaled: actions.currentPortions != (recipe.portions ?? 1),
-            onAddPhoto: !hasPhoto && canAddPhoto
-                ? () => actions.editRecipe(context)
-                : null,
           ),
           // BUT-643: nutrition strip (setting) and the always-present button.
           RecipeNutritionSection(
             recipe: recipe,
             portions: actions.currentPortions,
+            onAddPhoto: !hasPhoto && canAddPhoto
+                ? () => actions.editRecipe(context)
+                : null,
           ),
           FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
@@ -232,7 +230,7 @@ abstract final class RecipeDetailSharedWidgets {
   }
 
   /// The brand line and the category heading above the title of a recipe
-  /// without a photo (Komponentark v1, "Utan foto · typografiskt huvud").
+  /// without a photo ("Utan foto · typografiskt huvud").
   static List<Widget> _typographicHeadLead(
     BuildContext context,
     Recipe recipe,

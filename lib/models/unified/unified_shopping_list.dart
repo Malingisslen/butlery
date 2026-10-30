@@ -205,9 +205,9 @@ class UnifiedShoppingList {
   /// P6-U02: the ids of the rows the week merge (#inkopmerge) put on this
   /// list. "Ersätt listan" replaces exactly these rows and keeps every other
   /// row, because "Dina egna, manuellt tillagda varor behålls alltid"
-  /// (Skarmar v12 del 2 #inkopmerge; flows-roles-budget.md:47; produktbeslut
+  /// (produktbeslut
   /// PQ-10 = A, 2026-09-23). A row is told apart by its id, never by its
-  /// name (produktregler.md:118, "Namn är aldrig identitet"). Null on lists
+  /// name ("Namn är aldrig identitet"). Null on lists
   /// written before this field existed: their rows cannot be told apart, so
   /// all of them are kept.
   final List<String>? menuItemIds;

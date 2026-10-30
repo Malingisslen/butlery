@@ -10,8 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
-/// Diameter of the paper ring behind a hero icon button (Komponentark
-/// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
+/// The hitbox around it is 48 dp.
 const double _paperRingSize = 40;
 
 /// The icon colour on the hero. Ink on the paper ring, which is paper in both
@@ -20,10 +19,6 @@ const double _paperRingSize = 40;
 Color _heroIconColor(ColorScheme cs, {required bool onPaper}) =>
     onPaper ? cs.primary : cs.onSurface;
 
-/// An icon button on the media hero: an ink icon in a paper ring, 48 dp
-/// hitbox, the canonical focus ring around the hitbox (Komponentark
-/// v1:81-89 "Ikonknappar i pappersringar"; Grafisk manual v6:381).
-///
 /// Paper and ink are the same in both modes, because the ring stands on a
 /// photo, not on the theme's surface: onPrimary is paper #F5F4ED and
 /// primary is ink #24382C in both schemes (lib/theme/app_colors.dart
@@ -43,7 +38,7 @@ class RecipeHeroButton extends StatefulWidget {
 
   /// False on a page without a photo: the ring stands on a photo, and with
   /// none behind it the icons are drawn bare on the paper and the 48 dp
-  /// hitboxes abut (Komponentark v1, "Utan foto · typografiskt huvud").
+  /// hitboxes abut ("Utan foto · typografiskt huvud").
   final bool ringVisible;
 
   @override
@@ -143,7 +138,7 @@ class _PaperRing extends StatelessWidget {
 }
 
 /// The hero's popup menu button, in the same paper ring as
-/// [RecipeHeroButton] (Komponentark v1:81-89).
+/// [RecipeHeroButton].
 class RecipeHeroMenuButton<T> extends StatefulWidget {
   const RecipeHeroMenuButton({
     required this.icon,

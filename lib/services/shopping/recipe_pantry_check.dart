@@ -31,16 +31,16 @@ class RecipePantryResult {
   });
 
   /// The items to add, in recipe order. A row the pantry marked carries
-  /// "Kanske hemma" or "Kolla datum" in its note (produktregler.md:230-232),
+  /// "Kanske hemma" or "Kolla datum" in its note,
   /// as a week merge row does.
   final List<UnifiedShoppingItem> toBuy;
 
-  /// Names left off because enough is at home (produktregler.md:228, "raden
+  /// Names left off because enough is at home ("raden
   /// visas i 'Har hemma'").
   final List<String> coveredAtHome;
 
   /// Names added with less than the recipe asks for, because some is at
-  /// home (produktregler.md:229, 233).
+  /// home.
   final List<String> lessened;
 }
 
@@ -49,9 +49,9 @@ class RecipePantryCheck {
   const RecipePantryCheck._();
 
   /// [items] against [pantry] by the week merge's rule, in its order
-  /// (flows-roles-budget.md:51): duplicates are merged first, units are
+  /// duplicates are merged first, units are
   /// converted within one family, then the pantry is subtracted
-  /// ([MenuShoppingMergePlanner.toBuy], produktregler.md:224-234). Enough at
+  /// ([MenuShoppingMergePlanner.toBuy]). Enough at
   /// home leaves an item off, some at home leaves the difference, and an
   /// unknown amount, a unit that cannot be converted or a date passed
   /// subtracts nothing and marks the row. The order of [items] is kept.
@@ -69,7 +69,7 @@ class RecipePantryCheck {
       double? amount = item.amount;
       if (group.unconvertible) {
         // The same ingredient in units that do not convert: nothing can be
-        // subtracted without counting the stock twice (produktregler.md:231).
+        // subtracted without counting the stock twice.
         final atHome = pantry.any(
           (p) =>
               SwedishCharacterNormalizer.normalize(p.ingredientName) ==

@@ -61,10 +61,14 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
         throw Exception('No permission to add members');
       }
 
-      // 3. Add the member
+      // 3. Add the member. Someone already here keeps the provenance they
+      // have; changing a permission is updateMemberPermission's job.
       final updatedMemberPermissions = Map<String, ResourcePermission>.from(
         recipe.socialData?.memberPermissions ?? {},
       );
+      if (updatedMemberPermissions.containsKey(userId)) {
+        throw Exception('Already a member');
+      }
       updatedMemberPermissions[userId] = permission;
 
       // BUT-1797: record WHY they have access, exactly as RecipeMemberManager

@@ -22,7 +22,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/star_rating_row.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -61,6 +62,16 @@ Widget _app(Widget child) {
   );
 }
 
+final _summary = find.ancestor(
+  of: find.byType(ButleryChevron),
+  matching: find.byType(ButleryTapTarget),
+);
+
+Future<void> _openRatingSheet(WidgetTester tester) async {
+  await tester.tap(_summary);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const min = AppDimensions.minTouchTarget;
   final sv = AppLocalizationsSv();
@@ -78,8 +89,10 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  testWidgets('the remove-own-rating control is at least 48 x 48 dp and a '
-      'press beside the glyph opens the confirmation', (tester) async {
+  testWidgets('the remove-own-rating control in the rating sheet is at least '
+      '48 x 48 dp and a press beside the label opens the confirmation', (
+    tester,
+  ) async {
     final recipe = RecipeFactory.build(
       id: 'rated-1',
       rating: 4.0,
@@ -105,32 +118,75 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
+    await _openRatingSheet(tester);
 
-    final control = find
-        .ancestor(
-          of: find.byIcon(ButleryIcons.x),
-          matching: find.byType(GestureDetector),
-        )
-        .first;
+    final control = find.ancestor(
+      of: find.text(sv.a11yRemoveOwnRating),
+      matching: find.bySubtype<TextButton>(),
+    );
     expect(control, findsOneWidget);
     final size = tester.getSize(control);
     expect(size.width, greaterThanOrEqualTo(min));
     expect(size.height, greaterThanOrEqualTo(min));
-    expect(tester.getSize(find.byIcon(ButleryIcons.x)), const Size(14, 14));
 
-    // 2 dp inside the corner: well clear of the 14 dp glyph.
-    await tester.tapAt(tester.getTopLeft(control) + const Offset(2, 2));
-    await tester.pump();
+    // 2 dp inside the corner: well clear of the label.
+    final corner = tester.getTopLeft(control) + const Offset(2, 2);
+    expect(
+      tester.getRect(find.text(sv.a11yRemoveOwnRating)).contains(corner),
+      isFalse,
+    );
+    await tester.tapAt(corner);
+    await tester.pumpAndSettle();
     expect(find.text(sv.ratingRemoveTitle), findsOneWidget);
   });
 
+  testWidgets('each star button in the rating sheet is at least 48 x 48 dp', (
+    tester,
+  ) async {
+    final recipe = RecipeFactory.build(
+      id: 'rated-stars',
+      rating: 4.0,
+      type: RecipeType.shared,
+    );
+    final service = _RatedRecipeService()
+      ..setRecipeState(recipes: [recipe], isInitialized: true);
+    TestServiceLocator.registerMock<UnifiedRecipeService>(service);
+    TestServiceLocator.registerMock<RecipeCookingService>(
+      MockFactory.createRecipeCookingService(),
+    );
+    final vm = RecipeDetailViewModel(recipe: recipe, recipeService: service);
+    addTearDown(vm.dispose);
+
+    await tester.pumpWidget(
+      _app(
+        RecipeDetailMetadata(
+          viewModel: vm,
+          currentPortions: 4,
+          isScaled: false,
+        ),
+      ),
+    );
+    await tester.pump();
+    await _openRatingSheet(tester);
+
+    final stars = find.descendant(
+      of: find.byType(StarRatingRow),
+      matching: find.byType(InkWell),
+    );
+    expect(stars, findsNWidgets(5));
+    for (var i = 0; i < 5; i++) {
+      final size = tester.getSize(stars.at(i));
+      expect(size.width, greaterThanOrEqualTo(min), reason: 'star ${i + 1}');
+      expect(size.height, greaterThanOrEqualTo(min), reason: 'star ${i + 1}');
+    }
+  });
+
   // BUT-2218: on the narrowest phone (Breakpoints.mobileSmall, 320 dp) and at
-  // double text size, the 48 dp remove control wraps below the stars rather
-  // than overflowing the rating row, and stays whole on screen.
+  // double text size, the metadata row wraps rather than overflowing, the
+  // rating summary stays whole on screen and keeps a 48 dp tall tap target.
   for (final (width, scale) in [(320.0, 1.0), (360.0, 2.0)]) {
-    testWidgets('the rating row fits at $width dp, text x$scale', (
-      tester,
-    ) async {
+    testWidgets('the metadata row and rating summary fit at $width dp, '
+        'text x$scale', (tester) async {
       tester.view.physicalSize = Size(width, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -173,16 +229,13 @@ void main() {
       await tester.pump();
 
       expect(tester.takeException(), isNull);
-      final control = tester.getRect(
-        find
-            .ancestor(
-              of: find.byIcon(ButleryIcons.x),
-              matching: find.byType(GestureDetector),
-            )
-            .first,
-      );
-      expect(control.right, lessThanOrEqualTo(width - 16));
-      expect(control.width, greaterThanOrEqualTo(min));
+      expect(_summary, findsOneWidget);
+      final summary = tester.getRect(_summary);
+      expect(summary.left, greaterThanOrEqualTo(16));
+      expect(summary.right, lessThanOrEqualTo(width - 16));
+      expect(summary.height, greaterThanOrEqualTo(min));
+      final row = tester.getRect(find.byType(Wrap).first);
+      expect(row.right, lessThanOrEqualTo(width - 16));
     });
   }
 

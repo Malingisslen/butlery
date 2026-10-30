@@ -171,7 +171,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       }
 
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
-      // Flow 07: explanation before the system prompt (produktregler.md:682).
+      // Flow 07: explanation before the system prompt.
       final outcome = await imagePickerService.pickMultipleImagesWithOutcome(
         rationale: mediaRationalePrompt(context),
       );

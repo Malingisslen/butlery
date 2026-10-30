@@ -249,7 +249,7 @@ Future<void> _migrateAllergens(Directory outputDir) async {
       key: 'nötkött',
       triggerProperties: ['beef'],
       containsTagSv: 'innehåller-nötkött',
-      freeTagSv: 'nötkötsfri',
+      freeTagSv: 'nötköttsfri',
       containsTagEn: 'contains-beef',
       freeTagEn: 'beef-free',
       uiGroup: 'meat',
@@ -284,7 +284,8 @@ Future<void> _migrateAllergens(Directory outputDir) async {
     'schemaVersion': 1,
     // v2: skaldjur trigger gained 'seafood' (2026-07-02 audit fix)
     // v3: skaldjur trigger lost 'seafood' again (BUT-2234)
-    'version': 3,
+    // v4: nötkött free tag spelled 'nötköttsfri'
+    'version': 4,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'displayOrder': allergens.map((a) => a['key']).toList(),
@@ -409,7 +410,7 @@ Future<void> _migrateDietary(Directory outputDir) async {
     ),
     _dietary(
       key: 'nötkötsfri',
-      tagSv: 'nötkötsfri',
+      tagSv: 'nötköttsfri',
       tagEn: 'beef-free',
       excludedProperties: ['beef'],
       descriptionSv: 'Ej nötkött',
@@ -438,7 +439,8 @@ Future<void> _migrateDietary(Directory outputDir) async {
   final document = {
     'schemaVersion': 1,
     // v2: vegetarisk/vegansk/kosheranpassad exclusion fixes (2026-07-02)
-    'version': 2,
+    // v3: nötkötsfri shown as 'nötköttsfri' (the key keeps its spelling)
+    'version': 3,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'displayOrder': dietary.map((d) => d['key']).toList(),

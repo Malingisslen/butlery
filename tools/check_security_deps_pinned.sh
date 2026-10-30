@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # BUT-793: ensure security-primitive deps stay pinned to exact versions.
-# These three packages affect attestation, RASP, and cert-pinning behavior;
+# These packages affect attestation and cert-pinning behavior;
 # silent minor bumps via `pub upgrade` can change security semantics without
 # review. Pinning forces an explicit upgrade decision.
 
@@ -15,7 +15,7 @@ if [[ ! -f "$PUBSPEC" ]]; then
 fi
 
 # Each line must match: `<name>: <semver>` with no caret/tilde/range marker.
-DEPS=(firebase_app_check freerasp http_certificate_pinning)
+DEPS=(firebase_app_check http_certificate_pinning)
 EXIT=0
 
 for dep in "${DEPS[@]}"; do
@@ -40,4 +40,4 @@ done
 if [[ $EXIT -ne 0 ]]; then
   exit $EXIT
 fi
-echo "OK: security-primitive deps pinned exactly (firebase_app_check, freerasp, http_certificate_pinning)"
+echo "OK: security-primitive deps pinned exactly (firebase_app_check, http_certificate_pinning)"

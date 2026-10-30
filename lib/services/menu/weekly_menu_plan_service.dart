@@ -34,7 +34,7 @@ class WeeklyMenuDistributionResult {
   /// recipe id. The tray needs it to distribute the rest into next week.
   final Map<String, String> overflowMealTypes;
 
-  /// P5-U23 (produktregler.md:1125, § 22.6): why the rest did not fit. Null
+  /// P5-U23: why the rest did not fit. Null
   /// when nothing overflowed, or when the caller built the result by hand.
   final WeeklyMenuOverflowReason? overflowReason;
 
@@ -46,8 +46,8 @@ class WeeklyMenuDistributionResult {
   });
 }
 
-/// P5-U23: why recipes did not fit (produktregler.md:1125: the tray "säger
-/// *varför* resten inte fick plats"; Skarmar v12 etapp 11 breda vyer:235).
+/// P5-U23: why recipes did not fit (the tray "säger
+/// *varför* resten inte fick plats").
 ///
 /// A recipe overflows only when its kind of place has no free place left in
 /// [weekStart] from the anchor on: lunch and middag take one each, övrigt one
@@ -69,9 +69,7 @@ class WeeklyMenuOverflowReason {
   /// Days before today were skipped (only in the current week).
   final bool pastDaysSkipped;
 
-  /// Whether the tray may offer the following week. False once the tray has
-  /// been moved on one week: produktregler.md:893 makes the two-week limit
-  /// something the user sees, never a silent third week.
+  /// Whether the tray may offer the following week.
   final bool nextWeekOffered;
 
   /// BUT-2362: at least one dish stayed out because someone eating at every
@@ -128,10 +126,7 @@ class WeeklyMenuOverflowReason {
 /// P5-U24: what the overflow tray keeps on the device between sessions.
 ///
 /// Recipes are kept by id and resolved again on restore, so a recipe deleted
-/// in the meantime does not come back. Nothing here is written to the shared
-/// week: the tray is the unplaced rest of a week generation, and
-/// produktregler.md:164-172 keeps a generation's local draft on the device
-/// only (Q-A11: per person, on the device).
+/// in the meantime does not come back.
 @immutable
 class WeeklyMenuOverflowTraySnapshot {
   const WeeklyMenuOverflowTraySnapshot({
@@ -151,7 +146,7 @@ class WeeklyMenuOverflowTraySnapshot {
   /// How many recipes the distribution was given (placed plus overflow).
   final int total;
 
-  /// Last change. The tray lives 30 days from here (produktregler.md:169).
+  /// Last change. The tray lives 30 days from here.
   final DateTime savedAt;
 
   final WeeklyMenuOverflowReason? reason;
@@ -185,12 +180,6 @@ class WeeklyMenuOverflowTraySnapshot {
 
 /// P5-U24: keeps the overflow tray on this device, per person, 30 days.
 ///
-/// produktregler.md:164-172 (the local draft of a week generation): only on
-/// the device, never in the cloud until saved; 30 days since the last change;
-/// deleted when saved (here: when the tray is emptied), when discarded, when
-/// its lifetime runs out, and at logout. The key carries the user id, so
-/// another account on the same device never sees someone else's tray.
-///
 /// Logout: [clearAll] is the hook. Decision 2026-09-23 (PQ-12 = A) keeps
 /// device drafts through an AUTOMATIC logout (inactivity) and deletes them
 /// only when the user logs out herself, so the call belongs in the manual
@@ -208,7 +197,7 @@ class WeeklyMenuOverflowTrayStore {
   /// Every key this store writes starts with this.
   static const String keyPrefix = 'weekly_menu_overflow_tray_v1:';
 
-  /// How long an untouched tray is kept (produktregler.md:169).
+  /// How long an untouched tray is kept.
   static const Duration lifetime = Duration(days: 30);
 
   static String keyFor(String userId) => '$keyPrefix$userId';

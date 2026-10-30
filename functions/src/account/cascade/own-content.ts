@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
+import { DEEP_LINK_PAGE, deleteDeepLinkDocs } from "../../shared/deep-links";
 import { batchDeleteAll } from "./core";
 
 // The SUBCOLLECTION read is what erases a real user's recipes: `users/{uid}/recipes` claim-lint:ok moved unchanged, BUT-2113
@@ -178,6 +179,38 @@ export async function deleteShoppingListTemplates(
 }
 
 /**
+ * BUT-2463: the user's short links. Each one's `longUrl` carries their uid
+ * (`from=`), and any signed-in account that has the code can read it. Paged
+ * like `deleteShoppingListTemplates`; `deleteDeepLinkDocs` takes each link's
+ * `clicks` with it.
+ */
+export async function deleteDeepLinks(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let previous: Set<string> | null = null;
+  for (;;) {
+    const snap = await db
+      .collection(Collections.deepLinks)
+      .where("createdBy", "==", uid)
+      .limit(DEEP_LINK_PAGE)
+      .get();
+    if (snap.empty) return true;
+    const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+    const prior: Set<string> | null = previous;
+    if (prior !== null && [...paths].every((path) => prior.has(path))) {
+      logger.error(
+        "[deletion-cascade] deep link page did not shrink; stopping",
+        { uid_prefix: uid.slice(0, 6), rows: snap.size },
+      );
+      return false;
+    }
+    previous = paths;
+    await deleteDeepLinkDocs(db, snap.docs);
+  }
+}
+
+/**
  * BUT-2038. Same SHAPE as `MAX_ROSTER_SWEEP_ROWS`, not the same reason — that
  * cap exists because a PEER can seat rows keyed on this user. No such route
  * exists here: the create limb pins `userId == request.auth.uid`, so only the
@@ -249,7 +282,7 @@ export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
 
 /**
  * P5-U27b: suggestions to someone else's shared recipe
- * (`recipe_suggestions`, produktregler.md:103, :241). claim-lint:ok moved unchanged, BUT-2113
+ * (`recipe_suggestions`). claim-lint:ok moved unchanged, BUT-2113
  *
  * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
  * (`ownerId`), and it is deleted with EITHER account: the suggester's change is

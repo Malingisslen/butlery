@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -60,9 +60,9 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
           return ModuleLoadErrorScreen(
             error: snapshot.error,
             onRetry: _retry,
-            onGoHome: () => Navigator.of(
-              context,
-            ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
+            onGoHome: () => AppActions.returnToHome(
+              Navigator.of(context, rootNavigator: true),
+            ),
           );
         }
 
@@ -79,9 +79,9 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
         return ModuleLoadErrorScreen(
           error: 'Module not found: ${widget.moduleName}',
           onRetry: _retry,
-          onGoHome: () => Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
+          onGoHome: () => AppActions.returnToHome(
+            Navigator.of(context, rootNavigator: true),
+          ),
         );
       }
       return module.buildRoute(widget.routeName, widget.settings);
@@ -89,9 +89,8 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
       return ModuleLoadErrorScreen(
         error: e,
         onRetry: _retry,
-        onGoHome: () => Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
+        onGoHome: () =>
+            AppActions.returnToHome(Navigator.of(context, rootNavigator: true)),
       );
     }
   }
@@ -107,7 +106,7 @@ class ModuleLoadingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: cs.surface,
       body: Center(
-        // Plate line plus text, never a spinner (produktregler.md:163).
+        // Plate line plus text, never a spinner.
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.layoutMargin,

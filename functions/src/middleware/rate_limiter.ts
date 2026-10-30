@@ -32,6 +32,7 @@ import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { recordViolation } from "./violation_alert";
+import { signalIfCrossed } from "./ai_cap_signal";
 
 // =============================================================================
 // Types
@@ -64,6 +65,8 @@ export interface RateLimitCheckResult {
    * apart with this.
    */
   unavailable?: true;
+  /** Today's count including this call, on an allowed call. */
+  dailyCount?: number;
 }
 
 interface StoredRateLimit {
@@ -81,6 +84,8 @@ interface StoredRateLimit {
 // =============================================================================
 // Rate Limit Configurations (Mirror client-side)
 // =============================================================================
+
+const AI_OPERATIONS = new Set(["structureRecipe", "ocrRecipeImage"]);
 
 /**
  * Rate limit configurations per operation type.
@@ -110,6 +115,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 2,
     refillIntervalMs: 60000,
     dailyLimit: 50,
+  },
+  // The parser shadow comparison spends its own bucket, so a sampled import
+  // never takes room from the user's real structureRecipe calls.
+  shadowCompareImport: {
+    maxTokens: 3,
+    refillRate: 1,
+    refillIntervalMs: 60000,
+    dailyLimit: 20,
   },
 
   // BUT-1838: chat-group membership callables. These replace CLIENT writes whose
@@ -623,9 +636,26 @@ export async function checkRateLimit(
       return {
         allowed: true,
         remainingTokens: newTokens,
+        dailyCount: updateData.dailyCount,
       };
     });
 
+    // Here rather than in withRateLimit, so the OCR retry's direct call is
+    // counted too. Only the AI operations: they are what the morning koll
+    // reports on.
+    if (
+      AI_OPERATIONS.has(operationType) &&
+      config.dailyLimit !== undefined &&
+      result.dailyCount !== undefined
+    ) {
+      signalIfCrossed({
+        cap: "user_day",
+        count: result.dailyCount,
+        limit: config.dailyLimit,
+        operationType,
+        userIdHash: hashUid(userId),
+      });
+    }
     return result;
   } catch (error) {
     // Fail closed — deny on Firestore errors to prevent abuse
@@ -793,7 +823,7 @@ export async function checkGlobalLimit(): Promise<boolean> {
       const dailyCount = data.dayKey === currentDay ? (data.dailyCount ?? 0) : 0;
 
       if (hourlyCount >= hourlyLimit || dailyCount >= dailyLimit) {
-        return false;
+        return null;
       }
 
       tx.set(limitsRef, {
@@ -804,10 +834,13 @@ export async function checkGlobalLimit(): Promise<boolean> {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return true;
+      return { hourly: hourlyCount + 1, daily: dailyCount + 1 };
     });
 
-    return result;
+    if (!result) return false;
+    signalIfCrossed({ cap: "global_hour", count: result.hourly, limit: hourlyLimit });
+    signalIfCrossed({ cap: "global_day", count: result.daily, limit: dailyLimit });
+    return true;
   } catch (error) {
     // Fail closed on error — deny request to prevent abuse bypass
     logger.error("Global limit check failed, denying request:", error);

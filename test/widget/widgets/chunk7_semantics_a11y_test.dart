@@ -68,7 +68,7 @@ void main() {
 
   // BUT-2205: the chip's own fill used to sit above the ink layer, so its
   // remove × showed no press. The chip stands in the search box as an ink
-  // pill (Komponentark v1 §07), so its press is the step on ink.
+  // pill, so its press is the step on ink.
   for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
     testWidgets('a pressed remove × on an ingredient chip shows the step on '
         'ink (${theme.brightness.name})', (tester) async {

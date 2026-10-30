@@ -19,7 +19,7 @@ One-time setup (deploy-day for BUT-1478), **two steps**:
 gcloud firestore fields ttls update expireAt \
   --collection-group=parse_events \
   --enable-ttl \
-  --project=butlery-app-1
+  --project=butlery-prod
 ```
 
 (or Cloud Console → Firestore → Time-to-live → Create policy →
@@ -30,14 +30,14 @@ so events written before BUT-1478 shipped would otherwise be retained forever:
 
 ```
 cd functions
-npm run backfill-parse-event-expiry:dry-run -- --project butlery-app-1   # counts, no writes
-npm run backfill-parse-event-expiry -- --project butlery-app-1           # stamps expireAt = timestamp + 30d
+npm run backfill-parse-event-expiry:dry-run -- --project butlery-prod   # counts, no writes
+npm run backfill-parse-event-expiry -- --project butlery-prod           # stamps expireAt = timestamp + 30d
 ```
 
 Docs already past their 30-day window get a past `expireAt` and are reaped by
 the policy within ~24h. The script is idempotent (skips docs that have the field).
 
-Verify: `gcloud firestore fields ttls list --project=butlery-app-1` shows
+Verify: `gcloud firestore fields ttls list --project=butlery-prod` shows
 `parse_events/expireAt` with state `ACTIVE`. TTL deletion is best-effort
 (typically within 24h of expiry) — fine for retention purposes.
 
@@ -52,7 +52,7 @@ until a policy exists, and there are **two** ways to create one:
    `functions/src/__tests__/firestore-ttl-policies.test.ts`. **15 policies are
    declared this way today.**
 2. `gcloud firestore fields ttls update expireAt --collection-group=<name>
-   --enable-ttl --project=butlery-app-1` — one-off, per environment.
+   --enable-ttl --project=butlery-prod` — one-off, per environment.
 
 > ⚠️ **NEVER pass `--force` to `firebase deploy --only firestore:indexes`.** It
 > DELETES every TTL policy absent from `firestore.indexes.json`. With 15 declared
@@ -64,7 +64,7 @@ until a policy exists, and there are **two** ways to create one:
 
 **Declaring is not activating.** Firestore has no round-trip: nothing in this
 repo — this table included — can prove a policy is ON. After any deploy, verify
-with `gcloud firestore fields ttls list --project=butlery-app-1`. That listing is
+with `gcloud firestore fields ttls list --project=butlery-prod`. That listing is
 the only ground truth; this table tracks *which groups need a policy*.
 
 > This registry is known to be **incomplete**: these declared policies

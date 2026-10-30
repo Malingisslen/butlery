@@ -8,6 +8,7 @@
 library;
 
 import 'package:butlery/models/acquisition_attribution.dart';
+import 'package:butlery/models/admin/signup_invite.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
@@ -20,7 +21,11 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+
+import '../../infrastructure/mocks/production_mocks.dart';
 
 /// One `hasOnly([...])` list, located by the text that uniquely precedes it.
 class Allowlist {
@@ -106,14 +111,6 @@ const allowlists = <Allowlist>[
         'lib/repositories/firebase/firebase_notification_history_repository.dart '
         'recordNotification (create), plus the markNotificationDelivered and '
         'markNotificationOpened updates',
-  ),
-  Allowlist(
-    label: 'deep_links/{linkId}/clicks',
-    mustContain: 'timestamp',
-    anchor: 'match /clicks/{clickId}',
-    writer:
-        'lib/repositories/firebase/firebase_deeplink_repository.dart '
-        'trackUrlClick — the clicks .add after the counter update',
   ),
   // Anchored on the FUNCTION, not the `match /poll_votes/{voterId}` block: the
   // block declares `pollMessage()`, `inPollConversation()` and `pollIsOpen()`
@@ -208,6 +205,15 @@ const allowlists = <Allowlist>[
     anchor: 'match /users/{userId}/acquisition/{acquisitionDoc}',
     writer:
         'lib/models/acquisition_attribution.dart AcquisitionAttribution.toFirestore',
+  ),
+  // BUT-2452. The block's only `keys().hasOnly`, on the create limb.
+  Allowlist(
+    label: 'signup_allowlist create',
+    mustContain: 'invitedBy',
+    anchor: 'match /signup_allowlist/{email}',
+    writer:
+        'lib/repositories/firebase/firebase_signup_allowlist_repository.dart '
+        'FirebaseSignupAllowlistRepository.toFirestore',
   ),
 ];
 
@@ -352,7 +358,6 @@ Map<String, Set<String>> writtenKeys() => {
     'openedAt',
     'expireAt',
   },
-  'deep_links/{linkId}/clicks': {'userId', 'timestamp'},
   // `votePoll` writes the row with a bare `set` — no merge — so the keys the
   // rule sees are exactly these three and nothing widens them elsewhere. The
   // other branch of the method DELETES the row when the last option is
@@ -437,4 +442,18 @@ Map<String, Set<String>> writtenKeys() => {
     'updatedAt',
     'expireAt',
   },
+  // The repository builds the payload and stamps the caller's uid, so it needs
+  // a signed-in fake behind it.
+  'signup_allowlist create': () {
+    final auth = FakeAuthRepository()
+      ..setAuthState(
+        user: FakeUser(uid: 'a', displayName: 'A'),
+        userId: 'a',
+        isAuthenticated: true,
+      );
+    return FirebaseSignupAllowlistRepository(
+      firestore: FakeFirebaseFirestore(),
+      authRepository: auth,
+    ).toFirestore(const SignupInvite(email: 'x@example.com')).keys.toSet();
+  }(),
 };

@@ -1,5 +1,5 @@
 /// P5-U26b: a version the user loses to another person's save is kept for 30
-/// days and can be restored (produktregler.md:104, :109; PQ-01 = A).
+/// days and can be restored (PQ-01 = A).
 ///
 /// Driven through the real RealtimeSyncService conflict path (updateResource →
 /// shouldResolveConflict → resolveConflict), as the BUT-1265 stream test does,

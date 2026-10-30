@@ -2,23 +2,11 @@
 //
 // HEM-HERO (package 6): what Hem shows above the recipe library.
 //
-//   produktregler.md:263   "Hem … svarar på en fråga — vad äter vi ikväll".
-//   produktregler.md:265-274 (§ 6.1) the hero card's priority order, first
-//                          hit wins: (1) today's slot is filled → the planned
-//                          dish, marked IKVÄLL; (2) today is empty but the
-//                          week has dishes later → the next planned day,
-//                          marked with its weekday, never IKVÄLL; (3) the
-//                          week is empty and the library has recipes → a
-//                          suggestion; (4) the library is empty → the empty
-//                          state.
-//   produktregler.md:291-294 (§ 6.5) an error in the plan never empties the
-//                          view; cached content carries its fetch time.
-//
 // Interpretations:
 // * "Dagens plats" and IKVÄLL are the dinner slot (MealSlot.middag):
 //   "ikväll" is the evening meal.
 // * Row 3 (a suggestion from the library) follows the allergy rules of § 1
-//   (produktregler.md § 1): it is drawn only from recipes that pass the menu's
+//   it is drawn only from recipes that pass the menu's
 //   allergen and dietary filter with unknown treated as unsafe, and not at
 //   all when the household's preferences cannot be resolved or its roster is
 //   incomplete. Absence of data is never a safe answer.
@@ -42,7 +30,7 @@ import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Where the week's plan is.
 enum HemPlanStatus {
-  /// The first read has not answered yet (Skarmar v12 del 4 #hemladdar).
+  /// The first read has not answered yet.
   loading,
 
   /// The plan was read (or is empty).
@@ -52,7 +40,7 @@ enum HemPlanStatus {
   failed,
 }
 
-/// The dish the hero card shows (produktregler.md § 6.1, rows 1 to 3).
+/// The dish the hero card shows (rows 1 to 3).
 class HemHero {
   const HemHero({
     required this.entry,
@@ -88,7 +76,7 @@ class HemHero {
   final bool allInPantry;
 }
 
-/// Rows 1 and 2 of produktregler.md:268-269 for [plan] on the day of [now]:
+/// Rows 1 and 2 for [plan] on the day of [now]:
 /// today's dinner, else the first dinner planned later in the week, else
 /// null. Never an earlier day, and never a day outside [plan]'s week.
 ({WeeklyMenuPlanEntry entry, bool isTonight})? hemHeroEntry(
@@ -184,7 +172,7 @@ Future<UserAllergenPreferences?> hemHouseholdPrefs(
 /// Whether every normalised ingredient of [recipe] is among
 /// [pantryIngredientIds]. False when the recipe has no normalised
 /// ingredients: "Frånvaro av data är aldrig ett säkert svar"
-/// (produktregler.md:20) holds for the pantry claim too.
+/// holds for the pantry claim too.
 bool hemAllInPantry(Recipe recipe, Set<String> pantryIngredientIds) {
   final needed = recipe.core.ingredientsNormalized;
   if (needed == null || needed.isEmpty) return false;

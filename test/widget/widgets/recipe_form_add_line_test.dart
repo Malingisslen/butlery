@@ -247,5 +247,96 @@ void main() {
       expect(controllers.first.text.length, 500);
       expect(find.textContaining('/500'), findsNothing);
     });
+
+    // BUT-2455: a step an import cut in two is joined back from the form.
+    for (final reorderable in [true, false]) {
+      testWidgets(
+        'a merge link sits under every step but the last'
+        '${reorderable ? '' : ' (not reorderable)'}',
+        (tester) async {
+          final handle = tester.ensureSemantics();
+          final three = [
+            TextEditingController(text: 'Smält smöret.'),
+            TextEditingController(),
+            TextEditingController(text: 'Servera.'),
+          ];
+          addTearDown(() {
+            for (final c in three) {
+              c.dispose();
+            }
+          });
+          final merged = <int>[];
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: DynamicListBuilder(
+                label: 'Instruktion',
+                controllers: three,
+                onUpdate: (_, __) {},
+                onAdd: () {},
+                onLastFilled: () {},
+                onRemove: (_) {},
+                onReorder: reorderable ? (_, __) {} : null,
+                onMergeWithNext: merged.add,
+              ),
+            ),
+          );
+
+          expect(find.text('Slå ihop med nästa'), findsNWidgets(2));
+          expect(
+            find.semantics.byLabel('Slå ihop steg 2 med steg 3'),
+            findsOneWidget,
+          );
+          expect(
+            find.semantics.byLabel('Slå ihop steg 3 med steg 4'),
+            findsNothing,
+          );
+
+          tester.semantics.tap(
+            find.semantics.byLabel('Slå ihop steg 2 med steg 3'),
+          );
+          await tester.pump();
+          expect(merged, [1]);
+          handle.dispose();
+        },
+      );
+    }
+
+    testWidgets('no merge link above the empty last line', (tester) async {
+      final lines = [
+        TextEditingController(text: 'Stek löken.'),
+        TextEditingController(text: 'Servera.'),
+        TextEditingController(),
+      ];
+      addTearDown(() {
+        for (final c in lines) {
+          c.dispose();
+        }
+      });
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: DynamicListBuilder(
+            label: 'Instruktion',
+            controllers: lines,
+            onUpdate: (_, __) {},
+            onAdd: () {},
+            onLastFilled: () {},
+            onRemove: (_) {},
+            onMergeWithNext: (_) {},
+          ),
+        ),
+      );
+
+      expect(find.byKey(const ValueKey('step-merge-0')), findsOneWidget);
+      expect(find.byKey(const ValueKey('step-merge-1')), findsNothing);
+    });
+
+    testWidgets('no merge link without a merge callback', (tester) async {
+      controllers.add(TextEditingController(text: 'Servera.'));
+      await tester.pumpWidget(build());
+
+      expect(find.text('Slå ihop med nästa'), findsNothing);
+    });
   });
 }

@@ -5,7 +5,7 @@
 /// 2. What was kept ([preserved]), only when something was at stake.
 /// 3. What you can do ([actionLabel] / [onAction]), as a button.
 ///
-/// The anatomy is the drawn error boundary (Komponentark v1:755-758): a 1 px
+/// The anatomy is the drawn error boundary: a 1 px
 /// text.danger outline with the 8 px control radius, the triangle-alert
 /// glyph in text.danger, a bold title in text.primary and the body in
 /// text.body. Colours, both modes (tokens.json):
@@ -24,9 +24,8 @@
 ///   1.3:1 on the dark surface.
 ///
 /// Screen readers: the box has the alert role and its text is a live
-/// region, so it is read when it appears without moving focus
-/// (Butlery tillganglighetshandoff.dc.html:172, "Läses upp utan
-/// fokusbyte"). Flutter does not allow both on one node, so the role sits on
+/// region, so it is read when it appears without moving focus.
+/// Flutter does not allow both on one node, so the role sits on
 /// the box and the live region on the text inside it.
 library;
 
@@ -90,7 +89,6 @@ class InlineError extends StatelessWidget {
       child: Material(
         key: boxKey,
         color: cs.surface,
-        // Komponentark v1:755 border-radius:8px = radius.control.
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           side: BorderSide(

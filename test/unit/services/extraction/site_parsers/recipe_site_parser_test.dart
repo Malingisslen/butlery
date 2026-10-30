@@ -10,6 +10,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:html/dom.dart';
+import 'package:html/parser.dart' as html_parser;
 
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
@@ -118,6 +119,172 @@ void main() {
       // Title only (0.20) is well below the 0.80 minimum.
       final parser = _CssFallbackParser({'name': 'Bara en titel'});
       expect(parser.parseRecipe('inget recept här'), isNull);
+    });
+  });
+
+  group('swedishTimeToIso8601', () {
+    final parser = _NoopParser();
+
+    test('minutes alone', () {
+      expect(parser.swedishTimeToIso8601('30 minuter'), 'PT30M');
+    });
+
+    test('hours and minutes, any case', () {
+      expect(parser.swedishTimeToIso8601('1 Timme 30 min'), 'PT1H30M');
+    });
+
+    test('a zero is matched but not written', () {
+      expect(parser.swedishTimeToIso8601('0 min'), 'PT');
+    });
+
+    test('text without a number is null', () {
+      expect(parser.swedishTimeToIso8601('en stund'), isNull);
+    });
+  });
+
+  group('extractImage', () {
+    final parser = _NoopParser();
+
+    test('itemprop wins over every other selector', () {
+      final doc = html_parser.parse(
+        '<article><img src="https://x.se/article.jpg"></article>'
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>'
+        '<img itemprop="image" src="https://x.se/itemprop.jpg">',
+      );
+      expect(
+        parser.extractImage(doc, siteImageSelector: '.site-image img'),
+        'https://x.se/itemprop.jpg',
+      );
+    });
+
+    test('the site selector is tried before the hero and article images', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-hero"><img src="https://x.se/hero.jpg"></div>'
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>',
+      );
+      expect(
+        parser.extractImage(doc, siteImageSelector: '.site-image img'),
+        'https://x.se/site.jpg',
+      );
+    });
+
+    test('without a site selector the hero image is next', () {
+      final doc = html_parser.parse(
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>'
+        '<div class="recipe-hero"><img src="https://x.se/hero.jpg"></div>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/hero.jpg');
+    });
+
+    test('data-src is used when src is missing', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-image"><img data-src="https://x.se/lazy.jpg"></div>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/lazy.jpg');
+    });
+
+    test('a relative URL is skipped for the next selector', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-image"><img src="/relative.jpg"></div>'
+        '<article><img src="https://x.se/article.jpg"></article>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/article.jpg');
+    });
+
+    test('no image is null', () {
+      expect(parser.extractImage(html_parser.parse('<p>inget</p>')), isNull);
+    });
+  });
+
+  group('extractPortions', () {
+    final parser = _NoopParser();
+
+    test('the site selector is tried after .recipe-portions', () {
+      final doc = html_parser.parse(
+        '<span itemprop="recipeYield">2</span>'
+        '<span class="site-portions">6 portioner</span>'
+        '<span class="recipe-portions">4  portioner</span>',
+      );
+      expect(
+        parser.extractPortions(doc, sitePortionsSelector: '.site-portions'),
+        '4 portioner',
+      );
+    });
+
+    test('the site selector wins over itemprop', () {
+      final doc = html_parser.parse(
+        '<span itemprop="recipeYield">2</span>'
+        '<span class="site-portions">6 portioner</span>',
+      );
+      expect(
+        parser.extractPortions(doc, sitePortionsSelector: '.site-portions'),
+        '6 portioner',
+      );
+    });
+
+    test('without a site selector itemprop is next', () {
+      final doc = html_parser.parse(
+        '<span class="site-portions">6 portioner</span>'
+        '<span itemprop="recipeYield">2</span>',
+      );
+      expect(parser.extractPortions(doc), '2');
+    });
+
+    test('an empty element is skipped for the next selector', () {
+      final doc = html_parser.parse(
+        '<span class="recipe-portions"> </span>'
+        '<span class="portions">8</span>',
+      );
+      expect(parser.extractPortions(doc), '8');
+    });
+
+    test('falls back to the number after "Portioner:" in the page text', () {
+      final doc = html_parser.parse('<p>Portioner: 3 st</p>');
+      expect(parser.extractPortions(doc), '3');
+    });
+
+    test('nothing found is null', () {
+      expect(parser.extractPortions(html_parser.parse('<p>inget</p>')), isNull);
+    });
+  });
+
+  group('cleanCirkaFormatting', () {
+    final parser = _NoopParser();
+
+    test('strips ca and cirka from the portions', () {
+      expect(
+        parser.cleanCirkaFormatting({'recipeYield': 'ca 4 portioner'}),
+        {'recipeYield': '4 portioner'},
+      );
+      expect(
+        parser.cleanCirkaFormatting({'recipeYield': 'cirka 6 '}),
+        {'recipeYield': '6'},
+      );
+    });
+
+    test('strips a leading ca/cirka from ingredients and drops empty ones', () {
+      final recipe = parser.cleanCirkaFormatting({
+        'recipeIngredient': [
+          'Ca  2 dl mjölk',
+          'CIRKA 1 tsk salt',
+          '  ',
+          'smör',
+        ],
+      });
+      expect(recipe['recipeIngredient'], ['2 dl mjölk', '1 tsk salt', 'smör']);
+    });
+
+    test('cleans instruction text and drops empty steps', () {
+      final recipe = parser.cleanCirkaFormatting({
+        'recipeInstructions': ['Blanda  allt', ' ', 'Stek – klart'],
+      });
+      expect(recipe['recipeInstructions'], ['Blanda allt', 'Stek - klart']);
+    });
+
+    test('leaves a recipe without those fields unchanged', () {
+      expect(parser.cleanCirkaFormatting({'name': 'Pannkakor'}), {
+        'name': 'Pannkakor',
+      });
     });
   });
 }

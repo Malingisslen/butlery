@@ -13,7 +13,7 @@
 #   ./scripts/crf/retrain_with_corrections.sh --deploy   # also upload the new weights to Firebase Storage
 #
 # Env overrides:
-#   CRF_STORAGE_BUCKET   default butlery-app-1.firebasestorage.app
+#   CRF_STORAGE_BUCKET   default butlery-prod.firebasestorage.app
 #   CRF_WEIGHTS_VERSION  force the published version integer (default: current remote + 1)
 set -euo pipefail
 
@@ -30,11 +30,11 @@ done
 
 WEIGHTS="assets/data/crf_ingredient_weights.json"
 STORAGE_PATH="models/crf_ingredient_weights.json"
-BUCKET="${CRF_STORAGE_BUCKET:-butlery-app-1.firebasestorage.app}"
+BUCKET="${CRF_STORAGE_BUCKET:-butlery-prod.firebasestorage.app}"
 
 echo "=== Stage 1: Export corrections from Firestore ==="
 cd "$PROJECT_ROOT/functions"
-npx ts-node src/admin/export-corrections.ts --project butlery-app-1
+npx ts-node src/admin/export-corrections.ts --project butlery-prod
 cd "$PROJECT_ROOT"
 
 echo ""

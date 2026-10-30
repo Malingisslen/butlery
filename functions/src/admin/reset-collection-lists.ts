@@ -325,6 +325,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "admin_rate_limits" },
   { name: "admin_audit_logs" },
 
+  // BUT-2452: the guest list. The document id is the invitee's email address,
+  // and `invitedBy` is the inviting admin's uid, whose Auth account Phase 1
+  // deletes.
+  { name: "signup_allowlist" },
+
   // BUT-2010: `tag_configs` does NOT belong here and must not come back. It is
   // SEED data: `firestore.rules` gives it `allow write: if false`, so no user
   // can write it, and `TagConfigService` reads it as runtime config — wiping it
@@ -528,6 +533,7 @@ export const DATABASE_ONLY_ORPHANS = new Set<string>([
 export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "activeUsers", // recipePresence/{id}, shoppingPresence/{id}, realtime_*/{id}
   "block_mirror", // users/{uid}
+  "clicks", // deep_links/{code} (BUT-2463)
   "friendCategories", // users/{uid}, pre-rename spelling (BUT-2044)
   "comments", // menu_comments/{menuId}, and the {path=**} comment group
   "engagements", // shared_recipes/{id}, shared_menus/{id}

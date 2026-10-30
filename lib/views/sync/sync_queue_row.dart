@@ -1,13 +1,12 @@
 // lib/views/sync/sync_queue_row.dart
 //
-// P4-U19: one waiting change in "Väntar på synk", drawn in Skarmar v12 del 4
-// #synkko. A permanent failure is a card with its cause in words and its
-// actions (produktregler.md:188); a queued change is a row with what it
-// concerns and its age (produktregler.md:190).
+// A permanent failure is a card with its cause in words and its
+// actions; a queued change is a row with what it
+// concerns and its age.
 //
 // P6-U08b: a queued change that failed says when it is sent again ("nästa
-// försök om 8 s", #synkko), and a failure gets the actions produktregler.md
-// :188 and the drawing name: Försök igen or Försök mindre, Spara som kopia,
+// försök om 8 s"), and a failure gets the actions
+// Försök igen or Försök mindre, Spara som kopia,
 // Släng ändringen.
 library;
 
@@ -24,7 +23,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
-/// What [change] concerns, in words ("vad de rör", produktregler.md:190).
+/// What [change] concerns, in words ("vad de rör").
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   final subject = change.subject;
   if (change.isCommentGroup) {
@@ -50,7 +49,7 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   };
 }
 
-/// Why [change] waits for the user, in the words produktregler.md:188 names.
+/// Why [change] waits for the user.
 String describeQueuedReason(AppLocalizations l10n, QueuedChange change) =>
     change.isCommentGroup
     ? l10n.syncQueueReasonCommentFailed
@@ -91,7 +90,7 @@ String? describeAutoDiscard(AppLocalizations l10n, QueuedChange change) {
   return l10n.syncQueueAutoDiscard(unsentImageDaysLeft(since, clock.now()));
 }
 
-/// How long [change] has waited ("ålder", produktregler.md:190), written as
+/// How long [change] has waited ("ålder"), written as
 /// content-style-guide.md:31-35 writes durations: "nu", "9 min",
 /// "1 h 30 min".
 String describeQueuedAge(AppLocalizations l10n, QueuedChange change) {
@@ -108,11 +107,9 @@ String describeQueuedAge(AppLocalizations l10n, QueuedChange change) {
   return l10n.syncQueueAgeDays(age.inDays);
 }
 
-/// A permanent failure (#synkko "Väntar på dig"): a card edged in
+/// A permanent failure ("Väntar på dig"): a card edged in
 /// text.danger with the cause in text.danger and its actions.
 ///
-/// The actions (produktregler.md:188 "Försök igen · Spara som kopia ·
-/// Släng"; #synkko draws "Försök mindre" for a too-large image):
 /// * the first is "Försök mindre" for a too-large image
 ///   ([QueuedChange.canTrySmaller]), else "Försök igen";
 /// * "Spara som kopia" for a recipe write ([QueuedChange.canSaveAsCopy]);
@@ -205,7 +202,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: AppDimensions.space8),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             spacing: AppDimensions.space8,
             runSpacing: AppDimensions.space4,
@@ -265,7 +262,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
       excludeSemantics: true,
       button: true,
       // Busy keeps the name and gets the plate line; a second tap is ignored
-      // rather than the button going disabled (Komponentark v1:365).
+      // rather than the button going disabled.
       child: ActionButtons.outlinedButton(
         context,
         key: key,
@@ -293,13 +290,13 @@ class SyncQueueRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     // text.secondary (#5B6959 light, #A9B2A0 dark; tokens.json semantic).
     // Interpretation: #synkko's raw slot --r04slot-620 is #627061 light but
-    // #C9D3C4 (text.bodyMuted) dark (Skarmar v12 del 4:64); no token pairs
+    // #C9D3C4 (text.bodyMuted) dark; no token pairs
     // those two, so the token text.secondary decides the dark value.
     final secondary = AppTextStyles.captionBase.copyWith(
       color: cs.onSurfaceVariant,
     );
     // Shown offline too: #synkko draws "nästa försök om 8 s" under the
-    // offline banner (Skarmar v12 del 4:245, :271, :275).
+    // offline banner.
     final next = describeNextAttempt(l10n, change);
     return Container(
       key: rowKey(change),

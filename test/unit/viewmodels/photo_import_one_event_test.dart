@@ -72,6 +72,7 @@ class _AssistingPhotoStrategy extends PhotoImportStrategy {
 class _TextStrategy extends ImportStrategy {
   _TextStrategy(this.recipe);
   final Recipe recipe;
+  final List<String> inputs = [];
 
   @override
   String get strategyName => 'Text Import';
@@ -88,7 +89,10 @@ class _TextStrategy extends ImportStrategy {
   Future<ImportResult> import(
     String input, {
     Map<String, dynamic>? options,
-  }) async => ImportResult.success(recipe);
+  }) async {
+    inputs.add(input);
+    return ImportResult.success(recipe);
+  }
 }
 
 void main() {
@@ -98,6 +102,7 @@ void main() {
   late _SpyParseEventLogger spy;
   late _RecordingRateLimiter limiter;
   late ImportManager manager;
+  late _TextStrategy textStrategy;
   late PhotoImportViewModel viewModel;
   late Directory draftDir;
 
@@ -129,11 +134,14 @@ void main() {
     app_provider.ServiceLocator.initialize(DIContainer());
 
     spy = _SpyParseEventLogger();
+    textStrategy = _TextStrategy(
+      RecipeFactory.build(id: 'r1', title: 'Pannkakor'),
+    );
     manager = ImportManager.withStrategies(
       MockPersonalRecipeOperations(),
       [
         _AssistingPhotoStrategy(),
-        _TextStrategy(RecipeFactory.build(id: 'r1', title: 'Pannkakor')),
+        textStrategy,
       ],
       eventLogger: spy,
     );
@@ -228,5 +236,32 @@ void main() {
     );
     expect(spy.events, isEmpty);
     expect(limiter.recorded, isEmpty);
+  });
+
+  test('a restored draft is parsed with its wrapped lines rejoined', () async {
+    // The draft stores the text the reader produced, line breaks and all;
+    // the parse the user gets back must be the one they saw (BUT-2455).
+    await viewModel.persistPhotoDraft(
+      imageBytes: imageBytes,
+      ocrText: [
+        'Kycklinggryta',
+        'Ingredienser',
+        '500 g kycklingfilé',
+        '2 dl grädde',
+        'Gör så här',
+        'Smält ner',
+        'smöret i en kastrull på medelvärme.',
+        'Häll i grädden och låt sjuda i tio minuter.',
+      ].join('\n'),
+    );
+    final restored = PhotoImportViewModel(importManager: manager);
+    addTearDown(restored.dispose);
+
+    expect(await restored.restoreDraft(), isTrue);
+
+    expect(
+      textStrategy.inputs.last,
+      contains('Smält ner smöret i en kastrull på medelvärme.'),
+    );
   });
 }

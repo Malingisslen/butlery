@@ -123,7 +123,7 @@ void main() {
     testWidgets('ButleryPage top bar grows with the text instead of '
         'clamping it', (tester) async {
       // Package 4: ButleryPage draws ButleryTopBar.undersida, whose height
-      // follows its content up to 200 % text (tillganglighetshandoff:85),
+      // follows its content up to 200 % text,
       // so the BUT-763 clamp is no longer needed and the title keeps the
       // user's text size.
       Future<double> barHeight(double scale) async {

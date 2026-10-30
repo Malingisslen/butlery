@@ -6,11 +6,8 @@
 /// the dark theme and its colours are checked against the dark base: 4.5:1
 /// for text, 3:1 for graphics (WCAG 1.4.3, 1.4.11).
 ///
-/// Sources: Komponentark v1:491 (the dark rule: paper text, paper 35 % on
-/// controls, the tick always paper), :499 (outlined button), :522-525
-/// (chips), :532 (checked box), :545 (progress), :556 (chosen row check);
-/// Skarmar v12 del 4:104 (dark switch), etapp 2:37 and etapp 4 import:28
-/// (--ram-kontroll-a); tokens.json:54-57 (text.primary), :128-131
+/// Sources:
+/// tokens.json:54-57 (text.primary), :128-131
 /// (border.control), :137-152 (action.primary, control.checked),
 /// :161-168 (progress), :263 (overlay.paperWash).
 library;
@@ -139,7 +136,6 @@ void main() {
       final c = Theme.of(ctx).checkboxTheme;
       final fill = c.fillColor!.resolve(_selected)!;
       final tick = c.checkColor!.resolve(_selected)!;
-      // Komponentark v1:532: the checked box stays ink; the tick carries it.
       expect(fill, _ink);
       expect(tick, _paper);
       expect(_contrast(tick, fill), greaterThan(4.5));
@@ -174,7 +170,7 @@ void main() {
       final knob = s.thumbColor!.resolve(_selected)!;
       final edge = s.trackOutlineColor!.resolve(_selected)!;
       // tokens.json:145-152 control.checked: ink in dark too; the paper
-      // edge carries it on the dark base (Komponentark v1:523).
+      // edge carries it on the dark base.
       expect(track, _ink);
       expect(knob, _paper);
       expect(edge, _paper);
@@ -299,7 +295,7 @@ void main() {
       expect(_contrast(chip.labelStyle!.color!, _ink), greaterThan(4.5));
     });
 
-    test('chip disabled: no fill, sage label (Komponentark v1:525)', () {
+    test('chip disabled: no fill, sage label', () {
       final chip = dark.chipTheme;
       const off = {WidgetState.disabled};
       expect(chip.disabledColor!.a, 0);
@@ -393,8 +389,7 @@ void main() {
       expect((t.textColor! as WidgetStateColor).resolve(_selected), _ink);
       expect(light.chipTheme.selectedColor, _ink);
       // Light edges a resting chip in border-control #7D897C and a disabled
-      // one in surface.disabled #A9B2A0 on surface.raised (Komponentark
-      // v1:141-144); the check keeps Material's default colour.
+      // one in surface.disabled #A9B2A0 on surface.raised
       final side = light.chipTheme.side! as WidgetStateBorderSide;
       expect(side.resolve({})!.color, const Color(0xFF7D897C));
       expect(

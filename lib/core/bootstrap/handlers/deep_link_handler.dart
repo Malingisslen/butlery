@@ -7,6 +7,7 @@ library;
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:butlery/core/bootstrap/handlers/short_link.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -136,7 +137,7 @@ class DeepLinkHandler {
   static bool isBlockedCustomSchemeHost(Uri uri) {
     if (uri.scheme != 'butlery') return false;
     if (uri.host.isEmpty) return false;
-    const recognisedHosts = {'butlery.app', 'import'};
+    const recognisedHosts = {'butlery.app', 'butlery.se', 'import'};
     return !recognisedHosts.contains(uri.host);
   }
 
@@ -172,9 +173,9 @@ class DeepLinkHandler {
   /// the old silent behaviour instead of throwing.
   ///
   /// P6-U05: the notice is a failure snackbar whose only action is "Stäng"
-  /// (content-style-guide.md:97, Komponentark v1:750). PQ-13 = A (2026-09-23):
+  /// (content-style-guide.md:97). PQ-13 = A (2026-09-23):
   /// the app has no way to ask for a new link, and it never offers what it
-  /// cannot do (produktregler.md:535), so the text itself says who to ask.
+  /// cannot do, so the text itself says who to ask.
   /// The request button is BUT-2143.
   @visibleForTesting
   static void showDeepLinkNotice(BuildContext context, String message) {
@@ -258,6 +259,16 @@ class DeepLinkHandler {
 
       if (!context.mounted) {
         return;
+      }
+
+      if (shortCodeOf(uri) != null) {
+        final longUrl = await resolveShortLink(uri);
+        if (!context.mounted) return;
+        if (longUrl == null) {
+          _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
+          return;
+        }
+        return processDeepLink(longUrl, context);
       }
 
       // BUT-1587: single expiry gate for the time-limited share links
@@ -395,10 +406,6 @@ class DeepLinkHandler {
         );
       } else {
         // Link is valid but the recipe is gone or not shared with this user.
-        // The read cannot tell the two apart, so the notice says only that
-        // the content is no longer available: "ask for a new link" would not
-        // help when the recipe is deleted (flows-roles-budget.md:80 covers a
-        // revoked or expired link, which is the expiry gate above).
         _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }

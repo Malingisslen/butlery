@@ -66,6 +66,7 @@ void main() {
     ServiceLocator.initialize(DIContainer());
 
     when(() => mockAuthRepository.currentUserId).thenReturn('test-user');
+    when(() => mockIngredientRepository.getAll()).thenAnswer((_) async => []);
     // Each raw row looks up to the registry id of the same name.
     when(
       () => mockLookupService.lookupFromRaw(
@@ -315,6 +316,97 @@ void main() {
           userId: any(named: 'userId'),
         ),
       ).called(1);
+    });
+  });
+
+  group('a selected ingredient finds its specific forms', () {
+    IngredientData entry(String id, String swedish, String group) =>
+        IngredientData(
+          id: id,
+          swedish: swedish,
+          english: id,
+          group: group,
+          properties: const {},
+        );
+
+    setUp(() {
+      when(() => mockIngredientRepository.getAll()).thenAnswer(
+        (_) async => [
+          entry('chicken', 'kyckling', 'protein/meat/poultry'),
+          entry('chicken-breast', 'kycklingfilé', 'protein/meat/poultry'),
+          entry('chicken-whole', 'hel kyckling', 'protein/meat/poultry'),
+          entry('turkey-breast', 'kalkonfilé', 'protein/meat/poultry'),
+          entry('chicken-broth', 'kycklingbuljong', 'other/beverage'),
+          entry('potato', 'potatis', 'vegetable/root'),
+          entry('sweet-potato', 'sötpotatis', 'vegetable/root'),
+          entry('cream', 'grädde', 'dairy/cream'),
+        ],
+      );
+    });
+
+    Future<List<IngredientMatchResult>> search(
+      Set<String> selected,
+      List<String> recipeIds,
+    ) => service.matchRecipesWithNormalization(
+      selectedIngredientIds: selected,
+      recipes: [_recipe(id: 'r', title: 'R', raw: recipeIds)],
+    );
+
+    test('"kyckling" finds a recipe with kycklingfilé', () async {
+      final results = await search({'chicken'}, ['chicken-breast', 'cream']);
+
+      expect(results, hasLength(1));
+      expect(results.single.matchedCount, 1);
+      expect(results.single.missingIngredientIds, ['cream']);
+    });
+
+    test(
+      '"kyckling" finds "hel kyckling", where the word is not first',
+      () async {
+        expect(await search({'chicken'}, ['chicken-whole']), hasLength(1));
+      },
+    );
+
+    test('"kyckling" does not find kalkon in the same group', () async {
+      expect(await search({'chicken'}, ['turkey-breast']), isEmpty);
+    });
+
+    test('"kyckling" does not find kycklingbuljong in another group', () async {
+      expect(await search({'chicken'}, ['chicken-broth']), isEmpty);
+    });
+
+    test(
+      'it widens one way: "kycklingfilé" does not find plain kyckling',
+      () async {
+        expect(await search({'chicken-breast'}, ['chicken']), isEmpty);
+      },
+    );
+
+    test('"potatis" does not find sötpotatis', () async {
+      expect(await search({'potato'}, ['sweet-potato']), isEmpty);
+    });
+
+    test(
+      'the pantry match stays exact: kyckling is not kycklingfilé',
+      () async {
+        final results = await service.matchRecipes(
+          selectedIngredientIds: {'chicken'},
+          recipes: [
+            _recipe(id: 'r', title: 'R', raw: ['chicken-breast']),
+          ],
+        );
+
+        expect(results, isEmpty);
+      },
+    );
+
+    test('an unreadable registry falls back to the exact match', () async {
+      when(
+        () => mockIngredientRepository.getAll(),
+      ).thenThrow(Exception('offline'));
+
+      expect(await search({'chicken'}, ['chicken-breast']), isEmpty);
+      expect(await search({'chicken'}, ['chicken']), hasLength(1));
     });
   });
 

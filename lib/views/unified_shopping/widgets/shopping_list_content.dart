@@ -71,16 +71,16 @@ class ShoppingListContentWidget extends StatefulWidget {
 
   /// The receipt after an item moved to [category].
   ///
-  /// A category move is class 3 (produktregler.md:133): no Ångra. The row
+  /// A category move is class 3: no Ångra. The row
   /// leaves the user's view, into a section that may be collapsed, so the
   /// receipt stays, and a snackbar with no possible follow-up action gets
   /// `Stäng` (content-style-guide.md:96-97). With an action Flutter would keep
   /// it until tapped, so for most users [SnackBar.persist] is false and it
   /// closes on its own after the app's normal snackbar time
   /// ([SnackBarConfig.normalDuration]). Under assistive navigation it stays
-  /// until `Stäng`: the action must be a real focusable target
-  /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
-  /// a screen reader reads it (Grafisk manual v6:647).
+  /// until `Stäng`: the action must be a real focusable target,
+  /// and Flutter's timeout does not pause while
+  /// a screen reader reads it.
   static void showCategoryMoveReceipt(BuildContext context, String category) {
     SnackBarUtils.showInfo(
       context,
@@ -236,10 +236,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (!viewModel.hasItems) {
       // A list exists but is empty — distinct from "no list at all" above, so
       // the copy must say "list is empty", not "no list to derive from".
-      //
-      // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
-      // the week's dishes here, "Från veckomenyn" as the one saffron action
-      // and an outlined "Lägg till vara" beside it (Komponentark v1:843-844).
       return StateWidget(
         type: StateType.empty,
         title: context.l10n.shoppingEmptyTitle,
@@ -350,8 +346,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // #inkop: a plated band, the name in capitals and "N av M" at the
-        // right. Min 48px keeps the collapse toggle a full tap target.
+        // Min 48px keeps the collapse toggle a full tap target.
         KeyedSubtree(
           key: ValueKey('shopping-category-header-$category'),
           child: SectionBand(
@@ -421,9 +416,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     }
   }
 
-  /// "Köpt (N)" heading with the right-aligned "Rensa köpta" text action
-  /// (Grafisk manual v6:524; Skarmar v12 del 2 #inkop :915-916 light,
-  /// :1020-1021 dark). No icon, no subtitle line — the count lives in the
+  /// No icon, no subtitle line — the count lives in the
   /// heading itself, per the facit.
   Widget _buildCompletedItemsHeader(
     BuildContext context,

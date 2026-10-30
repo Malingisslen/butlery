@@ -1,7 +1,6 @@
 /// P5-U27b: the suggestion line in recipe detail.
 ///
-/// produktregler.md:103 keeps a suggestion 7 days behind "Se ditt förslag";
-/// produktregler.md:241 lets the owner accept or dismiss it. The conflict
+/// The conflict
 /// banner that first says so is dismissable, so this line is how both people
 /// reach the suggestion for the rest of its 7 days:
 /// - the owner sees suggestions waiting for a decision ("Se förslaget"), and
@@ -153,7 +152,7 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
     final l = context.l10n;
     // A neutral notice: surface.tint.warning (the information surface) with
     // no border, the 8 px control radius and text.body (the conflict banner's
-    // anatomy, Komponentark v1:755-757, without the danger colour: nothing is
+    // anatomy, without the danger colour: nothing is
     // lost). AppModeColors.textBody is text.body (#37453A / #F5F4ED,
     // tokens.json).
     return Padding(

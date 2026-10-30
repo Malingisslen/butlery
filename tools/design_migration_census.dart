@@ -16,7 +16,7 @@
 //   reported RETIRED with 0 entries, never an error;
 // - a fixture or findings file that is not there is reported NOT_PRESENT.
 //
-// Decision Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19):
+// Decision Q8-01 = A:
 // package 8 is done when the tests are green and every known failure has a
 // ticket; the migration is complete only when the known-failure list is
 // empty. The verdict section says which of these holds.
@@ -1180,7 +1180,7 @@ Map<String, Object?> buildCensus(CensusSource src) {
   return {
     'schema': 1,
     'decision':
-        'Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): '
+        'Q8-01 = A: '
         'package 8 is done when the tests are green and every known failure '
         'has a ticket; the migration is complete only when the known-failure '
         'list is empty.',

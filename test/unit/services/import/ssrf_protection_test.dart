@@ -51,8 +51,8 @@ void main() {
         expect(HttpContentFetcher.isBlockedHost('example.com'), isFalse);
       });
 
-      test('allows butlery.app', () {
-        expect(HttpContentFetcher.isBlockedHost('butlery.app'), isFalse);
+      test('allows butlery.se', () {
+        expect(HttpContentFetcher.isBlockedHost('butlery.se'), isFalse);
       });
 
       test('allows public IP addresses', () {

@@ -416,7 +416,7 @@ abstract class AppLocalizations {
   /// **'{placed, plural, =0{Inga lediga platser} =1{En plats} other{{placed} platser}}, {count} recept'**
   String slotSpillHeading(int placed, int count);
 
-  /// BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)
+  /// BUT-2153: names the recipes that do not fit, before anything is written
   ///
   /// In sv, this message translates to:
   /// **'{rest, plural, =1{Ett recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med det, sedan skriver vi.} other{{rest} recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med dem, sedan skriver vi.}}'**
@@ -763,6 +763,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Autentiseringsfel. Logga in igen.'**
   String get errorAuthentication;
+
+  /// No description provided for @errorSignupNotInvited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery är bara öppet för inbjudna just nu.'**
+  String get errorSignupNotInvited;
+
+  /// No description provided for @errorSignupGateUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att skapa kontot just nu. Försök igen om en stund.'**
+  String get errorSignupGateUnavailable;
+
+  /// No description provided for @errorSignInEmailUnverified.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.'**
+  String get errorSignInEmailUnverified;
 
   /// No description provided for @errorPermissionDenied.
   ///
@@ -1829,7 +1847,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCookedToday.
   ///
   /// In sv, this message translates to:
-  /// **'Lagat i dag'**
+  /// **'Markera som lagat'**
   String get recipeCookedToday;
 
   /// No description provided for @recipeCookedCount.
@@ -2726,7 +2744,7 @@ abstract class AppLocalizations {
   /// **'Tillbaka'**
   String get commonBack;
 
-  /// Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to (Komponentark v1 section 01, pattern 2; accessibility handoff, row Back)
+  /// Accessible name of the back arrow in the subpage top bar. Names the view the arrow leads to
   ///
   /// In sv, this message translates to:
   /// **'Tillbaka till {destination}'**
@@ -6056,30 +6074,6 @@ abstract class AppLocalizations {
   /// **'Vänförfrågan'**
   String get friendRequestTitle;
 
-  /// No description provided for @imageAddCount.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till ({count})'**
-  String imageAddCount(int count);
-
-  /// No description provided for @imageAddImages.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till bilder'**
-  String get imageAddImages;
-
-  /// No description provided for @imageAdding.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägger till …'**
-  String get imageAdding;
-
-  /// No description provided for @imageAddingImage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägger till bild …'**
-  String get imageAddingImage;
-
   /// No description provided for @imagePermissionMessage.
   ///
   /// In sv, this message translates to:
@@ -6109,12 +6103,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Välj bildkälla'**
   String get imageSelectSource;
-
-  /// No description provided for @imageTapToAddUpTo.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tryck för att lägga till upp till {count, plural, =1{1 bild} other{{count} bilder}}'**
-  String imageTapToAddUpTo(int count);
 
   /// No description provided for @imageTapToLoad.
   ///
@@ -7454,25 +7442,25 @@ abstract class AppLocalizations {
   /// **'Prova att justera sökning eller filter'**
   String get importTryAdjustFilters;
 
-  /// Offline banner title (P3-U05). Interpretation of PQ-03: Skarmar v12 del 4 #hemoffline. Changing the wording is this one value.
+  /// Offline banner title (P3-U05). Changing the wording is this one value.
   ///
   /// In sv, this message translates to:
   /// **'Ingen anslutning'**
   String get indicatorOfflineMode;
 
-  /// Offline banner queue count, shown only when count > 0 (flows-roles-budget.md:111).
+  /// Offline banner queue count, shown only when count > 0.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 ändring väntar} other{{count} ändringar väntar}}'**
   String offlineBannerPending(int count);
 
-  /// Visible offline banner line: title, middle dot, queue count (Skarmar v12 del 4 #hemoffline).
+  /// Visible offline banner line: title, middle dot, queue count.
   ///
   /// In sv, this message translates to:
   /// **'{title} · {pending}'**
   String offlineBannerWithPending(String title, String pending);
 
-  /// Screen-reader label for the offline banner with a count: a comma instead of the middle dot (Skarmar v12 del 4 #hemoffline data-a11y-name).
+  /// Screen-reader label for the offline banner with a count: a comma instead of the middle dot.
   ///
   /// In sv, this message translates to:
   /// **'{title}, {pending}'**
@@ -8048,18 +8036,6 @@ abstract class AppLocalizations {
   /// **'Totalt medlemmar'**
   String get socialTotalMembers;
 
-  /// No description provided for @userNoUsers.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga användare'**
-  String get userNoUsers;
-
-  /// No description provided for @userNoUsersToShow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga användare att visa'**
-  String get userNoUsersToShow;
-
   /// No description provided for @chatCannotMessageNonFriend.
   ///
   /// In sv, this message translates to:
@@ -8612,163 +8588,163 @@ abstract class AppLocalizations {
   /// **'Laddar recept …'**
   String get loadingRecipes;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar din behörighet …'**
   String get loadingAdminAccess;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina samtycken …'**
   String get loadingConsents;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar återkopplingen …'**
   String get loadingFeedbackEntries;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar bilden …'**
   String get loadingImage;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar mätvärdena …'**
   String get loadingMetrics;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar anmälningarna …'**
   String get loadingReports;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar driftloggen …'**
   String get loadingOpsLog;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar tolkningsstatistiken …'**
   String get loadingParsingStats;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar hushållet …'**
   String get loadingFamily;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Söker ingredienser …'**
   String get loadingIngredientSearch;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar riktlinjerna …'**
   String get loadingCommunityGuidelines;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar användarvillkoren …'**
   String get loadingTerms;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar veckomenyn …'**
   String get loadingWeeklyMenu;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina notiser …'**
   String get loadingNotifications;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina taggar …'**
   String get loadingPersonalTags;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina allergival …'**
   String get loadingAllergenPreferences;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar tvåstegsverifieringen …'**
   String get loadingMfaSettings;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina anmälningar …'**
   String get loadingMyReports;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina notisval …'**
   String get loadingNotificationPreferences;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar taggen …'**
   String get loadingTag;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar inköpslistan …'**
   String get loadingShoppingList;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar dina inköpslistor …'**
   String get loadingShoppingLists;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar gruppens medlemmar …'**
   String get loadingGroupMembers;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar profilen …'**
   String get loadingProfile;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar skafferiet …'**
   String get loadingPantry;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar delade inköpslistor …'**
   String get loadingSharedShoppingLists;
 
-  /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). P4-U18: laddningstexten är obligatorisk.
+  /// Laddningstext: tallrikslinje + text som säger vad som hämtas. P4-U18: laddningstexten är obligatorisk.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar flödet …'**
@@ -9623,7 +9599,7 @@ abstract class AppLocalizations {
   /// No description provided for @sharedEmptyStateExplanation.
   ///
   /// In sv, this message translates to:
-  /// **'När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.'**
+  /// **'När du eller dina vänner delar recept och menyer visas de här. Dela ett recept för att komma igång.'**
   String get sharedEmptyStateExplanation;
 
   /// No description provided for @taggingAnalyzingIngredients.
@@ -11516,12 +11492,6 @@ abstract class AppLocalizations {
   /// **'Ta bort bild'**
   String get imageRemoveImage;
 
-  /// No description provided for @imageSetAsPrimary.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange som primär'**
-  String get imageSetAsPrimary;
-
   /// No description provided for @imageSelectedImages.
   ///
   /// In sv, this message translates to:
@@ -12242,25 +12212,25 @@ abstract class AppLocalizations {
   /// **'Stäng meddelandet'**
   String get a11yShoppingListUpdatedByDismiss;
 
-  /// P3-U08: conflict banner title for a recipe (Komponentark v1:755-758; produktregler.md:102-103).
+  /// P3-U08: conflict banner title for a recipe.
   ///
   /// In sv, this message translates to:
   /// **'Två versioner av receptet'**
   String get conflictBannerTitleRecipe;
 
-  /// P3-U08: conflict banner title for a week menu (Komponentark v1:755-758; produktregler.md:104).
+  /// P3-U08: conflict banner title for a week menu.
   ///
   /// In sv, this message translates to:
   /// **'Två versioner av veckan'**
   String get conflictBannerTitleWeek;
 
-  /// P3-U08: conflict banner body; name = who made the other change (Komponentark v1:755-758).
+  /// P3-U08: conflict banner body; name = who made the other change.
   ///
   /// In sv, this message translates to:
   /// **'{name} ändrade samtidigt. Din version finns kvar – välj vilken som gäller.'**
   String conflictBannerBody(String name);
 
-  /// P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758).
+  /// P3-U08: conflict banner body when the other editor's name is unknown.
   ///
   /// In sv, this message translates to:
   /// **'Någon annan ändrade samtidigt. Din version finns kvar – välj vilken som gäller.'**
@@ -12272,7 +12242,7 @@ abstract class AppLocalizations {
   /// **'Du ändrade receptet på en annan enhet. Din version finns kvar – välj vilken som gäller.'**
   String get conflictBannerBodyOtherDevice;
 
-  /// P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).
+  /// P3-U08: week-menu conflict snackbar, 30 s.
   ///
   /// In sv, this message translates to:
   /// **'{name} sparade veckan'**
@@ -12691,6 +12661,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ge {count, plural, =1{1 stjärna} other{{count} stjärnor}}'**
   String ratingStarLabel(int count);
+
+  /// No description provided for @recipeRatingSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsätt receptet'**
+  String get recipeRatingSheetTitle;
+
+  /// No description provided for @recipeRatingUnrated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsätt'**
+  String get recipeRatingUnrated;
 
   /// No description provided for @messagingSending.
   ///
@@ -13340,18 +13322,6 @@ abstract class AppLocalizations {
   /// **'Skicka'**
   String get feedbackSendButton;
 
-  /// No description provided for @adminLoginButton.
-  ///
-  /// In sv, this message translates to:
-  /// **'Logga in'**
-  String get adminLoginButton;
-
-  /// No description provided for @adminPasswordLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lösenord'**
-  String get adminPasswordLabel;
-
   /// No description provided for @adminLoginFailed.
   ///
   /// In sv, this message translates to:
@@ -13717,6 +13687,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Drift'**
   String get adminNavOps;
+
+  /// No description provided for @adminNavGuestList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästlista'**
+  String get adminNavGuestList;
+
+  /// No description provided for @adminGuestListTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästlista'**
+  String get adminGuestListTitle;
+
+  /// No description provided for @adminGuestListLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar gästlistan …'**
+  String get adminGuestListLoading;
+
+  /// No description provided for @adminGuestListLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda gästlistan'**
+  String get adminGuestListLoadFailed;
+
+  /// No description provided for @adminGuestListEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen är inbjuden än'**
+  String get adminGuestListEmpty;
+
+  /// No description provided for @adminGuestListColEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post'**
+  String get adminGuestListColEmail;
+
+  /// No description provided for @adminGuestListColInvited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjuden'**
+  String get adminGuestListColInvited;
+
+  /// No description provided for @adminGuestListExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'utgången'**
+  String get adminGuestListExpired;
+
+  /// No description provided for @adminGuestListRemove.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get adminGuestListRemove;
+
+  /// No description provided for @adminGuestListRemoveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort inbjudan?'**
+  String get adminGuestListRemoveTitle;
+
+  /// No description provided for @adminGuestListRemoveMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{email} kan då inte skapa ett konto.'**
+  String adminGuestListRemoveMessage(String email);
+
+  /// No description provided for @adminGuestListEmailLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exakt e-postadress'**
+  String get adminGuestListEmailLabel;
+
+  /// No description provided for @adminGuestListInvite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in'**
+  String get adminGuestListInvite;
+
+  /// No description provided for @adminGuestListHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan gäller i 30 dagar och tas bort när kontot skapas och e-posten är bekräftad.'**
+  String get adminGuestListHelp;
+
+  /// No description provided for @adminGuestListInvalidEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en hel e-postadress, till exempel namn@exempel.se.'**
+  String get adminGuestListInvalidEmail;
+
+  /// No description provided for @adminGuestListDuplicate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den adressen är redan inbjuden.'**
+  String get adminGuestListDuplicate;
+
+  /// No description provided for @adminGuestListSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att spara. Försök igen.'**
+  String get adminGuestListSaveFailed;
 
   /// No description provided for @adminOpsTitle.
   ///
@@ -16418,7 +16490,7 @@ abstract class AppLocalizations {
   /// **'Senaste aktivitet av {name} {time}'**
   String shoppingListLastActivityBy(String name, String time);
 
-  /// BUT-2187: header notice on a shared shopping list when someone else updates it while it is open (produktregler.md).
+  /// BUT-2187: header notice on a shared shopping list when someone else updates it while it is open.
   ///
   /// In sv, this message translates to:
   /// **'Listan uppdaterades av {name}'**
@@ -19559,49 +19631,49 @@ abstract class AppLocalizations {
   /// **'Lösenorden matchar'**
   String get passwordsMatch;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj'**
   String get selectionEnter;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj recept'**
   String get selectionEnterRecipes;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj varor'**
   String get selectionEnterShoppingItems;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj varor i skafferiet'**
   String get selectionEnterPantryItems;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj taggar'**
   String get selectionEnterTags;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj medlemmar'**
   String get selectionEnterMembers;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
+  /// Multi-select entry in the top bar or section header (B-46).
   ///
   /// In sv, this message translates to:
   /// **'Välj blockerade personer'**
   String get selectionEnterBlockedUsers;
 
-  /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877). Drawn as "Markera alla 24" (Skarmar v12 etapp 9 #flerbar).
+  /// Multi-select entry in the top bar or section header (B-46). Drawn as "Markera alla 24".
   ///
   /// In sv, this message translates to:
   /// **'Markera alla {count}'**
@@ -19613,7 +19685,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 vald} other{{count} valda}}'**
   String bulkSelectedCount(int count);
 
-  /// Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)
+  /// Tooltip for the kebab in the recipe list selection bar
   ///
   /// In sv, this message translates to:
   /// **'Fler åtgärder'**
@@ -20075,7 +20147,7 @@ abstract class AppLocalizations {
   /// **'Skicka igen'**
   String get emailVerificationResend;
 
-  /// BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).
+  /// BUT-2146: the resend wait, shown under the button so the button's name does not change every second.
   ///
   /// In sv, this message translates to:
   /// **'Skicka igen ({seconds} s)'**
@@ -21287,31 +21359,31 @@ abstract class AppLocalizations {
   /// **'Plats'**
   String get pantryLocationLabel;
 
-  /// Pantry row: when the row was last changed (produktregler.md:105).
+  /// Pantry row: when the row was last changed.
   ///
   /// In sv, this message translates to:
   /// **'ändrad nu'**
   String get pantryItemChangedNow;
 
-  /// Pantry row: when the row was last changed (produktregler.md:105).
+  /// Pantry row: when the row was last changed.
   ///
   /// In sv, this message translates to:
   /// **'ändrad {count} min sedan'**
   String pantryItemChangedMinutesAgo(int count);
 
-  /// Pantry row: when the row was last changed (produktregler.md:105).
+  /// Pantry row: when the row was last changed.
   ///
   /// In sv, this message translates to:
   /// **'ändrad i dag {time}'**
   String pantryItemChangedToday(String time);
 
-  /// Pantry row: when the row was last changed (produktregler.md:105).
+  /// Pantry row: when the row was last changed.
   ///
   /// In sv, this message translates to:
   /// **'ändrad i går'**
   String get pantryItemChangedYesterday;
 
-  /// Pantry row: when the row was last changed (produktregler.md:105).
+  /// Pantry row: when the row was last changed.
   ///
   /// In sv, this message translates to:
   /// **'ändrad {date}'**
@@ -21440,7 +21512,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCardPantryMatchA11y.
   ///
   /// In sv, this message translates to:
-  /// **'Matchar {percent}% av dina ingredienser'**
+  /// **'Du har {percent} % av receptets ingredienser'**
   String recipeCardPantryMatchA11y(int percent);
 
   /// No description provided for @ingredientSearchTitle.
@@ -22138,12 +22210,6 @@ abstract class AppLocalizations {
   /// **'Kommentar, långtryck för att reagera'**
   String get a11yLongPressCommentForReactions;
 
-  /// Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).
-  ///
-  /// In sv, this message translates to:
-  /// **'{label}'**
-  String a11yEditImageAction(String label);
-
   /// Semantics label for removing a selected image preview by index.
   ///
   /// In sv, this message translates to:
@@ -22432,7 +22498,7 @@ abstract class AppLocalizations {
   /// **'Filter aktiva'**
   String get a11yFiltersActive;
 
-  /// The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).
+  /// The count beside a shopping list category heading: items checked off of the category's items.
   ///
   /// In sv, this message translates to:
   /// **'{completed} av {total}'**
@@ -23044,7 +23110,7 @@ abstract class AppLocalizations {
   /// **'Ändra betyg'**
   String get a11yEditMemberRating;
 
-  /// Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143).
+  /// Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. PQ-13 = A: no request button, the text says who to ask (BUT-2143).
   ///
   /// In sv, this message translates to:
   /// **'Länken gäller inte längre. Be den som delade om en ny.'**
@@ -23500,13 +23566,13 @@ abstract class AppLocalizations {
   /// **'Laddar upp fotot …'**
   String get uploadingCookSnap;
 
-  /// The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast).
+  /// The X that closes the recipe editor modal.
   ///
   /// In sv, this message translates to:
   /// **'Stäng editorn'**
   String get recipeEditorClose;
 
-  /// The empty week's line under "Veckomeny" on the root bar (Skarmar v12 del 1 #tomvecka).
+  /// The empty week's line under "Veckomeny" on the root bar.
   ///
   /// In sv, this message translates to:
   /// **'Vecka {week} · inget planerat'**
@@ -23518,13 +23584,13 @@ abstract class AppLocalizations {
   /// **'Vecka {week}'**
   String menuWeekBadgeOnly(int week);
 
-  /// Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop).
+  /// Name of the one overflow button on the Inköp and Veckomeny root bars.
   ///
   /// In sv, this message translates to:
   /// **'Fler åtgärder'**
   String get rootBarMoreActions;
 
-  /// The planning panel's status after 6 s (flows-roles-budget.md:33; TR::FLOW::01::genererar::6-10-s; ux-beslut D-03).
+  /// The planning panel's status after 6 s (TR::FLOW::01::genererar::6-10-s).
   ///
   /// In sv, this message translates to:
   /// **'Det tar längre tid än vanligt'**
@@ -23536,7 +23602,7 @@ abstract class AppLocalizations {
   /// **'Recepten kunde inte sparas. Försök igen.'**
   String get importBatchSaveFailed;
 
-  /// What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09, Skarmar v12 del 1 #veckogenererarpanel).
+  /// What the week menu says while it is planned: the generate button's busy name and the plate line's text (P4-U09).
   ///
   /// In sv, this message translates to:
   /// **'Planerar veckan …'**
@@ -23548,37 +23614,37 @@ abstract class AppLocalizations {
   /// **'Hämtar sparade menyer …'**
   String get menuLoadingSaved;
 
-  /// The shopping root bar's title (P4-U10; Skarmar v12 del 2 #inkop; Komponentark v1:62).
+  /// The shopping root bar's title (P4-U10).
   ///
   /// In sv, this message translates to:
   /// **'Inköp'**
   String get shoppingRootTitle;
 
-  /// The line under the shopping root bar's title (P4-U10; Komponentark v1:64).
+  /// The line under the shopping root bar's title (P4-U10).
   ///
   /// In sv, this message translates to:
   /// **'{listName} · {done} av {total, plural, =1{1 klar} other{{total} klara}}'**
   String shoppingRootLine(String listName, int done, int total);
 
-  /// The line under the root bar's title when the list is empty (Skarmar v12 del 2 #tominkop).
+  /// The line under the root bar's title when the list is empty.
   ///
   /// In sv, this message translates to:
   /// **'{listName} · inga varor'**
   String shoppingRootLineEmpty(String listName);
 
-  /// An empty shopping list's title (Skarmar v12 del 2 #tominkop).
+  /// An empty shopping list's title.
   ///
   /// In sv, this message translates to:
   /// **'Inget att handla'**
   String get shoppingEmptyTitle;
 
-  /// An empty shopping list's body (Skarmar v12 del 2 #tominkop).
+  /// An empty shopping list's body.
   ///
   /// In sv, this message translates to:
   /// **'Skicka veckans rätter hit så samlas ingredienserna per kategori. Det du redan har i skafferiet dras bort.'**
   String get shoppingEmptyBody;
 
-  /// The empty shopping list's saffron action (Skarmar v12 del 2 #tominkop).
+  /// The empty shopping list's saffron action.
   ///
   /// In sv, this message translates to:
   /// **'Från veckomenyn'**
@@ -23590,7 +23656,7 @@ abstract class AppLocalizations {
   /// **'Hämtar mallarna …'**
   String get shoppingLoadingTemplates;
 
-  /// What an import says while it fetches and parses (P4-U08; Skarmar v12 etapp 4 #imp2hamtar).
+  /// What an import says while it fetches and parses (P4-U08).
   ///
   /// In sv, this message translates to:
   /// **'Hämtar receptet …'**
@@ -23608,7 +23674,7 @@ abstract class AppLocalizations {
   /// **'Hämtar licenserna …'**
   String get loadingLicenses;
 
-  /// The consent view's saffron save (Skarmar v12 etapp 6 'Samtycke — sju ändamål').
+  /// The consent view's saffron save.
   ///
   /// In sv, this message translates to:
   /// **'Spara mina val'**
@@ -23620,7 +23686,7 @@ abstract class AppLocalizations {
   /// **'Hämtar blockerade användare …'**
   String get loadingBlockedUsers;
 
-  /// Shown under the plate line while the account is deleted (Skarmar v12 etapp 5-7 'Konto — raderingen pågår').
+  /// Shown under the plate line while the account is deleted.
   ///
   /// In sv, this message translates to:
   /// **'Raderar kontot …'**
@@ -23638,7 +23704,7 @@ abstract class AppLocalizations {
   /// **'Hämtar fler händelser …'**
   String get loadingMoreActivity;
 
-  /// Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands).
+  /// Top bar title of the shared menu preview.
   ///
   /// In sv, this message translates to:
   /// **'Delad meny'**
@@ -23716,13 +23782,13 @@ abstract class AppLocalizations {
   /// **'Åtgärden kunde inte slutföras.'**
   String get dialogActionFailed;
 
-  /// P5-T1: Section error on the start view (produktregler.md:297-298): the refresh failed but recipes already fetched are still shown.
+  /// P5-T1: Section error on the start view: the refresh failed but recipes already fetched are still shown.
   ///
   /// In sv, this message translates to:
   /// **'Recepten kunde inte uppdateras.'**
   String get minaReceptRefreshFailed;
 
-  /// P5-T1: Part 2: what was kept when the recipe refresh failed (produktregler.md:298).
+  /// P5-T1: Part 2: what was kept when the recipe refresh failed.
   ///
   /// In sv, this message translates to:
   /// **'Dina sparade recept visas nedan.'**
@@ -23824,13 +23890,13 @@ abstract class AppLocalizations {
   /// **'Användarvillkoren kunde inte hämtas.'**
   String get legalTermsCouldNotLoad;
 
-  /// Offline, the web links in a legal document are inactive and this line says why (Grafisk manual v6:665, P5-U30).
+  /// Offline, the web links in a legal document are inactive and this line says why (P5-U30).
   ///
   /// In sv, this message translates to:
   /// **'Webblänkarna öppnas när du är ansluten igen.'**
   String get legalLinksNeedConnection;
 
-  /// A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188).
+  /// A photo that exists but failed to load keeps its surface and explains.
   ///
   /// In sv, this message translates to:
   /// **'Bilden kunde inte visas'**
@@ -23842,13 +23908,13 @@ abstract class AppLocalizations {
   /// **'Den här delen kunde inte visas.'**
   String get errorPartNotShown;
 
-  /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
+  /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it. Opens the recipe editor, where the photo is added.
   ///
   /// In sv, this message translates to:
   /// **'Lägg till foto'**
   String get recipeAddPhoto;
 
-  /// Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel).
+  /// Second line under a failed photo; the retry is silent.
   ///
   /// In sv, this message translates to:
   /// **'Försöker igen när nätet är tillbaka'**
@@ -23866,43 +23932,43 @@ abstract class AppLocalizations {
   /// **'Dina ingredienser ligger kvar.'**
   String get ingredientSearchSelectionKept;
 
-  /// P5-U23: overflow tray title, counted in dishes (produktregler.md:206).
+  /// P5-U23: overflow tray title, counted in dishes.
   ///
   /// In sv, this message translates to:
   /// **'{placed} av {total, plural, =1{1 rätt placerad} other{{total} rätter placerade}}'**
   String weeklyMenuOverflowPlacedCount(int placed, int total);
 
-  /// P5-U23: why the rest did not fit (produktregler.md:1125).
+  /// P5-U23: why the rest did not fit.
   ///
   /// In sv, this message translates to:
   /// **'Vecka {week} hade inga fler lediga platser för de här.'**
   String weeklyMenuOverflowReason(int week);
 
-  /// P5-U23: part of the reason when the week is the current week (produktregler.md:201).
+  /// P5-U23: part of the reason when the week is the current week.
   ///
   /// In sv, this message translates to:
   /// **'Dagar som redan har passerat fylls aldrig.'**
   String get weeklyMenuOverflowPastDays;
 
-  /// P5-U23: the tray is a working store, not a notice (produktregler.md:1125, Skarmar v12 etapp 11:235).
+  /// P5-U23: the tray is a working store, not a notice.
   ///
   /// In sv, this message translates to:
   /// **'De ligger kvar här tills du placerar dem eller lägger dem i vecka {week}.'**
   String weeklyMenuOverflowKeepOrNextWeek(int week);
 
-  /// P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit, produktregler.md:893).
+  /// P5-U23: as weeklyMenuOverflowKeepOrNextWeek, when no further week is offered (two-week limit).
   ///
   /// In sv, this message translates to:
   /// **'De ligger kvar här tills du placerar dem.'**
   String get weeklyMenuOverflowKeep;
 
-  /// P5-U23: the tray's next-week choice (produktregler.md:1127; Skarmar v12 etapp 11:241 draws 'Lägg i v. 32'; content-style-guide.md:3 and :58 win: 'v.' is not an approved abbreviation, so the week is written out).
+  /// P5-U23: the tray's next-week choice ('v.' is not an approved abbreviation, so the week is written out).
   ///
   /// In sv, this message translates to:
   /// **'Lägg i vecka {week}'**
   String weeklyMenuOverflowNextWeekAction(int week);
 
-  /// P5-U23: accessible name of the next-week choice (Skarmar v12 etapp 11:241 'Lägg de tre i vecka 32').
+  /// P5-U23: accessible name of the next-week choice.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Lägg den i vecka {week}} other{Lägg de {count} i vecka {week}}}'**
@@ -23914,25 +23980,25 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 rätt lades i vecka {week}} other{{count} rätter lades i vecka {week}}}'**
   String weeklyMenuOverflowMovedToNextWeek(int count, int week);
 
-  /// P5-U23: screen-reader value of the placement order number in a cell (produktregler.md:1126).
+  /// P5-U23: screen-reader value of the placement order number in a cell.
   ///
   /// In sv, this message translates to:
   /// **'Placerad som nummer {order}'**
   String a11yWeeklyMenuPlacementOrder(int order);
 
-  /// P5-U25: a generation with fewer dishes than asked (produktregler.md:206; content-style-guide.md:14-15).
+  /// P5-U25: a generation with fewer dishes than asked.
   ///
   /// In sv, this message translates to:
   /// **'Vi hittade {found} av {requested, plural, =1{1 rätt} other{{requested} rätter}}'**
   String menuPartialTitle(int found, int requested);
 
-  /// P5-U25: why the menu is short (produktregler.md:206, :893). Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt.
+  /// P5-U25: why the menu is short. Neutral on purpose: the pool is also narrowed by household allergy and diet rules and by untagged recipes, not only by the prompt.
   ///
   /// In sv, this message translates to:
   /// **'Det fanns inte fler recept som passar.'**
   String get menuPartialBody;
 
-  /// P5-U25: one short meal type (produktregler.md:893: what is missing is named).
+  /// P5-U25: one short meal type (what is missing is named).
   ///
   /// In sv, this message translates to:
   /// **'{found} av {requested}, {missing} saknas'**
@@ -24064,13 +24130,13 @@ abstract class AppLocalizations {
   /// **'Det befintliga receptet är oförändrat.'**
   String get duplicateMergeFailedPreserved;
 
-  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws "Använd Eriks version"; name-free to avoid the {name}s genitive.
+  /// PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back.
   ///
   /// In sv, this message translates to:
   /// **'Använd deras version'**
   String get conflictDiffUseTheirs;
 
-  /// Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict. BUT-2153 del 3, Skarmar v12 del 3 #konflikt :1164/:1199.
+  /// Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict.
   ///
   /// In sv, this message translates to:
   /// **'Stäng utan att skriva över'**
@@ -24094,31 +24160,31 @@ abstract class AppLocalizations {
   /// **'Din version gäller fortfarande.'**
   String get conflictDiffUseTheirsKept;
 
-  /// Action on the 30 s week-menu conflict snackbar. The drawn words: Skarmar v12 etapp 11 breda vyer #vmbkonflikt :221, produktregler.md:1119.
+  /// Action on the 30 s week-menu conflict snackbar.
   ///
   /// In sv, this message translates to:
   /// **'Behåll min'**
   String get conflictWeekKeepMine;
 
-  /// P5-U33: closes a partial outcome and leaves multi-select (Skarmar v12 etapp 9 #flergrupp :392).
+  /// P5-U33: closes a partial outcome and leaves multi-select.
   ///
   /// In sv, this message translates to:
   /// **'Klart'**
   String get partialOutcomeDone;
 
-  /// P5-U33: partial outcome title after bulk member removal (produktregler.md:907).
+  /// P5-U33: partial outcome title after bulk member removal.
   ///
   /// In sv, this message translates to:
   /// **'{removed} av {total} togs bort'**
   String groupMembersPartialTitle(int removed, int total);
 
-  /// P5-U33: partial outcome body after bulk member removal (produktregler.md:908).
+  /// P5-U33: partial outcome body after bulk member removal.
   ///
   /// In sv, this message translates to:
   /// **'De som inte kunde tas bort ligger kvar valda ovan.'**
   String get groupMembersPartialMessage;
 
-  /// P5-U33: what went in a partial bulk member removal, naming each removed member (produktregler.md:906; Skarmar v12 etapp 9 :391).
+  /// P5-U33: what went in a partial bulk member removal, naming each removed member.
   ///
   /// In sv, this message translates to:
   /// **'{names} är inte längre med i {group}.'**
@@ -24166,25 +24232,25 @@ abstract class AppLocalizations {
   /// **'Ingen av de valda kunde tas bort.'**
   String get groupMembersRemoveNone;
 
-  /// P5-U33: what was kept after a bulk action failed for every selected row (produktregler.md:908).
+  /// P5-U33: what was kept after a bulk action failed for every selected row.
   ///
   /// In sv, this message translates to:
   /// **'De ligger kvar valda.'**
   String get selectionFailedKept;
 
-  /// P5-U33: partial outcome title after bulk tag delete (produktregler.md:907).
+  /// P5-U33: partial outcome title after bulk tag delete.
   ///
   /// In sv, this message translates to:
   /// **'{deleted} av {total, plural, =1{1 tagg} other{{total} taggar}} togs bort'**
   String personalTagBulkDeletePartialTitle(int deleted, int total);
 
-  /// P5-U33: partial outcome body after bulk tag delete (produktregler.md:908).
+  /// P5-U33: partial outcome body after bulk tag delete.
   ///
   /// In sv, this message translates to:
   /// **'De som inte kunde tas bort ligger kvar valda.'**
   String get personalTagBulkDeletePartialMessage;
 
-  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag (produktregler.md:906).
+  /// P5-U33: what went in a partial bulk tag delete, naming each deleted tag.
   ///
   /// In sv, this message translates to:
   /// **'{names} togs bort.'**
@@ -24202,7 +24268,7 @@ abstract class AppLocalizations {
   /// **'Taggarna kunde inte tas bort.'**
   String get personalTagBulkDeleteNone;
 
-  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote (produktregler.md:104, :109).
+  /// P5-U26b: overflow row and confirm button that restores a version another person's save overwrote.
   ///
   /// In sv, this message translates to:
   /// **'Återställ min version'**
@@ -24340,13 +24406,13 @@ abstract class AppLocalizations {
   /// **'Krävs när du väljer Annat.'**
   String get reportDescriptionRequiredHelper;
 
-  /// P6-U01: zero matches (Skarmar v12 del 1 #veckoingamatch).
+  /// P6-U01: zero matches.
   ///
   /// In sv, this message translates to:
   /// **'Inga recept matchar'**
   String get menuNoMatchTitle;
 
-  /// P6-U01: what stopped it, and the smallest way on (#veckoingamatch).
+  /// P6-U01: what stopped it, and the smallest way on.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Beskrivningen ger ingen träff på ditt enda recept.} other{Beskrivningen ger noll träffar bland dina {count} recept.}} Ändra eller släpp ett krav så hittar vi förslag.'**
@@ -24364,13 +24430,13 @@ abstract class AppLocalizations {
   /// **'Ändra beskrivningen'**
   String get menuNoMatchEditPrompt;
 
-  /// P6-U01: opens the calendar to plan by hand (#veckoingamatch).
+  /// P6-U01: opens the calendar to plan by hand.
   ///
   /// In sv, this message translates to:
   /// **'Lägg dagarna själv'**
   String get menuNoMatchPlanYourself;
 
-  /// P6-U01: why Generera is switched off offline (produktregler.md:1131).
+  /// P6-U01: why Generera is switched off offline.
   ///
   /// In sv, this message translates to:
   /// **'Ingen anslutning, så veckan kan inte planeras nu. Kalendern går att ändra som vanligt.'**
@@ -24382,7 +24448,7 @@ abstract class AppLocalizations {
   /// **'Anslutningen bröts, så förslaget placerades inte. Veckan är oförändrad.'**
   String get menuGenerateOfflineStopped;
 
-  /// P6-U02: the merge sheet title (Skarmar v12 del 2 #inkopmerge).
+  /// P6-U02: the merge sheet title.
   ///
   /// In sv, this message translates to:
   /// **'Till inköpslistan'**
@@ -24430,13 +24496,13 @@ abstract class AppLocalizations {
   /// **'Dölj detaljer'**
   String get shoppingMergeHideDetails;
 
-  /// P6-U02: accessible name of Visa detaljer (#inkopmerge data-a11y-name).
+  /// P6-U02: accessible name of Visa detaljer.
   ///
   /// In sv, this message translates to:
   /// **'Visa detaljer om sammanslagningen'**
   String get shoppingMergeShowDetailsA11y;
 
-  /// P6-U02: accessible name of Dölj detaljer (#inkopmergeoppen data-a11y-name).
+  /// P6-U02: accessible name of Dölj detaljer.
   ///
   /// In sv, this message translates to:
   /// **'Dölj detaljer om sammanslagningen'**
@@ -24448,7 +24514,7 @@ abstract class AppLocalizations {
   /// **'Slå samman dubbletter'**
   String get shoppingMergeDuplicatesTitle;
 
-  /// P6-U02: switch description (#inkopmergeoppen).
+  /// P6-U02: switch description.
   ///
   /// In sv, this message translates to:
   /// **'Gul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.'**
@@ -24460,7 +24526,7 @@ abstract class AppLocalizations {
   /// **'Konvertera enheter'**
   String get shoppingMergeConvertTitle;
 
-  /// P6-U02: switch description (#inkopmergeoppen).
+  /// P6-U02: switch description.
   ///
   /// In sv, this message translates to:
   /// **'2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra – de blir två rader.'**
@@ -24472,31 +24538,31 @@ abstract class AppLocalizations {
   /// **'Dra bort skafferivaror'**
   String get shoppingMergePantryTitle;
 
-  /// P6-U02: switch description (#inkopmergeoppen; produktregler.md:230).
+  /// P6-U02: switch description.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.'**
   String shoppingMergePantryBody(int count);
 
-  /// P6-U02: rows the pantry left off, named (produktregler.md:234).
+  /// P6-U02: rows the pantry left off, named.
   ///
   /// In sv, this message translates to:
   /// **'Finns hemma i tillräcklig mängd: {names}'**
   String shoppingMergePantryCovered(String names);
 
-  /// P6-U02: degraded mode (produktregler.md:697).
+  /// P6-U02: degraded mode.
   ///
   /// In sv, this message translates to:
   /// **'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.'**
   String get shoppingMergePantryUnavailable;
 
-  /// P6-U02: switch, off by default (#inkopmerge).
+  /// P6-U02: switch, off by default.
   ///
   /// In sv, this message translates to:
   /// **'Ersätt listan i stället för att lägga till'**
   String get shoppingMergeReplaceTitle;
 
-  /// P6-U02: switch description (#inkopmerge; PQ-10 = A).
+  /// P6-U02: switch description (PQ-10 = A).
   ///
   /// In sv, this message translates to:
   /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
@@ -24508,7 +24574,7 @@ abstract class AppLocalizations {
   /// **'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.'**
   String get shoppingMergeReplaceUnavailable;
 
-  /// P6-U02: the sheet hero (#inkopmerge).
+  /// P6-U02: the sheet hero.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}'**
@@ -24556,13 +24622,13 @@ abstract class AppLocalizations {
   /// **'{count} recept'**
   String shoppingMergeRowRecipes(int count);
 
-  /// P6-U02: row mark (produktregler.md:230).
+  /// P6-U02: row mark.
   ///
   /// In sv, this message translates to:
   /// **'Kanske hemma'**
   String get shoppingMergeMarkMaybeHome;
 
-  /// P6-U02: row mark (produktregler.md:232).
+  /// P6-U02: row mark.
   ///
   /// In sv, this message translates to:
   /// **'Kolla datum'**
@@ -24643,7 +24709,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekMenuDraftDaysDone.
   ///
   /// In sv, this message translates to:
-  /// **'{count} av 7 dagar klara'**
+  /// **'{count} av 7 dagar har förslag'**
   String weekMenuDraftDaysDone(int count);
 
   /// No description provided for @weekMenuDraftDayEmpty.
@@ -25324,6 +25390,18 @@ abstract class AppLocalizations {
   /// **'Timern syns bara i appen.'**
   String get timerInAppOnly;
 
+  /// Play exact-alarm plan D1: title of the one-time offer, shown the first time a timer starts while Android's Alarms & reminders access is off.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ska timern ringa på sekunden?'**
+  String get timerExactAlarmTitle;
+
+  /// Play exact-alarm plan D1: body of the one-time offer; the button opens the Alarms & reminders setting.
+  ///
+  /// In sv, this message translates to:
+  /// **'När appen ligger i bakgrunden kan telefonen skjuta upp timerns larm några minuter. Slå på Alarm och påminnelser för Butlery så ringer den exakt i tid.'**
+  String get timerExactAlarmBody;
+
   /// No description provided for @notifSystemOffRow.
   ///
   /// In sv, this message translates to:
@@ -25438,13 +25516,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}'**
   String importReadPages(int count);
 
-  /// P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open (flows-roles-budget.md:83).
+  /// P6-U05: dialog title when the role on a shared recipe drops to read-only while its editor is open.
   ///
   /// In sv, this message translates to:
   /// **'Du kan inte längre redigera receptet'**
   String get roleLoweredRecipeTitle;
 
-  /// P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy (flows-roles-budget.md:83).
+  /// P6-U05: dialog body with unsaved edits; the unsaved work is offered as a copy.
   ///
   /// In sv, this message translates to:
   /// **'Du kan nu bara läsa receptet, så ändringarna sparas inte i det. Du kan spara dem som en egen kopia.'**
@@ -25498,7 +25576,7 @@ abstract class AppLocalizations {
   /// **'Du kan inte längre ändra gruppens meny, bara läsa den.'**
   String get roleLoweredGroupMenu;
 
-  /// P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins (produktregler.md:103).
+  /// P5-U27b: conflict banner title on someone else's shared recipe; the owner's version wins.
   ///
   /// In sv, this message translates to:
   /// **'Ägarens version gäller'**
@@ -25528,7 +25606,7 @@ abstract class AppLocalizations {
   /// **'Någon annan ändrade samtidigt. Din ändring sparades inte i receptet och skickades inte som förslag.'**
   String get conflictBannerBodyMemberNotSentUnnamed;
 
-  /// P5-U27b: banner action, verbatim from produktregler.md:103.
+  /// P5-U27b: banner action.
   ///
   /// In sv, this message translates to:
   /// **'Se ditt förslag'**
@@ -25606,13 +25684,13 @@ abstract class AppLocalizations {
   /// **'Nu'**
   String get recipeSuggestionCurrentLabel;
 
-  /// P5-U27b: the owner accepts the suggestion (produktregler.md:241).
+  /// P5-U27b: the owner accepts the suggestion.
   ///
   /// In sv, this message translates to:
   /// **'Använd förslaget'**
   String get recipeSuggestionAccept;
 
-  /// P5-U27b: the owner dismisses the suggestion (produktregler.md:241).
+  /// P5-U27b: the owner dismisses the suggestion.
   ///
   /// In sv, this message translates to:
   /// **'Avvisa förslaget'**
@@ -25678,7 +25756,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Lägg 1 vara i inköpslistan} other{Lägg {count} varor i inköpslistan}}'**
   String recipeAddCountToShoppingList(int count);
 
-  /// Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows (produktregler.md:131).
+  /// Q5-01 = A: the overflow tray's action that empties it; 7 s Ångra follows.
   ///
   /// In sv, this message translates to:
   /// **'Släng resten'**
@@ -25690,13 +25768,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 rätt slängdes ur brickan} other{{count} rätter slängdes ur brickan}}'**
   String weeklyMenuOverflowDiscarded(int count);
 
-  /// Q5-03 = B: the meta line of a pantry row without an amount (produktregler.md:148).
+  /// Q5-03 = B: the meta line of a pantry row without an amount.
   ///
   /// In sv, this message translates to:
   /// **'har hemma'**
   String get pantryItemAmountUnknown;
 
-  /// Q4-03: the pantry covers every ingredient of the recipe; nothing is added (produktregler.md:228, 233).
+  /// Q4-03: the pantry covers every ingredient of the recipe; nothing is added.
   ///
   /// In sv, this message translates to:
   /// **'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: {names}'**
@@ -25708,31 +25786,31 @@ abstract class AppLocalizations {
   /// **'Allt finns hemma'**
   String get recipeAllAtHome;
 
-  /// Q4-03: ingredients added with the difference only, because some is at home (produktregler.md:229, 233).
+  /// Q4-03: ingredients added with the difference only, because some is at home.
   ///
   /// In sv, this message translates to:
   /// **'Mindre än i receptet, eftersom en del finns hemma: {names}'**
   String recipePantryLessened(String names);
 
-  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept, Skarmar v12 del 1 #hemrecept). Lowercase like the other tabs (produktregler.md:1055).
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Hem (Hem + recept). Lowercase like the other tabs.
   ///
   /// In sv, this message translates to:
   /// **'Hem'**
   String get navigationHome;
 
-  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer (Skarmar v12 del 2 #mer).
+  /// P6-T6 (PQ-17, P4-U19): bottom-bar and rail tab for Mer.
   ///
   /// In sv, this message translates to:
   /// **'Mer'**
   String get navigationMore;
 
-  /// P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list (tillganglighetshandoff, Navigation & toppfält).
+  /// P6-T6 (PQ-17, P4-U19): accessible name of the central plus button outside the tab list.
   ///
   /// In sv, this message translates to:
   /// **'Lägg till'**
   String get navigationAddAction;
 
-  /// P6-T6 (PQ-17, P4-U19): title of the Mer destination (Skarmar v12 del 2 #mer).
+  /// P6-T6 (PQ-17, P4-U19): title of the Mer destination.
   ///
   /// In sv, this message translates to:
   /// **'Mer'**
@@ -25780,31 +25858,31 @@ abstract class AppLocalizations {
   /// **'Notiser'**
   String get moreNotifications;
 
-  /// P6-T6 (PQ-17): the hero choice in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :582).
+  /// P6-T6 (PQ-17): the hero choice in the plus sheet.
   ///
   /// In sv, this message translates to:
   /// **'Snabbspara'**
   String get addSheetQuickSaveTitle;
 
-  /// P6-T6 (PQ-17): under Snabbspara in the plus sheet, as drawn (Skarmar v12 del 1 #plussheet :583).
+  /// P6-T6 (PQ-17): under Snabbspara in the plus sheet.
   ///
   /// In sv, this message translates to:
   /// **'Bara namn och måltid – importera detaljer senare'**
   String get addSheetQuickSaveSubtitle;
 
-  /// P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row (produktregler.md:190).
+  /// P6-T6 (PQ-17, P4-U19): the queue view title and its Mer row.
   ///
   /// In sv, this message translates to:
   /// **'Väntar på synk'**
   String get syncQueueTitle;
 
-  /// P6-T6 (PQ-17, P4-U19): heading over the permanent failures (produktregler.md:189; Skarmar v12 del 4 #synkko).
+  /// P6-T6 (PQ-17, P4-U19): heading over the permanent failures.
   ///
   /// In sv, this message translates to:
   /// **'Väntar på dig · {count}'**
   String syncQueueNeedsYouHeader(int count);
 
-  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko.
+  /// P6-T6 (PQ-17, P4-U19)
   ///
   /// In sv, this message translates to:
   /// **'Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.'**
@@ -25816,7 +25894,7 @@ abstract class AppLocalizations {
   /// **'I kö · {count}'**
   String syncQueueQueuedHeader(int count);
 
-  /// P6-T6 (PQ-17, P4-U19): Skarmar v12 del 4 #synkko; produktregler.md:186.
+  /// P6-T6 (PQ-17, P4-U19)
   ///
   /// In sv, this message translates to:
   /// **'Ordningen är först in, först ut per objekt, men parallellt mellan objekt.'**
@@ -25834,7 +25912,7 @@ abstract class AppLocalizations {
   /// **'Synkar …'**
   String get syncQueueSyncing;
 
-  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (produktregler.md:189).
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure.
   ///
   /// In sv, this message translates to:
   /// **'Försök igen'**
@@ -25846,7 +25924,7 @@ abstract class AppLocalizations {
   /// **'Försök igen – {what}'**
   String syncQueueRetryA11y(String what);
 
-  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure (Skarmar v12 del 4 #synkko).
+  /// P6-T6 (PQ-17, P4-U19): action on a permanent failure.
   ///
   /// In sv, this message translates to:
   /// **'Släng ändringen'**
@@ -25858,13 +25936,13 @@ abstract class AppLocalizations {
   /// **'Släng ändringen {what}'**
   String syncQueueDiscardA11y(String what);
 
-  /// P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (produktregler.md:132, class 1).
+  /// P6-T6 (P4-U19): the 7 s Ångra snackbar after Släng ändringen (class 1).
   ///
   /// In sv, this message translates to:
   /// **'Ändringen slängdes.'**
   String get syncQueueDiscarded;
 
-  /// Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s (produktregler.md:132).
+  /// Q6-11 = B (produktbeslut 2026-09-27b): undo snackbar after a new recipe that existed only on this phone was discarded from Väntar på dig; Ångra for 7 s.
   ///
   /// In sv, this message translates to:
   /// **'Receptet slängdes.'**
@@ -25930,7 +26008,7 @@ abstract class AppLocalizations {
   /// **'Allt är sparat. Inget väntar på att synkas.'**
   String get syncQueueEmpty;
 
-  /// P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn (produktregler.md:187).
+  /// P6-T6 (PQ-17, P4-U19): second line of a queued change with dependsOn.
   ///
   /// In sv, this message translates to:
   /// **'väntar på en tidigare ändring'**
@@ -25966,7 +26044,7 @@ abstract class AppLocalizations {
   /// **'{title} · taggas'**
   String syncQueueRecipeTagged(String title);
 
-  /// P6-T6 (PQ-17, P4-U19): what a queued upload concerns (Skarmar v12 del 4 #synkko).
+  /// P6-T6 (PQ-17, P4-U19): what a queued upload concerns.
   ///
   /// In sv, this message translates to:
   /// **'Bild till {title}'**
@@ -26008,25 +26086,25 @@ abstract class AppLocalizations {
   /// **'Kommentaren skickas när du är online igen.'**
   String get commentQueuedOffline;
 
-  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  /// P6-T6 (PQ-17, P4-U19)
   ///
   /// In sv, this message translates to:
   /// **'Receptet finns inte längre'**
   String get syncQueueReasonNotFound;
 
-  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  /// P6-T6 (PQ-17, P4-U19)
   ///
   /// In sv, this message translates to:
   /// **'Du har inte längre behörighet'**
   String get syncQueueReasonPermission;
 
-  /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
+  /// P6-T6 (PQ-17, P4-U19)
   ///
   /// In sv, this message translates to:
   /// **'Bilden är för stor'**
   String get syncQueueReasonTooLarge;
 
-  /// P6-T6 (PQ-17, P4-U19): a chain marked as failed (produktregler.md:187).
+  /// P6-T6 (PQ-17, P4-U19): a chain marked as failed.
   ///
   /// In sv, this message translates to:
   /// **'Den hänger på en ändring som inte gick att spara'**
@@ -26038,13 +26116,13 @@ abstract class AppLocalizations {
   /// **'Servern tog inte emot ändringen'**
   String get syncQueueReasonUnknown;
 
-  /// P6-U08b: the queue retried for 24 h without success and stopped (produktregler.md:188).
+  /// P6-U08b: the queue retried for 24 h without success and stopped.
   ///
   /// In sv, this message translates to:
   /// **'Gick inte att spara på 24 h'**
   String get syncQueueReasonExpired;
 
-  /// P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own (produktregler.md:188).
+  /// P6-U08b: action on a permanent failure of a recipe; keeps the device content as a new recipe of your own.
   ///
   /// In sv, this message translates to:
   /// **'Spara som kopia'**
@@ -26062,13 +26140,13 @@ abstract class AppLocalizations {
   /// **'Spara som kopia – {what}'**
   String syncQueueSaveAsCopyA11y(String what);
 
-  /// P6-U08b: action on an image the server refused as too large (Skarmar v12 del 4 #synkko).
+  /// P6-U08b: action on an image the server refused as too large.
   ///
   /// In sv, this message translates to:
   /// **'Försök mindre'**
   String get syncQueueTrySmaller;
 
-  /// P6-U08b: accessible name of Försök mindre, naming the change (#synkko data-a11y-name).
+  /// P6-U08b: accessible name of Försök mindre, naming the change.
   ///
   /// In sv, this message translates to:
   /// **'Försök mindre – {what}'**
@@ -26086,7 +26164,7 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte göras mindre.'**
   String get syncQueueTrySmallerFailed;
 
-  /// P6-U08b: when a failed change is sent again, under a minute (#synkko; produktregler.md:188).
+  /// P6-U08b: when a failed change is sent again, under a minute.
   ///
   /// In sv, this message translates to:
   /// **'nästa försök om {seconds} s'**
@@ -26140,7 +26218,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 ändring väntar på dig. Öppna Väntar på synk} other{{count} ändringar väntar på dig. Öppna Väntar på synk}}'**
   String syncQueueIndicatorA11y(int count);
 
-  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera (produktregler.md:247).
+  /// Q6-08 = A: recipe menu item and editor title for a member of someone else's shared recipe, in place of Redigera.
   ///
   /// In sv, this message translates to:
   /// **'Föreslå ändring'**
@@ -26248,43 +26326,43 @@ abstract class AppLocalizations {
   /// **'Ingen har skrivit hur det görs än. Spara en egen kopia och skriv stegen där.'**
   String get cookingNoStepsBodyOthersNoIngredients;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278).
+  /// HEM-HERO: Hem. Greeting 05-11.
   ///
   /// In sv, this message translates to:
   /// **'God morgon'**
   String get hemGreetingMorning;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 11-17 (produktregler.md:278).
+  /// HEM-HERO: Hem. Greeting 11-17.
   ///
   /// In sv, this message translates to:
   /// **'Hej'**
   String get hemGreetingDay;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 17-22 (produktregler.md:278).
+  /// HEM-HERO: Hem. Greeting 17-22.
   ///
   /// In sv, this message translates to:
   /// **'God kväll'**
   String get hemGreetingEvening;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 22-05 (produktregler.md:278).
+  /// HEM-HERO: Hem. Greeting 22-05.
   ///
   /// In sv, this message translates to:
   /// **'God natt'**
   String get hemGreetingNight;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting in the empty state, a user with no recipes (#hemtom).
+  /// HEM-HERO: Hem. Greeting in the empty state, a user with no recipes.
   ///
   /// In sv, this message translates to:
   /// **'Välkommen'**
   String get hemGreetingWelcome;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The greeting followed by the first name from the profile.
+  /// HEM-HERO: Hem. The greeting followed by the first name from the profile.
   ///
   /// In sv, this message translates to:
   /// **'{greeting}, {name}'**
   String hemGreetingWithName(String greeting, String name);
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Label of the hero card when today's dinner slot is filled (produktregler.md:268).
+  /// HEM-HERO: Hem. Label of the hero card when today's dinner slot is filled.
   ///
   /// In sv, this message translates to:
   /// **'Ikväll'**
@@ -26296,133 +26374,133 @@ abstract class AppLocalizations {
   /// **'Dina recept · {count}'**
   String hemLibraryHeading(int count);
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: cooking time.
+  /// HEM-HERO: Hem. Card metadata: cooking time.
   ///
   /// In sv, this message translates to:
   /// **'{minutes} min'**
   String hemMetaMinutes(int minutes);
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).
+  /// HEM-HERO: Hem. Card metadata: portions, abbreviated as in card metadata (content-style-guide.md:53, :58).
   ///
   /// In sv, this message translates to:
   /// **'{count} port.'**
   String hemMetaPortions(int count);
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish.
+  /// HEM-HERO: Hem. The one saffron action on Hem: opens cooking mode for the planned dish.
   ///
   /// In sv, this message translates to:
   /// **'Börja laga'**
   String get hemStartCooking;
 
-  /// HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3).
+  /// HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested.
   ///
   /// In sv, this message translates to:
   /// **'Förslag'**
   String get hemSuggestion;
 
-  /// HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3).
+  /// HEM-HERO: changes the suggested recipe to the next safe one.
   ///
   /// In sv, this message translates to:
   /// **'Byt förslag'**
   String get hemSwapSuggestion;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
+  /// HEM-HERO: Hem. Opens the week menu to change the planned dish.
   ///
   /// In sv, this message translates to:
   /// **'Byt rätt'**
   String get hemSwapDish;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry.
+  /// HEM-HERO: Hem. Shown on the hero card only when every ingredient of the dish is in the pantry.
   ///
   /// In sv, this message translates to:
   /// **'allt i skafferiet'**
   String get hemAllInPantry;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar).
+  /// HEM-HERO: Hem. Loading text beside the plate line.
   ///
   /// In sv, this message translates to:
   /// **'Hämtar veckomenyn …'**
   String get hemLoadingPlan;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel).
+  /// HEM-HERO: Hem. Error, what happened.
   ///
   /// In sv, this message translates to:
   /// **'Veckomenyn kunde inte hämtas.'**
   String get hemPlanErrorWhat;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel).
+  /// HEM-HERO: Hem. Error, second action: opens the week menu.
   ///
   /// In sv, this message translates to:
   /// **'Öppna veckomenyn'**
   String get hemShowSavedPlan;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Offline: when the shown plan was fetched (#hemoffline; produktregler.md:294).
+  /// HEM-HERO: Hem. Offline: when the shown plan was fetched.
   ///
   /// In sv, this message translates to:
   /// **'Planen hämtades {time} – kan ha ändrats av någon annan sedan dess.'**
   String hemPlanFetchedAt(String time);
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state title (#hemtom).
+  /// HEM-HERO: Hem. Empty state title.
   ///
   /// In sv, this message translates to:
   /// **'Butlery blir användbar med ett recept'**
   String get hemEmptyTitle;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state body (#hemtom).
+  /// HEM-HERO: Hem. Empty state body.
   ///
   /// In sv, this message translates to:
   /// **'Lägg in något du redan lagar ofta. Sedan kan Butlery planera veckan, räkna om portioner och skriva inköpslistan åt dig.'**
   String get hemEmptyBody;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state section label (#hemtom).
+  /// HEM-HERO: Hem. Empty state section label.
   ///
   /// In sv, this message translates to:
   /// **'Snabbaste vägarna'**
   String get hemEmptyShortcuts;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut.
   ///
   /// In sv, this message translates to:
   /// **'Klistra in en länk'**
   String get hemEmptyLinkTitle;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut explanation.
   ///
   /// In sv, this message translates to:
   /// **'från en receptsida, YouTube eller Instagram'**
   String get hemEmptyLinkBody;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut.
   ///
   /// In sv, this message translates to:
   /// **'Fota en receptsida'**
   String get hemEmptyPhotoTitle;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut explanation.
   ///
   /// In sv, this message translates to:
   /// **'ur en kokbok eller ett urklipp'**
   String get hemEmptyPhotoBody;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut.
   ///
   /// In sv, this message translates to:
   /// **'Skriv själv'**
   String get hemEmptyWriteTitle;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state shortcut explanation (#hemtom).
+  /// HEM-HERO: Hem. Empty state shortcut explanation.
   ///
   /// In sv, this message translates to:
   /// **'för det du lagar utan recept'**
   String get hemEmptyWriteBody;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy reminder (#hemtom; produktregler.md:288).
+  /// HEM-HERO: Hem. Empty state allergy reminder.
   ///
   /// In sv, this message translates to:
   /// **'Har hushållet allergier? Ställ in dem först, så filtrerar Butlery bort dem ur veckomenyn. Kontrollera ändå alltid förpackningen.'**
   String get hemEmptyAllergyNote;
 
-  /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Empty state allergy link (#hemtom).
+  /// HEM-HERO: Hem. Empty state allergy link.
   ///
   /// In sv, this message translates to:
   /// **'Ställ in allergener'**
@@ -26746,7 +26824,7 @@ abstract class AppLocalizations {
   /// **'Meddelandena kunde inte laddas.'**
   String get chatMessagesLoadFailed;
 
-  /// BUT-2175: the recipe form's draft question, one draft: Släng deletes it (produktregler.md:171-172).
+  /// BUT-2175: the recipe form's draft question, one draft: Släng deletes it.
   ///
   /// In sv, this message translates to:
   /// **'Släng'**
@@ -26878,7 +26956,7 @@ abstract class AppLocalizations {
   /// **'Välj ett nytt lösenord för {email}'**
   String setNewPasswordForAccount(String email);
 
-  /// BUT-2170: second password field, label from Skarmar v12 etapp 6.
+  /// BUT-2170: second password field.
   ///
   /// In sv, this message translates to:
   /// **'Upprepa nytt lösenord'**
@@ -27100,7 +27178,7 @@ abstract class AppLocalizations {
   /// **'{count} recept gick inte att klara. Försök igen.'**
   String trashFailFailed(int count);
 
-  /// BUT-2157: outlined button under the planning panel that stops a week generation (Skarmar v12 del 1 #veckogenererarpanel).
+  /// BUT-2157: outlined button under the planning panel that stops a week generation.
   ///
   /// In sv, this message translates to:
   /// **'Avbryt planeringen'**
@@ -30574,6 +30652,30 @@ abstract class AppLocalizations {
   /// **'Sparad'**
   String get sharedSavedState;
 
+  /// The permission line on the sheet for a shared recipe the user can only read
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan läsa'**
+  String get sharedReceiveCanRead;
+
+  /// The permission line on the sheet for a shared recipe the user may edit
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan redigera'**
+  String get sharedReceiveCanEdit;
+
+  /// Saves a shared recipe to the user's own; the sheet's one filled action
+  ///
+  /// In sv, this message translates to:
+  /// **'Acceptera'**
+  String get sharedReceiveAccept;
+
+  /// Opens a shared recipe without saving it
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa receptet'**
+  String get sharedReceiveView;
+
   /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item
   ///
   /// In sv, this message translates to:
@@ -31767,6 +31869,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.'**
   String get decisionRevisedNoActionOutcome;
+
+  /// BUT-2455: link between two recipe steps that joins them into one.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop med nästa'**
+  String get mergeWithNextStep;
+
+  /// BUT-2455: snackbar after two steps were joined; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stegen slogs ihop'**
+  String get stepsMerged;
+
+  /// BUT-2455: warning when two joined steps would exceed the 500-character step limit; nothing is merged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stegen blir för långa för att slås ihop'**
+  String get stepsTooLongToMerge;
+
+  /// BUT-2455: screen-reader label of the merge link, naming both step numbers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop steg {first} med steg {second}'**
+  String a11yMergeSteps(int first, int second);
 }
 
 class _AppLocalizationsDelegate

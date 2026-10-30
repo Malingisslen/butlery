@@ -57,7 +57,6 @@ class PantryItem {
 
   /// The amount on hand, or null for "har hemma, vet inte hur mycket" — a
   /// value of its own that never overwrites a known amount
-  /// (produktregler.md:148, § 2.2).
   final double? quantity;
   final String unit;
   final PantryLocation location;
@@ -71,7 +70,7 @@ class PantryItem {
   final bool isStaple;
 
   /// When the row was last changed, written by the server on every update
-  /// (produktregler.md:105: "radens tidsstämpel uppdateras"). Null for a row
+  /// ("radens tidsstämpel uppdateras"). Null for a row
   /// that has not been changed since it was added.
   final DateTime? updatedAt;
 
@@ -149,11 +148,11 @@ class PantryItem {
   }
 
   /// The fields a user edits, as a Firestore update of only what changed
-  /// since [before] (produktregler.md:105, :142: "per fält, senaste ändring
+  /// since [before] ("per fält, senaste ändring
   /// vinner"). Two devices that change different fields of the same row no
   /// longer overwrite each other.
   ///
-  /// A null [quantity] never replaces a known amount (produktregler.md:148):
+  /// A null [quantity] never replaces a known amount:
   /// when [before] has one, the quantity is left out. A cleared optional
   /// field is deleted. [updatedAt] and [updatedBy] are the repository's to
   /// write, so they are never part of the result.

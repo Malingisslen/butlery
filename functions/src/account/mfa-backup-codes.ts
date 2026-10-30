@@ -1,11 +1,6 @@
 /**
  * P6-U09 — backup codes for two-step verification (flow 06).
  *
- * "Reservkoder hör i påslagningen — tio engångskoder innan skyddet gäller.
- * Utan reservväg och utan en utmaning i inloggningen (AU-10) får skyddet
- * inte gå att slå på" (produktregler.md:747-749; Skarmar v12 etapp 6
- * #mfalagg #mfaaktiv).
- *
  * Firebase MFA has no backup codes, so they live here:
  *
  *  - `generateMfaBackupCodes` (signed in, sign-in at most five minutes old)
@@ -84,6 +79,7 @@ import {
   projectAuthHandlerUri,
   verifyFirstFactorProof,
 } from "./mfa-first-factor";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export * from "./mfa-codes";
 export * from "./mfa-recovery-attempts";
@@ -382,7 +378,7 @@ async function writeAudit(entry: Record<string, unknown>): Promise<void> {
 
 export const generateMfaBackupCodes = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<{ codes: string[] }> => {
@@ -412,7 +408,7 @@ export const generateMfaBackupCodes = onCall(
 
 export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
     // Replay protection: every call needs a fresh, limited-use App Check
     // token (the client asks for one with `limitedUseAppCheckToken`).
@@ -458,7 +454,7 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
  */
 export const clearMfaBackupCodes = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<{ cleared: boolean }> => {

@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart' show immutable;
 /// How many of the user's changes are not yet saved, across both queues
 /// (the sync queue and the upload queue).
 ///
-/// The queue view shows "antal poster" (produktregler.md:191), and the
-/// offline banner "N ändringar väntar" (Komponentark v1:753-754), so the
+/// The queue view shows "antal poster", and the
+/// offline banner "N ändringar väntar", so the
 /// app needs one number for both queues, not one per table.
 ///
 /// PQ-04 = B (decided 2026-09-23): a surface shows nothing while the queue
@@ -25,8 +25,7 @@ class QueueCounts {
   /// failed, even when its retries have run out.
   final int draining;
 
-  /// Permanent failures that wait for the user ("Väntar på dig",
-  /// produktregler.md:189).
+  /// Permanent failures that wait for the user
   final int needsUser;
 
   /// Every change that has not reached the server.

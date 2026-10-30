@@ -11,7 +11,7 @@ import os
 import firebase_admin
 from firebase_admin import credentials, storage
 
-BUCKET = "butlery-app-1.firebasestorage.app"
+BUCKET = "butlery-prod.firebasestorage.app"
 STORAGE_BASE = "models/line_classifier"
 
 

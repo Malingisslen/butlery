@@ -137,6 +137,15 @@ export const CONTENT_HASH_KEYS: Allowlist = {
   hashes: { list: scalars("hash", "at") },
 };
 
+/**
+ * `createShortUrl` (`firebase_deeplink_repository.dart`) with the `metadata`
+ * map `_generateInternalShortUrl` passes it; the id is the short code.
+ */
+export const DEEP_LINK_KEYS: Allowlist = {
+  ...scalars("longUrl", "createdAt"),
+  metadata: { map: scalars("isActive", "expiresAt") },
+};
+
 function rowsWithId(
   docs: admin.firestore.QueryDocumentSnapshot[],
   keys: Allowlist,
@@ -278,6 +287,19 @@ export const ACCOUNT_SECTIONS: readonly SectionDef[] = [
   {
     name: "notification_opened_events",
     read: byUserId("notification_opened_events", OPENED_EVENT_KEYS),
+  },
+  {
+    // deleteDeepLinks
+    name: "deep_links",
+    read: async (database, uid) =>
+      rowsWithId(
+        await cappedDocs(
+          database.collection(Collections.deepLinks).where("createdBy", "==", uid),
+          MAX_SECTION_ROWS,
+          Collections.deepLinks,
+        ),
+        DEEP_LINK_KEYS,
+      ),
   },
   // onUserDeleted's per-user subcollection purge
   {

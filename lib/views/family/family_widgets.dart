@@ -48,7 +48,7 @@ class FamilyAvatar extends StatelessWidget {
   final String? initials;
 
   /// A circle instead of the square, as the household and member lists are
-  /// drawn (Skärmar v12 #familj, #medlemmar).
+  /// drawn (#medlemmar).
   final bool round;
 
   const FamilyAvatar({

@@ -308,4 +308,38 @@
 {"type": "review", "tier": "full", "panel": ["Privacy / Data Protection Officer (GDPR)", "Security Architect", "Data Analyst / BI", "Database Administrator / Data-layer Engineer", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 30, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "approx_tokens": 530000, "via": "manual", "plan": "BUT-1997 anonym r\u00e4knare, blind panel (FinOps dropped: ~3 ops per attribution)", "ran": true, "ts": "2026-10-19T10:41:00.332330+00:00"}
 {"type": "review", "tier": "full", "panel": ["Privacy / Data Protection Officer (GDPR)", "Legal Counsel", "Security Architect", "Software Architect", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 33, "conflicts": 1, "escalations": 0, "adrs": ["ADR-0030"], "rubber_stamp": false, "approx_tokens": 500000, "via": "manual", "plan": "BUT-2414 del 2: andras saker, hush\u00e5ll, lagrade filer (FinOps, PM, Vendor dropped)", "ran": true, "ts": "2026-10-20T06:25:43.310688+00:00"}
 {"type":"review","ts":"2026-10-20","tier":"full","panel":["Privacy/DPO","Security Architect","Trust & Safety","DBA","Legal","Codebase Archaeologist"],"outcome":"approve-with-conditions","must_haves":47,"conflicts":0,"escalations":1,"adrs":[],"rubber_stamp":false,"via":"manual","plan":"BUT-2294 offline image queue"}
+{"ts":"2026-10-20T11:30:24.046Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,ocr,storage.rules,vertex","ran":null}
+{"ts":"2026-10-20T12:38:34.591Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,ocr,retention,storage.rules,trust & safety,vertex","ran":null}
+{"ts":"2026-10-20T12:39:07.601Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,ocr,retention,storage.rules,trust & safety,vertex","ran":null}
+{"ts":"2026-10-20T12:39:16.452Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,ocr,retention,storage.rules,trust & safety,vertex","ran":null}
+{"type": "review", "tier": "full", "panel": ["DevOps/SRE", "Security Architect", "Privacy/DPO", "FinOps", "QA", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 30, "conflicts": 1, "escalations": 1, "adrs": [], "rubber_stamp": false, "ran": true, "via": "exit-plan", "plan": "BUT-451 staging Firebase project", "ts": "2026-10-20T12:42:43.619389+00:00"}
+{"ts":"2026-10-20T20:51:02.412Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,monetiz,ocr,retention,storage.rules,vertex","ran":null}
+{"ts":"2026-10-20T20:55:50.021Z","type":"trigger","fired":true,"signals":"auth,billing,cloud function,delete,firestore.rules,functions/src,llm,monetiz,ocr,retention,storage.rules,vertex","ran":null}
 {"type": "review", "tier": "full", "panel": ["DevOps/SRE", "Security Architect", "Privacy/DPO", "FinOps", "Release/App-Store Compliance", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 42, "conflicts": 2, "escalations": 0, "adrs": ["ADR-0033"], "rubber_stamp": false, "ran": true, "via": "exit-plan", "plan": "New EU production project replacing butlery-app-1 (BUT-2427); Malin decided 7 cards; QA, DBA, Legal, PM and 10 others dropped (no distinct stake)", "ts": "2026-10-20T21:25:14.016941+00:00"}
+{"ts":"2026-10-21T05:06:02.348Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,functions/src,gdpr,moderation","ran":null}
+{"ts":"2026-10-21T05:11:18.284Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,functions/src,gdpr,moderation","ran":null}
+{"ts":"2026-10-21T06:05:19.158Z","type":"trigger","fired":true,"signals":"delete,functions/src,llm,ocr","ran":null}
+{"ts":"2026-10-21T06:11:25.839Z","type":"trigger","fired":true,"signals":"delete,functions/src,llm,ocr","ran":null}
+{"ts":"2026-10-21T11:39:27.014Z","type":"trigger","fired":true,"signals":"delete,functions/src,llm,ocr,privacy polic,vertex","ran":null}
+{"ts":"2026-10-21T11:39:47.022Z","type":"trigger","fired":true,"signals":"delete,functions/src,gdpr,llm,ocr,privacy polic,vertex","ran":null}
+{"ts":"2026-10-22T12:37:53.877Z","type":"trigger","fired":true,"signals":"auth,functions/src,llm,moderation,ocr,signup","ran":null}
+{"ts":"2026-10-22T12:38:06.579Z","type":"trigger","fired":true,"signals":"auth,deletion,functions/src,llm,moderation,ocr,sign-up,signup","ran":null}
+{"ts":"2026-10-22T19:08:14.227Z","type":"trigger","fired":true,"signals":"gdpr,llm","ran":null}
+{"ts":"2026-10-23T05:36:01.179Z","type":"trigger","fired":true,"signals":"auth","ran":null}
+{"ts":"2026-10-23T05:37:24.645Z","type":"trigger","fired":true,"signals":"auth,gdpr,llm","ran":null}
+{"type": "review", "tier": "full", "panel": ["Security Architect", "Privacy / Data Protection Officer (GDPR)", "Software Architect", "Database Administrator / Data-layer Engineer", "Codebase Archaeologist"], "outcome": "escalated", "must_haves": 30, "conflicts": 1, "escalations": 2, "adrs": ["ADR-0034"], "rubber_stamp": false, "approx_tokens": 540000, "via": "manual", "plan": "signup allowlist BUT-2452", "ran": true, "ts": "2026-10-24T09:03:49.725855+00:00"}
+{"ts":"2026-10-24T15:29:37.530Z","type":"trigger","fired":true,"signals":"age gate,auth,authentication,delete,erasure,firestore.rules,functions/src,gdpr,password,retention,sign-up,signup","ran":null}
+{"ts":"2026-10-24T15:31:28.773Z","type":"trigger","fired":true,"signals":"age gate,auth,authentication,delete,deletion,erasure,firestore.rules,functions/src,gdpr,llm,password,retention,sign-up,signup","ran":null}
+{"ts":"2026-10-26T07:26:30.884Z","type":"trigger","fired":true,"signals":"auth,firestore.rules,functions/src,signup","ran":null}
+{"ts":"2026-10-26T07:29:23.018Z","type":"trigger","fired":true,"signals":"auth,firestore.rules,functions/src,signup","ran":null}
+{"ts":"2026-10-26T13:55:06.682Z","type":"trigger","fired":true,"signals":"auth,cloud function,delete,deletion,firestore.rules,functions/src,signup","ran":null}
+{"ts":"2026-10-26T13:59:00.689Z","type":"trigger","fired":true,"signals":"auth,cloud function,delete,deletion,firestore.rules,functions/src,signup","ran":null}
+{"ts":"2026-10-27T21:10:46.591Z","type":"trigger","fired":true,"signals":"auth,gdpr","ran":null}
+{"ts":"2026-10-27T21:16:00.267Z","type":"trigger","fired":true,"signals":"auth,gdpr","ran":null}
+{"ts":"2026-10-28T06:20:08.328Z","type":"trigger","fired":true,"signals":"allergen,ocr","ran":null}
+{"ts":"2026-10-28T06:20:14.166Z","type":"trigger","fired":true,"signals":"allergen,ocr","ran":null}
+{"type": "review", "tier": "single", "panel": ["Data / Integrations Engineer"], "outcome": "approve-with-conditions", "must_haves": 8, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "via": "exit-plan", "plan": "BUT-2455 messy text import", "ts": "2026-10-28T06:36:03.285214+00:00"}
+{"ts":"2026-10-28T09:23:04.357Z","type":"trigger","fired":true,"signals":"allergen,gdpr","ran":null}
+{"ts":"2026-10-28T14:36:06.235Z","type":"trigger","fired":true,"signals":"gdpr","ran":null}
+{"ts":"2026-10-28T19:14:35.285Z","type":"trigger","fired":true,"signals":"deletion,firestore.rules","ran":null}
+{"ts":"2026-10-28T19:15:34.588Z","type":"trigger","fired":true,"signals":"deletion,firestore.rules","ran":null}

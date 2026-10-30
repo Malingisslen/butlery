@@ -152,6 +152,30 @@ void main() {
       expect(routedText, isEmpty, reason: 'drained, no double import');
     });
 
+    test('an overlapping initialize keeps the cold-start share', () async {
+      // Native hands the launch share over once; a re-query reads nothing.
+      var textCalls = 0;
+      var mediaCalls = 0;
+      when(
+        () => service.getInitialSharedText(),
+      ).thenAnswer((_) async => textCalls++ == 0 ? link : null);
+      when(
+        () => service.getInitialSharedImages(),
+      ).thenAnswer((_) async => mediaCalls++ == 0 ? ['/a.jpg'] : []);
+      when(() => auth.currentUser).thenReturn(_FakeUser());
+
+      await Future.wait([
+        handler.initialize(service: service),
+        handler.initialize(service: service),
+      ]);
+      await handler.processPendingShare();
+
+      expect(routedText.single.route, Routes.smartImport);
+      expect(routed, [
+        ['/a.jpg'],
+      ]);
+    });
+
     test('a warm-start text without a link opens the text import', () async {
       final controller = StreamController<String>();
       addTearDown(controller.close);

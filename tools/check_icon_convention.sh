@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # BUT-1213 (enforce half of BUT-944): keep the favourite/saved icon convention
-# from eroding. P7-U08 replaced AdaptiveIcons with the Butlery icon family
-# (beslutslogg.md:9, B-02); the concept glyphs have one home each:
+# from eroding. P7-U08 replaced AdaptiveIcons with the Butlery icon family;
+# the concept glyphs have one home each:
 #   heart    -> ButleryIcons.favourite / favouriteOutline  (favourite, like)
 #   bookmark -> ButleryIcons.savedTemplate / savedTemplateOutline
 #               (template/saved)

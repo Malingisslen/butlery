@@ -4,19 +4,49 @@
       "recall": 1.0,
       "headingLeaks": 0,
       "titleExact": 13,
-      "stepsExact": 8,
+      "stepsExact": 10,
       "portionsExact": 10,
       "timeExact": 9,
-      "failures": 0
+      "failures": 0,
+      "extraIngredients": 1,
+      "extraSteps": 1,
+      "chromeLeaks": 0
     },
     "text": {
-      "recall": 0.9675,
+      "recall": 0.9722,
       "headingLeaks": 3,
       "titleExact": 29,
-      "stepsExact": 11,
+      "stepsExact": 28,
       "portionsExact": 0,
       "timeExact": 0,
-      "failures": 0
+      "failures": 0,
+      "extraIngredients": 7,
+      "extraSteps": 0,
+      "chromeLeaks": 0
+    },
+    "stokig": {
+      "recall": 0.9531,
+      "headingLeaks": 0,
+      "titleExact": 9,
+      "stepsExact": 5,
+      "portionsExact": 7,
+      "timeExact": 2,
+      "failures": 0,
+      "extraIngredients": 3,
+      "extraSteps": 7,
+      "chromeLeaks": 0
+    },
+    "foto": {
+      "recall": 0.8709,
+      "headingLeaks": 0,
+      "chromeLeaks": 0,
+      "titleExact": 3,
+      "stepsExact": 0,
+      "portionsExact": 1,
+      "timeExact": 0,
+      "failures": 0,
+      "extraIngredients": 2,
+      "extraSteps": 9
     }
   },
   "knownRed": [
@@ -29,6 +59,21 @@
       "fixture": "text/26-sockerkaka-formen",
       "key": "smör",
       "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "stokig/03-ocr-avstavning-sidhuvud",
+      "key": "smör",
+      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
+    },
+    {
+      "fixture": "foto/02-kanelbullar-tva-sidor",
+      "key": "smör",
+      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
+    },
+    {
+      "fixture": "foto/03-enkel-kokbokssida",
+      "key": "smör",
+      "reason": "Rader med samma vara slås ihop och en mängd försvinner (BUT-2455)."
     }
   ]
 }

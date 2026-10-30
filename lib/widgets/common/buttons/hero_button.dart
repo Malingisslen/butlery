@@ -2,15 +2,12 @@
 //
 // The view's one saffron action.
 //
-// Komponentark v1:843-844 ("Saffranshierarki — en hero per vy"): the hero is
-// a filled saffron button, exactly one per view. Grafisk manual v6:219 says
-// the same ("max en"). The colours are the named hero style
+// The colours are the named hero style
 // (ButtonThemes.heroButtonStyle: action.primary behind text.onActionPrimary,
 // pressed action.primaryPressed behind text.onActionPrimaryPressed, in light
 // and dark alike).
 //
-// Busy follows Komponentark v1:365 and :372: the button keeps its shape and
-// its name and gets the plate line along its bottom edge. It is never
+// It is never
 // disabled while it works, because disabled is another state with another
 // surface.
 
@@ -20,7 +17,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// The view's single saffron action (Komponentark v1:843-844).
+/// The view's single saffron action.
 ///
 /// Use it for the one action a view is about. Every other primary stays ink.
 class HeroButton extends StatelessWidget {
@@ -45,14 +42,14 @@ class HeroButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Whether the action is running. The button keeps its shape and gets the
-  /// plate line along its bottom edge (Komponentark v1:372).
+  /// plate line along its bottom edge.
   final bool busy;
 
   /// What the button says while it works, for example "Sparar …"
   /// (content-style-guide.md:63). Null keeps [label].
   final String? busyLabel;
 
-  /// An optional leading icon. Hidden while busy, as drawn (v1:372).
+  /// An optional leading icon. Hidden while busy.
   final IconData? icon;
 
   /// Whether the button fills the available width.
@@ -180,7 +177,7 @@ class _FilledAction extends StatelessWidget {
             busy ? (busyLabel ?? label) : label,
             semanticsLabel: busy ? null : semanticLabel,
             // BUT-2219: a label wraps rather than ellipsising; a button never
-            // cuts its name (plattformsmatris.md).
+            // cuts its name.
             textAlign: TextAlign.center,
           );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;

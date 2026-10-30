@@ -1,4 +1,4 @@
-// P6-U08b: the retry schedule (produktregler.md:188, TR::FLOW::08::ko::
+// P6-U08b: the retry schedule (TR::FLOW::08::ko::
 // omforsok-backoff): "Exponentiell backoff 2 s → 4 s → 8 s → 30 s → 2 min →
 // 10 min, med jitter. Max 24 h, därefter permanent fel. Ingen omförsöksstorm
 // vid återkommande nät."
@@ -28,7 +28,7 @@ void main() {
       Duration(minutes: 10),
     ];
 
-    test('is the six steps of produktregler.md, in order', () {
+    test('is the six steps, in order', () {
       expect(kQueueRetrySchedule, steps);
       expect(kQueueMaxRetryAge, const Duration(hours: 24));
     });

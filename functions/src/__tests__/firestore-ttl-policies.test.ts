@@ -202,7 +202,7 @@ const TARGETS: {
     stamp: /'expiresAt':\s*PresenceTtl\.computeExpiresAt\(\)/,
   },
   // P5-U26b — a user's overwritten week menu or own recipe, kept 30 days
-  // behind "Återställ" (produktregler.md:109). One writer: the model's
+  // behind "Återställ". One writer: the model's
   // `toFirestore`, which RealtimeSyncService stores through the repository.
   // firestore.rules pins expiresAt to overwrittenAt + 30 d on create.
   {
@@ -231,7 +231,7 @@ const TARGETS: {
     stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
   },
   // P5-U27b — a change to someone else's shared recipe, kept 7 days as a
-  // suggestion (produktregler.md:103). One writer: the model's `toFirestore`,
+  // suggestion. One writer: the model's `toFirestore`,
   // which RealtimeSyncService stores through the repository. firestore.rules
   // pins expiresAt to createdAt + 7 d on create.
   {
@@ -260,6 +260,15 @@ const TARGETS: {
     field: "expireAt",
     retention: "60d",
     writer: "lib/repositories/firebase/firebase_menu_voting_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
+  },
+  // BUT-2452 — an unused guest-list invite. One writer: the admin repository's
+  // `toFirestore`; firestore.rules caps it at 30 days ahead.
+  {
+    group: "signup_allowlist",
+    field: "expireAt",
+    retention: "30d",
+    writer: "lib/repositories/firebase/firebase_signup_allowlist_repository.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
   },
 ];
@@ -303,6 +312,7 @@ const EXPECTED_TTL_GROUPS = [
   "rate_limits",
   "recipe_suggestions",
   "scheduled_notifications",
+  "signup_allowlist",
   "system_ip_audit_caps",
   "trash",
   "views",

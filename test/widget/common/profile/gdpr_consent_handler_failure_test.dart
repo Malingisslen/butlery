@@ -1,6 +1,6 @@
 // P7-B2: a GDPR link that cannot open says what did not open, as the
 // failure snackbar (alert role, Stäng), never the exception's own text
-// (content-style-guide.md:87-97, :95; tillganglighetshandoff.dc.html:172).
+// (content-style-guide.md:87-97, :95).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';

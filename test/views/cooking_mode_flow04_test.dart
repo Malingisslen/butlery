@@ -1,6 +1,4 @@
-/// P6-U04 · Flow 04, cooking mode (flows-roles-budget.md:66-73;
-/// produktregler.md:421-423, 1199-1201, 1227; Skarmar v12 etapp 11
-/// #lgbutan).
+/// P6-U04 · Flow 04, cooking mode
 ///
 /// - Back and close leave at once until more than one step is done; after
 ///   that they ask, and "Fortsätt laga" keeps the step.
@@ -350,8 +348,7 @@ void main() {
 
     // Q6-05 = C (produktbeslut 2026-09-27): on someone else's recipe the
     // first action is "Spara min kopia", and it leaves with saveCopy, which
-    // recipe detail turns into the user's own copy (never an edit of theirs,
-    // produktregler.md:241).
+    // recipe detail turns into the user's own copy
     testWidgets('someone else\'s recipe: "Spara min kopia" instead of '
         '"Skriv stegen", and it asks for a copy', (tester) async {
       final results = <Object?>[];
@@ -408,6 +405,7 @@ void main() {
       WidgetTester tester, {
       List<Object?>? results,
       _FakeEffects? effects,
+      List<String>? ingredients,
     }) async {
       // A landscape phone (shortest side 720): the split layout needs the
       // width the forced landscape gives it.
@@ -420,7 +418,7 @@ void main() {
       await tester.pumpWidget(
         host(
           (_) => CookingModeView(
-            recipe: _recipe(),
+            recipe: _recipe(ingredients: ingredients),
             effects: effects ?? _FakeEffects(),
           ),
           results: results,
@@ -445,6 +443,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(effects.calls, contains('portrait'));
+    });
+
+    testWidgets('a screen reader hears the amount as shown, "1,5 dl"', (
+      tester,
+    ) async {
+      await openCooking(tester, ingredients: ['1 1/2 dl panko']);
+
+      expect(find.text('1,5 dl'), findsOneWidget);
+      expect(find.bySemanticsLabel('1,5 dl panko'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 1/2 dl panko'), findsNothing);
     });
 
     testWidgets('back on step 2 leaves at once', (tester) async {

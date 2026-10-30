@@ -358,7 +358,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   /// [addItem] that returns the new row's id, or null when nothing was
   /// added.
   ///
-  /// Add is class 1 with a 7 s "Ångra" (produktregler.md:131). The undo
+  /// Add is class 1 with a 7 s "Ångra". The undo
   /// removes the row by this id, never by its name or position, so it takes
   /// away exactly what was added, on a personal list and a shared one.
   Future<String?> addItemWithId({

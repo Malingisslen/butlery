@@ -10,8 +10,8 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
-/// One hit in the ingredient search, as Skarmar v12 del 3 #ingredienssok
-/// draws it: a thumbnail, the title with its ingredient match
+/// One hit in the ingredient search
+/// : a thumbnail, the title with its ingredient match
 /// count, what is missing under it, and the match as an outlined pill on the right.
 class IngredientMatchRow extends StatelessWidget {
   const IngredientMatchRow({

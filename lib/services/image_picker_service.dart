@@ -18,8 +18,6 @@
 /// - **Error Recovery**: Robust error handling with detailed logging and graceful fallback strategies
 /// **Permission Management:**
 /// - **iOS Compatibility**: Photo library access with limited selection support
-/// - **Android Optimization**: Version-specific permission strategies (storage vs photos permissions)
-/// - **Smart Fallbacks**: Automatic fallback to alternative permission types when primary permissions fail
 /// - **Permission Debugging**: Comprehensive permission status monitoring and diagnostic capabilities
 
 import 'dart:io';
@@ -49,7 +47,6 @@ export 'package:butlery/core/utils/os_permission_helper.dart'
 /// **Cross-Platform Architecture:**
 /// Implements platform-specific strategies for optimal image selection:
 /// - iOS: Photo library access with limited selection support and privacy compliance
-/// - Android: Version-aware permission handling (storage vs photos permissions)
 /// - Universal: Consistent API surface with platform-optimized implementations
 /// **Image Processing Pipeline:**
 /// Provides comprehensive image processing including:
@@ -68,9 +65,8 @@ export 'package:butlery/core/utils/os_permission_helper.dart'
 /// await imageService.debugPermissions();
 /// ```
 /// Our own explanation before the system prompt for camera or photos
-/// (flows-roles-budget.md:100; Skarmar v12 etapp 3 #behkamera). Returns true
+/// Returns true
 /// when the user tapped Tillåt. The OS is asked only then
-/// (produktregler.md:682).
 typedef MediaRationalePrompt = Future<bool> Function(ImageSource source);
 
 /// What a pick produced, with the permission outcome that decided it
@@ -95,7 +91,7 @@ class ImagePickOutcome {
 
 /// Our explanation before the system prompt for camera and photos on the
 /// surfaces other than recipe import (avatar, recipe images, comments).
-/// Recipe import has its own drawn copy (Skarmar v12 etapp 3 #behkamera).
+/// Recipe import has its own drawn copy.
 MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
     (source) async {
       if (!context.mounted) return false;
@@ -115,8 +111,8 @@ MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
 /// than recipe import (flow 07): a permanent no says so with "Öppna
 /// inställningar"; a device block says so without a button; a plain no is a
 /// silent skip — tapping the control again asks again
-/// (produktregler.md:683). These surfaces offer no invented alternative
-/// (Q-P6-E15; produktregler.md:535).
+/// These surfaces offer no invented alternative
+/// (Q-P6-E15).
 void explainMediaPermission(
   BuildContext context,
   OsPermissionOutcome outcome,
@@ -155,6 +151,9 @@ class ImagePickerService extends BaseService {
   final PermissionProvider _permissionProvider;
   final ImageValidator _imageValidator;
 
+  /// Test seam: `Platform.isAndroid` is false on the test VM.
+  final bool Function()? _isAndroidOverride;
+
   // Store the XFile for web platform
   XFile? _lastPickedXFile;
 
@@ -162,7 +161,9 @@ class ImagePickerService extends BaseService {
     ImagePickerProvider? imagePickerProvider,
     PermissionProvider? permissionProvider,
     ImageValidator? imageValidator,
-  }) : _imagePickerProvider =
+    bool Function()? isAndroidOverride,
+  }) : _isAndroidOverride = isAndroidOverride,
+       _imagePickerProvider =
            imagePickerProvider ?? DefaultImagePickerProvider(),
        _permissionProvider = permissionProvider ?? DefaultPermissionProvider(),
        _imageValidator = imageValidator ?? DefaultImageValidator();
@@ -210,7 +211,7 @@ class ImagePickerService extends BaseService {
 
   /// [pickImage] with the typed permission outcome (flow 07). With a
   /// [rationale], our explanation comes before the system prompt and the OS
-  /// is asked only after Tillåt (produktregler.md:682). Without one, the
+  /// is asked only after Tillåt. Without one, the
   /// system prompt comes directly, as before.
   Future<ImagePickOutcome> pickImageWithOutcome(
     ImageSource source, {
@@ -485,7 +486,7 @@ class ImagePickerService extends BaseService {
   }
 
   /// Resolves the camera or photo-library permission to a typed outcome
-  /// (flow 07, flows-roles-budget.md:98-106; produktregler.md:680-687).
+  /// (flow 07).
   ///
   /// With a [rationale], our explanation comes first and the OS is asked only
   /// after Tillåt; "Inte nu" returns [OsPermissionOutcome.denied] without
@@ -501,6 +502,13 @@ class ImagePickerService extends BaseService {
       // Web: the browser owns the prompt.
       if (kIsWeb) return OsPermissionOutcome.granted;
 
+      // Android's gallery goes through the system photo picker, which needs
+      // no permission; Play rejects READ_MEDIA_IMAGES for an app the picker
+      // can serve, so the manifest no longer declares it.
+      if (source == ImageSource.gallery && _isAndroid) {
+        return OsPermissionOutcome.granted;
+      }
+
       final permission = source == ImageSource.camera
           ? Permission.camera
           : Permission.photos;
@@ -514,7 +522,6 @@ class ImagePickerService extends BaseService {
       }
 
       if (status == OsPermissionOutcome.permanentlyDenied) {
-        // Older Android keeps the gallery behind the storage permission.
         if (source == ImageSource.gallery) {
           return _resolveLegacyStorage();
         }
@@ -538,9 +545,7 @@ class ImagePickerService extends BaseService {
 
   /// The storage route behind a permanent photos no. Our explanation is not
   /// shown here: the user has already said no to photos, and a second no is
-  /// a silent skip with no repeated explanation (produktregler.md:683). On
-  /// Android 13+ storage reads as denied and a request is refused without a
-  /// dialog, so this falls through to the permanent-no notice.
+  /// a silent skip with no repeated explanation.
   Future<OsPermissionOutcome> _resolveLegacyStorage() async {
     final storage = OsPermissionHelper.outcomeOf(
       await _permissionProvider.checkPermission(Permission.storage),
@@ -554,6 +559,12 @@ class ImagePickerService extends BaseService {
       await _permissionProvider.requestPermission(Permission.storage),
     );
     return result.isUsable ? result : OsPermissionOutcome.permanentlyDenied;
+  }
+
+  bool get _isAndroid {
+    final override = _isAndroidOverride;
+    if (override != null) return override();
+    return Platform.isAndroid;
   }
 
   /// Format bytes to human-readable text

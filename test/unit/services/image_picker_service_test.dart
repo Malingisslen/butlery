@@ -418,8 +418,7 @@ void main() {
     });
   });
 
-  // P6-U07 (flow 07): a typed outcome instead of null or [] —
-  // flows-roles-budget.md:98-106; produktregler.md:680-687.
+  // P6-U07 (flow 07): a typed outcome instead of null or []
   group('typed permission outcome', () {
     test(
       'our explanation comes first; "Inte nu" never reaches the OS',
@@ -556,6 +555,49 @@ void main() {
 
       expect(await service.pickImage(ImageSource.camera), isNull);
       expect(await service.pickMultipleImages(), isEmpty);
+    });
+
+    test(
+      'the Android gallery opens without any permission check or rationale',
+      () async {
+        final android = ImagePickerService(
+          imagePickerProvider: mockPicker,
+          permissionProvider: mockPermission,
+          imageValidator: mockValidator,
+          isAndroidOverride: () => true,
+        );
+        var rationaleShown = false;
+
+        final outcome = await android.resolvePermission(
+          ImageSource.gallery,
+          rationale: (_) async {
+            rationaleShown = true;
+            return true;
+          },
+        );
+
+        expect(outcome, OsPermissionOutcome.granted);
+        expect(rationaleShown, isFalse);
+        verifyNever(() => mockPermission.checkPermission(any()));
+        verifyNever(() => mockPermission.requestPermission(any()));
+      },
+    );
+
+    test('the Android camera still asks for the camera permission', () async {
+      final android = ImagePickerService(
+        imagePickerProvider: mockPicker,
+        permissionProvider: mockPermission,
+        imageValidator: mockValidator,
+        isAndroidOverride: () => true,
+      );
+      when(
+        () => mockPermission.checkPermission(Permission.camera),
+      ).thenAnswer((_) async => PermissionStatus.granted);
+
+      final outcome = await android.resolvePermission(ImageSource.camera);
+
+      expect(outcome, OsPermissionOutcome.granted);
+      verify(() => mockPermission.checkPermission(Permission.camera)).called(1);
     });
   });
 }

@@ -1,5 +1,5 @@
 /// BUT-2140: the week menu's merge into a personal list, written per operation
-/// against the server's copy (flows-roles-budget.md:47, `lägga till` → the
+/// against the server's copy (`lägga till` → the
 /// list was changed at the same time → your rows are added and nothing is
 /// overwritten).
 ///

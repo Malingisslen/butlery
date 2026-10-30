@@ -133,8 +133,6 @@ void main() {
         );
 
         final rest = hoverable.restDecoration as BoxDecoration;
-        // Komponentark v1 receptlistrad: paper, one hairline under the row,
-        // no card edge and no corners.
         expect(rest.color, cs.surface);
         expect(
           rest.border,

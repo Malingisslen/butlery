@@ -8,7 +8,7 @@
 
 Butlery is a recipe management application operated by Malin Gisslén ("we", "us"). This Policy explains how we collect, use, store, and share your personal data, and the rights you have under the EU General Data Protection Regulation (GDPR).
 
-If you have questions, contact: malin.kallen1@gmail.com.
+If you have questions, contact: integritet@butlery.se.
 
 ## 2. What data we collect
 
@@ -53,7 +53,7 @@ We use on-device machine learning models for:
 
 These models run locally on your device. The input text, images, and audio processed by these models are **not transmitted to our servers** as part of model inference. The models themselves are downloaded from our content delivery network (Firebase Storage) once per version and verified by SHA-256 hash before use.
 
-Cloud-based AI processing (Mistral via Vertex AI) is used for recipe parsing from URLs, OCR enhancement, and menu generation. When you trigger these features, the input is sent to Google Cloud's Vertex AI in the `europe-west1` region. We do not retain the model inputs beyond the call.
+Cloud-based AI processing (Gemini via Vertex AI) is used for recipe parsing from URLs and OCR enhancement. When you trigger these features, the input is sent to Google Cloud's Vertex AI in the `europe-west4` region.
 
 ## 6. Data retention
 
@@ -77,7 +77,7 @@ We share necessary data with the following sub-processors. All are GDPR-complian
 | Google Cloud — Authentication | Account auth + MFA | Email, password hash, MFA token | Global (EU-routed) |
 | Google Cloud — Storage | Recipe images, exports | User-uploaded images | europe-west1 |
 | Google Cloud — Cloud Functions | Server-side logic | Account deletion, content moderation | europe-west1 |
-| Google Cloud — Vertex AI (Mistral) | Recipe parsing, OCR, menu generation | Inputs you submit to AI features | europe-west1 |
+| Google Cloud — Vertex AI (Gemini) | Recipe parsing, OCR | Inputs you submit to AI features | europe-west4 |
 | Google Cloud — Vision API | Image moderation (SafeSearch) | Uploaded images | europe-west1 |
 | Google Cloud — reCAPTCHA Enterprise | App Check (anti-abuse) | Device attestation token | Global |
 | Firebase Crashlytics | Crash reports | Stack traces, device metadata | Global |
@@ -130,4 +130,4 @@ We will notify you of material changes via in-app notification and update the "L
 ## 13. Contact
 
 Data controller: Malin Gisslén
-Email: malin.kallen1@gmail.com
+Email: integritet@butlery.se

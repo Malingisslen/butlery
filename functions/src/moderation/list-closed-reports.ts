@@ -22,6 +22,7 @@ import { isDecision } from "./decision-outcome";
 import { MODERATION_DECISIONS } from "./report-decision";
 import { REPORTS } from "./report-status";
 import { ReopenBlock, reopenBlock } from "./reopen-report";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "listClosedReports";
 
@@ -109,7 +110,7 @@ export async function handleListClosedReports(
 export const listClosedReports = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

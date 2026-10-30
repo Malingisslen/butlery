@@ -260,14 +260,14 @@ final _mergeSource = MenuShoppingListGenerator.sourceForMenu({
 }, DateTime(2026, 6, 10));
 
 final _controls = <String, _Control>{
-  // The view's one saffron action (Komponentark v1:370-373, :843-844).
+  // The view's one saffron action.
   'button': _Control(
     build: ({required enabled}) =>
         HeroButton(label: 'Spara', onPressed: enabled ? () {} : null),
     target: () => find.byType(HeroButton),
     label: 'Spara',
   ),
-  // A filter chip: a button that can be selected (Komponentark v1:139-146).
+  // A filter chip: a button that can be selected.
   'button.selected': _Control(
     build: ({required enabled}) => _stateful<Set<String>>(
       const {},

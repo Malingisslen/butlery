@@ -29,6 +29,7 @@ import { withCostLedger } from "../middleware/llm_cost_ledger";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
 import { captureLlmSample, domainFromUrl } from "./llm-sample-capture";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 // =============================================================================
 // Request/Response Types
@@ -93,7 +94,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     // Vertex AI uses ADC (Cloud Functions service account) — no API key secret needed.
     memory: "512MiB",
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   withCostLedger(withGuestImportQuota(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
@@ -131,6 +132,11 @@ async function defaultLoadKillSwitch(): Promise<KillSwitchConfig | undefined> {
 export interface RunStructureRecipeDeps {
   /** Test seam for the kill-switch lookup. */
   loadKillSwitch?: LoadKillSwitch;
+  /**
+   * The shadow comparison writes its own `mode: 'shadow'` sample, so this
+   * call must not add a second one.
+   */
+  suppressSampleCapture?: boolean;
 }
 
 /**
@@ -313,7 +319,7 @@ export async function runStructureRecipe(
       `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`
     );
 
-    // Call Vertex AI Gemini (`eu` multi-region, EU residency — BUT-1187)
+    // Call Vertex AI Gemini (EU residency — see VERTEX_LOCATION)
     const result = await model.generateContent({
       contents: [
         { role: "user", parts: [{ text: userPrompt }] },
@@ -353,7 +359,7 @@ export async function runStructureRecipe(
     // BUT-1451: capture the (scrubbed) input + raw output of this paid call
     // BEFORE parsing — so parse failures (the interesting cases) are sampled
     // too. Best-effort: never throws, awaited so the write lands before return.
-    await captureLlmSample({
+    if (!deps?.suppressSampleCapture) await captureLlmSample({
       mode,
       inputKind: "text",
       scrubbedInput: cleanText,

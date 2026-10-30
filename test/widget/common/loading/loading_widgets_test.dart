@@ -133,7 +133,7 @@ void main() {
           ),
         );
 
-        // The line never carries the news alone (produktregler.md:163):
+        // The line never carries the news alone:
         // the generic text stands in.
         expect(find.byType(PlateLine), findsOneWidget);
         expect(find.text('Laddar …'), findsOneWidget);
@@ -241,7 +241,7 @@ void main() {
           createTestApp(LoadingWidgets.loadingOverlay(isLoading: true)),
         );
 
-        // Plate line plus text (produktregler.md:163, B-18). Without a
+        // Plate line plus text (B-18). Without a
         // message the generic one stands in.
         expect(find.byType(PlateLineMessage), findsOneWidget);
         expect(find.byType(PlateLine), findsOneWidget);

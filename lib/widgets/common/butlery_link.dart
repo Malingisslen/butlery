@@ -1,9 +1,8 @@
 // lib/widgets/common/butlery_link.dart
 //
 // Länken: 48 dp träffyta och tangentbordsfokus med den kanoniska ringen
-// (fas2/block288-uxfrysning.json, interaktion CSR::ROLE::link::DEFAULT och
-// CSR::ROLE::link::FOCUSED; tokens.json touchTarget och focusRing;
-// tillgänglighetshandoff HA285-A).
+// (interaktion CSR::ROLE::link::DEFAULT och
+// CSR::ROLE::link::FOCUSED; tokens.json touchTarget och focusRing).
 //
 // En länk med egen rad blir lika hög som träffytan. En länk i en mening
 // (ButleryLink.inline) behåller radens höjd.

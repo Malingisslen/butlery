@@ -24,10 +24,19 @@ class GoldRecipe {
   final String id;
   final String title;
   final int steps;
+
+  /// A phrase from the last real step. A recipe-end rule that cuts too early
+  /// loses it, which the step count alone cannot show.
+  final String? lastStepKey;
   final int? portions;
   final int? timeMinutes;
   final List<GoldIngredient> ingredients;
   final List<String> headings;
+
+  /// Text that stood on the page but is not the recipe's: a screenshot's
+  /// clock and icon row. None of it may reach the title, the description, an
+  /// ingredient or a step.
+  final List<String> absent;
 
   const GoldRecipe({
     required this.id,
@@ -35,14 +44,17 @@ class GoldRecipe {
     required this.steps,
     required this.ingredients,
     required this.headings,
+    this.lastStepKey,
     this.portions,
     this.timeMinutes,
+    this.absent = const [],
   });
 
   factory GoldRecipe.fromJson(String id, Map<String, dynamic> j) => GoldRecipe(
     id: id,
     title: j['title'] as String,
     steps: j['steps'] as int,
+    lastStepKey: j['lastStepKey'] as String?,
     portions: j['portions'] as int?,
     timeMinutes: j['timeMinutes'] as int?,
     ingredients: [
@@ -50,14 +62,16 @@ class GoldRecipe {
         GoldIngredient.fromJson(i as Map<String, dynamic>),
     ],
     headings: [for (final h in j['headings'] as List? ?? const []) h as String],
+    absent: [for (final a in j['absent'] as List? ?? const []) a as String],
   );
 }
 
 /// What one import produced, reduced to what the gate scores.
 class Produced {
   final String? title;
+  final String? description;
   final List<String> ingredientLines;
-  final int steps;
+  final List<String> stepLines;
   final int? portions;
   final int? timeMinutes;
   final int llmCalls;
@@ -66,12 +80,15 @@ class Produced {
   const Produced({
     required this.title,
     required this.ingredientLines,
-    required this.steps,
+    this.description,
+    required this.stepLines,
     required this.llmCalls,
     this.portions,
     this.timeMinutes,
     this.failure,
   });
+
+  int get steps => stepLines.length;
 }
 
 /// Block markers that are never ingredients whatever the recipe, on top of
@@ -101,9 +118,33 @@ class RecipeScore {
   final List<GoldIngredient> dropped;
   final List<String> headingLeaks;
 
-  RecipeScore(this.gold, this.produced, this.dropped, this.headingLeaks);
+  /// Produced ingredient lines no gold line claimed: page junk, headings, or a
+  /// real line the gold keys do not name.
+  final int extraIngredients;
+
+  /// Gold `absent` phrases that reached the recipe anyway.
+  final List<String> chromeLeaks;
+
+  RecipeScore(
+    this.gold,
+    this.produced,
+    this.dropped,
+    this.headingLeaks,
+    this.extraIngredients,
+    this.chromeLeaks,
+  );
 
   int get kept => gold.ingredients.length - dropped.length;
+
+  /// Steps are gold-counted, not gold-listed, so only the surplus is visible.
+  int get extraSteps =>
+      produced.steps > gold.steps ? produced.steps - gold.steps : 0;
+  bool? get lastStepKept {
+    final key = gold.lastStepKey;
+    if (key == null) return null;
+    return produced.stepLines.any((s) => _norm(s).contains(_norm(key)));
+  }
+
   bool get titleExact => _norm(produced.title ?? '') == _norm(gold.title);
   bool get stepsExact => produced.steps == gold.steps;
   bool? get portionsExact =>
@@ -148,7 +189,24 @@ RecipeScore scoreRecipe(GoldRecipe gold, Produced produced) {
     for (final l in produced.ingredientLines)
       if (headingSet.contains(_norm(l))) l,
   ];
-  return RecipeScore(gold, produced, dropped, leaks);
+  final fields = [
+    produced.title ?? '',
+    produced.description ?? '',
+    ...produced.ingredientLines,
+    ...produced.stepLines,
+  ].map(_norm).toList();
+  final chrome = [
+    for (final a in gold.absent)
+      if (fields.any((f) => f.contains(_norm(a)))) a,
+  ];
+  return RecipeScore(
+    gold,
+    produced,
+    dropped,
+    leaks,
+    used.where((u) => !u).length,
+    chrome,
+  );
 }
 
 /// Aggregate over one corpus.
@@ -161,11 +219,18 @@ class CorpusScore {
   int get keptLines => recipes.fold(0, (n, r) => n + r.kept);
   double get recall => goldLines == 0 ? 1 : keptLines / goldLines;
   int get headingLeaks => recipes.fold(0, (n, r) => n + r.headingLeaks.length);
+  int get chromeLeaks => recipes.fold(0, (n, r) => n + r.chromeLeaks.length);
   int get titleExact => recipes.where((r) => r.titleExact).length;
   int get stepsExact => recipes.where((r) => r.stepsExact).length;
   int get portionsExact => recipes.where((r) => r.portionsExact == true).length;
   int get timeExact => recipes.where((r) => r.timeExact == true).length;
   int get failures => recipes.where((r) => r.produced.failure != null).length;
+  int get extraIngredients => recipes.fold(0, (n, r) => n + r.extraIngredients);
+  int get extraSteps => recipes.fold(0, (n, r) => n + r.extraSteps);
+  List<RecipeScore> get lastStepLost => [
+    for (final r in recipes)
+      if (r.lastStepKept == false) r,
+  ];
   int get llmCalls => recipes.fold(0, (n, r) => n + r.produced.llmCalls);
   int get maxLlmCallsPerImport => recipes.fold(
     0,
@@ -242,11 +307,20 @@ List<String> checkFloors(
 
   atLeast('recall', double.parse(c.recall.toStringAsFixed(4)));
   atMost('headingLeaks', c.headingLeaks);
+  atMost('chromeLeaks', c.chromeLeaks);
   atLeast('titleExact', c.titleExact);
   atLeast('stepsExact', c.stepsExact);
   atLeast('portionsExact', c.portionsExact);
   atLeast('timeExact', c.timeExact);
   atMost('failures', c.failures);
+  atMost('extraIngredients', c.extraIngredients);
+  atMost('extraSteps', c.extraSteps);
+  for (final r in c.lastStepLost) {
+    problems.add(
+      '${c.name}/${r.gold.id}: sista steget ("${r.gold.lastStepKey}") '
+      'saknas. Receptets slut har kapats för tidigt.',
+    );
+  }
 
   if (c.maxLlmCallsPerImport > 1) {
     problems.add(
@@ -323,6 +397,10 @@ String formatReport(
     'Rubriker i ingredienslistan',
     (c) => '${c.headingLeaks}${floor(c, 'headingLeaks')}',
   );
+  row(
+    'Skärmbildens egna rader i receptet',
+    (c) => '${c.chromeLeaks}${floor(c, 'chromeLeaks')}',
+  );
   row('Titel exakt rätt', (c) => '${c.titleExact}${floor(c, 'titleExact')}');
   row('Antal steg rätt', (c) => '${c.stepsExact}${floor(c, 'stepsExact')}');
   row(
@@ -331,6 +409,15 @@ String formatReport(
   );
   row('Tid rätt', (c) => '${c.timeExact}${floor(c, 'timeExact')}');
   row('Misslyckade importer', (c) => '${c.failures}${floor(c, 'failures')}');
+  row(
+    'Extra ingrediensrader (skräp)',
+    (c) => '${c.extraIngredients}${floor(c, 'extraIngredients')}',
+  );
+  row(
+    'Extra steg (skräp)',
+    (c) => '${c.extraSteps}${floor(c, 'extraSteps')}',
+  );
+  row('Sista steget saknas', (c) => '${c.lastStepLost.length}');
   row(
     'AI-anrop (totalt / högst per import)',
     (c) => '${c.llmCalls} / ${c.maxLlmCallsPerImport}',
@@ -362,8 +449,13 @@ String formatReport(
           'tappade: ${r.dropped.map((d) => d.key).join(', ')}',
         if (r.headingLeaks.isNotEmpty)
           'rubriker som ingredienser: ${r.headingLeaks.join(', ')}',
+        if (r.chromeLeaks.isNotEmpty)
+          'skärmbildens rader i receptet: ${r.chromeLeaks.join(', ')}',
         if (!r.titleExact) 'titel: "${r.produced.title}"',
         if (!r.stepsExact) 'steg: ${r.produced.steps} av ${r.gold.steps}',
+        if (r.extraIngredients > 0)
+          'extra ingrediensrader: ${r.extraIngredients}',
+        if (r.lastStepKept == false) 'sista steget saknas',
       ];
       if (notes.isEmpty) continue;
       b.writeln('- ${c.name}/${r.gold.id}: ${notes.join('; ')}');

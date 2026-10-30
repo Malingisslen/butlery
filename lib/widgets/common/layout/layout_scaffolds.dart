@@ -2,7 +2,7 @@
 //
 // BUT-188: IndexedStack for tab state preservation
 // PQ-17: the shell's four tabs Hem · Meny · Inköp · Mer and the separate
-// plus (tillganglighetshandoff 'Navigation & toppfält').
+// plus.
 
 import 'dart:async';
 
@@ -16,14 +16,15 @@ import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
-    show mainTabSwitchRequest;
+    show AppActions, mainTabSwitchRequest;
 
 /// Layout scaffold components for main navigation.
 /// This module provides the main menu with bottom navigation.
 class LayoutScaffolds {
-  /// Hem: the greeting and the recipe library (Skarmar v12 del 1
-  /// #hemrecept). Today the library.
+  /// Hem: the greeting and the recipe library
+  /// Today the library.
   static const int homeTab = 0;
 
   /// Meny (the week menu; the label is "Meny", beslut B-17).
@@ -32,7 +33,7 @@ class LayoutScaffolds {
   /// Inköp (the shopping list).
   static const int shoppingTab = 2;
 
-  /// Mer (Skarmar v12 del 2 #mer).
+  /// Mer.
   static const int moreTab = 3;
 
   static const int _tabCount = 4;
@@ -70,13 +71,15 @@ class LayoutScaffolds {
     return ButleryBottomNavigation(
       currentIndex: null,
       items: items,
-      onTap: (index) => Navigator.pushNamed(context, items[index].route),
+      onTap: (index) => items[index].route == Routes.home
+          ? AppActions.returnToHome(Navigator.of(context, rootNavigator: true))
+          : Navigator.pushNamed(context, items[index].route),
     );
   }
 }
 
 /// The shell: IndexedStack keeps each tab's scroll position and filters
-/// "tills appen stängs" (Grafisk manual v6:619), and the chosen tab survives
+/// "tills appen stängs", and the chosen tab survives
 /// the OS killing the app (state restoration).
 class _MainMenuLayout extends StatefulWidget {
   final int initialIndex;

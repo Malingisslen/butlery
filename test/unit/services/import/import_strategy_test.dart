@@ -362,6 +362,15 @@ void main() {
         expect(validator.extractRating('4.25/5'), equals(4.25));
         expect(validator.extractRating('2.5⭐'), equals(2.5));
       });
+
+      test('a decimal comma is part of the score', () {
+        expect(validator.extractRating('Betyg: 4,5 av 5'), equals(4.5));
+      });
+
+      test("a page's reader average is not the user's rating", () {
+        expect(validator.extractRating('4,5 av 5 (23 röster)'), isNull);
+        expect(validator.extractRating('4.8/5 (120 omdömen)'), isNull);
+      });
     });
   });
 

@@ -1,8 +1,7 @@
 /// The page template's chrome (P4-U02).
 ///
 /// The bar's side margin is tokens.json space.layoutMargin, so the title and
-/// the content below share a left edge (Q-P4-14). Grafisk manual v6:582:
-/// sticky layers never cover the focused element.
+/// the content below share a left edge (Q-P4-14).
 library;
 
 import 'package:flutter/material.dart';

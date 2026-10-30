@@ -49,3 +49,13 @@ first, as the dress rehearsal.
 The conditions are the plan's acceptance criteria (section H). The old project's data
 (four test accounts) is erased through the deletion cascade before the project is deleted.
 ADR-0032 is closed by the staging rebuild: staging's bucket moves to the EU too.
+
+## Supersession, 2026-10-28
+
+Retires this sentence in Malin's choices above: "`butlery.app` is pointed at the new project
+during the build".
+
+What the code and hosting do now: the app's links and hosting use `butlery.se` (Firebase
+Hosting site `butlery-prod`; `www.butlery.se` redirects to it). The legal site is
+`legal.butlery.se`, on the Hosting site `butlery-prod-legal`. `butlery.app` is not ours and
+is not used. The decision is Malin's of 2026-10-27.

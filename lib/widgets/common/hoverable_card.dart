@@ -58,7 +58,7 @@ class HoverableCard extends StatefulWidget {
   final Curve curve;
 
   /// Ink overlay for the InkWell inside a card: pressed fills to surface.raised
-  /// (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json), so press and hover
+  /// (B83-1 = A, BUT-2183), so press and hover
   /// share one colour. Hover is transparent because [hoverDecoration] already
   /// carries it; any other state (focus) resolves to null and keeps what the
   /// InkWell does today.

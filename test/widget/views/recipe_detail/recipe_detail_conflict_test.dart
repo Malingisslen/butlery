@@ -1,9 +1,6 @@
 // A conflict on your own recipe, in recipe detail (P5-U27).
 //
-// Sources: produktregler.md:102 (own recipe: both versions are shown and the
-// user chooses; the choice is the decision), flows-roles-budget.md:18 (the
-// user always learns that a conflict happened), Komponentark v1:755-758 (the
-// banner). Mounted as edit_recipe_view.dart does: ConflictBanner scoped by
+// Mounted as edit_recipe_view.dart does: ConflictBanner scoped by
 // the recipe's id. PQ-02 = A: a shared recipe gets the same view.
 //
 // Harness copied from test/widget/views/recipe_detail_read_only_test.dart.
@@ -259,7 +256,7 @@ void main() {
   }
 
   // P5-U26b: Återställ in the owner's overflow menu, only while a version of
-  // this recipe is kept (produktregler.md:109; PQ-01 = A).
+  // this recipe is kept (PQ-01 = A).
   group('RecipeDetailView — Återställ (P5-U26b)', () {
     const restoreRow = ValueKey('test-recipe-detail-restore-version');
 
@@ -385,7 +382,6 @@ void main() {
 
   // P5-U27b: someone else's shared recipe. The owner's version stays and the
   // edit is a suggestion behind "Se ditt förslag" for 7 days
-  // (produktregler.md:103); the owner accepts or dismisses it (:241).
   group('RecipeDetailView — suggestions (P5-U27b)', () {
     late _MockRecipeSuggestionService suggestions;
     late List<RecipeSuggestion> mine;

@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/di/modules/trash_registrations.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/trash/trash_service.dart';
@@ -24,6 +25,8 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Dependencies from Core Module
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
+import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -47,6 +50,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -178,6 +182,7 @@ class ContentModule implements DIModule {
     UnifiedRecipeService,
     UnifiedMenuService,
     ImportManager,
+    ParserShadowSampler,
     RecipeCookingService,
     MenuService,
     WeeklyMenuPlanRepository,
@@ -229,7 +234,7 @@ class ContentModule implements DIModule {
     NeuralLineClassifier,
     // Cooking-mode substitution suggestions (BUT-202)
     SubstitutionSuggestionService,
-    // Köksbutlern (tasks/koksbutlern-plan.md): OS TTS readouts
+    // Köksbutlern: OS TTS readouts
     TtsService,
     // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
     StepTimerService,
@@ -263,12 +268,20 @@ class ContentModule implements DIModule {
         firestoreRepository: app.isRegistered<FirestoreRepository>()
             ? app<FirestoreRepository>()
             : null,
+        removeRecipientsFromOwnShares: (recipeId, userIds) =>
+            app<FirebaseSharedRecipeRepository>().removeRecipientsFromOwnShares(
+              recipeId: recipeId,
+              userIds: userIds,
+            ),
       ),
       dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<ImportManager>(
-      () => ImportManager(container<UnifiedRecipeService>().personal),
+      () => ImportManager(
+        container<UnifiedRecipeService>().personal,
+        shadowSampler: container<ParserShadowSampler>(),
+      ),
     );
 
     // BUT-941: native photo-share bridge. No deps; the bootstrap
@@ -313,6 +326,14 @@ class ContentModule implements DIModule {
         rateLimiter: app<ImportRateLimiter>(),
         consentService: container<ConsentService>(),
         guestSession: container<GuestImportSession>(),
+        isGuest: () => container<AuthService>().isGuest,
+      ),
+    );
+
+    container.registerLazySingleton<ParserShadowSampler>(
+      () => ParserShadowSampler(
+        consentService: container<ConsentService>(),
+        llmService: container<LlmService>(),
         isGuest: () => container<AuthService>().isGuest,
       ),
     );
@@ -466,6 +487,11 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<OpsLogRepository>(
         () => OpsLogRepository(),
       );
+      container.registerLazySingleton<SignupAllowlistRepository>(
+        () => FirebaseSignupAllowlistRepository(
+          authRepository: container<auth.AuthRepository>(),
+        ),
+      );
       container.registerLazySingleton<ParseEventsRepository>(
         () => ParseEventsRepository(),
       );
@@ -538,7 +564,7 @@ class ContentModule implements DIModule {
         dispose: (s) => s.dispose(),
       );
 
-      // Köksbutlern (tasks/koksbutlern-plan.md): OS-native TTS for
+      // Köksbutlern: OS-native TTS for
       // cooking-mode readouts. No deps — wraps flutter_tts directly.
       container.registerLazySingleton<TtsService>(
         () => TtsService(),

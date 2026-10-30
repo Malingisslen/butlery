@@ -23,7 +23,7 @@ enum MembershipWriteIntent {
 /// BUT-2140: what the week menu's merge asks to write into a personal list.
 ///
 /// [rows] is a function rather than a list because "Ersätt listan" carries a
-/// bought tick over from the recipe rows it takes off (produktregler.md § 8.7),
+/// bought tick over from the recipe rows it takes off,
 /// and which rows those are is only known once the server's copy is read. It
 /// is called with no rows for a plain add. It must return the same row ids on
 /// every call: the write may be computed twice, once against the server and

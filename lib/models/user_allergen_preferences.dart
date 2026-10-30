@@ -327,7 +327,7 @@ class AllergenPreferenceOptions {
     'kosheranpassad': 'Kosheranpassad',
     'graviditetssäker': 'Graviditetssäker',
     'barnvänlig': 'Barnvänlig',
-    'nötkötsfri': 'Nötkötsfri',
+    'nötkötsfri': 'Nötköttsfri',
     'aip-vänlig': 'AIP-vänlig',
   };
 

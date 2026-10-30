@@ -474,7 +474,7 @@ class ButleryListRow extends StatelessWidget {
 }
 
 /// The chevron at the end of a row that leads somewhere: 12 px in
-/// text.secondary (Komponentark v1:36 "listradschevron är 12 px"). Drawn, not
+/// text.secondary. Drawn, not
 /// read: the row it sits in is the control and carries the meaning.
 class ButleryChevron extends StatelessWidget {
   const ButleryChevron({this.color, super.key});

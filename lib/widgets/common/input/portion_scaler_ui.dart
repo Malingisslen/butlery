@@ -27,6 +27,7 @@ class PortionScalerUI {
     required Animation<double> scaleAnimation,
     required Function(int) onUpdatePortions,
     required VoidCallback onToggleUnitConversion,
+    bool compact = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,6 +40,7 @@ class PortionScalerUI {
           maxPortions,
           scaleAnimation,
           onUpdatePortions,
+          compact,
         ),
 
         // Only add gap when status/toggle content follows
@@ -75,33 +77,34 @@ class PortionScalerUI {
     int maxPortions,
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
+    bool compact,
   ) {
     // A Wrap, so the controls move under the label when large text leaves
-    // no room beside it; full width, as the Row was, so a caller's
-    // background still spans the row.
-    return SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppDimensions.space16,
-        children: [
-          Text(
-            context.l10n.scalerPortionsLabel,
-            style: AppTextStyles.bodyBold.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+    // no room beside it. Full width, as the Row was, so a caller's
+    // background still spans the row; the compact scaler sits beside a
+    // heading and takes only the width it needs.
+    final header = Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: compact ? AppDimensions.space8 : AppDimensions.space16,
+      children: [
+        Text(
+          context.l10n.scalerPortionsLabel,
+          style: AppTextStyles.bodyBold.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          _buildPortionControls(
-            context,
-            currentPortions,
-            minPortions,
-            maxPortions,
-            scaleAnimation,
-            onUpdatePortions,
-          ),
-        ],
-      ),
+        ),
+        _buildPortionControls(
+          context,
+          currentPortions,
+          minPortions,
+          maxPortions,
+          scaleAnimation,
+          onUpdatePortions,
+          compact,
+        ),
+      ],
     );
+    return compact ? header : SizedBox(width: double.infinity, child: header);
   }
 
   /// Builds the portion control buttons
@@ -112,6 +115,7 @@ class PortionScalerUI {
     int maxPortions,
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
+    bool compact,
   ) {
     return AnimatedBuilder(
       animation: scaleAnimation,
@@ -144,6 +148,7 @@ class PortionScalerUI {
                 _buildControlButton(
                   context,
                   icon: ButleryIcons.minus,
+                  compact: compact,
                   onPressed: currentPortions > minPortions
                       ? () => onUpdatePortions(currentPortions - 1)
                       : null,
@@ -170,6 +175,7 @@ class PortionScalerUI {
                 _buildControlButton(
                   context,
                   icon: ButleryIcons.plus,
+                  compact: compact,
                   onPressed: currentPortions < maxPortions
                       ? () => onUpdatePortions(currentPortions + 1)
                       : null,
@@ -187,8 +193,12 @@ class PortionScalerUI {
     BuildContext context, {
     required IconData icon,
     required VoidCallback? onPressed,
+    required bool compact,
   }) {
     final cs = Theme.of(context).colorScheme;
+    final box = compact
+        ? AppDimensions.compactStepperButton
+        : AppDimensions.minTouchTarget;
     final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
@@ -204,29 +214,36 @@ class PortionScalerUI {
             child: InkWell(
               onTap: onPressed,
               borderRadius: BorderRadius.zero,
-              child: Ink(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: onPressed != null
-                          ? cs.onSurface
-                          : cs.outlineVariant,
-                      width: 2.0,
+              child: SizedBox.square(
+                dimension: AppDimensions.minTouchTarget,
+                child: Center(
+                  child: Ink(
+                    width: box,
+                    height: box,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
                     ),
-                  ),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: ButleryIcon(
-                      icon,
-                      size: AppDimensions.iconSizeL,
-                      color: onPressed != null
-                          ? cs.onSurface
-                          : cs.onSurfaceVariant,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: onPressed != null
+                              ? cs.onSurface
+                              : cs.outlineVariant,
+                          width: 2.0,
+                        ),
+                      ),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: ButleryIcon(
+                          icon,
+                          size: compact
+                              ? AppDimensions.iconSizeM
+                              : AppDimensions.iconSizeL,
+                          color: onPressed != null
+                              ? cs.onSurface
+                              : cs.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
                 ),

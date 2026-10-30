@@ -14,6 +14,8 @@ import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
@@ -196,12 +198,21 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.space16,
           ),
-          child: Semantics(
-            header: true,
-            child: Text(
-              context.l10n.recipeIngredients,
-              style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
-            ),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space8,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  context.l10n.recipeIngredients,
+                  style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+                ),
+              ),
+              _buildPortionScaler(context),
+            ],
           ),
         ),
         _buildIngredientsContent(context),
@@ -233,32 +244,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     );
   }
 
-  /// Ingredients content with portion scaler and structured table.
   Widget _buildIngredientsContent(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Portion scaler controls with background band
-          Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.space12,
-              horizontal: AppDimensions.space16,
-            ),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh,
-              border: Border(
-                bottom: BorderSide(
-                  color: cs.outlineVariant,
-                ),
-              ),
-            ),
-            child: _buildPortionScaler(context),
-          ),
-
           // BUT-951: ingredient rows via ListView.builder. shrinkWrap +
           // NeverScrollable because the outer scaffold owns the scroll. Saves
           // a layout pass per row vs the eager Column children list — most
@@ -549,6 +540,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         service: service,
         initialDuration: match.duration,
         sourcePhrase: instruction,
+        beforeStart: () => _offerExactAlarms(sheetContext),
         onExpired: () {
           HapticFeedback.mediumImpact();
           // The messenger is captured before the sheet opens.
@@ -556,6 +548,18 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         },
       ),
     );
+  }
+
+  /// Only when notifications can be shown: without them an exact alarm
+  /// alerts nobody.
+  Future<void> _offerExactAlarms(BuildContext context) async {
+    final permissions = ServiceLocator.tryGet<NotificationPermissionService>();
+    if (permissions != null && !await permissions.notificationsAllowed()) {
+      return;
+    }
+    if (!context.mounted) return;
+    await ServiceLocator.tryGet<LocalTimerNotificationService>()
+        ?.offerExactAlarmsOnce(context);
   }
 
   Widget _buildStepCheckbox(
@@ -796,6 +800,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       onPortionChanged: onPortionChanged,
       minPortions: 1,
       maxPortions: 20,
+      compact: true,
     );
   }
 }

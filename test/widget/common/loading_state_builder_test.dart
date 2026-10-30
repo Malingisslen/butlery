@@ -167,7 +167,7 @@ void main() {
           ),
         ),
       );
-      // Skelettet visas först efter 300 ms (produktregler.md:304).
+      // Skelettet visas först efter 300 ms.
       await tester.pump(const Duration(milliseconds: 301));
       // Skeleton list builds N Card placeholders.
       expect(find.byType(Card), findsNWidgets(3));

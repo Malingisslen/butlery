@@ -60,7 +60,7 @@ class _ConversationGroupDetailContentState
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<GroupDetailViewModel>();
-    // A subpage of the chat (Skarmar v12 etapp 9 #9 'Om samtalet'): the
+    // A subpage of the chat: the
     // group's name and size sit under the title in the bar.
     return ButleryPage.undersida(
       title: context.l10n.messagingAboutConversation,

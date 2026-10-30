@@ -155,7 +155,7 @@ not new systems.
 - [x] **CI-gate the tag scorecard** (S) → BUT-1489 — `test/corpus/tag_scorecard_test.dart` (the allergen
   accuracy metric) runs only manually; add to the suite matrix in `test.yml` with a numeric
   floor, like the CRF golden gate (BUT-1443 pattern).
-- [ ] **Grow the gated corpora** (M) → BUT-1490 — parsing golden set has 4 recipes; site-parser fixtures
+- [ ] **Grow the gated corpora** (M) → BUT-1490 — site-parser fixtures
   are hand-invented HTML (real ICA markup drift is invisible). Capture real HTML snapshots
   per supported domain; mine `llm_response_samples`/corrections for hard cases before TTL.
 - [ ] **`reserved_tags.dart` consistency test** (S) → BUT-1491 — ~120 hand-copied tag literals, nothing

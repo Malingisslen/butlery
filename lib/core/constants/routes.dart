@@ -59,12 +59,11 @@ class Routes {
   /// Unified shopping list route. URL value kept (BUT-967).
   static const String shoppingList = '/inkopslista';
 
-  /// The Mer destination, the shell's fourth tab (PQ-17; Skarmar v12 del 2
-  /// #mer).
+  /// The Mer destination, the shell's fourth tab
   static const String more = '/mer';
 
   /// "Väntar på synk", the user's view of the offline queue
-  /// (produktregler.md:190; P4-U19).
+  /// (P4-U19).
   static const String syncQueue = '/vantar-pa-synk';
 
   // Social routes

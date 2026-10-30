@@ -168,8 +168,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           context,
           label: context.l10n.commonCreate,
           onPressed: _selectedFriendIds.isEmpty ? null : _createConversation,
-          // Creating keeps the name and draws the plate line (Komponentark
-          // v1:372); busy ignores presses rather than disabling.
+          // Creating keeps the name and draws the plate line
           isLoading: _isCreating,
         ),
       ],

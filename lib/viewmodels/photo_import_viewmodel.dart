@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -20,16 +21,15 @@ import 'package:butlery/core/utils/os_permission_helper.dart';
 
 /// Resolves the camera or photo-library permission for a pick (flow 07).
 /// The view supplies it, because our explanation before the system prompt
-/// needs a BuildContext (Skarmar v12 etapp 3 #behkamera).
+/// needs a BuildContext.
 ///
 /// [askAgain] is true after an explicit "Fråga igen": the user has just asked
 /// for the system prompt, so our explanation is not repeated
-/// (produktregler.md:683).
 typedef PhotoPermissionResolver =
     Future<OsPermissionOutcome> Function(ImageSource source, bool askAgain);
 
 /// The permission state the photo-import view explains inline: which source
-/// was asked for and what the OS answered (flows-roles-budget.md:98-106).
+/// was asked for and what the OS answered.
 @immutable
 class PhotoPermissionNotice {
   const PhotoPermissionNotice({
@@ -112,7 +112,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Null when there is nothing to say.
   PhotoPermissionNotice? get permissionNotice => _permissionNotice;
 
-  /// "Fråga igen" after a no (flows-roles-budget.md:102): asks the OS again
+  /// "Fråga igen" after a no: asks the OS again
   /// for the same source, without repeating our explanation, and picks on a
   /// yes.
   Future<void> askPermissionAgain() async {
@@ -126,7 +126,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   }
 
   /// "Välj ur bildbiblioteket" after the camera was refused
-  /// (flows-roles-budget.md:102). Keeps what the refused pick was for: a
+  /// Keeps what the refused pick was for: a
   /// refused add-page leads to adding a page from the library, so the pages
   /// already taken stay; a refused fresh import starts a fresh one.
   Future<void> chooseFromGalleryInstead() async {
@@ -215,9 +215,9 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   bool get hasOcrResult => _ocrText.isNotEmpty;
 
-  /// Q4-04 = A (produktbeslut-2026-09-24.json): pages are taken or chosen
+  /// Q4-04 = A: pages are taken or chosen
   /// first, and the text is read only when the user presses "Läs av N
-  /// sidor" (Skarmar v12 del 2 #fotoimport). This counts the pages still
+  /// sidor". This counts the pages still
   /// waiting to be read.
   int get unreadPageCount => _pages.where((p) => !p.isRead).length;
 
@@ -580,7 +580,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     notifyListeners();
     // The draft's import was measured when it was first read.
     _measured = true;
-    await _autoParseOcrText(_ocrText);
+    await _autoParseOcrText(_ocrText, reflow: true);
     return true;
   }
 
@@ -611,7 +611,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
     // Flow 07: camera and photos go through the permission contract — our
     // explanation before the system prompt, and a typed answer the view
-    // explains (produktregler.md:680-687).
+    // explains.
     final resolver = permissionResolver;
     if (resolver != null) {
       final outcome = await resolver(source, askAgain);
@@ -626,7 +626,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         return;
       }
       // Limited photo access is its own state with a way to choose more
-      // (produktregler.md:684); anything else clears the notice.
+      // anything else clears the notice.
       _permissionNotice = outcome == OsPermissionOutcome.limited
           ? PhotoPermissionNotice(source: source, outcome: outcome)
           : null;
@@ -638,45 +638,91 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
 
     await executeAsyncVoid(() async {
-      // Pick image
-      final picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(
-        source: source,
-        maxWidth: 2048, // Limit width to reduce file size
-        maxHeight: 2048, // Limit height to reduce file size
-        imageQuality:
-            85, // Compress image to reduce file size while maintaining OCR quality
-      );
+      final remaining = addAsPage ? maxPages - _pages.length : maxPages;
+      final multi =
+          source == ImageSource.gallery && !_isHandwritten && remaining > 1;
+      final List<XFile> picked = multi
+          ? await _pickGalleryImages(remaining)
+          : await _pickSingleImage(source);
 
-      if (picked == null) {
+      if (picked.isEmpty) {
         throw Exception(AppLocale.current.errorNoImageSelected);
       }
 
-      // Validate image format
-      final fileName = picked.name.toLowerCase();
-      if (!fileName.endsWith('.jpg') &&
-          !fileName.endsWith('.jpeg') &&
-          !fileName.endsWith('.png')) {
-        throw Exception(AppLocale.current.errorImageFormatUnsupported);
+      // Picks arrive in selection order, which becomes the page order. The
+      // cap counts valid photos, so a bad one never costs a good one its slot.
+      final staged = <Uint8List>[];
+      Object? firstError;
+      var overCap = false;
+      for (final file in picked) {
+        if (staged.length == remaining) {
+          overCap = true;
+          break;
+        }
+        try {
+          staged.add(await _validatedBytes(file));
+        } catch (e) {
+          firstError ??= e;
+        }
       }
+      // A single pick keeps its specific error; a batch only fails when no
+      // page survived, so one bad photo never discards the others.
+      if (staged.isEmpty) throw firstError!;
 
-      // Read image bytes
-      final bytes = await picked.readAsBytes();
-
-      // Validate image size (max maxPageSizeMb after compression)
-      final sizeInMB = bytes.length / (1024 * 1024);
-      if (sizeInMB > maxPageSizeMb) {
-        throw Exception(
-          AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
-        );
-      }
-
-      // Q4-04: the page waits here until "Läs av N sidor". Handwritten mode
-      // is a single-image flow, so a new pick replaces the page (BUT-1460).
+      // Q4-04: pages wait here until "Läs av N sidor". Handwritten mode is a
+      // single-image flow, so a new pick replaces the page (BUT-1460).
       if (_isHandwritten) _pages.clear();
       _lastPickSource = source;
-      _stagePage(bytes);
+      for (final bytes in staged) {
+        _stagePage(bytes, notify: false);
+      }
+      notifyListeners();
+      if (overCap) {
+        _infoMessage = AppLocale.current.importPhotoPagesMaxReached(maxPages);
+      }
     }, errorPrefix: AppLocale.current.errorGeneric);
+  }
+
+  /// Test seam: the real gallery picker needs a platform channel.
+  @visibleForTesting
+  Future<List<XFile>> Function(int limit)? galleryPickerOverride;
+
+  Future<List<XFile>> _pickGalleryImages(int limit) async {
+    final override = galleryPickerOverride;
+    if (override != null) return override(limit);
+    return ImagePicker().pickMultiImage(
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+      limit: limit,
+    );
+  }
+
+  Future<List<XFile>> _pickSingleImage(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+    );
+    return picked == null ? const [] : [picked];
+  }
+
+  Future<Uint8List> _validatedBytes(XFile picked) async {
+    final fileName = picked.name.toLowerCase();
+    if (!fileName.endsWith('.jpg') &&
+        !fileName.endsWith('.jpeg') &&
+        !fileName.endsWith('.png')) {
+      throw Exception(AppLocale.current.errorImageFormatUnsupported);
+    }
+    final bytes = await picked.readAsBytes();
+    final sizeInMB = bytes.length / (1024 * 1024);
+    if (sizeInMB > maxPageSizeMb) {
+      throw Exception(
+        AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
+      );
+    }
+    return bytes;
   }
 
   /// Adds [bytes] as the next page, unread, and drops any combined text and
@@ -831,20 +877,21 @@ class PhotoImportViewModel extends ImportBaseViewModel
       notifyListeners();
       return;
     }
-    // Blank-line separator so the parser/splitter treats page boundaries the
-    // same as the blank lines that already delimit sections within a page.
-    _ocrText = _pages.map((p) => p.text).join('\n\n');
-
-    // Built from the SAME list, in the same order, with the same separator the
-    // join above uses — `DocumentLayout` joins its pages with '\n\n' too, so
-    // the two strings agree row for row and the splitter's precondition can
-    // confirm it rather than assume it.
+    // BUT-2455: each page loses its screenshot chrome, a page loses the lines
+    // it shares with the page before it, and the pages are joined — with a
+    // blank line at every boundary when every page has geometry, so the text
+    // and `DocumentLayout` agree row for row and the splitter's precondition
+    // can confirm it rather than assume it.
     //
-    // Any page without geometry makes this incomplete, and the splitter then
-    // falls back to the text rules for the whole import. That is deliberate
-    // and it is checked there, not here: this method's job is to build the
-    // pair, never to decide whether it is trustworthy.
-    final layout = DocumentLayout([for (final p in _pages) p.layout]);
+    // Any page without geometry makes the layout incomplete, and the splitter
+    // then falls back to the text rules for the whole import. That is
+    // deliberate and it is checked there, not here: this method's job is to
+    // build the pair, never to decide whether it is trustworthy.
+    final prepared = prepareScreenPages([
+      for (final p in _pages) PageText(p.text, layout: p.layout),
+    ]);
+    _ocrText = prepared.text;
+    final layout = DocumentLayout(prepared.layouts);
 
     notifyListeners();
 
@@ -853,7 +900,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // page's bytes (the draft schema stages one image) alongside the full text.
     unawaited(persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText));
 
-    await _autoParseOcrText(_ocrText, layout: layout);
+    await _autoParseOcrText(_ocrText, layout: layout, reflow: true);
   }
 
   /// Parse-only auto-parse: recipes exist in memory until the user explicitly
@@ -864,7 +911,14 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// image, never per-line boxes — and the handwriting path's
   /// needs-assistance branch, which never went near an OCR tier. Omitting it
   /// is not a degraded path; it is the path that ships today.
-  Future<void> _autoParseOcrText(String text, {DocumentLayout? layout}) async {
+  ///
+  /// [reflow] rejoins OCR-wrapped lines. The page paths ask for it; the
+  /// text behind a handwritten photo never had OCR line breaks and does not.
+  Future<void> _autoParseOcrText(
+    String text, {
+    DocumentLayout? layout,
+    bool reflow = false,
+  }) async {
     try {
       final channel = _measured ? null : ImportChannel.photo;
       _measured = true;
@@ -872,6 +926,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         text,
         layout: layout,
         channel: channel,
+        reflow: reflow,
       );
       final recipes = result.successfulRecipes;
       _parsedRecipes

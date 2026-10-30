@@ -30,7 +30,7 @@ service cloud.firestore {
     //   notification_history, notification_batches, conversations, messages
     //
     // Other:
-    //   menus, blocks, presence, feedback, deep_links(/clicks), reports,
+    //   menus, blocks, presence, feedback, deep_links, reports,
     //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
     //   ingredient_suggestions, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
@@ -41,9 +41,7 @@ service cloud.firestore {
     // Notification analytics:
     //   notification_delivery, notification_engagement, notification_metrics
 
-    // ========================================
     // HELPER FUNCTIONS
-    // ========================================
     
     // Check if user is authenticated
     function isAuthenticated() {
@@ -301,14 +299,12 @@ service cloud.firestore {
         || get(limitsPath).data.lastWrite + duration.value(seconds, 's') <= request.time;
     }
 
-    // ------------------------------------------------------------------
     // BUT-674: 1:1 DM minor-safety helpers.
     // A non-friend must not be able to open a direct-message conversation
     // with a minor. `isMinor:true` is written server-authoritatively by the
     // verifySignupAge CF onto users/{uid} for a compliant 15–17-year-old.
     // These helpers fire ONLY on a 1:1 conversation create (participantIds
     // size == 2); Firestore rules cannot iterate a group participant list.
-    // ------------------------------------------------------------------
 
     // BUT-1918: the conversations preview and list-order stamps get the hour
     // BUT-1903 gave a message's `sentAt` (ADR-0008). The messages create limb
@@ -498,9 +494,7 @@ service cloud.firestore {
             || (data.get('guardianConsent', {}).get('includesAllergenConsent', false) == true));
     }
 
-    // ========================================
     // USER DATA - Private to each user
-    // ========================================
     
     // User's private data (recipes, friends, etc.)
     match /users/{userId} {
@@ -553,8 +547,7 @@ service cloud.firestore {
         //   2. legacy->1: resource.data.core.cookCount was null, new is 1
         //   3. normal bump: new == old + 1, or equal (no-op/other field edit)
         // Arbitrary values (e.g. +5, reset to 0) are rejected.
-        // Owner only, whatever the member's permission (Q6-08 = A,
-        // produktregler.md:241): a member's edit is a suggestion in
+        // Owner only, whatever the member's permission (Q6-08 = A): a member's edit is a suggestion in
         // recipe_suggestions, and members' ratings, comments and cook marks
         // live in their own collections, not on this document.
         allow update: if isOwner(userId)
@@ -865,7 +858,7 @@ service cloud.firestore {
 
       // User's pantry ("skafferi") — owner-only
       //
-      // Per field, the latest change wins (produktregler.md:105, :142-148):
+      // Per field, the latest change wins:
       // the app writes only the changed fields, plus who changed the row
       // (updatedBy) and when (updatedAt, the server's time). The rule checks
       // those two stamps whenever a write sets them, and that quantity is a
@@ -901,9 +894,7 @@ service cloud.firestore {
       }
     }
 
-    // ========================================
     // DELETION AUDIT LOGS - Server-only
-    // ========================================
 
     // P3-06: Audit logs for account deletions — deny all client access
     match /deletion_audit_logs/{logId} {
@@ -919,9 +910,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ========================================
     // PUBLIC PROFILES - Readable by all authenticated users
-    // ========================================
     
     match /public_profiles/{userId} {
       // Anyone authenticated can read profiles for user search functionality
@@ -1007,9 +996,7 @@ service cloud.firestore {
         && request.resource.data.isHidden is bool;
     }
 
-    // ========================================
     // SOCIAL REQUESTS - Friend requests + group invitations (unified)
-    // ========================================
 
     match /social_requests/{requestId} {
       allow read: if isAuthenticated() && (
@@ -1052,10 +1039,8 @@ service cloud.firestore {
       );
     }
     
-    // ========================================
     // SHARED CONTENT - Unified collection for shared recipes, menus, shopping lists
     // Each document has a 'contentType' field: 'recipe' | 'menu' | 'shopping_list'
-    // ========================================
 
     match /shared_content/{contentId} {
       // List is permitted to the sharer OR a recipient.
@@ -1214,9 +1199,7 @@ service cloud.firestore {
       // reaches a subcollection beneath it.
     }
 
-    // ========================================
     // MENUS - User's personal menus (Issue #014 aligned)
-    // ========================================
 
     match /menus/{menuId} {
       // Owner OR recipient can read. Mirrors unified_shared_shopping_lists.
@@ -1261,9 +1244,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.sharedByUserId;
     }
 
-    // ========================================
     // WEEKLY MENU PLANS - Calendar view of veckomeny (BUT-211)
-    // ========================================
     // Doc ID is `{userId}_{YYYY}-W{WW}` so ownership is encoded in the path.
     // Owner-only read/write — no sharing in Phase 1.
     //
@@ -1306,9 +1287,7 @@ service cloud.firestore {
         && planId.matches('^' + request.auth.uid + '_.*');
     }
 
-    // ========================================
     // GROUP WEEKLY MENU PLANS - Collaborative weekly plans (BUT-405)
-    // ========================================
     // Doc ID is `{groupId}_{YYYY}-W{WW}`. The access gate is described on the
     // match block below, which is the only place it is enforced.
 
@@ -1425,9 +1404,7 @@ service cloud.firestore {
         && resource.data.memberPermissions[request.auth.uid] == 'admin';
     }
 
-    // ========================================
     // FAMILY RATING — shared household, diner profiles, family ratings
-    // ========================================
     // The household is the symmetric shared identity; diner profiles and family
     // ratings are scoped to it by householdId. Access reads the denormalised
     // memberUserIds/memberPermissions, so both are kept consistent on write.
@@ -1604,9 +1581,7 @@ service cloud.firestore {
         && shareId.split('_')[1] == request.auth.uid;
     }
 
-    // ========================================
     // REALTIME RESOURCES - live collaboration (ADR-0023, BUT-2151)
-    // ========================================
     // Live menus. A recipe resource is refused until a writer for it exists.
     // The id starts with the owner's uid, so nobody can claim an id that
     // belongs to someone else's resource. Participants with an edit role
@@ -1701,8 +1676,7 @@ service cloud.firestore {
             && voteMapOk(data, 'resolved', 100);
         }
 
-        // A cast ballot's key cannot be removed; its value can change
-        // (produktregler 4.8).
+        // A cast ballot's key cannot be removed; its value can change.
         // The diff is taken on the nested map: a document-level diff only
         // says that `ballots` changed, not which key.
         function ballotKeysKept() {
@@ -1748,9 +1722,7 @@ service cloud.firestore {
       }
     }
 
-    // ========================================
     // REALTIME MENUS - Collaborative menu editing
-    // ========================================
 
     match /realtime_menus/{menuId} {
       allow read: if isAuthenticated()
@@ -1831,9 +1803,7 @@ service cloud.firestore {
       }
     }
 
-    // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
-    // ========================================
     // This collection tracks ALL users viewing recipes (not just collaborative ones).
     
     match /recipePresence/{recipeId} {
@@ -1854,9 +1824,7 @@ service cloud.firestore {
       }
     }
 
-    // ========================================
     // PINGS - Group-scoped nudges (BUT-407)
-    // ========================================
     // Path: /pings/{groupId}/pings/{pingId}
     //
     // Rate-limit tradeoff: Firestore rules cannot efficiently run
@@ -1938,9 +1906,7 @@ service cloud.firestore {
             || request.auth.uid == resource.data.toUserId);
     }
 
-    // ========================================
     // SHOPPING PRESENCE - "Anna handlar nu" indicators (BUT-238)
-    // ========================================
     // Per-list presence for collaborative shopping. Same pattern as recipePresence.
 
     match /shoppingPresence/{listId} {
@@ -1958,9 +1924,7 @@ service cloud.firestore {
         allow write: if isAuthenticated() && request.auth.uid == userId;
       }
     }
-    // ========================================
     // RECIPE COMMENTS - Threaded comments
-    // ========================================
 
     match /recipe_comments/{commentId} {
       // BUT-458: Read access is now restricted to the recipe owner, the
@@ -2153,9 +2117,7 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
-    // ========================================
     // RECIPE COOK EVENTS - per-user append-only cook log (BUT-838)
-    // ========================================
     // One doc per "mark as cooked": {recipeId, cookedAt}. Written in the
     // same WriteBatch as the recipe's core.cookCount bump. The read rule
     // depends only on the {userId} path segment, so the client's
@@ -2185,9 +2147,7 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // ========================================
     // ACTIVITY EVENTS - Social activity feed (BUT-1294)
-    // ========================================
     // Top-level collection: one doc per social event {actorId, type, recipeId,
     // recipeTitle, createdAt, ...}. The feed query is a batched
     // `where('actorId', whereIn: [self + friendIds])` + orderBy createdAt
@@ -2239,9 +2199,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.actorId;
     }
 
-    // ========================================
     // BUTLERY ARCHIVE - Read-only community recipes
-    // ========================================
 
     match /butlery_archive/{recipeId} {
       allow read: if isAuthenticated();
@@ -2251,9 +2209,7 @@ service cloud.firestore {
     // NOTE: /menus/ rules are defined earlier in this file (line ~315)
     // Duplicate rule block removed to prevent override conflicts
 
-    // ========================================
     // CONVERSATIONS - User messaging
-    // ========================================
 
     match /conversations/{conversationId} {
       // BUT-1838: a direct conversation's id is derived from its members
@@ -2422,9 +2378,7 @@ service cloud.firestore {
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
       }
 
-      // ------------------------------------------------------------------
       // PARTICIPANT ROSTER (BUT-1482 sprint, 2026-08-12)
-      // ------------------------------------------------------------------
       // This path had no match block at all, so every write hit default-deny — and
       // unlike the other four drifts in this sprint the failure is NOT
       // swallowed: addParticipants has no local catch, so batch.commit() throws
@@ -2648,9 +2602,7 @@ service cloud.firestore {
       }
     }
 
-    // ========================================
     // CHAT GROUPS (BUT-1838) - the shared object a group chat hangs off
-    // ========================================
     //
     // Malin's decision, 2026-08-13: a group is its own thing, like WhatsApp —
     // not a `friend_categories` list (those have an owner, live under
@@ -2696,9 +2648,7 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
-    // ========================================
     // MESSAGES - Top-level messages collection (used by repository)
-    // ========================================
 
     match /messages/{messageId} {
       // One get(); the engine caches it per request, so the three references
@@ -2899,7 +2849,7 @@ service cloud.firestore {
                .hasOnly(['imageUrl', 'pendingImage'])
           && request.resource.data.metadata.get('pendingImage', false) != true
           && request.resource.data.metadata.imageUrl.matches(
-               '^https://firebasestorage\\.googleapis\\.com/v0/b/butlery-app-(1|staging)\\.firebasestorage\\.app/o/users%2F'
+               '^https://firebasestorage\\.googleapis\\.com/v0/b/butlery-(prod|app-staging)\\.firebasestorage\\.app/o/users%2F'
                + request.auth.uid + '%2Fchat_images%2F[A-Za-z0-9._-]+\\?.*$')
           && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
           && isAgeCompliant()
@@ -3139,9 +3089,7 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
     
-    // ========================================
     // CONNECTIVITY TEST - App initialization
-    // ========================================
     
     match /connectivity_test/{document} {
       // Anyone authenticated can read connectivity test documents
@@ -3151,9 +3099,7 @@ service cloud.firestore {
     }
     
     
-    // ========================================
     // UNIFIED SHARED SHOPPING LISTS - Collaborative shopping
-    // ========================================
     
     match /unified_shared_shopping_lists/{listId} {
       // BUT-1725: `contributorUserIds` is the ONLY handle account erasure has
@@ -3301,9 +3247,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.ownerId;
     }
 
-    // ========================================
     // SHOPPING LIST TEMPLATES - Reusable shopping list patterns
-    // ========================================
     
     match /shopping_list_templates/{templateId} {
       // Public templates can be read by anyone
@@ -3329,9 +3273,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.ownerId;
     }
     
-    // ========================================
     // USER SHARED SHOPPING LISTS - Tracking received lists
-    // ========================================
 
     match /user_shared_shopping_lists/{userId}/received_lists/{listId} {
       allow read, delete: if isOwner(userId);
@@ -3342,9 +3284,7 @@ service cloud.firestore {
       allow update: if isOwner(userId);
     }
 
-    // ========================================
     // USER SHARED MENUS - Subcollection tracking
-    // ========================================
 
     match /user_shared_menus/{userId}/received_menus/{menuId} {
       allow read, delete: if isOwner(userId);
@@ -3355,9 +3295,7 @@ service cloud.firestore {
       allow update: if isOwner(userId);
     }
 
-    // ========================================
     // PRESENCE - Online status and typing indicators
-    // ========================================
 
     match /presence/{userId} {
       allow read: if isAuthenticated();
@@ -3365,9 +3303,7 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // ========================================
     // BLOCKS - User block relationships (composite-key: {blockerId}_{blockedId})
-    // ========================================
 
     match /blocks/{blockId} {
       // Users can read blocks they are involved in (either direction)
@@ -3390,9 +3326,7 @@ service cloud.firestore {
         && resource.data.blockerId == request.auth.uid;
     }
 
-    // ========================================
     // RECIPE RATINGS - User ratings for recipes
-    // ========================================
 
     match /recipe_ratings/{ratingId} {
       // Can read all ratings (public social feature)
@@ -3475,9 +3409,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ========================================
     // USER NOTIFICATIONS - Push notifications
-    // ========================================
 
     match /user_notifications/{notificationId} {
       // Can read only your own notifications
@@ -3513,9 +3445,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.userId;
     }
 
-    // ========================================
     // FCM TOKENS - Firebase Cloud Messaging tokens
-    // ========================================
 
     match /user_fcm_tokens/{tokenDocId} {
       // Per-device document model: doc ID is {userId}_{deviceId}
@@ -3538,9 +3468,7 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
 
-    // ========================================
     // NOTIFICATION PREFERENCES - User notification settings
-    // ========================================
 
     match /user_notification_preferences/{userId} {
       // Can read only your own preferences
@@ -3552,9 +3480,7 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // ========================================
     // AUDIT LOGS
-    // ========================================
 
     match /audit_logs/{logId} {
       // BUT-424: Audit logs are admin-only readable from the client.
@@ -3580,29 +3506,23 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ========================================
     // BUT-627 audit ledger (admin-only) — defence-in-depth deny.
     // Top-level `audit/{category}/entries/{auto}` rows are written by Cloud
     // Functions via admin SDK (e.g. ping rate-limit violations). No client
     // path should reach them; the admin SDK bypasses rules anyway. Explicit
     // deny ensures a future wildcard rule cannot accidentally widen access.
-    // ========================================
     match /audit/{document=**} {
       allow read, write: if false;
     }
 
-    // ========================================
     // BUT-482 internal scratch space (admin-only) — defence-in-depth deny.
     // `_internal/rating_debounce/markers/{recipeId}` is written by the
     // rating-aggregation debounce path. Functions-only collection.
-    // ========================================
     match /_internal/{document=**} {
       allow read, write: if false;
     }
 
-    // ========================================
     // USER CONSENT - GDPR Article 7 compliance
-    // ========================================
 
     match /users/{userId}/consent/{consentDoc} {
       // Users can read only their own consent records
@@ -3616,12 +3536,10 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // ========================================
     // ACQUISITION ATTRIBUTION (BUT-612)
     // First-write-wins UTM data mirroring `campaign_click` events. Owner reads + creates only;
     // updates are blocked so original-source attribution is immutable.
     // Deletes go through admin tooling, not the client.
-    // ========================================
     match /users/{userId}/acquisition/{acquisitionDoc} {
       allow read: if isAuthenticated()
         && request.auth.uid == userId;
@@ -3647,18 +3565,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ========================================
     // OVERWRITTEN VERSIONS (P5-U26b)
     // A version of the user's own week menu or recipe that another person's
-    // save overwrote, kept 30 days behind "Återställ" (produktregler.md:104,
-    // :109; PQ-01 = A). It belongs to the user whose version it was: only
+    // save overwrote, kept 30 days behind "Återställ" (PQ-01 = A). It belongs to the user whose version it was: only
     // they read, keep and forget it, nobody can change it, and it can never
     // be kept longer than 30 days. `expiresAt` is exactly 30 days after
     // `overwrittenAt`, is in the future, and is at most 30 days and one hour
     // from the server's clock (the hour absorbs a device clock that runs
     // ahead). The TTL policy in firestore.indexes.json deletes on it, and
     // the account deletion cascade sweeps the collection (USER_SUBCOLLECTIONS).
-    // ========================================
     match /users/{userId}/overwritten_versions/{versionId} {
       allow read: if isAuthenticated()
         && request.auth.uid == userId;
@@ -3694,7 +3609,6 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // ========================================
     // TRASH (BUT-907)
     // An own recipe the user deleted, kept 30 days behind "Återställ". The
     // document id is the recipe's id. Same shape as overwritten_versions: the
@@ -3716,7 +3630,6 @@ service cloud.firestore {
     // A restore goes through the recipe's own create rule. An admin may delete
     // a copy (a moderator removing a reported recipe the owner already threw
     // away) but never reads one.
-    // ========================================
     match /users/{userId}/trash/{itemId} {
       allow read: if isAuthenticated()
         && request.auth.uid == userId;
@@ -3761,10 +3674,9 @@ service cloud.firestore {
         && (request.auth.uid == userId || isAdmin());
     }
 
-    // ========================================
     // RECIPE SUGGESTIONS (P5-U27b)
     // A change to someone else's shared recipe, kept 7 days as a suggestion
-    // the owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A).
+    // the owner accepts or dismisses (PQ-02 = A).
     // Two people and no one else: the suggester and the recipe's owner read
     // it. Only the suggester creates it, as themselves, never to their own
     // recipe, and only for a recipe the owner has shared with them: the
@@ -3786,7 +3698,6 @@ service cloud.firestore {
     // while the recipe is still shared with them. Who, which recipe, the
     // status and `createdAt` never change, and the owner's decision stays
     // the owner's.
-    // ========================================
     match /recipe_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
         && (resource.data.suggesterId == request.auth.uid
@@ -3844,18 +3755,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ========================================
     // ONBOARDING PROGRESS (BUT-675)
     // Resume-onboarding state: which step the user finished, when, and
     // whether onboarding has been completed. Owner-only read/write.
     // Doc shape: { step: string, completedAt: timestamp, completed: bool }
-    // ========================================
     match /users/{userId}/onboarding/{progressDoc} {
       allow read, write: if isAuthenticated()
         && request.auth.uid == userId;
     }
 
-    // ========================================
     // DELIVERED NOTIFICATIONS (BUT-1957)
     // The in-app row for a notification the service SENT the user: the win-back
     // job (analytics/detect-lapsed-users.ts) and the weekly activity digest
@@ -3875,13 +3783,11 @@ service cloud.firestore {
     // are a record of what the SERVER sent, so a client that could write one
     // could fabricate a notification it never received — and that record is now
     // reachable through the data export.
-    // ========================================
     match /users/{userId}/notifications/{notificationId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow write: if false;
     }
 
-    // ========================================
     // REPORT THROTTLE (BUT-781)
     // Per-(reporter, contentOwner) sentinel doc that powers the brigade
     // rate-limit on /reports. The reporter writes one of these alongside
@@ -3893,7 +3799,6 @@ service cloud.firestore {
     // (doc id == reporter uid) are blocked at the rules layer too — even
     // if a buggy client tried to write one, /reports would still reject
     // the parent report on the contentOwnerId != reporter check.
-    // ========================================
     match /users/{userId}/report_throttle/{ownerId} {
       // Owner reads their own throttle (used by the client to know if a
       // re-report is allowed without round-tripping through a denied
@@ -3915,9 +3820,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ========================================
     // CANONICAL RATING EVENTS (pooled ratings "Butlery-betyget", decision 10)
-    // ========================================
     // One frozen pool event per pool the user has voted in, written ONLY by the
     // Stage-A mirror Cloud Function (Admin SDK bypasses these rules). The owner
     // may READ their own events (GDPR export + any future "my contributions" UI);
@@ -3930,9 +3833,7 @@ service cloud.firestore {
       allow create, update, delete: if false;  // CF-only via Admin SDK
     }
 
-    // ========================================
     // MENU TEMPLATES - Reusable menu templates
-    // ========================================
 
     match /menu_templates/{templateId} {
       // Can read public templates and your own templates
@@ -3957,9 +3858,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.ownerId;
     }
 
-    // ========================================
     // SITE CONFIGS - Dynamic parsing configurations
-    // ========================================
 
     match /site_configs/{domain} {
       // Authenticated users can read site configs
@@ -3969,9 +3868,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // MENU LEXICON - Parser vocabulary overrides (BUT-370)
-    // ========================================
 
     match /menu_lexicon/{category} {
       // Authenticated users can read lexicon overrides
@@ -3981,9 +3878,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // PARSING CORRECTIONS - Parser improvement analytics
-    // ========================================
 
     match /parsing_corrections/{correctionId} {
       // Users can only read their own corrections (GDPR). Admins read across
@@ -4006,9 +3901,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.userId;
     }
 
-    // ========================================
     // TAG OVERRIDES LOG (BUT-1473) — allergen tag-override corrections
-    // ========================================
     // Own-data, append-only capture of allergen verdict overrides feeding the
     // tagging learning loop. Same ownership + immutability contract as
     // parsing_corrections above (GDPR read/delete of own data; admins read all
@@ -4037,9 +3930,7 @@ service cloud.firestore {
         && request.auth.uid == resource.data.userId;
     }
 
-    // ========================================
     // PARSE CORRECTIONS V2 (BUT-595) — server-write-only per-field log
-    // ========================================
     // Per-field correction telemetry. Documents are written by the
     // `logParseCorrection` Cloud Function via the admin SDK only. Userids and
     // recipeIds arrive pre-hashed; raw IDs never land here. The collection is
@@ -4049,10 +3940,8 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // COLLECTION GROUP RULES (Issue #014: Unlimited Sharing)
     // Required for collectionGroup('members') queries
-    // ========================================
 
     // ⚠️ SAFETY CONTRACT (BUT-463): Matches ALL `members/{id}` subcollections
     // across the database via collection-group. The rule depends on TWO
@@ -4160,9 +4049,7 @@ service cloud.firestore {
             || resource.data.toUserId == request.auth.uid);
     }
 
-    // ========================================
     // CONTENT REPORTS - User-submitted reports
-    // ========================================
 
     match /reports/{reportId} {
       // Users can read their own reports; admins can read all reports.
@@ -4258,9 +4145,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // ADMINS - Moderator allow-list (seeded server-side only)
-    // ========================================
     // Documents here simply mark a UID as an admin. The collection is
     // write-locked at the rules layer; entries are seeded via Firebase
     // Console / Admin SDK. Mirror-reads are restricted to admins themselves
@@ -4270,9 +4155,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // GLOBAL INGREDIENT DATABASE - Allergen/dietary lookup
-    // ========================================
 
     // Admin-curated ingredient database used by the tagging system.
     // Authenticated users need read access for ingredient lookup during
@@ -4282,18 +4165,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
     // INGREDIENT SUBSTITUTIONS - Read-only reference data
-    // ========================================
 
     match /ingredient_substitutions/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    // ========================================
     // TAG CONFIGS - Admin-managed tagging configuration
-    // ========================================
 
     // Read-only tag configuration documents (allergens, dietary, cuisine,
     // properties, display). Managed by admin via console/Cloud Functions.
@@ -4302,9 +4181,28 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ========================================
+    // BUT-2452 (ADR-0034): the guest list. The doc id is the invited address,
+    // trimmed and lower-cased, exactly as `beforeCreateAllowlist` looks it up.
+    // Admins only; an entry is created or deleted, never edited. `expireAt`
+    // feeds the TTL policy.
+    match /signup_allowlist/{email} {
+      allow read, delete: if isAdmin();
+      allow update: if false;
+      allow create: if isAdmin()
+        && email == email.lower()
+        && email == email.trim()
+        && email.size() <= 254
+        && email.matches('^[^/@\\s]+@[^/@\\s]+[.][^/@\\s]+$')
+        && request.resource.data.keys().hasOnly(['invitedAt', 'invitedBy', 'expireAt'])
+        && request.resource.data.keys().hasAll(['invitedAt', 'invitedBy', 'expireAt'])
+        && request.resource.data.invitedAt == request.time
+        && request.resource.data.invitedBy == request.auth.uid
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt <= request.time + duration.value(30 * 24 * 60 + 1, 'm');
+    }
+
     // FEEDBACK - Beta user feedback submissions
-    // ========================================
 
     match /feedback/{feedbackId} {
       // Users can submit their own feedback.
@@ -4337,44 +4235,28 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ========================================
     // DEEP LINKS - Shareable recipe/content links
-    // ========================================
 
     match /deep_links/{linkId} {
-      allow read: if isAuthenticated();
+      // BUT-2463: a link is opened by its code, so a single-document read is
+      // all the app needs. A list would hand any signed-in account every
+      // link's `longUrl`, and with it every creator's uid.
+      allow get: if isAuthenticated();
+      allow list: if false;
       allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.createdBy == request.auth.uid
         && hasRequiredFields(['longUrl', 'createdAt', 'createdBy']);
-      // Creator can update all fields; any user can update click tracking
-      allow update: if isAuthenticated()
-        && (resource.data.createdBy == request.auth.uid
-          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastClickedAt']));
+      // Nothing in the app updates a link after creating it.
+      allow update: if false;
       allow delete: if isAuthenticated()
         && resource.data.createdBy == request.auth.uid;
 
       match /clicks/{clickId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated()
-          // BUT-1482 sprint, 2026-08-12: the rules named `clickedAt` and
-          // `referrer`; the writer sends `timestamp` and `userId`, and neither
-          // `clickedAt` nor `referrer`, so every click write was denied
-          // (swallowed by a catch). Do not narrow this list to one key. The WRITER is the
-          // source of truth here because nothing anywhere reads this
-          // subcollection — grep for it returns only the collection constant —
-          // so there is no stored shape to stay compatible with. That also
-          // means it is write-only telemetry with no consumer; whether it
-          // should exist at all is recorded in tasks/todo.md, not decided here.
-          // Writer: firebase_deeplink_repository.dart:201-205.
-          && request.resource.data.keys().hasOnly(['userId', 'timestamp'])
-          && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if false;
+        allow read, write: if false;
       }
     }
 
-    // ========================================
     // INGREDIENT SUGGESTIONS - User-submitted ingredients
-    // ========================================
 
     // BUT-2028: this collection is uid-keyed (`userId`) and the `allow create`
     // limb below lets any signed-in client write a row keyed to themselves,
@@ -4460,9 +4342,7 @@ service cloud.firestore {
       allow update, delete: if false;  // Admin-only via console
     }
 
-    // ========================================
     // NOTIFICATION HISTORY - Per-notification delivery tracking
-    // ========================================
 
     match /notification_history/{notificationId} {
       allow read, delete: if isAuthenticated()
@@ -4482,9 +4362,7 @@ service cloud.firestore {
         && request.resource.data.get('data', {}).size() <= 20;
     }
 
-    // ========================================
     // NOTIFICATION BATCHES - Batched notification queue
-    // ========================================
 
     match /notification_batches/{batchKey} {
       allow read, delete: if isAuthenticated()
@@ -4497,9 +4375,7 @@ service cloud.firestore {
         ]);
     }
 
-    // ========================================
     // NOTIFICATION ANALYTICS - Delivery, engagement, and metrics tracking
-    // ========================================
 
     match /notification_delivery/{notificationId} {
       allow read: if isAuthenticated()
@@ -4549,9 +4425,7 @@ service cloud.firestore {
       allow create, update, delete: if false;  // No client writer exists
     }
 
-    // ========================================
     // RECIPE SOCIAL STATS - Aggregate rating statistics
-    // ========================================
 
     match /recipe_social_stats/{recipeId} {
       allow read: if isAuthenticated();
@@ -4567,13 +4441,9 @@ service cloud.firestore {
       allow create, update, delete: if false;  // Server-only via Cloud Functions (Admin SDK)
     }
 
-    // ========================================
     // DEFAULT DENY - Catch all other paths
-    // ========================================
 
-    // ========================================
     // ADMIN DASHBOARD READS (admin-only aggregate / ops data)
-    // ========================================
     // These collections are written server-side by Cloud Functions
     // (analytics rollups, north-star snapshots, cleanup-job logs) and read by
     // the admin dashboard. Admin-only, read-only — clients and non-admins are
@@ -4594,9 +4464,7 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
-    // ========================================
     // OWNER-READ MODERATION RECORD (server-written, subject-readable)
-    // ========================================
     // This ends the admin-only section above: the block below admits an
     // ORDINARY CLIENT reading their own document, so it cannot sit under a
     // header whose body says "Admin-only, read-only — clients and non-admins

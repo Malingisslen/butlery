@@ -258,7 +258,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         // Image container
         ButleryOutlinedBox(
           paintOnly: true,
-          // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
+          // Chosen: the 2 px text.primary border.
           // Not chosen: border.subtle itself, never faded claim-lint:ok moved unchanged with its box
           // (tokens.json:40-53). claim-lint:ok moved unchanged with its box
           borderColor: isSelected ? cs.onSurface : cs.outlineVariant,
@@ -289,8 +289,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                     ),
                     // No tint over a chosen photo: opacity is never a state
                     // (tokens.json:40-53). claim-lint:ok moved unchanged with its box The 2 px text.primary border and
-                    // the checked circle carry the choice (Grafisk manual
-                    // v6:209, "Vald = riktig border").
+                    // the checked circle carry the choice
                   ],
                 ),
               ),

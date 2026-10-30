@@ -43,7 +43,7 @@ class ShoppingItemDialogs {
         if (context.mounted) {
           if (id != null) {
             // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
-            // (produktregler.md:131; content-style-guide.md:96). Ångra
+            // (content-style-guide.md:96). Ångra
             // removes the row by the id the service returned, so it takes
             // away exactly this row, on a personal list and a shared one.
             SnackBarUtils.showUndo(
@@ -67,7 +67,7 @@ class ShoppingItemDialogs {
     }
   }
 
-  /// Editing is class 3 (produktregler.md:133): no receipt on success, so
+  /// Editing is class 3: no receipt on success, so
   /// only a failure is reported, through [onError].
   static Future<void> showEditItemDialog(
     BuildContext context,
@@ -102,7 +102,7 @@ class ShoppingItemDialogs {
         );
 
         // update{namn, mängd, enhet, kategori} is class 3: no friction on
-        // success (produktregler.md:133). The row changes on screen, and that
+        // success. The row changes on screen, and that
         // is the confirmation. Failures are still said.
         if (!success && context.mounted) {
           onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
@@ -190,63 +190,13 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   Widget build(BuildContext context) {
     return ButleryDialog(
       title: context.l10n.shoppingAddItem,
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            StyledInput(
-              controller: _nameController,
-              label: context.l10n.shoppingItemName,
-              hint: context.l10n.shoppingItemNameHint,
-              validator: (value) =>
-                  ValidationUtils.validateShoppingItemName(value),
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: StyledInput(
-                    controller: _amountController,
-                    label: context.l10n.shoppingAmount,
-                    hint: '1',
-                    // decimal: true asks the OS for a keyboard that HAS a
-                    // separator key; the formatter decides what may land in the
-                    // field. Both are needed - a numeric pad without the key
-                    // makes the formatter unreachable on a phone, and the
-                    // keyboard alone would let "1,5,5" through.
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: const [SwedishDecimalInputFormatter()],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  flex: 3,
-                  child: StyledInput(
-                    controller: _unitController,
-                    label: context.l10n.shoppingUnit,
-                    hint: context.l10n.shoppingUnitHint,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            StyledInput(
-              controller: _categoryController,
-              label: context.l10n.shoppingCategory,
-              hint: context.l10n.shoppingCategoryHint,
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            StyledInput(
-              controller: _noteController,
-              label: context.l10n.shoppingNoteOptional,
-              hint: context.l10n.shoppingNoteHint,
-            ),
-          ],
-        ),
+      content: _ShoppingItemForm(
+        formKey: _formKey,
+        nameController: _nameController,
+        amountController: _amountController,
+        unitController: _unitController,
+        categoryController: _categoryController,
+        noteController: _noteController,
       ),
       actions: [
         const DialogCancelButton(),
@@ -325,63 +275,13 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   Widget build(BuildContext context) {
     return ButleryDialog(
       title: context.l10n.shoppingEditItem,
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            StyledInput(
-              controller: _nameController,
-              label: context.l10n.shoppingItemName,
-              hint: context.l10n.shoppingItemNameHint,
-              validator: (value) =>
-                  ValidationUtils.validateShoppingItemName(value),
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: StyledInput(
-                    controller: _amountController,
-                    label: context.l10n.shoppingAmount,
-                    hint: '1',
-                    // decimal: true asks the OS for a keyboard that HAS a
-                    // separator key; the formatter decides what may land in the
-                    // field. Both are needed - a numeric pad without the key
-                    // makes the formatter unreachable on a phone, and the
-                    // keyboard alone would let "1,5,5" through.
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: const [SwedishDecimalInputFormatter()],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  flex: 3,
-                  child: StyledInput(
-                    controller: _unitController,
-                    label: context.l10n.shoppingUnit,
-                    hint: context.l10n.shoppingUnitHint,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            StyledInput(
-              controller: _categoryController,
-              label: context.l10n.shoppingCategory,
-              hint: context.l10n.shoppingCategoryHint,
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            StyledInput(
-              controller: _noteController,
-              label: context.l10n.shoppingNoteOptional,
-              hint: context.l10n.shoppingNoteHint,
-            ),
-          ],
-        ),
+      content: _ShoppingItemForm(
+        formKey: _formKey,
+        nameController: _nameController,
+        amountController: _amountController,
+        unitController: _unitController,
+        categoryController: _categoryController,
+        noteController: _noteController,
       ),
       actions: [
         const DialogCancelButton(),
@@ -432,5 +332,85 @@ class _CategorySuggester {
     if (savedCategory != null) return savedCategory;
     final category = IngredientCategorizer.categorize(itemName);
     return category == ShoppingCategory.other ? null : category;
+  }
+}
+
+class _ShoppingItemForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController nameController;
+  final TextEditingController amountController;
+  final TextEditingController unitController;
+  final TextEditingController categoryController;
+  final TextEditingController noteController;
+
+  const _ShoppingItemForm({
+    required this.formKey,
+    required this.nameController,
+    required this.amountController,
+    required this.unitController,
+    required this.categoryController,
+    required this.noteController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StyledInput(
+            controller: nameController,
+            label: context.l10n.shoppingItemName,
+            hint: context.l10n.shoppingItemNameHint,
+            validator: (value) =>
+                ValidationUtils.validateShoppingItemName(value),
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: StyledInput(
+                  controller: amountController,
+                  label: context.l10n.shoppingAmount,
+                  hint: '1',
+                  // decimal: true asks the OS for a keyboard that HAS a
+                  // separator key; the formatter decides what may land in the
+                  // field. Both are needed - a numeric pad without the key
+                  // makes the formatter unreachable on a phone, and the
+                  // keyboard alone would let "1,5,5" through.
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: const [SwedishDecimalInputFormatter()],
+                ),
+              ),
+              const SizedBox(width: AppDimensions.space8),
+              Expanded(
+                flex: 3,
+                child: StyledInput(
+                  controller: unitController,
+                  label: context.l10n.shoppingUnit,
+                  hint: context.l10n.shoppingUnitHint,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          StyledInput(
+            controller: categoryController,
+            label: context.l10n.shoppingCategory,
+            hint: context.l10n.shoppingCategoryHint,
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          StyledInput(
+            controller: noteController,
+            label: context.l10n.shoppingNoteOptional,
+            hint: context.l10n.shoppingNoteHint,
+          ),
+        ],
+      ),
+    );
   }
 }

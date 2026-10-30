@@ -1,5 +1,5 @@
 // Megagenomgång A7: "Kopiera för Claude" must not carry the reporter's
-// e-mail address (produktregler 18.3).
+// e-mail address.
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/feedback_entry.dart';

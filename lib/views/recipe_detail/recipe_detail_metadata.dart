@@ -15,7 +15,11 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
-import 'package:butlery/widgets/recipe/recipe_image_states.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
@@ -31,16 +35,11 @@ class RecipeDetailMetadata extends StatefulWidget {
   final int currentPortions;
   final bool isScaled;
 
-  /// Set only for a recipe without a photo that the viewer can edit; draws
-  /// the "Lägg till foto" chip in the chip row.
-  final VoidCallback? onAddPhoto;
-
   const RecipeDetailMetadata({
     super.key,
     required this.viewModel,
     required this.currentPortions,
     required this.isScaled,
-    this.onAddPhoto,
   });
 
   @override
@@ -176,56 +175,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       );
     }
 
-    // Star rating row — always visible, tappable to set rating.
-    // BUT-2218: a Wrap, not a Row, so the 48 dp remove control drops to the
-    // next line on a narrow screen instead of overflowing the row.
-    metadataWidgets.add(
-      Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppDimensions.space4,
-        children: [
-          StarRatingRow(
-            rating: recipe.rating ?? 0,
-            onRatingChanged: (value) => _rateRecipe(context, value),
-            semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
-          ),
-          if ((recipe.rating ?? 0) > 0) ...[
-            Text(
-              // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
-              TextFormatting.formatFractional(recipe.rating!),
-              style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-            ),
-            // Remove own rating — only when the user has rated
-            if (_checkedUserRating && _hasUserRating)
-              Semantics(
-                label: context.l10n.a11yRemoveOwnRating,
-                button: true,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _removeMyRating(context),
-                  // BUT-2218: the glyph stays 14 dp; the hit area is padded to
-                  // 48 dp (tokens.json touchTarget).
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: AppDimensions.minTouchTarget,
-                      minHeight: AppDimensions.minTouchTarget,
-                    ),
-                    child: Center(
-                      widthFactor: 1,
-                      heightFactor: 1,
-                      child: ButleryIcon(
-                        ButleryIcons.x,
-                        size: AppDimensions.iconSize14,
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ],
-      ),
-    );
+    metadataWidgets.add(_buildRatingSummary(context));
 
     // "Lagat idag" chip — disabled after first tap per calendar day.
     // BUT-403: `btn-mark-cooked` identifier for browser a11y tree queries.
@@ -258,11 +208,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         tone: ButleryStatusChipTone.gold,
       ),
     );
-
-    final onAddPhoto = widget.onAddPhoto;
-    if (onAddPhoto != null) {
-      metadataWidgets.add(RecipeAddPhotoChip(onPressed: onAddPhoto));
-    }
 
     final metadataRow = Wrap(
       spacing: AppDimensions.space16,
@@ -414,6 +359,77 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     AnalyticsService.tryLog(
       AnalyticsEvents.poolRatingContributed,
       parameters: {'pool_key': poolKey},
+    );
+  }
+
+  Widget _buildRatingSummary(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final rating = widget.viewModel.recipe.rating ?? 0;
+    return ButleryTapTarget(
+      semanticLabel: context.l10n.recipeRatingSheetTitle,
+      onTap: () => _openRatingSheet(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ButleryIcon(
+            rating > 0 ? ButleryIcons.star : ButleryIcons.starOutline,
+            size: AppDimensions.iconSizeS,
+            color: rating > 0
+                ? context.modeColors.starGold
+                : cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.space4),
+          Text(
+            rating > 0
+                // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
+                ? TextFormatting.formatFractional(rating)
+                : context.l10n.recipeRatingUnrated,
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
+          ),
+          const SizedBox(width: AppDimensions.space4),
+          const ButleryChevron(),
+        ],
+      ),
+    );
+  }
+
+  void _openRatingSheet(BuildContext context) {
+    final rating = widget.viewModel.recipe.rating ?? 0;
+    showButlerySheet<void>(
+      context: context,
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.all(AppDimensions.space16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              context.l10n.recipeRatingSheetTitle,
+              style: AppTextStyles.titleBold,
+            ),
+            const SizedBox(height: AppDimensions.space16),
+            StarRatingRow(
+              rating: rating,
+              size: AppDimensions.iconSizeXl,
+              onRatingChanged: (value) {
+                Navigator.of(sheetContext).pop();
+                _rateRecipe(context, value);
+              },
+              semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
+            ),
+            if (_checkedUserRating && _hasUserRating) ...[
+              const SizedBox(height: AppDimensions.space8),
+              ActionButtons.textButton(
+                context,
+                label: context.l10n.a11yRemoveOwnRating,
+                onPressed: () {
+                  Navigator.of(sheetContext).pop();
+                  _removeMyRating(context);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

@@ -177,6 +177,16 @@ void main() {
       expect(sub.count, 1);
     });
 
+    test('nötköttsfri, as the app spells it, and the old nötkötsfri', () {
+      for (final word in ['nötköttsfri', 'nötkötsfri']) {
+        final result = p('3 middagar varav en $word');
+        final sub = result.slotRequests.first.subRequests.firstWhere(
+          (s) => s.allergenFree.isNotEmpty,
+        );
+        expect(sub.allergenFree, contains('nötkött'), reason: word);
+      }
+    });
+
     test('inget jordnötter (global negation)', () {
       final result = p('inget jordnötter, 3 middagar');
       expect(result.globalAllergenAvoid, contains('jordnötter'));

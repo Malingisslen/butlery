@@ -1,7 +1,7 @@
 # Reset-user-data runbook (BUT-2028)
 
 `functions/src/admin/reset-user-data.ts` wipes user data from the project named
-by `--project` (`butlery-app-1` or `butlery-app-staging`). There is no default:
+by `--project` (`butlery-prod` or `butlery-app-staging`). There is no default:
 without the flag, or with a `GOOGLE_CLOUD_PROJECT`/`GCLOUD_PROJECT` or a
 service-account key naming a different project, it refuses before connecting
 (`functions/src/admin/require-project.ts`). This runbook covers what can go
@@ -139,6 +139,29 @@ Two steps this leaves for a person, neither of which the report performs:
   see the BUT-2044 entries in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
 - Anything the report names is either a collection needing a decision (into one
   of the three lists) or an orphan of a rename. Neither closes itself.
+
+## After a live run: getting back in past the guest list (BUT-2476)
+
+A live run deletes every Auth account and the whole `signup_allowlist`, and it
+keeps `system` and `admins`. So the guest-list gate is still on, nobody is
+invited, and the old `admins/{uid}` documents name accounts that no longer
+exist. A new sign-up, yours included, is refused as not invited.
+
+Pick one way back in:
+
+- **Invite yourself.** In the Firebase console, create
+  `signup_allowlist/<your address>` with an `expireAt` Timestamp in the future.
+  The document id is the address trimmed and in lower case. The gate stays on
+  for everyone else.
+- **Switch the gate off.** Set `system/config.signupAllowlistEnabled` to the
+  boolean `false`. Anyone can sign up until you set it back to `true` (or delete
+  the field), so do that as soon as your account exists.
+- **Create the account with the Admin SDK.** The gate does not see Admin SDK
+  creates.
+
+Then make the new account an admin: create `admins/<new uid>`, and delete the
+`admins` documents of the deleted accounts. The admin site checks that document;
+`onAdminGranted` sets the `admin` claim that admin callables read.
 
 ## Before a live run
 

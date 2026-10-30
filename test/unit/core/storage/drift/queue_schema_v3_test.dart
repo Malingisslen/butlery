@@ -1,4 +1,4 @@
-// P5-U35: the offline queue's schema (produktregler.md:183-193, § 3.1).
+// P5-U35: the offline queue's schema.
 //
 // The migration test opens a database written by schema 2 — the exact
 // CREATE statements drift emitted for schemaVersion 2, dumped from the code
@@ -223,7 +223,7 @@ void main() {
     );
   });
 
-  group('the whole chain fails, never half of it (produktregler.md:187)', () {
+  group('the whole chain fails, never half of it', () {
     late AppDatabase db;
 
     setUp(() => db = AppDatabase.forTesting(NativeDatabase.memory()));
@@ -278,7 +278,7 @@ void main() {
         <String>['other'],
       );
       expect(await db.uploadQueueDao.countPendingUploads('u1'), 0);
-      // Nothing was deleted (produktregler.md:192).
+      // Nothing was deleted.
       expect(await db.select(db.syncQueueEntries).get(), hasLength(4));
       expect(await db.select(db.uploadQueueEntries).get(), hasLength(1));
     });

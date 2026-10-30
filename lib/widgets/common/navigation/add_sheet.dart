@@ -1,10 +1,6 @@
 // lib/widgets/common/navigation/add_sheet.dart
 //
-// PQ-17: what the shell's plus opens. Skarmar v12 del 1 #plussheet: "Mitten-
-// plus öppnar ark: Snabbspara är arkets enda fyllda hjältehandling,
-// importvägarna ligger som pappersytor med inkkontur. Handtag i
-// border-control, 12 px överkant. Fokus flyttas in i arket, fälls in och
-// återgår till plusknappen vid stängning."
+// PQ-17: what the shell's plus opens.
 //
 // The modal route moves focus into the sheet and hands it back to the plus
 // when the sheet closes; the sheet's frame (12 px top edge, handle, surface)
@@ -119,7 +115,7 @@ class ButleryAddSheet extends StatelessWidget {
             child: Text(l10n.addRecipeTitle, style: AppTextStyles.subpageTitle),
           ),
           const SizedBox(height: AppDimensions.space8),
-          // The sheet's one filled hero (#plussheet), with a two-line face.
+          // The sheet's one filled hero, with a two-line face.
           Semantics(
             identifier: 'btn-quick-save',
             child: FormButton(
@@ -188,7 +184,7 @@ class ButleryAddSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.space8),
-          // Not drawn in #plussheet. Voice import was reachable from the old
+          // Voice import was reachable from the old
           // "lägg till" tab, so it stays one tap away here, as a paper tile
           // like the other import routes.
           Row(
@@ -207,7 +203,7 @@ class ButleryAddSheet extends StatelessWidget {
   }
 }
 
-/// A paper tile with an ink outline (#plussheet): surface.base with a 1.5 px
+/// A paper tile with an ink outline: surface.base with a 1.5 px
 /// text.primary edge and text.primary content, which is ink in light mode and
 /// paper in dark mode (tokens.json semantic text.primary).
 class _RouteTile extends StatelessWidget {

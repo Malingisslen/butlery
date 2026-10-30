@@ -67,7 +67,7 @@ class AuthMfaService extends ChangeNotifier
   /// Creates ten one-time backup codes and returns them, once. The server
   /// keeps only salted hashes. Null when they could not be made; enrollment
   /// must then stop, because the protection may not apply without a way back
-  /// (produktregler.md:749). The codes are never logged.
+  /// The codes are never logged.
   Future<List<String>?> generateBackupCodes() async {
     final functions = _functions;
     if (functions == null) return null;

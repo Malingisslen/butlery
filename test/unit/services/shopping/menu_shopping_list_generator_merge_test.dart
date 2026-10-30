@@ -1,13 +1,9 @@
-/// P6-U02: flow 02, the week menu to the shopping list through the merge
-/// sheet (Skarmar v12 del 2 #inkopmerge, #inkopmergeoppen;
-/// flows-roles-budget.md:44-51).
-///
 /// Pins what the sheet shows before anything is written (the preview), and
 /// what "Lägg till N varor", "Ersätt listan" and Ångra write:
 /// - produktbeslut PQ-10 = A: your own rows are always kept, and the rows
 ///   land in the week's generated list, created when missing.
-/// - produktbeslut PQ-11 = A: the pantry subtracts amounts (§ 4.2).
-/// - produktregler.md:131 (§ 2.4): Ångra takes back exactly the add, or the
+/// - produktbeslut PQ-11 = A: the pantry subtracts amounts.
+/// - Ångra takes back exactly the add, or the
 ///   replace.
 library;
 

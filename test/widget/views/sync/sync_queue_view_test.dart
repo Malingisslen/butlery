@@ -1,5 +1,4 @@
-// P4-U19: "Väntar på synk" (produktregler.md:189-192; Skarmar v12 del 4
-// #synkko, light and dark).
+// P4-U19: "Väntar på synk"
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -217,7 +216,7 @@ void main() {
     await tester.pump();
 
     expect(source.retried, [b]);
-    // Class 1 (produktregler.md:132): gone from the list at once, thrown
+    // Class 1: gone from the list at once, thrown
     // away only when the 7 s Ångra window closes.
     expect(find.byKey(SyncQueueNeedsYouCard.discardKey(a)), findsNothing);
     expect(find.text(_sv.syncQueueDiscarded), findsOneWidget);
@@ -413,7 +412,7 @@ void main() {
 
   // ── P6-U08b ────────────────────────────────────────────────────────────
 
-  group('nästa försök (#synkko; produktregler.md:188)', () {
+  group('nästa försök (#synkko)', () {
     for (final mode in {
       'light': AppTheme.lightTheme,
       'dark': AppTheme.darkTheme,
@@ -437,8 +436,6 @@ void main() {
         final line = find.text(_sv.syncQueueNextAttemptSeconds(8));
         expect(line, findsOneWidget);
         // text.secondary: #5B6959 light, #A9B2A0 dark (tokens.json semantic).
-        // Interpretation: #synkko's slot for this line is #627061 light but
-        // #C9D3C4 dark (Skarmar v12 del 4:64).
         expect(
           tester.widget<Text>(line).style!.color,
           mode.value.colorScheme.onSurfaceVariant,
@@ -481,7 +478,7 @@ void main() {
     });
 
     testWidgets('offline the line is still shown, as #synkko draws it under '
-        'the offline banner (Skarmar v12 del 4:245, :271)', (tester) async {
+        'the offline banner', (tester) async {
       final now = clock.now();
       source
         ..online = false
@@ -501,7 +498,7 @@ void main() {
     });
   });
 
-  group('the actions of a failure (produktregler.md:188; #synkko)', () {
+  group('the actions of a failure (#synkko)', () {
     testWidgets('a changed recipe: Försök igen, Spara som kopia, Släng', (
       tester,
     ) async {
@@ -535,7 +532,7 @@ void main() {
 
     // Q6-11 = B (produktbeslut 2026-09-27b): the recipe exists only on this
     // phone, so Släng first says so; confirmed, it is class 1 like every
-    // Släng (produktregler.md:132, 7 s Ångra).
+    // Släng (7 s Ångra).
     testWidgets('Släng on a phone-only recipe asks first, and Avbryt keeps '
         'it', (tester) async {
       final c = _change(
@@ -704,8 +701,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      // #synkko data-a11y-name "Försök mindre – Bild till Sommarens
-      // grillmarinad".
       expect(
         find.bySemanticsLabel(
           'Försök mindre – Bild till Sommarens grillmarinad',

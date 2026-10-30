@@ -27,7 +27,7 @@ enum _ShoppingRootAction {
 class ShoppingAppBar {
   /// The actions on the shopping list's root bar. The bar gives every icon
   /// its foreground, text.primary on the light root bar in both modes
-  /// (ButleryTopBar; Komponentark v1:62), so no icon sets its own colour.
+  /// (ButleryTopBar), so no icon sets its own colour.
   static List<Widget> buildHeaderActions(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -52,9 +52,7 @@ class ShoppingAppBar {
         RestorableRows.hasRestorable(activeList, DateTime.now()) &&
         viewModel.canEditActiveList;
 
-    // Skarmar v12 del 2 #inkop draws one outlined "more" button on the root
-    // bar and nothing else, so the list's secondary actions live in one
-    // overflow menu. Five 48 dp icons would leave the title "Inköp" and its
+    // Five 48 dp icons would leave the title "Inköp" and its
     // count line almost no width on a 320-360 dp phone. Each item keeps the
     // name it had as an icon; the sharing status says what the list is.
     return [
@@ -140,8 +138,6 @@ class ShoppingAppBar {
     // BUT-403: `btn-add-shopping-item` identifier for browser a11y queries.
     return Semantics(
       identifier: 'btn-add-shopping-item',
-      // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
-      // add button in saffron; Komponentark v1:843-844).
       // The hero fills what its slot offers, so the margins are set here.
       child: LayoutBuilder(
         builder: (context, constraints) => SizedBox(

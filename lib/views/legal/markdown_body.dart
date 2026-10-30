@@ -20,17 +20,15 @@ import 'package:butlery/widgets/common/layout/word_fit.dart';
 /// We render this in-house rather than pull in `flutter_markdown` (discontinued
 /// upstream) for one screen.
 ///
-/// Drawn as the sketch reads (Skärmar v12 #juridik): the top `#` title is the
+/// Drawn as the sketch reads: the top `#` title is the
 /// page bar's job and is not repeated, the lines up to the first `---` are
 /// the document's date and version in secondary text,
 /// and the headings are bold ink.
 class MarkdownBody extends StatefulWidget {
   final String data;
 
-  /// False while the device is offline. Web links (http/https) then render
-  /// as plain text without the link role, and one line above the document
-  /// says why (Grafisk manual v6:665: actions that need the network become
-  /// inactive with an explanatory text, not only dimmed). Mail links stay
+  /// False while the device is offline.
+  /// Mail links stay
   /// active: opening the mail app needs no connection.
   final bool webLinksEnabled;
 
@@ -221,7 +219,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
             style: base.merge(SpanStyles.bold),
           ),
           // Offline: an inactive web link is plain text, so it neither looks
-          // nor announces as something to tap (Grafisk manual v6:665).
+          // nor announces as something to tap.
           _TokenKind.link when !widget.webLinksEnabled && _isWebUrl(t.url) =>
             TextSpan(text: t.text, style: base),
           // BUT-1446: WidgetSpan + Semantics(link:) so screen readers

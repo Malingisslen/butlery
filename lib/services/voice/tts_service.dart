@@ -27,8 +27,7 @@ abstract class SpeechSynthesizer {
 /// flutter_tts-backed [SpeechSynthesizer] — Android `TextToSpeech` /
 /// iOS `AVSpeechSynthesizer` passthrough.
 ///
-/// Implements the Köksbutlern vendor-panel conditions
-/// (tasks/koksbutlern-plan.md):
+/// Implements the Köksbutlern vendor-panel conditions:
 /// - `awaitSpeakCompletion(true)` so the `speak()` call's returned Future
 ///   genuinely resolves on completion (native code defers its method-channel
 ///   result until the utterance ends) instead of the plugin's well-known

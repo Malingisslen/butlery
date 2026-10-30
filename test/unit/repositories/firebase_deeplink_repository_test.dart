@@ -6,7 +6,6 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
@@ -244,7 +243,7 @@ void main() {
 
       test('should create short URL successfully', () async {
         // Arrange
-        const longUrl = 'https://butlery.app/recipe/12345';
+        const longUrl = 'https://butlery.se/recipe/12345';
         final metadata = {'title': 'Amazing Recipe', 'type': 'recipe'};
 
         // Act
@@ -271,7 +270,7 @@ void main() {
       test('should resolve short URL to long URL', () async {
         // Arrange
         const shortCode = 'abc12345';
-        const longUrl = 'https://butlery.app/recipe/12345';
+        const longUrl = 'https://butlery.se/recipe/12345';
         await _seedDeepLink(fakeFirestore, shortCode, {
           'id': shortCode,
           'longUrl': longUrl,
@@ -300,241 +299,6 @@ void main() {
 
         // Assert
         expect(result, isNull);
-      });
-    });
-
-    group('Track URL Click', () {
-      test(
-        'should increment click count',
-        () async {
-          // Arrange
-          const shortCode = 'abc12345';
-          await _seedDeepLink(fakeFirestore, shortCode, {
-            'id': shortCode,
-            'longUrl': 'https://example.com',
-            'createdBy': 'user-123',
-            'clickCount': 5,
-          });
-
-          // Act
-          await repository.trackUrlClick(shortCode);
-
-          // Assert
-          final doc = await fakeFirestore
-              .collection('deep_links')
-              .doc(shortCode)
-              .get();
-          final data = doc.data()!;
-          expect(data['clickCount'], equals(6));
-        },
-      );
-
-      test(
-        'should record click history',
-        () async {
-          // Arrange
-          const shortCode = 'abc12345';
-          await _seedDeepLink(fakeFirestore, shortCode, {
-            'id': shortCode,
-            'longUrl': 'https://example.com',
-            'createdBy': 'user-123',
-            'clickCount': 0,
-          });
-
-          // Act
-          await repository.trackUrlClick(shortCode);
-
-          // Assert
-          final clicks = await fakeFirestore
-              .collection('deep_links')
-              .doc(shortCode)
-              .collection('clicks')
-              .get();
-          expect(clicks.docs.length, equals(1));
-          expect(clicks.docs.first.data()['userId'], equals('user-123'));
-        },
-      );
-    });
-
-    group('Store Deep Link Metadata', () {
-      test('should store metadata for existing link', () async {
-        // Arrange
-        const linkId = 'link-1';
-        await _seedDeepLink(fakeFirestore, linkId, {
-          'id': linkId,
-          'longUrl': 'https://example.com',
-          'createdBy': 'user-123',
-        });
-
-        final metadata = {
-          'title': 'New Recipe',
-          'description': 'A delicious recipe',
-          'imageUrl': 'https://example.com/image.jpg',
-        };
-
-        // Act
-        await repository.storeDeepLinkMetadata(linkId, metadata);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('deep_links')
-            .doc(linkId)
-            .get();
-        final data = doc.data()!;
-        expect(data['metadata'], equals(metadata));
-      });
-
-      test('should create new link document if not exists', () async {
-        // Arrange
-        const linkId = 'new-link';
-        final metadata = {
-          'title': 'New Recipe',
-          'type': 'recipe',
-        };
-
-        // Act
-        await repository.storeDeepLinkMetadata(linkId, metadata);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('deep_links')
-            .doc(linkId)
-            .get();
-        expect(doc.exists, isTrue);
-        final data = doc.data()!;
-        expect(data['id'], equals(linkId));
-        expect(data['metadata'], equals(metadata));
-      });
-    });
-
-    group('Get Deep Link Metadata', () {
-      test('should retrieve metadata for existing link', () async {
-        // Arrange
-        const linkId = 'link-1';
-        final metadata = {
-          'title': 'Amazing Recipe',
-          'description': 'Very tasty',
-          'type': 'recipe',
-        };
-        await _seedDeepLink(fakeFirestore, linkId, {
-          'id': linkId,
-          'longUrl': 'https://example.com',
-          'metadata': metadata,
-          'createdBy': 'user-123',
-        });
-
-        // Act
-        final result = await repository.getDeepLinkMetadata(linkId);
-
-        // Assert
-        expect(result, isNotNull);
-        expect(result!['title'], equals('Amazing Recipe'));
-        expect(result['description'], equals('Very tasty'));
-        expect(result['type'], equals('recipe'));
-      });
-
-      test('should return null for non-existent link', () async {
-        // Act
-        final result = await repository.getDeepLinkMetadata('nonexistent');
-
-        // Assert
-        expect(result, isNull);
-      });
-
-      test('should return null when link has no metadata', () async {
-        // Arrange
-        const linkId = 'link-1';
-        await _seedDeepLink(fakeFirestore, linkId, {
-          'id': linkId,
-          'longUrl': 'https://example.com',
-          'createdBy': 'user-123',
-        });
-
-        // Act
-        final result = await repository.getDeepLinkMetadata(linkId);
-
-        // Assert
-        expect(result, isNull);
-      });
-    });
-
-    group('Delete Expired Links', () {
-      test('should delete links older than cutoff date', () async {
-        // Arrange
-        final now = DateTime.now();
-        final cutoffDate = now.subtract(const Duration(days: 30));
-
-        // Old link (should be deleted)
-        await _seedDeepLink(fakeFirestore, 'old-link', {
-          'id': 'old-link',
-          'longUrl': 'https://example.com/old',
-          'createdAt': Timestamp.fromDate(
-            now.subtract(const Duration(days: 60)),
-          ),
-          'createdBy': 'user-123',
-        });
-
-        // Recent link (should be kept)
-        await _seedDeepLink(fakeFirestore, 'recent-link', {
-          'id': 'recent-link',
-          'longUrl': 'https://example.com/recent',
-          'createdAt': Timestamp.fromDate(
-            now.subtract(const Duration(days: 10)),
-          ),
-          'createdBy': 'user-123',
-        });
-
-        // Act
-        await repository.deleteExpiredLinks(cutoffDate);
-
-        // Assert
-        final oldDoc = await fakeFirestore
-            .collection('deep_links')
-            .doc('old-link')
-            .get();
-        final recentDoc = await fakeFirestore
-            .collection('deep_links')
-            .doc('recent-link')
-            .get();
-
-        expect(oldDoc.exists, isFalse);
-        expect(recentDoc.exists, isTrue);
-      });
-
-      test('should handle when no expired links exist', () async {
-        // Arrange
-        final now = DateTime.now();
-        await _seedDeepLink(fakeFirestore, 'recent-link', {
-          'id': 'recent-link',
-          'longUrl': 'https://example.com',
-          'createdAt': Timestamp.fromDate(
-            now.subtract(const Duration(days: 1)),
-          ),
-          'createdBy': 'user-123',
-        });
-
-        final cutoffDate = now.subtract(const Duration(days: 30));
-
-        // Act
-        await repository.deleteExpiredLinks(cutoffDate);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('deep_links')
-            .doc('recent-link')
-            .get();
-        expect(doc.exists, isTrue);
-      });
-
-      test('should handle empty collection', () async {
-        // Arrange
-        final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
-
-        // Act & Assert - Should not throw
-        await expectLater(
-          repository.deleteExpiredLinks(cutoffDate),
-          completes,
-        );
       });
     });
   });

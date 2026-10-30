@@ -3,7 +3,7 @@
 // "Söker ingredienser …" (P5-U21).
 //
 // Sources: content-style-guide.md:89-94 (what happened, what was kept, what
-// you can do), produktregler.md:163 (plate line + text).
+// you can do).
 import 'dart:async';
 
 import 'package:flutter/material.dart';

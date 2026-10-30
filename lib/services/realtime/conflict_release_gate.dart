@@ -2,8 +2,6 @@
 //
 // P6-U08b: "Konflikt i kön — Behandlas som § 2, inte som fel.
 // Konfliktbannern visas när kön töms, inte medan appen är offline."
-// (produktregler.md:189; fas2/block288-uxfrysning.json
-// TR::FLOW::08::ko::toms::konfliktbanner).
 library;
 
 import 'dart:async';
@@ -18,8 +16,7 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 /// database is always the one read. While it reports true a notice passes
 /// at once, which is the ordinary online case. A notice is never dropped:
 /// if the stream fails or ends before it has said true, what is held is let
-/// through (a notice shown early beats a notice never shown,
-/// produktregler.md:109).
+/// through
 class ConflictReleaseGate {
   ConflictReleaseGate({
     required Stream<bool> Function() settled,

@@ -53,7 +53,7 @@ enum EmptyStateVariant {
 
 /// Enum for different loading variants
 enum LoadingVariant {
-  /// Tallrikslinjen med text (beslut B-18; produktregler.md:163). Ingen
+  /// Tallrikslinjen med text (beslut B-18). Ingen
   /// snurra och ingen ärtbalja ritas.
   plateLine,
 
