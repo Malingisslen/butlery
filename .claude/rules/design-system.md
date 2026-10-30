@@ -55,6 +55,23 @@ light bar (B-60), the tab bar shows on every page reached from a tab (B-54).
 - `test/architecture/top_bar_choice_test.dart` lists the files that still construct
   `ButleryTopBar` themselves. The list only shrinks: a new view uses `ButleryPage`.
 
+## The cloche
+
+Decided by Malin 2026-10-30: all three looks stay, and each has its own place. A view
+does not pick a look; it uses the place's component. The stem is painted before the dome
+in every drawing, so the dome covers its foot.
+
+| Look | Where | Carried by |
+|---|---|---|
+| Filled saffron dome and cream plate on ground green | Outside the app: launcher and store icons, Android splash, web icons, iOS launch image | the generator |
+| Filled glyph with the wordmark, dome green on light and saffron on dark | The screens drawn by `AuthSurface` | `ButleryLockup` in `AuthSurface` |
+| Cream outline dome on the green plate | Inside the app: onboarding and the animated start screen | `ButleryClocheMark`, `StartSplash` |
+
+- B-19 in `decision_guards_b01_b55_test.dart` pins where `ButleryCloche` and
+  `ButleryClocheLift` are drawn.
+- `test/architecture/cloche_look_by_place_test.dart` lists where each component may be
+  built. A new place is a question for Malin, not a new variant.
+
 ## Primary button colour by place
 
 Decided by Malin (megagenomgången, B-158): saffron (`HeroButton`) opens a flow; dark green
