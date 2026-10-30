@@ -190,9 +190,21 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
         return;
       }
 
-      await sharedRecipeViewModel.importSharedRecipe(sharedRecipe);
+      final recipeId = await sharedRecipeViewModel.importSharedRecipe(
+        sharedRecipe,
+      );
 
       if (!mounted) return;
+      // The import reports most failures by returning null, not by throwing.
+      if (recipeId == null) {
+        SnackBarUtils.showFailure(
+          context,
+          what:
+              sharedRecipeViewModel.error ??
+              context.l10n.errorCouldNotImportRecipes,
+        );
+        return;
+      }
       SnackBarUtils.showSuccess(
         context,
         context.l10n.groupRecipeImportedSuccess(item.title),

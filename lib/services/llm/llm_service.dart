@@ -112,7 +112,11 @@ class LlmService extends BaseService {
         : LlmOperationType.fullExtraction;
     final operation = ImportOperation.withLlm('llm', llmType);
     final request = StructureRecipeRequest(
-      text: text,
+      // The server refuses a longer text outright, so a long video transcript
+      // is cut to the limit rather than failing the whole import.
+      text: text.length > llmMaxInputChars
+          ? text.substring(0, llmMaxInputChars)
+          : text,
       mode: mode,
       partialData: partialData,
       sourceUrl: sourceUrl,
