@@ -367,6 +367,10 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
               recipeData,
               'sourceUrl',
             ),
+            sourceAuthor: utils.SerializationUtils.safeNullableString(
+              recipeData,
+              'sourceAuthor',
+            ),
             createdAt:
                 utils.SerializationUtils.safeDateTime(
                   recipeData,

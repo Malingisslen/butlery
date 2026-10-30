@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 29, 2026
-**Version:** 1.25
+**Last updated:** October 30, 2026
+**Version:** 1.26
 
 ---
 
@@ -50,7 +50,8 @@ We collect the following types of personal data when you use Butlery:
 
 ### 3.3 Information from third parties
 
-- **Imported recipes:** Recipes you import from external websites
+- **Imported recipes:** Recipes you import from external websites. If the page names who wrote the recipe, we save that name with the recipe so it shows where the recipe comes from.
+- **Images from other websites:** The image on a recipe you imported from a website is shown directly from that website and is not copied to Butlery. When the image is shown, or when you tap “Open original”, your device fetches it from the website, which then sees your IP address. What the website does with it is governed by its own privacy policy.
 - **Sign-in with Google or Apple:** If you choose "Continue with Google" or "Continue with Apple", we receive your name, your email address and your user ID at Google or Apple. See section 6.5.
 - **The guest list during the test period:** If you have asked to try Butlery before the app is open to everyone, we put your email address on a guest list so that you can create an account. Only those of us who run Butlery can see the list, and we use the address for nothing else. It is removed once you have created the account and confirmed the email address. An invitation you do not use stops being valid after 30 days and is deleted automatically shortly after. If you want us to remove it sooner, write to integritet@butlery.se.
 

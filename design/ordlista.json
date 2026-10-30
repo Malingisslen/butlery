@@ -49,6 +49,16 @@
       "aldrig": ["tyvärr", "något gick fel", "hoppsan"]
     },
     {
+      "begrepp": "Webbsidan ett importerat recept kom från",
+      "skriv": "originalet",
+      "aldrig": ["originalsidan", "källsidan", "ursprungssidan"]
+    },
+    {
+      "begrepp": "Texten Butlery sparade vid importen",
+      "skriv": "källtext",
+      "aldrig": ["ursprungstext", "ursprungstexten"]
+    },
+    {
       "begrepp": "Att göra mat",
       "skriv": "laga",
       "aldrig": ["tillaga", "tillagar", "tillagade", "tillagas", "tillagat", "tillagning", "tillagningen", "tillagningar", "tillagningarna"]

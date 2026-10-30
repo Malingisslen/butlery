@@ -1,4 +1,4 @@
-/// BUT-1819: the source row is drawn as a LINK only when the value is one.
+/// BUT-1819: the source is drawn as a tappable card only when the value is a link.
 ///
 /// A unit test of `isSafeExternalUrl` proves nothing about this call site — the
 /// predicate could be perfect and the widget could still ignore it. So these
@@ -19,8 +19,8 @@
 library;
 
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/views/recipe_detail/recipe_source_card.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -32,11 +32,15 @@ void main() {
     await BaseUnitTest.setupUnit();
   });
 
-  Future<void> pumpSource(WidgetTester tester, String? sourceUrl) async {
+  Future<void> pumpSource(
+    WidgetTester tester,
+    String? sourceUrl, {
+    String? sourceAuthor,
+  }) async {
     final recipe = RecipeFactory.build(
       title: 'Pannkakor',
       sourceUrl: sourceUrl,
-    );
+    ).copyWith(sourceAuthor: sourceAuthor);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -61,15 +65,21 @@ void main() {
   }
 
   group('source row', () {
-    testWidgets('a real https URL is a link', (tester) async {
-      await pumpSource(tester, 'https://ica.se/recept/pannkakor');
+    testWidgets('a real https URL is the source card, named by its site', (
+      tester,
+    ) async {
+      await pumpSource(
+        tester,
+        'https://www.ica.se/recept/pannkakor',
+        sourceAuthor: 'Anna Berg',
+      );
 
-      expect(renderedAsLink(tester), isTrue);
-      // The link branch shortens to the HOST. `textContaining('ica.se')` would
-      // not prove that — the text branch prints the full URL, which contains
-      // 'ica.se' too. The path must be gone.
-      expect(find.text('Från ica.se'), findsOneWidget);
+      expect(find.byType(RecipeSourceCard), findsOneWidget);
+      // The card names the SITE: the path and the www. are gone.
+      expect(find.text('Hämtat från ica.se'), findsOneWidget);
       expect(find.textContaining('/recept/'), findsNothing);
+      expect(find.text('Öppna originalet'), findsOneWidget);
+      expect(find.text('Av Anna Berg'), findsOneWidget);
     });
 
     testWidgets('a javascript: source is NOT a link', (tester) async {
@@ -78,6 +88,7 @@ void main() {
       await pumpSource(tester, 'javascript:alert(1)');
 
       expect(renderedAsLink(tester), isFalse);
+      expect(find.byType(RecipeSourceCard), findsNothing);
       expect(find.text('javascript:alert(1)'), findsOneWidget);
     });
 
@@ -89,6 +100,7 @@ void main() {
       await pumpSource(tester, 'Butlery recipe collection');
 
       expect(renderedAsLink(tester), isFalse);
+      expect(find.byType(RecipeSourceCard), findsNothing);
       expect(find.text('Butlery recipe collection'), findsOneWidget);
     });
 
@@ -127,35 +139,4 @@ void main() {
       expect(find.byType(Text), findsNothing);
     });
   });
-
-  // R8-11 = A: the source link is text.link, #8A5212 light and #DCA968 dark.
-  for (final (mode, theme, link) in [
-    ('light', AppTheme.lightTheme, const Color(0xFF8A5212)),
-    ('dark', AppTheme.darkTheme, const Color(0xFFDCA968)),
-  ]) {
-    testWidgets('a source link is text.link ($mode)', (tester) async {
-      final recipe = RecipeFactory.build(
-        title: 'Pannkakor',
-        sourceUrl: 'https://www.ica.se/recept/pannkakor/',
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: theme,
-          locale: const Locale('sv'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: Builder(
-              builder: (context) =>
-                  RecipeDetailSharedWidgets.buildSourceRow(context, recipe),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-      final text = tester.widget<Text>(find.textContaining('www.ica.se'));
-      expect(text.style?.decoration, TextDecoration.underline);
-      expect(text.style?.color, link);
-    });
-  }
 }

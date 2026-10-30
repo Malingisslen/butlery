@@ -1728,6 +1728,39 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String recipeSourceCardTitle(String site) {
+    return 'Hämtat från $site';
+  }
+
+  @override
+  String recipeSourceAuthor(String author) {
+    return 'Av $author';
+  }
+
+  @override
+  String get recipeSourceOpenOriginal => 'Öppna originalet';
+
+  @override
+  String recipeBorrowedImageCredit(String site) {
+    return 'Bild: $site';
+  }
+
+  @override
+  String a11yRecipeSourceCard(String site) {
+    return 'Receptet är hämtat från $site';
+  }
+
+  @override
+  String a11yRecipeSourceCardWithAuthor(String site, String author) {
+    return 'Receptet är hämtat från $site, av $author';
+  }
+
+  @override
+  String a11yRecipeBorrowedImageCredit(String site) {
+    return 'Bilden visas från $site';
+  }
+
+  @override
   String get errorCouldNotOpenLink => 'Kunde inte öppna länk';
 
   @override

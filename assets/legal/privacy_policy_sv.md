@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 29 oktober 2026
-**Version:** 1.25
+**Senast uppdaterad:** 30 oktober 2026
+**Version:** 1.26
 
 ---
 
@@ -50,7 +50,8 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 
 ### 3.3 Information från tredje part
 
-- **Importerade recept:** Recept du importerar från externa webbplatser
+- **Importerade recept:** Recept du importerar från externa webbplatser. Anger sidan vem som skrev receptet sparar vi namnet med receptet, så att det syns vem receptet kommer från.
+- **Bilder från andra webbplatser:** Bilden på ett recept du har importerat från en webbplats visas direkt därifrån och kopieras inte till Butlery. När bilden visas, eller när du trycker på ”Öppna originalet”, hämtar din enhet den från webbplatsen, som då ser din IP-adress. Vad webbplatsen gör med den styrs av webbplatsens egen integritetspolicy.
 - **Inloggning med Google eller Apple:** Om du väljer ”Fortsätt med Google” eller ”Fortsätt med Apple” får vi ditt namn, din e-postadress och ditt användar-id hos Google eller Apple. Se avsnitt 6.5.
 - **Gästlistan under testperioden:** Har du bett om att få prova Butlery innan appen är öppen för alla, skriver vi in din e-postadress på en gästlista så att du kan skapa ett konto. Bara vi som administrerar Butlery ser listan, och vi använder adressen bara till det. Den tas bort när du har skapat kontot och bekräftat e-postadressen. En inbjudan du inte använder slutar gälla efter 30 dagar och raderas automatiskt kort därefter. Vill du att vi tar bort den tidigare, skriv till integritet@butlery.se.
 

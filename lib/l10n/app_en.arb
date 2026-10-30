@@ -1213,6 +1213,58 @@
       }
     }
   },
+  "recipeSourceCardTitle": "From {site}",
+  "@recipeSourceCardTitle": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceAuthor": "By {author}",
+  "@recipeSourceAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceOpenOriginal": "Open original",
+  "recipeBorrowedImageCredit": "Image: {site}",
+  "@recipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCard": "Recipe from {site}",
+  "@a11yRecipeSourceCard": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCardWithAuthor": "Recipe from {site}, by {author}",
+  "@a11yRecipeSourceCardWithAuthor": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeBorrowedImageCredit": "Image shown from {site}",
+  "@a11yRecipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
   "errorCouldNotOpenLink": "Could not open link",
   "errorInvalidLink": "Invalid link",
   "shoppingItemRemoved": "{name} removed.",

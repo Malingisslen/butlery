@@ -294,6 +294,7 @@ class RecipeFactory {
         rating: core.rating,
         mealType: core.mealType,
         sourceUrl: core.sourceUrl,
+        sourceAuthor: core.sourceAuthor,
         relatedRecipeIds: foreign ? null : core.relatedRecipeIds,
         sourceArtefact: foreign ? null : core.sourceArtefact,
         imageUrls: core.imageUrls,

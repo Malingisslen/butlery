@@ -1757,6 +1757,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String recipeSourceCardTitle(String site) {
+    return 'From $site';
+  }
+
+  @override
+  String recipeSourceAuthor(String author) {
+    return 'By $author';
+  }
+
+  @override
+  String get recipeSourceOpenOriginal => 'Open original';
+
+  @override
+  String recipeBorrowedImageCredit(String site) {
+    return 'Image: $site';
+  }
+
+  @override
+  String a11yRecipeSourceCard(String site) {
+    return 'Recipe from $site';
+  }
+
+  @override
+  String a11yRecipeSourceCardWithAuthor(String site, String author) {
+    return 'Recipe from $site, by $author';
+  }
+
+  @override
+  String a11yRecipeBorrowedImageCredit(String site) {
+    return 'Image shown from $site';
+  }
+
+  @override
   String get errorCouldNotOpenLink => 'Could not open link';
 
   @override
