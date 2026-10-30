@@ -317,19 +317,6 @@ void main() {
       });
     });
 
-    group('Recipe Lifecycle', () {
-      test('should mark recipe as cooked', () async {
-        when(
-          () => mockDelegate.markAsCooked(any()),
-        ).thenAnswer((_) async => true);
-
-        final result = await operations.markAsCooked('recipe-123');
-
-        expect(result, isTrue);
-        verify(() => mockDelegate.markAsCooked('recipe-123')).called(1);
-      });
-    });
-
     group('Legacy Compatibility', () {
       test('should add legacy recipe', () async {
         when(

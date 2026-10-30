@@ -16,7 +16,6 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/mocks/production_mocks.dart' as mocks;
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -768,30 +767,6 @@ void main() {
         // Assert
         expect(success, true);
       });
-
-      test('marking as cooked is recorded by the cooking service', () async {
-        final cooking = MockFactory.createRecipeCookingService();
-        TestServiceLocator.registerMock<RecipeCookingService>(cooking);
-
-        expect(await service.markAsCooked('test-recipe-id'), true);
-
-        verify(() => cooking.markAsCooked('test-recipe-id')).called(1);
-      });
-
-      test('a rejected cook event is reported as not recorded', () async {
-        final cooking = MockFactory.createRecipeCookingService();
-        when(() => cooking.markAsCooked(any())).thenAnswer((_) async => false);
-        TestServiceLocator.registerMock<RecipeCookingService>(cooking);
-
-        expect(await service.markAsCooked('test-recipe-id'), false);
-      });
-
-      test(
-        'without a cooking service nothing is reported as recorded',
-        () async {
-          expect(await service.markAsCooked('test-recipe-id'), false);
-        },
-      );
     });
 
     group('Collaborative Recipe Operations', () {

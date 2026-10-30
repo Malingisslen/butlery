@@ -7,7 +7,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
-import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/utils/retry_policy.dart';
@@ -160,12 +159,5 @@ class PersonalRecipeCrud {
         'BUT-893 cascade failed for recipe $recipeId: $e\n$st',
       );
     }
-  }
-
-  /// Mark recipe as cooked.
-  Future<bool> markAsCooked(String recipeId) async {
-    final cooking = ServiceLocator.tryGet<RecipeCookingService>();
-    if (cooking == null) return false;
-    return await cooking.markAsCooked(recipeId);
   }
 }

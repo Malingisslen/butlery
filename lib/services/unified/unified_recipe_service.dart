@@ -775,10 +775,6 @@ class UnifiedRecipeService
   Future<bool> deleteRecipe(String recipeId) async =>
       _personalCrud.deleteRecipe(recipeId);
 
-  @override
-  Future<bool> markAsCooked(String recipeId) async =>
-      _personalCrud.markAsCooked(recipeId);
-
   /// Save a recipe from the social module - handles both personal and collaborative types.
   /// Unlike [updateRecipe], this does not reject collaborative recipes.
   Future<bool> saveRecipeForSocialModule(Recipe recipe) async =>
