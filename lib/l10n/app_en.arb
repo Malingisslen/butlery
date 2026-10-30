@@ -16318,6 +16318,75 @@
       }
     }
   },
+  "allergenOverrideOk": "You marked {allergen} as fine. The app found {allergen}.",
+  "@allergenOverrideOk": {
+    "description": "Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideContains": "You marked this recipe as containing {allergen}.",
+  "@allergenOverrideContains": {
+    "description": "Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideReset": "Reset",
+  "@allergenOverrideReset": {
+    "description": "Button that removes the user override for one allergen."
+  },
+  "shareAllergensOverridden": "The app found {names}, but the owner has marked it as fine.",
+  "@shareAllergensOverridden": {
+    "description": "Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddTitle": "Add anyway?",
+  "@menuManualAddTitle": {
+    "description": "Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes."
+  },
+  "menuManualAddContains": "{recipe} contains {names}.",
+  "@menuManualAddContains": {
+    "description": "Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddDislikes": "Someone in the household dislikes something in {recipe}.",
+  "@menuManualAddDislikes": {
+    "description": "Confirmation line: someone in the household dislikes an ingredient in the recipe.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddUnchecked": "The allergens have not been checked for {recipe}.",
+  "@menuManualAddUnchecked": {
+    "description": "Confirmation line: the recipe has no settled allergen check for a tracked allergen.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddConfirm": "Add anyway",
+  "@menuManualAddConfirm": {
+    "description": "Button that adds the recipe to the menu despite the conflict."
+  },
   "recipeSaveNeedsTitle": "Add a title to save.",
   "recipeSaveNeedsIngredient": "Add at least one ingredient to save.",
   "recipeSaveNeedsInstruction": "Add at least one step to save.",

@@ -2,6 +2,8 @@ import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/allergen_verdict.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -234,6 +236,7 @@ class RecipeCard extends StatelessWidget {
                   tagResult: recipe.tagResult!,
                   userPrefs: userAllergenPrefs,
                   maxBadges: 4,
+                  statusOf: _allergenStatusOf,
                 ),
               ],
               if (_showUnassessedIndicator) ...[
@@ -315,6 +318,7 @@ class RecipeCard extends StatelessWidget {
                       tagResult: recipe.tagResult!,
                       userPrefs: userAllergenPrefs,
                       maxBadges: 4,
+                      statusOf: _allergenStatusOf,
                     ),
                   ],
                   if (!_isCompact && _showUnassessedIndicator) ...[
@@ -555,7 +559,15 @@ class RecipeCard extends StatelessWidget {
   /// at the call site is guarded by this being non-empty.
   List<String> get _allergenBadges => recipe.tagResult == null
       ? const []
-      : CompactAllergenRow.badgesFor(recipe.tagResult!, userAllergenPrefs);
+      : CompactAllergenRow.badgesFor(
+          recipe.tagResult!,
+          userAllergenPrefs,
+          statusOf: _allergenStatusOf,
+        );
+
+  /// The verdict the menu and sharing use, so a card never shows a stale FREE.
+  TriState _allergenStatusOf(String key) =>
+      AllergenVerdict.forAllergen(recipe, key).effective;
 
   /// Whether to say "Ej kontrollerat" on the card: the user asked for
   /// allergen information and at least one allergen they track is unsettled
@@ -565,7 +577,11 @@ class RecipeCard extends StatelessWidget {
   bool get _showUnassessedIndicator =>
       _allergenBadgesRequested &&
       !_showUntaggedIndicator &&
-      CompactAllergenRow.hasUnchecked(recipe.tagResult, userAllergenPrefs);
+      CompactAllergenRow.hasUnchecked(
+        recipe.tagResult,
+        userAllergenPrefs,
+        statusOf: _allergenStatusOf,
+      );
 
   /// Did the user actually ask for allergen information on this card?
   ///

@@ -31402,6 +31402,60 @@ abstract class AppLocalizations {
   /// **'Innehåller allergener: {names}'**
   String shareAllergensContains(String names);
 
+  /// Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har markerat {allergen} som ok. Appen hittade {allergen}.'**
+  String allergenOverrideOk(String allergen);
+
+  /// Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har markerat att receptet innehåller {allergen}.'**
+  String allergenOverrideContains(String allergen);
+
+  /// Button that removes the user override for one allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get allergenOverrideReset;
+
+  /// Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen hittade {names}, men ägaren har markerat det som ok.'**
+  String shareAllergensOverridden(String names);
+
+  /// Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ändå?'**
+  String get menuManualAddTitle;
+
+  /// Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipe} innehåller {names}.'**
+  String menuManualAddContains(String recipe, String names);
+
+  /// Confirmation line: someone in the household dislikes an ingredient in the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon i hushållet ogillar något i {recipe}.'**
+  String menuManualAddDislikes(String recipe);
+
+  /// Confirmation line: the recipe has no settled allergen check for a tracked allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergenerna är inte kontrollerade för {recipe}.'**
+  String menuManualAddUnchecked(String recipe);
+
+  /// Button that adds the recipe to the menu despite the conflict.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ändå'**
+  String get menuManualAddConfirm;
+
   /// No description provided for @recipeSaveNeedsTitle.
   ///
   /// In sv, this message translates to:

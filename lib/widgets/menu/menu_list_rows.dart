@@ -188,7 +188,8 @@ class MenuListRow extends StatelessWidget {
             tone: BadgeTone.warning,
             icon: ButleryIcons.triangleAlert,
           )
-        : viewModel.isUnknownSoft(recipe.id)
+        : viewModel.isUnknownSoft(recipe.id) ||
+              viewModel.hasUncheckedTrackedAllergen(recipe)
         ? UnifiedBadge.status(label: l10n.menuAllergenUnknownChip)
         : null;
     return DecoratedBox(

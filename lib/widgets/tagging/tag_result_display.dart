@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -23,6 +24,11 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 /// Derived from DietaryConfig to prevent key drift.
 final _defaultDietaryOrder = DietaryConfig.allKeys;
 
+/// Resolves the status a screen should show for an allergen, so the badges
+/// agree with the menu and sharing (see `AllergenVerdict`) rather than reading
+/// the tagger's raw answer. Null means the raw answer.
+typedef AllergenStatusOf = TriState Function(String allergenKey);
+
 /// The tracked allergens the tagger has not settled.
 ///
 /// A recipe with no tag result has settled none of them. [emptyMeansAll]
@@ -33,6 +39,7 @@ bool hasUncheckedAllergens(
   Set<String>? prefs, {
   required Set<String> fallback,
   required bool emptyMeansAll,
+  AllergenStatusOf? statusOf,
 }) {
   if (prefs != null && prefs.isEmpty && !emptyMeansAll) return false;
   if (tagResult == null) return true;
@@ -43,7 +50,8 @@ bool hasUncheckedAllergens(
       : fallback;
   // A result that settled no allergen at all has checked nothing.
   if (keys.isEmpty) return true;
-  return keys.any((a) => tagResult.getAllergenStatus(a) == TriState.unknown);
+  final status = statusOf ?? tagResult.getAllergenStatus;
+  return keys.any((a) => status(a) == TriState.unknown);
 }
 
 /// Displays the full tag result from the tagging system.
@@ -81,6 +89,16 @@ class TagResultDisplay extends StatelessWidget {
   /// Whether the tagging system is in degraded mode (config validation failed).
   final bool isDegraded;
 
+  /// Status to show per allergen. Null shows the tagger's raw answer.
+  final AllergenStatusOf? allergenStatusOf;
+
+  /// The user's manual corrections. Each one that changes the tagger's answer
+  /// gets a line saying so, so a correction is never invisible.
+  final TagOverrides? tagOverrides;
+
+  /// Removes the user's override for one allergen. Null hides the button.
+  final ValueChanged<String>? onResetAllergenOverride;
+
   const TagResultDisplay({
     super.key,
     required this.tagResult,
@@ -91,13 +109,20 @@ class TagResultDisplay extends StatelessWidget {
     this.onRetagRequested,
     this.compact = false,
     this.isDegraded = false,
+    this.allergenStatusOf,
+    this.tagOverrides,
+    this.onResetAllergenOverride,
   });
+
+  TriState _allergenStatus(String allergen) =>
+      (allergenStatusOf ?? tagResult.getAllergenStatus)(allergen);
 
   bool get _hasUnchecked => hasUncheckedAllergens(
     tagResult,
     userAllergenPrefs,
     fallback: const {},
     emptyMeansAll: true,
+    statusOf: allergenStatusOf,
   );
 
   @override
@@ -119,6 +144,7 @@ class TagResultDisplay extends StatelessWidget {
 
         // All badges inline in a single Wrap
         _buildInlineBadges(context),
+        if (!compact) ..._buildOverrideLines(context),
         if (!compact && _hasUnchecked) ...[
           const SizedBox(height: AppDimensions.space4),
           Text(
@@ -150,6 +176,48 @@ class TagResultDisplay extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildOverrideLines(BuildContext context) {
+    final overrides = tagOverrides?.allergenOverrides;
+    if (overrides == null || overrides.isEmpty) return const [];
+    final cs = Theme.of(context).colorScheme;
+    final lines = <Widget>[];
+    for (final entry in overrides.entries) {
+      final auto = tagResult.getAllergenStatus(entry.key);
+      final String text;
+      if (auto == TriState.contains && entry.value == TriState.free) {
+        text = context.l10n.allergenOverrideOk(entry.key);
+      } else if (entry.value == TriState.contains &&
+          auto != TriState.contains) {
+        text = context.l10n.allergenOverrideContains(entry.key);
+      } else {
+        continue;
+      }
+      lines.add(
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  text,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (onResetAllergenOverride != null)
+                ButleryTextButton(
+                  label: context.l10n.allergenOverrideReset,
+                  onPressed: () => onResetAllergenOverride!(entry.key),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+    return lines;
+  }
+
   /// Renders allergen and dietary badges inline without card wrapper.
   Widget _buildInlineBadges(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -175,7 +243,7 @@ class TagResultDisplay extends StatelessWidget {
         if (unchecked) AllergenUncheckedMark(compact: compact),
         // Allergen badges
         ...allergens.map((allergen) {
-          final status = tagResult.getAllergenStatus(allergen);
+          final status = _allergenStatus(allergen);
           final decision = tagResult.getAllergenDecision(allergen);
           return AllergenStatusBadge(
             allergen: allergen,
@@ -415,14 +483,13 @@ class TagResultDisplay extends StatelessWidget {
     if (userAllergenPrefs != null && userAllergenPrefs!.isNotEmpty) {
       // UI Redesign: Filter out unknown status even from user prefs
       return userAllergenPrefs!.where((allergen) {
-        return tagResult.getAllergenStatus(allergen) != TriState.unknown;
+        return _allergenStatus(allergen) != TriState.unknown;
       }).toList();
     }
 
     // Show allergens with known status (not unknown)
-    return tagResult.allergenStatus.entries
-        .where((e) => e.value != TriState.unknown)
-        .map((e) => e.key)
+    return tagResult.allergenStatus.keys
+        .where((key) => _allergenStatus(key) != TriState.unknown)
         .toList();
   }
 
@@ -455,11 +522,15 @@ class CompactAllergenRow extends StatelessWidget {
   /// Maximum number of badges to show.
   final int maxBadges;
 
+  /// Status to show per allergen. Null shows the tagger's raw answer.
+  final AllergenStatusOf? statusOf;
+
   const CompactAllergenRow({
     super.key,
     required this.tagResult,
     this.userPrefs,
     this.maxBadges = 4,
+    this.statusOf,
   });
 
   @override
@@ -475,7 +546,7 @@ class CompactAllergenRow extends StatelessWidget {
         spacing: AppDimensions.space4,
         runSpacing: AppDimensions.space4,
         children: badges.take(maxBadges).map((allergen) {
-          final status = tagResult.getAllergenStatus(allergen);
+          final status = (statusOf ?? tagResult.getAllergenStatus)(allergen);
           return AllergenStatusBadge(
             allergen: allergen,
             status: status,
@@ -493,17 +564,22 @@ class CompactAllergenRow extends StatelessWidget {
   /// rather than guessing from the preference set. `RecipeCard` needs that:
   /// this row collapses to `SizedBox.shrink()` when it has nothing to say, and
   /// a spacer emitted beside a collapsed row is a visible dead gap (BUT-1869).
-  static List<String> badgesFor(TagResult tagResult, Set<String>? userPrefs) {
+  static List<String> badgesFor(
+    TagResult tagResult,
+    Set<String>? userPrefs, {
+    AllergenStatusOf? statusOf,
+  }) {
     final allergensToCheck = userPrefs ?? _defaultAllergens;
+    final status = statusOf ?? tagResult.getAllergenStatus;
 
     // SAFETY: CONTAINS first — a warning outranks everything else here.
     final containsAllergens = allergensToCheck.where((a) {
-      return tagResult.getAllergenStatus(a) == TriState.contains;
+      return status(a) == TriState.contains;
     }).toList();
 
     // Then FREE — the good news.
     final freeAllergens = allergensToCheck.where((a) {
-      return tagResult.getAllergenStatus(a) == TriState.free;
+      return status(a) == TriState.free;
     }).toList();
 
     // UNKNOWN is deliberately NOT shown. Malin's call, 2026-06-22, recorded in
@@ -534,15 +610,20 @@ class CompactAllergenRow extends StatelessWidget {
 
   /// Whether any allergen this row checks is still unsettled. The row never
   /// draws those; the caller adds the one "Ej kontrollerat" badge.
-  static bool hasUnchecked(TagResult? tagResult, Set<String>? userPrefs) =>
-      hasUncheckedAllergens(
-        tagResult,
-        userPrefs,
-        fallback: _defaultAllergens,
-        emptyMeansAll: false,
-      );
+  static bool hasUnchecked(
+    TagResult? tagResult,
+    Set<String>? userPrefs, {
+    AllergenStatusOf? statusOf,
+  }) => hasUncheckedAllergens(
+    tagResult,
+    userPrefs,
+    fallback: _defaultAllergens,
+    emptyMeansAll: false,
+    statusOf: statusOf,
+  );
 
-  List<String> _getBadgesToShow() => badgesFor(tagResult, userPrefs);
+  List<String> _getBadgesToShow() =>
+      badgesFor(tagResult, userPrefs, statusOf: statusOf);
 
   static const _defaultAllergens = {
     'gluten',

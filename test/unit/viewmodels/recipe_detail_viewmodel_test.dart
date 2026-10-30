@@ -5,6 +5,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -472,6 +473,60 @@ void main() {
           );
         },
       );
+    });
+
+    group('resetAllergenOverride', () {
+      RecipeDetailViewModel vmWith(TagOverrides? overrides) {
+        final builder = RecipeBuilder()
+          ..withId(testRecipeId)
+          ..withTitle('Tagged Recipe');
+        if (overrides != null) builder.withTagOverrides(overrides);
+        final recipe = builder.build();
+        return RecipeDetailViewModel(
+          recipe: recipe,
+          recipeService: mockRecipeService,
+          analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
+        );
+      }
+
+      const both = TagOverrides(
+        allergenOverrides: {
+          'gluten': TriState.free,
+          'mjölk': TriState.free,
+        },
+      );
+
+      test('does nothing when the allergen has no override', () async {
+        final vm = vmWith(null);
+
+        expect(await vm.resetAllergenOverride('gluten'), isFalse);
+        verifyNever(() => mockRecipeService.updateRecipe(any()));
+      });
+
+      test('removes only that allergen and saves', () async {
+        when(
+          () => mockRecipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+        final vm = vmWith(both);
+
+        expect(await vm.resetAllergenOverride('gluten'), isTrue);
+
+        expect(vm.recipe.tagOverrides!.allergenOverrides, {
+          'mjölk': TriState.free,
+        });
+      });
+
+      test('keeps the override when the save fails', () async {
+        when(
+          () => mockRecipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => false);
+        final vm = vmWith(both);
+
+        expect(await vm.resetAllergenOverride('gluten'), isFalse);
+
+        expect(vm.recipe.tagOverrides, equals(both));
+      });
     });
 
     group('Recipe State Synchronization', () {

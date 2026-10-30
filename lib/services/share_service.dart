@@ -9,6 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
+import 'package:butlery/services/tagging/allergen_verdict.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -47,6 +48,12 @@ class ShareService extends BaseService {
             TriState.contains)
           key,
     ];
+    // An allergen the tagger found but the owner marked ok is still said out
+    // loud, so the text never reads cleaner than what the app itself found.
+    final overridden = [
+      for (final key in keys)
+        if (AllergenVerdict.forAllergen(recipe, key).overrideHidesContains) key,
+    ];
     final unchecked =
         keys.isEmpty ||
         keys.any(
@@ -57,6 +64,8 @@ class ShareService extends BaseService {
     final lines = [
       if (contains.isNotEmpty)
         AppLocale.current.shareAllergensContains(contains.join(', ')),
+      if (overridden.isNotEmpty)
+        AppLocale.current.shareAllergensOverridden(overridden.join(', ')),
       if (unchecked) AppLocale.current.allergenUncheckedDetail,
     ];
     return lines.isEmpty ? null : lines.join('\n');

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -290,6 +291,7 @@ Future<void> _openBulkAddToMenu(
     recipeTitles: [for (final r in recipes) r.title],
   );
   if (selection == null || !context.mounted) return;
+  if (!await confirmManualAdd(context, recipes) || !context.mounted) return;
 
   await _runBulkAddToMenu(context, viewModel, recipes, selection);
 }

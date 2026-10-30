@@ -20462,6 +20462,45 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String allergenOverrideOk(String allergen) {
+    return 'Du har markerat $allergen som ok. Appen hittade $allergen.';
+  }
+
+  @override
+  String allergenOverrideContains(String allergen) {
+    return 'Du har markerat att receptet innehåller $allergen.';
+  }
+
+  @override
+  String get allergenOverrideReset => 'Återställ';
+
+  @override
+  String shareAllergensOverridden(String names) {
+    return 'Appen hittade $names, men ägaren har markerat det som ok.';
+  }
+
+  @override
+  String get menuManualAddTitle => 'Lägg till ändå?';
+
+  @override
+  String menuManualAddContains(String recipe, String names) {
+    return '$recipe innehåller $names.';
+  }
+
+  @override
+  String menuManualAddDislikes(String recipe) {
+    return 'Någon i hushållet ogillar något i $recipe.';
+  }
+
+  @override
+  String menuManualAddUnchecked(String recipe) {
+    return 'Allergenerna är inte kontrollerade för $recipe.';
+  }
+
+  @override
+  String get menuManualAddConfirm => 'Lägg till ändå';
+
+  @override
   String get recipeSaveNeedsTitle => 'Skriv en titel för att kunna spara.';
 
   @override

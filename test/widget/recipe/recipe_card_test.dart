@@ -10,6 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
@@ -830,7 +831,7 @@ void main() {
                     dietaryStatus: const {'vegansk': TriState.free},
                     coverage: 1.0,
                     generatedAt: DateTime(2026, 1, 1),
-                    generatorVersion: '1.0',
+                    generatorVersion: kTagGeneratorVersion,
                     hasCoverageAnomaly: false,
                   ),
                 ))

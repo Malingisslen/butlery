@@ -9,6 +9,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/allergen_verdict.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -362,6 +364,20 @@ class MenuViewModel extends BaseViewModel {
       prefs,
       allergens: true,
     ).isEmpty;
+  }
+
+  /// Whether [recipe] carries an allergen the household tracks that nobody has
+  /// settled, however the dish got into the menu (generated, typed prompt,
+  /// placed by hand). False until the household's allergens have been read.
+  bool hasUncheckedTrackedAllergen(Recipe recipe) {
+    if (isLiveMenu) return false;
+    final prefs = _householdAllergens;
+    if (prefs == null) return false;
+    return prefs.trackedAllergens.any(
+      (allergen) =>
+          AllergenVerdict.forAllergen(recipe, allergen).effective ==
+          TriState.unknown,
+    );
   }
 
   void _loadHouseholdAllergens() {
