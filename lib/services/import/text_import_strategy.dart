@@ -1282,14 +1282,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   int? _extractPortions(String text) {
     // "4-5 portioner" is read as 4, the range's lower bound.
     const range = r'(\d+)(?:\s*[-–]\s*\d+)?';
+    // "2 persiljekvistar" is an ingredient, not two servings.
+    const persons = r'pers(?:on(?:er)?|\.)?(?![a-zåäö])';
     final patterns = [
       RegExp('portioner?\\s*:\\s*$range', caseSensitive: false),
       RegExp('servings?\\s*:\\s*$range', caseSensitive: false),
       RegExp('$range\\s*port(?:ion[a-zåäö]*)?(?![a-zåäö])'),
       // A unit after the number, so a shop offer ("betala för 2") is not a
       // yield.
-      RegExp('för\\s*$range\\s*(?:pers|port)'),
-      RegExp('$range\\s*pers'),
+      RegExp('för\\s*$range\\s*(?:$persons|port)'),
+      RegExp('$range\\s*$persons'),
     ];
 
     for (final pattern in patterns) {
