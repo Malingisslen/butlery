@@ -11,7 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _typedRadius = <String, int>{
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart': 1,
-  'lib/widgets/common/brand/butlery_cloche.dart': 1,
   'lib/widgets/onboarding/onboarding_parts.dart': 2,
 };
 

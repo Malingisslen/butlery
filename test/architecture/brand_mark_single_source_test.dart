@@ -7,18 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 // The cloche is drawn from design/brand-mark.json by
 // tools/generate_brand_assets.dart. These tests fail when a file that draws the
 // mark stops agreeing with that source, so the icons, the splash and the
-// in-app mark's lift and dome outline cannot drift apart.
+// in-app mark's shapes and lift cannot drift apart.
 
 Map<String, dynamic> _master() =>
     jsonDecode(File('design/brand-mark.json').readAsStringSync())
         as Map<String, dynamic>;
 
 String _text(String path) => File(path).readAsStringSync();
-
-List<double> _numbers(String d) => [
-  for (final m in RegExp(r'-?\d*\.?\d+').allMatches(d))
-    double.parse(m.group(0)!),
-];
 
 String _fmt(double v) {
   final s = v.toStringAsFixed(3);
@@ -53,6 +48,15 @@ void main() {
         final dome = entry.value == 'filled' ? 'domeFilled' : 'domeOutline';
         expect(xml, contains('android:pathData="${shapes[dome]}"'));
         expect(xml, contains('android:pathData="${shapes['plate']}"'));
+        expect(xml, contains('android:pathData="${shapes['stem']}"'));
+        final strokes = m['strokes'] as Map<String, dynamic>;
+        expect(xml, contains('android:strokeWidth="${strokes['plate']}"'));
+        expect(xml, contains('android:strokeWidth="${strokes['stem']}"'));
+        if (entry.value == 'filled') {
+          final colors = m['colors'] as Map<String, dynamic>;
+          expect(xml, contains((colors['saffron'] as String).toUpperCase()));
+          expect(xml, contains((colors['cream'] as String).toUpperCase()));
+        }
       });
     }
 
@@ -85,20 +89,63 @@ void main() {
   });
 
   group('the in-app mark reads the master', () {
-    final source = _text('lib/widgets/common/brand/butlery_cloche.dart');
+    final geometry = _text('lib/widgets/common/brand/brand_mark_geometry.dart');
+    final cloche = _text('lib/widgets/common/brand/butlery_cloche.dart');
 
-    test('the plate crop is raised by the outline lift', () {
-      final constant = RegExp(
-        r'const double _opticalLift = ([\d.]+);',
-      ).firstMatch(source)!.group(1)!;
-      expect(double.parse(constant), (lift['outline'] as num).toDouble());
+    double constant(String name) => double.parse(
+      RegExp(
+        'const double $name =\\s*([\\d.]+);',
+      ).firstMatch(geometry)!.group(1)!,
+    );
+
+    test('the generated constants carry the master values', () {
+      final knob = shapes['knob'] as Map<String, dynamic>;
+      final strokes = m['strokes'] as Map<String, dynamic>;
+      final crop = (m['inAppMark'] as Map<String, dynamic>)['crop'] as List;
+      expect(geometry, contains("'${shapes['domeOutline']}'"));
+      expect(geometry, contains("'${shapes['plate']}'"));
+      expect(geometry, contains("'${shapes['stem']}'"));
+      expect(constant('brandKnobLeft'), (knob['x'] as num).toDouble());
+      expect(constant('brandKnobTop'), (knob['y'] as num).toDouble());
+      expect(constant('brandKnobWidth'), (knob['width'] as num).toDouble());
+      expect(constant('brandKnobHeight'), (knob['height'] as num).toDouble());
+      expect(constant('brandKnobRadius'), (knob['radius'] as num).toDouble());
+      expect(
+        constant('brandPlateStroke'),
+        (strokes['plate'] as num).toDouble(),
+      );
+      expect(constant('brandDomeStroke'), (strokes['dome'] as num).toDouble());
+      expect(constant('brandStemStroke'), (strokes['stem'] as num).toDouble());
+      expect(
+        constant('brandOpticalLiftOutline'),
+        (lift['outline'] as num).toDouble(),
+      );
+      expect(constant('brandMarkCropLeft'), (crop[0] as num).toDouble());
+      expect(constant('brandMarkCropTop'), (crop[1] as num).toDouble());
+      expect(constant('brandMarkCropSize'), (crop[2] as num).toDouble());
     });
 
-    test('the dome is the master outline', () {
-      final dome = RegExp(
-        r"_dome = parseSvgPath\(\s*'([^']+)'",
-      ).firstMatch(source)!.group(1)!;
-      expect(_numbers(dome), _numbers(shapes['domeOutline'] as String));
+    test('the cloche is drawn from those constants, not its own', () {
+      expect(cloche, contains('parseSvgPath(brandDomeOutlinePath)'));
+      expect(cloche, contains('parseSvgPath(brandPlatePath)'));
+      expect(cloche, contains('brandOpticalLiftOutline'));
+      expect(cloche, isNot(contains('_opticalLift')));
+      for (final name in [
+        'brandStemPath',
+        'brandKnobLeft',
+        'brandKnobTop',
+        'brandKnobWidth',
+        'brandKnobHeight',
+        'brandKnobRadius',
+        'brandPlateStroke',
+        'brandDomeStroke',
+        'brandStemStroke',
+        'brandMarkCropLeft',
+        'brandMarkCropTop',
+        'brandMarkCropSize',
+      ]) {
+        expect(cloche, contains(name), reason: name);
+      }
     });
   });
 

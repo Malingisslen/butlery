@@ -1,5 +1,5 @@
 {
-  "_": "The one source of the cloche mark. tools/generate_brand_assets.dart writes every launcher icon, store icon, splash and web icon from this file; test/architecture/brand_mark_single_source_test.dart fails when one of them, or the lift and dome outline of the in-app mark in butlery_cloche.dart, stops agreeing with it.",
+  "_": "The one source of the cloche mark. tools/generate_brand_assets.dart writes every launcher icon, store icon, splash and web icon, and the Dart constants the in-app cloche is drawn from, from this file; test/architecture/brand_mark_single_source_test.dart fails when one of them, or lib/widgets/common/brand/brand_mark_geometry.dart (which butlery_cloche.dart draws from), stops agreeing with it.",
   "viewBox": 160,
   "colors": {
     "ground": "#24382C",
@@ -19,6 +19,7 @@
     "filled": 6.1,
     "outline": 6.9
   },
+  "inAppMark": {"crop": [25, 25, 110, 110]},
   "android": {"canvas": 108, "scale": 0.4125, "offset": 21, "splashCircle": 72},
   "web": {"maskableScale": 0.75}
 }
