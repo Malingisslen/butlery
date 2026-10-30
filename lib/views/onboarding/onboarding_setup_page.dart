@@ -5,11 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
-import 'package:butlery/widgets/common/brand/butlery_cloche.dart';
+import 'package:butlery/widgets/common/brand/butlery_cloche_lift.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 
@@ -35,15 +34,7 @@ class OnboardingSetupPage extends StatelessWidget {
           const SizedBox(height: AppDimensions.space32 + AppDimensions.space16),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: done ? 1 : 0),
-              duration: AnimationUtils.getDuration(
-                context,
-                const Duration(milliseconds: 700),
-              ),
-              curve: Curves.easeInOut,
-              builder: (_, lift, _) => ButleryCloche(size: 112, lift: lift),
-            ),
+            child: ButleryClocheLift(lifted: done),
           ),
           const SizedBox(height: AppDimensions.space24),
           const OnboardingPlateRule(),

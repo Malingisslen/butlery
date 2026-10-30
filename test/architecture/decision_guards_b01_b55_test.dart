@@ -95,14 +95,23 @@ void main() {
     expect(found, isEmpty, reason: 'kost visas som ord, aldrig som glyf');
   });
 
-  test('B-19 clochen är varumärke och ritas bara på startytorna', () {
-    final found = _filesMatching(RegExp(r'\bButleryCloche\s*\('));
-    expect(found, [
-      'lib/views/onboarding/onboarding_setup_page.dart',
-      'lib/widgets/common/brand/butlery_cloche.dart',
-      'lib/widgets/common/brand/start_splash.dart',
-    ]);
-  });
+  test(
+    'B-19 clochen är varumärke: startytorna och veckomenyns färdigmoment',
+    () {
+      final found = _filesMatching(RegExp(r'\bButleryCloche\s*\('));
+      expect(found, [
+        'lib/widgets/common/brand/butlery_cloche.dart',
+        'lib/widgets/common/brand/butlery_cloche_lift.dart',
+        'lib/widgets/common/brand/start_splash.dart',
+      ]);
+      final lifts = _filesMatching(RegExp(r'\bButleryClocheLift\s*\('));
+      expect(lifts, [
+        'lib/views/onboarding/onboarding_setup_page.dart',
+        'lib/widgets/common/brand/butlery_cloche_lift.dart',
+        'lib/widgets/menu/veckomeny_cloche_reveal.dart',
+      ]);
+    },
+  );
 
   test('B-46 Välj öppnar flervalet på de ytor som har det', () {
     for (final path in const [
