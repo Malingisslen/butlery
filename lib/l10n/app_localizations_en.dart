@@ -5135,6 +5135,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeFromArchive => 'From archive';
 
   @override
+  String get recipeFromFile => 'From file';
+
+  @override
   String get recipeFromImage => 'From image';
 
   @override
@@ -11950,9 +11953,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelEmptyMenu => 'Empty menu';
-
-  @override
-  String get errorVideoNoSubtitles => 'Video has no subtitles';
 
   @override
   String get errorNetworkFallback => 'Network error';

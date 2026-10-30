@@ -240,6 +240,30 @@ void main() {
       );
 
       test(
+        'a headless browser text with no ingredient and no step is not '
+        'a recipe',
+        () async {
+          const testUrl = 'https://example.com/recipe/only-a-title';
+          when(
+            () => mockWebScraper.performExtraction(any(), any()),
+          ).thenAnswer(
+            (_) async => ExtractionResult(
+              success: true,
+              extractedText:
+                  'Pannkakor\nEn klassiker som alla i familjen '
+                  'tycker om, perfekt en vanlig tisdag.',
+              metadata: {'extraction_method': 'webscraper_mock'},
+            ),
+          );
+
+          final result = await urlStrategy.import(testUrl);
+
+          expect(result.isSuccess, isFalse);
+          expect(result.metadata?['successfulTier'], isNot('WebScraper'));
+        },
+      );
+
+      test(
         'should fail with an unreachable cause when the network is down',
         () async {
           networkDown = true;

@@ -139,6 +139,7 @@ void main() {
         consentService: _FakeConsentService(),
         functions: _FakeFunctions(callable),
         backendBreaker: breaker,
+        retryDelay: Duration.zero,
       );
 
       test('repeated cost-ceiling denials do not open the breaker', () async {
@@ -197,7 +198,11 @@ void main() {
 
         expect(breaker.isOpen, isTrue);
         final response = await service.structureRecipe(text: 'a' * 50);
-        expect(callable.callCount, 3);
+        expect(
+          callable.callCount,
+          6,
+          reason: 'each unavailable call is tried twice, counted once',
+        );
         expect(response.success, isFalse);
       });
     });
@@ -221,4 +226,78 @@ void main() {
       },
     );
   });
+
+  group('a call the server never took on', () {
+    test('is tried once more and its answer used', () async {
+      final callable = _UnavailableOnceHttpsCallable();
+      final breaker = CircuitBreaker(
+        failureThreshold: 3,
+        resetTime: const Duration(seconds: 60),
+      );
+      final service = LlmService(
+        rateLimiter: _FakeRateLimiter(),
+        consentService: _FakeConsentService(),
+        functions: _FakeFunctions(callable),
+        backendBreaker: breaker,
+        retryDelay: Duration.zero,
+      );
+
+      final response = await service.structureRecipe(text: 'a' * 50);
+
+      expect(callable.callCount, 2);
+      expect(response.success, isTrue);
+      expect(breaker.failureCount, 0);
+    });
+
+    test(
+      'a timeout is not retried, since the first call may be paid for',
+      () async {
+        final callable = _ThrowingHttpsCallable(
+          FirebaseFunctionsException(
+            code: 'deadline-exceeded',
+            message: 'slow',
+          ),
+        );
+        final service = LlmService(
+          rateLimiter: _FakeRateLimiter(),
+          consentService: _FakeConsentService(),
+          functions: _FakeFunctions(callable),
+          retryDelay: Duration.zero,
+        );
+
+        await expectLater(
+          () => service.structureRecipe(text: 'a' * 50),
+          throwsA(isA<LlmException>()),
+        );
+        expect(callable.callCount, 1);
+      },
+    );
+  });
+}
+
+/// Unavailable on the first call, a successful structureRecipe answer after.
+class _UnavailableOnceHttpsCallable extends _CountingHttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    callCount++;
+    if (callCount == 1) {
+      throw FirebaseFunctionsException(code: 'unavailable', message: 'down');
+    }
+    return _Result<T>(
+      <String, dynamic>{
+            'success': true,
+            'estimatedCost': 0.001,
+          }
+          as T,
+    );
+  }
+}
+
+class _Result<T> extends Fake implements HttpsCallableResult<T> {
+  _Result(this.data);
+
+  @override
+  final T data;
 }

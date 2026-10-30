@@ -315,6 +315,13 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final textResult = await textStrategy.import(webScraperResult);
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
+    // The same gate as Tier 5: a page read as text with neither an ingredient
+    // nor a step is not a recipe, and shipping it here would stop the LLM
+    // tier from ever seeing the page.
+    final parsed = textResult.recipe!;
+    if (parsed.core.ingredients.isEmpty && parsed.core.instructions.isEmpty) {
+      return null;
+    }
 
     final recipe = textResult.recipe!.copyWith(
       sourceUrl: url,

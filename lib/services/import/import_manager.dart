@@ -5,11 +5,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
@@ -286,18 +286,8 @@ class ImportManager {
           return result;
         }
 
-        // Check for "needs screenshot" case - this is a valid result, not a fallback-worthy failure
-        if (result.metadata?['needsScreenshot'] == true) {
-          // Convert to user-assisted import with helpful message
-          return ImportManagerResult.assistance(
-            extractedText:
-                result.errorMessage ?? AppLocale.current.errorVideoNoSubtitles,
-            suggestedTitle: null,
-            sourceUrl: result.metadata?['url'] as String?,
-            thumbnailUrl: result.metadata?['thumbnailUrl'] as String?,
-            strategy: 'youtube',
-            metadata: result.metadata,
-          );
+        if (result.needsScreenshot) {
+          return _screenshotAnswer(result, 'youtube').withLlmUse(spent);
         }
 
         // YouTube strategy failed, continue with other strategies
@@ -312,6 +302,9 @@ class ImportManager {
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
           return result;
+        }
+        if (result.needsScreenshot) {
+          return _screenshotAnswer(result, 'tiktok').withLlmUse(spent);
         }
         // TikTok pipeline failed, continue with other strategies
         noteCall(result);
@@ -329,6 +322,9 @@ class ImportManager {
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
           return result;
+        }
+        if (result.needsScreenshot) {
+          return _screenshotAnswer(result, 'instagram').withLlmUse(spent);
         }
         noteCall(result);
         failure = _keepBetterFailure(failure, result);
@@ -376,6 +372,22 @@ class ImportManager {
       );
     }
   }
+
+  /// The platform read the post and found no recipe text in it (no caption,
+  /// no subtitles). That is an answer, not a miss: the web scraper would only
+  /// spend its time on the same post behind a login wall. The text is empty,
+  /// so nothing turns the platform's message into recipe lines; the view
+  /// reads [ImportManagerResult.needsScreenshot] and offers a screenshot.
+  ImportManagerResult _screenshotAnswer(
+    ImportManagerResult result,
+    String platform,
+  ) => ImportManagerResult.assistance(
+    extractedText: '',
+    sourceUrl: result.metadata?['url'] as String?,
+    thumbnailUrl: result.metadata?['thumbnailUrl'] as String?,
+    strategy: platform,
+    metadata: result.metadata,
+  );
 
   /// BUT-1460: single-image import for the handwritten opt-in (LLM-vision).
   ///
@@ -575,18 +587,12 @@ class ImportManager {
     }
   }
 
-  // Domain-like input without a scheme, e.g. "ica.se/recept/...".
-  static final _domainPattern = RegExp(
-    r'^[\w\-]+\.[\w\-]+(?:\.[\w\-]+)*(?:/.*)?$',
-    caseSensitive: false,
-  );
-
   bool _looksLikeLink(String input) {
     final trimmed = input.trim().toLowerCase();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return true;
     }
-    return _domainPattern.hasMatch(trimmed);
+    return InputDetector.looksLikeDomain(trimmed);
   }
 
   ImportChannel _channelForStrategy(String strategyName, String input) =>
@@ -1066,6 +1072,21 @@ class ImportManager {
         return ImportManagerResult.failure(
           'Parse successful but no recipe returned',
           strategy: strategy.strategyName,
+        );
+      }
+
+      // A title alone is not a recipe. As a success it would go on to the
+      // multi-recipe picker, which saves without an editor in between, and
+      // it would stop the strategies after this one from finding the real
+      // recipe; as a miss, the import tries on and the user is told.
+      final core = importResult.recipe!.core;
+      if (core.ingredients.isEmpty && core.instructions.isEmpty) {
+        return ImportManagerResult.failure(
+          'Parsed a recipe with no ingredients and no steps',
+          strategy: strategy.strategyName,
+          warnings: importResult.warnings,
+          metadata: importResult.metadata,
+          errorCode: ImportErrorCode.noRecipeContent,
         );
       }
 

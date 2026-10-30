@@ -73,12 +73,17 @@ class ImportNeedsUserHelp extends SmartImportResult {
   final String? sourceUrl;
   final List<int> likelyIngredientLines;
 
+  /// The post holds no recipe text to finish by hand; a screenshot is the
+  /// way forward.
+  final bool needsScreenshot;
+
   const ImportNeedsUserHelp({
     required this.extractedText,
     this.suggestedTitle,
     this.thumbnailUrl,
     this.sourceUrl,
     this.likelyIngredientLines = const [],
+    this.needsScreenshot = false,
   });
 }
 
@@ -393,6 +398,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
         thumbnailUrl: result.thumbnailUrl,
         sourceUrl: result.sourceUrl,
         likelyIngredientLines: result.likelyIngredientLines ?? [],
+        needsScreenshot: result.needsScreenshot,
       );
       _lastResult = helpResult;
       return helpResult;

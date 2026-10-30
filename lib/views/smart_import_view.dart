@@ -331,19 +331,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     SmartImportViewModel viewModel,
     ImportNeedsUserHelp helpResult,
   ) async {
-    final text = helpResult.extractedText;
-
-    // Detect if this is a short error message rather than actual recipe content
-    final isNeedsScreenshot =
-        text.length < 150 &&
-        (text.toLowerCase().contains('skärmbild') ||
-            text.toLowerCase().contains('screenshot') ||
-            text.toLowerCase().contains('undertexter') ||
-            text.toLowerCase().contains('transcript') ||
-            text.toLowerCase().contains('saknar') ||
-            text.isEmpty);
-
-    if (isNeedsScreenshot) {
+    // With no text there is nothing to finish by hand, whatever the reason.
+    if (helpResult.needsScreenshot || helpResult.extractedText.trim().isEmpty) {
       await _showNeedsScreenshotDialog(context, helpResult);
       return;
     }

@@ -195,6 +195,13 @@ class ButleryAddSheet extends StatelessWidget {
                 icon: ButleryIcons.mic,
                 onTap: () => onChoose(Routes.voiceImport),
               ),
+              gap,
+              _RouteTile(
+                identifier: 'btn-file-import',
+                label: l10n.recipeFromFile,
+                icon: ButleryIcons.file,
+                onTap: () => onChoose(Routes.fileImport),
+              ),
             ],
           ),
         ],

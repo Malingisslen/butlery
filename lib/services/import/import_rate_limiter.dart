@@ -87,7 +87,15 @@ class ImportRateLimiter extends BaseService {
       );
     } catch (e) {
       AppLogger.warning('ImportRateLimiter: Error checking limit: $e');
-      // Fail closed — deny on Firestore errors to prevent abuse
+      // An import that asks no model costs nothing to repeat, so an unreadable
+      // counter (offline, a Firestore hiccup) must not stop a pasted recipe
+      // from being parsed on the device. A model call fails closed here.
+      if (!operation.requiresLlm) {
+        return const RateLimitAllowed(
+          remainingInWindow: 0,
+          limitType: LimitType.perMinute,
+        );
+      }
       return const RateLimitDenied(
         message: 'Rate limit check unavailable. Please try again shortly.',
         retryAfter: Duration(seconds: 30),

@@ -16,6 +16,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/services/extraction/web_scraper.dart';
@@ -23,11 +24,14 @@ import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 
+import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _NoWebScraper extends Mock implements WebScraper {}
@@ -35,6 +39,10 @@ class _NoWebScraper extends Mock implements WebScraper {}
 class _SilentEventLogger extends Mock implements ParseEventLogger {}
 
 class _FakeYouTube extends Mock implements YouTubeImportStrategy {}
+
+class _FakeTikTok extends Mock implements TikTokPipeline {}
+
+class _FakeInstagram extends Mock implements InstagramPipeline {}
 
 class _FailingStrategy extends ImportStrategy {
   _FailingStrategy(this.strategyName, this.code);
@@ -61,6 +69,29 @@ class _FailingStrategy extends ImportStrategy {
     errorCode: code,
     metadata: {'from': strategyName},
   );
+}
+
+class _SucceedingStrategy extends ImportStrategy {
+  _SucceedingStrategy(this.strategyName, this.recipe);
+
+  @override
+  final String strategyName;
+  final Recipe recipe;
+
+  @override
+  bool canHandle(String input) => true;
+  @override
+  bool validateInput(String input) => true;
+  @override
+  String get inputExample => '';
+  @override
+  String get description => '';
+
+  @override
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async => ImportResult.success(recipe);
 }
 
 const _url = 'https://8.8.8.8/recept/kladdkaka';
@@ -225,10 +256,99 @@ void main() {
           eventLogger: _SilentEventLogger(),
         ).autoImport(video);
         expect(r.needsAssistance, isTrue);
-        expect(r.extractedText, 'Videon saknar undertexter');
-        expect(r.metadata?['needsScreenshot'], isTrue);
+        // The platform's message is not recipe text to split into lines.
+        expect(r.extractedText, isEmpty);
+        expect(r.needsScreenshot, isTrue);
       },
     );
+  });
+
+  group('a parse with neither ingredients nor steps', () {
+    test('is a miss, so the next strategy gets the input', () async {
+      final empty = _SucceedingStrategy(
+        'Text Import',
+        RecipeFactory.build(
+          title: 'Bara en rubrik',
+          ingredients: [],
+          instructions: [],
+        ),
+      );
+      final real = _SucceedingStrategy('URL Import', RecipeFactory.build());
+      final r = await ImportManager.withStrategies(
+        MockPersonalRecipeOperations(),
+        [empty, real],
+        eventLogger: _SilentEventLogger(),
+      ).autoImport('Bara en rubrik och lite text');
+
+      expect(r.isSuccess, isTrue);
+      expect(r.strategy, 'URL Import');
+    });
+
+    test('alone, it fails as no recipe content', () async {
+      final r = await ImportManager.withStrategies(
+        MockPersonalRecipeOperations(),
+        [
+          _SucceedingStrategy(
+            'Text Import',
+            RecipeFactory.build(ingredients: [], instructions: []),
+          ),
+        ],
+        eventLogger: _SilentEventLogger(),
+      ).autoImport('Bara en rubrik och lite text');
+
+      expect(r.isSuccess, isFalse);
+      expect(r.errorCode, ImportErrorCode.noRecipeContent);
+    });
+  });
+
+  group('a TikTok or Instagram post without a caption', () {
+    tearDown(() async {
+      await GetIt.instance.reset();
+      app_provider.ServiceLocator.reset();
+    });
+
+    Future<void> register<T extends ImportStrategy>(T pipeline) async {
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      await GetIt.instance.reset();
+      when(() => pipeline.canHandle(any())).thenReturn(true);
+      when(() => pipeline.strategyName).thenReturn('Social');
+      when(
+        () => pipeline.import(any(), options: any(named: 'options')),
+      ).thenAnswer(
+        (_) async => ImportResult.failure(
+          'Ingen bildtext',
+          metadata: {'needsScreenshot': true, 'url': 'https://x/p/1'},
+        ),
+      );
+      GetIt.instance.registerSingleton<T>(pipeline);
+    }
+
+    for (final (name, make) in [
+      ('TikTok', () => register<TikTokPipeline>(_FakeTikTok())),
+      ('Instagram', () => register<InstagramPipeline>(_FakeInstagram())),
+    ]) {
+      test(
+        '$name asks for a screenshot instead of scraping the post',
+        () async {
+          await make();
+          final scraper = _FailingStrategy(
+            'URL Import',
+            ImportErrorCode.noRecipeContent,
+          );
+          final r = await ImportManager.withStrategies(
+            MockPersonalRecipeOperations(),
+            [scraper],
+            eventLogger: _SilentEventLogger(),
+          ).autoImport('https://x/p/1');
+
+          expect(r.needsAssistance, isTrue);
+          expect(r.needsScreenshot, isTrue);
+          expect(r.extractedText, isEmpty);
+          expect(r.metadata?['from'], isNull, reason: 'the scraper never ran');
+        },
+      );
+    }
   });
 
   group('UrlImportStrategy.failureCodeFor', () {

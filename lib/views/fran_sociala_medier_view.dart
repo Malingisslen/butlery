@@ -2,6 +2,8 @@
 
 // lib/views/fran_sociala_medier_view.dart
 
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +42,9 @@ import 'package:butlery/widgets/common/input/styled_input.dart';
 class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
 
+  /// The link a shared recipe text carried, kept as the recipe's source.
+  final String? sourceUrl;
+
   /// BUT-928: overall OCR confidence (0.0-1.0) when [initialText] came from
   /// the photo-import OCR step — re-surfaces the preview badge here so the
   /// quality signal isn't dropped at the handoff. Null for non-OCR entry.
@@ -52,6 +57,7 @@ class FranSocialaMedierView extends StatefulWidget {
   const FranSocialaMedierView({
     super.key,
     this.initialText,
+    this.sourceUrl,
     this.ocrConfidence,
     this.continuesImport = false,
   });
@@ -65,6 +71,12 @@ class FranSocialaMedierView extends StatefulWidget {
         // BUT-928: overall OCR confidence from the photo-import preview.
         ocrConfidence: arguments['ocrConfidence'] as double?,
         continuesImport: true,
+      );
+    }
+    if (arguments is SharedTextImportArgs) {
+      return FranSocialaMedierView(
+        initialText: arguments.text,
+        sourceUrl: arguments.sourceUrl,
       );
     }
     return FranSocialaMedierView(
@@ -101,6 +113,7 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
         startsImport: !widget.continuesImport,
         child: _FranSocialaMedierViewContent(
           initialText: widget.initialText,
+          sourceUrl: widget.sourceUrl,
           ocrConfidence: widget.ocrConfidence,
         ),
       ),
@@ -110,10 +123,12 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
 
 class _FranSocialaMedierViewContent extends StatefulWidget {
   final String? initialText;
+  final String? sourceUrl;
   final double? ocrConfidence;
 
   const _FranSocialaMedierViewContent({
     this.initialText,
+    this.sourceUrl,
     this.ocrConfidence,
   });
 
@@ -150,7 +165,10 @@ class _FranSocialaMedierViewContentState
         // initialText (e.g. from URL-import sharing) wins over persisted
         // draft — user is starting from fresh content.
         final viewModel = context.read<TextImportViewModel>();
-        viewModel.updateInputText(widget.initialText!);
+        viewModel.updateTextAndSource(
+          widget.initialText!,
+          sourceUrl: widget.sourceUrl,
+        );
         viewModel.parseText();
       } else {
         await _loadDraft();
@@ -184,6 +202,18 @@ class _FranSocialaMedierViewContentState
 
   Future<void> _parseAndNavigate(BuildContext context) async {
     final viewModel = context.read<TextImportViewModel>();
+
+    // A link with only a blurb around it imports the way Smart import does,
+    // so a TikTok, Instagram or YouTube link reaches the pipeline that knows
+    // it instead of the plain web import. The draft stays, so the pasted text
+    // is still here if the user comes back.
+    final shared = routeForSharedText(viewModel.inputText);
+    if (shared != null && shared.route == Routes.smartImport) {
+      await Navigator.of(
+        context,
+      ).pushReplacementNamed(shared.route, arguments: shared.arguments);
+      return;
+    }
 
     // BUT-1037: cheap recipe-likeness gate. The user can always override,
     // so edge-case recipes are never blocked.

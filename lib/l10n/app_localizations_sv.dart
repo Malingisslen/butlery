@@ -5069,6 +5069,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeFromArchive => 'Från arkiv';
 
   @override
+  String get recipeFromFile => 'Från fil';
+
+  @override
   String get recipeFromImage => 'Från bild';
 
   @override
@@ -11901,9 +11904,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get labelEmptyMenu => 'Tom meny';
-
-  @override
-  String get errorVideoNoSubtitles => 'Video saknar undertexter';
 
   @override
   String get errorNetworkFallback => 'Nätverksfel';
