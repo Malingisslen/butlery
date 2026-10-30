@@ -40,7 +40,6 @@ const _namedLinkFiles = [
   'lib/views/auth_view.dart',
   'lib/widgets/common/buttons/butlery_text_button.dart',
   'lib/views/legal/markdown_body.dart',
-  'lib/views/recipe_detail/recipe_detail_shared_widgets.dart',
   'lib/widgets/common/feedback/inline_error.dart',
   'lib/widgets/common/linkified_text.dart',
   'lib/widgets/menu/parsed_extraction_chips.dart',

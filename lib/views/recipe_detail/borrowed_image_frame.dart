@@ -101,7 +101,7 @@ class BorrowedImageCredit extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 10,
+            horizontal: AppDimensions.space8,
             vertical: AppDimensions.space4,
           ),
           child: Row(
@@ -112,7 +112,7 @@ class BorrowedImageCredit extends StatelessWidget {
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   context.l10n.recipeBorrowedImageCredit(site),
@@ -120,7 +120,6 @@ class BorrowedImageCredit extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelMedium.copyWith(
                     color: cs.onSurface,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
