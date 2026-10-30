@@ -31,3 +31,10 @@ everywhere" action; follow-up ticket: BUT-2481.
   `session_invalidated_logout`; four timeout events are removed.
 - `TR::FLOW::06::session::utgang` is RESTING (decision `BUT-2480-ingen-timeout`).
 - Older app versions still sign out after 45 minutes until they are updated.
+
+## Tests removed
+
+The three test files for the removed service, detector and warning dialog are deleted, and the
+assertions for `logoutDueToInactivity`, `discardAndEndSession` and the app-shell activity
+detector go with the code they covered. `test/architecture/no_inactivity_logout_test.dart`
+replaces them as the guard against the feature returning.
