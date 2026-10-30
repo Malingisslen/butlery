@@ -1,0 +1,55 @@
+{
+  "_readme": "Word lists for Phase 4's holiday, season and luxury tags. After editing, run: dart run tools/gen_tag_vocabulary.dart. Each word matches by substring on the lower-cased recipe title or ingredient name. How many matches a tag needs, and which lists combine, is decided in tag_phase4_mood.dart, not here. Lists keep their order and their duplicates on purpose.",
+  "christmas": {
+    "tag": "jul",
+    "titleStem": "jul",
+    "titleStemFalsePositives": ["julienne"],
+    "titleWords": ["julskinka", "lutfisk", "jansson", "julbord"],
+    "ingredients": ["rödbeta", "sill", "julkorv", "prinskorv", "kål"]
+  },
+  "lucia": {
+    "tag": "lucia",
+    "titleWords": ["lucia", "lussebulle", "lussekatt"]
+  },
+  "easter": {
+    "tag": "påsk",
+    "titleWords": ["påsk"],
+    "eggTitleWords": ["ägg", "egg"]
+  },
+  "midsummer": {
+    "tag": "midsommar",
+    "titleWords": ["midsommar"],
+    "herringIngredients": ["sill"],
+    "newPotatoIngredients": ["färskpotatis", "nypotatis"],
+    "strawberryIngredients": ["jordgubb"]
+  },
+  "crayfish": {
+    "tag": "kräftskiva",
+    "titleWords": ["kräftskiva", "kräftkalas"],
+    "ingredients": ["kräft"]
+  },
+  "newYear": {
+    "tag": "nyår",
+    "titleWords": ["nyår"],
+    "ingredients": ["hummer", "ostron", "kaviar"]
+  },
+  "spring": {
+    "tag": "vår",
+    "ingredients": ["sparris", "rabarber", "rädisor", "vårlök", "ärtor", "nässla", "färskpotatis", "nypotatis", "purjolök", "dill"]
+  },
+  "summer": {
+    "tag": "sommar",
+    "ingredients": ["jordgubb", "hallon", "blåbär", "lingon", "björnbär", "sallad", "gurka", "tomat", "zucchini", "squash", "basilika", "majs", "paprika"]
+  },
+  "autumn": {
+    "tag": "höst",
+    "ingredients": ["svamp", "kantarell", "trattkantarell", "äpple", "päron", "plommon", "pumpa", "kål", "rödkål", "brysselkål", "vitkål"]
+  },
+  "winter": {
+    "tag": "vinter",
+    "ingredients": ["rotfrukt", "morot", "palsternacka", "kålrot", "grönkål", "selleri", "rödbetor", "rödbeta", "vitkål", "persilja"]
+  },
+  "luxury": {
+    "ingredients": ["oxfilé", "entrecôte", "hummer", "kräftor", "tryffel", "kaviar", "foie gras", "wagyu", "kalvfilé"]
+  }
+}
