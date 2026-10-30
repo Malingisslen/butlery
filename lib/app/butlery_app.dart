@@ -16,7 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/app/auth/auth_wrapper.dart';
-import 'package:butlery/app/session_activity_detector.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
@@ -27,10 +26,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
 import 'package:butlery/core/observers/feedback_route_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
-import 'package:butlery/core/observers/page_route_stack_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
 import 'package:butlery/core/observers/route_tracker.dart';
-import 'package:butlery/core/observers/session_activity_observer.dart';
 import 'package:butlery/core/observers/snackbar_route_observer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -51,15 +48,12 @@ import 'package:butlery/services/notifications/notification_deep_link_router.dar
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/services/auth/email_verification_refresh.dart';
-import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
@@ -194,9 +188,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   final PerformanceNavigatorObserver _performanceObserver =
       PerformanceNavigatorObserver();
   InteractionRouteObserver? _interactionObserver;
-  SessionTimeoutService? _sessionTimeoutService;
-  SessionActivityObserver? _sessionActivityObserver;
-  final PageRouteStackObserver _returnPathObserver = PageRouteStackObserver();
   DateTime? _sessionStartTime;
   // BUT-786: tracks when we last paused so resume-after-long-background can
   // mint a fresh `session_id` (analytics convention: 30 min idle = new session).
@@ -221,7 +212,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _localeProvider = ApplicationBootstrap().container.get<LocaleProvider>();
     _initializeUI();
     _trackAppOpened();
-    _initializeSessionTimeout();
     _initializeLocale();
     _initializeTheme();
     _initializeConsentRenewalCheck();
@@ -351,95 +341,12 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Initialize session timeout service for automatic logout on inactivity
-  Future<void> _initializeSessionTimeout() async {
-    try {
-      final bootstrap = ApplicationBootstrap();
-
-      // Wait for bootstrap to be ready using Completer pattern (no polling)
-      await bootstrap.initialized;
-
-      if (bootstrap.isInitialized) {
-        _sessionTimeoutService = bootstrap.container
-            .get<SessionTimeoutService>();
-
-        // Register warning dialog callback
-        _sessionTimeoutService?.registerWarningCallback(() {
-          _showSessionTimeoutWarning();
-        });
-        _sessionTimeoutService?.registerSessionEndCallback(_onSessionEnded);
-
-        // Initialize the service
-        await _sessionTimeoutService?.initialize();
-
-        // Create session activity observer
-        if (_sessionTimeoutService != null) {
-          _sessionActivityObserver = SessionActivityObserver(
-            _sessionTimeoutService!,
-          );
-        }
-      }
-    } catch (e) {
-      // Session timeout initialization failed - non-critical
-    }
-  }
-
-  /// Show session timeout warning dialog.
-  ///
-  /// The queue is read first because the dialog has two modes
-  /// with changes waiting, Fortsätt is primary, the
-  /// changes are named, and "Logga ut nu" leads to the same confirmation as
-  /// the manual sign-out (#utloggningko).
-  Future<void> _showSessionTimeoutWarning() async {
-    if (!mounted || appNavigatorKey.currentContext == null) return;
-
-    final guard = SignOutGuard(authService: ServiceLocator.get<AuthService>());
-    final pending = await guard.pendingForCurrentUser();
-    final context = appNavigatorKey.currentContext;
-    if (!mounted || context == null || !context.mounted) return;
-
-    final remainingSeconds =
-        (_sessionTimeoutService?.timeRemaining?.inSeconds ?? 300);
-
-    await SessionTimeoutWarningDialog.show(
-      context: context,
-      remainingSeconds: remainingSeconds,
-      pendingChanges: pending,
-      onExtendSession: () {
-        _sessionTimeoutService?.recordActivity();
-      },
-      onLogoutNow: () {
-        _sessionTimeoutService?.forceLogout();
-      },
-      onDiscardAndLogout: () => guard.discardAndEndSession(() async {
-        await _sessionTimeoutService?.forceLogout();
-      }),
-    );
-  }
-
-  /// A session ended by the timeout service: remember where the user was
-  /// (a timeout only, not her own "Logga ut nu"), then leave the signed-in
-  /// screens for the sign-in screen. Nothing in the queue is touched here.
-  void _onSessionEnded(SessionEnd end) {
-    final navigator = appNavigatorKey.currentState;
-    if (end.userId != null && end.reason != SessionEndReason.userRequested) {
-      final top = _returnPathObserver.topPageRoute;
-      SessionReturnPath.remember(
-        userId: end.userId!,
-        routeName: top?.settings.name,
-        arguments: top?.settings.arguments,
-      );
-    }
-    navigator?.pushNamedAndRemoveUntil(app_routes.Routes.auth, (_) => false);
-  }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _localeProvider.removeListener(_onLocaleChanged);
     _userService?.removeListener(_fillPreferredLocale);
     _themeService?.removeListener(_onThemeChanged);
-    _sessionTimeoutService?.dispose();
     _disposeCacheManager();
     super.dispose();
   }
@@ -464,14 +371,12 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
     if (state == AppLifecycleState.resumed) {
       _trackAppOpened();
-      _sessionTimeoutService?.onAppResumed();
       _resumeCacheManager();
       _checkClipboardForRecipeUrl();
       unawaited(refreshEmailVerification(ServiceLocator.tryGet<AuthService>()));
     } else if (state == AppLifecycleState.paused) {
       // App went to background
       _trackAppBackgrounded();
-      _sessionTimeoutService?.onAppPaused();
       _pauseCacheManager();
     }
   }
@@ -782,7 +687,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       ServiceLocator.get<InteractionLogger>(),
     );
 
-    // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
+    // Build navigator observers list with performance, snackbar, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
@@ -791,72 +696,66 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
       appRouteTracker,
       appFeedbackRouteObserver,
-      _returnPathObserver,
-      ?_sessionActivityObserver,
       ?_analyticsObserver,
     ];
 
-    // Wrap MaterialApp with GestureDetector for universal activity tracking (session timeout)
-    return SessionActivityDetector(
-      onActivity: () => _sessionTimeoutService?.recordActivity(),
-      child: MaterialApp(
-        navigatorKey: appNavigatorKey,
-        navigatorObservers: observers,
-        // PQ-17: the shell's chosen tab survives the OS ending the app in
-        // the background (layout_scaffolds.dart, RestorationMixin).
-        restorationScopeId: 'butlery',
-        title: 'Butlery',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: _themeService?.themeMode ?? widget.initialThemeMode,
-        debugShowCheckedModeBanner: false,
-        // Localization configuration
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: _localeProvider.locale,
-        home: const InitializationWrapper(),
-        onUnknownRoute: AppRouter.handleUnknownRoute,
-        onGenerateRoute: AppRouter.generateRoute,
-        // Universal fix for Android nav bar overlay + beta feedback FAB overlay
-        builder: (context, child) {
-          if (child == null) return const SizedBox.shrink();
-          // Keyboard layer (BUT-521).
-          //
-          // Must stay INSIDE this builder. Being here puts it below
-          // `DefaultTextEditingShortcuts`, hence nearer a focused field, so it
-          // sees editing keys first — `_NavigateBackAction` in
-          // `core/keyboard/app_actions.dart` compensates by disabling itself
-          // while a text field has focus. Hoisting this above `MaterialApp`
-          // inverts that ordering and silently makes the guard pointless.
-          return StagingBanner(
-            env: FirebaseEnv.current,
-            child: ButleryAppFocusRing(
-              child: MaintenanceModeGate(
-                child: AppKeyboardLayer(
-                  child: appRootInsets(
-                    FeedbackAwareScaffoldMessenger(
-                      child: Stack(
-                        children: [
-                          RepaintBoundary(
-                            key: feedbackRepaintBoundaryKey,
-                            child: child,
-                          ),
-                          const FeedbackFAB(),
-                        ],
-                      ),
+    return MaterialApp(
+      navigatorKey: appNavigatorKey,
+      navigatorObservers: observers,
+      // PQ-17: the shell's chosen tab survives the OS ending the app in
+      // the background (layout_scaffolds.dart, RestorationMixin).
+      restorationScopeId: 'butlery',
+      title: 'Butlery',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _themeService?.themeMode ?? widget.initialThemeMode,
+      debugShowCheckedModeBanner: false,
+      // Localization configuration
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _localeProvider.locale,
+      home: const InitializationWrapper(),
+      onUnknownRoute: AppRouter.handleUnknownRoute,
+      onGenerateRoute: AppRouter.generateRoute,
+      // Universal fix for Android nav bar overlay + beta feedback FAB overlay
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        // Keyboard layer (BUT-521).
+        //
+        // Must stay INSIDE this builder. Being here puts it below
+        // `DefaultTextEditingShortcuts`, hence nearer a focused field, so it
+        // sees editing keys first — `_NavigateBackAction` in
+        // `core/keyboard/app_actions.dart` compensates by disabling itself
+        // while a text field has focus. Hoisting this above `MaterialApp`
+        // inverts that ordering and silently makes the guard pointless.
+        return StagingBanner(
+          env: FirebaseEnv.current,
+          child: ButleryAppFocusRing(
+            child: MaintenanceModeGate(
+              child: AppKeyboardLayer(
+                child: appRootInsets(
+                  FeedbackAwareScaffoldMessenger(
+                    child: Stack(
+                      children: [
+                        RepaintBoundary(
+                          key: feedbackRepaintBoundaryKey,
+                          child: child,
+                        ),
+                        const FeedbackFAB(),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

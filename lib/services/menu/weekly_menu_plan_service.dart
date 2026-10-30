@@ -181,9 +181,9 @@ class WeeklyMenuOverflowTraySnapshot {
 /// P5-U24: keeps the overflow tray on this device, per person, 30 days.
 ///
 /// Logout: [clearAll] is the hook. Decision 2026-09-23 (PQ-12 = A) keeps
-/// device drafts through an AUTOMATIC logout (inactivity) and deletes them
+/// device drafts through an AUTOMATIC logout and deletes them
 /// only when the user logs out herself, so the call belongs in the manual
-/// sign-out path only (`AuthService.signOut`, not `logoutDueToInactivity`).
+/// sign-out path only (`AuthService.signOut`).
 ///
 /// Best-effort like `AutoSaveManager`: a storage error is logged and never
 /// breaks placing a recipe.

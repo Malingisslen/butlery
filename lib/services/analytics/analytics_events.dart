@@ -18,7 +18,6 @@ abstract final class AnalyticsEvents {
   static const appOpened = 'app_opened';
   static const appBackgrounded = 'app_backgrounded';
   static const logout = 'logout';
-  static const logoutInactivity = 'logout_inactivity';
   static const authFailed = 'auth_failed';
   static const mfaEnrolled = 'mfa_enrolled';
   static const mfaUnenrolled = 'mfa_unenrolled';
@@ -34,10 +33,7 @@ abstract final class AnalyticsEvents {
   static const retentionNoticeShown = 'retention_notice_shown';
   static const retentionNoticeClosed = 'retention_notice_closed';
   static const retentionNoticeRecovered = 'retention_notice_recovered';
-  static const sessionTimeoutPaused = 'session_timeout_paused';
-  static const sessionTimeoutResumed = 'session_timeout_resumed';
-  static const sessionTimeoutWarningShown = 'session_timeout_warning_shown';
-  static const sessionTimeoutLogout = 'session_timeout_logout';
+  static const sessionInvalidatedLogout = 'session_invalidated_logout';
   static const onboardingStarted = 'onboarding_started';
   static const onboardingPageViewed = 'onboarding_page_viewed';
   // BUT-675: emitted when a user re-enters onboarding mid-flow (resume) and

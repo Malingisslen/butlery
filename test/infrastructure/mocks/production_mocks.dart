@@ -1830,7 +1830,7 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   String? _capturedUserId;
   Map<String, dynamic> _userProperties = {};
   // BUT-1021: capture logEvent calls so tests can assert that production
-  // code emitted the expected analytics event (e.g. sessionTimeoutLogout
+  // code emitted the expected analytics event (e.g. sessionInvalidatedLogout
   // from the auth-stream error path). Stays parallel to _capturedUserId —
   // semantically a Fake, not a Mock with when()/verify().
   final List<({String name, Map<String, Object>? parameters})> _capturedEvents =
