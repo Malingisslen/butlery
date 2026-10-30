@@ -43,6 +43,7 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
 import 'package:butlery/services/offline/offline_purge_store.dart';
+import 'package:butlery/services/offline/read_cache_sweep.dart';
 import 'package:butlery/services/offline/upload_queue_wiring.dart'
     if (dart.library.html) 'package:butlery/services/offline/upload_queue_wiring_stub.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
@@ -300,9 +301,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
     await _initialization.initialize();
 
-    _userStorage = OfflineUserStorage(
-      database: _initialization.database,
-    );
+    _userStorage = OfflineUserStorage(database: _initialization.database);
+    await sweepReadCaches(_initialization.database, _authRepository);
 
     // Before the sync manager exists, so nothing owed a purge can be sent.
     await _purgeStore.purgeOwed(

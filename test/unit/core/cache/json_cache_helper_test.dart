@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 
 /// Stateful in-memory stand-in for the Drift-backed CacheDao. Only the JSON
 /// surface JsonCacheHelper uses is implemented; the rest is unreachable here.
@@ -266,5 +267,48 @@ void main() {
       expect(await recipes.loadJson('k'), {'kind': 'recipe'});
       expect(await shopping.loadJson('k'), {'kind': 'shopping'});
     });
+  });
+
+  group('sign-out', () {
+    test(
+      'the recipe cache module empties the cache of the user who left',
+      () async {
+        final signedOut = _InMemoryCacheDao();
+        final helper = JsonCacheHelper('unified_recipes_cache', signedOut)
+          ..setCurrentUser('u1');
+        final module = RecipeCacheModule(
+          cacheHelper: helper,
+          getCurrentUserId: () => 'u1',
+          setError: (_) {},
+          notifyListeners: () {},
+        );
+        await helper.saveJson('r1', {'title': 'Pannkakor'});
+        await helper.saveJson('r2', {'title': 'Soppa'});
+        final other = JsonCacheHelper('unified_recipes_cache', signedOut)
+          ..setCurrentUser('u2');
+        await other.saveJson('r1', {'title': 'Annans'});
+
+        module.onAuthStateChanged(null);
+        await Future<void>.delayed(Duration.zero);
+
+        final stored = signedOut.store.keys.toList();
+        expect(stored.where((k) => k.contains('|u1|')), isEmpty);
+        expect(stored.where((k) => k.contains('|u2|')), isNotEmpty);
+      },
+    );
+
+    test(
+      'a clear started before the user is dropped still completes',
+      () async {
+        final helper = JsonCacheHelper('box', dao)..setCurrentUser('u1');
+        await helper.saveJson('k', {'x': 1});
+
+        final cleared = helper.clear();
+        helper.setCurrentUser(null);
+
+        expect(await cleared, isTrue);
+        expect(dao.store, isEmpty);
+      },
+    );
   });
 }

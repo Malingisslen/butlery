@@ -22,7 +22,17 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+
+class _FakeAuth extends Fake implements AuthService {
+  _FakeAuth(this.userId);
+
+  String? userId;
+
+  @override
+  String? get currentUserId => userId;
+}
 
 /// Lets fire-and-forget eager writes and getInstance microtasks settle.
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
@@ -219,6 +229,92 @@ void main() {
 
       final restored = await manager.load();
       expect(restored, {'name': 'soppa', 'servings': 4});
+    });
+  });
+
+  group('draft ownership', () {
+    AutoSaveManager<String> managerFor(String? uid) => AutoSaveManager<String>(
+      storageKey: 'owned_draft',
+      encode: (text) => text,
+      decode: (raw) => raw,
+      ownerIdProvider: () => uid,
+    );
+
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('the owner reads the draft back', () async {
+      await managerFor('alice').flush('hej');
+      expect(await managerFor('alice').load(), 'hej');
+    });
+
+    test('another account gets nothing and the draft is deleted', () async {
+      await managerFor('alice').flush('hej');
+
+      expect(await managerFor('bob').load(), isNull);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('owned_draft'), isFalse);
+      expect(
+        prefs.containsKey(AutoSaveManager.ownerKeyFor('owned_draft')),
+        isFalse,
+      );
+      expect(await managerFor('alice').load(), isNull);
+    });
+
+    test('a draft with no owner (written before owners) is deleted', () async {
+      SharedPreferences.setMockInitialValues({'owned_draft': 'old text'});
+
+      expect(await managerFor('alice').load(), isNull);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('owned_draft'), isFalse);
+    });
+
+    test('by default the owner comes from defaultOwnerIdProvider', () async {
+      final auth = _FakeAuth('alice');
+      final original = AutoSaveManager.defaultOwnerIdProvider;
+      AutoSaveManager.defaultOwnerIdProvider = () => auth.userId;
+      addTearDown(() => AutoSaveManager.defaultOwnerIdProvider = original);
+      AutoSaveManager<String> byDefault() => AutoSaveManager<String>(
+        storageKey: 'owned_draft',
+        encode: (text) => text,
+        decode: (raw) => raw,
+      );
+
+      await byDefault().flush('hej');
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString(AutoSaveManager.ownerKeyFor('owned_draft')),
+        'alice',
+      );
+
+      auth.userId = 'bob';
+      expect(await byDefault().load(), isNull);
+      expect(prefs.containsKey('owned_draft'), isFalse);
+    });
+
+    test('without a wired default provider nobody is signed in', () {
+      expect(AutoSaveManager.defaultOwnerIdProvider(), isNull);
+    });
+
+    test('with nobody signed in the draft is hidden, not deleted', () async {
+      await managerFor('alice').flush('hej');
+
+      expect(await managerFor(null).load(), isNull);
+
+      expect(await managerFor('alice').load(), 'hej');
+    });
+
+    test('clear removes the owner key too', () async {
+      final manager = managerFor('alice');
+      await manager.flush('hej');
+      await manager.clear();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.containsKey(AutoSaveManager.ownerKeyFor('owned_draft')),
+        isFalse,
+      );
     });
   });
 }

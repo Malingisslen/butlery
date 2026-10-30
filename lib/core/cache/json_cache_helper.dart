@@ -144,10 +144,12 @@ class JsonCacheHelper {
 
   Future<bool> clear() async {
     try {
-      await _cacheDao.clearJsonBox(boxBaseName, _userId);
+      // Read once: the caller may drop the user while the clear is awaited.
+      final userId = _userId;
+      await _cacheDao.clearJsonBox(boxBaseName, userId);
 
       AppLogger.info(
-        'Cleared all cache data from ${boxBaseName}_${_userId.maskedUserId}',
+        'Cleared all cache data from ${boxBaseName}_${userId.maskedUserId}',
       );
       return true;
     } catch (e) {

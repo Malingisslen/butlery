@@ -9,7 +9,10 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,6 +29,26 @@ import '../../infrastructure/di/test_service_locator.dart';
 /// Local mocktail subclass — the production [FakeAuthRepository] extends
 /// [Fake] (BUT-1074) and cannot be used with `when(...)`.
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+Future<void> _seedReadCache(AppDatabase db, String userId) async {
+  await db.customStatement(
+    'INSERT INTO json_cache_entries (box_name, user_id, key, value, cached_at) '
+    "VALUES ('recipes', '$userId', 'k', '{}', 1700000000)",
+  );
+  await db.customStatement(
+    'INSERT INTO sync_queue_entries (user_id, recipe_id, operation, queued_at, '
+    "op_id) VALUES ('$userId', 'r1', 'update', 1700000000, 'op-$userId')",
+  );
+}
+
+Future<int> _rows(AppDatabase db, String table, String userId) async {
+  final row = await db
+      .customSelect(
+        "SELECT COUNT(*) AS n FROM $table WHERE user_id = '$userId'",
+      )
+      .getSingle();
+  return row.read<int>('n');
+}
 
 /// Convenience translator that maps the old `setAuthState(...)` API onto
 /// the new local mocktail-based [_MockAuthRepository]. Stubs the
@@ -323,6 +346,63 @@ void main() {
 
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(trayKey), isNotNull);
+      });
+    });
+
+    group('read caches at sign-out', () {
+      late AppDatabase db;
+
+      setUp(() async {
+        driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+        db = AppDatabase.forTesting(NativeDatabase.memory());
+        await _seedReadCache(db, 'u1');
+        await _seedReadCache(db, 'u2');
+        authService.dispose();
+        authService = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+          readCacheCleaner: db.cacheDao.clearUserReadCaches,
+        );
+        mockAuthRepository.setAuthState(
+          user: MockFactory.createMockUser(uid: 'u1'),
+        );
+        when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
+      });
+
+      tearDown(() async {
+        await db.close();
+      });
+
+      test(
+        'signOut empties the leaving user\'s cache, not the queue',
+        () async {
+          await authService.signOut();
+
+          expect(await _rows(db, 'json_cache_entries', 'u1'), 0);
+          expect(await _rows(db, 'json_cache_entries', 'u2'), 1);
+          expect(await _rows(db, 'sync_queue_entries', 'u1'), 1);
+        },
+      );
+
+      test('forceSignOut empties it too', () async {
+        await authService.forceSignOut();
+
+        expect(await _rows(db, 'json_cache_entries', 'u1'), 0);
+        expect(await _rows(db, 'sync_queue_entries', 'u1'), 1);
+      });
+
+      test('a failing clear does not stop the sign-out', () async {
+        // A closed database throws on every query.
+        await db.close();
+        await expectLater(
+          db.cacheDao.clearUserReadCaches('u1'),
+          throwsA(anything),
+        );
+
+        await authService.signOut();
+
+        verify(() => mockAuthRepository.signOut()).called(1);
+        expect(authService.errorMessage, isNull);
       });
     });
 
