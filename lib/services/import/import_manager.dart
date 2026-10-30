@@ -492,7 +492,7 @@ class ImportManager {
     final stopwatch = Stopwatch()..start();
     final result = await run();
     await _finishImport(channel, input, result, stopwatch.elapsed);
-    return result;
+    return result.withoutPageText();
   }
 
   Future<void> _finishImport(

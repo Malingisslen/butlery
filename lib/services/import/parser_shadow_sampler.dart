@@ -40,11 +40,14 @@ class ParserShadowSampler extends BaseService {
   static final RegExp _label = RegExp(r'^[A-Za-z0-9_.-]{1,40}$');
 
   /// The server's channel per import channel.
-  /// Known gap: link imports are not sampled, as a URL import keeps no page text.
   static const Map<ImportChannel, String> _channelFor = {
     ImportChannel.text: 'text',
     ImportChannel.photo: 'photo',
+    ImportChannel.link: 'link',
   };
+
+  /// The server refuses longer text, so such a call is not made.
+  static const int _maxTextChars = 50000;
 
   /// The artefact types whose payload is the text the parser read. OCR text
   /// the photo flow hands to `autoParseMulti` carries `textPaste`, so the
@@ -88,11 +91,21 @@ class ParserShadowSampler extends BaseService {
     final channel = _channelFor[importChannel];
     final artefact = recipe.core.sourceArtefact;
     if (channel == null || artefact == null) return null;
-    if (!_textCaptures.contains(artefact.type)) return null;
-    final text = artefact.payload;
-    if (text.trim().isEmpty) return null;
-
     final meta = metadata ?? const <String, dynamic>{};
+    final String text;
+    if (_textCaptures.contains(artefact.type)) {
+      text = artefact.payload;
+    } else if (artefact.type == SourceArtefactType.url) {
+      // A link import's artefact is the URL; the page text it read rides in
+      // the metadata. A recipe the AI answered has no parse to compare.
+      final pageText = meta['pageText'];
+      if (pageText is! String || meta['successfulTier'] == 'LLM') return null;
+      text = pageText;
+    } else {
+      return null;
+    }
+    if (text.trim().isEmpty || text.length > _maxTextChars) return null;
+
     String? label(Object? v) => v is String && _label.hasMatch(v) ? v : null;
     return {
       'text': text,

@@ -325,6 +325,10 @@ void main() {
             'Tier 2 uses the schema.org extractor when Tier 1 is unavailable',
       );
       expect(result.metadata?['successfulTier'], 'StructuredExtraction');
+      // The page as plain text, for the parser shadow comparison.
+      final pageText = result.metadata?['pageText'] as String;
+      expect(pageText, contains('Köttbullar'));
+      expect(pageText, isNot(contains('<')));
     });
 
     /// BUT-1077: pure prose (no ingredients, no instructions detectable) must
@@ -342,6 +346,7 @@ void main() {
       expect(result.isSuccess, isFalse);
       expect(result.needsAssistance, isFalse);
       expect(result.errorCode, ImportErrorCode.noRecipeContent);
+      expect(result.metadata?.containsKey('pageText'), isFalse);
     });
 
     /// BUT-1077: Tier 5 quality gate passes when there IS actual recipe
@@ -397,6 +402,7 @@ void main() {
       );
       expect(result.metadata?['tier'], 5);
       expect(result.metadata?['successfulTier'], 'HtmlTextParse');
+      expect(result.metadata?['pageText'], contains('3 dl vetemjöl'));
       expect(
         result.warnings,
         contains('Extracted from HTML text - quality may vary'),
@@ -1427,6 +1433,9 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
         reason: 'the floor result is the Tier 1 parse itself',
       );
       expect(result.recipe!.core.title, 'Rough Dish');
+      final pageText = result.metadata?['pageText'] as String;
+      expect(pageText.trim(), isNotEmpty);
+      expect(pageText, isNot(contains('<')));
     });
 
     /// Control: an ABOVE-threshold enhanced parse must still short-circuit at
@@ -1447,6 +1456,7 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
         reason: 'a good Tier 1 parse must win immediately, before Tier 2',
       );
       expect(result.recipe!.core.title, 'Rough Dish');
+      expect(result.metadata?['pageText'], contains('Pannkakor'));
     });
   });
 

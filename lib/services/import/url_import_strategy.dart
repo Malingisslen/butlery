@@ -123,17 +123,19 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Tier 1: Enhanced parser on HTTP HTML
       final parserOutcome = await _tryEnhancedParser(url, httpHtml, options);
       if (parserOutcome != null) {
-        if (parserOutcome.quality >= defaultQualityThreshold) {
-          return parserOutcome.result;
-        }
-        belowThresholdEnhanced ??= parserOutcome.result;
+        final read = _readFrom(parserOutcome.result, httpHtml);
+        if (parserOutcome.quality >= defaultQualityThreshold) return read;
+        belowThresholdEnhanced ??= read;
       }
 
       // Tier 2: Structured data on HTTP HTML
       if (httpHtml != null) {
         final structuredResult = _tryStructuredExtraction(httpHtml, url);
         if (structuredResult != null) {
-          return _atTier(structuredResult, 'StructuredExtraction');
+          return _atTier(
+            _readFrom(structuredResult, httpHtml),
+            'StructuredExtraction',
+          );
         }
       }
 
@@ -153,10 +155,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
           options,
         );
         if (scraperParserOutcome != null) {
+          final read = _readFrom(scraperParserOutcome.result, scraperHtml);
           if (scraperParserOutcome.quality >= defaultQualityThreshold) {
-            return scraperParserOutcome.result;
+            return read;
           }
-          belowThresholdEnhanced ??= scraperParserOutcome.result;
+          belowThresholdEnhanced ??= read;
         }
 
         final scraperStructuredResult = _tryStructuredExtraction(
@@ -164,7 +167,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
           url,
         );
         if (scraperStructuredResult != null) {
-          return _atTier(scraperStructuredResult, 'StructuredExtraction');
+          return _atTier(
+            _readFrom(scraperStructuredResult, scraperHtml),
+            'StructuredExtraction',
+          );
         }
       }
 
@@ -185,7 +191,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (bestHtml != null && pageText != null) {
         final textResult = await _tryHtmlTextParse(bestHtml, pageText, url);
         if (textResult != null) {
-          return _atTier(textResult, 'HtmlTextParse');
+          return _atTier(
+            textResult.withMetadata({'pageText': pageText}),
+            'HtmlTextParse',
+          );
         }
       }
 
@@ -335,6 +344,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'strategy': strategyName,
         'extraction_method': 'text_fallback',
         'url': url,
+        'pageText': webScraperResult,
       },
     );
   }
@@ -531,6 +541,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       return null;
     }
   }
+
+  /// [result] carrying the text of the [html] its tier read, for the parser
+  /// shadow comparison (ADR-0037). In memory only: `ImportManager` drops it
+  /// before the result reaches its caller.
+  static ImportResult _readFrom(ImportResult result, String? html) =>
+      html == null
+      ? result
+      : result.withMetadata({'pageText': HtmlSanitizer.stripToPlainText(html)});
 
   /// Names the tier that answered, for the import's one parse event.
   static ImportResult _atTier(ImportResult result, String tier) =>

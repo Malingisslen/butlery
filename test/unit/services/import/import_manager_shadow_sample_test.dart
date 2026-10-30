@@ -47,8 +47,9 @@ class _SpySampler extends ParserShadowSampler {
 class _NoLlm extends Mock implements LlmService {}
 
 class _Strategy extends ImportStrategy {
-  _Strategy(this.recipe);
+  _Strategy(this.recipe, {this.metadata});
   final Recipe? recipe;
+  final Map<String, dynamic>? metadata;
 
   @override
   String get strategyName => 'Text Import';
@@ -67,7 +68,7 @@ class _Strategy extends ImportStrategy {
     Map<String, dynamic>? options,
   }) async => recipe == null
       ? ImportResult.failure('nej')
-      : ImportResult.success(recipe!);
+      : ImportResult.success(recipe!, metadata: metadata);
 }
 
 void main() {
@@ -95,9 +96,12 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  ImportManager managerWith(Recipe? recipe) => ImportManager.withStrategies(
+  ImportManager managerWith(
+    Recipe? recipe, {
+    Map<String, dynamic>? metadata,
+  }) => ImportManager.withStrategies(
     ops,
-    [_Strategy(recipe)],
+    [_Strategy(recipe, metadata: metadata)],
     eventLogger: _QuietParseEventLogger(),
     shadowSampler: spy,
   );
@@ -143,6 +147,40 @@ void main() {
 
     expect(r.isSuccess, isTrue);
     expect(spy.offered, hasLength(1), reason: 'the sample was still asked');
+  });
+
+  group('a link import', () {
+    const url = 'https://ica.se/recept/pannkakor';
+    const pageText = 'Pannkakor\n3 dl vetemjöl\nVispa och stek.';
+    final meta = {'pageText': pageText, 'successfulTier': 'HtmlTextParse'};
+
+    test('is offered with its page text, as channel link', () async {
+      await managerWith(recipe, metadata: meta).autoImport(url);
+
+      expect(spy.offered, hasLength(1));
+      expect(spy.offered.single.$1, ImportChannel.link);
+      expect(spy.offered.single.$2.metadata?['pageText'], pageText);
+    });
+
+    test('returns to its caller without the page text', () async {
+      final r = await managerWith(recipe, metadata: meta).autoImport(url);
+
+      expect(r.isSuccess, isTrue);
+      expect(r.metadata?.containsKey('pageText'), isFalse);
+      expect(r.metadata?['successfulTier'], 'HtmlTextParse');
+    });
+
+    test('is not held back by a sample that never answers', () async {
+      spy.answer = Completer<bool>().future;
+
+      final r = await managerWith(
+        recipe,
+        metadata: meta,
+      ).autoImport(url).timeout(const Duration(seconds: 5));
+
+      expect(r.isSuccess, isTrue);
+      expect(spy.offered, hasLength(1));
+    });
   });
 
   test('a failed import is never offered', () async {

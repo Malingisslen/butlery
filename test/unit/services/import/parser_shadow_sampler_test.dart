@@ -1,7 +1,8 @@
 /// Parser shadow comparison (ADR-0037), client half: what [ParserShadowSampler]
 /// sends, and above all what it never sends — nothing without AI consent,
 /// nothing for a guest, nothing for voice or file, nothing from a failed
-/// import — and that a slow or failing callable never reaches the caller.
+/// import, nothing a link import's AI answered — and that a slow or failing
+/// callable never reaches the caller.
 library;
 
 import 'dart:async';
@@ -24,6 +25,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 class _MockLlmService extends Mock implements LlmService {}
 
 const _text = 'Pannkakor\n3 dl vetemjöl\n6 dl mjölk\nVispa och stek.';
+const _url = 'https://ica.se/recept/pannkakor';
 
 Recipe _recipe(SourceArtefactType? type, {String payload = _text}) {
   final base = RecipeFactory.build(id: 'r1', title: 'Pannkakor');
@@ -155,6 +157,28 @@ void main() {
     });
 
     test(
+      'a link: the page text it read, never the URL, under channel link',
+      () async {
+        await sampler().sample(
+          ImportChannel.link,
+          _ok(_recipe(SourceArtefactType.url, payload: _url), {
+            'pageText': _text,
+            'successfulTier': 'StructuredExtraction',
+            'url': _url,
+          }),
+        );
+
+        final p = sentPayload();
+        expect(p['text'], _text);
+        expect(p['channel'], 'link');
+        expect(p['successfulTier'], 'StructuredExtraction');
+        expect(p.containsKey('photoAiFallback'), isFalse);
+        expect(p.containsKey('pageText'), isFalse);
+        expect(p.values.whereType<String>(), isNot(contains(_url)));
+      },
+    );
+
+    test(
       'a label the server would refuse is left out, not the sample',
       () async {
         await sampler().sample(
@@ -206,9 +230,9 @@ void main() {
       }
     });
 
-    test('for any link import: a plain URL or a caption', () async {
+    test('for a link import that kept no page text, or a caption', () async {
       for (final (type, payload) in [
-        (SourceArtefactType.url, 'https://ica.se/x'),
+        (SourceArtefactType.url, _url),
         (SourceArtefactType.tiktokCaption, _text),
         (SourceArtefactType.youtubeTranscript, _text),
         (SourceArtefactType.instagramCaption, _text),
@@ -220,6 +244,36 @@ void main() {
           ),
         );
       }
+    });
+
+    test('for a link import the AI answered', () async {
+      await expectNothingSent(
+        sampler().sample(
+          ImportChannel.link,
+          _ok(_recipe(SourceArtefactType.url, payload: _url), {
+            'pageText': _text,
+            'successfulTier': 'LLM',
+          }),
+        ),
+      );
+    });
+
+    test('for text longer than the server takes, on any channel', () async {
+      final long = 'a' * 50001;
+      await expectNothingSent(
+        sampler().sample(
+          ImportChannel.link,
+          _ok(_recipe(SourceArtefactType.url, payload: _url), {
+            'pageText': long,
+          }),
+        ),
+      );
+      await expectNothingSent(
+        sampler().sample(
+          ImportChannel.text,
+          _ok(_recipe(SourceArtefactType.textPaste, payload: long)),
+        ),
+      );
     });
 
     test('for dictation, or a recipe with no capture at all', () async {
@@ -265,6 +319,19 @@ void main() {
         await sampler().sample(
           ImportChannel.text,
           _ok(_recipe(SourceArtefactType.textPaste)),
+        ),
+        isFalse,
+      );
+    });
+
+    test('a failing callable on a link import is swallowed', () async {
+      when(() => llm.shadowCompareImport(any())).thenThrow(Exception('boom'));
+      expect(
+        await sampler().sample(
+          ImportChannel.link,
+          _ok(_recipe(SourceArtefactType.url, payload: _url), {
+            'pageText': _text,
+          }),
         ),
         isFalse,
       );
