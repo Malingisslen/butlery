@@ -9962,27 +9962,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotExportRecipes => 'Could not export recipes';
 
   @override
-  String get errorCouldNotMarkAsCooked => 'Could not mark recipe as cooked';
-
-  @override
-  String get errorCouldNotAddIngredient => 'Could not add ingredient';
-
-  @override
-  String get errorCouldNotUpdateIngredient => 'Could not update ingredient';
-
-  @override
-  String get errorCouldNotRemoveIngredient => 'Could not remove ingredient';
-
-  @override
-  String get errorCouldNotAddInstruction => 'Could not add instruction';
-
-  @override
-  String get errorCouldNotUpdateInstruction => 'Could not update instruction';
-
-  @override
-  String get errorCouldNotRemoveInstruction => 'Could not remove instruction';
-
-  @override
   String get errorCouldNotStartSync => 'Could not start synchronisation';
 
   @override

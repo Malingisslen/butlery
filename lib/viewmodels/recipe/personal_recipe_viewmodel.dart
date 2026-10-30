@@ -243,15 +243,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     return await _recipeService.personal.removeInstruction(recipeId, index);
   }
 
-  Future<bool> markAsCooked(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
-
-    final recipe = getPersonalRecipeById(recipeId);
-    if (recipe == null || !recipe.isPersonal) return false;
-
-    return await _recipeService.personal.markAsCooked(recipeId);
-  }
-
   Future<RecipeOperationResult> addLegacyRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) {
       return RecipeOperationResult.failure('Recipe is not personal');

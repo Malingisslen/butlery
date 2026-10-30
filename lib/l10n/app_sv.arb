@@ -6368,13 +6368,6 @@
   "errorCouldNotAddRecipe": "Receptet kunde inte läggas till.",
   "errorCouldNotUpdateRecipe": "Receptet kunde inte uppdateras.",
   "errorCouldNotExportRecipes": "Kunde inte exportera recept",
-  "errorCouldNotMarkAsCooked": "Kunde inte markera receptet som lagat",
-  "errorCouldNotAddIngredient": "Kunde inte lägga till ingrediens",
-  "errorCouldNotUpdateIngredient": "Kunde inte uppdatera ingrediens",
-  "errorCouldNotRemoveIngredient": "Kunde inte ta bort ingrediens",
-  "errorCouldNotAddInstruction": "Kunde inte lägga till instruktion",
-  "errorCouldNotUpdateInstruction": "Kunde inte uppdatera instruktion",
-  "errorCouldNotRemoveInstruction": "Kunde inte ta bort instruktion",
   "errorCouldNotStartSync": "Kunde inte starta synkronisering",
   "errorSyncErrorFor": "Synkroniseringsfel för {syncType}",
   "@errorSyncErrorFor": {

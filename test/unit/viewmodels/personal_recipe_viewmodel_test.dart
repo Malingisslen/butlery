@@ -130,9 +130,6 @@ void main() {
       () => mockPersonalOps.removeInstruction(any(), any()),
     ).thenAnswer((_) async => true);
     when(
-      () => mockPersonalOps.markAsCooked(any()),
-    ).thenAnswer((_) async => true);
-    when(
       () => mockPersonalOps.addLegacyRecipe(any()),
     ).thenAnswer((_) async => RecipeOperationResult.success('ok'));
     when(
@@ -410,19 +407,6 @@ void main() {
     test('removeInstruction delegates to service', () async {
       final result = await viewModel.removeInstruction(testRecipeId, 0);
       expect(result, isTrue);
-    });
-  });
-
-  group('Mark as Cooked', () {
-    test('markAsCooked delegates to service', () async {
-      final result = await viewModel.markAsCooked(testRecipeId);
-      expect(result, isTrue);
-      verify(() => mockPersonalOps.markAsCooked(testRecipeId)).called(1);
-    });
-
-    test('markAsCooked rejects empty id', () async {
-      final result = await viewModel.markAsCooked('');
-      expect(result, isFalse);
     });
   });
 

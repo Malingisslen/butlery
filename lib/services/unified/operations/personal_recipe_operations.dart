@@ -47,7 +47,6 @@ abstract class PersonalRecipeDelegate {
     String instruction,
   );
   Future<bool> removeInstruction(String recipeId, int index);
-  Future<bool> markAsCooked(String recipeId);
 }
 
 class PersonalRecipeOperations {
@@ -245,10 +244,6 @@ class PersonalRecipeOperations {
 
   Future<bool> removeInstruction(String recipeId, int index) async {
     return await _delegate.removeInstruction(recipeId, index);
-  }
-
-  Future<bool> markAsCooked(String recipeId) async {
-    return await _delegate.markAsCooked(recipeId);
   }
 
   // Legacy compatibility methods for ViewModel
