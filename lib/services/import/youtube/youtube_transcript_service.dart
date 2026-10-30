@@ -50,12 +50,8 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
       r'^https?://(?:www\.|m\.)?youtube\.com/live/([A-Za-z0-9_-]{11})',
       caseSensitive: false,
     ),
-    // Just the video ID. BUT-1091 trade-off: this pattern still matches any
-    // 11-char `[A-Za-z0-9_-]` string. Acceptable because the only caller path
-    // that hits `canHandle` with a bare ID is direct user input after they've
-    // already picked "YouTube import" — the typosquat surface lives on the
-    // URL patterns above, which are now host-anchored.
-    RegExp(r'^([A-Za-z0-9_-]{11})$'),
+    // No bare-ID pattern: every import tries YouTube first, so an 11-letter
+    // word ("Chokladkaka") would be fetched as a video.
   ];
 
   /// Preferred languages for transcripts, in order of preference.

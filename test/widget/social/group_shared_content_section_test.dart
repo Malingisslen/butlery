@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
+import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/widgets/social/groups/group_shared_content_section.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/social_factory.dart';
+import '../../infrastructure/mocks/fallback_values.dart';
+
+class _MockSharedRecipeViewModel extends Mock
+    implements SharedRecipeViewModel {}
 
 /// Counts subscriptions per stream so a rebuild that re-subscribes shows up.
 class _Service extends Fake implements GroupSharedContentService {
@@ -165,6 +171,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(sv.groupImport), findsOneWidget);
+  });
+
+  testWidgets('an import that makes no copy says so, not "importerat"', (
+    tester,
+  ) async {
+    final vm = _MockSharedRecipeViewModel();
+    final shared = FakeSharedRecipe();
+    when(() => vm.getSharedRecipeById(any())).thenAnswer((_) async => shared);
+    when(() => vm.importSharedRecipe(shared)).thenAnswer((_) async => null);
+    when(() => vm.error).thenReturn(null);
+    TestServiceLocator.registerMock<SharedRecipeViewModel>(vm);
+    final service = _Service(
+      recipesByGroup: {
+        group.id: [item('recipe')],
+      },
+    );
+    await pump(tester, service);
+    await tester.tap(find.text(sv.groupSharedRecipesLabel(1)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(sv.groupImport));
+    await tester.pump();
+    await tester.pump();
+
+    verify(() => vm.importSharedRecipe(shared)).called(1);
+    expect(find.textContaining(sv.errorCouldNotImportRecipes), findsOneWidget);
+    expect(
+      find.text(sv.groupRecipeImportedSuccess('Delat recipe')),
+      findsNothing,
+    );
   });
 
   testWidgets('a shared menu offers no Importera', (tester) async {

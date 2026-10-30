@@ -3,8 +3,9 @@
 /// What this file proves (one bullet per behaviour, by group):
 ///
 /// URL parsing (`extractVideoId` / `isYouTubeUrl`):
-/// - All six documented URL shapes yield the same 11-char video ID:
-///   watch, youtu.be, shorts, embed, live, and bare-ID.
+/// - All five documented URL shapes yield the same 11-char video ID:
+///   watch, youtu.be, shorts, embed and live. A bare ID, or any 11-letter
+///   word, is not a video.
 /// - Surrounding whitespace is trimmed before matching (paste-from-chat).
 /// - Tracking parameters (`?si=…`, `&t=…`, `&list=…`) on every shape don't
 ///   defeat the match.
@@ -12,8 +13,6 @@
 ///   accepted (off-by-one regex-class bug class).
 /// - URLs with the wrong host (vimeo, "iyoutube.com", "youtube.example") return
 ///   null — pattern must not over-match.
-/// - IDs of length 10 or 12 reject (length 12 returns null for bare; length 12
-///   in a URL returns the first 11 — YouTube's own behaviour).
 /// - Non-strings, empty string and pure whitespace return null (no crash).
 ///
 /// `fetchVideoMetadata`:
@@ -130,7 +129,7 @@ void main() {
     setUp(() => svc = YouTubeTranscriptService());
     tearDown(() => svc.dispose());
 
-    /// All six documented URL shapes must parse to the same 11-char video ID.
+    /// All documented URL shapes must parse to the same 11-char video ID.
     /// This is the contract the rest of the service builds on — a single
     /// off-by-one in any one regex breaks import for that share-link shape.
     test('extracts video ID from every documented YouTube URL shape', () {
@@ -144,7 +143,6 @@ void main() {
         'shorts': 'https://www.youtube.com/shorts/$_vid',
         'embed': 'https://www.youtube.com/embed/$_vid',
         'live': 'https://www.youtube.com/live/$_vid',
-        'bare id': _vid,
       };
       for (final entry in shapes.entries) {
         expect(
@@ -156,15 +154,23 @@ void main() {
     });
 
     /// Surrounding whitespace must be trimmed. Pasted URLs from chat apps
-    /// arrive padded — without trim the regex `^…$` for bare-ID and the
-    /// host prefix in other patterns would silently fail to match.
+    /// arrive padded — without trim the host prefix would silently fail to
+    /// match.
     test('trims surrounding whitespace and newlines', () {
       expect(svc.extractVideoId('  https://youtu.be/$_vid  '), _vid);
       expect(
         svc.extractVideoId('\n\thttps://www.youtube.com/watch?v=$_vid\n'),
         _vid,
       );
-      expect(svc.extractVideoId('   $_vid   '), _vid);
+    });
+
+    test('an 11-letter word or a bare ID is not a video', () {
+      expect(svc.isYouTubeUrl('Chokladkaka'), isFalse);
+      expect(svc.isYouTubeUrl(_vid), isFalse);
+      expect(svc.extractVideoId('   $_vid   '), isNull);
+      expect(svc.extractVideoId('a' * 10), isNull);
+      expect(svc.extractVideoId('a' * 11), isNull);
+      expect(svc.extractVideoId('a' * 12), isNull);
     });
 
     /// The video-ID alphabet is `[A-Za-z0-9_-]`. A regex character class
@@ -182,7 +188,7 @@ void main() {
         svc.extractVideoId('https://www.youtube.com/shorts/$dashId'),
         dashId,
       );
-      expect(svc.extractVideoId(dashId), dashId);
+      expect(svc.extractVideoId(dashId), isNull);
     });
 
     /// `isYouTubeUrl` is a thin wrapper over `extractVideoId`. The bug class
@@ -248,15 +254,6 @@ void main() {
         svc.extractVideoId('https://random.youtube.com/watch?v=$_vid'),
         isNull,
       );
-    });
-
-    /// Length is strict at 11 for the bare-ID pattern. A 10-char or 12-char
-    /// bare string must NOT be accepted, otherwise we'd happily try to fetch
-    /// nonsense from YouTube.
-    test('bare-ID pattern rejects lengths other than 11', () {
-      expect(svc.extractVideoId('a' * 10), isNull); // too short
-      expect(svc.extractVideoId('a' * 12), isNull); // too long
-      expect(svc.extractVideoId('a' * 11), 'a' * 11); // exact
     });
   });
 

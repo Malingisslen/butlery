@@ -4140,6 +4140,13 @@
       "steps": [
         {
           "from": "v-fran-sociala-medier",
+          "to": "v-smart-import",
+          "payload": "En länk utan recepttext runt sig (routeForSharedText i shared_import_route.dart) lämnas över till Smart import i stället för att tolkas här",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "v-fran-sociala-medier",
           "to": "vm-text-import",
           "payload": "Inklistrad text (+ eventuell källa-URL)",
           "transport": "method-call",
@@ -4386,6 +4393,13 @@
         "IMP-09"
       ],
       "steps": [
+        {
+          "from": "v-add-recipe-hub",
+          "to": "v-file-import",
+          "payload": "Rutan “Från fil” i Lägg till-arket öppnar filimporten",
+          "transport": "navigation",
+          "verified": true
+        },
         {
           "from": "v-file-import",
           "to": "vm-file-import",

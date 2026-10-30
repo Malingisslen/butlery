@@ -7904,6 +7904,12 @@ abstract class AppLocalizations {
   /// **'Från arkiv'**
   String get recipeFromArchive;
 
+  /// No description provided for @recipeFromFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från fil'**
+  String get recipeFromFile;
+
   /// No description provided for @recipeFromImage.
   ///
   /// In sv, this message translates to:
@@ -18345,12 +18351,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Tom meny'**
   String get labelEmptyMenu;
-
-  /// No description provided for @errorVideoNoSubtitles.
-  ///
-  /// In sv, this message translates to:
-  /// **'Video saknar undertexter'**
-  String get errorVideoNoSubtitles;
 
   /// No description provided for @errorNetworkFallback.
   ///

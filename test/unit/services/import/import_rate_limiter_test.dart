@@ -5,7 +5,8 @@
 ///   reset together).
 /// - Daily and monthly USD cost ceilings, read from the server-written ledger
 ///   `rate_limits/llm_cost` (BUT-2243).
-/// - Fail-closed behaviour when Firestore throws.
+/// - Fail-closed behaviour for a model call when Firestore throws; an import
+///   without one goes ahead.
 /// - Anonymous (unauthenticated) callers are allowed but not tracked.
 /// - Time-window reset semantics — counters drop to 1 at exactly windowSize
 ///   elapsed, persist below it.
@@ -1083,12 +1084,13 @@ void main() {
     });
 
     group('fail-closed on Firestore errors', () {
-      /// If Firestore throws (network down, rules deny, etc.), the limiter
-      /// must DENY — not silently allow, which would open us to abuse.
+      /// If Firestore throws (network down, rules deny, etc.), a model call
+      /// must be DENIED — not silently allowed, which would open us to abuse.
       /// We simulate by injecting a [_ThrowingFirestoreRepository] that
       /// blows up on the underlying `firestore` getter access path.
       test(
-        'checkLimit denies with retryAfter=30s when Firestore read fails',
+        'checkLimit denies a model call with retryAfter=30s when Firestore '
+        'read fails',
         () async {
           final brokenRepo = _ThrowingFirestoreRepository();
           final brokenLimiter = ImportRateLimiter(
@@ -1098,7 +1100,9 @@ void main() {
 
           final result = await withClock(
             Clock.fixed(_t0),
-            () => brokenLimiter.checkLimit(ImportOperation.basic('url')),
+            () => brokenLimiter.checkLimit(
+              ImportOperation.withLlm('url', LlmOperationType.fullExtraction),
+            ),
           );
 
           expect(
@@ -1109,6 +1113,23 @@ void main() {
           final denied = result as RateLimitDenied;
           expect(denied.retryAfter, const Duration(seconds: 30));
           expect(denied.suggestedAction, FallbackAction.retryLater);
+        },
+      );
+
+      test(
+        'an import without a model call goes ahead when Firestore read fails',
+        () async {
+          final brokenLimiter = ImportRateLimiter(
+            firestoreRepository: _ThrowingFirestoreRepository(),
+            authRepository: auth,
+          );
+
+          final result = await withClock(
+            Clock.fixed(_t0),
+            () => brokenLimiter.checkLimit(ImportOperation.basic('text')),
+          );
+
+          expect(result, isA<RateLimitAllowed>());
         },
       );
 

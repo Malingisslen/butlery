@@ -160,7 +160,11 @@ class HttpContentFetcher {
         }
 
         // Read bytes incrementally with size cap
-        final bytes = await _readBytesWithLimit(streamedResponse.stream);
+        // The send timeout ends when the headers arrive; a server that then
+        // trickles the body would hold the import forever without this one.
+        final bytes = await _readBytesWithLimit(
+          streamedResponse.stream,
+        ).timeout(_fetchTimeout);
 
         // Detect charset and decode
         final charset = _detectCharset(

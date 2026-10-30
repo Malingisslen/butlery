@@ -152,6 +152,10 @@ class ImportManagerResult {
         );
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
+
+  /// The post was read and holds no recipe text, so a screenshot of the
+  /// recipe is the way forward.
+  bool get needsScreenshot => metadata?['needsScreenshot'] == true;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
 
   // Compatibility getters for ViewModels
