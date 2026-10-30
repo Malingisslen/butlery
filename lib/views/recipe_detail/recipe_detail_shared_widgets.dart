@@ -29,6 +29,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/tagging/allergen_verdict.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -183,6 +184,11 @@ abstract final class RecipeDetailSharedWidgets {
                   tagResult: tagResult,
                   userAllergenPrefs: allergenPrefs.trackedAllergens,
                   userDietaryPrefs: allergenPrefs.trackedDietary,
+                  allergenStatusOf: (key) =>
+                      AllergenVerdict.forAllergen(recipe, key).effective,
+                  tagOverrides: recipe.tagOverrides,
+                  onResetAllergenOverride: (key) =>
+                      viewModel.resetAllergenOverride(key),
                   showCoverage: tagResult.coverage < 1.0,
                   isDegraded:
                       ServiceLocator.tryGet<TaggingService>()

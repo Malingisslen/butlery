@@ -166,6 +166,20 @@ void main() {
       return vm;
     }
 
+    test('flags a dish whose tracked allergen nobody has settled', () async {
+      final vm = viewModel(() async => _tracksNuts);
+      final unsettled = _dish('unsettled', nuts: TriState.unknown);
+
+      // Before the household's allergens are read nothing can be said.
+      expect(vm.hasUncheckedTrackedAllergen(unsettled), isFalse);
+      vm.isHouseholdUnsafe(unsettled);
+      await pumpEventQueue();
+
+      expect(vm.hasUncheckedTrackedAllergen(unsettled), isTrue);
+      expect(vm.hasUncheckedTrackedAllergen(freeDish), isFalse);
+      expect(vm.hasUncheckedTrackedAllergen(nutDish), isFalse);
+    });
+
     test('a failed read is not repeated for every dish shown', () async {
       var reads = 0;
       final vm = viewModel(() async {

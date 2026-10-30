@@ -20632,6 +20632,45 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String allergenOverrideOk(String allergen) {
+    return 'You marked $allergen as fine. The app found $allergen.';
+  }
+
+  @override
+  String allergenOverrideContains(String allergen) {
+    return 'You marked this recipe as containing $allergen.';
+  }
+
+  @override
+  String get allergenOverrideReset => 'Reset';
+
+  @override
+  String shareAllergensOverridden(String names) {
+    return 'The app found $names, but the owner has marked it as fine.';
+  }
+
+  @override
+  String get menuManualAddTitle => 'Add anyway?';
+
+  @override
+  String menuManualAddContains(String recipe, String names) {
+    return '$recipe contains $names.';
+  }
+
+  @override
+  String menuManualAddDislikes(String recipe) {
+    return 'Someone in the household dislikes something in $recipe.';
+  }
+
+  @override
+  String menuManualAddUnchecked(String recipe) {
+    return 'The allergens have not been checked for $recipe.';
+  }
+
+  @override
+  String get menuManualAddConfirm => 'Add anyway';
+
+  @override
   String get recipeSaveNeedsTitle => 'Add a title to save.';
 
   @override

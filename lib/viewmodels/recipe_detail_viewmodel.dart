@@ -517,6 +517,22 @@ class RecipeDetailViewModel extends BaseViewModel {
     return true;
   }
 
+  /// Removes the user's override for one allergen so the tagger's own answer
+  /// applies again. Returns false when there was nothing to remove or the save
+  /// failed.
+  Future<bool> resetAllergenOverride(String allergenKey) {
+    final current = _recipe.tagOverrides;
+    if (current == null || !current.hasAllergenOverride(allergenKey)) {
+      return Future.value(false);
+    }
+    return updateRecipeTagOverrides(
+      current.withoutAllergenOverride(
+        allergenKey,
+        editedBy: ServiceLocator.tryGet<UserService>()?.currentUserId ?? '',
+      ),
+    );
+  }
+
   /// BUT-678: trigger in-app review prompt at the happy moment.
   /// Best-effort — never propagates failures back into the rating flow.
   Future<void> _maybeRequestInAppReview(double rating) async {

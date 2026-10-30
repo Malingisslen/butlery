@@ -16906,6 +16906,75 @@
       }
     }
   },
+  "allergenOverrideOk": "Du har markerat {allergen} som ok. Appen hittade {allergen}.",
+  "@allergenOverrideOk": {
+    "description": "Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideContains": "Du har markerat att receptet innehåller {allergen}.",
+  "@allergenOverrideContains": {
+    "description": "Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideReset": "Återställ",
+  "@allergenOverrideReset": {
+    "description": "Button that removes the user override for one allergen."
+  },
+  "shareAllergensOverridden": "Appen hittade {names}, men ägaren har markerat det som ok.",
+  "@shareAllergensOverridden": {
+    "description": "Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddTitle": "Lägg till ändå?",
+  "@menuManualAddTitle": {
+    "description": "Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes."
+  },
+  "menuManualAddContains": "{recipe} innehåller {names}.",
+  "@menuManualAddContains": {
+    "description": "Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddDislikes": "Någon i hushållet ogillar något i {recipe}.",
+  "@menuManualAddDislikes": {
+    "description": "Confirmation line: someone in the household dislikes an ingredient in the recipe.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddUnchecked": "Allergenerna är inte kontrollerade för {recipe}.",
+  "@menuManualAddUnchecked": {
+    "description": "Confirmation line: the recipe has no settled allergen check for a tracked allergen.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddConfirm": "Lägg till ändå",
+  "@menuManualAddConfirm": {
+    "description": "Button that adds the recipe to the menu despite the conflict."
+  },
   "recipeSaveNeedsTitle": "Skriv en titel för att kunna spara.",
   "recipeSaveNeedsIngredient": "Lägg till minst en ingrediens för att kunna spara.",
   "recipeSaveNeedsInstruction": "Lägg till minst ett steg för att kunna spara.",

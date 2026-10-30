@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -58,7 +60,7 @@ void main() {
                 dietaryStatus: const {'vegansk': TriState.free},
                 coverage: 1.0,
                 generatedAt: DateTime(2026, 1, 1),
-                generatorVersion: '1.0',
+                generatorVersion: kTagGeneratorVersion,
                 hasCoverageAnomaly: false,
               ),
             ))
@@ -79,7 +81,7 @@ void main() {
                 dietaryStatus: const {},
                 coverage: 0.0,
                 generatedAt: DateTime(2026, 1, 1),
-                generatorVersion: '1.0',
+                generatorVersion: kTagGeneratorVersion,
                 hasCoverageAnomaly: false,
               ),
             ))
