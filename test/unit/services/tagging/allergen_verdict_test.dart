@@ -94,6 +94,37 @@ void main() {
     });
   });
 
+  group('AllergenVerdict.trusted', () {
+    test('ignores an override but keeps the staleness downgrade', () {
+      final verdict = AllergenVerdict.forAllergen(
+        _recipe(
+          tags: _tags({'gluten': TriState.free}, coverage: 0.5),
+          overrides: const TagOverrides(
+            allergenOverrides: {'gluten': TriState.contains},
+          ),
+        ),
+        'gluten',
+      );
+
+      expect(verdict.effective, TriState.contains);
+      expect(verdict.trusted, TriState.unknown);
+    });
+
+    test('a CONTAINS is trusted as found', () {
+      final verdict = AllergenVerdict.forAllergen(
+        _recipe(
+          tags: _tags({'gluten': TriState.contains}, coverage: 0.5),
+          overrides: const TagOverrides(
+            allergenOverrides: {'gluten': TriState.free},
+          ),
+        ),
+        'gluten',
+      );
+
+      expect(verdict.trusted, TriState.contains);
+    });
+  });
+
   group('AllergenVerdict.overrideHidesContains', () {
     test('true when the user marked ok what the tagger found', () {
       final verdict = AllergenVerdict.forAllergen(

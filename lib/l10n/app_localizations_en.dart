@@ -20941,4 +20941,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yMergeSteps(int first, int second) {
     return 'Merge step $first with step $second';
   }
+
+  @override
+  String get tagAllergenSection => 'Allergens';
+
+  @override
+  String get tagAllergenHint =>
+      'Only change this if the app is wrong for this recipe. The app decides follows the ingredients.';
+
+  @override
+  String get tagAllergenChoiceAuto => 'App decides';
+
+  @override
+  String get tagAllergenChoiceContains => 'Contains';
+
+  @override
+  String get tagAllergenChoiceFree => 'Does not contain';
+
+  @override
+  String get tagAllergenAutoContains => 'App: contains';
+
+  @override
+  String get tagAllergenAutoFree => 'App: does not contain';
+
+  @override
+  String get tagAllergenAutoUnknown => 'App: not checked';
 }
