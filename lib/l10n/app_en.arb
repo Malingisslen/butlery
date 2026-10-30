@@ -6313,13 +6313,6 @@
   "errorCouldNotAddRecipe": "Could not add the recipe.",
   "errorCouldNotUpdateRecipe": "Could not update the recipe.",
   "errorCouldNotExportRecipes": "Could not export recipes",
-  "errorCouldNotMarkAsCooked": "Could not mark recipe as cooked",
-  "errorCouldNotAddIngredient": "Could not add ingredient",
-  "errorCouldNotUpdateIngredient": "Could not update ingredient",
-  "errorCouldNotRemoveIngredient": "Could not remove ingredient",
-  "errorCouldNotAddInstruction": "Could not add instruction",
-  "errorCouldNotUpdateInstruction": "Could not update instruction",
-  "errorCouldNotRemoveInstruction": "Could not remove instruction",
   "errorCouldNotStartSync": "Could not start synchronisation",
   "errorSyncErrorFor": "Sync error for {syncType}",
   "@errorSyncErrorFor": {

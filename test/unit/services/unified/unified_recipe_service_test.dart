@@ -960,15 +960,16 @@ void main() {
           instructions: instructions,
         );
         expect(recipeId, isNotNull, reason: 'Recipe should be created');
-        service.optimisticRestore(
-          service.getRecipeById(recipeId!) ??
-              RecipeFactory.build(
-                id: recipeId,
-                title: 'Recipe for Edits',
-                ingredients: ingredients,
-                instructions: instructions,
-              ),
-        );
+        if (service.getRecipeById(recipeId!) == null) {
+          service.optimisticRestore(
+            RecipeFactory.build(
+              id: recipeId,
+              title: 'Recipe for Edits',
+              ingredients: ingredients,
+              instructions: instructions,
+            ),
+          );
+        }
         return recipeId;
       }
 

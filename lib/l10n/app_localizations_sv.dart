@@ -9932,29 +9932,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotExportRecipes => 'Kunde inte exportera recept';
 
   @override
-  String get errorCouldNotMarkAsCooked =>
-      'Kunde inte markera receptet som lagat';
-
-  @override
-  String get errorCouldNotAddIngredient => 'Kunde inte lägga till ingrediens';
-
-  @override
-  String get errorCouldNotUpdateIngredient => 'Kunde inte uppdatera ingrediens';
-
-  @override
-  String get errorCouldNotRemoveIngredient => 'Kunde inte ta bort ingrediens';
-
-  @override
-  String get errorCouldNotAddInstruction => 'Kunde inte lägga till instruktion';
-
-  @override
-  String get errorCouldNotUpdateInstruction =>
-      'Kunde inte uppdatera instruktion';
-
-  @override
-  String get errorCouldNotRemoveInstruction => 'Kunde inte ta bort instruktion';
-
-  @override
   String get errorCouldNotStartSync => 'Kunde inte starta synkronisering';
 
   @override

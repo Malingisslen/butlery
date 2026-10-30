@@ -15692,48 +15692,6 @@ abstract class AppLocalizations {
   /// **'Kunde inte exportera recept'**
   String get errorCouldNotExportRecipes;
 
-  /// No description provided for @errorCouldNotMarkAsCooked.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte markera receptet som lagat'**
-  String get errorCouldNotMarkAsCooked;
-
-  /// No description provided for @errorCouldNotAddIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte lägga till ingrediens'**
-  String get errorCouldNotAddIngredient;
-
-  /// No description provided for @errorCouldNotUpdateIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera ingrediens'**
-  String get errorCouldNotUpdateIngredient;
-
-  /// No description provided for @errorCouldNotRemoveIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte ta bort ingrediens'**
-  String get errorCouldNotRemoveIngredient;
-
-  /// No description provided for @errorCouldNotAddInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte lägga till instruktion'**
-  String get errorCouldNotAddInstruction;
-
-  /// No description provided for @errorCouldNotUpdateInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera instruktion'**
-  String get errorCouldNotUpdateInstruction;
-
-  /// No description provided for @errorCouldNotRemoveInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte ta bort instruktion'**
-  String get errorCouldNotRemoveInstruction;
-
   /// No description provided for @errorCouldNotStartSync.
   ///
   /// In sv, this message translates to:
