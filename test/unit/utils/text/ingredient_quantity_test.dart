@@ -26,7 +26,8 @@ void main() {
       '1,5 dl socker': (1.5, 1.5, false),
       'creme fraiche, 2 dl': (2, 2, false),
     };
-    for (final MapEntry(key: line, value: (min, max, approx)) in cases.entries) {
+    for (final MapEntry(key: line, value: (min, max, approx))
+        in cases.entries) {
       test('"$line"', () {
         final q = IngredientQuantity.read(line);
         expect(q.min, min, reason: 'min');

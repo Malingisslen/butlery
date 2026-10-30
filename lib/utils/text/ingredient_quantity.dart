@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
@@ -74,7 +75,7 @@ class IngredientQuantity {
       final amount = switch (stored) {
         _
             when quantity.isUnknown &&
-                (entry.unit ?? '').isEmpty &&
+                entry.unit.orEmpty().isEmpty &&
                 !_digitRe.hasMatch(entry.raw) =>
           null,
         null => quantity.forShopping,
@@ -85,7 +86,7 @@ class IngredientQuantity {
       };
       return (
         name: entry.name.trim(),
-        unit: amount == null ? '' : (entry.unit ?? '').toLowerCase().trim(),
+        unit: amount == null ? '' : entry.unit.orEmpty().toLowerCase().trim(),
         amount: amount,
       );
     }
