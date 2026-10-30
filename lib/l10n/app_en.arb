@@ -17301,5 +17301,37 @@
       "first": {"type": "int"},
       "second": {"type": "int"}
     }
+  },
+  "tagAllergenSection": "Allergens",
+  "@tagAllergenSection": {
+    "description": "Heading of the allergen section in the tag editor dialog."
+  },
+  "tagAllergenHint": "Only change this if the app is wrong for this recipe. The app decides follows the ingredients.",
+  "@tagAllergenHint": {
+    "description": "Hint under the allergen heading in the tag editor."
+  },
+  "tagAllergenChoiceAuto": "App decides",
+  "@tagAllergenChoiceAuto": {
+    "description": "Segment: no manual override, the app decides."
+  },
+  "tagAllergenChoiceContains": "Contains",
+  "@tagAllergenChoiceContains": {
+    "description": "Segment: user overrides the allergen to CONTAINS."
+  },
+  "tagAllergenChoiceFree": "Does not contain",
+  "@tagAllergenChoiceFree": {
+    "description": "Segment: user overrides the allergen to FREE."
+  },
+  "tagAllergenAutoContains": "App: contains",
+  "@tagAllergenAutoContains": {
+    "description": "Secondary line: the app's own verdict is contains."
+  },
+  "tagAllergenAutoFree": "App: does not contain",
+  "@tagAllergenAutoFree": {
+    "description": "Secondary line: the app's own verdict is free."
+  },
+  "tagAllergenAutoUnknown": "App: not checked",
+  "@tagAllergenAutoUnknown": {
+    "description": "Secondary line: the app has not settled this allergen."
   }
 }

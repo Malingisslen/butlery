@@ -31935,6 +31935,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Slå ihop steg {first} med steg {second}'**
   String a11yMergeSteps(int first, int second);
+
+  /// Heading of the allergen section in the tag editor dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get tagAllergenSection;
+
+  /// Hint under the allergen heading in the tag editor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra bara om appen har fel för det här receptet. Appen avgör följer ingredienserna.'**
+  String get tagAllergenHint;
+
+  /// Segment: no manual override, the app decides.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen avgör'**
+  String get tagAllergenChoiceAuto;
+
+  /// Segment: user overrides the allergen to CONTAINS.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller'**
+  String get tagAllergenChoiceContains;
+
+  /// Segment: user overrides the allergen to FREE.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller inte'**
+  String get tagAllergenChoiceFree;
+
+  /// Secondary line: the app's own verdict is contains.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: innehåller'**
+  String get tagAllergenAutoContains;
+
+  /// Secondary line: the app's own verdict is free.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: innehåller inte'**
+  String get tagAllergenAutoFree;
+
+  /// Secondary line: the app has not settled this allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: ej kontrollerat'**
+  String get tagAllergenAutoUnknown;
 }
 
 class _AppLocalizationsDelegate

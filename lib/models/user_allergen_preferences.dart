@@ -34,11 +34,10 @@ class UserAllergenPreferences {
   }) : _includeUnknownInMenu = includeUnknownInMenu;
 
   /// Whether recipes with UNKNOWN status pass the menu's allergen and dietary
-  /// filters. Until the user decides, the switch is OFF for anyone who tracks
-  /// an allergen (Malin, 2026-10-05: an allergy means only recipes proven free
-  /// reach the menu) and ON for everyone else.
-  bool get includeUnknownInMenu =>
-      _includeUnknownInMenu ?? trackedAllergens.isEmpty;
+  /// filters. Until the user decides, the switch is ON, and the menu marks
+  /// such recipes as unchecked (Malin, 2026-10-30, superseding 2026-10-05's
+  /// "an allergy means only recipes proven free reach the menu").
+  bool get includeUnknownInMenu => _includeUnknownInMenu ?? true;
 
   /// The stored answer behind [includeUnknownInMenu]; null means undecided.
   bool? get includeUnknownInMenuChoice => _includeUnknownInMenu;

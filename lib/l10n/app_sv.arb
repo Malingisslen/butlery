@@ -17314,5 +17314,37 @@
       "first": {"type": "int"},
       "second": {"type": "int"}
     }
+  },
+  "tagAllergenSection": "Allergener",
+  "@tagAllergenSection": {
+    "description": "Heading of the allergen section in the tag editor dialog."
+  },
+  "tagAllergenHint": "Ändra bara om appen har fel för det här receptet. Appen avgör följer ingredienserna.",
+  "@tagAllergenHint": {
+    "description": "Hint under the allergen heading in the tag editor."
+  },
+  "tagAllergenChoiceAuto": "Appen avgör",
+  "@tagAllergenChoiceAuto": {
+    "description": "Segment: no manual override, the app decides."
+  },
+  "tagAllergenChoiceContains": "Innehåller",
+  "@tagAllergenChoiceContains": {
+    "description": "Segment: user overrides the allergen to CONTAINS."
+  },
+  "tagAllergenChoiceFree": "Innehåller inte",
+  "@tagAllergenChoiceFree": {
+    "description": "Segment: user overrides the allergen to FREE."
+  },
+  "tagAllergenAutoContains": "Appen: innehåller",
+  "@tagAllergenAutoContains": {
+    "description": "Secondary line: the app's own verdict is contains."
+  },
+  "tagAllergenAutoFree": "Appen: innehåller inte",
+  "@tagAllergenAutoFree": {
+    "description": "Secondary line: the app's own verdict is free."
+  },
+  "tagAllergenAutoUnknown": "Appen: ej kontrollerat",
+  "@tagAllergenAutoUnknown": {
+    "description": "Secondary line: the app has not settled this allergen."
   }
 }

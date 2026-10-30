@@ -21,12 +21,17 @@ class AllergenVerdict {
   /// recipe has no tag data.
   final TriState auto;
 
+  /// The tagger's status after the staleness downgrade but before any
+  /// override: what [effective] would be if the user had not corrected it.
+  final TriState trusted;
+
   /// True when a manual override decided [effective].
   final bool overridden;
 
   const AllergenVerdict({
     required this.effective,
     required this.auto,
+    required this.trusted,
     required this.overridden,
   });
 
@@ -65,6 +70,7 @@ class AllergenVerdict {
     return AllergenVerdict(
       effective: override ?? trusted,
       auto: auto,
+      trusted: trusted,
       overridden: override != null,
     );
   }

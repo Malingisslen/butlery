@@ -242,11 +242,7 @@ class _HouseholdAllergenSharingTileState
       HouseholdAllergenShare buildShare() {
         final now = clock.now();
         // A member who entered nothing shares an EMPTY list, not the
-        // defaults: `UserAllergenPreferences.defaults` names four allergens,
-        // and its `includeUnknownInMenu` therefore reads false. Sharing that
-        // would impose a caution they never chose — and because the household
-        // AND-folds this field, one such share strips every unverified recipe
-        // from everyone's menu.
+        // defaults: `UserAllergenPreferences.defaults` names four allergens.
         final shared = prefs ?? UserAllergenPreferences.none;
         return HouseholdAllergenShare(
           householdId: householdId,

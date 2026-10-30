@@ -20773,4 +20773,29 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yMergeSteps(int first, int second) {
     return 'Slå ihop steg $first med steg $second';
   }
+
+  @override
+  String get tagAllergenSection => 'Allergener';
+
+  @override
+  String get tagAllergenHint =>
+      'Ändra bara om appen har fel för det här receptet. Appen avgör följer ingredienserna.';
+
+  @override
+  String get tagAllergenChoiceAuto => 'Appen avgör';
+
+  @override
+  String get tagAllergenChoiceContains => 'Innehåller';
+
+  @override
+  String get tagAllergenChoiceFree => 'Innehåller inte';
+
+  @override
+  String get tagAllergenAutoContains => 'Appen: innehåller';
+
+  @override
+  String get tagAllergenAutoFree => 'Appen: innehåller inte';
+
+  @override
+  String get tagAllergenAutoUnknown => 'Appen: ej kontrollerat';
 }
