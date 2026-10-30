@@ -695,5 +695,119 @@ void main() {
       expect(stated('en lök'), '1');
       expect(stated('tre ägg'), '3');
     });
+
+    test('a strength, a temperature or half a fruit is not "1"', () {
+      expect(stated('crème fraiche 17%'), isNull);
+      expect(stated('saft av ½ lime'), isNull);
+      expect(stated('5-minuterssill'), isNull);
+      expect(stated('mjölk 1,5%'), isNull);
+      expect(stated('mjölk 1%'), isNull);
+      expect(stated('1-minuterssill'), isNull);
+    });
+  });
+
+  group('amounts written after the name or with a prefix', () {
+    RegexParseResult parse(String line) =>
+        IngredientParser.parseIngredient(line);
+
+    test('an amount that closes the line belongs to the name before it', () {
+      final creme = parse('creme fraiche naturell, 2 dl');
+      expect(creme.quantity, 2.0);
+      expect(creme.unit, 'dl');
+      expect(creme.name, 'creme fraiche naturell');
+
+      expect(parse('potatis 1 kg').name, 'potatis');
+      expect(parse('smör, 1,5 msk').quantity, 1.5);
+      expect(parse('mjöl, ½ dl').quantity, 0.5);
+      expect(parse('socker 1/2 dl').quantity, 0.5);
+    });
+
+    test('a line that is only an amount keeps an empty name', () {
+      final bare = parse('2 dl');
+      expect(bare.quantity, 2.0);
+      expect(bare.name, isEmpty);
+    });
+
+    test('"ca" before the amount is read past', () {
+      expect(parse('ca 2 dl mjölk').quantity, 2.0);
+      expect(parse('ca. 3 msk olja').quantity, 3.0);
+      expect(parse('cirka 1 1/2 dl grädde').quantity, 1.5);
+      expect(parse('ca 20 körsbärstomater').quantity, 20.0);
+      expect(parse('ev 2 tsk sambal oelek').quantity, 2.0);
+    });
+
+    test('a range is read from its low end', () {
+      final tomatoes = parse('2-3 tomater');
+      expect(tomatoes.quantity, 2.0);
+      expect(tomatoes.name, 'tomater');
+
+      final trailing = parse('tomater 2-3 st');
+      expect(trailing.quantity, 2.0);
+      expect(trailing.name, 'tomater');
+    });
+
+    test('a line that starts with an amount keeps it, '
+        'whatever closes the line', () {
+      expect(parse('½ zucchini, ca 100 g').quantity, 0.5);
+      expect(parse('4 bakpotatis, 800 g').quantity, 4.0);
+    });
+
+    test('a size word between amount and unit stays in the name', () {
+      final salmon = parse('6 tunna skivor rökt lax');
+      expect(salmon.quantity, 6.0);
+      expect(salmon.unit, 'skivor');
+      expect(salmon.name, 'tunna rökt lax');
+    });
+  });
+
+  group('IngredientParser.writtenAmount', () {
+    test('keeps a range or an approximation as written', () {
+      expect(IngredientParser.writtenAmount('2-3 tomater'), '2-3');
+      expect(IngredientParser.writtenAmount('ca 2 dl mjölk'), 'ca 2');
+      expect(IngredientParser.writtenAmount('ca 2-3 dl mjölk'), 'ca 2-3');
+      expect(IngredientParser.writtenAmount('ev. 1 1/2 tsk salt'), 'ev. 1 1/2');
+    });
+
+    test('a plain amount or none has nothing more to show', () {
+      expect(IngredientParser.writtenAmount('2 dl mjölk'), isNull);
+      expect(IngredientParser.writtenAmount('1 1/2 dl grädde'), isNull);
+      expect(IngredientParser.writtenAmount('salt'), isNull);
+      expect(IngredientParser.writtenAmount('5-minuterssill'), isNull);
+    });
+  });
+
+  group('a unit in the description is not the measure', () {
+    RegexParseResult parse(String line) =>
+        IngredientParser.parseIngredient(line);
+
+    test('after a comma or inside a parenthesis', () {
+      final avocado = parse('2 avokador, i bitar');
+      expect(avocado.quantity, 2.0);
+      expect(avocado.unit, isEmpty);
+      expect(avocado.name, contains('avokador'));
+
+      expect(parse('7 gula lökar (ca 900 g)').quantity, 7.0);
+    });
+
+    test('the fish keeps its name, so its allergen is highlighted', () {
+      final salmon = parse('4 laxfiléer ( ca 500 g )');
+      expect(salmon.quantity, 4.0);
+      expect(salmon.unit, isEmpty);
+      expect(salmon.name, contains('laxfiléer'));
+    });
+
+    test('a unit word after the name is no unit', () {
+      expect(parse('rödlök i skivor').unit, isEmpty);
+    });
+
+    test('a hyphenated word starting with a digit keeps its name', () {
+      final herring = parse('5-minuterssill');
+      expect(herring.quantity, 1.0);
+      expect(herring.name, '5-minuterssill');
+    });
+
+    test('a unit right after a spoken amount still counts', () {
+      expect(parse('Ett stort knippe bladpersilja').unit, 'knippe');
+    });
   });
 }

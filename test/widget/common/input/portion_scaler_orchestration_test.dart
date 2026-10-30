@@ -232,13 +232,11 @@ void main() {
 
   // BUT-444: when structuredIngredients is provided, the WIDGET must route
   // scaling through PortionScalerLogic.scaleEntries (persisted amounts), not
-  // the v1 string re-parse. The fixture line
-  // ("ca 2,5 dl ...") defeats the string parser (quantity coerced to 1.0 and
-  // the "ca" dropped — '2 dl vispgrädde' at factor 2), so these tests FAIL
-  // if any link in the chain silently drops back to the legacy path.
+  // the v1 string re-parse.
   group('Structured-first routing (BUT-444)', () {
+    // The persisted amount differs from the line, so the two routes disagree.
     const structuredEntry = RecipeIngredient(
-      amount: 2.5,
+      amount: 3,
       unit: 'dl',
       name: 'vispgrädde',
       raw: 'ca 2,5 dl vispgrädde',
@@ -261,18 +259,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 1 -> 2 portions: factor 2.0 -> 2,5 dl becomes 5 dl.
         await tester.tap(findControlIcon(ButleryIcons.plus));
         await tester.pumpAndSettle();
 
-        expect(
-          scaled.single,
-          '5 dl vispgrädde',
-          reason:
-              'the string path mangles this line to "2 dl vispgrädde" — '
-              'seeing that here means the widget/facade dropped the '
-              'structured route',
-        );
+        expect(scaled.single, '6 dl vispgrädde');
       },
     );
 
@@ -295,12 +285,7 @@ void main() {
       await tester.tap(findControlIcon(ButleryIcons.plus));
       await tester.pumpAndSettle();
 
-      // Documented-wrong legacy output (probe-then-pin): the v1 parser
-      // coerces "ca 2,5" to quantity 1.0 and drops the "ca" — this is the
-      // very mangling BUT-444 fixes on the structured route. Pinned so the
-      // string-only fallback contract stays observable; if the string path
-      // ever learns to scale this line correctly, update this expectation.
-      expect(scaled.single, '2 dl vispgrädde');
+      expect(scaled.single, '5 dl vispgrädde');
     });
   });
 

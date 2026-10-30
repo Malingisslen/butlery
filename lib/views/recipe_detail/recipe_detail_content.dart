@@ -351,11 +351,16 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       final stacked = isLargeText(context);
                       final hasAmount =
                           parsed.unit.isNotEmpty || parsed.quantity > 0;
+                      // "ca 2 dl", "2-3 tomater": the written amount says
+                      // more than the number read from it.
+                      final quantity =
+                          IngredientParser.writtenAmount(ingredient) ??
+                          _formatQuantity(parsed.quantity);
                       final amount = Text(
                         parsed.unit.isNotEmpty
-                            ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                            ? '$quantity ${parsed.unit}'
                             : parsed.quantity > 0
-                            ? _formatQuantity(parsed.quantity)
+                            ? quantity
                             : '',
                         style: AppTextStyles.bodyBold.copyWith(
                           color: cs.onSurface,
