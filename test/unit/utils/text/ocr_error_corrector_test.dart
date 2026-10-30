@@ -64,6 +64,15 @@ void main() {
         expect(OcrErrorCorrector.correctLine('2 d|'), '2 dl');
         expect(OcrErrorCorrector.correctLine('2 dl | grädde'), '2 dl | grädde');
       });
+
+      test('reads a lone d after an amount as dl', () {
+        expect(
+          OcrErrorCorrector.correctLine('creme fraiche naturell, 2 d'),
+          'creme fraiche naturell, 2 dl',
+        );
+        expect(OcrErrorCorrector.correctLine('1,5 d |'), '1,5 dl |');
+        expect(OcrErrorCorrector.correctLine('vitamin d'), 'vitamin d');
+      });
     });
 
     group('correctLines', () {

@@ -56,6 +56,14 @@ class OcrErrorCorrector {
     final corrected = <String>[];
 
     for (final word in words) {
+      // A lone "d" after an amount is a "dl" whose l the reader lost; no
+      // Swedish unit is spelled "d".
+      if (word == 'd' &&
+          corrected.isNotEmpty &&
+          _numericPattern.hasMatch(corrected.last)) {
+        corrected.add('dl');
+        continue;
+      }
       corrected.add(_correctWord(word));
     }
 
