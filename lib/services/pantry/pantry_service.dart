@@ -121,11 +121,13 @@ class PantryService extends BaseService {
     PantryLocation? location,
     String? note,
   }) {
+    // A row bought without an amount ("salt") goes in as "har hemma".
+    final known = item.amount > 0;
     return addFromText(
       userId,
       item.name,
-      quantity: item.amount,
-      unit: item.unit,
+      quantity: known ? item.amount : null,
+      unit: known ? item.unit : null,
       location: location,
       note: note,
     );

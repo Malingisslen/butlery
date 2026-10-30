@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
@@ -308,6 +309,33 @@ void main() {
               as PantryItem;
       expect(captured.quantity, isNull);
     });
+
+    test(
+      'a shopping row bought without an amount is added as "har hemma"',
+      () async {
+        when(
+          () => mockIngredientRepository.searchIngredients(
+            'XYZABC123',
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => const []);
+        when(
+          () => mockPantryRepository.add(userId, any()),
+        ).thenAnswer((_) async => 'new-item-id');
+
+        await service.addFromShoppingItem(
+          userId,
+          UnifiedShoppingItem(name: 'XYZABC123', amount: 0, unit: ''),
+        );
+
+        final captured =
+            verify(
+                  () => mockPantryRepository.add(userId, captureAny()),
+                ).captured.single
+                as PantryItem;
+        expect(captured.quantity, isNull);
+      },
+    );
   });
 
   group('PantryService.addFromIngredient', () {

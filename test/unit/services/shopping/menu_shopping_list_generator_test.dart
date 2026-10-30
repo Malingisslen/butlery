@@ -898,18 +898,16 @@ void main() {
       verifyNever(() => shoppingService.updateList(any()));
     });
 
-    test('amount-less aggregated lines land with the manual-add default of 1, '
-        'not a misleading 0', () async {
-      // Proves the generator-owned mapping rule (`a.amount ?? 1`): a raw-only
-      // line like "en nypa salt" must render like a manually added item
-      // (amount 1), never "0 salt". This lives in the GENERATOR, not the
-      // aggregator — the aggregator hands over amount == null.
+    test('a line stating no amount lands with no number shown', () async {
+      // The generator maps the aggregator's amount == null to 0, which the
+      // list renders as the name alone; a made-up 1 is not what the recipe
+      // said.
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
-          _recipe('r1', [RecipeIngredient.rawOnly('en nypa salt')]),
+          _recipe('r1', [RecipeIngredient.rawOnly('salt')]),
         ],
         isInitialized: true,
       );
@@ -935,7 +933,8 @@ void main() {
         reason: 'raw-only-ingredient weeks must still generate',
       );
       final written = capturedUpdate();
-      expect(written.items.single.amount, 1);
+      expect(written.items.single.amount, 0);
+      expect(written.items.single.quantityText, '');
     });
 
     test('PQ-11 = A: the pantry subtracts known amounts — enough at home '

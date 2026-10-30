@@ -254,7 +254,9 @@ class _EditItemDialogState extends State<_EditItemDialog> {
     // typing, so reopening an edited item does not show a period the user can
     // no longer type.
     _amountController = TextEditingController(
-      text: formatSwedishDecimal(widget.item.amount),
+      text: widget.item.amount == 0
+          ? ''
+          : formatSwedishDecimal(widget.item.amount),
     );
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);

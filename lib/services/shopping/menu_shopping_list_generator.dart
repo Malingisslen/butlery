@@ -302,9 +302,9 @@ class MenuShoppingListGenerator extends BaseService {
         for (final line in merge.lines)
           UnifiedShoppingItem(
             name: line.name,
-            // Amount-less lines follow the manual-add default of 1 rather
-            // than rendering a misleading "0".
-            amount: line.amount ?? 1,
+            // The line states no amount, and 0 shows the name alone
+            // ([UnifiedShoppingItem.quantityText]).
+            amount: line.amount ?? 0,
             unit: line.unit,
             category: line.category,
             note: _noteFor(line),
