@@ -13,7 +13,6 @@
 ///   accepted (off-by-one regex-class bug class).
 /// - URLs with the wrong host (vimeo, "iyoutube.com", "youtube.example") return
 ///   null — pattern must not over-match.
-/// - A length-12 ID in a URL returns the first 11 (YouTube's own behaviour).
 /// - Non-strings, empty string and pure whitespace return null (no crash).
 ///
 /// `fetchVideoMetadata`:
@@ -130,7 +129,7 @@ void main() {
     setUp(() => svc = YouTubeTranscriptService());
     tearDown(() => svc.dispose());
 
-    /// All six documented URL shapes must parse to the same 11-char video ID.
+    /// All documented URL shapes must parse to the same 11-char video ID.
     /// This is the contract the rest of the service builds on — a single
     /// off-by-one in any one regex breaks import for that share-link shape.
     test('extracts video ID from every documented YouTube URL shape', () {
@@ -168,6 +167,10 @@ void main() {
     test('an 11-letter word or a bare ID is not a video', () {
       expect(svc.isYouTubeUrl('Chokladkaka'), isFalse);
       expect(svc.isYouTubeUrl(_vid), isFalse);
+      expect(svc.extractVideoId('   $_vid   '), isNull);
+      expect(svc.extractVideoId('a' * 10), isNull);
+      expect(svc.extractVideoId('a' * 11), isNull);
+      expect(svc.extractVideoId('a' * 12), isNull);
     });
 
     /// The video-ID alphabet is `[A-Za-z0-9_-]`. A regex character class
@@ -185,6 +188,7 @@ void main() {
         svc.extractVideoId('https://www.youtube.com/shorts/$dashId'),
         dashId,
       );
+      expect(svc.extractVideoId(dashId), isNull);
     });
 
     /// `isYouTubeUrl` is a thin wrapper over `extractVideoId`. The bug class
