@@ -109,6 +109,20 @@ void main() {
       expect(page.lines, containsAll(['1tsk', '2 st']));
     });
 
+    test('a spaced status-bar row mid-page goes on a screenshot', () {
+      final withIcons = [...lines.take(4), 'd 5 g ll 66', ...lines.skip(4)];
+      final page = stripScreenChrome(
+        PageText('10:55\n${withIcons.join('\n')}'),
+      );
+      expect(page.text, isNot(contains('d 5 g ll')));
+    });
+
+    test('spaced quantity rows mid-page stay', () {
+      final rows = [...lines.take(4), '2 dl', '1 st', '5 g', ...lines.skip(4)];
+      final page = stripScreenChrome(PageText('10:55\n${rows.join('\n')}'));
+      expect(page.lines, containsAll(['2 dl', '1 st', '5 g']));
+    });
+
     test('an icon row mid-page stays without a clock', () {
       final withIcons = [...lines.take(4), '5Gtll 66', ...lines.skip(4)];
       final page = stripScreenChrome(PageText(withIcons.join('\n')));
@@ -353,6 +367,19 @@ void main() {
         PageText(second),
       ]);
       expect(mixed.text, '$first\n${lines.skip(7).join('\n')}');
+    });
+
+    test('a spaced status-bar row inside the overlap does not hide it', () {
+      final first = [
+        '10:55',
+        ...lines.take(5),
+        'd 5 g ll 66',
+        ...lines.skip(5).take(3),
+      ].join('\n');
+      final second = lines.skip(3).join('\n');
+      final doc = prepareScreenPages([PageText(first), PageText(second)]);
+      expect(doc.text, lines.skip(1).join('\n'));
+      expect(doc.text, isNot(contains('d 5 g ll')));
     });
 
     test('a page emptied by the overlap is dropped', () {

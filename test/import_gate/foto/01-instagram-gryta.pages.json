@@ -2,7 +2,7 @@
   "form": "Två skärmbilder av ett Instagraminlägg (krämig kycklinggryta), fångade med ML Kit på emulatorn ur Malins skärmbilder 2026-10-29 och kantbeskurna som i appen. Kontonamnen är utbytta och stegtexten omskriven (ADR-0012); OCR-felen, radbrytningarna, statusfältets ikonrad mitt på sidan, den avklippta sista raden och nästa inläggs bildtext under inläggsåldern är kvar.",
   "pages": [
     {
-      "providerText": "10:55\nGillas av anna_k och andra\nmatglad.anna KRÄMIG KYCKLINGGRYTA\nMED SMAK AV VITLÖK, DIJON &\nPARMESAN\nRECEPT\nTillagningstid\n15-20min\n4-5 portioner\nIngredienser\n- Smör och olivolja till stekning\nKycklingfilé, 700-800g\n- Salt, svartpeppar, paprikapulver, vitlökspulver,\nkycklingkrydda, oregano\nSchalottenlök, 3-4st\n- Vitlöksklyftor, 3-4st\n- Kyckling/hönsbuljongtärning, 2st\n- Hett vatten, 4dl\nCreme fraiche naturell, 2dI\n- Kycklingfond, 1,5msk\nDijonsenap, 1,5tsk\n5Gtll 66\n- Parmesan, 1dl\nGör såhär\n1. Tärna kycklingen ii bitar och krydda den med\nkryddorna ovan. Hacka schalottenlök och\nvitlök fint och riv osten. Lös upp\nbuljongtärningarnai det heta vattnet.\n2. Värm smör och olja i en panna och bryn\nkycklingen tills den fått färg. Lägg i schalotten lök\noch vitlök och fräs ihopi ca 1min. Slå i\nbuljongen och låt koka upp.\n3 Rörnor crömo frairha nh+illeöt+ roctorando",
+      "providerText": "10:55\nGillas av anna_k och andra\nmatglad.anna KRÄMIG KYCKLINGGRYTA\nMED SMAK AV VITLÖK, DIJON &\nPARMESAN\nRECEPT\nTillagningstid\n15-20min\n4-5 portioner\nIngredienser\n- Smör och olivolja till stekning\nKycklingfilé, 700-800g\n- Salt, svartpeppar, paprikapulver, vitlökspulver,\nkycklingkrydda, oregano\nSchalottenlök, 3-4st\n- Vitlöksklyftor, 3-4st\n- Kyckling/hönsbuljongtärning, 2st\n- Hett vatten, 4dl\nCreme fraiche naturell, 2dI\n- Kycklingfond, 1,5msk\nDijonsenap, 1,5tsk\nd 5 g ll 66\n- Parmesan, 1dl\nGör såhär\n1. Tärna kycklingen ii bitar och krydda den med\nkryddorna ovan. Hacka schalottenlök och\nvitlök fint och riv osten. Lös upp\nbuljongtärningarnai det heta vattnet.\n2. Värm smör och olja i en panna och bryn\nkycklingen tills den fått färg. Lägg i schalotten lök\noch vitlök och fräs ihopi ca 1min. Slå i\nbuljongen och låt koka upp.\n3 Rörnor crömo frairha nh+illeöt+ roctorando",
       "layout": {
         "width": 0.0,
         "height": 0.0,
@@ -603,14 +603,14 @@
             ]
           },
           {
-            "text": "5Gtll 66",
+            "text": "d 5 g ll 66",
             "x": 676.0,
             "y": 48.0,
             "w": 144.0,
             "h": 36.0,
             "words": [
               {
-                "t": "5Gtll",
+                "t": "d 5 g ll",
                 "x": 676.0,
                 "y": 48.0,
                 "w": 97.0,

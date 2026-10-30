@@ -23,8 +23,9 @@ String reflowWrappedLines(String text) {
   var i = 0;
   while (i < lines.length) {
     var current = lines[i];
+    final inStep = stepMarker.hasMatch(current.trim());
     var j = i + 1;
-    while (j < lines.length && _continues(current, lines[j])) {
+    while (j < lines.length && _continues(current, lines[j], inStep: inStep)) {
       current = _join(current, lines[j]);
       j++;
     }
@@ -35,9 +36,20 @@ String reflowWrappedLines(String text) {
 }
 
 /// Whether [next] is the rest of [line] rather than a line of its own.
-bool _continues(String line, String next) {
+bool _continues(String line, String next, {required bool inStep}) {
   final a = line.trimRight();
   final b = next.trim();
+  // A numbered step runs until the next marker, so a new sentence inside it
+  // is not a new row. What ends it is anything that is a row of its own;
+  // a line in capitals is a credit or heading, not more of the method.
+  if (inStep) {
+    return b.isNotEmpty &&
+        _hasLowercase.hasMatch(b) &&
+        !stepMarker.hasMatch(b) &&
+        !_bullet.hasMatch(b) &&
+        !_opensALine(b) &&
+        !HeadingWordLists.isPostAge(b);
+  }
   // Also what keeps a blank line, a bullet, a numbered step and a row that
   // opens with a digit on their own: none of them starts with a lowercase
   // letter.
@@ -119,6 +131,8 @@ final stepMarker = RegExp(
   r'^(?:\d{1,2}[.):]\s|steg\s*\d|[0-9]️?⃣)',
   caseSensitive: false,
 );
+final _hasLowercase = RegExp('[a-zåäöé]');
+final _bullet = RegExp(r'^[-•*–]\s');
 final _coordinator = RegExp(r'^(?:och|eller|samt)(?:\s|$)');
 final _quantityRow = RegExp(
   r'^ca\.?\s+\d+(?:[,.]\d+)?\s*'

@@ -20,6 +20,65 @@ void main() {
       );
     });
 
+    group('inside a numbered step', () {
+      const method = [
+        'Gör såhär',
+        '1. Skär kycklingen i tärningar och krydda med de',
+        'angivna kryddorna. Finhacka schalottenlök och',
+        'vitlök och riv parmesan. Smält ner',
+        'buljongtärningarna i hett vatten.',
+        '',
+        '2. Hetta upp en panna med smör och olja och stek',
+        'kycklingen tills den tar färg. Tillsätt schalottenlök',
+        'och vitlök och stek ihop i ca 1min. Häll i',
+        'buljongvattnet och koka upp.',
+        '',
+        '3. Blanda i creme fraiche och tillsätt resterande',
+        'ingredienser. Låt småkoka på svag värme i ca 2min.',
+        'Om det behövs kan du smaka av med kryddorna',
+        'som du använde till kycklingen. Servera med ris,',
+        'potatis eller pasta! mindre',
+        'För 6 dagar sedan',
+      ];
+
+      test('a capital after a full stop keeps the step whole', () {
+        final out = reflowWrappedLines(method.join('\n')).split('\n');
+        expect(
+          out,
+          contains(
+            '3. Blanda i creme fraiche och tillsätt resterande ingredienser. '
+            'Låt småkoka på svag värme i ca 2min. Om det behövs kan du smaka av '
+            'med kryddorna som du använde till kycklingen. Servera med ris, '
+            'potatis eller pasta! mindre',
+          ),
+        );
+        expect(out.where((l) => l.startsWith('1. ')), hasLength(1));
+        expect(out.where((l) => l.startsWith('2. ')), hasLength(1));
+        expect(out.last, 'För 6 dagar sedan');
+      });
+
+      test('the next number, a blank line and a heading end the step', () {
+        final out = reflowWrappedLines(
+          '1. Blanda allt.\n2. Grädda i ugnen.\nServera varmt.\n\nTips\n'
+          '3. Vila.\nIngredienser\n2 dl mjölk',
+        ).split('\n');
+        expect(out.first, '1. Blanda allt.');
+        expect(out[1], '2. Grädda i ugnen. Servera varmt.');
+        expect(out, contains('Ingredienser'));
+        expect(out, contains('2 dl mjölk'));
+      });
+
+      test('prose without a number keeps its sentences apart', () {
+        const prose = 'Blanda allt.\nGrädda i ugnen.\nServera varmt.';
+        expect(reflowWrappedLines(prose), prose);
+      });
+
+      test('a second pass changes nothing', () {
+        final once = reflowWrappedLines(method.join('\n'));
+        expect(reflowWrappedLines(once), once);
+      });
+    });
+
     test('a decimal quantity is not a step number', () {
       expect(reflowWrappedLines('1.5 dl grädde\nsalt'), '1.5 dl grädde\nsalt');
     });
@@ -101,7 +160,7 @@ void main() {
 
     test('a lowercase step number or quantity row is a line of its own', () {
       const text =
-          'Rör om och låt sjuda\nsteg 2 koka upp\nRör om och låt sjuda\nca 2 dl grädde';
+          'Rör om och låt sjuda\nsteg 2 koka upp\n\nRör om och låt sjuda\nca 2 dl grädde';
       expect(reflowWrappedLines(text), text);
     });
 
@@ -175,8 +234,14 @@ void main() {
           out,
           contains('1. Smält smöret och häll i mjölken. Värm till 37 grader.'),
         );
-        expect(out, contains('4. Låt jäsa 30 minuter.'));
-        expect(out, contains('Kavla ut och bred på fyllningen.'));
+        expect(
+          out,
+          contains(
+            '4. Låt jäsa 30 minuter. Kavla ut och bred på fyllningen. '
+            'Grädda i 250 grader 5-6 min.',
+          ),
+        );
+        expect(out, contains('FOTO: ANNA SVENSSON'));
       },
     );
   });

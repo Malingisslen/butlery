@@ -213,7 +213,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `tag_detail_view.dart` | 176 | Tag detail/editing screen |
 | `menu_viewmodel.dart` | 1155 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 684 | Shopping list member management dialog |
-| `photo_import_view.dart` | 561 | Photo import screen |
+| `photo_import_view.dart` | 571 | Photo import screen |
 | `layout_components.dart` | 171 | Common layout component widgets |
 | `group_weekly_menu_widget.dart` | 347 | The group's weekly menu screen (BUT-1971). Row added 2026-08-30. Grew past 500 with the provenance row and the voter sheet, which the Art. 15 keep decision rests on. The day rows, the face row and the week arrows are already separate widgets; the next split is the sheet. |
 | `menu_preview_view.dart` | 326 | Shared menu preview screen |

@@ -2,7 +2,6 @@
 
 // lib/views/fran_sociala_medier_view.dart
 
-import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +9,6 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -31,6 +29,7 @@ import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
+import 'package:butlery/widgets/import/recipe_form_handoff.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -214,36 +213,9 @@ class _FranSocialaMedierViewContentState
       // next visit to this surface starts blank.
       await _draftManager.clear();
       if (!context.mounted) return;
-      // BUT-1208: non-blocking allergen-setup prompt when the parsed recipe
-      // CONTAINS an allergen the user hasn't configured. Covers both direct
-      // text/paste import and the single-photo handoff that lands here.
-      // parsedRecipe carries the Phase-1 tags ImportManager attached — no new
-      // LLM/network — and the app-level ScaffoldMessenger survives the push.
-      // Mirrors SmartImportView._navigateToRecipeEditor.
-      final parsed = viewModel.parsedRecipe;
-      if (parsed != null) {
-        final prefs = ServiceLocator.get<UserService>().allergenPreferences;
-        if (AllergenMismatch.unconfiguredContainedAllergens(
-          parsed,
-          prefs,
-        ).isNotEmpty) {
-          AllergenSetupBanner.show(context);
-        }
-      }
-      // BUT-900 follow-on: match the smart-import path — replace this text-import
-      // form with the recipe form (named route) so saving lands on the new
-      // recipe with a clean back-stack, instead of leaving a dead, used-up
-      // import form behind.
-      Navigator.pushReplacementNamed(
-        context,
-        Routes.manualEntry,
-        arguments: {
-          'initialRecipe': viewModel.parsedRecipe,
-          'isTemplate': true,
-          ManualEntryRoute.importedWithoutIngredientsKey:
-              parsed != null && ManualEntryRoute.hasNoIngredients(parsed),
-        },
-      );
+      // BUT-1208, BUT-900: the allergen prompt and the form handoff are
+      // shared with the photo import.
+      handOffRecipeToForm(context, viewModel.parsedRecipe);
     } else if (context.mounted && viewModel.hasError) {
       SnackBarUtils.showFailure(context, what: viewModel.error!);
     }

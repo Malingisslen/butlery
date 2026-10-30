@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
+import 'package:butlery/widgets/import/recipe_form_handoff.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
@@ -220,19 +221,28 @@ class _PhotoImportViewContent extends StatelessWidget {
     BuildContext context,
     PhotoImportViewModel viewModel,
   ) {
-    if (viewModel.hasOcrResult) {
-      _stashHeirloomDraftIfActive(viewModel);
-      // BUT-928: carry the OCR confidence across the handoff so the badge
-      // the user saw on the preview step doesn't vanish on the next screen.
-      Navigator.pushNamed(
-        context,
-        '/franSocialaMedier',
-        arguments: {
-          'text': viewModel.ocrText,
-          'ocrConfidence': viewModel.confidence,
-        },
-      );
+    if (!viewModel.hasOcrResult) return;
+    _stashHeirloomDraftIfActive(viewModel);
+    final recipes = viewModel.parsedRecipes;
+    if (recipes.length == 1) {
+      // The reading already produced the recipe, with line joining and step
+      // numbers handled; parsing its text again would lose both and count the
+      // import twice.
+      ServiceLocator.tryGet<HeirloomBridge>()?.bindToAll([recipes.first.id]);
+      handOffRecipeToForm(context, recipes.first, replace: false);
+      return;
     }
+    // Reading failed to give a recipe: let the user fix the text by hand.
+    // BUT-928: carry the OCR confidence across the handoff so the badge
+    // the user saw on the preview step doesn't vanish on the next screen.
+    Navigator.pushNamed(
+      context,
+      '/franSocialaMedier',
+      arguments: {
+        'text': viewModel.ocrText,
+        'ocrConfidence': viewModel.confidence,
+      },
+    );
   }
 
   /// Multi-recipe page → let the user tick which recipes to add, reusing the

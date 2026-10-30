@@ -209,11 +209,21 @@ final _handleThenCaps = RegExp(r'^(\S+)\s+([A-ZÅÄÖÉ0-9][^a-zåäöé]*)$');
 
 bool _isMidPageIconRow(String line) {
   if (!isIconRow(line)) return false;
-  return line.trim().split(RegExp(r'\s+')).any((t) {
+  final tokens = line.trim().split(RegExp(r'\s+'));
+  final glued = tokens.any((t) {
     final m = _digitsThenLetters.firstMatch(t);
     return m != null && !_units.contains(m.group(1)!.toLowerCase());
   });
+  if (glued) return true;
+  // The spaced spelling splits the icons into separate letter tokens; a
+  // quantity row has only its lone unit letter among them.
+  final strayLetters = tokens.where(
+    (t) => _lettersOnly.hasMatch(t) && !_units.contains(t.toLowerCase()),
+  );
+  return strayLetters.length >= 2;
 }
+
+final _lettersOnly = RegExp(r'^[a-zA-ZåäöÅÄÖ]+$');
 
 final _digitsThenLetters = RegExp(r'^\d+([a-zA-Z]{3,})$');
 
