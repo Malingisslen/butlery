@@ -394,15 +394,15 @@ class RecipeCacheModule {
   /// Handle user authentication state changes
   void onAuthStateChanged(String? userId) {
     try {
-      // Update cache helper with new user
-      _cacheHelper.setCurrentUser(userId);
-
       if (userId == null) {
-        // User logged out - stop sync and clear cache
+        // Started before the user is dropped: the clear is scoped by the id
+        // the helper still holds.
         stopFirebaseSync();
-        clearCache();
+        unawaited(clearCache().catchError((Object _) {}));
+        _cacheHelper.setCurrentUser(null);
         AppLogger.info('User logged out - cache cleared');
       } else {
+        _cacheHelper.setCurrentUser(userId);
         // User logged in - start sync
         startFirebaseSync();
         AppLogger.info('User logged in - sync started');

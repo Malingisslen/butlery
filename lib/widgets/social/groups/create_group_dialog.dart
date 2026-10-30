@@ -8,6 +8,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -36,7 +37,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   /// one-at-a-time per session, no per-id multi-instance concern.
   /// BUT-1203: persistence is now the shared [AutoSaveManager] (the non-String
   /// JSON-map case) — this widget keeps only the build-map + load-and-apply glue.
-  static const String _draftPrefsKey = 'group_creation_draft_v1';
+  static const String _draftPrefsKey =
+      LocalUserDataRegistry.groupCreationDraftKey;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();

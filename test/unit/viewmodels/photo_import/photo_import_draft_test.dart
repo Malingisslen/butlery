@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
@@ -168,8 +169,7 @@ Vispa ihop smeten och stek i smör.''';
         vm.clearPhoto();
 
         // `clearPhoto` fires the discard unawaited, and that discard awaits
-        // three I/O steps in sequence: load prefs, delete the staged file,
-        // clear prefs. A bare `pumpEventQueue()` is 20 microtask pumps, which
+        // real file and prefs I/O in sequence. A bare `pumpEventQueue()` is 20 microtask pumps, which
         // does not bound real file I/O — under a multi-directory batch's disk
         // contention it loses the race, and this test went red once in three
         // such runs on 2026-08-07 while passing alone every time.
@@ -186,10 +186,9 @@ Vispa ihop smeten och stek i smör.''';
         // The guard matches the forbidden call TEXTUALLY, so it fires on a
         // comment that merely names it; that is why this sentence does not.
         //
-        // Polled on the LAST step of the discard, not the file. The discard is
-        // load prefs -> delete the image -> clear prefs, so waiting for the
-        // file to vanish leaves the prefs half unbounded and just moves the
-        // same flake one step later.
+        // Polled on the LAST step of the discard (clearing prefs), not the
+        // file: waiting for the file to vanish leaves the prefs half
+        // unbounded and just moves the same flake one step later.
         final sw = Stopwatch()..start();
         while ((await vm.loadPersistedDraft()) != null &&
             sw.elapsed < const Duration(seconds: 5)) {
@@ -201,6 +200,38 @@ Vispa ihop smeten och stek i smör.''';
         vm.dispose();
       },
     );
+
+    test('discard by another account still removes the staged image', () async {
+      var owner = 'alice';
+      PhotoImportViewModel vmFor() => PhotoImportViewModel(
+        importManager: ImportManager.withStrategies(
+          mockPersonalOps,
+          [TextImportStrategy()],
+        ),
+        draftManager: AutoSaveManager<PhotoImportDraft>(
+          storageKey: 'photo_import_draft_v1',
+          encode: encodePhotoImportDraft,
+          decode: decodePhotoImportDraft,
+          ownerIdProvider: () => owner,
+        ),
+      );
+
+      final vm1 = vmFor();
+      await vm1.persistPhotoDraft(
+        imageBytes: Uint8List.fromList([4, 5, 6]),
+        ocrText: recipeText,
+      );
+      final staged = (await vm1.loadPersistedDraft())!.imagePath;
+      expect(File(staged!).existsSync(), isTrue);
+      vm1.dispose();
+
+      owner = 'bob';
+      final vm2 = vmFor();
+      await vm2.discardPersistedDraft();
+
+      expect(File(staged).existsSync(), isFalse);
+      vm2.dispose();
+    });
 
     test('restoreDraft returns false when nothing was persisted', () async {
       final vm = makeVm();

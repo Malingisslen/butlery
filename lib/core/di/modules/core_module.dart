@@ -32,6 +32,7 @@ import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
@@ -282,9 +283,17 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
           providerSignIn: container<ProviderSignInService>(),
+          readCacheCleaner: (userId) async {
+            if (!container.isRegistered<OfflineService>()) return;
+            final offline = container<OfflineService>();
+            if (!offline.isInitialized) return;
+            await offline.database.cacheDao.clearUserReadCaches(userId);
+          },
         ),
         dispose: (s) => s.dispose(),
       );
+      AutoSaveManager.defaultOwnerIdProvider = () =>
+          container<AuthService>().currentUserId;
 
       // MFA service (extracted from AuthService for file size compliance)
       container.registerLazySingleton<AuthMfaService>(

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_stub.dart'
@@ -16,7 +17,7 @@ import 'package:butlery/viewmodels/photo_import/draft_image_store_stub.dart'
 /// discard on explicit clear) and *what to do* with a restored draft
 /// (repopulate state, re-parse); this mixin owns the plumbing.
 mixin PhotoImportDraftMixin {
-  static const String _storageKey = 'photo_import_draft_v1';
+  static const String _storageKey = LocalUserDataRegistry.photoImportDraftKey;
 
   AutoSaveManager<PhotoImportDraft>? _draftManager;
 
@@ -72,8 +73,9 @@ mixin PhotoImportDraftMixin {
   Future<void> discardPersistedDraft() async {
     final manager = _draftManager;
     if (manager == null) return;
-    final draft = await manager.load();
-    await image_store.deleteDraftImage(draft?.imagePath);
+    // The staged file is the same one every time; going by the draft's path
+    // would leave it behind when the owner check had already dropped the draft.
+    await image_store.clearStagedDraftImage();
     await manager.clear();
   }
 
