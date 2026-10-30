@@ -278,6 +278,23 @@ const TARGETS: {
     writer: "lib/models/tagging/tag_override_log_entry.dart",
     stamp: /'expireAt':\s*correctionExpireAt\(\)/,
   },
+  // User feedback and the per-field parse-correction telemetry, 12 months.
+  // firestore.rules makes the feedback stamp optional so an older build can
+  // still send feedback; onFeedbackCreated stamps a row that arrives without one.
+  {
+    group: "feedback",
+    field: "expireAt",
+    retention: "365d",
+    writer: "lib/repositories/firebase/firebase_feedback_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(clock\.now\(\)\.add\(kFeedbackRetention\)\)/,
+  },
+  {
+    group: "parse_corrections_v2",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/events/log-parse-correction.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
   // BUT-2452 — an unused guest-list invite. One writer: the admin repository's
   // `toFirestore`; firestore.rules caps it at 30 days ahead.
   {
@@ -310,6 +327,7 @@ const EXPECTED_TTL_GROUPS = [
   "dismissals",
   "engagements",
   "erasures_in_progress",
+  "feedback",
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
@@ -321,6 +339,7 @@ const EXPECTED_TTL_GROUPS = [
   "notification_opened_events",
   "notification_send_events",
   "overwritten_versions",
+  "parse_corrections_v2",
   "parse_events",
   "parsing_corrections",
   "report_evidence",

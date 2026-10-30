@@ -35,9 +35,38 @@ export const onFeedbackCreated = onDocumentCreated(
       `category=${data.category}, userHash=${hashUid(data.userId || "unknown")}`
     );
 
+    // Stamping first: a failure here is logged and never blocks the email.
+    await stampRetentionIfMissing(event.data?.ref, data);
     await notifyByEmail(feedbackId, data);
   }
 );
+
+// Matches kFeedbackRetention in the Dart repository.
+export const FEEDBACK_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+
+/**
+ * An older app build writes feedback without `expireAt` (the rule leaves it
+ * optional so the form keeps working). The trigger stamps what the client did
+ * not.
+ */
+export async function stampRetentionIfMissing(
+  ref: { update: (data: Record<string, unknown>) => Promise<unknown> } | undefined,
+  data: FirebaseFirestore.DocumentData,
+  nowMs: number = Date.now()
+): Promise<boolean> {
+  if (!ref || data.expireAt instanceof admin.firestore.Timestamp) return false;
+  try {
+    await ref.update({
+      expireAt: admin.firestore.Timestamp.fromMillis(
+        nowMs + FEEDBACK_RETENTION_MS
+      ),
+    });
+    return true;
+  } catch (err) {
+    logger.error("Feedback retention stamp failed", { err: String(err) });
+    return false;
+  }
+}
 
 /**
  * The email carries no personal data: the category, a dashboard link and the
