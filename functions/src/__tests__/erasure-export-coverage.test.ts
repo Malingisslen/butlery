@@ -50,6 +50,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   personal_tags: [{ client: "personal_tags" }],
   personal_tag_groups: [{ client: "personal_tag_groups" }],
   tag_overrides_log: [{ residue: ["tag_overrides_log"] }],
+  parsing_corrections: [{ residue: ["parsing_corrections"] }],
   cook_snaps: [{ client: "cook_snaps" }],
   activity_events: [{ client: "activity_events" }],
   shopping_list_templates: [{ client: "shopping_list_templates" }],

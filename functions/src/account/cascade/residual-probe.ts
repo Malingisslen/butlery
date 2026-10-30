@@ -75,6 +75,8 @@ export async function probeResidualData(
     "notification_engagement",
     // BUT-1473: allergen tag-override corrections (top-level, userId-scoped).
     "tag_overrides_log",
+    // The user-typed parser corrections `deleteParsingCorrections` erases.
+    "parsing_corrections",
     // BUT-2028: the collection `deleteIngredientSuggestions` erases. Same
     // shape as the rest of this list — top-level, filtered on a `userId`
     // field — so it belongs here rather than needing a leg of its own.
