@@ -1,6 +1,9 @@
 /**
- * Every top-level collection in firestore.rules is either reached by the
- * account-deletion code, has a TTL policy, or is named in UNREVIEWED below.
+ * Every collection in firestore.rules, and every collection the functions
+ * open with `.collection(...)`, is either reached by the account-deletion
+ * code, has a TTL policy, or is named in UNREVIEWED below. The second source
+ * is there because a collection only the Admin SDK writes may have no rules
+ * block.
  *
  * erasure-export-coverage.test.ts reads the step labels of
  * request-account-deletion.ts, so a new collection holding a user's id that no
@@ -38,6 +41,16 @@ const UNREVIEWED: Record<string, string> = {
   notification_metrics: "aggregate; not looked at for user ids",
   recipe_social_stats: "aggregate; not looked at for user ids",
   site_configs: "not looked at",
+  admin_audit_logs: "adminUid field (bulk-retag.ts); an admin's own uid, like admins",
+  admin_rate_limits: "admin uid in the document id and the adminUid field (bulk-retag.ts)",
+  corrections: "analytics/parsing/corrections: per-domain counters, no user id field",
+  group_invitations: "fromUserId; on-profile-updated.ts only renames, account deletion does not reach it",
+  group_moves: "holds only movedAt per group id (hand-over-group.ts)",
+  learned_aliases: "cleanUserFromLearnedAliases removes the uid, but the document and the text the user typed stay after the last uid is gone",
+  snapshots: "not looked at",
+  summary: "not looked at",
+  unmatched: "analytics/ingredients/unmatched: ingredient text and example recipe ids, no user id field",
+  weekly: "not looked at",
 };
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -54,6 +67,44 @@ function rulesCollections(): string[] {
   const names = new Set<string>();
   for (const m of rules.matchAll(/^ {4}match \/([A-Za-z0-9_-]+)\/\{/gm)) {
     names.add(m[1]);
+  }
+  return [...names].sort();
+}
+
+/**
+ * Names the functions pass to `.collection()` or `.collectionGroup()`: a
+ * literal, a `Collections.<key>` constant, or an upper-case `const` holding a
+ * literal (the file's own first, then one from any file). `.doc()`
+ * names are not collections and are left out.
+ */
+function functionsCollections(keyToName: Map<string, string>): string[] {
+  const CONST_RE =
+    /\b(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)(?:\s*:\s*string)?\s*=\s*["'`]([A-Za-z0-9_]+)["'`]/g;
+  const texts = walk(FUNCTIONS_SRC)
+    .filter((f) => !f.includes("__tests__"))
+    .map((f) => fs.readFileSync(f, "utf8"));
+  const anyFile = new Map<string, string>();
+  for (const text of texts) {
+    for (const m of text.matchAll(CONST_RE)) {
+      if (!anyFile.has(m[1])) anyFile.set(m[1], m[2]);
+    }
+  }
+  const names = new Set<string>();
+  for (const text of texts) {
+    const ownFile = new Map<string, string>(
+      [...text.matchAll(CONST_RE)].map((m) => [m[1], m[2]] as [string, string])
+    );
+    for (const m of text.matchAll(/\.collection(?:Group)?\(\s*["'`]([A-Za-z0-9_]+)["'`]/g)) {
+      names.add(m[1]);
+    }
+    for (const m of text.matchAll(/\.collection(?:Group)?\(\s*Collections\.([A-Za-z0-9_]+)\b/g)) {
+      const name = keyToName.get(m[1]);
+      if (name) names.add(name);
+    }
+    for (const m of text.matchAll(/\.collection(?:Group)?\(\s*([A-Z][A-Z0-9_]*)\s*[,)]/g)) {
+      const name = ownFile.get(m[1]) ?? anyFile.get(m[1]);
+      if (name) names.add(name);
+    }
   }
   return [...names].sort();
 }
@@ -92,15 +143,25 @@ function ttlGroups(): Set<string> {
 }
 
 function main(): void {
-  const cols = rulesCollections();
   const keyOf = collectionKeys();
+  const keyToName = new Map([...keyOf].map(([name, key]) => [key, name]));
+  const fromRules = rulesCollections();
+  const fromFunctions = functionsCollections(keyToName);
+  const cols = [...new Set([...fromRules, ...fromFunctions])].sort();
   const src = deletionSource();
   const ttl = ttlGroups();
   const failures: string[] = [];
 
-  if (cols.length < 30) {
+  if (fromRules.length < 30) {
     failures.push(
-      `only ${cols.length} collections read from firestore.rules; the pattern no longer matches the file`
+      `only ${fromRules.length} collections read from firestore.rules; the pattern no longer matches the file`
+    );
+  }
+
+  const functionsOnly = fromFunctions.filter((n) => !fromRules.includes(n));
+  if (functionsOnly.length < 8) {
+    failures.push(
+      `only ${functionsOnly.length} collections found in functions/src that firestore.rules lacks; the patterns no longer match the source`
     );
   }
 
@@ -115,7 +176,7 @@ function main(): void {
     const listed = name in UNREVIEWED;
     if (!handled(name) && !listed) {
       failures.push(
-        `${name}: in firestore.rules but not reached by account deletion, not under a TTL policy, and not in UNREVIEWED. If its documents carry a user id, add the deletion; if they never can, say so in UNREVIEWED.`
+        `${name}: a collection in firestore.rules or functions/src, not reached by account deletion, not under a TTL policy, and not in UNREVIEWED. If its documents carry a user id, add the deletion; if they never can, say so in UNREVIEWED.`
       );
     }
     if (handled(name) && listed) {
@@ -126,7 +187,7 @@ function main(): void {
   }
   for (const name of Object.keys(UNREVIEWED)) {
     if (!cols.includes(name)) {
-      failures.push(`${name}: in UNREVIEWED but no longer in firestore.rules`);
+      failures.push(`${name}: in UNREVIEWED but no longer in firestore.rules or functions/src`);
     }
   }
 
