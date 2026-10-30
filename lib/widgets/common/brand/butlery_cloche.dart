@@ -18,6 +18,9 @@ import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart'
     show parseSvgPath;
 
+/// How far the mark is raised in the plate, in drawing units.
+const double _opticalLift = 6.9;
+
 final Path _plate = parseSvgPath('M28 113H132');
 final Path _dome = parseSvgPath(
   'M40.5 104 C40.5 81.09 57.88 64.5 80 64.5 C102.12 64.5 119.5 81.09 119.5 104',
@@ -173,8 +176,11 @@ class ButleryClocheMark extends StatelessWidget {
                 ink: BrandColors.markInk,
                 pose: ButleryClochePose.closed,
                 steam: BrandColors.markInk,
-                // The drawing crops to the cloche (viewBox 25 25 110 110).
-                crop: const Rect.fromLTWH(25, 25, 110, 110),
+                // The drawing crops to the cloche. The plate and the dome's
+                // weight sit low in the drawing, so the crop is lowered to put
+                // the mark's optical centre, not its bounding box, on the
+                // plate's centre.
+                crop: const Rect.fromLTWH(25, 25 + _opticalLift, 110, 110),
               ),
             ),
           ),
