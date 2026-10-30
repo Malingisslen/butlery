@@ -373,6 +373,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                   recipeMap,
                   'sourceUrl',
                 ),
+                sourceAuthor: utils.SerializationUtils.safeNullableString(
+                  recipeMap,
+                  'sourceAuthor',
+                ),
                 createdAt: utils.SerializationUtils.safeDateTime(
                   recipeMap,
                   'createdAt',

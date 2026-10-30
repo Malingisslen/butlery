@@ -3,8 +3,6 @@
 // Flow 08 (P6-U08a): signing out with unsaved changes in the offline queue.
 // "Utloggning med kö — Blockeras med förklaring: ”N ändringar har inte
 // sparats.” Alternativ: Vänta på synk · Logga ut och släng. Aldrig tyst kast."
-// The same confirmation follows "Logga ut nu" in the
-// session-timeout warning.
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -146,16 +144,5 @@ class SignOutGuard {
     if (userId == null) return;
     await _source.discard(userId);
     AppLogger.info('SignOutGuard: queued changes discarded by the user');
-  }
-
-  /// The session-timeout dialog's "Logga ut och släng": the session ends
-  /// even when the discard fails, because the timeout is a security control.
-  Future<void> discardAndEndSession(Future<void> Function() endSession) async {
-    try {
-      await discardForCurrentUser();
-    } catch (e) {
-      AppLogger.error('SignOutGuard: discard failed, ending the session', e);
-    }
-    await endSession();
   }
 }

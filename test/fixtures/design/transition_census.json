@@ -1036,18 +1036,13 @@
     {
       "id": "TR::FLOW::06::session::utgang",
       "flow": "06",
-      "status": "TESTED",
-      "test_file": "test/unit/services/session_timeout_service_test.dart",
-      "test_name": "the return path goes to the same account only, once",
-      "tests": [
-        {
-          "file": "test/unit/services/session_timeout_service_test.dart",
-          "name": "the return path goes to the same account only, once",
-          "group": "session end: queue untouched, notice, return path"
-        }
-      ],
-      "ticket": null,
-      "reason": "Existing test."
+      "status": "RESTING",
+      "test_file": null,
+      "test_name": null,
+      "tests": [],
+      "ticket": "BUT-2480",
+      "reason": "Malin 2026-10-30: the user stays signed in until signing out; no inactivity logout exists, so no return path after one.",
+      "decision": "BUT-2480-ingen-timeout"
     },
     {
       "id": "TR::FLOW::06::skapa-konto::verifiera-epost",
@@ -1593,13 +1588,9 @@
       "id": "TR::FLOW::08::utkast::utloggning-raderar",
       "flow": "08",
       "status": "TESTED",
-      "test_file": "test/unit/services/session_timeout_service_test.dart",
-      "test_name": "\"Logga ut nu\" is user_requested: queue kept, drafts go",
+      "test_file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+      "test_name": "clearDraftsFor removes the account's drafts and the index",
       "tests": [
-        {
-          "file": "test/unit/services/session_timeout_service_test.dart",
-          "name": "\"Logga ut nu\" is user_requested: queue kept, drafts go"
-        },
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "clearDraftsFor removes the account's drafts and the index"

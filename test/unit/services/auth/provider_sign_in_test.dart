@@ -595,11 +595,6 @@ void main() {
       expect(platform.googleSignOuts, 1);
     });
 
-    test('logoutDueToInactivity', () async {
-      await auth.logoutDueToInactivity();
-      expect(platform.googleSignOuts, 1);
-    });
-
     test('forceSignOut', () async {
       await auth.forceSignOut();
       expect(platform.googleSignOuts, 1);

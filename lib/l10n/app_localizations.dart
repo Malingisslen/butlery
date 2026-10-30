@@ -2696,6 +2696,48 @@ abstract class AppLocalizations {
   /// **'Från {host}'**
   String recipeSourceFrom(String host);
 
+  /// No description provided for @recipeSourceCardTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtat från {site}'**
+  String recipeSourceCardTitle(String site);
+
+  /// No description provided for @recipeSourceAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Av {author}'**
+  String recipeSourceAuthor(String author);
+
+  /// No description provided for @recipeSourceOpenOriginal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna originalet'**
+  String get recipeSourceOpenOriginal;
+
+  /// No description provided for @recipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild: {site}'**
+  String recipeBorrowedImageCredit(String site);
+
+  /// No description provided for @a11yRecipeSourceCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}'**
+  String a11yRecipeSourceCard(String site);
+
+  /// No description provided for @a11yRecipeSourceCardWithAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}, av {author}'**
+  String a11yRecipeSourceCardWithAuthor(String site, String author);
+
+  /// No description provided for @a11yRecipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden visas från {site}'**
+  String a11yRecipeBorrowedImageCredit(String site);
+
   /// No description provided for @errorCouldNotOpenLink.
   ///
   /// In sv, this message translates to:
@@ -2995,12 +3037,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Språk'**
   String get settingsLanguageTitle;
-
-  /// No description provided for @commonLogoutNow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Logga ut nu'**
-  String get commonLogoutNow;
 
   /// No description provided for @commonTakePhoto.
   ///
@@ -5659,30 +5695,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Sakta ner lite'**
   String get rateLimitSlowDown;
-
-  /// No description provided for @sessionContinue.
-  ///
-  /// In sv, this message translates to:
-  /// **'Fortsätt session'**
-  String get sessionContinue;
-
-  /// No description provided for @sessionContinueOrLogout.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du fortsätta din session eller logga ut nu?'**
-  String get sessionContinueOrLogout;
-
-  /// No description provided for @sessionExpiringMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din session kommer att avslutas om:'**
-  String get sessionExpiringMessage;
-
-  /// No description provided for @sessionExpiringTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Session utgår snart'**
-  String get sessionExpiringTitle;
 
   /// No description provided for @shareContentTypeMenu.
   ///
@@ -24669,30 +24681,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Logga ut och släng ändringarna'**
   String get signOutPendingDiscard;
-
-  /// No description provided for @sessionPendingChangesIntro.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}'**
-  String sessionPendingChangesIntro(int count);
-
-  /// No description provided for @sessionEndedBackgroundTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Du loggades ut medan appen låg still.'**
-  String get sessionEndedBackgroundTitle;
-
-  /// No description provided for @sessionEndedBackgroundReason.
-  ///
-  /// In sv, this message translates to:
-  /// **'Det händer efter 45 minuter utan aktivitet, och det är meningen.'**
-  String get sessionEndedBackgroundReason;
-
-  /// No description provided for @sessionEndedBackgroundPending.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.}}'**
-  String sessionEndedBackgroundPending(int count);
 
   /// No description provided for @draftTimeLeftDays.
   ///

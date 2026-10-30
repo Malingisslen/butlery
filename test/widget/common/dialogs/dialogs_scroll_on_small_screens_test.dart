@@ -12,7 +12,6 @@ import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
-import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -48,12 +47,6 @@ void main() {
         limitType: LimitType.perMinute,
         suggestedAction: FallbackAction.retryLater,
       ),
-    ),
-    'session timeout': (c) => SessionTimeoutWarningDialog.show(
-      context: c,
-      remainingSeconds: 60,
-      onExtendSession: () {},
-      onLogoutNow: () {},
     ),
     'retag progress': (c) => showDialog<void>(
       context: c,

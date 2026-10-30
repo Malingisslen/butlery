@@ -149,17 +149,7 @@ abstract final class ImportResultHandler {
           return false;
 
         case DuplicateMergeChoice.replaceWithNew:
-          // Replace existing recipe content with new recipe data
-          final merged = matches.first.copyWith(
-            title: recipe.title,
-            description: recipe.description,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            timeMinutes: recipe.timeMinutes,
-            portions: recipe.portions,
-            imageUrls: recipe.imageUrls,
-            sourceUrl: recipe.sourceUrl,
-          );
+          final merged = result.buildReplacedRecipe();
           await saveMergeAndOpen(context, recipeService, merged);
           return false;
 

@@ -50,7 +50,6 @@ import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/in_app_review_service.dart';
-import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
 // Core providers
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -106,7 +105,6 @@ class CoreModule implements DIModule {
       SharedPreferences,
       AuthRepository,
       AuthService,
-      SessionTimeoutService,
       FirebaseAuditRepository,
       FirebaseConsentRepository,
       AcquisitionRepository,
@@ -302,15 +300,6 @@ class CoreModule implements DIModule {
       container.registerLazySingleton<PasswordResetService>(
         () => PasswordResetService(
           authRepository: container<AuthRepository>(),
-        ),
-      );
-
-      // Session timeout service for automatic logout on inactivity
-      // Note: Depends on AuthService and AnalyticsService
-      container.registerLazySingleton<SessionTimeoutService>(
-        () => SessionTimeoutService(
-          authService: container<AuthService>(),
-          analyticsService: container<AnalyticsService>(),
         ),
       );
 

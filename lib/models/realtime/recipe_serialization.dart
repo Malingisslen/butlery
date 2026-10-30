@@ -109,6 +109,10 @@ class RecipeSerialization {
           defaultValue: 'Middag',
         ),
         sourceUrl: SerializationUtils.safeNullableString(coreData, 'sourceUrl'),
+        sourceAuthor: SerializationUtils.safeNullableString(
+          coreData,
+          'sourceAuthor',
+        ),
         createdAt:
             SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
             clock.now(),

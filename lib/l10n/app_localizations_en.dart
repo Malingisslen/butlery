@@ -1757,6 +1757,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String recipeSourceCardTitle(String site) {
+    return 'From $site';
+  }
+
+  @override
+  String recipeSourceAuthor(String author) {
+    return 'By $author';
+  }
+
+  @override
+  String get recipeSourceOpenOriginal => 'Open original';
+
+  @override
+  String recipeBorrowedImageCredit(String site) {
+    return 'Image: $site';
+  }
+
+  @override
+  String a11yRecipeSourceCard(String site) {
+    return 'Recipe from $site';
+  }
+
+  @override
+  String a11yRecipeSourceCardWithAuthor(String site, String author) {
+    return 'Recipe from $site, by $author';
+  }
+
+  @override
+  String a11yRecipeBorrowedImageCredit(String site) {
+    return 'Image shown from $site';
+  }
+
+  @override
   String get errorCouldNotOpenLink => 'Could not open link';
 
   @override
@@ -1928,9 +1961,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLanguageTitle => 'Language';
-
-  @override
-  String get commonLogoutNow => 'Sign out now';
 
   @override
   String get commonTakePhoto => 'Take photo';
@@ -3663,19 +3693,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateLimitSlowDown => 'Slow down a bit';
-
-  @override
-  String get sessionContinue => 'Continue session';
-
-  @override
-  String get sessionContinueOrLogout =>
-      'Do you want to continue your session or sign out now?';
-
-  @override
-  String get sessionExpiringMessage => 'Your session will expire in:';
-
-  @override
-  String get sessionExpiringTitle => 'Session expiring soon';
 
   @override
   String get shareContentTypeMenu => 'menus';
@@ -16116,39 +16133,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutPendingDiscard => 'Sign out and discard the changes';
-
-  @override
-  String sessionPendingChangesIntro(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count changes have not been saved yet:',
-      one: '1 change has not been saved yet:',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get sessionEndedBackgroundTitle =>
-      'You were signed out while the app lay still.';
-
-  @override
-  String get sessionEndedBackgroundReason =>
-      'That happens after 45 minutes without activity, and it is meant to.';
-
-  @override
-  String sessionEndedBackgroundPending(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count changes are still on the phone and are sent as soon as you are back in – nothing you did is lost.',
-      one:
-          '1 change is still on the phone and is sent as soon as you are back in – nothing you did is lost.',
-      zero: 'No changes are waiting.',
-    );
-    return '$_temp0';
-  }
 
   @override
   String draftTimeLeftDays(int count) {

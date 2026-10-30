@@ -43,6 +43,7 @@ import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/views/recipe_detail/borrowed_image_frame.dart';
 
 const double _quantityColumnWidth = 70;
 
@@ -737,6 +738,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
   Widget _buildImageCarousel(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final credit = BorrowedImageCredit.forGallery(
+      imageUrls: viewModel.recipe.imageUrls,
+      sourceUrl: viewModel.recipe.sourceUrl,
+    );
 
     return Container(
       width: double.infinity,
@@ -773,6 +778,19 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             ),
           ),
 
+          if (credit != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.space16,
+                0,
+                AppDimensions.space16,
+                AppDimensions.space8,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: credit,
+              ),
+            ),
           // Image carousel
           ClipRRect(
             borderRadius: BorderRadius.zero,

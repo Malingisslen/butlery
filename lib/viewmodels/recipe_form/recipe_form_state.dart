@@ -77,6 +77,8 @@ class RecipeFormState extends ChangeNotifier {
   // No field shows it, but an import's provenance stamp (voice, photo, link)
   // must reach the saved recipe, and an edit must not erase it.
   SourceArtefact? _sourceArtefact;
+  // Who wrote the recipe at [_sourceUrl]; no field shows it either.
+  String? _sourceAuthor;
 
   // CRITICAL FIX: Remove internal arrays to eliminate dual state inconsistency
   // Single source of truth is now FormFieldsManager values only
@@ -239,6 +241,7 @@ class RecipeFormState extends ChangeNotifier {
     _sourceUrl = recipe.sourceUrl;
     _tagOverrides = recipe.tagOverrides;
     _sourceArtefact = recipe.core.sourceArtefact;
+    _sourceAuthor = recipe.core.sourceAuthor;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
@@ -565,6 +568,8 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   void setSourceUrl(String? sourceUrl) {
+    // The author belongs to the old page; a new source must not inherit it.
+    if (sourceUrl != _sourceUrl) _sourceAuthor = null;
     _sourceUrl = sourceUrl;
     notifyListeners();
     _scheduleAutoSave();
@@ -758,6 +763,7 @@ class RecipeFormState extends ChangeNotifier {
       'timeMinutes': _timeMinutes,
       'rating': _rating,
       'sourceUrl': _sourceUrl,
+      'sourceAuthor': _sourceAuthor,
       'imageUrls': _imageUrls,
       'ingredients': _ingredientsManager.values,
       'instructions': _instructionsManager.values,
@@ -779,6 +785,7 @@ class RecipeFormState extends ChangeNotifier {
       _timeMinutes = draftData['timeMinutes'];
       _rating = draftData['rating'];
       _sourceUrl = draftData['sourceUrl'];
+      _sourceAuthor = draftData['sourceAuthor'] as String?;
       _imageUrls = List<String>.from(
         (draftData['imageUrls'] as List?).orEmpty(),
       );
@@ -922,6 +929,7 @@ class RecipeFormState extends ChangeNotifier {
         imageUrls: imageUrls ?? _imageUrls,
         thumbnailUrl: thumbnailUrl ?? _originalRecipe?.core.thumbnailUrl,
         sourceUrl: _sourceUrl?.trim(),
+        sourceAuthor: _sourceAuthor,
         createdBy: _originalRecipe?.core.createdBy,
         createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: clock.now(),
@@ -954,6 +962,7 @@ class RecipeFormState extends ChangeNotifier {
     _sourceUrl = null;
     _tagOverrides = null;
     _sourceArtefact = null;
+    _sourceAuthor = null;
 
     _ingredientsManager.updateItems(['']);
     _instructionsManager.updateItems(['']);

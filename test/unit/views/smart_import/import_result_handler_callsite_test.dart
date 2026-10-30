@@ -51,6 +51,7 @@ Recipe _recipe({
   String id = 'r1',
   String title = 'Recepttitel',
   String? sourceUrl,
+  String? sourceAuthor,
   List<String> ingredients = const ['ägg', 'mjöl', 'smör'],
 }) {
   return Recipe(
@@ -62,6 +63,7 @@ Recipe _recipe({
       instructions: const [],
       mealType: 'Middag',
       sourceUrl: sourceUrl,
+      sourceAuthor: sourceAuthor,
     ),
     type: RecipeType.personal,
   );
@@ -362,6 +364,8 @@ void main() {
       final existingRecipe = _recipe(
         id: 'existing',
         title: 'Soppor',
+        sourceUrl: 'https://gammal.se/soppor',
+        sourceAuthor: 'Gammal Författare',
         ingredients: const ['ägg', 'mjöl', 'smör'],
       );
       mockRecipeService.setRecipeState(
@@ -375,6 +379,8 @@ void main() {
       final candidate = _recipe(
         id: 'new',
         title: 'Pannkakor',
+        sourceUrl: 'https://ny.se/pannkakor',
+        sourceAuthor: 'Ny Författare',
         ingredients: const ['ägg', 'mjöl', 'smör'],
       );
 
@@ -431,6 +437,23 @@ void main() {
               'on the error screen — that was the BUT-1779 defect',
         );
         expect(find.text('DETAIL_ERROR'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      '$branchName saves the new source together with its author',
+      (tester) async {
+        await runBranch(tester, writeSucceeds: true);
+
+        final saved =
+            verify(
+                  () => mockRecipeService.updateRecipe(captureAny()),
+                ).captured.single
+                as Recipe;
+        // Both branches take the candidate's source, so the credit must be
+        // the candidate's too, never the old page's author.
+        expect(saved.sourceUrl, 'https://ny.se/pannkakor');
+        expect(saved.sourceAuthor, 'Ny Författare');
       },
     );
 

@@ -81,10 +81,18 @@ bool isSafeExternalUrl(String? value) {
 ///
 /// A `PlatformException` is folded into `false` here rather than thrown, so
 /// callers keep ONE meaning for a failed open: the OS would not take it.
-Future<bool> openExternalLink(Uri uri) async {
+///
+/// [inAppBrowser] opens the page in a browser tab over the app (Custom Tabs,
+/// SFSafariViewController), so the user lands back in the recipe when done.
+Future<bool> openExternalLink(Uri uri, {bool inAppBrowser = false}) async {
   if (!isSafeExternalUrl(uri.toString())) return false;
   try {
-    return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    return await launchUrl(
+      uri,
+      mode: inAppBrowser
+          ? LaunchMode.inAppBrowserView
+          : LaunchMode.externalApplication,
+    );
   } on PlatformException {
     return false;
   }

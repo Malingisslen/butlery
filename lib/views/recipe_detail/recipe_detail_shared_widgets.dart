@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
+import 'package:butlery/views/recipe_detail/recipe_source_card.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -33,7 +34,6 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Shared widget builders for recipe detail layouts (mobile + tablet).
 abstract final class RecipeDetailSharedWidgets {
@@ -77,32 +77,10 @@ abstract final class RecipeDetailSharedWidgets {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.space4),
-      child: ButleryLink(
-        onTap: () => launchSourceUrl(context, url),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // BUT-1041: platform-aware leading icon so video imports read as
-            // media at a glance, generic links as external.
-            ButleryIcon(
-              sourceIcon(url),
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.space4),
-            Flexible(
-              child: Text(
-                context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
-                // text.link (R8-11 = A).
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: context.modeColors.textLink,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.only(top: AppDimensions.space12),
+      child: RecipeSourceCard(
+        sourceUrl: url,
+        sourceAuthor: recipe.sourceAuthor,
       ),
     );
   }
@@ -340,7 +318,6 @@ abstract final class RecipeDetailSharedWidgets {
   /// BUT-1041: platform-aware icon for the recipe source link. Sniffs the
   /// host (no schema/enum migration needed) so YouTube/TikTok video imports
   /// read as media and generic web imports read as an external link.
-  @visibleForTesting
   static IconData sourceIcon(String url) {
     final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
@@ -363,10 +340,13 @@ abstract final class RecipeDetailSharedWidgets {
   /// `RecipeDetailActions.handleSourceUrlClick`, which had the message already.
   static Future<void> launchSourceUrl(
     BuildContext context,
-    String url,
-  ) async {
+    String url, {
+    bool inAppBrowser = false,
+  }) async {
     try {
-      if (await openExternalLink(Uri.parse(url))) return;
+      if (await openExternalLink(Uri.parse(url), inAppBrowser: inAppBrowser)) {
+        return;
+      }
       if (!context.mounted) return;
       SnackBarUtils.showFailure(
         context,

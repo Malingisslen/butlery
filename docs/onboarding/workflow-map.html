@@ -690,12 +690,6 @@
       "path": "lib/services/auth/auth_mfa_service.dart"
     },
     {
-      "id": "svc-session-timeout",
-      "label": "SessionTimeoutService — inaktivitet",
-      "context": "service",
-      "path": "lib/services/session_timeout_service.dart"
-    },
-    {
       "id": "repo-auth",
       "label": "FirebaseAuthRepository",
       "context": "repository",
@@ -3276,7 +3270,7 @@
     {
       "id": "flow-auth-2",
       "label": "logga in & ut",
-      "description": "Inloggning med e-post och lösenord samt utloggning — manuellt från profilmenyn, tvingat vid 45 minuters inaktivitet, eller när sessionstokenet blir ogiltigt.",
+      "description": "Inloggning med e-post och lösenord samt utloggning — manuellt från profilmenyn, eller när sessionstokenet blir ogiltigt.",
       "features": [
         "AUTH-01",
         "AUTH-04"
@@ -3329,13 +3323,6 @@
           "to": "ds-auth",
           "payload": "loggar ut",
           "transport": "Auth SDK",
-          "verified": true
-        },
-        {
-          "from": "svc-session-timeout",
-          "to": "svc-auth",
-          "payload": "logoutDueToInactivity() efter 45 minuters inaktivitet",
-          "transport": "method call",
           "verified": true
         },
         {

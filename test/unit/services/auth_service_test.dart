@@ -302,13 +302,8 @@ void main() {
       });
 
       test('rensas vid manuell utloggning, inte vid automatisk', () async {
-        await authService.logoutDueToInactivity();
-        var prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString(trayKey), isNotNull);
-        expect(prefs.getString(draftKey), isNotNull);
-
         await authService.forceSignOut();
-        prefs = await SharedPreferences.getInstance();
+        var prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(trayKey), isNotNull);
         expect(prefs.getString(draftKey), isNotNull);
 
@@ -1529,31 +1524,6 @@ void main() {
       });
     });
 
-    group('logoutDueToInactivity', () {
-      test('signs the user out and records the inactivity event', () async {
-        mockAuthRepository.setAuthState(
-          user: MockFactory.createMockUser(uid: 'inact1'),
-          isAuthenticated: true,
-        );
-        when(
-          () => mockAuthRepository.signIn(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          ),
-        ).thenAnswer((_) async {});
-        await authService.signInWithEmail(email: 'a@b.c', password: 'pw');
-
-        when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
-        // mockAnalyticsService.logEvent has a concrete no-op (see setUp note);
-        // don't restub it. Just observe the side-effect on auth state.
-
-        await authService.logoutDueToInactivity();
-
-        expect(authService.currentUser, isNull);
-        verify(() => mockAuthRepository.signOut()).called(1);
-      });
-    });
-
     group('reauthenticateWithPassword', () {
       test('returns true on success', () async {
         when(
@@ -1839,7 +1809,7 @@ void main() {
     //   1. `sessionExpired == true` is set synchronously.
     //   2. `_authRepository.signOut()` runs (via `forceSignOut()`).
     //   3. `errorMessage` contains the Swedish `errorSessionExpired` copy.
-    //   4. The `sessionTimeoutLogout` analytics event fired with
+    //   4. The `sessionInvalidatedLogout` analytics event fired with
     //      `{reason: 'auth_stream_error', error_code: <code>}`.
     group('Auth Stream Error Handling (BUT-966 / BUT-1021)', () {
       late StreamController<User?> streamController;
@@ -1907,7 +1877,7 @@ void main() {
           verify(() => mockAuthRepository.signOut()).called(1);
 
           final events = mockAnalyticsService.capturedEvents
-              .where((e) => e.name == 'session_timeout_logout')
+              .where((e) => e.name == 'session_invalidated_logout')
               .toList();
           expect(events, hasLength(1));
           expect(
@@ -1933,7 +1903,7 @@ void main() {
         verify(() => mockAuthRepository.signOut()).called(1);
 
         final events = mockAnalyticsService.capturedEvents
-            .where((e) => e.name == 'session_timeout_logout')
+            .where((e) => e.name == 'session_invalidated_logout')
             .toList();
         expect(events, hasLength(1));
         expect(
@@ -1961,7 +1931,7 @@ void main() {
           verifyNever(() => mockAuthRepository.signOut());
 
           final events = mockAnalyticsService.capturedEvents
-              .where((e) => e.name == 'session_timeout_logout')
+              .where((e) => e.name == 'session_invalidated_logout')
               .toList();
           expect(
             events,
@@ -1985,7 +1955,7 @@ void main() {
           verifyNever(() => mockAuthRepository.signOut());
 
           final events = mockAnalyticsService.capturedEvents
-              .where((e) => e.name == 'session_timeout_logout')
+              .where((e) => e.name == 'session_invalidated_logout')
               .toList();
           expect(events, isEmpty);
         },

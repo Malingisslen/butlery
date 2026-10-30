@@ -263,6 +263,7 @@ class RecipeSerialization {
       'imageUrls': recipe.core.imageUrls,
       'thumbnailUrl': recipe.core.thumbnailUrl,
       'sourceUrl': recipe.core.sourceUrl,
+      'sourceAuthor': recipe.core.sourceAuthor,
       'exportedAt': clock.now().toIso8601String(),
       'exportFormat': 'butlery-simple-v1',
     };
@@ -298,6 +299,7 @@ class RecipeSerialization {
             : [],
         thumbnailUrl: data['thumbnailUrl']?.toString(),
         sourceUrl: data['sourceUrl']?.toString(),
+        sourceAuthor: data['sourceAuthor']?.toString(),
         createdBy: importedBy,
       ),
       type: type,
@@ -335,6 +337,9 @@ class RecipeSerialization {
     if (recipe.core.sourceUrl != null) {
       compressed['src'] = recipe.core.sourceUrl;
     }
+    if (recipe.core.sourceAuthor != null) {
+      compressed['sa'] = recipe.core.sourceAuthor;
+    }
 
     return compressed;
   }
@@ -365,6 +370,7 @@ class RecipeSerialization {
             : [],
         thumbnailUrl: compressed['thu']?.toString(),
         sourceUrl: compressed['src']?.toString(),
+        sourceAuthor: compressed['sa']?.toString(),
       ),
       type: SerializationUtils.safeEnumByIndex(
         compressed['ty'],
