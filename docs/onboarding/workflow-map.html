@@ -4037,6 +4037,20 @@
           "verified": true
         },
         {
+          "from": "v-photo-import",
+          "to": "v-recipe-form",
+          "payload": "“Fortsätt” med exakt ett tolkat recept → receptet går direkt till formuläret (handOffRecipeToForm i recipe_form_handoff.dart, samma överlämning som textimporten), utan att texten tolkas en gång till",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "v-photo-import",
+          "to": "v-fran-sociala-medier",
+          "payload": "“Fortsätt” utan ett enda tolkat recept → rå OCR-text + konfidens till textimporten, där användaren kan rätta texten",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
           "from": "vm-photo-import",
           "to": "svc-import-manager",
           "payload": "importSinglePhoto (isHandwritten: true)",
