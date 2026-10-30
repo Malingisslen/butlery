@@ -13,6 +13,8 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import {
   buildFeedbackEmail,
+  stampRetentionIfMissing,
+  FEEDBACK_RETENTION_MS,
   recordEmailFailure,
 } from "../feedback/on-feedback-created";
 
@@ -144,11 +146,58 @@ async function run_(): Promise<void> {
       sender.includes("buildFeedbackEmail(") &&
         !/data\.(description|email|deviceInfo|screenshotUrl|userId)/.test(sender),
     );
+    check(
+      "onFeedbackCreated stamps the retention before it sends the email",
+      /await stampRetentionIfMissing\([^)]*\);\s*await notifyByEmail\(/.test(source),
+    );
     const hostile = buildFeedbackEmail("fb-x", { category: "<b>x</b>" }, undefined);
     check(
       "category is HTML-escaped",
       !hostile.html.includes("<b>") && hostile.html.includes("&lt;b&gt;"),
       hostile.html,
+    );
+  }
+
+  {
+    // An older build sends no expireAt; without a stamp the row would never be
+    // deleted by the TTL policy.
+    const updates: Record<string, unknown>[] = [];
+    const ref = {
+      update: async (d: Record<string, unknown>) => {
+        updates.push(d);
+      },
+    };
+    const NOW = 1_700_000_000_000;
+    const stamped = await stampRetentionIfMissing(ref, { category: "bug" }, NOW);
+    const stamp = updates[0]?.expireAt as admin.firestore.Timestamp | undefined;
+    check(
+      "a feedback row without expireAt is stamped a year ahead",
+      stamped === true && stamp?.toMillis() === NOW + FEEDBACK_RETENTION_MS,
+      JSON.stringify(updates),
+    );
+    updates.length = 0;
+    check(
+      "an explicit null expireAt is stamped too",
+      (await stampRetentionIfMissing(ref, { expireAt: null }, NOW)) === true &&
+        updates.length === 1,
+    );
+    updates.length = 0;
+    check(
+      "a row the client already stamped is left alone",
+      (await stampRetentionIfMissing(
+        ref,
+        { expireAt: admin.firestore.Timestamp.fromMillis(NOW) },
+        NOW
+      )) === false && updates.length === 0,
+    );
+    const failing = {
+      update: async () => {
+        throw new Error("boom");
+      },
+    };
+    check(
+      "a failed stamp is reported as false and does not throw",
+      (await stampRetentionIfMissing(failing, {}, NOW)) === false,
     );
   }
 
