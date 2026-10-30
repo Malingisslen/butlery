@@ -99,6 +99,22 @@ void main() {
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
+    test('a bought plain name grows the prepared pantry row', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'hackad lök', qty: 2)],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'lök', amount: 3),
+        wasBought: false,
+      );
+
+      verify(() => pantry.adjustQuantity('u1', any(), 3)).called(1);
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
     test('adds a new pantry item when no matching entry exists', () async {
       when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
       when(() => pantry.getAll('u1')).thenAnswer((_) async => []);

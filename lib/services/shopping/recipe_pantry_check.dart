@@ -16,9 +16,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
-import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
@@ -72,9 +72,7 @@ class RecipePantryCheck {
         // The same ingredient in units that do not convert: nothing can be
         // subtracted without counting the stock twice.
         final atHome = pantry.any(
-          (p) =>
-              SwedishCharacterNormalizer.normalize(p.ingredientName) ==
-              SwedishCharacterNormalizer.normalize(item.name),
+          (p) => IngredientIdentity.same(p.ingredientName, item.name),
         );
         mark = atHome
             ? MenuShoppingPantryMark.maybeAtHome
@@ -136,7 +134,7 @@ class RecipePantryCheck {
     for (final item in items) {
       byName
           .putIfAbsent(
-            SwedishCharacterNormalizer.normalize(item.name),
+            IngredientIdentity.nameKey(item.name),
             () => [],
           )
           .add(item);
@@ -144,7 +142,7 @@ class RecipePantryCheck {
     final done = <String>{};
     final result = <({UnifiedShoppingItem item, bool unconvertible})>[];
     for (final item in items) {
-      final key = SwedishCharacterNormalizer.normalize(item.name);
+      final key = IngredientIdentity.nameKey(item.name);
       if (!done.add(key)) continue;
       final rows = byName[key]!;
       if (rows.length == 1) {

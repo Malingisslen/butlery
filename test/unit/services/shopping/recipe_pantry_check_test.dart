@@ -152,6 +152,36 @@ void main() {
     expect(left.map((i) => i.note), everyElement('Kanske hemma'));
   });
 
+  test('a prepared pantry row covers the plain ingredient', () {
+    final left = RecipePantryCheck.toBuy(
+      [_item('lök', 2, 'st')],
+      [_pantry('hackad lök', quantity: 6)],
+    );
+
+    expect(left, isEmpty);
+  });
+
+  test('lines that differ only by a preparation word are counted once', () {
+    final left = RecipePantryCheck.toBuy([
+      _item('hackad lök', 1, 'st'),
+      _item('lök', 1, 'st'),
+    ], const []);
+
+    expect(left, hasLength(1));
+    expect(left.single.amount, closeTo(2, 1e-9));
+  });
+
+  test('lines that do not convert are marked when the pantry holds the plain '
+      'name', () {
+    final left = RecipePantryCheck.toBuy(
+      [_item('hackad lök', 1, 'msk'), _item('lök', 50, 'g')],
+      [_pantry('lök', quantity: 5)],
+    );
+
+    expect(left, hasLength(2));
+    expect(left.map((i) => i.note), everyElement('Kanske hemma'));
+  });
+
   group('the button and what it adds agree', () {
     final recipe = RecipeFactory.build(
       id: 'r1',
@@ -171,8 +201,7 @@ void main() {
       );
     });
 
-    // "3 ägg" is parsed without a unit, so the pantry row is unit-less too:
-    // the merge's rule matches units as written.
+    // "3 ägg" is parsed without a unit, so the pantry row is unit-less too.
     test('the count is what is added', () {
       final pantry = [_pantry('ägg', quantity: 10, unit: '')];
       final count = RecipeShoppingHandler.countToBuy(

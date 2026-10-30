@@ -15,13 +15,13 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest;
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 export 'package:butlery/services/shopping/menu_shopping_merge.dart';
@@ -385,7 +385,7 @@ class MenuShoppingListGenerator extends BaseService {
     List<UnifiedShoppingItem> removed,
   ) {
     String boughtKey(String name, String unit) =>
-        '${SwedishCharacterNormalizer.normalize(name)}|'
+        '${IngredientIdentity.nameKey(name)}|'
         '${UnitDefinitions.canonical(unit)}';
     final wasBought = {
       for (final item in removed)
