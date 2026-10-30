@@ -16,6 +16,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -94,7 +95,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     // recipes don't cross-contaminate. BUT-904: persistence is now the shared
     // AutoSaveManager; this widget keeps only the load-and-apply glue.
     _draftManager = AutoSaveManager<String>(
-      storageKey: 'comment_draft_v1_${widget.recipeId}',
+      storageKey: LocalUserDataRegistry.commentDraftKey(widget.recipeId),
       encode: (text) => text,
       decode: (raw) => raw,
       logLabel: 'CommentFormWidget',

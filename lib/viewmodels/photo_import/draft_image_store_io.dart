@@ -61,3 +61,14 @@ Future<void> deleteDraftImage(String? path) async {
     AppLogger.warning('DraftImageStore: failed to delete staged image ($e)');
   }
 }
+
+/// Deletes the staged image wherever the draft pointed. Used at sign-out,
+/// when the draft key is gone and its path with it.
+Future<void> clearStagedDraftImage() async {
+  try {
+    final file = await _draftFile();
+    if (await file.exists()) await file.delete();
+  } catch (e) {
+    AppLogger.warning('DraftImageStore: failed to clear staged image ($e)');
+  }
+}

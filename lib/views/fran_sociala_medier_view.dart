@@ -24,6 +24,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
+import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/user_service.dart';
@@ -128,7 +129,7 @@ class _FranSocialaMedierViewContentState
   /// no multi-instance isolation concern. BUT-904: persistence is now the
   /// shared AutoSaveManager.
   final AutoSaveManager<String> _draftManager = AutoSaveManager<String>(
-    storageKey: 'text_import_draft_v1',
+    storageKey: LocalUserDataRegistry.textImportDraftKey,
     encode: (text) => text,
     decode: (raw) => raw,
     logLabel: 'FranSocialaMedierView',
