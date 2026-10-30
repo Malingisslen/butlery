@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/brand/butlery_cloche_lift.dart';
 
 /// Laid over the week for a moment when a generated menu is ready: the cover
@@ -14,7 +15,7 @@ class VeckomenyClocheReveal extends StatefulWidget {
   final VoidCallback onDone;
 
   /// How long the lifted cloche is held before the week is handed back.
-  static const Duration hold = Duration(milliseconds: 350);
+  static const Duration hold = AppMotion.standard;
 
   static const Key liftKey = ValueKey<String>('veckomeny-cloche-lift');
 
