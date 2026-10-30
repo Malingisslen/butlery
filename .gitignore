@@ -228,3 +228,6 @@ test/views/design_states/shots/
 *.hprof
 *.keystore
 .claude/settings.local.json
+
+# Run reports written by functions/src/admin/sync-ingredients.ts
+docs/tagging/data/sync-reports/
