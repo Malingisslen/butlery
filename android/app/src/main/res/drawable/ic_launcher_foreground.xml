@@ -4,7 +4,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Source: design/exports/android/ic_launcher_foreground.svg -->
+    <!-- Source: design/brand-mark.json -->
     <group
         android:translateX="21"
         android:translateY="18.484"
@@ -12,19 +12,19 @@
         android:scaleY="0.4125">
         <path
             android:fillColor="#D68523"
-            android:pathData="M37,104C39,79 55.92,61 80,61C104.08,61 121,79 123,104L37,104Z"/>
+            android:pathData="M37 104C39 79 55.92 61 80 61C104.08 61 121 79 123 104L37 104Z"/>
         <path
-            android:pathData="M28,113H132"
+            android:pathData="M28 113H132"
             android:strokeColor="#F5F4ED"
             android:strokeWidth="7"
             android:strokeLineCap="round"/>
         <path
-            android:pathData="M80,55V60"
+            android:pathData="M80 55V60"
             android:strokeColor="#D68523"
             android:strokeWidth="3.5"
             android:strokeLineCap="round"/>
         <path
             android:fillColor="#D68523"
-            android:pathData="M76,48H84A4,4 0 0 1 88,52A4,4 0 0 1 84,56H76A4,4 0 0 1 72,52A4,4 0 0 1 76,48Z"/>
+            android:pathData="M76 48H84A4 4 0 0 1 88 52A4 4 0 0 1 84 56H76A4 4 0 0 1 72 52A4 4 0 0 1 76 48Z"/>
     </group>
 </vector>

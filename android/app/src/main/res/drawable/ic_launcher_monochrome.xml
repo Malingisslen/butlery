@@ -4,30 +4,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Source: design/exports/android/ic_launcher_monochrome.svg. Android 13+
-         tints this from the user's wallpaper, so every shape is solid white. -->
+    <!-- Source: design/brand-mark.json. Android 13+ tints this from the user's
+         wallpaper, so every shape is solid white. -->
     <group
         android:translateX="21"
         android:translateY="18.154"
         android:scaleX="0.4125"
         android:scaleY="0.4125">
         <path
-            android:pathData="M40.5,104C40.5,81.09 57.88,64.5 80,64.5C102.12,64.5 119.5,81.09 119.5,104"
+            android:pathData="M40.5 104C40.5 81.09 57.88 64.5 80 64.5C102.12 64.5 119.5 81.09 119.5 104"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="7"
             android:strokeLineCap="butt"/>
         <path
-            android:pathData="M28,113H132"
+            android:pathData="M28 113H132"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="7"
             android:strokeLineCap="round"/>
         <path
-            android:pathData="M80,55V60"
+            android:pathData="M80 55V60"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="3.5"
             android:strokeLineCap="round"/>
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M76,48H84A4,4 0 0 1 88,52A4,4 0 0 1 84,56H76A4,4 0 0 1 72,52A4,4 0 0 1 76,48Z"/>
+            android:pathData="M76 48H84A4 4 0 0 1 88 52A4 4 0 0 1 84 56H76A4 4 0 0 1 72 52A4 4 0 0 1 76 48Z"/>
     </group>
 </vector>
