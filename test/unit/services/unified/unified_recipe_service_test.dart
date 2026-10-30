@@ -16,6 +16,7 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/mocks/production_mocks.dart' as mocks;
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -768,24 +769,29 @@ void main() {
         expect(success, true);
       });
 
-      test('should mark recipe as cooked', () async {
-        // Arrange
-        final recipeId = 'test-recipe-id';
+      test('marking as cooked is recorded by the cooking service', () async {
+        final cooking = MockFactory.createRecipeCookingService();
+        TestServiceLocator.registerMock<RecipeCookingService>(cooking);
 
-        // Stub repository methods
-        when(() => mockRecipeRepository.read(any())).thenAnswer(
-          (_) async => RecipeFactory.build(id: recipeId),
-        );
-        when(() => mockRecipeRepository.update(any())).thenAnswer(
-          (_) async {},
-        );
+        expect(await service.markAsCooked('test-recipe-id'), true);
 
-        // Act
-        final success = await service.markAsCooked(recipeId);
-
-        // Assert
-        expect(success, true);
+        verify(() => cooking.markAsCooked('test-recipe-id')).called(1);
       });
+
+      test('a rejected cook event is reported as not recorded', () async {
+        final cooking = MockFactory.createRecipeCookingService();
+        when(() => cooking.markAsCooked(any())).thenAnswer((_) async => false);
+        TestServiceLocator.registerMock<RecipeCookingService>(cooking);
+
+        expect(await service.markAsCooked('test-recipe-id'), false);
+      });
+
+      test(
+        'without a cooking service nothing is reported as recorded',
+        () async {
+          expect(await service.markAsCooked('test-recipe-id'), false);
+        },
+      );
     });
 
     group('Collaborative Recipe Operations', () {
@@ -941,114 +947,113 @@ void main() {
         );
       });
 
-      test('should add ingredient', () async {
-        // Arrange - create a recipe
+      // BUT-2482: an edit works on the recipe the service holds and must leave
+      // the edited recipe in that list, or the next edit starts from stale
+      // content.
+      Future<String> seedRecipe({
+        List<String> ingredients = const ['Initial Ingredient'],
+        List<String> instructions = const ['Initial Step'],
+      }) async {
         final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Initial Ingredient'],
+          title: 'Recipe for Edits',
+          ingredients: ingredients,
+          instructions: instructions,
         );
-
         expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.addIngredient(
-          recipeId!,
-          'New Ingredient',
+        service.optimisticRestore(
+          service.getRecipeById(recipeId!) ??
+              RecipeFactory.build(
+                id: recipeId,
+                title: 'Recipe for Edits',
+                ingredients: ingredients,
+                instructions: instructions,
+              ),
         );
+        return recipeId;
+      }
 
-        // Assert
-        expect(success, true);
+      test('should add ingredient', () async {
+        final recipeId = await seedRecipe();
+
+        expect(await service.addIngredient(recipeId, 'New Ingredient'), true);
+
+        expect(
+          service.getRecipeById(recipeId)!.core.ingredients,
+          contains('New Ingredient'),
+        );
       });
 
       test('should update ingredient', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Old Ingredient'],
+        final recipeId = await seedRecipe(ingredients: ['Old Ingredient']);
+
+        expect(
+          await service.updateIngredient(recipeId, 0, 'Updated Ingredient'),
+          true,
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.updateIngredient(
-          recipeId!,
-          0,
+        expect(service.getRecipeById(recipeId)!.core.ingredients, [
           'Updated Ingredient',
-        );
+        ]);
+      });
 
-        // Assert
-        expect(success, true);
+      test('a second edit builds on the first', () async {
+        final recipeId = await seedRecipe(ingredients: ['Smör']);
+
+        expect(await service.updateIngredient(recipeId, 0, 'Margarin'), true);
+        expect(await service.addIngredient(recipeId, 'Salt'), true);
+
+        expect(service.getRecipeById(recipeId)!.core.ingredients, [
+          'Margarin',
+          'Salt',
+        ]);
       });
 
       test('should remove ingredient', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Ingredient to Remove'],
+        final recipeId = await seedRecipe(
+          ingredients: ['Keep', 'Ingredient to Remove'],
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
+        expect(await service.removeIngredient(recipeId, 1), true);
 
-        // Act
-        final success = await service.removeIngredient(recipeId!, 0);
-
-        // Assert
-        expect(success, true);
+        expect(service.getRecipeById(recipeId)!.core.ingredients, ['Keep']);
       });
 
       test('should add instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Initial Step'],
+        final recipeId = await seedRecipe();
+
+        expect(await service.addInstruction(recipeId, 'New Step'), true);
+
+        expect(
+          service.getRecipeById(recipeId)!.core.instructions,
+          contains('New Step'),
         );
-
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.addInstruction(
-          recipeId!,
-          'New Step',
-        );
-
-        // Assert
-        expect(success, true);
       });
 
       test('should update instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Old Step'],
+        final recipeId = await seedRecipe(instructions: ['Old Step']);
+
+        expect(
+          await service.updateInstruction(recipeId, 0, 'Updated Step'),
+          true,
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.updateInstruction(
-          recipeId!,
-          0,
+        expect(service.getRecipeById(recipeId)!.core.instructions, [
           'Updated Step',
-        );
-
-        // Assert
-        expect(success, true);
+        ]);
       });
 
       test('should remove instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Step to Remove'],
+        final recipeId = await seedRecipe(
+          instructions: ['Keep', 'Step to Remove'],
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
+        expect(await service.removeInstruction(recipeId, 1), true);
 
-        // Act
-        final success = await service.removeInstruction(recipeId!, 0);
+        expect(service.getRecipeById(recipeId)!.core.instructions, ['Keep']);
+      });
 
-        // Assert
-        expect(success, true);
+      test('an edit of a recipe that is not loaded reports failure', () async {
+        expect(await service.updateIngredient('not-loaded', 0, 'x'), false);
       });
     });
 

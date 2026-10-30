@@ -343,44 +343,6 @@ void main() {
         expect(result, isFalse);
         expect(lastError, isNotNull);
       });
-
-      test('should fail content ops when not authenticated', () async {
-        currentUserId = null;
-        expect(await module.addIngredient('r1', 'test'), isFalse);
-        expect(await module.updateIngredient('r1', 0, 'test'), isFalse);
-        expect(await module.removeIngredient('r1', 0), isFalse);
-        expect(await module.addInstruction('r1', 'test'), isFalse);
-        expect(await module.updateInstruction('r1', 0, 'test'), isFalse);
-        expect(await module.removeInstruction('r1', 0), isFalse);
-        expect(await module.markRecipeAsCooked('r1'), isFalse);
-      });
-    });
-
-    group('Content Operations (authenticated)', () {
-      test('should add ingredient', () async {
-        final result = await module.addIngredient('r1', '2 dl mjölk');
-        expect(result, isTrue);
-      });
-
-      test('should update ingredient', () async {
-        final result = await module.updateIngredient('r1', 0, '600g köttfärs');
-        expect(result, isTrue);
-      });
-
-      test('should remove ingredient', () async {
-        final result = await module.removeIngredient('r1', 1);
-        expect(result, isTrue);
-      });
-
-      test('should add instruction', () async {
-        final result = await module.addInstruction('r1', 'Servera');
-        expect(result, isTrue);
-      });
-
-      test('should mark recipe as cooked', () async {
-        final result = await module.markRecipeAsCooked('r1');
-        expect(result, isTrue);
-      });
     });
 
     group('Cache Loading', () {

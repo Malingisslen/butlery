@@ -374,7 +374,10 @@ class UnifiedRecipeService
         ?.recipesDropped
         .listen(_cacheModule.dropDiscardedRecipe);
 
-    _contentOps = RecipeContentOperations(personalModule: _personalModule);
+    _contentOps = RecipeContentOperations(
+      lookupRecipe: getRecipeById,
+      saveRecipe: updateRecipe,
+    );
 
     _authHandler = RecipeAuthStateHandler(
       cacheModule: _cacheModule,
@@ -912,10 +915,6 @@ class UnifiedRecipeService
   @override
   Future<bool> removeInstruction(String recipeId, int index) async =>
       _contentOps.removeInstruction(recipeId, index);
-
-  Future<bool> markRecipeAsCooked(String recipeId) async {
-    return await _personalModule.markRecipeAsCooked(recipeId);
-  }
 
   /// Toggle favorite status for a recipe.
   /// Performs optimistic update via copyWith + updateRecipe.
