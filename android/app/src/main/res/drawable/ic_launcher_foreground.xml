@@ -7,7 +7,7 @@
     <!-- Source: design/exports/android/ic_launcher_foreground.svg -->
     <group
         android:translateX="21"
-        android:translateY="21"
+        android:translateY="18.484"
         android:scaleX="0.4125"
         android:scaleY="0.4125">
         <path
