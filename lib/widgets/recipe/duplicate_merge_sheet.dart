@@ -43,6 +43,21 @@ class DuplicateMergeResult {
     required this.similarityScore,
   });
 
+  /// The existing recipe with its content replaced by the new import's.
+  Recipe buildReplacedRecipe() {
+    return existingRecipe.copyWith(
+      title: newRecipe.title,
+      description: newRecipe.description,
+      ingredients: newRecipe.ingredients,
+      instructions: newRecipe.instructions,
+      timeMinutes: newRecipe.timeMinutes,
+      portions: newRecipe.portions,
+      imageUrls: newRecipe.imageUrls,
+      sourceUrl: newRecipe.sourceUrl,
+      sourceAuthor: newRecipe.sourceAuthor,
+    );
+  }
+
   /// Build a merged recipe preferring the version with more/better data.
   Recipe buildMergedRecipe() {
     return existingRecipe.copyWith(
@@ -65,6 +80,10 @@ class DuplicateMergeResult {
           ? newRecipe.imageUrls
           : existingRecipe.imageUrls,
       sourceUrl: newRecipe.sourceUrl ?? existingRecipe.sourceUrl,
+      // The author travels with whichever source won.
+      sourceAuthor: newRecipe.sourceUrl != null
+          ? newRecipe.sourceAuthor
+          : existingRecipe.sourceAuthor,
     );
   }
 

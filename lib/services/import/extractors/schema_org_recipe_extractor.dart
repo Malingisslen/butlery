@@ -30,6 +30,7 @@ class SchemaOrgRecipeExtractor {
         mealType: MealTypes.match(extractCategory(data).orEmpty()) ?? 'Middag',
         imageUrls: extractImages(data),
         sourceUrl: sourceUrl,
+        sourceAuthor: extractAuthor(data),
         createdAt: clock.now(),
         updatedAt: clock.now(),
         createdBy: '',
@@ -48,6 +49,38 @@ class SchemaOrgRecipeExtractor {
       return _unescape.convert(name.toString().trim());
     }
     return 'Imported Recipe';
+  }
+
+  static const maxAuthorLength = 120;
+
+  /// The recipe's writer from schema.org `author`, which sites publish as a
+  /// string, a Person/Organization object or a list of either. A bare
+  /// `@id` reference into `@graph` carries no name and yields null.
+  static String? extractAuthor(Map<String, dynamic> data) {
+    final author = data['author'];
+    final names = <String>[
+      for (final entry in author is List ? author : [author])
+        ?_authorName(entry),
+    ];
+    if (names.isEmpty) return null;
+    final joined = names.toSet().join(', ');
+    return joined.length <= maxAuthorLength
+        ? joined
+        : joined.substring(0, maxAuthorLength).trimRight();
+  }
+
+  static String? _authorName(Object? entry) {
+    final raw = switch (entry) {
+      final String s => s,
+      final Map<dynamic, dynamic> m => m['name']?.toString(),
+      _ => null,
+    };
+    if (raw == null) return null;
+    final text = _unescape
+        .convert(raw.replaceAll(RegExp('<[^>]*>'), ' '))
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    return text.isEmpty ? null : text;
   }
 
   static String extractDescription(Map<String, dynamic> data) {

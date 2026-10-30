@@ -375,6 +375,10 @@ class RecipeOperations {
           ? recipe.core.personalTagIds
           : personalTagIds,
       sourceUrl: sourceUrl == _sentinel ? recipe.core.sourceUrl : sourceUrl,
+      // The author belongs to the old page; a new source must not inherit it.
+      sourceAuthor: sourceUrl == _sentinel || sourceUrl == recipe.core.sourceUrl
+          ? recipe.core.sourceAuthor
+          : null,
       isPublic: isPublic,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
