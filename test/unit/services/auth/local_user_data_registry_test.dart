@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_io.dart'
@@ -36,6 +37,53 @@ void main() {
     expect(prefs.getKeys(), {'unrelated_setting'});
   });
 
+  test(
+    'an explicit sign-out whose writes were sent asks for the cache wipe',
+    () async {
+      await LocalUserDataRegistry.clearDrafts(
+        userId: 'alice',
+        reason: DeviceCleanupReason.explicitSignOut,
+        firestoreWritesSettled: true,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(FirestoreCacheWipe.requestKey), isTrue);
+    },
+  );
+
+  test('unsent Firestore writes mean no cache wipe is requested', () async {
+    await LocalUserDataRegistry.clearDrafts(
+      userId: 'alice',
+      reason: DeviceCleanupReason.explicitSignOut,
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey(FirestoreCacheWipe.requestKey), isFalse);
+  });
+
+  test(
+    'a sign-out that leaves writes unsent withdraws an earlier wipe request',
+    () async {
+      for (final reason in DeviceCleanupReason.values) {
+        SharedPreferences.setMockInitialValues({
+          FirestoreCacheWipe.requestKey: true,
+        });
+
+        await LocalUserDataRegistry.clearDrafts(
+          userId: 'alice',
+          reason: reason,
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.containsKey(FirestoreCacheWipe.requestKey),
+          isFalse,
+          reason: '$reason',
+        );
+      }
+    },
+  );
+
   test('an automatic sign-out keeps the drafts (PQ-12 = A)', () async {
     await LocalUserDataRegistry.clearDrafts(
       userId: 'alice',
@@ -44,6 +92,7 @@ void main() {
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getKeys(), _everyDraft().keys.toSet());
+    expect(prefs.containsKey(FirestoreCacheWipe.requestKey), isFalse);
   });
 
   test('an explicit sign-out deletes the staged photo draft file', () async {

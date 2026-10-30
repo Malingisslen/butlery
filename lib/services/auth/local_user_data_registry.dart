@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -44,19 +45,29 @@ class LocalUserDataRegistry {
     pendingImportUrlKey,
   ];
 
-  /// Clears what [reason] allows. Every store it calls logs its own errors
+  /// Clears what [reason] allows, and, once [firestoreWritesSettled], asks a later
+  /// start to empty Firestore's own cache. Every store it calls logs its own errors
   /// and does not throw, so a sign-out cannot fail on it.
   static Future<void> clearDrafts({
     required String? userId,
     required DeviceCleanupReason reason,
+    bool firestoreWritesSettled = false,
   }) async {
-    if (reason == DeviceCleanupReason.automaticSignOut) return;
+    if (reason == DeviceCleanupReason.automaticSignOut) {
+      await FirestoreCacheWipe.cancel();
+      return;
+    }
     await _clearPrefs();
     // Not awaited: a temp-file delete must not hold a sign-out up.
     unawaited(image_store.clearStagedDraftImage());
     await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
     await WeeklyMenuDraftStore.clearAll(userId: userId);
     await RecipeFormAutoSaveManager.clearDraftsFor(userId);
+    if (firestoreWritesSettled) {
+      await FirestoreCacheWipe.request();
+    } else {
+      await FirestoreCacheWipe.cancel();
+    }
   }
 
   static Future<void> _clearPrefs() async {

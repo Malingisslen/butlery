@@ -37,6 +37,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
@@ -283,6 +284,10 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
           providerSignIn: container<ProviderSignInService>(),
+          firestoreWritesSettled: () => FirestoreCacheWipe.writesSettled(
+            () => container<FirestoreRepository>().firestore
+                .waitForPendingWrites(),
+          ),
           readCacheCleaner: (userId) async {
             if (!container.isRegistered<OfflineService>()) return;
             final offline = container<OfflineService>();
