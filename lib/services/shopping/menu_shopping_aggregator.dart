@@ -15,7 +15,7 @@ class AggregatedShoppingItem {
   /// Summed amount, or null when the source lines carry no usable quantity.
   final double? amount;
 
-  /// Unit as written (post lowercase/trim). Empty for unit-less lines.
+  /// Empty for unit-less lines.
   final String unit;
 
   /// ShoppingCategory constant from [IngredientCategorizer].
@@ -349,24 +349,23 @@ class _MergeGroup {
       ..sourceCount = sourceCount;
   }
 
-  static const _spoonUnits = {
-    'msk',
-    'matsked',
-    'matskedar',
-    'tsk',
-    'tesked',
-    'teskedar',
-    'krm',
-    'kryddmått',
-  };
+  static const _spoonMl = {'msk': 15.0, 'tsk': 5.0, 'krm': 1.0};
 
   /// BUT-2304: nobody shops for sugar in centiliters, so a total written only
   /// in spoons stays in spoons instead of reading "3 cl socker". The largest
   /// spoon that measures it in half steps wins, except that half a msk reads
   /// as 1.5 tsk.
   ConvertedMeasurement? _asSpoons() {
-    if (memberUnits.isEmpty || !memberUnits.every(_spoonUnits.contains)) {
+    if (memberUnits.isEmpty || !memberUnits.every(_spoonMl.containsKey)) {
       return null;
+    }
+    // "¼ tsk" written in one spoon stays in it, not "1/12 msk" (i09).
+    final only = memberUnits.toSet();
+    if (only.length == 1) {
+      return ConvertedMeasurement(
+        baseQuantity / _spoonMl[only.first]!,
+        only.first,
+      );
     }
     for (final (unit, ml, least) in const [
       ('msk', 15.0, 1.0),

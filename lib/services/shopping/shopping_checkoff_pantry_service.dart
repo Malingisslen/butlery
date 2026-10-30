@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// BUT-1050: the policy seam between shopping-list checkoff and the pantry.
 ///
@@ -53,7 +54,10 @@ class ShoppingCheckoffPantryService {
     final sameName = existing
         .where((p) => p.ingredientName.toLowerCase() == name)
         .toList();
-    final match = sameName.firstWhereOrNull((p) => p.unit == item.unit);
+    final unit = UnitDefinitions.canonical(item.unit);
+    final match = sameName.firstWhereOrNull(
+      (p) => UnitDefinitions.canonical(p.unit) == unit,
+    );
 
     if (match != null && match.quantity != null) {
       // What was bought is added as a relative change, never as a new total

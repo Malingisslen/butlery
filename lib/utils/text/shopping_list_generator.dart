@@ -43,6 +43,7 @@ import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
@@ -341,7 +342,9 @@ class ShoppingListGenerator {
         final shoppingItem = UnifiedShoppingItem(
           name: processed.originalName.trim(), // Display original
           amount: scaledQuantity,
-          unit: stated.isUnknown ? '' : processed.unit,
+          unit: stated.isUnknown
+              ? ''
+              : UnitDefinitions.canonical(processed.unit),
           category: category,
           bought: false,
           note: '', // No notes from recipe ingredients

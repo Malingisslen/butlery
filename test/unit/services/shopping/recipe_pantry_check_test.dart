@@ -42,6 +42,14 @@ void main() {
     expect(RecipePantryCheck.toBuy(items, const []), items);
   });
 
+  test('a pantry row in another spelling of the unit is subtracted', () {
+    final left = RecipePantryCheck.toBuy(items, [
+      _pantry('Ägg', quantity: 6, unit: 'stycken'),
+    ]);
+
+    expect(left.map((i) => i.name), ['Mjölk', 'Vetemjöl', 'Salt']);
+  });
+
   test('enough at home leaves an item off; name matching ignores case', () {
     final left = RecipePantryCheck.toBuy(items, [_pantry('ägg', quantity: 6)]);
 

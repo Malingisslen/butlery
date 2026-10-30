@@ -165,6 +165,31 @@ void main() {
       verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
+    test('aggregates into a pantry row whose unit is a long spelling of the '
+        'bought unit', () async {
+      // Intent: shopping rows carry the short form ("msk") while older pantry
+      // rows keep what the user typed ("matsked"). They are one unit, so the
+      // purchase grows the existing row instead of creating a second one.
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'Salt', qty: 4, unit: 'matsked')],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'salt', amount: 2, unit: 'msk'),
+        wasBought: false,
+      );
+
+      final captured =
+          verify(
+                () => pantry.adjustQuantity('u1', captureAny(), 2),
+              ).captured.single
+              as PantryItem;
+      expect(captured.unit, 'matsked');
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
     test('does nothing when user profile is null (not yet loaded)', () async {
       // Intent: the null-profile guard must fire before any pantry I/O, just
       // like the preference-OFF guard. Ensures the service doesn't crash or

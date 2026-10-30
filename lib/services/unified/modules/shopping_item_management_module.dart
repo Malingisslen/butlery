@@ -1,5 +1,6 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:butlery/utils/text/unit_definitions.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -242,8 +243,8 @@ class ShoppingItemManagementModule {
           if (existingName != normalizedName) return false;
           // Compatible units: same unit or both empty
           final unitsMatch =
-              existing.unit.trim().toLowerCase() ==
-              newItem.unit.trim().toLowerCase();
+              UnitDefinitions.canonical(existing.unit) ==
+              UnitDefinitions.canonical(newItem.unit);
           return unitsMatch;
         });
 

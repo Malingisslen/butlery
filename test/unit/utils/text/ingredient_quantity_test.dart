@@ -99,5 +99,19 @@ void main() {
       expect(line.unit, 'g');
       expect(line.name, 'krossade tomater');
     });
+
+    test('a unit written out in full comes back as its short form', () {
+      // The list sums rows by unit, so "matsked" and "msk" must meet.
+      for (final MapEntry(key: raw, value: unit) in {
+        '1 matsked olja': 'msk',
+        '2 styck ägg': 'st',
+      }.entries) {
+        expect(
+          IngredientQuantity.shoppingLine(RecipeIngredient.rawOnly(raw)).unit,
+          unit,
+          reason: raw,
+        );
+      }
+    });
   });
 }

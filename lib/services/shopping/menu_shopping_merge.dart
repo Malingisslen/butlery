@@ -10,6 +10,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// "Ersätt listan" is always off by default ("Ersätt
 /// listan är alltid av som standard"); the other three are drawn on.
@@ -300,7 +301,7 @@ class MenuShoppingMergePlanner {
     final row = AggregatedShoppingItem(
       name: name,
       amount: amount,
-      unit: unit.toLowerCase().trim(),
+      unit: UnitDefinitions.canonical(unit),
       category: '',
       sourceCount: 1,
     );
@@ -339,7 +340,7 @@ class MenuShoppingMergePlanner {
       if (quantity == null) {
         return const _Marked(MenuShoppingPantryMark.maybeAtHome);
       }
-      final unit = item.unit.toLowerCase().trim();
+      final unit = UnitDefinitions.canonical(item.unit);
       if (unit == row.unit) {
         have += quantity;
         continue;

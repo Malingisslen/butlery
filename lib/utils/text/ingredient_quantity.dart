@@ -2,6 +2,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// The amount an ingredient line states: a number, a range ("2-3 dl"), or
 /// nothing at all ("salt"). Read from the line itself, so every import path
@@ -86,7 +87,9 @@ class IngredientQuantity {
       };
       return (
         name: entry.name.trim(),
-        unit: amount == null ? '' : entry.unit.orEmpty().toLowerCase().trim(),
+        unit: amount == null
+            ? ''
+            : UnitDefinitions.canonical(entry.unit.orEmpty()),
         amount: amount,
       );
     }
@@ -98,7 +101,7 @@ class IngredientQuantity {
     }
     return (
       name: parsed.name.trim(),
-      unit: parsed.unit.toLowerCase().trim(),
+      unit: UnitDefinitions.canonical(parsed.unit),
       amount: quantity.forShopping,
     );
   }
