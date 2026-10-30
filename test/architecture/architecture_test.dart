@@ -174,6 +174,9 @@ void main() {
         // Local test mode points the SDK singletons at the emulators before
         // the DI graph exists, the same moment main.dart configures them.
         'lib/core/bootstrap/emulator_bootstrap.dart',
+        // The cache wipe needs the restored session before DI exists, the same
+        // moment the Firestore settings are applied.
+        'lib/core/bootstrap/firestore_bootstrap.dart',
 
         // FCM token-manager: structurally a service but named without
         // "_service" suffix; Firebase Messaging singleton is the contract.

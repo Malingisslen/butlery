@@ -14,6 +14,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_account_changes.dart';
@@ -38,6 +39,9 @@ class AuthService extends ChangeNotifier
   final AnalyticsService _analyticsService;
   final ProviderSignInService? _providerSignIn;
   final ReadCacheCleaner? _readCacheCleaner;
+
+  /// True once the signed-in user's unsent Firestore writes have been sent.
+  final Future<bool> Function()? _firestoreWritesSettled;
 
   @override
   @protected
@@ -77,13 +81,18 @@ class AuthService extends ChangeNotifier
     required AnalyticsService analyticsService,
     ProviderSignInService? providerSignIn,
     ReadCacheCleaner? readCacheCleaner,
+    Future<bool> Function()? firestoreWritesSettled,
   }) : _authRepository = authRepository ?? FirebaseAuthRepository(),
        _analyticsService = analyticsService,
        _providerSignIn = providerSignIn,
-       _readCacheCleaner = readCacheCleaner {
+       _readCacheCleaner = readCacheCleaner,
+       _firestoreWritesSettled = firestoreWritesSettled {
     _authStateSubscription = _authRepository.authStateChanges().listen(
       (User? user) {
         _currentUser = user;
+        // A request belongs to the sign-out that made it: once someone is
+        // signed in, a session that ends some other way must not wipe them.
+        if (user != null) unawaited(FirestoreCacheWipe.cancel());
         // BUT-833: pin analytics user identifier to the authoritative auth
         // stream — fires on cold-start (cached user), sign-in, sign-out, and
         // forced revocation. SDK suppresses the call pre-consent, so calling
@@ -307,6 +316,8 @@ class AuthService extends ChangeNotifier
       // Read before the sign-out clears it: only this person's data goes.
       final userId = (_currentUser ?? _authRepository.currentUser)?.uid;
       await SignOutCleanup.clearReadCaches(_readCacheCleaner, userId);
+      // While still signed in: the wipe it permits deletes unsent writes.
+      final writesSettled = await _firestoreWritesSettled?.call() ?? false;
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
@@ -316,6 +327,7 @@ class AuthService extends ChangeNotifier
       await LocalUserDataRegistry.clearDrafts(
         userId: userId,
         reason: DeviceCleanupReason.explicitSignOut,
+        firestoreWritesSettled: writesSettled,
       );
       await _analyticsService.logLogout();
     }).catchError((e) {
@@ -347,14 +359,17 @@ class AuthService extends ChangeNotifier
   Future<void> forceSignOut() async {
     try {
       _clearConsentCacheIfAvailable();
-      await SignOutCleanup.clearReadCaches(
-        _readCacheCleaner,
-        (_currentUser ?? _authRepository.currentUser)?.uid,
-      );
+      final userId = (_currentUser ?? _authRepository.currentUser)?.uid;
+      await SignOutCleanup.clearReadCaches(_readCacheCleaner, userId);
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
       await _providerSignIn?.signOut();
+      // Keeps the drafts; only withdraws an earlier cache-wipe request.
+      await LocalUserDataRegistry.clearDrafts(
+        userId: userId,
+        reason: DeviceCleanupReason.automaticSignOut,
+      );
     } catch (e) {
       AppLogger.error('Force sign out error: $e');
     } finally {

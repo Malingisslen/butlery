@@ -10,8 +10,10 @@ library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 
 void main() {
   group('FirestoreBootstrap', () {
@@ -53,12 +55,86 @@ void main() {
       expect(connected, same(firestore));
       expect(firestore.events, ['settings', 'connect']);
     });
+
+    group('cache wipe requested by a sign-out', () {
+      setUp(() => SharedPreferences.setMockInitialValues({}));
+
+      test(
+        'runs after connect when nobody is signed in, then clears the flag',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            FirestoreCacheWipe.requestKey: true,
+          });
+          final firestore = _RecordingFirestore();
+
+          await FirestoreBootstrap.configure(
+            firestore: firestore,
+            connect: (_) => firestore.events.add('connect'),
+            noOneSignedIn: () async => true,
+          );
+
+          expect(firestore.events, ['settings', 'connect', 'clearPersistence']);
+          final prefs = await SharedPreferences.getInstance();
+          expect(prefs.containsKey(FirestoreCacheWipe.requestKey), isFalse);
+        },
+      );
+
+      test('does not run without a request', () async {
+        final firestore = _RecordingFirestore();
+
+        await FirestoreBootstrap.configure(firestore: firestore);
+
+        expect(firestore.events, ['settings']);
+      });
+
+      test('a failed wipe keeps the request for the next start', () async {
+        SharedPreferences.setMockInitialValues({
+          FirestoreCacheWipe.requestKey: true,
+        });
+        final firestore = _RecordingFirestore()..failClear = true;
+
+        await FirestoreBootstrap.configure(
+          firestore: firestore,
+          noOneSignedIn: () async => true,
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool(FirestoreCacheWipe.requestKey), isTrue);
+      });
+
+      test(
+        'a signed-in user keeps their unsent writes and the request waits',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            FirestoreCacheWipe.requestKey: true,
+          });
+          final firestore = _RecordingFirestore();
+
+          await FirestoreBootstrap.configure(
+            firestore: firestore,
+            noOneSignedIn: () async => false,
+          );
+
+          expect(firestore.events, ['settings']);
+          final prefs = await SharedPreferences.getInstance();
+          expect(prefs.getBool(FirestoreCacheWipe.requestKey), isTrue);
+        },
+      );
+    });
   });
 }
 
 class _RecordingFirestore extends FakeFirebaseFirestore {
   final events = <String>[];
 
+  bool failClear = false;
+
   @override
   set settings(Settings settings) => events.add('settings');
+
+  @override
+  Future<void> clearPersistence() async {
+    events.add('clearPersistence');
+    if (failClear) throw StateError('in use');
+  }
 }

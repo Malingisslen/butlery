@@ -16,6 +16,18 @@ void main() {
     expect(module, contains('clearUserReadCaches('));
   });
 
+  test('the wipe waits for the user\'s unsent Firestore writes', () {
+    expect(module, contains('firestoreWritesSettled:'));
+    expect(module, contains('FirestoreCacheWipe.writesSettled('));
+    expect(
+      module.replaceAll(RegExp(r'\s+'), ''),
+      contains(
+        'container<FirestoreRepository>().firestore.waitForPendingWrites()'
+            .replaceAll(' ', ''),
+      ),
+    );
+  });
+
   test('drafts take their owner from the signed-in AuthService', () {
     expect(module, contains('AutoSaveManager.defaultOwnerIdProvider ='));
   });

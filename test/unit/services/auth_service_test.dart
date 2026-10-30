@@ -17,6 +17,7 @@ import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
@@ -383,6 +384,121 @@ void main() {
           expect(await _rows(db, 'sync_queue_entries', 'u1'), 1);
         },
       );
+
+      test('signOut asks for the Firestore cache wipe only once its writes '
+          'are sent', () async {
+        SharedPreferences.setMockInitialValues({});
+        authService.dispose();
+        authService = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+          firestoreWritesSettled: () async => true,
+        );
+        await authService.signOut();
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool(FirestoreCacheWipe.requestKey), isTrue);
+
+        SharedPreferences.setMockInitialValues({});
+        authService.dispose();
+        authService = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+          firestoreWritesSettled: () async => false,
+        );
+        await authService.signOut();
+        expect(
+          (await SharedPreferences.getInstance()).containsKey(
+            FirestoreCacheWipe.requestKey,
+          ),
+          isFalse,
+        );
+      });
+
+      test('a sign-in withdraws a cache-wipe request', () async {
+        SharedPreferences.setMockInitialValues({
+          FirestoreCacheWipe.requestKey: true,
+        });
+        final user = MockFactory.createMockUser(uid: 'u2');
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(user));
+
+        final signedIn = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+        );
+        addTearDown(signedIn.dispose);
+        await pumpEventQueue();
+
+        expect(
+          (await SharedPreferences.getInstance()).containsKey(
+            FirestoreCacheWipe.requestKey,
+          ),
+          isFalse,
+        );
+      });
+
+      test(
+        'a signed-out event keeps a request a failed wipe left behind',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            FirestoreCacheWipe.requestKey: true,
+          });
+          final signedOut = AuthService(
+            authRepository: mockAuthRepository,
+            analyticsService: mockAnalyticsService,
+          );
+          addTearDown(signedOut.dispose);
+          await pumpEventQueue();
+
+          expect(
+            (await SharedPreferences.getInstance()).getBool(
+              FirestoreCacheWipe.requestKey,
+            ),
+            isTrue,
+          );
+        },
+      );
+
+      test(
+        'signOut waits for the Firestore writes before the auth sign-out',
+        () async {
+          var authSignedOut = false;
+          when(() => mockAuthRepository.signOut()).thenAnswer((_) async {
+            authSignedOut = true;
+          });
+          bool? signedOutWhenAsked;
+          authService.dispose();
+          authService = AuthService(
+            authRepository: mockAuthRepository,
+            analyticsService: mockAnalyticsService,
+            firestoreWritesSettled: () async {
+              signedOutWhenAsked = authSignedOut;
+              return true;
+            },
+          );
+
+          await authService.signOut();
+
+          expect(signedOutWhenAsked, isFalse);
+          expect(authSignedOut, isTrue);
+        },
+      );
+
+      test('forceSignOut withdraws an earlier cache-wipe request', () async {
+        SharedPreferences.setMockInitialValues({
+          FirestoreCacheWipe.requestKey: true,
+        });
+
+        await authService.forceSignOut();
+
+        expect(
+          (await SharedPreferences.getInstance()).containsKey(
+            FirestoreCacheWipe.requestKey,
+          ),
+          isFalse,
+        );
+      });
 
       test('forceSignOut empties it too', () async {
         await authService.forceSignOut();
