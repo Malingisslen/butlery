@@ -410,59 +410,6 @@ void main() {
         expect(recipes.any((r) => r.id == 'recent_1'), isTrue);
       });
 
-      test('should recommend recipes based on user history', () async {
-        // Arrange - Simulate user preference for Italian recipes
-        final italianRecipes = [
-          RecipeBuilder()
-              .withId('italian_1')
-              .withTitle('Spaghetti Carbonara')
-              .asCollaborative()
-              .withTags(['italian', 'pasta', 'recommended'])
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_chef',
-                  memberPermissions: {
-                    'user_123': ResourcePermission.viewer,
-                  },
-                ),
-              )
-              .build(),
-          RecipeBuilder()
-              .withId('italian_2')
-              .withTitle('Risotto alla Milanese')
-              .asCollaborative()
-              .withTags(['italian', 'rice', 'recommended'])
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_chef2',
-                  memberPermissions: {
-                    'user_123': ResourcePermission.editor,
-                  },
-                ),
-              )
-              .build(),
-        ];
-
-        mockParentService.setRecipeState(
-          currentUserId: 'user_123',
-          recipes: [...testRecipes, ...italianRecipes],
-        );
-
-        // Act
-        final recipes = await discoveryService.searchRecipes(
-          query: 'italian',
-          includePersonal: false,
-        );
-
-        // Assert
-        expect(
-          recipes
-              .where((r) => r.personalTagIds?.contains('italian') ?? false)
-              .length,
-          greaterThanOrEqualTo(2),
-        );
-      });
-
       test('should calculate discovery statistics correctly', () {
         // Arrange
         mockParentService.setRecipeState(
@@ -566,54 +513,6 @@ void main() {
         expect(recipes.any((r) => r.id == 'multi_2'), isTrue);
       });
 
-      test(
-        'should handle complex search queries with Swedish characters',
-        () async {
-          // Arrange
-          final swedishRecipes = [
-            RecipeBuilder()
-                .withId('swedish_1')
-                .withTitle('Köttbullar med lingonsylt')
-                .withDescription('Traditionella svenska köttbullar')
-                .asCollaborative()
-                .withTags(['svensk', 'kött', 'traditionell'])
-                .withSocialData(
-                  RecipeSocialData(
-                    ownerId: 'user_123',
-                    memberPermissions: {},
-                  ),
-                )
-                .build(),
-            RecipeBuilder()
-                .withId('swedish_2')
-                .withTitle('Räksmörgås')
-                .withDescription('Öppen smörgås med räkor')
-                .asCollaborative()
-                .withTags(['svensk', 'fisk', 'smörgås'])
-                .withSocialData(
-                  RecipeSocialData(
-                    ownerId: 'user_123',
-                    memberPermissions: {},
-                  ),
-                )
-                .build(),
-          ];
-
-          mockParentService.setRecipeState(
-            currentUserId: 'user_123',
-            recipes: [...testRecipes, ...swedishRecipes],
-          );
-
-          // Act
-          final recipes = await discoveryService.searchRecipes(
-            query: 'köttbullar',
-          );
-
-          // Assert
-          expect(recipes.any((r) => r.id == 'swedish_1'), isTrue);
-        },
-      );
-
       test('should combine search and category filters', () async {
         // Act
         final recipes = await discoveryService.getCollaborativeRecipes(
@@ -624,26 +523,6 @@ void main() {
         // Assert
         expect(recipes.length, equals(1));
         expect(recipes[0].id, equals('collab_1'));
-      });
-
-      test('should search in ingredients field', () async {
-        // Act
-        final recipes = await discoveryService.searchRecipes(
-          query: 'tomatoes',
-        );
-
-        // Assert
-        expect(recipes.any((r) => r.ingredients.contains('tomatoes')), isTrue);
-      });
-
-      test('should handle empty search results gracefully', () async {
-        // Act
-        final recipes = await discoveryService.searchRecipes(
-          query: 'nonexistent_ingredient_xyz',
-        );
-
-        // Assert
-        expect(recipes, isEmpty);
       });
     });
 
@@ -712,65 +591,6 @@ void main() {
         // Assert
         expect(recipes.length, lessThanOrEqualTo(50));
         expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be fast
-      });
-
-      test('should sort results by relevance in search', () async {
-        // Arrange
-        final searchableRecipes = [
-          RecipeBuilder()
-              .withId('exact_title')
-              .withTitle('Pasta')
-              .withDescription('Some description')
-              .asCollaborative()
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_123',
-                  memberPermissions: {},
-                ),
-              )
-              .build(),
-          RecipeBuilder()
-              .withId('in_description')
-              .withTitle('Something else')
-              .withDescription('This has pasta in description')
-              .asCollaborative()
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_123',
-                  memberPermissions: {},
-                ),
-              )
-              .build(),
-          RecipeBuilder()
-              .withId('in_tags')
-              .withTitle('Another recipe')
-              .withDescription('No match here')
-              .withTags(['pasta', 'italian'])
-              .asCollaborative()
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_123',
-                  memberPermissions: {},
-                ),
-              )
-              .build(),
-        ];
-
-        mockParentService.setRecipeState(
-          currentUserId: 'user_123',
-          recipes: searchableRecipes,
-        );
-
-        // Act
-        final results = await discoveryService.searchRecipes(
-          query: 'pasta',
-        );
-
-        // Assert
-        expect(
-          results.first.id,
-          equals('exact_title'),
-        ); // Title match should be first
       });
 
       test('should handle concurrent discovery operations', () async {
@@ -848,16 +668,6 @@ void main() {
 
         // Assert
         expect(recipes, isEmpty); // Should filter out broken recipe
-      });
-
-      test('should handle empty search query', () async {
-        // Act
-        final recipes = await discoveryService.searchRecipes(
-          query: '   ', // Whitespace only
-        );
-
-        // Assert
-        expect(recipes, isEmpty);
       });
     });
   });

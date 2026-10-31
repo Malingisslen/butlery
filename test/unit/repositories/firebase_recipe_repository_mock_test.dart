@@ -37,7 +37,6 @@ void main() {
         currentUserId: 'test-user-123',
         recipesByUser: {},
         archiveRecipes: [],
-        searchResults: [],
         recipesById: {},
       );
 
@@ -229,51 +228,6 @@ void main() {
             onError: any(named: 'onError'),
           ),
         ).called(1);
-      });
-    });
-
-    group('Search Operations', () {
-      test('should search recipes by query', () async {
-        // Arrange
-        const query = 'pasta';
-        final searchResults = [
-          RecipeFactory.build(id: 'recipe-1', title: 'Pasta Carbonara'),
-          RecipeFactory.build(id: 'recipe-2', title: 'Pasta Bolognese'),
-        ];
-
-        // Stub the repository method
-        when(
-          () => mockRepository.searchRecipes(query),
-        ).thenAnswer((_) async => searchResults);
-
-        // Act
-        final results = await mockRepository.searchRecipes(query);
-
-        // Assert
-        expect(results, hasLength(2));
-        expect(
-          results.every((r) => r.title.toLowerCase().contains('pasta')),
-          isTrue,
-        );
-
-        verify(() => mockRepository.searchRecipes(query)).called(1);
-      });
-
-      test('should return empty list for no search results', () async {
-        // Arrange
-        const query = 'xyz123';
-
-        // Stub the repository method
-        when(
-          () => mockRepository.searchRecipes(query),
-        ).thenAnswer((_) async => []);
-
-        // Act
-        final results = await mockRepository.searchRecipes(query);
-
-        // Assert
-        expect(results, isEmpty);
-        verify(() => mockRepository.searchRecipes(query)).called(1);
       });
     });
 

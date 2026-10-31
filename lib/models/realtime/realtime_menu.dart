@@ -362,28 +362,6 @@ class RealtimeMenu extends RealtimeResource {
     );
   }
 
-  List<Recipe> searchRecipes(String query) =>
-      RealtimeMenuAnalytics.searchRecipes(_data, query);
-
-  List<Recipe> searchRecipesAdvanced({
-    String? query,
-    String? mealType,
-    List<String>? tags,
-    int? maxTimeMinutes,
-    int? minPortions,
-    int? maxPortions,
-    double? minRating,
-  }) => RealtimeMenuAnalytics.searchRecipesAdvanced(
-    _data,
-    query: query,
-    mealType: mealType,
-    tags: tags,
-    maxTimeMinutes: maxTimeMinutes,
-    minPortions: minPortions,
-    maxPortions: maxPortions,
-    minRating: minRating,
-  );
-
   Map<String, List<Recipe>> filterByMealType(String mealType) =>
       RealtimeMenuAnalytics.filterByMealType(_data, mealType);
 

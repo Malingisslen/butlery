@@ -1,4 +1,4 @@
-/// Comprehensive realtime menu analytics providing advanced search, filtering, and intelligent insights for collaborative meal planning.
+/// Comprehensive realtime menu analytics providing filtering and intelligent insights for collaborative meal planning.
 
 // lib/models/realtime/realtime_menu_analytics.dart
 
@@ -6,111 +6,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 
-/// Comprehensive realtime menu analytics with advanced search, filtering, and intelligent insights for collaborative meal planning.
-/// Provides complete analytical capabilities for menu data including multi-criteria search, nutritional analysis,
+/// Comprehensive realtime menu analytics with filtering and intelligent insights for collaborative meal planning.
+/// Provides complete analytical capabilities for menu data including nutritional analysis,
 /// balance insights, and recommendation systems through focused analytical algorithms and Swedish-optimized content analysis.
 /// This class serves as the intelligence layer for all menu analysis and optimization features.
 class RealtimeMenuAnalytics {
-  /// Search functionality for intelligent recipe discovery with multi-field text matching.
-
-  /// Searches recipes across all menu categories using comprehensive text matching and ingredient analysis.
-  static List<Recipe> searchRecipes(RealtimeMenuData data, String query) {
-    if (query.isEmpty) return data.allUniqueRecipes;
-
-    final lowerQuery = query.toLowerCase();
-    final results = <Recipe>[];
-
-    for (final recipes in data.menuSnapshot.values) {
-      for (final recipe in recipes) {
-        if (_recipeMatchesQuery(recipe, lowerQuery) &&
-            !results.any((r) => r.id == recipe.id)) {
-          results.add(recipe);
-        }
-      }
-    }
-
-    return results;
-  }
-
-  /// Checks if a recipe matches the search query using comprehensive field analysis.
-  static bool _recipeMatchesQuery(Recipe recipe, String lowerQuery) {
-    return recipe.core.title.toLowerCase().contains(lowerQuery) ||
-        recipe.core.description.toLowerCase().contains(lowerQuery) ||
-        recipe.core.ingredients.any(
-          (ingredient) => ingredient.toLowerCase().contains(lowerQuery),
-        ) ||
-        recipe.core.mealType.toLowerCase().contains(lowerQuery) ||
-        (recipe.core.personalTags?.any(
-              (pt) => pt.name.toLowerCase().contains(lowerQuery),
-            ) ??
-            false);
-  }
-
-  /// Performs advanced multi-criteria recipe search with comprehensive filtering and intelligent matching.
-  static List<Recipe> searchRecipesAdvanced(
-    RealtimeMenuData data, {
-    String? query,
-    String? mealType,
-    List<String>? tags,
-    int? maxTimeMinutes,
-    int? minPortions,
-    int? maxPortions,
-    double? minRating,
-  }) {
-    var results = data.allUniqueRecipes;
-
-    // Apply text search filter
-    if (query != null && query.isNotEmpty) {
-      results = searchRecipes(data, query);
-    }
-
-    // Apply meal type filter
-    if (mealType != null) {
-      results = results
-          .where(
-            (recipe) =>
-                recipe.core.mealType.toLowerCase() == mealType.toLowerCase(),
-          )
-          .toList();
-    }
-
-    // Apply time filter
-    if (maxTimeMinutes != null) {
-      results = results
-          .where((recipe) => (recipe.core.timeMinutes ?? 0) <= maxTimeMinutes)
-          .toList();
-    }
-
-    // Apply portion filters
-    if (minPortions != null) {
-      results = results
-          .where((recipe) => (recipe.core.portions ?? 0) >= minPortions)
-          .toList();
-    }
-    if (maxPortions != null) {
-      results = results
-          .where((recipe) => (recipe.core.portions ?? 0) <= maxPortions)
-          .toList();
-    }
-
-    // Apply rating filter
-    if (minRating != null) {
-      results = results
-          .where((recipe) => (recipe.core.rating ?? 0.0) >= minRating)
-          .toList();
-    }
-
-    // Apply tags filter
-    if (tags != null && tags.isNotEmpty) {
-      results = results.where((recipe) {
-        final recipeTags = recipe.core.personalTagIds ?? [];
-        return tags.every((tag) => recipeTags.contains(tag));
-      }).toList();
-    }
-
-    return results;
-  }
-
   /// Filter menu by specific meal type
   static Map<String, List<Recipe>> filterByMealType(
     RealtimeMenuData data,

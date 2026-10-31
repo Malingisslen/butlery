@@ -321,44 +321,6 @@ void main() {
           'match the nested visibility/metadata paths the repo queries on '
           'now — BUT-369 continuation will rewrite.',
       () {
-        test('should search recipes with text matching', () async {
-          // Arrange - Create searchable recipes
-          final recipes = [
-            RecipeBuilder()
-                .withId('pasta-1')
-                .withTitle('Pasta Carbonara')
-                .withDescription('Classic Italian pasta dish')
-                .withCreatedBy(testUserId)
-                .build(),
-            RecipeBuilder()
-                .withId('pasta-2')
-                .withTitle('Pasta Bolognese')
-                .withDescription('Traditional meat sauce pasta')
-                .withCreatedBy(testUserId)
-                .build(),
-            RecipeBuilder()
-                .withId('chicken-1')
-                .withTitle('Grilled Chicken')
-                .withDescription('Healthy grilled chicken breast')
-                .withCreatedBy(testUserId)
-                .build(),
-          ];
-
-          for (final recipe in recipes) {
-            await repository.create(recipe);
-          }
-
-          // Act - Search for pasta
-          final results = await repository.searchRecipes('pasta');
-
-          // Assert
-          expect(results.length, greaterThanOrEqualTo(2));
-          expect(
-            results.every((r) => r.title.toLowerCase().contains('pasta')),
-            isTrue,
-          );
-        });
-
         test('should handle complex compound queries', () async {
           // Arrange - Create recipes with various attributes
           for (int i = 0; i < 10; i++) {

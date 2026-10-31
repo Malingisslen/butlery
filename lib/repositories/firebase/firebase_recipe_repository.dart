@@ -61,9 +61,6 @@ import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 /// recipeRepo.watchRecipes(userId).listen((recipes) {
 ///   // Receives the 100 most recent recipes
 /// });
-/// // Search with scope limits
-/// final results = await recipeRepo.searchRecipes('chicken');
-/// // Searches within 200 most recent recipes
 /// ```
 class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>
@@ -576,39 +573,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       AppLogger.warning('Failed to load more recipes after $afterRecipeId: $e');
       return const <Recipe>[];
     }
-  }
-
-  @override
-  Future<List<Recipe>> searchRecipes(String query) async {
-    // ✅ PERFORMANCE FIX: Added limit and optimized search approach
-    // Instead of loading ALL recipes, we limit and use server-side orderBy for better performance
-    return await FirebasePerformanceService.traceSearch(
-      (trace) async {
-        final lower = query.toLowerCase();
-
-        // For small datasets, this is acceptable, but for optimization we could implement
-        // server-side text search with Algolia or similar in the future
-        final userId = currentUserId;
-        if (userId == null) return [];
-
-        final snap = await getCollectionForUser(userId)
-            .orderBy('core.updatedAt', descending: true)
-            .limit(200) // Limit search scope to most recent 200 recipes
-            .get();
-
-        final results = snap.docs
-            .map(fromFirestore)
-            .where((r) => r.title.toLowerCase().contains(lower))
-            .toList();
-
-        trace.putAttribute('query_length', query.length.toString());
-        trace.putAttribute('user_id', userId);
-        trace.setMetric('result_count', results.length);
-
-        return results;
-      },
-      searchType: 'recipe_title',
-    );
   }
 
   @override

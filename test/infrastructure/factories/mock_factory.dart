@@ -67,7 +67,6 @@ class MockFactory {
     String? currentUserId,
     Map<String, List<Recipe>>? recipesByUser,
     List<Recipe>? archiveRecipes,
-    List<Recipe>? searchResults,
     Map<String, Recipe>? recipesById,
     List<Recipe>? recipes, // For backward compatibility
   }) {
@@ -82,7 +81,6 @@ class MockFactory {
         currentUserId: currentUserId,
         recipesByUser: recipesByUser,
         archiveRecipes: archiveRecipes,
-        searchResults: searchResults,
         recipesById: recipesById,
       );
     }

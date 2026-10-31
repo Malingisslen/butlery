@@ -157,21 +157,6 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
     }
   }
 
-  /// Search recipes using the repository's client-side title filter.
-  ///
-  /// An empty/whitespace query short-circuits to `[]` and never hits the
-  /// repository — a bare `contains('')` would otherwise match every title and
-  /// perform a needless 200-doc read.
-  Future<List<Recipe>> searchRecipes(String query) async {
-    if (query.trim().isEmpty) return const <Recipe>[];
-    try {
-      return await _recipeRepository.searchRecipes(query);
-    } catch (e) {
-      AppLogger.error('❌ Failed to search recipes via repository', e);
-      return [];
-    }
-  }
-
   /// Send notification using repository pattern
   Future<void> sendNotification({
     required String userId,

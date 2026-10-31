@@ -66,16 +66,6 @@ class TestableUnifiedRecipeService {
   TestableUnifiedRecipeService(this.service, this.mockRepository);
 
   // Search and filtering methods
-  Future<List<Recipe>> searchRecipes(String query) async {
-    try {
-      // Delegate to mock repository
-      return await mockRepository.searchRecipes(query);
-    } catch (e) {
-      // Service will capture error through its own error handling
-      return [];
-    }
-  }
-
   Future<List<Recipe>> filterRecipes(Map<String, dynamic> filters) async {
     // Filtering is handled by service internally
     // For testing, check for invalid filters
@@ -1583,38 +1573,6 @@ void main() {
       });
 
       group('Recipe Search Errors', () {
-        test('should handle invalid search query format', () async {
-          // Arrange
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => throw FormatException(
-              'Invalid search query: special characters not allowed',
-            ),
-          );
-
-          // Act
-          final results = await testableService.searchRecipes('@#\$%^&*');
-
-          // Assert
-          expect(results, isEmpty);
-          // Note: testableService methods don't set service.error directly
-        });
-
-        test('should handle search timeout', () async {
-          // Arrange — simulate a timeout by throwing TimeoutException directly.
-          // The prior 3-second Future.delayed added no behavioural value; the
-          // service's catch-block treats any throw as a failed search.
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => throw TimeoutException('Search timeout'),
-          );
-
-          // Act
-          final results = await testableService.searchRecipes('slow query');
-
-          // Assert
-          expect(results, isEmpty);
-          // Note: testableService methods don't set service.error directly
-        });
-
         test('should handle malformed filter parameters', () async {
           // Arrange - filtering is handled by test helper internally
 
@@ -1626,23 +1584,6 @@ void main() {
           // Assert
           expect(results, isEmpty); // No recipes match invalid filter
           // Note: testableService methods don't set service.error directly
-        });
-
-        test('should handle empty results gracefully', () async {
-          // Arrange
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => [],
-          );
-
-          // Act
-          final results = await testableService.searchRecipes(
-            'obscure recipe name',
-          );
-
-          // Assert - empty results returned without throwing
-          expect(results, isEmpty);
-          // Note: service.hasError may be true due to async Firebase sync
-          // errors in unit tests -- this is unrelated to search results.
         });
 
         test('should handle pagination errors', () async {
@@ -2576,49 +2517,6 @@ void main() {
             greaterThanOrEqualTo(0),
           ); // More flexible
         });
-
-        test(
-          'should efficiently search through large recipe collection',
-          () async {
-            // Arrange
-            final recipes = List.generate(
-              200,
-              (i) => Recipe.personal(
-                title: i < 100 ? 'Swedish Recipe $i' : 'Italian Recipe $i',
-                description: 'Test recipe for search',
-                createdBy: 'test-user',
-                ingredients: i < 100 ? ['köttbullar'] : ['pasta'],
-                instructions: ['cook'],
-                mealType: 'dinner',
-              ),
-            );
-
-            when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer((
-              invocation,
-            ) async {
-              final query = invocation.positionalArguments[0] as String;
-              return recipes
-                  .where(
-                    (r) => r.title.toLowerCase().contains(query.toLowerCase()),
-                  )
-                  .toList();
-            });
-
-            // Act
-            final stopwatch = Stopwatch()..start();
-            final swedishRecipes = await testableService.searchRecipes(
-              'Swedish',
-            );
-            stopwatch.stop();
-
-            // Assert
-            expect(swedishRecipes.length, equals(100));
-            expect(
-              stopwatch.elapsedMilliseconds,
-              lessThan(1000),
-            ); // Search should be fast
-          },
-        );
 
         test(
           'should handle memory optimization for large collections',

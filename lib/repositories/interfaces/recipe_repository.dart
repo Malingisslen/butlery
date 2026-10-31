@@ -54,9 +54,6 @@ abstract class RecipeRepository extends Repository<Recipe>
     int pageSize = 100,
   });
 
-  /// Search recipes by query text.
-  Future<List<Recipe>> searchRecipes(String query);
-
   /// Batch add multiple recipes.
   Future<void> addRecipes(List<Recipe> recipes);
 

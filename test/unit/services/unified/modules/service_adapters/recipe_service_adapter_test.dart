@@ -336,55 +336,6 @@ void main() {
           expect(result, isEmpty);
         },
       );
-
-      test('should search recipes', () async {
-        // Arrange
-        const query = 'pasta';
-        final recipes = [
-          RecipeFactory.buildPersonal(id: 'recipe-1', title: 'Pasta Carbonara'),
-          RecipeFactory.buildPersonal(id: 'recipe-2', title: 'Pasta Bolognese'),
-        ];
-
-        when(
-          () => mockRecipeRepository.searchRecipes(any()),
-        ).thenAnswer((_) async => recipes);
-
-        // Act
-        final result = await adapter.searchRecipes(query);
-
-        // Assert
-        expect(result, equals(recipes));
-        verify(() => mockRecipeRepository.searchRecipes(query)).called(1);
-      });
-
-      test('should return empty list when search fails', () async {
-        // Arrange
-        const query = 'pasta';
-
-        when(
-          () => mockRecipeRepository.searchRecipes(any()),
-        ).thenThrow(Exception('Search failed'));
-
-        // Act
-        final result = await adapter.searchRecipes(query);
-
-        // Assert
-        expect(result, isEmpty);
-      });
-
-      test(
-        'empty or whitespace query short-circuits without hitting the repository',
-        () async {
-          // Act
-          final emptyResult = await adapter.searchRecipes('');
-          final whitespaceResult = await adapter.searchRecipes('   ');
-
-          // Assert
-          expect(emptyResult, isEmpty);
-          expect(whitespaceResult, isEmpty);
-          verifyNever(() => mockRecipeRepository.searchRecipes(any()));
-        },
-      );
     });
 
     // BUT-907: a delete moves the recipe to the trash, with its photos.
