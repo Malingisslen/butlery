@@ -142,4 +142,65 @@ void main() {
       });
     },
   );
+
+  group('savedWeeks (kärnflöde 8B: the week\'s shopping list follows)', () {
+    test('saveRevisionQueued tells which week it saved once the save is on '
+        'the device, not before', () {
+      fakeAsync((async) {
+        serverNeverAnswersYet();
+        final saved = <DateTime>[];
+        service.savedWeeks.listen(saved.add);
+
+        service.saveRevisionQueued(_week('rev-1').nextRevision());
+        async.elapse(queuedWritePatience - const Duration(milliseconds: 1));
+        expect(saved, isEmpty);
+
+        async.elapse(const Duration(milliseconds: 1));
+        expect(saved, [DateTime(2026, 10, 12)]);
+      });
+    });
+
+    test('save tells too, which is the week menu\'s own edits', () {
+      fakeAsync((async) {
+        serverNeverAnswersYet();
+        final saved = <DateTime>[];
+        service.savedWeeks.listen(saved.add);
+
+        service.save(_week('rev-1'));
+        async.elapse(queuedWritePatience);
+
+        expect(saved, [DateTime(2026, 10, 12)]);
+      });
+    });
+
+    test('saveRevision tells once the repository has the week', () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+      final saved = <DateTime>[];
+      final sub = service.savedWeeks.listen(saved.add);
+
+      await service.saveRevision(_week('rev-1').nextRevision());
+      await pumpEventQueue();
+
+      expect(saved, [DateTime(2026, 10, 12)]);
+      await sub.cancel();
+    });
+
+    test('a refused save tells nobody, so the list does not follow a week '
+        'that was not saved', () async {
+      when(
+        () => repo.save(any()),
+      ).thenAnswer((_) async => throw WeekPlanConflictException(_week('x')));
+      final saved = <DateTime>[];
+      final sub = service.savedWeeks.listen(saved.add);
+
+      await expectLater(
+        service.saveRevision(_week('rev-1').nextRevision()),
+        throwsA(isA<WeekPlanConflictException>()),
+      );
+      await pumpEventQueue();
+
+      expect(saved, isEmpty);
+      await sub.cancel();
+    });
+  });
 }
