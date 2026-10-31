@@ -189,7 +189,6 @@ class ImportRateLimiter extends BaseService {
     return result.isAllowed;
   }
 
-  /// Get the rate limit document reference for a user.
   DocumentReference<Map<String, dynamic>> _getRateLimitDoc(String userId) {
     return _firestoreRepo.firestore
         .collection(FirestoreCollections.users)
@@ -210,7 +209,6 @@ class ImportRateLimiter extends BaseService {
     return ServerLlmCost.fromFirestore(doc.data(), now);
   }
 
-  /// Get current usage, using cache if valid.
   Future<UsageLimits> _getCurrentUsage(String userId) async {
     // Check cache
     if (_cachedUsage != null &&
@@ -233,7 +231,6 @@ class ImportRateLimiter extends BaseService {
     return _cachedUsage!;
   }
 
-  /// Check basic import rate limits.
   RateLimitDenied? _checkBasicLimits(UsageLimits usage, DateTime now) {
     // Check per-minute limit
     if (_isInWindow(usage.minuteWindowStart, now, const Duration(minutes: 1))) {
@@ -304,7 +301,6 @@ class ImportRateLimiter extends BaseService {
     return null; // All basic limits OK
   }
 
-  /// Check LLM-specific rate limits.
   RateLimitDenied? _checkLlmLimits(
     UsageLimits usage,
     ServerLlmCost cost,
@@ -382,13 +378,11 @@ class ImportRateLimiter extends BaseService {
     );
   }
 
-  /// Check if we're still in a time window.
   bool _isInWindow(DateTime? windowStart, DateTime now, Duration windowSize) {
     if (windowStart == null) return false;
     return now.difference(windowStart) < windowSize;
   }
 
-  /// Calculate time until a window resets.
   Duration _timeUntilWindowReset(
     DateTime windowStart,
     Duration windowSize,
@@ -399,7 +393,6 @@ class ImportRateLimiter extends BaseService {
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
-  /// Calculate remaining operations in the most restrictive window.
   int _calculateRemaining(
     UsageLimits usage,
     ImportOperation operation,
