@@ -110,13 +110,13 @@ void main() {
       expect(tags, isNot(contains('proteinrik')));
     });
 
-    test('dairy is not protein for this tag', () {
+    test('dairy counts as protein for this tag', () {
       final tags = _tags([
-        _r('mjölk', 'protein/dairy', 2000),
-        _r('mozzarella', 'protein/dairy/cheese', 1000),
+        _r('keso', 'protein/dairy', 250),
+        _r('halloumi', 'protein/dairy/cheese', 150),
       ], recipe: _recipe(portions: 2));
 
-      expect(tags, isNot(contains('proteinrik')));
+      expect(tags, contains('proteinrik'));
     });
 
     test('weighed non-protein lines do not count', () {

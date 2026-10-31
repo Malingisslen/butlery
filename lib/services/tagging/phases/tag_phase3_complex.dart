@@ -280,17 +280,15 @@ class TagPhase3Complex {
         p1.hasTag('soppa');
   }
 
-  /// At least [proteinGramsPerPortion] of weighed meat, fish, egg or plant
-  /// protein per portion (Malin 2026-10-30, kärnflöde steg 5 beslut 8).
-  /// Dairy is left out: the milk in a pancake batter is not a protein dish.
+  /// At least [proteinGramsPerPortion] of weighed protein-group ingredients
+  /// per portion (Malin 2026-10-30, kärnflöde steg 5 beslut 8). Dairy counts
+  /// (Malin 2026-10-31).
   bool _isHighProtein(Phase1Result p1, Recipe recipe) {
     final portions = recipe.core.portions;
     if (portions == null || portions <= 0) return false;
     final grams = MainIngredients.gramsWhere(
       p1.lookup.lines,
-      (i) =>
-          i.group.startsWith('protein/') &&
-          !i.group.startsWith('protein/dairy'),
+      (i) => i.group.startsWith('protein/'),
     );
     return grams >= proteinGramsPerPortion * portions;
   }
