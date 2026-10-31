@@ -151,6 +151,22 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
   font-size: 11px; font-weight: 600; background: var(--cs-raised); color: var(--cs-on-surface);
   box-shadow: inset 0 0 0 1px var(--cs-outline-variant);
 }
+.phone .mr-list { padding: 0 16px; }
+.phone .mr-row { display: flex; align-items: center; padding: 10px 0 8px 18px; border-bottom: 1px solid var(--cs-outline-variant); }
+.phone .mr-row .tile {
+  flex: none; width: 36px; height: 36px; margin-right: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  background: var(--cs-raised); color: var(--cs-on-surface-variant); font-size: 17px; font-weight: 600;
+}
+.phone .mr-row .body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.phone .mr-row .name { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.phone .mr-row .meta { margin-top: 3px; font-size: 12px; color: var(--cs-on-surface-variant); line-height: 1.4; white-space: nowrap; }
+.phone .mr-row .meta .rate { color: var(--butlery-text-accent); }
+.phone .mr-row .unchecked {
+  align-self: flex-start; margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 8px;
+  font-size: 11px; font-weight: 600; background: var(--cs-raised); color: var(--cs-on-surface);
+  box-shadow: inset 0 0 0 1px var(--cs-outline-variant);
+}
+.phone .mr-row .more { flex: none; color: var(--cs-on-surface); width: 20px; height: 20px; margin: 0 26px 0 12px; }
 .phone .mr-tip { margin: 0 8px; padding: 8px 8px 8px 16px; min-height: 62px; background: color-mix(in srgb, var(--cs-raised) 40%, var(--cs-surface)); font-size: 13px; font-weight: 600; gap: 12px; }
 .phone[data-theme="dark"] .mr-tip, [data-theme="dark"] .phone .mr-tip { background: var(--cs-raised); }
 
