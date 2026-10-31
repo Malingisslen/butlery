@@ -241,4 +241,31 @@ void main() {
 
     expect(announces.messages, isEmpty);
   });
+
+  testWidgets('the proceed button is disabled while a page is still read', (
+    tester,
+  ) async {
+    // A tap mid-read would open the editor on the text before the new page.
+    final handle = tester.ensureSemantics();
+    final l10n = await pumpView(tester);
+
+    fakeVm.emit(hasOcrResult: true, isProcessing: true);
+    await tester.pump();
+    expect(
+      tester.getSemantics(find.text(l10n.importProceedToEdit)),
+      containsSemantics(
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: false,
+      ),
+    );
+
+    fakeVm.emit(hasOcrResult: true, isProcessing: false);
+    await tester.pump();
+    expect(
+      tester.getSemantics(find.text(l10n.importProceedToEdit)),
+      containsSemantics(isButton: true, hasEnabledState: true, isEnabled: true),
+    );
+    handle.dispose();
+  });
 }

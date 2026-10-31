@@ -530,10 +530,12 @@ class _PhotoImportViewContent extends StatelessWidget {
                           viewModel.parsedRecipes.length,
                         ),
                         icon: ButleryIcons.list,
-                        onPressed: () => _navigateToMultiRecipePicker(
-                          context,
-                          viewModel,
-                        ),
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToMultiRecipePicker(
+                                context,
+                                viewModel,
+                              ),
                         isExpanded: true,
                       )
                     else
@@ -541,8 +543,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                         context,
                         label: context.l10n.importProceedToEdit,
                         icon: ButleryIcons.arrowRight,
-                        onPressed: () =>
-                            _navigateToTextImport(context, viewModel),
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToTextImport(context, viewModel),
                         isExpanded: true,
                       ),
                     const SizedBox(height: AppDimensions.space16),
