@@ -397,7 +397,7 @@ void main() {
       });
 
       test(
-        'uses the app-wide rule: words may match different fields',
+        'uses the app-wide rule: folds accents and ignores word order',
         () async {
           viewModel = createViewModel();
           await viewModel.loadRecipes();
