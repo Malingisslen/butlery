@@ -114,6 +114,23 @@ class _FailingStrategy extends ImportStrategy {
   }
 }
 
+/// Stands in for the AI re-read, recording what it was asked to read.
+class _RecordingAiReread extends _FailingStrategy {
+  _RecordingAiReread(this.recipe) : super('spoken_text_reimport', null);
+  final Recipe recipe;
+  final List<Map<String, dynamic>?> options = [];
+
+  @override
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
+    calls++;
+    this.options.add(options);
+    return ImportResult.success(recipe);
+  }
+}
+
 class _SucceedingStrategy extends _FailingStrategy {
   _SucceedingStrategy(this.recipe) : super('Text Import', null);
   final Recipe recipe;
@@ -422,6 +439,103 @@ void main() {
       expect(text.inputs, isEmpty);
       expect(spy.events, isEmpty);
       expect(limiter.recorded, isEmpty);
+    });
+
+    test('a caption or transcript the rules cannot read is read with AI, '
+        'with the post it came from', () async {
+      for (final type in [
+        SourceArtefactType.youtubeTranscript,
+        SourceArtefactType.tiktokCaption,
+        SourceArtefactType.instagramCaption,
+      ]) {
+        installLimiter();
+        final text = _CannedTextStrategy(ImportResult.failure('ingen recept'));
+        final ai = _RecordingAiReread(recipe);
+
+        final r =
+            await ImportManager.withStrategies(
+              ops,
+              [text],
+              eventLogger: spy,
+              spokenTextReimport: ai,
+            ).reimportFromArtefact(
+              artefact(type, 'gör en god pasta med lite grädde'),
+              sourceUrl: 'https://www.tiktok.com/@a/video/1',
+            );
+
+        expect(r.isSuccess, isTrue, reason: '$type');
+        expect(text.inputs, hasLength(1), reason: 'rules first: $type');
+        expect(ai.calls, 1, reason: '$type');
+        expect(
+          ai.options.single?['sourceUrl'],
+          'https://www.tiktok.com/@a/video/1',
+        );
+      }
+    });
+
+    test('a caption the rules can read never reaches AI', () async {
+      installLimiter();
+      final ai = _RecordingAiReread(recipe);
+
+      final r =
+          await ImportManager.withStrategies(
+            ops,
+            [_CannedTextStrategy(ImportResult.success(recipe))],
+            eventLogger: spy,
+            spokenTextReimport: ai,
+          ).reimportFromArtefact(
+            artefact(SourceArtefactType.instagramCaption, 'Pannkakor\n3 ägg'),
+          );
+
+      expect(r.isSuccess, isTrue);
+      expect(ai.calls, 0);
+    });
+
+    test('a link, a pasted text, a photo or a dictation is never read with '
+        'AI, even when the rules fail', () async {
+      for (final type in [
+        SourceArtefactType.url,
+        SourceArtefactType.textPaste,
+        SourceArtefactType.photoOcr,
+        SourceArtefactType.voiceDictation,
+      ]) {
+        installLimiter();
+        final ai = _RecordingAiReread(recipe);
+
+        final r = await ImportManager.withStrategies(
+          ops,
+          [
+            _CannedUrlStrategy(ImportResult.failure('nej')),
+            _CannedTextStrategy(ImportResult.failure('nej')),
+          ],
+          eventLogger: spy,
+          spokenTextReimport: ai,
+        ).reimportFromArtefact(artefact(type, 'https://a.se/x'));
+
+        expect(r.isSuccess, isFalse, reason: '$type');
+        expect(ai.calls, 0, reason: '$type');
+      }
+    });
+
+    test('a refused re-extract of a caption reaches neither the rules nor '
+        'AI', () async {
+      installLimiter(deny: true);
+      final text = _CannedTextStrategy(ImportResult.failure('nej'));
+      final ai = _RecordingAiReread(recipe);
+
+      final r =
+          await ImportManager.withStrategies(
+            ops,
+            [text],
+            eventLogger: spy,
+            spokenTextReimport: ai,
+          ).reimportFromArtefact(
+            artefact(SourceArtefactType.tiktokCaption, 'pasta'),
+          );
+
+      expect(r.rateLimitDenied, isNotNull);
+      expect(text.inputs, isEmpty);
+      expect(ai.calls, 0);
     });
 
     test('importWithStrategy is refused the same way', () async {

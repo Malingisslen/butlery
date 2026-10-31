@@ -70,6 +70,7 @@ that only bind in app, Cloud Functions or Firestore code.
 - En statisk sida i ett befintligt hosting-mål publicerar ALLT målet bär — mät vad målet publicerar och vem som når det; olanserat innehåll får en egen sajt med egen grind, och statiska filer behöver ingen build (BUT-890, 2026-10-05)
 - En spärr i en `cancel-in-progress`-grupp med varje merge körs nästan aldrig klart — läs senaste FÄRDIGA körning och räkna avbrotten innan du säger att den håller (2026-10-10)
 - Hämta main före mätning, och en ny host körs av varje svit som loopar över `reviewHosts` — kör textskaletestet före push (BUT-2395, 2026-10-17)
+- Säg aldrig hur en funktion använder AI utan att ha öppnat strategin för VARJE indatatyp — "AI bara som reserv" gällde webbrecept, inte inlägg och videor (2026-10-31)
 
 ## UI/UX
 

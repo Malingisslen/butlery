@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/spoken_text_reimport_strategy.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
@@ -49,13 +50,15 @@ class ImportManager {
   final ParseEventLogger _eventLogger;
 
   final ParserShadowSampler? _shadowSampler;
+  final ImportStrategy _spokenTextReimport;
 
   ImportManager(
     this._personalOperations, {
     ParseEventLogger? eventLogger,
     ParserShadowSampler? shadowSampler,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
-       _shadowSampler = shadowSampler {
+       _shadowSampler = shadowSampler,
+       _spokenTextReimport = SpokenTextReimportStrategy() {
     _initializeStrategies();
   }
 
@@ -67,8 +70,11 @@ class ImportManager {
     List<ImportStrategy> strategies, {
     ParseEventLogger? eventLogger,
     ParserShadowSampler? shadowSampler,
+    ImportStrategy? spokenTextReimport,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
-       _shadowSampler = shadowSampler {
+       _shadowSampler = shadowSampler,
+       _spokenTextReimport =
+           spokenTextReimport ?? SpokenTextReimportStrategy() {
     _strategies.addAll(strategies);
   }
 
@@ -625,22 +631,47 @@ class ImportManager {
   );
 
   /// BUT-2279: re-reads a saved recipe from the capture it was made from. A
-  /// link is fetched again; every other capture is parsed as text.
-  Future<ImportManagerResult> reimportFromArtefact(SourceArtefact artefact) {
+  /// link is fetched again; every other capture is parsed as text. Only a
+  /// caption or a video transcript, whose loose wording the rules often miss,
+  /// may then be read with AI; the rules always go first, so a re-read they
+  /// manage costs nothing. [sourceUrl] is the post or video it came from.
+  Future<ImportManagerResult> reimportFromArtefact(
+    SourceArtefact artefact, {
+    String? sourceUrl,
+  }) {
     final isLink = artefact.type == SourceArtefactType.url;
     return _measured(
       isLink ? ImportChannel.link : ImportChannel.text,
       artefact.payload,
-      () => _rateLimitedParse(
-        isLink
-            ? _strategies.whereType<UrlImportStrategy>().firstOrNull
-            : _strategies.whereType<TextImportStrategy>().firstOrNull,
-        artefact.payload,
-        null,
-        missing: 'No ${artefact.type.name} import strategy is available',
-      ),
+      () async {
+        final parsed = await _rateLimitedParse(
+          isLink
+              ? _strategies.whereType<UrlImportStrategy>().firstOrNull
+              : _strategies.whereType<TextImportStrategy>().firstOrNull,
+          artefact.payload,
+          null,
+          missing: 'No ${artefact.type.name} import strategy is available',
+        );
+        if (parsed.isSuccess ||
+            parsed.rateLimitDenied != null ||
+            !_spokenText.contains(artefact.type)) {
+          return parsed;
+        }
+        return _rateLimitedParse(
+          _spokenTextReimport,
+          artefact.payload,
+          {'sourceUrl': sourceUrl},
+          missing: 'No AI re-read is available',
+        );
+      },
     );
   }
+
+  static const _spokenText = {
+    SourceArtefactType.youtubeTranscript,
+    SourceArtefactType.tiktokCaption,
+    SourceArtefactType.instagramCaption,
+  };
 
   Future<ImportManagerResult> _rateLimitedParse(
     ImportStrategy? strategy,
