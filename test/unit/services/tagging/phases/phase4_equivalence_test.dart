@@ -1,6 +1,4 @@
-// Steg 0 of the kärnflöde plan moves Phase 4's word lists out of the code
-// without changing a single tag. The golden was recorded from Phase 4 at
-// c6b82d2, before the move, and is never rewritten by this test: a red case
+// The golden is never rewritten by this test: a red case
 // here means a recipe would now get different occasion or season tags.
 
 import 'dart:convert';

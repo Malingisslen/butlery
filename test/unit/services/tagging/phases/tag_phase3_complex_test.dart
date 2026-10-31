@@ -30,7 +30,7 @@ Phase2Result p2(Phase1Result base, {Set<String> tags = const {}}) =>
 
 Recipe recipe({
   int ingredientCount = 8,
-  int timeMinutes = 45,
+  int? timeMinutes = 45,
   int portions = 4,
   String title = 'Vardagsmat',
 }) => RecipeFactory.build(
@@ -63,6 +63,12 @@ void main() {
     test('in-between → medel', () {
       final r = run(recipe(ingredientCount: 8, timeMinutes: 45));
       expect(r.tags, contains('medel'));
+    });
+
+    test('no stated time → no difficulty at all', () {
+      final r = run(recipe(ingredientCount: 3, timeMinutes: null));
+      expect(r.tags, isNot(anyOf(contains('enkel'), contains('medel'))));
+      expect(r.tags, isNot(contains('avancerad')));
     });
   });
 
