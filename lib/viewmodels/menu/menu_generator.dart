@@ -6,6 +6,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
+import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -824,26 +825,7 @@ class MenuGenerator {
     return pool.where((recipe) {
       if (excludeIds.contains(recipe.id)) return false;
 
-      final categoryLower = category.toLowerCase();
-      final mealTypeLower = recipe.mealType.toLowerCase();
-
-      if (categoryLower.contains('middag') ||
-          categoryLower.contains('dinner')) {
-        return mealTypeLower.contains('middag') ||
-            mealTypeLower.contains('dinner') ||
-            mealTypeLower.isEmpty;
-      }
-      if (categoryLower.contains('lunch')) {
-        return mealTypeLower.contains('lunch') || mealTypeLower.isEmpty;
-      }
-      if (categoryLower.contains('frukost') ||
-          categoryLower.contains('breakfast')) {
-        return mealTypeLower.contains('frukost') ||
-            mealTypeLower.contains('breakfast') ||
-            mealTypeLower.isEmpty;
-      }
-
-      return mealTypeLower == categoryLower || mealTypeLower.isEmpty;
+      return fitsMealSlot(recipe.mealType, category);
     }).toList();
   }
 
@@ -851,7 +833,7 @@ class MenuGenerator {
   Recipe _scoreAndPickBest(List<Recipe> candidates, Recipe current) {
     final seasonTag = SeasonUtils.currentSeasonTag();
     final currentCuisine = _extractCuisine(current);
-    final currentCategory = current.mealType.toLowerCase();
+    final currentCategory = menuMealKey(current.mealType);
 
     var bestScore = -1;
     final bestCandidates = <Recipe>[];
@@ -866,7 +848,7 @@ class MenuGenerator {
       }
 
       // +2 same category
-      if (candidate.mealType.toLowerCase() == currentCategory) score += 2;
+      if (menuMealKey(candidate.mealType) == currentCategory) score += 2;
 
       // +1 seasonal match
       final tags = candidate.tagResult?.tags;

@@ -432,6 +432,87 @@ void main() {
       );
     });
 
+    group('Meal-type fit uses the shared rule', () {
+      Recipe withType(
+        String id,
+        String mealType, {
+        Set<String> tags = const {},
+      }) {
+        final base = RecipeFactory.build(
+          id: id,
+          title: id,
+          mealType: mealType,
+        );
+        return Recipe(
+          core: base.core.copyWith(
+            tagResult: TagResult(
+              tags: tags,
+              allergenStatus: const {},
+              dietaryStatus: const {},
+              coverage: 1.0,
+              generatedAt: DateTime(2026),
+            ),
+          ),
+          type: base.type,
+        );
+      }
+
+      ParsedMenuRequest request(SlotRequest slot) => ParsedMenuRequest(
+        slotRequests: [slot],
+        globalAllergenAvoid: const {},
+        globalDietaryRequire: const {},
+        dayPins: const [],
+        trace: const ExtractionTrace(),
+        rawPrompt: 'test',
+      );
+
+      test(
+        'a recipe without a known meal type can fill a middag slot',
+        () async {
+          final pool = [
+            withType('empty', ''),
+            withType('soppor', 'Soppor'),
+            withType('lunch-only', 'Lunch'),
+          ];
+          final menu = await menuService.generateMenuFromParsedRequest(
+            request(
+              SlotRequest(
+                mealType: 'middag',
+                subRequests: [RecipeConstraint(count: 5)],
+              ),
+            ),
+            pool,
+          );
+          final ids = (menu['middag'] ?? const <Recipe>[]).map((r) => r.id);
+          expect(ids, containsAll(['empty', 'soppor']));
+          expect(ids, isNot(contains('lunch-only')));
+        },
+      );
+
+      test(
+        'an ovrigt slot picks a tagged recipe whatever its meal type',
+        () async {
+          final pool = [
+            withType('bread', 'Middag', tags: {'bakverk'}),
+            withType('plain', 'Middag'),
+          ];
+          final menu = await menuService.generateMenuFromParsedRequest(
+            request(
+              SlotRequest(
+                mealType: 'ovrigt',
+                subRequests: [
+                  RecipeConstraint(count: 1, requiredTags: const {'bakverk'}),
+                ],
+              ),
+            ),
+            pool,
+          );
+          final ids = (menu['ovrigt'] ?? const <Recipe>[]).map((r) => r.id);
+          expect(ids, ['bread']);
+        },
+      );
+    });
+
     group('Per-slot constraint trust routing (BUT-1466)', () {
       Recipe taggedRecipe(
         String id, {
