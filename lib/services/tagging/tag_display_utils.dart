@@ -1,3 +1,5 @@
+import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
+
 /// Utilities for displaying tags with smart prioritization.
 ///
 /// Provides methods to select and order the most relevant tags
@@ -10,25 +12,7 @@ class TagDisplayUtils {
   /// Tags in earlier categories are shown before later ones.
   static const List<Set<String>> _priorityCategories = [
     // Priority 1: Protein tags (most searchable)
-    {
-      'kyckling',
-      'anka',
-      'kalkon',
-      'nötkött',
-      'fläskkött',
-      'lamm',
-      'vilt',
-      'fisk',
-      'lax',
-      'torsk',
-      'sill',
-      'skaldjur',
-      'fisk-och-skaldjur',
-      'räkor',
-      'tofu',
-      'baljväxter',
-      'ägg',
-    },
+    {...Phase1NutritionCalculator.proteinTags, 'fisk-och-skaldjur'},
     // Priority 2: Dish type
     {
       'soppa',

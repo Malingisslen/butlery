@@ -1,7 +1,9 @@
 /// Unit tests for SharedShoppingList.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:clock/clock.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/shared_shopping_list.dart';
@@ -285,5 +287,72 @@ void main() {
     expect(str, contains('sh-1'));
     expect(str, contains('Helgens'));
     expect(str, contains('Bob'));
+  });
+
+  group('documents written by the share flow (title/description)', () {
+    // Same keys as shopping_social_share_module.dart writes.
+    Map<String, dynamic> shareFlowDoc({String? description}) => {
+      'contentType': 'shopping_list',
+      'title': 'Fredagsmys',
+      'description': description,
+      'listData': {'name': 'Fredagsmys', 'items': <Object>[]},
+      'itemCount': 4,
+      'sharedByUserId': 'alice',
+      'sharedByDisplayName': 'Alice',
+      'sharedByAvatarUrl': null,
+      'sharedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+      'sharedToUserIds': ['bob'],
+      'isActive': true,
+      'listType': 'shopping_list_shared',
+    };
+
+    Future<SharedShoppingList> viaFirestore(Map<String, dynamic> data) async {
+      final db = FakeFirebaseFirestore();
+      await db.collection('shared').doc('s1').set(data);
+      return SharedShoppingList.fromFirestore(
+        await db.collection('shared').doc('s1').get(),
+      );
+    }
+
+    test('fromFirestore shows the title as the list name and the description '
+        'as the message', () async {
+      final list = await viaFirestore(shareFlowDoc(description: 'Kolla här'));
+
+      expect(list.listName, 'Fredagsmys');
+      expect(list.shareMessage, 'Kolla här');
+      expect(list.itemCount, 4);
+    });
+
+    test('fromMap reads the same shape', () {
+      final data = shareFlowDoc(description: 'Kolla här')
+        ..['sharedAt'] = DateTime.utc(2026, 1, 1);
+      final list = SharedShoppingList.fromMap('s1', data);
+
+      expect(list.listName, 'Fredagsmys');
+      expect(list.shareMessage, 'Kolla här');
+    });
+
+    test('a share without a message has no message', () async {
+      final list = await viaFirestore(shareFlowDoc());
+
+      expect(list.shareMessage, isNull);
+    });
+
+    test('listName and shareMessage win over title and description, and an '
+        'empty listName falls back to the title', () async {
+      final both = await viaFirestore({
+        ...shareFlowDoc(description: 'från description'),
+        'listName': 'Eget namn',
+        'shareMessage': 'eget meddelande',
+      });
+      expect(both.listName, 'Eget namn');
+      expect(both.shareMessage, 'eget meddelande');
+
+      final empty = await viaFirestore({
+        ...shareFlowDoc(),
+        'listName': '',
+      });
+      expect(empty.listName, 'Fredagsmys');
+    });
   });
 }

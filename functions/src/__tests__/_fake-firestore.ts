@@ -592,6 +592,15 @@ export class FakeFirestore {
         setAt(doc, segments, this.now);
         continue;
       }
+      if (kind === "NumericIncrementTransform") {
+        const current = getAt(doc, segments);
+        const operand = (value as { operand?: unknown }).operand;
+        if (typeof operand !== "number") {
+          throw new Error("fake-firestore: increment without a numeric operand");
+        }
+        setAt(doc, segments, (typeof current === "number" ? current : 0) + operand);
+        continue;
+      }
       if (kind === "ArrayUnionTransform" || kind === "ArrayRemoveTransform") {
         const current = getAt(doc, segments);
         const base = Array.isArray(current) ? [...current] : [];

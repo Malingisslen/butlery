@@ -20956,4 +20956,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagAllergenAutoUnknown => 'App: not checked';
+
+  @override
+  String shoppingMergeUnresolvedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes',
+      one: '1 dish',
+    );
+    return '$_temp0 could not be counted because the recipe no longer exists.';
+  }
+
+  @override
+  String shoppingPantryAddFailed(String name) {
+    return 'Could not add $name to the pantry.';
+  }
 }

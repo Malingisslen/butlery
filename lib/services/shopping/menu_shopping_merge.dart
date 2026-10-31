@@ -162,6 +162,8 @@ class MenuShoppingMergePreview {
 
   int get recipeCount => source.recipeCount;
 
+  int get unresolvedRecipes => source.unresolvedRecipes;
+
   /// "Efter sammanslagning blir det 18 varor" and "Lägg till 18 varor".
   int get itemCount => lines.length;
 }

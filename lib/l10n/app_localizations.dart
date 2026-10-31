@@ -31947,6 +31947,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Appen: ej kontrollerat'**
   String get tagAllergenAutoUnknown;
+
+  /// Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.'**
+  String shoppingMergeUnresolvedRecipes(int count);
+
+  /// Snackbar when adding a just-checked-off item to the pantry failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga {name} i skafferiet.'**
+  String shoppingPantryAddFailed(String name);
 }
 
 class _AppLocalizationsDelegate

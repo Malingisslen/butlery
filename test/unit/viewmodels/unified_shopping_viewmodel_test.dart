@@ -878,6 +878,82 @@ void main() {
       },
     );
 
+    test('a failed pantry add after check-off is reported once, by item name, '
+        'and the tick itself still goes through', () async {
+      when(
+        () => mockCheckoff.onItemCheckedOff(
+          any(),
+          any(),
+          wasBought: any(named: 'wasBought'),
+        ),
+      ).thenAnswer((_) async => throw StateError('pantry write refused'));
+      mockShoppingService.setShoppingState(
+        lists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            ownerId: testUserId,
+            items: [
+              ShoppingListFactory.buildItem(
+                id: 'item-1',
+                name: 'Mjolk',
+                bought: false,
+              ),
+            ],
+          ),
+        ],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+      var notifications = 0;
+      viewModel.addListener(() => notifications++);
+
+      await viewModel.toggleItemBought('item-1');
+      final beforeFailure = notifications;
+      await pumpEventQueue();
+
+      expect(
+        notifications,
+        greaterThan(beforeFailure),
+        reason: 'the failure notifies so the view can show it',
+      );
+      expect(viewModel.consumePantryAddError(), 'Mjolk');
+      expect(viewModel.consumePantryAddError(), isNull);
+    });
+
+    test('a successful pantry add leaves nothing to report', () async {
+      mockShoppingService.setShoppingState(
+        lists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            ownerId: testUserId,
+            items: [
+              ShoppingListFactory.buildItem(
+                id: 'item-1',
+                name: 'Mjolk',
+                bought: false,
+              ),
+            ],
+          ),
+        ],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+
+      await viewModel.toggleItemBought('item-1');
+      await pumpEventQueue();
+
+      verify(
+        () => mockCheckoff.onItemCheckedOff(
+          testUserId,
+          any(),
+          wasBought: false,
+        ),
+      ).called(1);
+      expect(viewModel.consumePantryAddError(), isNull);
+    });
+
     test(
       'toggleItemBought feeds wasBought=true when un-checking an already-bought '
       'item (lets the service no-op correctly)',
@@ -997,6 +1073,23 @@ void main() {
             wasBought: false,
           ),
         ]);
+      });
+
+      test('a failed pantry write completes normally and is reported '
+          'once', () async {
+        seedItem(bought: true);
+        when(
+          () => mockCheckoff.onItemCheckedOff(
+            any(),
+            any(),
+            wasBought: any(named: 'wasBought'),
+          ),
+        ).thenAnswer((_) async => throw StateError('pantry write refused'));
+
+        await viewModel.acceptPantryAutoAdd('item-1');
+
+        expect(viewModel.consumePantryAddError(), 'Mjolk');
+        expect(viewModel.consumePantryAddError(), isNull);
       });
 
       test('a row un-ticked while the prompt was open stays out of the '

@@ -46,7 +46,6 @@ const UNREVIEWED: Record<string, string> = {
   corrections: "analytics/parsing/corrections: per-domain counters, no user id field",
   group_invitations: "fromUserId; on-profile-updated.ts only renames, account deletion does not reach it",
   group_moves: "holds only movedAt per group id (hand-over-group.ts)",
-  learned_aliases: "cleanUserFromLearnedAliases removes the uid, but the document and the text the user typed stay after the last uid is gone",
   snapshots: "not looked at",
   summary: "not looked at",
   unmatched: "analytics/ingredients/unmatched: ingredient text and example recipe ids, no user id field",

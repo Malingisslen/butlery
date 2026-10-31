@@ -83,6 +83,31 @@ export const CASES: SectionCase[] = [
     overCap: (db) => many(db, ROWS, (i) => `parsing_corrections/x${i}`, { userId: UID }),
   },
   {
+    section: "learned_aliases",
+    idKey: "id",
+    rows: ["a1", "a2"],
+    seed: (db) => {
+      db.seed("analytics/ingredients/learned_aliases/a1", {
+        originalName: "tomatoe", correctedName: "tomat", ingredientId: "i1",
+        status: "pending", userIds: [UID, OTHER], count: 2, firstSeen: T0, lastSeen: T0, ...STRAY,
+      });
+      db.seed("analytics/ingredients/learned_aliases/a2", {
+        originalName: "lok", correctedName: "lök", ingredientId: "i2",
+        status: "approved", userIds: [UID], count: 1, ...STRAY,
+      });
+      db.seed("analytics/ingredients/learned_aliases/a3", {
+        originalName: "gurk", correctedName: "gurka", status: "pending", userIds: [OTHER],
+      });
+    },
+    check: ([row]) => {
+      expect(row.correctedName === "tomat" && row.status === "pending", "alias fields kept");
+      expect(!("userIds" in row) && !("count" in row), "other voters left out");
+      expect(row.firstSeen === T0_ISO, "firstSeen as ISO");
+    },
+    overCap: (db) =>
+      many(db, ROWS, (i) => `analytics/ingredients/learned_aliases/x${i}`, { userIds: [UID] }),
+  },
+  {
     section: "guest_quota",
     idKey: "calls",
     rows: ["2"],

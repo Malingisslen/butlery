@@ -76,6 +76,9 @@ class ShoppingMergeSheet extends StatefulWidget {
   static const Key pantryUnavailableKey = ValueKey<String>(
     'shopping-merge-pantry-unavailable',
   );
+  static const Key unresolvedRecipesKey = ValueKey<String>(
+    'shopping-merge-unresolved-recipes',
+  );
   static const Key pantryRetryKey = ValueKey<String>(
     'shopping-merge-pantry-retry',
   );
@@ -153,6 +156,10 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                 color: cs.onSurfaceVariant,
               ),
             ),
+          ],
+          if (merge.unresolvedRecipes > 0) ...[
+            const SizedBox(height: AppDimensions.space12),
+            _UnresolvedRecipes(count: merge.unresolvedRecipes),
           ],
           if (merge.pantryUnavailable) ...[
             const SizedBox(height: AppDimensions.space12),

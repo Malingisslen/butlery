@@ -20,7 +20,6 @@ import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
 import { clampLimit } from "../shared/validate-limit";
-import { commitInChunks } from "../shared/batch-update";
 import { hashUid } from "../shared/hash-uid";
 import { ALLERGEN_RELEVANT_PROPERTIES } from "../shared/allergen-properties";
 
@@ -546,43 +545,3 @@ export const getCorrectionStats = onCall(
     };
   }
 );
-
-/**
- * GDPR: Remove userId from all learned alias documents on account deletion.
- *
- * Called from the existing GDPR deletion cascade.
- */
-export async function cleanUserFromLearnedAliases(
-  userId: string
-): Promise<void> {
-  const db = getDb();
-
-  const snapshot = await db
-    .collection("analytics").doc("ingredients").collection("learned_aliases")
-    .where("userIds", "array-contains", userId)
-    .get();
-
-  if (snapshot.empty) return;
-
-  // Chunk the writes at the 500-op Firestore batch limit. A prolific corrector
-  // can touch more than 500 alias candidates; a single flat batch.commit()
-  // would throw past 500 ops and — because the GDPR cascade caller swallows
-  // the error — leave the user's data partially un-erased (Art. 17 gap).
-  // arrayRemove/decrement are idempotent, so a retry is safe.
-  const cleaned = await commitInChunks(
-    db,
-    snapshot.docs,
-    (batch, doc) => {
-      batch.update(doc.ref, {
-        userIds: admin.firestore.FieldValue.arrayRemove(userId),
-        count: admin.firestore.FieldValue.increment(-1),
-      });
-    },
-    { label: "cleanUserFromLearnedAliases" }
-  );
-
-  // Never log a raw UID — hash it (see hash-uid / WS10 log-masking sweep).
-  logger.info(
-    `GDPR: Cleaned user ${hashUid(userId)} from ${cleaned} learned alias documents`
-  );
-}

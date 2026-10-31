@@ -75,6 +75,7 @@ class ShoppingPersonalMergeModule {
   final PersonalMergeTransactionRunner? transactionRunner;
   final PersonalListServerRead? serverRead;
   final Future<bool> Function(String uid, String listId)? pendingWrites;
+  final Future<void> Function(WriteBatch batch)? commitBatch;
 
   ShoppingPersonalMergeModule({
     required this.firestore,
@@ -86,6 +87,7 @@ class ShoppingPersonalMergeModule {
     this.transactionRunner,
     this.serverRead,
     this.pendingWrites,
+    this.commitBatch,
   });
 
   DocumentReference<Map<String, dynamic>> _listRef(String uid, String id) =>
@@ -137,7 +139,10 @@ class ShoppingPersonalMergeModule {
       }
     } else {
       final added = request.rows(const []);
-      await _addBatch(uid, base.id, added, request.generatedForWeek).commit();
+      await _commitAdd(
+        _addBatch(uid, base.id, added, request.generatedForWeek),
+        base.id,
+      );
       result = PersonalMergeResult(
         list: server.copyWith(
           items: [...server.items, ...added],
@@ -307,6 +312,17 @@ class ShoppingPersonalMergeModule {
     });
     return batch;
   }
+
+  /// A connection lost after the server read leaves the commit pending until
+  /// reconnect while the local cache already holds the rows, so the sheet
+  /// stops waiting after the same budget as a replace — safe on replay because
+  /// it only extends `menuItemIds` with `arrayUnion`.
+  Future<void> _commitAdd(WriteBatch batch, String listId) =>
+      awaitOrLeaveQueued(
+        (commitBatch ?? (b) => b.commit())(batch),
+        what: 'menu add into personal list $listId',
+        patience: _transactionBudget,
+      );
 
   /// Offline: the write is computed from the copy in memory and queued, which
   /// Firestore replays on reconnect. An add is still safe, because it extends
