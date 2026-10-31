@@ -2,7 +2,6 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -25,6 +24,7 @@ import 'package:butlery/services/tagging/tagging_pipeline_runner.dart';
 /// Supports user overrides for unknown ingredients.
 class TaggingService extends BaseService {
   final IngredientLookupService _lookupService;
+  final PermissionService _permissionService;
   final TagGenerator _tagGenerator;
   final UserIngredientRepository? _userIngredientRepository;
   final TaggingEventsTracker? _eventsTracker;
@@ -52,12 +52,14 @@ class TaggingService extends BaseService {
 
   TaggingService({
     required IngredientLookupService lookupService,
+    required PermissionService permissionService,
     TagConfigService? tagConfigService,
     TagGenerator? tagGenerator,
     UserIngredientRepository? userIngredientRepository,
     TaggingEventsTracker? eventsTracker,
     NutritionService? nutritionService,
   }) : _lookupService = lookupService,
+       _permissionService = permissionService,
        _tagGenerator =
            tagGenerator ??
            TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
@@ -308,9 +310,8 @@ class TaggingService extends BaseService {
   /// M2: Gets the current user ID from PermissionService for user-defined ingredient lookup.
   String? _getCurrentUserId() {
     try {
-      return ServiceLocator.get<PermissionService>().currentUser?.uid;
+      return _permissionService.currentUser?.uid;
     } catch (e) {
-      // ServiceLocator not available or PermissionService not registered
       return null;
     }
   }

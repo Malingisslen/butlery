@@ -7,7 +7,6 @@ import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/personal_tag_types.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Evaluates personal tag rules against recipes and enforces group constraints.
 ///
@@ -18,10 +17,13 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// - Ingredient lookup delegation for property-based conditions
 class PersonalTagRuleEvaluator extends BaseService {
   final IngredientLookupService _lookupService;
+  final auth.AuthRepository _authRepository;
 
   PersonalTagRuleEvaluator({
     required IngredientLookupService lookupService,
-  }) : _lookupService = lookupService;
+    required auth.AuthRepository authRepository,
+  }) : _lookupService = lookupService,
+       _authRepository = authRepository;
 
   @override
   String get serviceName => 'PersonalTagRuleEvaluator';
@@ -298,8 +300,7 @@ class PersonalTagRuleEvaluator extends BaseService {
 
   String? _getCurrentUserId() {
     try {
-      final authRepository = ServiceLocator.get<auth.AuthRepository>();
-      return authRepository.currentUserId;
+      return _authRepository.currentUserId;
     } catch (e) {
       AppLogger.error('Failed to get current user ID: $e');
       return null;
