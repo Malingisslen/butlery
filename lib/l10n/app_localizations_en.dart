@@ -15978,7 +15978,7 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 item is at home.',
       zero: 'None of the items are at home.',
     );
-    return '$_temp0 An unknown amount gives no deduction – the item is added marked “Maybe at home”.';
+    return '$_temp0';
   }
 
   @override

@@ -99,6 +99,24 @@ void main() {
     );
   });
 
+  test('a row without an amount is covered by any stock in date '
+      '(Malin 2026-10-31)', () {
+    final saltOnly = [_item('Salt', 0, '')];
+
+    final result = RecipePantryCheck.check(saltOnly, [
+      _pantry('Salt', quantity: 1, unit: 'förp'),
+    ]);
+    expect(result.toBuy, isEmpty);
+    expect(result.coveredAtHome, ['Salt']);
+
+    expect(RecipePantryCheck.toBuy(saltOnly, [_pantry('Salt')]), isEmpty);
+
+    final expired = RecipePantryCheck.toBuy(saltOnly, [
+      _pantry('Salt', quantity: 1, expiry: DateTime(2020, 1, 1)),
+    ]);
+    expect(expired.single.note, 'Kolla datum');
+  });
+
   test('a row past its date subtracts nothing and marks Kolla datum', () {
     final left = RecipePantryCheck.toBuy(items, [
       _pantry('Ägg', quantity: 12, expiry: DateTime(2000)),

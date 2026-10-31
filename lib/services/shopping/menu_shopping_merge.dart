@@ -279,8 +279,8 @@ class MenuShoppingMergePlanner {
   /// the pantry by one rule. [pantry] is the whole pantry; the rows are
   /// matched by [IngredientIdentity.sameItem] as in [preview]. Returns the
   /// amount still to buy: null when enough is at home, [amount] unchanged
-  /// when nothing can be subtracted (no match, an unknown amount, another
-  /// unit family, past its date), else the difference. [mark] is the row's
+  /// when nothing can be subtracted (no match, another unit family, past
+  /// its date), else the difference. [mark] is the row's
   /// "Kanske hemma" or "Kolla datum", carried as a merge line carries it.
   static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
     required String name,
@@ -338,9 +338,9 @@ class MenuShoppingMergePlanner {
       return const _Marked(MenuShoppingPantryMark.maybeAtHome);
     }
     final need = row.amount;
-    if (need == null || need <= 0) {
-      return const _Marked(MenuShoppingPantryMark.maybeAtHome);
-    }
+    // A row without an amount ("salt") is covered by any stock in date
+    // (Malin 2026-10-31).
+    if (need == null || need <= 0) return const _Covered();
     final needBase = SmartUnitConverter.toCanonicalBase(need, row.unit);
     var have = 0.0;
     for (final item in at) {

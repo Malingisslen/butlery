@@ -1,3 +1,26 @@
+# Malins svar 2026-10-31: rad utan mängd mot skafferiet, och portioner som källan inte anger
+
+Malin svarade på beslutskort i tråden 2026-10-31 07:54 (frågorna 2 och 4 i
+`/mnt/project-files/steg3/fragor-till-malin.md`).
+
+- [x] 1. Fråga 2 = B: en rad utan mängd ("salt") räknas som täckt av skafferiet när varan
+      finns och inte gått ut. En ändring i `MenuShoppingMergePlanner._deduct`, som både
+      veckolistan och receptknappen (`toBuy`) går igenom. Utgången vara ger fortfarande
+      "Kolla datum".
+- [x] 2. Fråga 4 = A: parsningsnivåerna (schema.org, sajtkonfig, regelbaserad, AI-nivån)
+      sparar inga portioner när källan inte anger några, i stället för en gissad 4:a. De
+      returnerar `FieldResult.failed` som de redan gör för tid. `kDefaultPortions` tas bort.
+      Risk: kvalitetspoängen sjunker med portionsfältets vikt (0,10 × låg säkerhet) för sådana
+      recept. Golden-testerna för parsning körs för att se om nivåvalet ändras.
+- [ ] 3. Tester per punkt, `flutter analyze`, grindarna, PR med auto-merge.
+
+Utanför: kalkylarksimporten (`spreadsheet_recipe_mapper`) sätter fortfarande 4. Den är en egen
+importväg som frågan inte gällde.
+
+Sammanfattning för Malin: har du salt hemma och receptet bara säger "salt" hamnar det inte på
+listan. Ett recept från en sajt eller inklistrad text som inte säger hur många portioner det
+ger sparas med tomma portioner, så du fyller i dem själv om du vill.
+
 # Kärnflöde steg 5D: täckningskrav, osäkra taggar och omtaggning
 
 Del av den godkända steg 5-planen (`/mnt/project-files/steg5/plan.md`, 5D; Malins beslut 5
