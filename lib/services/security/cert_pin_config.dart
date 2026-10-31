@@ -1,6 +1,6 @@
 /// Per-host SHA-256 SPKI fingerprint configuration for outbound HTTPS pinning.
 ///
-/// BUT-427: third-party HTTPS calls (Algolia, OCR fallbacks, web scraping for
+/// BUT-427: third-party HTTPS calls (Algolia, web scraping for
 /// recipe import) are pinned at the HTTP-client layer. The pins themselves are
 /// rotated by an ops task — this file is the wiring contract.
 ///

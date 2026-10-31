@@ -97,7 +97,7 @@
 /// Scoped to the ViewModel path. `PhotoImportStrategy` is the OTHER photo
 /// route (`importSinglePhoto`, the handwriting loops) and calls the text
 /// strategy directly without passing through `autoParseMulti`, so no geometry
-/// travels there and type-size splitting does not apply to it. A page from a paid tier, from the handwriting path or
+/// travels there and type-size splitting does not apply to it. A page from the handwriting path or
 /// from a restored draft carries no geometry, which makes the whole document
 /// incomplete and sends the import back to the text rules.
 library;
@@ -448,7 +448,7 @@ class DocumentLayout {
   /// The combined text — the string the parser will see — or null when any
   /// page lacks geometry.
   ///
-  /// Null, not a best effort. A geometry-less page is one a paid tier read: it
+  /// Null, not a best effort. A geometry-less page
   /// contributes its OWN lines to the real combined string, and this object has
   /// no idea how many. Producing a plausible-looking string there would be
   /// wrong by an unbounded amount and would look exactly like a correct one.
