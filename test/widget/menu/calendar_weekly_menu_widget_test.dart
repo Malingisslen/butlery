@@ -24,6 +24,9 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -1460,6 +1463,52 @@ void main() {
 
         expect(find.byType(MenuRecipeSelectionDialog), findsOneWidget);
         expect(find.text('Fika'), findsNothing);
+      });
+
+      testWidgets('a dish picked for an empty cell is confirmed first when it '
+          'contains a tracked allergen', (tester) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        // Without a resolvable household the check falls back to the common
+        // allergen floor, which includes gluten.
+        final base = RecipeFactory.build(id: 'bread', title: 'Surdegsbröd');
+        final bread = Recipe(
+          core: base.core.copyWith(
+            tagResult: TagResult(
+              tags: const {},
+              allergenStatus: const {'gluten': TriState.contains},
+              dietaryStatus: const {},
+              coverage: 1.0,
+              generatedAt: DateTime(2026),
+            ),
+          ),
+          type: base.type,
+        );
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: [bread], isLoading: false),
+        );
+        await pumpOvrigt(tester);
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Lägg till rätt'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Surdegsbröd'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Lägg till (1)'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Lägg till ändå?'), findsOneWidget);
+        expect(
+          find.textContaining('Surdegsbröd innehåller gluten'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
+
+        verifyNever(() => service.saveRevision(any()));
+        expect(find.text('Surdegsbröd'), findsNothing);
       });
 
       testWidgets('while selecting, a tap on the övrigt cell chooses every '

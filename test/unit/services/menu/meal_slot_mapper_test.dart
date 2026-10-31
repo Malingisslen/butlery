@@ -33,6 +33,13 @@ void main() {
       expect(mapMealTypeToSlot('övrigt'), MealSlot.ovrigt);
     });
 
+    test('synonyms and canonical spellings use the shared normalisation', () {
+      expect(mapMealTypeToSlot('Huvudrätt'), MealSlot.middag);
+      expect(mapMealTypeToSlot('Efterrätt'), MealSlot.ovrigt);
+      expect(mapMealTypeToSlot('Mellanmål'), MealSlot.ovrigt);
+      expect(mapMealTypeToSlot(''), MealSlot.middag);
+    });
+
     test('unknown meal types fall back to middag (most common default)', () {
       expect(mapMealTypeToSlot('unknown_meal_type'), MealSlot.middag);
       expect(mapMealTypeToSlot('whatever'), MealSlot.middag);
@@ -47,6 +54,61 @@ void main() {
     test('whitespace is trimmed', () {
       expect(mapMealTypeToSlot('  middag  '), MealSlot.middag);
       expect(mapMealTypeToSlot('\tlunch\n'), MealSlot.lunch);
+    });
+  });
+
+  group('menuMealKey', () {
+    test('every canonical type gives its lowercase key', () {
+      expect(menuMealKey('Frukost'), 'frukost');
+      expect(menuMealKey('Lunch'), 'lunch');
+      expect(menuMealKey('Middag'), 'middag');
+      expect(menuMealKey('Dessert'), 'dessert');
+      expect(menuMealKey('Mellanmål'), 'mellanmål');
+      expect(menuMealKey('Fika'), 'fika');
+    });
+
+    test('synonyms resolve through MealTypes', () {
+      expect(menuMealKey('Huvudrätt'), 'middag');
+      expect(menuMealKey('dinner'), 'middag');
+      expect(menuMealKey('efterrätt'), 'dessert');
+      expect(menuMealKey('snack'), 'mellanmål');
+      expect(menuMealKey('  Main   course '), 'middag');
+    });
+
+    test('empty and unknown text default to middag', () {
+      expect(menuMealKey(''), 'middag');
+      expect(menuMealKey('Soppor'), 'middag');
+      expect(menuMealKey('Förrätt'), 'middag');
+    });
+
+    test('ovrigt keeps its own key', () {
+      expect(menuMealKey('ovrigt'), 'ovrigt');
+      expect(menuMealKey('Övrigt'), 'ovrigt');
+    });
+  });
+
+  group('fitsMealSlot', () {
+    test('matches a recipe whose normalised type equals the request', () {
+      expect(fitsMealSlot('Middag', 'middag'), isTrue);
+      expect(fitsMealSlot('Huvudrätt', 'middag'), isTrue);
+      expect(fitsMealSlot('efterrätt', 'dessert'), isTrue);
+      expect(fitsMealSlot('dinner', 'Middag'), isTrue);
+      expect(fitsMealSlot('Lunch', 'middag'), isFalse);
+      expect(fitsMealSlot('Frukost', 'lunch'), isFalse);
+    });
+
+    test('empty and unknown recipe types fit middag only', () {
+      expect(fitsMealSlot('', 'middag'), isTrue);
+      expect(fitsMealSlot('Soppor', 'middag'), isTrue);
+      expect(fitsMealSlot('', 'lunch'), isFalse);
+      expect(fitsMealSlot('Soppor', 'dessert'), isFalse);
+    });
+
+    test('an ovrigt request accepts any recipe', () {
+      for (final type in ['Middag', 'Lunch', 'Fika', '', 'Soppor']) {
+        expect(fitsMealSlot(type, 'ovrigt'), isTrue, reason: type);
+        expect(fitsMealSlot(type, 'övrigt'), isTrue, reason: type);
+      }
     });
   });
 

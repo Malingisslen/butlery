@@ -15,6 +15,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
+import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/protein_category.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
@@ -484,7 +485,7 @@ class MenuService extends BaseService {
       final pool = globallyOk
           .where(
             (r) =>
-                r.mealType.toLowerCase() == pin.mealType.toLowerCase() &&
+                fitsMealSlot(r.mealType, pin.mealType) &&
                 _matchesConstraint(r, pin.constraint) &&
                 !usedIds.contains(r.id),
           )
@@ -509,7 +510,7 @@ class MenuService extends BaseService {
       final slotPool = globallyOk
           .where(
             (r) =>
-                r.mealType.toLowerCase() == slot.mealType.toLowerCase() &&
+                fitsMealSlot(r.mealType, slot.mealType) &&
                 !usedIds.contains(r.id),
           )
           .toList();
@@ -518,7 +519,7 @@ class MenuService extends BaseService {
         // Build mealType distribution for diagnostics
         final mealDist = <String, int>{};
         for (final r in globallyOk) {
-          final mt = r.mealType.toLowerCase();
+          final mt = menuMealKey(r.mealType);
           mealDist[mt] = (mealDist[mt] ?? 0) + 1;
         }
         AppLogger.warning(

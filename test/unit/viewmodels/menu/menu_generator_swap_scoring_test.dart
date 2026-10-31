@@ -190,18 +190,25 @@ void main() {
           final current = _recipe('current', mealType: 'Middag');
           // best: same category = 2
           final categoryMatch = _recipe('category_match', mealType: 'Middag');
-          // lesser: empty mealType keeps it eligible (isEmpty branch) but earns
-          // no category point; only the seasonal tag scores = 1.
+          // lesser: a lunch recipe is eligible only because the swap is for an
+          // 'ovrigt' place, which accepts any meal type; it earns no category
+          // point, only the seasonal tag = 1.
           final seasonalOnly = _recipe(
             'seasonal_only',
-            mealType: '',
+            mealType: 'Lunch',
             tags: {_kWinterTag},
+          );
+          mockRecipeService.setRecipeState(
+            recipes: [current, categoryMatch, seasonalOnly],
+            isInitialized: true,
           );
 
           final picks = <String>{};
           for (var i = 0; i < 15; i++) {
             picks.add(
-              (await doSwap(current, [categoryMatch, seasonalOnly])).recipe!.id,
+              (await generator.swapSingleRecipe(current, 'ovrigt', {
+                'ovrigt': [current],
+              })).recipe!.id,
             );
           }
 
@@ -226,22 +233,30 @@ void main() {
       'prefers the seasonal candidate when no cuisine or category matches',
       () async {
         await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
-          // current: no cuisine tag, Middag. Both candidates use an empty mealType
-          // so they stay eligible (isEmpty branch of the swap filter) but earn no
-          // category point — isolating the seasonal tier (1) vs zero.
+          // current: no cuisine tag, Middag. Both candidates are lunch recipes,
+          // eligible only because the swap is for an 'ovrigt' place, so neither
+          // earns a category point — isolating the seasonal tier (1) vs zero.
           final current = _recipe('current', mealType: 'Middag');
           // one candidate has seasonal tag = 1
           final seasonal = _recipe(
             'seasonal',
-            mealType: '',
+            mealType: 'Lunch',
             tags: {_kWinterTag},
           );
           // other has no advantage = 0
-          final noMatch = _recipe('no_match', mealType: '');
+          final noMatch = _recipe('no_match', mealType: 'Lunch');
+          mockRecipeService.setRecipeState(
+            recipes: [current, seasonal, noMatch],
+            isInitialized: true,
+          );
 
           final picks = <String>{};
           for (var i = 0; i < 15; i++) {
-            picks.add((await doSwap(current, [seasonal, noMatch])).recipe!.id);
+            picks.add(
+              (await generator.swapSingleRecipe(current, 'ovrigt', {
+                'ovrigt': [current],
+              })).recipe!.id,
+            );
           }
 
           expect(
@@ -402,5 +417,48 @@ void main() {
         );
       },
     );
+  });
+
+  group('swap eligibility uses the shared meal-type rule', () {
+    test(
+      'a synonym or typeless recipe is a valid middag replacement',
+      () async {
+        final current = _recipe('current', mealType: 'Middag');
+        final synonym = _recipe('synonym', mealType: 'Huvudrätt');
+        final typeless = _recipe('typeless', mealType: '');
+        final lunch = _recipe('lunch', mealType: 'Lunch');
+        mockRecipeService.setRecipeState(
+          recipes: [current, synonym, typeless, lunch],
+          isInitialized: true,
+        );
+
+        final seen = <String>{};
+        for (var i = 0; i < 30; i++) {
+          final result = await generator.swapSingleRecipe(current, 'middag', {
+            'middag': [current],
+          });
+          seen.add(result.recipe!.id);
+        }
+
+        expect(seen, isNot(contains('lunch')));
+        expect(seen, isNotEmpty);
+        expect(seen.difference({'synonym', 'typeless'}), isEmpty);
+      },
+    );
+
+    test('a lunch swap no longer takes a typeless recipe', () async {
+      final current = _recipe('current', mealType: 'Lunch');
+      final typeless = _recipe('typeless', mealType: '');
+      mockRecipeService.setRecipeState(
+        recipes: [current, typeless],
+        isInitialized: true,
+      );
+
+      final result = await generator.swapSingleRecipe(current, 'Lunch', {
+        'Lunch': [current],
+      });
+
+      expect(result.recipe, isNull);
+    });
   });
 }
