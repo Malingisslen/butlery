@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 30, 2026
-**Version:** 1.27
+**Last updated:** October 31, 2026
+**Version:** 1.28
 
 ---
 
@@ -37,7 +37,7 @@ We collect the following types of personal data when you use Butlery:
 - **Social features:** Friends, shares, messages
 - **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
 - **Communications:** Messages you send to us or other users
-- **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone.
+- **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone. Feedback is kept for about 12 months and is deleted earlier if you delete your account.
 
 ### 3.2 Information we collect automatically
 
@@ -47,6 +47,8 @@ We collect the following types of personal data when you use Butlery:
 - **Analytics data:** Usage statistics (only with your consent)
 - **Notification records:** Delivery and engagement records for notifications — which notification was sent to you (or that you triggered to others), when, its delivery status, and whether you opened it
 - **Import log:** When you import a recipe, we store your user id, the page address (without certain parameters that can contain sign-in details), the website's name and how the import went, for example which import method you used, whether it succeeded, how long it took and whether AI was used. We use the log to see which websites import works on and to fix errors. The log is deleted automatically about 30 days after the import, even if the account has already been deleted.
+- **Correction log:** When you correct a recipe the app has read, for example the title, an ingredient or a step, or change an allergen label the app has set on a recipe, we store what the app read, what you changed it to, the recipe's id and sometimes the website's name. Part of it is stored with your user id and part with a code derived from your user id. We use the log to improve how the app reads recipes. The log is deleted automatically after about 12 months. What is stored with your user id is also deleted when you delete your account.
+- **Suggested ingredient spellings:** When you correct the name of an ingredient in an imported recipe, it can become a suggestion that the app should understand that spelling as that ingredient. The suggestion stores the spelling, the correction and your user id. When several people have made the same correction, the app can start to understand the spelling. When you delete your account, your user id is removed from every suggestion. A suggestion nobody has decided on yet and that nobody else supports is deleted. A suggestion that has already been approved, rejected or revoked is kept without being linked to any person.
 
 ### 3.3 Information from third parties
 
@@ -82,6 +84,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Import log (see section 3.2) | Legitimate interest (Art. 6.1.f) | Make import work and fix errors; you can object (Art. 21) |
 | Samples from AI recipe reading (see section 5.2) | Consent (Art. 6.1.a) | Improve recipe reading; you can withdraw at any time |
 | Feedback you send in the app | Legitimate interest (Art. 6.1.f) | Answer and act on what you report; you can object (Art. 21) |
+| Correction log and suggested ingredient spellings (see section 3.2) | Legitimate interest (Art. 6.1.f) | Improve how the app reads recipes; you can object (Art. 21) |
 
 ---
 
@@ -126,8 +129,10 @@ We use your personal data for the following purposes:
 - Remind about activity
 
 **AI-assisted features (if you have consented):**
-- Extract and structure recipes from photos and web links (OCR and text analysis)
+- Extract and structure recipes from photos and web links
 - Suggest weekly menus and recipe enhancements
+
+**Photos of recipes.** A photo of a recipe is first read on your phone, with text recognition from Google (ML Kit) that runs on the phone. The photo is not sent anywhere for that. If the phone cannot read the photo, finds no recipe in it, or it is handwritten, the app asks: “Do you want AI to read the photo? The photo will then be sent to Google to be read.” Only when you say yes is the photo sent to the AI, and your yes is recorded as consent to AI processing. Without that consent our server does not accept the photo.
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
 
@@ -183,23 +188,11 @@ We share your personal data with the following third parties:
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
-- **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis) via Gemini models
+- **Purpose:** AI-based recipe extraction and structuring via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
 - **Transfer:** Within EU/EEA — processing takes place in Google Cloud's `europe-west4` region (the Netherlands). No transfer to the USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
-- **Note:** Images submitted for OCR processing may contain personal information visible in the photograph. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
-
-**OCR.space (a9t9 software GmbH, Austria/EU)**
-- **Purpose:** Optical character recognition for recipe photo import
-- **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA
-- **Policy:** [https://ocr.space/privacypolicy](https://ocr.space/privacypolicy)
-
-**Algolia (Algolia Inc., USA/EU)** *(currently inactive — available via feature flag)*
-- **Purpose:** Search indexing and recipe search (when enabled)
-- **Legal basis:** Legitimate interest (necessary for the service's search functionality)
-- **Transfer:** EU data center (France), with USA backup under EU-US Data Privacy Framework
-- **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
+- **Note:** A photo is sent here only after you have said yes to AI reading it (see section 5.2). The photo may contain personal information visible in the picture. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
 ### 6.2 Legal requirements
 
@@ -223,9 +216,9 @@ The following is a list of the data processors that receive your data, the categ
 |-----------|---------------|----------------|--------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgium). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
-| **OCR.space** (a9t9 software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
-| **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+
+When the phone reads a recipe photo itself (Google ML Kit), the photo is not sent to anyone.
 
 This list is updated whenever our subprocessor chain changes. Older versions of the app also sent data to Talsec, see section 6.6.
 
@@ -302,7 +295,9 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 | Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, even if the account has already been deleted | Legitimate interest |
 | Samples from AI recipe reading (text to and from the AI, without images and without names, email or anything else that identifies you) | Deleted automatically after 30 days, even if the account has already been deleted | Consent |
-| Feedback you send in the app, with screenshot | Until you delete your account. It is then deleted with its screenshots | Legitimate interest |
+| Feedback you send in the app, with screenshot | About 12 months. Deleted earlier, with its screenshots, if you delete your account | Legitimate interest |
+| Correction log (what you corrected in imported recipes and allergen labels) | About 12 months. What is stored with your user id is deleted with the account | Legitimate interest |
+| Suggested ingredient spellings | Your user id is removed when you delete your account. A suggestion nobody has decided on yet and that nobody else supports is then deleted. An approved, rejected or revoked suggestion is kept without being linked to any person | Legitimate interest |
 
 After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored.
 
@@ -330,6 +325,7 @@ You have the following rights under GDPR:
 - **How:** More > Privacy and data > Export my data
 - **Format:** JSON (universal format)
 - **Sign-in methods:** The export shows which sign-in methods are linked to the account (email and password, Google or Apple) and the email address from Google or Apple. Sign-in tokens and the profile picture link are not included.
+- **The correction log** stored with your user id and **your suggested ingredient spellings** are included in the export.
 - **The import log** is not included in the export. To see it, contact integritet@butlery.se.
 
 ### 9.5 Right to restriction (Art. 18)

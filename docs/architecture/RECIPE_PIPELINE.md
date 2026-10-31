@@ -30,7 +30,8 @@
 │ Models: bundled assets + Firebase Storage OTA, SHA-256 fail-closed registry. │
 │ Output: ParsedRecipe with per-field confidence.                              │
 └──────────────────────────────────────────────────────────────────────────────┘
-        │  (photo = OCR → TextImportStrategy regex parser, NOT this service)
+        │  (photo = on-device ML Kit → TextImportStrategy regex parser, NOT this
+        │   service; ocrRecipeImage only after the user says yes to AI)
         ▼
 ┌── CLOUD LLM (functions/src/llm/) ────────────────────────────────────────────┐
 │ structureRecipe + ocrRecipeImage callables → Gemini 2.5 Flash Lite (Vertex,  │
@@ -82,7 +83,7 @@ audit's core finding — check it before trusting any description of the pipelin
 | Site-config success counters → routing | **LIVE, closed loop** | `logParseEvent` increments per-domain counters; `computedQualityScore` flips to live data at ≥5 samples; `isReliable` raises the LLM-avoidance threshold. The one fully automatic flywheel. |
 | Alias learning (corrections → `learnedAliasesSv`) | **LIVE but dormant** | Auto-writes production ingredient master data at 3 distinct users; unreachable pre-launch; **no review/revert path** (roadmap P1). |
 | CRF retrain pipeline | **HALF-BUILT** | Corrections→CoNLL→retrain script works; but the hash registry forces an app release anyway. |
-| `parse_corrections_v2` (per-field, scrubbed) | **WRITE-ONLY** | Built by BUT-595 to be queryable; nothing queries it. The CRF export reads the *old* unscrubbed aggregate collection instead. |
+| `parse_corrections_v2` (per-field, scrubbed) | **READ BY CRF EXPORT** | Built by BUT-595 to be queryable. |
 | `llm_response_samples` capture | **WRITE-ONLY** | Every paid Gemini call captured "for mining"; no reader exists; 30-day TTL deletes before use. |
 | Prompt A/B infrastructure | **BUILT, unused** | Bucketing + per-bucket logging fully threaded; no experiment configured. |
 | Correction capture (flywheel intake) | **~1 of 8 paths** | Only Tier-1 URL imports write the ParsedRecipeCache snapshot the diff needs. Photo/OCR, text-paste, Instagram/TikTok/YouTube, and URL tiers 2–7 produce **zero** training data. |
@@ -91,7 +92,7 @@ audit's core finding — check it before trusting any description of the pipelin
 | Menu generation vs user tag overrides | **GAP** | Recipe-list filtering honors overrides + coverage + needsRetagging guards; menu generation reads raw `tagResult` with none of them. A user's manual "this DOES contain gluten" correction is ignored by menus. |
 | `TagGenerator.generate()` | **DEAD** | ~175-line duplicate orchestrator, zero production callers; live path is `TaggingPipelineRunner`. Yet `tag_generator_test.dart` (3,300 lines) pins it 142 times, and the "Import → Tagging Integration" test also runs it. |
 | Tag-config change → retag | **MISSING LINK** | `needsRetagging` keys only on the code constant `kTagGeneratorVersion`; a remote `tag_configs` change never invalidates existing tags. Conversely, bumping the constant makes every client re-tag everything (no server-side batch path). |
-| Tagging correction loop | **MISSING** | User tag/allergen overrides are display-only; "the auto-tagger got an allergen wrong" leaves no queryable trace anywhere. |
+| Tagging correction loop | **MISSING** | User tag/allergen overrides are display-only. |
 | Menu engagement signals | **MISSING** | Swaps/regenerations/rejections not logged at all — menu quality (the monetization linchpin) is unmeasurable. |
 | Corpus eval harnesses (`tools/corpus/`, tag scorecard) | **Partly gated** | The tag scorecard (`test/evaluation/`) and the import gate (`test/import_gate/`) run in `test.yml`. (CRF golden set IS CI-gated at ≥85%; tagging golden runs in the golden suite.) |
 
@@ -99,17 +100,17 @@ audit's core finding — check it before trusting any description of the pipelin
 
 | Signal | Captured where | Fed back into | Automatic? |
 |---|---|---|---|
-| Parse success/tier/cost | `parse_events` (Firestore, **no TTL**) | `site_configs` domain counters → routing | ✅ yes |
-| Field corrections (aggregate) | `parsing_corrections` (client-written, unscrubbed) | alias learning + CRF retrain export | alias: ✅ / CRF: manual, deploy link broken |
-| Field corrections (per-field, scrubbed) | `parse_corrections_v2` | nothing | ❌ no consumer |
+| Parse success/tier/cost | `parse_events` (Firestore, 30d TTL) | `site_configs` domain counters → routing | ✅ yes |
+| Field corrections (aggregate) | `parsing_corrections` (client-written, 365d TTL) | alias learning + CRF retrain export | alias: ✅ / CRF: manual, deploy link broken |
+| Field corrections (per-field, scrubbed) | `parse_corrections_v2` (365d TTL) | CRF retrain export (`functions/src/admin/export-corrections.ts`) | manual |
 | LLM call samples | `llm_response_samples` (30d TTL) | nothing | ❌ no consumer |
 | Tagging health | Firebase Analytics events | dashboards only | observability, not learning |
-| Tag/allergen overrides | per-recipe `TagOverrides` | display merge only | ❌ never analyzed |
+| Tag/allergen overrides | per-recipe `TagOverrides`; allergen overrides also in `tag_overrides_log` (365d TTL) | display merge only | ❌ never analyzed |
 | Menu behavior | — | — | ❌ not captured |
 | Ratings (family/public) | rating subsystem | `_ratingMultiplier` next generation | ✅ (lagging signal) |
 
 **Net:** two loops genuinely close (site-config routing, alias learning-at-scale). Everything
-else is either intake-starved (corrections from 1 of 8 paths), write-only (v2, LLM samples),
+else is either intake-starved (corrections from 1 of 8 paths), write-only (LLM samples),
 or missing (tagging corrections, menu engagement). The retrain half is built but the
 deploy+measure links are broken. Most fixes are *connections between existing pieces*,
 not new systems — see the roadmap.

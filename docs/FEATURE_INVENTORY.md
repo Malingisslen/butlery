@@ -530,7 +530,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### IMP-04: Photo / OCR import (multi-page, heirloom scans)
 - **Entry:** `/photoImport` — "Från bild" tile + onboarding import page.
 - **User story:** As a user with a paper or cookbook recipe, I want to photograph pages and have the text extracted and parsed so that I can digitize heirloom recipes without typing.
-- **Expected behavior:** Camera/gallery (compressed) → quality assessment → multi-provider OCR (OCR.space → Google Vision → Tesseract) → auto-parse. Up to 5 pages, reorderable, combined into ONE recipe. OCR text + first image persisted as a draft. Heirloom metadata form. Failed OCR retry. Confidence/quality surfaced.
+- **Expected behavior:** Camera/gallery (compressed) → quality assessment → on-device OCR (ML Kit) → auto-parse; when the device cannot read the photo, finds no recipe or it is handwritten, the app offers AI reading (`ocrRecipeImage`, Vertex AI Gemini), sent only after the user says yes and refused by the server without AI consent. Up to 5 pages, reorderable, combined into ONE recipe. OCR text + first image persisted as a draft. Heirloom metadata form. Failed OCR retry. Confidence/quality surfaced.
 - **Edge cases:** No image; unsupported format; >15MB rejected; quality hard-reject before OCR to save quota; blank page → error not silent append.
 - **Validation:** Format whitelist, 15MB cap, quality gate.
 - **Test coverage:** Verified — `photo_import_viewmodel_test.dart` (+multi), `photo_import_allergen_banner_journey_test.dart`, `photo_import_draft_restore_test.dart`, `photo_import_announce_test.dart`.

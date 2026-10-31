@@ -847,7 +847,7 @@
     },
     {
       "id": "svc-ocr-extraction",
-      "label": "OCR-extraktion (på-enheten → OCR.space/Google Vision/Tesseract)",
+      "label": "OCR-extraktion på telefonen (ML Kit)",
       "context": "service",
       "path": "lib/services/ocr_extraction_service.dart"
     },
@@ -3967,7 +3967,7 @@
     {
       "id": "flow-imp-1",
       "label": "Fotoimport (OCR)",
-      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
+      "description": "Kamera/galleri-bild läses först på telefonen (ML Kit) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Kan telefonen inte läsa en sida, hittar den inget recept, eller är handskriven-togglen på, frågar appen innan fotot skickas till Gemini Vision (ocrRecipeImage); servern kör den bara med AI-samtycke.",
       "features": [
         "IMP-04",
         "ENG-09"
