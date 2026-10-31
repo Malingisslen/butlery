@@ -164,8 +164,7 @@ void main() {
         expect(result.hasTag('påsk'), isTrue);
       });
 
-      test('detects påsk from lamb ingredient (Swedish Easter tradition)', () {
-        // System intentionally tags lamb dishes as Easter (cultural association)
+      test('lamb alone is not Easter food (beslut 6)', () {
         final recipe = RecipeBuilder()
             .withTitle('Vardaglig lammgryta')
             .withIngredients(['lammkött', 'tomat', 'vitlök'])
@@ -179,7 +178,23 @@ void main() {
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // Lamb triggers påsk tag due to Swedish Easter tradition
+        expect(result.hasTag('påsk'), isFalse);
+      });
+
+      test('lamb with eggs is Easter food', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Lammstek med ägghalvor')
+            .withIngredients(['lammstek', 'ägg'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('lammstek', 'protein/meat/lamb', {
+            'meat',
+          }),
+          TaggingTestHelper.ingredient('ägg', 'protein/egg', {'egg'}),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
         expect(result.hasTag('påsk'), isTrue);
       });
     });
@@ -199,6 +214,75 @@ void main() {
 
         // Julienne should not trigger jul detection
         expect(result.hasTag('jul'), isFalse);
+      });
+    });
+
+    group('one ingredient never makes a holiday (beslut 6)', () {
+      bool hasTag(String tag, List<String> names) {
+        final recipe = RecipeBuilder()
+            .withTitle('Rätt')
+            .withIngredients(names)
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          for (final n in names) TaggingTestHelper.ingredient(n, 'other', {}),
+        ]);
+        return generator
+            .generate(ingredients: lookup, recipe: recipe)
+            .hasTag(tag);
+      }
+
+      test('nyår needs two festive ingredients', () {
+        expect(hasTag('nyår', ['hummer']), isFalse);
+        expect(hasTag('nyår', ['hummer', 'ostron']), isTrue);
+      });
+
+      test('kräftskiva needs crayfish with dill', () {
+        expect(hasTag('kräftskiva', ['kräftor']), isFalse);
+        expect(hasTag('kräftskiva', ['kräftor', 'krondill']), isTrue);
+      });
+
+      test('jul needs a Christmas main with a Christmas side', () {
+        expect(hasTag('jul', ['rödbetor', 'sill']), isFalse);
+        expect(hasTag('jul', ['julskinka', 'rödbetssallad']), isTrue);
+      });
+
+      test('a side word inside another word does not count', () {
+        expect(hasTag('jul', ['julskinka', 'blomkål']), isFalse);
+      });
+
+      test('påsk from eggs with herring', () {
+        expect(hasTag('påsk', ['ägg']), isFalse);
+        expect(hasTag('påsk', ['ägg', 'inlagd sill']), isTrue);
+      });
+
+      test(
+        'midsommar needs strawberries with cream, or herring with new potatoes',
+        () {
+          expect(hasTag('midsommar', ['jordgubbar']), isFalse);
+          expect(hasTag('midsommar', ['jordgubbar', 'vispgrädde']), isTrue);
+          expect(hasTag('midsommar', ['sill', 'färskpotatis']), isTrue);
+        },
+      );
+
+      test('saffron alone is not lucia', () {
+        expect(hasTag('lucia', ['saffran']), isFalse);
+      });
+
+      test('lucia needs saffron in a bake', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Saffransbullar')
+            .withIngredients(['saffran', 'vetemjöl'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('saffran', 'spice', {}),
+          TaggingTestHelper.ingredient('vetemjöl', 'grain', {}),
+        ]);
+        expect(
+          generator
+              .generate(ingredients: lookup, recipe: recipe)
+              .hasTag('lucia'),
+          isTrue,
+        );
       });
     });
   });

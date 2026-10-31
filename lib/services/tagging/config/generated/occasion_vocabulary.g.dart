@@ -11,18 +11,35 @@ abstract final class OccasionVocabulary {
     'jansson',
     'julbord',
   ];
-  static const christmasIngredients = <String>[
-    'rödbeta',
-    'sill',
+  static const christmasMainIngredients = <String>[
+    'julskinka',
+    'revbensspjäll',
+    'lutfisk',
     'julkorv',
     'prinskorv',
-    'kål',
+  ];
+  static const christmasSideIngredients = <String>[
+    'rödbet',
+    'grönkål',
+    'julsenap',
+    'rödkål',
   ];
   static const luciaTag = 'lucia';
   static const luciaTitleWords = <String>['lucia', 'lussebulle', 'lussekatt'];
+  static const luciaSaffronIngredients = <String>['saffran'];
+  static const luciaBakeTitleWords = <String>[
+    'bulle',
+    'bullar',
+    'bröd',
+    'längd',
+    'kaka',
+    'krans',
+  ];
   static const easterTag = 'påsk';
   static const easterTitleWords = <String>['påsk'];
-  static const easterEggTitleWords = <String>['ägg', 'egg'];
+  static const easterLambIngredients = <String>['lamm'];
+  static const easterEggIngredients = <String>['ägg'];
+  static const easterHerringIngredients = <String>['sill'];
   static const midsummerTag = 'midsommar';
   static const midsummerTitleWords = <String>['midsommar'];
   static const midsummerHerringIngredients = <String>['sill'];
@@ -31,12 +48,25 @@ abstract final class OccasionVocabulary {
     'nypotatis',
   ];
   static const midsummerStrawberryIngredients = <String>['jordgubb'];
+  static const midsummerCreamIngredients = <String>[
+    'grädde',
+    'vispgrädde',
+    'vaniljsås',
+    'glass',
+  ];
   static const crayfishTag = 'kräftskiva';
   static const crayfishTitleWords = <String>['kräftskiva', 'kräftkalas'];
   static const crayfishIngredients = <String>['kräft'];
+  static const crayfishDillIngredients = <String>['dill', 'krondill'];
   static const newYearTag = 'nyår';
   static const newYearTitleWords = <String>['nyår'];
-  static const newYearIngredients = <String>['hummer', 'ostron', 'kaviar'];
+  static const newYearIngredients = <String>[
+    'hummer',
+    'ostron',
+    'kaviar',
+    'löjrom',
+    'champagne',
+  ];
   static const springTag = 'vår';
   static const springIngredients = <String>[
     'sparris',
@@ -103,6 +133,108 @@ abstract final class OccasionVocabulary {
     'foie gras',
     'wagyu',
     'kalvfilé',
+  ];
+  static const titleKeywordsStarkSet = <String>[
+    'pepparsås',
+    'pepparbiff',
+    'pepparstekt',
+    'au poivre',
+    'steak au poivre',
+    'pepparrotssås',
+    'chilisås',
+    'chilistekt',
+    'chiliglaserad',
+    'chili con carne',
+    'szechuan',
+    'sichuan',
+    'kung pao',
+    'mapo tofu',
+    'dan dan',
+    'gochujang',
+    'vindaloo',
+    'madras',
+    'phaal',
+    'jalfrezi',
+    'pad prik',
+    'nam prik',
+    'buffalo',
+    'buffalo wings',
+    'jalapeño',
+    'habanero',
+    'arrabbiata',
+    'all\'arrabbiata',
+    'fra diavolo',
+    'diavolo',
+    'cajun',
+    'blackened',
+    'harissa',
+    'piri piri',
+    'peri peri',
+    'stark',
+    'kryddstark',
+    'eldigt',
+    'spicy',
+    'hot wings',
+  ];
+  static const titleKeywordsStarkBoost = <String>[
+    'senapssås',
+    'senapsglaserad',
+    'dijonsås',
+    'kimchi',
+    'bulgogi',
+    'chipotle',
+    'creole',
+    'het',
+    'heta',
+    'fire',
+  ];
+  static const titleKeywordsLyxigSet = <String>['lyxig', 'gourmet', 'tryffel'];
+  static const titleKeywordsLyxigBoost = <String>[
+    'lyx',
+    'festlig',
+    'fin middag',
+    'middag för två',
+    'romantisk',
+    'nyårsmiddag',
+    'champagne',
+  ];
+  static const titleKeywordsComfortFoodSet = <String>[
+    'comfort',
+    'comfort food',
+    'fredagsmys',
+    'husmanskost',
+  ];
+  static const titleKeywordsComfortFoodBoost = <String>[
+    'mys',
+    'go-to',
+    'favorit',
+    'klassisk',
+  ];
+  static const titleKeywordsBarnvanligConfirm = <String>[
+    'barnvänlig',
+    'för barn',
+  ];
+  static const titleKeywordsBarnvanligBoost = <String>[
+    'kids',
+    'hela familjen',
+    'familje',
+    'barnen',
+    'barnens',
+  ];
+  static const titleKeywordsSnabblagatBoost = <String>[
+    'snabb',
+    'snabbt',
+    'kvick',
+    'lättlagad',
+    'lätt att laga',
+    '20 min',
+    'one pot',
+    'one-pot',
+  ];
+  static const titleKeywordsSnabblagatSet = <String>[
+    '15 min',
+    '15-min',
+    'express',
   ];
 
   /// Every tag name the data file gives Phase 4.
