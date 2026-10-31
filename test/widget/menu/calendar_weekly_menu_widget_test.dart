@@ -147,6 +147,10 @@ void main() {
       service = _MockWeeklyMenuPlanService();
       recipeService = _MockUnifiedRecipeService();
       when(() => service.saveRevision(any())).thenAnswer((_) async {});
+      // The view model listens to the recipe list from its constructor.
+      when(
+        () => recipeService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
     });
 
     testWidgets('renders the empty-hint notice card when '
@@ -219,6 +223,46 @@ void main() {
         expect(vm.currentWeekStart, equals(requested));
       },
     );
+
+    testWidgets('a planned dish shows the recipe\'s current title, not the one '
+        'stored when it was placed', (tester) async {
+      final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: _plan(
+            weekStart: weekStart,
+            entries: [
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'mon-m',
+                recipeId: 'r-mon',
+                title: 'Gammalt namn',
+              ),
+            ],
+          ),
+          readFailed: false,
+        ),
+      );
+      when(
+        () => recipeService.getRecipeById('r-mon'),
+      ).thenReturn(RecipeFactory.build(id: 'r-mon', title: 'Nytt namn'));
+
+      final vm = WeeklyMenuPlanViewModel(
+        service: service,
+        recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
+      );
+      addTearDown(vm.dispose);
+
+      await tester.pumpWidget(
+        _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nytt namn'), findsOneWidget);
+      expect(find.text('Gammalt namn'), findsNothing);
+    });
 
     testWidgets('populated week renders one row per DayOfWeek (7) with lunch + '
         'middag + övrigt columns per row', (tester) async {
@@ -506,6 +550,7 @@ void main() {
       Future<WeeklyMenuPlanViewModel> pumpPopulated(
         WidgetTester tester, {
         required WeeklyMenuPlan plan,
+        RouteFactory? onGenerateRoute,
       }) async {
         when(() => service.readWeek(any())).thenAnswer(
           (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
@@ -517,7 +562,11 @@ void main() {
         );
         addTearDown(vm.dispose);
         await tester.pumpWidget(
-          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+          _host(
+            vm: vm,
+            child: const CalendarWeeklyMenuWidget(),
+            onGenerateRoute: onGenerateRoute,
+          ),
         );
         await tester.pumpAndSettle();
         return vm;
@@ -614,11 +663,23 @@ void main() {
 
       testWidgets(
         'in selection mode, tapping an assigned cell toggles its selection '
-        'and does NOT navigate (getRecipeById never called)',
+        'and does NOT navigate',
         (tester) async {
           final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+          // The recipe resolves, so a tap that also opened it would push.
+          when(
+            () => recipeService.getRecipeById('r-mon'),
+          ).thenReturn(RecipeFactory.build(id: 'r-mon', title: 'Pasta'));
+          RouteSettings? pushed;
           final vm = await pumpPopulated(
             tester,
+            onGenerateRoute: (settings) {
+              pushed = settings;
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const Text('RECIPE PAGE'),
+              );
+            },
             plan: _plan(
               weekStart: weekStart,
               entries: [
@@ -650,9 +711,8 @@ void main() {
           expect(vm.selectedCount, 1);
           expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
           expect(find.byIcon(ButleryIcons.square), findsNothing);
-
-          // Navigation must NOT have fired — the tap toggled instead.
-          verifyNever(() => recipeService.getRecipeById(any()));
+          expect(pushed, isNull);
+          expect(find.text('RECIPE PAGE'), findsNothing);
         },
       );
     });
@@ -1425,7 +1485,7 @@ void main() {
       ) async {
         when(
           () => recipeService.getRecipeById('r-o2'),
-        ).thenReturn(RecipeFactory.build(id: 'r-o2'));
+        ).thenReturn(RecipeFactory.build(id: 'r-o2', title: 'Fika'));
         RouteSettings? pushed;
         await pumpOvrigt(tester, const ['Smoothie', 'Fika'], (settings) {
           pushed = settings;
@@ -1442,7 +1502,6 @@ void main() {
 
         expect(pushed?.name, Routes.recipeDetail);
         expect(find.text('RECIPE PAGE'), findsOneWidget);
-        verify(() => recipeService.getRecipeById('r-o2')).called(1);
       });
 
       testWidgets('"Lägg till rätt" in the övrigt sheet opens the recipe '
@@ -1742,6 +1801,9 @@ void main() {
 
       final service = _MockWeeklyMenuPlanService();
       final recipeService = _MockUnifiedRecipeService();
+      when(
+        () => recipeService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
       when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
       // Use a week in the past so the "today" badge doesn't render (the

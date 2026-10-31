@@ -111,7 +111,9 @@ class MenuPlacementViewModel extends BaseViewModel {
     Future<Map<String, Set<String>>> Function()? readDislikes,
     Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? allergenScope,
     bool Function()? allergenScopeOn,
+    Recipe? Function(String recipeId)? recipeById,
   }) : _service = service,
+       _recipeById = recipeById,
        _readDislikes =
            readDislikes ?? const MealDislikesResolver().readDislikes,
        _allergenScope = allergenScope,
@@ -130,6 +132,13 @@ class MenuPlacementViewModel extends BaseViewModel {
   }
 
   static bool _never() => false;
+
+  final Recipe? Function(String recipeId)? _recipeById;
+
+  /// What a dish already in the week is called: the recipe's current title
+  /// when it is loaded, the same rule the calendar uses.
+  String entryTitle(WeeklyMenuPlanEntry entry) =>
+      entry.titleFor(_recipeById?.call(entry.recipeId));
 
   WeeklyMenuPlan? get plan => _plan;
   List<MenuPlacementItem> get items => _itemsView;

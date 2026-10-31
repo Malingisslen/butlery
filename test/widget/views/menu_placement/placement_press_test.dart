@@ -18,6 +18,8 @@ import '../../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements MenuPlacementViewModel {}
 
+class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
+
 void main() {
   late _MockVm vm;
 
@@ -66,6 +68,9 @@ void main() {
     when(() => vm.isEligible(DayOfWeek.tue, MealSlot.ovrigt)).thenReturn(true);
     when(() => vm.isSessionEntry(any())).thenReturn(true);
     when(() => vm.isSessionEntry('earlier')).thenReturn(false);
+    when(() => vm.entryTitle(any())).thenAnswer(
+      (i) => (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
+    );
     when(() => vm.weekStart).thenReturn(now);
     when(() => vm.items).thenReturn([item, item]);
     when(() => vm.selectedIndex).thenReturn(1);
@@ -74,6 +79,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(DayOfWeek.mon);
     registerFallbackValue(MealSlot.lunch);
+    registerFallbackValue(_FakeEntry());
   });
 
   Future<void> pump(WidgetTester tester, ThemeData theme, Widget child) async {

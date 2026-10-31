@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:uuid/uuid.dart';
 
 /// Meal slot for weekly planning. Frukost is intentionally absent — breakfast
@@ -123,6 +124,14 @@ class WeeklyMenuPlanEntry {
     this.proposedBy,
     this.votedInBy = const [],
   });
+
+  /// The name to show: the recipe's own title when [current] is loaded, so a
+  /// renamed recipe reads the same in the calendar as in the library, else
+  /// [recipeTitle].
+  String titleFor(Recipe? current) {
+    final title = current?.title;
+    return title == null || title.trim().isEmpty ? recipeTitle : title;
+  }
 
   factory WeeklyMenuPlanEntry.create({
     required DayOfWeek day,

@@ -41,7 +41,11 @@ class _MockService extends Mock implements WeeklyMenuPlanService {
   Stream<LateWeekConflict> get lateConflicts => const Stream.empty();
 }
 
-class _MockRecipes extends Mock implements UnifiedRecipeService {}
+class _MockRecipes extends Mock implements UnifiedRecipeService {
+  void quiet() {
+    when(() => stateStream).thenAnswer((_) => const Stream.empty());
+  }
+}
 
 class _MockShopping extends Mock implements MenuShoppingListGenerator {}
 
@@ -252,7 +256,7 @@ void main() {
       );
       final vm = WeeklyMenuPlanViewModel(
         service: service,
-        recipeService: _MockRecipes(),
+        recipeService: _MockRecipes()..quiet(),
         shoppingListGenerator: _MockShopping(),
       );
       addTearDown(vm.dispose);

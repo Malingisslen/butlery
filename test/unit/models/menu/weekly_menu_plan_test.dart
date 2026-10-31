@@ -12,6 +12,9 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
+
+import '../../../infrastructure/factories/recipe_factory.dart';
 
 void main() {
   group('MealSlot', () {
@@ -70,6 +73,30 @@ void main() {
       expect(e.id, isNotEmpty);
       expect(e.day, DayOfWeek.mon);
       expect(e.recipeTitle, 'Pasta');
+    });
+
+    group('titleFor', () {
+      final entry = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'r1',
+        recipeTitle: 'Gammalt namn',
+      );
+
+      Recipe recipeTitled(String title) =>
+          RecipeFactory.build(id: 'r1', title: title);
+
+      test('uses the loaded recipe title after a rename', () {
+        expect(entry.titleFor(recipeTitled('Nytt namn')), 'Nytt namn');
+      });
+
+      test('uses the stored title when the recipe is not loaded', () {
+        expect(entry.titleFor(null), 'Gammalt namn');
+      });
+
+      test('uses the stored title when the recipe title is blank', () {
+        expect(entry.titleFor(recipeTitled('   ')), 'Gammalt namn');
+      });
     });
 
     test('toMap → fromMap round-trips, omitting a null image', () {
