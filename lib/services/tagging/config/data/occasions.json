@@ -1,37 +1,44 @@
 {
-  "_readme": "Word lists for Phase 4's holiday, season and luxury tags. After editing, run: dart run tools/gen_tag_vocabulary.dart. Each word matches by substring on the lower-cased recipe title or ingredient name. How many matches a tag needs, and which lists combine, is decided in tag_phase4_mood.dart, not here. Lists keep their order and their duplicates on purpose.",
+  "_readme": "Word lists for Phase 4's holiday, season and luxury tags and for the recipe-title keywords. After editing, run: dart run tools/gen_tag_vocabulary.dart. How a word matches, how many matches a tag needs, and which lists combine is decided in the code that reads each list (tag_phase4_mood.dart, title_keyword_rules.dart), not here. Lists keep their order and their duplicates on purpose.",
   "christmas": {
     "tag": "jul",
     "titleStem": "jul",
     "titleStemFalsePositives": ["julienne"],
     "titleWords": ["julskinka", "lutfisk", "jansson", "julbord"],
-    "ingredients": ["rödbeta", "sill", "julkorv", "prinskorv", "kål"]
+    "mainIngredients": ["julskinka", "revbensspjäll", "lutfisk", "julkorv", "prinskorv"],
+    "sideIngredients": ["rödbet", "grönkål", "julsenap", "rödkål"]
   },
   "lucia": {
     "tag": "lucia",
-    "titleWords": ["lucia", "lussebulle", "lussekatt"]
+    "titleWords": ["lucia", "lussebulle", "lussekatt"],
+    "saffronIngredients": ["saffran"],
+    "bakeTitleWords": ["bulle", "bullar", "bröd", "längd", "kaka", "krans"]
   },
   "easter": {
     "tag": "påsk",
     "titleWords": ["påsk"],
-    "eggTitleWords": ["ägg", "egg"]
+    "lambIngredients": ["lamm"],
+    "eggIngredients": ["ägg"],
+    "herringIngredients": ["sill"]
   },
   "midsummer": {
     "tag": "midsommar",
     "titleWords": ["midsommar"],
     "herringIngredients": ["sill"],
     "newPotatoIngredients": ["färskpotatis", "nypotatis"],
-    "strawberryIngredients": ["jordgubb"]
+    "strawberryIngredients": ["jordgubb"],
+    "creamIngredients": ["grädde", "vispgrädde", "vaniljsås", "glass"]
   },
   "crayfish": {
     "tag": "kräftskiva",
     "titleWords": ["kräftskiva", "kräftkalas"],
-    "ingredients": ["kräft"]
+    "ingredients": ["kräft"],
+    "dillIngredients": ["dill", "krondill"]
   },
   "newYear": {
     "tag": "nyår",
     "titleWords": ["nyår"],
-    "ingredients": ["hummer", "ostron", "kaviar"]
+    "ingredients": ["hummer", "ostron", "kaviar", "löjrom", "champagne"]
   },
   "spring": {
     "tag": "vår",
@@ -51,5 +58,17 @@
   },
   "luxury": {
     "ingredients": ["oxfilé", "entrecôte", "hummer", "kräftor", "tryffel", "kaviar", "foie gras", "wagyu", "kalvfilé"]
+  },
+  "titleKeywords": {
+    "starkSet": ["pepparsås", "pepparbiff", "pepparstekt", "au poivre", "steak au poivre", "pepparrotssås", "chilisås", "chilistekt", "chiliglaserad", "chili con carne", "szechuan", "sichuan", "kung pao", "mapo tofu", "dan dan", "gochujang", "vindaloo", "madras", "phaal", "jalfrezi", "pad prik", "nam prik", "buffalo", "buffalo wings", "jalapeño", "habanero", "arrabbiata", "all'arrabbiata", "fra diavolo", "diavolo", "cajun", "blackened", "harissa", "piri piri", "peri peri", "stark", "kryddstark", "eldigt", "spicy", "hot wings"],
+    "starkBoost": ["senapssås", "senapsglaserad", "dijonsås", "kimchi", "bulgogi", "chipotle", "creole", "het", "heta", "fire"],
+    "lyxigSet": ["lyxig", "gourmet", "tryffel"],
+    "lyxigBoost": ["lyx", "festlig", "fin middag", "middag för två", "romantisk", "nyårsmiddag", "champagne"],
+    "comfortFoodSet": ["comfort", "comfort food", "fredagsmys", "husmanskost"],
+    "comfortFoodBoost": ["mys", "go-to", "favorit", "klassisk"],
+    "barnvanligConfirm": ["barnvänlig", "för barn"],
+    "barnvanligBoost": ["kids", "hela familjen", "familje", "barnen", "barnens"],
+    "snabblagatBoost": ["snabb", "snabbt", "kvick", "lättlagad", "lätt att laga", "20 min", "one pot", "one-pot"],
+    "snabblagatSet": ["15 min", "15-min", "express"]
   }
 }

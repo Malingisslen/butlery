@@ -3,6 +3,7 @@ import 'package:butlery/services/tagging/config/generated/occasion_vocabulary.g.
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
+import 'package:butlery/services/tagging/title_keyword_rules.dart';
 
 /// Phase 4: Mood and occasion tags requiring all previous phases.
 ///
@@ -149,44 +150,66 @@ class TagPhase4Mood {
     final hasTrueJul =
         title.contains(OccasionVocabulary.christmasTitleStem) &&
         !titleHasAny(OccasionVocabulary.christmasTitleStemFalsePositives);
+    // A holiday comes from the title or from a pair of ingredients, never
+    // from one ingredient alone (Malin 2026-10-30, beslut 6): lamb is not
+    // Easter food by itself, nor lobster New Year's.
+    final christmasPlate =
+        _anyWordMatching(p1, OccasionVocabulary.christmasMainIngredients) &&
+        _anyWordMatching(p1, OccasionVocabulary.christmasSideIngredients);
     if (hasTrueJul ||
         titleHasAny(OccasionVocabulary.christmasTitleWords) ||
-        _countMatching(p1, OccasionVocabulary.christmasIngredients) >= 2) {
+        christmasPlate) {
       tags.add(OccasionVocabulary.christmasTag);
     }
 
-    if (titleHasAny(OccasionVocabulary.luciaTitleWords)) {
+    final saffronBake =
+        _anyWordMatching(p1, OccasionVocabulary.luciaSaffronIngredients) &&
+        // A bake word usually ends a compound ("saffransbullar"), so it
+        // matches anywhere in the title.
+        titleHasAny(OccasionVocabulary.luciaBakeTitleWords);
+    if (titleHasAny(OccasionVocabulary.luciaTitleWords) || saffronBake) {
       tags.add(OccasionVocabulary.luciaTag);
     }
 
-    // Lamb, or an egg dish that says so in its title.
+    final lamb = _anyWordMatching(p1, OccasionVocabulary.easterLambIngredients);
+    final egg = _anyWordMatching(p1, OccasionVocabulary.easterEggIngredients);
+    final herring = _anyWordMatching(
+      p1,
+      OccasionVocabulary.easterHerringIngredients,
+    );
     if (titleHasAny(OccasionVocabulary.easterTitleWords) ||
-        p1.hasTag('lamm') ||
-        (p1.hasTag('ägg') &&
-            titleHasAny(OccasionVocabulary.easterEggTitleWords))) {
+        (lamb && (egg || herring)) ||
+        (egg && herring)) {
       tags.add(OccasionVocabulary.easterTag);
     }
 
-    // Herring with new potatoes, or strawberries with something dairy.
+    // Herring with new potatoes, or strawberries with cream.
     final midsummerPlate =
-        (_anyMatching(p1, OccasionVocabulary.midsummerHerringIngredients) &&
-            _anyMatching(
+        (_anyWordMatching(
+              p1,
+              OccasionVocabulary.midsummerHerringIngredients,
+            ) &&
+            _anyWordMatching(
               p1,
               OccasionVocabulary.midsummerNewPotatoIngredients,
             )) ||
-        (_anyMatching(p1, OccasionVocabulary.midsummerStrawberryIngredients) &&
-            p1.hasProperty('dairy'));
+        (_anyWordMatching(
+              p1,
+              OccasionVocabulary.midsummerStrawberryIngredients,
+            ) &&
+            _anyWordMatching(p1, OccasionVocabulary.midsummerCreamIngredients));
     if (titleHasAny(OccasionVocabulary.midsummerTitleWords) || midsummerPlate) {
       tags.add(OccasionVocabulary.midsummerTag);
     }
 
     if (titleHasAny(OccasionVocabulary.crayfishTitleWords) ||
-        _anyMatching(p1, OccasionVocabulary.crayfishIngredients)) {
+        (_anyWordMatching(p1, OccasionVocabulary.crayfishIngredients) &&
+            _anyWordMatching(p1, OccasionVocabulary.crayfishDillIngredients))) {
       tags.add(OccasionVocabulary.crayfishTag);
     }
 
     if (titleHasAny(OccasionVocabulary.newYearTitleWords) ||
-        _anyMatching(p1, OccasionVocabulary.newYearIngredients)) {
+        _countWordMatching(p1, OccasionVocabulary.newYearIngredients) >= 2) {
       tags.add(OccasionVocabulary.newYearTag);
     }
 
@@ -286,6 +309,17 @@ class TagPhase4Mood {
 
   bool _anyMatching(Phase1Result p1, List<String> words) =>
       p1.lookup.matched.any((i) => words.any(i.swedish.toLowerCase().contains));
+
+  /// Like [_countMatching], but a word must begin a word of the ingredient
+  /// name, so "kål" does not find "blomkål".
+  int _countWordMatching(Phase1Result p1, List<String> words) =>
+      p1.lookup.matched.where((i) {
+        final name = i.swedish.toLowerCase();
+        return words.any((w) => TitleKeywordRules.titleHasWord(name, w));
+      }).length;
+
+  bool _anyWordMatching(Phase1Result p1, List<String> words) =>
+      _countWordMatching(p1, words) > 0;
 }
 
 /// Result of Phase 4 calculation.

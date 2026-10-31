@@ -12,6 +12,7 @@ import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
+import 'package:butlery/services/tagging/title_keyword_rules.dart';
 
 /// BUT-1483: the two config-backed phases (allergen/dietary Phase 1 + cuisine
 /// Phase 5) resolved for one tagging run. Captured once per run so a
@@ -224,7 +225,14 @@ class TagGenerator {
       if (phase5PartialResult != null) ...phase5PartialResult.tags,
     };
 
-    final resolvedTags = _resolveTagConflicts(allTags, recipe);
+    final resolvedTags = _resolveTagConflicts(
+      TitleKeywordRules.apply(
+        tags: allTags,
+        recipe: recipe,
+        phase1: phase1Result,
+      ),
+      recipe,
+    );
     final hasDraft = ingredients.matched.any((i) => i.status == 'draft');
 
     return TagResult(
@@ -439,7 +447,14 @@ class TagGenerator {
     };
 
     // MED-5: Resolve conflicting tags (e.g., stark vs mild)
-    final resolvedTags = _resolveTagConflicts(allTags, recipe);
+    final resolvedTags = _resolveTagConflicts(
+      TitleKeywordRules.apply(
+        tags: allTags,
+        recipe: recipe,
+        phase1: phase1Result,
+      ),
+      recipe,
+    );
 
     // C3: Mark as partial if timeout or if any phase was skipped
     // CRIT-7: Phase 5 partial result counts as having cuisine tags
@@ -485,24 +500,28 @@ class TagGenerator {
   /// - 'stark' wins over 'mild' (safer to warn about spiciness)
   /// - 'avancerad' wins over 'enkel' (safer to warn about difficulty)
   /// - 'varm-rätt' wins over 'kall-rätt' (mutually exclusive, warm is more common)
+  /// - 'stark' wins over 'barnvänlig'
   /// Season tags are NOT mutually exclusive: recipes can span multiple seasons
   /// when ingredients have multi-season seasonAvailability data.
   Set<String> _resolveTagConflicts(Set<String> tags, Recipe recipe) {
     final resolved = Set<String>.from(tags);
 
-    // Define conflicting pairs: key wins over value
-    const conflicts = {
-      'stark': 'mild', // If both, keep 'stark' (safety: warn about spicy)
-      'avancerad':
-          'enkel', // If both, keep 'avancerad' (safety: warn difficulty)
-      'varm-rätt': 'kall-rätt', // CRIT-9: Mutually exclusive temperature tags
-    };
+    // Define conflicting pairs: the first wins over the second
+    const conflicts = [
+      ('stark', 'mild'), // If both, keep 'stark' (safety: warn about spicy)
+      (
+        'avancerad',
+        'enkel',
+      ), // If both, keep 'avancerad' (safety: warn difficulty)
+      ('varm-rätt', 'kall-rätt'), // CRIT-9: Mutually exclusive temperature tags
+      ('stark', 'barnvänlig'), // A strong dish is not for children (beslut 3)
+    ];
 
-    for (final entry in conflicts.entries) {
-      if (resolved.contains(entry.key) && resolved.contains(entry.value)) {
-        resolved.remove(entry.value);
+    for (final (winner, loser) in conflicts) {
+      if (resolved.contains(winner) && resolved.contains(loser)) {
+        resolved.remove(loser);
         AppLogger.debug(
-          'Tag conflict resolved: removed "${entry.value}" in favor of "${entry.key}"',
+          'Tag conflict resolved: removed "$loser" in favor of "$winner"',
           'TagGenerator',
         );
       }
