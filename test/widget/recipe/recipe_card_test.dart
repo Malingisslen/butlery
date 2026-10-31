@@ -13,7 +13,6 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
-import 'package:butlery/widgets/tagging/tag_result_display.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -844,16 +843,6 @@ void main() {
           ),
         );
 
-        expect(
-          find.byType(CompactAllergenRow),
-          findsNothing,
-          reason: style.name,
-        );
-        expect(
-          find.byType(CompactDietaryRow),
-          findsNothing,
-          reason: style.name,
-        );
         expect(
           find.byType(AllergenStatusBadge),
           findsNothing,

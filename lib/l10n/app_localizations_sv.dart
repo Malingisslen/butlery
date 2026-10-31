@@ -7662,12 +7662,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yAllergenStatusRow => 'Allergenstatus';
-
-  @override
-  String get a11yDietaryStatusRow => 'Koststatus';
-
-  @override
   String get a11yShowImage => 'Visa bild';
 
   @override

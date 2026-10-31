@@ -22,7 +22,6 @@ import '../infrastructure/mocks/production_mocks.dart';
 const _seedPrefs = UserAllergenPreferences(
   trackedAllergens: {'gluten', 'mjölk'},
   trackedDietary: {'vegansk'},
-  showOnCards: true,
   showOnDetail: true,
   showCoverage: true,
 );

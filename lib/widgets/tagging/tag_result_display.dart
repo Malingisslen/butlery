@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
-/// Priority-ordered list of dietary keys used by both TagResultDisplay and CompactDietaryRow.
+/// Priority-ordered list of dietary keys used by TagResultDisplay.
 /// Derived from DietaryConfig to prevent key drift.
 final _defaultDietaryOrder = DietaryConfig.allKeys;
 
@@ -31,23 +31,17 @@ typedef AllergenStatusOf = TriState Function(String allergenKey);
 
 /// The tracked allergens the tagger has not settled.
 ///
-/// A recipe with no tag result has settled none of them. [emptyMeansAll]
-/// mirrors the call sites: the detail view reads a null or empty set as
-/// "every allergen", a card reads an empty set as "tracks nothing".
+/// A recipe with no tag result has settled none of them. A null or empty
+/// [prefs] reads as "every allergen the tagger settled".
 bool hasUncheckedAllergens(
   TagResult? tagResult,
   Set<String>? prefs, {
-  required Set<String> fallback,
-  required bool emptyMeansAll,
   AllergenStatusOf? statusOf,
 }) {
-  if (prefs != null && prefs.isEmpty && !emptyMeansAll) return false;
   if (tagResult == null) return true;
   final keys = prefs != null && prefs.isNotEmpty
       ? prefs
-      : emptyMeansAll
-      ? tagResult.allergenStatus.keys.toSet()
-      : fallback;
+      : tagResult.allergenStatus.keys.toSet();
   // A result that settled no allergen at all has checked nothing.
   if (keys.isEmpty) return true;
   final status = statusOf ?? tagResult.getAllergenStatus;
@@ -64,10 +58,7 @@ class TagResultDisplay extends StatelessWidget {
 
   /// Allergen keys the user wants to track (considers only these).
   /// Null — and, here, an EMPTY set — mean every allergen the tagger settled.
-  /// That differs from [CompactAllergenRow], where an empty set means silence,
-  /// and a card that emitted a spacer above that silence is what BUT-1869
-  /// fixed. On BOTH allergen paths UNKNOWN is dropped, so a tracked allergen is
-  /// no guarantee of a badge.
+  /// UNKNOWN is dropped, so a tracked allergen is no guarantee of a badge.
   final Set<String>? userAllergenPrefs;
 
   /// Dietary keys the user wants to track.
@@ -120,8 +111,6 @@ class TagResultDisplay extends StatelessWidget {
   bool get _hasUnchecked => hasUncheckedAllergens(
     tagResult,
     userAllergenPrefs,
-    fallback: const {},
-    emptyMeansAll: true,
     statusOf: allergenStatusOf,
   );
 
@@ -503,198 +492,6 @@ class TagResultDisplay extends StatelessWidget {
       return status == TriState.free;
     }).toList();
   }
-}
-
-/// Compact row of allergen badges for recipe cards.
-///
-/// Draws CONTAINS and FREE, in that order — CONTAINS first because a warning
-/// outranks reassurance. UNKNOWN is never drawn (see [badgesFor]).
-///
-/// Limited to maxBadges to fit on cards.
-class CompactAllergenRow extends StatelessWidget {
-  final TagResult tagResult;
-
-  /// Only consider these allergens; null falls back to a default four. A badge
-  /// is drawn only where the status is CONTAINS or FREE, so a non-empty set is
-  /// no guarantee that this row draws anything — see [badgesFor].
-  final Set<String>? userPrefs;
-
-  /// Maximum number of badges to show.
-  final int maxBadges;
-
-  /// Status to show per allergen. Null shows the tagger's raw answer.
-  final AllergenStatusOf? statusOf;
-
-  const CompactAllergenRow({
-    super.key,
-    required this.tagResult,
-    this.userPrefs,
-    this.maxBadges = 4,
-    this.statusOf,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final badges = _getBadgesToShow();
-
-    if (badges.isEmpty) return const SizedBox.shrink();
-
-    return Semantics(
-      label: context.l10n.a11yAllergenStatusRow,
-      container: true,
-      child: Wrap(
-        spacing: AppDimensions.space4,
-        runSpacing: AppDimensions.space4,
-        children: badges.take(maxBadges).map((allergen) {
-          final status = (statusOf ?? tagResult.getAllergenStatus)(allergen);
-          return AllergenStatusBadge(
-            allergen: allergen,
-            status: status,
-            compact: true,
-            showLabel: false,
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  /// What this row WOULD draw, without building it.
-  ///
-  /// Public and static so a caller can gate its own spacer on real content
-  /// rather than guessing from the preference set. `RecipeCard` needs that:
-  /// this row collapses to `SizedBox.shrink()` when it has nothing to say, and
-  /// a spacer emitted beside a collapsed row is a visible dead gap (BUT-1869).
-  static List<String> badgesFor(
-    TagResult tagResult,
-    Set<String>? userPrefs, {
-    AllergenStatusOf? statusOf,
-  }) {
-    final allergensToCheck = userPrefs ?? _defaultAllergens;
-    final status = statusOf ?? tagResult.getAllergenStatus;
-
-    // SAFETY: CONTAINS first — a warning outranks everything else here.
-    final containsAllergens = allergensToCheck.where((a) {
-      return status(a) == TriState.contains;
-    }).toList();
-
-    // Then FREE — the good news.
-    final freeAllergens = allergensToCheck.where((a) {
-      return status(a) == TriState.free;
-    }).toList();
-
-    // UNKNOWN is deliberately NOT shown. Malin's call, 2026-06-22, recorded in
-    // docs/architecture/ACCEPTED_DEVIATIONS.md, and re-confirmed 2026-08-18 when
-    // BUT-1780 made this row live on every recipe card for the first time:
-    // a grey question mark reads as a verdict when it is the absence of one.
-    //
-    // An earlier version of this comment also claimed the uncertain badges
-    // "pushed out the real answers". That was FALSE and is worth recording so
-    // nobody re-derives it: UNKNOWN sorted LAST and `.take(maxBadges)` runs
-    // after the concatenation, so an uncertain badge could never displace a
-    // CONTAINS or a FREE. The real cost is the opposite shape — on an UNTAGGED
-    // recipe the tagger settled NOTHING about, every default allergen is UNKNOWN,
-    // so four grey question marks were not part of the row, they WERE the row.
-    //
-    // `TagResultDisplay._getAllergensToShow` (the detail view) filters them out
-    // on its no-prefs fallback branch from day one, and on its user-prefs
-    // branch since the UI redesign (668a68b25) — so "has always filtered them"
-    // would be false, and a user WITH prefs did see UNKNOWN there until that
-    // commit. This row was still the odd one out, invisibly, because until
-    // BUT-1780 it had no live construction site at all.
-    //
-    // Do NOT "restore" unknown badges to make an older ordering test pass —
-    // `compact_tag_rows_test.dart`'s CONTAINS-before-FREE-before-UNKNOWN case
-    // was rewritten deliberately in the same change.
-    return [...containsAllergens, ...freeAllergens];
-  }
-
-  /// Whether any allergen this row checks is still unsettled. The row never
-  /// draws those; the caller adds the one "Ej kontrollerat" badge.
-  static bool hasUnchecked(
-    TagResult? tagResult,
-    Set<String>? userPrefs, {
-    AllergenStatusOf? statusOf,
-  }) => hasUncheckedAllergens(
-    tagResult,
-    userPrefs,
-    fallback: _defaultAllergens,
-    emptyMeansAll: false,
-    statusOf: statusOf,
-  );
-
-  List<String> _getBadgesToShow() =>
-      badgesFor(tagResult, userPrefs, statusOf: statusOf);
-
-  static const _defaultAllergens = {
-    'gluten',
-    'mjölk',
-    'nötter',
-    'ägg',
-  };
-}
-
-/// Compact row of dietary badges for recipe cards.
-///
-/// Shows only FREE status badges for positive dietary attributes
-/// (e.g., "Vegansk", "Vegetarisk"). Limited to maxBadges to fit on cards.
-class CompactDietaryRow extends StatelessWidget {
-  final TagResult tagResult;
-
-  /// Only consider these diets. Null falls back to every configured dietary
-  /// key, not to a pair of them — and in either case a badge is drawn only
-  /// where the status is FREE (BUT-1895).
-  final Set<String>? userPrefs;
-
-  /// Maximum number of badges to show.
-  final int maxBadges;
-
-  const CompactDietaryRow({
-    super.key,
-    required this.tagResult,
-    this.userPrefs,
-    this.maxBadges = 2,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final badges = _getBadgesToShow();
-
-    if (badges.isEmpty) return const SizedBox.shrink();
-
-    return Semantics(
-      label: context.l10n.a11yDietaryStatusRow,
-      container: true,
-      child: Wrap(
-        spacing: AppDimensions.space4,
-        runSpacing: AppDimensions.space4,
-        children: badges.take(maxBadges).map((diet) {
-          return DietaryStatusBadge(
-            diet: diet,
-            status: TriState.free,
-            compact: true,
-            showLabel: true,
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  /// What this row WOULD draw, without building it. See
-  /// [CompactAllergenRow.badgesFor] — same contract, same reason.
-  ///
-  /// This one matters MORE than its allergen twin: a non-empty preference set
-  /// is no guarantee of content here, because only FREE diets are shown.
-  static List<String> badgesFor(TagResult tagResult, Set<String>? userPrefs) {
-    final dietsToCheck = userPrefs ?? _defaultDietaryOrder;
-
-    // Only FREE — the badge means "this recipe IS vegan/vegetarian", so
-    // CONTAINS and UNKNOWN have nothing to say.
-    return dietsToCheck.where((diet) {
-      return tagResult.getDietaryStatus(diet) == TriState.free;
-    }).toList();
-  }
-
-  List<String> _getBadgesToShow() => badgesFor(tagResult, userPrefs);
 }
 
 class AllergenDisclaimer extends StatelessWidget {

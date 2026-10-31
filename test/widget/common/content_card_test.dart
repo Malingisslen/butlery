@@ -34,7 +34,6 @@ import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
-import 'package:butlery/widgets/tagging/tag_result_display.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -661,7 +660,6 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CompactAllergenRow), findsNothing);
       expect(find.byType(AllergenStatusBadge), findsNothing);
       expect(find.text('Ej kontrollerat'), findsNothing);
     });
