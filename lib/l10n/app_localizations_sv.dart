@@ -15864,7 +15864,7 @@ class AppLocalizationsSv extends AppLocalizations {
       one: '1 vara finns hemma.',
       zero: 'Ingen av varorna finns hemma.',
     );
-    return '$_temp0 Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.';
+    return '$_temp0';
   }
 
   @override

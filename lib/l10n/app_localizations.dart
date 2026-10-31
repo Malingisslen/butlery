@@ -24517,7 +24517,7 @@ abstract class AppLocalizations {
   /// P6-U02: switch description.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.'**
+  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}}'**
   String shoppingMergePantryBody(int count);
 
   /// P6-U02: rows the pantry left off, named.

@@ -196,6 +196,44 @@ void main() {
       expect(line.amount, 350);
     });
 
+    test('a row without an amount is covered by stock in date, and marked '
+        'Kolla datum when the stock is past it (Malin 2026-10-31)', () {
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [
+            const RecipeIngredient(name: 'salt', raw: 'salt'),
+          ]),
+        ],
+      }, _date);
+
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([_pantry('salt', null, 'st')]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.lines, isEmpty);
+      expect(merge.coveredAtHome, ['salt']);
+      expect(merge.atHomeCount, 1);
+
+      final expired = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([
+          PantryItem(
+            id: 'p-salt',
+            ingredientName: 'salt',
+            quantity: 1,
+            unit: 'st',
+            location: PantryLocation.pantry,
+            addedAt: DateTime(2026, 1, 1),
+            expiryDate: DateTime(2020, 1, 1),
+          ),
+        ]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(expired.lines.single.mark, MenuShoppingPantryMark.checkDate);
+      expect(expired.coveredAtHome, isEmpty);
+    });
+
     test('a prepared pantry row covers the plain ingredient', () {
       final source = MenuShoppingListGenerator.sourceForMenu({
         'Middag': [

@@ -548,10 +548,7 @@ class LlmTier extends ParsingTier with QualityScoring {
           : FieldResult.failed('Invalid title from LLM'),
       portions: hasValidPortions && extracted.portions != null
           ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
-          : FieldResult.lowConfidence(
-              ParsingTier.kDefaultPortions,
-              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
-            ),
+          : FieldResult.failed('No portions found'),
       ingredients: hasValidIngredients
           ? _convertIngredients(extracted.ingredients)
           : FieldResult.failed('Invalid ingredients from LLM'),
@@ -598,10 +595,7 @@ class LlmTier extends ParsingTier with QualityScoring {
       title: FieldResult.mediumConfidence(extracted.title, 'LLM extraction'),
       portions: extracted.portions != null
           ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
-          : FieldResult.lowConfidence(
-              ParsingTier.kDefaultPortions,
-              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
-            ),
+          : FieldResult.failed('No portions found'),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: totalTime != null

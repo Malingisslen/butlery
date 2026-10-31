@@ -11582,7 +11582,7 @@
   "@shoppingMergePantryTitle": {
     "description": "P6-U02: switch."
   },
-  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.",
+  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}}",
   "@shoppingMergePantryBody": {
     "description": "P6-U02: switch description.",
     "placeholders": {

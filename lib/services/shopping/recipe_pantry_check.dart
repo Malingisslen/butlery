@@ -53,8 +53,8 @@ class RecipePantryCheck {
   /// duplicates are merged first, units are
   /// converted within one family, then the pantry is subtracted
   /// ([MenuShoppingMergePlanner.toBuy]). Enough at
-  /// home leaves an item off, some at home leaves the difference, and an
-  /// unknown amount, a unit that cannot be converted or a date passed
+  /// home leaves an item off, some at home leaves the difference, and a
+  /// unit that cannot be converted or a date passed
   /// subtracts nothing and marks the row. The order of [items] is kept.
   static RecipePantryResult check(
     List<UnifiedShoppingItem> items,

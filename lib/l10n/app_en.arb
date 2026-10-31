@@ -11348,7 +11348,7 @@
   "shoppingMergeConvertTitle": "Convert units",
   "shoppingMergeConvertBody": "2 dl + 100 ml becomes 3 dl. Volume and weight are never converted into each other – they stay two lines.",
   "shoppingMergePantryTitle": "Subtract pantry items",
-  "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}} An unknown amount gives no deduction – the item is added marked “Maybe at home”.",
+  "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}}",
   "shoppingMergePantryCovered": "At home in full: {names}",
   "shoppingMergePantryUnavailable": "The pantry could not be read, so the list is made without pantry deduction.",
   "shoppingMergeReplaceTitle": "Replace the list instead of adding",
