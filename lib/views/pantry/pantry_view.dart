@@ -152,17 +152,20 @@ class _PantryViewContent extends StatelessWidget {
   ) async {
     final ids = selection.selectedIds;
     if (ids.isEmpty) return;
-    final removed = viewModel.items.where((i) => ids.contains(i.id)).toList();
+    final selected = viewModel.items.where((i) => ids.contains(i.id)).toList();
     final undo = UndoSnackBar.capture(context);
-    final message = context.l10n.pantryItemsRemovedUndoMessage(removed.length);
+    final l10n = context.l10n;
 
     selection.clearSelection();
-    await viewModel.bulkRemoveItems(ids);
-    // If the delete failed, the VM surfaces its own error — don't also show a
-    // "N removed" undo snackbar that would restore items still present.
-    if (viewModel.hasError) return;
+    final deleted = await viewModel.bulkRemoveItems(ids);
+    // Only rows actually deleted get Ångra.
+    final removed = selected.where((i) => deleted.contains(i.id)).toList();
+    if (removed.isEmpty) return;
 
-    undo.show(message, onUndo: () => viewModel.restoreItems(removed));
+    undo.show(
+      l10n.pantryItemsRemovedUndoMessage(removed.length),
+      onUndo: () => viewModel.restoreItems(removed),
+    );
   }
 
   Future<void> _showAddSheet(

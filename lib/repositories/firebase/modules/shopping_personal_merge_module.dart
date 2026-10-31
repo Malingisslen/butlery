@@ -10,9 +10,10 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
+import 'package:butlery/repositories/firebase/modules/personal_merge_plan.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
-    show PersonalMergeRequest, PersonalMergeResult, PersonalMergeWrite;
+    show PersonalMergeRequest, PersonalMergeResult;
 
 /// Runs the replace transaction. Production binds this to
 /// `firestore.runTransaction`; tests inject a runner that fails with the
@@ -117,21 +118,30 @@ class ShoppingPersonalMergeModule {
       resourceId: base.id,
     );
     final concurrentChange = !pending && _differs(base, server);
-
+    // The follow runs after every save of the week, and most saves change no
+    // row. Such a sync is settled on the server copy just read, so it costs
+    // no transaction and no read per row.
     final PersonalMergeResult result;
-    try {
-      result = await runTransactionKeepingHandlerError(
-        transactionRunner ??
-            budgetedTransactionRunner<PersonalMergeResult>(
-              firestore,
-              _transactionBudget,
-            ),
-        (transaction) =>
-            _sync(transaction, uid, server, request, concurrentChange),
+    if (PersonalMergePlan.of(server, request).changesNothing) {
+      result = PersonalMergePlan.unchanged(
+        server,
+        concurrentChange: concurrentChange,
       );
-    } on FirebaseException catch (e) {
-      if (!_offlineCodes.contains(e.code)) rethrow;
-      return _mergeFromMemory(uid, base, request);
+    } else {
+      try {
+        result = await runTransactionKeepingHandlerError(
+          transactionRunner ??
+              budgetedTransactionRunner<PersonalMergeResult>(
+                firestore,
+                _transactionBudget,
+              ),
+          (transaction) =>
+              _sync(transaction, uid, server, request, concurrentChange),
+        );
+      } on FirebaseException catch (e) {
+        if (!_offlineCodes.contains(e.code)) rethrow;
+        return _mergeFromMemory(uid, base, request);
+      }
     }
 
     logPermissionCheck(
@@ -231,27 +241,25 @@ class ShoppingPersonalMergeModule {
     final stored = fromFirestore(parent);
     final menuIds = stored.menuItemIds ?? const <String>[];
 
-    final current = <UnifiedShoppingItem>[];
+    final rows = <UnifiedShoppingItem>[];
     for (final id in menuIds) {
       final row = await transaction.get(items.doc(id));
       final data = row.data();
       if (row.exists && data != null) {
-        current.add(UnifiedShoppingItem.fromFirestore(data));
+        rows.add(UnifiedShoppingItem.fromFirestore(data));
       }
     }
-    final write = _within(request.sync(current), current);
+    final (:current, :write, :changesNothing) = PersonalMergePlan.of(
+      stored.copyWith(items: rows),
+      request,
+    );
     _checkWriteCount(
       write.remove.length + write.add.length + write.update.length + 1,
     );
-    // The follow runs after every save of the week, and most saves change no
-    // row: such a sync writes nothing, so no device's listener fires for it.
-    if (write.isEmpty &&
-        current.length == menuIds.length &&
-        stored.generatedForWeek == request.generatedForWeek) {
-      return PersonalMergeResult(
-        list: server,
-        added: const [],
-        removed: const [],
+    // A sync that writes nothing leaves no device's listener firing for it.
+    if (changesNothing) {
+      return PersonalMergePlan.unchanged(
+        server,
         concurrentChange: concurrentChange,
       );
     }
@@ -275,13 +283,13 @@ class ShoppingPersonalMergeModule {
     });
 
     return PersonalMergeResult(
-      list: _applied(server, write).copyWith(
+      list: PersonalMergePlan.applied(server, write).copyWith(
         menuItemIds: nextMenuIds,
         generatedForWeek: request.generatedForWeek,
       ),
       added: write.add,
       updated: write.update,
-      changedFrom: _before(current, write.update),
+      changedFrom: PersonalMergePlan.before(current, write.update),
       removed: write.remove,
       concurrentChange: concurrentChange,
     );
@@ -305,21 +313,15 @@ class ShoppingPersonalMergeModule {
       resourceType: 'shopping_list',
       resourceId: base.id,
     );
-    final menuIds = (base.menuItemIds ?? const <String>[]).toSet();
-    final current = base.items.where((i) => menuIds.contains(i.id)).toList();
-    final write = _within(request.sync(current), current);
+    final (:current, :write, :changesNothing) = PersonalMergePlan.of(
+      base,
+      request,
+    );
     _checkWriteCount(
       write.remove.length + write.add.length + write.update.length + 2,
     );
-    if (write.isEmpty &&
-        current.length == menuIds.length &&
-        base.generatedForWeek == request.generatedForWeek) {
-      return PersonalMergeResult(
-        list: base,
-        added: const [],
-        removed: const [],
-        concurrentChange: false,
-      );
+    if (changesNothing) {
+      return PersonalMergePlan.unchanged(base, concurrentChange: false);
     }
 
     final items = _itemsRef(uid, base.id);
@@ -368,58 +370,19 @@ class ShoppingPersonalMergeModule {
 
     final removedIds = {for (final item in write.remove) item.id};
     return PersonalMergeResult(
-      list: _applied(base, write).copyWith(
+      list: PersonalMergePlan.applied(base, write).copyWith(
         menuItemIds: [
-          ...menuIds.where((id) => !removedIds.contains(id)),
+          ...{...?base.menuItemIds}.where((id) => !removedIds.contains(id)),
           for (final item in write.add) item.id,
         ],
         generatedForWeek: request.generatedForWeek,
       ),
       added: write.add,
       updated: write.update,
-      changedFrom: _before(current, write.update),
+      changedFrom: PersonalMergePlan.before(current, write.update),
       removed: write.remove,
       concurrentChange: false,
     );
-  }
-
-  /// [write] with only the overwrites and removals of rows in [current], so
-  /// a sync can never change a row the user typed by hand.
-  static PersonalMergeWrite _within(
-    PersonalMergeWrite write,
-    List<UnifiedShoppingItem> current,
-  ) {
-    final known = {for (final item in current) item.id};
-    return PersonalMergeWrite(
-      add: write.add.where((i) => !known.contains(i.id)).toList(),
-      update: write.update.where((i) => known.contains(i.id)).toList(),
-      remove: write.remove.where((i) => known.contains(i.id)).toList(),
-    );
-  }
-
-  /// [list] with [write] applied to its rows, in their order.
-  static UnifiedShoppingList _applied(
-    UnifiedShoppingList list,
-    PersonalMergeWrite write,
-  ) {
-    final removed = {for (final item in write.remove) item.id};
-    final updated = {for (final item in write.update) item.id: item};
-    return list.copyWith(
-      items: [
-        for (final item in list.items)
-          if (!removed.contains(item.id)) updated[item.id] ?? item,
-        ...write.add,
-      ],
-    );
-  }
-
-  /// The rows of [current] that [updated] overwrites, as they were.
-  static List<UnifiedShoppingItem> _before(
-    List<UnifiedShoppingItem> current,
-    List<UnifiedShoppingItem> updated,
-  ) {
-    final ids = {for (final item in updated) item.id};
-    return List.unmodifiable(current.where((i) => ids.contains(i.id)));
   }
 
   Future<UnifiedShoppingList> _readFromServer(String uid, String listId) async {

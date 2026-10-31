@@ -429,6 +429,170 @@ void main() {
     });
   });
 
+  group('stock past its date never counts (Malin 2026-10-30)', () {
+    final past = DateTime(2000);
+    final milk = _recipe(['5 dl mjölk']);
+
+    test('fresh stock that covers the need leaves the row off', () {
+      final result = RecipePantryCheck.check(
+        milk,
+        portions: 4,
+        pantry: [
+          _pantry('Mjölk', quantity: 5, unit: 'dl', expiry: past),
+          _pantry('Mjölk', quantity: 6, unit: 'dl'),
+        ],
+      );
+
+      expect(result.toBuy, isEmpty);
+      expect(result.coveredAtHome, ['mjölk']);
+    });
+
+    test(
+      'fresh stock that covers part leaves the rest, marked Kolla datum',
+      () {
+        final left = _toBuy(
+          milk,
+          pantry: [
+            _pantry('Mjölk', quantity: 5, unit: 'dl', expiry: past),
+            _pantry('Mjölk', quantity: 2, unit: 'dl'),
+          ],
+        );
+
+        expect(left.single.amount, closeTo(3, 1e-9));
+        expect(left.single.note, 'Kolla datum');
+      },
+    );
+
+    test('only expired stock keeps the full amount, marked Kolla datum', () {
+      final left = _toBuy(
+        milk,
+        pantry: [_pantry('Mjölk', quantity: 9, unit: 'dl', expiry: past)],
+      );
+
+      expect(left.single.amount, 5);
+      expect(left.single.note, 'Kolla datum');
+    });
+
+    test('two units that do not convert, with expired stock beside fresh: '
+        'Kolla datum wins', () {
+      final left = _toBuy(
+        _recipe(['100 g smör', '2 msk smör']),
+        pantry: [
+          _pantry('Smör', quantity: 500, unit: 'g', expiry: past),
+          _pantry('Smör', quantity: 500, unit: 'g'),
+        ],
+      );
+
+      expect(left.single.amount, 100);
+      expect(left.single.note, '+ 2 msk · Kolla datum');
+    });
+
+    test('expired, partial and uncounted together: Kolla datum wins', () {
+      final left = _toBuy(
+        milk,
+        pantry: [
+          _pantry('Mjölk', quantity: 9, unit: 'dl', expiry: past),
+          _pantry('Mjölk', quantity: 2, unit: 'dl'),
+          _pantry('Mjölk'),
+        ],
+      );
+
+      expect(left.single.amount, closeTo(3, 1e-9));
+      expect(left.single.note, 'Kolla datum');
+    });
+  });
+
+  group('stock that cannot be counted next to stock that can', () {
+    final milk = _recipe(['5 dl mjölk']);
+
+    test('a "har hemma" row beside a covering row: covered', () {
+      final result = RecipePantryCheck.check(
+        milk,
+        portions: 4,
+        pantry: [
+          _pantry('Mjölk'),
+          _pantry('Mjölk', quantity: 5, unit: 'dl'),
+        ],
+      );
+
+      expect(result.toBuy, isEmpty);
+      expect(result.coveredAtHome, ['mjölk']);
+    });
+
+    test('a "har hemma" row beside a partial row: remaining, Kanske hemma', () {
+      final left = _toBuy(
+        milk,
+        pantry: [
+          _pantry('Mjölk'),
+          _pantry('Mjölk', quantity: 2, unit: 'dl'),
+        ],
+      );
+
+      expect(left.single.amount, closeTo(3, 1e-9));
+      expect(left.single.note, 'Kanske hemma');
+    });
+
+    test('an unconvertible unit beside a partial row: remaining, Kanske '
+        'hemma', () {
+      final left = _toBuy(
+        milk,
+        pantry: [
+          _pantry('Mjölk', quantity: 1, unit: 'förp'),
+          _pantry('Mjölk', quantity: 2, unit: 'dl'),
+        ],
+      );
+
+      expect(left.single.amount, closeTo(3, 1e-9));
+      expect(left.single.note, 'Kanske hemma');
+    });
+
+    test('an unconvertible unit beside a covering row: covered', () {
+      final result = RecipePantryCheck.check(
+        milk,
+        portions: 4,
+        pantry: [
+          _pantry('Mjölk', quantity: 1, unit: 'förp'),
+          _pantry('Mjölk', quantity: 5, unit: 'dl'),
+        ],
+      );
+
+      expect(result.toBuy, isEmpty);
+    });
+  });
+
+  group('pieces: "3 ägg" and "12 st" count alike', () {
+    test('a unit-less recipe line is covered by pantry pieces', () {
+      final result = RecipePantryCheck.check(
+        _recipe(['3 ägg']),
+        portions: 4,
+        pantry: [_pantry('ägg', quantity: 12)],
+      );
+
+      expect(result.toBuy, isEmpty);
+      expect(result.coveredAtHome, ['ägg']);
+    });
+
+    test('too few pieces leave the difference with no mark', () {
+      final left = _toBuy(
+        _recipe(['3 ägg']),
+        pantry: [_pantry('ägg', quantity: 2)],
+      );
+
+      expect(left.single.amount, closeTo(1, 1e-9));
+      expect(left.single.note, isNull);
+    });
+
+    test('a unit-less pantry row covers a recipe line in st', () {
+      final result = RecipePantryCheck.check(
+        _recipe(['3 st ägg']),
+        portions: 4,
+        pantry: [_pantry('ägg', quantity: 12, unit: '')],
+      );
+
+      expect(result.toBuy, isEmpty);
+    });
+  });
+
   group('kärnflöde 8C: the recipe button and the week count alike', () {
     final onionStructured = [
       const RecipeIngredient(

@@ -65,8 +65,6 @@ class PantryItem {
   final String? note;
 
   /// BUT-1279: a "staple" the user always keeps on hand (salt, olja, peppar).
-  /// Staples are excluded from the menu→shopping list so the generated list
-  /// stays focused on what actually needs buying this week.
   final bool isStaple;
 
   /// When the row was last changed, written by the server on every update

@@ -55,7 +55,7 @@ void main() {
     when(() => vm.expiringItems).thenReturn([item]);
     when(() => vm.itemsByLocation(any())).thenReturn(const []);
     when(() => vm.loadPantry()).thenAnswer((_) async {});
-    when(() => vm.bulkRemoveItems(any())).thenAnswer((_) async {});
+    when(() => vm.bulkRemoveItems(any())).thenAnswer((_) async => {'p_1'});
     when(() => vm.restoreItems(any())).thenAnswer((_) async {});
     TestServiceLocator.registerFactory<PantryViewModel>(() => vm);
   });
@@ -97,9 +97,11 @@ void main() {
     verify(() => vm.restoreItems(any(that: contains(item)))).called(1);
   });
 
-  testWidgets('a failed bulk delete shows no undo snackbar', (tester) async {
-    when(() => vm.bulkRemoveItems(any())).thenAnswer((_) async {});
-    when(() => vm.hasError).thenReturn(true); // delete failed
+  testWidgets('a bulk delete where every delete is refused shows no undo '
+      'snackbar', (tester) async {
+    // The VM reports nothing deleted (it also sets its error).
+    when(() => vm.bulkRemoveItems(any())).thenAnswer((_) async => <String>{});
+    when(() => vm.hasError).thenReturn(true);
 
     await tester.pumpWidget(createLocalizedTestApp(child: const PantryView()));
     await tester.pumpAndSettle();
@@ -109,6 +111,7 @@ void main() {
     await tester.tap(find.text('Ta bort'));
     await tester.pumpAndSettle();
 
+    verify(() => vm.bulkRemoveItems({'p_1'})).called(1);
     expect(
       find.text('Ångra'),
       findsNothing,
@@ -116,5 +119,42 @@ void main() {
           'a failed delete must not offer an undo that would re-add '
           'items still present',
     );
+  });
+
+  testWidgets('a partly refused bulk delete offers undo for the deleted row '
+      'only', (tester) async {
+    final second = PantryItem(
+      id: 'p_2',
+      ingredientName: 'Ägg',
+      quantity: 6,
+      unit: 'st',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+    );
+    when(() => vm.items).thenReturn([item, second]);
+    when(() => vm.expiringItems).thenReturn([item, second]);
+    when(() => vm.bulkRemoveItems(any())).thenAnswer((_) async => {'p_1'});
+    when(() => vm.hasError).thenReturn(true);
+
+    await tester.pumpWidget(createLocalizedTestApp(child: const PantryView()));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Mjölk'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ägg'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ta bort'));
+    await tester.pumpAndSettle();
+
+    verify(() => vm.bulkRemoveItems({'p_1', 'p_2'})).called(1);
+    expect(find.text('1 borttagen ur skafferiet'), findsOneWidget);
+
+    await tester.tap(find.text('Ångra'));
+    await tester.pumpAndSettle();
+
+    final restored =
+        verify(() => vm.restoreItems(captureAny())).captured.single
+            as List<PantryItem>;
+    expect(restored.map((i) => i.id), ['p_1']);
   });
 }
