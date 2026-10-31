@@ -667,30 +667,36 @@ void main() {
     });
 
     /// `0` portions is meaningless and would brick downstream multipliers.
-    /// The `> 0` guard MUST reject it → falls back to default 4 low-conf.
-    test('zero portions → fallback to default (defends > 0 guard)', () async {
+    /// The `> 0` guard MUST reject it, and no count is stored.
+    test('zero portions → no portions (defends > 0 guard)', () async {
       final p = await portionsFor('0 portioner');
-      expect(p!.value, 4);
+      expect(p!.value, isNull);
       expect(
         p.confidence,
-        ParseConfidence.low,
-        reason: 'fallback must surface low-confidence',
+        ParseConfidence.failed,
+        reason: 'a page without a usable count stores none (Malin 2026-10-31)',
       );
     });
 
     /// `9999 portions` would crash menu generation if it got through —
     /// kMaxPortions cap MUST reject it.
-    test('absurdly large portions → fallback', () async {
+    test('absurdly large portions → no portions', () async {
       final p = await portionsFor('9999 servings');
-      expect(p!.value, 4);
-      expect(p.confidence, ParseConfidence.low);
+      expect(p!.value, isNull);
+      expect(p.confidence, ParseConfidence.failed);
     });
 
-    /// Selector matches but text has no digits → low-conf default.
-    test('no digits in portions text → low-conf default', () async {
+    /// Selector matches but text has no digits → no portions.
+    test('no digits in portions text → no portions', () async {
       final p = await portionsFor('Serves family');
-      expect(p!.value, 4);
-      expect(p.confidence, ParseConfidence.low);
+      expect(p!.value, isNull);
+      expect(p.confidence, ParseConfidence.failed);
+    });
+
+    test('an empty portions element → no portions', () async {
+      final p = await portionsFor('');
+      expect(p!.value, isNull);
+      expect(p.confidence, ParseConfidence.failed);
     });
   });
 

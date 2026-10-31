@@ -194,10 +194,27 @@ void main() {
       // Should succeed with partial result — portions invalid but rest valid
       expect(result.success, isTrue);
       expect(result.recipe, isNotNull);
-      // Portions should fall back to default
-      expect(result.recipe!.portions.value, 4);
-      expect(result.recipe!.portions.confidence, ParseConfidence.low);
+      // An out-of-range count is not stated, so no portions are stored.
+      expect(result.recipe!.portions.value, isNull);
+      expect(result.recipe!.portions.confidence, ParseConfidence.failed);
     });
+
+    test(
+      'a recipe the LLM reads without servings stores no portions',
+      () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(portions: null),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.portions.value, isNull);
+        expect(result.recipe!.portions.confidence, ParseConfidence.failed);
+      },
+    );
 
     test('validates title containing URL triggers validation', () async {
       mockLlmService.nextResponse = StructureRecipeResponse(
