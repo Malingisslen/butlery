@@ -20786,4 +20786,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tagAllergenAutoUnknown => 'Appen: ej kontrollerat';
+
+  @override
+  String shoppingMergeUnresolvedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter kunde inte räknas med',
+      one: '1 rätt kunde inte räknas med',
+    );
+    return '$_temp0, eftersom receptet inte finns kvar.';
+  }
+
+  @override
+  String shoppingPantryAddFailed(String name) {
+    return 'Kunde inte lägga $name i skafferiet.';
+  }
 }

@@ -17347,5 +17347,23 @@
   "tagAllergenAutoUnknown": "Appen: ej kontrollerat",
   "@tagAllergenAutoUnknown": {
     "description": "Secondary line: the app has not settled this allergen."
+  },
+  "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.",
+  "@shoppingMergeUnresolvedRecipes": {
+    "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPantryAddFailed": "Kunde inte lägga {name} i skafferiet.",
+  "@shoppingPantryAddFailed": {
+    "description": "Snackbar when adding a just-checked-off item to the pantry failed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

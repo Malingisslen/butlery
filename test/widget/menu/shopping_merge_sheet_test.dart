@@ -66,6 +66,7 @@ Future<_Harness> _open(
   MenuShoppingPantry pantry = const MenuShoppingPantry.read([]),
   MenuShoppingPantry retryAnswer = const MenuShoppingPantry.read([]),
   bool canReplace = true,
+  int unresolvedRecipes = 0,
 }) async {
   final harness = _Harness();
   tester.view.physicalSize = const Size(1200, 2400);
@@ -83,7 +84,12 @@ Future<_Harness> _open(
             onPressed: () async {
               harness.result = await showShoppingMergeSheet(
                 context,
-                source: _source,
+                source: MenuShoppingSource(
+                  week: _source.week,
+                  placements: _source.placements,
+                  recipeCount: _source.recipeCount,
+                  unresolvedRecipes: unresolvedRecipes,
+                ),
                 pantry: pantry,
                 retryPantry: () async {
                   harness.retries++;
@@ -353,5 +359,27 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(ShoppingMergeSheet.confirmKey), findsOneWidget);
+  });
+
+  testWidgets('says how many dishes were left out because their recipe is '
+      'gone', (tester) async {
+    await _open(tester, unresolvedRecipes: 2);
+
+    expect(
+      find.descendant(
+        of: find.byKey(ShoppingMergeSheet.unresolvedRecipesKey),
+        matching: find.text(
+          '2 rätter kunde inte räknas med, eftersom receptet inte finns kvar.',
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('no notice when every planned recipe was found', (tester) async {
+    await _open(tester);
+
+    expect(find.byKey(ShoppingMergeSheet.summaryKey), findsOneWidget);
+    expect(find.byKey(ShoppingMergeSheet.unresolvedRecipesKey), findsNothing);
   });
 }

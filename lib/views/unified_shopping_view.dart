@@ -80,6 +80,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
+    _viewModel.addListener(_onViewModelChanged);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
@@ -795,6 +796,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     );
   }
 
+  void _onViewModelChanged() {
+    final name = _viewModel.consumePantryAddError();
+    if (name == null || !mounted) return;
+    _showErrorSnackBar(context.l10n.shoppingPantryAddFailed(name));
+  }
+
   /// Comprehensive resource disposal with proper lifecycle management and cleanup coordination.
   /// Performs complete resource cleanup preventing memory leaks and ensuring proper
   /// lifecycle management through systematic disposal of state resources, event handlers,
@@ -805,6 +812,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// - Event handler cleanup with proper subscription management
   @override
   void dispose() {
+    _viewModel.removeListener(_onViewModelChanged);
     _selection.dispose();
     _pantrySelection.dispose();
     _pantryViewModel?.dispose();

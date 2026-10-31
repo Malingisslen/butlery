@@ -495,14 +495,8 @@ class UnifiedShoppingViewModel extends BaseViewModel {
             .firstOrNull;
         final userId = currentUserId;
         if (toggled != null && userId != null) {
-          unawaited(
-            _checkoffPantryService?.onItemCheckedOff(
-                  userId,
-                  toggled,
-                  wasBought: wasBought,
-                ) ??
-                Future<void>.value(),
-          );
+          // Fire-and-forget so the tick never waits on the pantry.
+          unawaited(_addToPantry(userId, toggled, wasBought: wasBought));
         }
       }
     }
@@ -543,11 +537,33 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     final item = activeList?.items.where((i) => i.id == itemId).firstOrNull;
     final userId = currentUserId;
     if (item == null || !item.bought || userId == null) return;
-    await _checkoffPantryService?.onItemCheckedOff(
-      userId,
-      item,
-      wasBought: false,
-    );
+    await _addToPantry(userId, item, wasBought: false);
+  }
+
+  /// A failed pantry write is logged and handed to the view through
+  /// [consumePantryAddError], never left as an unhandled error.
+  Future<void> _addToPantry(
+    String userId,
+    UnifiedShoppingItem item, {
+    required bool wasBought,
+  }) async {
+    try {
+      await _checkoffPantryService?.onItemCheckedOff(
+        userId,
+        item,
+        wasBought: wasBought,
+      );
+    } catch (e, st) {
+      AppLogger.error(
+        'Pantry add after check-off failed for "${item.name}"',
+        e,
+        null,
+        st,
+      );
+      if (isDisposed) return;
+      _pantryAddError = item.name;
+      notifyListeners();
+    }
   }
 
   /// Record that the first-checkoff prompt has been shown so it never re-nags.
@@ -789,6 +805,15 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   /// reason lives in its own field and is consumed here. No disposal guard is
   /// needed — reading notifies nobody.
   String? consumeMutationError() => _shoppingService.consumeMutationError();
+
+  String? _pantryAddError;
+
+  /// Name of the item whose pantry write failed after a check-off, read-once.
+  String? consumePantryAddError() {
+    final name = _pantryAddError;
+    _pantryAddError = null;
+    return name;
+  }
 
   /// Get shopping insights for UI
   Map<String, dynamic> get shoppingInsights =>
