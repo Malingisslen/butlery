@@ -18,7 +18,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 
 void registerPersonalMergeFallbacks() {
   registerFallbackValue(
-    PersonalMergeRequest(rows: (_) => const [], replace: false),
+    PersonalMergeRequest(sync: (_) => const PersonalMergeWrite()),
   );
   registerFallbackValue(<UnifiedShoppingItem>[]);
   registerFallbackValue(<String>[]);
@@ -55,24 +55,34 @@ void stubPersonalMerge(
     final request = invocation.positionalArguments[1] as PersonalMergeRequest;
     final list = shopping.lists.firstWhere((l) => l.id == listId);
     final menuIds = (list.menuItemIds ?? const <String>[]).toSet();
-    final removed = request.replace
-        ? list.items.where((i) => menuIds.contains(i.id)).toList()
-        : <UnifiedShoppingItem>[];
-    final added = request.rows(removed);
-    final gone = {for (final i in removed) i.id};
+    final write = request.sync(
+      list.items.where((i) => menuIds.contains(i.id)).toList(),
+    );
+    final gone = {for (final i in write.remove) i.id};
+    final updated = {for (final i in write.update) i.id: i};
+    final before = {for (final i in list.items) i.id: i};
     final next = list.copyWith(
-      items: [...list.items.where((i) => !gone.contains(i.id)), ...added],
+      items: [
+        for (final i in list.items)
+          if (!gone.contains(i.id)) updated[i.id] ?? i,
+        ...write.add,
+      ],
       menuItemIds: [
-        if (!request.replace) ...menuIds,
-        for (final i in added) i.id,
+        ...menuIds.where((id) => !gone.contains(id)),
+        for (final i in write.add) i.id,
       ],
       generatedForWeek: request.generatedForWeek,
     );
     store(next);
     return PersonalMergeResult(
       list: next,
-      added: added,
-      removed: removed,
+      added: write.add,
+      updated: write.update,
+      changedFrom: [
+        for (final i in write.update)
+          if (before[i.id] != null) before[i.id]!,
+      ],
+      removed: write.remove,
       concurrentChange: false,
     );
   });

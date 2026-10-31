@@ -9,23 +9,26 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 
 final _sv = AppLocalizationsSv();
 
-MenuShoppingMergeReceipt _receipt({required bool concurrentChange}) =>
-    MenuShoppingMergeReceipt(
-      listId: 'week-list',
-      listName: 'Inköpslista v.24',
-      addedItemIds: const ['a', 'b', 'c'],
-      removedItems: const [],
-      previousMenuItemIds: const [],
-      replaced: false,
-      createdList: false,
-      concurrentChange: concurrentChange,
-    );
+MenuShoppingMergeReceipt _receipt({
+  required bool concurrentChange,
+  List<UnifiedShoppingItem> changedItems = const [],
+}) => MenuShoppingMergeReceipt(
+  listId: 'week-list',
+  listName: 'Inköpslista v.24',
+  addedItemIds: const ['a', 'b', 'c'],
+  removedItems: const [],
+  previousMenuItemIds: const [],
+  createdList: false,
+  changedItems: changedItems,
+  concurrentChange: concurrentChange,
+);
 
 Widget _app(void Function(BuildContext context) onTap) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -98,6 +101,40 @@ void main() {
           findsOneWidget,
         );
         expect(find.textContaining('annan enhet'), findsNothing);
+      });
+
+      testWidgets('a sync that changed rows already on the list says the list '
+          'is updated, not that items were added', (tester) async {
+        await tester.pumpWidget(
+          _app(
+            (context) => showShoppingMergeReceipt(
+              context,
+              _receipt(
+                concurrentChange: false,
+                changedItems: [
+                  UnifiedShoppingItem(
+                    id: 'a',
+                    name: 'mjölk',
+                    amount: 1,
+                    unit: 'dl',
+                  ),
+                ],
+              ),
+              onUndo: () {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('go'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(_sv.shoppingMergeSynced('Inköpslista v.24')),
+          findsOneWidget,
+        );
+        expect(
+          find.text(_sv.shoppingMergeAdded(3, 'Inköpslista v.24')),
+          findsNothing,
+        );
       });
     },
   );

@@ -291,7 +291,6 @@ final _controls = <String, _Control>{
           source: _mergeSource,
           pantry: const MenuShoppingPantry.read([]),
           retryPantry: () async => const MenuShoppingPantry.read([]),
-          canReplace: true,
         ),
         child: const Text('öppna'),
       ),

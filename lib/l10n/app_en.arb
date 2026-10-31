@@ -11351,13 +11351,11 @@
   "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}}",
   "shoppingMergePantryCovered": "At home in full: {names}",
   "shoppingMergePantryUnavailable": "The pantry could not be read, so the list is made without pantry deduction.",
-  "shoppingMergeReplaceTitle": "Replace the list instead of adding",
-  "shoppingMergeReplaceBody": "Items you added yourself are always kept.",
-  "shoppingMergeReplaceUnavailable": "This list was made before the app kept the week's items apart from your own, so it cannot be replaced. The week's items are added.",
   "shoppingMergeAdd": "{count, plural, =1{Add 1 item} other{Add {count} items}}",
-  "shoppingMergeReplaceAction": "{count, plural, =1{Replace with 1 item} other{Replace with {count} items}}",
+  "shoppingMergeUpdate": "Update the list",
+  "shoppingMergeUpdateBody": "The list already has items from the week. They are updated, but what you changed or ticked off is left alone and your own items stay. The list then follows along when you change the week.",
+  "shoppingMergeSynced": "{list} is up to date with the week. What you changed yourself is still there.",
   "shoppingMergeAdded": "{count, plural, =1{1 item was added to {list}.} other{{count} items were added to {list}.}}",
-  "shoppingMergeReplaced": "{list} now has {count, plural, =1{1 item} other{{count} items}} from the week. Your own items are still there.",
   "shoppingMergeConcurrentChange": "{count, plural, =1{The list had been changed on another device. Your item was added and nothing was overwritten.} other{The list had been changed on another device. Your {count} items were added and nothing was overwritten.}}",
   "shoppingMergeUndoFailed": "The undo could not be completed",
   "shoppingMergeUndoFailedKept": "The items are still on the list.",
@@ -16673,25 +16671,8 @@
   "@shoppingMergePantryUnavailable": {
     "description": "P6-U02: degraded mode."
   },
-  "@shoppingMergeReplaceTitle": {
-    "description": "P6-U02: switch, off by default."
-  },
-  "@shoppingMergeReplaceBody": {
-    "description": "P6-U02: switch description (PQ-10 = A)."
-  },
-  "@shoppingMergeReplaceUnavailable": {
-    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
-  },
   "@shoppingMergeAdd": {
     "description": "P6-U02: the sheet hero.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@shoppingMergeReplaceAction": {
-    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -16709,12 +16690,15 @@
       }
     }
   },
-  "@shoppingMergeReplaced": {
-    "description": "P6-U02: receipt with Ångra after a replace.",
+  "@shoppingMergeUpdate": {
+    "description": "Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source."
+  },
+  "@shoppingMergeUpdateBody": {
+    "description": "Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding."
+  },
+  "@shoppingMergeSynced": {
+    "description": "Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.",
     "placeholders": {
-      "count": {
-        "type": "int"
-      },
       "list": {
         "type": "String"
       }

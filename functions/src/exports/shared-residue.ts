@@ -85,6 +85,8 @@ export const ITEM_EXPORT_KEYS: readonly string[] = [
   "assignedAt",
   "previous",
   "ingredientId",
+  "generatedFrom",
+  "generatedAs",
 ];
 
 type ItemUidField = (typeof ITEM_UID_FIELDS)[number];

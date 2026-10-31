@@ -331,6 +331,19 @@ class WeeklyMenuPlanService extends BaseService {
   /// [saveRevision] or [saveRevisionQueued].
   Stream<String?> get weekWrites => _weekWrites.stream;
 
+  final StreamController<DateTime> _savedWeeks =
+      StreamController<DateTime>.broadcast();
+
+  /// Kärnflöde 8B: the start of every week [saveRevision] or
+  /// [saveRevisionQueued] saved, once the save is on the device, so the
+  /// week's shopping list can follow it. Emitted for the week menu's own
+  /// edits as well, unlike [weekWrites].
+  Stream<DateTime> get savedWeeks => _savedWeeks.stream;
+
+  void _announceSaved(WeeklyMenuPlan plan) {
+    if (!_savedWeeks.isClosed) _savedWeeks.add(plan.weekStartDate);
+  }
+
   final StreamController<LateWeekConflict> _lateConflicts =
       StreamController<LateWeekConflict>.broadcast();
 
@@ -341,6 +354,7 @@ class WeeklyMenuPlanService extends BaseService {
   @override
   Future<void> onDispose() async {
     await _weekWrites.close();
+    await _savedWeeks.close();
     await _lateConflicts.close();
   }
 
@@ -424,7 +438,12 @@ class WeeklyMenuPlanService extends BaseService {
   /// BUT-2289: [saveRevision] for a caller that moves on once the week is
   /// saved on the device. A refusal inside the patience is thrown as before;
   /// a conflict after it goes to [lateConflicts], anything else to the log.
-  Future<void> saveRevisionQueued(WeeklyMenuPlan plan) => awaitOrLeaveQueued(
+  Future<void> saveRevisionQueued(WeeklyMenuPlan plan) async {
+    await _saveQueued(plan);
+    _announceSaved(plan);
+  }
+
+  Future<void> _saveQueued(WeeklyMenuPlan plan) => awaitOrLeaveQueued(
     _repository.save(plan),
     what: 'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
     onLateRefusal: (e, stack) {
@@ -447,8 +466,10 @@ class WeeklyMenuPlanService extends BaseService {
   /// BUT-2215: saves exactly [plan], which the caller has already made a new
   /// revision with `nextRevision()`. The week menu publishes that copy before
   /// it saves, so a second quick edit builds on the new revision.
-  Future<void> saveRevision(WeeklyMenuPlan plan) async =>
-      _repository.save(plan);
+  Future<void> saveRevision(WeeklyMenuPlan plan) async {
+    await _repository.save(plan);
+    _announceSaved(plan);
+  }
 
   /// BUT-996: copy every entry from [fromWeekStart] into [toWeekStart].
   ///
