@@ -17,6 +17,7 @@ void main() {
     String title,
     List<(String, String)> ingredients, {
     String? schemaCuisine,
+    List<String> unmatched = const [],
   }) {
     final recipe = RecipeBuilder()
         .withTitle(title)
@@ -26,7 +27,7 @@ void main() {
     recipe.core.cuisine = schemaCuisine;
     final lookup = TaggingTestHelper.createLookup([
       for (final (n, g) in ingredients) TaggingTestHelper.ingredient(n, g, {}),
-    ]);
+    ], unmatched: unmatched);
     final tags = generator.generate(ingredients: lookup, recipe: recipe).tags;
     return tags.where(CuisineConfig.allTags.contains).toSet();
   }
@@ -107,5 +108,66 @@ void main() {
       schemaCuisine: 'Mexican',
     );
     expect(cuisines, {'thailändsk', 'mexikansk'});
+  });
+
+  group('coverage bar (COV-06)', () {
+    const pastaAndParmesan = [
+      ('pasta', 'grain/pasta-bread'),
+      ('parmesan', 'dairy/cheese'),
+    ];
+
+    test('pasta and parmesan are Italian when every line is known', () {
+      expect(
+        cuisinesFor('Middag', pastaAndParmesan),
+        contains('italiensk'),
+        reason: 'precondition: the fixture is eligible at full coverage',
+      );
+    });
+
+    test('below 0.60 the ingredients alone do not name a cuisine', () {
+      final cuisines = cuisinesFor(
+        'Middag',
+        pastaAndParmesan,
+        unmatched: ['okänd 1', 'okänd 2'],
+      );
+      expect(cuisines, isNot(contains('italiensk')));
+    });
+
+    test('at exactly 0.60 the ingredients count again', () {
+      final cuisines = cuisinesFor(
+        'Middag',
+        [...pastaAndParmesan, ('lök', 'vegetable')],
+        unmatched: ['okänd 1', 'okänd 2'],
+      );
+      expect(cuisines, contains('italiensk'));
+    });
+
+    test('a title keyword still names the cuisine at low coverage', () {
+      final cuisines = cuisinesFor(
+        'Pizza',
+        [pastaAndParmesan.first],
+        unmatched: ['okänd 1', 'okänd 2'],
+      );
+      expect(cuisines, contains('italiensk'));
+    });
+
+    test('a schema.org cuisine still names it at low coverage', () {
+      final cuisines = cuisinesFor(
+        'Middag',
+        [pastaAndParmesan.first],
+        schemaCuisine: 'Italian',
+        unmatched: ['okänd 1', 'okänd 2'],
+      );
+      expect(cuisines, contains('italiensk'));
+    });
+
+    test('a negative word still rules the cuisine out at low coverage', () {
+      final cuisines = cuisinesFor(
+        'Pasta med sojasås',
+        [pastaAndParmesan.first],
+        unmatched: ['okänd 1', 'okänd 2'],
+      );
+      expect(cuisines, isNot(contains('italiensk')));
+    });
   });
 }

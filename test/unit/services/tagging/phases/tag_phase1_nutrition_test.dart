@@ -10,6 +10,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/tagging/ingredient_line.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
 
@@ -253,5 +254,119 @@ void main() {
       ]),
     );
     expect(tags, everyElement(isIn(Phase1NutritionCalculator.proteinTags)));
+  });
+
+  group('calculateProteinTags — coverage bar (COV-05)', () {
+    IngredientData row(
+      String swedish,
+      String group, [
+      Set<String> properties = const {},
+    ]) => IngredientData(
+      id: swedish,
+      swedish: swedish,
+      english: swedish,
+      group: group,
+      properties: properties,
+    );
+
+    IngredientLine lineOf(IngredientData i, {double? grams}) => IngredientLine(
+      names: [i.swedish],
+      ingredients: [i],
+      known: true,
+      grams: grams,
+    );
+
+    IngredientLine unknownLine(String name) =>
+        IngredientLine(names: [name], ingredients: const [], known: false);
+
+    IngredientLookupResult lookupWith(
+      List<IngredientLine> lines,
+      double coverage,
+    ) => IngredientLookupResult(
+      matched: [for (final l in lines) ...l.ingredients],
+      unmatched: [
+        for (final l in lines)
+          if (!l.known) l.names.first,
+      ],
+      coverage: coverage,
+      lines: lines,
+    );
+
+    final chicken = row('kyckling', 'protein/meat/poultry');
+    final shrimp = row('räkor', 'protein/seafood/shellfish', {'crustacean'});
+    final veg = [
+      row('potatis', 'vegetable/root'),
+      row('lök', 'vegetable'),
+      row('morot', 'vegetable/root'),
+    ];
+
+    test('chicken with four known lines and one unknown keeps its tag', () {
+      final lookup = IngredientLookupResult.fromLists(
+        matched: [chicken, ...veg, row('ris', 'grain')],
+        unmatched: const ['mystisk krydda'],
+      );
+      expect(lookup.coverage, greaterThanOrEqualTo(0.80));
+
+      expect(
+        Phase1NutritionCalculator.calculateProteinTags(lookup),
+        contains('kyckling'),
+      );
+    });
+
+    test('at 0.80 a garnish protein is kept, just below it is dropped', () {
+      final lines = [
+        for (final v in veg) lineOf(v),
+        lineOf(shrimp),
+        unknownLine('okänd'),
+      ];
+
+      expect(
+        Phase1NutritionCalculator.calculateProteinTags(lookupWith(lines, 0.80)),
+        contains('räkor'),
+      );
+      final below = Phase1NutritionCalculator.calculateProteinTags(
+        lookupWith(lines, 0.79),
+      );
+      expect(below, isNot(contains('räkor')));
+      expect(below, isNot(contains('skaldjur')));
+    });
+
+    test('below 0.80 a protein that is a main ingredient survives', () {
+      final tags = Phase1NutritionCalculator.calculateProteinTags(
+        lookupWith([
+          lineOf(chicken),
+          lineOf(veg.first),
+          unknownLine('okänd'),
+          unknownLine('okänd 2'),
+        ], 0.5),
+      );
+      expect(tags, containsAll(<String>['kyckling', 'fågel']));
+    });
+
+    test('below 0.80 a small weighed protein is not a main ingredient', () {
+      final tags = Phase1NutritionCalculator.calculateProteinTags(
+        lookupWith([
+          lineOf(chicken, grams: 500),
+          lineOf(veg.first, grams: 500),
+          lineOf(shrimp, grams: 20),
+          unknownLine('okänd'),
+        ], 0.75),
+      );
+      expect(tags, contains('kyckling'));
+      expect(tags, isNot(contains('räkor')));
+    });
+
+    test('a garnish protein past the first three lines is dropped', () {
+      final tags = Phase1NutritionCalculator.calculateProteinTags(
+        lookupWith([
+          lineOf(chicken),
+          for (final v in veg) lineOf(v),
+          lineOf(shrimp),
+          unknownLine('okänd'),
+        ], 0.6),
+      );
+      expect(tags, contains('kyckling'));
+      expect(tags, isNot(contains('räkor')));
+    });
   });
 }

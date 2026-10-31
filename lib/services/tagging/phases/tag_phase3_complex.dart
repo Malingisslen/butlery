@@ -342,9 +342,15 @@ class TagPhase3Complex {
       !p1.hasProperty('is-spicy') &&
       p1.getAllergenStatus('alkohol') == TriState.free;
 
+  /// Both freezer and meal-prep promise that NO ingredient fails to keep, so
+  /// they need enough of the ingredients known (Malin 2026-10-30, kärnflöde
+  /// steg 5 beslut 5).
+  bool _keepsWell(Phase1Result p1) =>
+      p1.lookup.coverage >= TaggingThresholds.cuisineAndMoodCoverage &&
+      !p1.hasProperty('doesnt-freeze-well');
+
   bool _isFreezerFriendly(Phase1Result p1, Phase2Result p2) {
-    // No ingredients that don't freeze well
-    if (p1.hasProperty('doesnt-freeze-well')) return false;
+    if (!_keepsWell(p1)) return false;
 
     // Not a salad
     if (p1.hasTag('sallad')) return false;
@@ -360,7 +366,7 @@ class TagPhase3Complex {
   bool _isMealPrepFriendly(Phase1Result p1, Phase2Result p2, Recipe recipe) {
     // Keeps well, easy to reheat
     if (p1.hasTag('sallad')) return false;
-    if (p1.hasProperty('doesnt-freeze-well')) return false;
+    if (!_keepsWell(p1)) return false;
 
     final portions = recipe.core.portions ?? 4;
     // L6: Added pastabaserad - pasta dishes keep well for meal prep

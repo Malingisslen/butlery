@@ -14,6 +14,15 @@ class TaggingThresholds {
   // requires 100% coverage for allergen/dietary claims (safety-critical).
   // Keeping unused constants creates confusion for developers.
 
+  /// Below this share of known ingredients only a main ingredient gives a
+  /// protein tag, and the recipe detail calls its tags uncertain (Malin
+  /// 2026-10-30, kärnflöde steg 5 beslut 5).
+  static const double proteinCoverage = 0.80;
+
+  /// Below this share of known ingredients the ingredients give a cuisine no
+  /// points, and no tag claims an ingredient is absent (beslut 5).
+  static const double cuisineAndMoodCoverage = 0.60;
+
   /// Timeout for tag generation operations.
   static const Duration generationTimeout = Duration(seconds: 30);
 
