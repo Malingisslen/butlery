@@ -15,7 +15,10 @@ library;
 // only way to count what a batch and a transaction write.
 // ignore_for_file: subtype_of_sealed_class
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -179,6 +182,7 @@ void main() {
     PersonalMergeTransactionRunner? transactionRunner,
     PersonalListServerRead? serverRead,
     bool pending = false,
+    Future<void> Function(WriteBatch batch)? commitBatch,
   }) => ShoppingPersonalMergeModule(
     firestore: firestore,
     requireCurrentUserId: () => _uid,
@@ -211,6 +215,7 @@ void main() {
         ),
     serverRead: serverRead,
     pendingWrites: (_, _) async => pending,
+    commitBatch: commitBatch,
   );
 
   /// Stores [list] as the server holds it: the parent document and one
@@ -520,5 +525,61 @@ void main() {
       expect(firestore.counts.transactionWrites, 2 + 1 + 1);
       expect(firestore.counts.batchWrites, 0);
     });
+  });
+
+  group('add that never settles (connection lost after the read)', () {
+    test('the add is reported as done once the budget runs out', () {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: const []);
+      final pendingWrite = Completer<void>();
+      PersonalMergeResult? result;
+      var finished = false;
+
+      fakeAsync((async) {
+        module(
+          serverRead: (_, _) async => memory,
+          commitBatch: (_) => pendingWrite.future,
+        ).applyPersonalMerge(memory, _request([_row('a', 'gul lök')])).then((
+          r,
+        ) {
+          result = r;
+          finished = true;
+        });
+
+        async.elapse(const Duration(seconds: 7));
+        expect(finished, isFalse, reason: 'still inside the budget');
+
+        async.elapse(const Duration(seconds: 2));
+        expect(finished, isTrue);
+        expect(result!.added.map((i) => i.id), ['a']);
+        expect(result!.list.items.map((i) => i.id), ['own', 'a']);
+        expect(result!.list.menuItemIds, ['a']);
+      });
+    });
+
+    test(
+      'a rejection that is not a timeout still reaches the caller',
+      () async {
+        final memory = _list([_row('own', 'kaffe')], menuItemIds: const []);
+
+        await expectLater(
+          module(
+            serverRead: (_, _) async => memory,
+            commitBatch: (_) => Future<void>.error(
+              FirebaseException(
+                plugin: 'cloud_firestore',
+                code: 'permission-denied',
+              ),
+            ),
+          ).applyPersonalMerge(memory, _request([_row('a', 'gul lök')])),
+          throwsA(
+            isA<FirebaseException>().having(
+              (e) => e.code,
+              'code',
+              'permission-denied',
+            ),
+          ),
+        );
+      },
+    );
   });
 }

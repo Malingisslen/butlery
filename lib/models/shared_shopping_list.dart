@@ -99,6 +99,21 @@ class SharedShoppingList
     );
   }
 
+  /// The share flow writes the name as `title` and the message as
+  /// `description` (`shopping_social_share_module.dart`), while [toFirestore]
+  /// writes `listName` and `shareMessage`; both shapes are read.
+  static String _listNameOf(Map<String, dynamic> data) {
+    final name = SerializationUtils.safeString(data, 'listName');
+    return name.isNotEmpty ? name : SerializationUtils.safeString(data, 'title');
+  }
+
+  static String? _shareMessageOf(
+    Map<String, dynamic> commonFields,
+    Map<String, dynamic> data,
+  ) =>
+      commonFields['shareMessage'] as String? ??
+      SerializationUtils.safeNullableString(data, 'description');
+
   factory SharedShoppingList.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
@@ -118,7 +133,7 @@ class SharedShoppingList
       sharedByUserId: commonFields['sharedByUserId'] as String,
       sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
       sharedAt: commonFields['sharedAt'] as DateTime,
-      shareMessage: commonFields['shareMessage'] as String?,
+      shareMessage: _shareMessageOf(commonFields, data),
       viewCount: commonFields['viewCount'] as int,
       engagementCount: SerializationUtils.safeInt(
         data,
@@ -126,7 +141,7 @@ class SharedShoppingList
         defaultValue: commonFields['engagementCount'] as int,
       ),
       dismissalCount: commonFields['dismissalCount'] as int,
-      listName: SerializationUtils.safeString(data, 'listName'),
+      listName: _listNameOf(data),
       listDescription: data['listDescription'],
       itemCount: itemCount,
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
@@ -158,7 +173,7 @@ class SharedShoppingList
       sharedByUserId: commonFields['sharedByUserId'] as String,
       sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
       sharedAt: commonFields['sharedAt'] as DateTime,
-      shareMessage: commonFields['shareMessage'] as String?,
+      shareMessage: _shareMessageOf(commonFields, data),
       viewCount: commonFields['viewCount'] as int,
       engagementCount: SerializationUtils.safeInt(
         data,
@@ -166,7 +181,7 @@ class SharedShoppingList
         defaultValue: commonFields['engagementCount'] as int,
       ),
       dismissalCount: commonFields['dismissalCount'] as int,
-      listName: SerializationUtils.safeString(data, 'listName'),
+      listName: _listNameOf(data),
       listDescription: SerializationUtils.safeNullableString(
         data,
         'listDescription',

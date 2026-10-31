@@ -17334,5 +17334,23 @@
   "tagAllergenAutoUnknown": "App: not checked",
   "@tagAllergenAutoUnknown": {
     "description": "Secondary line: the app has not settled this allergen."
+  },
+  "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 dish} other{{count} dishes}} could not be counted because the recipe no longer exists.",
+  "@shoppingMergeUnresolvedRecipes": {
+    "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPantryAddFailed": "Could not add {name} to the pantry.",
+  "@shoppingPantryAddFailed": {
+    "description": "Snackbar when adding a just-checked-off item to the pantry failed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
