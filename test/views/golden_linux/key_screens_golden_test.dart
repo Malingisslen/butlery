@@ -44,7 +44,6 @@ class _KeyScreen {
 }
 
 final _screens = <_KeyScreen>[
-  const _KeyScreen('hem', row: 'hem::DEFAULT'),
   const _KeyScreen('veckomeny', row: 'veckomeny::DEFAULT'),
   // "Planerar veckan" after 6 s, when the slower line shows
   // (VeckomenyGeneratingOverlay.slowAfter).
@@ -60,6 +59,8 @@ final _screens = <_KeyScreen>[
   // timed steps, Lagade detta, Kommentarer).
   _KeyScreen('receptdetalj_fullt', host: fullRecipeDetailHost),
   _KeyScreen('mina_recept', host: minaReceptHost),
+  // The same library in list mode.
+  _KeyScreen('mina_recept_lista', host: minaReceptHostWith(grid: false)),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
   _KeyScreen('skafferi', host: pantryWithItemsHost),
