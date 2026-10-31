@@ -207,6 +207,8 @@ export {
 
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
+// Steg 10E: the profile copy of a recipe its owner chose to show.
+export { syncPublicRecipe } from "./recipes/sync-public-recipe";
 
 // Pre-release audit B1: server-side friend-request acceptance. Moves the
 // mutual friend-doc write off the client so the friends-write rule can be

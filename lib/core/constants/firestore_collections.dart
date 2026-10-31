@@ -148,6 +148,9 @@ abstract final class FirestoreCollections {
   // BUT-907: users/{uid}/trash, the user's deleted own recipes, kept 30 days
   // behind "Återställ" before the TTL policy on `expireAt` removes them.
   static const String userTrash = 'trash';
+  // Steg 10E: users/{uid}/public_recipes, the profile copy of each recipe the
+  // owner chose to show. Written only by the `syncPublicRecipe` function.
+  static const String userPublicRecipes = 'public_recipes';
   // P5-U27b: a change to someone else's shared recipe, kept 7 days as a
   // suggestion the owner accepts or dismisses.
   // Top-level: the suggester and the owner both read it.

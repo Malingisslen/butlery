@@ -218,6 +218,11 @@ class PreferencesExportManager {
       'user_trash',
       (max) => _exports.exportTrash(userId, maxDocuments: max),
     );
+    await readLeg(
+      'public_recipes',
+      'user_public_recipes',
+      (max) => _exports.exportPublicRecipes(userId, maxDocuments: max),
+    );
 
     return {
       ...reads.section,
