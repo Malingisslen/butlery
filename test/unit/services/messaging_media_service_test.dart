@@ -56,6 +56,7 @@ void main() {
       messagingService: messaging,
       authRepository: auth,
       uploadService: upload,
+      offlineService: () => null,
     ).uploadAndSendImage(conversationId: 'c1', imagePath: file.path);
 
     expect(ok, ImageSendOutcome.sent);

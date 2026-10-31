@@ -75,7 +75,10 @@ class RecipePersistenceManager with ErrorHandlingMixin {
            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
        _editEmitter =
            editEmitter ??
-           RecipeEditAnalyticsEmitter(analytics: analyticsService);
+           RecipeEditAnalyticsEmitter(
+             analytics:
+                 analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
+           );
 
   /// Saves recipe with atomic coordination, preventing concurrent saves and ensuring image upload completion.
   Future<Recipe?> saveRecipe({

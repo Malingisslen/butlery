@@ -18,7 +18,6 @@ const _residue = <String, int>{
   'lib/services/account/export/family_export_manager.dart': 4,
   'lib/services/account/export/preferences_export_manager.dart': 1,
   'lib/services/account/export/social_export_manager.dart': 1,
-  'lib/services/analytics/recipe_edit_analytics_emitter.dart': 1,
   'lib/services/analytics_service.dart': 2,
   'lib/services/attribution_source.dart': 1,
   'lib/services/auth/guest_auth_service.dart': 1,
@@ -41,7 +40,6 @@ const _residue = <String, int>{
   'lib/services/menu/present_diner_prefs_resolver.dart': 12,
   'lib/services/menu_voting_service.dart': 2,
   'lib/services/messaging/message_sending_operations.dart': 1,
-  'lib/services/messaging_media_service.dart': 1,
   'lib/services/messaging_service.dart': 6,
   'lib/services/notifications/fcm_service.dart': 8,
   'lib/services/notifications/modules/notification_analytics_manager.dart': 1,
@@ -117,7 +115,6 @@ const _residue = <String, int>{
   'lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart':
       2,
   'lib/services/unified/operations/shopping/shopping_presence_module.dart': 1,
-  'lib/services/unified/operations/shopping_share_operations.dart': 1,
   'lib/services/unified/operations/social_menu_operations.dart': 18,
   'lib/services/unified/operations/social_recipe_operations.dart': 1,
   'lib/services/unified/unified_friends_service.dart': 2,
