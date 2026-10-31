@@ -36,14 +36,11 @@
 /// // Returns: ["1,5 kg mjöl", "6 ägg", "3 dl grädde", ...]
 /// ```
 
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
-import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
-import 'package:butlery/utils/text/unit_definitions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
@@ -266,112 +263,5 @@ class ShoppingListGenerator {
           ),
         )
         .toList();
-  }
-
-  /// Generate shopping items from a single recipe with Swedish ingredient parsing and categorization.
-  /// This method creates UnifiedShoppingItem objects from a recipe's ingredients, providing
-  /// structured shopping data ready for addition to shopping lists. It leverages the existing
-  /// Swedish ingredient parsing infrastructure and intelligent categorization system.
-  /// **Processing Features:**
-  /// - Swedish ingredient parsing with unit/quantity extraction
-  /// - Automatic ingredient categorization (Mejeri, Kött & fisk, etc.)
-  /// - Smart unit conversion and formatting
-  /// - Fallback categorization for unknown ingredients
-  /// - Robust error handling for malformed ingredient strings
-  /// [recipe] Recipe object containing ingredients list to convert
-  /// [portions] Optional portion scaling factor (defaults to recipe portions)
-  /// Returns List of UnifiedShoppingItem objects ready for shopping list addition
-  /// **Usage Example:**
-  /// ```dart
-  /// final recipe = Recipe(
-  ///   title: 'Pannkakor',
-  ///   ingredients: ['2 dl mjölk', '1 ägg', '100g mjöl'],
-  /// );
-  /// final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(recipe);
-  /// // Returns: [
-  /// //   UnifiedShoppingItem(name: 'mjölk', amount: 2.0, unit: 'dl', category: ShoppingCategory.dairy),
-  /// //   UnifiedShoppingItem(name: 'ägg', amount: 1.0, unit: 'st', category: ShoppingCategory.dairy),
-  /// //   UnifiedShoppingItem(name: 'mjöl', amount: 100.0, unit: 'g', category: ShoppingCategory.dryGoods),
-  /// // ]
-  /// ```
-  static List<UnifiedShoppingItem> generateShoppingItemsFromRecipe(
-    Recipe recipe, {
-    int? portions,
-  }) {
-    // Handle empty ingredients gracefully
-    if (recipe.ingredients.isEmpty) return [];
-
-    final List<UnifiedShoppingItem> shoppingItems = [];
-    final targetPortions = portions ?? recipe.portions ?? 1;
-    final originalPortions = recipe.portions ?? 1;
-    final scalingFactor = originalPortions > 0
-        ? targetPortions / originalPortions
-        : 1.0;
-
-    // One entry per line, in order ([Recipe.structuredIngredients]).
-    final lines = recipe.structuredIngredients;
-    for (final line in lines) {
-      final rawIngredient = line.raw;
-      // Skip empty or whitespace-only ingredients
-      if (rawIngredient.trim().isEmpty) continue;
-
-      try {
-        // MODUL1 Pattern B: Parse + Normalize for better categorization
-        // Normalized name improves category detection accuracy
-        final processed = IngredientProcessor.parseAndNormalize(rawIngredient);
-        final stated = IngredientQuantity.read(rawIngredient);
-
-        // BUT-2067: the PRODUCT, not the input. `QuantityParser.parse`
-        // bounds `processed.quantity`, but `scalingFactor` comes from a
-        // portion count the user types, and two finite doubles multiply to
-        // Infinity.
-        // A line stating no amount ("salt") gets 0, which shows the name
-        // alone, and is not scaled.
-        final scaledQuantity = stated.isUnknown
-            ? 0.0
-            : QuantityParser.finiteQuantityOr1(
-                (stated.forShopping ?? processed.quantity) * scalingFactor,
-                'shopping_list_generator portion scaling',
-              );
-
-        // Determine category using normalized name for better accuracy
-        // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable
-        final category = IngredientCategorizer.categorize(
-          processed.normalizedName,
-        );
-
-        // Create UnifiedShoppingItem with original name for display
-        // but use normalized name for better categorization
-        final shoppingItem = UnifiedShoppingItem(
-          name: processed.originalName.trim(), // Display original
-          amount: scaledQuantity,
-          unit: stated.isUnknown
-              ? ''
-              : UnitDefinitions.canonical(processed.unit),
-          category: category,
-          bought: false,
-          note: '', // No notes from recipe ingredients
-          priority: 3, // Default priority
-          ingredientId: line.ingredientId,
-        );
-
-        shoppingItems.add(shoppingItem);
-      } catch (e) {
-        // Handle parsing errors gracefully - create basic item
-        final fallbackItem = UnifiedShoppingItem(
-          name: rawIngredient.trim(),
-          amount: 0,
-          unit: '',
-          category: ShoppingCategory.other,
-          bought: false,
-          note: AppLocale.current.ingredientParseError,
-          priority: 3,
-        );
-
-        shoppingItems.add(fallbackItem);
-      }
-    }
-
-    return shoppingItems;
   }
 }

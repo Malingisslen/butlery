@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 
 Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
@@ -893,6 +894,73 @@ void main() {
       ]);
       expect(items, hasLength(1));
       expect(items.single.ingredientId, isNull);
+    });
+  });
+
+  group('what a row counts (kärnflöde steg 8C)', () {
+    RecipeIngredient ing(double amount, String unit, String name) =>
+        RecipeIngredient(
+          amount: amount,
+          unit: unit,
+          name: name,
+          raw: '$amount $unit $name',
+        );
+
+    test('one recipe naming milk on two lines is one recipe, two lines', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(2, 'dl', 'mjölk'), ing(1, 'dl', 'mjölk')])),
+      ]);
+
+      expect(agg.items.single.sourceCount, 2);
+      expect(agg.items.single.recipeCount, 1);
+    });
+
+    test('two placements naming milk are two recipes', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(2, 'dl', 'mjölk'), ing(1, 'dl', 'mjölk')])),
+        _p(_recipe('r2', [ing(1, 'dl', 'mjölk')])),
+      ]);
+
+      expect(agg.items.single.sourceCount, 3);
+      expect(agg.items.single.recipeCount, 2);
+    });
+
+    test('the same recipe placed twice counts twice', () {
+      final recipe = _recipe('r1', [ing(2, 'dl', 'mjölk')]);
+
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(recipe),
+        _p(recipe),
+      ]);
+
+      expect(agg.items.single.recipeCount, 2);
+    });
+
+    test('the count survives a fold of units that cannot join', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(100, 'g', 'smör'), ing(2, 'msk', 'smör')])),
+      ]);
+
+      expect(agg.items.single.extraAmounts, hasLength(1));
+      expect(agg.items.single.recipeCount, 1);
+    });
+
+    test('a plural lands in the aisle of its plain form', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(3, '', 'morötter'), ing(2, '', 'paprikor')])),
+      ]);
+
+      expect(agg.items.map((i) => i.category).toSet(), {ShoppingCategory.veg});
+    });
+
+    test('a name whose plain form is unknown keeps its own aisle', () {
+      // "fryst" is dropped as a preparation word, and "mandel" alone is
+      // not in an aisle, so only the full name knows it is frozen.
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(1, 'dl', 'fryst mandel')])),
+      ]);
+
+      expect(agg.items.single.category, ShoppingCategory.frozen);
     });
   });
 }

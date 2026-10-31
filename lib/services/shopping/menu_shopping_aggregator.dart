@@ -1,8 +1,10 @@
 // lib/services/shopping/menu_shopping_aggregator.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
+import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
@@ -21,8 +23,12 @@ class AggregatedShoppingItem {
   /// ShoppingCategory constant from [IngredientCategorizer].
   final String category;
 
-  /// How many menu recipes contributed to this line.
+  /// How many ingredient lines went into this line.
   final int sourceCount;
+
+  /// How many placements contributed to this line. A recipe that names one
+  /// ingredient on two lines is still one.
+  final int recipeCount;
 
   /// BUT-2304: further amounts of the same ingredient whose units could not
   /// be converted into [unit] ("100 g" + "3 dl"), kept visible on the one row.
@@ -38,6 +44,7 @@ class AggregatedShoppingItem {
     required this.unit,
     required this.category,
     required this.sourceCount,
+    this.recipeCount = 1,
     this.extraAmounts = const [],
     this.ingredientId,
   });
@@ -103,7 +110,7 @@ class MenuShoppingAggregator {
     final byKey = <String, _Accumulator>{};
     var rawRows = 0;
 
-    for (final placement in placements) {
+    for (final (index, placement) in placements.indexed) {
       final factor = placement.factor;
       // One entry per ingredient line, structured or raw-only — the facade
       // getter guarantees alignment and fallback.
@@ -130,6 +137,7 @@ class MenuShoppingAggregator {
           ),
         );
         acc.sourceCount++;
+        acc.placements.add(index);
         if (entry.ingredientId case final id?) acc.ingredientIds.add(id);
         if (hasAmount) {
           // BUT-1613: scale the numeric amount by the placement factor. Never
@@ -165,8 +173,9 @@ class MenuShoppingAggregator {
                 name: acc.displayName,
                 amount: acc.hasAmount ? acc.sum : null,
                 unit: acc.unit,
-                category: IngredientCategorizer.categorize(acc.displayName),
+                category: _categoryOf(acc.displayName),
                 sourceCount: acc.sourceCount,
+                recipeCount: acc.placements.length,
                 extraAmounts: acc.extraAmounts,
                 ingredientId: acc.ingredientId,
               ),
@@ -183,6 +192,18 @@ class MenuShoppingAggregator {
       rawRowCount: rawRows,
       convertedCount: converted.value,
     );
+  }
+
+  /// The aisle of [name], read from its base form first, so a plural or a
+  /// prepared form ("morötter", "hackad paprika") lands where the plain
+  /// ingredient does. Its own form decides when the base form is not
+  /// recognised.
+  static String _categoryOf(String name) {
+    final base = IngredientProcessor.normalizeIngredientName(name).normalized;
+    final category = IngredientCategorizer.categorize(base);
+    return category == ShoppingCategory.other
+        ? IngredientCategorizer.categorize(name)
+        : category;
   }
 
   /// BUT-2304: third pass. Rows left sharing a name key (their units are not
@@ -215,6 +236,7 @@ class MenuShoppingAggregator {
       ..sum = primary.sum
       ..hasAmount = primary.hasAmount
       ..sourceCount = group.fold(0, (n, r) => n + r.sourceCount)
+      ..placements.addAll(group.expand((r) => r.placements))
       ..ingredientIds.addAll(group.expand((r) => r.ingredientIds))
       ..extraAmounts = [
         for (final r in withAmount.skip(1)) (amount: r.sum, unit: r.unit),
@@ -260,6 +282,7 @@ class MenuShoppingAggregator {
         'menu_shopping_aggregator unit merge',
       );
       group.sourceCount += acc.sourceCount;
+      group.placements.addAll(acc.placements);
       group.memberUnits.add(acc.unit);
       group.ingredientIds.addAll(acc.ingredientIds);
     }
@@ -327,6 +350,9 @@ class _Accumulator {
   /// Every registry id the joined lines carried.
   final Set<String> ingredientIds = {};
 
+  /// The index of every placement a joined line came from.
+  final Set<int> placements = {};
+
   String? get ingredientId =>
       ingredientIds.length == 1 ? ingredientIds.single : null;
 }
@@ -347,6 +373,7 @@ class _MergeGroup {
   /// The unit each joined row was written in, one entry per row.
   final List<String> memberUnits = [];
   final Set<String> ingredientIds = {};
+  final Set<int> placements = {};
 
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
@@ -363,6 +390,7 @@ class _MergeGroup {
       ..sum = display.quantity
       ..hasAmount = true
       ..sourceCount = sourceCount
+      ..placements.addAll(placements)
       ..ingredientIds.addAll(ingredientIds);
   }
 

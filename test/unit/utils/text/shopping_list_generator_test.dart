@@ -14,7 +14,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports
 import 'package:butlery/utils/text/shopping_list_generator.dart';
-import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Test infrastructure
@@ -39,74 +38,7 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    // BUT-2067: a non-finite `UnifiedShoppingItem.amount` prints as the word
-    // "Infinity" through `formatSwedishDecimal` and then `parseSwedishDecimal`
-    // refuses to read it back, so the user cannot edit their way out of the
-    // field.
-    group('the amount a recipe line states (kärnflöde steg 3)', () {
-      test('a line stating no amount gets none, and is not scaled', () {
-        final recipe = _makeRecipe(['salt', 'peppar efter smak', 'nypa salt'])
-          ..core.portions = 2;
-
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-          portions: 4,
-        );
-
-        expect(items.map((i) => i.amount), [0, 0, 0]);
-        expect(items.map((i) => i.unit), ['', '', '']);
-        expect(items.map((i) => i.quantityText), ['', '', '']);
-      });
-
-      test('a range is bought at its highest value, scaled', () {
-        final recipe = _makeRecipe(['2-3 dl mjölk', '2-3 tomater'])
-          ..core.portions = 2;
-
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-          portions: 4,
-        );
-
-        expect(items.map((i) => i.amount), [6, 6]);
-      });
-
-      test('a unit written out in full is listed as its short form', () {
-        // The list sums rows by unit, so "matsked" and "msk" must meet.
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          _makeRecipe(['1 matsked olja', '2 styck ägg']),
-        );
-
-        expect(items.map((i) => i.unit), ['msk', 'st']);
-      });
-    });
-
     group('non-finite quantities never reach amount (BUT-2067)', () {
-      test('a portion scale that overflows falls back to 1.0', () {
-        final recipe = _makeRecipe(['$_nearMaxQuantity dl mjölk'])
-          ..core.portions = 1;
-
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-          portions: 2,
-        );
-
-        expect(items, hasLength(1));
-        expect(items.first.amount.isFinite, isTrue);
-        expect(items.first.amount, 1.0);
-        expect(items.first.unit, 'dl');
-      });
-
-      test('an ordinary portion scale is untouched', () {
-        final recipe = _makeRecipe(['2 dl mjölk'])..core.portions = 2;
-
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-          portions: 4,
-        );
-
-        expect(items.first.amount, 4.0);
-      });
-
       test('a consolidation sum that overflows falls back to 1.0', () {
         final menu = {
           'Måndag': [
@@ -127,83 +59,6 @@ void main() {
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
-    });
-
-    group('registry id from the recipe line', () {
-      Recipe withLines(
-        List<String> ingredients,
-        List<RecipeIngredient> structured,
-      ) => Recipe(
-        core: RecipeCore(
-          title: 'Test',
-          description: '',
-          ingredients: ingredients,
-          structuredIngredients: structured,
-          instructions: const [],
-          mealType: '',
-        ),
-        type: RecipeType.personal,
-      );
-
-      test('each shopping row carries the id of its own line', () {
-        final recipe = withLines(
-          ['2 dl mellanmjölk', '500 g bringa', '1 hackad lök'],
-          const [
-            RecipeIngredient(
-              amount: 2,
-              unit: 'dl',
-              name: 'mellanmjölk',
-              raw: '2 dl mellanmjölk',
-              ingredientId: 'milk',
-            ),
-            RecipeIngredient(
-              amount: 500,
-              unit: 'g',
-              name: 'bringa',
-              raw: '500 g bringa',
-            ),
-            RecipeIngredient(
-              amount: 1,
-              name: 'lök',
-              raw: '1 hackad lök',
-              ingredientId: 'onion',
-            ),
-          ],
-        );
-
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-        );
-
-        expect(items.map((i) => i.ingredientId), ['milk', null, 'onion']);
-      });
-
-      test('a recipe without stored lines gives rows without ids', () {
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          _makeRecipe(['2 dl mjölk', '3 ägg']),
-        );
-        expect(items, hasLength(2));
-        expect(items.map((i) => i.ingredientId), [null, null]);
-      });
-
-      test('stored lines that no longer match the text give no ids', () {
-        final recipe = withLines(
-          ['4 dl mellanmjölk'],
-          const [
-            RecipeIngredient(
-              amount: 2,
-              unit: 'dl',
-              name: 'mellanmjölk',
-              raw: '2 dl mellanmjölk',
-              ingredientId: 'milk',
-            ),
-          ],
-        );
-        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-          recipe,
-        );
-        expect(items.single.ingredientId, isNull);
-      });
     });
 
     group('Basic Shopping List Generation', () {

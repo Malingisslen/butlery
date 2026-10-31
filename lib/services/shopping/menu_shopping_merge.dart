@@ -5,6 +5,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
@@ -110,6 +111,7 @@ class MenuShoppingMergeLine {
     required this.unit,
     required this.category,
     required this.sourceCount,
+    this.recipeCount = 1,
     this.mark = MenuShoppingPantryMark.none,
     this.extraAmounts = const [],
     this.ingredientId,
@@ -124,6 +126,9 @@ class MenuShoppingMergeLine {
 
   /// How many recipe lines went into the row.
   final int sourceCount;
+
+  /// [AggregatedShoppingItem.recipeCount].
+  final int recipeCount;
   final MenuShoppingPantryMark mark;
 
   /// BUT-2304: amounts in units that could not join [unit].
@@ -131,6 +136,69 @@ class MenuShoppingMergeLine {
 
   /// [AggregatedShoppingItem.ingredientId].
   final String? ingredientId;
+
+  /// The list row both the week and the recipe button write for this line.
+  UnifiedShoppingItem toItem() => UnifiedShoppingItem(
+    name: name,
+    // The line states no amount, and 0 shows the name alone
+    // ([UnifiedShoppingItem.quantityText]).
+    amount: amount ?? 0,
+    unit: unit,
+    category: category,
+    note: _note,
+    ingredientId: ingredientId,
+  );
+
+  /// The amounts that could not join [unit], how many recipes the row came
+  /// from ("Raden visar '3 recept'", #inkopmergeoppen) and the pantry's mark
+  /// (§ 4.2).
+  String? get _note {
+    final l = AppLocale.current;
+    final parts = [
+      // BUT-2304: amounts that could not join the row's own unit.
+      for (final extra in extraAmounts) '+ ${_formatExtra(extra)}',
+      if (recipeCount > 1) l.shoppingMergeRowRecipes(recipeCount),
+      if (mark == MenuShoppingPantryMark.maybeAtHome)
+        l.shoppingMergeMarkMaybeHome,
+      if (mark == MenuShoppingPantryMark.checkDate)
+        l.shoppingMergeMarkCheckDate,
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
+  }
+
+  static String _formatExtra(({double amount, String unit}) extra) {
+    final item = UnifiedShoppingItem(
+      name: '',
+      amount: extra.amount,
+      unit: extra.unit,
+    );
+    return [
+      item.formattedAmount,
+      item.formattedUnit,
+    ].where((p) => p.isNotEmpty).join(' ');
+  }
+}
+
+/// What the pantry leaves of a set of rows ([MenuShoppingMergePlanner.againstPantry]).
+class MenuShoppingPantryPass {
+  const MenuShoppingPantryPass({
+    required this.lines,
+    required this.coveredAtHome,
+    required this.lessened,
+    required this.atHomeCount,
+  });
+
+  /// The rows still to buy, in the order they came in.
+  final List<MenuShoppingMergeLine> lines;
+
+  /// Rows left off because enough is at home, by name.
+  final List<String> coveredAtHome;
+
+  /// Rows kept with less than asked for, because some is at home, by name.
+  final List<String> lessened;
+
+  /// The rows the pantry touched in any way.
+  final int atHomeCount;
 }
 
 /// P6-U02: what "Lägg till N varor" will do, computed before anything is
@@ -234,16 +302,42 @@ class MenuShoppingMergePlanner {
       convertUnits: options.convertUnits,
     );
     final subtract = options.subtractPantry && !pantry.unavailable;
+    final pass = againstPantry(
+      aggregation.items,
+      subtract ? pantry.items : const [],
+    );
+
+    return MenuShoppingMergePreview(
+      source: source,
+      options: options,
+      lines: pass.lines,
+      rawRowCount: aggregation.rawRowCount,
+      mergedCount: aggregation.mergedCount,
+      convertedCount: aggregation.convertedCount,
+      atHomeCount: pass.atHomeCount,
+      coveredAtHome: pass.coveredAtHome,
+      pantryUnavailable: options.subtractPantry && pantry.unavailable,
+    );
+  }
+
+  /// [rows] against [pantry], matched by [IngredientIdentity.sameItem].
+  /// Enough at home leaves a row off, some at home leaves the difference,
+  /// and a unit that cannot be converted or a date passed subtracts nothing
+  /// and marks the row. The week and the recipe button both count this way.
+  static MenuShoppingPantryPass againstPantry(
+    List<AggregatedShoppingItem> rows,
+    List<PantryItem> pantry,
+  ) {
     final pantryKeys = [
-      if (subtract)
-        for (final item in pantry.items)
-          (item: item, key: IngredientIdentity.nameKey(item.ingredientName)),
+      for (final item in pantry)
+        (item: item, key: IngredientIdentity.nameKey(item.ingredientName)),
     ];
 
     final lines = <MenuShoppingMergeLine>[];
     final covered = <String>[];
+    final lessened = <String>[];
     var atHome = 0;
-    for (final row in aggregation.items) {
+    for (final row in rows) {
       // [IngredientIdentity.sameItem], with the pantry's keys computed once.
       final key = IngredientIdentity.nameKey(row.name);
       final id = row.ingredientId;
@@ -260,22 +354,17 @@ class MenuShoppingMergePlanner {
         case _Covered():
           covered.add(row.name);
         case _Remaining(:final amount):
+          lessened.add(row.name);
           lines.add(_line(row, amount));
         case _Marked(:final mark):
           lines.add(_line(row, row.amount, mark: mark));
       }
     }
-
-    return MenuShoppingMergePreview(
-      source: source,
-      options: options,
+    return MenuShoppingPantryPass(
       lines: List.unmodifiable(lines),
-      rawRowCount: aggregation.rawRowCount,
-      mergedCount: aggregation.mergedCount,
-      convertedCount: aggregation.convertedCount,
-      atHomeCount: atHome,
       coveredAtHome: List.unmodifiable(covered),
-      pantryUnavailable: options.subtractPantry && pantry.unavailable,
+      lessened: List.unmodifiable(lessened),
+      atHomeCount: atHome,
     );
   }
 
@@ -289,64 +378,11 @@ class MenuShoppingMergePlanner {
     unit: row.unit,
     category: row.category,
     sourceCount: row.sourceCount,
+    recipeCount: row.recipeCount,
     mark: mark,
     extraAmounts: row.extraAmounts,
     ingredientId: row.ingredientId,
   );
-
-  /// Q4-03: the same deduction for one row outside a merge (the recipe's
-  /// "Lägg {n} varor i inköpslistan"), so a recipe and a week count against
-  /// the pantry by one rule. [pantry] is the whole pantry; the rows are
-  /// matched by [IngredientIdentity.sameItem] as in [preview]. Returns the
-  /// amount still to buy: null when enough is at home, [amount] unchanged
-  /// when nothing can be subtracted (no match, another unit family, past
-  /// its date), else the difference. [mark] is the row's
-  /// "Kanske hemma" or "Kolla datum", carried as a merge line carries it.
-  static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
-    required String name,
-    required double? amount,
-    required String unit,
-    required List<PantryItem> pantry,
-    String? ingredientId,
-  }) {
-    final matches = [
-      for (final item in pantry)
-        if (IngredientIdentity.sameItem(
-          item.ingredientName,
-          item.ingredientId,
-          name,
-          ingredientId,
-        ))
-          item,
-    ];
-    if (matches.isEmpty) {
-      return (
-        covered: false,
-        amount: amount,
-        mark: MenuShoppingPantryMark.none,
-      );
-    }
-    final row = AggregatedShoppingItem(
-      name: name,
-      amount: amount,
-      unit: UnitDefinitions.canonical(unit),
-      category: '',
-      sourceCount: 1,
-    );
-    return switch (_deduct(row, matches)) {
-      _Covered() => (
-        covered: true,
-        amount: null,
-        mark: MenuShoppingPantryMark.none,
-      ),
-      _Remaining(:final amount) => (
-        covered: false,
-        amount: amount,
-        mark: MenuShoppingPantryMark.none,
-      ),
-      _Marked(:final mark) => (covered: false, amount: amount, mark: mark),
-    };
-  }
 
   static _Deduction _deduct(AggregatedShoppingItem row, List<PantryItem> at) {
     if (at.any((p) => p.expiryStatus == PantryExpiryStatus.expired)) {

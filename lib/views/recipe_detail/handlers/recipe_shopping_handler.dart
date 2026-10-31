@@ -6,7 +6,6 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/utils/text/shopping_list_generator.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_add_to_list_dialog.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -33,13 +32,7 @@ class RecipeShoppingHandler {
     List<PantryItem>? pantry,
   }) {
     if (pantry == null) return null;
-    return RecipePantryCheck.check(
-      ShoppingListGenerator.generateShoppingItemsFromRecipe(
-        recipe,
-        portions: portions,
-      ),
-      pantry,
-    );
+    return RecipePantryCheck.check(recipe, portions: portions, pantry: pantry);
   }
 
   /// Q4-03: the items the button adds, at [portions]. With a known
@@ -50,12 +43,11 @@ class RecipeShoppingHandler {
     Recipe recipe, {
     required int portions,
     List<PantryItem>? pantry,
-  }) =>
-      pantryCheck(recipe, portions: portions, pantry: pantry)?.toBuy ??
-      ShoppingListGenerator.generateShoppingItemsFromRecipe(
-        recipe,
-        portions: portions,
-      );
+  }) => RecipePantryCheck.check(
+    recipe,
+    portions: portions,
+    pantry: pantry ?? const [],
+  ).toBuy;
 
   /// Q6-09 = C (produktbeslut 2026-09-27b): whether the known pantry covers
   /// every ingredient at [portions], so nothing would be added
@@ -126,10 +118,7 @@ class RecipeShoppingHandler {
       );
       final shoppingItems =
           check?.toBuy ??
-          ShoppingListGenerator.generateShoppingItemsFromRecipe(
-            recipe,
-            portions: currentPortions,
-          );
+          RecipePantryCheck.check(recipe, portions: currentPortions).toBuy;
 
       if (shoppingItems.isEmpty && (check?.coveredAtHome.isNotEmpty ?? false)) {
         // Everything is at home: nothing is added, and the user is told so.
