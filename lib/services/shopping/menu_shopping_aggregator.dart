@@ -79,16 +79,6 @@ typedef ScaledRecipe = ({Recipe recipe, double factor});
 class MenuShoppingAggregator {
   const MenuShoppingAggregator._();
 
-  /// [excludeNames] (BUT-1279): normalized ingredient names to drop from the
-  /// result — used to keep pantry staples off the generated list. Each name
-  /// must already be passed through [IngredientIdentity.nameKey].
-  /// Retained as public API: since BUT-1613 the generator splits staples from
-  /// a single unfiltered pass, so the only current caller is the unit test.
-  static List<AggregatedShoppingItem> aggregate(
-    List<ScaledRecipe> placements, {
-    Set<String> excludeNames = const {},
-  }) => aggregateForMerge(placements, excludeNames: excludeNames).items;
-
   /// P6-U02: the aggregation the merge sheet (#inkopmerge) reads, with the
   /// numbers its summary shows.
   ///
@@ -98,7 +88,6 @@ class MenuShoppingAggregator {
   /// stays its own row, as written. Conversion only ever joins rows of the
   /// same ingredient, so with merging off it has nothing to join and does
   /// nothing (an interpretation: the drawing shows both switches on).
-  /// [convertUnits] off keeps "2 dl" and "100 ml" as two rows.
   static MenuShoppingAggregation aggregateForMerge(
     List<ScaledRecipe> placements, {
     Set<String> excludeNames = const {},
@@ -377,7 +366,7 @@ class _MergeGroup {
 
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
-    // unit for display (e.g. 500 ml stays ml, 1300 g → 1.3 kg).
+    // unit for display (e.g. 1300 g → 1.3 kg).
     final display =
         _asSpoons() ??
         SmartUnitConverter.convertToReadableUnit(baseQuantity, baseUnit);

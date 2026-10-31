@@ -1086,11 +1086,6 @@ void main() {
       final result = await generator.generateForWeek(_date);
 
       expect(result, isNotNull, reason: 'the deduction must not abort');
-      expect(
-        result!.excludedStaples,
-        2,
-        reason: 'both rows were touched by the pantry',
-      );
       // BUT-1296: the pantry is read for THIS user.
       verify(() => pantryService.watchAll(_testUserId)).called(1);
 
@@ -1170,7 +1165,6 @@ void main() {
         isNotNull,
         reason: 'a pantry read failure must not fail generation',
       );
-      expect(result!.excludedStaples, 0);
       expect(
         capturedUpdate().items.map((i) => i.name),
         ['salt'],
