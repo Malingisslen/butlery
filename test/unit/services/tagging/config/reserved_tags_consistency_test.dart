@@ -31,6 +31,7 @@ import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/config/generated/occasion_vocabulary.g.dart';
 import 'package:butlery/services/tagging/config/reserved_tags.dart';
+import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
 
 void main() {
   // The tag-emitting phase calculators. Phase 5 (cuisine) is config-derived and
@@ -205,5 +206,15 @@ void main() {
       expect(ReservedTags.isReserved('nötköttsfri'), isTrue);
       expect(ReservedTags.isReserved('nötkötsfri'), isTrue);
     });
+  });
+
+  test('every protein tag the tagger can emit is reserved', () {
+    expect(
+      Phase1NutritionCalculator.proteinTags.difference(ReservedTags.all),
+      isEmpty,
+      reason:
+          'a user must not be able to create a personal tag that '
+          'shadows a protein auto tag',
+    );
   });
 }

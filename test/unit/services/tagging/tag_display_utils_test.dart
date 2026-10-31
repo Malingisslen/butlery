@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 
 void main() {
@@ -32,6 +33,22 @@ void main() {
       );
       expect(top, ['kyckling', 'italiensk']);
     });
+
+    test(
+      'every protein tag the tagger can emit outranks a cuisine tag',
+      () {
+        for (final protein in [
+          ...Phase1NutritionCalculator.proteinTags,
+          'fisk-och-skaldjur',
+        ]) {
+          expect(
+            TagDisplayUtils.getTopTags({'italiensk', protein}, {}, limit: 1),
+            [protein],
+            reason: '$protein must be shown before a cuisine tag',
+          );
+        }
+      },
+    );
 
     test('respects the limit', () {
       final top = TagDisplayUtils.getTopTags(

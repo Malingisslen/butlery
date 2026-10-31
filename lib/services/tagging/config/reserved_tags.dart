@@ -3,6 +3,7 @@ import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/config/generated/occasion_vocabulary.g.dart';
+import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
 
 /// Reserved system tag names that cannot be used for personal tags.
 /// Prevents confusion between auto-generated tags and user-created tags.
@@ -18,12 +19,7 @@ class ReservedTags {
     // Phase 1: Time
     'under-15-min', 'under-30-min', 'under-45-min', 'under-60-min',
     'över-60-min',
-    // Phase 1: Protein
-    'kyckling', 'anka', 'kalkon', 'fågel', 'nötkött', 'fläskkött', 'lamm',
-    'vilt',
-    'fisk', 'lax', 'torsk', 'sill', 'skaldjur', 'räkor',
-    'tofu', 'tempeh', 'seitan', 'quorn', 'växtfärs', 'bönprotein', 'oumph',
-    'växtprotein', 'baljväxter', 'ägg',
+    ...Phase1NutritionCalculator.proteinTags,
     // Phase 1: Carb/base
     'pastabaserad', 'risbaserad', 'potatisbaserad', 'nudelbaserad',
     'brödbaserad', 'fullkorn',

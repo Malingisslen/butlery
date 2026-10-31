@@ -50,6 +50,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/search/recipe_search_matcher.dart';
 
 /// Comprehensive recipe selection ViewModel providing advanced recipe sharing through service integration.
 /// Manages recipe selection state enabling social recipe sharing with multi-recipe selection, sharing status tracking,
@@ -313,7 +314,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// prioritizing unshared recipes and maintaining alphabetical organization for optimal
   /// user experience and efficient recipe discovery through responsive filtering operations.
   /// **Filtering Features:**
-  /// - Multi-criteria search across recipe titles, descriptions, and ingredients with comprehensive matching
   /// - Case-insensitive search with performance optimized filtering and responsive results
   /// - Sharing status prioritization with unshared recipes displayed first for optimal user experience
   /// - Alphabetical sorting with consistent recipe organization and predictable interface behavior
@@ -322,16 +322,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
     var filtered = _allRecipes;
 
     // Apply text-based search filtering
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      filtered = filtered.where((recipe) {
-        return recipe.title.toLowerCase().contains(query) ||
-            recipe.description.toLowerCase().contains(query) ||
-            recipe.ingredients.any(
-              (ingredient) => ingredient.toLowerCase().contains(query),
-            );
-      }).toList();
-    }
+    filtered = RecipeSearchMatcher.filter(filtered, _searchQuery);
 
     // Apply intelligent sorting: unshared recipes first, then alphabetical
     filtered.sort((a, b) {
