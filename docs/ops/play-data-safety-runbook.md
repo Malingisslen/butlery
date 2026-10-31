@@ -185,25 +185,15 @@ Processors (no sharing flag triggered):
 | Processor | Function | Region | DPA |
 |---|---|---|---|
 | **Google Firebase** (Auth, Firestore, Storage, FCM, Analytics, Crashlytics, Performance, Installations, App Check, Realtime Database) | Backend infrastructure | Firestore data: **`europe-west3` (Frankfurt)** — resolved in BUT-819, 2026-06-14. Compute (Cloud Functions) pinned to `europe-west1`. Auth: global (managed). Both regions are EU. Verify live: `gcloud firestore backups list --location=europe-west3` (see `docs/ops/backups.md`) | Google Cloud DPA |
-| **Google Cloud Vertex AI** (Gemini models for recipe parsing + OCR) | LLM-based recipe extraction | `europe-west1` (Belgium) | Google Cloud DPA |
-| **OCR.space** (a9t9 software GmbH) | OCR tier 2 for recipe-photo import | EU/EEA (Austria) | OCR.space privacy policy |
-| **Google Cloud Vision** | OCR tier 3 fallback | **Global endpoint `vision.googleapis.com` — NOT EU-pinned.** Dormant: gated on a build-time `--dart-define GOOGLE_VISION_API_KEY` that is set nowhere in this repo | Google Cloud DPA — **but see the warning below** |
-| **Tesseract** (self-hosted) | OCR tier 4 fallback | Wherever the endpoint is hosted. Dormant: gated on a build-time `--dart-define TESSERACT_API_URL`, set nowhere in this repo | Self-hosted — no third party |
+| **Google Cloud Vertex AI** (Gemini models for recipe parsing, and reading a recipe photo after the user says yes to AI) | LLM-based recipe extraction | `europe-west4` (Netherlands), `VERTEX_LOCATION` in `functions/src/llm/gemini-client.ts` | Google Cloud DPA |
 
-**(re-verified 2026-08-25 — the restored list named only Firebase, Vertex AI, OCR.space and
-Algolia. The OCR chain is four tiers, not one.)** `lib/services/ocr_extraction_service.dart`
-falls back on-device ML Kit → OCR.space → Google Vision → Tesseract, each behind its own
-circuit breaker. On-device ML Kit is not a processor at all: it runs locally and sends nothing.
+A recipe photo is read on the device first, by ML Kit (`lib/services/ocr_extraction_service.dart`,
+behind the `enableOnDeviceOcr` flag). On-device ML Kit is not a processor: it runs locally and
+sends nothing. The photo goes to Vertex AI (`ocrRecipeImage`) only after the user says yes to AI
+reading it, and the server refuses the call without the AI-processing consent (`withAiConsent`,
+`functions/src/llm/ai-consent.ts`).
 
-> **Blocker before ticking any box on this page.** Two of those tiers are shipped code that
-> today's builds cannot reach (no key / no URL configured), and **neither is named in
-> `assets/legal/privacy_policy_{sv,en}.md` §6.2**. One `--dart-define` at build time turns
-> Google Vision on and starts sending recipe photos to a non-EU-pinned endpoint that the
-> privacy policy does not disclose. Before submitting: either confirm both stay unconfigured
-> (and say so here), or add them to the policy first. Own ticket — the policy is legal text
-> and is not edited from this runbook.
-
-If Play Console UI insists on declaring transfers when the data leaves the EU/EEA, file under "App functionality" with no Sharing flag. The Vertex AI Belgium region is EU, so no Chapter V transfer occurs for recipe text/images sent for parsing.
+If Play Console UI insists on declaring transfers when the data leaves the EU/EEA, file under "App functionality" with no Sharing flag. The Vertex AI Netherlands region is EU, so no Chapter V transfer occurs for recipe text/images sent for parsing.
 
 **Open conflict, not resolved here:** `assets/legal/privacy_policy_{sv,en}.md` §6.2 still states
 `europe-west1` for Firestore, while `docs/ops/backups.md` records `europe-west3` as the resolved
@@ -240,7 +230,6 @@ No data-deletion page is hosted (404 when measured 2026-10-28), so there is no U
 - [ ] **Re-read** `ios/Runner/PrivacyInfo.xcprivacy` to confirm no new `NSPrivacyCollectedDataType` entries since last audit (`docs/ops/ios-privacy-manifest-audit.md`). If any are new, add them to §2 here and to the Play Console form.
 - [ ] **Re-read** `assets/legal/privacy_policy_en.md` and confirm §6.1 third-party processor list matches §3 of this runbook.
 - [ ] **Verify** the Firestore region against `docs/ops/backups.md` (recorded region is `europe-west3`, Frankfurt; compute stays on `europe-west1`). Run `gcloud firestore backups list --location=europe-west3 --project=butlery-prod` to confirm the live database matches — `--location=eur3` returns an empty list and looks exactly like "no backups exist". If non-EU, declare cross-border transfer in §3.
-- [ ] **Verify** the OCR fallback tiers (§3): confirm `GOOGLE_VISION_API_KEY` and `TESSERACT_API_URL` are still undefined in the release build's `--dart-define` set. If either is configured, the privacy policy must name that processor **before** the form is submitted.
 - [ ] **Cross-check** Play Console field labels against this runbook — Google occasionally renames categories (e.g., "Other in-app messages" was "Messages" before 2025). If a label has changed, look at the field's tooltip rather than the column header.
 - [ ] **Save as draft.** Walk away for 30 minutes. Re-read for typos and inconsistencies between the iOS manifest and Play form.
 - [ ] **Submit.** Take a PDF screenshot of every page of the form before pressing Submit. Save to `docs/ops/play-data-safety-submission-{YYYY-MM-DD}.pdf` for the audit trail.
@@ -282,7 +271,6 @@ Update this file (and re-submit Data Safety form) whenever any of the following 
 - A new analytics event tracks a new field that didn't exist before (especially anything with location, contact, or device-fingerprinting characteristics).
 - Firestore region changes (`docs/ops/backups.md`).
 - Vertex AI region changes.
-- An OCR fallback tier is configured — a release build that defines `GOOGLE_VISION_API_KEY` or `TESSERACT_API_URL` adds a processor (§3).
 - The age floor moves, or `verifySignupAge` / `isAgeCompliant()` changes shape (§1).
 - Voice input starts sending audio off-device for any reason (§2.6 flips from No to Yes).
 - Privacy policy version bumps in `assets/legal/privacy_policy_en.md`.

@@ -6760,3 +6760,18 @@ writes have reached the server, and any other sign-out or any sign-in withdraws 
   offline, so the request is not made (2 s limit) rather than risk deleting unsent writes.
 - **Not run on a device:** native `clearPersistence` after the settings are applied, and web with
   several tabs open (the flag then stays set for the next start).
+
+## Learned ingredient aliases: a decided candidate outlives its voters' accounts (2026-10-31)
+
+Decided by Malin 2026-10-31 (”1 och 2 ja”).
+
+- **Erasure.** Tier 1 step `learned_aliases` (`cleanUserFromLearnedAliases`,
+  `functions/src/account/cascade/learned-aliases.ts`) removes the uid from `userIds` on every
+  candidate in `analytics/ingredients/learned_aliases` and deletes a `pending` or
+  `held_for_review` candidate the user was the last voter on.
+- **An `approved`, `rejected` or `revoked` candidate is kept without voters.** `approved` backs
+  the alias on the ingredient; `rejected` and `revoked` stop the same wrong spelling being
+  approved again. What stays is the misspelling and the correction, not who wrote it.
+- **Art. 15.** Section `learned_aliases` (`functions/src/exports/erasure-residue/account-sections.ts`)
+  reads the same predicate and leaves out `userIds`.
+- Art. 30 record: `docs/security/correction-log-retention.md`.
