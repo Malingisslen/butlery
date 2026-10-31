@@ -92,29 +92,6 @@ void main() {
       },
     );
 
-    // CompactAllergenRow._defaultAllergens is private; hardcode known keys.
-    test(
-      'should have CompactAllergenRow defaults as subset of AllergenConfig',
-      () {
-        const compactRowDefaults = {
-          'gluten',
-          'mjölk',
-          'nötter',
-          'ägg',
-        };
-        final missing = compactRowDefaults.difference(canonicalKeys);
-
-        expect(
-          missing,
-          isEmpty,
-          reason:
-              'CompactAllergenRow._defaultAllergens contains keys not in '
-              'AllergenConfig.all: $missing. '
-              'Verify lib/widgets/tagging/tag_result_display.dart',
-        );
-      },
-    );
-
     test('should have no duplicate keys in AllergenConfig', () {
       final keys = AllergenConfig.allKeys;
       final duplicates = keys.toList()
@@ -163,7 +140,7 @@ void main() {
       );
     });
 
-    // CompactDietaryRow and TagResultDisplay use _defaultDietaryOrder
+    // TagResultDisplay uses _defaultDietaryOrder
     // (derived from DietaryConfig.allKeys). This snapshot test guards against
     // accidental removal of dietary entries.
     test('should have all expected dietary keys', () {

@@ -11,9 +11,6 @@ class UserAllergenPreferences {
   /// Dietary preferences to display.
   final Set<String> trackedDietary;
 
-  /// Show allergen badges on recipe cards.
-  final bool showOnCards;
-
   /// Show allergen badges on detail view.
   final bool showOnDetail;
 
@@ -27,7 +24,6 @@ class UserAllergenPreferences {
   const UserAllergenPreferences({
     required this.trackedAllergens,
     required this.trackedDietary,
-    this.showOnCards = true,
     this.showOnDetail = true,
     this.showCoverage = true,
     bool? includeUnknownInMenu,
@@ -61,7 +57,6 @@ class UserAllergenPreferences {
       'vegetarisk',
       'vegansk',
     },
-    showOnCards: true,
     showOnDetail: true,
     showCoverage: true,
   );
@@ -85,11 +80,6 @@ class UserAllergenPreferences {
     return UserAllergenPreferences(
       trackedAllergens: migrated.allergens,
       trackedDietary: migrated.dietary,
-      showOnCards: SerializationUtils.safeBool(
-        data,
-        'showOnCards',
-        defaultValue: true,
-      ),
       showOnDetail: SerializationUtils.safeBool(
         data,
         'showOnDetail',
@@ -111,7 +101,6 @@ class UserAllergenPreferences {
     return {
       'trackedAllergens': trackedAllergens.toList(),
       'trackedDietary': trackedDietary.toList(),
-      'showOnCards': showOnCards,
       'showOnDetail': showOnDetail,
       'showCoverage': showCoverage,
       // Written even when null: the settings doc is saved with merge, so an
@@ -124,7 +113,6 @@ class UserAllergenPreferences {
   UserAllergenPreferences copyWith({
     Set<String>? trackedAllergens,
     Set<String>? trackedDietary,
-    bool? showOnCards,
     bool? showOnDetail,
     bool? showCoverage,
     bool? includeUnknownInMenu,
@@ -132,7 +120,6 @@ class UserAllergenPreferences {
     return UserAllergenPreferences(
       trackedAllergens: trackedAllergens ?? this.trackedAllergens,
       trackedDietary: trackedDietary ?? this.trackedDietary,
-      showOnCards: showOnCards ?? this.showOnCards,
       showOnDetail: showOnDetail ?? this.showOnDetail,
       showCoverage: showCoverage ?? this.showCoverage,
       includeUnknownInMenu: includeUnknownInMenu ?? _includeUnknownInMenu,
@@ -244,7 +231,6 @@ class UserAllergenPreferences {
           runtimeType == other.runtimeType &&
           _setEquals(trackedAllergens, other.trackedAllergens) &&
           _setEquals(trackedDietary, other.trackedDietary) &&
-          showOnCards == other.showOnCards &&
           showOnDetail == other.showOnDetail &&
           showCoverage == other.showCoverage &&
           _includeUnknownInMenu == other._includeUnknownInMenu;
@@ -257,7 +243,6 @@ class UserAllergenPreferences {
     // `==` compares set CONTENTS; a Set's own hashCode is identity.
     Object.hashAllUnordered(trackedAllergens),
     Object.hashAllUnordered(trackedDietary),
-    showOnCards,
     showOnDetail,
     showCoverage,
     _includeUnknownInMenu,

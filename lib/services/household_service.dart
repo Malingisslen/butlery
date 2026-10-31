@@ -469,7 +469,6 @@ class HouseholdService extends BaseService {
     trackedAllergens: allergens,
     trackedDietary: dietary,
     includeUnknownInMenu: includeUnknown,
-    showOnCards: true,
     showOnDetail: true,
     showCoverage: true,
   );

@@ -17,7 +17,7 @@ import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
-import 'package:butlery/widgets/tagging/tag_result_display.dart';
+import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 
 import '../infrastructure/builders/recipe_builder.dart';
 import '../infrastructure/helpers/widget_test_app.dart';
@@ -92,7 +92,7 @@ void main() {
         ) async {
           await pumpCard(tester, gridView: gridView);
 
-          expect(find.byType(CompactAllergenRow), findsNothing);
+          expect(find.byType(AllergenStatusBadge), findsNothing);
           expect(find.text('Ej kontrollerat'), findsNothing);
         },
       );

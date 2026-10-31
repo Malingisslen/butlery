@@ -17,7 +17,6 @@ void main() {
     const seedPreferences = UserAllergenPreferences(
       trackedAllergens: {'gluten', 'mjölk'},
       trackedDietary: {'vegansk'},
-      showOnCards: true,
       showOnDetail: true,
       showCoverage: false,
     );
@@ -80,7 +79,6 @@ void main() {
       });
 
       test('should reflect display settings from seed data', () {
-        expect(viewModel.showOnCards, isTrue);
         expect(viewModel.showOnDetail, isTrue);
         expect(viewModel.showCoverage, isFalse);
       });
@@ -185,13 +183,6 @@ void main() {
     // ---- Display settings ----
 
     group('display settings', () {
-      test('should update showOnCards and set hasChanges', () {
-        viewModel.setShowOnCards(false);
-
-        expect(viewModel.showOnCards, isFalse);
-        expect(viewModel.hasChanges, isTrue);
-      });
-
       test('should update showOnDetail and set hasChanges', () {
         viewModel.setShowOnDetail(false);
 
@@ -204,15 +195,6 @@ void main() {
 
         expect(viewModel.showCoverage, isTrue);
         expect(viewModel.hasChanges, isTrue);
-      });
-
-      test('should notify listeners when changing showOnCards', () {
-        var notified = false;
-        viewModel.addListener(() => notified = true);
-
-        viewModel.setShowOnCards(false);
-
-        expect(notified, isTrue);
       });
 
       test('should notify listeners when changing showOnDetail', () {
@@ -348,7 +330,6 @@ void main() {
       test('should have default display settings', () {
         viewModel.resetToDefaults();
 
-        expect(viewModel.showOnCards, isTrue);
         expect(viewModel.showOnDetail, isTrue);
         expect(viewModel.showCoverage, isTrue);
       });
@@ -368,13 +349,12 @@ void main() {
     group('discardChanges', () {
       test('should reload preferences from service', () {
         viewModel.toggleAllergen('gluten'); // mutate local state
-        viewModel.setShowOnCards(false);
+        viewModel.setShowOnDetail(false);
 
         viewModel.discardChanges();
 
         // Should match the seed preferences from the mock
         expect(viewModel.preferences, equals(seedPreferences));
-        expect(viewModel.showOnCards, isTrue);
         expect(viewModel.isAllergenTracked('gluten'), isTrue);
       });
 
@@ -403,7 +383,6 @@ void main() {
         const updatedPreferences = UserAllergenPreferences(
           trackedAllergens: {'soja'},
           trackedDietary: {'vegetarisk'},
-          showOnCards: false,
           showOnDetail: false,
           showCoverage: true,
         );
@@ -415,7 +394,7 @@ void main() {
 
         expect(viewModel.preferences, equals(updatedPreferences));
         expect(viewModel.trackedAllergens, equals({'soja'}));
-        expect(viewModel.showOnCards, isFalse);
+        expect(viewModel.showOnDetail, isFalse);
       });
     });
   });
