@@ -5249,8 +5249,6 @@
       }
     }
   },
-  "a11yAllergenStatusRow": "Allergenstatus",
-  "a11yDietaryStatusRow": "Koststatus",
   "a11yShowImage": "Visa bild",
   "a11yShowMore": "Visa fler",
   "a11yShoppingItemMoreOptions": "Fler val för {name}",

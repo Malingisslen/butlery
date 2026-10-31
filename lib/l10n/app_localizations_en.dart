@@ -7734,12 +7734,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yAllergenStatusRow => 'Allergen status';
-
-  @override
-  String get a11yDietaryStatusRow => 'Dietary status';
-
-  @override
   String get a11yShowImage => 'Show image';
 
   @override

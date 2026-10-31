@@ -11834,18 +11834,6 @@ abstract class AppLocalizations {
   /// **'Exkludera {tagName}'**
   String a11yExcludeTag(String tagName);
 
-  /// No description provided for @a11yAllergenStatusRow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Allergenstatus'**
-  String get a11yAllergenStatusRow;
-
-  /// No description provided for @a11yDietaryStatusRow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koststatus'**
-  String get a11yDietaryStatusRow;
-
   /// No description provided for @a11yShowImage.
   ///
   /// In sv, this message translates to:

@@ -5215,8 +5215,6 @@
       }
     }
   },
-  "a11yAllergenStatusRow": "Allergen status",
-  "a11yDietaryStatusRow": "Dietary status",
   "a11yShowImage": "Show image",
   "a11yShowMore": "Show more",
   "a11yShoppingItemMoreOptions": "More options for {name}",
