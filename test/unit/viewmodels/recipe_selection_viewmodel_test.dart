@@ -238,6 +238,13 @@ void main() {
       },
     );
 
+    test('uses the app-wide rule: words may match different fields', () {
+      // "healthy" is only in the description, "carrots" only in an
+      // ingredient, so the old whole-phrase check found nothing.
+      viewModel.updateSearchQuery('healthy carrots');
+      expect(viewModel.filteredRecipes.map((r) => r.id), ['recipe_2']);
+    });
+
     test('should clear search and support compatibility methods', () {
       viewModel.updateSearchQuery('pasta');
       expect(viewModel.filteredRecipes.length, equals(1));

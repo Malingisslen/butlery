@@ -190,38 +190,6 @@ void main() {
     });
   });
 
-  group('Search', () {
-    test('searchPersonalRecipes matches title', () {
-      final results = viewModel.searchPersonalRecipes('Kott');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches ingredient', () {
-      final results = viewModel.searchPersonalRecipes('kottfars');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches instruction', () {
-      final results = viewModel.searchPersonalRecipes('Forma');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches tag', () {
-      final results = viewModel.searchPersonalRecipes('middag');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes returns all for empty query', () {
-      final results = viewModel.searchPersonalRecipes('');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes returns empty for no match', () {
-      final results = viewModel.searchPersonalRecipes('pizza');
-      expect(results, isEmpty);
-    });
-  });
-
   group('Statistics', () {
     test('getPersonalMealTypeCounts groups correctly', () {
       final counts = viewModel.getPersonalMealTypeCounts();

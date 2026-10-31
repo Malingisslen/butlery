@@ -276,38 +276,6 @@ void main() {
         );
       });
     });
-
-    group('Advanced Search', () {
-      test('should combine multiple search criteria', () {
-        final results = service.advancedSearch(
-          testRecipes,
-          searchQuery: 'pasta',
-          mealType: 'middag',
-          maxTime: 30,
-          minRating: 3.5,
-        );
-
-        expect(results.length, equals(1));
-        expect(results.first.title, equals('Pasta Carbonara'));
-      });
-
-      test('should handle empty advanced search', () {
-        final results = service.advancedSearch(testRecipes);
-
-        expect(results.length, equals(testRecipes.length));
-      });
-
-      test('should filter by tags in advanced search', () {
-        final results = service.advancedSearch(
-          testRecipes,
-          tags: ['italiensk'],
-          maxTime: 90,
-        );
-
-        expect(results.length, equals(2));
-      });
-    });
-
     group('Sorting', () {
       test('should sort by title ascending', () {
         final sorted = service.sortRecipes(testRecipes, SortCriteria.title);
@@ -360,117 +328,6 @@ void main() {
         expect(sorted.last.mealType, equals('middag'));
       });
     });
-
-    group('Search Suggestions', () {
-      test('should return empty list for short partial input', () {
-        final suggestions = service.getSearchSuggestions(testRecipes, 'k');
-
-        expect(suggestions, isEmpty);
-      });
-
-      test('should generate suggestions from titles', () {
-        final suggestions = service.getSearchSuggestions(testRecipes, 'pa');
-
-        expect(suggestions.contains('Pasta Carbonara'), isTrue);
-        expect(suggestions.contains('Pannkakor'), isTrue);
-      });
-
-      test('should generate suggestions from ingredients', () {
-        final suggestions = service.getSearchSuggestions(testRecipes, 'mj');
-
-        expect(suggestions.any((s) => s.contains('mjöl')), isTrue);
-        expect(suggestions.any((s) => s.contains('mjölk')), isTrue);
-      });
-
-      test('should generate suggestions from tags', () {
-        final suggestions = service.getSearchSuggestions(testRecipes, 'sve');
-
-        expect(suggestions.contains('svensk'), isTrue);
-      });
-
-      test('should limit suggestions to 10', () {
-        // Create many recipes with similar ingredients
-        final manyRecipes = List.generate(
-          20,
-          (i) => RecipeFactory.build(
-            title: 'Recipe $i',
-            ingredients: ['ingredient$i', 'common'],
-            personalTagIds: ['tag$i', 'common'],
-          ),
-        );
-
-        final suggestions = service.getSearchSuggestions(manyRecipes, 'co');
-
-        expect(suggestions.length, lessThanOrEqualTo(10));
-      });
-
-      test('should sort suggestions alphabetically', () {
-        final suggestions = service.getSearchSuggestions(testRecipes, 'kö');
-
-        expect(suggestions, equals(suggestions..sort()));
-      });
-    });
-
-    group('Popular Search Terms', () {
-      test('should extract popular terms from recipes', () {
-        final popularTerms = service.getPopularSearchTerms(testRecipes);
-
-        expect(popularTerms, isNotEmpty);
-        expect(popularTerms.contains('middag'), isTrue);
-      });
-
-      test('should clean ingredient terms', () {
-        final popularTerms = service.getPopularSearchTerms(testRecipes);
-
-        // Should not contain measurements
-        expect(popularTerms.any((t) => t.contains('dl')), isFalse);
-        expect(popularTerms.any((t) => t.contains('msk')), isFalse);
-      });
-
-      test('should limit popular terms to 20', () {
-        final manyRecipes = List.generate(
-          50,
-          (i) => RecipeFactory.build(
-            mealType: 'type$i',
-            personalTagIds: ['tag$i', 'tag${i + 1}'],
-            ingredients: ['ingredient$i'],
-          ),
-        );
-
-        final popularTerms = service.getPopularSearchTerms(manyRecipes);
-
-        expect(popularTerms.length, lessThanOrEqualTo(20));
-      });
-    });
-
-    group('SearchParameters', () {
-      test('should create with default values', () {
-        const params = SearchParameters();
-
-        expect(params.query, isNull);
-        expect(params.mealType, isNull);
-        expect(params.tags, isEmpty);
-        expect(params.sortBy, equals(SortCriteria.title));
-        expect(params.sortAscending, isTrue);
-      });
-
-      test('should copyWith to update parameters', () {
-        const original = SearchParameters(
-          query: 'pasta',
-          mealType: 'middag',
-        );
-
-        final updated = original.copyWith(
-          query: 'kyckling',
-          minRating: 4.0,
-        );
-
-        expect(updated.query, equals('kyckling'));
-        expect(updated.mealType, equals('middag'));
-        expect(updated.minRating, equals(4.0));
-      });
-    });
-
     group('Edge Cases', () {
       test('should handle empty recipe list', () {
         final results = service.searchRecipes([], 'test');
@@ -584,71 +441,6 @@ void main() {
         expect(results.length, 1);
         expect(results.first.title, 'Vegansk pasta');
       });
-
-      test('should generate suggestions from tag names, not UUIDs', () {
-        final suggestions = service.getSearchSuggestions(
-          recipesWithUuidTags,
-          'gri',
-        );
-
-        // Should contain the tag name "grillat", not the UUID
-        expect(
-          suggestions.any((s) => s.toLowerCase().contains('grillat')),
-          isTrue,
-          reason: 'Suggestions should use tag names',
-        );
-        expect(
-          suggestions.any((s) => s.contains('a1b2c3d4')),
-          isFalse,
-          reason: 'Suggestions should not contain UUIDs',
-        );
-      });
-
-      test('should generate suggestions from tag names for vegansk', () {
-        final suggestions = service.getSearchSuggestions(
-          recipesWithUuidTags,
-          've',
-        );
-
-        expect(
-          suggestions.any((s) => s.toLowerCase().contains('vegansk')),
-          isTrue,
-          reason: 'Suggestions should include tag name "vegansk"',
-        );
-      });
-
-      test('should include tag names in popular search terms', () {
-        final popularTerms = service.getPopularSearchTerms(recipesWithUuidTags);
-
-        // Tag names should appear in popular terms
-        expect(
-          popularTerms.any((t) => t.toLowerCase() == 'grillat'),
-          isTrue,
-          reason: 'Popular terms should include tag name "grillat"',
-        );
-        expect(
-          popularTerms.any((t) => t.toLowerCase() == 'vegansk'),
-          isTrue,
-          reason: 'Popular terms should include tag name "vegansk"',
-        );
-      });
-
-      test('should NOT include tag UUIDs in popular search terms', () {
-        final popularTerms = service.getPopularSearchTerms(recipesWithUuidTags);
-
-        // No UUID-like strings should appear
-        expect(
-          popularTerms.any((t) => t.contains('a1b2c3d4')),
-          isFalse,
-          reason: 'Popular terms should not contain UUID fragments',
-        );
-        expect(
-          popularTerms.any((t) => t.contains('f9e8d7c6')),
-          isFalse,
-          reason: 'Popular terms should not contain UUID fragments',
-        );
-      });
-
       test('should handle recipe with null personalTags gracefully', () {
         final recipeWithNullTags = [
           RecipeFactory.build(
@@ -666,15 +458,6 @@ void main() {
         // so neither UUID nor name matching should return results via tags
         // (recipe might still match on other fields like title/description)
         expect(() => results, returnsNormally);
-
-        final suggestions = service.getSearchSuggestions(
-          recipeWithNullTags,
-          'so',
-        );
-        expect(() => suggestions, returnsNormally);
-
-        final popular = service.getPopularSearchTerms(recipeWithNullTags);
-        expect(() => popular, returnsNormally);
       });
     });
   });

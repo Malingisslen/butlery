@@ -266,6 +266,19 @@ void main() {
         expect(results.first.title, equals('Pasta Carbonara'));
       });
 
+      test('uses the app-wide rule: words may match different fields', () {
+        // "Pannkakor" is only in the title, "mjolk" only in an ingredient
+        // and written without the ö.
+        final recipe = RecipeFactory.build(
+          title: 'Pannkakor med sylt',
+          ingredients: ['mjölk', 'ägg', 'mjöl'],
+        );
+        mockRecipeService.setRecipeState(recipes: [...allRecipes, recipe]);
+
+        final results = viewModel.searchRecipes('pannkakor mjolk');
+        expect(results.map((r) => r.title), ['Pannkakor med sylt']);
+      });
+
       test('should handle case-insensitive search', () {
         final results = viewModel.searchRecipes('PANNKAKOR');
         expect(results.length, equals(1));

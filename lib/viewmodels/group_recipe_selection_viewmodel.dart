@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/search/recipe_search_matcher.dart';
 
 /// ViewModel for selecting and sharing recipes with a group
 /// Uses AsyncOperationMixin for loading state management while maintaining
@@ -231,18 +232,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
   void _applyFilters() {
     var filtered = _allRecipes;
 
-    // Apply text search
-    if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((recipe) {
-        final titleMatch = recipe.title.toLowerCase().contains(
-          _searchQuery.toLowerCase(),
-        );
-        final descMatch = recipe.description.toLowerCase().contains(
-          _searchQuery.toLowerCase(),
-        );
-        return titleMatch || descMatch;
-      }).toList();
-    }
+    filtered = RecipeSearchMatcher.filter(filtered, _searchQuery);
 
     // Sort: unshared first, then alphabetically
     filtered.sort((a, b) {

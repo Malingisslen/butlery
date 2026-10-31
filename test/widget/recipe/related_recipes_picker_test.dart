@@ -31,6 +31,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
@@ -291,4 +292,51 @@ void main() {
     expect(find.text('Välj relaterade recept'), findsNothing);
     expect(linked, 0);
   });
+
+  testWidgets(
+    'typing an auto-tag word finds a recipe whose title does not contain it',
+    (tester) async {
+      final tagged = _pickable(id: 'r-tagged', title: 'Mammas special');
+      final taggedWithNoodles = tagged.copyWith(
+        tagResult: TagResult(
+          tags: const {'noodle-dish'},
+          allergenStatus: const {},
+          dietaryStatus: const {},
+          coverage: 1.0,
+          generatedAt: DateTime(2026, 1, 1),
+        ),
+      );
+      mockVm.setRecipeListState(
+        recipes: [
+          taggedWithNoodles,
+          _pickable(id: 'r-soup', title: 'Ärtsoppa'),
+        ],
+        isLoading: false,
+      );
+      TestServiceLocator.registerMock<RecipeListViewModel>(mockVm);
+
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r-current',
+            relatedRecipes: const [],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('+ Länka relaterat recept'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Mammas special'), findsOneWidget);
+      expect(find.text('Ärtsoppa'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'nudlar');
+      await tester.pump();
+
+      expect(find.text('Mammas special'), findsOneWidget);
+      expect(find.text('Ärtsoppa'), findsNothing);
+    },
+  );
 }
