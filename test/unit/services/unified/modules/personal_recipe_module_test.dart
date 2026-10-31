@@ -17,6 +17,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -188,6 +189,134 @@ void main() {
         expect(structured[1].amount, 2);
         expect(structured[1].unit, 'msk');
         expect(structured[2].amount, isNull);
+      });
+
+      group('ingredient registry links', () {
+        late _MockIngredientIdResolver resolver;
+
+        PersonalRecipeModule moduleWith(IngredientIdResolver? resolver) =>
+            PersonalRecipeModule(
+              recipeRepository: mockRepository,
+              userRepository: mockUserRepository,
+              getCacheHelper: () => mockCacheHelper,
+              getCurrentUserId: () => currentUserId,
+              getCurrentUserDisplayName: () => currentUserDisplayName,
+              setError: (error) => lastError = error,
+              notifyListeners: () => notifyListenersCalled++,
+              getServiceAdapter: () => mockServiceAdapter,
+              ingredientIdResolver: resolver,
+            );
+
+        setUpAll(() => registerFallbackValue(<RecipeIngredient>[]));
+
+        setUp(() => resolver = _MockIngredientIdResolver());
+
+        test(
+          'a created recipe is stored with the ids the resolver found',
+          () async {
+            when(() => resolver.resolve(any())).thenAnswer(
+              (invocation) async => [
+                for (final row
+                    in invocation.positionalArguments.first
+                        as List<RecipeIngredient>)
+                  row.withIngredientId(row.name == 'gul lök' ? 'onion' : null),
+              ],
+            );
+
+            final linking = moduleWith(resolver);
+            final id = await linking.createPersonalRecipe(
+              title: 'Kycklingcurry',
+              ingredients: ['1 gul lök', 'Salt'],
+              instructions: ['Koka'],
+            );
+            expect(id, isNotNull);
+
+            final rows = linking
+                .popLastCreatedRecipe()!
+                .core
+                .structuredIngredients!;
+            expect(rows.map((r) => r.ingredientId), ['onion', null]);
+            expect(rows.map((r) => r.raw), ['1 gul lök', 'Salt']);
+          },
+        );
+
+        test(
+          'an updated recipe is re-linked, so a stale id is cleared',
+          () async {
+            when(() => resolver.resolve(any())).thenAnswer(
+              (invocation) async => [
+                for (final row
+                    in invocation.positionalArguments.first
+                        as List<RecipeIngredient>)
+                  row.withIngredientId(null),
+              ],
+            );
+            final stale = RecipeFactory.build(
+              id: 'curry-1',
+              createdBy: 'test-user-123',
+              ingredients: ['1 gul lök'],
+            );
+            stale.core.structuredIngredients = const [
+              RecipeIngredient(
+                amount: 1,
+                name: 'gul lök',
+                raw: '1 gul lök',
+                ingredientId: 'removed-from-registry',
+              ),
+            ];
+
+            await moduleWith(resolver).updatePersonalRecipe(stale);
+
+            final cached = Recipe.fromJson(
+              (await mockCacheHelper.loadJson('curry-1'))!,
+            );
+            expect(
+              cached.core.structuredIngredients!.single.ingredientId,
+              isNull,
+            );
+          },
+        );
+
+        test(
+          'an imported recipe is re-linked, so an id from elsewhere is '
+          'cleared',
+          () async {
+            when(() => resolver.resolve(any())).thenAnswer(
+              (invocation) async => [
+                for (final row
+                    in invocation.positionalArguments.first
+                        as List<RecipeIngredient>)
+                  row.withIngredientId(null),
+              ],
+            );
+            final exported = RecipeFactory.build(
+              id: 'curry-2',
+              createdBy: 'someone-else',
+              ingredients: ['1 gul lök'],
+            );
+            exported.core.structuredIngredients = const [
+              RecipeIngredient(
+                amount: 1,
+                name: 'gul lök',
+                raw: '1 gul lök',
+                ingredientId: 'not-in-this-registry',
+              ),
+            ];
+
+            final ids = await moduleWith(
+              resolver,
+            ).importRecipesFromData([exported.toJson()]);
+            expect(ids, hasLength(1));
+
+            final cached = Recipe.fromJson(
+              (await mockCacheHelper.loadJson('curry-2'))!,
+            );
+            expect(
+              cached.core.structuredIngredients!.single.ingredientId,
+              isNull,
+            );
+          },
+        );
       });
 
       test('isOwnerCopy reaches the stored recipe, plain title kept', () async {
@@ -759,6 +888,8 @@ class _MockOfflineQueue extends Mock implements OfflineService {}
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
 class _MockTaggingService extends Mock implements TaggingService {}
+
+class _MockIngredientIdResolver extends Mock implements IngredientIdResolver {}
 
 class _RecordingAdapter extends MockRecipeServiceAdapter {
   final List<String> updatedIds = [];

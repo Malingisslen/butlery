@@ -17,9 +17,11 @@ PantryItem _pantry(
   double? quantity,
   String unit = 'st',
   DateTime? expiry,
+  String? ingredientId,
 }) => PantryItem(
   id: 'p_$name',
   ingredientName: name,
+  ingredientId: ingredientId,
   quantity: quantity,
   unit: unit,
   location: PantryLocation.pantry,
@@ -37,6 +39,23 @@ void main() {
     _item('Vetemjöl', 3, 'dl'),
     _item('Salt', 1, 'krm'),
   ];
+
+  test('a pantry row of the same registry entry covers a row of another '
+      'name', () {
+    final red = UnifiedShoppingItem(
+      name: 'Rödlök',
+      amount: 2,
+      unit: 'st',
+      ingredientId: 'onion',
+    );
+    final pantry = [_pantry('Lök', quantity: 5, ingredientId: 'onion')];
+
+    expect(RecipePantryCheck.toBuy([red], pantry), isEmpty);
+    expect(
+      RecipePantryCheck.toBuy([_item('Rödlök', 2, 'st')], pantry),
+      hasLength(1),
+    );
+  });
 
   test('an empty pantry covers nothing', () {
     expect(RecipePantryCheck.toBuy(items, const []), items);

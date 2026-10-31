@@ -100,6 +100,7 @@ class MenuShoppingMergeLine {
     required this.sourceCount,
     this.mark = MenuShoppingPantryMark.none,
     this.extraAmounts = const [],
+    this.ingredientId,
   });
 
   final String name;
@@ -115,6 +116,9 @@ class MenuShoppingMergeLine {
 
   /// BUT-2304: amounts in units that could not join [unit].
   final List<({double amount, String unit})> extraAmounts;
+
+  /// [AggregatedShoppingItem.ingredientId].
+  final String? ingredientId;
 }
 
 /// P6-U02: what "Lägg till N varor" will do, computed before anything is
@@ -210,23 +214,23 @@ class MenuShoppingMergePlanner {
       convertUnits: options.convertUnits,
     );
     final subtract = options.subtractPantry && !pantry.unavailable;
-    final byName = <String, List<PantryItem>>{};
-    if (subtract) {
-      for (final item in pantry.items) {
-        byName
-            .putIfAbsent(
-              IngredientIdentity.nameKey(item.ingredientName),
-              () => [],
-            )
-            .add(item);
-      }
-    }
+    final pantryKeys = [
+      if (subtract)
+        for (final item in pantry.items)
+          (item: item, key: IngredientIdentity.nameKey(item.ingredientName)),
+    ];
 
     final lines = <MenuShoppingMergeLine>[];
     final covered = <String>[];
     var atHome = 0;
     for (final row in aggregation.items) {
-      final matches = byName[IngredientIdentity.nameKey(row.name)] ?? const [];
+      // [IngredientIdentity.sameItem], with the pantry's keys computed once.
+      final key = IngredientIdentity.nameKey(row.name);
+      final id = row.ingredientId;
+      final matches = [
+        for (final p in pantryKeys)
+          if (p.key == key || (id != null && p.item.ingredientId == id)) p.item,
+      ];
       if (matches.isEmpty) {
         lines.add(_line(row, row.amount));
         continue;
@@ -267,26 +271,33 @@ class MenuShoppingMergePlanner {
     sourceCount: row.sourceCount,
     mark: mark,
     extraAmounts: row.extraAmounts,
+    ingredientId: row.ingredientId,
   );
 
   /// Q4-03: the same deduction for one row outside a merge (the recipe's
   /// "Lägg {n} varor i inköpslistan"), so a recipe and a week count against
   /// the pantry by one rule. [pantry] is the whole pantry; the rows are
-  /// matched by normalised name as in [preview]. Returns the amount still
-  /// to buy: null when enough is at home, [amount] unchanged when nothing
-  /// can be subtracted (no match, an unknown amount, another unit family,
-  /// past its date), else the difference. [mark] is the row's "Kanske
-  /// hemma" or "Kolla datum", carried as a merge
-  /// line carries it.
+  /// matched by [IngredientIdentity.sameItem] as in [preview]. Returns the
+  /// amount still to buy: null when enough is at home, [amount] unchanged
+  /// when nothing can be subtracted (no match, an unknown amount, another
+  /// unit family, past its date), else the difference. [mark] is the row's
+  /// "Kanske hemma" or "Kolla datum", carried as a merge line carries it.
   static ({bool covered, double? amount, MenuShoppingPantryMark mark}) toBuy({
     required String name,
     required double? amount,
     required String unit,
     required List<PantryItem> pantry,
+    String? ingredientId,
   }) {
     final matches = [
       for (final item in pantry)
-        if (IngredientIdentity.same(item.ingredientName, name)) item,
+        if (IngredientIdentity.sameItem(
+          item.ingredientName,
+          item.ingredientId,
+          name,
+          ingredientId,
+        ))
+          item,
     ];
     if (matches.isEmpty) {
       return (

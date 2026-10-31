@@ -52,7 +52,14 @@ class ShoppingCheckoffPantryService {
     // name + unit, instead of creating a duplicate entry.
     final existing = await _pantryService.getAll(userId);
     final sameName = existing
-        .where((p) => IngredientIdentity.same(p.ingredientName, item.name))
+        .where(
+          (p) => IngredientIdentity.sameItem(
+            p.ingredientName,
+            p.ingredientId,
+            item.name,
+            item.ingredientId,
+          ),
+        )
         .toList();
     final unit = UnitDefinitions.canonical(item.unit);
     final match = sameName.firstWhereOrNull(

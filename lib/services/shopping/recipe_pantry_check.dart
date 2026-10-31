@@ -72,7 +72,12 @@ class RecipePantryCheck {
         // The same ingredient in units that do not convert: nothing can be
         // subtracted without counting the stock twice.
         final atHome = pantry.any(
-          (p) => IngredientIdentity.same(p.ingredientName, item.name),
+          (p) => IngredientIdentity.sameItem(
+            p.ingredientName,
+            p.ingredientId,
+            item.name,
+            item.ingredientId,
+          ),
         );
         mark = atHome
             ? MenuShoppingPantryMark.maybeAtHome
@@ -83,6 +88,7 @@ class RecipePantryCheck {
           amount: item.amount,
           unit: item.unit,
           pantry: pantry,
+          ingredientId: item.ingredientId,
         );
         if (left.covered) {
           covered.add(item.name);

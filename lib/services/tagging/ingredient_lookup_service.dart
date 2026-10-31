@@ -134,7 +134,7 @@ class IngredientLookupService extends BaseService {
     if (normalizedName.isEmpty) return null;
 
     // Clean the name further
-    final cleanName = _cleanForLookup(normalizedName);
+    final cleanName = cleanForLookup(normalizedName);
 
     // CRIT-13: Empty name after cleaning means no valid ingredient
     // This prevents cache key collisions for whitespace-only inputs
@@ -246,7 +246,7 @@ class IngredientLookupService extends BaseService {
   /// CRIT-14: Uses SwedishCharacterNormalizer for consistent handling of
   /// å→a, ä→a, ö→o. This ensures "köttfärs" matches "kottfars" in the database
   /// regardless of whether the input contains Swedish diacritics.
-  String _cleanForLookup(String name) {
+  static String cleanForLookup(String name) {
     // CRIT-14: Apply Swedish character normalization (includes toLowerCase)
     return SwedishCharacterNormalizer.normalize(name)
         .trim()
@@ -337,7 +337,7 @@ class IngredientLookupService extends BaseService {
       variations.add(name.substring(0, name.length - 2));
     }
 
-    // Remove common adjectives (ASCII-normalized to match _cleanForLookup output)
+    // Remove common adjectives (ASCII-normalized to match cleanForLookup output)
     final adjectives = [
       'farsk',
       'farska',
@@ -419,37 +419,8 @@ class IngredientLookupService extends BaseService {
         ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
 
     for (final raw in rawIngredients) {
-      // M2: Parse raw ingredient to extract name (strips quantity and unit)
-      // BUT-1496: parse och-conjunctions ("salt och peppar") into separate
-      // ingredients — the compound parser existed but was never used here, so
-      // conjunction lines stayed one unmatchable blob.
-      // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
-      List<String> namesToNormalize;
-      try {
-        final parsedParts = IngredientParser.parseCompoundIngredient(raw);
-        namesToNormalize = [
-          for (final parsed in parsedParts)
-            if (parsed.name.isNotEmpty) parsed.name,
-        ];
-        if (namesToNormalize.isEmpty) namesToNormalize = [raw];
-      } catch (e) {
-        AppLogger.warning(
-          'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
-        );
-        namesToNormalize = [raw];
-      }
-
-      for (final nameToNormalize in namesToNormalize) {
-        final result = IngredientNormalizer.normalize(
-          nameToNormalize,
-          additionalKnown: enrichedKnown,
-        );
-        final norm = result.normalized;
-
-        if (norm.isNotEmpty && !seen.contains(norm)) {
-          seen.add(norm);
-          normalized.add(norm);
-        }
+      for (final part in partsOf(raw, additionalKnown: enrichedKnown)) {
+        if (seen.add(part.normalized)) normalized.add(part.normalized);
       }
     }
 
@@ -462,6 +433,44 @@ class IngredientLookupService extends BaseService {
     }
 
     return lookupIngredients(normalized, userId: userId);
+  }
+
+  /// The ingredient names in one raw line, each as parsed and as normalized:
+  /// "2 dl mjölk" is "mjölk", "salt och peppar" is two names, and the parsed
+  /// name keeps words the normalizer drops ("rökt lax" normalizes to "lax").
+  static List<({String parsed, String normalized})> partsOf(
+    String raw, {
+    Set<String>? additionalKnown,
+  }) {
+    // M2: Parse raw ingredient to extract name (strips quantity and unit)
+    // BUT-1496: parse och-conjunctions ("salt och peppar") into separate
+    // ingredients — the compound parser existed but was never used here, so
+    // conjunction lines stayed one unmatchable blob.
+    // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
+    List<String> namesToNormalize;
+    try {
+      final parsedParts = IngredientParser.parseCompoundIngredient(raw);
+      namesToNormalize = [
+        for (final parsed in parsedParts)
+          if (parsed.name.isNotEmpty) parsed.name,
+      ];
+      if (namesToNormalize.isEmpty) namesToNormalize = [raw];
+    } catch (e) {
+      AppLogger.warning(
+        'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
+      );
+      namesToNormalize = [raw];
+    }
+    return [
+      for (final name in namesToNormalize)
+        (
+          parsed: name,
+          normalized: IngredientNormalizer.normalize(
+            name,
+            additionalKnown: additionalKnown,
+          ).normalized,
+        ),
+    ].where((part) => part.normalized.isNotEmpty).toList();
   }
 
   /// Searches for ingredients matching a query.

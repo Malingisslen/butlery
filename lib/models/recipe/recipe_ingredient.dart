@@ -35,6 +35,11 @@ class RecipeIngredient {
   /// Null for ungrouped lines (the default for every legacy recipe).
   final String? section;
 
+  /// The ingredient registry entry this line is, when that could be decided
+  /// without guessing (`IngredientIdResolver`). Null for an ambiguous or
+  /// unknown name, and for every recipe saved before lines carried it.
+  final String? ingredientId;
+
   const RecipeIngredient({
     this.amount,
     this.unit,
@@ -42,6 +47,7 @@ class RecipeIngredient {
     this.note,
     required this.raw,
     this.section,
+    this.ingredientId,
   });
 
   /// A line we have no structured data for — name falls back to the line
@@ -78,6 +84,18 @@ class RecipeIngredient {
     note: note,
     raw: raw,
     section: normalizeSection(section),
+    ingredientId: ingredientId,
+  );
+
+  /// Copy with [ingredientId] explicitly set (null clears it).
+  RecipeIngredient withIngredientId(String? ingredientId) => RecipeIngredient(
+    amount: amount,
+    unit: unit,
+    name: name,
+    note: note,
+    raw: raw,
+    section: section,
+    ingredientId: ingredientId,
   );
 
   /// Blank or whitespace-only section labels mean "no section" everywhere —
@@ -104,6 +122,7 @@ class RecipeIngredient {
     if (note != null) 'note': note,
     'raw': raw,
     if (section != null) 'section': section,
+    if (ingredientId != null) 'ingredientId': ingredientId,
   };
 
   factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
@@ -116,6 +135,10 @@ class RecipeIngredient {
       raw: raw,
       section: normalizeSection(
         SerializationUtils.safeNullableString(json, 'section'),
+      ),
+      ingredientId: SerializationUtils.safeNullableString(
+        json,
+        'ingredientId',
       ),
     );
   }
@@ -145,10 +168,12 @@ class RecipeIngredient {
           name == other.name &&
           note == other.note &&
           raw == other.raw &&
-          section == other.section;
+          section == other.section &&
+          ingredientId == other.ingredientId;
 
   @override
-  int get hashCode => Object.hash(amount, unit, name, note, raw, section);
+  int get hashCode =>
+      Object.hash(amount, unit, name, note, raw, section, ingredientId);
 
   @override
   String toString() => 'RecipeIngredient($raw)';

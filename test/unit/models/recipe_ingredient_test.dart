@@ -304,6 +304,58 @@ void main() {
     });
   });
 
+  group('ingredientId (registry link)', () {
+    const linked = RecipeIngredient(
+      amount: 2,
+      unit: 'dl',
+      name: 'mellanmjölk',
+      raw: '2 dl mellanmjölk',
+      ingredientId: 'milk',
+    );
+
+    test('round-trips through toJson/fromJson', () {
+      final json = linked.toJson();
+      expect(json['ingredientId'], 'milk');
+      expect(RecipeIngredient.fromJson(json).ingredientId, 'milk');
+    });
+
+    test(
+      'an unlinked line omits the key (legacy docs stay byte-identical)',
+      () {
+        expect(
+          RecipeIngredient.rawOnly('salt').toJson().containsKey('ingredientId'),
+          isFalse,
+        );
+      },
+    );
+
+    test('withIngredientId sets and clears, leaving the rest of the line', () {
+      const bare = RecipeIngredient(
+        amount: 1,
+        unit: 'st',
+        name: 'lök',
+        note: 'hackad',
+        raw: '1 hackad lök',
+        section: 'Sås',
+      );
+      final set = bare.withIngredientId('onion');
+      expect(set.ingredientId, 'onion');
+      expect(set.copyWithSection('Sås'), set);
+      expect(set.withIngredientId(null), bare);
+    });
+
+    test('copyWithSection keeps the id', () {
+      expect(linked.copyWithSection('Deg').ingredientId, 'milk');
+    });
+
+    test('lines differing only in id are not equal', () {
+      expect(linked.withIngredientId('oat-milk'), isNot(linked));
+      expect(linked.withIngredientId(null), isNot(linked));
+      expect(linked.withIngredientId('milk'), linked);
+      expect(linked.withIngredientId('milk').hashCode, linked.hashCode);
+    });
+  });
+
   group('ParsedRecipe → import wire-through shape', () {
     test('fromParsed list is index-aligned with the originalLine strings', () {
       // Mirrors url_import_strategy._convertParsedRecipeToImportResult:

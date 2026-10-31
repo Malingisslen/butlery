@@ -609,6 +609,7 @@ void main() {
           assignedToUserId: 'user_789',
           assignedToDisplayName: 'Erik Eriksson',
           assignedAt: DateTime(2026, 7, 3),
+          ingredientId: 'bread',
         );
         mockParentService.setShoppingState(
           collaborativeLists: [
@@ -649,6 +650,8 @@ void main() {
         expect(theirs.name, equals('Bröd'));
         expect(theirs.bought, isTrue);
         expect(theirs.purchasedAt, equals(DateTime(2026, 7, 2)));
+        // A registry id names a product, not a person.
+        expect(theirs.ingredientId, 'bread');
 
         final mine = copied.firstWhere((i) => i.id == 'item_1');
         expect(mine.addedByUserId, equals('user_123'));

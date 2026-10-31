@@ -18,6 +18,11 @@ abstract class IngredientRepository {
   /// Searches aliases_sv and aliases_en.
   Future<List<IngredientData>> findByAlias(String alias);
 
+  /// The id of every ingredient with [name] as its exact name or alias, in
+  /// any language. More than one means the name is ambiguous ("bringa" is
+  /// both beef and lamb); [findByName] and [findByAlias] still return one.
+  Future<Set<String>> idsForKey(String name);
+
   /// Get all ingredients in a group.
   ///
   /// Example: getByGroup('protein/meat') returns all meats.

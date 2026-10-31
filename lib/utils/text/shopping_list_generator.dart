@@ -308,7 +308,10 @@ class ShoppingListGenerator {
         ? targetPortions / originalPortions
         : 1.0;
 
-    for (final rawIngredient in recipe.ingredients) {
+    // One entry per line, in order ([Recipe.structuredIngredients]).
+    final lines = recipe.structuredIngredients;
+    for (final line in lines) {
+      final rawIngredient = line.raw;
       // Skip empty or whitespace-only ingredients
       if (rawIngredient.trim().isEmpty) continue;
 
@@ -349,6 +352,7 @@ class ShoppingListGenerator {
           bought: false,
           note: '', // No notes from recipe ingredients
           priority: 3, // Default priority
+          ingredientId: line.ingredientId,
         );
 
         shoppingItems.add(shoppingItem);

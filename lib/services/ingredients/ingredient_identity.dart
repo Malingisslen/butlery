@@ -97,5 +97,17 @@ class IngredientIdentity {
     return SwedishCharacterNormalizer.normalize(base.join(' '));
   }
 
+  /// Whether two rows are one product: the same registry id
+  /// (`RecipeIngredient.ingredientId`, `PantryItem.ingredientId`), or the
+  /// same name as [same] reads it. Different ids do not keep two rows of one
+  /// name apart, since the name match is what the list relied on before rows
+  /// carried an id.
+  static bool sameItem(
+    String name,
+    String? id,
+    String otherName,
+    String? otherId,
+  ) => (id != null && id == otherId) || same(name, otherName);
+
   static bool same(String a, String b) => nameKey(a) == nameKey(b);
 }

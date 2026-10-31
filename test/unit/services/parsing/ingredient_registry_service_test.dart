@@ -47,6 +47,9 @@ class FakeIngredientRepository implements IngredientRepository {
   Future<List<IngredientData>> findByAlias(String alias) async => [];
 
   @override
+  Future<Set<String>> idsForKey(String name) async => {};
+
+  @override
   Future<List<IngredientData>> getByProperty(String property) async => [];
 
   @override

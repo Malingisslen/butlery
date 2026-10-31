@@ -84,6 +84,7 @@ export const ITEM_EXPORT_KEYS: readonly string[] = [
   "assignedToDisplayName",
   "assignedAt",
   "previous",
+  "ingredientId",
 ];
 
 type ItemUidField = (typeof ITEM_UID_FIELDS)[number];

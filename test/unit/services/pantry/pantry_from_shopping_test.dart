@@ -25,9 +25,11 @@ PantryItem _pantryItem({
   required String name,
   required double qty,
   String unit = 'st',
+  String? ingredientId,
 }) => PantryItem(
   id: 'p_$name',
   ingredientName: name,
+  ingredientId: ingredientId,
   quantity: qty,
   unit: unit,
   location: PantryLocation.pantry,
@@ -108,6 +110,29 @@ void main() {
       await service.onItemCheckedOff(
         'u1',
         _shoppingItem(name: 'lök', amount: 3),
+        wasBought: false,
+      );
+
+      verify(() => pantry.adjustQuantity('u1', any(), 3)).called(1);
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
+    test('a bought row grows the pantry row of the same registry entry, '
+        'whatever its name', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'lök', qty: 2, ingredientId: 'onion')],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        UnifiedShoppingItem(
+          name: 'rödlök',
+          amount: 3,
+          unit: 'st',
+          bought: true,
+          ingredientId: 'onion',
+        ),
         wasBought: false,
       );
 

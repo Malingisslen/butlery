@@ -1,3 +1,30 @@
+# Kärnflöde steg 3B-2b: receptrader och inköpsrader får ingrediens-id
+
+Del av den godkända steg 3-planen (`/mnt/project-files/steg3/plan.md`, 3B punkt 2–4; Malin "kör"
+2026-10-30 21:00). Bygger på #1073. Ingen omskrivning av lagrade recept eller listor.
+
+- [x] 1. `IngredientRepository.idsForKey`: alla ingrediens-id vars namn eller alias har den
+      nyckeln. Indexet behåller dagens vinnare (taggningen ändras inte) men minns krockarna.
+- [x] 2. `IngredientIdResolver` (ny, `lib/services/ingredients/`): id till en receptrad bara när
+      radens namn, eller namnet utan märke, är exakt ett namn eller alias för exakt EN global
+      ingrediens. Tvetydigt, okänt, sammansatt ("salt och peppar") eller bara likt → inget id.
+      Användarens egna ingredienser används inte: ett recept kan delas, ett privat id ska inte följa med.
+      Läser ingrediensernas minnescache, ingen extra Firestore-läsning.
+- [x] 3. `RecipeIngredient.ingredientId` (valfritt fält, sparas bara när det finns). Sätts när ett
+      personligt recept skapas, redigeras eller kopieras, före taggningen.
+- [x] 4. `UnifiedShoppingItem.ingredientId`. Veckolistan bär id:t från receptraderna (raderna som
+      slås ihop behåller id:t bara när alla som har ett är överens); receptknappen likaså.
+      GDPR-exportens fältlista får fältet.
+- [x] 5. Skafferiet räknar en rad som samma vara när id:na är lika ELLER namnen är samma som i dag:
+      veckolistans avdrag, receptknappens avdrag och "köpt" till skafferiet.
+- [x] 6. Tester per punkt, `flutter analyze`, grindarna, PR med auto-merge.
+
+Sammanfattning för Malin: varje ingrediensrad i ett recept, och varje rad på inköpslistan, kommer
+ihåg vilken vara i ingrediensdatabasen den är, när det går att avgöra säkert. Då vet skafferiet att
+"gul lök" du har hemma räcker till receptets "lök" även när namnen skiljer sig. När ett namn kan
+betyda två saker ("bringa" kan vara nöt eller lamm) gissar appen inte. Befintliga recept får
+kopplingen nästa gång de sparas; inget skrivs om i bakgrunden.
+
 # Kodhygien: tre duplicerade kluster i lib/ (Malin 2026-10-29)
 
 Malins uppdrag: en delad hjälpare per kluster som `node tools/code_hygiene.mjs` pekar ut,
