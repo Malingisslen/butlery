@@ -20,26 +20,34 @@ enum MembershipWriteIntent {
   selfRemoval,
 }
 
-/// BUT-2140: what the week menu's merge asks to write into a personal list.
-///
-/// [rows] is a function rather than a list because "Ersätt listan" carries a
-/// bought tick over from the recipe rows it takes off,
-/// and which rows those are is only known once the server's copy is read. It
-/// is called with no rows for a plain add. It must return the same row ids on
-/// every call: the write may be computed twice, once against the server and
-/// once against the copy in memory when the device turns out to be offline.
-class PersonalMergeRequest {
-  const PersonalMergeRequest({
-    required this.rows,
-    required this.replace,
-    this.generatedForWeek,
+/// What one week sync writes into a personal list: rows to add, rows to
+/// overwrite (same ids, new values) and rows to take off.
+class PersonalMergeWrite {
+  const PersonalMergeWrite({
+    this.add = const [],
+    this.update = const [],
+    this.remove = const [],
   });
 
-  final List<UnifiedShoppingItem> Function(List<UnifiedShoppingItem> removed)
-  rows;
+  final List<UnifiedShoppingItem> add;
+  final List<UnifiedShoppingItem> update;
+  final List<UnifiedShoppingItem> remove;
 
-  /// Takes off the rows the list's `menuItemIds` names before adding.
-  final bool replace;
+  bool get isEmpty => add.isEmpty && update.isEmpty && remove.isEmpty;
+}
+
+/// BUT-2140: what the week menu's merge asks to write into a personal list.
+///
+/// [sync] is a function rather than a write because what to change depends
+/// on the rows the list holds, which are only known once the server's copy is
+/// read. It gets the rows the list's `menuItemIds` names. It must return the
+/// same new row ids on every call: the write may be computed twice, once
+/// against the server and once against the copy in memory when the device
+/// turns out to be offline.
+class PersonalMergeRequest {
+  const PersonalMergeRequest({required this.sync, this.generatedForWeek});
+
+  final PersonalMergeWrite Function(List<UnifiedShoppingItem> listRows) sync;
   final String? generatedForWeek;
 }
 
@@ -50,6 +58,8 @@ class PersonalMergeResult {
     required this.added,
     required this.removed,
     required this.concurrentChange,
+    this.updated = const [],
+    this.changedFrom = const [],
   });
 
   /// The list after the merge, built on the server's rows when they could be
@@ -57,9 +67,15 @@ class PersonalMergeResult {
   final UnifiedShoppingList list;
   final List<UnifiedShoppingItem> added;
 
-  /// The recipe rows a replace took off, as the server held them. A row
-  /// another device deleted first is not here, so Ångra cannot bring it back.
+  /// The rows the sync took off, as the server held them. A row another
+  /// device deleted first is not here, so Ångra cannot bring it back.
   final List<UnifiedShoppingItem> removed;
+
+  /// The rows the sync overwrote, with their new values.
+  final List<UnifiedShoppingItem> updated;
+
+  /// The same rows as [updated], as they were before, for Ångra.
+  final List<UnifiedShoppingItem> changedFrom;
 
   /// The server's list differed from the copy in memory: another device had
   /// changed it. False whenever the server could not be read, and while this
@@ -68,7 +84,6 @@ class PersonalMergeResult {
   final bool concurrentChange;
 }
 
-/// Repository interface for shopping list operations.
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Stream of collaborative lists for real-time updates from Firestore
   Stream<List<UnifiedShoppingList>> collaborativeListsStream();
