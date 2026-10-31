@@ -164,7 +164,10 @@ class PantryService extends BaseService {
       operationName: 'updateItem',
       defaultValue: false,
     );
-    if (written != true || previous == null) return null;
+    // A refused write must not look saved: the row would come back on the
+    // next load.
+    if (written != true) throw StateError('updateItem failed');
+    if (previous == null) return null;
     return PantryPreviousVersion(
       fields: previous.storedValues(changes.keys),
       at: clock.now(),
@@ -250,15 +253,13 @@ class PantryService extends BaseService {
     return written ?? false;
   }
 
-  Future<void> removeItem(String userId, String itemId) async {
-    await executeServiceOperation<void>(
-      () => _pantryRepository.remove(userId, itemId),
-      operationName: 'removeItem',
-    );
-  }
+  /// Throws when the delete is refused, so the row is not dropped from the
+  /// screen while it stays stored. A delete left queued offline returns.
+  Future<void> removeItem(String userId, String itemId) =>
+      _pantryRepository.remove(userId, itemId);
 
   /// BUT-954: re-persists a just-removed item for the snackbar-undo flow.
-  /// Returns the restored item (with its newly generated document ID).
+  /// Returns the restored item.
   Future<PantryItem> restoreItem(String userId, PantryItem item) async {
     _validateInput(item.ingredientName, item.quantity);
     final id = await executeServiceOperation<String>(
@@ -271,14 +272,10 @@ class PantryService extends BaseService {
     return item.copyWith(id: id);
   }
 
-  Future<List<PantryItem>> getAll(String userId) async {
-    return await executeServiceOperation<List<PantryItem>>(
-          () => _pantryRepository.getAll(userId),
-          operationName: 'getAll',
-          defaultValue: const [],
-        ) ??
-        const [];
-  }
+  /// Throws when the pantry cannot be read: an empty list would show as an
+  /// empty pantry, and a check-off would add a row that is already there.
+  Future<List<PantryItem>> getAll(String userId) =>
+      _pantryRepository.getAll(userId);
 
   Stream<List<PantryItem>> watchAll(String userId) {
     return _pantryRepository.watchAll(userId);

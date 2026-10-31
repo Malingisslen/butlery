@@ -66,8 +66,9 @@ void main() {
     await vm.loadPantry();
     expect(vm.items, hasLength(3));
 
-    await vm.bulkRemoveItems({'a', 'c'});
+    final deleted = await vm.bulkRemoveItems({'a', 'c'});
 
+    expect(deleted, {'a', 'c'});
     expect(
       vm.items.map((i) => i.id),
       ['b'],
@@ -77,6 +78,71 @@ void main() {
     verify(() => service.removeItem(any(), 'c')).called(1);
     verifyNever(() => service.removeItem(any(), 'b'));
     expect(vm.hasError, isFalse);
+    vm.dispose();
+  });
+
+  test('a refused delete stops the pass: rows deleted before it are '
+      'dropped and returned, the refused and untried rows stay', () async {
+    final service = _MockPantryService();
+    when(
+      () => service.getAll(any()),
+    ).thenAnswer((_) async => [_item('a'), _item('b'), _item('c')]);
+    when(() => service.removeItem(any(), 'a')).thenAnswer((_) async {});
+    when(
+      () => service.removeItem(any(), 'b'),
+    ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+    final vm = buildVm(service);
+    await vm.loadPantry();
+
+    final deleted = await vm.bulkRemoveItems(['a', 'b', 'c']);
+
+    expect(deleted, {'a'});
+    expect(vm.items.map((i) => i.id), ['b', 'c']);
+    expect(vm.hasError, isTrue);
+    verify(() => service.removeItem(any(), 'b')).called(1);
+    verifyNever(() => service.removeItem(any(), 'c'));
+    vm.dispose();
+  });
+
+  test('bulkRemoveItems returns nothing and keeps every row when the first '
+      'delete is refused', () async {
+    final service = _MockPantryService();
+    when(
+      () => service.getAll(any()),
+    ).thenAnswer((_) async => [_item('a'), _item('b')]);
+    when(
+      () => service.removeItem(any(), any()),
+    ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+    final vm = buildVm(service);
+    await vm.loadPantry();
+
+    final deleted = await vm.bulkRemoveItems(['a', 'b']);
+
+    expect(deleted, isEmpty);
+    expect(vm.items.map((i) => i.id), ['a', 'b']);
+    expect(vm.hasError, isTrue);
+    vm.dispose();
+  });
+
+  test('removeItem keeps the row and sets an error when the delete is '
+      'refused', () async {
+    final service = _MockPantryService();
+    when(
+      () => service.getAll(any()),
+    ).thenAnswer((_) async => [_item('a'), _item('b')]);
+    when(
+      () => service.removeItem(any(), 'a'),
+    ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+    final vm = buildVm(service);
+    await vm.loadPantry();
+
+    await vm.removeItem('a');
+
+    expect(vm.items.map((i) => i.id), ['a', 'b']);
+    expect(vm.hasError, isTrue);
     vm.dispose();
   });
 

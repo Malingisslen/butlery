@@ -489,7 +489,12 @@ void main() {
   group('PantryService part A (P5-U28)', () {
     setUp(() {
       when(
-        () => mockPantryRepository.updateFields(any(), any(), any()),
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
       ).thenAnswer((_) async {});
       when(
         () => mockPantryRepository.adjustQuantity(any(), any(), any()),
@@ -621,5 +626,74 @@ void main() {
         );
       },
     );
+  });
+
+  group('PantryService failed reads and deletes', () {
+    test('getAll rethrows when the pantry cannot be read, not an empty list '
+        '(an empty list would look like an empty pantry)', () async {
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) => Future<List<PantryItem>>.error(StateError('read')));
+
+      await expectLater(service.getAll(userId), throwsA(isA<StateError>()));
+    });
+
+    test('getAll returns the stored rows when the read works', () async {
+      final rows = [_pantryItem(id: 'p1')];
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) async => rows);
+
+      expect(await service.getAll(userId), rows);
+    });
+
+    test('removeItem rethrows when the repository delete is refused', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.removeItem(userId, 'p1'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('removeItem returns normally when the delete is accepted', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) async {});
+
+      await service.removeItem(userId, 'p1');
+
+      verify(() => mockPantryRepository.remove(userId, 'p1')).called(1);
+    });
+
+    test('updateItem throws when the write fails, instead of returning null '
+        'as if it were saved', () async {
+      final before = _pantryItem(id: 'p1', ingredientName: 'Mjölk');
+      when(
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.updateItem(
+          userId,
+          before.copyWith(note: 'ny'),
+          previous: before,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'updateItem failed',
+          ),
+        ),
+      );
+    });
   });
 }
