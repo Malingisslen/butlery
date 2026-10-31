@@ -39,6 +39,7 @@ IngredientData _ingredient({
   required String swedish,
   String? typicalUnit,
   String? typicalStorage,
+  List<String> aliasesSv = const [],
 }) => IngredientData(
   id: id,
   swedish: swedish,
@@ -47,6 +48,7 @@ IngredientData _ingredient({
   properties: const {},
   typicalUnit: typicalUnit,
   typicalStorage: typicalStorage,
+  aliasesSv: aliasesSv,
 );
 
 Recipe _recipeWithNormalizedIngredients({
@@ -365,6 +367,65 @@ void main() {
         expect(captured.quantity, isNull);
       },
     );
+
+    test('a search hit that is another product is not linked and lends '
+        'nothing (typed "mjöl", hit "Mjölk")', () async {
+      when(
+        () => mockIngredientRepository.searchIngredients('mjöl', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'milk',
+            swedish: 'Mjölk',
+            typicalUnit: 'l',
+            typicalStorage: 'refrigerated',
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'mjöl');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientName, 'mjöl');
+      expect(captured.ingredientId, isNull);
+      expect(captured.unit, isNot('l'));
+    });
+
+    test('a search hit that lists the typed word as an alias is linked and '
+        'named by the registry', () async {
+      when(
+        () =>
+            mockIngredientRepository.searchIngredients('florsocker', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'icing-sugar',
+            swedish: 'Pudersocker',
+            aliasesSv: const ['florsocker'],
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'florsocker');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientId, 'icing-sugar');
+      expect(captured.ingredientName, 'Pudersocker');
+    });
   });
 
   group('PantryService.addFromIngredient', () {

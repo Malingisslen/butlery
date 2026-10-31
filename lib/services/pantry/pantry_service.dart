@@ -9,6 +9,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 
 /// Business logic layer for the pantry ("skafferi") feature.
 class PantryService extends BaseService {
@@ -80,7 +81,11 @@ class PantryService extends BaseService {
           trimmed,
           limit: 1,
         );
-        final match = matches.isNotEmpty ? matches.first : null;
+        // The search's first hit can be another product ("mjöl" finds
+        // "mjölk"), so it is linked, and its name used, only when it names
+        // what was typed (k08).
+        final hit = matches.isNotEmpty ? matches.first : null;
+        final match = hit != null && _names(hit, trimmed) ? hit : null;
 
         final item = _buildItem(
           ingredientId: match?.id,
@@ -102,6 +107,12 @@ class PantryService extends BaseService {
     }
     return result;
   }
+
+  static bool _names(IngredientData ingredient, String typed) => [
+    ingredient.swedish,
+    ...ingredient.aliasesSv,
+    ...ingredient.learnedAliasesSv,
+  ].any((name) => IngredientIdentity.same(name, typed));
 
   /// BUT-991: hook for the shopping-checkoff → pantry flow.
   ///
