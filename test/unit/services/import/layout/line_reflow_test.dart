@@ -265,6 +265,34 @@ void main() {
       }
     });
 
+    test('CRLF and lone CR line breaks reflow like LF', () {
+      const lf =
+          '2. Hetta upp en panna med smör och olja och stek\n'
+          'kycklingen tills den tar färg.\n'
+          '50 g jäst';
+      final expected = reflowWrappedLines(lf);
+      expect(expected, contains('stek kycklingen'));
+      expect(reflowWrappedLines(lf.replaceAll('\n', '\r\n')), expected);
+      expect(reflowWrappedLines(lf.replaceAll('\n', '\r')), expected);
+    });
+
+    test('every gold text reflows the same with CRLF as with LF', () {
+      final files = [
+        for (final dir in ['test/import_gate/text', 'test/import_gate/stokig'])
+          ...Directory(dir).listSync().whereType<File>().where(
+            (f) => f.path.endsWith('.txt'),
+          ),
+      ];
+      for (final file in files) {
+        final lf = file.readAsStringSync().replaceAll('\r\n', '\n');
+        expect(
+          reflowWrappedLines(lf.replaceAll('\n', '\r\n')),
+          reflowWrappedLines(lf),
+          reason: file.path,
+        );
+      }
+    });
+
     test(
       'the kanelbullar page keeps its ingredient rows and joins its steps',
       () {

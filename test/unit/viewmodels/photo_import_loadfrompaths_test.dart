@@ -140,7 +140,7 @@ void main() {
     expect(vm.hasError, isFalse);
   });
 
-  test('offline: surfaces the offline error, no OCR, no pages', () async {
+  test('offline: shared photos are staged without a network', () async {
     final offlineVm = PhotoImportViewModel(
       importManager: ImportManager.withStrategies(
         mockPersonalOps,
@@ -152,8 +152,8 @@ void main() {
 
     await offlineVm.loadImagesFromPaths([writeImage(1)]);
 
-    expect(offlineVm.pageCount, 0);
-    expect(offlineVm.hasError, isTrue);
+    expect(offlineVm.pageCount, 1);
+    expect(offlineVm.hasError, isFalse);
     expect(recognizer.calls, 0);
   });
 
@@ -195,7 +195,7 @@ void main() {
     },
   );
 
-  test('offline: Läs av says so and reads nothing', () async {
+  test('offline: Läs av reads on the phone, with no error', () async {
     final offlineVm = PhotoImportViewModel(
       importManager: ImportManager.withStrategies(
         mockPersonalOps,
@@ -208,9 +208,28 @@ void main() {
 
     await offlineVm.readPages();
 
-    expect(offlineVm.hasError, isTrue);
-    expect(offlineVm.unreadPageCount, 1);
-    expect(recognizer.calls, 0);
+    expect(offlineVm.hasError, isFalse);
+    expect(offlineVm.unreadPageCount, 0);
+    expect(offlineVm.hasOcrResult, isTrue);
+    expect(recognizer.calls, 1);
+  });
+
+  test('offline: retrying a staged page reads it on the phone', () async {
+    final offlineVm = PhotoImportViewModel(
+      importManager: ImportManager.withStrategies(
+        mockPersonalOps,
+        [TextImportStrategy()],
+      ),
+      connectivity: _OfflineConnectivity(),
+    );
+    addTearDown(offlineVm.dispose);
+    offlineVm.stagePageForTesting(OCRTestImages.uniqueImage(42));
+
+    await offlineVm.retryOcr();
+
+    expect(offlineVm.hasError, isFalse);
+    expect(offlineVm.hasOcrResult, isTrue);
+    expect(recognizer.calls, 1);
   });
 
   group('gallery multi-select', () {
@@ -219,6 +238,23 @@ void main() {
       if (ext == 'jpg') return XFile(path);
       return XFile(File(path).renameSync('${tmpDir.path}/img_$seed.$ext').path);
     }
+
+    test('offline: picking photos still stages them', () async {
+      final offlineVm = PhotoImportViewModel(
+        importManager: ImportManager.withStrategies(
+          mockPersonalOps,
+          [TextImportStrategy()],
+        ),
+        connectivity: _OfflineConnectivity(),
+      )..galleryPickerOverride = (_) async => [pick(51), pick(52)];
+      addTearDown(offlineVm.dispose);
+
+      await offlineVm.pickImageFromGallery();
+
+      expect(offlineVm.pageCount, 2);
+      expect(offlineVm.hasError, isFalse);
+      expect(recognizer.calls, 0);
+    });
 
     test('several photos picked at once become pages in pick order', () async {
       vm.galleryPickerOverride = (_) async => [pick(3), pick(1), pick(2)];

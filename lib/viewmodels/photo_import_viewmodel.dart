@@ -385,10 +385,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// only a batch where every page failed surfaces an error.
   Future<void> loadImagesFromPaths(List<String> paths) async {
     if (isDisposed || paths.isEmpty) return;
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
 
     final overCap = paths.length > maxPages;
     final selected = overCap ? paths.sublist(0, maxPages) : paths;
@@ -427,10 +423,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// page by page in page order — then combines and parses the recipe once.
   Future<void> readPages() async {
     if (isDisposed || unreadPageCount == 0) return;
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
     await executeAsyncVoid(() async {
       clearError();
       clearAiOffer();
@@ -439,6 +431,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
         // one page (not reachable through the toggle, see
         // canToggleHandwritten) every page goes through the printed path
         // below rather than being dropped.
+        // No phone reading exists for handwriting, so offline there is
+        // nothing to try and no point asking for consent.
+        if (!isOnline) {
+          setError(AppLocale.current.importOfflineMessage);
+          return;
+        }
         final page = _pages.first;
         _lastQualityScore = null;
         _lastRecommendations = null;
@@ -587,11 +585,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
       return;
     }
 
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
-
     // Q4-04: a failed read leaves its page unread, so a retry reads the
     // pages still waiting — the ones already read keep their text.
     if (_pages.isEmpty) _stagePage(_imageBytes!, notify: false);
@@ -688,11 +681,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
     bool addAsPage = false,
     bool askAgain = false,
   }) async {
-    // BUT-610: offline pre-check. Fail fast before opening the picker.
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
     if (addAsPage && !canAddPage) {
       setError(AppLocale.current.importPhotoPagesMaxReached(maxPages));
       return;
