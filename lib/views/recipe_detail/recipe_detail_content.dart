@@ -258,6 +258,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           // recipes are short so the win is modest, but for long-ingredient
           // baking recipes (50+ items) it's measurable on lower-end Android.
           ListView.builder(
+            // A ListView without padding takes the system insets as padding.
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _ingredientRows.length,
@@ -469,6 +471,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       padding: const EdgeInsets.all(AppDimensions.space16),
       // BUT-951: instructions via ListView.builder, mirrors ingredients change.
       child: ListView.builder(
+        padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: instructions.length,
