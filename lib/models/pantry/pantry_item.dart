@@ -295,8 +295,7 @@ class PantryItem {
   }
 
   /// Three-state classification: fresh if >3 days or no date, expiringSoon
-  /// within 3 days, expired if past. The 3-day threshold matches the
-  /// service default for `getExpiringSoon`.
+  /// within 3 days, expired if past.
   PantryExpiryStatus get expiryStatus {
     final days = daysUntilExpiry;
     if (days == null) return PantryExpiryStatus.fresh;
