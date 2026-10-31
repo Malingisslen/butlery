@@ -386,8 +386,7 @@ void main() {
           ),
         ),
       );
-      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
-      expect(card.matchPercent, 0.75);
+      expect(find.text('75%'), findsOneWidget);
     });
   });
 
