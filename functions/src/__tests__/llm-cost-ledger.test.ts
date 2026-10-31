@@ -315,8 +315,7 @@ const cases: UnitCase[] = [
       // pinned on the source: without it every case above passes and no call
       // is ever counted.
       for (const [file, op, gate] of [
-        ["structure-recipe.ts", "structureRecipe", ""],
-        // The image call also passes the consent gate (ai-consent.ts).
+        ["structure-recipe.ts", "structureRecipe", "withAiConsent("],
         ["ocr-recipe-image.ts", "ocrRecipeImage", "withAiConsent("],
       ]) {
         const src = fs.readFileSync(path.join(__dirname, "..", "llm", file), "utf8");

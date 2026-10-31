@@ -484,8 +484,8 @@ const cases: UnitCase[] = [
     name: "structureRecipe and ocrRecipeImage wrap withRateLimit in withGuestImportQuota, inside withCostLedger",
     fn: () => {
       for (const [file, op, gate] of [
-        ["structure-recipe.ts", "structureRecipe", ""],
-        // The image call also passes the consent gate (ai-consent.ts).
+        // Both calls also pass the consent gate (ai-consent.ts).
+        ["structure-recipe.ts", "structureRecipe", "withAiConsent("],
         ["ocr-recipe-image.ts", "ocrRecipeImage", "withAiConsent("],
       ]) {
         const src = fs.readFileSync(path.resolve(__dirname, "..", "llm", file), "utf8");

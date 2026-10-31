@@ -8,6 +8,7 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { withGuestImportQuota } from "./guest-import-quota";
+import { withAiConsent } from "./ai-consent";
 import { logger } from "firebase-functions/logger";
 import {
   getGeminiClient,
@@ -97,13 +98,13 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
-  withCostLedger(withGuestImportQuota(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
+  withCostLedger(withAiConsent(withGuestImportQuota(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
     // Authentication is handled by withRateLimit middleware
     return runStructureRecipe(
       { ...request.data, fromImageOcr: undefined, guestImportId: undefined },
       hashUid(request.auth!.uid)
     );
-  })))
+  }))))
 );
 
 /**
