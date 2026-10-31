@@ -1,5 +1,6 @@
 // lib/services/shopping/week_list_reconciler.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
@@ -30,7 +31,7 @@ abstract final class WeekListReconciler {
     _key(item),
     _amount(item.amount),
     item.category,
-    item.note ?? '',
+    item.note.orEmpty(),
   ].join('|');
 
   /// [fresh] stamped as rows [origin] wrote, ready to compare and store.

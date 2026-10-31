@@ -9,13 +9,8 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/services/shopping/week_list_follower.dart';
-
-import '../../../infrastructure/di/test_service_locator.dart';
-import '../../../test_support/base_unit_test.dart';
 
 // Mondays of two different ISO weeks.
 final _week24 = DateTime(2026, 6, 8);
@@ -173,28 +168,26 @@ void main() {
   });
 
   group('MenuShoppingOptionsMemory', () {
-    setUpAll(() {
-      production.ServiceLocator.initialize(DIContainer());
-    });
+    late SharedPreferences preferences;
 
     setUp(() async {
-      await BaseUnitTest.setupUnit();
-      await TestServiceLocator.initialize();
       SharedPreferences.setMockInitialValues({});
-      TestServiceLocator.registerMock<SharedPreferences>(
-        await SharedPreferences.getInstance(),
-      );
-    });
-
-    tearDown(() async {
-      BaseUnitTest.resetMocks();
-      await TestServiceLocator.reset();
+      preferences = await SharedPreferences.getInstance();
     });
 
     test('nothing remembered reads as the sheet\'s drawn defaults', () {
-      final options = MenuShoppingOptionsMemory.read();
+      final options = MenuShoppingOptionsMemory(preferences).read();
 
       expect(options, const MenuShoppingMergeOptions());
+    });
+
+    test('without device storage the defaults are read and a write is a '
+        'no-op', () async {
+      final memory = MenuShoppingOptionsMemory(null);
+
+      await memory.write(const MenuShoppingMergeOptions(convertUnits: false));
+
+      expect(memory.read(), const MenuShoppingMergeOptions());
     });
 
     test('the rules the user confirmed are read back the same, switch by '
@@ -205,9 +198,9 @@ void main() {
         subtractPantry: false,
       );
 
-      await MenuShoppingOptionsMemory.write(chosen);
+      await MenuShoppingOptionsMemory(preferences).write(chosen);
 
-      final read = MenuShoppingOptionsMemory.read();
+      final read = MenuShoppingOptionsMemory(preferences).read();
       expect(read.mergeDuplicates, isFalse);
       expect(read.convertUnits, isTrue);
       expect(read.subtractPantry, isFalse);

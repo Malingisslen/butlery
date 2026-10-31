@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
@@ -70,13 +69,17 @@ class WeekListFollower {
 
 /// The rules the user last confirmed in the merge sheet, kept on the device
 /// so a follow made later, after a restart too, uses the same ones.
-abstract final class MenuShoppingOptionsMemory {
+class MenuShoppingOptionsMemory {
+  MenuShoppingOptionsMemory(this._preferences);
+
   static const String _key = 'menu_shopping_last_options';
 
-  static MenuShoppingMergeOptions read() {
-    final flags = ServiceLocator.tryGet<SharedPreferences>()
-        ?.getString(_key)
-        ?.split('|');
+  /// Null where no device storage is wired: nothing is remembered and the
+  /// sheet's drawn defaults are read.
+  final SharedPreferences? _preferences;
+
+  MenuShoppingMergeOptions read() {
+    final flags = _preferences?.getString(_key)?.split('|');
     if (flags == null || flags.length != 3) {
       return const MenuShoppingMergeOptions();
     }
@@ -87,10 +90,10 @@ abstract final class MenuShoppingOptionsMemory {
     );
   }
 
-  static Future<void> write(MenuShoppingMergeOptions options) async {
+  Future<void> write(MenuShoppingMergeOptions options) async {
     String flag(bool on) => on ? '1' : '0';
     try {
-      await ServiceLocator.tryGet<SharedPreferences>()?.setString(
+      await _preferences?.setString(
         _key,
         [
           flag(options.mergeDuplicates),

@@ -210,12 +210,12 @@
         },
         {
           "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
-          "name": "Ersätt listan carries over a tick the other device made on a recipe row",
+          "name": "a sync decides on the server's row, so a tick the other device made a moment ago keeps the row where it is",
           "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
         },
         {
           "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
-          "name": "Ersätt listan does not bring back a recipe row the other device deleted, and Ångra has nothing of it to restore",
+          "name": "a sync is not shown a row the other device deleted, and Ångra has nothing of it to restore",
           "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
         },
         {
@@ -235,7 +235,7 @@
         },
         {
           "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-          "name": "a change made on another device reaches the receipt, which takes its removed rows from the server for Ångra",
+          "name": "a change made on another device reaches the receipt, which takes its removed and changed rows from the server for Ångra, and the sync decides on the server's rows",
           "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
         },
         {
@@ -252,12 +252,12 @@
       "flow": "02",
       "status": "TESTED",
       "test_file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-      "test_name": "replaces only the rows that came from recipes, keeps your own, and Ångra puts the old recipe rows back",
+      "test_name": "a second sync updates the rows the first wrote instead of doubling them, leaves a ticked row and a row of yours alone, takes off a dish's untouched row, and Ångra puts every old value back",
       "tests": [
         {
           "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-          "name": "replaces only the rows that came from recipes, keeps your own, and Ångra puts the old recipe rows back",
-          "group": "TR::FLOW::02::merge-ark::ersätt-listan-på"
+          "name": "a second sync updates the rows the first wrote instead of doubling them, leaves a ticked row and a row of yours alone, takes off a dish's untouched row, and Ångra puts every old value back",
+          "group": "TR::FLOW::02::merge-ark::listan-följer-menyn"
         }
       ],
       "ticket": null,
@@ -293,7 +293,7 @@
         },
         {
           "file": "test/widget/menu/shopping_merge_sheet_test.dart",
-          "name": "summary first: the line, the three figures, Ersätt off (TR::FLOW::02::veckomeny::till-inköpslistan)"
+          "name": "summary first: the line, the three figures (TR::FLOW::02::veckomeny::till-inköpslistan)"
         }
       ],
       "ticket": null,

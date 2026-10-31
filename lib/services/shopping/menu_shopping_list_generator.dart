@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -101,6 +103,11 @@ class MenuShoppingGenerationResult {
 /// left as it is, and the week's list follows later saves of the week
 /// ([followMenuSaves]).
 class MenuShoppingListGenerator extends BaseService {
+  MenuShoppingListGenerator({SharedPreferences? preferences})
+    : _optionsMemory = MenuShoppingOptionsMemory(preferences);
+
+  final MenuShoppingOptionsMemory _optionsMemory;
+
   @override
   String get serviceName => 'MenuShoppingListGenerator';
 
@@ -304,7 +311,7 @@ class MenuShoppingListGenerator extends BaseService {
 
       final list = shoppingService.lists.firstWhere((l) => l.id == listId);
       final previousMenuIds = list.menuItemIds;
-      if (activate) unawaited(MenuShoppingOptionsMemory.write(merge.options));
+      if (activate) unawaited(_optionsMemory.write(merge.options));
 
       final origin = merge.source.origin;
       final fresh = WeekListReconciler.stamp([
@@ -418,7 +425,7 @@ class MenuShoppingListGenerator extends BaseService {
     // A recipe that could not be read (not loaded yet, or deleted) would read
     // as a dish taken off the week, and its rows would come off unasked.
     if (source == null || source.unresolvedRecipes > 0) return null;
-    final options = MenuShoppingOptionsMemory.read();
+    final options = _optionsMemory.read();
     final pantry = options.subtractPantry
         ? await readPantry()
         : const MenuShoppingPantry.read([]);

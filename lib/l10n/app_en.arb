@@ -16690,6 +16690,20 @@
       }
     }
   },
+  "@shoppingMergeUpdate": {
+    "description": "Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source."
+  },
+  "@shoppingMergeUpdateBody": {
+    "description": "Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding."
+  },
+  "@shoppingMergeSynced": {
+    "description": "Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.",
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
   "@shoppingMergeConcurrentChange": {
     "description": "BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.",
     "placeholders": {
