@@ -11917,9 +11917,21 @@
     "description": "Q5-03 = B: the meta line of a pantry row without an amount."
   },
   "pantryStapleTitle": "Always at home",
+  "@pantryStapleTitle": {
+    "description": "10G: switch in the pantry add/edit sheet marking a staple."
+  },
   "pantryStapleBody": "Never added to the shopping list",
+  "@pantryStapleBody": {
+    "description": "10G: the line under the staple switch."
+  },
   "pantryStapleAmount": "always at home",
+  "@pantryStapleAmount": {
+    "description": "10G: the meta line of a staple pantry row, in place of the amount."
+  },
   "pantryStapleBadge": "Staple",
+  "@pantryStapleBadge": {
+    "description": "10G: the neutral pill on a staple pantry row."
+  },
   "recipePantryAllAtHome": "Everything is at home in full, so nothing is added to the shopping list: {names}",
   "recipePantryLessened": "Less than the recipe, since some is at home: {names}",
   "navigationHome": "Home",
