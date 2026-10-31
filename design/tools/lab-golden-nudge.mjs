@@ -9,7 +9,7 @@
 // regenerate the file after editing a screen's markup.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { SCREENS } from './lab-screens.mjs';
+import { SCREENS, fitPhone } from './lab-screens.mjs';
 
 const root = new URL('../../', import.meta.url).pathname;
 const check = process.argv.includes('--check');
@@ -36,6 +36,7 @@ for (const [name, idx] of SCREENS) {
   const goldenBuf = readFileSync(join(root, `test/views/golden_linux/goldens/${name}_light.png`));
   const gw = goldenBuf.readUInt32BE(16), gh = goldenBuf.readUInt32BE(20);
   const phone = await figs[idx * 2].$('.phone');
+  await fitPhone(page, phone, gh);
   await phone.scrollIntoViewIfNeeded();
   const box = await phone.boundingBox();
   const lab = (await page.screenshot({ clip: { x: Math.round(box.x), y: Math.round(box.y), width: gw, height: gh } })).toString('base64');

@@ -441,7 +441,8 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .phone .b-bottomnav.nav-all .tab { color: var(--cs-on-ink); font-weight: 700; }
 .phone[data-theme="dark"].ml-phone, [data-theme="dark"] .phone.ml-phone { background: var(--butlery-palette-ink-deep, #17251D) !important; }
 .phone[data-theme="dark"] .ml-mic, [data-theme="dark"] .phone .ml-mic { background: rgba(0, 0, 0, .12); }
-.golden-img { display: none; }
+.golden-frame { display: none; }
 .golden-on .screens > figure:has(.golden-img) { display: flex; gap: 12px; align-items: flex-start; }
 .golden-on .screens.only-light > .fig-dark, .golden-on .screens.only-dark > .fig-light { display: none; }
-.golden-on .golden-img { display: block; flex: none; max-width: none; outline: 1px solid var(--butlery-palette-sage-muted, #888); }
+.golden-on .golden-frame { display: block; flex: none; max-height: 800px; overflow-y: auto; scrollbar-width: none; outline: 1px solid var(--butlery-palette-sage-muted, #888); }
+.golden-img { display: block; max-width: none; }
