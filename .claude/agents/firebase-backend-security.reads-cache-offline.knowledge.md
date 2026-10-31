@@ -146,7 +146,12 @@
   and check `current.uid == userId` (the uid captured before the await) before patching or
   caching. Without that check, an account switch mid-await puts one user's value on the
   other's profile and caches it under the first uid. The repository write itself is
-  self-scoped by rules; the in-memory patch is not.
+  self-scoped by rules; the in-memory patch is not. The same shape applies to a LISTENER
+  delivery that awaits (an unsent-write probe, a Drift cache write) before pushing into an
+  in-memory list: cancelling the subscription stops NEW events, not a chain already past the
+  listener. `JsonCacheHelper.saveJson` swallows its own "user not set" error and returns
+  false, so a signed-out cache write does not stop the screen callback after it. Capture the
+  uid at delivery and drop the item if it changed after the last await.
 - Per-item analytics loops over a REPLACEMENT set double-count on regeneration — log once
   with a count. A consent check with no in-flight dedupe means N fire-and-forget events on a
   cold cache issue N concurrent reads — wrap the whole emit in one `unawaited(...)`.

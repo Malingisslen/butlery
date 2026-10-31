@@ -34,6 +34,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
@@ -326,6 +327,40 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('live sync on a fresh install', () {
+      test('a recipe the sync delivers after the empty cache was read shows '
+          'up in the list without a restart', () async {
+        void Function(List<RecipeChange>)? deliver;
+        when(
+          () => mockRecipeRepository.subscribeToUserRecipes(
+            any(),
+            any(),
+            onError: any(named: 'onError'),
+            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+          ),
+        ).thenAnswer((inv) {
+          deliver =
+              inv.positionalArguments[1] as void Function(List<RecipeChange>);
+          return const Stream<void>.empty().listen((_) {});
+        });
+
+        await service.initialize();
+        await Future<void>.delayed(const Duration(milliseconds: 700));
+        expect(deliver, isNotNull, reason: 'sync must have started');
+        expect(service.recipes, isEmpty);
+
+        final recipe = RecipeFactory.build(
+          id: 'from-server',
+          title: 'Pannkakor',
+          createdBy: 'test_user_123',
+        );
+        deliver!([RecipeChange(type: RecipeChangeType.added, recipe: recipe)]);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        expect(service.recipes.map((r) => r.id), ['from-server']);
+      });
     });
 
     group('Initial State', () {
@@ -1276,10 +1311,7 @@ void main() {
         // BUT-1252 motivation: the cache module previously notified twice on a
         // single direct update (its own _notifyListeners PLUS the direct
         // callback). The fix makes a single mutation produce a single state
-        // signal. The web double-notify path is kIsWeb-gated and can't run in
-        // the VM, but the native optimistic path shares the same one-mutation/
-        // one-notify contract — a regression that re-adds a redundant notify on
-        // this path would emit twice and fail this count.
+        // signal.
         var emissions = 0;
         final sub = service.stateStream.listen((_) => emissions++);
         // Drain the BehaviorSubject replay event before counting.
