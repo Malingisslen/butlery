@@ -100,8 +100,7 @@ void main() {
     ];
     final merged = _list([_item('own'), _item('theirs'), _item('ours')]);
     final request = PersonalMergeRequest(
-      rows: (_) => [_item('ours')],
-      replace: false,
+      sync: (_) => PersonalMergeWrite(add: [_item('ours')]),
     );
     when(() => repository.applyPersonalMerge(any(), request)).thenAnswer(
       (_) async => PersonalMergeResult(

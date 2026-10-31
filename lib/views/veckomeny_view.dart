@@ -632,7 +632,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       source: source,
       pantry: pantry,
       retryPantry: planVm.readPantryForShopping,
-      canReplace: planVm.canReplaceShoppingList(source.week),
+      updatesList: planVm.shoppingListHasRowsFrom(source),
     );
     if (merge == null || !mounted) return;
     final receipt = await planVm.applyShoppingMerge(merge);
@@ -1127,8 +1127,8 @@ void showShoppingMergeReceipt(
   final l10n = context.l10n;
   final message = receipt.concurrentChange
       ? l10n.shoppingMergeConcurrentChange(receipt.itemCount)
-      : receipt.replaced
-      ? l10n.shoppingMergeReplaced(receipt.itemCount, receipt.listName)
+      : receipt.updatedList
+      ? l10n.shoppingMergeSynced(receipt.listName)
       : l10n.shoppingMergeAdded(receipt.itemCount, receipt.listName);
   SnackBarUtils.showUndo(context, message, onUndo: onUndo);
 }

@@ -29,7 +29,7 @@ Future<MenuShoppingMergePreview?> showShoppingMergeSheet(
   required MenuShoppingSource source,
   required MenuShoppingPantry pantry,
   required Future<MenuShoppingPantry> Function() retryPantry,
-  bool canReplace = true,
+  bool updatesList = false,
 }) {
   return showButlerySheet<MenuShoppingMergePreview>(
     context: context,
@@ -37,35 +37,37 @@ Future<MenuShoppingMergePreview?> showShoppingMergeSheet(
       source: source,
       pantry: pantry,
       retryPantry: retryPantry,
-      canReplace: canReplace,
+      updatesList: updatesList,
     ),
   );
 }
 
 /// The switches the sheet can show, as stable ids for keys and tests.
-enum ShoppingMergeSwitch { duplicates, convert, pantry, replace }
+enum ShoppingMergeSwitch { duplicates, convert, pantry }
 
 /// "Sammanfattning först." (#inkopmerge): the summary line and three figures
 /// carry the outcome, and the rules sit one tap away behind "Visa detaljer".
-/// Opened (#inkopmergeoppen), all four switches show, so no setting hides.
-/// "Ersätt listan" is always off by default and is shown in both states.
+/// Opened (#inkopmergeoppen), all three switches show, so no setting hides.
+/// Kärnflöde 8B: there is no "Ersätt listan" any more. Every confirm is one
+/// sync, so the button says "Uppdatera listan" once the list holds rows from
+/// this source.
 class ShoppingMergeSheet extends StatefulWidget {
   const ShoppingMergeSheet({
     super.key,
     required this.source,
     required this.pantry,
     required this.retryPantry,
-    this.canReplace = true,
+    this.updatesList = false,
   });
 
   final MenuShoppingSource source;
   final MenuShoppingPantry pantry;
   final Future<MenuShoppingPantry> Function() retryPantry;
 
-  /// False when the week's list was written before the app knew which rows
-  /// came from recipes: "Ersätt listan" is then off, with the reason
-  /// (MenuShoppingListGenerator.canReplaceWeekList).
-  final bool canReplace;
+  /// The week's list already holds rows from this source
+  /// (MenuShoppingListGenerator.weekListHasRowsFrom), so confirming updates
+  /// them.
+  final bool updatesList;
 
   static const Key detailsToggleKey = ValueKey<String>(
     'shopping-merge-details',
@@ -83,6 +85,9 @@ class ShoppingMergeSheet extends StatefulWidget {
     'shopping-merge-pantry-retry',
   );
   static const Key coveredKey = ValueKey<String>('shopping-merge-covered');
+  static const Key updatesListKey = ValueKey<String>(
+    'shopping-merge-updates-list',
+  );
 
   /// The row of one switch.
   static Key switchKey(ShoppingMergeSwitch which) =>
@@ -121,9 +126,10 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
       _pantry,
       _options,
     );
-    final canConfirm = merge.itemCount > 0 || _options.replaceList;
-    final confirmLabel = _options.replaceList
-        ? l.shoppingMergeReplaceAction(merge.itemCount)
+    // An update with nothing left to buy still takes the rows off.
+    final canConfirm = merge.itemCount > 0 || widget.updatesList;
+    final confirmLabel = widget.updatesList
+        ? l.shoppingMergeUpdate
         : l.shoppingMergeAdd(merge.itemCount);
 
     return SingleChildScrollView(
@@ -214,27 +220,22 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                       ),
                     ),
               value: _options.subtractPantry,
-              divider: true,
+              divider: false,
               onChanged: (v) => setState(
                 () => _options = _options.copyWith(subtractPantry: v),
               ),
             ),
-          ] else
+          ],
+          if (widget.updatesList) ...[
             const SizedBox(height: AppDimensions.space12),
-          _SwitchRow(
-            which: ShoppingMergeSwitch.replace,
-            title: l.shoppingMergeReplaceTitle,
-            body: widget.canReplace
-                ? l.shoppingMergeReplaceBody
-                : l.shoppingMergeReplaceUnavailable,
-            value: _options.replaceList,
-            divider: false,
-            onChanged: widget.canReplace
-                ? (v) => setState(
-                    () => _options = _options.copyWith(replaceList: v),
-                  )
-                : null,
-          ),
+            Text(
+              l.shoppingMergeUpdateBody,
+              key: ShoppingMergeSheet.updatesListKey,
+              style: AppTextStyles.captionBase.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: AppDimensions.space16),
           Row(
             children: [

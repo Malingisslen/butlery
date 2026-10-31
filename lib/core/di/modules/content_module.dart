@@ -13,6 +13,7 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -641,17 +642,25 @@ class ContentModule implements DIModule {
       // Lazy resolution of UserService: it's registered in SocialModule
       // which loads after ContentModule. Lazy singleton resolves at first
       // get() which happens after all modules are configured.
-      container.registerLazySingleton<WeeklyMenuPlanService>(
-        () => WeeklyMenuPlanService(
+      container.registerLazySingleton<WeeklyMenuPlanService>(() {
+        final service = WeeklyMenuPlanService(
           repository: container<WeeklyMenuPlanRepository>(),
           userService: container<UserService>(),
-        ),
-      );
+        );
+        // Kärnflöde 8B: the week's shopping list follows saves of the week.
+        // Wired here because every save goes through this service.
+        container<MenuShoppingListGenerator>().followMenuSaves(
+          service.savedWeeks,
+        );
+        return service;
+      });
 
       // BUT-956: menu→shopping generation. ServiceLocator-resolves its three
       // collaborators at call time, so registration order is a non-issue.
       container.registerLazySingleton<MenuShoppingListGenerator>(
-        () => MenuShoppingListGenerator(),
+        () => MenuShoppingListGenerator(
+          preferences: container<SharedPreferences>(),
+        ),
       );
 
       // BUT-405: group-scoped weekly menu plans. Coexists with the per-user

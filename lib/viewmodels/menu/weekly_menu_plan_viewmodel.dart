@@ -29,7 +29,6 @@ const shoppingMergeAlreadyRunning = MenuShoppingMergeReceipt(
   addedItemIds: [],
   removedItems: [],
   previousMenuItemIds: null,
-  replaced: false,
   createdList: false,
 );
 
@@ -1051,10 +1050,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Future<MenuShoppingPantry> readPantryForShopping() =>
       _shoppingListGenerator.readPantry();
 
-  /// P6-U02: whether "Ersätt listan" can take anything off the week's list
-  /// ([MenuShoppingListGenerator.canReplaceWeekList]).
-  bool canReplaceShoppingList(DateTime week) =>
-      _shoppingListGenerator.canReplaceWeekList(week);
+  /// Kärnflöde 8B: whether confirming the sheet updates rows [source] wrote
+  /// earlier ([MenuShoppingListGenerator.weekListHasRowsFrom]).
+  bool shoppingListHasRowsFrom(MenuShoppingSource source) =>
+      _shoppingListGenerator.weekListHasRowsFrom(source.week, source.origin);
 
   bool _mergeInFlight = false;
 
