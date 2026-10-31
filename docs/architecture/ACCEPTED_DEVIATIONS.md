@@ -2338,7 +2338,7 @@ removed the row everywhere cannot pass as satisfying this decision.
 **Superseded 2026-10-31 (Malin).** `RecipeCard` takes no allergen or dietary parameters and
 draws no allergen row, dietary row or "Ej kontrollerat" in any style. The pin above is deleted;
 `test/widget/recipe/recipe_card_test.dart` ("a tagged recipe shows no allergen or dietary
-info") now covers it.
+info") now covers it. `CompactAllergenRow` and `CompactDietaryRow`, named above, are deleted.
 
 ---
 
