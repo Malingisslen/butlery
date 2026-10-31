@@ -55,26 +55,10 @@ final _screens = <_KeyScreen>[
   ),
   const _KeyScreen('inkopslista', row: 'inköpslista::DEFAULT'),
   const _KeyScreen('receptdetalj', row: 'receptdetalj::DEFAULT'),
-  // A full imported recipe, top to bottom: the parts the plain recipe never
-  // reaches (tags, finished allergen check, a sauce group, timed steps, Lagade
-  // detta, Kommentarer).
-  _KeyScreen('receptdetalj_fullt', host: fullRecipeDetailHost()),
-  _KeyScreen(
-    'receptdetalj_fullt_ingredienser',
-    host: fullRecipeDetailHost(scrollTo: 'Ingredienser'),
-  ),
-  _KeyScreen(
-    'receptdetalj_fullt_sas',
-    host: fullRecipeDetailHost(scrollTo: 'SÅS'),
-  ),
-  _KeyScreen(
-    'receptdetalj_fullt_instruktioner',
-    host: fullRecipeDetailHost(scrollTo: 'Instruktioner'),
-  ),
-  _KeyScreen(
-    'receptdetalj_fullt_slut',
-    host: fullRecipeDetailHost(toEnd: true),
-  ),
+  // A full imported recipe, its whole page in one picture: the parts the
+  // plain recipe never reaches (tags, finished allergen check, a sauce group,
+  // timed steps, Lagade detta, Kommentarer).
+  _KeyScreen('receptdetalj_fullt', host: fullRecipeDetailHost),
   _KeyScreen('mina_recept', host: minaReceptHost),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
@@ -101,7 +85,7 @@ void main() {
   });
 
   test('every key screen names a harness row or a host', () {
-    expect(_screens, hasLength(19));
+    expect(_screens, hasLength(15));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);

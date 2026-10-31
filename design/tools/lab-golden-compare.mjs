@@ -1,5 +1,5 @@
 // Draws every example screen of designlabb.html, light and dark, next to the app's Linux golden of the same screen
-// and reports how far apart they are. The goldens are test/views/golden_linux/goldens/*.png, 360 x 800.
+// and reports how far apart they are. The goldens are test/views/golden_linux/goldens/*.png.
 //   node design/tools/lab-golden-compare.mjs [outDir] [screen,screen]   writes <screen>-<mode>.png (golden | lab | difference)
 //   PLAYWRIGHT_MODULE=<path to playwright/index.mjs>   when playwright is not resolvable from here
 // "strict" counts every pixel that differs by more than 24/255, with no tolerance for text edges.
@@ -15,7 +15,7 @@ const only = process.argv[3]?.split(',');
 mkdirSync(out, { recursive: true });
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
 
-import { SCREENS } from './lab-screens.mjs';
+import { SCREENS, fitPhone } from './lab-screens.mjs';
 
 const goldenDir = join(root, 'test/views/golden_linux/goldens');
 const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
@@ -35,6 +35,7 @@ for (const mode of ['light', 'dark']) {
     const phone = await figs[idx * 2 + (mode === 'dark' ? 1 : 0)].$('.phone');
     const goldenBuf = readFileSync(join(goldenDir, `${name}_${mode}.png`));
     const gw = goldenBuf.readUInt32BE(16), gh = goldenBuf.readUInt32BE(20);
+    await fitPhone(page, phone, gh);
     await phone.scrollIntoViewIfNeeded();
     const box = await phone.boundingBox();
     const lab = (await page.screenshot({ clip: { x: Math.round(box.x), y: Math.round(box.y), width: gw, height: gh } })).toString('base64');

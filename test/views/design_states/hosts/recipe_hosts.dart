@@ -113,43 +113,32 @@ Recipe _recipe() => RecipeFactory.build(
 
 /// The recipe detail of a full, imported recipe: no time or rating, finished
 /// tagging with the reader's tracked allergen and diet free, tags, a sauce
-/// group and steps with times. [scrollTo] scrolls to the text it names, and
-/// [toEnd] scrolls to the bottom of the page.
-StateHost fullRecipeDetailHost({String? scrollTo, bool toEnd = false}) =>
-    StateHost(
-      build: (ctx) async => _detail(
-        ctx,
-        shown: _fullRecipe(),
-        prefs: const UserAllergenPreferences(
-          trackedAllergens: {'skaldjur'},
-          trackedDietary: {'graviditetssäker'},
-        ),
-      ),
-      reach: scrollTo == null && !toEnd
-          ? null
-          : (tester, ctx) async {
-              await tester.pump(const Duration(milliseconds: 400));
-              if (toEnd) {
-                final position = tester
-                    .state<ScrollableState>(find.byType(Scrollable).first)
-                    .position;
-                position.jumpTo(position.maxScrollExtent);
-                await tester.pump();
-                return;
-              }
-              final target = find.text(scrollTo!).first;
-              await Scrollable.ensureVisible(tester.element(target));
-              // Down by the app bar's height, so the text is not under it.
-              final position = Scrollable.of(tester.element(target)).position;
-              position.jumpTo(
-                (position.pixels - kToolbarHeight).clamp(
-                  0,
-                  position.maxScrollExtent,
-                ),
-              );
-              await tester.pump();
-            },
-    );
+/// group and steps with times. The surface grows to the page's whole height,
+/// so a picture of it shows the page from top to bottom without scrolling.
+final StateHost fullRecipeDetailHost = StateHost(
+  build: (ctx) async => _detail(
+    ctx,
+    shown: _fullRecipe(),
+    prefs: const UserAllergenPreferences(
+      trackedAllergens: {'skaldjur'},
+      trackedDietary: {'graviditetssäker'},
+    ),
+  ),
+  reach: (tester, ctx) async {
+    await tester.pump(const Duration(milliseconds: 400));
+    final page = find.byType(Scrollable).first;
+    var height = tester.view.physicalSize.height;
+    for (var hidden = _scrollExtent(tester, page); hidden > 0;) {
+      height += hidden;
+      setStateSurface(tester, size: Size(stateSurface.width, height));
+      await tester.pump();
+      hidden = _scrollExtent(tester, page);
+    }
+  },
+);
+
+double _scrollExtent(WidgetTester tester, Finder scrollable) =>
+    tester.state<ScrollableState>(scrollable).position.maxScrollExtent;
 
 Recipe _fullRecipe() {
   const main = [
