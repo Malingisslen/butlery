@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
+import 'package:butlery/services/pantry/pantry_unit_factor.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
-import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// One pantry row and how much of it, in the row's own unit, a cooked
@@ -84,7 +84,10 @@ class CookedPantryPlan {
       var rest = need;
       for (final item in stock) {
         if (rest <= 0) break;
-        final perRowUnit = _rowUnitsPerItemUnit(item.unit, row.unit);
+        final perRowUnit = PantryUnitFactor.unitsOfToPerFrom(
+          UnitDefinitions.canonical(item.unit),
+          row.unit,
+        );
         if (perRowUnit == null) continue;
         final have = item.quantity! * perRowUnit;
         final use = have < rest ? have : rest;
@@ -95,22 +98,6 @@ class CookedPantryPlan {
     }
     return List.unmodifiable(takes);
   }
-
-  /// How many of [rowUnit] one [itemUnit] holds, or null when the two do
-  /// not convert. "3 ägg" carries no unit and the pantry's "12 st" does:
-  /// both count pieces.
-  static double? _rowUnitsPerItemUnit(String itemUnit, String rowUnit) {
-    final unit = UnitDefinitions.canonical(itemUnit);
-    if (unit == rowUnit || (_isCount(unit) && _isCount(rowUnit))) return 1;
-    final item = SmartUnitConverter.toCanonicalBase(1, unit);
-    final row = SmartUnitConverter.toCanonicalBase(1, rowUnit);
-    if (item == null || row == null || item.baseUnit != row.baseUnit) {
-      return null;
-    }
-    return item.quantity / row.quantity;
-  }
-
-  static bool _isCount(String unit) => unit.isEmpty || unit == 'st';
 
   static int _soonestFirst(PantryItem a, PantryItem b) {
     final x = a.expiryDate;

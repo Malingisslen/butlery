@@ -87,7 +87,6 @@ class MenuShoppingListGenerator extends BaseService {
       itemCount: receipt.itemCount,
       recipeCount: source.recipeCount,
       unresolvedRecipes: source.unresolvedRecipes,
-      excludedStaples: merge.atHomeCount,
       scaledMeals: source.scaledMeals,
     );
   }

@@ -236,13 +236,12 @@ class ShoppingItemManagementModule {
       final itemsToAdd = <UnifiedShoppingItem>[];
       final itemsToUpdate = <UnifiedShoppingItem>[];
 
-      // Dedup: merge quantities for matching items (same name, compatible units)
+      // Dedup: merge quantities for matching items
       for (final newItem in items) {
         final normalizedName = IngredientIdentity.nameKey(newItem.name);
         final matchIndex = existingItems.indexWhere((existing) {
           final existingName = IngredientIdentity.nameKey(existing.name);
           if (existingName != normalizedName) return false;
-          // Compatible units: same unit or both empty
           final unitsMatch =
               UnitDefinitions.canonical(existing.unit) ==
               UnitDefinitions.canonical(newItem.unit);

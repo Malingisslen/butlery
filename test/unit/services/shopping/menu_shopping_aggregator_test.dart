@@ -35,11 +35,19 @@ Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
 /// pre-BUT-1613 behaviour test asserting the SAME numbers it always did.
 ScaledRecipe _p(Recipe r, [double factor = 1.0]) => (recipe: r, factor: factor);
 
+List<AggregatedShoppingItem> _aggregate(
+  List<ScaledRecipe> placements, {
+  Set<String> excludeNames = const {},
+}) => MenuShoppingAggregator.aggregateForMerge(
+  placements,
+  excludeNames: excludeNames,
+).items;
+
 void main() {
   group('MenuShoppingAggregator (BUT-956)', () {
     test('same ingredient + same unit across recipes sums into one line', () {
       // The ticket's marquee case: 2 dl mjöl + 1 dl mjöl → 3 dl mjöl.
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -71,7 +79,7 @@ void main() {
         'into one shopping line (PR #211)', () {
       // A kanelbulle has smör in both Deg and Fyllning; the shopper buys one
       // amount of butter. The aggregator keys on name|unit, never section.
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('kanelbullar', const [
             RecipeIngredient(
@@ -97,7 +105,7 @@ void main() {
     });
 
     test('Swedish-character variants merge ("Mjöl" + "mjol")', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -132,7 +140,7 @@ void main() {
         'row carrying both amounts, never a converted sum', () {
       // Cross-FAMILY conversion (g↔dl) needs a density we don't have, so the
       // amounts are not summed (BUT-1278); BUT-2304 puts them on ONE row.
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -166,7 +174,7 @@ void main() {
       () {
         // The ticket's marquee case: 3 dl + 200 ml is 500 ml of the same thing —
         // one line, not two. Display reduces to the readable Swedish unit (5 dl).
-        final items = MenuShoppingAggregator.aggregate([
+        final items = _aggregate([
           _p(
             _recipe('r1', const [
               RecipeIngredient(
@@ -208,7 +216,7 @@ void main() {
     test(
       'BUT-1278: compatible WEIGHT units merge into one line (1 kg + 300 g)',
       () {
-        final items = MenuShoppingAggregator.aggregate([
+        final items = _aggregate([
           _p(
             _recipe('r1', const [
               RecipeIngredient(
@@ -243,7 +251,7 @@ void main() {
         'olja)', () {
       // 2 msk = 30 ml, 1 dl = 100 ml → 130 ml. Proves the Swedish spoon
       // equivalences participate in volume merging.
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -281,7 +289,7 @@ void main() {
               name: name,
               raw: '$amount $unit $name',
             );
-        final items = MenuShoppingAggregator.aggregate([
+        final items = _aggregate([
           _p(
             _recipe('r1', [
               line(2, 'msk', 'socker'),
@@ -318,7 +326,7 @@ void main() {
       () {
         // "st" has no measurement family — it must keep the original
         // exact-unit-string behavior (sums when identical, separate otherwise).
-        final items = MenuShoppingAggregator.aggregate([
+        final items = _aggregate([
           _p(
             _recipe('r1', const [
               RecipeIngredient(
@@ -351,7 +359,7 @@ void main() {
       () {
         // Names passed in excludeNames (already normalized) never reach the
         // output — this is how pantry staples are kept off the list.
-        final items = MenuShoppingAggregator.aggregate(
+        final items = _aggregate(
           [
             _p(
               _recipe('r1', const [
@@ -382,7 +390,7 @@ void main() {
 
     test('raw-only lines land on the list with the amount they state, never '
         'dropped', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [RecipeIngredient.rawOnly('en nypa salt')])),
         _p(
           _recipe('r2', const [
@@ -400,7 +408,7 @@ void main() {
     });
 
     test('amount-less duplicates collapse to one line by name', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [RecipeIngredient.rawOnly('salt')])),
         _p(_recipe('r2', [RecipeIngredient.rawOnly('salt')])),
       ]);
@@ -423,7 +431,7 @@ void main() {
         ),
         type: RecipeType.personal,
       );
-      final items = MenuShoppingAggregator.aggregate([_p(legacy)]);
+      final items = _aggregate([_p(legacy)]);
       expect(items, hasLength(1));
       expect(items.single.name, 'mjölk');
       expect(items.single.amount, 2);
@@ -431,7 +439,7 @@ void main() {
     });
 
     test('output is grouped by category then name (stable shopping order)', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -461,7 +469,7 @@ void main() {
     });
 
     test('blank ingredient names are skipped (never produce empty lines)', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [RecipeIngredient.rawOnly('   ')])),
       ]);
       expect(items, isEmpty);
@@ -473,7 +481,7 @@ void main() {
       // Proves: the placement factor multiplies the authored amount. "st" has
       // no measurement family so it passes through the merge unchanged — the
       // clean lens on the scale math without unit re-display noise.
-      final halved = MenuShoppingAggregator.aggregate([
+      final halved = _aggregate([
         _p(
           _recipe('r', const [
             RecipeIngredient(amount: 4, unit: 'st', name: 'ägg', raw: '4 ägg'),
@@ -484,7 +492,7 @@ void main() {
       expect(halved.single.amount, closeTo(2, 1e-9));
       expect(halved.single.unit, 'st');
 
-      final tripled = MenuShoppingAggregator.aggregate([
+      final tripled = _aggregate([
         _p(
           _recipe('r', const [
             RecipeIngredient(amount: 2, unit: 'st', name: 'ägg', raw: '2 ägg'),
@@ -509,7 +517,7 @@ void main() {
           raw: '4 dl mjölk',
         ),
       ]);
-      final items = MenuShoppingAggregator.aggregate([_p(r, 1.0), _p(r, 0.5)]);
+      final items = _aggregate([_p(r, 1.0), _p(r, 0.5)]);
       expect(items, hasLength(1));
       expect(
         items.single.amount,
@@ -526,7 +534,7 @@ void main() {
         // "salt efter smak" carries no quantity, so no factor — however small —
         // can scale it toward zero or drop it. It must survive present + amount
         // null regardless of the placement factor.
-        final items = MenuShoppingAggregator.aggregate([
+        final items = _aggregate([
           _p(
             _recipe('r', [RecipeIngredient.rawOnly('salt efter smak')]),
             0.1,
@@ -551,7 +559,7 @@ void main() {
       // unit merge may re-display 12.5 ml, and pinning that would break on a
       // display refactor without changing the "still positive, still there"
       // behaviour this test exists to prove.)
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r', const [
             RecipeIngredient(
@@ -576,7 +584,7 @@ void main() {
       // Scaling happens before the family merge, so two placements that scale
       // into the same volume family still collapse to one line: "4 dl" at
       // factor 0.5 (→ 2 dl = 200 ml) + "300 ml" at factor 1.0 = 500 ml = 5 dl.
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -626,7 +634,7 @@ void main() {
     // invisible.
     test('a week total that overflows falls back to 1.0', () {
       final huge = double.maxFinite;
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', [
             RecipeIngredient(
@@ -664,7 +672,7 @@ void main() {
     // ml, so this overflows inside the unit merge — after the guard on the
     // per-recipe total has already passed it as finite.
     test('a single row that overflows the unit conversion falls back', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', [
             const RecipeIngredient(
@@ -690,7 +698,7 @@ void main() {
     });
 
     test('an ordinary week total is untouched', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(
           _recipe('r1', const [
             RecipeIngredient(
@@ -717,7 +725,7 @@ void main() {
         );
 
     test('grams and a unit-less count fold, first-seen casing kept', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [ing(100, 'g', 'parmesanost')])),
         _p(_recipe('r2', [ing(1, '', 'Parmesanost')])),
       ]);
@@ -729,7 +737,7 @@ void main() {
     });
 
     test('weight and volume fold into one row', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [ing(350, 'g', 'vetemjöl')])),
         _p(_recipe('r2', [ing(3, 'dl', 'vetemjöl')])),
       ]);
@@ -738,7 +746,7 @@ void main() {
     });
 
     test('an amount-less row adds no visible amount', () {
-      final items = MenuShoppingAggregator.aggregate([
+      final items = _aggregate([
         _p(_recipe('r1', [ing(null, '', 'salt')])),
         _p(_recipe('r2', [ing(2, 'tsk', 'salt')])),
       ]);
@@ -769,11 +777,10 @@ void main() {
   });
 
   group('one spelling per unit (kärnflöde steg 3, p09/i08/i09)', () {
-    List<AggregatedShoppingItem> aggregate(List<String> lines) =>
-        MenuShoppingAggregator.aggregate([
-          for (final (i, line) in lines.indexed)
-            _p(_recipe('r$i', [StructuredIngredientDeriver.derive(line)])),
-        ]);
+    List<AggregatedShoppingItem> aggregate(List<String> lines) => _aggregate([
+      for (final (i, line) in lines.indexed)
+        _p(_recipe('r$i', [StructuredIngredientDeriver.derive(line)])),
+    ]);
 
     test('"matsked" and "msk" are one unit and sum', () {
       final items = aggregate(['1 matsked olja', '1 msk olja']);
@@ -829,7 +836,7 @@ void main() {
     );
 
     List<AggregatedShoppingItem> aggregate(List<RecipeIngredient> lines) =>
-        MenuShoppingAggregator.aggregate([
+        _aggregate([
           for (final (i, line) in lines.indexed) _p(_recipe('r$i', [line])),
         ]);
 

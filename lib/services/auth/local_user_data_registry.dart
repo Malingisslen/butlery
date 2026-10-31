@@ -46,6 +46,19 @@ class LocalUserDataRegistry {
     pendingImportUrlKey,
   ];
 
+  /// Written by the removed `PersistenceService` recipe and menu cache, which
+  /// held a person's recipes and menu in plain text. Nothing writes them now,
+  /// but installs from before the removal may still carry them.
+  static const String legacyRecipesCacheKey = 'butlery_recipes';
+  static const String legacyCurrentMenuKey = 'butlery_current_menu';
+  static const String legacyLastUpdatedKey = 'butlery_last_updated';
+
+  static const List<String> legacyUserPrefsKeys = [
+    legacyRecipesCacheKey,
+    legacyCurrentMenuKey,
+    legacyLastUpdatedKey,
+  ];
+
   /// Clears what [reason] allows, and, once [firestoreWritesSettled], asks a later
   /// start to empty Firestore's own cache. Every store it calls logs its own errors
   /// and does not throw, so a sign-out cannot fail on it.
@@ -55,6 +68,7 @@ class LocalUserDataRegistry {
     bool firestoreWritesSettled = false,
   }) async {
     if (reason == DeviceCleanupReason.automaticSignOut) {
+      await _clearLegacyPrefs();
       await FirestoreCacheWipe.cancel();
       return;
     }
@@ -71,6 +85,19 @@ class LocalUserDataRegistry {
     }
   }
 
+  static Future<void> _clearLegacyPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final key in legacyUserPrefsKeys) {
+        await prefs.remove(key);
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'LocalUserDataRegistry: could not clear legacy prefs ($e)',
+      );
+    }
+  }
+
   static Future<void> _clearPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -81,6 +108,7 @@ class LocalUserDataRegistry {
         ],
         ...prefs.getKeys().where((k) => k.startsWith(commentDraftKeyPrefix)),
         WeekListFollowNoticeStore.storageKey,
+        ...legacyUserPrefsKeys,
       };
       for (final key in doomed) {
         await prefs.remove(key);

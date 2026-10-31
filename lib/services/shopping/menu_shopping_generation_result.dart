@@ -16,12 +16,6 @@ class MenuShoppingGenerationResult {
   /// not yet cached). Logged; carried for observability.
   final int unresolvedRecipes;
 
-  /// How many rows the pantry touched: left off because enough is at home,
-  /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
-  /// (produktbeslut PQ-11 = A). It replaced
-  /// the BUT-1279 count of whole staple rows.
-  final int excludedStaples;
-
   /// BUT-1613: how many planned meals had their quantities scaled to who's
   /// home (present count differs from the recipe's serving count). Surfaced so
   /// the UI can explain why amounts changed instead of the shrink reading as a
@@ -34,7 +28,6 @@ class MenuShoppingGenerationResult {
     required this.itemCount,
     required this.recipeCount,
     required this.unresolvedRecipes,
-    this.excludedStaples = 0,
     this.scaledMeals = 0,
   });
 

@@ -208,16 +208,6 @@ void main() {
       },
     );
 
-    test('should include delay during generation', () async {
-      mockMenuService.setGenerateMenuResult(createTestMenu());
-
-      final stopwatch = Stopwatch()..start();
-      await menuGenerator.generateMenuFromPrompt('test prompt');
-      stopwatch.stop();
-
-      expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(300));
-    });
-
     test('should handle complex prompts', () async {
       const complexPrompt =
           'vegetarisk veckomeny för familj med 4 personer, budget-vänlig med italienska rätter';
@@ -279,18 +269,6 @@ void main() {
       expect(mockMenuService.lastGeneratePrompt, equals('3 Monday'));
     });
 
-    test('should include regeneration delay', () async {
-      mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build()],
-      });
-
-      final stopwatch = Stopwatch()..start();
-      await menuGenerator.regenerateMenuSection('Monday', createTestMenu());
-      stopwatch.stop();
-
-      expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(200));
-    });
-
     test('should handle empty sections in current menu', () async {
       final menuWithEmptySection = <String, List<Recipe>>{
         'Monday': [],
@@ -304,58 +282,6 @@ void main() {
       await menuGenerator.regenerateMenuSection('Monday', menuWithEmptySection);
 
       expect(mockMenuService.lastGeneratePrompt, equals('0 Monday'));
-    });
-  });
-
-  group('MenuGenerator - Generation Validation', () {
-    test('should validate generation prerequisites successfully', () {
-      const validPrompt = 'vegetarian weekly menu';
-
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites(validPrompt),
-        returnsNormally,
-      );
-    });
-
-    test('should throw error for empty prompt', () {
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites(''),
-        throwsA(
-          predicate(
-            (e) =>
-                e is ArgumentError &&
-                e.toString().contains('Fyll i alla obligatoriska fält'),
-          ),
-        ),
-      );
-    });
-
-    test('should throw error for whitespace-only prompt', () {
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites('   '),
-        throwsA(
-          predicate(
-            (e) =>
-                e is ArgumentError &&
-                e.toString().contains('Fyll i alla obligatoriska fält'),
-          ),
-        ),
-      );
-    });
-
-    test('should throw error when no recipes available', () {
-      mockRecipeService.setRecipeState(recipes: []);
-
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites('valid prompt'),
-        throwsA(
-          predicate(
-            (e) =>
-                e is Exception &&
-                e.toString().contains('Inga recept tillgängliga'),
-          ),
-        ),
-      );
     });
   });
 
@@ -513,11 +439,10 @@ void main() {
       expect(analysis['totalRecipes'], equals(3));
     });
 
-    test('should validate then generate menu', () async {
+    test('should generate a menu for an optimal prompt', () async {
       const prompt = 'healthy weekly veckomeny'; // add keyword
       mockMenuService.setGenerateMenuResult(createTestMenu());
 
-      menuGenerator.validateGenerationPrerequisites(prompt);
       final result = await menuGenerator.generateMenuFromPrompt(prompt);
 
       expect(result, isNotEmpty);

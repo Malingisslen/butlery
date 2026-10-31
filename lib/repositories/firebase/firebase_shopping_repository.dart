@@ -513,11 +513,6 @@ class FirebaseShoppingRepository
     await delete(listId);
   }
 
-  /// Fetch all personal lists for the current user.
-  /// Uses base class stream methods for consistency.
-  Stream<List<UnifiedShoppingList>> personalListsStream() =>
-      _queryModule.personalListsStream();
-
   /// Fetch collaborative lists where the current user is a member.
   @override
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() =>

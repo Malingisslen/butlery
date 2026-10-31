@@ -173,6 +173,57 @@ void main() {
     });
   });
 
+  group('BackupRestoreHandler when some recipes were not saved', () {
+    testWidgets('names how many could not be restored instead of '
+        'reporting a completed restore', (tester) async {
+      when(() => backup.importFromFile()).thenAnswer(
+        // One duplicate skip plus two failures, so skipCount (3) and the
+        // failed count (2) differ.
+        (_) async => const ImportResult(
+          totalRecipes: 4,
+          successCount: 1,
+          skipCount: 3,
+          errors: ['A', 'B'],
+        ),
+      );
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(_app(navigatorKey));
+
+      BackupRestoreHandler.handleRestore(
+        navigatorKey.currentContext!,
+        closeModal: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.profileRestoreSomeNotRestored(2)), findsOneWidget);
+      expect(find.text(sv.profileRestoreCompleted), findsNothing);
+    });
+
+    testWidgets('a restore that only skipped duplicates reports completed', (
+      tester,
+    ) async {
+      when(() => backup.importFromFile()).thenAnswer(
+        (_) async => const ImportResult(
+          totalRecipes: 3,
+          successCount: 1,
+          skipCount: 2,
+          errors: [],
+        ),
+      );
+      final navigatorKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(_app(navigatorKey));
+
+      BackupRestoreHandler.handleRestore(
+        navigatorKey.currentContext!,
+        closeModal: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.profileRestoreCompleted), findsOneWidget);
+      expect(find.textContaining('kunde inte återställas'), findsNothing);
+    });
+  });
+
   group('BackupRestoreHandler from a modal', () {
     testWidgets('closes the sheet, keeps the page, and shows the failure '
         'after the sheet is gone', (tester) async {

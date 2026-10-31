@@ -18,7 +18,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
@@ -51,10 +50,6 @@ class MenuImportResult {
 /// - Exposes stateStream for reactive UI updates with menu state changes across all modules
 /// - Uses [ErrorHandlingMixin] for comprehensive error management and graceful degradation strategies
 /// - Implements [FirebaseServiceMixin] for Firebase integration and authentication-aware operations
-/// - Coordinates with MenuService for basic menu generation and management operations
-/// **Modular Coordination Architecture:**
-/// This service coordinates between focused modules with clear responsibilities:
-/// - **[MenuService]**: Basic menu generation, natural language processing, and meal planning
 /// **Unified API Benefits:**
 /// - **Single Entry Point**: Unified interface for all menu operations reducing complexity for ViewModels
 /// - **Coordinated Operations**: Seamless integration between personal and collaborative menu features
@@ -68,15 +63,12 @@ class MenuImportResult {
 /// ```dart
 /// final menuService = UnifiedMenuService(firestore, authRepository);
 /// await menuService.initialize();
-/// // Personal menu operations
-/// final menu = await menuService.generateMenuFromPrompt('tre frukoster och två middagar', recipes);
 /// ```
 class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
   final FirestoreRepository _firestoreRepository;
 
   // Core services
-  late final MenuService _menuService;
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
 
   // Optional test seams — when provided, override the ServiceLocator lookup
@@ -122,7 +114,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   UnifiedMenuService({
     FirestoreRepository? firestoreRepository,
     FirebaseSharedMenuRepository? sharedMenuRepository,
-    MenuService? menuService,
     UserService? userService,
     RealtimeMenuService? realtimeMenuService,
     PermissionService? permissionService,
@@ -134,9 +125,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
        _userServiceOverride = userService,
        _realtimeMenuServiceOverride = realtimeMenuService,
        _permissionServiceOverride = permissionService {
-    // Initialize core menu service (override-aware for testability)
-    _menuService = menuService ?? MenuService();
-
     // Initialize SharedMenu repository (override-aware for testability)
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
@@ -279,14 +267,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         notifyListeners();
       }
     });
-  }
-
-  /// Generate a menu from Swedish natural language prompt
-  Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
-    String prompt,
-    List<Recipe> availableRecipes,
-  ) async {
-    return await _menuService.generateMenuFromPrompt(prompt, availableRecipes);
   }
 
   /// Create a new menu

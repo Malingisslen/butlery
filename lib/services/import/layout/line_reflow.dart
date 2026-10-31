@@ -14,7 +14,12 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 /// Joins each wrapped line to its continuation. Idempotent: a second pass
 /// over the result changes nothing.
 String reflowWrappedLines(String text) {
-  final lines = text.split('\n');
+  // Files checked out with CRLF (git autocrlf on Windows) and pasted text
+  // both carry '\r', which would otherwise stay glued to each line's end.
+  final lines = text
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
   final out = <String>[];
   var i = 0;
   while (i < lines.length) {

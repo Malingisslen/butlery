@@ -476,9 +476,6 @@ class MenuGenerator {
     await ensureRecipeServiceInitialized();
     _stopIfCancelled(isCancelled);
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    _stopIfCancelled(isCancelled);
-
     // BUT-1464: the async pool is THE allergen-safe pool (household union +
     // trust guards). Computed once — both the emptiness check and the
     // keyword filter must see the same filtered pool, never the sync
@@ -716,7 +713,6 @@ class MenuGenerator {
     String? originalPrompt,
     bool Function()? isCancelled,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 200));
     _stopIfCancelled(isCancelled);
 
     final currentCount = currentMenu[section]?.length ?? 1;
@@ -895,21 +891,6 @@ class MenuGenerator {
 
   static String? _extractCuisine(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
-
-  /// Validate menu generation prerequisites.
-  ///
-  /// Facade over [MenuQualityAnalyzer.validatePromptNotEmpty]; the
-  /// availability check stays here because it depends on generator state.
-  void validateGenerationPrerequisites(String prompt) {
-    MenuQualityAnalyzer.validatePromptNotEmpty(prompt);
-
-    // Sync single-user pool is fine here: this emptiness PRE-check is not
-    // safety-load-bearing — generation itself draws from the async
-    // household-filtered pool and re-checks emptiness there (BUT-1464).
-    if (availableRecipes.isEmpty) {
-      throw Exception(AppLocale.current.errorNoRecipesAvailable);
-    }
-  }
 
   /// Analyze generated menu quality (delegates to [MenuQualityAnalyzer]).
   Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) =>

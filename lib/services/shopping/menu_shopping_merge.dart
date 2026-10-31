@@ -9,9 +9,9 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
+import 'package:butlery/services/pantry/pantry_unit_factor.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/shopping/week_list_reconciler.dart';
-import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// The sheet's three rules, all drawn on.
@@ -407,7 +407,6 @@ class MenuShoppingMergePlanner {
     // A row without an amount ("salt") is covered by any stock in date
     // (Malin 2026-10-31).
     if (need == null || need <= 0) return const _Covered();
-    final needBase = SmartUnitConverter.toCanonicalBase(need, row.unit);
     var have = 0.0;
     // Stock with no amount, or in a unit that cannot be converted, is at
     // home in an amount nobody can count.
@@ -419,19 +418,12 @@ class MenuShoppingMergePlanner {
         continue;
       }
       final unit = UnitDefinitions.canonical(item.unit);
-      if (unit == row.unit || (_isCount(unit) && _isCount(row.unit))) {
-        have += quantity;
-        continue;
-      }
-      final haveBase = SmartUnitConverter.toCanonicalBase(quantity, unit);
-      if (needBase == null ||
-          haveBase == null ||
-          haveBase.baseUnit != needBase.baseUnit) {
+      final perRowUnit = PantryUnitFactor.unitsOfToPerFrom(unit, row.unit);
+      if (perRowUnit == null) {
         uncounted = true;
         continue;
       }
-      // Into the row's own unit through the family's base unit.
-      have += haveBase.quantity * need / needBase.quantity;
+      have += quantity * perRowUnit;
     }
     if (have >= need) return const _Covered();
     final mark = anyExpired
@@ -442,9 +434,6 @@ class MenuShoppingMergePlanner {
     if (have <= 0) return _Marked(mark);
     return _Remaining(need - have, mark: mark);
   }
-
-  /// "3 ägg" carries no unit and the pantry's "12 st" does: both count pieces.
-  static bool _isCount(String unit) => unit.isEmpty || unit == 'st';
 }
 
 sealed class _Deduction {

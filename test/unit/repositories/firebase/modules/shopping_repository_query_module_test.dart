@@ -1,8 +1,7 @@
 /// Unit tests for ShoppingRepositoryQueryModule.
 ///
 /// Targets the personal-list reads and the trivial active-list lookup —
-/// `readAll` loads personal lists plus their `items` subcollection,
-/// `personalListsStream` is a simple ordered snapshot stream, and
+/// `readAll` loads personal lists plus their `items` subcollection, and
 /// `getActiveList` delegates to the injected readList callback. The
 /// collaborative-list paths are exercised only as smoke tests — but NOT
 /// because the fake cannot express their filter. It can: both of them use
@@ -307,39 +306,6 @@ void main() {
       ).getActiveList('l1');
       expect(capturedId, 'l1');
       expect(result, same(stub));
-    });
-  });
-
-  group('personalListsStream', () {
-    test('emits all personal lists newest-first', () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seedPersonalList(
-        firestore,
-        id: 'a',
-        name: 'A',
-        updatedAt: DateTime.utc(2026, 1, 1),
-      );
-      await _seedPersonalList(
-        firestore,
-        id: 'b',
-        name: 'B',
-        updatedAt: DateTime.utc(2026, 1, 3),
-      );
-      await _seedPersonalList(
-        firestore,
-        id: 'c',
-        name: 'C',
-        updatedAt: DateTime.utc(2026, 1, 2),
-      );
-
-      final lists = await _module(firestore).personalListsStream().first;
-      expect(lists.map((l) => l.id), ['b', 'c', 'a']);
-    });
-
-    test('emits empty list when user has no personal lists', () async {
-      final firestore = FakeFirebaseFirestore();
-      final lists = await _module(firestore).personalListsStream().first;
-      expect(lists, isEmpty);
     });
   });
 

@@ -87,6 +87,33 @@ void main() {
     },
   );
 
+  test('the legacy recipe and menu cache keys are registered', () {
+    expect(LocalUserDataRegistry.legacyUserPrefsKeys, [
+      'butlery_recipes',
+      'butlery_current_menu',
+      'butlery_last_updated',
+    ]);
+  });
+
+  for (final reason in DeviceCleanupReason.values) {
+    test('a $reason clears the legacy recipe and menu cache', () async {
+      SharedPreferences.setMockInitialValues({
+        ..._everyDraft(),
+        'butlery_recipes': '[]',
+        'butlery_current_menu': '[]',
+        'butlery_last_updated': '2025-01-01T00:00:00.000',
+      });
+
+      await LocalUserDataRegistry.clearDrafts(userId: 'alice', reason: reason);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('butlery_recipes'), isFalse);
+      expect(prefs.containsKey('butlery_current_menu'), isFalse);
+      expect(prefs.containsKey('butlery_last_updated'), isFalse);
+      expect(prefs.containsKey('unrelated_setting'), isTrue);
+    });
+  }
+
   test('an automatic sign-out keeps the drafts (PQ-12 = A)', () async {
     await LocalUserDataRegistry.clearDrafts(
       userId: 'alice',
