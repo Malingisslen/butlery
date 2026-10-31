@@ -50,8 +50,8 @@ class CookedPantryPlan {
   /// What [recipe] at [portions] takes from [pantry], matched and counted as
   /// the shopping list's pantry deduction counts it
   /// ([MenuShoppingMergePlanner.againstPantry]). Only stock that can be
-  /// counted is offered: a row past its date, a row without an amount and a
-  /// row in a unit that does not convert are left alone. Several rows of one
+  /// counted is offered: a staple, a row past its date, a row without an
+  /// amount and a row in a unit that does not convert are left alone. Several rows of one
   /// item are taken from the one closest to its date first.
   static List<CookedPantryTake> of(
     Recipe recipe, {
@@ -74,6 +74,7 @@ class CookedPantryPlan {
       final stock = [
         for (final item in pantry)
           if (!taken.contains(item.id) &&
+              !item.isStaple &&
               (item.quantity ?? 0) > 0 &&
               item.expiryStatus != PantryExpiryStatus.expired &&
               (IngredientIdentity.nameKey(item.ingredientName) == key ||

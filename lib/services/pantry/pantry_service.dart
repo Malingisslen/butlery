@@ -37,6 +37,7 @@ class PantryService extends BaseService {
     PantryLocation? location,
     DateTime? expiryDate,
     String? note,
+    bool isStaple = false,
   }) async {
     final result = await executeServiceOperation<PantryItem>(
       () async {
@@ -50,6 +51,7 @@ class PantryService extends BaseService {
           location: location,
           expiryDate: expiryDate,
           note: note,
+          isStaple: isStaple,
         );
         final id = await _pantryRepository.add(userId, item);
         return item.copyWith(id: id);
@@ -72,6 +74,7 @@ class PantryService extends BaseService {
     PantryLocation? location,
     DateTime? expiryDate,
     String? note,
+    bool isStaple = false,
   }) async {
     final result = await executeServiceOperation<PantryItem>(
       () async {
@@ -97,6 +100,7 @@ class PantryService extends BaseService {
           location: location,
           expiryDate: expiryDate,
           note: note,
+          isStaple: isStaple,
         );
         final id = await _pantryRepository.add(userId, item);
         return item.copyWith(id: id);
@@ -411,6 +415,7 @@ class PantryService extends BaseService {
     PantryLocation? location,
     DateTime? expiryDate,
     String? note,
+    bool isStaple = false,
   }) {
     return PantryItem(
       id: '',
@@ -422,6 +427,7 @@ class PantryService extends BaseService {
       addedAt: clock.now().toUtc(),
       expiryDate: expiryDate,
       note: note,
+      isStaple: isStaple,
     );
   }
 }

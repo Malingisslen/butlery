@@ -16867,6 +16867,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryItemAmountUnknown => 'at home';
 
   @override
+  String get pantryStapleTitle => 'Always at home';
+
+  @override
+  String get pantryStapleBody => 'Never added to the shopping list';
+
+  @override
+  String get pantryStapleAmount => 'always at home';
+
+  @override
+  String get pantryStapleBadge => 'Staple';
+
+  @override
   String recipePantryAllAtHome(String names) {
     return 'Everything is at home in full, so nothing is added to the shopping list: $names';
   }

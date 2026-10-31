@@ -302,9 +302,16 @@ class MenuShoppingMergePlanner {
       convertUnits: options.convertUnits,
     );
     final subtract = options.subtractPantry && !pantry.unavailable;
+    // A staple stays off the list even with the pantry switch off (Malin
+    // 2026-10-31, 10G).
     final pass = againstPantry(
       aggregation.items,
-      subtract ? pantry.items : const [],
+      subtract
+          ? pantry.items
+          : [
+              for (final item in pantry.items)
+                if (item.isStaple) item,
+            ],
     );
 
     return MenuShoppingMergePreview(
@@ -350,6 +357,11 @@ class MenuShoppingMergePlanner {
         continue;
       }
       atHome++;
+      // A staple is always at home: no amount or date to count against.
+      if (matches.any((item) => item.isStaple)) {
+        covered.add(row.name);
+        continue;
+      }
       switch (_deduct(row, matches)) {
         case _Covered():
           covered.add(row.name);

@@ -385,10 +385,10 @@ class MenuShoppingListGenerator extends BaseService {
     // as a dish taken off the week, and its rows would come off unasked.
     if (source == null || source.unresolvedRecipes > 0) return null;
     final options = _optionsMemory.read();
-    final pantry = options.subtractPantry
-        ? await readPantry()
-        : const MenuShoppingPantry.read([]);
-    // Without the pantry every covered row would come back at full amount.
+    // Read even with the pantry switch off: staples stay off the list.
+    final pantry = await readPantry();
+    // Without the pantry every covered row, staples included, would come
+    // back at full amount, so nothing is written.
     if (pantry.unavailable) return null;
     final receipt = await apply(
       preview(source, pantry, options),
