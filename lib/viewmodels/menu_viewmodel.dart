@@ -303,12 +303,10 @@ class MenuViewModel extends BaseViewModel {
     }
   }
 
-  List<Recipe> get availableRecipes => _generator.availableRecipes;
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
 
   /// The pool a user may pick a recipe FROM (vote alternatives): filtered for
   /// the whole household including diner profiles, like generation and swap.
-  /// [availableRecipes] filters on the signed-in user alone.
   Future<List<Recipe>> getAvailableRecipesAsync() =>
       _generator.getAvailableRecipesAsync();
 

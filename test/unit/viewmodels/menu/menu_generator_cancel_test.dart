@@ -82,7 +82,7 @@ void main() {
     );
   });
 
-  test('cancelled during the first wait: no week read and no '
+  test('cancelled before the pool is read: no week read and no '
       'computation', () async {
     var cancelled = false;
     final run = generator.generateMenuFromPrompt(
@@ -107,15 +107,13 @@ void main() {
     expect(menuService.lastGeneratePrompt, 'tre middagar');
   });
 
-  test('a re-roll cancelled during its first wait computes nothing', () async {
-    var cancelled = false;
+  test('a re-roll cancelled before it starts computes nothing', () async {
     final run = generator.regenerateMenuSection(
       'Middag',
       const {},
       originalPrompt: 'tre middagar',
-      isCancelled: () => cancelled,
+      isCancelled: () => true,
     );
-    cancelled = true;
 
     await expectLater(run, throwsA(isA<MenuGenerationCancelled>()));
     verifyNever(() => planService.readWeek(any()));
