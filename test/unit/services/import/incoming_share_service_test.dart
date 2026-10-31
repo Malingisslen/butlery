@@ -102,8 +102,8 @@ void main() {
     expect(emitted, isFalse, reason: 'guard blocks a spurious navigation');
   });
 
-  test('non-Android platform is a no-op (returns empty)', () async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+  test('a desktop platform is a no-op (returns empty)', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
 
     final service = IncomingShareService(channel: channel);
     addTearDown(service.dispose);
@@ -111,8 +111,8 @@ void main() {
     expect(await service.getInitialSharedImages(), isEmpty);
   });
 
-  test('non-Android platform never asks the channel for shared text', () async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+  test('a desktop platform never asks the channel for shared text', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
     messenger.setMockMethodCallHandler(channel, (call) async {
       if (call.method == 'getInitialText') return 'https://www.ica.se/r';
       return null;
@@ -122,6 +122,48 @@ void main() {
     addTearDown(service.dispose);
 
     expect(await service.getInitialSharedText(), isNull);
+  });
+
+  group('iOS (the share extension hands over through the app)', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+
+    test('asks the channel for the share the app was opened with', () async {
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'getInitialMedia') return <Object?>['/tmp/a.jpg'];
+        if (call.method == 'getInitialText') return 'https://www.ica.se/r';
+        return null;
+      });
+
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+
+      expect(await service.getInitialSharedImages(), ['/tmp/a.jpg']);
+      expect(await service.getInitialSharedText(), 'https://www.ica.se/r');
+    });
+
+    test('a share pushed while the app runs reaches the streams', () async {
+      final service = IncomingShareService(channel: channel);
+      addTearDown(service.dispose);
+      final texts = <String>[];
+      final media = <List<String>>[];
+      service.textStream.listen(texts.add);
+      service.mediaStream.listen(media.add);
+
+      Future<void> push(String method, Object arguments) =>
+          messenger.handlePlatformMessage(
+            channel.name,
+            channel.codec.encodeMethodCall(MethodCall(method, arguments)),
+            (_) {},
+          );
+      await push('onText', 'https://www.ica.se/r');
+      await push('onMedia', <Object?>['/tmp/a.jpg']);
+      await pumpEventQueue();
+
+      expect(texts, ['https://www.ica.se/r']);
+      expect(media, [
+        ['/tmp/a.jpg'],
+      ]);
+    });
   });
 
   group('shared text (BUT-2241)', () {

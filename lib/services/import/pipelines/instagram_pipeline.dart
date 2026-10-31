@@ -1,8 +1,9 @@
 /// Instagram recipe import pipeline with WebView-based caption extraction.
 ///
 /// Tier structure:
-/// 1. WebScraper caption extraction via InstagramContentExtractor (free, client-side)
-/// 2. LLM structuring of extracted caption (paid)
+/// 1. WebScraper caption extraction via InstagramContentExtractor (free, client-side),
+///    read with the rule-based parser first (free)
+/// 2. LLM structuring of extracted caption (paid), only when the rules find no recipe
 /// 3. User-assisted import with extracted text (free)
 /// 4. Request user screenshot (free)
 library;
@@ -14,12 +15,14 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/extraction/platform_detector.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
+import 'package:butlery/services/import/caption_rules_reader.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 
 class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
   final LlmEnhancementService _llmService;
+  final CaptionRulesReader _rules;
 
   /// `caseSensitive: false` because share-sheets and iOS Safari often emit
   /// mixed-case hosts (BUT-1113).
@@ -30,8 +33,11 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
     RegExp(r'instagram\.com/([A-Za-z0-9_.]+)/p/', caseSensitive: false),
   ];
 
-  InstagramPipeline({required LlmEnhancementService llmService})
-    : _llmService = llmService;
+  InstagramPipeline({
+    required LlmEnhancementService llmService,
+    CaptionRulesReader? rules,
+  }) : _llmService = llmService,
+       _rules = rules ?? CaptionRulesReader();
 
   @override
   String get strategyName => 'instagram';
@@ -103,6 +109,28 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
       'InstagramPipeline: Got caption (${captionText.length} chars)',
     );
 
+    final byRules = await _rules.read(
+      captionText,
+      artefactType: SourceArtefactType.instagramCaption,
+      sourceUrl: input,
+      fallbackTitle: _extractTitleFromCaption(captionText),
+    );
+    if (byRules != null) {
+      return ImportSuccess(
+        recipe: byRules,
+        confidence: 0.6,
+        pipeline: 'instagram',
+        tier: 1,
+        method: 'caption-rules',
+        requiresReview: true,
+        metadata: {
+          'successfulTier': 'RuleBased',
+          'postUrl': input,
+          'thumbnailUrl': thumbnailUrl,
+        },
+      );
+    }
+
     // Tier 2: LLM extraction from caption, unless the user chose to go on
     // without AI.
     final ImportResultV2? llmResult = options?['skipLlm'] == true
@@ -135,6 +163,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
         requiresReview: true,
         metadata: {
           ...llmUse,
+          'successfulTier': 'LLM',
           'postUrl': input,
           'thumbnailUrl': thumbnailUrl,
         },

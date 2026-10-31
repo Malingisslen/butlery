@@ -594,7 +594,7 @@ class RecipeDetailViewModel extends BaseViewModel {
     try {
       result =
           await (_injectedImportManager ?? ServiceLocator.get<ImportManager>())
-              .reimportFromArtefact(artefact);
+              .reimportFromArtefact(artefact, sourceUrl: _recipe.sourceUrl);
     } catch (e) {
       return ReextractOutcome.failure;
     }

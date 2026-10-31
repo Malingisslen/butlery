@@ -4738,3 +4738,9 @@ Date: 2026-10-20
 Trigger: BUT-2426. Villkorsrutan ignorerade klick i webbläsaren medan texten fungerade. Fyra rena provsidor (varje skärm för sig, olika bredd och pixeltäthet) visade inget fel; felet fanns först när jag körde den riktiga appen med `flutter run -d web-server` och drev den med Playwright.
 Rule: Ett fel som bara syns i appens skal kräver skalet. Kör riktiga appen, fråga webbläsaren `document.elementFromPoint` vid klickpunkten och lista alla `flt-semantics` med `pointer-events: all` som täcker den. Ett `GestureDetector` över hela appen utan `excludeFromSemantics: true` ger en skärmstor tap-nod som tar klick från varje kontroll som ritas utanför tillgänglighetsträdet.
 Example: 2026-10-20 — `SessionActivityDetector`; två prov rodnar när `excludeFromSemantics` tas bort.
+
+### Ett "AI bara som reserv" gäller per väg, inte för hela funktionen (2026-10-31)
+Date: 2026-10-31
+Trigger: Steg 4b, beslutskort om omläsning av recept. Jag skrev till Malin att importen alltid läser med logik först och AI bara som reserv. För webbrecept stämmer det, men en första import av ett Instagram- eller TikTok-inlägg eller en YouTube-video går direkt till AI. Malin fattade sitt beslut på den felaktiga meningen och fick en rättelse efteråt.
+Rule: Innan du säger hur en funktion använder AI till Malin, öppna strategin för VARJE indatatyp och säg det per väg. Ett påstående om "importen" är ett påstående om alla importvägar.
+Example: 2026-10-31 — meningen struken i tråden, rättelsen skickad; omläsningen byggdes därefter med AI som reserv bara för bildtexter och videotext.
