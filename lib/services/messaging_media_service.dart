@@ -12,7 +12,6 @@ import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/offline/chat_image_queue_metadata.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -48,6 +47,7 @@ enum ImageSendOutcome {
 /// final mediaService = MessagingMediaService(
 ///   messagingService: messagingService,
 ///   authRepository: authRepository,
+///   offlineService: () => offlineService,
 /// );
 /// // Pick and send image (now with automatic retry on failure!)
 /// await mediaService.pickAndSendImage(
@@ -70,9 +70,8 @@ class MessagingMediaService extends BaseService {
     required auth_repo.AuthRepository authRepository,
     ImageUploadService? uploadService,
     ImagePicker? imagePicker,
-    OfflineService? Function()? offlineService,
-  }) : _offline =
-           offlineService ?? (() => ServiceLocator.tryGet<OfflineService>()),
+    required OfflineService? Function() offlineService,
+  }) : _offline = offlineService,
        _uploadService = uploadService ?? ImageUploadService(),
        _messagingService = messagingService,
        _authRepository = authRepository,

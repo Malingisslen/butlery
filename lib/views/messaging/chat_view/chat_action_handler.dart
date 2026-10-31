@@ -9,6 +9,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging_media_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -56,6 +57,7 @@ class ChatActionHandler {
        _mediaService = MessagingMediaService(
          messagingService: ServiceLocator.get(),
          authRepository: ServiceLocator.get(),
+         offlineService: () => ServiceLocator.tryGet<OfflineService>(),
        );
 
   /// Handle menu actions from chat app bar
