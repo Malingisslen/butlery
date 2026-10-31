@@ -26,6 +26,7 @@ const _ingredients = ['2-3 tomater', 'ca 500 g potatis', '2 dl mjölk'];
 Future<void> _pump(
   WidgetTester tester, {
   List<String> ingredients = _ingredients,
+  EdgeInsets systemInsets = EdgeInsets.zero,
 }) async {
   tester.view.physicalSize = const Size(420, 2400);
   tester.view.devicePixelRatio = 1.0;
@@ -62,6 +63,10 @@ Future<void> _pump(
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(padding: systemInsets),
+        child: child!,
+      ),
       home: Scaffold(
         body: SingleChildScrollView(
           child: RecipeDetailContent(
@@ -123,5 +128,29 @@ void main() {
     expect(find.text('¾ dl'), findsOneWidget);
     expect(find.text('1 ½ dl'), findsOneWidget);
     expect(find.textContaining('0,75'), findsNothing);
+  });
+
+  testWidgets('the status and navigation bars add no gap to the lists', (
+    tester,
+  ) async {
+    // A shrink-wrapped list pads itself with the screen's system insets
+    // unless told otherwise, which left a blank band under each heading.
+    List<double> gaps() => [
+      tester.getTopLeft(find.text('tomater')).dy -
+          tester.getBottomLeft(find.text('Ingredienser')).dy,
+      tester.getTopLeft(find.text('Instruktioner')).dy -
+          tester.getBottomLeft(find.text('mjölk')).dy,
+      tester.getTopLeft(find.text('Blanda.')).dy -
+          tester.getBottomLeft(find.text('Instruktioner')).dy,
+    ];
+
+    await _pump(tester);
+    final withoutBars = gaps();
+    await _pump(
+      tester,
+      systemInsets: const EdgeInsets.only(top: 80, bottom: 80),
+    );
+
+    expect(gaps(), withoutBars);
   });
 }
