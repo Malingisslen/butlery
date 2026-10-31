@@ -876,7 +876,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// terminal failure (or rate-limit denial) into a generic English "No import
   /// strategy could handle" message. importSinglePhoto returns the strategy's
   /// own result so the caller surfaces the real text.
-  Future<ImportManagerResult> _readWithAi(Uint8List bytes, ImageSource source) async {
+  Future<ImportManagerResult> _readWithAi(
+    Uint8List bytes,
+    ImageSource source,
+  ) async {
     final result = await importManager.importSinglePhoto(
       'photo',
       options: {

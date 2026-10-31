@@ -354,34 +354,38 @@ void main() {
         expect(result.errorMessage, contains('No text could be extracted'));
       });
 
-      test('an on-device read at medium confidence carries the medium-confidence '
-          'warning', () async {
-        when(() => mockOcrService.extractText(any())).thenAnswer(
-          (_) async => _createOCRResult(
-            text: 'Recipe text',
-            confidence: 0.75,
-            processingMethod: 'on_device',
-            isSuccessful: true,
-          ),
-        );
+      test(
+        'an on-device read at medium confidence carries the medium-confidence '
+        'warning',
+        () async {
+          when(() => mockOcrService.extractText(any())).thenAnswer(
+            (_) async => _createOCRResult(
+              text: 'Recipe text',
+              confidence: 0.75,
+              processingMethod: 'on_device',
+              isSuccessful: true,
+            ),
+          );
 
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+          when(
+            () =>
+                mockTextStrategy.import(any(), options: any(named: 'options')),
+          ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
-        // Act
-        final result = await strategy.import(
-          'photo',
-          options: {
-            'imageBytes': testImageBytes,
-          },
-        );
+          // Act
+          final result = await strategy.import(
+            'photo',
+            options: {
+              'imageBytes': testImageBytes,
+            },
+          );
 
-        // Assert
-        expect(result.isSuccess, isTrue);
-        expect(result.metadata?['ocr_method'], equals('on_device'));
-        expect(result.warnings, contains(contains('Medium OCR confidence')));
-      });
+          // Assert
+          expect(result.isSuccess, isTrue);
+          expect(result.metadata?['ocr_method'], equals('on_device'));
+          expect(result.warnings, contains(contains('Medium OCR confidence')));
+        },
+      );
     });
 
     group('Confidence Threshold Warnings', () {
@@ -1057,18 +1061,20 @@ void main() {
         app_provider.ServiceLocator.reset();
       });
 
-      test('visionOnly sends the photo to LLM vision once, without char-OCR',
-          () async {
-        final result = await strategy.import(
-          'photo',
-          options: {'imageBytes': testImageBytes, 'visionOnly': true},
-        );
+      test(
+        'visionOnly sends the photo to LLM vision once, without char-OCR',
+        () async {
+          final result = await strategy.import(
+            'photo',
+            options: {'imageBytes': testImageBytes, 'visionOnly': true},
+          );
 
-        expect(result.isSuccess, isTrue);
-        expect(fakeLlm.extractFromImageCalls, 1);
-        expect(fakeLlm.lastIsHandwritten, isFalse);
-        verifyNever(() => mockOcrService.extractText(any()));
-      });
+          expect(result.isSuccess, isTrue);
+          expect(fakeLlm.extractFromImageCalls, 1);
+          expect(fakeLlm.lastIsHandwritten, isFalse);
+          verifyNever(() => mockOcrService.extractText(any()));
+        },
+      );
 
       test('a failed on-device OCR returns failure, no LLM call', () async {
         when(() => mockOcrService.extractText(any())).thenAnswer(
