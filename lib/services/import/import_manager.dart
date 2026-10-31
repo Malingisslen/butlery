@@ -11,7 +11,6 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/spoken_text_reimport_strategy.dart';
 import 'package:butlery/services/import/caption_rules_reader.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
@@ -51,15 +50,16 @@ class ImportManager {
   final ParseEventLogger _eventLogger;
 
   final ParserShadowSampler? _shadowSampler;
-  final ImportStrategy _spokenTextReimport;
+  final ImportStrategy? _spokenTextReimport;
 
   ImportManager(
     this._personalOperations, {
     ParseEventLogger? eventLogger,
     ParserShadowSampler? shadowSampler,
+    ImportStrategy? spokenTextReimport,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
        _shadowSampler = shadowSampler,
-       _spokenTextReimport = SpokenTextReimportStrategy() {
+       _spokenTextReimport = spokenTextReimport {
     _initializeStrategies();
   }
 
@@ -74,8 +74,7 @@ class ImportManager {
     ImportStrategy? spokenTextReimport,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
        _shadowSampler = shadowSampler,
-       _spokenTextReimport =
-           spokenTextReimport ?? SpokenTextReimportStrategy() {
+       _spokenTextReimport = spokenTextReimport {
     _strategies.addAll(strategies);
   }
 

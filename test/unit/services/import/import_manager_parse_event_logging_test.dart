@@ -517,6 +517,30 @@ void main() {
       expect(ai.calls, 0);
     });
 
+    test('without an AI re-read wired in, a caption the rules found no '
+        'recipe in fails rather than returning the empty read', () async {
+      installLimiter();
+      final empty = Recipe.personal(
+        title: 'Bästa pastan',
+        description: '',
+        mealType: 'dinner',
+        ingredients: const ['300 g pasta'],
+        instructions: const [],
+      );
+
+      final r =
+          await ImportManager.withStrategies(
+            ops,
+            [_CannedTextStrategy(ImportResult.success(empty))],
+            eventLogger: spy,
+          ).reimportFromArtefact(
+            artefact(SourceArtefactType.tiktokCaption, 'Bästa pastan #pasta'),
+          );
+
+      expect(r.isSuccess, isFalse);
+      expect(r.recipe, isNull);
+    });
+
     test('a link, a pasted text, a photo or a dictation is never read with '
         'AI, even when the rules fail', () async {
       for (final type in [

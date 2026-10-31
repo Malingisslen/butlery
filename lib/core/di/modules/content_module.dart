@@ -50,6 +50,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/spoken_text_reimport_strategy.dart';
 import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -285,6 +286,9 @@ class ContentModule implements DIModule {
       () => ImportManager(
         container<UnifiedRecipeService>().personal,
         shadowSampler: container<ParserShadowSampler>(),
+        spokenTextReimport: SpokenTextReimportStrategy(
+          llm: container<LlmEnhancementService>(),
+        ),
       ),
     );
 
