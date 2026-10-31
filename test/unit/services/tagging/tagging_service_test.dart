@@ -17,6 +17,9 @@ import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
+import '../../../infrastructure/builders/user_builder.dart';
+import '../../../infrastructure/mocks/production_mocks.dart'
+    show FakePermissionService;
 
 // Mocks
 class MockIngredientLookupService extends Mock
@@ -128,8 +131,14 @@ void main() {
       configVersion: null,
     ));
 
+    final permissionService = FakePermissionService()
+      ..setPermissionState(
+        currentUser: UserBuilder().withId('injected-permission-uid').build(),
+      );
+
     service = TaggingService(
       lookupService: mockLookupService,
+      permissionService: permissionService,
       tagGenerator: mockTagGenerator,
       userIngredientRepository: mockUserIngredientRepo,
     );
@@ -219,7 +228,7 @@ void main() {
         verify(
           () => mockLookupService.lookupFromRaw(
             any(),
-            userId: any(named: 'userId'),
+            userId: 'injected-permission-uid',
           ),
         ).called(1);
         // Each phase invoked exactly once on the happy path.
@@ -303,7 +312,48 @@ void main() {
           () => mockLookupService.lookupFromRaw([
             'tomat',
             'lök',
-          ], userId: any(named: 'userId')),
+          ], userId: 'injected-permission-uid'),
+        ).called(1);
+      });
+    });
+
+    group('HIGH-1: generatePhase1Preview', () {
+      test('looks ingredients up for the injected permission user', () async {
+        final lookupResult = _createTestLookupResult();
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => lookupResult);
+        when(
+          () => mockTagGenerator.generatePhase1Only(
+            ingredients: any(named: 'ingredients'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenReturn(
+          TagResult(
+            tags: const {'p1'},
+            allergenStatus: const {},
+            dietaryStatus: const {},
+            coverage: 1.0,
+            unknownIngredients: const [],
+            generatorVersion: kTagGeneratorVersion,
+            generatedAt: DateTime.now(),
+          ),
+        );
+        final recipe = RecipeBuilder().withTitle('Preview').withIngredients([
+          'tomat',
+        ]).build();
+
+        final result = await service.generatePhase1Preview(recipe);
+
+        expect(result, isNotNull);
+        verify(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: 'injected-permission-uid',
+          ),
         ).called(1);
       });
     });

@@ -81,12 +81,16 @@ void main() {
     mockLookup = _MockIngredientLookupService();
     mockAuth = _MockAuthRepository();
 
-    // Wire the production ServiceLocator that _getCurrentUserId() uses.
+    // The auth pre-flight in executeServiceOperation still reads the
+    // production ServiceLocator, so it holds its own repository, apart from
+    // the injected one.
+    final locatorAuth = _MockAuthRepository();
     final getIt = GetIt.instance;
     await getIt.reset();
-    getIt.registerSingleton<AuthRepository>(mockAuth);
+    getIt.registerSingleton<AuthRepository>(locatorAuth);
     ServiceLocator.initialize(DIContainer());
 
+    when(() => locatorAuth.currentUserId).thenReturn('locator-user');
     when(() => mockAuth.currentUserId).thenReturn('u1');
 
     // Default stub — individual tests override when they need lookup.
@@ -97,7 +101,10 @@ void main() {
       ),
     ).thenAnswer((_) async => _lookupWith({}));
 
-    evaluator = PersonalTagRuleEvaluator(lookupService: mockLookup);
+    evaluator = PersonalTagRuleEvaluator(
+      lookupService: mockLookup,
+      authRepository: mockAuth,
+    );
   });
 
   tearDown(() async {
@@ -306,4 +313,32 @@ void main() {
       );
     },
   );
+  test('looks ingredients up for the injected auth user', () async {
+    // Intent: a property condition needs the lookup, which finds the user's
+    // own ingredient definitions; the user id must come from the repository
+    // the evaluator was built with.
+    final tag = PersonalTagBuilder()
+        .withId('fish-tag')
+        .withName('Fiskrecept')
+        .build();
+    final rule = PersonalTagRuleBuilder()
+        .withId('rule-fish')
+        .withTagId('fish-tag')
+        .withPropertyCondition('fish')
+        .build();
+    final recipe = RecipeBuilder().withTitle('Stekt lax').withIngredients([
+      'lax',
+    ]).build();
+
+    await evaluator.evaluateRulesForRecipe(
+      recipe,
+      [TagRulePair(tag, rule)],
+      [tag],
+      [],
+    );
+
+    verify(
+      () => mockLookup.lookupFromRaw(any(), userId: 'u1'),
+    ).called(1);
+  });
 }
