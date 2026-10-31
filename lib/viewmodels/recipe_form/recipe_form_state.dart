@@ -24,6 +24,7 @@ import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -289,6 +290,22 @@ class RecipeFormState extends ChangeNotifier {
 
   void setImportReviewRows(List<ParsedIngredient>? rows) {
     _importReviewRows = rows;
+  }
+
+  /// Writes an import's amounts as the recipe page shows them; the seed's raw
+  /// lines follow, so the save still reuses their structured entries.
+  void applyImportFractions() {
+    final values = _ingredientsManager.values;
+    for (var i = 0; i < values.length; i++) {
+      final rewritten = ImportFractions.line(values[i]);
+      if (rewritten != values[i]) _ingredientsManager.updateAt(i, rewritten);
+    }
+    final seed = _seedStructured;
+    if (seed == null) return;
+    _seedStructured = [
+      for (final entry in seed)
+        ImportFractions.withRaw(entry, ImportFractions.line(entry.raw)),
+    ];
   }
 
   /// BUT-1469: pre-edit snapshot diffed against the saved recipe to capture

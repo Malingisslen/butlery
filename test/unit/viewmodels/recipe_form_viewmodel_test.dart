@@ -26,6 +26,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -1435,6 +1436,70 @@ void main() {
           expect(vm.pendingParseConfirmations, 0);
         });
       });
+
+      group(
+        'an import is written with the fractions the recipe page shows',
+        () {
+          test(
+            'the editor shows 1 ½ and the review still matches its lines',
+            () {
+              final vm = openTemplate(
+                imported(const ['1,5 dl mjölk', '} dl potatismjöl', '2 ägg']),
+                confidences: const [
+                  ParseConfidence.high,
+                  ParseConfidence.failed,
+                  ParseConfidence.high,
+                ],
+              );
+              addTearDown(vm.dispose);
+
+              expect(vm.ingredients.take(3), ['1 ½ dl mjölk', '', '2 ägg']);
+              expect(vm.pendingParseConfirmations, 1);
+            },
+          );
+
+          test('the saved line keeps the note and section the import read', () {
+            final vm = openTemplate(
+              imported(const ['1,5 dl mjölk']).copyWith(
+                structuredIngredients: const [
+                  RecipeIngredient(
+                    amount: 1.5,
+                    unit: 'dl',
+                    name: 'mjölk',
+                    note: 'rumstempererad',
+                    raw: '1,5 dl mjölk',
+                    section: 'Smet',
+                  ),
+                ],
+              ),
+            );
+            addTearDown(vm.dispose);
+
+            final entry = vm.state
+                .createRecipe()
+                .core
+                .structuredIngredients!
+                .single;
+            expect(entry.raw, '1 ½ dl mjölk');
+            expect(entry.note, 'rumstempererad');
+            expect(entry.section, 'Smet');
+          });
+
+          test(
+            'a recipe opened as a copy, without an import, keeps its text',
+            () {
+              final vm = RecipeFormViewModel(
+                recipeService: mockRecipeService,
+                initialRecipe: imported(const ['1,5 dl mjölk']),
+                isTemplate: true,
+              );
+              addTearDown(vm.dispose);
+
+              expect(vm.ingredients.first, '1,5 dl mjölk');
+            },
+          );
+        },
+      );
 
       test('a blank line between ingredients does not shift the rows', () {
         final vm = openTemplate(
