@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
@@ -11,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
@@ -54,6 +56,7 @@ class PersonalRecipeModule {
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
   final TaggingService? _taggingService;
+  final IngredientIdResolver? _ingredientIdResolver;
   final PersonalTagService? _personalTagService;
 
   /// BUT-2162: the offline queue every create, update and delete goes
@@ -128,6 +131,7 @@ class PersonalRecipeModule {
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
     TaggingService? taggingService,
+    IngredientIdResolver? ingredientIdResolver,
     PersonalTagService? personalTagService,
     void Function(String recipeTitle)? onTaggingFailed,
     OfflineService? Function()? getOfflineQueue,
@@ -143,6 +147,7 @@ class PersonalRecipeModule {
        _notifyListeners = notifyListeners,
        _getServiceAdapter = getServiceAdapter,
        _taggingService = taggingService,
+       _ingredientIdResolver = ingredientIdResolver,
        _personalTagService = personalTagService,
        _onTaggingFailed = onTaggingFailed;
 
@@ -204,6 +209,8 @@ class PersonalRecipeModule {
           // portions) treat a recipe without these as unparsed lines.
           newRecipe.core.structuredIngredients ??=
               StructuredIngredientDeriver.deriveAll(newRecipe.ingredients);
+
+          newRecipe = await _withIngredientIds(newRecipe);
 
           // Generate tags if tagging service is available
           newRecipe = await _applyTagging(newRecipe);
@@ -293,6 +300,8 @@ class PersonalRecipeModule {
             lastEditedByUserId: currentUserId,
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
+
+          editedRecipe = await _withIngredientIds(editedRecipe);
 
           // Regenerate tags if ingredients changed
           editedRecipe = await _applyTagging(editedRecipe);
@@ -584,6 +593,8 @@ class PersonalRecipeModule {
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
 
+          personalRecipe = await _withIngredientIds(personalRecipe);
+
           // Apply tagging to imported recipes
           personalRecipe = await _applyTagging(
             personalRecipe,
@@ -736,6 +747,17 @@ class PersonalRecipeModule {
   /// queue tags it once the write has reached the server.
   static bool _taggingFailed(Recipe recipe) =>
       recipe.core.tagResult?.generatorVersion == 'failed';
+
+  /// [recipe] with its stored ingredient lines linked to the ingredient
+  /// registry, so the shopping list and the pantry can match them by id.
+  Future<Recipe> _withIngredientIds(Recipe recipe) async {
+    final rows = recipe.core.structuredIngredients;
+    final resolver = _ingredientIdResolver;
+    if (rows == null || resolver == null) return recipe;
+    final linked = await resolver.resolve(rows);
+    if (listEquals(linked, rows)) return recipe;
+    return recipe.copyWith(structuredIngredients: linked);
+  }
 
   /// Applies automatic tagging to a recipe if tagging service is available.
   ///

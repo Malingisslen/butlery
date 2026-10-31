@@ -1,5 +1,6 @@
 // lib/services/unified/unified_recipe_service.dart
 
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
@@ -328,6 +329,7 @@ class UnifiedRecipeService
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
       taggingService: _tryGetTaggingService(),
+      ingredientIdResolver: ServiceLocator.tryGet<IngredientIdResolver>(),
       personalTagService: _tryGetPersonalTagService(),
       // CRIT-7: Wire up tagging failure notifications to stream
       onTaggingFailed: (recipeTitle) {
