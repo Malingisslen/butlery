@@ -151,6 +151,7 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 
 // Ingredient registry (enriches static KnownIngredients from Firestore)
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
@@ -267,6 +268,9 @@ class ContentModule implements DIModule {
             : null,
         firestoreRepository: app.isRegistered<FirestoreRepository>()
             ? app<FirestoreRepository>()
+            : null,
+        ingredientIdResolver: app.isRegistered<IngredientIdResolver>()
+            ? app<IngredientIdResolver>()
             : null,
         removeRecipientsFromOwnShares: (recipeId, userIds) =>
             app<FirebaseSharedRecipeRepository>().removeRecipientsFromOwnShares(

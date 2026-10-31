@@ -78,6 +78,7 @@ class UnifiedRecipeService
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
+  final IngredientIdResolver? _ingredientIdResolver;
   final FirestoreRepository _firestoreRepository;
   final Future<void> Function(String recipeId, List<String> userIds)?
   _removeRecipientsFromOwnShares;
@@ -222,9 +223,11 @@ class UnifiedRecipeService
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
+    IngredientIdResolver? ingredientIdResolver,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
   }) : _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares,
+       _ingredientIdResolver = ingredientIdResolver,
        _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
        _firestore =
@@ -329,7 +332,7 @@ class UnifiedRecipeService
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
       taggingService: _tryGetTaggingService(),
-      ingredientIdResolver: ServiceLocator.tryGet<IngredientIdResolver>(),
+      ingredientIdResolver: _ingredientIdResolver,
       personalTagService: _tryGetPersonalTagService(),
       // CRIT-7: Wire up tagging failure notifications to stream
       onTaggingFailed: (recipeTitle) {
