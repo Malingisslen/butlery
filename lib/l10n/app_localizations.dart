@@ -19511,12 +19511,6 @@ abstract class AppLocalizations {
   /// **'Kontrollera behörigheter'**
   String get checkPermissions;
 
-  /// No description provided for @ingredientParseError.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte tolka ingrediens'**
-  String get ingredientParseError;
-
   /// No description provided for @portionsUnit.
   ///
   /// In sv, this message translates to:
