@@ -51,8 +51,6 @@ void main() {
               recipe: _recipe(),
               style: RecipeCardStyle.detailed,
               matchPercent: 0.85,
-              showAllergenBadges: true,
-              userAllergenPrefs: const {'gluten'},
               onTap: (_) => tapped++,
             ),
           ),
@@ -74,9 +72,7 @@ void main() {
     expect(lines.where((l) => l.contains('85 %')), [
       'Du har 85 % av receptets ingredienser',
     ]);
-    expect(lines.where((l) => l.contains('kontrollerade')), [
-      'Allergener ej kontrollerade',
-    ]);
+    expect(lines.where((l) => l.contains('kontrollerade')), isEmpty);
     expect(lines.where((l) => l.contains('Köttbullar')), ['Köttbullar']);
     expectNothingAnnouncedTwice(tester, card);
     expectActivatable(tester, card);

@@ -1,6 +1,5 @@
-/// Megagenomgång A1: a recipe whose allergens are unsettled says
-/// "Ej kontrollerat" in words wherever allergens are shown, so the absence of
-/// a badge is never read as "safe".
+/// Where allergens are shown, an unsettled one says "Ej kontrollerat" so the
+/// absence of a badge is never read as "safe". Recipe cards show none.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -44,103 +42,32 @@ void main() {
   });
 
   group('recipe card', () {
-    Future<void> pumpCard(
-      WidgetTester tester,
-      Recipe recipe, {
-      RecipeCardStyle style = RecipeCardStyle.detailed,
-    }) => tester.pumpWidget(
-      createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: Scaffold(
-          body: RecipeCard(
-            recipe: recipe,
-            style: style,
-            showAllergenBadges: true,
-            userAllergenPrefs: const {'gluten', 'mjölk'},
-          ),
-        ),
-      ),
-    );
-
-    testWidgets(
-      'says so beside the known badges when one allergen is unsettled',
-      (
+    for (final style in RecipeCardStyle.values) {
+      testWidgets('${style.name}: shows nothing allergen-related', (
         tester,
       ) async {
-        await pumpCard(
-          tester,
-          _recipe(
-            _tagResult({'gluten': TriState.free, 'mjölk': TriState.unknown}),
-          ),
-        );
-
-        expect(find.byType(AllergenStatusBadge), findsOneWidget);
-        expect(find.text('Ej kontrollerat'), findsOneWidget);
-      },
-    );
-
-    testWidgets('does not draw a free badge for tags an older tagger made', (
-      tester,
-    ) async {
-      await pumpCard(
-        tester,
-        _recipe(
-          TagResult(
-            tags: const {},
-            allergenStatus: const {
-              'gluten': TriState.free,
-              'mjölk': TriState.free,
-            },
-            dietaryStatus: const {},
-            coverage: 1.0,
-            generatedAt: DateTime(2026, 1, 1),
-            generatorVersion: '1.0.0',
-            hasCoverageAnomaly: false,
-          ),
-        ),
-      );
-
-      expect(find.byType(AllergenStatusBadge), findsNothing);
-      expect(find.text('Ej kontrollerat'), findsOneWidget);
-    });
-
-    for (final style in [RecipeCardStyle.detailed, RecipeCardStyle.grid]) {
-      testWidgets('${style.name}: an owner CONTAINS beats the tagger\'s FREE', (
-        tester,
-      ) async {
-        await pumpCard(
-          tester,
-          _recipe(
-            _tagResult({'gluten': TriState.free, 'mjölk': TriState.free}),
-          ).copyWith(
-            tagOverrides: const TagOverrides(
-              allergenOverrides: {'gluten': TriState.contains},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: _recipe(
+                  _tagResult({
+                    'gluten': TriState.contains,
+                    'mjölk': TriState.unknown,
+                  }),
+                ),
+                style: style,
+              ),
             ),
           ),
-          style: style,
         );
 
-        final statuses = tester
-            .widgetList<AllergenStatusBadge>(find.byType(AllergenStatusBadge))
-            .map((b) => (b.allergen, b.status))
-            .toList();
-        expect(statuses, contains(('gluten', TriState.contains)));
-        expect(statuses, isNot(contains(('gluten', TriState.free))));
+        expect(find.byType(AllergenStatusBadge), findsNothing);
+        expect(find.byType(AllergenUncheckedMark), findsNothing);
+        expect(find.text('Ej kontrollerat'), findsNothing);
       });
     }
-
-    testWidgets('stays silent when every tracked allergen is settled', (
-      tester,
-    ) async {
-      await pumpCard(
-        tester,
-        _recipe(
-          _tagResult({'gluten': TriState.free, 'mjölk': TriState.contains}),
-        ),
-      );
-
-      expect(find.text('Ej kontrollerat'), findsNothing);
-    });
   });
 
   group('TagResultDisplay', () {

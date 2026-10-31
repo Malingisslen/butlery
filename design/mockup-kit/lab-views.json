@@ -5,8 +5,8 @@
   "lib/views/cooking_mode_view.dart": "fa5de615e13b",
   "lib/views/edit_recipe_view.dart": "0f18a0f17cd9",
   "lib/views/hem": "168e4d34b96f",
-  "lib/views/mina_recept": "051b9df1df30",
-  "lib/views/mina_recept_view.dart": "9e3ee5af292b",
+  "lib/views/mina_recept": "b67dadaeb41c",
+  "lib/views/mina_recept_view.dart": "cccfd15ebb23",
   "lib/views/more/app_settings_view.dart": "b9a1b7b867a4",
   "lib/views/more/more_view.dart": "5a763047b7f3",
   "lib/views/pantry/pantry_view.dart": "005181e2d25f",
@@ -14,7 +14,7 @@
   "lib/views/recipe_detail_view.dart": "95f6da827a5a",
   "lib/views/skriv_sjalv_recept_view.dart": "50786bab1aeb",
   "lib/views/sync/sync_queue_view.dart": "e25624cc2492",
-  "lib/views/unified_shopping": "0ffc4afac854",
-  "lib/views/unified_shopping_view.dart": "9d299fb87f34",
-  "lib/views/veckomeny_view.dart": "6d2f70c6920c"
+  "lib/views/unified_shopping": "b8d284a553f8",
+  "lib/views/unified_shopping_view.dart": "444f1dcc384e",
+  "lib/views/veckomeny_view.dart": "230a0f48a702"
 }

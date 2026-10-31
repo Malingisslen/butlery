@@ -97,12 +97,6 @@ class _AllergenPreferencesContent extends StatelessWidget {
           title: l10n.allergenDisplayTitle,
           rows: [
             ButleryListRow.toggle(
-              label: l10n.allergenDisplayOnCardsTitle,
-              subtitle: l10n.allergenDisplayOnCardsSubtitle,
-              checked: viewModel.showOnCards,
-              onChanged: (v) => change(() => viewModel.setShowOnCards(v)),
-            ),
-            ButleryListRow.toggle(
               label: l10n.allergenDisplayOnDetailTitle,
               subtitle: l10n.allergenDisplayOnDetailSubtitle,
               checked: viewModel.showOnDetail,
