@@ -87,7 +87,6 @@ We share necessary data with the following sub-processors. All are GDPR-complian
 
 | Sub-processor | When | Status |
 |---------------|------|--------|
-| Algolia | Recipe full-text search | Feature-flagged off; pending evaluation |
 | RevenueCat | Subscription management | Not yet — monetization not implemented |
 
 This list will be updated when we add or remove processors.

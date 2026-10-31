@@ -194,12 +194,6 @@ We share your personal data with the following third parties:
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** A photo is sent here only after you have said yes to AI reading it (see section 5.2). The photo may contain personal information visible in the picture. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
-**Algolia (Algolia Inc., USA/EU)** *(currently inactive — available via feature flag)*
-- **Purpose:** Search indexing and recipe search (when enabled)
-- **Legal basis:** Legitimate interest (necessary for the service's search functionality)
-- **Transfer:** EU data center (France), with USA backup under EU-US Data Privacy Framework
-- **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
-
 ### 6.2 Legal requirements
 
 We may share information if:
@@ -223,7 +217,6 @@ The following is a list of the data processors that receive your data, the categ
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgium). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
-| **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
 
 When the phone reads a recipe photo itself (Google ML Kit), the photo is not sent to anyone.
 

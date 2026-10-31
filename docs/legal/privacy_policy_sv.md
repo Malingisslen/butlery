@@ -86,7 +86,6 @@ Vi delar nödvändiga uppgifter med följande underleverantörer. Samtliga är G
 
 | Underleverantör | Plan | Status |
 |----------------|------|--------|
-| Algolia | Receptsök | Inaktiverad bakom feature-flag; under utvärdering |
 | RevenueCat | Prenumerationshantering | Inte än — monetisering ej implementerad |
 
 Denna lista uppdateras när vi lägger till eller tar bort leverantörer.
