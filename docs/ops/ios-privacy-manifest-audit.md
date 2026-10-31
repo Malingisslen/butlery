@@ -106,6 +106,10 @@ Columns:
 | flutter_onnxruntime | 1.6.4 | N *(verify)* | none needed (pure compute) | none (on-device inference) | github.com/microsoft/onnxruntime |
 | algoliasearch | 1.46.1 | pure-Dart REST client | n/a | Search queries (hashed user IDs) | github.com/algolia/algoliasearch-client-dart |
 
+Second bundle: `ShareExtension.appex` (first-party, `ios/ShareExtension/`) ships its own
+`PrivacyInfo.xcprivacy`: no tracking, no collected data, no required-reason APIs. It copies the
+shared files into the App Group container and sends nothing off the device.
+
 *(Packages omitted: pure-Dart utility libs with no native code — uuid, intl, collection, rxdart, clock, path, html, html_unescape, csv, excel, timeago, archive, sembast, sembast_web, sqlite3, web.)*
 
 ## NSPrivacyAccessedAPITypes — declarations we carry

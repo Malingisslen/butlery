@@ -1,0 +1,3 @@
+// The extension's version must equal the app's, so it reads Flutter's
+// build name and number. Pods are deliberately not included.
+#include "../Flutter/Generated.xcconfig"
