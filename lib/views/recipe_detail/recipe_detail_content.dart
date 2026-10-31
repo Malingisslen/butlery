@@ -247,18 +247,26 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   }
 
   Widget _buildIngredientsContent(BuildContext context) {
-    // BUT-951: ingredient rows via ListView.builder. shrinkWrap +
-    // NeverScrollable because the outer scaffold owns the scroll. Saves
-    // a layout pass per row vs the eager Column children list — most
-    // recipes are short so the win is modest, but for long-ingredient
-    // baking recipes (50+ items) it's measurable on lower-end Android.
-    // An explicit padding keeps the list from adding the system bars' insets.
-    return ListView.builder(
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _ingredientRows.length,
-      itemBuilder: (context, index) => _buildDisplayRow(context, index),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // BUT-951: ingredient rows via ListView.builder. shrinkWrap +
+          // NeverScrollable because the outer scaffold owns the scroll. Saves
+          // a layout pass per row vs the eager Column children list — most
+          // recipes are short so the win is modest, but for long-ingredient
+          // baking recipes (50+ items) it's measurable on lower-end Android.
+          ListView.builder(
+            // A ListView without padding takes the system insets as padding.
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _ingredientRows.length,
+            itemBuilder: (context, index) => _buildDisplayRow(context, index),
+          ),
+        ],
+      ),
     );
   }
 
@@ -459,14 +467,17 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       );
     }
 
-    // BUT-951: instructions via ListView.builder, mirrors ingredients change.
-    return ListView.builder(
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: instructions.length,
-      itemBuilder: (context, index) =>
-          _buildInstructionRow(context, index, instructions),
+      // BUT-951: instructions via ListView.builder, mirrors ingredients change.
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: instructions.length,
+        itemBuilder: (context, index) =>
+            _buildInstructionRow(context, index, instructions),
+      ),
     );
   }
 
