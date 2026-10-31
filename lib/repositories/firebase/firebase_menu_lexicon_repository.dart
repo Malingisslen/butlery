@@ -4,9 +4,6 @@
 /// 1-hour TTL cache. Returns partial data (only categories with Firestore
 /// overrides); the caller merges with [CodeLexiconProvider] defaults via
 /// [Lexicon.mergedWith].
-///
-/// Offline-resilient: on Firestore failure, logs a warning and returns an
-/// empty map so the code lexicon remains the safe fallback.
 library;
 
 import 'package:clock/clock.dart';
@@ -35,13 +32,17 @@ class FirebaseMenuLexiconRepository {
   ///
   /// Returns a map of category → entries. Categories not present in
   /// Firestore are omitted (the caller falls back to code defaults).
-  /// Returns an empty map if Firestore is unreachable or the collection
-  /// is empty.
-  Future<Map<LexiconCategory, Map<String, String>>> loadOverrides() async {
+  Future<Map<LexiconCategory, Map<String, String>>> loadOverrides() async =>
+      (await loadOverridesWithStatus()).overrides;
+
+  /// Like [loadOverrides], but says whether the fetch failed, so a caller can
+  /// tell "no overrides exist" from "the overrides could not be read".
+  Future<({Map<LexiconCategory, Map<String, String>> overrides, bool failed})>
+  loadOverridesWithStatus() async {
     // TTL cache: skip Firestore if fresh enough.
     if (_cache != null && _cachedAt != null) {
       if (clock.now().difference(_cachedAt!) < _cacheDuration) {
-        return _cache!;
+        return (overrides: _cache!, failed: false);
       }
     }
 
@@ -79,6 +80,12 @@ class FirebaseMenuLexiconRepository {
         }
       }
 
+      // Offline, persistence answers get() from the device cache without an
+      // error, possibly empty on a fresh install. That is not the server's
+      // answer, so it is neither cached here nor reported as complete.
+      if (snapshot.metadata.isFromCache) {
+        return (overrides: result, failed: true);
+      }
       _cache = result;
       _cachedAt = clock.now();
       if (result.isNotEmpty) {
@@ -86,13 +93,16 @@ class FirebaseMenuLexiconRepository {
           'MenuLexiconRepository: loaded ${result.length} category overrides',
         );
       }
-      return result;
+      return (overrides: result, failed: false);
     } catch (e) {
       AppLogger.warning(
         'MenuLexiconRepository: Firestore unavailable, '
         'falling back to code lexicon: $e',
       );
-      return const {};
+      return (
+        overrides: const <LexiconCategory, Map<String, String>>{},
+        failed: true,
+      );
     }
   }
 

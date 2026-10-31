@@ -14,6 +14,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
+import 'package:butlery/services/menu/ingredient_exclusion.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
@@ -46,8 +47,11 @@ class MenuService extends BaseService {
   Future<Lexicon?> _loadLexicon() async {
     if (_cachedLexicon != null) return _cachedLexicon;
     if (_lexiconProvider == null) return null;
-    _cachedLexicon = await _lexiconProvider.load();
-    return _cachedLexicon;
+    final loaded = await _lexiconProvider.load();
+    // An incomplete lexicon (Firestore overrides unreadable) serves this call
+    // only; keeping it would pin the code defaults for the whole session.
+    if (loaded.isComplete) _cachedLexicon = loaded;
+    return loaded;
   }
 
   /// Parses Swedish meal request and returns randomly selected recipes.
@@ -613,9 +617,8 @@ class MenuService extends BaseService {
       if (tr != null && p.globalExcludedTags.any(tr.tags.contains)) {
         return false;
       }
-      final ings = r.core.ingredientsNormalized ?? r.core.ingredients;
       for (final word in p.globalExcludedTags) {
-        if (ings.any((i) => i.toLowerCase().contains(word))) return false;
+        if (IngredientExclusion.recipeContainsWord(r, word)) return false;
       }
     }
     return true;

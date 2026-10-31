@@ -92,6 +92,7 @@ class MenuContentWidgets {
         // BUT-2362: dishes kept for a meal when someone is away are on this
         // list too; say so while the choice is on.
         if (viewModel.mealAllergenScopeOn) _buildMealScopeHint(context),
+        if (viewModel.recencyReadFailed) _buildRecencyReadFailedHint(context),
         for (final entry in MenuViewHelpers.getSortedMenuEntries(
           viewModel.menu,
         )) ...[
@@ -138,6 +139,32 @@ class MenuContentWidgets {
               isFamilyScope
                   ? context.l10n.menuHiddenByFamilyAllergies(count)
                   : context.l10n.menuHiddenByOwnAllergies(count),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildRecencyReadFailedHint(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ButleryIcon(
+            ButleryIcons.calendar,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.space4),
+          Expanded(
+            child: Text(
+              context.l10n.menuRecencyReadFailedHint,
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),

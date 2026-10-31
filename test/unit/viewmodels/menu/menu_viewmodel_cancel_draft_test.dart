@@ -35,7 +35,9 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
@@ -74,6 +76,8 @@ class _HeldMenuService extends Mock implements MenuService {
   @override
   Future<ParsedMenuRequest?> parsePrompt(String input) async => null;
 }
+
+class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
 
 class _Analytics extends Fake implements AnalyticsService {
   final MockMenuEventsTracker _menu = MockMenuEventsTracker();
@@ -796,6 +800,86 @@ void main() {
       final rewritten = await storedDraftObject();
       expect(rewritten!.recipeIdsByMealType['Middag'], ['r-soup']);
       expect(rewritten.recipeNames, {'r-soup': 'Ärtsoppa'});
+    });
+  });
+
+  group('earlier weeks unreadable (recencyReadFailed)', () {
+    late _MockPlanService plans;
+    var readFailed = true;
+
+    setUp(() {
+      registerFallbackValue(DateTime(2026));
+      readFailed = true;
+      plans = _MockPlanService();
+      when(() => plans.readWeek(any())).thenAnswer((i) async {
+        final week = i.positionalArguments.first as DateTime;
+        return WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(userId: 'u1', date: week),
+          readFailed: readFailed,
+        );
+      });
+      TestServiceLocator.registerMock<WeeklyMenuPlanService>(plans);
+      // The generator resolves the plan service when the view model is built.
+      vm.dispose();
+      vm = MenuViewModel(
+        recipeService: recipes,
+        menuService: menuService,
+        analyticsService: analytics,
+      );
+    });
+
+    tearDown(() async {
+      TestServiceLocator.unregister<WeeklyMenuPlanService>();
+    });
+
+    test(
+      'a failed read surfaces on the view model, a clean one clears it',
+      () async {
+        await generate('en middag', {
+          'Middag': [soup],
+        });
+        expect(vm.recencyReadFailed, isTrue);
+
+        readFailed = false;
+        await generate('en middag', {
+          'Middag': [stew],
+        });
+        expect(vm.recencyReadFailed, isFalse);
+      },
+    );
+
+    test(
+      'cancelling a run puts back the flag of the earlier suggestion',
+      () async {
+        await generate('en middag', {
+          'Middag': [soup],
+        });
+        expect(vm.recencyReadFailed, isTrue);
+
+        readFailed = false;
+        menuService.hold = Completer<void>();
+        final run = vm.generateMenu('en annan middag');
+        await reachComputation();
+        expect(vm.recencyReadFailed, isFalse);
+
+        vm.cancelGeneration();
+        expect(await run, MenuGenerationEnd.cancelled);
+
+        expect(vm.recencyReadFailed, isTrue);
+        menuService.hold!.complete();
+        await pumpEventQueue();
+      },
+    );
+
+    test('clearing the menu forgets the notice', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(vm.recencyReadFailed, isTrue);
+
+      vm.clearMenu();
+
+      expect(vm.recencyReadFailed, isFalse);
     });
   });
 }

@@ -155,14 +155,8 @@ void main() {
       );
     });
 
-    // `getWeek` survives BUT-1948 on purpose (the group twin was deleted): its
-    // caller is the recent-recipe dedup in `menu_generator.dart`, where an
-    // empty plan is the correct answer to a failed read because dedup must
-    // never block generation. That suite stubs `getWeek` on a mock service, so
-    // nothing exercised the real delegate. The pair below is what makes the
-    // fallback a decision rather than an accident.
     test('getWeek answers a FAILED read with an empty plan instead of '
-        'throwing — the dedup caller must never be blocked', () async {
+        'throwing', () async {
       when(
         () => repo.fetchForWeek(
           userId: any(named: 'userId'),

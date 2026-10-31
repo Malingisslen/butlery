@@ -49,6 +49,7 @@ typedef _MenuScreen = ({
   Map<String, int> requested,
   MenuNoMatchOutcome? noMatch,
   MenuPoolStats? poolStats,
+  bool recencyReadFailed,
 });
 
 /// P5-U25: one meal type the generation could not fill.
@@ -418,10 +419,18 @@ class MenuViewModel extends BaseViewModel {
       _generator.lastPoolStats?.unknownSoftRecipeIds.contains(recipeId) ??
       false;
 
+  /// Whether the menu on screen was made without knowing which dishes the
+  /// last two weeks used, so the same dish may appear again. A shared live
+  /// menu was not made by this session's generator.
+  bool get recencyReadFailed => !isLiveMenu && _generator.lastRecencyReadFailed;
+
   // BUT-1820: the pool stats must describe the menu on screen. A loaded menu
   // was never filtered by this session's pool, so a stale roster-incomplete
   // source would put the warning over a friend's menu.
-  void _forgetPoolStats() => _generator.lastPoolStats = null;
+  void _forgetPoolStats() {
+    _generator.lastPoolStats = null;
+    _generator.lastRecencyReadFailed = false;
+  }
 
   /// Generates menu from AI prompt
   /// - Menu state update with generated content
@@ -558,6 +567,7 @@ class MenuViewModel extends BaseViewModel {
     _requestedByMealType = before.requested;
     _noMatch = before.noMatch;
     _generator.lastPoolStats = before.poolStats;
+    _generator.lastRecencyReadFailed = before.recencyReadFailed;
     _stateManager.loadMenuFromData(
       menu: before.menu,
       lastPrompt: before.prompt,
@@ -581,6 +591,7 @@ class MenuViewModel extends BaseViewModel {
     requested: _requestedByMealType,
     noMatch: _noMatch,
     poolStats: _generator.lastPoolStats,
+    recencyReadFailed: _generator.lastRecencyReadFailed,
   );
 
   /// BUT-2157: the kept draft found by [checkForDraft], until it is restored

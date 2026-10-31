@@ -37,11 +37,19 @@ enum LexiconCategory {
 class Lexicon {
   final Map<LexiconCategory, Map<String, String>> _entries;
 
-  const Lexicon(Map<LexiconCategory, Map<String, String>> entries)
-    : _entries = entries;
+  const Lexicon(
+    Map<LexiconCategory, Map<String, String>> entries, {
+    this.isComplete = true,
+  }) : _entries = entries;
 
   /// Empty lexicon — useful for tests that want to verify graceful failure.
-  const Lexicon.empty() : _entries = const {};
+  const Lexicon.empty() : _entries = const {}, isComplete = true;
+
+  /// False when a source that should have contributed entries could not be
+  /// read. The lexicon is still usable (the code defaults carry the parser),
+  /// but a holder must not keep it for the session: the next load may
+  /// succeed and bring the overrides in.
+  final bool isComplete;
 
   /// Look up the map for a category. Returns an empty map if absent.
   Map<String, String> of(LexiconCategory category) =>
@@ -59,7 +67,7 @@ class Lexicon {
         ...overlay._entries[cat] ?? const {},
       };
     }
-    return Lexicon(merged);
+    return Lexicon(merged, isComplete: isComplete && overlay.isComplete);
   }
 }
 
