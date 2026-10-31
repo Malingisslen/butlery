@@ -76,6 +76,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
     PantryLocation? location,
     DateTime? expiryDate,
     String? note,
+    bool isStaple = false,
   }) async {
     final userId = _currentUserId();
     if (userId == null) return;
@@ -90,6 +91,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
           location: location,
           expiryDate: expiryDate,
           note: note,
+          isStaple: isStaple,
         );
         _items = [..._items, added];
       },
@@ -104,6 +106,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
     PantryLocation? location,
     DateTime? expiryDate,
     String? note,
+    bool isStaple = false,
   }) async {
     final userId = _currentUserId();
     if (userId == null) return;
@@ -118,6 +121,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
           location: location,
           expiryDate: expiryDate,
           note: note,
+          isStaple: isStaple,
         );
         _items = [..._items, added];
       },

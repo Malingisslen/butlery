@@ -1082,4 +1082,170 @@ void main() {
     ).captured.single;
     expect(saved, isA<DateTime>());
   });
+
+  group('a staple ("Finns alltid hemma")', () {
+    void stubAddWithStaple() {
+      when(
+        () => vm.addItemFromText(
+          any(),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: any(named: 'isStaple'),
+        ),
+      ).thenAnswer((_) async {});
+    }
+
+    final stapleSwitch = find.byKey(AddPantryItemSheet.stapleSwitchKey);
+
+    Future<void> toggleStaple(WidgetTester tester) async {
+      await tester.ensureVisible(stapleSwitch);
+      await tester.tap(stapleSwitch);
+      await tester.pumpAndSettle();
+    }
+
+    PantryItem existingStaple({double? quantity, DateTime? expiry}) =>
+        PantryItem(
+          id: 'p_salt',
+          ingredientName: 'Salt',
+          quantity: quantity,
+          unit: 'g',
+          location: PantryLocation.pantry,
+          addedAt: DateTime(2026, 1, 1),
+          expiryDate: expiry,
+          isStaple: true,
+        );
+
+    testWidgets('turning the switch on hides the amount and the date '
+        'fields', (tester) async {
+      await tester.pumpWidget(buildSheet());
+      expect(find.text('Mängd'), findsOneWidget);
+      expect(find.text('Utgår'), findsOneWidget);
+
+      await toggleStaple(tester);
+
+      expect(find.text('Mängd'), findsNothing);
+      expect(find.text('Utgår'), findsNothing);
+      expect(find.text('Finns alltid hemma'), findsOneWidget);
+
+      await toggleStaple(tester);
+
+      expect(find.text('Mängd'), findsOneWidget);
+      expect(find.text('Utgår'), findsOneWidget);
+    });
+
+    testWidgets('adding with the switch on sends isStaple true and no '
+        'amount, even after one was typed', (tester) async {
+      stubAddWithStaple();
+      await tester.pumpWidget(buildSheet());
+      await tester.enterText(
+        fieldLabelled('Ingrediens', type: TextField),
+        'Salt',
+      );
+      await tester.enterText(fieldLabelled('Mängd', type: TextField), '5');
+      await toggleStaple(tester);
+
+      await tester.ensureVisible(find.text('Lägg till'));
+      await tester.tap(find.text('Lägg till'));
+      await tester.pump();
+
+      verify(
+        () => vm.addItemFromText(
+          'Salt',
+          quantity: null,
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: null,
+          note: any(named: 'note'),
+          isStaple: true,
+        ),
+      ).called(1);
+    });
+
+    testWidgets('adding without touching the switch is not a staple', (
+      tester,
+    ) async {
+      stubAddWithStaple();
+      await tester.pumpWidget(buildSheet());
+      await tester.enterText(
+        fieldLabelled('Ingrediens', type: TextField),
+        'Mjölk',
+      );
+      await tester.enterText(fieldLabelled('Mängd', type: TextField), '2');
+
+      await tester.ensureVisible(find.text('Lägg till'));
+      await tester.tap(find.text('Lägg till'));
+      await tester.pump();
+
+      verify(
+        () => vm.addItemFromText(
+          'Mjölk',
+          quantity: 2,
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: false,
+        ),
+      ).called(1);
+    });
+
+    testWidgets('editing a staple opens with the switch on and saves it '
+        'without amount or date', (tester) async {
+      await tester.pumpWidget(
+        buildSheet(
+          existingItem: existingStaple(
+            quantity: 3,
+            expiry: DateTime(2026, 9, 30),
+          ),
+        ),
+      );
+
+      expect(
+        tester
+            .widget<Switch>(
+              find.descendant(
+                of: stapleSwitch,
+                matching: find.byType(Switch),
+              ),
+            )
+            .value,
+        isTrue,
+      );
+      expect(find.text('Mängd'), findsNothing);
+      expect(find.text('Utgår'), findsNothing);
+
+      await tester.ensureVisible(find.text('Spara'));
+      await tester.tap(find.text('Spara'));
+      await tester.pump();
+
+      final saved =
+          verify(() => vm.updateItem(captureAny())).captured.single
+              as PantryItem;
+      expect(saved.id, 'p_salt');
+      expect(saved.isStaple, isTrue);
+      expect(saved.quantity, isNull);
+      expect(saved.expiryDate, isNull);
+    });
+
+    testWidgets('turning the switch off on a staple saves it as an ordinary '
+        'item', (tester) async {
+      await tester.pumpWidget(buildSheet(existingItem: existingStaple()));
+
+      await toggleStaple(tester);
+      expect(find.text('Mängd'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Spara'));
+      await tester.tap(find.text('Spara'));
+      await tester.pump();
+
+      final saved =
+          verify(() => vm.updateItem(captureAny())).captured.single
+              as PantryItem;
+      expect(saved.id, 'p_salt');
+      expect(saved.isStaple, isFalse);
+    });
+  });
 }

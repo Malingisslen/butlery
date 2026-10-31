@@ -25702,6 +25702,30 @@ abstract class AppLocalizations {
   /// **'har hemma'**
   String get pantryItemAmountUnknown;
 
+  /// 10G: switch in the pantry add/edit sheet marking a staple.
+  ///
+  /// In sv, this message translates to:
+  /// **'Finns alltid hemma'**
+  String get pantryStapleTitle;
+
+  /// 10G: the line under the staple switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommer aldrig på inköpslistan'**
+  String get pantryStapleBody;
+
+  /// 10G: the meta line of a staple pantry row, in place of the amount.
+  ///
+  /// In sv, this message translates to:
+  /// **'alltid hemma'**
+  String get pantryStapleAmount;
+
+  /// 10G: the neutral pill on a staple pantry row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Basvara'**
+  String get pantryStapleBadge;
+
   /// Q4-03: the pantry covers every ingredient of the recipe; nothing is added.
   ///
   /// In sv, this message translates to:

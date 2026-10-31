@@ -171,4 +171,72 @@ void main() {
       ).called(1);
     });
   });
+
+  // Kärnflöde 10G: a staple added from the sheet must reach the service
+  // flagged, or it is stored as an ordinary row and bought again.
+  group('a staple', () {
+    test('addItemFromText forwards isStaple', () async {
+      when(
+        () => service.addFromText(
+          any(),
+          any(),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: any(named: 'isStaple'),
+        ),
+      ).thenAnswer((_) async => added);
+
+      await vm.addItemFromText('Salt', quantity: null, isStaple: true);
+
+      verify(
+        () => service.addFromText(
+          any(),
+          'Salt',
+          quantity: null,
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: true,
+        ),
+      ).called(1);
+    });
+
+    test('addItemFromIngredient forwards isStaple', () async {
+      when(
+        () => service.addFromIngredient(
+          any(),
+          any(),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: any(named: 'isStaple'),
+        ),
+      ).thenAnswer((_) async => added);
+
+      await vm.addItemFromIngredient(
+        ingredient,
+        quantity: null,
+        isStaple: true,
+      );
+
+      verify(
+        () => service.addFromIngredient(
+          any(),
+          ingredient,
+          quantity: null,
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+          isStaple: true,
+        ),
+      ).called(1);
+    });
+  });
 }
