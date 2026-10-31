@@ -35,6 +35,7 @@ void main() {
     required MenuPrefSource prefSource,
     required bool unknownSoft,
     required Recipe recipe,
+    bool recencyReadFailed = false,
   }) {
     final vm = _FakeMenuViewModel();
     when(() => vm.hasError).thenReturn(false);
@@ -51,6 +52,7 @@ void main() {
     when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
     when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
     when(() => vm.mealAllergenScopeOn).thenReturn(false);
+    when(() => vm.recencyReadFailed).thenReturn(recencyReadFailed);
     return vm;
   }
 
@@ -85,6 +87,39 @@ void main() {
       expect(find.text('ALLERGENER EJ KONTROLLERADE'), findsOneWidget);
     },
   );
+
+  group('earlier weeks unreadable', () {
+    const hint = 'Kunde inte läsa tidigare veckor, så rätter kan upprepas.';
+
+    testWidgets('says dishes may repeat when the read failed', (tester) async {
+      final vm = vmWith(
+        hiddenCount: 0,
+        prefSource: MenuPrefSource.household,
+        unknownSoft: false,
+        recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+        recencyReadFailed: true,
+      );
+
+      await pumpMenuContent(tester, vm);
+
+      expect(find.text(hint), findsOneWidget);
+      expect(find.text('Köttbullar'), findsOneWidget);
+    });
+
+    testWidgets('stays silent when the read worked', (tester) async {
+      final vm = vmWith(
+        hiddenCount: 0,
+        prefSource: MenuPrefSource.household,
+        unknownSoft: false,
+        recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+      );
+
+      await pumpMenuContent(tester, vm);
+
+      expect(find.text(hint), findsNothing);
+      expect(find.text('Köttbullar'), findsOneWidget);
+    });
+  });
 
   testWidgets(
     'family hint uses the singular plural form at count 1',

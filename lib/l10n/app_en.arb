@@ -12968,6 +12968,10 @@
   "@menuMealAllergenScopeHint": {
     "description": "BUT-2362: hint above the generated menu list while the per-meal allergen choice is on"
   },
+  "menuRecencyReadFailedHint": "Couldn't read earlier weeks, so dishes may repeat.",
+  "@menuRecencyReadFailedHint": {
+    "description": "Hint above the generated menu list when the earlier weeks could not be read, so dishes from them may come back"
+  },
   "weeklyMenuOverflowAllergen": "Some of them don't suit someone who is home on the free days.",
   "@weeklyMenuOverflowAllergen": {
     "description": "BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens"

@@ -17762,6 +17762,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.';
 
   @override
+  String get menuRecencyReadFailedHint =>
+      'Kunde inte läsa tidigare veckor, så rätter kan upprepas.';
+
+  @override
   String get weeklyMenuOverflowAllergen =>
       'Några av dem passar inte någon som är hemma de dagar som var lediga.';
 

@@ -27298,6 +27298,12 @@ abstract class AppLocalizations {
   /// **'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.'**
   String get menuMealAllergenScopeHint;
 
+  /// Hint above the generated menu list when the earlier weeks could not be read, so dishes from them may come back
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa tidigare veckor, så rätter kan upprepas.'**
+  String get menuRecencyReadFailedHint;
+
   /// BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens
   ///
   /// In sv, this message translates to:

@@ -17910,6 +17910,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can\'t eat them is away.';
 
   @override
+  String get menuRecencyReadFailedHint =>
+      'Couldn\'t read earlier weeks, so dishes may repeat.';
+
+  @override
   String get weeklyMenuOverflowAllergen =>
       'Some of them don\'t suit someone who is home on the free days.';
 

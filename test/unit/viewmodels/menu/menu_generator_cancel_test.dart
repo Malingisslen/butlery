@@ -48,14 +48,17 @@ void main() {
         'Middag': [RecipeFactory.build(id: 'r1', mealType: 'Middag')],
       });
     planService = _MockWeeklyMenuPlanService();
-    when(() => planService.getWeek(any())).thenAnswer(
-      (_) async => WeeklyMenuPlan(
-        id: 'w',
-        userId: 'u',
-        weekStartDate: DateTime(2026, 9, 21),
-        entries: const [],
-        createdAt: DateTime(2026, 9, 21),
-        updatedAt: DateTime(2026, 9, 21),
+    when(() => planService.readWeek(any())).thenAnswer(
+      (_) async => WeeklyMenuPlanRead(
+        plan: WeeklyMenuPlan(
+          id: 'w',
+          userId: 'u',
+          weekStartDate: DateTime(2026, 9, 21),
+          entries: const [],
+          createdAt: DateTime(2026, 9, 21),
+          updatedAt: DateTime(2026, 9, 21),
+        ),
+        readFailed: false,
       ),
     );
     final users = MockUserService();
@@ -89,7 +92,7 @@ void main() {
     cancelled = true;
 
     await expectLater(run, throwsA(isA<MenuGenerationCancelled>()));
-    verifyNever(() => planService.getWeek(any()));
+    verifyNever(() => planService.readWeek(any()));
     expect(menuService.lastGeneratePrompt, isNull);
   });
 
@@ -100,7 +103,7 @@ void main() {
     );
 
     expect(menu.keys, ['Middag']);
-    verify(() => planService.getWeek(any())).called(2);
+    verify(() => planService.readWeek(any())).called(2);
     expect(menuService.lastGeneratePrompt, 'tre middagar');
   });
 
@@ -115,7 +118,7 @@ void main() {
     cancelled = true;
 
     await expectLater(run, throwsA(isA<MenuGenerationCancelled>()));
-    verifyNever(() => planService.getWeek(any()));
+    verifyNever(() => planService.readWeek(any()));
     expect(menuService.lastGeneratePrompt, isNull);
   });
 
@@ -183,7 +186,7 @@ void main() {
 
         await expectCancelled();
 
-        verifyNever(() => planService.getWeek(any()));
+        verifyNever(() => planService.readWeek(any()));
         expect(menuService.lastGeneratePrompt, isNull);
         // The screen went back to an earlier suggestion; its stats stay.
         expect(laterGenerator.lastPoolStats, isNull);
@@ -191,21 +194,24 @@ void main() {
     );
 
     test('after the recent weeks are read: no pantry read follows', () async {
-      when(() => planService.getWeek(any())).thenAnswer((_) async {
+      when(() => planService.readWeek(any())).thenAnswer((_) async {
         cancelled = true;
-        return WeeklyMenuPlan(
-          id: 'w',
-          userId: 'u',
-          weekStartDate: DateTime(2026, 9, 21),
-          entries: const [],
-          createdAt: DateTime(2026, 9, 21),
-          updatedAt: DateTime(2026, 9, 21),
+        return WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan(
+            id: 'w',
+            userId: 'u',
+            weekStartDate: DateTime(2026, 9, 21),
+            entries: const [],
+            createdAt: DateTime(2026, 9, 21),
+            updatedAt: DateTime(2026, 9, 21),
+          ),
+          readFailed: false,
         );
       });
 
       await expectCancelled();
 
-      verify(() => planService.getWeek(any())).called(2);
+      verify(() => planService.readWeek(any())).called(2);
       verifyNever(() => pantry.getMatchingRecipes(any(), any()));
       expect(menuService.lastGeneratePrompt, isNull);
     });
