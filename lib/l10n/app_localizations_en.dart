@@ -15991,17 +15991,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The pantry could not be read, so the list is made without pantry deduction.';
 
   @override
-  String get shoppingMergeReplaceTitle => 'Replace the list instead of adding';
-
-  @override
-  String get shoppingMergeReplaceBody =>
-      'Items you added yourself are always kept.';
-
-  @override
-  String get shoppingMergeReplaceUnavailable =>
-      'This list was made before the app kept the week\'s items apart from your own, so it cannot be replaced. The week\'s items are added.';
-
-  @override
   String shoppingMergeAdd(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -16013,14 +16002,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shoppingMergeReplaceAction(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Replace with $count items',
-      one: 'Replace with 1 item',
-    );
-    return '$_temp0';
+  String get shoppingMergeUpdate => 'Update the list';
+
+  @override
+  String get shoppingMergeUpdateBody =>
+      'The list already has items from the week. They are updated, but what you changed or ticked off is left alone and your own items stay. The list then follows along when you change the week.';
+
+  @override
+  String shoppingMergeSynced(String list) {
+    return '$list is up to date with the week. What you changed yourself is still there.';
   }
 
   @override
@@ -16032,17 +16022,6 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 item was added to $list.',
     );
     return '$_temp0';
-  }
-
-  @override
-  String shoppingMergeReplaced(int count, String list) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items',
-      one: '1 item',
-    );
-    return '$list now has $_temp0 from the week. Your own items are still there.';
   }
 
   @override

@@ -35,7 +35,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      PersonalMergeRequest(rows: (_) => const [], replace: false),
+      PersonalMergeRequest(sync: (_) => const PersonalMergeWrite()),
     );
   });
 
