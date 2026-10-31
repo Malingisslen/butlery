@@ -46,6 +46,7 @@ bool _continues(String line, String next, {required bool inStep}) {
         !_opensALine(b) &&
         !HeadingWordLists.isPostAge(b);
   }
+  if (_startsUppercase(b) && _runsOnIntoCapital(a, b)) return true;
   // Also what keeps a blank line, a bullet, a numbered step and a row that
   // opens with a digit on their own: none of them starts with a lowercase
   // letter.
@@ -79,6 +80,21 @@ bool _continues(String line, String next, {required bool inStep}) {
     return b.split(_whitespace).length >= 3;
   }
   return false;
+}
+
+/// An OCR reader can capitalise the first word of a wrapped line ("…hacka
+/// de" / "Soltorkade tomaterna väl."). A line that stops on a word no
+/// sentence ends on still runs on, unless either side is a row of its own.
+bool _runsOnIntoCapital(String a, String b) {
+  if (!_danglingWord.hasMatch(a) || _terminal.hasMatch(a)) return false;
+  if (_isListHeading(a) || _opensALine(b)) return false;
+  if (HeadingWordLists.isPostAge(b)) return false;
+  if (!stepMarker.hasMatch(a.trim()) &&
+      RecipeSectionDetector.looksLikeIngredient(a) &&
+      RecipeSectionDetector.instructionScore(a) < 2) {
+    return false;
+  }
+  return b.split(_whitespace).length >= 3;
 }
 
 String _join(String line, String next) {

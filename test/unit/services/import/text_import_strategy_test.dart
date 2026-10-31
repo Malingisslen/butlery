@@ -591,6 +591,36 @@ void main() {
         expect(recipe.instructions.join(' '), contains('Lägg i form.'));
       });
 
+      test('a sentence the reader broke off with a capital is no '
+          'description, and the step after it is kept', () async {
+        const method =
+            'Medelhavsbiffar\n'
+            'Recept\n'
+            '500g köttfärs\n'
+            '1 ägg\n'
+            'Blanda ingredienserna till biffarna, hacka de.\n'
+            'Soltorkade tomaterna väl.\n'
+            'Forma till biffar och stek hastigt för yta.\n'
+            'Lägg i form.';
+        final recipe = (await strategy.import(method)).recipe!;
+
+        expect(recipe.description, isEmpty);
+        expect(recipe.instructions.join(' '), contains('Forma till biffar'));
+      });
+
+      test('a step sentence two lines after the last step is kept', () async {
+        const method =
+            'Pannkakor\n'
+            '3 dl vetemjöl\n'
+            '2 ägg\n'
+            'Vispa ihop smeten.\n'
+            'Ugnen.\n'
+            'Forma till biffar och stek hastigt för yta.';
+        final recipe = (await strategy.import(method)).recipe!;
+
+        expect(recipe.instructions.join(' '), contains('Forma till biffar'));
+      });
+
       test('reads "Ca 4-5 port." as the yield, not the description', () async {
         final recipe = (await strategy.import(text)).recipe!;
 

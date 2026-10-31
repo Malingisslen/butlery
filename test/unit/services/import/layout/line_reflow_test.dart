@@ -212,6 +212,29 @@ void main() {
       expect(reflowWrappedLines(text), text);
     });
 
+    test('a reader capitalising a wrapped line does not end the sentence', () {
+      expect(
+        reflowWrappedLines(
+          'Blanda ingredienserna till biffarna, hacka de\n'
+          'Soltorkade tomaterna väl. Forma till biffar.',
+        ),
+        'Blanda ingredienserna till biffarna, hacka de '
+        'Soltorkade tomaterna väl. Forma till biffar.',
+      );
+    });
+
+    test(
+      'a heading, a row or a post date after a dangling word stays apart',
+      () {
+        const heading = 'Biffar med\nSå gör du:';
+        expect(reflowWrappedLines(heading), heading);
+        const row = '2 dl grädde och\nSalt och peppar efter smak';
+        expect(reflowWrappedLines(row), row);
+        const footer = 'Servera med ris och\nFör 6 dagar sedan';
+        expect(reflowWrappedLines(footer), footer);
+      },
+    );
+
     test('a continuation that opens with a capital is a line of its own', () {
       const text = 'Purjolök innehåller mycket\nC-vitamin och fibrer.';
       expect(reflowWrappedLines(text), text);

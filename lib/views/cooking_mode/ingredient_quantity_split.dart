@@ -28,11 +28,13 @@ final _quantityPattern = RegExp(
   caseSensitive: false,
 );
 
-// ASCII fractions are shown as the recipe page shows them (1,5), reusing its
+// ASCII fractions are shown as the recipe page shows them (¾), reusing its
 // parser and formatter; decimals, ranges and glyphs stay as written.
 String _displayNumber(String number) {
   final value = QuantityParser.parseAsciiFraction(number);
-  return value == null ? number.trim() : TextFormatting.formatFractional(value);
+  return value == null
+      ? number.trim()
+      : TextFormatting.toSwedishHalfFraction(value);
 }
 
 IngredientQuantitySplit splitIngredientQuantity(String text) {

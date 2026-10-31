@@ -625,10 +625,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     return null;
   }
 
-  /// Formats a quantity for display with sv-SE decimal comma (1.5 → "1,5");
-  /// whole numbers render without a decimal.
+  /// Formats a quantity for display: common fractions as glyphs (0.75 →
+  /// "¾", 1.5 → "1 ½"), anything else with sv-SE decimal comma.
   String _formatQuantity(double quantity) {
-    return TextFormatting.formatFractional(quantity);
+    return TextFormatting.toSwedishHalfFraction(quantity);
   }
 
   void _showSubstitutionSheet(BuildContext context, String ingredientName) {

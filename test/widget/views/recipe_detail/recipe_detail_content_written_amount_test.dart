@@ -116,4 +116,12 @@ void main() {
     expect(amountIn('salt'), findsNothing);
     expect(amountIn('ägg'), findsOneWidget);
   });
+
+  testWidgets('a common fraction is shown as a fraction', (tester) async {
+    await _pump(tester, ingredients: ['3/4 dl ströbröd', '1,5 dl mjölk']);
+
+    expect(find.text('¾ dl'), findsOneWidget);
+    expect(find.text('1 ½ dl'), findsOneWidget);
+    expect(find.textContaining('0,75'), findsNothing);
+  });
 }

@@ -445,13 +445,13 @@ void main() {
       expect(effects.calls, contains('portrait'));
     });
 
-    testWidgets('a screen reader hears the amount as shown, "1,5 dl"', (
+    testWidgets('a screen reader hears the amount as shown, "1 ½ dl"', (
       tester,
     ) async {
       await openCooking(tester, ingredients: ['1 1/2 dl panko']);
 
-      expect(find.text('1,5 dl'), findsOneWidget);
-      expect(find.bySemanticsLabel('1,5 dl panko'), findsOneWidget);
+      expect(find.text('1 ½ dl'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 ½ dl panko'), findsOneWidget);
       expect(find.bySemanticsLabel('1 1/2 dl panko'), findsNothing);
     });
 

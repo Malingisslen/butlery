@@ -227,8 +227,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
     return _stripped(original) != _stripped(_shown);
   }
 
-  /// The line with its amount written the way the recipe page writes it:
-  /// "0,75 dl", not the parser's "0.75 dl", and "2-3" or "ca 2" as written.
+  /// The line with its amount written the way the recipe page writes it,
+  /// not the parser's "0.75 dl", and "2-3" or "ca 2" as written.
   String get _shown {
     final ingredient = widget.ingredient;
     final quantity = ingredient.quantity;
@@ -236,7 +236,9 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
     final value = double.tryParse(quantity);
     final amount =
         IngredientParser.writtenAmount(ingredient.originalLine) ??
-        (value == null ? quantity : TextFormatting.formatFractional(value));
+        (value == null
+            ? quantity.replaceAll('.', ',')
+            : TextFormatting.toSwedishHalfFraction(value));
     return ingredient.copyWith(quantity: amount).displayString;
   }
 

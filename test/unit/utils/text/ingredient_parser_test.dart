@@ -766,6 +766,7 @@ void main() {
       expect(IngredientParser.writtenAmount('ca 2 dl mjölk'), 'ca 2');
       expect(IngredientParser.writtenAmount('ca 2-3 dl mjölk'), 'ca 2-3');
       expect(IngredientParser.writtenAmount('ev. 1 1/2 tsk salt'), 'ev. 1 1/2');
+      expect(IngredientParser.writtenAmount('0,5-1dl chilisås'), '0,5-1');
     });
 
     test('a plain amount or none has nothing more to show', () {
@@ -773,6 +774,7 @@ void main() {
       expect(IngredientParser.writtenAmount('1 1/2 dl grädde'), isNull);
       expect(IngredientParser.writtenAmount('salt'), isNull);
       expect(IngredientParser.writtenAmount('5-minuterssill'), isNull);
+      expect(IngredientParser.writtenAmount('1msk mjöl'), isNull);
     });
   });
 

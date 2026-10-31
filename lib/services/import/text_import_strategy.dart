@@ -723,14 +723,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     bool listStarted = false;
     final introLines = <String>[];
     final stepLines = <String>{};
-    // Whether the last classified line was taken as a step: the sentence
-    // splitter cuts one step into several, and a plain sentence right after
-    // a step ("Forma till biffar och stek hastigt för yta.") is more of it.
-    var afterStep = false;
     void takeStep(String line, String instruction) {
       instructions.add(instruction);
       stepLines.add(line);
-      afterStep = true;
       // A heading over the ingredient rows does not reach past the method.
       currentSection = null;
     }
@@ -882,12 +877,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       final score = RecipeSectionDetector.instructionScore(line);
+      // The sentence splitter cuts one step into several, and a plain
+      // sentence once the method has begun ("Forma till biffar och stek
+      // hastigt för yta.") is more of it.
       final stepGoesOn =
-          afterStep &&
+          instructions.isNotEmpty &&
           score >= 1 &&
           !RecipeSectionDetector.looksLikeIngredient(line) &&
           !_isQuantityRow(line);
-      afterStep = false;
 
       if (inIngredients) {
         if (RecipeSectionDetector.isValidIngredient(line)) {
@@ -931,6 +928,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           afterIngredientRow = true;
         }
       } else if (description.isEmpty &&
+          instructions.isEmpty &&
           line.length > 10 &&
           score < 1 &&
           !_isPageMetadata(line)) {
