@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -35,7 +36,7 @@ class SpokenTextReimportStrategy implements ImportStrategy {
     final llm = _llm ?? ServiceLocator.get<LlmEnhancementService>();
     final result = await llm.extractFromTranscript(
       input,
-      options?['sourceUrl'] as String? ?? '',
+      (options?['sourceUrl'] as String?).orEmpty(),
     );
     return result.toLegacyResult();
   }
