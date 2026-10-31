@@ -464,7 +464,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### REC-16: Voice recipe search ("Tala in din sökning")
 - **Entry:** Mic in the Mina recept search field (`SearchFilterWidget.enableVoiceInput` → `VoicePromptButton`).
 - **User story:** As a home cook, I want to speak a search query so that I can find a recipe without typing.
-- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript lands in the search box as if typed (same onSearchChanged path; Algolia/Firestore routing untouched). Opt-in per surface — other lists sharing the search facade show no mic. Audio deleted after transcription, never uploaded.
+- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript lands in the search box as if typed (same onSearchChanged path). Opt-in per surface — other lists sharing the search facade show no mic. Audio deleted after transcription, never uploaded.
 - **Edge cases:** Denied mic → typed search untouched; model missing → "inte tillgänglig" notice with typing pointer; hidden on web.
 - **Test coverage:** Verified — `search_filter_widget_test.dart` (spoken query → onSearchChanged; no mic by default), plus the shared `voice_prompt_button_test.dart` degradation suite.
 
@@ -1313,9 +1313,9 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### ENG-11: Recipe search (local, on-device matching)
 - **Entry:** Automatic as the user types in recipe search.
 - **User story:** As a user browsing recipes, I want search to match instantly across my loaded library without a network round-trip per keystroke.
-- **Expected behavior:** Substring matching over already-cached recipes (title/description/ingredients/instructions/personal tags) via `SearchService`, sorted locally — no per-keystroke network call. *(BUT-1500: the dead Algolia-routing path was removed; Algolia infrastructure remains for indexing / user search.)*
+- **Expected behavior:** Substring matching over already-cached recipes (title/description/ingredients/instructions/personal tags) via `SearchService`, sorted locally — no per-keystroke network call.
 - **Edge cases:** Empty query short-circuits; search covers only recipes already loaded into the list.
-- **Test coverage:** Verified — `search_service_test.dart`, `search_repository_test.dart`.
+- **Test coverage:** Verified — `search_service_test.dart`.
 
 #### ENG-12: Allergen / dietary filtering in menu generation
 - **Entry:** Automatic when generating a weekly menu (opt-in toggles, off by default).

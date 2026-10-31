@@ -480,12 +480,6 @@
       "path": "lib/services/unified/operations/modules/recipe_member_manager.dart"
     },
     {
-      "id": "repo-search",
-      "label": "SearchRepository — sökindex",
-      "context": "repository",
-      "path": "Algolia/Meili-index"
-    },
-    {
       "id": "cf-structure",
       "label": "structureRecipe — LLM-parse",
       "context": "cloud-function",
@@ -910,6 +904,12 @@
       "label": "OS-delningsmeny (dela-till)",
       "context": "external",
       "path": "android/app/src/main/AndroidManifest.xml"
+    },
+    {
+      "id": "ext-ios-share-extension",
+      "label": "iOS-delningsfönster (App Group-inkorg)",
+      "context": "external",
+      "path": "ios/ShareExtension/ShareViewController.swift"
     },
     {
       "id": "svc-incoming-share",
@@ -3114,13 +3114,6 @@
         },
         {
           "from": "svc-account-deletion",
-          "to": "repo-search",
-          "payload": "uid → sökindexradering (före CF, klientsidigt)",
-          "transport": "index delete",
-          "verified": true
-        },
-        {
-          "from": "svc-account-deletion",
           "to": "cf-request-deletion",
           "payload": "{reason} · App Check-krav · 9 min klienttimeout · retur bär retained[] (artikel 12.4-besked, BUT-2046)",
           "transport": "callable CF",
@@ -3881,7 +3874,7 @@
         {
           "from": "vm-recipe-detail",
           "to": "svc-import-manager",
-          "payload": "reimportFromArtefact(artefact) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
+          "payload": "reimportFromArtefact(artefact, sourceUrl) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text; transkript/bildtext utan recept enligt reglerna läses om med AI (extractFromTranscript)",
           "transport": "method call",
           "verified": true
         },
@@ -4221,7 +4214,7 @@
     {
       "id": "flow-imp-3",
       "label": "Dela-till-Butlery & social extraktion",
-      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En text med länk öppnar SmartImport på länken, annan text öppnar textimporten ifylld; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
+      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En länk med högst två rader text runt sig öppnar SmartImport på länken; längre text med länk, och text utan länk, öppnar textimporten ifylld (med länken som källa när det finns en); på iOS sparar delningsfönstret det delade i en App Group-inkorg som appen hämtar nästa gång den öppnas; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
       "features": [
         "IMP-06",
         "IMP-07"
@@ -4256,6 +4249,13 @@
           "verified": true
         },
         {
+          "from": "ext-ios-share-extension",
+          "to": "svc-incoming-share",
+          "payload": "Länk, text eller bilder via App Group-inkorgen — AppDelegate lämnar dem på samma kanal när appen öppnas",
+          "transport": "platform-channel",
+          "verified": false
+        },
+        {
           "from": "svc-incoming-share",
           "to": "svc-incoming-share-handler",
           "payload": "Delad text (cold-start eller warm-start)",
@@ -4265,7 +4265,7 @@
         {
           "from": "svc-incoming-share-handler",
           "to": "v-smart-import",
-          "payload": "Text med länk → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
+          "payload": "Länk med högst två rader text → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
           "transport": "navigation",
           "verified": true
         },
@@ -4328,7 +4328,7 @@
         {
           "from": "svc-instagram-pipeline",
           "to": "svc-llm-enhancement",
-          "payload": "Tier 2: strukturera bildtext till recept",
+          "payload": "Tier 2: strukturera bildtext till recept, bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         },
@@ -4342,7 +4342,7 @@
         {
           "from": "svc-import-manager",
           "to": "svc-tiktok-pipeline",
-          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → emoji-heuristik → LLM)",
+          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → regeltolkning → emoji-heuristik → LLM)",
           "transport": "method-call",
           "verified": true
         },
@@ -4377,7 +4377,7 @@
         {
           "from": "svc-youtube-import-strategy",
           "to": "svc-llm-enhancement",
-          "payload": "Transkript → strukturera recept (structureRecipe)",
+          "payload": "Transkript → strukturera recept (structureRecipe), bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         }

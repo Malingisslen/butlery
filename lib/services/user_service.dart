@@ -6,7 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User;

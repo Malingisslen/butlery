@@ -87,9 +87,8 @@ class SearchFilterWidget extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   /// Opt-in mic in the search field: a spoken query lands in the box exactly
-  /// as if typed (same onSearchChanged path — Algolia/Firestore routing
-  /// untouched). Off by default so list surfaces that share this facade
-  /// don't all sprout microphones.
+  /// as if typed (same onSearchChanged path). Off by default so list surfaces
+  /// that share this facade don't all sprout microphones.
   final bool enableVoiceInput;
 
   /// Injectable per OsPermissionHelper's contract — tests stub permission

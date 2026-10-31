@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart' as model;
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';

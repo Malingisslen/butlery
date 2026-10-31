@@ -146,6 +146,10 @@ DEMO FLOW (5–10 MINUTES)
    tap "Blockera" to test block, then "Avblockera" to revert.
    This is the user-blocking flow required by Apple Guideline 1.2.
 7. Open "Veckomeny" to view the pre-seeded weekly menu.
+   (iOS) In Safari, open any recipe page → Share → "Butlery". The
+   sheet stores the page locally and says so; opening Butlery
+   afterwards starts the import. The share sheet itself sends
+   nothing off the device.
 8. Open "Inställningar" → "Hantera konto" → review the data
    export and delete-account flows (do not delete; the next
    reviewer needs the account intact).

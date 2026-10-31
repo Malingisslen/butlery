@@ -189,7 +189,6 @@ Processors (no sharing flag triggered):
 | **OCR.space** (a9t9 software GmbH) | OCR tier 2 for recipe-photo import | EU/EEA (Austria) | OCR.space privacy policy |
 | **Google Cloud Vision** | OCR tier 3 fallback | **Global endpoint `vision.googleapis.com` — NOT EU-pinned.** Dormant: gated on a build-time `--dart-define GOOGLE_VISION_API_KEY` that is set nowhere in this repo | Google Cloud DPA — **but see the warning below** |
 | **Tesseract** (self-hosted) | OCR tier 4 fallback | Wherever the endpoint is hosted. Dormant: gated on a build-time `--dart-define TESSERACT_API_URL`, set nowhere in this repo | Self-hosted — no third party |
-| **Algolia** (currently inactive — feature flag `enable_algolia_search`, default false) | Recipe search indexing | EU (France primary, US backup) | Algolia DPA + EU-US DPF |
 
 **(re-verified 2026-08-25 — the restored list named only Firebase, Vertex AI, OCR.space and
 Algolia. The OCR chain is four tiers, not one.)** `lib/services/ocr_extraction_service.dart`
@@ -241,7 +240,6 @@ No data-deletion page is hosted (404 when measured 2026-10-28), so there is no U
 - [ ] **Re-read** `ios/Runner/PrivacyInfo.xcprivacy` to confirm no new `NSPrivacyCollectedDataType` entries since last audit (`docs/ops/ios-privacy-manifest-audit.md`). If any are new, add them to §2 here and to the Play Console form.
 - [ ] **Re-read** `assets/legal/privacy_policy_en.md` and confirm §6.1 third-party processor list matches §3 of this runbook.
 - [ ] **Verify** the Firestore region against `docs/ops/backups.md` (recorded region is `europe-west3`, Frankfurt; compute stays on `europe-west1`). Run `gcloud firestore backups list --location=europe-west3 --project=butlery-prod` to confirm the live database matches — `--location=eur3` returns an empty list and looks exactly like "no backups exist". If non-EU, declare cross-border transfer in §3.
-- [ ] **Verify** Algolia is still inactive (`enable_algolia_search` in `lib/services/feature_flags/feature_flag_service.dart`, plus the Remote Config value). If activated since last submission, set Algolia search-context purpose in §2.10 "In-app search history".
 - [ ] **Verify** the OCR fallback tiers (§3): confirm `GOOGLE_VISION_API_KEY` and `TESSERACT_API_URL` are still undefined in the release build's `--dart-define` set. If either is configured, the privacy policy must name that processor **before** the form is submitted.
 - [ ] **Cross-check** Play Console field labels against this runbook — Google occasionally renames categories (e.g., "Other in-app messages" was "Messages" before 2025). If a label has changed, look at the field's tooltip rather than the column header.
 - [ ] **Save as draft.** Walk away for 30 minutes. Re-read for typos and inconsistencies between the iOS manifest and Play form.
@@ -284,7 +282,6 @@ Update this file (and re-submit Data Safety form) whenever any of the following 
 - A new analytics event tracks a new field that didn't exist before (especially anything with location, contact, or device-fingerprinting characteristics).
 - Firestore region changes (`docs/ops/backups.md`).
 - Vertex AI region changes.
-- Algolia is activated (currently inactive — feature flag).
 - An OCR fallback tier is configured — a release build that defines `GOOGLE_VISION_API_KEY` or `TESSERACT_API_URL` adds a processor (§3).
 - The age floor moves, or `verifySignupAge` / `isAgeCompliant()` changes shape (§1).
 - Voice input starts sending audio off-device for any reason (§2.6 flips from No to Yes).

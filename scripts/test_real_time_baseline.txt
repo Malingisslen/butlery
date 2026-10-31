@@ -86,7 +86,6 @@ test/unit/services/performance/intelligent_cache_manager_test.dart
 test/unit/services/persistence_service_test.dart
 test/unit/services/realtime/realtime_menu_service_test.dart
 test/unit/services/seasonal/seasonal_hero_service_test.dart
-test/unit/services/security/algolia_pinning_interceptor_concurrency_test.dart
 test/unit/services/share_service_test.dart
 test/unit/services/shopping/shopping_presence_module_test.dart
 test/unit/services/social/ping_service_test.dart
