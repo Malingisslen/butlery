@@ -278,20 +278,6 @@ class SocialRecipeOperations {
     );
   }
 
-  Future<List<Recipe>> searchRecipes({
-    required String query,
-    int limit = 20,
-    List<String>? categoryFilter,
-    bool includePersonal = false,
-  }) async {
-    return await _discoveryService.searchRecipes(
-      query: query,
-      limit: limit,
-      categoryFilter: categoryFilter,
-      includePersonal: includePersonal,
-    );
-  }
-
   Future<String?> addComment({
     required String recipeId,
     required String content,

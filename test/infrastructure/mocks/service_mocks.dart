@@ -150,18 +150,12 @@ class MockRecipeDiscoveryService extends Mock
     implements RecipeDiscoveryService {
   // Configuration state
   List<Recipe> _trendingRecipes = [];
-  List<Recipe> _searchResults = [];
   List<Recipe> _recentlySharedRecipes = [];
   bool _shouldThrowError = false;
 
   /// Configure trending recipes result
   void setTrendingRecipes(List<Recipe> recipes) {
     _trendingRecipes = recipes;
-  }
-
-  /// Configure search results
-  void setSearchResults(List<Recipe> results) {
-    _searchResults = results;
   }
 
   /// Configure recently shared recipes result
@@ -193,25 +187,6 @@ class MockRecipeDiscoveryService extends Mock
     return result;
   }
 
-  /// Mock implementation of searchRecipes
-  @override
-  Future<List<Recipe>> searchRecipes({
-    required String query,
-    int limit = 20,
-    List<String>? categoryFilter,
-    bool includePersonal = false,
-  }) async {
-    if (_shouldThrowError) {
-      throw Exception('Mock configured to throw error');
-    }
-
-    var result = List<Recipe>.from(_searchResults);
-    if (limit > 0 && result.length > limit) {
-      result = result.take(limit).toList();
-    }
-    return result;
-  }
-
   /// Mock implementation of getRecentlySharedRecipes
   @override
   Future<List<Recipe>> getRecentlySharedRecipes({
@@ -232,7 +207,6 @@ class MockRecipeDiscoveryService extends Mock
   /// Reset mock state
   void resetState() {
     _trendingRecipes.clear();
-    _searchResults.clear();
     _recentlySharedRecipes.clear();
     _shouldThrowError = false;
   }

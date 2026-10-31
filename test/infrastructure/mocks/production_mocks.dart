@@ -204,7 +204,6 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
   String? _currentUserId = 'test-user-123';
   Map<String, List<Recipe>> _recipesByUser = {};
   List<Recipe> _archiveRecipes = [];
-  List<Recipe> _searchResults = [];
   Map<String, Recipe> _recipesById = {};
 
   /// Configure mock state for recipe repository
@@ -212,13 +211,11 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
     String? currentUserId,
     Map<String, List<Recipe>>? recipesByUser,
     List<Recipe>? archiveRecipes,
-    List<Recipe>? searchResults,
     Map<String, Recipe>? recipesById,
   }) {
     if (currentUserId != null) _currentUserId = currentUserId;
     if (recipesByUser != null) _recipesByUser = recipesByUser;
     if (archiveRecipes != null) _archiveRecipes = archiveRecipes;
-    if (searchResults != null) _searchResults = searchResults;
     if (recipesById != null) _recipesById = recipesById;
   }
 
@@ -238,7 +235,7 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
   Map<String, Recipe> get recipesById => _recipesById;
 
   // All methods left without implementation to allow stubbing with when()
-  // This includes watchRecipes, subscribeToUserRecipes, searchRecipes,
+  // This includes watchRecipes, subscribeToUserRecipes,
   // create, read, update, delete, etc.
 }
 
@@ -2380,14 +2377,6 @@ class FakeSocialRecipeOperations extends Fake
     int limit = 20,
     Duration? timeWindow,
     List<String>? categoryFilter,
-  }) async => [];
-
-  @override
-  Future<List<Recipe>> searchRecipes({
-    required String query,
-    int limit = 20,
-    List<String>? categoryFilter,
-    bool includePersonal = false,
   }) async => [];
 
   // ===== RECIPE COMMENTS =====
