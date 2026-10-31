@@ -18,6 +18,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
@@ -103,6 +105,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       AppDimensions.minTouchTarget + AppDimensions.space16;
 
   late final WeeklyMenuPlanService _planService;
+  late final Recipe? Function(String recipeId) _recipeById;
   late DateTime _visibleWeekStart;
   WeeklyMenuPlan? _plan;
   bool _isLoading = true;
@@ -114,6 +117,8 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
   void initState() {
     super.initState();
     _planService = ServiceLocator.get<WeeklyMenuPlanService>();
+    final recipes = ServiceLocator.tryGet<UnifiedRecipeService>();
+    _recipeById = (id) => recipes?.getRecipeById(id);
     _visibleWeekStart = IsoWeekUtils.weekStartOf(clock.now());
     _loadWeek();
   }
@@ -431,7 +436,9 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                       Expanded(
                         child: isOccupied
                             ? Text(
-                                entries.first.recipeTitle,
+                                entries.first.titleFor(
+                                  _recipeById(entries.first.recipeId),
+                                ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.labelSmall,

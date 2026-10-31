@@ -18,9 +18,13 @@ import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
+class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
+
 final _sv = AppLocalizationsSv();
 
 void main() {
+  setUpAll(() => registerFallbackValue(_FakeEntry()));
+
   late _MockVm vm;
 
   setUp(() {
@@ -30,6 +34,9 @@ void main() {
     when(() => vm.isSelected(any())).thenReturn(false);
     when(() => vm.isAllergenUnsafe(any())).thenReturn(false);
     when(() => vm.placementOrderOf(any())).thenReturn(null);
+    when(() => vm.entryTitle(any())).thenAnswer(
+      (i) => (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
+    );
   });
 
   final roster = [

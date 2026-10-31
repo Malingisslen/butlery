@@ -422,6 +422,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       context,
       dayName: DateFormat.EEEE(locale).format(date),
       entries: plan.entriesAt(day, MealSlot.ovrigt),
+      titleOf: vm.entryTitle,
     );
     if (!context.mounted) return;
     switch (result) {
@@ -456,7 +457,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         toBeginningOfSentenceCase(slot.displayLabel, locale),
         DateFormat.EEEE(locale).format(date),
       ),
-      ?entry?.recipeTitle,
+      if (entry != null) vm.entryTitle(entry),
     ].join(' · ');
     final result = await showWhoIsHomeSheet(
       context,

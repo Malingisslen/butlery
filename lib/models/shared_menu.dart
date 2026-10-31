@@ -6,6 +6,7 @@ import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -339,6 +340,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                 ingredients: utils.SerializationUtils.safeStringList(
                   recipeMap,
                   'ingredients',
+                ),
+                // Amounts and units for the shopping list; without them a
+                // shared or saved menu loaded into the editor shops raw lines.
+                structuredIngredients: RecipeIngredient.listFromJson(
+                  recipeMap['structuredIngredients'],
                 ),
                 instructions: utils.SerializationUtils.safeStringList(
                   recipeMap,

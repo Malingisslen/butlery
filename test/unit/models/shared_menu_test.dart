@@ -10,6 +10,7 @@ library;
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 
@@ -92,6 +93,35 @@ void main() {
 
       expect(dishes.map((d) => d.isOwnerCopy), [true, true]);
       expect(dishes[1].title, 'Soppa');
+    });
+
+    // A menu loaded back into the editor feeds the shopping list, which
+    // needs each line's amount and unit.
+    test('keeps each dish\'s structured ingredients', () {
+      const line = RecipeIngredient(
+        amount: 2,
+        unit: 'dl',
+        name: 'grädde',
+        raw: '2 dl grädde',
+        ingredientId: 'cream',
+      );
+      final withAmounts = Recipe(
+        core: _recipe(id: 'r1').core.copyWith(
+          ingredients: const ['2 dl grädde'],
+          structuredIngredients: const [line],
+        ),
+        type: RecipeType.personal,
+      );
+      final data = _menu(
+        menuSnapshot: {
+          'Middag': [withAmounts, _recipe(id: 'r2')],
+        },
+      ).toFirestore();
+
+      final dishes = SharedMenu.fromMap('sm-1', data).menuSnapshot['Middag']!;
+
+      expect(dishes[0].core.structuredIngredients, [line]);
+      expect(dishes[1].core.structuredIngredients, isNull);
     });
   });
 
