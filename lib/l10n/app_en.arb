@@ -8528,7 +8528,6 @@
   "addRecipe": "Add recipe",
   "editRecipe": "Edit recipe",
   "checkPermissions": "Check permissions",
-  "ingredientParseError": "Could not parse ingredient",
   "portionsUnit": "portions",
   "sharedRecipeFallback": "Shared recipe · {count, plural, =1{1 member} other{{count} members}}",
   "@sharedRecipeFallback": {

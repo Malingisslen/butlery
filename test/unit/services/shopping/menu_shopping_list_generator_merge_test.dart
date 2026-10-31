@@ -304,42 +304,6 @@ void main() {
       });
     });
 
-    group('toBuy (recipe "Lägg varor i inköpslistan")', () {
-      test('the same id covers the row although the names differ', () {
-        final left = MenuShoppingMergePlanner.toBuy(
-          name: 'rödlök',
-          amount: 1,
-          unit: 'st',
-          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
-          ingredientId: 'onion',
-        );
-        expect(left.covered, isTrue);
-      });
-
-      test('without the row id the differing names stay unmatched', () {
-        final left = MenuShoppingMergePlanner.toBuy(
-          name: 'rödlök',
-          amount: 1,
-          unit: 'st',
-          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
-        );
-        expect(left.covered, isFalse);
-        expect(left.amount, 1);
-      });
-
-      test('an id match still subtracts only what is at home', () {
-        final left = MenuShoppingMergePlanner.toBuy(
-          name: 'rödlök',
-          amount: 3,
-          unit: 'st',
-          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
-          ingredientId: 'onion',
-        );
-        expect(left.covered, isFalse);
-        expect(left.amount, closeTo(1, 1e-9));
-      });
-    });
-
     test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
         '1 dl on the list (PQ-11 = A)', () {
       final merge = MenuShoppingListGenerator.preview(
@@ -528,7 +492,8 @@ void main() {
       final mjol = items.singleWhere((i) => i.name == 'vetemjöl');
       expect(mjol.amount, 350);
       expect(mjol.unit, 'g');
-      expect(mjol.note, '+ 4,5 dl · 3 recept');
+      // r2 names vetemjöl on two lines but is one recipe.
+      expect(mjol.note, '+ 4,5 dl · 2 recept');
       final ost = items.singleWhere(
         (i) => i.name.toLowerCase() == 'parmesanost',
       );

@@ -12732,9 +12732,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get checkPermissions => 'Kontrollera behörigheter';
 
   @override
-  String get ingredientParseError => 'Kunde inte tolka ingrediens';
-
-  @override
   String get portionsUnit => 'portioner';
 
   @override

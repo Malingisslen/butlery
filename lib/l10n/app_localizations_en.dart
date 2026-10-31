@@ -12811,9 +12811,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkPermissions => 'Check permissions';
 
   @override
-  String get ingredientParseError => 'Could not parse ingredient';
-
-  @override
   String get portionsUnit => 'portions';
 
   @override

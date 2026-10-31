@@ -11,7 +11,6 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
@@ -274,18 +273,7 @@ class MenuShoppingListGenerator extends BaseService {
       final origin = merge.source.origin;
       final fresh = WeekListReconciler.stamp([
         for (final line in merge.lines)
-          shoppingService.categoryPreferences.withUserCategory(
-            UnifiedShoppingItem(
-              name: line.name,
-              // The line states no amount, and 0 shows the name alone
-              // ([UnifiedShoppingItem.quantityText]).
-              amount: line.amount ?? 0,
-              unit: line.unit,
-              category: line.category,
-              note: _noteFor(line),
-              ingredientId: line.ingredientId,
-            ),
-          ),
+          shoppingService.categoryPreferences.withUserCategory(line.toItem()),
       ], origin);
       final result = await shoppingService.applyPersonalMerge(
         listId,
@@ -437,34 +425,6 @@ class MenuShoppingListGenerator extends BaseService {
     _disposed = true;
     await _follower?.dispose();
     _follower = null;
-  }
-
-  static String _formatExtra(({double amount, String unit}) extra) {
-    final item = UnifiedShoppingItem(
-      name: '',
-      amount: extra.amount,
-      unit: extra.unit,
-    );
-    return [
-      item.formattedAmount,
-      item.formattedUnit,
-    ].where((p) => p.isNotEmpty).join(' ');
-  }
-
-  /// The row's note: how many recipes it came from ("Raden visar '3
-  /// recept'", #inkopmergeoppen) and the pantry's mark (§ 4.2).
-  static String? _noteFor(MenuShoppingMergeLine line) {
-    final l = AppLocale.current;
-    final parts = [
-      // BUT-2304: amounts that could not join the row's own unit.
-      for (final extra in line.extraAmounts) '+ ${_formatExtra(extra)}',
-      if (line.sourceCount > 1) l.shoppingMergeRowRecipes(line.sourceCount),
-      if (line.mark == MenuShoppingPantryMark.maybeAtHome)
-        l.shoppingMergeMarkMaybeHome,
-      if (line.mark == MenuShoppingPantryMark.checkDate)
-        l.shoppingMergeMarkCheckDate,
-    ];
-    return parts.isEmpty ? null : parts.join(' · ');
   }
 
   /// BUT-1613: the presence-derived scale factor for one plan entry. Returns

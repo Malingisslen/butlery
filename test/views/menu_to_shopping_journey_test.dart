@@ -1,10 +1,8 @@
 /// Journey test: weekly menu → generate shopping list.
 ///
-/// Exercises the menu-to-shopping pipeline around
-/// `ShoppingListGenerator.generateShoppingItemsFromMenu` (the old
-/// `showShoppingListSelector` sheet had no callers and was removed in
-/// package 7). The journey is
-/// simulated through a small widget that mirrors that composition: a user
+/// Exercises the week menu's shopping computation in list mode
+/// (`MenuShoppingListGenerator.preview` on `sourceForMenu`). The journey is
+/// simulated through a small widget: a user
 /// with a menu of 2+ recipes taps "Skapa inköpslista" and sees the
 /// aggregated shopping items.
 ///
@@ -14,8 +12,7 @@
 ///     → one item, summed quantity).
 ///   - Distinct ingredients stay separate.
 ///   - Empty menu → empty list, not a crash.
-///   - Pantry filtering is NOT performed here (verified by investigation
-///     of `ShoppingListGenerator` — it aggregates unconditionally).
+///   - With no pantry given, nothing is left off.
 library;
 
 // ignore_for_file: invalid_use_of_protected_member
@@ -35,9 +32,20 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/utils/text/shopping_list_generator.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 
 import '../infrastructure/factories/recipe_factory.dart';
+
+/// The week menu's own computation in list mode: the menu's dishes at their
+/// authored amounts, merged, with no pantry.
+List<UnifiedShoppingItem> _itemsForMenu(Map<String, List<Recipe>> menu) => [
+  for (final line in MenuShoppingListGenerator.preview(
+    MenuShoppingListGenerator.sourceForMenu(menu, DateTime(2026, 11, 2)),
+    const MenuShoppingPantry.read([]),
+    const MenuShoppingMergeOptions(),
+  ).lines)
+    line.toItem(),
+];
 
 // Pure mocks — no concrete overrides so when()/verify() work cleanly.
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
@@ -45,8 +53,7 @@ class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 class _MockUserService extends Mock implements UserService {}
 
 /// Small widget that lets a test drive the menu-to-shopping action.
-/// Mirrors the production composition: a menu (`Map<String, List<Recipe>>`)
-/// goes into `ShoppingListGenerator.generateShoppingItemsFromMenu` and the
+/// A menu (`Map<String, List<Recipe>>`) goes into [_itemsForMenu] and the
 /// aggregated items are exposed to the UI and the test.
 class _MenuToShoppingBody extends StatefulWidget {
   const _MenuToShoppingBody({required this.menu});
@@ -62,7 +69,7 @@ class _MenuToShoppingBodyState extends State<_MenuToShoppingBody> {
 
   void _generate() {
     setState(() {
-      _generated = ShoppingListGenerator.generateShoppingItemsFromMenu(
+      _generated = _itemsForMenu(
         widget.menu,
       );
     });
@@ -215,7 +222,7 @@ void main() {
 
         // Inspect the generated items for domain behaviour.
         // The key call is the pure one — repeat it to assert on data.
-        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = _itemsForMenu(menu);
 
         // Duplicate ingredients across the two recipes were merged.
         // (3 dl mjöl + 2 dl mjöl) → one item with amount 5.0
@@ -276,18 +283,14 @@ void main() {
 
       // Sanity: the generator itself returns empty.
       expect(
-        ShoppingListGenerator.generateShoppingItemsFromMenu(const {}),
+        _itemsForMenu(const {}),
         isEmpty,
       );
     });
 
-    testWidgets('pantry contents are NOT filtered out at the generator layer', (
+    testWidgets('with no pantry given, every ingredient is listed', (
       tester,
     ) async {
-      // Domain invariant: ShoppingListGenerator aggregates unconditionally;
-      // pantry exclusion is not part of the menu-to-shopping pipeline (as
-      // of BUT-390). If someone adds pantry filtering here in the future
-      // this test will break and flag a behaviour change to the user.
       final recipe = RecipeFactory.build(
         id: 'omelett',
         title: 'Omelett',
@@ -295,21 +298,18 @@ void main() {
         portions: 2,
       );
 
-      // Stub a user that "has salt in pantry". The generator must still
-      // return salt — filtering is not its responsibility.
       when(() => mockUserService.currentUserProfile).thenReturn(null);
 
       final menu = <String, List<Recipe>>{
         'Frukost': [recipe],
       };
 
-      final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+      final items = _itemsForMenu(menu);
 
       expect(
         items.any((i) => i.name.toLowerCase() == 'salt'),
         isTrue,
-        reason:
-            'Pantry filtering is view-layer, not generator — salt must appear',
+        reason: 'only the pantry passed in is subtracted',
       );
       expect(items.any((i) => i.name.toLowerCase() == 'ägg'), isTrue);
       expect(items.any((i) => i.name.toLowerCase() == 'smör'), isTrue);
