@@ -7,6 +7,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
+import 'package:butlery/services/nutrition/nutrition_table.dart';
 import 'package:butlery/services/tagging/ingredient_line_weigher.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
@@ -112,12 +113,7 @@ class TaggingPhaseCallables {
 
   /// Puts each line's weight on the lookup; left null, the main ingredients
   /// are read from the line order alone.
-  final Future<IngredientLookupResult> Function(
-    IngredientLookupResult,
-    Recipe,
-    List<String> ingredients,
-  )?
-  weigh;
+  final LineWeigher? weigh;
   final Future<Phase5ResultPartial> Function(
     Phase1Result,
     Recipe,
@@ -139,6 +135,7 @@ class TaggingPhaseCallables {
 TaggingPhaseCallables _defaultPhaseCallables(
   IngredientLookupService lookupService,
   TagGenerator generator,
+  Future<NutritionTable> Function()? nutritionTable,
 ) {
   // BUT-1483: phase1/phase5/phase5FromPhase1 are intentionally omitted (null).
   // The config-backed phases are resolved once per run inside [run] and passed
@@ -153,7 +150,7 @@ TaggingPhaseCallables _defaultPhaseCallables(
         Future<Phase3Result>(() => generator.runPhase3(p1, p2, recipe)),
     phase4: (p1, p2, p3, recipe) =>
         Future<Phase4Result>(() => generator.runPhase4(p1, p2, p3, recipe)),
-    weigh: IngredientLineWeigher.weighWithAppTable,
+    weigh: IngredientLineWeigher.withTable(nutritionTable),
   );
 }
 
@@ -191,10 +188,12 @@ class TaggingPipelineRunner {
     required IngredientLookupService lookupService,
     required TagGenerator generator,
     TaggingPhaseCallables? phaseCallables,
+    Future<NutritionTable> Function()? nutritionTable,
     this.onPhaseOutcome,
   }) : _generator = generator,
        _phases =
-           phaseCallables ?? _defaultPhaseCallables(lookupService, generator);
+           phaseCallables ??
+           _defaultPhaseCallables(lookupService, generator, nutritionTable);
 
   /// Test-only constructor: injects [TaggingPhaseCallables] without
   /// requiring a real lookup service. The generator is still required for

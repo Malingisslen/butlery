@@ -27,6 +27,7 @@ import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
+import 'package:butlery/services/tagging/ingredient_line_weigher.dart';
 import 'package:butlery/services/tagging/tagging_pipeline_runner.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -73,12 +74,7 @@ void main() {
     phase4,
     Future<Phase5Result> Function(Phase4Result, Recipe)? phase5,
     Future<Phase5ResultPartial> Function(Phase1Result, Recipe)? phase5FromP1,
-    Future<IngredientLookupResult> Function(
-      IngredientLookupResult,
-      Recipe,
-      List<String>,
-    )?
-    weigh,
+    LineWeigher? weigh,
   }) {
     return TaggingPhaseCallables(
       lookup: lookup ?? (_, __) async => lookupResult,

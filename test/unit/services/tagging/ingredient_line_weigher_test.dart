@@ -238,10 +238,10 @@ void main() {
 
   // Without a registered nutrition service the table is missing, and a line
   // stated in grams must still weigh so tags do not depend on the asset.
-  test('weighWithAppTable weighs stated grams without the table', () async {
+  test('withTable weighs stated grams when there is no table', () async {
     final lines = ['400 g kycklingfilé', '2 dl grädde'];
 
-    final result = await IngredientLineWeigher.weighWithAppTable(
+    final result = await IngredientLineWeigher.withTable(null)(
       _lookupOf(['kycklingfilé', 'grädde']),
       _recipe(lines),
       lines,

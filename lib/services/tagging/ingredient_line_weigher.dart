@@ -1,47 +1,50 @@
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
-import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/nutrition/nutrition_table.dart';
 import 'package:butlery/services/tagging/tagging_phase_budgets.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 
+/// Weighs the lines of a lookup made from the given recipe lines.
+typedef LineWeigher =
+    Future<IngredientLookupResult> Function(
+      IngredientLookupResult lookup,
+      Recipe recipe,
+      List<String> lookedUp,
+    );
+
 /// Puts each line's weight on a lookup, so the tagging can tell the main
 /// ingredients from the rest (kärnflöde steg 5 beslut 7).
 abstract final class IngredientLineWeigher {
-  /// [weigh] with the app's bundled table. Without weights the main
+  /// [weigh] with the table [loadTable] gives. Without weights the main
   /// ingredients come from the line order, so a failure here returns the
   /// lookup unweighed rather than stopping the tagging.
-  static Future<IngredientLookupResult> weighWithAppTable(
-    IngredientLookupResult lookup,
-    Recipe recipe,
-    List<String> lookedUp,
-  ) async {
-    NutritionTable? table;
-    try {
-      table = await ServiceLocator.tryGet<NutritionService>()?.table().timeout(
-        kLookupBudget,
-      );
-    } catch (e) {
-      // A line stated in grams still weighs without the table.
-      AppLogger.warning('Tagging: the nutrition table did not load: $e');
-    }
-    try {
-      return weigh(
-        lookup: lookup,
-        recipe: recipe,
-        lookedUp: lookedUp,
-        table: table,
-      );
-    } catch (e) {
-      AppLogger.warning('Tagging: weighing the ingredient lines failed: $e');
-      return lookup;
-    }
-  }
+  static LineWeigher withTable(Future<NutritionTable> Function()? loadTable) =>
+      (lookup, recipe, lookedUp) async {
+        NutritionTable? table;
+        try {
+          table = await loadTable?.call().timeout(kLookupBudget);
+        } catch (e) {
+          // A line stated in grams still weighs without the table.
+          AppLogger.warning('Tagging: the nutrition table did not load: $e');
+        }
+        try {
+          return weigh(
+            lookup: lookup,
+            recipe: recipe,
+            lookedUp: lookedUp,
+            table: table,
+          );
+        } catch (e) {
+          AppLogger.warning(
+            'Tagging: weighing the ingredient lines failed: $e',
+          );
+          return lookup;
+        }
+      };
 
   /// [lookedUp] is the list the lookup was made from: the recipe's lines or
   /// their normalized names, which leave out the empty lines. Only an amount
