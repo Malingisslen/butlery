@@ -1,5 +1,5 @@
 /**
- * The consent gate in front of `ocrRecipeImage` (`llm/ai-consent.ts`): only a
+ * The consent gate in front of `ocrRecipeImage` and `structureRecipe` (`llm/ai-consent.ts`): only a
  * caller whose stored consent says yes to AI processing reaches the handler.
  *
  * Run: npx ts-node src/__tests__/ai-consent.test.ts
@@ -76,14 +76,18 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "ocrRecipeImage is wrapped in the gate outside the guest quota and rate limit",
+    name: "ocrRecipeImage and structureRecipe are wrapped in the gate outside the guest quota and rate limit",
     fn: async () => {
-      const src = fs.readFileSync(path.resolve(__dirname, "../llm/ocr-recipe-image.ts"), "utf8");
-      assertEqual(
-        src.includes('withAiConsent(withGuestImportQuota(withRateLimit("ocrRecipeImage"'),
-        true,
-        "wrapper order",
-      );
+      for (const [file, op] of [
+        ["ocr-recipe-image.ts", "ocrRecipeImage"],
+        ["structure-recipe.ts", "structureRecipe"],
+      ]) {
+        const src = fs.readFileSync(path.resolve(__dirname, "../llm", file), "utf8");
+        const wired = new RegExp(
+          `withAiConsent\\(\\s*withGuestImportQuota\\(\\s*withRateLimit\\(\\s*"${op}"`,
+        );
+        assertEqual(wired.test(src), true, `${file}: wrapper order`);
+      }
     },
   },
 ];
