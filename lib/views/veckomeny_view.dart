@@ -43,6 +43,7 @@ import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
 import 'package:butlery/widgets/menu/veckomeny_draft_resume_card.dart';
+import 'package:butlery/widgets/menu/veckomeny_cloche_reveal.dart';
 import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
@@ -252,6 +253,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       return;
     }
 
+    if (menuVm.hasMenu && !menuVm.hasError) {
+      setState(() => _revealing = true);
+    }
+
     if (_viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu) {
       // Overwrite was already confirmed above.
       //
@@ -407,6 +412,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   bool _restoringDraft = false;
+
+  bool _revealing = false;
 
   /// BUT-2157: the draft comes back in Lista, where the suggestion is shown
   /// and placed from, with its prompt.
@@ -625,7 +632,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       source: source,
       pantry: pantry,
       retryPantry: planVm.readPantryForShopping,
-      canReplace: planVm.canReplaceShoppingList(source.week),
+      updatesList: planVm.shoppingListHasRowsFrom(source),
     );
     if (merge == null || !mounted) return;
     final receipt = await planVm.applyShoppingMerge(merge);
@@ -816,71 +823,88 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             ),
           ),
           Expanded(
-            child: Padding(
-              padding: AppDimensions.responsiveHorizontalPadding(context),
-              child: viewModel.isGenerating
-                  ? SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const VeckomenyGeneratingOverlay(),
-                          const SizedBox(height: AppDimensions.space16),
-                          VeckomenyPlanningCancelFooter(
-                            onCancel: _cancelPlanning,
-                          ),
-                        ],
-                      ),
-                    )
-                  : _viewMode == VeckomenyViewMode.kalender &&
-                        widget.realtimeMenuId == null
-                  ? SingleChildScrollView(
-                      // BUT-1611: per-meal "who's home" lives inside the
-                      // calendar (faces on each slot + a collapsible
-                      // week overview), not a separate strip.
-                      child: CalendarWeeklyMenuWidget(
-                        onRefinePrompt: _promptFocusNode.requestFocus,
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        // P5-U25: fewer dishes than asked is a partial
-                        // outcome, named above the list.
-                        if (viewModel.partialOutcome != null &&
-                            !viewModel.hasError)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppDimensions.space8,
-                            ),
-                            child: VeckomenyPartialResult(
-                              outcome: viewModel.partialOutcome!,
-                            ),
-                          ),
-                        Expanded(
-                          child:
-                              viewModel.noMatchOutcome != null &&
-                                  !viewModel.hasError
-                              // P6-U01: nothing matched is its own
-                              // outcome, never "Ett fel uppstod".
-                              ? VeckomenyNoMatch(
-                                  outcome: viewModel.noMatchOutcome!,
-                                  onEditPrompt: _promptFocusNode.requestFocus,
-                                  onPlanYourself: () => unawaited(
-                                    _setViewMode(
-                                      VeckomenyViewMode.kalender,
-                                    ),
-                                  ),
-                                )
-                              : MenuContentWidgets.buildMenuContent(
-                                  context,
-                                  viewModel: viewModel,
-                                  votingViewModel: viewModel.votingViewModel,
-                                  onRetry: _promptController.text.isNotEmpty
-                                      ? () => unawaited(_generateMenu())
-                                      : null,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Padding(
+                    padding: AppDimensions.responsiveHorizontalPadding(context),
+                    child: viewModel.isGenerating
+                        ? SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const VeckomenyGeneratingOverlay(),
+                                const SizedBox(height: AppDimensions.space16),
+                                VeckomenyPlanningCancelFooter(
+                                  onCancel: _cancelPlanning,
                                 ),
-                        ),
-                      ],
+                              ],
+                            ),
+                          )
+                        : _viewMode == VeckomenyViewMode.kalender &&
+                              widget.realtimeMenuId == null
+                        ? SingleChildScrollView(
+                            // BUT-1611: per-meal "who's home" lives inside the
+                            // calendar (faces on each slot + a collapsible
+                            // week overview), not a separate strip.
+                            child: CalendarWeeklyMenuWidget(
+                              onRefinePrompt: _promptFocusNode.requestFocus,
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              // P5-U25: fewer dishes than asked is a partial
+                              // outcome, named above the list.
+                              if (viewModel.partialOutcome != null &&
+                                  !viewModel.hasError)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: AppDimensions.space8,
+                                  ),
+                                  child: VeckomenyPartialResult(
+                                    outcome: viewModel.partialOutcome!,
+                                  ),
+                                ),
+                              Expanded(
+                                child:
+                                    viewModel.noMatchOutcome != null &&
+                                        !viewModel.hasError
+                                    // P6-U01: nothing matched is its own
+                                    // outcome, never "Ett fel uppstod".
+                                    ? VeckomenyNoMatch(
+                                        outcome: viewModel.noMatchOutcome!,
+                                        onEditPrompt:
+                                            _promptFocusNode.requestFocus,
+                                        onPlanYourself: () => unawaited(
+                                          _setViewMode(
+                                            VeckomenyViewMode.kalender,
+                                          ),
+                                        ),
+                                      )
+                                    : MenuContentWidgets.buildMenuContent(
+                                        context,
+                                        viewModel: viewModel,
+                                        votingViewModel:
+                                            viewModel.votingViewModel,
+                                        onRetry:
+                                            _promptController.text.isNotEmpty
+                                            ? () => unawaited(_generateMenu())
+                                            : null,
+                                      ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                if (_revealing)
+                  Positioned.fill(
+                    child: VeckomenyClocheReveal(
+                      onDone: () {
+                        if (mounted) setState(() => _revealing = false);
+                      },
                     ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -1103,8 +1127,8 @@ void showShoppingMergeReceipt(
   final l10n = context.l10n;
   final message = receipt.concurrentChange
       ? l10n.shoppingMergeConcurrentChange(receipt.itemCount)
-      : receipt.replaced
-      ? l10n.shoppingMergeReplaced(receipt.itemCount, receipt.listName)
+      : receipt.updatedList
+      ? l10n.shoppingMergeSynced(receipt.listName)
       : l10n.shoppingMergeAdded(receipt.itemCount, receipt.listName);
   SnackBarUtils.showUndo(context, message, onUndo: onUndo);
 }

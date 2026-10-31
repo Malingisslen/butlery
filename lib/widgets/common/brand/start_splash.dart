@@ -115,7 +115,9 @@ class _StartSplashState extends State<StartSplash>
   @override
   Widget build(BuildContext context) {
     final reduced = MediaQuery.of(context).disableAnimations;
-    return ColoredBox(
+    // Shown straight under the app's Navigator with no Scaffold, so without a
+    // Material its Text falls back to the yellow double-underlined debug style.
+    return Material(
       color: BrandColors.markGround,
       child: SafeArea(
         child: Column(

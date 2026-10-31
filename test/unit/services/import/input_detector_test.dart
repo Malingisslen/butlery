@@ -104,6 +104,23 @@ void main() {
         final result = detector.detect('https://example.com');
         expect(result.uri, isNotNull);
       });
+
+      for (final amount in [
+        '1.5 dl mjölk',
+        '2.5dl mjöl',
+        '0.5 tsk salt',
+        '2.5dl',
+      ]) {
+        test('"$amount" is recipe text, not a link', () {
+          expect(detector.detect(amount).isText, isTrue);
+          expect(InputDetector.looksLikeDomain(amount), isFalse);
+        });
+      }
+
+      test('a link without its scheme still counts, with path and query', () {
+        expect(InputDetector.looksLikeDomain('ica.se/recept/x?y=1'), isTrue);
+        expect(InputDetector.looksLikeDomain('vm.tiktok.com/ZM123/'), isTrue);
+      });
     });
   });
 }

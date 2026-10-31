@@ -45,6 +45,7 @@ import {
   deletePersonalTags,
   deletePersonalTagGroups,
   deleteTagOverridesLog,
+  deleteParsingCorrections,
   deleteCookSnaps,
   deleteActivityEvents,
   deleteShoppingListTemplates,
@@ -94,6 +95,7 @@ import {
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
 import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
+import { cleanUserFromLearnedAliases } from "./cascade/learned-aliases";
 import { Collections } from "../shared/collections";
 import { CallerAuth, isGuestCaller } from "../shared/caller-eligibility";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
@@ -356,6 +358,10 @@ export async function runAccountDeletionWithDeps(
     ["personal_tags", () => deletePersonalTags(database, uid)],
     ["personal_tag_groups", () => deletePersonalTagGroups(database, uid)],
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
+    ["parsing_corrections", () => deleteParsingCorrections(database, uid)],
+    // Was only in `onUserDeleted`, which runs after the residual probe, so the
+    // probe could not check it.
+    ["learned_aliases", () => cleanUserFromLearnedAliases(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
     [

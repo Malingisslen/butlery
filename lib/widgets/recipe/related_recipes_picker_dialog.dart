@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/services/search/recipe_search_matcher.dart';
 
 /// Shows a multi-select dialog to pick recipes to link.
 /// Returns `List<Recipe>` on confirm, null on cancel.
@@ -124,13 +125,7 @@ class _RelatedRecipesPickerDialogState
       );
     }
 
-    final filtered = _searchQuery.isEmpty
-        ? selectable
-        : selectable.where((r) {
-            final q = _searchQuery.toLowerCase();
-            return r.title.toLowerCase().contains(q) ||
-                r.mealType.toLowerCase().contains(q);
-          }).toList();
+    final filtered = RecipeSearchMatcher.filter(selectable, _searchQuery);
 
     return Column(
       children: [

@@ -31,6 +31,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart' show InkSnackBarAction;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/views/menu_placement_view.dart';
+import 'package:butlery/widgets/common/brand/butlery_cloche_lift.dart';
+import 'package:butlery/widgets/menu/veckomeny_cloche_reveal.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
 import 'veckomeny_flow_harness.dart';
@@ -75,6 +77,44 @@ void main() {
         expect(find.text('Middag 1'), findsOneWidget);
         // The saved week is untouched until the user places the result.
         expect(h.repository.saves, isEmpty);
+      });
+    });
+
+    testWidgets('a planned week is shown behind the lifted cloche, which '
+        'leaves again', (tester) async {
+      await runOnMonday(() async {
+        await h.pump(tester);
+        h.menu.hold = Completer<void>();
+        await h.generate(tester, 'tre middagar');
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.byType(VeckomenyClocheReveal), findsNothing);
+
+        h.menu.hold!.complete();
+        await tester.pump();
+        await tester.pump();
+        expect(find.byType(VeckomenyClocheReveal), findsOneWidget);
+
+        await tester.pump(ButleryClocheLift.duration);
+        await tester.pump(const Duration(milliseconds: 16));
+        await tester.pump(VeckomenyClocheReveal.hold);
+        await tester.pump();
+        expect(find.byType(VeckomenyClocheReveal), findsNothing);
+        expect(find.text('Middag 1'), findsOneWidget);
+      });
+    });
+
+    testWidgets('a planning that matched nothing lifts no cloche', (
+      tester,
+    ) async {
+      await runOnMonday(() async {
+        await h.pump(tester);
+        h.menu.next = const {};
+
+        await h.generate(tester, 'tre middagar');
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump();
+
+        expect(find.byType(VeckomenyClocheReveal), findsNothing);
       });
     });
   });

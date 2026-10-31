@@ -8,6 +8,7 @@
 import * as admin from "firebase-admin";
 import { Collections } from "../../shared/collections";
 import { RETENTION_ANALYTICS_PARENTS } from "../../account/account-deletion-cascade";
+import { learnedAliasesCollection } from "../../account/cascade/learned-aliases";
 import {
   RECOVERY_ATTEMPTS_COLLECTION,
   uidAttemptKey,
@@ -39,6 +40,29 @@ export const MAX_SECTION_ROWS = 2000;
 export const TAG_OVERRIDE_KEYS: Allowlist = {
   ...scalars("id", "userId", "recipeId", "type", "tag", "direction", "timestamp"),
   triggeringIngredients: "strings",
+};
+
+/** `ParsingCorrection.toFirestore` (`lib/models/parsing/parsing_correction.dart`) and the three correction models it nests. */
+export const PARSING_CORRECTION_KEYS: Allowlist = {
+  ...scalars(
+    "id", "recipeId", "userId", "timestamp", "source", "domain",
+    "successfulTier", "originalQuality", "totalCorrections",
+  ),
+  titleCorrection: { map: scalars("original", "corrected") },
+  portionsCorrection: { map: scalars("original", "corrected") },
+  timeCorrection: { map: scalars("original", "corrected") },
+  ingredientCorrections: {
+    list: scalars(
+      "type", "originalIndex", "correctedIndex", "originalLine",
+      "originalQuantity", "originalUnit", "originalName", "correctedLine",
+      "correctedName", "quantityChanged", "unitChanged", "nameChanged",
+    ),
+  },
+  instructionCorrections: {
+    list: scalars(
+      "type", "originalIndex", "correctedIndex", "originalText", "correctedText",
+    ),
+  },
 };
 
 /** What `consumeGuestCall` and `refundGuestCall` write (`llm/guest-import-quota.ts`). */
@@ -146,6 +170,14 @@ export const DEEP_LINK_KEYS: Allowlist = {
   metadata: { map: scalars("isActive", "expiresAt") },
 };
 
+/**
+ * The alias candidate `processCorrectionEvent` writes. `userIds` is left out:
+ * it names the other people who voted for the same spelling.
+ */
+export const LEARNED_ALIAS_KEYS: Allowlist = scalars(
+  "originalName", "correctedName", "ingredientId", "status", "firstSeen", "lastSeen",
+);
+
 function rowsWithId(
   docs: admin.firestore.QueryDocumentSnapshot[],
   keys: Allowlist,
@@ -218,6 +250,21 @@ function ownSubcollection(name: string, keys: Allowlist): SectionDef["read"] {
 export const ACCOUNT_SECTIONS: readonly SectionDef[] = [
   // deleteTagOverridesLog
   { name: "tag_overrides_log", read: byUserId("tag_overrides_log", TAG_OVERRIDE_KEYS) },
+  // deleteParsingCorrections
+  { name: "parsing_corrections", read: byUserId("parsing_corrections", PARSING_CORRECTION_KEYS) },
+  {
+    // cleanUserFromLearnedAliases
+    name: "learned_aliases",
+    read: async (database, uid) =>
+      rowsWithId(
+        await cappedDocs(
+          learnedAliasesCollection(database).where("userIds", "array-contains", uid),
+          MAX_SECTION_ROWS,
+          "learned_aliases",
+        ),
+        LEARNED_ALIAS_KEYS,
+      ),
+  },
   {
     // deleteGuestQuota
     name: "guest_quota",

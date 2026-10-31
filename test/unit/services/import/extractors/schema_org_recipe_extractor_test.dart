@@ -402,4 +402,76 @@ void main() {
       expect(recipe.ingredients, isEmpty);
     });
   });
+
+  group('extractAuthor', () {
+    test('reads a plain string', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({'author': 'Anna Berg'}),
+        'Anna Berg',
+      );
+    });
+
+    test('reads a Person or Organization object', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({
+          'author': {'@type': 'Person', 'name': 'Anna Berg'},
+        }),
+        'Anna Berg',
+      );
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({
+          'author': {'@type': 'Organization', 'name': 'Matbloggen'},
+        }),
+        'Matbloggen',
+      );
+    });
+
+    test('joins a list and drops duplicates', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({
+          'author': [
+            {'name': 'Anna Berg'},
+            'Per Ek',
+            {'name': 'Anna Berg'},
+          ],
+        }),
+        'Anna Berg, Per Ek',
+      );
+    });
+
+    test('is null for a bare @graph reference, an empty name or no author', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({
+          'author': {'@id': 'https://matbloggen.se/#/person/1'},
+        }),
+        isNull,
+      );
+      expect(SchemaOrgRecipeExtractor.extractAuthor({'author': '  '}), isNull);
+      expect(SchemaOrgRecipeExtractor.extractAuthor({}), isNull);
+    });
+
+    test('strips markup, unescapes entities and collapses whitespace', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractAuthor({
+          'author': '<b>Anna</b>\n  Berg &amp; Co',
+        }),
+        'Anna Berg & Co',
+      );
+    });
+
+    test('caps a very long name', () {
+      final author = SchemaOrgRecipeExtractor.extractAuthor({
+        'author': 'a' * 500,
+      });
+      expect(author!.length, SchemaOrgRecipeExtractor.maxAuthorLength);
+    });
+
+    test('createRecipe stores the author on the recipe', () {
+      final recipe = SchemaOrgRecipeExtractor.createRecipe({
+        'name': 'Laxpudding',
+        'author': {'name': 'Anna Berg'},
+      }, 'https://matbloggen.se/recept/laxpudding');
+      expect(recipe.sourceAuthor, 'Anna Berg');
+    });
+  });
 }

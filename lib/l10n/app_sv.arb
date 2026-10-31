@@ -882,10 +882,6 @@
     }
   },
   "recipePersonalTags": "Egna taggar",
-  "recipeAnalysisFailed": "Analys misslyckades",
-  "recipeAnalyzing": "Analyseras …",
-  "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
-  "recipeAnalyzingA11y": "Ingredienser analyseras",
   "recipeSearchHint": "Sök bland recepten …",
   "recipeShowMore": "Visa fler recept",
   "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
@@ -1219,6 +1215,58 @@
       }
     }
   },
+  "recipeSourceCardTitle": "Hämtat från {site}",
+  "@recipeSourceCardTitle": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceAuthor": "Av {author}",
+  "@recipeSourceAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceOpenOriginal": "Öppna originalet",
+  "recipeBorrowedImageCredit": "Bild: {site}",
+  "@recipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCard": "Receptet är hämtat från {site}",
+  "@a11yRecipeSourceCard": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCardWithAuthor": "Receptet är hämtat från {site}, av {author}",
+  "@a11yRecipeSourceCardWithAuthor": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeBorrowedImageCredit": "Bilden visas från {site}",
+  "@a11yRecipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
   "errorCouldNotOpenLink": "Kunde inte öppna länk",
   "errorInvalidLink": "Ogiltig länk",
   "shoppingItemRemoved": "{name} är borttagen.",
@@ -1375,7 +1423,6 @@
     "description": "BUT-1322: tooltip/semantics for the household-size plus button"
   },
   "settingsLanguageTitle": "Språk",
-  "commonLogoutNow": "Logga ut nu",
   "commonTakePhoto": "Ta foto",
   "commonSelectFromGallery": "Välj från galleri",
   "commonSelectFriends": "Välj vänner",
@@ -1648,8 +1695,6 @@
     "description": "BUT-1306: decline button on the first-checkoff prompt."
   },
   "allergenDisplayTitle": "Visa på",
-  "allergenDisplayOnCardsTitle": "Receptkort",
-  "allergenDisplayOnCardsSubtitle": "Visa allergenstatus på receptkort i listor",
   "allergenDisplayOnDetailTitle": "Receptdetaljer",
   "allergenDisplayOnDetailSubtitle": "Visa fullständig allergenstatus på receptsidan",
   "allergenDisplayCoverageSubtitle": "Visa hur stor andel ingredienser som är kända",
@@ -1752,6 +1797,14 @@
   "tagResultCoverage": "Täckning",
   "tagResultUnknownIngredients": "{count, plural, =1{1 okänd ingrediens} other{{count} okända ingredienser}}",
   "@tagResultUnknownIngredients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagResultUncertainTags": "Osäkra taggar, {count, plural, =1{1 ingrediens okänd} other{{count} ingredienser okända}}",
+  "@tagResultUncertainTags": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -1984,6 +2037,14 @@
   "profileRestoreNotRead": "Säkerhetskopian kunde inte läsas in.",
   "profileRestoreNothingRemoved": "Inga recept har raderats.",
   "profileRestoreCompleted": "Återställningen är genomförd.",
+  "profileRestoreSomeNotRestored": "{count} recept kunde inte återställas.",
+  "@profileRestoreSomeNotRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileRestoreFailed": "Återställningen misslyckades. Inget har ändrats. Försök igen.",
   "@profileRestoreFailed": {
     "placeholders": {
@@ -2393,10 +2454,6 @@
   "rateLimitAiLimit": "AI-gräns nådd",
   "rateLimitDailyQuota": "Dagskvot uppnådd",
   "rateLimitSlowDown": "Sakta ner lite",
-  "sessionContinue": "Fortsätt session",
-  "sessionContinueOrLogout": "Vill du fortsätta din session eller logga ut nu?",
-  "sessionExpiringMessage": "Din session kommer att avslutas om:",
-  "sessionExpiringTitle": "Session utgår snart",
   "shareContentTypeMenu": "menyer",
   "shareContentTypeRecipe": "recept",
   "shareContentTypeShoppingList": "inköpslistor",
@@ -3351,6 +3408,7 @@
   "recipeContinueEditing": "Fortsätt redigera",
   "recipeCopySaved": "Kopian av receptet är sparad.",
   "recipeFromArchive": "Från arkiv",
+  "recipeFromFile": "Från fil",
   "recipeFromImage": "Från bild",
   "recipeImportedFromShare": "Importerat från delning",
   "recipeImportLink": "Importera länk",
@@ -5199,8 +5257,6 @@
       }
     }
   },
-  "a11yAllergenStatusRow": "Allergenstatus",
-  "a11yDietaryStatusRow": "Koststatus",
   "a11yShowImage": "Visa bild",
   "a11yShowMore": "Visa fler",
   "a11yShoppingItemMoreOptions": "Fler val för {name}",
@@ -6321,13 +6377,6 @@
   "errorCouldNotAddRecipe": "Receptet kunde inte läggas till.",
   "errorCouldNotUpdateRecipe": "Receptet kunde inte uppdateras.",
   "errorCouldNotExportRecipes": "Kunde inte exportera recept",
-  "errorCouldNotMarkAsCooked": "Kunde inte markera receptet som lagat",
-  "errorCouldNotAddIngredient": "Kunde inte lägga till ingrediens",
-  "errorCouldNotUpdateIngredient": "Kunde inte uppdatera ingrediens",
-  "errorCouldNotRemoveIngredient": "Kunde inte ta bort ingrediens",
-  "errorCouldNotAddInstruction": "Kunde inte lägga till instruktion",
-  "errorCouldNotUpdateInstruction": "Kunde inte uppdatera instruktion",
-  "errorCouldNotRemoveInstruction": "Kunde inte ta bort instruktion",
   "errorCouldNotStartSync": "Kunde inte starta synkronisering",
   "errorSyncErrorFor": "Synkroniseringsfel för {syncType}",
   "@errorSyncErrorFor": {
@@ -7839,7 +7888,6 @@
   },
   "importedRecipeLabel": "Importerat recept",
   "labelEmptyMenu": "Tom meny",
-  "errorVideoNoSubtitles": "Video saknar undertexter",
   "errorNetworkFallback": "Nätverksfel",
   "recipeCollaborationEnable": "Aktivera samarbete",
   "recipeCollaborationDisable": "Avaktivera samarbete",
@@ -8538,7 +8586,6 @@
   "addRecipe": "Lägg till recept",
   "editRecipe": "Redigera recept",
   "checkPermissions": "Kontrollera behörigheter",
-  "ingredientParseError": "Kunde inte tolka ingrediens",
   "portionsUnit": "portioner",
   "sharedRecipeFallback": "Delat recept · {count, plural, =1{1 medlem} other{{count} medlemmar}}",
   "@sharedRecipeFallback": {
@@ -11534,7 +11581,7 @@
   "@shoppingMergePantryTitle": {
     "description": "P6-U02: switch."
   },
-  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.",
+  "shoppingMergePantryBody": "{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}}",
   "@shoppingMergePantryBody": {
     "description": "P6-U02: switch description.",
     "placeholders": {
@@ -11556,18 +11603,6 @@
   "@shoppingMergePantryUnavailable": {
     "description": "P6-U02: degraded mode."
   },
-  "shoppingMergeReplaceTitle": "Ersätt listan i stället för att lägga till",
-  "@shoppingMergeReplaceTitle": {
-    "description": "P6-U02: switch, off by default."
-  },
-  "shoppingMergeReplaceBody": "Dina egna, manuellt tillagda varor behålls alltid.",
-  "@shoppingMergeReplaceBody": {
-    "description": "P6-U02: switch description (PQ-10 = A)."
-  },
-  "shoppingMergeReplaceUnavailable": "Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.",
-  "@shoppingMergeReplaceUnavailable": {
-    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
-  },
   "shoppingMergeAdd": "{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}",
   "@shoppingMergeAdd": {
     "description": "P6-U02: the sheet hero.",
@@ -11577,30 +11612,26 @@
       }
     }
   },
-  "shoppingMergeReplaceAction": "{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}",
-  "@shoppingMergeReplaceAction": {
-    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
+  "shoppingMergeUpdate": "Uppdatera listan",
+  "@shoppingMergeUpdate": {
+    "description": "Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source."
+  },
+  "shoppingMergeUpdateBody": "Listan har redan varor från veckan. De uppdateras, men det du har ändrat eller bockat av rörs inte och dina egna varor finns kvar. Listan följer sedan med när du ändrar veckan.",
+  "@shoppingMergeUpdateBody": {
+    "description": "Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding."
+  },
+  "shoppingMergeSynced": "{list} är uppdaterad med veckan. Det du har ändrat själv finns kvar.",
+  "@shoppingMergeSynced": {
+    "description": "Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.",
     "placeholders": {
-      "count": {
-        "type": "int"
+      "list": {
+        "type": "String"
       }
     }
   },
   "shoppingMergeAdded": "{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}",
   "@shoppingMergeAdded": {
     "description": "P6-U02: receipt with Ångra after Lägg till.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "list": {
-        "type": "String"
-      }
-    }
-  },
-  "shoppingMergeReplaced": "{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.",
-  "@shoppingMergeReplaced": {
-    "description": "P6-U02: receipt with Ångra after a replace.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -11618,6 +11649,50 @@
         "type": "int"
       }
     }
+  },
+  "shoppingFollowNotice": "Uppdaterad från veckomenyn: {changes}",
+  "@shoppingFollowNotice": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFollowAdded": "{count, plural, =1{1 ny} other{{count} nya}}",
+  "@shoppingFollowAdded": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowChanged": "{count, plural, =1{1 ändrad} other{{count} ändrade}}",
+  "@shoppingFollowChanged": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowRemoved": "{count, plural, =1{1 borttagen} other{{count} borttagna}}",
+  "@shoppingFollowRemoved": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowNoticeDismiss": "Stäng meddelandet",
+  "@shoppingFollowNoticeDismiss": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button."
+  },
+  "shoppingFollowNoticeUndoFailed": "Kunde inte ångra uppdateringen",
+  "@shoppingFollowNoticeUndoFailed": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed."
   },
   "shoppingMergeUndoFailed": "Kunde inte ångra sammanslagningen",
   "@shoppingMergeUndoFailed": {
@@ -11671,24 +11746,6 @@
   },
   "signOutPendingWait": "Vänta på synk",
   "signOutPendingDiscard": "Logga ut och släng ändringarna",
-  "sessionPendingChangesIntro": "{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}",
-  "@sessionPendingChangesIntro": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "sessionEndedBackgroundTitle": "Du loggades ut medan appen låg still.",
-  "sessionEndedBackgroundReason": "Det händer efter 45 minuter utan aktivitet, och det är meningen.",
-  "sessionEndedBackgroundPending": "{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.}}",
-  "@sessionEndedBackgroundPending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "draftTimeLeftDays": "{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}",
   "@draftTimeLeftDays": {
     "placeholders": {
@@ -13527,6 +13584,10 @@
   "menuMealAllergenScopeHint": "Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.",
   "@menuMealAllergenScopeHint": {
     "description": "BUT-2362: hint above the generated menu list while the per-meal allergen choice is on"
+  },
+  "menuRecencyReadFailedHint": "Kunde inte läsa tidigare veckor, så rätter kan upprepas.",
+  "@menuRecencyReadFailedHint": {
+    "description": "Hint above the generated menu list when the earlier weeks could not be read, so dishes from them may come back"
   },
   "weeklyMenuOverflowAllergen": "Några av dem passar inte någon som är hemma de dagar som var lediga.",
   "@weeklyMenuOverflowAllergen": {
@@ -16137,7 +16198,7 @@
   "@pendingDeletionItemHouseholdNote": {
     "description": "Spår 6, v62: what is deleted, detail"
   },
-  "pendingDeletionItemCache": "Sökindex och lokal cache",
+  "pendingDeletionItemCache": "Lokal cache",
   "@pendingDeletionItemCache": {
     "description": "Spår 6, v62: what is deleted"
   },
@@ -16877,6 +16938,75 @@
       }
     }
   },
+  "allergenOverrideOk": "Du har markerat {allergen} som ok. Appen hittade {allergen}.",
+  "@allergenOverrideOk": {
+    "description": "Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideContains": "Du har markerat att receptet innehåller {allergen}.",
+  "@allergenOverrideContains": {
+    "description": "Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideReset": "Återställ",
+  "@allergenOverrideReset": {
+    "description": "Button that removes the user override for one allergen."
+  },
+  "shareAllergensOverridden": "Appen hittade {names}, men ägaren har markerat det som ok.",
+  "@shareAllergensOverridden": {
+    "description": "Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddTitle": "Lägg till ändå?",
+  "@menuManualAddTitle": {
+    "description": "Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes."
+  },
+  "menuManualAddContains": "{recipe} innehåller {names}.",
+  "@menuManualAddContains": {
+    "description": "Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddDislikes": "Någon i hushållet ogillar något i {recipe}.",
+  "@menuManualAddDislikes": {
+    "description": "Confirmation line: someone in the household dislikes an ingredient in the recipe.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddUnchecked": "Allergenerna är inte kontrollerade för {recipe}.",
+  "@menuManualAddUnchecked": {
+    "description": "Confirmation line: the recipe has no settled allergen check for a tracked allergen.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddConfirm": "Lägg till ändå",
+  "@menuManualAddConfirm": {
+    "description": "Button that adds the recipe to the menu despite the conflict."
+  },
   "recipeSaveNeedsTitle": "Skriv en titel för att kunna spara.",
   "recipeSaveNeedsIngredient": "Lägg till minst en ingrediens för att kunna spara.",
   "recipeSaveNeedsInstruction": "Lägg till minst ett steg för att kunna spara.",
@@ -17215,6 +17345,189 @@
     "placeholders": {
       "first": {"type": "int"},
       "second": {"type": "int"}
+    }
+  },
+  "tagAllergenSection": "Allergener",
+  "@tagAllergenSection": {
+    "description": "Heading of the allergen section in the tag editor dialog."
+  },
+  "tagAllergenHint": "Ändra bara om appen har fel för det här receptet. Appen avgör följer ingredienserna.",
+  "@tagAllergenHint": {
+    "description": "Hint under the allergen heading in the tag editor."
+  },
+  "tagAllergenChoiceAuto": "Appen avgör",
+  "@tagAllergenChoiceAuto": {
+    "description": "Segment: no manual override, the app decides."
+  },
+  "tagAllergenChoiceContains": "Innehåller",
+  "@tagAllergenChoiceContains": {
+    "description": "Segment: user overrides the allergen to CONTAINS."
+  },
+  "tagAllergenChoiceFree": "Innehåller inte",
+  "@tagAllergenChoiceFree": {
+    "description": "Segment: user overrides the allergen to FREE."
+  },
+  "tagAllergenAutoContains": "Appen: innehåller",
+  "@tagAllergenAutoContains": {
+    "description": "Secondary line: the app's own verdict is contains."
+  },
+  "tagAllergenAutoFree": "Appen: innehåller inte",
+  "@tagAllergenAutoFree": {
+    "description": "Secondary line: the app's own verdict is free."
+  },
+  "tagAllergenAutoUnknown": "Appen: ej kontrollerat",
+  "@tagAllergenAutoUnknown": {
+    "description": "Secondary line: the app has not settled this allergen."
+  },
+  "llmAiConsentRequired": "AI-tolkning kräver ditt samtycke. Du kan ge det under Integritet i inställningarna.",
+  "@llmAiConsentRequired": {
+    "description": "LLM error: the server refused because the user has not consented to AI processing"
+  },
+  "photoAiConsentSaveFailed": "Ditt svar kunde inte sparas, så fotot skickades inte. Försök igen.",
+  "@photoAiConsentSaveFailed": {
+    "description": "Photo import: saving the AI consent failed, nothing was sent"
+  },
+  "photoAiOfferPhoneCouldNotRead": "Telefonen kunde inte läsa hela receptet.",
+  "@photoAiOfferPhoneCouldNotRead": {
+    "description": "Photo import AI offer: the on-device reading failed"
+  },
+  "photoAiOfferNoRecipeFound": "Telefonen läste texten men hittade inget recept i den.",
+  "@photoAiOfferNoRecipeFound": {
+    "description": "Photo import AI offer: text read on the phone but no recipe found"
+  },
+  "photoAiOfferHandwriting": "Handskrivna recept kan bara läsas av AI.",
+  "@photoAiOfferHandwriting": {
+    "description": "Photo import AI offer: handwriting mode"
+  },
+  "photoAiOfferQuestion": "Vill du att AI läser fotot? Då skickas fotot till Google för att läsas. Ditt ja gäller AI-tolkning i appen tills du ändrar det under Integritet.",
+  "@photoAiOfferQuestion": {
+    "description": "Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent"
+  },
+  "photoAiOfferQuestionConsented": "Vill du att AI läser fotot? Då skickas fotot till Google för att läsas.",
+  "@photoAiOfferQuestionConsented": {
+    "description": "Photo import AI offer question when consent is already given"
+  },
+  "photoAiOfferAccept": "Ja, skicka fotot",
+  "@photoAiOfferAccept": {
+    "description": "Photo import AI offer: accept button"
+  },
+  "photoAiOfferDecline": "Nej, jag skriver själv",
+  "@photoAiOfferDecline": {
+    "description": "Photo import AI offer: decline button, manual entry"
+  },
+  "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.",
+  "@shoppingMergeUnresolvedRecipes": {
+    "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPantryAddFailed": "Kunde inte lägga {name} i skafferiet.",
+  "@shoppingPantryAddFailed": {
+    "description": "Snackbar when adding a just-checked-off item to the pantry failed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryTitle": "Dra av från skafferiet?",
+  "@cookedPantryTitle": {
+    "description": "Title of the sheet offered after a recipe is marked as cooked."
+  },
+  "cookedPantrySubtitle": "Varor i skafferiet som receptet använder, för {portions, plural, =1{1 portion} other{{portions} portioner}}.",
+  "@cookedPantrySubtitle": {
+    "description": "Subtitle of the cooked-recipe pantry sheet.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryHasLeft": "har {have}, kvar {left}",
+  "@cookedPantryHasLeft": {
+    "description": "Grey line under a pantry row in the cooked sheet: what the row holds and what remains.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryHasRemoved": "har {have}, tas bort ur skafferiet",
+  "@cookedPantryHasRemoved": {
+    "description": "Grey line under a pantry row that the take empties.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantrySkip": "Hoppa över",
+  "@cookedPantrySkip": {
+    "description": "Outlined button in the cooked pantry sheet."
+  },
+  "cookedPantryConfirm": "{count, plural, =1{Dra av 1 vara} other{Dra av {count} varor}}",
+  "@cookedPantryConfirm": {
+    "description": "Primary button in the cooked pantry sheet; disabled at zero.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryTaken": "{count, plural, =1{1 vara dragen} other{{count} varor dragna}} från skafferiet",
+  "@cookedPantryTaken": {
+    "description": "Snackbar after the take; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryFailed": "Kunde inte dra av allt från skafferiet. Det som hann dras av kan ångras.",
+  "@cookedPantryFailed": {
+    "description": "Failure snackbar when a pantry write was refused."
+  },
+  "cookedPantryUndoFailed": "Kunde inte ångra avdraget i skafferiet",
+  "@cookedPantryUndoFailed": {
+    "description": "Failure snackbar when Ångra could not write back."
+  },
+  "cookedPantryEditTitle": "Hur mycket {name}?",
+  "@cookedPantryEditTitle": {
+    "description": "Title of the dialog that edits the amount to take.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryRowSemantics": "{name}, dra av {amount}",
+  "@cookedPantryRowSemantics": {
+    "description": "Screen-reader label of a row in the cooked pantry sheet.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryAmountSemantics": "Ändra mängd för {name}, nu {amount}",
+  "@cookedPantryAmountSemantics": {
+    "description": "Screen-reader label of the amount box in a cooked pantry row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   }
 }

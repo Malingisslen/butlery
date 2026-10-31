@@ -28,6 +28,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 
@@ -122,6 +123,7 @@ void main() {
     late _MockMenuShoppingListGenerator mockGenerator;
     late StreamController<String?> weekWrites;
     late StreamController<LateWeekConflict> lateConflicts;
+    late StreamController<RecipeServiceState> recipeStates;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -137,6 +139,10 @@ void main() {
       when(
         () => mockService.lateConflicts,
       ).thenAnswer((_) => lateConflicts.stream);
+      recipeStates = StreamController<RecipeServiceState>.broadcast();
+      when(
+        () => mockRecipeService.stateStream,
+      ).thenAnswer((_) => recipeStates.stream);
 
       // Most tests don't exercise save; stub a permissive default that
       // individual tests can override with `when(...).thenAnswer(...)`.
@@ -153,6 +159,47 @@ void main() {
       viewModel.dispose();
       await weekWrites.close();
       await lateConflicts.close();
+      await recipeStates.close();
+    });
+
+    group('entryTitle', () {
+      test('shows the recipe\'s current title after a rename', () {
+        when(
+          () => mockRecipeService.getRecipeById('r-1'),
+        ).thenReturn(_recipe(id: 'r-1', title: 'Nytt namn'));
+
+        final entry = _entry(
+          day: DayOfWeek.mon,
+          slot: MealSlot.middag,
+          title: 'Gammalt namn',
+        );
+
+        expect(viewModel.entryTitle(entry), 'Nytt namn');
+      });
+
+      test('keeps the stored title while the recipe is not loaded', () {
+        when(() => mockRecipeService.getRecipeById('r-1')).thenReturn(null);
+
+        final entry = _entry(
+          day: DayOfWeek.mon,
+          slot: MealSlot.middag,
+          title: 'Gammalt namn',
+        );
+
+        expect(viewModel.entryTitle(entry), 'Gammalt namn');
+      });
+
+      // The calendar reads entryTitle in build, so a recipe list that arrives
+      // after the week must repaint even for a user with no allergen scope.
+      test('a recipe list change notifies without an allergen scope', () async {
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
+        recipeStates.add(RecipeStateData(recipes: [_recipe()]));
+        await pumpEventQueue();
+
+        expect(notifications, 1);
+      });
     });
 
     // BUT-1962 — a refused save must (a) say so and (b) put back the state it
@@ -2236,7 +2283,6 @@ void main() {
         addedItemIds: ['a'],
         removedItems: [],
         previousMenuItemIds: null,
-        replaced: false,
         createdList: false,
       );
 

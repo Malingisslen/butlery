@@ -24,6 +24,7 @@ import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -77,6 +78,8 @@ class RecipeFormState extends ChangeNotifier {
   // No field shows it, but an import's provenance stamp (voice, photo, link)
   // must reach the saved recipe, and an edit must not erase it.
   SourceArtefact? _sourceArtefact;
+  // Who wrote the recipe at [_sourceUrl]; no field shows it either.
+  String? _sourceAuthor;
 
   // CRITICAL FIX: Remove internal arrays to eliminate dual state inconsistency
   // Single source of truth is now FormFieldsManager values only
@@ -239,6 +242,7 @@ class RecipeFormState extends ChangeNotifier {
     _sourceUrl = recipe.sourceUrl;
     _tagOverrides = recipe.tagOverrides;
     _sourceArtefact = recipe.core.sourceArtefact;
+    _sourceAuthor = recipe.core.sourceAuthor;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
@@ -286,6 +290,22 @@ class RecipeFormState extends ChangeNotifier {
 
   void setImportReviewRows(List<ParsedIngredient>? rows) {
     _importReviewRows = rows;
+  }
+
+  /// Writes an import's amounts as the recipe page shows them; the seed's raw
+  /// lines follow, so the save still reuses their structured entries.
+  void applyImportFractions() {
+    final values = _ingredientsManager.values;
+    for (var i = 0; i < values.length; i++) {
+      final rewritten = ImportFractions.line(values[i]);
+      if (rewritten != values[i]) _ingredientsManager.updateAt(i, rewritten);
+    }
+    final seed = _seedStructured;
+    if (seed == null) return;
+    _seedStructured = [
+      for (final entry in seed)
+        ImportFractions.withRaw(entry, ImportFractions.line(entry.raw)),
+    ];
   }
 
   /// BUT-1469: pre-edit snapshot diffed against the saved recipe to capture
@@ -565,6 +585,8 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   void setSourceUrl(String? sourceUrl) {
+    // The author belongs to the old page; a new source must not inherit it.
+    if (sourceUrl != _sourceUrl) _sourceAuthor = null;
     _sourceUrl = sourceUrl;
     notifyListeners();
     _scheduleAutoSave();
@@ -758,6 +780,7 @@ class RecipeFormState extends ChangeNotifier {
       'timeMinutes': _timeMinutes,
       'rating': _rating,
       'sourceUrl': _sourceUrl,
+      'sourceAuthor': _sourceAuthor,
       'imageUrls': _imageUrls,
       'ingredients': _ingredientsManager.values,
       'instructions': _instructionsManager.values,
@@ -779,6 +802,7 @@ class RecipeFormState extends ChangeNotifier {
       _timeMinutes = draftData['timeMinutes'];
       _rating = draftData['rating'];
       _sourceUrl = draftData['sourceUrl'];
+      _sourceAuthor = draftData['sourceAuthor'] as String?;
       _imageUrls = List<String>.from(
         (draftData['imageUrls'] as List?).orEmpty(),
       );
@@ -922,6 +946,7 @@ class RecipeFormState extends ChangeNotifier {
         imageUrls: imageUrls ?? _imageUrls,
         thumbnailUrl: thumbnailUrl ?? _originalRecipe?.core.thumbnailUrl,
         sourceUrl: _sourceUrl?.trim(),
+        sourceAuthor: _sourceAuthor,
         createdBy: _originalRecipe?.core.createdBy,
         createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: clock.now(),
@@ -954,6 +979,7 @@ class RecipeFormState extends ChangeNotifier {
     _sourceUrl = null;
     _tagOverrides = null;
     _sourceArtefact = null;
+    _sourceAuthor = null;
 
     _ingredientsManager.updateItems(['']);
     _instructionsManager.updateItems(['']);

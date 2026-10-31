@@ -25,9 +25,11 @@ PantryItem _pantryItem({
   required String name,
   required double qty,
   String unit = 'st',
+  String? ingredientId,
 }) => PantryItem(
   id: 'p_$name',
   ingredientName: name,
+  ingredientId: ingredientId,
   quantity: qty,
   unit: unit,
   location: PantryLocation.pantry,
@@ -99,6 +101,45 @@ void main() {
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
+    test('a bought plain name grows the prepared pantry row', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'hackad lök', qty: 2)],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'lök', amount: 3),
+        wasBought: false,
+      );
+
+      verify(() => pantry.adjustQuantity('u1', any(), 3)).called(1);
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
+    test('a bought row grows the pantry row of the same registry entry, '
+        'whatever its name', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'lök', qty: 2, ingredientId: 'onion')],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        UnifiedShoppingItem(
+          name: 'rödlök',
+          amount: 3,
+          unit: 'st',
+          bought: true,
+          ingredientId: 'onion',
+        ),
+        wasBought: false,
+      );
+
+      verify(() => pantry.adjustQuantity('u1', any(), 3)).called(1);
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
     test('adds a new pantry item when no matching entry exists', () async {
       when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
       when(() => pantry.getAll('u1')).thenAnswer((_) async => []);
@@ -163,6 +204,31 @@ void main() {
       verify(() => pantry.addFromShoppingItem('u1', item)).called(1);
       verifyNever(() => pantry.updateItem(any(), any()));
       verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+    });
+
+    test('aggregates into a pantry row whose unit is a long spelling of the '
+        'bought unit', () async {
+      // Intent: shopping rows carry the short form ("msk") while older pantry
+      // rows keep what the user typed ("matsked"). They are one unit, so the
+      // purchase grows the existing row instead of creating a second one.
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(() => pantry.getAll('u1')).thenAnswer(
+        (_) async => [_pantryItem(name: 'Salt', qty: 4, unit: 'matsked')],
+      );
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'salt', amount: 2, unit: 'msk'),
+        wasBought: false,
+      );
+
+      final captured =
+          verify(
+                () => pantry.adjustQuantity('u1', captureAny(), 2),
+              ).captured.single
+              as PantryItem;
+      expect(captured.unit, 'matsked');
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
     test('does nothing when user profile is null (not yet loaded)', () async {
@@ -262,5 +328,28 @@ void main() {
         );
       },
     );
+
+    test('a pantry that cannot be read adds nothing: the throw reaches the '
+        'caller and no duplicate row is written', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(
+        () => pantry.getAll('u1'),
+      ).thenAnswer((_) => Future<List<PantryItem>>.error(StateError('read')));
+
+      await expectLater(
+        service.onItemCheckedOff(
+          'u1',
+          _shoppingItem(name: 'Mjölk'),
+          wasBought: false,
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+      verifyNever(
+        () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+      );
+    });
   });
 }

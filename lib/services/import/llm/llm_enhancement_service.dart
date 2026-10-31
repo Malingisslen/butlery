@@ -399,8 +399,8 @@ class LlmEnhancementService extends BaseService {
       title: extracted.title,
       description: extracted.description.orEmpty(),
       mealType: mealType,
-      portions: extracted.portions ?? ParsingTier.kDefaultPortions,
-      timeMinutes: extracted.totalTimeMinutes ?? 0,
+      portions: _plausiblePortions(extracted.portions),
+      timeMinutes: _plausibleMinutes(extracted.totalTimeMinutes),
       ingredients: parsedIngredients.map((i) => i.originalLine).toList(),
       structuredIngredients: parsedIngredients
           .map(RecipeIngredient.fromParsed)
@@ -410,6 +410,17 @@ class LlmEnhancementService extends BaseService {
       sourceUrl: extracted.source,
     );
   }
+
+  // A recipe that states no servings or time is saved without them rather
+  // than with a guess that reads as a fact. The bounds are the ones LlmTier
+  // rejects an answer for.
+  static int? _plausiblePortions(int? portions) =>
+      portions != null && portions >= 1 && portions <= ParsingTier.kMaxPortions
+      ? portions
+      : null;
+
+  static int? _plausibleMinutes(int? minutes) =>
+      minutes != null && minutes >= 1 && minutes <= 2880 ? minutes : null;
 
   /// Infer meal type from recipe tags.
   String _inferMealType(List<String> tags) {

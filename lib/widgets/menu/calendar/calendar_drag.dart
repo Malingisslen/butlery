@@ -30,7 +30,10 @@ sealed class CalendarDragPayload {}
 
 class MovePayload extends CalendarDragPayload {
   final WeeklyMenuPlanEntry entry;
-  MovePayload(this.entry);
+
+  /// The dish's name as the cell shows it, for the drag label.
+  final String title;
+  MovePayload(this.entry, {required this.title});
 }
 
 class OverflowPayload extends CalendarDragPayload {
@@ -47,7 +50,7 @@ Widget wrapAsDraggable({
 }) {
   // Simple label feedback avoids layout issues (Expanded in overlay).
   final label = switch (payload) {
-    MovePayload(:final entry) => entry.recipeTitle,
+    MovePayload(:final title) => title,
     OverflowPayload(:final recipe) => recipe.title,
   };
   final cs = Theme.of(context).colorScheme;

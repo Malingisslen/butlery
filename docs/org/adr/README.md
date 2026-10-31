@@ -50,6 +50,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0039](ADR-0039-no-inactivity-logout.md) — the 45-minute inactivity logout is removed; the user stays signed in until she signs out herself, Malin accepted the unattended-device risk — accepted (session-timeout removal plan, 2026-10-30).
 - [ADR-0038](ADR-0038-llm-samples-keep-running-until-policy-1-25.md) — the existing `llm_response_samples` capture keeps running although policy 1.24 does not mention it; the DPO asked to switch it off until 1.25, Malin chose to keep it and order 1.25 first — escalated to Malin (parser-shadow plan, 2026-10-29).
 - [ADR-0037](ADR-0037-parser-shadow-ai-consent-only.md) — parser shadow sampling runs only for users with AI consent, not on legitimate interest — escalated to Malin (parser-shadow plan, 2026-10-29).
 - [ADR-0035](ADR-0035-short-links-kept-14-days.md) — how long `deep_links` short links are kept; the plan said 30 days, the DPO asked for 7–14, Malin chose 14 — escalated to Malin (BUT-2463, 2026-10-28).

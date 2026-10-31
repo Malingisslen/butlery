@@ -9,3 +9,5 @@ Future<Uint8List?> readDraftImage(String? path) async =>
 
 Future<void> deleteDraftImage(String? path) async =>
     throw UnsupportedError('Platform not supported');
+
+Future<void> clearStagedDraftImage() async {}

@@ -162,39 +162,83 @@ void main() {
     });
 
     group('ostig (cheesy) detection', () {
-      test('detects cheesy from parmesan', () {
+      // Malin 2026-10-30, kärnflöde steg 5 beslut 8: ostig is 100 g of
+      // weighed cheese, not a cheese somewhere on the list.
+      test('detects cheesy from 100 g parmesan', () {
         final recipe = RecipeBuilder()
             .withTitle('Pasta med parmesan')
             .withIngredients(['pasta', 'parmesan', 'smör'])
             .build();
-        final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {
-            'contains-gluten',
-          }),
-          TaggingTestHelper.ingredient('parmesan', 'protein/dairy/cheese', {
-            'dairy',
-            'cheese',
-          }),
-        ]);
+        Set<String> tagsWith(double parmesanGrams) => generator
+            .generate(
+              ingredients: TaggingTestHelper.weighedLookup([
+                (
+                  TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {
+                    'contains-gluten',
+                  }),
+                  400,
+                ),
+                (
+                  TaggingTestHelper.ingredient(
+                    'parmesan',
+                    'protein/dairy/cheese',
+                    {'dairy', 'cheese'},
+                  ),
+                  parmesanGrams,
+                ),
+              ]),
+              recipe: recipe,
+            )
+            .tags;
 
-        final result = generator.generate(ingredients: lookup, recipe: recipe);
-
-        expect(result.hasTag('ostig'), isTrue);
+        expect(tagsWith(100), contains('ostig'));
+        expect(tagsWith(30), isNot(contains('ostig')));
       });
 
-      test('detects cheesy from mozzarella', () {
+      test('gräddost is cheese, gräddpulver is not', () {
+        final recipe = RecipeBuilder().withTitle('Gratäng').withIngredients([
+          'potatis',
+          'ost',
+        ]).build();
+        Set<String> tagsWith(String dairy) => generator
+            .generate(
+              ingredients: TaggingTestHelper.weighedLookup([
+                (TaggingTestHelper.ingredient('potatis', 'vegetable', {}), 800),
+                (
+                  TaggingTestHelper.ingredient(dairy, 'protein/dairy', {
+                    'dairy',
+                  }),
+                  150,
+                ),
+              ]),
+              recipe: recipe,
+            )
+            .tags;
+
+        expect(tagsWith('gräddost'), contains('ostig'));
+        expect(tagsWith('smörgåsost'), contains('ostig'));
+        expect(tagsWith('gräddpulver'), isNot(contains('ostig')));
+      });
+
+      test('detects cheesy from a weighed mozzarella', () {
         final recipe = RecipeBuilder()
             .withTitle('Pizza Margherita')
             .withIngredients(['pizzadeg', 'tomatsås', 'mozzarella'])
             .build();
-        final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient('pizzadeg', 'grain/pasta-bread', {
-            'contains-gluten',
-          }),
-          TaggingTestHelper.ingredient('mozzarella', 'protein/dairy/cheese', {
-            'dairy',
-            'cheese',
-          }),
+        final lookup = TaggingTestHelper.weighedLookup([
+          (
+            TaggingTestHelper.ingredient('pizzadeg', 'grain/pasta-bread', {
+              'contains-gluten',
+            }),
+            null,
+          ),
+          (
+            TaggingTestHelper.ingredient('mozzarella', 'protein/dairy/cheese', {
+              'dairy',
+              'cheese',
+            }),
+            125,
+          ),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -229,19 +273,28 @@ void main() {
             .withTitle('Krämig ostpasta')
             .withIngredients(['pasta', 'grädde', 'parmesan'])
             .build();
-        final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {
-            'contains-gluten',
-          }),
-          TaggingTestHelper.ingredient('grädde', 'protein/dairy', {
-            'dairy',
-            'animal-product',
-            'cream',
-          }),
-          TaggingTestHelper.ingredient('parmesan', 'protein/dairy/cheese', {
-            'dairy',
-            'cheese',
-          }),
+        final lookup = TaggingTestHelper.weighedLookup([
+          (
+            TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {
+              'contains-gluten',
+            }),
+            400,
+          ),
+          (
+            TaggingTestHelper.ingredient('grädde', 'protein/dairy', {
+              'dairy',
+              'animal-product',
+              'cream',
+            }),
+            300,
+          ),
+          (
+            TaggingTestHelper.ingredient('parmesan', 'protein/dairy/cheese', {
+              'dairy',
+              'cheese',
+            }),
+            100,
+          ),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);

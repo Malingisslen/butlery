@@ -107,7 +107,7 @@ class FCMService extends BaseService {
 
         // Listen for mid-session consent changes (BUT-356). BUT-752:
         // ConsentService implements Listenable so multiple subscribers
-        // (this + SearchModule for Algolia re-init) co-exist.
+        // co-exist.
         _consentService?.addListener(_onConsentChanged);
 
         await _initializeNotificationChannels();

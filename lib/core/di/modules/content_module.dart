@@ -13,6 +13,7 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -50,6 +51,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/spoken_text_reimport_strategy.dart';
 import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -151,6 +153,7 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 
 // Ingredient registry (enriches static KnownIngredients from Firestore)
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
@@ -268,6 +271,9 @@ class ContentModule implements DIModule {
         firestoreRepository: app.isRegistered<FirestoreRepository>()
             ? app<FirestoreRepository>()
             : null,
+        ingredientIdResolver: app.isRegistered<IngredientIdResolver>()
+            ? app<IngredientIdResolver>()
+            : null,
         removeRecipientsFromOwnShares: (recipeId, userIds) =>
             app<FirebaseSharedRecipeRepository>().removeRecipientsFromOwnShares(
               recipeId: recipeId,
@@ -281,6 +287,9 @@ class ContentModule implements DIModule {
       () => ImportManager(
         container<UnifiedRecipeService>().personal,
         shadowSampler: container<ParserShadowSampler>(),
+        spokenTextReimport: SpokenTextReimportStrategy(
+          llm: container<LlmEnhancementService>(),
+        ),
       ),
     );
 
@@ -637,17 +646,25 @@ class ContentModule implements DIModule {
       // Lazy resolution of UserService: it's registered in SocialModule
       // which loads after ContentModule. Lazy singleton resolves at first
       // get() which happens after all modules are configured.
-      container.registerLazySingleton<WeeklyMenuPlanService>(
-        () => WeeklyMenuPlanService(
+      container.registerLazySingleton<WeeklyMenuPlanService>(() {
+        final service = WeeklyMenuPlanService(
           repository: container<WeeklyMenuPlanRepository>(),
           userService: container<UserService>(),
-        ),
-      );
+        );
+        // Kärnflöde 8B: the week's shopping list follows saves of the week.
+        // Wired here because every save goes through this service.
+        container<MenuShoppingListGenerator>().followMenuSaves(
+          service.savedWeeks,
+        );
+        return service;
+      });
 
       // BUT-956: menu→shopping generation. ServiceLocator-resolves its three
       // collaborators at call time, so registration order is a non-issue.
       container.registerLazySingleton<MenuShoppingListGenerator>(
-        () => MenuShoppingListGenerator(),
+        () => MenuShoppingListGenerator(
+          preferences: container<SharedPreferences>(),
+        ),
       );
 
       // BUT-405: group-scoped weekly menu plans. Coexists with the per-user

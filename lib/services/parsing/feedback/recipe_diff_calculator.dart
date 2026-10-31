@@ -214,7 +214,10 @@ class RecipeDiffCalculator {
     // Compare fields
     final quantityChanged = !_quantitiesEqual(
       original.quantity,
-      correctedParsed.quantity.toString(),
+      IngredientParser.statedQuantity(
+        correctedLine,
+        correctedParsed.quantity,
+      ),
     );
     final unitChanged = !_unitsEqual(
       original.unit,

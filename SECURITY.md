@@ -64,7 +64,7 @@ Findings in any of the following are in-scope:
 - CI/CD workflows that produce production artifacts (`.github/workflows/`)
 
 Out-of-scope:
-- Third-party services we depend on (Firebase, Vertex AI, Algolia, etc.) — please
+- Third-party services we depend on (Firebase, Vertex AI, etc.) — please
   report those directly to the vendor.
 - Findings that require physical device access or a compromised root account.
 - Social engineering of the maintainer.

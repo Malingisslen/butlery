@@ -10,6 +10,7 @@ import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
@@ -27,6 +28,7 @@ class TaggingService extends BaseService {
   final TagGenerator _tagGenerator;
   final UserIngredientRepository? _userIngredientRepository;
   final TaggingEventsTracker? _eventsTracker;
+  final NutritionService? _nutritionService;
 
   /// BUT-553: per-phase budgeted pipeline. Replaces the previous single
   /// 30s wrapper-timeout so a slow Phase doesn't starve downstream phases.
@@ -34,6 +36,7 @@ class TaggingService extends BaseService {
   late final TaggingPipelineRunner _pipelineRunner = TaggingPipelineRunner(
     lookupService: _lookupService,
     generator: _tagGenerator,
+    nutritionTable: _nutritionService?.table,
   );
 
   /// MED-5: Tracks if config validation failed during initialization.
@@ -53,12 +56,14 @@ class TaggingService extends BaseService {
     TagGenerator? tagGenerator,
     UserIngredientRepository? userIngredientRepository,
     TaggingEventsTracker? eventsTracker,
+    NutritionService? nutritionService,
   }) : _lookupService = lookupService,
        _tagGenerator =
            tagGenerator ??
            TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
        _userIngredientRepository = userIngredientRepository,
-       _eventsTracker = eventsTracker;
+       _eventsTracker = eventsTracker,
+       _nutritionService = nutritionService;
 
   /// Generates tags for a recipe.
   ///

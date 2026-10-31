@@ -70,7 +70,7 @@ class RecipeAuthStateHandler {
       // Reload from cache (contains user-specific data)
       AppLogger.info('🔍 [UnifiedRecipeService] Reloading from cache...');
       final cachedRecipes = await cacheModule.initializeCache();
-      recipes.addAll(cachedRecipes);
+      _takeCached(cachedRecipes);
 
       AppLogger.info(
         '🔍 [UnifiedRecipeService] ✅ Loaded ${cachedRecipes.length} recipes from cache',
@@ -97,9 +97,8 @@ class RecipeAuthStateHandler {
           await Future.delayed(const Duration(milliseconds: 300));
 
           // Reload from cache after initial fetch has populated it
-          recipes.clear();
           final fetchedRecipes = await cacheModule.initializeCache();
-          recipes.addAll(fetchedRecipes);
+          _takeCached(fetchedRecipes);
           AppLogger.info(
             '🔍 [UnifiedRecipeService] 📦 Reloaded ${fetchedRecipes.length} recipes from cache after sync',
           );
@@ -117,6 +116,19 @@ class RecipeAuthStateHandler {
       setLoading(false);
       notifyListeners();
     }
+  }
+
+  /// Puts [cached] on screen without losing or doubling a recipe the live
+  /// sync handed over while the cache was being read: the synced copy is the
+  /// newer one, so it wins.
+  void _takeCached(List<Recipe> cached) {
+    final byId = {for (final r in cached) r.id: r};
+    for (final r in recipes) {
+      byId[r.id] = r;
+    }
+    recipes
+      ..clear()
+      ..addAll(byId.values);
   }
 
   /// Clear all recipe data.

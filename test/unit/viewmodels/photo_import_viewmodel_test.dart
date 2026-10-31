@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
@@ -23,26 +21,6 @@ import '../../infrastructure/mocks/production_mocks.dart';
 // - MockImportManager
 // - MockImagePicker
 // - MockXFile
-
-// Using local mock patterns that follow centralized architecture
-class MockHttpClient extends Mock implements http.Client {}
-
-// Fake for BaseRequest
-class FakeBaseRequest extends Fake implements http.BaseRequest {}
-
-// Mock for HTTP StreamedResponse
-class MockStreamedResponse extends Mock implements http.StreamedResponse {
-  final String _body;
-  final int _statusCode;
-
-  MockStreamedResponse(this._body, this._statusCode);
-
-  @override
-  int get statusCode => _statusCode;
-
-  @override
-  http.ByteStream get stream => http.ByteStream.fromBytes(utf8.encode(_body));
-}
 
 // Testable version that allows dependency injection.
 //
@@ -82,7 +60,6 @@ void main() {
     late TestablePhotoImportViewModel viewModel;
     late MockImportManager mockImportManager;
     late MockImagePicker mockImagePicker;
-    late MockHttpClient mockHttpClient;
 
     // Test image bytes
     final testImageBytes = Uint8List.fromList([1, 2, 3, 4, 5]);
@@ -107,14 +84,6 @@ void main() {
           Tid: 20 minuter
         ''';
 
-    // Test OCR response
-    final Map<String, dynamic> testOcrResponse = {
-      'IsErroredOnProcessing': false,
-      'ParsedResults': [
-        {'ParsedText': testOcrText},
-      ],
-    };
-
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       // PhotoImportViewModel touches SharedPreferences during construction
@@ -125,7 +94,6 @@ void main() {
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(Uint8List(0));
       registerFallbackValue(Uri.parse('https://example.com'));
-      registerFallbackValue(FakeBaseRequest());
     });
 
     setUp(() async {
@@ -143,7 +111,6 @@ void main() {
       // Create mocks
       mockImportManager = MockImportManager();
       mockImagePicker = MockImagePicker();
-      mockHttpClient = MockHttpClient();
 
       when(() => mockImportManager.autoImport(any())).thenAnswer((_) async {
         return ImportManagerResult.success(
@@ -182,11 +149,6 @@ void main() {
       when(
         () => mockImagePicker.pickImage(source: any(named: 'source')),
       ).thenAnswer((_) async => mockXFile);
-
-      // Configure HTTP Client mock for OCR
-      when(() => mockHttpClient.send(any())).thenAnswer(
-        (_) async => MockStreamedResponse(jsonEncode(testOcrResponse), 200),
-      );
 
       // Create viewModel
       viewModel = TestablePhotoImportViewModel(
@@ -848,6 +810,7 @@ void main() {
           ),
         );
 
+        viewModel.hasAiConsentOverride = () async => true;
         viewModel.setHandwritten(true);
         await viewModel.processPickedImageForTesting(
           testImageBytes, // 5 bytes → the gate WOULD reject this
@@ -967,6 +930,7 @@ void main() {
           );
 
           // 1) Handwritten pick → vision path (one importSinglePhoto call).
+          viewModel.hasAiConsentOverride = () async => true;
           viewModel.setHandwritten(true);
           await viewModel.processPickedImageForTesting(
             testImageBytes,

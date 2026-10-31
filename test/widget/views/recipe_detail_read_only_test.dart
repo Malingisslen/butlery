@@ -519,6 +519,17 @@ void main() {
       expect(shape.side.width, 1.5);
     });
 
+    // A line that states no amount is only "maybe at home" against the
+    // pantry, so the pantry tests use lines that state one.
+    Recipe statedAmounts({required String id, required String createdBy}) =>
+        RecipeFactory.build(
+          id: id,
+          title: 'Pannkakor med mängder',
+          createdBy: createdBy,
+          ingredients: ['3 dl mjöl', '6 dl mjölk', '3 ägg'],
+          instructions: ['Blanda.', 'Stek.'],
+        );
+
     // Q4-03 = A (produktbeslut 2026-09-24): the button counts what the
     // pantry does not cover (content-style-guide.md:76).
     testWidgets('the shopping-list action counts against the pantry', (
@@ -542,7 +553,12 @@ void main() {
       TestServiceLocator.registerMock<PantryService>(pantry);
       TestServiceLocator.registerMock<AuthRepository>(auth);
 
-      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await pumpView(
+        tester,
+        RecipeDetailView(
+          recipe: statedAmounts(id: 'recipe-stated-1', createdBy: _testUserId),
+        ),
+      );
       await tester.pump();
 
       expect(
@@ -553,18 +569,18 @@ void main() {
 
     // Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers every
     // ingredient, the button is replaced by the text "Allt finns hemma".
-    void pantryCovering(List<String> names) {
+    void pantryCovering(List<(String, String)> rows) {
       final pantry = _MockPantryService();
       final auth = _MockAuthRepository();
       when(() => auth.currentUserId).thenReturn(_testUserId);
       when(() => pantry.watchAll(_testUserId)).thenAnswer(
         (_) => Stream.value([
-          for (final name in names)
+          for (final (name, unit) in rows)
             PantryItem(
               id: 'p-$name',
               ingredientName: name,
               quantity: 10,
-              unit: '',
+              unit: unit,
               location: PantryLocation.pantry,
               addedAt: DateTime(2026, 1, 1),
             ),
@@ -580,12 +596,17 @@ void main() {
     ]) {
       testWidgets('Q6-09: everything at home replaces the button with text '
           '($mode)', (tester) async {
-        pantryCovering(['mjöl', 'mjölk', 'ägg']);
+        pantryCovering([('mjöl', 'dl'), ('mjölk', 'dl'), ('ägg', '')]);
         final semantics = tester.ensureSemantics();
 
         await pumpView(
           tester,
-          RecipeDetailView(recipe: ownedRecipe),
+          RecipeDetailView(
+            recipe: statedAmounts(
+              id: 'recipe-stated-1',
+              createdBy: _testUserId,
+            ),
+          ),
           theme: theme,
         );
         await tester.pump();
@@ -620,10 +641,16 @@ void main() {
 
     testWidgets("Q6-09: on a friend's recipe the photo's shopping button is "
         'left out', (tester) async {
-      pantryCovering(['pasta', 'tomatsås', 'ost']);
+      pantryCovering([('mjöl', 'dl'), ('mjölk', 'dl'), ('ägg', '')]);
       await pumpView(
         tester,
-        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+        RecipeDetailView(
+          recipe: statedAmounts(
+            id: 'recipe-stated-friend',
+            createdBy: _friendUserId,
+          ),
+          readOnly: true,
+        ),
       );
       await tester.pump();
       expect(

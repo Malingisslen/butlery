@@ -36,6 +36,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
 import 'package:butlery/widgets/menu/calendar/ovrigt_sheet.dart';
@@ -391,9 +392,13 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       categoryName: slot.displayLabel,
     );
     if (picked == null || picked.isEmpty || !context.mounted) return;
+    // Only the recipes that will actually be placed are checked, in one
+    // dialog, before the first assign.
+    final toAdd = slot.isMulti ? picked : [picked.first];
+    if (!await confirmManualAdd(context, toAdd) || !context.mounted) return;
     // For lunch/middag take the first; for övrigt accept all and queue them.
     if (slot.isMulti) {
-      for (final recipe in picked) {
+      for (final recipe in toAdd) {
         // Stop at the first refusal: each further write clears the error the
         // user needs to read.
         if (!await vm.assignRecipe(day: day, slot: slot, recipe: recipe)) break;
@@ -417,6 +422,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       context,
       dayName: DateFormat.EEEE(locale).format(date),
       entries: plan.entriesAt(day, MealSlot.ovrigt),
+      titleOf: vm.entryTitle,
     );
     if (!context.mounted) return;
     switch (result) {
@@ -451,7 +457,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         toBeginningOfSentenceCase(slot.displayLabel, locale),
         DateFormat.EEEE(locale).format(date),
       ),
-      ?entry?.recipeTitle,
+      if (entry != null) vm.entryTitle(entry),
     ].join(' · ');
     final result = await showWhoIsHomeSheet(
       context,

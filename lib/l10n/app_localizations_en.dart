@@ -1219,18 +1219,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipePersonalTags => 'Personal tags';
 
   @override
-  String get recipeAnalysisFailed => 'Analysis failed';
-
-  @override
-  String get recipeAnalyzing => 'Analysing …';
-
-  @override
-  String get recipeAnalysisFailedA11y => 'Ingredient analysis failed';
-
-  @override
-  String get recipeAnalyzingA11y => 'Ingredients being analysed';
-
-  @override
   String get recipeSearchHint => 'Search recipes …';
 
   @override
@@ -1757,6 +1745,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String recipeSourceCardTitle(String site) {
+    return 'From $site';
+  }
+
+  @override
+  String recipeSourceAuthor(String author) {
+    return 'By $author';
+  }
+
+  @override
+  String get recipeSourceOpenOriginal => 'Open original';
+
+  @override
+  String recipeBorrowedImageCredit(String site) {
+    return 'Image: $site';
+  }
+
+  @override
+  String a11yRecipeSourceCard(String site) {
+    return 'Recipe from $site';
+  }
+
+  @override
+  String a11yRecipeSourceCardWithAuthor(String site, String author) {
+    return 'Recipe from $site, by $author';
+  }
+
+  @override
+  String a11yRecipeBorrowedImageCredit(String site) {
+    return 'Image shown from $site';
+  }
+
+  @override
   String get errorCouldNotOpenLink => 'Could not open link';
 
   @override
@@ -1928,9 +1949,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLanguageTitle => 'Language';
-
-  @override
-  String get commonLogoutNow => 'Sign out now';
 
   @override
   String get commonTakePhoto => 'Take photo';
@@ -2358,13 +2376,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allergenDisplayTitle => 'Display on';
 
   @override
-  String get allergenDisplayOnCardsTitle => 'Recipe cards';
-
-  @override
-  String get allergenDisplayOnCardsSubtitle =>
-      'Show allergen status on recipe cards in lists';
-
-  @override
   String get allergenDisplayOnDetailTitle => 'Recipe details';
 
   @override
@@ -2598,6 +2609,17 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 unknown ingredient',
     );
     return '$_temp0';
+  }
+
+  @override
+  String tagResultUncertainTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredients unknown',
+      one: '1 ingredient unknown',
+    );
+    return 'Uncertain tags, $_temp0';
   }
 
   @override
@@ -2882,6 +2904,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileRestoreCompleted => 'Restore completed.';
+
+  @override
+  String profileRestoreSomeNotRestored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0 could not be restored.';
+  }
 
   @override
   String profileRestoreFailed(String error) {
@@ -3663,19 +3696,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateLimitSlowDown => 'Slow down a bit';
-
-  @override
-  String get sessionContinue => 'Continue session';
-
-  @override
-  String get sessionContinueOrLogout =>
-      'Do you want to continue your session or sign out now?';
-
-  @override
-  String get sessionExpiringMessage => 'Your session will expire in:';
-
-  @override
-  String get sessionExpiringTitle => 'Session expiring soon';
 
   @override
   String get shareContentTypeMenu => 'menus';
@@ -5116,6 +5136,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeFromArchive => 'From archive';
+
+  @override
+  String get recipeFromFile => 'From file';
 
   @override
   String get recipeFromImage => 'From image';
@@ -7722,12 +7745,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yAllergenStatusRow => 'Allergen status';
-
-  @override
-  String get a11yDietaryStatusRow => 'Dietary status';
-
-  @override
   String get a11yShowImage => 'Show image';
 
   @override
@@ -9945,27 +9962,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotExportRecipes => 'Could not export recipes';
 
   @override
-  String get errorCouldNotMarkAsCooked => 'Could not mark recipe as cooked';
-
-  @override
-  String get errorCouldNotAddIngredient => 'Could not add ingredient';
-
-  @override
-  String get errorCouldNotUpdateIngredient => 'Could not update ingredient';
-
-  @override
-  String get errorCouldNotRemoveIngredient => 'Could not remove ingredient';
-
-  @override
-  String get errorCouldNotAddInstruction => 'Could not add instruction';
-
-  @override
-  String get errorCouldNotUpdateInstruction => 'Could not update instruction';
-
-  @override
-  String get errorCouldNotRemoveInstruction => 'Could not remove instruction';
-
-  @override
   String get errorCouldNotStartSync => 'Could not start synchronisation';
 
   @override
@@ -11956,9 +11952,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelEmptyMenu => 'Empty menu';
 
   @override
-  String get errorVideoNoSubtitles => 'Video has no subtitles';
-
-  @override
   String get errorNetworkFallback => 'Network error';
 
   @override
@@ -12802,9 +12795,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkPermissions => 'Check permissions';
-
-  @override
-  String get ingredientParseError => 'Could not parse ingredient';
 
   @override
   String get portionsUnit => 'portions';
@@ -15971,7 +15961,7 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 item is at home.',
       zero: 'None of the items are at home.',
     );
-    return '$_temp0 An unknown amount gives no deduction – the item is added marked “Maybe at home”.';
+    return '$_temp0';
   }
 
   @override
@@ -15982,17 +15972,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shoppingMergePantryUnavailable =>
       'The pantry could not be read, so the list is made without pantry deduction.';
-
-  @override
-  String get shoppingMergeReplaceTitle => 'Replace the list instead of adding';
-
-  @override
-  String get shoppingMergeReplaceBody =>
-      'Items you added yourself are always kept.';
-
-  @override
-  String get shoppingMergeReplaceUnavailable =>
-      'This list was made before the app kept the week\'s items apart from your own, so it cannot be replaced. The week\'s items are added.';
 
   @override
   String shoppingMergeAdd(int count) {
@@ -16006,14 +15985,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shoppingMergeReplaceAction(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Replace with $count items',
-      one: 'Replace with 1 item',
-    );
-    return '$_temp0';
+  String get shoppingMergeUpdate => 'Update the list';
+
+  @override
+  String get shoppingMergeUpdateBody =>
+      'The list already has items from the week. They are updated, but what you changed or ticked off is left alone and your own items stay. The list then follows along when you change the week.';
+
+  @override
+  String shoppingMergeSynced(String list) {
+    return '$list is up to date with the week. What you changed yourself is still there.';
   }
 
   @override
@@ -16028,17 +16008,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shoppingMergeReplaced(int count, String list) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items',
-      one: '1 item',
-    );
-    return '$list now has $_temp0 from the week. Your own items are still there.';
-  }
-
-  @override
   String shoppingMergeConcurrentChange(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -16050,6 +16019,47 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String shoppingFollowNotice(String changes) {
+    return 'Updated from the week menu: $changes';
+  }
+
+  @override
+  String shoppingFollowAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingFollowNoticeDismiss => 'Dismiss notice';
+
+  @override
+  String get shoppingFollowNoticeUndoFailed => 'The update could not be undone';
 
   @override
   String get shoppingMergeUndoFailed => 'The undo could not be completed';
@@ -16116,39 +16126,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutPendingDiscard => 'Sign out and discard the changes';
-
-  @override
-  String sessionPendingChangesIntro(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count changes have not been saved yet:',
-      one: '1 change has not been saved yet:',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get sessionEndedBackgroundTitle =>
-      'You were signed out while the app lay still.';
-
-  @override
-  String get sessionEndedBackgroundReason =>
-      'That happens after 45 minutes without activity, and it is meant to.';
-
-  @override
-  String sessionEndedBackgroundPending(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count changes are still on the phone and are sent as soon as you are back in – nothing you did is lost.',
-      one:
-          '1 change is still on the phone and is sent as soon as you are back in – nothing you did is lost.',
-      zero: 'No changes are waiting.',
-    );
-    return '$_temp0';
-  }
 
   @override
   String draftTimeLeftDays(int count) {
@@ -17955,6 +17932,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get menuMealAllergenScopeHint =>
       'The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can\'t eat them is away.';
+
+  @override
+  String get menuRecencyReadFailedHint =>
+      'Couldn\'t read earlier weeks, so dishes may repeat.';
 
   @override
   String get weeklyMenuOverflowAllergen =>
@@ -19974,7 +19955,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'you are removed, the lists stay with the others';
 
   @override
-  String get pendingDeletionItemCache => 'Search index and local cache';
+  String get pendingDeletionItemCache => 'Local cache';
 
   @override
   String get pendingDeletionItemCacheNote => 'cleared first of all';
@@ -20648,6 +20629,45 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String allergenOverrideOk(String allergen) {
+    return 'You marked $allergen as fine. The app found $allergen.';
+  }
+
+  @override
+  String allergenOverrideContains(String allergen) {
+    return 'You marked this recipe as containing $allergen.';
+  }
+
+  @override
+  String get allergenOverrideReset => 'Reset';
+
+  @override
+  String shareAllergensOverridden(String names) {
+    return 'The app found $names, but the owner has marked it as fine.';
+  }
+
+  @override
+  String get menuManualAddTitle => 'Add anyway?';
+
+  @override
+  String menuManualAddContains(String recipe, String names) {
+    return '$recipe contains $names.';
+  }
+
+  @override
+  String menuManualAddDislikes(String recipe) {
+    return 'Someone in the household dislikes something in $recipe.';
+  }
+
+  @override
+  String menuManualAddUnchecked(String recipe) {
+    return 'The allergens have not been checked for $recipe.';
+  }
+
+  @override
+  String get menuManualAddConfirm => 'Add anyway';
+
+  @override
   String get recipeSaveNeedsTitle => 'Add a title to save.';
 
   @override
@@ -20917,5 +20937,151 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yMergeSteps(int first, int second) {
     return 'Merge step $first with step $second';
+  }
+
+  @override
+  String get tagAllergenSection => 'Allergens';
+
+  @override
+  String get tagAllergenHint =>
+      'Only change this if the app is wrong for this recipe. The app decides follows the ingredients.';
+
+  @override
+  String get tagAllergenChoiceAuto => 'App decides';
+
+  @override
+  String get tagAllergenChoiceContains => 'Contains';
+
+  @override
+  String get tagAllergenChoiceFree => 'Does not contain';
+
+  @override
+  String get tagAllergenAutoContains => 'App: contains';
+
+  @override
+  String get tagAllergenAutoFree => 'App: does not contain';
+
+  @override
+  String get tagAllergenAutoUnknown => 'App: not checked';
+
+  @override
+  String get llmAiConsentRequired =>
+      'AI reading needs your consent. You can give it under Privacy in settings.';
+
+  @override
+  String get photoAiConsentSaveFailed =>
+      'Your answer could not be saved, so the photo was not sent. Try again.';
+
+  @override
+  String get photoAiOfferPhoneCouldNotRead =>
+      'The phone could not read the whole recipe.';
+
+  @override
+  String get photoAiOfferNoRecipeFound =>
+      'The phone read the text but found no recipe in it.';
+
+  @override
+  String get photoAiOfferHandwriting =>
+      'Handwritten recipes can only be read by AI.';
+
+  @override
+  String get photoAiOfferQuestion =>
+      'Do you want AI to read the photo? The photo is then sent to Google to be read. Your yes covers AI reading in the app until you change it under Privacy.';
+
+  @override
+  String get photoAiOfferQuestionConsented =>
+      'Do you want AI to read the photo? The photo is then sent to Google to be read.';
+
+  @override
+  String get photoAiOfferAccept => 'Yes, send the photo';
+
+  @override
+  String get photoAiOfferDecline => 'No, I\'ll type it myself';
+
+  @override
+  String shoppingMergeUnresolvedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes',
+      one: '1 dish',
+    );
+    return '$_temp0 could not be counted because the recipe no longer exists.';
+  }
+
+  @override
+  String shoppingPantryAddFailed(String name) {
+    return 'Could not add $name to the pantry.';
+  }
+
+  @override
+  String get cookedPantryTitle => 'Take it out of the pantry?';
+
+  @override
+  String cookedPantrySubtitle(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions servings',
+      one: '1 serving',
+    );
+    return 'Pantry items the recipe uses, for $_temp0.';
+  }
+
+  @override
+  String cookedPantryHasLeft(String have, String left) {
+    return 'have $have, $left left';
+  }
+
+  @override
+  String cookedPantryHasRemoved(String have) {
+    return 'have $have, removed from the pantry';
+  }
+
+  @override
+  String get cookedPantrySkip => 'Skip';
+
+  @override
+  String cookedPantryConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take out $count items',
+      one: 'Take out 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookedPantryTaken(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0 taken out of the pantry';
+  }
+
+  @override
+  String get cookedPantryFailed =>
+      'Could not take everything out of the pantry. What was taken can be undone.';
+
+  @override
+  String get cookedPantryUndoFailed => 'Could not undo the pantry take-out';
+
+  @override
+  String cookedPantryEditTitle(String name) {
+    return 'How much $name?';
+  }
+
+  @override
+  String cookedPantryRowSemantics(String name, String amount) {
+    return '$name, take out $amount';
+  }
+
+  @override
+  String cookedPantryAmountSemantics(String name, String amount) {
+    return 'Change the amount for $name, now $amount';
   }
 }

@@ -1358,31 +1358,40 @@ void main() {
       );
     }
 
-    test('a tracked allergen keeps CONTAINS and UNKNOWN recipes out of the '
-        'sample menu (BUT-2299)', () async {
-      when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) {
-        final id = inv.positionalArguments.first as String;
-        if (id == 'r1') return taggedRecipe(id, TriState.free);
-        if (id == 'r2') return taggedRecipe(id, TriState.contains);
-        if (id == 'r3') return taggedRecipe(id, TriState.unknown);
-        return recipeWith(id, 'Middag');
-      });
-      wireRealAdderOnEmptyWeek();
-      viewModel.toggleAllergen('gluten');
+    test(
+      'a tracked allergen keeps CONTAINS recipes out of the sample menu '
+      'and lets UNKNOWN ones in to be marked (BUT-2299, Malin 2026-10-30)',
+      () async {
+        when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) {
+          final id = inv.positionalArguments.first as String;
+          if (id == 'r1') return taggedRecipe(id, TriState.free);
+          if (id == 'r2') return taggedRecipe(id, TriState.contains);
+          if (id == 'r3') return taggedRecipe(id, TriState.unknown);
+          return recipeWith(id, 'Middag');
+        });
+        wireRealAdderOnEmptyWeek();
+        viewModel.toggleAllergen('gluten');
 
-      await viewModel.completeOnboarding();
+        await viewModel.completeOnboarding();
 
-      final savedPlan =
-          verify(() => mockMenuService.save(captureAny())).captured.single
-              as WeeklyMenuPlan;
-      expect(
-        savedPlan.entries.map((e) => e.recipeId).toSet(),
-        {'r1'},
-        reason:
-            'only the recipe proven free of gluten may be planned; a '
-            'CONTAINS, an UNKNOWN and an untagged recipe all stay out',
-      );
-    });
+        final savedPlan =
+            verify(() => mockMenuService.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        final planned = savedPlan.entries.map((e) => e.recipeId).toSet();
+        expect(
+          planned,
+          isNot(contains('r2')),
+          reason: 'a recipe that contains gluten may never be planned',
+        );
+        expect(
+          planned,
+          containsAll(<String>['r1', 'r3']),
+          reason:
+              'the recipe proven free and the unchecked one both reach the '
+              'menu; the menu marks the unchecked one',
+        );
+      },
+    );
 
     test('a tracked allergen no seeded recipe is safe for leaves the week '
         'empty and builds no shopping list (BUT-2299)', () async {

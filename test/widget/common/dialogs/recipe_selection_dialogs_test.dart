@@ -28,6 +28,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -74,6 +75,7 @@ Recipe _recipe({
   int? timeMinutes = 30,
   int? portions = 4,
   List<String> imageUrls = const [],
+  TagResult? tagResult,
 }) {
   return Recipe(
     core: RecipeCore(
@@ -86,6 +88,7 @@ Recipe _recipe({
       timeMinutes: timeMinutes,
       portions: portions,
       imageUrls: imageUrls,
+      tagResult: tagResult,
     ),
     type: RecipeType.personal,
   );
@@ -119,6 +122,22 @@ class _EmptyRecipeList extends Fake
 
   @override
   List<Recipe> get recipes => const [];
+}
+
+class _FixedRecipeList extends Fake
+    with ChangeNotifier
+    implements RecipeListViewModel {
+  _FixedRecipeList(this._recipes);
+  final List<Recipe> _recipes;
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  bool get hasError => false;
+
+  @override
+  List<Recipe> get recipes => _recipes;
 }
 
 void main() {
@@ -684,6 +703,43 @@ void main() {
 
         expect(find.byType(ButleryAddSheet), findsOneWidget);
         expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'MenuRecipeSelectionDialog: typing an auto-tag word finds a recipe '
+      'whose title does not contain it',
+      (tester) async {
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          _FixedRecipeList([
+            _recipe(
+              id: 'a',
+              title: 'Mammas special',
+              description: '',
+              tagResult: TagResult(
+                tags: const {'fredagsmys'},
+                allergenStatus: const {},
+                dietaryStatus: const {},
+                coverage: 1.0,
+                generatedAt: DateTime(2026, 1, 1),
+              ),
+            ),
+            _recipe(id: 'b', title: 'Ärtsoppa', description: ''),
+          ]),
+        );
+
+        await openDialog(
+          tester,
+          const MenuRecipeSelectionDialog(categoryName: 'Lunch'),
+        );
+        expect(find.text('Mammas special'), findsOneWidget);
+        expect(find.text('Ärtsoppa'), findsOneWidget);
+
+        await tester.enterText(find.byType(TextField), 'fredagsmys');
+        await tester.pumpAndSettle();
+
+        expect(find.text('Mammas special'), findsOneWidget);
+        expect(find.text('Ärtsoppa'), findsNothing);
       },
     );
 

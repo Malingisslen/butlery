@@ -374,7 +374,7 @@ void main() {
         expect(result.hasTag('asiatisk'), isFalse);
       });
 
-      test('multiple cuisines can be detected', () {
+      test('a negative word rules out a cuisine its other words point to', () {
         // A fusion dish might match multiple cuisines
         final recipe = RecipeBuilder()
             .withTitle('Asian Fusion Pasta')
@@ -389,8 +389,9 @@ void main() {
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // Could match both Italian (pasta) and Asian (soy + sesame)
-        expect(result.hasTag('italiensk'), isTrue);
+        // Soy sauce rules Italian out (Drive CuisineRules); soy + sesame
+        // still make it Asian.
+        expect(result.hasTag('italiensk'), isFalse);
         expect(result.hasTag('asiatisk'), isTrue);
       });
     });

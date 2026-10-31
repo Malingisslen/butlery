@@ -41,19 +41,7 @@ Firebase config files (`google-services.json`, `GoogleService-Info.plist`) are h
 
 ## Required Environment Variables
 
-See `.env.example` for the current authoritative list. Typical contents:
-
-```bash
-# OCR Service (photo import feature)
-OCR_API_KEY=your_ocr_space_key
-
-# Algolia Search (optional)
-ALGOLIA_APP_ID=your_algolia_app_id
-ALGOLIA_API_KEY=your_algolia_search_key
-
-# Google Vision API (optional, fallback OCR)
-GOOGLE_VISION_API_KEY=your_vision_key
-```
+See `.env.example` for the current authoritative list.
 
 Firebase platform credentials (API keys, app IDs) are **not** in `.env` — they come from `firebase_options.dart` (committed, client-safe keys) and the native `google-services.json` / `GoogleService-Info.plist` files.
 
@@ -62,11 +50,6 @@ Firebase platform credentials (API keys, app IDs) are **not** in `.env` — they
 ### Compile-Time Injection
 
 The app reads env vars via Dart's `String.fromEnvironment()`, which is resolved at **compile time** — the values are baked into the build artifact. They're passed via Flutter's `--dart-define-from-file` flag pointing at the `.env` file.
-
-```dart
-// lib/services/ocr_extraction_service.dart
-return const String.fromEnvironment('OCR_SPACE_API_KEY');
-```
 
 ### Build Commands
 
@@ -115,8 +98,6 @@ GitHub Actions composes `.env` at build time from repository secrets:
    ```yaml
    - name: Create .env file
      run: |
-       echo "OCR_API_KEY=${{ secrets.OCR_API_KEY }}" >> .env
-       echo "ALGOLIA_APP_ID=${{ secrets.ALGOLIA_APP_ID }}" >> .env
        # ... add all required variables
    - name: Build
      run: flutter build appbundle --release --dart-define-from-file=.env
@@ -126,7 +107,7 @@ GitHub Actions composes `.env` at build time from repository secrets:
 
 If credentials are exposed (committed to git, shared publicly, etc.):
 
-1. **Revoke exposed credentials** at the provider (Firebase Console, OCR.space, Algolia dashboard, etc.)
+1. **Revoke exposed credentials** at the provider (Firebase Console, etc.)
 2. **Generate new credentials**
 3. **Update locally:** edit `.env` with the new values
 4. **Update CI:** update the corresponding GitHub Actions secrets
@@ -160,15 +141,6 @@ lib/**/firebase_options_real*.dart
 The repo's lefthook config blocks commits containing `.env` files or files matching `firebase_options_real*.dart`.
 
 ## Troubleshooting
-
-### "Environment variable not found" / OCR key is empty
-
-**Cause**: `--dart-define-from-file=.env` flag was omitted, or the variable name in `.env` doesn't match the `String.fromEnvironment()` key in code.
-
-**Solution**:
-1. Verify you launched with `flutter run --dart-define-from-file=.env`
-2. Check variable name matches (case-sensitive) what `String.fromEnvironment()` expects
-3. Rebuild — `String.fromEnvironment` is compile-time, so hot reload won't pick up `.env` changes
 
 ### "Firebase initialization failed"
 

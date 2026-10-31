@@ -147,7 +147,7 @@ class _DayCells {
       day: day,
       slot: slot,
       child: CalendarDishCell(
-        title: entry.recipeTitle,
+        title: vm.entryTitle(entry),
         marks: CalendarCellMarks(
           isNew: vm.isRecentlyPlaced(entry.id),
           allergenUnsafe: vm.isAllergenUnsafe(entry.id),
@@ -173,7 +173,7 @@ class _DayCells {
             onTapRecipe(entry.recipeId);
           }
         },
-        dragPayload: MovePayload(entry),
+        dragPayload: MovePayload(entry, title: vm.entryTitle(entry)),
       ),
     );
   }
@@ -206,7 +206,7 @@ class _DayCells {
       day: day,
       slot: MealSlot.ovrigt,
       child: CalendarDishCell(
-        title: entries.first.recipeTitle,
+        title: vm.entryTitle(entries.first),
         extraCount: entries.length - 1,
         marks: CalendarCellMarks(
           isNew: entries.any((e) => vm.isRecentlyPlaced(e.id)),
@@ -228,7 +228,9 @@ class _DayCells {
             if (vm.isSelected(e.id) == allSelected) vm.toggleSelection(e.id);
           }
         },
-        dragPayload: entries.length == 1 ? MovePayload(entries.first) : null,
+        dragPayload: entries.length == 1
+            ? MovePayload(entries.first, title: vm.entryTitle(entries.first))
+            : null,
       ),
     );
   }

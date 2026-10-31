@@ -8,3 +8,7 @@ assets/brand/*.svg -text
 # P8-U04: the icon font the Linux goldens load, vendored so a render never
 # depends on a runner's Flutter cache.
 test/fixtures/fonts/*.otf binary
+
+# The import-gate gold texts are compared line by line; an autocrlf checkout
+# on Windows must not turn them into CRLF.
+test/import_gate/**/*.txt text eol=lf

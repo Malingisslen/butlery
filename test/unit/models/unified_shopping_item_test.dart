@@ -800,6 +800,77 @@ void main() {
       });
     });
 
+    group('ingredientId (registry link)', () {
+      UnifiedShoppingItem linked() => UnifiedShoppingItem(
+        id: 'lok',
+        name: 'Gul lök',
+        amount: 3,
+        unit: 'st',
+        ingredientId: 'onion',
+      );
+
+      test('Firestore round-trip keeps the id', () {
+        final decoded = UnifiedShoppingItem.fromFirestore(
+          Map<String, dynamic>.from(linked().toFirestore()),
+        );
+        expect(decoded.ingredientId, 'onion');
+      });
+
+      test('JSON round-trip keeps the id', () {
+        final decoded = UnifiedShoppingItem.fromJson(linked().toJson());
+        expect(decoded.ingredientId, 'onion');
+      });
+
+      test('a row saved before rows carried an id reads as unlinked', () {
+        final legacy = {
+          'id': 'legacy',
+          'name': 'Smör',
+          'amount': 1.0,
+          'unit': '',
+          'category': ShoppingCategory.other,
+          'bought': false,
+          'priority': 3,
+        };
+        expect(UnifiedShoppingItem.fromFirestore(legacy).ingredientId, isNull);
+        expect(UnifiedShoppingItem.fromJson(legacy).ingredientId, isNull);
+      });
+
+      test('renaming the row drops the id: it may be another product', () {
+        expect(linked().copyWith(name: 'Purjolök').ingredientId, isNull);
+      });
+
+      test('changing the amount keeps the id', () {
+        final more = linked().copyWith(amount: 5);
+        expect(more.amount, 5);
+        expect(more.ingredientId, 'onion');
+      });
+
+      test('a rename that passes a new id sets it', () {
+        final renamed = linked().copyWith(
+          name: 'Rödlök',
+          ingredientId: 'red-onion',
+        );
+        expect(renamed.ingredientId, 'red-onion');
+      });
+
+      test('re-passing the same name keeps the id', () {
+        expect(linked().copyWith(name: 'Gul lök').ingredientId, 'onion');
+      });
+
+      test('ticking the row off keeps the id', () {
+        expect(
+          linked().togglePurchased(userId: 'user_123').ingredientId,
+          'onion',
+        );
+      });
+
+      test('claiming and releasing the row keep the id', () {
+        final claimed = linked().assign(userId: 'user_123', displayName: 'Ann');
+        expect(claimed.ingredientId, 'onion');
+        expect(claimed.unassign().ingredientId, 'onion');
+      });
+    });
+
     group('Collaborative Features', () {
       test('should track item modifications correctly', () {
         // Arrange

@@ -141,7 +141,7 @@ class ImportCorrectionSnapshot {
     return ParsedIngredient(
       name: parsed.name,
       originalLine: line,
-      quantity: parsed.quantity.toString(),
+      quantity: IngredientParser.statedQuantity(line, parsed.quantity),
       unit: parsed.unit.isEmpty ? null : parsed.unit,
       confidence: confidence,
     );

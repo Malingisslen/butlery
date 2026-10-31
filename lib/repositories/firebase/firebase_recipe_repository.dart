@@ -39,7 +39,6 @@ import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 /// - **Streaming Limits**: Live watcher caps at [_defaultWatchPageSize] (100)
 ///   most recent recipes; older pages are fetched via [loadMoreRecipes]
 ///   cursor-paginated against `core.updatedAt`
-/// - **Search Limits**: Limits search scope to 200 most recent recipes for performance
 /// - **Archive Limits**: Restricts archive queries to 100 recipes maximum
 /// - **Efficient Queries**: Uses server-side ordering and filtering where possible
 /// - **Batch Operations**: Supports efficient bulk recipe operations
@@ -61,9 +60,6 @@ import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 /// recipeRepo.watchRecipes(userId).listen((recipes) {
 ///   // Receives the 100 most recent recipes
 /// });
-/// // Search with scope limits
-/// final results = await recipeRepo.searchRecipes('chicken');
-/// // Searches within 200 most recent recipes
 /// ```
 class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>
@@ -579,39 +575,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<List<Recipe>> searchRecipes(String query) async {
-    // ✅ PERFORMANCE FIX: Added limit and optimized search approach
-    // Instead of loading ALL recipes, we limit and use server-side orderBy for better performance
-    return await FirebasePerformanceService.traceSearch(
-      (trace) async {
-        final lower = query.toLowerCase();
-
-        // For small datasets, this is acceptable, but for optimization we could implement
-        // server-side text search with Algolia or similar in the future
-        final userId = currentUserId;
-        if (userId == null) return [];
-
-        final snap = await getCollectionForUser(userId)
-            .orderBy('core.updatedAt', descending: true)
-            .limit(200) // Limit search scope to most recent 200 recipes
-            .get();
-
-        final results = snap.docs
-            .map(fromFirestore)
-            .where((r) => r.title.toLowerCase().contains(lower))
-            .toList();
-
-        trace.putAttribute('query_length', query.length.toString());
-        trace.putAttribute('user_id', userId);
-        trace.setMetric('result_count', results.length);
-
-        return results;
-      },
-      searchType: 'recipe_title',
-    );
-  }
-
-  @override
   Future<int> countRecipesByTagId(String tagId) async {
     final userId = currentUserId;
     if (userId == null) return 0;
@@ -881,68 +844,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
 
     return allRecipes;
-  }
-
-  /// Find recipes by meal type (e.g., 'Frukost', 'Lunch', 'Middag')
-  Future<List<Recipe>> findByMealType(String mealType) async {
-    return await FirebasePerformanceService.traceSearch(
-      (trace) async {
-        final userId = currentUserId;
-        if (userId == null) return [];
-
-        final snap = await getCollectionForUser(userId)
-            .where('core.mealType', isEqualTo: mealType)
-            .orderBy('core.updatedAt', descending: true)
-            .limit(100)
-            .get();
-
-        final recipes = snap.docs.map(fromFirestore).toList();
-        trace.putAttribute('meal_type', mealType);
-        trace.setMetric('result_count', recipes.length);
-
-        return recipes;
-      },
-      searchType: 'meal_type',
-    );
-  }
-
-  /// Find recipes containing a specific ingredient
-  Future<List<Recipe>> findByIngredient(String ingredient) async {
-    final userId = currentUserId;
-    if (userId == null) return [];
-
-    // Note: Firestore doesn't support array-contains with case-insensitive search
-    // This is a basic implementation - for production, consider using Algolia or similar
-    final snap = await getCollectionForUser(
-      userId,
-    ).orderBy('core.updatedAt', descending: true).limit(200).get();
-
-    final lowerIngredient = ingredient.toLowerCase();
-    return snap.docs
-        .map(fromFirestore)
-        .where(
-          (recipe) => recipe.ingredients.any(
-            (recipeIngredient) =>
-                recipeIngredient.toLowerCase().contains(lowerIngredient),
-          ),
-        )
-        .toList();
-  }
-
-  /// Search recipes by title with more focused search
-  Future<List<Recipe>> searchByTitle(String title) async {
-    final userId = currentUserId;
-    if (userId == null) return [];
-
-    final lowerTitle = title.toLowerCase();
-    final snap = await getCollectionForUser(
-      userId,
-    ).orderBy('core.updatedAt', descending: true).limit(200).get();
-
-    return snap.docs
-        .map(fromFirestore)
-        .where((recipe) => recipe.title.toLowerCase().contains(lowerTitle))
-        .toList();
   }
 
   /// Check if user can read a specific recipe

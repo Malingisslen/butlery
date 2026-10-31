@@ -1,5 +1,7 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -234,16 +236,15 @@ class ShoppingItemManagementModule {
       final itemsToAdd = <UnifiedShoppingItem>[];
       final itemsToUpdate = <UnifiedShoppingItem>[];
 
-      // Dedup: merge quantities for matching items (same name, compatible units)
+      // Dedup: merge quantities for matching items
       for (final newItem in items) {
-        final normalizedName = newItem.name.trim().toLowerCase();
+        final normalizedName = IngredientIdentity.nameKey(newItem.name);
         final matchIndex = existingItems.indexWhere((existing) {
-          final existingName = existing.name.trim().toLowerCase();
+          final existingName = IngredientIdentity.nameKey(existing.name);
           if (existingName != normalizedName) return false;
-          // Compatible units: same unit or both empty
           final unitsMatch =
-              existing.unit.trim().toLowerCase() ==
-              newItem.unit.trim().toLowerCase();
+              UnitDefinitions.canonical(existing.unit) ==
+              UnitDefinitions.canonical(newItem.unit);
           return unitsMatch;
         });
 
@@ -263,7 +264,7 @@ class ShoppingItemManagementModule {
           );
           itemsToUpdate.add(merged);
         } else {
-          itemsToAdd.add(newItem);
+          itemsToAdd.add(getCategoryPreferences().withUserCategory(newItem));
         }
       }
 

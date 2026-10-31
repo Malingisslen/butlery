@@ -1,6 +1,6 @@
 /// Per-host SHA-256 SPKI fingerprint configuration for outbound HTTPS pinning.
 ///
-/// BUT-427: third-party HTTPS calls (Algolia, OCR fallbacks, web scraping for
+/// BUT-427: third-party HTTPS calls (web scraping for
 /// recipe import) are pinned at the HTTP-client layer. The pins themselves are
 /// rotated by an ops task — this file is the wiring contract.
 ///
@@ -46,9 +46,7 @@ class CertPinConfig {
   /// guidance (OWASP) is to pin only endpoints you control. Our controlled
   /// backends (Firebase / Firestore) ride the SDK, not this HTTP layer, so
   /// there is currently nothing here that is both ours and routed through
-  /// [PinnedHttpClient] / [PinningDioInterceptor]. Both wrappers stay installed
-  /// (empty map → graceful platform-trust fall-through), so adding a genuinely
-  /// controlled host later is a one-entry change, not a re-wire.
+  /// [PinnedHttpClient].
   ///
   /// To add a controlled host: add `'host': ['<leaf SHA-256>', '<backup>']`
   /// (colon-separated uppercase hex, openssl default) per

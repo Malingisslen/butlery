@@ -346,6 +346,7 @@ class ListLifecycleOperations {
       assignedAt: keepAssigned ? item.assignedAt : null,
       // BUT-2140: a snapshot holds no name or uid, so the strip keeps it.
       previous: item.previous,
+      ingredientId: item.ingredientId,
     );
   }
 }

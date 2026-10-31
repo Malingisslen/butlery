@@ -1,0 +1,73 @@
+{
+  "form": "Malins Instagramskärmbild 2026-10-30 (Medelhavsbiffar), facit graderat från bilden: femton ingrediensrader varav fem under \"Sås:\", tre stycken med metod, \"Ca 4-5 port.\". Statusraden, gillningsraden, kontonamnet, hashtaggarna, \"mindre\" och inläggsdatumet får aldrig nå receptet.",
+  "title": "Medelhavsbiffar med soltorkade tomater, tips inför veckan",
+  "steps": 3,
+  "lastStepKey": "basilikablad",
+  "portions": 4,
+  "ingredients": [
+    {
+      "key": "köttfärs"
+    },
+    {
+      "key": "ströbröd",
+      "allergen": "gluten"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "soltorkade tomater"
+    },
+    {
+      "key": "timjan"
+    },
+    {
+      "key": "salt o peppar"
+    },
+    {
+      "key": "mozzarella",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "basilika"
+    },
+    {
+      "key": "skivad tomat"
+    },
+    {
+      "key": "grädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "mjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "timjan"
+    },
+    {
+      "key": "chilisås"
+    },
+    {
+      "key": "salt"
+    }
+  ],
+  "headings": [
+    "Sås"
+  ],
+  "absent": [
+    "20:43",
+    "155",
+    "Gillas av",
+    "matmodig",
+    "mindre",
+    "26 juli",
+    "#gratäng",
+    "#vardagsmat"
+  ]
+}

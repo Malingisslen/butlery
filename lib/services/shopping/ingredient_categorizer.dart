@@ -4,10 +4,7 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 /// Categorizes a Swedish ingredient name into one of the
 /// [ShoppingCategory] buckets used by the shopping list UI.
 ///
-/// Pure-compute / no I/O — promoted from the previously-private
-/// `ShoppingListGenerator._categorizeIngredient` so the LLM golden-set
-/// runner (BUT-784 / BUT-888) can exercise the same logic the runtime
-/// shopping list uses.
+/// Pure-compute / no I/O.
 ///
 /// Rule order matters: the first matching rule wins. Dairy is checked
 /// before dry goods so that `mjölk` resolves to dairy rather than

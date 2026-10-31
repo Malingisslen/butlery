@@ -1,8 +1,7 @@
 /// Unit tests for ShoppingRepositoryQueryModule.
 ///
 /// Targets the personal-list reads and the trivial active-list lookup —
-/// `readAll` loads personal lists plus their `items` subcollection,
-/// `personalListsStream` is a simple ordered snapshot stream, and
+/// `readAll` loads personal lists plus their `items` subcollection, and
 /// `getActiveList` delegates to the injected readList callback. The
 /// collaborative-list paths are exercised only as smoke tests — but NOT
 /// because the fake cannot express their filter. It can: both of them use
@@ -132,13 +131,47 @@ void main() {
       expect(list.items.map((i) => i.name).toSet(), {'Mjölk', 'Bröd'});
     });
 
+    test('gives each list its own rows, and the lists come out '
+        'newest first', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedPersonalList(
+        firestore,
+        id: 'big',
+        name: 'Stor',
+        updatedAt: DateTime.utc(2026, 1, 1),
+        items: [
+          _itemDoc(name: 'Mjölk'),
+          _itemDoc(name: 'Bröd'),
+          _itemDoc(name: 'Ost'),
+        ],
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'empty',
+        name: 'Tom',
+        updatedAt: DateTime.utc(2026, 1, 2),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'small',
+        name: 'Liten',
+        updatedAt: DateTime.utc(2026, 1, 3),
+        items: [_itemDoc(name: 'Ägg')],
+      );
+      final result = await _module(firestore).readAll();
+
+      expect(result.map((l) => l.id), ['small', 'empty', 'big']);
+      final byId = {for (final l in result) l.id: l};
+      expect(
+        byId['big']!.items.map((i) => i.name),
+        unorderedEquals(['Mjölk', 'Bröd', 'Ost']),
+      );
+      expect(byId['empty']!.items, isEmpty);
+      expect(byId['small']!.items.map((i) => i.name), ['Ägg']);
+    });
+
     test('returns all personal lists regardless of seed order', () async {
-      // NOTE: production readAll() calls copyWith(items: ...) on every
-      // list, which resets `updatedAt` to clock.now() (see copyWith
-      // defaults at unified_shopping_list.dart:425). The subsequent
-      // `allLists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt))`
-      // then degenerates to insertion order. We assert membership only,
-      // not the sort key.
+      // We assert membership only, not the sort key.
       final firestore = FakeFirebaseFirestore();
       await _seedPersonalList(
         firestore,
@@ -273,39 +306,6 @@ void main() {
       ).getActiveList('l1');
       expect(capturedId, 'l1');
       expect(result, same(stub));
-    });
-  });
-
-  group('personalListsStream', () {
-    test('emits all personal lists newest-first', () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seedPersonalList(
-        firestore,
-        id: 'a',
-        name: 'A',
-        updatedAt: DateTime.utc(2026, 1, 1),
-      );
-      await _seedPersonalList(
-        firestore,
-        id: 'b',
-        name: 'B',
-        updatedAt: DateTime.utc(2026, 1, 3),
-      );
-      await _seedPersonalList(
-        firestore,
-        id: 'c',
-        name: 'C',
-        updatedAt: DateTime.utc(2026, 1, 2),
-      );
-
-      final lists = await _module(firestore).personalListsStream().first;
-      expect(lists.map((l) => l.id), ['b', 'c', 'a']);
-    });
-
-    test('emits empty list when user has no personal lists', () async {
-      final firestore = FakeFirebaseFirestore();
-      final lists = await _module(firestore).personalListsStream().first;
-      expect(lists, isEmpty);
     });
   });
 

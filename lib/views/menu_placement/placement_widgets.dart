@@ -178,7 +178,7 @@ class _PlacedDish extends StatelessWidget {
         children: [
           Expanded(
             child: WholeWordText(
-              entry.recipeTitle,
+              vm.entryTitle(entry),
               width: cellWidth == null
                   ? null
                   : cellWidth - kCalendarCellChrome - badgeWidth,

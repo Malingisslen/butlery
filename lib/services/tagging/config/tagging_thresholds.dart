@@ -14,13 +14,32 @@ class TaggingThresholds {
   // requires 100% coverage for allergen/dietary claims (safety-critical).
   // Keeping unused constants creates confusion for developers.
 
+  /// Below this share of known ingredients only a main ingredient gives a
+  /// protein tag, and the recipe detail calls its tags uncertain (Malin
+  /// 2026-10-30, kärnflöde steg 5 beslut 5).
+  static const double proteinCoverage = 0.80;
+
+  /// Below this share of known ingredients the ingredients give a cuisine no
+  /// points, and no tag claims an ingredient is absent (beslut 5).
+  static const double cuisineAndMoodCoverage = 0.60;
+
   /// Timeout for tag generation operations.
   static const Duration generationTimeout = Duration(seconds: 30);
 
-  /// HIGH-9: Minimum protein ratio (of matched ingredients) for "proteinrik" tag.
-  /// Raised from 0.25 to 0.40 to require ~2 in 5 ingredients to be protein
-  /// sources, reducing tag inflation for single-protein dishes.
-  static const double highProteinRatio = 0.40;
+  /// Weighed protein per portion for "proteinrik" (Malin 2026-10-30).
+  static const int proteinGramsPerPortion = 200;
+
+  /// Weighed cheese in the whole recipe for "ostig" (Malin 2026-10-30).
+  static const double cheeseGrams = 100;
+
+  /// Fresh herbs for "örtig" (Malin 2026-10-30).
+  static const int herbRichCount = 2;
+
+  /// Preparation time "lite-jobb" stays under (Malin 2026-10-30).
+  static const int littleWorkMaxMinutes = 15;
+
+  /// Lines that are not staples for "få-ingredienser".
+  static const int fewIngredientsMax = 6;
 
   /// Minimum vegetable count for "grönsaksrik" tag.
   static const int veggieRichCount = 3;
@@ -48,16 +67,6 @@ class TaggingThresholds {
 
   /// Minimum characters for substring matching in fuzzy lookup.
   static const int fuzzyMatchMinChars = 3;
-
-  // Sprint 2: Sustainability tag thresholds
-
-  /// Coverage threshold for "klimatsmart" tag.
-  /// At least 80% of ingredients with carbon data must NOT be 'high' carbon.
-  static const double klimatsmartCoverage = 0.80;
-
-  /// Coverage threshold for "budgetvänlig" tag.
-  /// At least 80% of ingredients with price data must NOT be 'premium'.
-  static const double budgetvanligCoverage = 0.80;
 
   /// Coverage threshold for "mild" tag.
   /// At 80%+ coverage with no spicy ingredients, we can reasonably claim mild.

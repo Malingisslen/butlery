@@ -34,6 +34,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
@@ -66,16 +67,6 @@ class TestableUnifiedRecipeService {
   TestableUnifiedRecipeService(this.service, this.mockRepository);
 
   // Search and filtering methods
-  Future<List<Recipe>> searchRecipes(String query) async {
-    try {
-      // Delegate to mock repository
-      return await mockRepository.searchRecipes(query);
-    } catch (e) {
-      // Service will capture error through its own error handling
-      return [];
-    }
-  }
-
   Future<List<Recipe>> filterRecipes(Map<String, dynamic> filters) async {
     // Filtering is handled by service internally
     // For testing, check for invalid filters
@@ -336,6 +327,40 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('live sync on a fresh install', () {
+      test('a recipe the sync delivers after the empty cache was read shows '
+          'up in the list without a restart', () async {
+        void Function(List<RecipeChange>)? deliver;
+        when(
+          () => mockRecipeRepository.subscribeToUserRecipes(
+            any(),
+            any(),
+            onError: any(named: 'onError'),
+            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+          ),
+        ).thenAnswer((inv) {
+          deliver =
+              inv.positionalArguments[1] as void Function(List<RecipeChange>);
+          return const Stream<void>.empty().listen((_) {});
+        });
+
+        await service.initialize();
+        await Future<void>.delayed(const Duration(milliseconds: 700));
+        expect(deliver, isNotNull, reason: 'sync must have started');
+        expect(service.recipes, isEmpty);
+
+        final recipe = RecipeFactory.build(
+          id: 'from-server',
+          title: 'Pannkakor',
+          createdBy: 'test_user_123',
+        );
+        deliver!([RecipeChange(type: RecipeChangeType.added, recipe: recipe)]);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        expect(service.recipes.map((r) => r.id), ['from-server']);
+      });
     });
 
     group('Initial State', () {
@@ -767,25 +792,6 @@ void main() {
         // Assert
         expect(success, true);
       });
-
-      test('should mark recipe as cooked', () async {
-        // Arrange
-        final recipeId = 'test-recipe-id';
-
-        // Stub repository methods
-        when(() => mockRecipeRepository.read(any())).thenAnswer(
-          (_) async => RecipeFactory.build(id: recipeId),
-        );
-        when(() => mockRecipeRepository.update(any())).thenAnswer(
-          (_) async {},
-        );
-
-        // Act
-        final success = await service.markAsCooked(recipeId);
-
-        // Assert
-        expect(success, true);
-      });
     });
 
     group('Collaborative Recipe Operations', () {
@@ -941,114 +947,114 @@ void main() {
         );
       });
 
-      test('should add ingredient', () async {
-        // Arrange - create a recipe
+      // BUT-2482: an edit works on the recipe the service holds and must leave
+      // the edited recipe in that list, or the next edit starts from stale
+      // content.
+      Future<String> seedRecipe({
+        List<String> ingredients = const ['Initial Ingredient'],
+        List<String> instructions = const ['Initial Step'],
+      }) async {
         final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Initial Ingredient'],
+          title: 'Recipe for Edits',
+          ingredients: ingredients,
+          instructions: instructions,
         );
-
         expect(recipeId, isNotNull, reason: 'Recipe should be created');
+        if (service.getRecipeById(recipeId!) == null) {
+          service.optimisticRestore(
+            RecipeFactory.build(
+              id: recipeId,
+              title: 'Recipe for Edits',
+              ingredients: ingredients,
+              instructions: instructions,
+            ),
+          );
+        }
+        return recipeId;
+      }
 
-        // Act
-        final success = await service.addIngredient(
-          recipeId!,
-          'New Ingredient',
+      test('should add ingredient', () async {
+        final recipeId = await seedRecipe();
+
+        expect(await service.addIngredient(recipeId, 'New Ingredient'), true);
+
+        expect(
+          service.getRecipeById(recipeId)!.core.ingredients,
+          contains('New Ingredient'),
         );
-
-        // Assert
-        expect(success, true);
       });
 
       test('should update ingredient', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Old Ingredient'],
+        final recipeId = await seedRecipe(ingredients: ['Old Ingredient']);
+
+        expect(
+          await service.updateIngredient(recipeId, 0, 'Updated Ingredient'),
+          true,
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.updateIngredient(
-          recipeId!,
-          0,
+        expect(service.getRecipeById(recipeId)!.core.ingredients, [
           'Updated Ingredient',
-        );
+        ]);
+      });
 
-        // Assert
-        expect(success, true);
+      test('a second edit builds on the first', () async {
+        final recipeId = await seedRecipe(ingredients: ['Smör']);
+
+        expect(await service.updateIngredient(recipeId, 0, 'Margarin'), true);
+        expect(await service.addIngredient(recipeId, 'Salt'), true);
+
+        expect(service.getRecipeById(recipeId)!.core.ingredients, [
+          'Margarin',
+          'Salt',
+        ]);
       });
 
       test('should remove ingredient', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Ingredients',
-          ingredients: ['Ingredient to Remove'],
+        final recipeId = await seedRecipe(
+          ingredients: ['Keep', 'Ingredient to Remove'],
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
+        expect(await service.removeIngredient(recipeId, 1), true);
 
-        // Act
-        final success = await service.removeIngredient(recipeId!, 0);
-
-        // Assert
-        expect(success, true);
+        expect(service.getRecipeById(recipeId)!.core.ingredients, ['Keep']);
       });
 
       test('should add instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Initial Step'],
+        final recipeId = await seedRecipe();
+
+        expect(await service.addInstruction(recipeId, 'New Step'), true);
+
+        expect(
+          service.getRecipeById(recipeId)!.core.instructions,
+          contains('New Step'),
         );
-
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.addInstruction(
-          recipeId!,
-          'New Step',
-        );
-
-        // Assert
-        expect(success, true);
       });
 
       test('should update instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Old Step'],
+        final recipeId = await seedRecipe(instructions: ['Old Step']);
+
+        expect(
+          await service.updateInstruction(recipeId, 0, 'Updated Step'),
+          true,
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.updateInstruction(
-          recipeId!,
-          0,
+        expect(service.getRecipeById(recipeId)!.core.instructions, [
           'Updated Step',
-        );
-
-        // Assert
-        expect(success, true);
+        ]);
       });
 
       test('should remove instruction', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Instructions',
-          instructions: ['Step to Remove'],
+        final recipeId = await seedRecipe(
+          instructions: ['Keep', 'Step to Remove'],
         );
 
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
+        expect(await service.removeInstruction(recipeId, 1), true);
 
-        // Act
-        final success = await service.removeInstruction(recipeId!, 0);
+        expect(service.getRecipeById(recipeId)!.core.instructions, ['Keep']);
+      });
 
-        // Assert
-        expect(success, true);
+      test('an edit of a recipe that is not loaded reports failure', () async {
+        expect(await service.updateIngredient('not-loaded', 0, 'x'), false);
       });
     });
 
@@ -1305,10 +1311,7 @@ void main() {
         // BUT-1252 motivation: the cache module previously notified twice on a
         // single direct update (its own _notifyListeners PLUS the direct
         // callback). The fix makes a single mutation produce a single state
-        // signal. The web double-notify path is kIsWeb-gated and can't run in
-        // the VM, but the native optimistic path shares the same one-mutation/
-        // one-notify contract — a regression that re-adds a redundant notify on
-        // this path would emit twice and fail this count.
+        // signal.
         var emissions = 0;
         final sub = service.stateStream.listen((_) => emissions++);
         // Drain the BehaviorSubject replay event before counting.
@@ -1602,38 +1605,6 @@ void main() {
       });
 
       group('Recipe Search Errors', () {
-        test('should handle invalid search query format', () async {
-          // Arrange
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => throw FormatException(
-              'Invalid search query: special characters not allowed',
-            ),
-          );
-
-          // Act
-          final results = await testableService.searchRecipes('@#\$%^&*');
-
-          // Assert
-          expect(results, isEmpty);
-          // Note: testableService methods don't set service.error directly
-        });
-
-        test('should handle search timeout', () async {
-          // Arrange — simulate a timeout by throwing TimeoutException directly.
-          // The prior 3-second Future.delayed added no behavioural value; the
-          // service's catch-block treats any throw as a failed search.
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => throw TimeoutException('Search timeout'),
-          );
-
-          // Act
-          final results = await testableService.searchRecipes('slow query');
-
-          // Assert
-          expect(results, isEmpty);
-          // Note: testableService methods don't set service.error directly
-        });
-
         test('should handle malformed filter parameters', () async {
           // Arrange - filtering is handled by test helper internally
 
@@ -1645,23 +1616,6 @@ void main() {
           // Assert
           expect(results, isEmpty); // No recipes match invalid filter
           // Note: testableService methods don't set service.error directly
-        });
-
-        test('should handle empty results gracefully', () async {
-          // Arrange
-          when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async => [],
-          );
-
-          // Act
-          final results = await testableService.searchRecipes(
-            'obscure recipe name',
-          );
-
-          // Assert - empty results returned without throwing
-          expect(results, isEmpty);
-          // Note: service.hasError may be true due to async Firebase sync
-          // errors in unit tests -- this is unrelated to search results.
         });
 
         test('should handle pagination errors', () async {
@@ -2595,49 +2549,6 @@ void main() {
             greaterThanOrEqualTo(0),
           ); // More flexible
         });
-
-        test(
-          'should efficiently search through large recipe collection',
-          () async {
-            // Arrange
-            final recipes = List.generate(
-              200,
-              (i) => Recipe.personal(
-                title: i < 100 ? 'Swedish Recipe $i' : 'Italian Recipe $i',
-                description: 'Test recipe for search',
-                createdBy: 'test-user',
-                ingredients: i < 100 ? ['köttbullar'] : ['pasta'],
-                instructions: ['cook'],
-                mealType: 'dinner',
-              ),
-            );
-
-            when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer((
-              invocation,
-            ) async {
-              final query = invocation.positionalArguments[0] as String;
-              return recipes
-                  .where(
-                    (r) => r.title.toLowerCase().contains(query.toLowerCase()),
-                  )
-                  .toList();
-            });
-
-            // Act
-            final stopwatch = Stopwatch()..start();
-            final swedishRecipes = await testableService.searchRecipes(
-              'Swedish',
-            );
-            stopwatch.stop();
-
-            // Assert
-            expect(swedishRecipes.length, equals(100));
-            expect(
-              stopwatch.elapsedMilliseconds,
-              lessThan(1000),
-            ); // Search should be fast
-          },
-        );
 
         test(
           'should handle memory optimization for large collections',

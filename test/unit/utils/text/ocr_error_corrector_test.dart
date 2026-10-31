@@ -45,7 +45,7 @@ void main() {
         );
       });
 
-      test('corrects di -> dl (OCR.space engine 2 misreads the unit)', () {
+      test('corrects di -> dl (cookbook OCR misreads the unit)', () {
         // The systematic cookbook-OCR error: "4 di apelsinjuice" should be dl.
         expect(
           OcrErrorCorrector.correctLine('4 di apelsinjuice'),
@@ -63,6 +63,15 @@ void main() {
       test('reads a pipe glued to a unit as l, never a lone pipe', () {
         expect(OcrErrorCorrector.correctLine('2 d|'), '2 dl');
         expect(OcrErrorCorrector.correctLine('2 dl | grädde'), '2 dl | grädde');
+      });
+
+      test('reads a lone d after an amount as dl', () {
+        expect(
+          OcrErrorCorrector.correctLine('creme fraiche naturell, 2 d'),
+          'creme fraiche naturell, 2 dl',
+        );
+        expect(OcrErrorCorrector.correctLine('1,5 d |'), '1,5 dl |');
+        expect(OcrErrorCorrector.correctLine('vitamin d'), 'vitamin d');
       });
     });
 

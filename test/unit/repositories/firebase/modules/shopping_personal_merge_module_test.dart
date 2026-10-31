@@ -15,6 +15,8 @@ library;
 // only way to count what a batch and a transaction write.
 // ignore_for_file: subtype_of_sealed_class
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,25 +136,17 @@ UnifiedShoppingList _list(
   menuItemIds: menuItemIds,
 );
 
-/// Rows the merge adds. Built once so every call returns the same ids, as the
-/// request contract demands; a bought tick is carried by name and unit.
-PersonalMergeRequest _request(
-  List<UnifiedShoppingItem> fresh, {
-  bool replace = false,
-}) => PersonalMergeRequest(
-  replace: replace,
-  generatedForWeek: _weekKey,
-  rows: (removed) {
-    final bought = {
-      for (final r in removed)
-        if (r.bought) '${r.name}|${r.unit}',
-    };
-    return [
-      for (final f in fresh)
-        bought.contains('${f.name}|${f.unit}') ? f.copyWith(bought: true) : f,
-    ];
-  },
-);
+/// A merge that only adds [fresh]. Built once so every call returns the same
+/// ids, as the request contract demands.
+PersonalMergeRequest _request(List<UnifiedShoppingItem> fresh) =>
+    PersonalMergeRequest(
+      generatedForWeek: _weekKey,
+      sync: (_) => PersonalMergeWrite(add: fresh),
+    );
+
+PersonalMergeRequest _syncRequest(
+  PersonalMergeWrite Function(List<UnifiedShoppingItem> listRows) sync,
+) => PersonalMergeRequest(generatedForWeek: _weekKey, sync: sync);
 
 FirebaseException _offline() =>
     FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
@@ -288,43 +282,48 @@ void main() {
         expect((await storedRows()).keys, unorderedEquals(['own', 'a']));
       });
 
-      test(
-        'Ersätt listan carries over a tick the other device made on a recipe '
-        'row',
-        () async {
-          final memory = _list(
+      test('a sync decides on the server\'s row, so a tick the other device '
+          'made a moment ago keeps the row where it is', () async {
+        final memory = _list(
+          [
+            _row('own', 'kaffe'),
+            _row('old', 'gul lök'),
+          ],
+          menuItemIds: ['old'],
+        );
+        await seedServer(
+          _list(
             [
               _row('own', 'kaffe'),
-              _row('old', 'gul lök'),
+              _row('old', 'gul lök', bought: true),
             ],
             menuItemIds: ['old'],
-          );
-          await seedServer(
-            _list(
-              [
-                _row('own', 'kaffe'),
-                _row('old', 'gul lök', bought: true),
+          ),
+        );
+        List<UnifiedShoppingItem>? seen;
+
+        final result = await module().applyPersonalMerge(
+          memory,
+          _syncRequest((listRows) {
+            seen = listRows;
+            return PersonalMergeWrite(
+              remove: [
+                for (final r in listRows)
+                  if (!r.bought) r,
               ],
-              menuItemIds: ['old'],
-            ),
-          );
+            );
+          }),
+        );
 
-          final result = await module().applyPersonalMerge(
-            memory,
-            _request([_row('new', 'gul lök')], replace: true),
-          );
+        expect(seen!.single.bought, isTrue);
+        expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
+        expect(await storedMenuIds(), ['old']);
+        expect(result.removed, isEmpty);
+        expect(result.concurrentChange, isTrue);
+      });
 
-          final stored = await storedRows();
-          expect(stored.keys, unorderedEquals(['own', 'new']));
-          expect(stored['new']!.bought, isTrue);
-          expect(await storedMenuIds(), ['new']);
-          expect(result.removed.single.bought, isTrue);
-          expect(result.concurrentChange, isTrue);
-        },
-      );
-
-      test('Ersätt listan does not bring back a recipe row the other device '
-          'deleted, and Ångra has nothing of it to restore', () async {
+      test('a sync is not shown a row the other device deleted, and Ångra has '
+          'nothing of it to restore', () async {
         final memory = _list(
           [
             _row('old-1', 'gul lök'),
@@ -339,13 +338,65 @@ void main() {
 
         final result = await module().applyPersonalMerge(
           memory,
-          _request([_row('new', 'mjölk')], replace: true),
+          _syncRequest(
+            (listRows) => PersonalMergeWrite(
+              remove: listRows,
+              add: [_row('new', 'mjölk')],
+            ),
+          ),
         );
 
         expect((await storedRows()).keys, ['new']);
         expect(result.removed.map((i) => i.id), ['old-1']);
         expect(result.list.items.map((i) => i.id), ['new']);
       });
+
+      test(
+        'one transaction updates, removes and adds: the stored rows and '
+        'menuItemIds follow, and changedFrom holds the row as it was',
+        () async {
+          final memory = _list(
+            [
+              _row('own', 'kaffe'),
+              _row('upd', 'gul lök'),
+              _row('rem', 'pasta'),
+            ],
+            menuItemIds: ['upd', 'rem'],
+          );
+          await seedServer(memory);
+          firestore.counts.transactionReads = 0;
+          final changed = _row('upd', 'gul lök').copyWith(amount: 3);
+
+          final result = await module().applyPersonalMerge(
+            memory,
+            _syncRequest(
+              (listRows) => PersonalMergeWrite(
+                update: [changed],
+                remove: [listRows.firstWhere((r) => r.id == 'rem')],
+                add: [_row('new', 'mjölk')],
+              ),
+            ),
+          );
+
+          final stored = await storedRows();
+          expect(stored.keys, unorderedEquals(['own', 'upd', 'new']));
+          expect(stored['upd']!.amount, 3);
+          expect(await storedMenuIds(), unorderedEquals(['upd', 'new']));
+          expect(result.updated.single.amount, 3);
+          expect(result.changedFrom.single.id, 'upd');
+          expect(result.changedFrom.single.amount, 1);
+          expect(result.removed.single.id, 'rem');
+          expect(result.added.single.id, 'new');
+          expect(
+            result.list.items.firstWhere((i) => i.id == 'upd').amount,
+            3,
+          );
+          expect(result.list.menuItemIds, unorderedEquals(['upd', 'new']));
+          expect(firestore.counts.transactionReads, 1 + 2);
+          expect(firestore.counts.transactionWrites, 1 + 2 + 1);
+          expect(firestore.counts.batchWrites, 0);
+        },
+      );
 
       test('offline: the rows are queued from memory, nothing is reported, and '
           'menuItemIds is extended with arrayUnion, not overwritten', () async {
@@ -366,36 +417,80 @@ void main() {
         expect(result.list.items.map((i) => i.id), ['own', 'a']);
       });
 
-      test('offline Ersätt listan replaces from memory (accepted deviation, '
-          'B1)', () async {
+      test('offline sync updates, removes and adds from memory (accepted '
+          'deviation, B1)', () async {
         final memory = _list(
           [
             _row('own', 'kaffe'),
-            _row('old', 'gul lök', bought: true),
+            _row('upd', 'gul lök'),
+            _row('rem', 'pasta'),
           ],
-          menuItemIds: ['old'],
+          menuItemIds: ['upd', 'rem'],
         );
         await seedServer(memory);
+        final changed = _row('upd', 'gul lök').copyWith(amount: 3);
 
         final result =
             await module(
               transactionRunner: (_) async => throw _offline(),
             ).applyPersonalMerge(
               memory,
-              _request([_row('new', 'gul lök')], replace: true),
+              _syncRequest(
+                (listRows) => PersonalMergeWrite(
+                  update: [changed],
+                  remove: [listRows.firstWhere((r) => r.id == 'rem')],
+                  add: [_row('new', 'mjölk')],
+                ),
+              ),
             );
         await pumpEventQueue();
 
         final stored = await storedRows();
-        expect(stored.keys, unorderedEquals(['own', 'new']));
-        expect(stored['new']!.bought, isTrue);
-        expect(await storedMenuIds(), ['new']);
+        expect(stored.keys, unorderedEquals(['own', 'upd', 'new']));
+        expect(stored['upd']!.amount, 3);
+        expect(await storedMenuIds(), unorderedEquals(['upd', 'new']));
+        expect(result.changedFrom.single.amount, 1);
         expect(result.concurrentChange, isFalse);
       });
 
-      test('offline Ersätt listan also replaces from memory when the platform '
-          'hides the handler error (web)', () async {
-        final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+      test('a sync cannot overwrite or take off a row the list does not name '
+          'in menuItemIds', () async {
+        final memory = _list(
+          [
+            _row('own', 'kaffe'),
+            _row('menu', 'gul lök'),
+          ],
+          menuItemIds: ['menu'],
+        );
+        await seedServer(memory);
+
+        final result = await module().applyPersonalMerge(
+          memory,
+          _syncRequest(
+            (_) => PersonalMergeWrite(
+              update: [_row('own', 'kaffe').copyWith(amount: 9)],
+              remove: [_row('own', 'kaffe')],
+            ),
+          ),
+        );
+
+        final stored = await storedRows();
+        expect(stored.keys, unorderedEquals(['own', 'menu']));
+        expect(stored['own']!.amount, _row('own', 'kaffe').amount);
+        expect(result.updated, isEmpty);
+        expect(result.removed, isEmpty);
+        expect(await storedMenuIds(), ['menu']);
+      });
+
+      test('offline also syncs from memory when the platform hides the '
+          'handler error (web)', () async {
+        final memory = _list(
+          [
+            _row('own', 'kaffe'),
+            _row('old', 'gul lök'),
+          ],
+          menuItemIds: ['old'],
+        );
         await seedServer(memory);
 
         await module(
@@ -407,12 +502,56 @@ void main() {
           },
         ).applyPersonalMerge(
           memory,
-          _request([_row('new', 'gul lök')], replace: true),
+          _syncRequest(
+            (_) => PersonalMergeWrite(
+              remove: [_row('old', 'gul lök')],
+              add: [_row('new', 'gul lök')],
+            ),
+          ),
         );
         await pumpEventQueue();
 
         expect(await storedMenuIds(), ['new']);
       });
+
+      test('a spent transaction budget is treated as offline: the sync is '
+          'written from memory', () async {
+        final memory = _list([_row('own', 'kaffe')], menuItemIds: const []);
+        await seedServer(memory);
+
+        final result = await module(
+          transactionRunner: (_) async => throw TimeoutException('the budget'),
+        ).applyPersonalMerge(memory, _request([_row('a', 'gul lök')]));
+        await pumpEventQueue();
+
+        expect(result.added.map((i) => i.id), ['a']);
+        expect((await storedRows()).keys, unorderedEquals(['own', 'a']));
+      });
+
+      test(
+        'a rejection that is not offline still reaches the caller',
+        () async {
+          final memory = _list([_row('own', 'kaffe')], menuItemIds: const []);
+          await seedServer(memory);
+
+          await expectLater(
+            module(
+              transactionRunner: (_) async => throw FirebaseException(
+                plugin: 'cloud_firestore',
+                code: 'permission-denied',
+              ),
+            ).applyPersonalMerge(memory, _request([_row('a', 'gul lök')])),
+            throwsA(
+              isA<FirebaseException>().having(
+                (e) => e.code,
+                'code',
+                'permission-denied',
+              ),
+            ),
+          );
+          expect((await storedRows()).keys, ['own']);
+        },
+      );
 
       test('writes of this device still waiting to sync are not reported as '
           'another device\'s change', () async {
@@ -453,72 +592,314 @@ void main() {
         expect(undone.menuItemIds, ['x']);
       });
 
-      test('Ångra after Ersätt listan puts the server\'s removed rows back and '
-          'takes ours off', () async {
+      test('Ångra after a sync puts the removed and the overwritten rows back '
+          'and takes the added ones off', () async {
         final memory = _list(
           [
             _row('own', 'kaffe'),
-            _row('old', 'gul lök'),
+            _row('upd', 'gul lök'),
+            _row('rem', 'pasta'),
           ],
-          menuItemIds: ['old'],
+          menuItemIds: ['upd', 'rem'],
         );
         await seedServer(memory);
         final merge = module();
         final result = await merge.applyPersonalMerge(
           memory,
-          _request([_row('new', 'gul lök')], replace: true),
+          _syncRequest(
+            (listRows) => PersonalMergeWrite(
+              update: [_row('upd', 'gul lök').copyWith(amount: 3)],
+              remove: [listRows.firstWhere((r) => r.id == 'rem')],
+              add: [_row('new', 'mjölk')],
+            ),
+          ),
         );
 
         await merge.undoPersonalMerge(
           result.list,
           addedIds: ['new'],
-          restore: result.removed,
+          restore: [...result.removed, ...result.changedFrom],
         );
 
-        expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
-        expect(await storedMenuIds(), ['old']);
+        final stored = await storedRows();
+        expect(stored.keys, unorderedEquals(['own', 'upd', 'rem']));
+        expect(stored['upd']!.amount, 1);
+        expect(await storedMenuIds(), unorderedEquals(['upd', 'rem']));
       });
     },
   );
 
+  group('a sync the server copy already settles costs no transaction', () {
+    var transactionRuns = 0;
+
+    PersonalMergeTransactionRunner countedRunner() => (handler) {
+      transactionRuns++;
+      return firestore.runTransaction(
+        (tx) => handler(_CountingTransaction(tx, firestore.counts)),
+      );
+    };
+
+    setUp(() => transactionRuns = 0);
+
+    test('nothing to change: the transaction never runs, the server list is '
+        'returned and the change made elsewhere is still reported', () async {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+      await seedServer(
+        _list(
+          [_row('own', 'kaffe'), _row('old', 'pasta'), _row('brod', 'bröd')],
+          menuItemIds: ['old'],
+        ),
+      );
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 0);
+      expect(firestore.counts.transactionReads, 0);
+      expect(audit, ['menu_merge'], reason: 'the permission log still runs');
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(result.updated, isEmpty);
+      expect(result.concurrentChange, isTrue);
+      expect(
+        result.list.items.map((i) => i.id),
+        unorderedEquals(['own', 'old', 'brod']),
+        reason: 'the view gets the server rows, including the other device\'s',
+      );
+      expect(result.list.menuItemIds, ['old']);
+      expect(
+        (await storedRows()).keys,
+        unorderedEquals(['own', 'old', 'brod']),
+      );
+    });
+
+    test('nothing to change while this device\'s own writes wait to sync: '
+        'no change is reported', () async {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+      await seedServer(
+        _list(
+          [_row('own', 'kaffe'), _row('old', 'pasta')],
+          menuItemIds: ['old'],
+        ),
+      );
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+            pending: true,
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 0);
+      expect(audit, ['menu_merge']);
+      expect(result.concurrentChange, isFalse);
+    });
+
+    test('a sync that only touches rows outside menuItemIds changes nothing '
+        'and costs no transaction', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest(
+              (_) => PersonalMergeWrite(
+                update: [_row('own', 'kaffe').copyWith(amount: 9)],
+                remove: [_row('own', 'kaffe')],
+              ),
+            ),
+          );
+
+      expect(transactionRuns, 0);
+      expect(audit, ['menu_merge']);
+      expect(result.updated, isEmpty);
+      expect(result.removed, isEmpty);
+      expect((await storedRows())['own']!.amount, 1);
+    });
+
+    test('a server copy that looked changed but is clean when the transaction '
+        'reads it writes nothing', () async {
+      final own = _row('own', 'kaffe');
+      final old = _row('old', 'pasta');
+      final memory = _list([own, old], menuItemIds: ['old']);
+      // What is stored needs nothing; the copy read first still names a dead
+      // id, as it would if another device had cleaned it up in between.
+      await seedServer(memory);
+      firestore.counts.transactionWrites = 0;
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+            serverRead: (_, _) async =>
+                _list([own, old], menuItemIds: ['old', 'gone']),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 1);
+      expect(firestore.counts.transactionWrites, 0);
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(await storedMenuIds(), ['old']);
+    });
+
+    test('a sync that changes a row still runs exactly one transaction and '
+        'stores the change', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest(
+              (_) => PersonalMergeWrite(
+                update: [_row('old', 'pasta').copyWith(amount: 3)],
+              ),
+            ),
+          );
+
+      expect(transactionRuns, 1);
+      expect(result.updated.single.amount, 3);
+      expect((await storedRows())['old']!.amount, 3);
+    });
+
+    test('a sync whose only difference is the week still runs the '
+        'transaction and stores the new week', () async {
+      final memory = _list([_row('old', 'pasta')], menuItemIds: ['old']);
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            PersonalMergeRequest(
+              generatedForWeek: '2026-W25',
+              sync: (_) => const PersonalMergeWrite(),
+            ),
+          );
+
+      expect(transactionRuns, 1);
+      expect(result.list.generatedForWeek, '2026-W25');
+      expect(
+        (await lists().doc(_listId).get()).data()!['generatedForWeek'],
+        '2026-W25',
+      );
+    });
+
+    test('a menuItemIds naming a row that no longer exists still runs the '
+        'transaction, which drops the dead id', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old', 'gone'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 1);
+      expect(await storedMenuIds(), ['old']);
+      expect(result.added, isEmpty);
+    });
+  });
+
   group('cost (BUT-2140 acceptance: N+R+2 writes at most)', () {
-    test('an add writes N rows and one narrow parent update, in no '
-        'transaction', () async {
+    test('an add reads the parent, writes N rows and one parent update, all '
+        'in one transaction', () async {
       final memory = _list([_row('own', 'kaffe')], menuItemIds: const []);
       await seedServer(memory);
-      firestore.counts.batchWrites = 0;
+      firestore.counts.transactionReads = 0;
+      firestore.counts.transactionWrites = 0;
 
       await module().applyPersonalMerge(
         memory,
         _request([_row('a', 'gul lök'), _row('b', 'pasta')]),
       );
 
-      expect(firestore.counts.batchWrites, 2 + 1);
-      expect(firestore.counts.transactionReads, 0);
-      expect(firestore.counts.transactionWrites, 0);
+      expect(firestore.counts.transactionReads, 1);
+      expect(firestore.counts.transactionWrites, 2 + 1);
+      expect(firestore.counts.batchWrites, 0);
     });
 
-    test('a replace reads the parent and the R recipe rows in its '
-        'transaction and writes R deletes, N rows and the parent', () async {
+    test('a sync with nothing to change writes nothing', () async {
       final memory = _list(
-        [
-          _row('own', 'kaffe'),
-          _row('old-1', 'gul lök'),
-          _row('old-2', 'pasta'),
-        ],
-        menuItemIds: ['old-1', 'old-2'],
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
       );
       await seedServer(memory);
-      firestore.counts.batchWrites = 0;
+      firestore.counts.transactionWrites = 0;
 
       await module().applyPersonalMerge(
         memory,
-        _request([_row('new', 'mjölk')], replace: true),
+        _syncRequest((_) => const PersonalMergeWrite()),
       );
 
-      expect(firestore.counts.transactionReads, 1 + 2);
-      expect(firestore.counts.transactionWrites, 2 + 1 + 1);
+      expect(firestore.counts.transactionWrites, 0);
+      expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
+    });
+
+    test('offline, a sync with nothing to change queues no write', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            serverRead: (_, _) async => throw _offline(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+      await pumpEventQueue();
+
       expect(firestore.counts.batchWrites, 0);
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(result.updated, isEmpty);
+      expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
+      expect(await storedMenuIds(), ['old']);
+    });
+
+    test('a sync with nothing to change still drops the id of a row deleted '
+        'elsewhere', () async {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: ['gone']);
+      await seedServer(memory);
+      firestore.counts.transactionWrites = 0;
+
+      await module().applyPersonalMerge(
+        memory,
+        _syncRequest((_) => const PersonalMergeWrite()),
+      );
+
+      expect(firestore.counts.transactionWrites, 1);
+      expect(await storedMenuIds(), isEmpty);
     });
   });
 }

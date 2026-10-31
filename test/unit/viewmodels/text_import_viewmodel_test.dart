@@ -819,6 +819,23 @@ void main() {
         verify(() => mockImportManager.saveImportedRecipe(any())).called(2);
       });
 
+      test('saves the amounts as fractions', () async {
+        final ok = await viewModel.saveSelectedRecipes([
+          RecipeFactory.build(
+            id: 'r1',
+            title: 'A',
+          ).copyWith(ingredients: const ['1,5 dl mjölk', '2 ägg']),
+        ]);
+
+        expect(ok, isTrue);
+        final saved =
+            verify(
+                  () => mockImportManager.saveImportedRecipe(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(saved.ingredients, ['1 ½ dl mjölk', '2 ägg']);
+      });
+
       test('empty selection sets an error and saves nothing', () async {
         final ok = await viewModel.saveSelectedRecipes(const []);
 

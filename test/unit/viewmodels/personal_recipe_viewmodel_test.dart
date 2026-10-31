@@ -130,9 +130,6 @@ void main() {
       () => mockPersonalOps.removeInstruction(any(), any()),
     ).thenAnswer((_) async => true);
     when(
-      () => mockPersonalOps.markAsCooked(any()),
-    ).thenAnswer((_) async => true);
-    when(
       () => mockPersonalOps.addLegacyRecipe(any()),
     ).thenAnswer((_) async => RecipeOperationResult.success('ok'));
     when(
@@ -190,38 +187,6 @@ void main() {
 
     test('currentUserDisplayName comes from service', () {
       expect(viewModel.currentUserDisplayName, 'Test User');
-    });
-  });
-
-  group('Search', () {
-    test('searchPersonalRecipes matches title', () {
-      final results = viewModel.searchPersonalRecipes('Kott');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches ingredient', () {
-      final results = viewModel.searchPersonalRecipes('kottfars');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches instruction', () {
-      final results = viewModel.searchPersonalRecipes('Forma');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes matches tag', () {
-      final results = viewModel.searchPersonalRecipes('middag');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes returns all for empty query', () {
-      final results = viewModel.searchPersonalRecipes('');
-      expect(results, hasLength(1));
-    });
-
-    test('searchPersonalRecipes returns empty for no match', () {
-      final results = viewModel.searchPersonalRecipes('pizza');
-      expect(results, isEmpty);
     });
   });
 
@@ -410,19 +375,6 @@ void main() {
     test('removeInstruction delegates to service', () async {
       final result = await viewModel.removeInstruction(testRecipeId, 0);
       expect(result, isTrue);
-    });
-  });
-
-  group('Mark as Cooked', () {
-    test('markAsCooked delegates to service', () async {
-      final result = await viewModel.markAsCooked(testRecipeId);
-      expect(result, isTrue);
-      verify(() => mockPersonalOps.markAsCooked(testRecipeId)).called(1);
-    });
-
-    test('markAsCooked rejects empty id', () async {
-      final result = await viewModel.markAsCooked('');
-      expect(result, isFalse);
     });
   });
 

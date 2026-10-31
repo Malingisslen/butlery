@@ -411,6 +411,53 @@ void main() {
       );
     });
 
+    test('BUT-2501: a text-tier recipe takes the page\'s og:image only when '
+        'it is https', () async {
+      String page(String image) =>
+          '''
+<!doctype html>
+<html><head><title>Pannkakor</title>
+<meta property="og:image" content="$image"></head>
+<body>
+<h1>Pannkakor</h1>
+<h2>Ingredienser</h2>
+<ul>
+  <li>3 ägg</li>
+  <li>5 dl mjölk</li>
+  <li>3 dl vetemjöl</li>
+  <li>1 krm salt</li>
+  <li>2 msk smör</li>
+</ul>
+<h2>Gör så här</h2>
+<ol>
+  <li>Vispa ihop ägg och mjölk i en bunke.</li>
+  <li>Tillsätt vetemjöl och salt under omrörning tills smeten är slät.</li>
+  <li>Hetta upp smör i en stekpanna och stek pannkakor på medelvärme.</li>
+</ol>
+</body>
+</html>
+''';
+
+      final withImage = await _strategyWith(
+        (req) async => _htmlResponse(page('https://cdn.example.se/p.jpg')),
+      ).import('http://8.8.8.8/pannkakor');
+      expect(withImage.metadata?['successfulTier'], 'HtmlTextParse');
+      expect(withImage.recipe!.imageUrls, ['https://cdn.example.se/p.jpg']);
+      expect(withImage.metadata?['extraction_method'], 'html_text_parse');
+      expect(withImage.metadata?['tier'], 5);
+      expect(withImage.metadata?['pageText'], contains('3 dl vetemjöl'));
+      expect(
+        withImage.warnings,
+        contains('Extracted from HTML text - quality may vary'),
+      );
+      expect(withImage.recipe!.core.sourceUrl, 'http://8.8.8.8/pannkakor');
+
+      final insecure = await _strategyWith(
+        (req) async => _htmlResponse(page('http://cdn.example.se/p.jpg')),
+      ).import('http://8.8.8.8/pannkakor');
+      expect(insecure.recipe!.imageUrls, isEmpty);
+    });
+
     /// BUT-1077 boundary: the quality gate is
     /// `ingredients.isEmpty && instructions.isEmpty` — an AND, not an OR.
     /// A page with detectable INSTRUCTIONS but ZERO ingredients must STILL

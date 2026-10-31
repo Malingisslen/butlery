@@ -6,6 +6,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
+import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -249,6 +250,12 @@ class MenuGenerator {
   /// "bland dina 84 recept".
   int lastPoolSize = 0;
 
+  /// True when the last generation, re-shuffle or swap could not read the
+  /// earlier weeks, so it ran without the repeat down-weighting. A new
+  /// generation replaces it; a re-shuffle or swap only ever raises it, since
+  /// the menu on screen still came from the unread generation.
+  bool lastRecencyReadFailed = false;
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   ///
   /// A run cancelled while the preferences are read leaves [lastPoolStats]
@@ -469,9 +476,6 @@ class MenuGenerator {
     await ensureRecipeServiceInitialized();
     _stopIfCancelled(isCancelled);
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    _stopIfCancelled(isCancelled);
-
     // BUT-1464: the async pool is THE allergen-safe pool (household union +
     // trust guards). Computed once — both the emptiness check and the
     // keyword filter must see the same filtered pool, never the sync
@@ -485,8 +489,10 @@ class MenuGenerator {
 
     final pool = _applyPromptKeywordFilter(prompt, available);
 
-    final recentIds = await _recentlyUsedRecipeIds();
+    final recent = await _recentlyUsedRecipeIds();
     _stopIfCancelled(isCancelled);
+    lastRecencyReadFailed = recent.readFailed;
+    final recentIds = recent.ids;
     final scoringContext = await _buildScoringContext(pool);
     _stopIfCancelled(isCancelled);
 
@@ -528,30 +534,31 @@ class MenuGenerator {
   /// down-weight them (BUT-1318). Returns an empty set with no history (first
   /// menu ever) or when no plan service is wired — generation then uses the
   /// full pool unchanged. Errors are swallowed: a recent-plan read failure
-  /// must never block menu generation.
-  Future<Set<String>> _recentlyUsedRecipeIds() async {
+  /// must never block menu generation, but it is reported in `readFailed` so
+  /// the screen can say that dishes may repeat.
+  Future<({Set<String> ids, bool readFailed})> _recentlyUsedRecipeIds() async {
     final service = _weeklyMenuPlanService;
-    if (service == null) return const {};
+    if (service == null) return (ids: const <String>{}, readFailed: false);
     try {
       final now = clock.now();
       final thisWeek = IsoWeekUtils.weekStartOf(now);
       final lastWeek = thisWeek.subtract(const Duration(days: 7));
       // Read this week + last week only (1-2 plans) — bounded, cheap, and the
       // weeks the user is most likely repeating from.
-      final plans = await Future.wait([
-        service.getWeek(thisWeek),
-        service.getWeek(lastWeek),
+      final reads = await Future.wait([
+        service.readWeek(thisWeek),
+        service.readWeek(lastWeek),
       ]);
       final ids = <String>{};
-      for (final plan in plans) {
-        for (final entry in plan.entries) {
+      for (final read in reads) {
+        for (final entry in read.plan.entries) {
           ids.add(entry.recipeId);
         }
       }
-      return ids;
+      return (ids: ids, readFailed: reads.any((r) => r.readFailed));
     } catch (e) {
       AppLogger.warning('Recent-plan dedup skipped: $e');
-      return const {};
+      return (ids: const <String>{}, readFailed: true);
     }
   }
 
@@ -706,7 +713,6 @@ class MenuGenerator {
     String? originalPrompt,
     bool Function()? isCancelled,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 200));
     _stopIfCancelled(isCancelled);
 
     final currentCount = currentMenu[section]?.length ?? 1;
@@ -716,12 +722,17 @@ class MenuGenerator {
     // BUT-1329: a single-slot re-roll must get the same cross-week freshness
     // down-weighting as a full generation, so last-week recipes are deprioritised
     // here too. Empty set / no plan service → behaves exactly as before.
-    final recentIds = await _recentlyUsedRecipeIds();
+    final recent = await _recentlyUsedRecipeIds();
     _stopIfCancelled(isCancelled);
+    if (recent.readFailed) lastRecencyReadFailed = true;
+    final recentIds = recent.ids;
     // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
     // generation — a refresh must not reintroduce a filtered-out recipe.
-    final pool = await getAvailableRecipesAsync(isCancelled: isCancelled);
+    final available = await getAvailableRecipesAsync(isCancelled: isCancelled);
     _stopIfCancelled(isCancelled);
+    // The menu came from a "favoriter"/"senaste" prompt; a re-roll that left
+    // the keyword out of the pool would bring back dishes the prompt excluded.
+    final pool = _applyPromptKeywordFilter(prompt, available);
     // A re-roll rebuilds the scoring context from scratch so it scores against
     // the LIVE pantry + pooled stats (founder decision 2026-07-12, reverting the
     // BUT-1455 within-session cache): if the cook marked ingredients used since
@@ -781,6 +792,17 @@ class MenuGenerator {
       if (liked.isNotEmpty) eligibleRecipes = liked;
     }
 
+    // Same intent as generation's repeat down-weighting: prefer a dish not
+    // used in the last two weeks, but never run out of swaps because of it.
+    final recent = await _recentlyUsedRecipeIds();
+    if (recent.readFailed) lastRecencyReadFailed = true;
+    if (recent.ids.isNotEmpty) {
+      final fresh = eligibleRecipes
+          .where((r) => !recent.ids.contains(r.id))
+          .toList();
+      if (fresh.isNotEmpty) eligibleRecipes = fresh;
+    }
+
     if (eligibleRecipes.isEmpty) {
       AppLogger.warning(
         'No eligible recipes found for swap in category: $category',
@@ -824,26 +846,7 @@ class MenuGenerator {
     return pool.where((recipe) {
       if (excludeIds.contains(recipe.id)) return false;
 
-      final categoryLower = category.toLowerCase();
-      final mealTypeLower = recipe.mealType.toLowerCase();
-
-      if (categoryLower.contains('middag') ||
-          categoryLower.contains('dinner')) {
-        return mealTypeLower.contains('middag') ||
-            mealTypeLower.contains('dinner') ||
-            mealTypeLower.isEmpty;
-      }
-      if (categoryLower.contains('lunch')) {
-        return mealTypeLower.contains('lunch') || mealTypeLower.isEmpty;
-      }
-      if (categoryLower.contains('frukost') ||
-          categoryLower.contains('breakfast')) {
-        return mealTypeLower.contains('frukost') ||
-            mealTypeLower.contains('breakfast') ||
-            mealTypeLower.isEmpty;
-      }
-
-      return mealTypeLower == categoryLower || mealTypeLower.isEmpty;
+      return fitsMealSlot(recipe.mealType, category);
     }).toList();
   }
 
@@ -851,7 +854,7 @@ class MenuGenerator {
   Recipe _scoreAndPickBest(List<Recipe> candidates, Recipe current) {
     final seasonTag = SeasonUtils.currentSeasonTag();
     final currentCuisine = _extractCuisine(current);
-    final currentCategory = current.mealType.toLowerCase();
+    final currentCategory = menuMealKey(current.mealType);
 
     var bestScore = -1;
     final bestCandidates = <Recipe>[];
@@ -866,7 +869,7 @@ class MenuGenerator {
       }
 
       // +2 same category
-      if (candidate.mealType.toLowerCase() == currentCategory) score += 2;
+      if (menuMealKey(candidate.mealType) == currentCategory) score += 2;
 
       // +1 seasonal match
       final tags = candidate.tagResult?.tags;
@@ -888,21 +891,6 @@ class MenuGenerator {
 
   static String? _extractCuisine(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
-
-  /// Validate menu generation prerequisites.
-  ///
-  /// Facade over [MenuQualityAnalyzer.validatePromptNotEmpty]; the
-  /// availability check stays here because it depends on generator state.
-  void validateGenerationPrerequisites(String prompt) {
-    MenuQualityAnalyzer.validatePromptNotEmpty(prompt);
-
-    // Sync single-user pool is fine here: this emptiness PRE-check is not
-    // safety-load-bearing — generation itself draws from the async
-    // household-filtered pool and re-checks emptiness there (BUT-1464).
-    if (availableRecipes.isEmpty) {
-      throw Exception(AppLocale.current.errorNoRecipesAvailable);
-    }
-  }
 
   /// Analyze generated menu quality (delegates to [MenuQualityAnalyzer]).
   Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) =>

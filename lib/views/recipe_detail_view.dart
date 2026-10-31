@@ -26,6 +26,7 @@ import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
 import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_action_bar.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_note_banner.dart';
@@ -34,6 +35,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/views/recipe_detail/borrowed_image_frame.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -364,7 +366,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             // picker, and cooking mode knows no member ids, so none are
             // passed (Q-P6-E18).
             case CookingModeExit.finished:
-              await viewModel.markAsCooked();
+              if (await viewModel.markAsCooked() && context.mounted) {
+                await RecipeManagementHandler.offerCookedPantry(
+                  context,
+                  viewModel.recipe,
+                  _actions.currentPortions,
+                );
+              }
             // Q6-05 = C: "Spara min kopia" does exactly that, through the
             // same copy path as "Spara till mitt kök".
             case CookingModeExit.saveCopy:
@@ -517,35 +525,39 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       : FlexibleSpaceBar(
                           background: Hero(
                             tag: ImageConfig.recipeHeroTag(recipe.id),
-                            child: Semantics(
-                              label: context.l10n.a11yRecipeImageFullscreen,
-                              button: true,
-                              child: GestureDetector(
-                                onTap: () =>
-                                    RecipeDetailSharedWidgets.showFullscreenImage(
-                                      context,
-                                      recipe.imageUrls,
-                                      0,
+                            child: BorrowedImageFrame(
+                              imageUrl: recipe.imageUrls.first,
+                              sourceUrl: recipe.sourceUrl,
+                              child: Semantics(
+                                label: context.l10n.a11yRecipeImageFullscreen,
+                                button: true,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      RecipeDetailSharedWidgets.showFullscreenImage(
+                                        context,
+                                        recipe.imageUrls,
+                                        0,
+                                      ),
+                                  child: CachedNetworkImage(
+                                    imageUrl: recipe.imageUrls.first,
+                                    cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                      recipe.imageUrls.first,
                                     ),
-                                child: CachedNetworkImage(
-                                  imageUrl: recipe.imageUrls.first,
-                                  cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                    recipe.imageUrls.first,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth:
+                                        (600 *
+                                                MediaQuery.of(
+                                                  context,
+                                                ).devicePixelRatio)
+                                            .round(),
+                                    // A still plate while the photo loads,
+                                    // never a spinner (U05 test plan).
+                                    placeholder: (context, url) => ColoredBox(
+                                      color: cs.surfaceContainerHighest,
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        const RecipeImageFailedPlate(),
                                   ),
-                                  fit: BoxFit.cover,
-                                  memCacheWidth:
-                                      (600 *
-                                              MediaQuery.of(
-                                                context,
-                                              ).devicePixelRatio)
-                                          .round(),
-                                  // A still plate while the photo loads,
-                                  // never a spinner (U05 test plan).
-                                  placeholder: (context, url) => ColoredBox(
-                                    color: cs.surfaceContainerHighest,
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const RecipeImageFailedPlate(),
                                 ),
                               ),
                             ),

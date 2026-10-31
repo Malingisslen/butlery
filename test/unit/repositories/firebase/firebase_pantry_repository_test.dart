@@ -390,56 +390,6 @@ void main() {
     });
   });
 
-  group('getByIngredientId', () {
-    test('returns matching item', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.add(
-        _alice,
-        _item(id: 'i1', ingredientId: 'ing-mjolk', name: 'Mjölk'),
-      );
-
-      final got = await repo.getByIngredientId(_alice, 'ing-mjolk');
-      expect(got, isNotNull);
-      expect(got!.id, 'i1');
-    });
-
-    test('returns null when no match', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.add(_alice, _item(ingredientId: 'ing-other'));
-
-      expect(await repo.getByIngredientId(_alice, 'ing-mjolk'), isNull);
-    });
-  });
-
-  group('getExpiringSoon', () {
-    test('returns items expiring before cutoff', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () async {
-        // Expires in 3 days — within 7-day cutoff.
-        await repo.add(
-          _alice,
-          _item(id: 'i1', expiry: DateTime.utc(2026, 1, 4), name: 'Soon'),
-        );
-        // Expires in 30 days — outside 7-day cutoff.
-        await repo.add(
-          _alice,
-          _item(id: 'i2', expiry: DateTime.utc(2026, 2, 1), name: 'Later'),
-        );
-
-        final expiring = await repo.getExpiringSoon(_alice, 7);
-        expect(expiring.map((i) => i.id), ['i1']);
-      });
-    });
-
-    test('returns empty when no items expiring', () async {
-      final repo = _repo(FakeFirebaseFirestore());
-      expect(await repo.getExpiringSoon(_alice, 7), isEmpty);
-    });
-  });
-
   group('exportAllByUser', () {
     test('returns items as id+data maps', () async {
       final firestore = FakeFirebaseFirestore();
@@ -462,25 +412,6 @@ void main() {
 
       final export = await repo.exportAllByUser(_alice, maxDocuments: 3);
       expect(export.length, 3);
-    });
-  });
-
-  group('deleteAll', () {
-    test('removes all items for user', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.add(_alice, _item(id: 'i1'));
-      await repo.add(_alice, _item(id: 'i2'));
-      await repo.add(_alice, _item(id: 'i3'));
-
-      await repo.deleteAll(_alice);
-
-      expect(await repo.getAll(_alice), isEmpty);
-    });
-
-    test('no-op when no items', () async {
-      final repo = _repo(FakeFirebaseFirestore());
-      await repo.deleteAll(_alice);
     });
   });
 }

@@ -202,7 +202,7 @@ class IngredientParsingStrategy {
 
     // Use per-ingredient confidence when CRF is active (more accurate
     // than just checking isStructured, since CRF sets confidence based
-    // on label coverage). Fall back to isStructured ratio for regex.
+    // on label coverage). Fall back to the structured ratio for regex.
     final confidenceScore = parser != null
         ? _crfConfidenceScore(parsed)
         : _structuredRatio(parsed);
@@ -344,9 +344,15 @@ class IngredientParsingStrategy {
   }
 
   /// Confidence score based on structured ingredient ratio (regex fallback).
+  ///
+  /// Read from each row's confidence, not [ParsedIngredient.isStructured]:
+  /// a row whose line states no amount shows no quantity but still counts
+  /// here.
   double _structuredRatio(List<ParsedIngredient> parsed) {
     if (parsed.isEmpty) return 0.0;
-    final structuredCount = parsed.where((p) => p.isStructured).length;
+    final structuredCount = parsed
+        .where((p) => p.confidence != ParseConfidence.low)
+        .length;
     return structuredCount / parsed.length;
   }
 
@@ -366,7 +372,7 @@ class IngredientParsingStrategy {
     return ParsedIngredient(
       name: result.name,
       originalLine: line,
-      quantity: result.quantity > 0 ? result.quantity.toString() : null,
+      quantity: IngredientParser.statedQuantity(line, result.quantity),
       unit: result.unit.isNotEmpty ? result.unit : null,
       confidence: confidence,
     );

@@ -100,13 +100,108 @@ class IngredientParser {
   static double parseQuantity(String qtyString) =>
       QuantityParser.parse(qtyString);
 
+  static final RegExp _writtenAmountRe = RegExp(r'[\d½¼¾⅓⅔⅛⅜⅝⅞]');
+
+  /// A "1" of its own: not part of "12", "1/2" or "1,5", nor a strength or
+  /// temperature ("1%", "1°") or the start of a word ("1-minuts").
+  static final RegExp _statedOneRe = RegExp(
+    r'(?<![\d,./])1(?![\d,./]|\s*[%°]|-[A-Za-zÅÄÖåäö])',
+  );
+  static final RegExp _spokenOneRe = RegExp(
+    r'^(en|ett)\s',
+    caseSensitive: false,
+  );
+
+  /// The amount [line] states, as shown to the user: "2" rather than "2.0",
+  /// and null when the line names none — [parseIngredient] answers 1 for
+  /// those, and that 1 is not something the recipe said.
+  static String? statedQuantity(String line, double quantity) {
+    if (quantity <= 0) return null;
+    final trimmed = line.trim();
+    if (quantity == 1 &&
+        !_statedOneRe.hasMatch(trimmed) &&
+        !_spokenOneRe.hasMatch(trimmed)) {
+      return null;
+    }
+    return quantity % 1 == 0
+        ? quantity.toInt().toString()
+        : quantity.toString();
+  }
+
+  static const String _amount = r'(?:\d+(?:[,.]\d+)?(?:/\d+)?|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])';
+
+  static final RegExp _approximatelyRe = RegExp(
+    '^(?:ca\\.?|cirka|ungefär|ungef\\.|ev\\.?)\\s+(?=$_amount)',
+    caseSensitive: false,
+  );
+
+  /// "2-3 tomater": the amount is read from the low end, and "-3" must not
+  /// end up in the name.
+  static final RegExp _rangeRe = RegExp(
+    '^($_amount)\\s*[-–]\\s*(?:(?:ca|ev)\\.?\\s+)?$_amount(?: \\d+/\\d+)?\\s',
+    caseSensitive: false,
+  );
+
+  static final RegExp _rangeTailRe = RegExp('\\s*[-–]\\s*$_amount\$');
+
+  static final RegExp _writtenAmountPrefixRe = RegExp(
+    '^(?:(?:ca\\.?|cirka|ungefär|ungef\\.|ev\\.?)\\s+)?$_amount(?: \\d+/\\d+)?'
+    '(?:\\s*[-–]\\s*(?:(?:ca|ev)\\.?\\s+)?$_amount(?: \\d+/\\d+)?)?(?=\\s)',
+    caseSensitive: false,
+  );
+
+  /// The leading amount as written ("ca 2", "2-3") when it is more than the
+  /// number [parseIngredient] reads from it, so a display can keep it.
+  static String? writtenAmount(String line) {
+    final text = _writtenAmountPrefixRe
+        .firstMatch(_normalizeWhitespace(line))
+        ?.group(0);
+    if (text == null || !RegExp(r'^\p{L}|[-–]', unicode: true).hasMatch(text)) {
+      return null;
+    }
+    return text;
+  }
+
+  static String _leadingAmountOnly(String ingredient) => ingredient
+      .replaceFirst(_approximatelyRe, '')
+      .replaceFirstMapped(_rangeRe, (m) => '${m[1]} ');
+
+  static final RegExp _startsWithAmountRe = RegExp('^$_amount(?:\\s|\$)');
+  static final RegExp _wordAfterHyphenRe = RegExp(r'^[-–][A-Za-zÅÄÖåäö]');
+  static final RegExp _amountOnlyRe = RegExp(
+    '^$_amount(?: $_amount)?(?: [a-zåäö]+)?\$',
+    caseSensitive: false,
+  );
+
+  /// Words from a comma or a parenthesis on describe the ingredient.
+  static int _headEnd(List<String> words) {
+    for (var k = 0; k < words.length; k++) {
+      final w = words[k];
+      if (w == ',' || w.startsWith('(')) return k;
+      if (w.endsWith(',')) return k + 1;
+    }
+    return words.length;
+  }
+
+  /// Nothing, an amount (with a size: "1 stort knippe"), or one word such
+  /// as "några" in "några droppar".
+  static bool _canPrecedeUnit(String before) =>
+      before.isEmpty || !before.contains(' ') || _amountOnlyRe.hasMatch(before);
+
+  // "1/2" is an amount too; parseQuantity does not read it. "2-3" is read
+  // from its low end.
+  static double _amountBeforeUnit(String text) {
+    final amount = text.trim().replaceFirst(_rangeTailRe, '');
+    return QuantityParser.parseAsciiFraction(amount) ?? parseQuantity(amount);
+  }
+
   /// Parses an ingredient string into structured components.
   static RegexParseResult parseIngredient(String rawIngredient) {
     if (rawIngredient.isEmpty) {
       return const RegexParseResult(quantity: 1.0, unit: '', name: '');
     }
 
-    final ingredient = _normalizeWhitespace(rawIngredient);
+    final ingredient = _leadingAmountOnly(_normalizeWhitespace(rawIngredient));
     if (ingredient.isEmpty) {
       return const RegexParseResult(quantity: 1.0, unit: '', name: '');
     }
@@ -160,27 +255,59 @@ class IngredientParser {
 
     // Step 2: Unit-first detection
     final lowerWords = ingredient.toLowerCase().split(RegExp(r'\s+'));
+    final headEnd = _headEnd(words);
     for (int i = 0; i < lowerWords.length; i++) {
       if (UnitDefinitions.isKnownUnit(lowerWords[i])) {
         final beforeUnit = words.take(i);
         final afterUnit = words.skip(i + 1);
 
-        double quantity = 1.0;
-        if (beforeUnit.isNotEmpty) {
-          quantity = parseQuantity(beforeUnit.join(' '));
+        // "creme fraiche naturell, 2 dl": the amount closes the line, as on
+        // Instagram, so the words before it are the name.
+        if (afterUnit.isEmpty &&
+            i >= 2 &&
+            !_startsWithAmountRe.hasMatch(ingredient)) {
+          final amount = words[i - 1];
+          if (_writtenAmountRe.hasMatch(amount[0])) {
+            final name = words
+                .take(i - 1)
+                .join(' ')
+                .replaceFirst(RegExp(r'\s*[,:]$'), '');
+            return RegexParseResult(
+              quantity: _amountBeforeUnit(amount),
+              unit: lowerWords[i],
+              name: name.toLowerCase(),
+            );
+          }
         }
+
+        // "2 avokador, i bitar", "7 gula lökar (ca 900 g)", "rödlök i
+        // skivor": a unit that does not follow the amount describes the
+        // ingredient, and is not what it is measured in.
+        if (i >= headEnd || !_canPrecedeUnit(beforeUnit.join(' '))) continue;
+
+        // "6 tunna skivor rökt lax": the size word belongs to the name.
+        final amountWords = beforeUnit.toList();
+        final size =
+            amountWords.length > 1 &&
+                !_startsWithAmountRe.hasMatch(amountWords.last)
+            ? amountWords.removeLast()
+            : null;
+        final quantity = amountWords.isEmpty
+            ? 1.0
+            : _amountBeforeUnit(amountWords.join(' '));
 
         return RegexParseResult(
           quantity: quantity,
           unit: lowerWords[i],
-          name: afterUnit.join(' ').toLowerCase(),
+          name: [?size, ...afterUnit].join(' ').toLowerCase(),
         );
       }
     }
 
     // Step 3: Regex fallback for attached units
     final match = quantityRegex.firstMatch(ingredient);
-    if (match != null) {
+    // "5-minuterssill": the digit starts the word.
+    if (match != null && !_wordAfterHyphenRe.hasMatch(match.group(3)!)) {
       final qtyString = match.group(1)!;
       final attachedUnit = match.group(2);
       final rest = match.group(3)!.trim();

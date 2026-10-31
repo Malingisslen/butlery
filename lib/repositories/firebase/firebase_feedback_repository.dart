@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -11,6 +12,10 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+
+/// How long a feedback row is kept before the TTL policy on `expireAt`
+/// deletes it.
+const Duration kFeedbackRetention = Duration(days: 365);
 
 /// Firebase implementation for beta feedback persistence.
 /// Uses Firestore for feedback entries and Firebase Storage for screenshots.
@@ -36,7 +41,10 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
       FeedbackEntry.fromMap({...doc.data()!, 'id': doc.id});
 
   @override
-  Map<String, dynamic> toFirestore(FeedbackEntry entity) => entity.toMap();
+  Map<String, dynamic> toFirestore(FeedbackEntry entity) => {
+    ...entity.toMap(),
+    'expireAt': Timestamp.fromDate(clock.now().add(kFeedbackRetention)),
+  };
 
   @override
   String getId(FeedbackEntry entity) => entity.id;

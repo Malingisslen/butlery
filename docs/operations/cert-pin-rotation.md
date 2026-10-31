@@ -9,8 +9,6 @@ in release mode if any host has an empty pin list.
 
 | Host | Surface |
 | ---- | ------- |
-| `butlery-app-dsn.algolia.net` | Algolia search API (DSN) |
-| `butlery-app.algolia.net` | Algolia search API (writes) |
 | `api.ocr.space` | Primary OCR HTTP fallback |
 | `vision.googleapis.com` | Google Vision OCR fallback |
 | `www.ica.se` | Recipe URL scrape |
@@ -68,7 +66,6 @@ After populating pins:
 1. `flutter test test/unit/services/security/` — unit + lookup tests.
 2. Build a release APK: `flutter build apk --release`.
 3. Install on a device, open the app, exercise:
-   - Recipe search (Algolia)
    - Recipe URL import (one of the recipe-scrape hosts)
    - OCR scan (api.ocr.space or vision.googleapis.com)
 4. Inspect logs: a successful pin check produces no warnings. A pin mismatch

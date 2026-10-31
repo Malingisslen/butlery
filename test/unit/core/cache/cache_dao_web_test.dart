@@ -452,4 +452,62 @@ void main() {
       expect(await cacheDao.getParsedRecipe('test'), isNotNull);
     });
   });
+
+  group('read-cache clearing', () {
+    Future<void> seed(String userId) async {
+      await cacheDao.putJson(
+        boxName: 'recipes',
+        userId: userId,
+        key: 'k',
+        value: '{}',
+      );
+      await cacheDao.putJson(
+        boxName: 'shopping',
+        userId: userId,
+        key: 'k',
+        value: '{}',
+      );
+      await cacheDao.putParsedRecipe(
+        cacheKey: 'c-$userId',
+        userId: userId,
+        recipeJson: '{}',
+        parserVersion: '1.0',
+        source: 'url',
+      );
+    }
+
+    test('clearUserReadCaches removes every box for that user only', () async {
+      await seed('u1');
+      await seed('u2');
+
+      await cacheDao.clearUserReadCaches('u1');
+
+      expect(await cacheDao.getJson('recipes', 'u1', 'k'), isNull);
+      expect(await cacheDao.getJson('shopping', 'u1', 'k'), isNull);
+      expect(await cacheDao.getParsedRecipe('c-u1'), isNull);
+      expect(await cacheDao.getJson('recipes', 'u2', 'k'), isNotNull);
+      expect(await cacheDao.getParsedRecipe('c-u2'), isNotNull);
+    });
+
+    test('clearReadCachesExcept keeps only the signed-in user', () async {
+      await seed('u1');
+      await seed('u2');
+
+      await cacheDao.clearReadCachesExcept('u2');
+
+      expect(await cacheDao.getJson('shopping', 'u1', 'k'), isNull);
+      expect(await cacheDao.getParsedRecipe('c-u1'), isNull);
+      expect(await cacheDao.getJson('shopping', 'u2', 'k'), isNotNull);
+    });
+
+    test('clearReadCachesExcept(null) drops every account', () async {
+      await seed('u1');
+      await seed('u2');
+
+      await cacheDao.clearReadCachesExcept(null);
+
+      expect(await cacheDao.getJson('recipes', 'u2', 'k'), isNull);
+      expect(await cacheDao.getParsedRecipe('c-u2'), isNull);
+    });
+  });
 }

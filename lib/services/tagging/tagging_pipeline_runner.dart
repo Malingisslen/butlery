@@ -7,6 +7,8 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
+import 'package:butlery/services/nutrition/nutrition_table.dart';
+import 'package:butlery/services/tagging/ingredient_line_weigher.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
@@ -108,6 +110,10 @@ class TaggingPhaseCallables {
   )
   phase4;
   final Future<Phase5Result> Function(Phase4Result, Recipe)? phase5;
+
+  /// Puts each line's weight on the lookup; left null, the main ingredients
+  /// are read from the line order alone.
+  final LineWeigher? weigh;
   final Future<Phase5ResultPartial> Function(
     Phase1Result,
     Recipe,
@@ -122,12 +128,14 @@ class TaggingPhaseCallables {
     required this.phase4,
     this.phase5,
     this.phase5FromPhase1,
+    this.weigh,
   });
 }
 
 TaggingPhaseCallables _defaultPhaseCallables(
   IngredientLookupService lookupService,
   TagGenerator generator,
+  Future<NutritionTable> Function()? nutritionTable,
 ) {
   // BUT-1483: phase1/phase5/phase5FromPhase1 are intentionally omitted (null).
   // The config-backed phases are resolved once per run inside [run] and passed
@@ -142,6 +150,7 @@ TaggingPhaseCallables _defaultPhaseCallables(
         Future<Phase3Result>(() => generator.runPhase3(p1, p2, recipe)),
     phase4: (p1, p2, p3, recipe) =>
         Future<Phase4Result>(() => generator.runPhase4(p1, p2, p3, recipe)),
+    weigh: IngredientLineWeigher.withTable(nutritionTable),
   );
 }
 
@@ -179,10 +188,12 @@ class TaggingPipelineRunner {
     required IngredientLookupService lookupService,
     required TagGenerator generator,
     TaggingPhaseCallables? phaseCallables,
+    Future<NutritionTable> Function()? nutritionTable,
     this.onPhaseOutcome,
   }) : _generator = generator,
        _phases =
-           phaseCallables ?? _defaultPhaseCallables(lookupService, generator);
+           phaseCallables ??
+           _defaultPhaseCallables(lookupService, generator, nutritionTable);
 
   /// Test-only constructor: injects [TaggingPhaseCallables] without
   /// requiring a real lookup service. The generator is still required for
@@ -211,9 +222,9 @@ class TaggingPipelineRunner {
       work: () => _phases.lookup(ingredients, userId),
     );
     outcomes.add(lookupExec.outcome);
-    final lookupResult = lookupExec.value;
+    final lookedUp = lookupExec.value;
 
-    if (lookupResult == null) {
+    if (lookedUp == null) {
       // Lookup floor — match legacy CRIT-4 behaviour.
       return TaggingPipelineResult(
         tagResult: _lookupFloorResult(ingredients, lookupExec.outcome),
@@ -223,11 +234,19 @@ class TaggingPipelineRunner {
 
     // Edge case: every ingredient unknown. Same shape as legacy service:
     // return `TagResult.allUnknown` without running any phase.
-    if (lookupResult.matched.isEmpty && lookupResult.unmatched.isNotEmpty) {
+    if (lookedUp.matched.isEmpty && lookedUp.unmatched.isNotEmpty) {
       return TaggingPipelineResult(
-        tagResult: TagResult.allUnknown(lookupResult.unmatched),
+        tagResult: TagResult.allUnknown(lookedUp.unmatched),
         outcomes: outcomes,
       );
+    }
+    IngredientLookupResult lookupResult = lookedUp;
+    try {
+      lookupResult =
+          await _phases.weigh?.call(lookedUp, recipe, ingredients) ?? lookedUp;
+    } catch (e) {
+      // Without weights the main ingredients come from the line order.
+      AppLogger.warning('Tagging: weighing the ingredient lines failed: $e');
     }
 
     // BUT-1483: resolve the config-backed (phase1, phase5) pair ONCE for this

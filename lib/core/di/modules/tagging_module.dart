@@ -24,6 +24,8 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.d
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 
+import 'package:butlery/services/nutrition/nutrition_service.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
@@ -63,6 +65,7 @@ class TaggingModule implements DIModule {
   List<Type> get provides => [
     TagConfigService,
     IngredientRepository,
+    IngredientIdResolver,
     UserIngredientRepository,
     IngredientLookupService,
     TaggingEventsTracker,
@@ -110,6 +113,10 @@ class TaggingModule implements DIModule {
         tagConfigService: app<TagConfigService>(),
         userIngredientRepository: container<UserIngredientRepository>(),
         eventsTracker: app<TaggingEventsTracker>(),
+        // Weighs ingredient lines so tagging can find the main ingredients.
+        nutritionService: container.isRegistered<NutritionService>()
+            ? container<NutritionService>()
+            : null,
       ),
     );
 
@@ -161,6 +168,12 @@ class TaggingModule implements DIModule {
       // Global ingredient repository with in-memory caching
       container.registerLazySingleton<IngredientRepository>(
         () => FirebaseIngredientRepository(),
+      );
+
+      container.registerLazySingleton<IngredientIdResolver>(
+        () => IngredientIdResolver(
+          ingredientRepository: container<IngredientRepository>(),
+        ),
       );
 
       // IngredientLookupService, TaggingService, PersonalTagRuleEvaluator,

@@ -118,7 +118,7 @@ class InputDetector {
     // Check if it looks like a URL
     if (!input.startsWith('http://') && !input.startsWith('https://')) {
       // Try adding https:// if it looks like a domain
-      if (_looksLikeDomain(input)) {
+      if (looksLikeDomain(input)) {
         input = 'https://$input';
       } else {
         return null;
@@ -137,14 +137,16 @@ class InputDetector {
     return null;
   }
 
-  /// Checks if the input looks like a domain (e.g., "youtube.com/watch?v=xxx").
-  bool _looksLikeDomain(String input) {
-    // Simple heuristic: contains a dot and no spaces in the first part
-    final parts = input.split(' ');
-    if (parts.isEmpty) return false;
-    final firstPart = parts.first;
-    return firstPart.contains('.') && !firstPart.contains('\n');
-  }
+  /// A link typed without its scheme ("ica.se/recept/…"): one word, ending
+  /// its host in a letters-only top-level domain, so an amount like
+  /// "1.5 dl" or "2.5dl" stays recipe text.
+  static bool looksLikeDomain(String input) =>
+      _bareDomain.hasMatch(input.trim());
+
+  static final _bareDomain = RegExp(
+    r'^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?::\d+)?(?:[/?#]\S*)?$',
+    caseSensitive: false,
+  );
 
   /// Detects the platform from the URL.
   Platform _detectPlatform(Uri uri) {

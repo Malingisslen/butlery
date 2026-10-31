@@ -4,7 +4,6 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -15,8 +14,7 @@ import 'package:butlery/models/account/retained_record.dart';
 /// The cascade itself lives in `functions/src/account/request-account-
 /// deletion.ts`. This class is now a thin orchestrator:
 ///
-///   1. Pre-CF: clean third-party indexes the CF can't reach (Algolia /
-///      MeiliSearch search index, local offline cache).
+///   1. Pre-CF: clear the local offline cache, which the CF can't reach.
 ///   2. Invoke the `requestAccountDeletion` callable. The CF runs the
 ///      Firestore cascade + Storage cleanup as Admin SDK, then calls
 ///      `admin.auth().deleteUser(uid)` LAST.
@@ -35,7 +33,6 @@ class AccountDeletionService extends BaseService {
 
   final AuthService _authService;
   final FirebaseFunctions _functions;
-  final SearchRepository? _searchRepository;
   final OfflineService? _offlineService;
   static const String _logTag = 'AccountDeletionService';
   static const String _callableName = 'requestAccountDeletion';
@@ -46,11 +43,9 @@ class AccountDeletionService extends BaseService {
   AccountDeletionService({
     required AuthService authService,
     required FirebaseFunctions functions,
-    SearchRepository? searchRepository,
     OfflineService? offlineService,
   }) : _authService = authService,
        _functions = functions,
-       _searchRepository = searchRepository,
        _offlineService = offlineService;
 
   /// Delete this user's account.
@@ -104,13 +99,6 @@ class AccountDeletionService extends BaseService {
     }
 
     app_logger.AppLogger.info('[$_logTag] Starting account deletion');
-
-    // Pre-CF: search-index cleanup. Once `auth.deleteUser` runs server-side,
-    // the client's search-SDK credentials are tied to a now-gone user, so
-    // any Algolia/Meili call would fail. Run this BEFORE the CF call.
-    if (_searchRepository != null) {
-      await _cleanupSearchIndex(uid, result);
-    }
 
     // Pre-CF: clear local offline cache. Client-only — no CF equivalent.
     if (_offlineService != null) {
@@ -169,8 +157,8 @@ class AccountDeletionService extends BaseService {
   }
 
   /// Ask the server to delete the account after the grace period instead of
-  /// now (BUT-950). Nothing is erased yet, so the search index and the offline
-  /// cache stay as they are.
+  /// now (BUT-950). Nothing is erased yet, so the offline cache stays as it
+  /// is.
   Future<DeletionScheduleResult> scheduleAccountDeletion({
     required String reason,
   }) async {
@@ -281,22 +269,6 @@ class AccountDeletionService extends BaseService {
       return DeletionScheduleStatus.network;
     }
     return DeletionScheduleStatus.failed;
-  }
-
-  Future<void> _cleanupSearchIndex(
-    String userId,
-    Map<String, dynamic> result,
-  ) async {
-    try {
-      await _searchRepository!.removeUser(userId);
-      (result['deletedCollections'] as List).add('search_index_user');
-    } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] search index user removal failed',
-        e,
-      );
-      (result['failedCollections'] as List).add('search_index_user');
-    }
   }
 
   /// Translate a `FirebaseFunctionsException` into the result-map shape.

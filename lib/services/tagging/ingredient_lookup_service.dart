@@ -1,14 +1,15 @@
+import 'package:butlery/constants/grocery_brands.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/tagging/ingredient_line.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/config/compound_suffixes.dart';
+import 'package:butlery/services/tagging/ingredient_line_parts.dart';
 import 'package:butlery/utils/text/compound_splitter.dart';
-import 'package:butlery/utils/text/ingredient_normalizer.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 
 /// Service for looking up ingredients from the database.
@@ -98,11 +99,23 @@ class IngredientLookupService extends BaseService {
             : _findIngredient(base, userId: userId);
       }),
     );
+    final dishRowFor = {
+      for (var i = 0; i < unmatched.length; i++)
+        if (dishRows[i] != null) unmatched[i]: dishRows[i]!,
+    };
     final total = matched.length + unmatched.length;
     final result = IngredientLookupResult(
       matched: [...matched, ...dishRows.whereType<IngredientData>()],
       unmatched: unmatched,
       coverage: total == 0 ? 0.0 : matched.length / total,
+      lines: [
+        for (var i = 0; i < normalizedNames.length; i++)
+          IngredientLine(
+            names: [normalizedNames[i]],
+            ingredients: [?results[i] ?? dishRowFor[normalizedNames[i]]],
+            known: results[i] != null,
+          ),
+      ],
     );
 
     if (result.hasUnknowns) {
@@ -123,6 +136,7 @@ class IngredientLookupService extends BaseService {
   /// 3. Global database by exact name
   /// 4. Global database by alias
   /// 5. Fuzzy match (compound words, common variations)
+  /// 6. The same steps without a grocery brand ([GroceryBrands])
   ///
   /// CRIT-3: Captures cache version before async lookup to detect invalidation.
   Future<IngredientData?> _findIngredient(
@@ -132,7 +146,7 @@ class IngredientLookupService extends BaseService {
     if (normalizedName.isEmpty) return null;
 
     // Clean the name further
-    final cleanName = _cleanForLookup(normalizedName);
+    final cleanName = cleanForLookup(normalizedName);
 
     // CRIT-13: Empty name after cleaning means no valid ingredient
     // This prevents cache key collisions for whitespace-only inputs
@@ -212,6 +226,14 @@ class IngredientLookupService extends BaseService {
       if (aliasResults.isNotEmpty) return aliasResults.first;
     }
 
+    // 5. Last, the same name without a brand ("arla mellanmjolk"). Only
+    // after every form of the whole name, so a registry entry that carries
+    // the brand ("felix mos") still wins.
+    final unbranded = GroceryBrands.strip(cleanName);
+    if (unbranded != null) {
+      return _performLookup(unbranded, userId: userId);
+    }
+
     return null;
   }
 
@@ -236,7 +258,7 @@ class IngredientLookupService extends BaseService {
   /// CRIT-14: Uses SwedishCharacterNormalizer for consistent handling of
   /// å→a, ä→a, ö→o. This ensures "köttfärs" matches "kottfars" in the database
   /// regardless of whether the input contains Swedish diacritics.
-  String _cleanForLookup(String name) {
+  static String cleanForLookup(String name) {
     // CRIT-14: Apply Swedish character normalization (includes toLowerCase)
     return SwedishCharacterNormalizer.normalize(name)
         .trim()
@@ -327,7 +349,7 @@ class IngredientLookupService extends BaseService {
       variations.add(name.substring(0, name.length - 2));
     }
 
-    // Remove common adjectives (ASCII-normalized to match _cleanForLookup output)
+    // Remove common adjectives (ASCII-normalized to match cleanForLookup output)
     final adjectives = [
       'farsk',
       'farska',
@@ -405,41 +427,18 @@ class IngredientLookupService extends BaseService {
     // H2: Deduplicate before lookup, preserving order
     final seen = <String>{};
     final normalized = <String>[];
+    final lineNames = <List<String>>[];
     final enrichedKnown =
         ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
 
     for (final raw in rawIngredients) {
-      // M2: Parse raw ingredient to extract name (strips quantity and unit)
-      // BUT-1496: parse och-conjunctions ("salt och peppar") into separate
-      // ingredients — the compound parser existed but was never used here, so
-      // conjunction lines stayed one unmatchable blob.
-      // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
-      List<String> namesToNormalize;
-      try {
-        final parsedParts = IngredientParser.parseCompoundIngredient(raw);
-        namesToNormalize = [
-          for (final parsed in parsedParts)
-            if (parsed.name.isNotEmpty) parsed.name,
-        ];
-        if (namesToNormalize.isEmpty) namesToNormalize = [raw];
-      } catch (e) {
-        AppLogger.warning(
-          'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
-        );
-        namesToNormalize = [raw];
-      }
-
-      for (final nameToNormalize in namesToNormalize) {
-        final result = IngredientNormalizer.normalize(
-          nameToNormalize,
-          additionalKnown: enrichedKnown,
-        );
-        final norm = result.normalized;
-
-        if (norm.isNotEmpty && !seen.contains(norm)) {
-          seen.add(norm);
-          normalized.add(norm);
-        }
+      final names = [
+        for (final part in partsOf(raw, additionalKnown: enrichedKnown))
+          part.normalized,
+      ];
+      lineNames.add(names);
+      for (final name in names) {
+        if (seen.add(name)) normalized.add(name);
       }
     }
 
@@ -451,8 +450,28 @@ class IngredientLookupService extends BaseService {
       );
     }
 
-    return lookupIngredients(normalized, userId: userId);
+    final result = await lookupIngredients(normalized, userId: userId);
+    final byName = {for (final line in result.lines) line.names.single: line};
+    // One line per raw line, so a line's weight can be read beside it.
+    return result.withLines([
+      for (final names in lineNames)
+        IngredientLine(
+          names: names,
+          ingredients: [
+            for (final name in names) ...?byName[name]?.ingredients,
+          ],
+          known:
+              names.isNotEmpty &&
+              names.every((name) => byName[name]?.known ?? false),
+        ),
+    ]);
   }
+
+  /// The ingredient names in one raw line; see [IngredientLineParts.of].
+  static List<({String parsed, String normalized})> partsOf(
+    String raw, {
+    Set<String>? additionalKnown,
+  }) => IngredientLineParts.of(raw, additionalKnown: additionalKnown);
 
   /// Searches for ingredients matching a query.
   ///

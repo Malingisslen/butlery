@@ -5,10 +5,6 @@
 /// Pure function, no Flutter imports, same category as `page_reflow.dart`
 /// (see `lib/services/CLAUDE.md`). Text rules only: it runs where no
 /// geometry reaches the parser.
-///
-/// A line that carries a quantity is never joined to the line after it unless it ends
-/// in a comma or a hyphen, because two ingredient rows that read as prose
-/// ("salt och vitpeppar" over "Gör så här") would otherwise fold into one.
 library;
 
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
@@ -18,7 +14,12 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 /// Joins each wrapped line to its continuation. Idempotent: a second pass
 /// over the result changes nothing.
 String reflowWrappedLines(String text) {
-  final lines = text.split('\n');
+  // Files checked out with CRLF (git autocrlf on Windows) and pasted text
+  // both carry '\r', which would otherwise stay glued to each line's end.
+  final lines = text
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
   final out = <String>[];
   var i = 0;
   while (i < lines.length) {
@@ -50,6 +51,7 @@ bool _continues(String line, String next, {required bool inStep}) {
         !_opensALine(b) &&
         !HeadingWordLists.isPostAge(b);
   }
+  if (_startsUppercase(b) && _runsOnIntoCapital(a, b)) return true;
   // Also what keeps a blank line, a bullet, a numbered step and a row that
   // opens with a digit on their own: none of them starts with a lowercase
   // letter.
@@ -60,9 +62,12 @@ bool _continues(String line, String next, {required bool inStep}) {
   if (a.endsWith(',')) return true;
 
   // Out of a quantity row only through a comma or a hyphen, handled above.
-  // A numbered step is never one, however many "smör och olja" it carries.
+  // A numbered step is never one, however many "smör och olja" it carries,
+  // and neither is a line that reads as a step: "Gratinera på 225 grader"
+  // holds a "225 g".
   if (!stepMarker.hasMatch(a.trim()) &&
-      RecipeSectionDetector.looksLikeIngredient(a)) {
+      RecipeSectionDetector.looksLikeIngredient(a) &&
+      RecipeSectionDetector.instructionScore(a) < 2) {
     return false;
   }
   if (_isListHeading(a)) return false;
@@ -80,6 +85,21 @@ bool _continues(String line, String next, {required bool inStep}) {
     return b.split(_whitespace).length >= 3;
   }
   return false;
+}
+
+/// An OCR reader can capitalise the first word of a wrapped line ("…hacka
+/// de" / "Soltorkade tomaterna väl."). A line that stops on a word no
+/// sentence ends on still runs on, unless either side is a row of its own.
+bool _runsOnIntoCapital(String a, String b) {
+  if (!_danglingWord.hasMatch(a) || _terminal.hasMatch(a)) return false;
+  if (_isListHeading(a) || _opensALine(b)) return false;
+  if (HeadingWordLists.isPostAge(b)) return false;
+  if (!stepMarker.hasMatch(a.trim()) &&
+      RecipeSectionDetector.looksLikeIngredient(a) &&
+      RecipeSectionDetector.instructionScore(a) < 2) {
+    return false;
+  }
+  return b.split(_whitespace).length >= 3;
 }
 
 String _join(String line, String next) {

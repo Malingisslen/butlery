@@ -9,7 +9,8 @@ library;
 
 import 'package:flutter/services.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/services/auth/local_user_data_registry.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -22,6 +23,7 @@ import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 
 /// Import phases for the state machine.
 enum ImportPhase {
@@ -72,12 +74,17 @@ class ImportNeedsUserHelp extends SmartImportResult {
   final String? sourceUrl;
   final List<int> likelyIngredientLines;
 
+  /// The post holds no recipe text to finish by hand; a screenshot is the
+  /// way forward.
+  final bool needsScreenshot;
+
   const ImportNeedsUserHelp({
     required this.extractedText,
     this.suggestedTitle,
     this.thumbnailUrl,
     this.sourceUrl,
     this.likelyIngredientLines = const [],
+    this.needsScreenshot = false,
   });
 }
 
@@ -140,7 +147,12 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   late final ImportProgressTracker _progressTracker;
 
-  static const String _pendingImportKey = 'butlery_pending_import_url';
+  final AutoSaveManager<String> _pendingImport = AutoSaveManager<String>(
+    storageKey: LocalUserDataRegistry.pendingImportUrlKey,
+    encode: (url) => url,
+    decode: (raw) => raw,
+    logLabel: 'SmartImportViewModel.pendingImport',
+  );
 
   SmartImportViewModel({
     required ImportManager importManager,
@@ -387,6 +399,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
         thumbnailUrl: result.thumbnailUrl,
         sourceUrl: result.sourceUrl,
         likelyIngredientLines: result.likelyIngredientLines ?? [],
+        needsScreenshot: result.needsScreenshot,
       );
       _lastResult = helpResult;
       return helpResult;
@@ -452,7 +465,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     clearError();
     try {
       for (final recipe in recipes) {
-        final result = await _importManager.saveImportedRecipe(recipe);
+        final result = await _importManager.saveImportedRecipe(
+          // These skip the editor, which writes an import's amounts as fractions.
+          ImportFractions.recipe(recipe),
+        );
         if (!result.isSuccess) {
           AppLogger.error(
             'Multi-recipe save failed: ${result.errorMessage.orEmpty()}',
@@ -640,9 +656,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   Future<void> _loadPendingImport() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final url = await _pendingImport.load();
       if (isDisposed) return;
-      final url = prefs.getString(_pendingImportKey);
       if (url != null && url.isNotEmpty) {
         // BUT-1147: if the user already typed before prefs resolved, don't
         // flip the banner flag or notify — their input is the source of truth.
@@ -659,9 +674,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   Future<void> _savePendingImportUrl(String url) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      await _pendingImport.flush(url);
       if (isDisposed) return;
-      await prefs.setString(_pendingImportKey, url);
       _hasPendingImport = true;
     } catch (e) {
       AppLogger.warning('Failed to save pending import URL: $e');
@@ -670,9 +684,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   Future<void> _clearPendingImportUrl() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      await _pendingImport.clear();
       if (isDisposed) return;
-      await prefs.remove(_pendingImportKey);
       _hasPendingImport = false;
     } catch (e) {
       AppLogger.warning('Failed to clear pending import URL: $e');
@@ -683,9 +696,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     if (!_hasPendingImport || !isOnline) return;
     // Read persisted URL directly — _input may have been changed by the user
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final url = await _pendingImport.load();
       if (isDisposed) return;
-      final url = prefs.getString(_pendingImportKey);
       if (url != null && url.isNotEmpty) {
         _input = url;
         _detection = _inputDetector.detect(url);

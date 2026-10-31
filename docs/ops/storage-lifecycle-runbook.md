@@ -199,3 +199,20 @@ re-applies the same policies.
 - BUT-419 — this runbook's parent ticket. **Closed 2026-04-26.**
 - BUT-418 — sibling DR pattern for Firestore (PITR + GCS exports).
 - BUT-450 — sibling fail-loud script pattern for GCP alerting.
+
+---
+
+## Feedback screenshots: delete after a year
+
+`feedback/<uid>/*.png` is kept as long as the feedback row it belongs to (the
+row's `expireAt` is one year after submission). The rule is added by a second
+script, because applying a lifecycle file replaces every rule on the bucket:
+
+```bash
+export STORAGE_BUCKET=butlery-prod.firebasestorage.app
+./infrastructure/storage/setup-feedback-screenshot-lifecycle.sh          # counts only
+./infrastructure/storage/setup-feedback-screenshot-lifecycle.sh --apply  # sets the rule
+```
+
+Run the count first and show the number of screenshots older than a year to
+Malin: they are deleted at the next lifecycle sweep after `--apply`.

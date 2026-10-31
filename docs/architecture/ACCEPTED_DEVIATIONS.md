@@ -469,6 +469,17 @@ without reception is worse than the narrow window. Do NOT file "the offline repl
 another device's tick" against `_mergeFromMemory` — decided. The alternative, B2, is switching
 "Ersätt listan" off offline with the sheet saying why. — 2026-10-08
 
+**Superseded 2026-10-31 (kärnflöde steg 8B):** there is no "Ersätt listan" and no add-only
+branch any more. Every merge is one sync (`WeekListReconciler`). Online it runs one transaction
+that reads the rows `menuItemIds` names. Offline, `_mergeFromMemory` computes the sync from the
+copy in memory, writes added and overwritten rows with `set`, deletes the rows it takes off, and
+changes `menuItemIds` with `arrayUnion`/`arrayRemove`. A tick the same account made on another
+device in the meantime, on a row the memory copy holds as untouched and unticked, can be lost when
+that row is overwritten or taken off. It retires "An add is safe" and "sets `menuItemIds`
+outright".
+**Accepted** by Malin 2026-10-31 13:36 on the decision card "Är det ok att en avbockning gjord
+utan nät ibland försvinner när listan uppdateras?": "Ja, det är ok".
+
 ### [Shopping/Offline] A version lost to an offline cached-base replay is not kept for restore (BUT-2140, PR 3)
 The 30-day restore keeps a row's earlier version (`previous`) and a removed row
 (`recentlyRemoved`) in the same write as the change, computed from the document that write
@@ -546,6 +557,11 @@ stem, so "potatismjöl" swallowed "Mjöl", "bovetemjöl" swallowed "Vete" and "m
 FREE. Rescued rows are therefore exempt from the CONTAINMENT branch in both directions, but not
 from exact-name dedup ("Råg:" still collapses into "2 dl råg"). Do not "simplify" that back to one
 exemption flag covering the whole loop.
+**SUPERSEDES "Rescued rows are therefore exempt from the CONTAINMENT branch … Do not "simplify"
+that back to one exemption flag covering the whole loop." (BUT-2455, 2026-10-30):**
+`_deduplicateIngredients` has no containment branch; it merges only rows whose whole names match
+under the same heading. A rescued row (`_IngredientRow.rescued`) skips the garbage and
+orphan-fragment filters and goes through the exact-name merge like any other row.
 
 ### [Privacy/GDPR] Feature-retention DAILY AGGREGATES keep a deleted user's contribution; the per-user rows are erased (BUT-1789)
 `compute-feature-retention.ts` writes two things per run. The per-user-per-day rows,
@@ -2326,6 +2342,11 @@ unchanged; only the false half of its supporting sentence is struck. Raised by t
 grid draws no `CompactDietaryRow` when the card is handed dietary preferences and the recipe
 is FREE on a diet, and its control asserts the detailed layout still does — so a change that
 removed the row everywhere cannot pass as satisfying this decision.
+
+**Superseded 2026-10-31 (Malin).** `RecipeCard` takes no allergen or dietary parameters and
+draws no allergen row, dietary row or "Ej kontrollerat" in any style. The pin above is deleted;
+`test/widget/recipe/recipe_card_test.dart` ("a tagged recipe shows no allergen or dietary
+info") now covers it. `CompactAllergenRow` and `CompactDietaryRow`, named above, are deleted.
 
 ---
 
@@ -6735,3 +6756,35 @@ Decided by Malin 2026-10-29 with the policy 1.25 wording, which says the samples
 - Writers: `ocr-recipe-image.ts` and `structure-recipe.ts` call `captureLlmSample`; the app sends
   those calls only after `ConsentService.hasConsent(ConsentPurpose.aiProcessing)`
   (`llm_service.dart`), a client-side check.
+
+## ADR-0039 — Firestore's on-device cache is emptied only at a later cold start, and not always (2026-10-30)
+
+Decided by Malin 2026-10-30. After an explicit sign-out, `FirestoreCacheWipe` records a request and
+`FirestoreBootstrap.configure` runs `clearPersistence` at a cold start with nobody signed in. The
+wipe also deletes writes never sent, so it is only requested once the signing-out user's pending
+writes have reached the server, and any other sign-out or any sign-in withdraws it.
+
+- **A second account in the same session can still read the first account's cached documents.**
+  The SDK serves cached documents without asking the rules again, `terminate` would leave
+  Firestore unusable until restart, and that sign-in withdraws the request, so the cache is
+  emptied only after a later explicit sign-out with all writes sent and a cold start with
+  nobody signed in.
+- **A sign-out with no connection leaves the cache.** `waitForPendingWrites` does not finish
+  offline, so the request is not made (2 s limit) rather than risk deleting unsent writes.
+- **Not run on a device:** native `clearPersistence` after the settings are applied, and web with
+  several tabs open (the flag then stays set for the next start).
+
+## Learned ingredient aliases: a decided candidate outlives its voters' accounts (2026-10-31)
+
+Decided by Malin 2026-10-31 (”1 och 2 ja”).
+
+- **Erasure.** Tier 1 step `learned_aliases` (`cleanUserFromLearnedAliases`,
+  `functions/src/account/cascade/learned-aliases.ts`) removes the uid from `userIds` on every
+  candidate in `analytics/ingredients/learned_aliases` and deletes a `pending` or
+  `held_for_review` candidate the user was the last voter on.
+- **An `approved`, `rejected` or `revoked` candidate is kept without voters.** `approved` backs
+  the alias on the ingredient; `rejected` and `revoked` stop the same wrong spelling being
+  approved again. What stays is the misspelling and the correction, not who wrote it.
+- **Art. 15.** Section `learned_aliases` (`functions/src/exports/erasure-residue/account-sections.ts`)
+  reads the same predicate and leaves out `userIds`.
+- Art. 30 record: `docs/security/correction-log-retention.md`.

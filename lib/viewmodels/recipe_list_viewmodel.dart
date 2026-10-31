@@ -374,10 +374,13 @@ class RecipeListViewModel extends BaseViewModel {
       _favoritesOnly ||
       _pantryOnly;
 
-  /// Whether allergen or dietary filters are specifically active.
+  /// Whether allergen or status-backed dietary filters are active.
   /// These filters require tagResult to be present, so untagged recipes are excluded.
   bool get hasTagBasedFilters =>
-      _activeAllergenFilters.isNotEmpty || _activeDietaryFilters.isNotEmpty;
+      _activeAllergenFilters.isNotEmpty ||
+      _activeDietaryFilters.any(
+        (id) => !RecipeFilters.tagBackedDietaryFilterIds.contains(id),
+      );
 
   /// Count of recipes that are excluded from filter results due to missing tags.
   /// Used to inform users that some recipes are still being analyzed.
@@ -1162,7 +1165,22 @@ class RecipeListViewModel extends BaseViewModel {
   /// SAFETY: Excludes recipes with coverage < 100% because unknown ingredients
   /// could violate dietary restrictions. Only recipes with full coverage can be trusted.
   List<Recipe> _applyDietaryFilters(List<Recipe> recipes) {
+    final tagValues = {
+      for (final id in _activeDietaryFilters)
+        if (RecipeFilters.tagBackedDietaryFilterIds.contains(id))
+          RecipeFilters.dietaryFilterValue(id)!,
+    };
+    final statusFilters = _activeDietaryFilters.where(
+      (id) => !RecipeFilters.tagBackedDietaryFilterIds.contains(id),
+    );
+
     return recipes.where((recipe) {
+      if (tagValues.isNotEmpty &&
+          !_tagEditingService.getEffectiveTags(recipe).containsAll(tagValues)) {
+        return false;
+      }
+      if (statusFilters.isEmpty) return true;
+
       final tagResult = recipe.tagResult;
       // See _applyAllergenFilters: keep seeded starter recipes visible under
       // dietary filters rather than excluding them for missing tag analysis.
@@ -1176,7 +1194,7 @@ class RecipeListViewModel extends BaseViewModel {
 
       // Recipe must be safe for ALL selected diets (AND logic)
       // Uses effective status which respects user overrides
-      for (final filterId in _activeDietaryFilters) {
+      for (final filterId in statusFilters) {
         final filterValue = RecipeFilters.dietaryFilterValue(filterId);
         if (filterValue != null) {
           final effectiveStatus = _tagEditingService.getEffectiveDietaryStatus(

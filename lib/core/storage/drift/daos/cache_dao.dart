@@ -104,6 +104,34 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
     )..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId))).go();
   }
 
+  /// Removes every cached read of [userId], in every box. The offline write
+  /// queue and the recipe copies sit in other tables and stay.
+  Future<void> clearUserReadCaches(String userId) async {
+    await (delete(
+      jsonCacheEntries,
+    )..where((e) => e.userId.equals(userId))).go();
+    await (delete(
+      parseCacheEntries,
+    )..where((e) => e.userId.equals(userId))).go();
+  }
+
+  /// Removes the cached reads of every user but [keepUserId] (of all users
+  /// when it is null).
+  Future<void> clearReadCachesExcept(String? keepUserId) async {
+    await (delete(jsonCacheEntries)..where(
+          (e) => keepUserId == null
+              ? const Constant(true)
+              : e.userId.equals(keepUserId).not(),
+        ))
+        .go();
+    await (delete(parseCacheEntries)..where(
+          (e) => keepUserId == null
+              ? const Constant(true)
+              : e.userId.equals(keepUserId).not(),
+        ))
+        .go();
+  }
+
   /// Count entries in a box for a user
   Future<int> countJsonEntries(String boxName, String userId) async {
     final count = countAll();

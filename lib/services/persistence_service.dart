@@ -1,31 +1,22 @@
 /// Comprehensive local data persistence service providing cross-platform storage management and session continuity.
 /// This service manages all local data storage operations using SharedPreferences for reliable cross-platform
 /// persistence between application sessions. It provides comprehensive data serialization, error handling,
-/// and storage management for recipes, menus, and application metadata with intelligent caching strategies
+/// and storage management with intelligent caching strategies
 /// and robust error recovery mechanisms to ensure data integrity across device restarts and app updates.
 /// **Architecture Integration:**
 /// - Uses [SharedPreferences] for cross-platform local storage with native platform optimization
-/// - Integrates with [Recipe] unified model system for comprehensive recipe data persistence
 /// - Implements [AppLogger] for detailed operation logging and debugging capabilities
 /// - Provides JSON serialization/deserialization for complex data structure persistence
 /// **Data Persistence Categories:**
-/// - **Recipe Storage**: Complete recipe collection with metadata, images, and user customizations
-/// - **Menu Management**: Weekly menu planning with recipe associations and meal organization
-/// - **Metadata Tracking**: Last update timestamps, storage statistics, and application state information
 /// - **Batch Operations**: Efficient bulk data operations with atomic transaction-like behavior
 /// **Storage Features:**
 /// - **Atomic Operations**: Transaction-like behavior ensuring data consistency during storage operations
 /// - **Error Recovery**: Comprehensive error handling with graceful degradation and data corruption protection
 /// - **JSON Serialization**: Efficient data serialization with type safety and version compatibility
-/// - **Storage Analytics**: Detailed storage statistics and debugging information for performance optimization
 /// - **Data Migration**: Flexible data format handling supporting application updates and schema changes
 /// - **Swedish Localization**: User-friendly Swedish language logging and error messages
 
-import 'package:clock/clock.dart';
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 
@@ -41,35 +32,15 @@ import 'package:butlery/core/base/base_service.dart';
 /// - Comprehensive error handling with graceful degradation strategies
 /// **Data Categories:**
 /// Manages multiple categories of persistent data:
-/// - Recipe collections with complete metadata and user customizations
-/// - Menu planning data with weekly organization and meal associations
-/// - Application metadata including timestamps and storage statistics
 /// - User preferences and application state information
 /// **Usage Examples:**
 /// ```dart
 /// final persistenceService = PersistenceService();
-/// // Save recipe collection
-/// final success = await persistenceService.saveRecipes(recipeList);
-/// // Load recipes on app startup
-/// final savedRecipes = await persistenceService.loadRecipes();
-/// // Menu management
-/// await persistenceService.saveCurrentMenu(['recipe1', 'recipe2']);
-/// final menuIds = await persistenceService.loadCurrentMenu();
-/// // Storage analytics
-/// final storageInfo = await persistenceService.getStorageInfo();
+/// final isGrid = await persistenceService.getIsGridView();
 /// ```
 class PersistenceService extends BaseService {
   @override
   String get serviceName => 'PersistenceService';
-
-  /// Storage key for recipe collection data in SharedPreferences.
-  static const String _recipesKey = 'butlery_recipes';
-
-  /// Storage key for current weekly menu planning data.
-  static const String _currentMenuKey = 'butlery_current_menu';
-
-  /// Storage key for last update timestamp tracking.
-  static const String _lastUpdatedKey = 'butlery_last_updated';
 
   static const String _viewModeKey = 'butlery_view_mode';
   static const String _veckomenyViewModeKey = 'veckomeny_view_mode';
@@ -103,198 +74,6 @@ class PersistenceService extends BaseService {
   /// Throws [Exception] if SharedPreferences initialization fails
   Future<SharedPreferences> get _prefs async {
     return await SharedPreferences.getInstance();
-  }
-
-  /// Persists complete recipe collection to local storage with atomic operation handling.
-  /// This method serializes the entire recipe collection to JSON format and stores it atomically
-  /// in SharedPreferences. It includes comprehensive error handling, data validation, and timestamp
-  /// tracking to ensure data integrity and provide audit trail for storage operations.
-  /// [recipes] Complete list of recipes to persist to local storage
-  /// Returns `true` if storage operation completed successfully, `false` on failure
-  /// **Storage Process:**
-  /// 1. **Data Serialization**: Converts Recipe objects to JSON-serializable format
-  /// 2. **JSON Encoding**: Transforms recipe data to JSON string for storage
-  /// 3. **Atomic Storage**: Saves data atomically to prevent corruption during write operations
-  /// 4. **Timestamp Update**: Records last update timestamp for data freshness tracking
-  /// 5. **Success Validation**: Verifies storage operation completion and returns status
-  /// **Error Handling:**
-  /// - Comprehensive exception catching with detailed error logging
-  /// - Graceful degradation ensuring application stability on storage failures
-  /// - Data integrity protection preventing partial writes or corruption
-  /// - Swedish localized error messages for debugging and user feedback
-  /// **Performance Considerations:**
-  /// - Efficient JSON serialization minimizing memory usage during conversion
-  /// - Atomic write operations preventing data races in concurrent scenarios
-  /// - Optimized storage format reducing persistent data size and access time
-  Future<bool> saveRecipes(List<Recipe> recipes) async {
-    // Web uses localStorage (5MB limit) — skip local persistence since Firestore is the source of truth
-    if (kIsWeb) {
-      AppLogger.debug('Hoppar över lokal receptlagring på webb', 'Persistence');
-      return true;
-    }
-
-    try {
-      final prefs = await _prefs;
-
-      // Convert each recipe to a Map
-      final List<Map<String, dynamic>> recipesJson = recipes
-          .map((recipe) => recipe.toJson())
-          .toList();
-
-      // Convert the full list to JSON text
-      final String recipesString = jsonEncode(recipesJson);
-
-      // Save to phone with our key
-      final success = await prefs.setString(_recipesKey, recipesString);
-
-      // Also save when we last updated
-      if (success) {
-        await prefs.setString(
-          _lastUpdatedKey,
-          clock.now().toIso8601String(),
-        );
-      }
-
-      return success;
-    } catch (e) {
-      // If something goes wrong, log the error and return false
-      AppLogger.error('Fel vid sparande av recept', e, 'Persistence');
-      return false;
-    }
-  }
-
-  /// Loads all recipes from local storage
-  /// Converts JSON text back to Recipe objects
-  Future<List<Recipe>> loadRecipes() async {
-    // Web uses localStorage (5MB limit) — skip local persistence since Firestore is the source of truth
-    if (kIsWeb) {
-      return [];
-    }
-
-    try {
-      final prefs = await _prefs;
-
-      // Try to retrieve the saved JSON text
-      final String? recipesString = prefs.getString(_recipesKey);
-
-      // If no data exists, return empty list
-      if (recipesString == null || recipesString.isEmpty) {
-        AppLogger.info(
-          'Inga sparade recept hittades - startar med tom lista',
-          'Persistence',
-        );
-        return [];
-      }
-
-      // Convert JSON text back to list of Map objects
-      final List<dynamic> recipesJson = jsonDecode(recipesString);
-
-      // Convert each Map back to a Recipe object
-      final List<Recipe> recipes = recipesJson
-          .map((json) => Recipe.fromJson(json as Map<String, dynamic>))
-          .toList();
-
-      AppLogger.success(
-        'Laddade ${recipes.length} recept från lokal lagring',
-        'Persistence',
-      );
-      return recipes;
-    } catch (e) {
-      // If something goes wrong (e.g. corrupt data), log and return empty list
-      AppLogger.error('Fel vid laddning av recept', e, 'Persistence');
-      return [];
-    }
-  }
-
-  /// 🗑️ Tar bort alla sparade recept
-  /// Användbart för att "återställa" appen
-  Future<bool> clearRecipes() async {
-    try {
-      final prefs = await _prefs;
-      return await prefs.remove(_recipesKey);
-    } catch (e) {
-      AppLogger.error('Fel vid borttagning av recept', e, 'Persistence');
-      return false;
-    }
-  }
-
-  /// Saves recipe IDs representing the current weekly menu
-  Future<bool> saveCurrentMenu(List<String> recipeIds) async {
-    try {
-      final prefs = await _prefs;
-      final String menuString = jsonEncode(recipeIds);
-      return await prefs.setString(_currentMenuKey, menuString);
-    } catch (e) {
-      AppLogger.error('Fel vid sparande av meny', e, 'Persistence');
-      return false;
-    }
-  }
-
-  /// Loads current weekly menu, returns list of recipe IDs
-  Future<List<String>> loadCurrentMenu() async {
-    try {
-      final prefs = await _prefs;
-      final String? menuString = prefs.getString(_currentMenuKey);
-
-      if (menuString == null || menuString.isEmpty) {
-        return [];
-      }
-
-      final List<dynamic> menuJson = jsonDecode(menuString);
-      return menuJson.cast<String>();
-    } catch (e) {
-      AppLogger.error('Fel vid laddning av meny', e, 'Persistence');
-      return [];
-    }
-  }
-
-  /// 🗑️ Tar bort sparad meny
-  Future<bool> clearCurrentMenu() async {
-    try {
-      final prefs = await _prefs;
-      return await prefs.remove(_currentMenuKey);
-    } catch (e) {
-      AppLogger.error('Fel vid borttagning av meny', e, 'Persistence');
-      return false;
-    }
-  }
-
-  /// Gets when data was last updated
-  Future<DateTime?> getLastUpdated() async {
-    try {
-      final prefs = await _prefs;
-      final String? lastUpdatedString = prefs.getString(_lastUpdatedKey);
-
-      if (lastUpdatedString == null) return null;
-
-      return DateTime.tryParse(lastUpdatedString);
-    } catch (e) {
-      AppLogger.error(
-        'Fel vid hämtning av senaste uppdatering',
-        e,
-        'Persistence',
-      );
-      return null;
-    }
-  }
-
-  /// 🧹 Rensar all lokal data (reset-funktion)
-  Future<bool> clearAllData() async {
-    try {
-      final prefs = await _prefs;
-
-      final results = await Future.wait([
-        prefs.remove(_recipesKey),
-        prefs.remove(_currentMenuKey),
-        prefs.remove(_lastUpdatedKey),
-      ]);
-
-      // Return true if all operations succeeded
-      return results.every((success) => success);
-    } catch (e) {
-      AppLogger.error('Fel vid rensning av all data', e, 'Persistence');
-      return false;
-    }
   }
 
   Future<bool> getIsGridView() async {
@@ -662,32 +441,6 @@ class PersistenceService extends BaseService {
       await prefs.setInt(key, value);
     } catch (e) {
       AppLogger.warning('Failed to set int "$key": $e');
-    }
-  }
-
-  /// Gets storage statistics for debugging
-  Future<Map<String, dynamic>> getStorageInfo() async {
-    try {
-      // Get data directly via methods instead of prefs
-      final recipes = await loadRecipes();
-      final menu = await loadCurrentMenu();
-      final lastUpdated = await getLastUpdated();
-
-      return {
-        'totalRecipes': recipes.length,
-        'menuItems': menu.length,
-        'lastUpdated': lastUpdated?.toIso8601String(),
-        'hasData': recipes.isNotEmpty,
-      };
-    } catch (e) {
-      AppLogger.error('Fel vid hämtning av lagringsinfo', e, 'Persistence');
-      return {
-        'totalRecipes': 0,
-        'menuItems': 0,
-        'lastUpdated': null,
-        'hasData': false,
-        'error': e.toString(),
-      };
     }
   }
 }

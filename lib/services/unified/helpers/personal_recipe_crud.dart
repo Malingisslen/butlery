@@ -160,9 +160,4 @@ class PersonalRecipeCrud {
       );
     }
   }
-
-  /// Mark recipe as cooked.
-  Future<bool> markAsCooked(String recipeId) async {
-    return await personalModule.markRecipeAsCooked(recipeId);
-  }
 }

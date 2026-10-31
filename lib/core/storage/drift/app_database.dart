@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:clock/clock.dart';
 
@@ -11,11 +9,11 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sqlite3/sqlite3.dart' show Database;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // The generated sync-queue table creates each opId with Uuid (tables/sync_queue.dart).
 import 'package:uuid/uuid.dart';
-import 'package:butlery/core/utils/logger.dart';
 
+import 'package:butlery/core/storage/drift/database_key_store.dart';
+import 'package:butlery/core/storage/drift/local_database_reset.dart';
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/core/storage/drift/tables/json_cache.dart';
@@ -399,24 +397,15 @@ SELECT id AS op_id, permanently_failed AS failed FROM upload_queue_entries
   }
 }
 
-/// Secure storage instance for database encryption key
-const _secureStorage = FlutterSecureStorage(
-  aOptions: AndroidOptions(),
-  iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-);
-
-/// Storage key for the database encryption key
-const _dbEncryptionKeyName = 'drift_db_encryption_key';
-
 /// Opens a connection to the encrypted SQLite database (SQLite3MultipleCiphers,
 /// selected by the `hooks` block in pubspec.yaml).
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     // Use a new filename to avoid conflicts with old unencrypted database
-    final file = File(p.join(dbFolder.path, 'butlery_drift_encrypted.sqlite'));
+    final file = File(p.join(dbFolder.path, encryptedDatabaseFileName));
 
-    final encryptionKey = await _getDatabaseEncryptionKey();
+    final encryptionKey = await DatabaseKeyStore().keyFor(file);
 
     return NativeDatabase(
       file,
@@ -448,35 +437,6 @@ void configureDatabaseEncryption(Database db, String encryptionKey) {
   // in case the generator ever changes format.
   final escapedKey = encryptionKey.replaceAll("'", "''");
   db.execute("PRAGMA key = '$escapedKey'");
-}
-
-/// Gets or generates the database encryption key from secure storage
-Future<String> _getDatabaseEncryptionKey() async {
-  try {
-    // Try to read existing key
-    var key = await _secureStorage.read(key: _dbEncryptionKeyName);
-
-    if (key == null) {
-      // Generate a new 32-byte (256-bit) random key
-      key = _generateSecureKey();
-      await _secureStorage.write(key: _dbEncryptionKeyName, value: key);
-      AppLogger.info('Generated new database encryption key');
-    }
-
-    return key;
-  } catch (e) {
-    AppLogger.error('Failed to access database encryption key: $e');
-    // Generate a temporary key if secure storage fails
-    // Note: This means data won't persist across app restarts if secure storage is unavailable
-    return _generateSecureKey();
-  }
-}
-
-/// Generates a cryptographically secure random key
-String _generateSecureKey() {
-  final random = Random.secure();
-  final bytes = List<int>.generate(32, (_) => random.nextInt(256));
-  return base64Url.encode(bytes);
 }
 
 /// Creates an in-memory database for testing (unencrypted)

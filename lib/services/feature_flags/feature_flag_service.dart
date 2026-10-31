@@ -11,14 +11,6 @@ import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 
 /// Feature flag service using Firebase Remote Config.
 /// Enables gradual rollouts, A/B testing, and kill switches without code deploys.
-///
-/// Usage:
-/// ```dart
-/// final flags = ServiceLocator.get<FeatureFlagService>();
-/// if (flags.isEnabled(FeatureFlags.enableAlgoliaSearch)) {
-///   // Use Algolia search
-/// }
-/// ```
 class FeatureFlagService {
   final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
@@ -43,7 +35,6 @@ class FeatureFlagService {
   /// Default flag values - used when Remote Config is unavailable or flag not set
   static const Map<String, dynamic> _defaults = {
     // Phase 2 Scalability Flags
-    'enable_algolia_search': false,
     'enable_subcollection_participants': true,
     'max_inline_participants': 10,
     'enable_reference_shared_content': true,
@@ -271,7 +262,7 @@ class FeatureFlagService {
     'tag_easy_max_minutes': TaggingThresholds.easyMaxMinutes,
     'tag_advanced_min_ingredients': TaggingThresholds.advancedMinIngredients,
     'tag_advanced_min_minutes': TaggingThresholds.advancedMinMinutes,
-    'tag_high_protein_ratio': TaggingThresholds.highProteinRatio,
+    'tag_protein_grams_per_portion': TaggingThresholds.proteinGramsPerPortion,
     'tag_season_threshold': 2,
     'tag_spice_rich_count': TaggingThresholds.spiceRichCount,
     'tag_veggie_rich_count': TaggingThresholds.veggieRichCount,
@@ -480,7 +471,6 @@ class FeatureFlagService {
 /// Use these instead of string literals.
 abstract final class FeatureFlags {
   // Phase 2 Scalability Flags
-  static const enableAlgoliaSearch = 'enable_algolia_search';
   static const enableSubcollectionParticipants =
       'enable_subcollection_participants';
   static const maxInlineParticipants = 'max_inline_participants';
@@ -531,7 +521,7 @@ abstract final class FeatureFlags {
   static const tagEasyMaxMinutes = 'tag_easy_max_minutes';
   static const tagAdvancedMinIngredients = 'tag_advanced_min_ingredients';
   static const tagAdvancedMinMinutes = 'tag_advanced_min_minutes';
-  static const tagHighProteinRatio = 'tag_high_protein_ratio';
+  static const tagProteinGramsPerPortion = 'tag_protein_grams_per_portion';
   static const tagSeasonThreshold = 'tag_season_threshold';
   static const tagSpiceRichCount = 'tag_spice_rich_count';
   static const tagVeggieRichCount = 'tag_veggie_rich_count';

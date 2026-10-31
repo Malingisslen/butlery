@@ -35,7 +35,7 @@ void main() {
               child: Builder(
                 builder: (context) => wrapAsDraggable(
                   context: context,
-                  payload: MovePayload(entry),
+                  payload: MovePayload(entry, title: entry.recipeTitle),
                   child: const SizedBox(
                     key: Key('cell'),
                     width: 80,

@@ -217,6 +217,46 @@ void main() {
     );
   }
 
+  group('entryTitle', () {
+    final entry = _entry(
+      day: DayOfWeek.mon,
+      slot: MealSlot.middag,
+      recipeId: 'r-9',
+      title: 'Gammalt namn',
+    );
+
+    MenuPlacementViewModel vmWith(Recipe? Function(String id)? lookup) =>
+        MenuPlacementViewModel(
+          service: service,
+          generated: const {},
+          weekStart: _weekStart,
+          recipeById: lookup,
+        );
+
+    test('shows the current title of a loaded recipe', () {
+      final vm = vmWith(
+        (id) => id == 'r-9' ? RecipeFactory.build(id: id, title: 'Nytt') : null,
+      );
+      addTearDown(vm.dispose);
+
+      expect(vm.entryTitle(entry), 'Nytt');
+    });
+
+    test('falls back to the stored title when the recipe is not loaded', () {
+      final vm = vmWith((_) => null);
+      addTearDown(vm.dispose);
+
+      expect(vm.entryTitle(entry), 'Gammalt namn');
+    });
+
+    test('falls back to the stored title with no lookup at all', () {
+      final vm = vmWith(null);
+      addTearDown(vm.dispose);
+
+      expect(vm.entryTitle(entry), 'Gammalt namn');
+    });
+  });
+
   group('init', () {
     test('loads the week and selects the first unplaced item', () async {
       final vm = buildVm();

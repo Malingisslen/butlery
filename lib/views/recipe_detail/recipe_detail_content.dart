@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
+import 'package:butlery/widgets/tagging/uncertain_tags_line.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -43,6 +44,7 @@ import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/views/recipe_detail/borrowed_image_frame.dart';
 
 const double _quantityColumnWidth = 70;
 
@@ -256,6 +258,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           // recipes are short so the win is modest, but for long-ingredient
           // baking recipes (50+ items) it's measurable on lower-end Android.
           ListView.builder(
+            // A ListView without padding takes the system insets as padding.
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _ingredientRows.length,
@@ -349,14 +353,25 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       // so the rows read the same instead of switching layout
                       // from one ingredient to the next.
                       final stacked = isLargeText(context);
+                      // "salt" parses as 1, but the recipe never said 1.
                       final hasAmount =
-                          parsed.unit.isNotEmpty || parsed.quantity > 0;
+                          parsed.unit.isNotEmpty ||
+                          IngredientParser.statedQuantity(
+                                ingredient,
+                                parsed.quantity,
+                              ) !=
+                              null;
+                      // "ca 2 dl", "2-3 tomater": the written amount says
+                      // more than the number read from it.
+                      final quantity =
+                          IngredientParser.writtenAmount(ingredient) ??
+                          _formatQuantity(parsed.quantity);
                       final amount = Text(
-                        parsed.unit.isNotEmpty
-                            ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                            : parsed.quantity > 0
-                            ? _formatQuantity(parsed.quantity)
-                            : '',
+                        !hasAmount
+                            ? ''
+                            : parsed.unit.isNotEmpty
+                            ? '$quantity ${parsed.unit}'
+                            : quantity,
                         style: AppTextStyles.bodyBold.copyWith(
                           color: cs.onSurface,
                           fontFeatures: const [FontFeature.tabularFigures()],
@@ -456,6 +471,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       padding: const EdgeInsets.all(AppDimensions.space16),
       // BUT-951: instructions via ListView.builder, mirrors ingredients change.
       child: ListView.builder(
+        padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: instructions.length,
@@ -613,10 +629,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     return null;
   }
 
-  /// Formats a quantity for display with sv-SE decimal comma (1.5 → "1,5");
-  /// whole numbers render without a decimal.
+  /// Formats a quantity for display: common fractions as glyphs (0.75 →
+  /// "¾", 1.5 → "1 ½"), anything else with sv-SE decimal comma.
   String _formatQuantity(double quantity) {
-    return TextFormatting.formatFractional(quantity);
+    return TextFormatting.toSwedishHalfFraction(quantity);
   }
 
   void _showSubstitutionSheet(BuildContext context, String ingredientName) {
@@ -725,6 +741,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               );
             }).toList(),
           ),
+          if (UncertainTagsLine.appliesTo(recipe.tagResult)) ...[
+            const SizedBox(height: AppDimensions.space8),
+            UncertainTagsLine(tagResult: recipe.tagResult!),
+          ],
         ],
       ),
     );
@@ -732,6 +752,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
   Widget _buildImageCarousel(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final credit = BorrowedImageCredit.forGallery(
+      imageUrls: viewModel.recipe.imageUrls,
+      sourceUrl: viewModel.recipe.sourceUrl,
+    );
 
     return Container(
       width: double.infinity,
@@ -768,6 +792,19 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             ),
           ),
 
+          if (credit != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.space16,
+                0,
+                AppDimensions.space16,
+                AppDimensions.space8,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: credit,
+              ),
+            ),
           // Image carousel
           ClipRRect(
             borderRadius: BorderRadius.zero,

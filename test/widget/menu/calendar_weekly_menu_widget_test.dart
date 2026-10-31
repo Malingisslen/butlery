@@ -24,6 +24,9 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -144,6 +147,10 @@ void main() {
       service = _MockWeeklyMenuPlanService();
       recipeService = _MockUnifiedRecipeService();
       when(() => service.saveRevision(any())).thenAnswer((_) async {});
+      // The view model listens to the recipe list from its constructor.
+      when(
+        () => recipeService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
     });
 
     testWidgets('renders the empty-hint notice card when '
@@ -216,6 +223,46 @@ void main() {
         expect(vm.currentWeekStart, equals(requested));
       },
     );
+
+    testWidgets('a planned dish shows the recipe\'s current title, not the one '
+        'stored when it was placed', (tester) async {
+      final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+      when(() => service.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: _plan(
+            weekStart: weekStart,
+            entries: [
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'mon-m',
+                recipeId: 'r-mon',
+                title: 'Gammalt namn',
+              ),
+            ],
+          ),
+          readFailed: false,
+        ),
+      );
+      when(
+        () => recipeService.getRecipeById('r-mon'),
+      ).thenReturn(RecipeFactory.build(id: 'r-mon', title: 'Nytt namn'));
+
+      final vm = WeeklyMenuPlanViewModel(
+        service: service,
+        recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
+      );
+      addTearDown(vm.dispose);
+
+      await tester.pumpWidget(
+        _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nytt namn'), findsOneWidget);
+      expect(find.text('Gammalt namn'), findsNothing);
+    });
 
     testWidgets('populated week renders one row per DayOfWeek (7) with lunch + '
         'middag + övrigt columns per row', (tester) async {
@@ -503,6 +550,7 @@ void main() {
       Future<WeeklyMenuPlanViewModel> pumpPopulated(
         WidgetTester tester, {
         required WeeklyMenuPlan plan,
+        RouteFactory? onGenerateRoute,
       }) async {
         when(() => service.readWeek(any())).thenAnswer(
           (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
@@ -514,7 +562,11 @@ void main() {
         );
         addTearDown(vm.dispose);
         await tester.pumpWidget(
-          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+          _host(
+            vm: vm,
+            child: const CalendarWeeklyMenuWidget(),
+            onGenerateRoute: onGenerateRoute,
+          ),
         );
         await tester.pumpAndSettle();
         return vm;
@@ -611,11 +663,23 @@ void main() {
 
       testWidgets(
         'in selection mode, tapping an assigned cell toggles its selection '
-        'and does NOT navigate (getRecipeById never called)',
+        'and does NOT navigate',
         (tester) async {
           final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+          // The recipe resolves, so a tap that also opened it would push.
+          when(
+            () => recipeService.getRecipeById('r-mon'),
+          ).thenReturn(RecipeFactory.build(id: 'r-mon', title: 'Pasta'));
+          RouteSettings? pushed;
           final vm = await pumpPopulated(
             tester,
+            onGenerateRoute: (settings) {
+              pushed = settings;
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const Text('RECIPE PAGE'),
+              );
+            },
             plan: _plan(
               weekStart: weekStart,
               entries: [
@@ -647,9 +711,8 @@ void main() {
           expect(vm.selectedCount, 1);
           expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
           expect(find.byIcon(ButleryIcons.square), findsNothing);
-
-          // Navigation must NOT have fired — the tap toggled instead.
-          verifyNever(() => recipeService.getRecipeById(any()));
+          expect(pushed, isNull);
+          expect(find.text('RECIPE PAGE'), findsNothing);
         },
       );
     });
@@ -1422,7 +1485,7 @@ void main() {
       ) async {
         when(
           () => recipeService.getRecipeById('r-o2'),
-        ).thenReturn(RecipeFactory.build(id: 'r-o2'));
+        ).thenReturn(RecipeFactory.build(id: 'r-o2', title: 'Fika'));
         RouteSettings? pushed;
         await pumpOvrigt(tester, const ['Smoothie', 'Fika'], (settings) {
           pushed = settings;
@@ -1439,7 +1502,6 @@ void main() {
 
         expect(pushed?.name, Routes.recipeDetail);
         expect(find.text('RECIPE PAGE'), findsOneWidget);
-        verify(() => recipeService.getRecipeById('r-o2')).called(1);
       });
 
       testWidgets('"Lägg till rätt" in the övrigt sheet opens the recipe '
@@ -1460,6 +1522,52 @@ void main() {
 
         expect(find.byType(MenuRecipeSelectionDialog), findsOneWidget);
         expect(find.text('Fika'), findsNothing);
+      });
+
+      testWidgets('a dish picked for an empty cell is confirmed first when it '
+          'contains a tracked allergen', (tester) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        // Without a resolvable household the check falls back to the common
+        // allergen floor, which includes gluten.
+        final base = RecipeFactory.build(id: 'bread', title: 'Surdegsbröd');
+        final bread = Recipe(
+          core: base.core.copyWith(
+            tagResult: TagResult(
+              tags: const {},
+              allergenStatus: const {'gluten': TriState.contains},
+              dietaryStatus: const {},
+              coverage: 1.0,
+              generatedAt: DateTime(2026),
+            ),
+          ),
+          type: base.type,
+        );
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: [bread], isLoading: false),
+        );
+        await pumpOvrigt(tester);
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Lägg till rätt'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Surdegsbröd'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Lägg till (1)'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Lägg till ändå?'), findsOneWidget);
+        expect(
+          find.textContaining('Surdegsbröd innehåller gluten'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
+
+        verifyNever(() => service.saveRevision(any()));
+        expect(find.text('Surdegsbröd'), findsNothing);
       });
 
       testWidgets('while selecting, a tap on the övrigt cell chooses every '
@@ -1693,6 +1801,9 @@ void main() {
 
       final service = _MockWeeklyMenuPlanService();
       final recipeService = _MockUnifiedRecipeService();
+      when(
+        () => recipeService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
       when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
       // Use a week in the past so the "today" badge doesn't render (the

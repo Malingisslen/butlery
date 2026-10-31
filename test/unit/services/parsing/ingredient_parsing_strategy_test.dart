@@ -10,6 +10,25 @@ void main() {
     strategy = IngredientParsingStrategy();
   });
 
+  group('regex parse quantity', () {
+    test('a line that states no amount gets no quantity', () {
+      final parsed = strategy.parseLineSync('salt och peppar');
+      expect(parsed.quantity, isNull);
+      expect(parsed.displayString, isNot(startsWith('1')));
+    });
+
+    test('a whole amount is shown without decimals', () {
+      expect(strategy.parseLineSync('2 dl mjölk').quantity, '2');
+      expect(strategy.parseLineSync('1,5 dl grädde').quantity, '1.5');
+    });
+
+    test('amount-less lines still count toward the list confidence', () async {
+      final field = await strategy.parseLines(['salt', 'peppar', '2 dl mjölk']);
+      expect(strategy.hasCrf, isFalse, reason: 'must exercise the regex path');
+      expect(field.confidenceScore, 1.0);
+    });
+  });
+
   group('getUncertainLineIndices', () {
     test('should return empty list when all lines are high confidence', () {
       final parsed = [

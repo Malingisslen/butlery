@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
@@ -254,6 +255,24 @@ void main() {
         );
 
         expect(text, contains('Läs ingredienserna själv'));
+      });
+
+      test('an owner override never hides what the tagger found', () {
+        final recipe = withTags({'gluten': TriState.contains}).copyWith(
+          tagOverrides: const TagOverrides(
+            allergenOverrides: {'gluten': TriState.free},
+          ),
+        );
+
+        final text = shareService.formatRecipeComplete(recipe);
+
+        expect(text, isNot(contains('Innehåller allergener')));
+        expect(
+          text,
+          contains(
+            'Appen hittade gluten, men ägaren har markerat det som ok.',
+          ),
+        );
       });
 
       test('a recipe that was never tagged is not silent', () {

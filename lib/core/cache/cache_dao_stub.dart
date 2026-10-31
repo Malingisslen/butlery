@@ -113,6 +113,41 @@ class CacheDao {
     );
   }
 
+  // Keys are `box/userId/key`, so the user is the second path segment.
+  Filter _jsonKeyUserFilter(bool Function(String? userId) test) =>
+      Filter.custom((record) {
+        final parts = (record.key as String).split('/');
+        return test(parts.length > 1 ? parts[1] : null);
+      });
+
+  Future<void> clearUserReadCaches(String userId) async {
+    final db = await _database;
+    await _jsonStore.delete(
+      db,
+      finder: Finder(filter: _jsonKeyUserFilter((u) => u == userId)),
+    );
+    await _parseStore.delete(
+      db,
+      finder: Finder(filter: Filter.equals('userId', userId)),
+    );
+  }
+
+  Future<void> clearReadCachesExcept(String? keepUserId) async {
+    final db = await _database;
+    await _jsonStore.delete(
+      db,
+      finder: Finder(filter: _jsonKeyUserFilter((u) => u != keepUserId)),
+    );
+    await _parseStore.delete(
+      db,
+      finder: Finder(
+        filter: keepUserId == null
+            ? null
+            : Filter.not(Filter.equals('userId', keepUserId)),
+      ),
+    );
+  }
+
   Future<int> countJsonEntries(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);

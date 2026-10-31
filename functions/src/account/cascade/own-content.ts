@@ -111,14 +111,49 @@ export async function deleteTagOverridesLog(
 ): Promise<boolean> {
   // BUT-1473: top-level, userId-keyed allergen tag-override corrections
   // (linked PII: userId, recipeId, tag, direction, triggeringIngredients).
-  // No TTL, so GDPR Art. 17 needs an explicit cascade delete — analogous to
-  // the other top-level userId-scoped own-data collections above.
   const snap = await db
     .collection("tag_overrides_log")
     .where("userId", "==", uid)
     .get();
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+// A user's own correction log can run past one batch; paging keeps each read
+// small and a re-run after a partial failure simply finds what is left.
+export const PARSING_CORRECTIONS_PAGE = 500;
+
+export async function deleteParsingCorrections(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  // Linked PII: userId plus the raw ingredient and instruction lines the user
+  // typed, written straight from the client. Nothing else erased this
+  // collection on account deletion.
+  let previous: Set<string> | null = null;
+  for (;;) {
+    const snap = await db
+      .collection("parsing_corrections")
+      .where("userId", "==", uid)
+      .limit(PARSING_CORRECTIONS_PAGE)
+      .get();
+    if (snap.empty) return true;
+    const paths = new Set(snap.docs.map((d) => d.ref.path));
+    const prior: Set<string> | null = previous;
+    // batchDeleteAll swallows a failed chunk, so a full page that cannot be
+    // deleted comes back unchanged; without this the loop re-reads it until
+    // the callable times out and the later cascade steps never run.
+    if (prior !== null && [...paths].every((p) => prior.has(p))) {
+      logger.error("[deletion-cascade] parsing-correction page did not shrink; stopping", {
+        uid_prefix: uid.slice(0, 6),
+        rows: snap.size,
+      });
+      return false;
+    }
+    previous = paths;
+    await batchDeleteAll(db, snap.docs);
+    if (snap.size < PARSING_CORRECTIONS_PAGE) return true;
+  }
 }
 
 export async function deleteCookSnaps(

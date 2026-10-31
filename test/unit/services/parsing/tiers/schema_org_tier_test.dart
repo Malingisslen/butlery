@@ -495,34 +495,36 @@ void main() {
     });
 
     /// `recipeYield: "0"` is meaningless ("makes 0 servings"). The
-    /// `num > 0` guard MUST reject it → falls through to default 4.
+    /// `num > 0` guard MUST reject it.
     /// Off-by-one (`>= 0`) would let 0 through and produce a broken recipe.
-    test('zero portions → falls back to default (defends > 0 guard)', () async {
+    test('zero portions → no portions (defends > 0 guard)', () async {
       final p = await portionsFor('"Serves 0"');
-      expect(p!.value, 4);
+      expect(p!.value, isNull);
       expect(
         p.confidence,
-        ParseConfidence.low,
-        reason: 'fallback must be low-confidence so consumer can prompt user',
+        ParseConfidence.failed,
+        reason:
+            'a source without a usable count stores none (Malin 2026-10-31)',
       );
     });
 
     /// `recipeYield: "Serves 9999"` would crash menu generation if it
-    /// got through — the kMaxPortions cap MUST reject it and fall back.
-    test('absurdly large portions (>kMaxPortions) → falls back', () async {
+    /// got through — the kMaxPortions cap MUST reject it.
+    test('absurdly large portions (>kMaxPortions) → no portions', () async {
       final p = await portionsFor('"Serves 9999"');
-      expect(p!.value, 4);
-      expect(p.confidence, ParseConfidence.low);
+      expect(p!.value, isNull);
+      expect(p.confidence, ParseConfidence.failed);
     });
 
-    /// Missing field defaults to 4 portions with low confidence.
-    test('missing recipeYield → default 4 portions low-confidence', () async {
+    /// Malin 2026-10-31: a recipe that states no servings stores none, so
+    /// the user fills them in rather than inheriting a guessed 4.
+    test('missing recipeYield → no portions', () async {
       final jsonLd =
           '{"@type":"Recipe","name":"x","recipeIngredient":["1 c"],"recipeInstructions":["s"]}';
       final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
       final result = await tier.parse(ctx);
-      expect(result.recipe!.portions.value, 4);
-      expect(result.recipe!.portions.confidence, ParseConfidence.low);
+      expect(result.recipe!.portions.value, isNull);
+      expect(result.recipe!.portions.confidence, ParseConfidence.failed);
     });
   });
 

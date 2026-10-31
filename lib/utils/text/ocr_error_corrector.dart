@@ -11,7 +11,6 @@ class OcrErrorCorrector {
   OcrErrorCorrector._();
 
   /// Common OCR character confusions: {wrong -> correct}.
-  /// Ordered by frequency in typical Tesseract/Google Vision output.
   static const _confusions = <String, String>{
     'rn': 'm', // very common: "rnilk" -> "milk", "rnorot" -> "morot"
     'cl': 'd', // "cill" -> "dill"
@@ -19,8 +18,7 @@ class OcrErrorCorrector {
     'li': 'h', // "liackad" -> "hackad"
     'ii': 'n', // "iiottar" -> "nottar"
     'nn': 'm', // "nnuskotnot" -> "muskotnot" (less common)
-    // OCR.space engine 2 systematically reads the unit "dl" as "di" on
-    // cookbook print ("4 di apelsinjuice"). Gate-safe: only fires when the
+    // "4 di apelsinjuice" is the unit "dl". Gate-safe: only fires when the
     // candidate is a known unit — "di"->"dl" sticks, "dill"->"dlll" is rejected.
     'di': 'dl',
   };
@@ -56,6 +54,14 @@ class OcrErrorCorrector {
     final corrected = <String>[];
 
     for (final word in words) {
+      // A lone "d" after an amount is a "dl" whose l the reader lost; no
+      // Swedish unit is spelled "d".
+      if (word == 'd' &&
+          corrected.isNotEmpty &&
+          _numericPattern.hasMatch(corrected.last)) {
+        corrected.add('dl');
+        continue;
+      }
       corrected.add(_correctWord(word));
     }
 

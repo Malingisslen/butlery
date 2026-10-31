@@ -17,7 +17,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { anonymizeReportsUnlessHeldWithDb } from "../moderation/erasure-hold";
 import { withTimeout } from "../shared/with-timeout";
-import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
+import { cleanUserFromLearnedAliases } from "../account/cascade/learned-aliases";
 import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
 import {
   stageCascadeAuditEntry,
@@ -190,8 +190,10 @@ export async function cleanupUserSocialData(
   // 5. Clean up feedback submissions and screenshots
   results.feedbackCleaned = await cleanupFeedback(userId);
 
-  // 6. GDPR: Remove userId from learned ingredient aliases
-  await cleanUserFromLearnedAliases(userId);
+  // 6. GDPR: Remove userId from learned ingredient aliases. The account
+  // deletion cascade runs the same step before the residual probe; this one
+  // covers an auth user deleted some other way.
+  await cleanUserFromLearnedAliases(db, userId);
 
   // 7. Delete public profile
   // BUT-886: own-data delete — audit row records the cascade for GDPR Art. 17

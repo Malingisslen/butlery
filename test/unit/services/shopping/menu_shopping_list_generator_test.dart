@@ -22,6 +22,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -41,6 +42,9 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/shopping/week_list_follow_notice.dart';
+import 'package:butlery/services/shopping/week_list_follower.dart';
+import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
@@ -405,71 +409,87 @@ void main() {
       expect(result.itemCount, written.items.length);
     });
 
-    test('idempotent regeneration: existing week list is updated in place, '
-        'never duplicated; its recipe rows are replaced and your own rows '
-        'kept (PQ-10 = A)', () async {
-      // Proves: re-running the week for the same week targets the existing
-      // MARKED list (no "Inköpslista v.24 (2)" pile-up). The rows an earlier
-      // merge put there are replaced; a row the user typed is always kept
-      seedTwoRecipePlan();
-      final stale = UnifiedShoppingItem(
-        id: 'stale-row',
-        name: 'gammal vara',
-        amount: 1,
-        unit: 'st',
-      );
-      final own = UnifiedShoppingItem(
-        id: 'own-row',
-        name: 'egen vara',
-        amount: 1,
-        unit: 'st',
-      );
-      final existing = _list(
-        'existing-1',
-        _expectedListName,
-        generatedForWeek: _expectedWeekKey,
-        items: [stale, own],
-        menuItemIds: const ['stale-row'],
-      );
-      shoppingService.setShoppingState(
-        lists: [existing],
-        personalLists: [existing],
-      );
+    test(
+      'idempotent regeneration: existing week list is updated in place, '
+      'never duplicated; a row the week wrote and nobody touched is taken '
+      'off, your own rows kept (PQ-10 = A), and a second run adds nothing',
+      () async {
+        // Proves: re-running the week for the same week targets the existing
+        // MARKED list (no "Inköpslista v.24 (2)" pile-up). The rows an earlier
+        // merge put there are replaced; a row the user typed is always kept
+        seedTwoRecipePlan();
+        final stale = WeekListReconciler.stamp([
+          UnifiedShoppingItem(
+            id: 'stale-row',
+            name: 'gammal vara',
+            amount: 1,
+            unit: 'st',
+          ),
+        ], ShoppingRowOrigin.plan).single;
+        final own = UnifiedShoppingItem(
+          id: 'own-row',
+          name: 'egen vara',
+          amount: 1,
+          unit: 'st',
+        );
+        final existing = _list(
+          'existing-1',
+          _expectedListName,
+          generatedForWeek: _expectedWeekKey,
+          items: [stale, own],
+          menuItemIds: const ['stale-row'],
+        );
+        shoppingService.setShoppingState(
+          lists: [existing],
+          personalLists: [existing],
+        );
 
-      final result = await generator.generateForWeek(_date);
+        final result = await generator.generateForWeek(_date);
 
-      expect(
-        result,
-        isNotNull,
-        reason: 'regeneration must run against the existing list',
-      );
-      expect(result!.listId, 'existing-1');
-      verifyNever(
-        () => shoppingService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        ),
-      );
+        expect(
+          result,
+          isNotNull,
+          reason: 'regeneration must run against the existing list',
+        );
+        expect(result!.listId, 'existing-1');
+        verifyNever(
+          () => shoppingService.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        );
 
-      final written = capturedUpdate();
-      expect(written.id, 'existing-1');
-      expect(
-        written.items.map((i) => i.name),
-        isNot(contains('gammal vara')),
-        reason: 'a row an earlier merge put there is replaced',
-      );
-      expect(
-        written.items.map((i) => i.id),
-        contains('own-row'),
-        reason: 'PQ-10 = A: your own rows are always kept',
-      );
-      expect(written.items.map((i) => i.name), containsAll(['mjöl', 'ägg']));
-      expect(
-        written.menuItemIds,
-        isNot(contains('own-row')),
-        reason: 'the kept row stays yours: identity by id, never by name',
-      );
-    });
+        final written = capturedUpdate();
+        expect(written.id, 'existing-1');
+        expect(
+          written.items.map((i) => i.name),
+          isNot(contains('gammal vara')),
+          reason: 'a row an earlier merge put there is replaced',
+        );
+        expect(
+          written.items.map((i) => i.id),
+          contains('own-row'),
+          reason: 'PQ-10 = A: your own rows are always kept',
+        );
+        expect(written.items.map((i) => i.name), containsAll(['mjöl', 'ägg']));
+        expect(
+          written.menuItemIds,
+          isNot(contains('own-row')),
+          reason: 'the kept row stays yours: identity by id, never by name',
+        );
+
+        final rowCount = written.items.length;
+        final second = await generator.generateForWeek(_date);
+
+        expect(second!.itemCount, 0, reason: 'nothing left to add');
+        expect(writes.last.items, hasLength(rowCount));
+        expect(
+          writes.last.items.map((i) => i.id),
+          unorderedEquals(written.items.map((i) => i.id)),
+          reason: 'the same rows, not a second copy',
+        );
+      },
+    );
 
     test('BUT-1234: a RENAMED generated list is still found via its '
         'generatedForWeek marker and regenerated in place', () async {
@@ -712,7 +732,7 @@ void main() {
         'existing-1',
         _expectedListName,
         generatedForWeek: _expectedWeekKey,
-        items: [
+        items: WeekListReconciler.stamp([
           UnifiedShoppingItem(
             id: 'old-mjol',
             name: 'Mjöl',
@@ -720,7 +740,7 @@ void main() {
             unit: 'dl',
             bought: true,
           ),
-        ],
+        ], ShoppingRowOrigin.plan),
         menuItemIds: const ['old-mjol'],
       );
       shoppingService.setShoppingState(
@@ -737,10 +757,11 @@ void main() {
       );
       final written = capturedUpdate();
       expect(
-        written.items.single.name,
-        'mjol',
-        reason: 'sanity: this run\'s first-seen display casing wins',
+        written.items,
+        hasLength(1),
+        reason: '"mjol" is the same ingredient as "Mjöl": no second row',
       );
+      expect(written.items.single.id, 'old-mjol');
       expect(
         written.items.single.bought,
         isTrue,
@@ -748,6 +769,62 @@ void main() {
             '"Mjöl" ticked off last run must stay ticked when the '
             'fresh aggregation spells it "mjol"',
       );
+    });
+
+    test('bought-status survives when the old row spells the unit differently '
+        'from the fresh canonical one', () async {
+      // Proves: a row ticked off under "matsked" (how older lists stored it,
+      // before rows carried their origin) is still recognised against the
+      // fresh "msk" row: it is taken over as the week's row, stays ticked and
+      // no second row is added beside it.
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1'])));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(
+              amount: 1,
+              unit: 'msk',
+              name: 'salt',
+              raw: '1 msk salt',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      final existing = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: [
+          UnifiedShoppingItem(
+            id: 'old-salt',
+            name: 'salt',
+            amount: 1,
+            unit: 'matsked',
+            bought: true,
+          ),
+        ],
+        menuItemIds: const ['old-salt'],
+      );
+      shoppingService.setShoppingState(
+        lists: [existing],
+        personalLists: [existing],
+      );
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(
+        result,
+        isNotNull,
+        reason: 'regeneration must reach the merge write',
+      );
+      final written = capturedUpdate();
+      expect(written.items, hasLength(1));
+      expect(written.items.single.id, 'old-salt');
+      expect(written.items.single.generatedFrom, 'plan');
+      expect(written.items.single.bought, isTrue);
     });
 
     test('unresolved plan recipe: counted in the result, list still '
@@ -898,18 +975,16 @@ void main() {
       verifyNever(() => shoppingService.updateList(any()));
     });
 
-    test('amount-less aggregated lines land with the manual-add default of 1, '
-        'not a misleading 0', () async {
-      // Proves the generator-owned mapping rule (`a.amount ?? 1`): a raw-only
-      // line like "en nypa salt" must render like a manually added item
-      // (amount 1), never "0 salt". This lives in the GENERATOR, not the
-      // aggregator — the aggregator hands over amount == null.
+    test('a line stating no amount lands with no number shown', () async {
+      // The generator maps the aggregator's amount == null to 0, which the
+      // list renders as the name alone; a made-up 1 is not what the recipe
+      // said.
       when(
         () => menuService.readWeek(any()),
       ).thenAnswer((_) async => _read(_plan(['r1'])));
       recipeService.setRecipeState(
         recipes: [
-          _recipe('r1', [RecipeIngredient.rawOnly('en nypa salt')]),
+          _recipe('r1', [RecipeIngredient.rawOnly('salt')]),
         ],
         isInitialized: true,
       );
@@ -935,8 +1010,49 @@ void main() {
         reason: 'raw-only-ingredient weeks must still generate',
       );
       final written = capturedUpdate();
-      expect(written.items.single.amount, 1);
+      expect(written.items.single.amount, 0);
+      expect(written.items.single.quantityText, '');
     });
+
+    test(
+      'a row lands in the category the user moved that name to (i07)',
+      () async {
+        when(
+          () => menuService.readWeek(any()),
+        ).thenAnswer((_) async => _read(_plan(['r1'])));
+        recipeService.setRecipeState(
+          recipes: [
+            _recipe('r1', [
+              RecipeIngredient.rawOnly('2 dl grädde'),
+              RecipeIngredient.rawOnly('1 gul lök'),
+            ]),
+          ],
+          isInitialized: true,
+        );
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+        when(
+          () => shoppingService.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async {
+          shoppingService.setShoppingState(
+            lists: [_list('new-list-1', _expectedListName)],
+            personalLists: [_list('new-list-1', _expectedListName)],
+          );
+          return 'new-list-1';
+        });
+        await stubCategoryOverrides(shoppingService, {'grädde': 'Skafferi'});
+
+        await generator.generateForWeek(_date);
+
+        final items = capturedUpdate().items;
+        final cream = items.singleWhere((i) => i.name.contains('grädde'));
+        final onion = items.singleWhere((i) => i.name.contains('lök'));
+        expect(cream.category, 'Skafferi');
+        expect(onion.category, isNot('Skafferi'));
+      },
+    );
 
     test('PQ-11 = A: the pantry subtracts known amounts — enough at home '
         'leaves the row off, less adds the difference', () async {
@@ -970,11 +1086,6 @@ void main() {
       final result = await generator.generateForWeek(_date);
 
       expect(result, isNotNull, reason: 'the deduction must not abort');
-      expect(
-        result!.excludedStaples,
-        2,
-        reason: 'both rows were touched by the pantry',
-      );
       // BUT-1296: the pantry is read for THIS user.
       verify(() => pantryService.watchAll(_testUserId)).called(1);
 
@@ -1054,7 +1165,6 @@ void main() {
         isNotNull,
         reason: 'a pantry read failure must not fail generation',
       );
-      expect(result!.excludedStaples, 0);
       expect(
         capturedUpdate().items.map((i) => i.name),
         ['salt'],
@@ -1435,6 +1545,270 @@ void main() {
             'weekly regeneration is not a new list — counting it would '
             'inflate list-creation week over week',
       );
+    });
+  });
+
+  group('the week list follows the week menu (kärnflöde 8B)', () {
+    UnifiedShoppingItem weekRow(String id, String name, ShoppingRowOrigin o) =>
+        WeekListReconciler.stamp([
+          UnifiedShoppingItem(id: id, name: name, amount: 1, unit: 'st'),
+        ], o).single;
+
+    UnifiedShoppingList seedList(List<UnifiedShoppingItem> items) {
+      final list = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: items,
+        menuItemIds: [
+          for (final i in items)
+            if (i.generatedFrom != null) i.id,
+        ],
+      );
+      shoppingService.setShoppingState(lists: [list], personalLists: [list]);
+      return list;
+    }
+
+    test('a week without a list is left alone', () async {
+      seedTwoRecipePlan();
+      shoppingService.setShoppingState(lists: [], personalLists: []);
+
+      final receipt = await generator.syncFollowedWeek(_date);
+
+      expect(receipt, isNull);
+      expect(writes, isEmpty);
+      verifyNever(() => menuService.readWeek(any()));
+    });
+
+    test('a list holding only your own rows or rows from the generated menu '
+        'is not rewritten by a save of the week', () async {
+      seedTwoRecipePlan();
+      seedList([
+        UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1),
+        weekRow('menu-row', 'pasta', ShoppingRowOrigin.menu),
+      ]);
+
+      final receipt = await generator.syncFollowedWeek(_date);
+
+      expect(receipt, isNull);
+      expect(writes, isEmpty);
+      verifyNever(() => menuService.readWeek(any()));
+    });
+
+    test('a list holding rows the week plan wrote follows the week without '
+        'making the list the active one', () async {
+      seedTwoRecipePlan();
+      seedList([
+        UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1),
+        weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan),
+      ]);
+
+      final receipt = await generator.syncFollowedWeek(_date);
+
+      expect(receipt, isNotNull, reason: 'the follow must reach the write');
+      final written = writes.single;
+      final names = written.items.map((i) => i.name).toList();
+      expect(names, containsAll(['kaffe', 'mjöl', 'ägg']));
+      expect(names, isNot(contains('gammal vara')));
+      verifyNever(() => shoppingService.setActiveList(any()));
+    });
+
+    test('a week emptied of dishes still takes its untouched rows off the '
+        'list', () async {
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(const [])));
+      seedList([
+        UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1),
+        weekRow('week-row', 'mjöl', ShoppingRowOrigin.plan),
+      ]);
+
+      await generator.syncFollowedWeek(_date);
+
+      expect(writes.single.items.map((i) => i.id), ['own']);
+    });
+
+    test('a week with a recipe that cannot be read writes nothing, rather '
+        'than taking that dish\'s rows off', () async {
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(_plan(['r1', 'missing'])));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'mjöl',
+              raw: '2 dl mjöl',
+            ),
+          ]),
+        ],
+      );
+      seedList([
+        weekRow('week-row', 'mjöl', ShoppingRowOrigin.plan),
+        weekRow('missing-row', 'ägg', ShoppingRowOrigin.plan),
+      ]);
+
+      final receipt = await generator.syncFollowedWeek(_date);
+
+      expect(receipt, isNull);
+      expect(writes, isEmpty);
+    });
+
+    test('a pantry that cannot be read writes nothing, rather than every '
+        'covered row at full amount', () async {
+      seedTwoRecipePlan();
+      seedList([weekRow('week-row', 'mjöl', ShoppingRowOrigin.plan)]);
+      when(
+        () => pantryService.watchAll(any()),
+      ).thenAnswer((_) => Stream.error(StateError('offline')));
+
+      final receipt = await generator.syncFollowedWeek(_date);
+
+      expect(receipt, isNull);
+      expect(writes, isEmpty);
+    });
+
+    group('the notice of what a follow did', () {
+      late SharedPreferences prefs;
+      late MenuShoppingListGenerator withDevice;
+
+      setUp(() async {
+        SharedPreferences.setMockInitialValues({});
+        prefs = await SharedPreferences.getInstance();
+        withDevice = MenuShoppingListGenerator(preferences: prefs);
+      });
+
+      test('a follow that wrote rows leaves one notice for that list, taken '
+          'once', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        final receipt = await withDevice.syncFollowedWeek(_date);
+        final notice = await withDevice.takeFollowNotice('existing-1');
+
+        expect(receipt, isNotNull, reason: 'the follow must reach the write');
+        expect(notice, isNotNull);
+        expect(notice!.listId, 'existing-1');
+        expect(notice.addedCount, 2, reason: 'mjöl and ägg');
+        expect(notice.removedCount, 1, reason: 'the stale row');
+        expect(notice.removed.single.name, 'gammal vara');
+        expect(await withDevice.takeFollowNotice('existing-1'), isNull);
+      });
+
+      test('a follow that writes nothing leaves no notice', () async {
+        seedTwoRecipePlan();
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+
+        await withDevice.syncFollowedWeek(_date);
+
+        expect(await withDevice.takeFollowNotice('existing-1'), isNull);
+      });
+
+      test('the rules saved for the menu reach the follow: no pantry is read '
+          'when it is off, and the list is still written', () async {
+        await MenuShoppingOptionsMemory(
+          prefs,
+        ).write(const MenuShoppingMergeOptions(subtractPantry: false));
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        final receipt = await withDevice.syncFollowedWeek(_date);
+
+        expect(receipt, isNotNull);
+        expect(writes, hasLength(1));
+        verifyNever(() => pantryService.watchAll(any()));
+      });
+
+      test('without a saved choice the pantry is read', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        await withDevice.syncFollowedWeek(_date);
+
+        verify(() => pantryService.watchAll(any())).called(greaterThan(0));
+      });
+
+      test('Ångra on a taken notice puts the follow back through the '
+          'shopping service', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        final receipt = await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+
+        final undone = await withDevice.undoFollow(notice);
+
+        expect(undone, isTrue);
+        final captured = verify(
+          () => shoppingService.undoPersonalMerge(
+            captureAny(),
+            captureAny(),
+            captureAny(),
+          ),
+        ).captured;
+        expect(captured[0], 'existing-1');
+        expect(captured[1], unorderedEquals(receipt!.addedItemIds));
+        expect(
+          (captured[2] as List<UnifiedShoppingItem>).map((i) => i.name),
+          ['gammal vara'],
+        );
+        final names = shoppingService.lists.single.items.map((i) => i.name);
+        expect(names, ['gammal vara']);
+      });
+
+      test('a follow that ends after sign-out leaves no notice', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.onDispose();
+
+        await withDevice.syncFollowedWeek(_date);
+
+        expect(
+          prefs.containsKey(WeekListFollowNoticeStore.storageKey),
+          isFalse,
+        );
+      });
+
+      test('Ångra when every row was ticked since writes nothing', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+        final list = shoppingService.lists.single;
+        final ticked = list.copyWith(
+          items: [for (final i in list.items) i.copyWith(bought: true)],
+        );
+        // The removed row is back on the list too, so nothing is left to undo.
+        final withRemoved = ticked.copyWith(
+          items: [
+            ...ticked.items,
+            ...notice.removed.map((r) => r.copyWith(bought: true)),
+          ],
+        );
+        shoppingService.setShoppingState(
+          lists: [withRemoved],
+          personalLists: [withRemoved],
+        );
+
+        expect(await withDevice.undoFollow(notice), isTrue);
+        verifyNever(
+          () => shoppingService.undoPersonalMerge(any(), any(), any()),
+        );
+      });
+
+      test('Ångra for a list that is gone is not claimed as done', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+
+        expect(await withDevice.undoFollow(notice), isFalse);
+        verifyNever(
+          () => shoppingService.undoPersonalMerge(any(), any(), any()),
+        );
+      });
     });
   });
 }

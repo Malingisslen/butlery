@@ -208,16 +208,6 @@ void main() {
       },
     );
 
-    test('should include delay during generation', () async {
-      mockMenuService.setGenerateMenuResult(createTestMenu());
-
-      final stopwatch = Stopwatch()..start();
-      await menuGenerator.generateMenuFromPrompt('test prompt');
-      stopwatch.stop();
-
-      expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(300));
-    });
-
     test('should handle complex prompts', () async {
       const complexPrompt =
           'vegetarisk veckomeny för familj med 4 personer, budget-vänlig med italienska rätter';
@@ -279,18 +269,6 @@ void main() {
       expect(mockMenuService.lastGeneratePrompt, equals('3 Monday'));
     });
 
-    test('should include regeneration delay', () async {
-      mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build()],
-      });
-
-      final stopwatch = Stopwatch()..start();
-      await menuGenerator.regenerateMenuSection('Monday', createTestMenu());
-      stopwatch.stop();
-
-      expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(200));
-    });
-
     test('should handle empty sections in current menu', () async {
       final menuWithEmptySection = <String, List<Recipe>>{
         'Monday': [],
@@ -304,58 +282,6 @@ void main() {
       await menuGenerator.regenerateMenuSection('Monday', menuWithEmptySection);
 
       expect(mockMenuService.lastGeneratePrompt, equals('0 Monday'));
-    });
-  });
-
-  group('MenuGenerator - Generation Validation', () {
-    test('should validate generation prerequisites successfully', () {
-      const validPrompt = 'vegetarian weekly menu';
-
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites(validPrompt),
-        returnsNormally,
-      );
-    });
-
-    test('should throw error for empty prompt', () {
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites(''),
-        throwsA(
-          predicate(
-            (e) =>
-                e is ArgumentError &&
-                e.toString().contains('Fyll i alla obligatoriska fält'),
-          ),
-        ),
-      );
-    });
-
-    test('should throw error for whitespace-only prompt', () {
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites('   '),
-        throwsA(
-          predicate(
-            (e) =>
-                e is ArgumentError &&
-                e.toString().contains('Fyll i alla obligatoriska fält'),
-          ),
-        ),
-      );
-    });
-
-    test('should throw error when no recipes available', () {
-      mockRecipeService.setRecipeState(recipes: []);
-
-      expect(
-        () => menuGenerator.validateGenerationPrerequisites('valid prompt'),
-        throwsA(
-          predicate(
-            (e) =>
-                e is Exception &&
-                e.toString().contains('Inga recept tillgängliga'),
-          ),
-        ),
-      );
     });
   });
 
@@ -513,11 +439,10 @@ void main() {
       expect(analysis['totalRecipes'], equals(3));
     });
 
-    test('should validate then generate menu', () async {
+    test('should generate a menu for an optimal prompt', () async {
       const prompt = 'healthy weekly veckomeny'; // add keyword
       mockMenuService.setGenerateMenuResult(createTestMenu());
 
-      menuGenerator.validateGenerationPrerequisites(prompt);
       final result = await menuGenerator.generateMenuFromPrompt(prompt);
 
       expect(result, isNotEmpty);
@@ -1275,6 +1200,9 @@ void main() {
       );
     }
 
+    WeeklyMenuPlanRead ok(WeeklyMenuPlan plan) =>
+        WeeklyMenuPlanRead(plan: plan, readFailed: false);
+
     MenuGenerator generatorWithPlanService(WeeklyMenuPlanService? planService) {
       return MenuGenerator(
         menuService: mockMenuService,
@@ -1305,7 +1233,7 @@ void main() {
       'plan-service read throws -> error swallowed, empty set, generation proceeds',
       () async {
         when(
-          () => mockPlanService.getWeek(any()),
+          () => mockPlanService.readWeek(any()),
         ).thenThrow(StateError('boom — recent-plan read failed'));
         final generator = generatorWithPlanService(mockPlanService);
 
@@ -1324,10 +1252,10 @@ void main() {
       'reads this-week + last-week plans under a fixed clock and unions their recipe ids',
       () async {
         when(
-          () => mockPlanService.getWeek(thisWeekStart),
-        ).thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
-        when(() => mockPlanService.getWeek(lastWeekStart)).thenAnswer(
-          (_) async => planWithRecipeIds(lastWeekStart, ['r2', 'r3']),
+          () => mockPlanService.readWeek(thisWeekStart),
+        ).thenAnswer((_) async => ok(planWithRecipeIds(thisWeekStart, ['r1'])));
+        when(() => mockPlanService.readWeek(lastWeekStart)).thenAnswer(
+          (_) async => ok(planWithRecipeIds(lastWeekStart, ['r2', 'r3'])),
         );
         final generator = generatorWithPlanService(mockPlanService);
 
@@ -1336,8 +1264,8 @@ void main() {
         });
 
         // 1-2 week window only: this week + last week, no other weeks.
-        verify(() => mockPlanService.getWeek(thisWeekStart)).called(1);
-        verify(() => mockPlanService.getWeek(lastWeekStart)).called(1);
+        verify(() => mockPlanService.readWeek(thisWeekStart)).called(1);
+        verify(() => mockPlanService.readWeek(lastWeekStart)).called(1);
         verifyNoMoreInteractions(mockPlanService);
         expect(
           mockMenuService.lastRecentlyUsedRecipeIds,
@@ -1347,9 +1275,11 @@ void main() {
     );
 
     test('empty history -> empty set, generation still proceeds', () async {
-      when(() => mockPlanService.getWeek(any())).thenAnswer((invocation) async {
+      when(() => mockPlanService.readWeek(any())).thenAnswer((
+        invocation,
+      ) async {
         final week = invocation.positionalArguments.first as DateTime;
-        return WeeklyMenuPlan.empty(userId: 'u', date: week);
+        return ok(WeeklyMenuPlan.empty(userId: 'u', date: week));
       });
       final generator = generatorWithPlanService(mockPlanService);
 
@@ -1365,11 +1295,11 @@ void main() {
       'BUT-1329: regenerateMenuSection threads the same recent set as full generation',
       () async {
         when(
-          () => mockPlanService.getWeek(thisWeekStart),
-        ).thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
+          () => mockPlanService.readWeek(thisWeekStart),
+        ).thenAnswer((_) async => ok(planWithRecipeIds(thisWeekStart, ['r1'])));
         when(
-          () => mockPlanService.getWeek(lastWeekStart),
-        ).thenAnswer((_) async => planWithRecipeIds(lastWeekStart, ['r2']));
+          () => mockPlanService.readWeek(lastWeekStart),
+        ).thenAnswer((_) async => ok(planWithRecipeIds(lastWeekStart, ['r2'])));
         final generator = generatorWithPlanService(mockPlanService);
         mockMenuService.setGenerateMenuResult({
           'Monday': [RecipeFactory.build(title: 'New')],
@@ -1400,6 +1330,84 @@ void main() {
         expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
       },
     );
+
+    test(
+      'a clean read of both weeks leaves lastRecencyReadFailed false',
+      () async {
+        when(() => mockPlanService.readWeek(any())).thenAnswer((i) async {
+          final week = i.positionalArguments.first as DateTime;
+          return ok(WeeklyMenuPlan.empty(userId: 'u', date: week));
+        });
+        final generator = generatorWithPlanService(mockPlanService);
+
+        await generator.generateMenuFromPrompt('veckomeny');
+
+        expect(generator.lastRecencyReadFailed, isFalse);
+      },
+    );
+
+    test(
+      'a week whose read did not answer is reported, ids from the other week still count',
+      () async {
+        when(() => mockPlanService.readWeek(thisWeekStart)).thenAnswer(
+          (_) async => ok(planWithRecipeIds(thisWeekStart, ['r1'])),
+        );
+        when(() => mockPlanService.readWeek(lastWeekStart)).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(
+            plan: WeeklyMenuPlan.empty(userId: 'u', date: lastWeekStart),
+            readFailed: true,
+          ),
+        );
+        final generator = generatorWithPlanService(mockPlanService);
+
+        await withClock(Clock.fixed(fixedNow), () async {
+          await generator.generateMenuFromPrompt('veckomeny');
+        });
+
+        expect(generator.lastRecencyReadFailed, isTrue);
+        expect(mockMenuService.lastRecentlyUsedRecipeIds, equals({'r1'}));
+      },
+    );
+
+    test('a throwing read is reported as failed too', () async {
+      when(
+        () => mockPlanService.readWeek(any()),
+      ).thenThrow(StateError('boom'));
+      final generator = generatorWithPlanService(mockPlanService);
+
+      await generator.generateMenuFromPrompt('veckomeny');
+
+      expect(generator.lastRecencyReadFailed, isTrue);
+    });
+
+    test(
+      'a new generation with a clean read clears an earlier failure',
+      () async {
+        var fail = true;
+        when(() => mockPlanService.readWeek(any())).thenAnswer((i) async {
+          final week = i.positionalArguments.first as DateTime;
+          return WeeklyMenuPlanRead(
+            plan: WeeklyMenuPlan.empty(userId: 'u', date: week),
+            readFailed: fail,
+          );
+        });
+        final generator = generatorWithPlanService(mockPlanService);
+
+        await generator.generateMenuFromPrompt('veckomeny');
+        expect(generator.lastRecencyReadFailed, isTrue);
+        fail = false;
+        await generator.generateMenuFromPrompt('veckomeny');
+        expect(generator.lastRecencyReadFailed, isFalse);
+      },
+    );
+
+    test('no plan service wired is not a failure', () async {
+      final generator = generatorWithPlanService(null);
+
+      await generator.generateMenuFromPrompt('veckomeny');
+
+      expect(generator.lastRecencyReadFailed, isFalse);
+    });
   });
 
   // A single-section re-roll rebuilds its scoring context from scratch so it

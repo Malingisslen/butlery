@@ -57,6 +57,7 @@
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
@@ -517,6 +518,23 @@ class RecipeDetailViewModel extends BaseViewModel {
     return true;
   }
 
+  /// Removes the user's override for one allergen so the tagger's own answer
+  /// applies again. Returns false when there was nothing to remove or the save
+  /// failed.
+  Future<bool> resetAllergenOverride(String allergenKey) {
+    final current = _recipe.tagOverrides;
+    if (current == null || !current.hasAllergenOverride(allergenKey)) {
+      return Future.value(false);
+    }
+    return updateRecipeTagOverrides(
+      current.withoutAllergenOverride(
+        allergenKey,
+        editedBy: (ServiceLocator.tryGet<UserService>()?.currentUserId)
+            .orEmpty(),
+      ),
+    );
+  }
+
   /// BUT-678: trigger in-app review prompt at the happy moment.
   /// Best-effort — never propagates failures back into the rating flow.
   Future<void> _maybeRequestInAppReview(double rating) async {
@@ -576,7 +594,7 @@ class RecipeDetailViewModel extends BaseViewModel {
     try {
       result =
           await (_injectedImportManager ?? ServiceLocator.get<ImportManager>())
-              .reimportFromArtefact(artefact);
+              .reimportFromArtefact(artefact, sourceUrl: _recipe.sourceUrl);
     } catch (e) {
       return ReextractOutcome.failure;
     }

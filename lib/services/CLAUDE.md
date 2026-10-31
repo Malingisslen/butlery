@@ -18,6 +18,8 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
 - `lib/services/parsing/ner/onnx_ner_service.dart`
 - `lib/services/tagging/tag_resolution_service.dart`
+- `lib/services/search/recipe_search_matcher.dart` (pure function — the one text-search rule
+  every recipe search box uses; no async, no Firebase)
 - `lib/services/shopping/ingredient_categorizer.dart` (pure-compute rule engine — no async, no Firebase)
 - `lib/services/import/multi_recipe_splitter.dart` (pure-compute rule engine — splits a
   cookbook spread into per-recipe blocks; no async, no Firebase, no LLM)

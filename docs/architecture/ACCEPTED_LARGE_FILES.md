@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` lists the files over 500 lines. Some of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, session_timeout_service.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
+**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` lists the files over 500 lines. Some of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -71,7 +71,6 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_data_export_repository.dart` | 1333 | Read-only GDPR export gateway — funnels residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. +94 from BUT-1774/1775/1798 (shared_content legs repointed, and the shopping-list leg that had never been exported at all). +69 from BUT-1832 (the per-poll vote probe, its read budget and its failure logging). +26 from BUT-1957 (the `users/{uid}/notifications` export leg). +72 from BUT-1992 (three `users/{uid}` export legs the deletion cascade already erased, and the settings read widened from one document to its collection). Row refreshed 2026-09-16 (BUT-1693 added the household-allergen-share export leg). Row refreshed 2026-10-09 (BUT-1701 `countConversations`, BUT-2114 `exportLikesByUser`). +18 from BUT-907 (the `users/{uid}/trash` export leg). Row refreshed 2026-10-09 (BUT-2082 `exportRecipeTitles`). Row refreshed 2026-10-19 (BUT-2413 replaced the per-poll vote probe with `exportPollVotesByUser`). |
 | `firebase_social_request_repository.dart` | 515 | Single unified social-request collection; clean extension of base repo class |
 | `firebase_analytics_repository.dart` | 569 | Analytics writes with per-install salted SHA-256 PII hashing (GDPR Art.7); single-concern repository |
-| `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
 | `friend_category_repository.dart` | 648 | Clean single-collection repo; user-scoped friend category CRUD only. BUT-2326 (2026-10-09) added the owner's difference write (`updateOwnedCategory`) and the offline leave refusal. |
 | `social_export_manager.dart` | 802 | GDPR Art. 15 facade for the social sections. Crossed the limit in BUT-1832 (2026-08-17), which added the per-conversation poll-vote overlay plus its two truncation/error lifts. The section-assembly loop is one pass over conversations that must keep sanitisation, truncation and error-code precedence together, and those three interact per record. `ChatGroupExport` and `SharedShoppingListExport` are already extracted; the remainder is the facade itself. Known extraction candidate if this grows again: `_redactOtherParticipants` plus the conversation loop would mirror `ChatGroupExport`. (An earlier version of this row cited BUT-1801 as evidence against splitting — wrong direction: that defect was two reads sharing ONE catch, i.e. too little separation.) Row refreshed 2026-09-11 (BUT-1854 added the `lastMessage` history cut-off to `_redactOtherParticipants`). Row refreshed 2026-10-09 (BUT-2008 isolated the reads in `exportFriends` and `exportSharedContent` through `IsolatedSectionReads`; BUT-1701 capped blocks, reports and pings and added the conversation count probe). Row refreshed 2026-10-09 (BUT-1955 kept the requester's vote on a withheld row). Row refreshed 2026-10-19 (BUT-2413 reads the poll votes once and places them). |
 | `content_export_manager.dart` | 709 | GDPR Art. 15 facade for the content sections. Row refreshed 2026-08-31 (556 -> 589; BUT-1971's follow-up added the group-plan erasure-handle strip and the left-group sentence). Row refreshed 2026-09-07 (BUT-2028 added the ingredient-suggestions section and its fail-closed field allowlist). BUT-1801 (2026-08-17) REMOVED a read and added the comment explaining why it could never have worked — every Art. 15 bundle had been losing its whole recipe section to it. Each section is a self-contained try/catch by design; the amplifier this file documents is two reads sharing one catch, which is an argument against merging sections, not for it. |
@@ -98,7 +97,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 547 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `user_service.dart` | 1255 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
-| `text_import_strategy.dart` | 1468 | Text-based recipe import strategy. Row refreshed 2026-10-29. |
+| `text_import_strategy.dart` | 1420 | Text-based recipe import strategy. Row refreshed 2026-10-30. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 607 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 681 | Friend category CRUD operations |
@@ -113,7 +112,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `deep_link_service.dart` | 566 | Deep link routing service |
 | `llm_tier.dart` | 732 | LLM-based recipe parsing tier |
 | `unified_shopping_service.dart` | 864 | Shopping service facade. BUT-2140 added the restore module's wiring and two delegates; the restore logic lives in `shopping_restore_module.dart`. |
-| `shopping_item_management_module.dart` | 588 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
+| `shopping_item_management_module.dart` | 590 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
 | `realtime_menu_service.dart` | 534 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `search_service.dart` | 538 | Recipe/content search service |
 | `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |
@@ -153,7 +152,7 @@ Must be self-contained.
 | File | Lines | Reason |
 |------|-------|--------|
 | `main.dart` | 337 | App entry point — bootstrap sequence only. BUT-530 (2026-06-14) extracted `ButleryApp`/shell → `lib/app/butlery_app.dart` and the auth-routing subtree → `lib/app/auth/auth_wrapper.dart`, bringing this from 1,395 back under the historical 954 ceiling. |
-| `lib/app/butlery_app.dart` | 904 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, session timeout, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
+| `lib/app/butlery_app.dart` | 836 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
 
 ## Config / Constants / Data
 
@@ -184,10 +183,10 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `personal_tag_rule_dialog.dart` | 834 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |
-| `recipe_detail_view.dart` | 1339 | Recipe detail screen (source-artefact sheet in recipe_detail/recipe_source_artefact_sheet.dart, sticky action bar in recipe_detail/recipe_action_bar.dart) |
+| `recipe_detail_view.dart` | 1352 | Recipe detail screen (source-artefact sheet in recipe_detail/recipe_source_artefact_sheet.dart, sticky action bar in recipe_detail/recipe_action_bar.dart) |
 | `weekly_menu_plan_viewmodel.dart` | 1652 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
-| `recipe_detail_content.dart` | 947 | Body content widget for recipe detail |
+| `recipe_detail_content.dart` | 980 | Body content widget for recipe detail |
 | `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |
@@ -197,7 +196,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `ui_module.dart` | 516 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |
 | `edit_recipe_view.dart` | 847 | Recipe editing screen. |
 | `user_profile_edit_view.dart` | 353 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
-| `ocr_extraction_service.dart` | 1,256 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
+| `ocr_extraction_service.dart` | 865 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 711 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 463 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
@@ -213,7 +212,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `tag_detail_view.dart` | 176 | Tag detail/editing screen |
 | `menu_viewmodel.dart` | 1155 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 684 | Shopping list member management dialog |
-| `photo_import_view.dart` | 571 | Photo import screen |
+| `photo_import_view.dart` | 606 | Photo import screen |
 | `layout_components.dart` | 171 | Common layout component widgets |
 | `group_weekly_menu_widget.dart` | 347 | The group's weekly menu screen (BUT-1971). Row added 2026-08-30. Grew past 500 with the provenance row and the voter sheet, which the Art. 15 keep decision rests on. The day rows, the face row and the week arrows are already separate widgets; the next split is the sheet. |
 | `menu_preview_view.dart` | 326 | Shared menu preview screen |
@@ -240,7 +239,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `collaborative_shopping_items.dart` | 534 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
 | `tag_result_display.dart` | 605 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
 | `onboarding_viewmodel.dart` | 614 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
-| `photo_import_viewmodel.dart` | 1,006 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
+| `photo_import_viewmodel.dart` | 1,146 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 691 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 524 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 616 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
@@ -264,7 +263,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `collaborative_shopping_items.dart` | 534 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 605 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 614 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
-| `photo_import_viewmodel.dart` | 1,006 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
+| `photo_import_viewmodel.dart` | 1,146 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 691 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 738 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
 | `menu_generator.dart` | 922 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |

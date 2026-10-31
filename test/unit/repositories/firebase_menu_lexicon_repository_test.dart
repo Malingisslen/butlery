@@ -4,8 +4,10 @@
 /// TTL cache, malformed document handling, and offline resilience.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
@@ -128,4 +130,55 @@ void main() {
       expect(result[LexiconCategory.dietaryStems], {'lchf': 'lchf'});
     });
   });
+
+  group('FirebaseMenuLexiconRepository offline answer', () {
+    late _MockFirestore firestore;
+    late _MockCollection collection;
+    late _MockQuerySnapshot snapshot;
+    late _MockMetadata metadata;
+    late FirebaseMenuLexiconRepository repository;
+
+    setUp(() {
+      firestore = _MockFirestore();
+      collection = _MockCollection();
+      snapshot = _MockQuerySnapshot();
+      metadata = _MockMetadata();
+      when(() => firestore.collection(any())).thenReturn(collection);
+      when(() => collection.get()).thenAnswer((_) async => snapshot);
+      when(() => snapshot.docs).thenReturn(const []);
+      when(() => snapshot.metadata).thenReturn(metadata);
+      repository = FirebaseMenuLexiconRepository(firestore: firestore);
+    });
+
+    test('a device-cache answer is reported as failed and not kept', () async {
+      when(() => metadata.isFromCache).thenReturn(true);
+
+      final first = await repository.loadOverridesWithStatus();
+      await repository.loadOverridesWithStatus();
+
+      expect(first.failed, isTrue);
+      verify(() => collection.get()).called(2);
+    });
+
+    test('a server answer is complete and kept for the TTL', () async {
+      when(() => metadata.isFromCache).thenReturn(false);
+
+      final first = await repository.loadOverridesWithStatus();
+      await repository.loadOverridesWithStatus();
+
+      expect(first.failed, isFalse);
+      verify(() => collection.get()).called(1);
+    });
+  });
 }
+
+class _MockFirestore extends Mock implements FirebaseFirestore {}
+
+// ignore: subtype_of_sealed_class
+class _MockCollection extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
+
+class _MockMetadata extends Mock implements SnapshotMetadata {}

@@ -39,6 +39,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -454,6 +455,25 @@ Blanda allt och rulla till bollar.''';
 
       expect(r, isA<ImportSucceeded>());
       verifyNever(() => mockImportManager.autoParseMulti(any()));
+    });
+
+    test('saveSelectedRecipes saves the amounts as fractions', () async {
+      final saved = <Recipe>[];
+      when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer((
+        inv,
+      ) async {
+        final r = inv.positionalArguments.first as Recipe;
+        saved.add(r);
+        return ImportManagerResult.success(r, strategy: 'photo');
+      });
+
+      await viewModel.saveSelectedRecipes([
+        RecipeFactory.build(title: 'A').copyWith(
+          ingredients: const ['1,5 dl mjölk', '2 ägg'],
+        ),
+      ]);
+
+      expect(saved.single.ingredients, ['1 ½ dl mjölk', '2 ägg']);
     });
 
     test('saveSelectedRecipes saves each and stops on a refusal', () async {

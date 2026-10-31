@@ -37,20 +37,8 @@ class OcrErrorMessageBuilder {
     // Extract circuit breaker states
     final circuitBreakers =
         result.metadata['circuit_breakers'] as Map<String, dynamic>?;
-    // "Services unavailable" must mean EVERY provider is down, including the
-    // free on-device tier. Checking only the three paid ones would tell the
-    // user the services are unreachable on a run where the device tier
-    // executed fine and merely read something that wasn't a recipe.
-    final allProvidersDown =
-        circuitBreakers != null &&
-        // Absent counts as DOWN: the service publishes `on_device_state` only
-        // when the tier actually ran, so a missing key means it did not
-        // participate and must not veto the message.
-        (!circuitBreakers.containsKey('on_device_state') ||
-            circuitBreakers['on_device_state'] == 'open') &&
-        circuitBreakers['ocr_space_state'] == 'open' &&
-        circuitBreakers['google_vision_state'] == 'open' &&
-        circuitBreakers['tesseract_state'] == 'open';
+    final onDeviceDown =
+        circuitBreakers != null && circuitBreakers['on_device_state'] == 'open';
 
     // Build specific error message based on failure reasons
     final messageParts = <String>[];
@@ -71,7 +59,7 @@ class OcrErrorMessageBuilder {
       messageParts.add(AppLocale.current.errorOcrRateLimit);
     } else if (classification == 'timeout' || classification == 'network') {
       messageParts.add(AppLocale.current.errorOcrTimeout);
-    } else if (allProvidersDown) {
+    } else if (classification == 'unavailable' || onDeviceDown) {
       messageParts.add(
         AppLocale.current.errorOcrServicesUnavailable,
       );

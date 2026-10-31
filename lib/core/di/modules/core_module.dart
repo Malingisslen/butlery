@@ -30,12 +30,13 @@ import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_acquisition_repository.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
@@ -50,7 +51,6 @@ import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/in_app_review_service.dart';
-import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
 // Core providers
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -106,7 +106,6 @@ class CoreModule implements DIModule {
       SharedPreferences,
       AuthRepository,
       AuthService,
-      SessionTimeoutService,
       FirebaseAuditRepository,
       FirebaseConsentRepository,
       AcquisitionRepository,
@@ -284,9 +283,21 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
           providerSignIn: container<ProviderSignInService>(),
+          firestoreWritesSettled: () => FirestoreCacheWipe.writesSettled(
+            () => container<FirestoreRepository>().firestore
+                .waitForPendingWrites(),
+          ),
+          readCacheCleaner: (userId) async {
+            if (!container.isRegistered<OfflineService>()) return;
+            final offline = container<OfflineService>();
+            if (!offline.isInitialized) return;
+            await offline.database.cacheDao.clearUserReadCaches(userId);
+          },
         ),
         dispose: (s) => s.dispose(),
       );
+      AutoSaveManager.defaultOwnerIdProvider = () =>
+          container<AuthService>().currentUserId;
 
       // MFA service (extracted from AuthService for file size compliance)
       container.registerLazySingleton<AuthMfaService>(
@@ -305,15 +316,6 @@ class CoreModule implements DIModule {
         ),
       );
 
-      // Session timeout service for automatic logout on inactivity
-      // Note: Depends on AuthService and AnalyticsService
-      container.registerLazySingleton<SessionTimeoutService>(
-        () => SessionTimeoutService(
-          authService: container<AuthService>(),
-          analyticsService: container<AnalyticsService>(),
-        ),
-      );
-
       // Persistence service for local data storage and caching
       container.registerLazySingleton<PersistenceService>(
         () => PersistenceService(),
@@ -328,7 +330,7 @@ class CoreModule implements DIModule {
 
       // Account deletion service for GDPR Article 17 (Right to Erasure).
       // BUT-788: now a thin wrapper around the `requestAccountDeletion`
-      // Cloud Function. Pre-CF deps: SearchRepository (Algolia cleanup),
+      // Cloud Function. Pre-CF deps:
       // OfflineService (local cache cleanup). Post-CF: AuthService signs out.
       container.registerLazySingleton<AccountDeletionService>(() {
         return AccountDeletionService(
@@ -336,9 +338,6 @@ class CoreModule implements DIModule {
           // BUT-1025: singleton access lives in the DI module (allow-listed),
           // not in the service. Region pin matches the CF deployment.
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          searchRepository: container.isRegistered<SearchRepository>()
-              ? container<SearchRepository>()
-              : null,
           offlineService: container.isRegistered<OfflineService>()
               ? container<OfflineService>()
               : null,

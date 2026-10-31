@@ -13,8 +13,8 @@
 ///   metadata block with originalConfidence/missingFields/llmCost.
 /// - Meal-type inference: tags from the LLM are routed to the correct
 ///   mealType.
-/// - Default portions: when LLM returns `portions: null`, the recipe gets
-///   `ParsingTier.kDefaultPortions` (4) — not 0, not null-then-crash.
+/// - Unknown portions and time: when the LLM states none (or an implausible
+///   value), the recipe stores none, never a guessed 4 portions or 0 minutes.
 /// - LlmException → ImportFailure: rate-limited LlmException maps to
 ///   `llmQuotaExceeded`, others to `parsingFailed`, retryAfter is preserved.
 /// - Non-LlmException error path: unexpected throws are caught and surfaced
@@ -450,41 +450,117 @@ void main() {
   });
 
   group('enhance — extracted→recipe defaults', () {
-    /// If LLM omits portions, we must NOT propagate null or 0 (which would
-    /// later divide-by-zero in shopping/scaling). We fall back to the
-    /// documented ParsingTier.kDefaultPortions constant.
-    test(
-      'null portions from LLM falls back to ParsingTier.kDefaultPortions',
-      () async {
+    test('null portions from LLM stay unknown, not a guessed 4', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(portions: null),
+        estimatedCost: 0,
+      );
+
+      final result = await service.enhance(_partial()) as ImportSuccess;
+
+      expect(result.recipe.portions, isNull);
+    });
+
+    test('portions outside 1..kMaxPortions are treated as unknown', () async {
+      for (final bad in [0, -2, ParsingTier.kMaxPortions + 1]) {
         llm.structureResponse = StructureRecipeResponse(
           success: true,
-          recipe: _extracted(portions: null),
+          recipe: _extracted(portions: bad),
           estimatedCost: 0,
         );
 
         final result = await service.enhance(_partial()) as ImportSuccess;
 
-        expect(result.recipe.portions, ParsingTier.kDefaultPortions);
-      },
-    );
+        expect(result.recipe.portions, isNull, reason: 'portions=$bad');
+      }
+    });
 
-    /// totalTimeMinutes is prep+cook; when both are null the recipe gets
-    /// 0 (not crash, not null). Guards against the "0 minutes shown
-    /// because we forgot the coalesce" UX bug.
-    test(
-      'null prep+cook minutes maps to timeMinutes=0 without crashing',
-      () async {
+    test('portions at the edges 1 and kMaxPortions are kept', () async {
+      for (final edge in [1, ParsingTier.kMaxPortions]) {
         llm.structureResponse = StructureRecipeResponse(
           success: true,
-          recipe: _extracted(prepTime: null, cookTime: null),
+          recipe: _extracted(portions: edge),
           estimatedCost: 0,
         );
 
         final result = await service.enhance(_partial()) as ImportSuccess;
 
-        expect(result.recipe.timeMinutes, 0);
-      },
-    );
+        expect(result.recipe.portions, edge, reason: 'portions=$edge');
+      }
+    });
+
+    test('minutes above 2880 are unknown; 1 and 2880 are kept', () async {
+      final cases = <(int, int), int?>{
+        (2000, 881): null,
+        (2000, 880): 2880,
+        (1, 0): 1,
+      };
+      for (final MapEntry(key: (prep, cook), value: expected)
+          in cases.entries) {
+        llm.structureResponse = StructureRecipeResponse(
+          success: true,
+          recipe: _extracted(prepTime: prep, cookTime: cook),
+          estimatedCost: 0,
+        );
+
+        final result = await service.enhance(_partial()) as ImportSuccess;
+
+        expect(
+          result.recipe.timeMinutes,
+          expected,
+          reason: 'prep=$prep cook=$cook',
+        );
+      }
+    });
+
+    test('stated portions are kept', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(portions: 6),
+        estimatedCost: 0,
+      );
+
+      final result = await service.enhance(_partial()) as ImportSuccess;
+
+      expect(result.recipe.portions, 6);
+    });
+
+    test('null prep+cook minutes stay unknown, not 0 minutes', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(prepTime: null, cookTime: null),
+        estimatedCost: 0,
+      );
+
+      final result = await service.enhance(_partial()) as ImportSuccess;
+
+      expect(result.recipe.timeMinutes, isNull);
+    });
+
+    test('a stated 0 + 0 minutes is unknown, not "0 min"', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(prepTime: 0, cookTime: 0),
+        estimatedCost: 0,
+      );
+
+      final result = await service.enhance(_partial()) as ImportSuccess;
+
+      expect(result.recipe.timeMinutes, isNull);
+    });
+
+    test('stated prep+cook minutes are summed and kept', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(prepTime: 10, cookTime: 25),
+        estimatedCost: 0,
+      );
+
+      final result = await service.enhance(_partial()) as ImportSuccess;
+
+      expect(result.recipe.timeMinutes, 35);
+    });
 
     test(
       'ingredients are converted to their formatted string representation',

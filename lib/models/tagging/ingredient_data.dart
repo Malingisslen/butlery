@@ -77,11 +77,10 @@ class IngredientData {
 
   // --- New fields for sustainability and metadata (Sprint 1) ---
 
-  /// Seasons when this ingredient is available (vår, sommar, höst, vinter).
-  /// Empty list means year-round or unknown.
+  /// Seasons when this ingredient is available.
   final List<String> seasonAvailability;
 
-  /// Price category: budget, medium, or premium.
+  /// Price category.
   final String? priceCategory;
 
   /// Carbon footprint category: low, medium, or high.

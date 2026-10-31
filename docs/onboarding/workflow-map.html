@@ -480,12 +480,6 @@
       "path": "lib/services/unified/operations/modules/recipe_member_manager.dart"
     },
     {
-      "id": "repo-search",
-      "label": "SearchRepository — sökindex",
-      "context": "repository",
-      "path": "Algolia/Meili-index"
-    },
-    {
       "id": "cf-structure",
       "label": "structureRecipe — LLM-parse",
       "context": "cloud-function",
@@ -690,12 +684,6 @@
       "path": "lib/services/auth/auth_mfa_service.dart"
     },
     {
-      "id": "svc-session-timeout",
-      "label": "SessionTimeoutService — inaktivitet",
-      "context": "service",
-      "path": "lib/services/session_timeout_service.dart"
-    },
-    {
       "id": "repo-auth",
       "label": "FirebaseAuthRepository",
       "context": "repository",
@@ -859,7 +847,7 @@
     },
     {
       "id": "svc-ocr-extraction",
-      "label": "OCR-extraktion (på-enheten → OCR.space/Google Vision/Tesseract)",
+      "label": "OCR-extraktion på telefonen (ML Kit)",
       "context": "service",
       "path": "lib/services/ocr_extraction_service.dart"
     },
@@ -916,6 +904,12 @@
       "label": "OS-delningsmeny (dela-till)",
       "context": "external",
       "path": "android/app/src/main/AndroidManifest.xml"
+    },
+    {
+      "id": "ext-ios-share-extension",
+      "label": "iOS-delningsfönster (App Group-inkorg)",
+      "context": "external",
+      "path": "ios/ShareExtension/ShareViewController.swift"
     },
     {
       "id": "svc-incoming-share",
@@ -2480,7 +2474,7 @@
         {
           "from": "svc-import-manager",
           "to": "v-recipe-form",
-          "payload": "ParsedRecipe → Recipe som förifyllt formulär (granska före spar)",
+          "payload": "ParsedRecipe → Recipe som förifyllt formulär (granska före spar). Formuläret skriver sedan ingrediensradernas inledande mängd som vanligt bråk (1,5 dl → 1 ½ dl, ImportFractions), efter tolkningsgranskningen",
           "transport": "return + Navigator",
           "verified": true
         },
@@ -3120,13 +3114,6 @@
         },
         {
           "from": "svc-account-deletion",
-          "to": "repo-search",
-          "payload": "uid → sökindexradering (före CF, klientsidigt)",
-          "transport": "index delete",
-          "verified": true
-        },
-        {
-          "from": "svc-account-deletion",
           "to": "cf-request-deletion",
           "payload": "{reason} · App Check-krav · 9 min klienttimeout · retur bär retained[] (artikel 12.4-besked, BUT-2046)",
           "transport": "callable CF",
@@ -3135,7 +3122,7 @@
         {
           "from": "cf-request-deletion",
           "to": "ds-users",
-          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → efter Tier 1: receptägarens uid tas bort från andras betyg, betyget ligger kvar (BUT-2072); uid tas bort från andras kommentarer (ägare, delningslista) och egna gillamarkeringar raderas (BUT-2112) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), parsningskorrigeringar (parsing_corrections), inlärda ingrediensalias (learned_aliases: uid tas bort, en obeslutad kandidat utan andra röster raderas; samma steg körs i onUserDeleted för en Auth-användare som raderats på annat sätt), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → efter Tier 1: receptägarens uid tas bort från andras betyg, betyget ligger kvar (BUT-2072); uid tas bort från andras kommentarer (ägare, delningslista) och egna gillamarkeringar raderas (BUT-2112) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
           "transport": "Admin SDK delete + write",
           "verified": true
         },
@@ -3276,7 +3263,7 @@
     {
       "id": "flow-auth-2",
       "label": "logga in & ut",
-      "description": "Inloggning med e-post och lösenord samt utloggning — manuellt från profilmenyn, tvingat vid 45 minuters inaktivitet, eller när sessionstokenet blir ogiltigt.",
+      "description": "Inloggning med e-post och lösenord samt utloggning — manuellt från profilmenyn, eller när sessionstokenet blir ogiltigt.",
       "features": [
         "AUTH-01",
         "AUTH-04"
@@ -3329,13 +3316,6 @@
           "to": "ds-auth",
           "payload": "loggar ut",
           "transport": "Auth SDK",
-          "verified": true
-        },
-        {
-          "from": "svc-session-timeout",
-          "to": "svc-auth",
-          "payload": "logoutDueToInactivity() efter 45 minuters inaktivitet",
-          "transport": "method call",
           "verified": true
         },
         {
@@ -3622,7 +3602,7 @@
         {
           "from": "vm-recipe-list",
           "to": "svc-search",
-          "payload": "searchRecipes(filtered, query) — substrängmatchning på titel/beskrivning/ingredienser/instruktioner/personliga taggar, ENDAST över redan cachade recept",
+          "payload": "searchRecipes(filtered, query) → RecipeSearchMatcher, samma regel som veckomenyns receptdialog, relaterade recept, föreslå alternativ och delningsväljaren: varje sökord ska finnas någonstans i receptet, olika ord får träffa olika fält — titel, beskrivning, måltidstyp, ingredienser, instruktioner, kök, författare, personliga taggar och kokböcker, autotaggar efter egna ändringar (lagrat ord och visat namn) samt kost- och allergenfri-etiketter; accenter viks bort och ett tal matchar portioner, tid eller betyg. ENDAST över redan cachade recept",
           "transport": "method call",
           "verified": true
         },
@@ -3894,7 +3874,7 @@
         {
           "from": "vm-recipe-detail",
           "to": "svc-import-manager",
-          "payload": "reimportFromArtefact(artefact) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
+          "payload": "reimportFromArtefact(artefact, sourceUrl) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text; transkript/bildtext utan recept enligt reglerna läses om med AI (extractFromTranscript)",
           "transport": "method call",
           "verified": true
         },
@@ -3987,7 +3967,7 @@
     {
       "id": "flow-imp-1",
       "label": "Fotoimport (OCR)",
-      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
+      "description": "Kamera/galleri-bild läses först på telefonen (ML Kit) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Kan telefonen inte läsa en sida, hittar den inget recept, eller är handskriven-togglen på, frågar appen innan fotot skickas till Gemini Vision (ocrRecipeImage); servern kör den bara med AI-samtycke.",
       "features": [
         "IMP-04",
         "ENG-09"
@@ -4047,6 +4027,20 @@
           "to": "v-photo-import",
           "payload": "Tolkad text + recept för granskning",
           "transport": "notify",
+          "verified": true
+        },
+        {
+          "from": "v-photo-import",
+          "to": "v-recipe-form",
+          "payload": "“Fortsätt” med exakt ett tolkat recept → receptet går direkt till formuläret (handOffRecipeToForm i recipe_form_handoff.dart, samma överlämning som textimporten), utan att texten tolkas en gång till",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "v-photo-import",
+          "to": "v-fran-sociala-medier",
+          "payload": "“Fortsätt” utan ett enda tolkat recept → rå OCR-text + konfidens till textimporten, där användaren kan rätta texten",
+          "transport": "navigation",
           "verified": true
         },
         {
@@ -4115,7 +4109,7 @@
         {
           "from": "vm-photo-import",
           "to": "svc-import-manager",
-          "payload": "saveSelectedRecipes → saveImportedRecipe (efter granskning)",
+          "payload": "saveSelectedRecipes → saveImportedRecipe (efter granskning); mängderna skrivs som vanliga bråk först (ImportFractions.recipe)",
           "transport": "method-call",
           "verified": true
         },
@@ -4137,6 +4131,13 @@
         "IMP-05"
       ],
       "steps": [
+        {
+          "from": "v-fran-sociala-medier",
+          "to": "v-smart-import",
+          "payload": "En länk utan recepttext runt sig (routeForSharedText i shared_import_route.dart) lämnas över till Smart import i stället för att tolkas här",
+          "transport": "navigation",
+          "verified": true
+        },
         {
           "from": "v-fran-sociala-medier",
           "to": "vm-text-import",
@@ -4196,7 +4197,7 @@
         {
           "from": "v-fran-sociala-medier",
           "to": "svc-import-manager",
-          "payload": "saveImportedRecipe (efter redigering)",
+          "payload": "Spara valda: saveSelectedRecipes → saveImportedRecipe; mängderna skrivs som vanliga bråk först (ImportFractions.recipe)",
           "transport": "method-call",
           "verified": true
         },
@@ -4213,7 +4214,7 @@
     {
       "id": "flow-imp-3",
       "label": "Dela-till-Butlery & social extraktion",
-      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En text med länk öppnar SmartImport på länken, annan text öppnar textimporten ifylld; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
+      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En länk med högst två rader text runt sig öppnar SmartImport på länken; längre text med länk, och text utan länk, öppnar textimporten ifylld (med länken som källa när det finns en); på iOS sparar delningsfönstret det delade i en App Group-inkorg som appen hämtar nästa gång den öppnas; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
       "features": [
         "IMP-06",
         "IMP-07"
@@ -4248,6 +4249,13 @@
           "verified": true
         },
         {
+          "from": "ext-ios-share-extension",
+          "to": "svc-incoming-share",
+          "payload": "Länk, text eller bilder via App Group-inkorgen — AppDelegate lämnar dem på samma kanal när appen öppnas",
+          "transport": "platform-channel",
+          "verified": false
+        },
+        {
           "from": "svc-incoming-share",
           "to": "svc-incoming-share-handler",
           "payload": "Delad text (cold-start eller warm-start)",
@@ -4257,7 +4265,7 @@
         {
           "from": "svc-incoming-share-handler",
           "to": "v-smart-import",
-          "payload": "Text med länk → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
+          "payload": "Länk med högst två rader text → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
           "transport": "navigation",
           "verified": true
         },
@@ -4320,7 +4328,7 @@
         {
           "from": "svc-instagram-pipeline",
           "to": "svc-llm-enhancement",
-          "payload": "Tier 2: strukturera bildtext till recept",
+          "payload": "Tier 2: strukturera bildtext till recept, bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         },
@@ -4334,7 +4342,7 @@
         {
           "from": "svc-import-manager",
           "to": "svc-tiktok-pipeline",
-          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → emoji-heuristik → LLM)",
+          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → regeltolkning → emoji-heuristik → LLM)",
           "transport": "method-call",
           "verified": true
         },
@@ -4369,7 +4377,7 @@
         {
           "from": "svc-youtube-import-strategy",
           "to": "svc-llm-enhancement",
-          "payload": "Transkript → strukturera recept (structureRecipe)",
+          "payload": "Transkript → strukturera recept (structureRecipe), bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         }
@@ -4385,6 +4393,13 @@
         "IMP-09"
       ],
       "steps": [
+        {
+          "from": "v-add-recipe-hub",
+          "to": "v-file-import",
+          "payload": "Rutan “Från fil” i Lägg till-arket öppnar filimporten",
+          "transport": "navigation",
+          "verified": true
+        },
         {
           "from": "v-file-import",
           "to": "vm-file-import",
@@ -4744,7 +4759,7 @@
         {
           "from": "svc-menu-shopping-generator",
           "to": "svc-unified-shopping",
-          "payload": "skapa ny lista eller uppdatera veckans redan genererade lista (markör generatedForWeek), bevara ikryssat-status",
+          "payload": "skapa ny lista eller synka veckans redan genererade lista (markör generatedForWeek): orörda rader uppdateras, rader användaren ändrat eller bockat av och handskrivna rader lämnas, en rätt som tagits bort ur menyn tar sina orörda rader med sig (WeekListReconciler), och Ångra lägger tillbaka överskrivna rader. Därefter följer listan varje sparning av veckan, 2 s efter den sista (WeekListFollower), men bara en lista som redan har rader från veckoplanen",
           "transport": "method call",
           "verified": true
         },
@@ -6750,7 +6765,7 @@
         {
           "from": "vm-unified-shopping",
           "to": "svc-checkoff-pantry",
-          "payload": "onItemCheckedOff(userId, item, wasBought)",
+          "payload": "onItemCheckedOff(userId, item, wasBought); avbockningen väntar aldrig, och ett misslyckat skafferiskrivande loggas och visas som snackbar",
           "transport": "method-call (fire-and-forget)",
           "verified": true,
           "status": "live"

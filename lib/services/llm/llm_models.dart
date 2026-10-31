@@ -404,6 +404,10 @@ class LlmException implements Exception {
   /// [code] when the server's daily ceiling for guest imports is reached.
   static const guestCapacityCode = 'guest-capacity';
 
+  /// [code] when the server refuses because the user has not consented to AI
+  /// processing (`functions/src/llm/ai-consent.ts`).
+  static const aiConsentRequiredCode = 'ai-consent-required';
+
   @override
   String toString() => 'LlmException: $message';
 
@@ -432,6 +436,10 @@ class LlmException implements Exception {
         code: costCeilingCode,
         isRateLimited: true,
       );
+    }
+
+    if (reason == aiConsentRequiredCode) {
+      return LlmException(l.llmAiConsentRequired, code: aiConsentRequiredCode);
     }
 
     // Both are answers from a healthy backend, and neither is worth a retry.

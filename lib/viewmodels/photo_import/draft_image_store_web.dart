@@ -9,3 +9,5 @@ Future<String?> stageDraftImage(Uint8List bytes) async => null;
 Future<Uint8List?> readDraftImage(String? path) async => null;
 
 Future<void> deleteDraftImage(String? path) async {}
+
+Future<void> clearStagedDraftImage() async {}

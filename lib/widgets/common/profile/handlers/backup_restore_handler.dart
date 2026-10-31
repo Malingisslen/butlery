@@ -74,7 +74,16 @@ class BackupRestoreHandler {
       final result = await backupService.importFromFile();
 
       if (context.mounted) {
-        if (result.success) {
+        if (result.success && result.failedCount > 0) {
+          ResultDisplayer.showResult(
+            context,
+            success: false,
+            message: context.l10n.profileRestoreSomeNotRestored(
+              result.failedCount,
+            ),
+            closeModal: closeModal,
+          );
+        } else if (result.success) {
           ResultDisplayer.showResult(
             context,
             success: true,

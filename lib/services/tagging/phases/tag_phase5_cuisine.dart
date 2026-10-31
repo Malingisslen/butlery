@@ -4,6 +4,7 @@ import 'package:butlery/models/tagging/firebase_tag_config.dart'
     as firebase_config;
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
+import 'package:butlery/services/tagging/cuisine_scoring.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
@@ -14,8 +15,6 @@ import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 /// Generates cuisine tags based on:
 /// - Recipe title keywords (e.g., "Thai", "Pasta", "Taco")
 /// - Ingredient patterns (e.g., soy sauce + sesame = Asian)
-///
-/// Supports 17 world cuisines including Swedish, Mediterranean, Asian, etc.
 ///
 /// If [firebaseConfig] is provided, uses Firebase-backed cuisine definitions
 /// (admin-editable without app release). Falls back to hardcoded static config.
@@ -62,129 +61,41 @@ class TagPhase5Cuisine {
     );
   }
 
-  /// Core cuisine detection using Firebase config with static fallback.
-  /// If Schema.org provides an explicit cuisine, use it as a strong signal.
+  /// Scores the Firestore cuisines when they are loaded, otherwise the repo
+  /// config they are generated from.
   Set<String> _detectCuisines(Recipe recipe, IngredientLookupResult lookup) {
-    final tags = <String>{};
-
-    // Schema.org cuisine is a strong signal — use it directly if available
-    final schemaCuisine = recipe.cuisine;
-    if (schemaCuisine != null && schemaCuisine.isNotEmpty) {
-      final matched = _matchSchemaCuisineToTag(schemaCuisine);
-      if (matched != null) {
-        tags.add(matched);
-        return tags;
-      }
-    }
-
-    // Use Firebase cuisine entries if available
     final firebaseCuisines = _firebaseConfig?.cuisines.enabledEntries;
     if (firebaseCuisines != null && firebaseCuisines.isNotEmpty) {
-      for (final cuisine in firebaseCuisines) {
-        if (_matchesFirebaseCuisine(cuisine, recipe, lookup)) {
-          tags.add(cuisine.getTag('sv'));
-        }
-      }
-      return tags;
+      return CuisineScoring.detect(recipe, lookup, [
+        for (final c in firebaseCuisines)
+          (
+            tag: c.getTag('sv'),
+            titleKeywords: c.titleKeywords,
+            ingredientKeywords: c.ingredientKeywords,
+            ingredientGroups: c.ingredientGroups,
+            minIngredientMatches: c.minIngredientMatches,
+            matchMode: c.matchMode,
+          ),
+      ]);
     }
 
-    // Fall back to static config
     if (CuisineConfig.cuisines.isEmpty) {
       AppLogger.warning(
         'CuisineConfig.cuisines is empty - cuisine detection disabled',
         'TagPhase5Cuisine',
       );
     }
-
-    for (final cuisine in CuisineConfig.cuisines) {
-      if (cuisine.matches(recipe, lookup)) {
-        tags.add(cuisine.tag);
-      }
-    }
-
-    return tags;
-  }
-
-  /// Map a Schema.org cuisine string (e.g., "Italian", "Thai") to a known tag.
-  String? _matchSchemaCuisineToTag(String schemaCuisine) {
-    final lower = schemaCuisine.toLowerCase();
-    // Check Firebase config first
-    final firebaseCuisines = _firebaseConfig?.cuisines.enabledEntries;
-    if (firebaseCuisines != null) {
-      for (final c in firebaseCuisines) {
-        if (c.titleKeywords.any((kw) => lower.contains(kw.toLowerCase()))) {
-          return c.getTag('sv');
-        }
-      }
-    }
-    // Fallback to static config
-    for (final c in CuisineConfig.cuisines) {
-      if (c.titleKeywords.any((kw) => lower.contains(kw.toLowerCase()))) {
-        return c.tag;
-      }
-    }
-    return null;
-  }
-
-  /// Matches a recipe against a Firebase cuisine entry, respecting matchMode.
-  bool _matchesFirebaseCuisine(
-    firebase_config.CuisineEntry cuisine,
-    Recipe recipe,
-    IngredientLookupResult lookup,
-  ) {
-    switch (cuisine.matchMode) {
-      case firebase_config.CuisineMatchMode.titleOnly:
-        return _hasTitleMatch(cuisine, recipe);
-      case firebase_config.CuisineMatchMode.ingredientsOnly:
-        return _hasIngredientMatch(cuisine, lookup);
-      case firebase_config.CuisineMatchMode.titleAndIngredients:
-        return _hasTitleMatch(cuisine, recipe) &&
-            _hasIngredientMatch(cuisine, lookup);
-      case firebase_config.CuisineMatchMode.titleOrIngredients:
-        return _hasTitleMatch(cuisine, recipe) ||
-            _hasIngredientMatch(cuisine, lookup);
-    }
-  }
-
-  bool _hasTitleMatch(
-    firebase_config.CuisineEntry cuisine,
-    Recipe recipe,
-  ) {
-    final title = recipe.core.title.toLowerCase();
-    for (final keyword in cuisine.titleKeywords) {
-      if (title.contains(keyword.toLowerCase())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool _hasIngredientMatch(
-    firebase_config.CuisineEntry cuisine,
-    IngredientLookupResult lookup,
-  ) {
-    int matches = 0;
-
-    for (final ingredient in lookup.matched) {
-      final name = ingredient.swedish.toLowerCase();
-      final group = ingredient.group.toLowerCase();
-
-      for (final keyword in cuisine.ingredientKeywords) {
-        if (name.contains(keyword.toLowerCase())) {
-          matches++;
-          break;
-        }
-      }
-
-      for (final groupPattern in cuisine.ingredientGroups) {
-        if (group.contains(groupPattern.toLowerCase())) {
-          matches++;
-          break;
-        }
-      }
-    }
-
-    return matches >= cuisine.minIngredientMatches;
+    return CuisineScoring.detect(recipe, lookup, [
+      for (final c in CuisineConfig.cuisines)
+        (
+          tag: c.tag,
+          titleKeywords: c.titleKeywords,
+          ingredientKeywords: c.ingredientKeywords,
+          ingredientGroups: c.ingredientGroups,
+          minIngredientMatches: c.minIngredientMatches,
+          matchMode: firebase_config.CuisineMatchMode.titleOrIngredients,
+        ),
+    ]);
   }
 }
 

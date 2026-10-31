@@ -1,10 +1,9 @@
 /// Pins what the sheet shows before anything is written (the preview), and
-/// what "Lägg till N varor", "Ersätt listan" and Ångra write:
+/// what "Lägg till N varor", "Uppdatera listan" and Ångra write:
 /// - produktbeslut PQ-10 = A: your own rows are always kept, and the rows
 ///   land in the week's generated list, created when missing.
 /// - produktbeslut PQ-11 = A: the pantry subtracts amounts.
-/// - Ångra takes back exactly the add, or the
-///   replace.
+/// - Ångra takes back exactly the add, or the sync.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +20,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -66,13 +66,19 @@ MenuShoppingSource _source() => MenuShoppingListGenerator.sourceForMenu({
   ],
 }, _date);
 
-PantryItem _pantry(String name, double? quantity, String unit) => PantryItem(
+PantryItem _pantry(
+  String name,
+  double? quantity,
+  String unit, {
+  String? ingredientId,
+}) => PantryItem(
   id: 'p-$name',
   ingredientName: name,
   quantity: quantity,
   unit: unit,
   location: PantryLocation.pantry,
   addedAt: DateTime(2026, 6, 1),
+  ingredientId: ingredientId,
 );
 
 UnifiedShoppingList _weekList({
@@ -190,6 +196,114 @@ void main() {
       expect(line.amount, 350);
     });
 
+    test('a row without an amount is covered by stock in date, and marked '
+        'Kolla datum when the stock is past it (Malin 2026-10-31)', () {
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [
+            const RecipeIngredient(name: 'salt', raw: 'salt'),
+          ]),
+        ],
+      }, _date);
+
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([_pantry('salt', null, 'st')]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.lines, isEmpty);
+      expect(merge.coveredAtHome, ['salt']);
+      expect(merge.atHomeCount, 1);
+
+      final expired = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([
+          PantryItem(
+            id: 'p-salt',
+            ingredientName: 'salt',
+            quantity: 1,
+            unit: 'st',
+            location: PantryLocation.pantry,
+            addedAt: DateTime(2026, 1, 1),
+            expiryDate: DateTime(2020, 1, 1),
+          ),
+        ]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(expired.lines.single.mark, MenuShoppingPantryMark.checkDate);
+      expect(expired.coveredAtHome, isEmpty);
+    });
+
+    test('a prepared pantry row covers the plain ingredient', () {
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [_ing(1, 'st', 'lök')]),
+        ],
+      }, _date);
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([_pantry('hackad lök', 2, 'st')]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.lines, isEmpty);
+      expect(merge.coveredAtHome, ['lök']);
+    });
+
+    group('pantry match by registry id', () {
+      // "rödlök" and "lök" have different name keys (rodlok / lok), so only
+      // a shared id can make the pantry cover the row.
+      MenuShoppingSource sourceFor(String? recipeLineId) =>
+          MenuShoppingListGenerator.sourceForMenu({
+            'Middag': [
+              _recipe('r1', [
+                RecipeIngredient(
+                  amount: 1,
+                  unit: 'st',
+                  name: 'rödlök',
+                  raw: '1 st rödlök',
+                  ingredientId: recipeLineId,
+                ),
+              ]),
+            ],
+          }, _date);
+
+      MenuShoppingMergePreview previewWith(
+        String? recipeLineId,
+        String? pantryId,
+      ) => MenuShoppingListGenerator.preview(
+        sourceFor(recipeLineId),
+        MenuShoppingPantry.read([
+          _pantry('lök', 2, 'st', ingredientId: pantryId),
+        ]),
+        const MenuShoppingMergeOptions(),
+      );
+
+      test('the same id covers the row although the names differ', () {
+        final merge = previewWith('onion', 'onion');
+        expect(merge.lines, isEmpty);
+        expect(merge.coveredAtHome, ['rödlök']);
+      });
+
+      test('without ids the differing names do not match', () {
+        final merge = previewWith(null, null);
+        expect(merge.lines.single.name, 'rödlök');
+        expect(merge.atHomeCount, 0);
+      });
+
+      test('an id on only one side does not match', () {
+        expect(previewWith('onion', null).atHomeCount, 0);
+        expect(previewWith(null, 'onion').atHomeCount, 0);
+      });
+
+      test('different ids with different names do not match', () {
+        expect(previewWith('onion', 'leek').atHomeCount, 0);
+      });
+
+      test('the merge line carries the id for the list row', () {
+        expect(previewWith('onion', null).lines.single.ingredientId, 'onion');
+      });
+    });
+
     test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
         '1 dl on the list (PQ-11 = A)', () {
       final merge = MenuShoppingListGenerator.preview(
@@ -256,7 +370,6 @@ void main() {
 
       expect(receipt, isNotNull);
       expect(receipt!.itemCount, 3);
-      expect(receipt.replaced, isFalse);
       final written = writes.single;
       expect(written.items.map((i) => i.id), containsAll(['own', 'earlier']));
       expect(written.items, hasLength(5));
@@ -274,6 +387,52 @@ void main() {
       final back = writes.last;
       expect(back.items.map((i) => i.id), ['own', 'earlier']);
       expect(back.menuItemIds, ['earlier']);
+    });
+
+    test('a written row carries the registry id of its recipe lines, and a '
+        'row whose lines disagree carries none', () async {
+      const lok = RecipeIngredient(
+        amount: 1,
+        unit: 'st',
+        name: 'gul lök',
+        raw: '1 st gul lök',
+        ingredientId: 'onion',
+      );
+      RecipeIngredient bringa(String id) => RecipeIngredient(
+        amount: 500,
+        unit: 'g',
+        name: 'bringa',
+        raw: '500 g bringa',
+        ingredientId: id,
+      );
+      shopping.setShoppingState(
+        lists: [_weekList()],
+        personalLists: [_weekList()],
+      );
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [lok, bringa('beef-brisket')]),
+          _recipe('r2', [lok, bringa('lamb-brisket')]),
+        ],
+      }, _date);
+
+      await generator.apply(
+        MenuShoppingListGenerator.preview(
+          source,
+          const MenuShoppingPantry.read([]),
+          const MenuShoppingMergeOptions(),
+        ),
+      );
+
+      final written = writes.single.items;
+      expect(
+        written.singleWhere((i) => i.name == 'gul lök').ingredientId,
+        'onion',
+      );
+      expect(
+        written.singleWhere((i) => i.name == 'bringa').ingredientId,
+        isNull,
+      );
     });
 
     test(
@@ -333,7 +492,8 @@ void main() {
       final mjol = items.singleWhere((i) => i.name == 'vetemjöl');
       expect(mjol.amount, 350);
       expect(mjol.unit, 'g');
-      expect(mjol.note, '+ 4,5 dl · 3 recept');
+      // r2 names vetemjöl on two lines but is one recipe.
+      expect(mjol.note, '+ 4,5 dl · 2 recept');
       final ost = items.singleWhere(
         (i) => i.name.toLowerCase() == 'parmesanost',
       );
@@ -341,49 +501,157 @@ void main() {
     });
   });
 
-  group('TR::FLOW::02::merge-ark::ersätt-listan-på', () {
-    test('replaces only the rows that came from recipes, keeps your own, '
-        'and Ångra puts the old recipe rows back', () async {
-      final own = UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1);
-      final old = UnifiedShoppingItem(
-        id: 'old',
-        name: 'gul lök',
-        amount: 1,
-        unit: 'st',
-        bought: true,
-      );
-      final list = _weekList(items: [own, old], menuItemIds: ['old']);
-      shopping.setShoppingState(lists: [list], personalLists: [list]);
-
-      final receipt = await generator.apply(
+  group('TR::FLOW::02::merge-ark::listan-följer-menyn', () {
+    MenuShoppingMergePreview previewOf(List<Recipe> recipes) =>
         MenuShoppingListGenerator.preview(
-          _source(),
+          MenuShoppingListGenerator.sourceForMenu({'Middag': recipes}, _date),
           const MenuShoppingPantry.read([]),
-          const MenuShoppingMergeOptions(replaceList: true),
-        ),
+          const MenuShoppingMergeOptions(),
+        );
+
+    final onion = _recipe('r1', [_ing(1, 'st', 'gul lök')]);
+    final milk = _recipe('r2', [_ing(2, 'dl', 'mjölk')]);
+    final pasta = _recipe('r3', [_ing(500, 'g', 'pasta')]);
+    final bigMilk = _recipe('r4', [_ing(5, 'dl', 'mjölk')]);
+
+    UnifiedShoppingItem rowNamed(UnifiedShoppingList list, String name) =>
+        list.items.firstWhere((i) => i.name == name);
+
+    void seedEmptyWeekList({List<UnifiedShoppingItem> items = const []}) {
+      final list = _weekList(items: items, menuItemIds: const []);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+    }
+
+    test('a second sync updates the rows the first wrote instead of doubling '
+        'them, leaves a ticked row and a row of yours alone, takes off a '
+        'dish\'s untouched row, and Ångra puts every old value back', () async {
+      seedEmptyWeekList(
+        items: [UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1)],
+      );
+      final first = await generator.apply(previewOf([onion, milk, pasta]));
+      final afterFirst = writes.last;
+      final milkId = rowNamed(afterFirst, 'mjölk').id;
+      final milkBefore = rowNamed(afterFirst, 'mjölk').amount;
+      // The user ticks the onion in the shop.
+      final ticked = [
+        for (final i in afterFirst.items)
+          i.name == 'gul lök' ? i.copyWith(bought: true) : i,
+      ];
+      shopping.setShoppingState(
+        lists: [afterFirst.copyWith(items: ticked)],
+        personalLists: [afterFirst.copyWith(items: ticked)],
       );
 
-      final written = writes.single;
-      expect(written.items.map((i) => i.id), contains('own'));
-      expect(written.items.map((i) => i.id), isNot(contains('old')));
-      expect(written.items, hasLength(4));
-      expect(written.menuItemIds, receipt!.addedItemIds);
+      // The week now has more milk, no pasta, and a second onion dish.
+      final second = await generator.apply(
+        previewOf([onion, onion, bigMilk]),
+      );
+
+      final written = writes.last;
+      expect(second, isNotNull);
+      expect(first!.itemCount, 3);
+      expect(second!.addedItemIds, isEmpty, reason: 'no row is doubled');
       expect(
-        written.items.firstWhere((i) => i.name == 'gul lök').bought,
-        isTrue,
-        reason: 'bought status survives a replace by name and unit (§ 8.7)',
+        written.items.where((i) => i.name == 'mjölk'),
+        hasLength(1),
+        reason: 'the milk row is updated in place',
       );
+      expect(rowNamed(written, 'mjölk').id, milkId);
+      expect(rowNamed(written, 'mjölk').amount, greaterThan(milkBefore));
+      expect(
+        rowNamed(written, 'gul lök').amount,
+        1,
+        reason: 'a ticked row is never updated',
+      );
+      expect(rowNamed(written, 'gul lök').bought, isTrue);
+      expect(written.items.map((i) => i.name), isNot(contains('pasta')));
+      expect(written.items.map((i) => i.name), contains('kaffe'));
+      expect(second.updatedList, isTrue);
+      expect(second.removedItems.map((i) => i.name), ['pasta']);
+      expect(second.changedItems.single.amount, milkBefore);
 
-      await generator.undo(receipt);
+      await generator.undo(second);
 
       final back = writes.last;
-      expect(back.items.map((i) => i.id), unorderedEquals(['own', 'old']));
-      expect(back.menuItemIds, ['old']);
+      expect(rowNamed(back, 'mjölk').amount, milkBefore);
+      expect(back.items.map((i) => i.name), contains('pasta'));
+      expect(back.items.map((i) => i.name), contains('kaffe'));
     });
 
-    test('a list written before menuItemIds existed cannot be replaced: '
-        'Ersätt adds, keeps every row and its bought status, and the receipt '
-        'says it added', () async {
+    test(
+      'pressing the same merge twice writes nothing the second time',
+      () async {
+        seedEmptyWeekList();
+        await generator.apply(previewOf([onion, milk, pasta]));
+        final afterFirst = writes.last;
+
+        final second = await generator.apply(previewOf([onion, milk, pasta]));
+
+        expect(second!.itemCount, 0);
+        expect(second.updatedList, isFalse);
+        expect(
+          writes.last.items.map((i) => i.id),
+          unorderedEquals(afterFirst.items.map((i) => i.id)),
+        );
+        expect(writes.last.items, hasLength(afterFirst.items.length));
+      },
+    );
+
+    test('a row you changed is kept as you left it', () async {
+      seedEmptyWeekList();
+      await generator.apply(previewOf([onion, milk]));
+      final afterFirst = writes.last;
+      final edited = [
+        for (final i in afterFirst.items)
+          i.name == 'mjölk' ? i.copyWith(amount: 99) : i,
+      ];
+      shopping.setShoppingState(
+        lists: [afterFirst.copyWith(items: edited)],
+        personalLists: [afterFirst.copyWith(items: edited)],
+      );
+
+      final second = await generator.apply(previewOf([onion, bigMilk]));
+
+      expect(rowNamed(writes.last, 'mjölk').amount, 99);
+      expect(second!.updatedList, isFalse);
+      expect(writes.last.items.where((i) => i.name == 'mjölk'), hasLength(1));
+    });
+
+    test('a list written before rows carried their origin: a row with the '
+        'same amount is taken over, one you changed is left, and neither is '
+        'doubled', () async {
+      final same = UnifiedShoppingItem(
+        id: 'same',
+        name: 'gul lök',
+        unit: 'st',
+        amount: 1,
+        bought: true,
+      );
+      final changed = UnifiedShoppingItem(
+        id: 'changed',
+        name: 'pasta',
+        unit: 'g',
+        amount: 123,
+      );
+      final list = _weekList(
+        items: [same, changed],
+        menuItemIds: ['same', 'changed'],
+      );
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+
+      final receipt = await generator.apply(previewOf([onion, pasta]));
+
+      final written = writes.single;
+      expect(receipt!.addedItemIds, isEmpty);
+      expect(written.items, hasLength(2));
+      expect(rowNamed(written, 'gul lök').generatedFrom, 'menu');
+      expect(rowNamed(written, 'gul lök').bought, isTrue);
+      expect(rowNamed(written, 'pasta').amount, 123);
+    });
+
+    test('a list written before menuItemIds existed: the rows are added, '
+        'every old row and its tick is kept, and the list then knows its '
+        'rows', () async {
       final legacyBought = UnifiedShoppingItem(
         id: 'legacy-bought',
         name: 'gul lök',
@@ -398,75 +666,116 @@ void main() {
       );
       final list = _weekList(items: [legacyBought, legacyOpen]);
       shopping.setShoppingState(lists: [list], personalLists: [list]);
-      expect(generator.canReplaceWeekList(_date), isFalse);
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.menu),
+        isFalse,
+      );
 
       final merge = MenuShoppingListGenerator.preview(
         _source(),
         const MenuShoppingPantry.read([]),
-        const MenuShoppingMergeOptions(replaceList: true),
+        const MenuShoppingMergeOptions(),
       );
       final receipt = await generator.apply(merge);
 
       final written = writes.single;
       expect(receipt, isNotNull);
-      expect(receipt!.replaced, isFalse, reason: 'nothing was replaced');
-      expect(receipt.removedItems, isEmpty);
+      expect(receipt!.removedItems, isEmpty);
       expect(written.items, hasLength(2 + merge.itemCount));
       final legacy = written.items.where((i) => i.id.startsWith('legacy'));
       expect(legacy.map((i) => (i.id, i.bought)), [
         ('legacy-bought', true),
         ('legacy-open', false),
       ]);
-      // From now on the list knows its recipe rows, so the next Ersätt works.
       expect(written.menuItemIds, receipt.addedItemIds);
-      expect(generator.canReplaceWeekList(_date), isTrue);
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.menu),
+        isTrue,
+      );
     });
 
-    test('a tracked list and a missing list can be replaced', () {
-      expect(generator.canReplaceWeekList(_date), isTrue);
-      final list = _weekList(menuItemIds: const []);
-      shopping.setShoppingState(lists: [list], personalLists: [list]);
-      expect(generator.canReplaceWeekList(_date), isTrue);
+    test('weekListHasRowsFrom: false for a missing list, your own rows and '
+        'the other source\'s rows, true for this source\'s', () async {
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.menu),
+        isFalse,
+      );
+      seedEmptyWeekList(
+        items: [UnifiedShoppingItem(id: 'own', name: 'kaffe', amount: 1)],
+      );
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.menu),
+        isFalse,
+      );
+
+      await generator.apply(previewOf([onion]));
+
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.menu),
+        isTrue,
+      );
+      expect(
+        generator.weekListHasRowsFrom(_date, ShoppingRowOrigin.plan),
+        isFalse,
+      );
     });
+
+    test(
+      'activate false writes the list without making it the active one',
+      () async {
+        seedEmptyWeekList();
+
+        await generator.apply(previewOf([onion]), activate: false);
+
+        expect(writes, hasLength(1));
+        verifyNever(() => shopping.setActiveList(any()));
+      },
+    );
   });
 
   group(
     'TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt',
     () {
       test('a change made on another device reaches the receipt, which takes '
-          'its removed rows from the server for Ångra', () async {
+          'its removed and changed rows from the server for Ångra, and the '
+          'sync decides on the server\'s rows', () async {
         final list = _weekList(menuItemIds: const []);
         shopping.setShoppingState(lists: [list], personalLists: [list]);
         final merge = MenuShoppingListGenerator.preview(
           _source(),
           const MenuShoppingPantry.read([]),
-          const MenuShoppingMergeOptions(replaceList: true),
+          const MenuShoppingMergeOptions(),
         );
-        // The server's list, with a row another device ticked and one it
+        // The server's list, with a week row another device ticked and one it
         // added. The generator writes per operation and never sends a list.
-        final ticked = UnifiedShoppingItem(
-          id: 'ticked',
-          name: 'gul lök',
-          amount: 1,
-          unit: 'st',
-          bought: true,
-        );
+        final ticked = WeekListReconciler.stamp([
+          UnifiedShoppingItem(
+            id: 'ticked',
+            name: 'gul lök',
+            amount: 1,
+            unit: 'st',
+            bought: true,
+          ),
+        ], ShoppingRowOrigin.menu).single;
         final theirs = UnifiedShoppingItem(
           id: 'theirs',
           name: 'bröd',
           amount: 1,
         );
-        late List<UnifiedShoppingItem> written;
+        final gone = UnifiedShoppingItem(id: 'gone', name: 'ris', amount: 1);
+        final was = UnifiedShoppingItem(id: 'was', name: 'te', amount: 1);
+        late PersonalMergeWrite write;
         when(() => shopping.applyPersonalMerge(any(), any())).thenAnswer((
           invocation,
         ) async {
           final request =
               invocation.positionalArguments[1] as PersonalMergeRequest;
-          written = request.rows([ticked]);
+          write = request.sync([ticked]);
           return PersonalMergeResult(
-            list: _weekList(items: [theirs, ...written]),
-            added: written,
-            removed: [ticked],
+            list: _weekList(items: [theirs, ticked, ...write.add]),
+            added: write.add,
+            removed: [gone],
+            changedFrom: [was],
             concurrentChange: true,
           );
         });
@@ -474,13 +783,16 @@ void main() {
         final receipt = await generator.apply(merge);
 
         expect(receipt!.concurrentChange, isTrue);
-        expect(receipt.removedItems, [ticked]);
-        expect(receipt.addedItemIds, [for (final i in written) i.id]);
+        expect(receipt.removedItems, [gone]);
+        expect(receipt.changedItems, [was]);
+        expect(receipt.addedItemIds, [for (final i in write.add) i.id]);
         expect(
-          written.firstWhere((i) => i.name == 'gul lök').bought,
-          isTrue,
-          reason: 'the tick read from the server carries over (§ 8.7)',
+          write.add.map((i) => i.name),
+          isNot(contains('gul lök')),
+          reason: 'the tick read from the server keeps its row, no copy',
         );
+        expect(write.remove, isEmpty);
+        expect(write.update, isEmpty);
         verifyNever(() => shopping.updateList(any()));
       });
     },

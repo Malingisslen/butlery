@@ -37,30 +37,27 @@ class ShoppingRepositoryQueryModule {
       // Get personal lists using user collection
       final personalRef = getUserCollection(uid);
       final personalSnapshot = await personalRef.get();
-      final personalLists = <UnifiedShoppingList>[];
 
-      // Load each list with its items from subcollection
-      for (final listDoc in personalSnapshot.docs) {
-        final list = fromFirestore(listDoc);
-
-        // Load items for this list from subcollection
-        final itemsSnapshot = await getUserCollection(
-          uid,
-        ).doc(list.id).collection(FirestoreCollections.items).get();
-
-        final items = itemsSnapshot.docs
-            .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
-            .toList();
-
-        // Create list with loaded items
-        final listWithItems = list.copyWith(items: items);
-        personalLists.add(listWithItems);
-
-        AppLogger.info(
-          'Loaded list "${list.name}" with ${items.length} items',
-          'ShoppingRepository',
-        );
-      }
+      // Each list's rows live in its own subcollection, and the owner-only
+      // rules allow no query across them, so they are read one call per
+      // list, all at once rather than one after another.
+      final personalLists = await Future.wait(
+        personalSnapshot.docs.map((listDoc) async {
+          final list = fromFirestore(listDoc);
+          final itemsSnapshot = await personalRef
+              .doc(list.id)
+              .collection(FirestoreCollections.items)
+              .get();
+          final items = itemsSnapshot.docs
+              .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
+              .toList();
+          AppLogger.info(
+            'Loaded list "${list.name}" with ${items.length} items',
+            'ShoppingRepository',
+          );
+          return list.copyWith(items: items);
+        }),
+      );
 
       // Get shared/collaborative lists where user is a member.
       // `isNull: false`, NOT `isNotEqualTo: null` — the SDK only adds the
@@ -190,20 +187,6 @@ class ShoppingRepositoryQueryModule {
   Future<UnifiedShoppingList?> getActiveList(String? activeListId) async {
     if (activeListId == null) return null;
     return readList(activeListId);
-  }
-
-  /// Stream of user's personal lists
-  Stream<List<UnifiedShoppingList>> personalListsStream() {
-    try {
-      final uid = requireCurrentUserId();
-      return getUserCollection(uid)
-          .orderBy('updatedAt', descending: true)
-          .limit(20) // Limit personal lists to 20 most recent
-          .snapshots()
-          .map((snap) => snap.docs.map(fromFirestore).toList());
-    } catch (e) {
-      return const Stream.empty();
-    }
   }
 
   /// Stream of collaborative lists where user is a member

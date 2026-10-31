@@ -65,7 +65,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | AUTH-01 | Email/password sign-in | Verified |
 | AUTH-02 | Email/password registration | Verified |
 | AUTH-03 | Password reset email | Partial |
-| AUTH-04 | Sign-out (manual / inactivity / forced) | Verified |
+| AUTH-04 | Sign-out (manual / forced) | Verified |
 | AUTH-05 | Email-verification gate | Untested |
 | AUTH-06 | GDPR age gate (under-15 block) | Verified |
 | AUTH-07 | Onboarding allergen selection | Verified |
@@ -270,10 +270,10 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Validation:** Email non-empty + regex; trimmed.
 - **Test coverage:** Partial — exercised via `auth_viewmodel_test.dart` and `auth_service_test.dart`; no dedicated reset-flow widget test.
 
-#### AUTH-04: Sign-out (manual, inactivity, forced session-expiry)
-- **Entry:** Profile/settings (manual); SessionTimeoutService (inactivity); auth-state stream on fatal error (forced).
-- **User story:** As a user, I want to be securely signed out — by my own action, after inactivity, or when my session is invalid — so that my account stays protected.
-- **Expected behavior:** `signOut` pops the user DI scope, signs out, clears the user, logs `logout`. Inactivity logout also clears consent cache. A fatal auth-stream error (user-disabled, token-expired, etc.) forces sign-out, sets `sessionExpired`, surfaces `errorSessionExpired`.
+#### AUTH-04: Sign-out (manual, forced session-expiry)
+- **Entry:** Profile/settings (manual); auth-state stream on fatal error (forced).
+- **User story:** As a user, I want to be securely signed out — by my own action or when my session is invalid — so that my account stays protected.
+- **Expected behavior:** `signOut` pops the user DI scope, signs out, clears the user, logs `logout`. A fatal auth-stream error (user-disabled, token-expired, etc.) forces sign-out, sets `sessionExpired`, surfaces `errorSessionExpired`.
 - **Edge cases:** Transient/non-fatal stream errors keep the session (BUG-31). signOut failure → `errorCouldNotLogOut`. forceSignOut always clears state in `finally`.
 - **Test coverage:** Verified — `test/unit/services/auth_service_test.dart`.
 
@@ -332,7 +332,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Entry:** ConsentManagementView; also a consent-renewal dialog.
 - **User story:** As a user, I want to grant or revoke consent for analytics, marketing, social, and push so that I control how my data is used.
 - **Expected behavior:** Loads current consent; four user-controllable toggles + two always-on required purposes. Save persists + reloads timestamps. Analytics observers honor the analytics consent.
-- **Edge cases:** No stored consent → optional default false, `needsRenewal` true. Save false → `errorGeneric`. No user → must-be-logged-in error. Cache cleared on sign-out/inactivity.
+- **Edge cases:** No stored consent → optional default false, `needsRenewal` true. Save false → `errorGeneric`. No user → must-be-logged-in error. Cache cleared on sign-out.
 - **Validation:** Essential services + data processing hard-coded true.
 - **Test coverage:** Verified — `consent_viewmodel_test.dart`, `consent_service_test.dart`, `user_consent_test.dart`, `firebase_consent_repository_test.dart`, `consent_renewal_dialog_test.dart`, plus analytics-gate tests.
 
@@ -464,7 +464,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### REC-16: Voice recipe search ("Tala in din sökning")
 - **Entry:** Mic in the Mina recept search field (`SearchFilterWidget.enableVoiceInput` → `VoicePromptButton`).
 - **User story:** As a home cook, I want to speak a search query so that I can find a recipe without typing.
-- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript lands in the search box as if typed (same onSearchChanged path; Algolia/Firestore routing untouched). Opt-in per surface — other lists sharing the search facade show no mic. Audio deleted after transcription, never uploaded.
+- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript lands in the search box as if typed (same onSearchChanged path). Opt-in per surface — other lists sharing the search facade show no mic. Audio deleted after transcription, never uploaded.
 - **Edge cases:** Denied mic → typed search untouched; model missing → "inte tillgänglig" notice with typing pointer; hidden on web.
 - **Test coverage:** Verified — `search_filter_widget_test.dart` (spoken query → onSearchChanged; no mic by default), plus the shared `voice_prompt_button_test.dart` degradation suite.
 
@@ -530,7 +530,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### IMP-04: Photo / OCR import (multi-page, heirloom scans)
 - **Entry:** `/photoImport` — "Från bild" tile + onboarding import page.
 - **User story:** As a user with a paper or cookbook recipe, I want to photograph pages and have the text extracted and parsed so that I can digitize heirloom recipes without typing.
-- **Expected behavior:** Camera/gallery (compressed) → quality assessment → multi-provider OCR (OCR.space → Google Vision → Tesseract) → auto-parse. Up to 5 pages, reorderable, combined into ONE recipe. OCR text + first image persisted as a draft. Heirloom metadata form. Failed OCR retry. Confidence/quality surfaced.
+- **Expected behavior:** Camera/gallery (compressed) → quality assessment → on-device OCR (ML Kit) → auto-parse; when the device cannot read the photo, finds no recipe or it is handwritten, the app offers AI reading (`ocrRecipeImage`, Vertex AI Gemini), sent only after the user says yes and refused by the server without AI consent. Up to 5 pages, reorderable, combined into ONE recipe. OCR text + first image persisted as a draft. Heirloom metadata form. Failed OCR retry. Confidence/quality surfaced.
 - **Edge cases:** No image; unsupported format; >15MB rejected; quality hard-reject before OCR to save quota; blank page → error not silent append.
 - **Validation:** Format whitelist, 15MB cap, quality gate.
 - **Test coverage:** Verified — `photo_import_viewmodel_test.dart` (+multi), `photo_import_allergen_banner_journey_test.dart`, `photo_import_draft_restore_test.dart`, `photo_import_announce_test.dart`.
@@ -1313,9 +1313,9 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### ENG-11: Recipe search (local, on-device matching)
 - **Entry:** Automatic as the user types in recipe search.
 - **User story:** As a user browsing recipes, I want search to match instantly across my loaded library without a network round-trip per keystroke.
-- **Expected behavior:** Substring matching over already-cached recipes (title/description/ingredients/instructions/personal tags) via `SearchService`, sorted locally — no per-keystroke network call. *(BUT-1500: the dead Algolia-routing path was removed; Algolia infrastructure remains for indexing / user search.)*
+- **Expected behavior:** Substring matching over already-cached recipes (title/description/ingredients/instructions/personal tags) via `SearchService`, sorted locally — no per-keystroke network call.
 - **Edge cases:** Empty query short-circuits; search covers only recipes already loaded into the list.
-- **Test coverage:** Verified — `search_service_test.dart`, `search_repository_test.dart`.
+- **Test coverage:** Verified — `search_service_test.dart`.
 
 #### ENG-12: Allergen / dietary filtering in menu generation
 - **Entry:** Automatic when generating a weekly menu (opt-in toggles, off by default).

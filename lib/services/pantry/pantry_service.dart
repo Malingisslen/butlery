@@ -9,6 +9,8 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
+import 'package:butlery/services/pantry/cooked_pantry_plan.dart';
 
 /// Business logic layer for the pantry ("skafferi") feature.
 class PantryService extends BaseService {
@@ -80,7 +82,11 @@ class PantryService extends BaseService {
           trimmed,
           limit: 1,
         );
-        final match = matches.isNotEmpty ? matches.first : null;
+        // The search's first hit can be another product ("mjöl" finds
+        // "mjölk"), so it is linked, and its name used, only when it names
+        // what was typed (k08).
+        final hit = matches.isNotEmpty ? matches.first : null;
+        final match = hit != null && _names(hit, trimmed) ? hit : null;
 
         final item = _buildItem(
           ingredientId: match?.id,
@@ -103,6 +109,12 @@ class PantryService extends BaseService {
     return result;
   }
 
+  static bool _names(IngredientData ingredient, String typed) => [
+    ingredient.swedish,
+    ...ingredient.aliasesSv,
+    ...ingredient.learnedAliasesSv,
+  ].any((name) => IngredientIdentity.same(name, typed));
+
   /// BUT-991: hook for the shopping-checkoff → pantry flow.
   ///
   /// Delegates to [addFromText] because [UnifiedShoppingItem] doesn't
@@ -121,11 +133,13 @@ class PantryService extends BaseService {
     PantryLocation? location,
     String? note,
   }) {
+    // A row bought without an amount ("salt") goes in as "har hemma".
+    final known = item.amount > 0;
     return addFromText(
       userId,
       item.name,
-      quantity: item.amount,
-      unit: item.unit,
+      quantity: known ? item.amount : null,
+      unit: known ? item.unit : null,
       location: location,
       note: note,
     );
@@ -162,7 +176,10 @@ class PantryService extends BaseService {
       operationName: 'updateItem',
       defaultValue: false,
     );
-    if (written != true || previous == null) return null;
+    // A refused write must not look saved: the row would come back on the
+    // next load.
+    if (written != true) throw StateError('updateItem failed');
+    if (previous == null) return null;
     return PantryPreviousVersion(
       fields: previous.storedValues(changes.keys),
       at: clock.now(),
@@ -248,15 +265,61 @@ class PantryService extends BaseService {
     return written ?? false;
   }
 
-  Future<void> removeItem(String userId, String itemId) async {
-    await executeServiceOperation<void>(
-      () => _pantryRepository.remove(userId, itemId),
-      operationName: 'removeItem',
-    );
+  /// Kärnflöde steg 9C: takes what a cooked recipe used out of the pantry.
+  /// A take that empties its row removes the row. A refused write stops the
+  /// pass and throws [CookedPantryTakeFailed], which carries the takes
+  /// already written so Ångra can still put them back.
+  Future<List<CookedPantryTake>> takeCooked(
+    String userId,
+    List<CookedPantryTake> takes,
+  ) async {
+    final written = <CookedPantryTake>[];
+    for (final take in takes) {
+      try {
+        if (take.emptiesRow) {
+          await _pantryRepository.remove(userId, take.item.id);
+        } else {
+          await _pantryRepository.adjustQuantity(
+            userId,
+            take.item.id,
+            -take.amount,
+          );
+        }
+      } catch (e) {
+        throw CookedPantryTakeFailed(List.unmodifiable(written), e);
+      }
+      written.add(take);
+    }
+    return List.unmodifiable(written);
   }
 
+  /// Ångra for [takeCooked]: a removed row is written back whole, under its
+  /// own id, and a lessened row gets its amount back as a relative change,
+  /// so a purchase checked off meanwhile is kept.
+  Future<void> undoTakeCooked(
+    String userId,
+    List<CookedPantryTake> written,
+  ) async {
+    for (final take in written) {
+      if (take.emptiesRow) {
+        await _pantryRepository.add(userId, take.item);
+      } else {
+        await _pantryRepository.adjustQuantity(
+          userId,
+          take.item.id,
+          take.amount,
+        );
+      }
+    }
+  }
+
+  /// Throws when the delete is refused, so the row is not dropped from the
+  /// screen while it stays stored. A delete left queued offline returns.
+  Future<void> removeItem(String userId, String itemId) =>
+      _pantryRepository.remove(userId, itemId);
+
   /// BUT-954: re-persists a just-removed item for the snackbar-undo flow.
-  /// Returns the restored item (with its newly generated document ID).
+  /// Returns the restored item.
   Future<PantryItem> restoreItem(String userId, PantryItem item) async {
     _validateInput(item.ingredientName, item.quantity);
     final id = await executeServiceOperation<String>(
@@ -269,29 +332,13 @@ class PantryService extends BaseService {
     return item.copyWith(id: id);
   }
 
-  Future<List<PantryItem>> getAll(String userId) async {
-    return await executeServiceOperation<List<PantryItem>>(
-          () => _pantryRepository.getAll(userId),
-          operationName: 'getAll',
-          defaultValue: const [],
-        ) ??
-        const [];
-  }
+  /// Throws when the pantry cannot be read: an empty list would show as an
+  /// empty pantry, and a check-off would add a row that is already there.
+  Future<List<PantryItem>> getAll(String userId) =>
+      _pantryRepository.getAll(userId);
 
   Stream<List<PantryItem>> watchAll(String userId) {
     return _pantryRepository.watchAll(userId);
-  }
-
-  Future<List<PantryItem>> getExpiringSoon(
-    String userId, {
-    int days = 3,
-  }) async {
-    return await executeServiceOperation<List<PantryItem>>(
-          () => _pantryRepository.getExpiringSoon(userId, days),
-          operationName: 'getExpiringSoon',
-          defaultValue: const [],
-        ) ??
-        const [];
   }
 
   /// Scores [recipes] by pantry ingredient coverage. Recipes without
@@ -314,10 +361,13 @@ class PantryService extends BaseService {
             final items = pantryItems ?? await _pantryRepository.getAll(userId);
             if (items.isEmpty) return const [];
 
-            final pantryIngredientIds = items
-                .map((item) => item.ingredientId)
-                .whereType<String>()
-                .toSet();
+            final pantryIngredientIds = {
+              ...items.map((item) => item.ingredientId).whereType<String>(),
+              ...await _matchService.keysForNames([
+                for (final item in items)
+                  if (item.ingredientId == null) item.ingredientName,
+              ]),
+            };
             if (pantryIngredientIds.isEmpty) return const [];
 
             final matchResults = await _matchService.matchRecipes(

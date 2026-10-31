@@ -25,6 +25,10 @@ class FirebaseIngredientRepository
   final Map<String, String> _swedishNameIndex = {};
   final Map<String, String> _englishNameIndex = {};
   final Map<String, String> _aliasIndex = {};
+
+  // Every id a name or alias key was indexed for, across all three indexes,
+  // because each index keeps only one id per key ([idsForKey]).
+  final Map<String, Set<String>> _idsByKey = {};
   final Set<String> _compoundNames = {};
 
   /// When the cache was last populated. `null` means uninitialized.
@@ -224,6 +228,7 @@ class FirebaseIngredientRepository
     _englishNameIndex.clear();
     _aliasIndex.clear();
     _compoundNames.clear();
+    _idsByKey.clear();
     for (final ingredient in _cache.values) {
       _addToCache(ingredient);
     }
@@ -271,6 +276,7 @@ class FirebaseIngredientRepository
       _englishNameIndex.clear();
       _aliasIndex.clear();
       _compoundNames.clear();
+      _idsByKey.clear();
       Timestamp? maxTs;
       for (final doc in snapshot.docs) {
         _addToCache(IngredientData.fromFirestore(doc));
@@ -324,6 +330,7 @@ class FirebaseIngredientRepository
       );
     }
     index[key] = ingredient.id;
+    _idsByKey.putIfAbsent(key, () => {}).add(ingredient.id);
   }
 
   /// Adds an ingredient to all cache indexes.
@@ -600,6 +607,12 @@ class FirebaseIngredientRepository
   }
 
   @override
+  Future<Set<String>> idsForKey(String name) async {
+    await _ensureCacheLoaded();
+    return {...?_idsByKey[_normalize(name)]};
+  }
+
+  @override
   Future<List<IngredientData>> getByGroup(String groupPath) async {
     await _ensureCacheLoaded();
 
@@ -710,6 +723,7 @@ class FirebaseIngredientRepository
     _englishNameIndex.clear();
     _aliasIndex.clear();
     _compoundNames.clear();
+    _idsByKey.clear();
     _cacheLoadedAt = null;
     _maxUpdatedAt = null;
   }

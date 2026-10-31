@@ -1,5 +1,6 @@
-/// BUT-2241: where a shared text lands. A link starts Smart import on its own;
-/// any other text opens the text import, filled in.
+/// BUT-2241: where a shared text lands. A link starts Smart import on its own,
+/// a recipe text keeps its link as the source, and any other text opens the
+/// text import, filled in.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -27,6 +28,49 @@ void main() {
       (route?.arguments as SmartImportRouteArgs).url,
       'https://www.arla.se/recept/kladdkaka/',
     );
+  });
+
+  test('a recipe text with its source link keeps the text and the link', () {
+    const text =
+        'Pannkakor\n3 dl mjöl\n6 dl mjölk\n3 ägg\nVispa ihop och stek.\n'
+        'Källa: https://www.ica.se/recept/pannkakor-1/';
+    final route = routeForSharedText('  $text  ');
+
+    expect(route?.route, Routes.fromSocialMedia);
+    final args = route?.arguments as SharedTextImportArgs;
+    expect(args.text, text);
+    expect(args.sourceUrl, 'https://www.ica.se/recept/pannkakor-1/');
+  });
+
+  test('three lines around the link are a recipe, two are a blurb', () {
+    const link = 'https://www.ica.se/recept/x/';
+    expect(
+      routeForSharedText('Pannkakor\nMjöl, mjölk\n$link')?.route,
+      Routes.smartImport,
+    );
+    expect(
+      routeForSharedText(
+        'Pannkakor\nMjöl, mjölk\nVispa och stek\n$link',
+      )?.route,
+      Routes.fromSocialMedia,
+    );
+  });
+
+  test('a caption with hashtags is a blurb, not a recipe', () {
+    final route = routeForSharedText(
+      'Så steker du 5 st ägg #bake #cook #grill\n'
+      'https://www.instagram.com/reel/abc/',
+    );
+
+    expect(route?.route, Routes.smartImport);
+  });
+
+  test('recipe words inside the link itself do not count as a recipe', () {
+    final route = routeForSharedText(
+      'https://www.ica.se/recept/stek-3-dl-mjolk-och-vispa-ihop-500-g/',
+    );
+
+    expect(route?.route, Routes.smartImport);
   });
 
   test('text without a link opens the text import, trimmed', () {

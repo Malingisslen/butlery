@@ -183,6 +183,17 @@ ImportSuccess _llmSuccess({Recipe? recipe}) {
   );
 }
 
+const _recipeCaption = '''Krämig pasta
+
+Ingredienser:
+300 g pasta
+2 dl grädde
+1 vitlöksklyfta
+
+Gör så här:
+Koka pastan enligt paketet.
+Fräs vitlöken och häll i grädden, låt puttra.''';
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -913,6 +924,71 @@ Pannkakor receptet jag lovat! ✨
       expect(result.isSuccess, isTrue);
       expect(result.metadata?['usedLlm'], isTrue);
       expect(result.metadata?['llmCost'], 0.0012);
+    });
+  });
+
+  group('rules first', () {
+    const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
+
+    test('a caption laid out as a recipe is read by the rules and never '
+        'reaches AI', () async {
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(title: _recipeCaption),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.importV2(input);
+
+      expect(llm.seenTranscripts, isEmpty);
+      final s = result as ImportSuccess;
+      expect(s.method, 'caption-rules');
+      expect(s.usedLlm, isFalse);
+      expect(s.requiresReview, isTrue);
+      expect(s.metadata?['successfulTier'], 'RuleBased');
+      expect(s.metadata?.containsKey('usedLlm'), isFalse);
+      expect(s.recipe.title, 'Krämig pasta');
+      expect(s.recipe.sourceUrl, input);
+      expect(
+        s.recipe.core.sourceArtefact?.type,
+        SourceArtefactType.tiktokCaption,
+      );
+      expect(s.recipe.core.sourceArtefact?.payload, _recipeCaption);
+    });
+
+    test('a caption the rules cannot read still goes to AI', () async {
+      llm.responses.add(_llmSuccess());
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(
+          title: 'Krämig pasta på 15 min, koka pastan och häll i grädde!',
+        ),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.importV2(input);
+
+      expect(llm.seenTranscripts, hasLength(1));
+      expect(
+        (result as ImportSuccess).metadata?['successfulTier'],
+        'LLM',
+      );
+    });
+
+    test('the rules read the caption even when the user chose to go on '
+        'without AI', () async {
+      final pipeline = _pipelineWith(
+        llm: llm,
+        responder: (_) async => _oembedJson(title: _recipeCaption),
+      );
+      addTearDown(pipeline.dispose);
+
+      final result = await pipeline.importV2(
+        input,
+        options: {'skipLlm': true},
+      );
+
+      expect((result as ImportSuccess).method, 'caption-rules');
     });
   });
 }

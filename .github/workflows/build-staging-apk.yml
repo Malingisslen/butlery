@@ -48,13 +48,11 @@ jobs:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         cache: true
 
-    # Same build-time keys as build-validation.yml. ENV is passed on the
-    # command line instead, so this file cannot select production.
+    # ENV is passed on the command line instead, so this file cannot select
+    # production.
     - name: Create .env from secrets
       run: |
         cat > .env << 'ENVEOF'
-        OCR_API_KEY=${{ secrets.OCR_API_KEY }}
-        OCR_API_URL=${{ secrets.OCR_API_URL }}
         ENVEOF
 
     - name: Decode staging google-services.json

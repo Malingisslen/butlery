@@ -17,6 +17,7 @@ import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/photo_import_view.dart';
@@ -59,6 +60,12 @@ class _ReadFakeViewModel extends ChangeNotifier
 
   @override
   bool get hasImage => false;
+
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+
+  @override
+  bool get aiConsentAlreadyGiven => false;
 
   @override
   bool get hasError => false;

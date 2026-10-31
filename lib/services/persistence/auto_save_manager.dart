@@ -42,11 +42,23 @@ class AutoSaveManager<T> {
     required DraftDecoder<T> decode,
     this.debounce = Duration.zero,
     String? logLabel,
+    String? Function()? ownerIdProvider,
     @visibleForTesting Future<SharedPreferences> Function()? prefsProvider,
   }) : _encode = encode,
        _decode = decode,
        _logLabel = logLabel ?? 'AutoSaveManager($storageKey)',
+       _ownerIdProvider = ownerIdProvider ?? defaultOwnerIdProvider,
        _prefsProvider = prefsProvider ?? SharedPreferences.getInstance;
+
+  /// Who owns a new draft when the caller names no owner. The DI module
+  /// points this at the signed-in account; until then nobody is signed in,
+  /// which hides every owned draft rather than showing it to the wrong person.
+  static String? Function() defaultOwnerIdProvider = _nobody;
+
+  static String? _nobody() => null;
+
+  /// The sibling key that names the account a draft belongs to.
+  static String ownerKeyFor(String storageKey) => '$storageKey.owner';
 
   /// The SharedPreferences key this manager owns. Keep it stable across
   /// releases — changing it orphans every in-flight draft.
@@ -61,6 +73,7 @@ class AutoSaveManager<T> {
   final DraftEncoder<T> _encode;
   final DraftDecoder<T> _decode;
   final String _logLabel;
+  final String? Function() _ownerIdProvider;
   final Future<SharedPreferences> Function() _prefsProvider;
 
   Timer? _debounceTimer;
@@ -73,6 +86,18 @@ class AutoSaveManager<T> {
       final prefs = await _prefsProvider();
       final raw = prefs.getString(storageKey);
       if (raw == null || raw.isEmpty) return null;
+      // A draft written before drafts had an owner, or by another account on
+      // this device, is deleted unread: it may hold that person's text.
+      // While nobody is known to be signed in (a session not yet restored) it
+      // is only hidden, so the owner still finds it once the session is back.
+      final owner = prefs.getString(ownerKeyFor(storageKey));
+      final signedIn = _ownerIdProvider();
+      if (signedIn == null && owner != null) return null;
+      if (owner != signedIn) {
+        await prefs.remove(storageKey);
+        await prefs.remove(ownerKeyFor(storageKey));
+        return null;
+      }
       return _decode(raw);
     } catch (e) {
       AppLogger.warning('$_logLabel: failed to load draft ($e)');
@@ -106,7 +131,14 @@ class AutoSaveManager<T> {
       final prefs = await _prefsProvider();
       if (encoded == null || encoded.isEmpty) {
         await prefs.remove(storageKey);
+        await prefs.remove(ownerKeyFor(storageKey));
       } else {
+        final owner = _ownerIdProvider();
+        if (owner == null) {
+          await prefs.remove(ownerKeyFor(storageKey));
+        } else {
+          await prefs.setString(ownerKeyFor(storageKey), owner);
+        }
         await prefs.setString(storageKey, encoded);
       }
     } catch (e) {
@@ -121,6 +153,7 @@ class AutoSaveManager<T> {
     try {
       final prefs = await _prefsProvider();
       await prefs.remove(storageKey);
+      await prefs.remove(ownerKeyFor(storageKey));
     } catch (e) {
       AppLogger.warning('$_logLabel: failed to clear draft ($e)');
     }

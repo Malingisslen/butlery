@@ -189,7 +189,6 @@ void main() {
         expect(viewModel.totalRecipeCount, equals(0));
         expect(viewModel.lastPrompt, isEmpty);
         expect(viewModel.savedMenus, isEmpty);
-        expect(viewModel.availableRecipes, isNotEmpty);
         expect(viewModel.hasAvailableRecipes, isTrue);
       });
     });
@@ -487,11 +486,12 @@ void main() {
     // -- Recipe Operations ----------------------------------------------------
 
     group('Recipe Operations', () {
-      test('should expose available recipes from service', () {
-        expect(viewModel.availableRecipes, isNotEmpty);
+      test('should expose available recipes from service', () async {
+        final pool = await viewModel.getAvailableRecipesAsync();
+        expect(pool, isNotEmpty);
         expect(viewModel.hasAvailableRecipes, isTrue);
-        expect(viewModel.availableRecipes, contains(testRecipe));
-        expect(viewModel.availableRecipes, contains(testRecipe2));
+        expect(pool, contains(testRecipe));
+        expect(pool, contains(testRecipe2));
       });
 
       test('should track menu state after generation', () async {
@@ -863,8 +863,7 @@ void main() {
       }
 
       test(
-        'the vote sheet\'s async pool drops a child\'s fish recipe that the '
-        'sync single-user pool keeps',
+        'the vote sheet\'s async pool drops a child\'s fish recipe',
         () async {
           final householdRepo = _MockHouseholdRepository();
           final dinerRepo = _MockDinerProfileRepository();
@@ -921,7 +920,6 @@ void main() {
           );
           addTearDown(vm.dispose);
 
-          expect(vm.availableRecipes.map((r) => r.id), contains('fish'));
           final pool = await vm.getAvailableRecipesAsync();
           expect(pool.map((r) => r.id), ['veg']);
         },
@@ -970,7 +968,7 @@ void main() {
 
       test(
         'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
-        () {
+        () async {
           final nutFree = recipeWith(
             'nut_free',
             tagWith(allergen: {'nötter': TriState.free}),
@@ -990,7 +988,9 @@ void main() {
           );
           addTearDown(vm.dispose);
 
-          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          final ids = (await vm.getAvailableRecipesAsync())
+              .map((r) => r.id)
+              .toSet();
           expect(ids, contains('nut_free'));
           expect(
             ids,
@@ -1003,7 +1003,7 @@ void main() {
 
       test(
         'criterion 2: excludes a recipe failing a tracked dietary preference',
-        () {
+        () async {
           final vegetarian = recipeWith(
             'vegetarian',
             tagWith(dietary: {'vegetarisk': TriState.free}),
@@ -1023,7 +1023,9 @@ void main() {
           );
           addTearDown(vm.dispose);
 
-          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          final ids = (await vm.getAvailableRecipesAsync())
+              .map((r) => r.id)
+              .toSet();
           expect(ids, contains('vegetarian'));
           expect(ids, isNot(contains('not_vegetarian')));
         },
@@ -1031,7 +1033,7 @@ void main() {
 
       test(
         'criterion 3: includeUnknownInMenu=false excludes UNKNOWN-status recipes',
-        () {
+        () async {
           final free = recipeWith(
             'free',
             tagWith(allergen: {'nötter': TriState.free}),
@@ -1051,7 +1053,9 @@ void main() {
           );
           addTearDown(vm.dispose);
 
-          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          final ids = (await vm.getAvailableRecipesAsync())
+              .map((r) => r.id)
+              .toSet();
           expect(
             ids,
             equals({'free'}),
@@ -1062,7 +1066,7 @@ void main() {
 
       test(
         'criterion 3: includeUnknownInMenu=true keeps UNKNOWN-status recipes',
-        () {
+        () async {
           final free = recipeWith(
             'free',
             tagWith(allergen: {'nötter': TriState.free}),
@@ -1082,7 +1086,9 @@ void main() {
           );
           addTearDown(vm.dispose);
 
-          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          final ids = (await vm.getAvailableRecipesAsync())
+              .map((r) => r.id)
+              .toSet();
           expect(
             ids,
             equals({'free', 'unknown'}),
@@ -1093,7 +1099,7 @@ void main() {
 
       test(
         'no-regression: with no tracked prefs the full pool is still available',
-        () {
+        () async {
           final a = recipeWith(
             'a',
             tagWith(allergen: {'nötter': TriState.free}),
@@ -1114,7 +1120,9 @@ void main() {
 
           // Filtering is ON but there is nothing to filter against, so the pool
           // is unchanged — confirms we didn't over-filter when prefs are empty.
-          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          final ids = (await vm.getAvailableRecipesAsync())
+              .map((r) => r.id)
+              .toSet();
           expect(ids, equals({'a', 'b'}));
         },
       );

@@ -24,6 +24,8 @@ import '../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
+class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
+
 HouseholdRosterMember _member(String id, String name) =>
     HouseholdRosterMember.fromUser(userId: id, displayName: name);
 
@@ -86,6 +88,8 @@ Widget _dayCell(
 }
 
 void main() {
+  setUpAll(() => registerFallbackValue(_FakeEntry()));
+
   late _MockVm vm;
 
   setUp(() {
@@ -95,6 +99,9 @@ void main() {
     when(() => vm.isSelected(any())).thenReturn(false);
     when(() => vm.isAllergenUnsafe(any())).thenReturn(false);
     when(() => vm.placementOrderOf(any())).thenReturn(null);
+    when(() => vm.entryTitle(any())).thenAnswer(
+      (i) => (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
+    );
   });
 
   testWidgets('a household with family opens who is home from a dish, '

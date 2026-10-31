@@ -5,12 +5,15 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
@@ -50,7 +53,10 @@ class PhotoPermissionNotice {
 /// import lifecycle; heirloom form state lives in
 /// [PhotoImportHeirloomFormMixin].
 class PhotoImportViewModel extends ImportBaseViewModel
-    with PhotoImportHeirloomFormMixin, PhotoImportDraftMixin {
+    with
+        PhotoImportHeirloomFormMixin,
+        PhotoImportDraftMixin,
+        PhotoImportAiOfferMixin {
   /// Raw image bytes from the selected photo (OCR input + preview).
   /// In multi-page mode (BUT-903) this mirrors the FIRST page so every existing
   /// single-image consumer — preview thumbnail, heirloom scan, draft staging —
@@ -73,11 +79,14 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// or reordering a page re-parses the same import, so it writes no second.
   bool _measured = false;
 
+  /// The AI reading has read this import, so a parse that finds nothing is
+  /// not offered to it again.
+  bool _aiUsed = false;
+
   /// BUT-684: user opted in to handwritten-recipe mode. When true the pick
   /// pipeline routes the image through the LLM-vision path (which uses a
   /// handwriting-tuned Cloud Function prompt) instead of the char-OCR cascade,
-  /// which reliably fails on handwriting. Opt-in because the LLM call costs
-  /// more than OCR.space.
+  /// which reliably fails on handwriting.
   bool _isHandwritten = false;
 
   /// Last OCR quality score from image assessment (0.0-1.0).
@@ -329,6 +338,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
   @override
   void clearImportData() {
     _measured = false;
+    _aiUsed = false;
+    clearAiOffer();
     super.clearImportData();
   }
 
@@ -374,10 +385,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// only a batch where every page failed surfaces an error.
   Future<void> loadImagesFromPaths(List<String> paths) async {
     if (isDisposed || paths.isEmpty) return;
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
 
     final overCap = paths.length > maxPages;
     final selected = overCap ? paths.sublist(0, maxPages) : paths;
@@ -414,30 +421,37 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   /// Q4-04: reads every page not yet read — OCR (or the handwriting path)
   /// page by page in page order — then combines and parses the recipe once.
-  /// A page that cannot be read stops the run with its error; the pages
-  /// read before it keep their text, and Försök igen continues from there.
   Future<void> readPages() async {
     if (isDisposed || unreadPageCount == 0) return;
-    // BUT-610: OCR is a cloud cascade that spins on provider timeouts when
-    // offline. Fail fast.
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
     await executeAsyncVoid(() async {
       clearError();
+      clearAiOffer();
       if (_isHandwritten && _pages.length == 1) {
         // Handwritten mode is a single-image flow (BUT-1460). With more than
         // one page (not reachable through the toggle, see
         // canToggleHandwritten) every page goes through the printed path
         // below rather than being dropped.
+        // No phone reading exists for handwriting, so offline there is
+        // nothing to try and no point asking for consent.
+        if (!isOnline) {
+          setError(AppLocale.current.importOfflineMessage);
+          return;
+        }
         final page = _pages.first;
         _lastQualityScore = null;
         _lastRecommendations = null;
         _lastConfidence = null;
-        await _extractHandwritten(page.bytes, _lastPickSource);
+        // The phone cannot read handwriting, so the photo would have to be
+        // sent; without consent that is asked first.
+        if (!await hasAiConsent()) {
+          await offerAi(PhotoAiOfferReason.handwriting);
+          return;
+        }
+        _aiUsed = true;
+        await _extractWithAi(page.bytes, _lastPickSource);
         return;
       }
+      var phoneMissedAPage = false;
       for (var i = 0; i < _pages.length; i++) {
         final page = _pages[i];
         if (page.isRead) continue;
@@ -446,7 +460,14 @@ class PhotoImportViewModel extends ImportBaseViewModel
           page.bytes,
         );
         if (!ocrResult.isSuccessful || ocrResult.text.isEmpty) {
-          throw Exception(_buildEnhancedErrorMessage(ocrResult));
+          final message = _buildEnhancedErrorMessage(ocrResult);
+          // A photo the quality gate refused is too small or blurred for the
+          // AI reading too, so its own advice is shown instead of the offer.
+          if (ocrResult.processingMethod == 'pre_ocr_quality_gate') {
+            throw Exception(message);
+          }
+          phoneMissedAPage = true;
+          continue;
         }
         _pages[i] = _PhotoPage(
           bytes: page.bytes,
@@ -456,8 +477,74 @@ class PhotoImportViewModel extends ImportBaseViewModel
         );
         _lastConfidence = ocrResult.confidence;
       }
+      // Every page gets the phone's try first, so only the pages it missed
+      // are offered to the AI reading.
+      if (phoneMissedAPage) {
+        await offerAi(PhotoAiOfferReason.phoneCouldNotRead);
+        return;
+      }
+      await _recombineAndParse();
+      if (_parsedRecipes.isEmpty && !_aiUsed) {
+        await offerAi(PhotoAiOfferReason.noRecipeFound);
+      }
+    }, errorPrefix: AppLocale.current.errorGeneric);
+  }
+
+  /// "Ja, skicka fotot": records the consent if it is not given yet, then lets
+  /// the AI reading read the photo. With one page the AI's recipe is used as
+  /// it comes; with several, each page the phone could not read (or every
+  /// page, when the phone's text held no recipe) is read and the text joined.
+  Future<void> acceptAiOffer() async {
+    if (isDisposed || aiOffer == null) return;
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+    final reason = takeAiOffer();
+    await executeAsyncVoid(() async {
+      clearError();
+      if (!await ensureAiConsent()) {
+        if (reason != null) await offerAi(reason);
+        return;
+      }
+      _aiUsed = true;
+      if (_pages.length == 1) {
+        await _extractWithAi(_pages.first.bytes, _lastPickSource);
+        return;
+      }
+      for (var i = 0; i < _pages.length; i++) {
+        final page = _pages[i];
+        if (page.isRead && reason != PhotoAiOfferReason.noRecipeFound) continue;
+        final result = await _readWithAi(page.bytes, _lastPickSource);
+        final text = result.isSuccess && result.recipe != null
+            ? _recipeToReviewText(result.recipe!)
+            : result.extractedText.orEmpty().trim();
+        if (text.isEmpty) {
+          final denied = result.rateLimitDenied;
+          setError(
+            denied != null
+                ? denied.swedishMessage
+                : (result.errorMessage ?? AppLocale.current.errorGeneric),
+          );
+          return;
+        }
+        _pages[i] = _PhotoPage(bytes: page.bytes, text: text, isRead: true);
+      }
       await _recombineAndParse();
     }, errorPrefix: AppLocale.current.errorGeneric);
+  }
+
+  /// "Nej, jag skriver själv": nothing is sent. What the phone read stays as
+  /// editable text, and a page it could not read counts as read with no text.
+  Future<void> declineAiOffer() async {
+    if (isDisposed || aiOffer == null) return;
+    takeAiOffer();
+    for (var i = 0; i < _pages.length; i++) {
+      if (!_pages[i].isRead) {
+        _pages[i] = _PhotoPage(bytes: _pages[i].bytes, text: '', isRead: true);
+      }
+    }
+    await _recombineAndParse();
   }
 
   /// BUT-903: drop the page at [index] and recombine. Removing the last page
@@ -465,6 +552,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   Future<void> removePage(int index) async {
     if (isDisposed || index < 0 || index >= _pages.length) return;
     _pages.removeAt(index);
+    clearAiOffer();
     if (_pages.isEmpty) {
       clearPhoto();
       return;
@@ -485,6 +573,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     if (target == oldIndex) return;
     final page = _pages.removeAt(oldIndex);
     _pages.insert(target, page);
+    clearAiOffer();
     await _recombineAndParse();
   }
 
@@ -493,12 +582,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
   Future<void> retryOcr() async {
     if (_imageBytes == null) {
       setError(AppLocale.current.errorNoImageToProcess);
-      return;
-    }
-
-    // BUT-610: same offline pre-check — a retry re-runs the OCR cloud cascade.
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
       return;
     }
 
@@ -598,13 +681,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
     bool addAsPage = false,
     bool askAgain = false,
   }) async {
-    // BUT-610: offline pre-check — OCR runs a multi-provider cloud cascade
-    // (OCR.space → Google Vision → Tesseract) that spins 30–90s on provider
-    // timeouts when offline. Fail fast before opening the picker.
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
     if (addAsPage && !canAddPage) {
       setError(AppLocale.current.importPhotoPagesMaxReached(maxPages));
       return;
@@ -732,6 +808,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     _imageBytes = _pages.first.bytes;
     _ocrText = '';
     _parsedRecipes.clear();
+    clearAiOffer();
     if (notify) notifyListeners();
   }
 
@@ -780,23 +857,32 @@ class PhotoImportViewModel extends ImportBaseViewModel
   Future<void> extractHandwrittenForTesting(
     Uint8List bytes, {
     ImageSource source = ImageSource.gallery,
-  }) => _extractHandwritten(bytes, source);
+  }) => _extractWithAi(bytes, source);
 
-  Future<void> _extractHandwritten(Uint8List bytes, ImageSource source) async {
-    // BUT-1460: use importSinglePhoto, NOT autoImport. The handwritten LLM-vision
-    // result is terminal — autoImport's multi-strategy fallback loop would
-    // swallow a terminal failure (or rate-limit denial) into a generic English
-    // "No import strategy could handle" message. importSinglePhoto returns the
-    // strategy's own result so the setError block below surfaces the real text.
+  /// BUT-1460: importSinglePhoto, NOT autoImport. The LLM-vision result is
+  /// terminal — autoImport's multi-strategy fallback loop would swallow a
+  /// terminal failure (or rate-limit denial) into a generic English "No import
+  /// strategy could handle" message. importSinglePhoto returns the strategy's
+  /// own result so the caller surfaces the real text.
+  Future<ImportManagerResult> _readWithAi(
+    Uint8List bytes,
+    ImageSource source,
+  ) async {
     final result = await importManager.importSinglePhoto(
       'photo',
       options: {
         'imageBytes': bytes,
         'sourceType': source == ImageSource.camera ? 'camera' : 'gallery',
         'isHandwritten': _isHandwritten,
+        'visionOnly': true,
       },
     );
     _measured = result.rateLimitDenied == null;
+    return result;
+  }
+
+  Future<void> _extractWithAi(Uint8List bytes, ImageSource source) async {
+    final result = await _readWithAi(bytes, source);
 
     if (result.isSuccess && result.recipe != null) {
       final recipe = result.recipe!;
@@ -967,7 +1053,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
         final toSave = await withHeirloomScan(recipe);
         final result = toSave == null
             ? null
-            : await importManager.saveImportedRecipe(toSave);
+            // These skip the editor, which writes an import's amounts as fractions.
+            : await importManager.saveImportedRecipe(
+                ImportFractions.recipe(toSave),
+              );
         if (result?.isSuccess != true) _lastSaveFailureCount++;
       }
       if (_lastSaveFailureCount == recipes.length) {

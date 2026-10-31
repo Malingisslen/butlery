@@ -24,9 +24,6 @@ abstract class ParsingTier {
   /// Maximum valid portions value across all tiers.
   static const kMaxPortions = 100;
 
-  /// Default portions when extraction fails.
-  static const kDefaultPortions = 4;
-
   /// Unique name for this tier.
   String get tierName;
 
@@ -279,10 +276,7 @@ mixin QualityScoring {
               structure.portions!,
               'Extracted from text',
             )
-          : FieldResult.lowConfidence(
-              ParsingTier.kDefaultPortions,
-              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
-            ),
+          : FieldResult.failed('No portions found'),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: structure.totalTime != null

@@ -184,23 +184,25 @@ void main() {
     verifyNever(() => userService.lookupUserProfile(any()));
   });
 
-  test('a child saved by the family screen, which has no switch, closes the '
-      'UNKNOWN hatch through the derived default: an allergy means proven-free '
-      'only (Malin 2026-10-05), for children as for adults', () async {
-    useRoster([
-      HouseholdRosterMember.fromUser(userId: _self, displayName: 'Jag'),
-      _kidDiner(includeUnknownInMenu: null),
-    ]);
+  test(
+    'a child saved by the family screen, which has no switch, keeps the '
+    'UNKNOWN hatch open through the derived default: unchecked recipes are '
+    'marked, not hidden (Malin 2026-10-30), for children as for adults',
+    () async {
+      useRoster([
+        HouseholdRosterMember.fromUser(userId: _self, displayName: 'Jag'),
+        _kidDiner(includeUnknownInMenu: null),
+      ]);
 
-    // The child alone, so nothing but the derived default can shut the hatch
-    // (the diner-only meal above reads TRUE with an explicit true).
-    final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+      // The child alone, so nothing but the derived default decides the hatch.
+      final result = await const PresentDinerPrefsResolver().resolve([_kid]);
 
-    expect(result, isNotNull);
-    expect(result!.preferences.trackedAllergens, {'sesam'});
-    expect(result.preferences.includeUnknownInMenu, isFalse);
-    expect(result.isComplete, isTrue);
-  });
+      expect(result, isNotNull);
+      expect(result!.preferences.trackedAllergens, {'sesam'});
+      expect(result.preferences.includeUnknownInMenu, isTrue);
+      expect(result.isComplete, isTrue);
+    },
+  );
 
   test('one cautious diner closes the UNKNOWN hatch for the whole '
       'meal', () async {

@@ -79,6 +79,32 @@ void main() {
       });
     });
 
+    // BUT-2455: a step that names ingredients still reads as a step.
+    test('a step naming ingredients is rejoined across its wrap', () {
+      expect(
+        reflowWrappedLines(
+          'Blanda ingredienserna till biffarna, hacka de\n'
+          'soltorkade tomaterna väl.',
+        ),
+        'Blanda ingredienserna till biffarna, hacka de soltorkade tomaterna väl.',
+      );
+      expect(
+        reflowWrappedLines(
+          'Gratinera på 225 grader i ca 20 min. Efter ca 10 min\n'
+          'lägg på mozzarella, tomat och basilika.',
+        ),
+        'Gratinera på 225 grader i ca 20 min. Efter ca 10 min '
+        'lägg på mozzarella, tomat och basilika.',
+      );
+    });
+
+    test('a post date is never joined onto a step', () {
+      expect(
+        reflowWrappedLines('1. Servera med ris och\n26 juli'),
+        '1. Servera med ris och\n26 juli',
+      );
+    });
+
     test('a decimal quantity is not a step number', () {
       expect(reflowWrappedLines('1.5 dl grädde\nsalt'), '1.5 dl grädde\nsalt');
     });
@@ -186,6 +212,29 @@ void main() {
       expect(reflowWrappedLines(text), text);
     });
 
+    test('a reader capitalising a wrapped line does not end the sentence', () {
+      expect(
+        reflowWrappedLines(
+          'Blanda ingredienserna till biffarna, hacka de\n'
+          'Soltorkade tomaterna väl. Forma till biffar.',
+        ),
+        'Blanda ingredienserna till biffarna, hacka de '
+        'Soltorkade tomaterna väl. Forma till biffar.',
+      );
+    });
+
+    test(
+      'a heading, a row or a post date after a dangling word stays apart',
+      () {
+        const heading = 'Biffar med\nSå gör du:';
+        expect(reflowWrappedLines(heading), heading);
+        const row = '2 dl grädde och\nSalt och peppar efter smak';
+        expect(reflowWrappedLines(row), row);
+        const footer = 'Servera med ris och\nFör 6 dagar sedan';
+        expect(reflowWrappedLines(footer), footer);
+      },
+    );
+
     test('a continuation that opens with a capital is a line of its own', () {
       const text = 'Purjolök innehåller mycket\nC-vitamin och fibrer.';
       expect(reflowWrappedLines(text), text);
@@ -213,6 +262,34 @@ void main() {
       for (final file in files) {
         final once = reflowWrappedLines(file.readAsStringSync());
         expect(reflowWrappedLines(once), once, reason: file.path);
+      }
+    });
+
+    test('CRLF and lone CR line breaks reflow like LF', () {
+      const lf =
+          '2. Hetta upp en panna med smör och olja och stek\n'
+          'kycklingen tills den tar färg.\n'
+          '50 g jäst';
+      final expected = reflowWrappedLines(lf);
+      expect(expected, contains('stek kycklingen'));
+      expect(reflowWrappedLines(lf.replaceAll('\n', '\r\n')), expected);
+      expect(reflowWrappedLines(lf.replaceAll('\n', '\r')), expected);
+    });
+
+    test('every gold text reflows the same with CRLF as with LF', () {
+      final files = [
+        for (final dir in ['test/import_gate/text', 'test/import_gate/stokig'])
+          ...Directory(dir).listSync().whereType<File>().where(
+            (f) => f.path.endsWith('.txt'),
+          ),
+      ];
+      for (final file in files) {
+        final lf = file.readAsStringSync().replaceAll('\r\n', '\n');
+        expect(
+          reflowWrappedLines(lf.replaceAll('\n', '\r\n')),
+          reflowWrappedLines(lf),
+          reason: file.path,
+        );
       }
     });
 

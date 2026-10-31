@@ -20,6 +20,7 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
@@ -63,6 +64,12 @@ class _FakePhotoImportViewModel extends ChangeNotifier
 
   @override
   bool get hasError => false;
+
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+
+  @override
+  bool get aiConsentAlreadyGiven => false;
 
   @override
   String? get error => null;
@@ -240,5 +247,32 @@ void main() {
     await tester.pump();
 
     expect(announces.messages, isEmpty);
+  });
+
+  testWidgets('the proceed button is disabled while a page is still read', (
+    tester,
+  ) async {
+    // A tap mid-read would open the editor on the text before the new page.
+    final handle = tester.ensureSemantics();
+    final l10n = await pumpView(tester);
+
+    fakeVm.emit(hasOcrResult: true, isProcessing: true);
+    await tester.pump();
+    expect(
+      tester.getSemantics(find.text(l10n.importProceedToEdit)),
+      containsSemantics(
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: false,
+      ),
+    );
+
+    fakeVm.emit(hasOcrResult: true, isProcessing: false);
+    await tester.pump();
+    expect(
+      tester.getSemantics(find.text(l10n.importProceedToEdit)),
+      containsSemantics(isButton: true, hasEnabledState: true, isEnabled: true),
+    );
+    handle.dispose();
   });
 }

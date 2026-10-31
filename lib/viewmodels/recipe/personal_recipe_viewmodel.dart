@@ -243,15 +243,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     return await _recipeService.personal.removeInstruction(recipeId, index);
   }
 
-  Future<bool> markAsCooked(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
-
-    final recipe = getPersonalRecipeById(recipeId);
-    if (recipe == null || !recipe.isPersonal) return false;
-
-    return await _recipeService.personal.markAsCooked(recipeId);
-  }
-
   Future<RecipeOperationResult> addLegacyRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) {
       return RecipeOperationResult.failure('Recipe is not personal');
@@ -312,26 +303,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     return personalRecipes
         .where((r) => r.personalTagIds?.contains(tag) ?? false)
         .toList();
-  }
-
-  List<Recipe> searchPersonalRecipes(String query) {
-    if (query.trim().isEmpty) return personalRecipes;
-
-    final lowercaseQuery = query.toLowerCase();
-    return personalRecipes.where((recipe) {
-      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
-          recipe.description.toLowerCase().contains(lowercaseQuery) ||
-          recipe.ingredients.any(
-            (ingredient) => ingredient.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          recipe.instructions.any(
-            (instruction) => instruction.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          (recipe.personalTagIds?.any(
-                (tag) => tag.toLowerCase().contains(lowercaseQuery),
-              ) ??
-              false);
-    }).toList();
   }
 
   Map<String, int> getPersonalMealTypeCounts() {

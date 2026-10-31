@@ -1,8 +1,8 @@
 /// P6-U02: the merge sheet (#inkopmergeoppen).
 ///
 /// Summary first: the line "N rätter ger M rader. Efter sammanslagning blir
-/// det K varor." and three figures. "Visa detaljer" opens all four switches;
-/// "Ersätt listan" is always off by default. The hero says what will be
+/// det K varor." and three figures. "Visa detaljer" opens the three switches.
+/// The hero says what will be
 /// written, the pantry's degraded mode is said with a retry
 /// and nothing is written by the sheet itself.
 library;
@@ -12,6 +12,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -65,7 +66,9 @@ Future<_Harness> _open(
   ThemeData? theme,
   MenuShoppingPantry pantry = const MenuShoppingPantry.read([]),
   MenuShoppingPantry retryAnswer = const MenuShoppingPantry.read([]),
-  bool canReplace = true,
+  bool updatesList = false,
+  bool emptyWeek = false,
+  int unresolvedRecipes = 0,
 }) async {
   final harness = _Harness();
   tester.view.physicalSize = const Size(1200, 2400);
@@ -83,13 +86,18 @@ Future<_Harness> _open(
             onPressed: () async {
               harness.result = await showShoppingMergeSheet(
                 context,
-                source: _source,
+                source: MenuShoppingSource(
+                  week: _source.week,
+                  placements: emptyWeek ? const [] : _source.placements,
+                  recipeCount: _source.recipeCount,
+                  unresolvedRecipes: unresolvedRecipes,
+                ),
                 pantry: pantry,
                 retryPantry: () async {
                   harness.retries++;
                   return retryAnswer;
                 },
-                canReplace: canReplace,
+                updatesList: updatesList,
               );
               harness.closed = true;
             },
@@ -110,7 +118,7 @@ Finder _hero(String label) => find.descendant(
 );
 
 void main() {
-  testWidgets('summary first: the line, the three figures, Ersätt off '
+  testWidgets('summary first: the line, the three figures '
       '(TR::FLOW::02::veckomeny::till-inköpslistan)', (tester) async {
     await _open(
       tester,
@@ -132,29 +140,12 @@ void main() {
     expect(stat('merged', '3'), findsOneWidget);
     expect(stat('converted', '1'), findsOneWidget);
     expect(stat('atHome', '1'), findsOneWidget);
-    expect(
-      find.text('Ersätt listan i stället för att lägga till'),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Dina egna, manuellt tillagda varor behålls alltid.'),
-      findsOneWidget,
-    );
-    final replace = tester.widget<Checkbox>(
-      find.descendant(
-        of: find.byKey(
-          ShoppingMergeSheet.switchKey(ShoppingMergeSwitch.replace),
-        ),
-        matching: find.byType(Checkbox),
-      ),
-    );
-    expect(replace.value, isFalse, reason: 'Ersätt is always off by default');
     expect(_hero('Lägg till 2 varor'), findsOneWidget);
-    // Details closed: only Ersätt shows.
+    // Details closed: no rule shows.
     expect(find.text('Slå samman dubbletter'), findsNothing);
   });
 
-  testWidgets('Visa detaljer opens all four switches, and they change what '
+  testWidgets('Visa detaljer opens the three switches, and they change what '
       'the hero will add', (tester) async {
     await _open(tester);
 
@@ -165,10 +156,10 @@ void main() {
       'Slå samman dubbletter',
       'Konvertera enheter',
       'Dra bort skafferivaror',
-      'Ersätt listan i stället för att lägga till',
     ]) {
       expect(find.text(title), findsOneWidget);
     }
+    expect(find.textContaining('Ersätt'), findsNothing);
     expect(find.text('Dölj detaljer'), findsOneWidget);
     expect(_hero('Lägg till 3 varor'), findsOneWidget);
 
@@ -177,41 +168,58 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(_hero('Lägg till 6 varor'), findsOneWidget);
-
-    await tester.tap(
-      find.byKey(ShoppingMergeSheet.switchKey(ShoppingMergeSwitch.replace)),
-    );
-    await tester.pumpAndSettle();
-    expect(_hero('Ersätt med 6 varor'), findsOneWidget);
   });
 
-  testWidgets('a list from before recipe rows were tracked: Ersätt is off '
-      'and says why, and a tap changes nothing', (tester) async {
-    final harness = await _open(tester, canReplace: false);
-    final row = find.byKey(
-      ShoppingMergeSheet.switchKey(ShoppingMergeSwitch.replace),
-    );
+  testWidgets('a list that already holds the week\'s rows: the hero says '
+      'Uppdatera listan and a caption says what is kept', (tester) async {
+    final harness = await _open(tester, updatesList: true);
 
+    expect(_hero('Uppdatera listan'), findsOneWidget);
+    expect(_hero('Lägg till 3 varor'), findsNothing);
+    final caption = find.byKey(ShoppingMergeSheet.updatesListKey);
+    expect(caption, findsOneWidget);
     expect(
-      find.text(
-        'Listan gjordes innan appen höll isär veckans varor och dina egna, '
-        'så den kan inte ersättas. Veckans varor läggs till.',
-      ),
-      findsOneWidget,
+      tester.widget<Text>(caption).data,
+      AppLocalizationsSv().shoppingMergeUpdateBody,
     );
-    final box = tester.widget<Checkbox>(
-      find.descendant(of: row, matching: find.byType(Checkbox)),
-    );
-    expect(box.onChanged, isNull);
 
-    await tester.tap(row);
-    await tester.pumpAndSettle();
-    expect(_hero('Lägg till 3 varor'), findsOneWidget);
     await tester.tap(find.byKey(ShoppingMergeSheet.confirmKey));
     await tester.pumpAndSettle();
-    expect(harness.result!.options.replaceList, isFalse);
+    expect(harness.result!.itemCount, 3);
   });
 
+  testWidgets('a first merge says Lägg till and shows no update caption', (
+    tester,
+  ) async {
+    await _open(tester);
+
+    expect(_hero('Lägg till 3 varor'), findsOneWidget);
+    expect(find.byKey(ShoppingMergeSheet.updatesListKey), findsNothing);
+  });
+
+  testWidgets('an update with nothing left to buy can still be confirmed, '
+      'because it takes the old rows off', (tester) async {
+    final harness = await _open(tester, updatesList: true, emptyWeek: true);
+
+    expect(_hero('Uppdatera listan'), findsOneWidget);
+    await tester.tap(find.byKey(ShoppingMergeSheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(harness.closed, isTrue);
+    expect(harness.result!.itemCount, 0);
+  });
+
+  testWidgets('a first merge with nothing to add cannot be confirmed', (
+    tester,
+  ) async {
+    final harness = await _open(tester, emptyWeek: true);
+
+    await tester.tap(find.byKey(ShoppingMergeSheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(harness.closed, isFalse);
+    expect(find.byKey(ShoppingMergeSheet.confirmKey), findsOneWidget);
+  });
   testWidgets('what is at home in full is named under the pantry switch', (
     tester,
   ) async {
@@ -258,7 +266,6 @@ void main() {
     expect(harness.closed, isTrue);
     expect(harness.result, isNotNull);
     expect(harness.result!.itemCount, 3);
-    expect(harness.result!.options.replaceList, isFalse);
 
     harness = await _open(tester);
     await tester.tap(find.byKey(ShoppingMergeSheet.cancelKey));
@@ -353,5 +360,27 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(ShoppingMergeSheet.confirmKey), findsOneWidget);
+  });
+
+  testWidgets('says how many dishes were left out because their recipe is '
+      'gone', (tester) async {
+    await _open(tester, unresolvedRecipes: 2);
+
+    expect(
+      find.descendant(
+        of: find.byKey(ShoppingMergeSheet.unresolvedRecipesKey),
+        matching: find.text(
+          '2 rätter kunde inte räknas med, eftersom receptet inte finns kvar.',
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('no notice when every planned recipe was found', (tester) async {
+    await _open(tester);
+
+    expect(find.byKey(ShoppingMergeSheet.summaryKey), findsOneWidget);
+    expect(find.byKey(ShoppingMergeSheet.unresolvedRecipesKey), findsNothing);
   });
 }

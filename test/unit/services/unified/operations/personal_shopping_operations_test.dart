@@ -454,6 +454,42 @@ void main() {
         );
       });
 
+      test(
+        'a renamed item drops its registry link; other edits keep it',
+        () async {
+          when(
+            () => mockParent.updateList(any()),
+          ).thenAnswer((_) async => true);
+          final linked = testItem.copyWith(ingredientId: 'milk');
+          mockParent.setShoppingState(
+            activeListId: 'test-list-1',
+            personalLists: [
+              testList.copyWith(items: [linked]),
+            ],
+            lists: [
+              testList.copyWith(items: [linked]),
+            ],
+          );
+
+          await operations.updateItem(
+            listId: 'test-list-1',
+            itemId: 'item-1',
+            amount: 3,
+          );
+          await operations.updateItem(
+            listId: 'test-list-1',
+            itemId: 'item-1',
+            name: 'Havredryck',
+          );
+
+          final saved = verify(
+            () => mockParent.updateList(captureAny()),
+          ).captured.cast<UnifiedShoppingList>();
+          expect(saved.first.items.single.ingredientId, 'milk');
+          expect(saved.last.items.single.ingredientId, isNull);
+        },
+      );
+
       // The third leg, same reason as in the shared-list module: without it,
       // `note == null ? item.note : null` erases every typed note and both
       // cases around it still pass.

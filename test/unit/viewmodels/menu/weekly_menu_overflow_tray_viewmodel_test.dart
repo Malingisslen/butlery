@@ -155,6 +155,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     service = _MockService();
     recipes = _MockRecipes();
+    when(() => recipes.stateStream).thenAnswer((_) => const Stream.empty());
     when(() => service.overflowTrayOwnerId).thenReturn('malin');
     when(() => service.saveRevision(any())).thenAnswer((_) async {});
     when(

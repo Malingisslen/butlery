@@ -177,7 +177,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Tier 4: Web scraper text extraction fallback
       final scraperResult = await _tryWebScraperFallback(url);
       if (scraperResult != null) {
-        return _atTier(scraperResult, 'WebScraper');
+        return _atTier(
+          _withPageImage(scraperResult, scraperHtml ?? httpHtml, url),
+          'WebScraper',
+        );
       }
 
       // Use best available HTML for remaining tiers
@@ -192,7 +195,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         final textResult = await _tryHtmlTextParse(bestHtml, pageText, url);
         if (textResult != null) {
           return _atTier(
-            textResult.withMetadata({'pageText': pageText}),
+            _withPageImage(
+              textResult.withMetadata({'pageText': pageText}),
+              bestHtml,
+              url,
+            ),
             'HtmlTextParse',
           );
         }
@@ -204,7 +211,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         llm = await _llmFallback.tryExtraction(pageText, url, strategyName);
         final llmResult = llm.result;
         if (llmResult != null) {
-          return _atTier(llmResult, 'LLM');
+          return _atTier(_withPageImage(llmResult, bestHtml, url), 'LLM');
         }
       }
       // A call that found nothing was still paid for: whatever answers the
@@ -315,6 +322,13 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final textResult = await textStrategy.import(webScraperResult);
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
+    // The same gate as Tier 5: a page read as text with neither an ingredient
+    // nor a step is not a recipe, and shipping it here would stop the LLM
+    // tier from ever seeing the page.
+    final parsed = textResult.recipe!;
+    if (parsed.core.ingredients.isEmpty && parsed.core.instructions.isEmpty) {
+      return null;
+    }
 
     final recipe = textResult.recipe!.copyWith(
       sourceUrl: url,
@@ -549,6 +563,26 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       html == null
       ? result
       : result.withMetadata({'pageText': HtmlSanitizer.stripToPlainText(html)});
+
+  /// The text tiers never see markup, so the page's og:image is read from the
+  /// HTML here. A photo the tier already found is kept.
+  static ImportResult _withPageImage(
+    ImportResult result,
+    String? html,
+    String url,
+  ) {
+    final recipe = result.recipe;
+    if (html == null || recipe == null || recipe.imageUrls.isNotEmpty) {
+      return result;
+    }
+    final image = HtmlUtilities.extractOgImage(html, url);
+    if (image == null) return result;
+    return ImportResult.success(
+      recipe.copyWith(imageUrls: [image]),
+      warnings: result.warnings,
+      metadata: result.metadata,
+    );
+  }
 
   /// Names the tier that answered, for the import's one parse event.
   static ImportResult _atTier(ImportResult result, String tier) =>

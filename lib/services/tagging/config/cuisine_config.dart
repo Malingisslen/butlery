@@ -4,7 +4,6 @@
 /// This is a hardcoded approach for reliability and testability - no CSV parsing.
 library;
 
-import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Single cuisine configuration.
@@ -35,48 +34,6 @@ class CuisineEntry {
     this.ingredientGroups = const {},
     this.minIngredientMatches = 2,
   });
-
-  /// Check if recipe matches this cuisine.
-  ///
-  /// Returns true if:
-  /// - Title contains any title keyword, OR
-  /// - At least [minIngredientMatches] ingredient keywords match
-  bool matches(Recipe recipe, IngredientLookupResult lookup) {
-    final title = recipe.core.title.toLowerCase();
-
-    // Check title keywords
-    for (final keyword in titleKeywords) {
-      if (title.contains(keyword.toLowerCase())) {
-        return true;
-      }
-    }
-
-    // Count ingredient matches
-    int ingredientMatches = 0;
-
-    for (final ingredient in lookup.matched) {
-      final name = ingredient.swedish.toLowerCase();
-      final group = ingredient.group.toLowerCase();
-
-      // Check ingredient name keywords
-      for (final keyword in ingredientKeywords) {
-        if (name.contains(keyword.toLowerCase())) {
-          ingredientMatches++;
-          break; // Count each ingredient only once
-        }
-      }
-
-      // Check ingredient groups
-      for (final groupPattern in ingredientGroups) {
-        if (group.contains(groupPattern.toLowerCase())) {
-          ingredientMatches++;
-          break;
-        }
-      }
-    }
-
-    return ingredientMatches >= minIngredientMatches;
-  }
 }
 
 /// Static configuration of all supported cuisines.

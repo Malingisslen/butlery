@@ -1886,30 +1886,6 @@ abstract class AppLocalizations {
   /// **'Egna taggar'**
   String get recipePersonalTags;
 
-  /// No description provided for @recipeAnalysisFailed.
-  ///
-  /// In sv, this message translates to:
-  /// **'Analys misslyckades'**
-  String get recipeAnalysisFailed;
-
-  /// No description provided for @recipeAnalyzing.
-  ///
-  /// In sv, this message translates to:
-  /// **'Analyseras …'**
-  String get recipeAnalyzing;
-
-  /// No description provided for @recipeAnalysisFailedA11y.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingrediensanalys misslyckades'**
-  String get recipeAnalysisFailedA11y;
-
-  /// No description provided for @recipeAnalyzingA11y.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingredienser analyseras'**
-  String get recipeAnalyzingA11y;
-
   /// No description provided for @recipeSearchHint.
   ///
   /// In sv, this message translates to:
@@ -2696,6 +2672,48 @@ abstract class AppLocalizations {
   /// **'Från {host}'**
   String recipeSourceFrom(String host);
 
+  /// No description provided for @recipeSourceCardTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtat från {site}'**
+  String recipeSourceCardTitle(String site);
+
+  /// No description provided for @recipeSourceAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Av {author}'**
+  String recipeSourceAuthor(String author);
+
+  /// No description provided for @recipeSourceOpenOriginal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna originalet'**
+  String get recipeSourceOpenOriginal;
+
+  /// No description provided for @recipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild: {site}'**
+  String recipeBorrowedImageCredit(String site);
+
+  /// No description provided for @a11yRecipeSourceCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}'**
+  String a11yRecipeSourceCard(String site);
+
+  /// No description provided for @a11yRecipeSourceCardWithAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är hämtat från {site}, av {author}'**
+  String a11yRecipeSourceCardWithAuthor(String site, String author);
+
+  /// No description provided for @a11yRecipeBorrowedImageCredit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden visas från {site}'**
+  String a11yRecipeBorrowedImageCredit(String site);
+
   /// No description provided for @errorCouldNotOpenLink.
   ///
   /// In sv, this message translates to:
@@ -2995,12 +3013,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Språk'**
   String get settingsLanguageTitle;
-
-  /// No description provided for @commonLogoutNow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Logga ut nu'**
-  String get commonLogoutNow;
 
   /// No description provided for @commonTakePhoto.
   ///
@@ -3602,18 +3614,6 @@ abstract class AppLocalizations {
   /// **'Visa på'**
   String get allergenDisplayTitle;
 
-  /// No description provided for @allergenDisplayOnCardsTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Receptkort'**
-  String get allergenDisplayOnCardsTitle;
-
-  /// No description provided for @allergenDisplayOnCardsSubtitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa allergenstatus på receptkort i listor'**
-  String get allergenDisplayOnCardsSubtitle;
-
   /// No description provided for @allergenDisplayOnDetailTitle.
   ///
   /// In sv, this message translates to:
@@ -4046,6 +4046,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 okänd ingrediens} other{{count} okända ingredienser}}'**
   String tagResultUnknownIngredients(int count);
 
+  /// No description provided for @tagResultUncertainTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Osäkra taggar, {count, plural, =1{1 ingrediens okänd} other{{count} ingredienser okända}}'**
+  String tagResultUncertainTags(int count);
+
   /// No description provided for @tagResultUnknownIngredientsA11y.
   ///
   /// In sv, this message translates to:
@@ -4387,6 +4393,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Återställningen är genomförd.'**
   String get profileRestoreCompleted;
+
+  /// No description provided for @profileRestoreSomeNotRestored.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept kunde inte återställas.'**
+  String profileRestoreSomeNotRestored(int count);
 
   /// No description provided for @profileRestoreFailed.
   ///
@@ -5659,30 +5671,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Sakta ner lite'**
   String get rateLimitSlowDown;
-
-  /// No description provided for @sessionContinue.
-  ///
-  /// In sv, this message translates to:
-  /// **'Fortsätt session'**
-  String get sessionContinue;
-
-  /// No description provided for @sessionContinueOrLogout.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vill du fortsätta din session eller logga ut nu?'**
-  String get sessionContinueOrLogout;
-
-  /// No description provided for @sessionExpiringMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Din session kommer att avslutas om:'**
-  String get sessionExpiringMessage;
-
-  /// No description provided for @sessionExpiringTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Session utgår snart'**
-  String get sessionExpiringTitle;
 
   /// No description provided for @shareContentTypeMenu.
   ///
@@ -7891,6 +7879,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Från arkiv'**
   String get recipeFromArchive;
+
+  /// No description provided for @recipeFromFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från fil'**
+  String get recipeFromFile;
 
   /// No description provided for @recipeFromImage.
   ///
@@ -11846,18 +11840,6 @@ abstract class AppLocalizations {
   /// **'Exkludera {tagName}'**
   String a11yExcludeTag(String tagName);
 
-  /// No description provided for @a11yAllergenStatusRow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Allergenstatus'**
-  String get a11yAllergenStatusRow;
-
-  /// No description provided for @a11yDietaryStatusRow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koststatus'**
-  String get a11yDietaryStatusRow;
-
   /// No description provided for @a11yShowImage.
   ///
   /// In sv, this message translates to:
@@ -15680,48 +15662,6 @@ abstract class AppLocalizations {
   /// **'Kunde inte exportera recept'**
   String get errorCouldNotExportRecipes;
 
-  /// No description provided for @errorCouldNotMarkAsCooked.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte markera receptet som lagat'**
-  String get errorCouldNotMarkAsCooked;
-
-  /// No description provided for @errorCouldNotAddIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte lägga till ingrediens'**
-  String get errorCouldNotAddIngredient;
-
-  /// No description provided for @errorCouldNotUpdateIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera ingrediens'**
-  String get errorCouldNotUpdateIngredient;
-
-  /// No description provided for @errorCouldNotRemoveIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte ta bort ingrediens'**
-  String get errorCouldNotRemoveIngredient;
-
-  /// No description provided for @errorCouldNotAddInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte lägga till instruktion'**
-  String get errorCouldNotAddInstruction;
-
-  /// No description provided for @errorCouldNotUpdateInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera instruktion'**
-  String get errorCouldNotUpdateInstruction;
-
-  /// No description provided for @errorCouldNotRemoveInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte ta bort instruktion'**
-  String get errorCouldNotRemoveInstruction;
-
   /// No description provided for @errorCouldNotStartSync.
   ///
   /// In sv, this message translates to:
@@ -18376,12 +18316,6 @@ abstract class AppLocalizations {
   /// **'Tom meny'**
   String get labelEmptyMenu;
 
-  /// No description provided for @errorVideoNoSubtitles.
-  ///
-  /// In sv, this message translates to:
-  /// **'Video saknar undertexter'**
-  String get errorVideoNoSubtitles;
-
   /// No description provided for @errorNetworkFallback.
   ///
   /// In sv, this message translates to:
@@ -19534,12 +19468,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kontrollera behörigheter'**
   String get checkPermissions;
-
-  /// No description provided for @ingredientParseError.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte tolka ingrediens'**
-  String get ingredientParseError;
 
   /// No description provided for @portionsUnit.
   ///
@@ -24541,7 +24469,7 @@ abstract class AppLocalizations {
   /// P6-U02: switch description.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}} Okänd mängd ger inget avdrag – varan läggs till märkt ”Kanske hemma”.'**
+  /// **'{count, plural, =0{Ingen av varorna finns hemma.} =1{1 vara finns hemma.} other{{count} varor finns hemma.}}'**
   String shoppingMergePantryBody(int count);
 
   /// P6-U02: rows the pantry left off, named.
@@ -24556,35 +24484,29 @@ abstract class AppLocalizations {
   /// **'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.'**
   String get shoppingMergePantryUnavailable;
 
-  /// P6-U02: switch, off by default.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ersätt listan i stället för att lägga till'**
-  String get shoppingMergeReplaceTitle;
-
-  /// P6-U02: switch description (PQ-10 = A).
-  ///
-  /// In sv, this message translates to:
-  /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
-  String get shoppingMergeReplaceBody;
-
-  /// P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows.
-  ///
-  /// In sv, this message translates to:
-  /// **'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.'**
-  String get shoppingMergeReplaceUnavailable;
-
   /// P6-U02: the sheet hero.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}'**
   String shoppingMergeAdd(int count);
 
-  /// P6-U02: the sheet hero while Ersätt listan is on.
+  /// Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}'**
-  String shoppingMergeReplaceAction(int count);
+  /// **'Uppdatera listan'**
+  String get shoppingMergeUpdate;
+
+  /// Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan har redan varor från veckan. De uppdateras, men det du har ändrat eller bockat av rörs inte och dina egna varor finns kvar. Listan följer sedan med när du ändrar veckan.'**
+  String get shoppingMergeUpdateBody;
+
+  /// Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{list} är uppdaterad med veckan. Det du har ändrat själv finns kvar.'**
+  String shoppingMergeSynced(String list);
 
   /// P6-U02: receipt with Ångra after Lägg till.
   ///
@@ -24592,17 +24514,47 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}'**
   String shoppingMergeAdded(int count, String list);
 
-  /// P6-U02: receipt with Ångra after a replace.
-  ///
-  /// In sv, this message translates to:
-  /// **'{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.'**
-  String shoppingMergeReplaced(int count, String list);
-
   /// BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.} other{Listan hade ändrats på en annan enhet. Dina {count} varor lades till och inget skrevs över.}}'**
   String shoppingMergeConcurrentChange(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdaterad från veckomenyn: {changes}'**
+  String shoppingFollowNotice(String changes);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ny} other{{count} nya}}'**
+  String shoppingFollowAdded(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändrad} other{{count} ändrade}}'**
+  String shoppingFollowChanged(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 borttagen} other{{count} borttagna}}'**
+  String shoppingFollowRemoved(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng meddelandet'**
+  String get shoppingFollowNoticeDismiss;
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra uppdateringen'**
+  String get shoppingFollowNoticeUndoFailed;
 
   /// P6-U02: failure, what happened.
   ///
@@ -24669,30 +24621,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Logga ut och släng ändringarna'**
   String get signOutPendingDiscard;
-
-  /// No description provided for @sessionPendingChangesIntro.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 ändring har inte sparats än:} other{{count} ändringar har inte sparats än:}}'**
-  String sessionPendingChangesIntro(int count);
-
-  /// No description provided for @sessionEndedBackgroundTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Du loggades ut medan appen låg still.'**
-  String get sessionEndedBackgroundTitle;
-
-  /// No description provided for @sessionEndedBackgroundReason.
-  ///
-  /// In sv, this message translates to:
-  /// **'Det händer efter 45 minuter utan aktivitet, och det är meningen.'**
-  String get sessionEndedBackgroundReason;
-
-  /// No description provided for @sessionEndedBackgroundPending.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =0{Inga ändringar väntar.} =1{1 ändring ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.} other{{count} ändringar ligger kvar på telefonen och skickas så fort du är inne igen – inget av det du gjorde är borta.}}'**
-  String sessionEndedBackgroundPending(int count);
 
   /// No description provided for @draftTimeLeftDays.
   ///
@@ -27357,6 +27285,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.'**
   String get menuMealAllergenScopeHint;
+
+  /// Hint above the generated menu list when the earlier weeks could not be read, so dishes from them may come back
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa tidigare veckor, så rätter kan upprepas.'**
+  String get menuRecencyReadFailedHint;
 
   /// BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens
   ///
@@ -30433,7 +30367,7 @@ abstract class AppLocalizations {
   /// Spår 6, v62: what is deleted
   ///
   /// In sv, this message translates to:
-  /// **'Sökindex och lokal cache'**
+  /// **'Lokal cache'**
   String get pendingDeletionItemCache;
 
   /// Spår 6, v62: what is deleted, detail
@@ -31414,6 +31348,60 @@ abstract class AppLocalizations {
   /// **'Innehåller allergener: {names}'**
   String shareAllergensContains(String names);
 
+  /// Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har markerat {allergen} som ok. Appen hittade {allergen}.'**
+  String allergenOverrideOk(String allergen);
+
+  /// Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har markerat att receptet innehåller {allergen}.'**
+  String allergenOverrideContains(String allergen);
+
+  /// Button that removes the user override for one allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get allergenOverrideReset;
+
+  /// Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen hittade {names}, men ägaren har markerat det som ok.'**
+  String shareAllergensOverridden(String names);
+
+  /// Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ändå?'**
+  String get menuManualAddTitle;
+
+  /// Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipe} innehåller {names}.'**
+  String menuManualAddContains(String recipe, String names);
+
+  /// Confirmation line: someone in the household dislikes an ingredient in the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon i hushållet ogillar något i {recipe}.'**
+  String menuManualAddDislikes(String recipe);
+
+  /// Confirmation line: the recipe has no settled allergen check for a tracked allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergenerna är inte kontrollerade för {recipe}.'**
+  String menuManualAddUnchecked(String recipe);
+
+  /// Button that adds the recipe to the menu despite the conflict.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ändå'**
+  String get menuManualAddConfirm;
+
   /// No description provided for @recipeSaveNeedsTitle.
   ///
   /// In sv, this message translates to:
@@ -31893,6 +31881,192 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Slå ihop steg {first} med steg {second}'**
   String a11yMergeSteps(int first, int second);
+
+  /// Heading of the allergen section in the tag editor dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get tagAllergenSection;
+
+  /// Hint under the allergen heading in the tag editor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra bara om appen har fel för det här receptet. Appen avgör följer ingredienserna.'**
+  String get tagAllergenHint;
+
+  /// Segment: no manual override, the app decides.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen avgör'**
+  String get tagAllergenChoiceAuto;
+
+  /// Segment: user overrides the allergen to CONTAINS.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller'**
+  String get tagAllergenChoiceContains;
+
+  /// Segment: user overrides the allergen to FREE.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller inte'**
+  String get tagAllergenChoiceFree;
+
+  /// Secondary line: the app's own verdict is contains.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: innehåller'**
+  String get tagAllergenAutoContains;
+
+  /// Secondary line: the app's own verdict is free.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: innehåller inte'**
+  String get tagAllergenAutoFree;
+
+  /// Secondary line: the app has not settled this allergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen: ej kontrollerat'**
+  String get tagAllergenAutoUnknown;
+
+  /// LLM error: the server refused because the user has not consented to AI processing
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning kräver ditt samtycke. Du kan ge det under Integritet i inställningarna.'**
+  String get llmAiConsentRequired;
+
+  /// Photo import: saving the AI consent failed, nothing was sent
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt svar kunde inte sparas, så fotot skickades inte. Försök igen.'**
+  String get photoAiConsentSaveFailed;
+
+  /// Photo import AI offer: the on-device reading failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Telefonen kunde inte läsa hela receptet.'**
+  String get photoAiOfferPhoneCouldNotRead;
+
+  /// Photo import AI offer: text read on the phone but no recipe found
+  ///
+  /// In sv, this message translates to:
+  /// **'Telefonen läste texten men hittade inget recept i den.'**
+  String get photoAiOfferNoRecipeFound;
+
+  /// Photo import AI offer: handwriting mode
+  ///
+  /// In sv, this message translates to:
+  /// **'Handskrivna recept kan bara läsas av AI.'**
+  String get photoAiOfferHandwriting;
+
+  /// Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas. Ditt ja gäller AI-tolkning i appen tills du ändrar det under Integritet.'**
+  String get photoAiOfferQuestion;
+
+  /// Photo import AI offer question when consent is already given
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas.'**
+  String get photoAiOfferQuestionConsented;
+
+  /// Photo import AI offer: accept button
+  ///
+  /// In sv, this message translates to:
+  /// **'Ja, skicka fotot'**
+  String get photoAiOfferAccept;
+
+  /// Photo import AI offer: decline button, manual entry
+  ///
+  /// In sv, this message translates to:
+  /// **'Nej, jag skriver själv'**
+  String get photoAiOfferDecline;
+
+  /// Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.'**
+  String shoppingMergeUnresolvedRecipes(int count);
+
+  /// Snackbar when adding a just-checked-off item to the pantry failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga {name} i skafferiet.'**
+  String shoppingPantryAddFailed(String name);
+
+  /// Title of the sheet offered after a recipe is marked as cooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dra av från skafferiet?'**
+  String get cookedPantryTitle;
+
+  /// Subtitle of the cooked-recipe pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varor i skafferiet som receptet använder, för {portions, plural, =1{1 portion} other{{portions} portioner}}.'**
+  String cookedPantrySubtitle(int portions);
+
+  /// Grey line under a pantry row in the cooked sheet: what the row holds and what remains.
+  ///
+  /// In sv, this message translates to:
+  /// **'har {have}, kvar {left}'**
+  String cookedPantryHasLeft(String have, String left);
+
+  /// Grey line under a pantry row that the take empties.
+  ///
+  /// In sv, this message translates to:
+  /// **'har {have}, tas bort ur skafferiet'**
+  String cookedPantryHasRemoved(String have);
+
+  /// Outlined button in the cooked pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hoppa över'**
+  String get cookedPantrySkip;
+
+  /// Primary button in the cooked pantry sheet; disabled at zero.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Dra av 1 vara} other{Dra av {count} varor}}'**
+  String cookedPantryConfirm(int count);
+
+  /// Snackbar after the take; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara dragen} other{{count} varor dragna}} från skafferiet'**
+  String cookedPantryTaken(int count);
+
+  /// Failure snackbar when a pantry write was refused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte dra av allt från skafferiet. Det som hann dras av kan ångras.'**
+  String get cookedPantryFailed;
+
+  /// Failure snackbar when Ångra could not write back.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra avdraget i skafferiet'**
+  String get cookedPantryUndoFailed;
+
+  /// Title of the dialog that edits the amount to take.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur mycket {name}?'**
+  String cookedPantryEditTitle(String name);
+
+  /// Screen-reader label of a row in the cooked pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}, dra av {amount}'**
+  String cookedPantryRowSemantics(String name, String amount);
+
+  /// Screen-reader label of the amount box in a cooked pantry row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra mängd för {name}, nu {amount}'**
+  String cookedPantryAmountSemantics(String name, String amount);
 }
 
 class _AppLocalizationsDelegate

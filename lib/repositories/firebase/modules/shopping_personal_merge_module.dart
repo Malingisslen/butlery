@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
+import 'package:butlery/repositories/firebase/modules/personal_merge_plan.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest, PersonalMergeResult;
@@ -32,11 +33,10 @@ typedef PersonalListServerRead =
 /// operation so that a change the same account made on another device is not
 /// overwritten.
 ///
-/// Rows are their own documents in the `items` subcollection, so adding them
-/// commutes with anything another device does. The one field both devices
-/// share is the parent's `menuItemIds`, which an add extends with
-/// `arrayUnion` — that merges on an offline replay as well. Only "Ersätt
-/// listan" changes rows that already exist, and only it runs a transaction.
+/// Rows are their own documents in the `items` subcollection. A sync reads
+/// the rows the parent's `menuItemIds` names inside a transaction, so what it
+/// overwrites or takes off is the server's current row, and a tick another
+/// device made a moment ago keeps that row where it is.
 class ShoppingPersonalMergeModule {
   /// Same budget as the shared-list transaction, for the same reason: the
   /// sheet waits on it.
@@ -118,9 +118,16 @@ class ShoppingPersonalMergeModule {
       resourceId: base.id,
     );
     final concurrentChange = !pending && _differs(base, server);
-
+    // The follow runs after every save of the week, and most saves change no
+    // row. Such a sync is settled on the server copy just read, so it costs
+    // no transaction and no read per row.
     final PersonalMergeResult result;
-    if (request.replace) {
+    if (PersonalMergePlan.of(server, request).changesNothing) {
+      result = PersonalMergePlan.unchanged(
+        server,
+        concurrentChange: concurrentChange,
+      );
+    } else {
       try {
         result = await runTransactionKeepingHandlerError(
           transactionRunner ??
@@ -129,28 +136,12 @@ class ShoppingPersonalMergeModule {
                 _transactionBudget,
               ),
           (transaction) =>
-              _replace(transaction, uid, server, request, concurrentChange),
+              _sync(transaction, uid, server, request, concurrentChange),
         );
       } on FirebaseException catch (e) {
         if (!_offlineCodes.contains(e.code)) rethrow;
         return _mergeFromMemory(uid, base, request);
       }
-    } else {
-      final added = request.rows(const []);
-      await _addBatch(uid, base.id, added, request.generatedForWeek).commit();
-      result = PersonalMergeResult(
-        list: server.copyWith(
-          items: [...server.items, ...added],
-          menuItemIds: {
-            ...?server.menuItemIds,
-            for (final item in added) item.id,
-          }.toList(),
-          generatedForWeek: request.generatedForWeek,
-        ),
-        added: added,
-        removed: const [],
-        concurrentChange: concurrentChange,
-      );
     }
 
     logPermissionCheck(
@@ -160,6 +151,7 @@ class ShoppingPersonalMergeModule {
       granted: true,
       details:
           'List: ${base.id}, added: ${result.added.length}, '
+          'updated: ${result.updated.length}, '
           'removed: ${result.removed.length}',
     );
     return result;
@@ -232,11 +224,10 @@ class ShoppingPersonalMergeModule {
     );
   }
 
-  /// "Ersätt listan" against the server: the recipe rows to take off are the
-  /// ones the server's `menuItemIds` names and that still exist, and their
-  /// bought ticks are read inside the transaction, so a tick made on another
-  /// device a moment ago carries over.
-  Future<PersonalMergeResult> _replace(
+  /// The sync against the server: the rows it compares with are the ones the
+  /// server's `menuItemIds` names and that still exist, read inside the
+  /// transaction.
+  Future<PersonalMergeResult> _sync(
     Transaction transaction,
     String uid,
     UnifiedShoppingList server,
@@ -247,74 +238,70 @@ class ShoppingPersonalMergeModule {
     final items = _itemsRef(uid, server.id);
     final parent = await transaction.get(listRef);
     if (!parent.exists) throw _notFound(server.id);
-    final menuIds = fromFirestore(parent).menuItemIds ?? const <String>[];
+    final stored = fromFirestore(parent);
+    final menuIds = stored.menuItemIds ?? const <String>[];
 
-    final removed = <UnifiedShoppingItem>[];
+    final rows = <UnifiedShoppingItem>[];
     for (final id in menuIds) {
       final row = await transaction.get(items.doc(id));
       final data = row.data();
       if (row.exists && data != null) {
-        removed.add(UnifiedShoppingItem.fromFirestore(data));
+        rows.add(UnifiedShoppingItem.fromFirestore(data));
       }
     }
-    final added = request.rows(removed);
-    _checkWriteCount(removed.length + added.length + 1);
+    final (:current, :write, :changesNothing) = PersonalMergePlan.of(
+      stored.copyWith(items: rows),
+      request,
+    );
+    _checkWriteCount(
+      write.remove.length + write.add.length + write.update.length + 1,
+    );
+    // A sync that writes nothing leaves no device's listener firing for it.
+    if (changesNothing) {
+      return PersonalMergePlan.unchanged(
+        server,
+        concurrentChange: concurrentChange,
+      );
+    }
 
-    for (final item in removed) {
+    for (final item in write.remove) {
       transaction.delete(items.doc(item.id));
     }
-    for (final item in added) {
+    for (final item in [...write.add, ...write.update]) {
       transaction.set(items.doc(item.id), item.toFirestore());
     }
-    final addedIds = [for (final item in added) item.id];
+    final removedIds = {for (final item in write.remove) item.id};
+    final nextMenuIds = [
+      for (final row in current)
+        if (!removedIds.contains(row.id)) row.id,
+      for (final item in write.add) item.id,
+    ];
     transaction.update(listRef, {
-      'menuItemIds': addedIds,
+      'menuItemIds': nextMenuIds,
       'generatedForWeek': request.generatedForWeek,
       'updatedAt': Timestamp.fromDate(clock.now().toUtc()),
     });
 
-    final gone = {for (final item in removed) item.id, ...addedIds};
     return PersonalMergeResult(
-      list: server.copyWith(
-        items: [...server.items.where((i) => !gone.contains(i.id)), ...added],
-        menuItemIds: addedIds,
+      list: PersonalMergePlan.applied(server, write).copyWith(
+        menuItemIds: nextMenuIds,
         generatedForWeek: request.generatedForWeek,
       ),
-      added: added,
-      removed: removed,
+      added: write.add,
+      updated: write.update,
+      changedFrom: PersonalMergePlan.before(current, write.update),
+      removed: write.remove,
       concurrentChange: concurrentChange,
     );
   }
 
-  /// The add, as a batch: the rows, and the parent's `menuItemIds` extended
-  /// rather than replaced.
-  WriteBatch _addBatch(
-    String uid,
-    String listId,
-    List<UnifiedShoppingItem> added,
-    String? generatedForWeek,
-  ) {
-    _checkWriteCount(added.length + 1);
-    final items = _itemsRef(uid, listId);
-    final batch = firestore.batch();
-    for (final item in added) {
-      batch.set(items.doc(item.id), item.toFirestore());
-    }
-    batch.update(_listRef(uid, listId), {
-      'menuItemIds': FieldValue.arrayUnion([for (final i in added) i.id]),
-      'generatedForWeek': generatedForWeek,
-      'updatedAt': Timestamp.fromDate(clock.now().toUtc()),
-    });
-    return batch;
-  }
-
   /// Offline: the write is computed from the copy in memory and queued, which
-  /// Firestore replays on reconnect. An add is still safe, because it extends
-  /// `menuItemIds` with `arrayUnion`. A replace takes off the rows the memory
-  /// copy knows of and sets `menuItemIds` outright, so a tick another device
-  /// made on a recipe row in the meantime can be lost — the accepted
-  /// deviation in `docs/architecture/ACCEPTED_DEVIATIONS.md` (BUT-2140, the
-  /// BUT-1683 shape), chosen over a sheet that refuses to replace in a shop.
+  /// Firestore replays on reconnect. `menuItemIds` is changed with
+  /// `arrayUnion`/`arrayRemove`, which merge on replay. A row the sync
+  /// overwrites or takes off is the memory copy's, so a tick another device
+  /// made on it in the meantime can be lost — the accepted deviation in
+  /// `docs/architecture/ACCEPTED_DEVIATIONS.md` (BUT-2140, the BUT-1683
+  /// shape), chosen over a sheet that refuses to write in a shop.
   Future<PersonalMergeResult> _mergeFromMemory(
     String uid,
     UnifiedShoppingList base,
@@ -326,31 +313,41 @@ class ShoppingPersonalMergeModule {
       resourceType: 'shopping_list',
       resourceId: base.id,
     );
-    final menuIds = (base.menuItemIds ?? const <String>[]).toSet();
-    final removed = request.replace
-        ? base.items.where((i) => menuIds.contains(i.id)).toList()
-        : const <UnifiedShoppingItem>[];
-    final added = request.rows(removed);
-    final addedIds = [for (final item in added) item.id];
+    final (:current, :write, :changesNothing) = PersonalMergePlan.of(
+      base,
+      request,
+    );
+    _checkWriteCount(
+      write.remove.length + write.add.length + write.update.length + 2,
+    );
+    if (changesNothing) {
+      return PersonalMergePlan.unchanged(base, concurrentChange: false);
+    }
 
-    final WriteBatch batch;
-    if (request.replace) {
-      _checkWriteCount(removed.length + added.length + 1);
-      final items = _itemsRef(uid, base.id);
-      batch = firestore.batch();
-      for (final item in removed) {
-        batch.delete(items.doc(item.id));
-      }
-      for (final item in added) {
-        batch.set(items.doc(item.id), item.toFirestore());
-      }
-      batch.update(_listRef(uid, base.id), {
-        'menuItemIds': addedIds,
-        'generatedForWeek': request.generatedForWeek,
-        'updatedAt': Timestamp.fromDate(clock.now().toUtc()),
+    final items = _itemsRef(uid, base.id);
+    final listRef = _listRef(uid, base.id);
+    final batch = firestore.batch();
+    for (final item in write.remove) {
+      batch.delete(items.doc(item.id));
+    }
+    for (final item in [...write.add, ...write.update]) {
+      batch.set(items.doc(item.id), item.toFirestore());
+    }
+    // Two updates because one update cannot carry two transforms on the same
+    // field.
+    batch.update(listRef, {
+      'menuItemIds': FieldValue.arrayUnion([
+        for (final item in write.add) item.id,
+      ]),
+      'generatedForWeek': request.generatedForWeek,
+      'updatedAt': Timestamp.fromDate(clock.now().toUtc()),
+    });
+    if (write.remove.isNotEmpty) {
+      batch.update(listRef, {
+        'menuItemIds': FieldValue.arrayRemove([
+          for (final item in write.remove) item.id,
+        ]),
       });
-    } else {
-      batch = _addBatch(uid, base.id, added, request.generatedForWeek);
     }
     // Not awaited: offline the future settles only once the write reaches the
     // server, while the local cache already holds it.
@@ -368,20 +365,22 @@ class ShoppingPersonalMergeModule {
       resource: 'shopping_list',
       operation: 'menu_merge',
       granted: true,
-      details:
-          'List: ${base.id}, offline '
-          '${request.replace ? 'replace from memory' : 'add (arrayUnion)'}',
+      details: 'List: ${base.id}, offline sync from memory',
     );
 
-    final gone = {for (final item in removed) item.id};
+    final removedIds = {for (final item in write.remove) item.id};
     return PersonalMergeResult(
-      list: base.copyWith(
-        items: [...base.items.where((i) => !gone.contains(i.id)), ...added],
-        menuItemIds: request.replace ? addedIds : [...menuIds, ...addedIds],
+      list: PersonalMergePlan.applied(base, write).copyWith(
+        menuItemIds: [
+          ...{...?base.menuItemIds}.where((id) => !removedIds.contains(id)),
+          for (final item in write.add) item.id,
+        ],
         generatedForWeek: request.generatedForWeek,
       ),
-      added: added,
-      removed: removed,
+      added: write.add,
+      updated: write.update,
+      changedFrom: PersonalMergePlan.before(current, write.update),
+      removed: write.remove,
       concurrentChange: false,
     );
   }

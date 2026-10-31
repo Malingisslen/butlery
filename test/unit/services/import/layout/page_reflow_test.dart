@@ -31,6 +31,30 @@ void main() {
   final lines = post.split('\n');
 
   group('stripScreenChrome', () {
+    // BUT-2455: an Instagram screenshot's status bar reads as the clock and
+    // a warning triangle ("20:43 A"), and its handle sits in front of a
+    // caption that opens with a capital.
+    test('a clock with its icons and the handle before a caption go', () {
+      final page = stripScreenChrome(
+        PageText(
+          '20:43 A\nGillas av mammansmat och andra\n'
+          'matmodig Medelhavsbiffar med soltorkade\n'
+          '${lines.skip(2).join('\n')}',
+        ),
+      );
+      expect(page.text, startsWith('Medelhavsbiffar med soltorkade'));
+    });
+
+    test('a dot-decimal row with a bare unit is not the clock', () {
+      final page = stripScreenChrome(PageText('2.25 kg\npotatis\n$post'));
+      expect(page.text, startsWith('2.25 kg'));
+    });
+
+    test('a dated post closes the caption like a post age', () {
+      final page = stripScreenChrome(PageText('10:55\n$post\n26 juli'));
+      expect(page.text, endsWith('Servera med ris och en sallad.'));
+    });
+
     test('the clock and its icon row go', () {
       final page = stripScreenChrome(PageText('10:55\nd 5 g ll 66\n$post'));
       expect(page.text, startsWith('Krämig kycklinggryta'));

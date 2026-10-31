@@ -1,11 +1,11 @@
 /// BUT-941: Dart side of the native incoming-share bridge.
 ///
-/// Receives image file paths captured by the native share handler
-/// (`MainActivity.kt` on Android; an iOS share extension lands in Stage 2)
-/// and exposes them to the bootstrap handler that routes them into the
-/// existing photo-import pipeline.
+/// Receives what the native share handler captured (`MainActivity.kt` on
+/// Android; the share extension's App Group inbox, read by `AppDelegate.swift`,
+/// on iOS) and exposes it to the bootstrap handler that routes it into the
+/// existing import flows.
 ///
-/// On web (and, until Stage 2, iOS) this is a no-op returning nothing.
+/// On web and desktop this is a no-op returning nothing.
 library;
 
 import 'dart:async';
@@ -18,9 +18,8 @@ class IncomingShareService {
   IncomingShareService({MethodChannel? channel})
     : _channel =
           channel ?? const MethodChannel('se.butlery.app/incoming_share') {
-    // Only Android delivers shares today; skip the handler elsewhere so the
-    // stream simply never emits.
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    // Only the mobile apps receive shares; elsewhere the streams never emit.
+    if (_receivesShares) {
       _channel.setMethodCallHandler(_handleNativeCall);
     }
   }
@@ -37,10 +36,15 @@ class IncomingShareService {
   /// Warm-start text shares (BUT-2241): a link or recipe text.
   Stream<String> get textStream => _textController.stream;
 
-  /// Cold-start: the launch intent's shared images, if any. Returns an empty
-  /// list on non-Android/web or when the app wasn't launched from a share.
+  static bool get _receivesShares =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
+  /// Cold-start: the share the app was opened with, if any. Returns an empty
+  /// list on web/desktop or when there is no share.
   Future<List<String>> getInitialSharedImages() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+    if (!_receivesShares) {
       return const [];
     }
     try {
@@ -54,9 +58,9 @@ class IncomingShareService {
     }
   }
 
-  /// Cold-start: the launch intent's shared text, or null.
+  /// Cold-start: the shared text the app was opened with, or null.
   Future<String?> getInitialSharedText() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+    if (!_receivesShares) {
       return null;
     }
     try {

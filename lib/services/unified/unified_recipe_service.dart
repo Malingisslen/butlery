@@ -1,5 +1,6 @@
 // lib/services/unified/unified_recipe_service.dart
 
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
@@ -77,6 +78,7 @@ class UnifiedRecipeService
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
+  final IngredientIdResolver? _ingredientIdResolver;
   final FirestoreRepository _firestoreRepository;
   final Future<void> Function(String recipeId, List<String> userIds)?
   _removeRecipientsFromOwnShares;
@@ -221,9 +223,11 @@ class UnifiedRecipeService
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
+    IngredientIdResolver? ingredientIdResolver,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
   }) : _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares,
+       _ingredientIdResolver = ingredientIdResolver,
        _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
        _firestore =
@@ -328,6 +332,7 @@ class UnifiedRecipeService
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
       taggingService: _tryGetTaggingService(),
+      ingredientIdResolver: _ingredientIdResolver,
       personalTagService: _tryGetPersonalTagService(),
       // CRIT-7: Wire up tagging failure notifications to stream
       onTaggingFailed: (recipeTitle) {
@@ -354,9 +359,11 @@ class UnifiedRecipeService
       getCurrentUserId: () => currentUserId,
       setError: _setError,
       notifyListeners: notifyListeners,
-      // BUG-003: On web, cache is stubbed so we update _recipes directly
-      onRecipeUpdated: kIsWeb ? _handleDirectRecipeUpdate : null,
-      onRecipeRemoved: kIsWeb ? _handleDirectRecipeRemoval : null,
+      // Every platform takes a synced change into the list on screen. On
+      // native the change is also cached, but nothing re-reads the cache
+      // after the first sync, so a fresh install would stay empty.
+      onRecipeUpdated: _handleDirectRecipeUpdate,
+      onRecipeRemoved: _handleDirectRecipeRemoval,
       hasUnsentWrite: (recipeId) async {
         final userId = currentUserId;
         final queue = ServiceLocator.tryGet<OfflineService>();
@@ -374,7 +381,10 @@ class UnifiedRecipeService
         ?.recipesDropped
         .listen(_cacheModule.dropDiscardedRecipe);
 
-    _contentOps = RecipeContentOperations(personalModule: _personalModule);
+    _contentOps = RecipeContentOperations(
+      lookupRecipe: getRecipeById,
+      saveRecipe: updateRecipe,
+    );
 
     _authHandler = RecipeAuthStateHandler(
       cacheModule: _cacheModule,
@@ -564,10 +574,8 @@ class UnifiedRecipeService
     }
   }
 
-  /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache).
-  ///
-  /// BUT-1252: Self-contained — calls [notifyListeners] itself at the end. On
-  /// web the cache module therefore skips its own notify (it notifies only when
+  /// BUT-1252: Self-contained — calls [notifyListeners] itself at the end. The
+  /// cache module therefore skips its own notify (it notifies only when
   /// its direct callback is null — see RecipeCacheModule._updateCachedRecipe),
   /// so the listener signal fires exactly once. This keeps the mutation and the
   /// signal in one place and guarantees the O(1) index is rebuilt for the
@@ -579,16 +587,14 @@ class UnifiedRecipeService
     } else {
       _recipes.add(recipe);
     }
-    AppLogger.debug('📝 [Web] Direct recipe update: ${recipe.title}');
+    AppLogger.debug('📝 Direct recipe update: ${recipe.title}');
     notifyListeners();
   }
 
-  /// BUG-003: Handle direct recipe removals on web (bypasses stubbed cache).
-  ///
   /// BUT-1252: Self-contained — see [_handleDirectRecipeUpdate].
   void _handleDirectRecipeRemoval(String recipeId) {
     _recipes.removeWhere((r) => r.id == recipeId);
-    AppLogger.debug('🗑️ [Web] Direct recipe removal: $recipeId');
+    AppLogger.debug('🗑️ Direct recipe removal: $recipeId');
     notifyListeners();
   }
 
@@ -772,10 +778,6 @@ class UnifiedRecipeService
   Future<bool> deleteRecipe(String recipeId) async =>
       _personalCrud.deleteRecipe(recipeId);
 
-  @override
-  Future<bool> markAsCooked(String recipeId) async =>
-      _personalCrud.markAsCooked(recipeId);
-
   /// Save a recipe from the social module - handles both personal and collaborative types.
   /// Unlike [updateRecipe], this does not reject collaborative recipes.
   Future<bool> saveRecipeForSocialModule(Recipe recipe) async =>
@@ -912,10 +914,6 @@ class UnifiedRecipeService
   @override
   Future<bool> removeInstruction(String recipeId, int index) async =>
       _contentOps.removeInstruction(recipeId, index);
-
-  Future<bool> markRecipeAsCooked(String recipeId) async {
-    return await _personalModule.markRecipeAsCooked(recipeId);
-  }
 
   /// Toggle favorite status for a recipe.
   /// Performs optimistic update via copyWith + updateRecipe.

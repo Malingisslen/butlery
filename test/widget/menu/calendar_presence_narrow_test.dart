@@ -25,6 +25,8 @@ import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
+class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
+
 Future<void> _loadButlerySans() async {
   final loader = FontLoader('ButlerySans');
   for (final face in ['Regular', 'Semibold', 'Bold']) {
@@ -96,6 +98,9 @@ Future<void> _pumpWeek(
   when(() => vm.isSelected(any())).thenReturn(false);
   when(() => vm.isAllergenUnsafe(any())).thenReturn(true);
   when(() => vm.placementOrderOf(any())).thenReturn(null);
+  when(() => vm.entryTitle(any())).thenAnswer(
+    (i) => (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
+  );
 
   await tester.pumpWidget(
     MaterialApp(
@@ -129,6 +134,8 @@ Future<void> _pumpWeek(
 }
 
 void main() {
+  setUpAll(() => registerFallbackValue(_FakeEntry()));
+
   setUpAll(_loadButlerySans);
 
   for (final width in [320.0, 360.0]) {

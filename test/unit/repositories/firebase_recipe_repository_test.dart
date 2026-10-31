@@ -1,7 +1,7 @@
 /// Comprehensive unit tests for FirebaseRecipeRepository
 ///
 /// Tests Firebase Firestore implementation of recipe data operations including
-/// CRUD operations, permission validation, real-time streaming, and search functionality.
+/// CRUD operations, permission validation, and real-time streaming.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -338,101 +338,6 @@ void main() {
         expect(changes.first.recipe.id, equals('recipe-1'));
 
         subscription.cancel();
-      });
-    });
-
-    group('Search Operations', () {
-      test('should search recipes by title', () async {
-        // Arrange
-        final collection = fakeFirestore
-            .collection('users')
-            .doc('test-user-123')
-            .collection('recipes');
-
-        final chickenRecipe = RecipeFactory.build(
-          id: 'recipe-1',
-          title: 'Chicken Curry',
-          createdBy: 'test-user-123',
-        );
-        final beefRecipe = RecipeFactory.build(
-          id: 'recipe-2',
-          title: 'Beef Stew',
-          createdBy: 'test-user-123',
-        );
-        final veggieRecipe = RecipeFactory.build(
-          id: 'recipe-3',
-          title: 'Vegetable Soup',
-          createdBy: 'test-user-123',
-        );
-
-        await collection.doc('recipe-1').set(chickenRecipe.toFirestore());
-        await collection.doc('recipe-2').set(beefRecipe.toFirestore());
-        await collection.doc('recipe-3').set(veggieRecipe.toFirestore());
-
-        // Act
-        final results = await repository.searchRecipes('chicken');
-
-        // Assert
-        expect(results, hasLength(1));
-        expect(results.first.title, equals('Chicken Curry'));
-      });
-
-      test('should search case-insensitively', () async {
-        // Arrange
-        final collection = fakeFirestore
-            .collection('users')
-            .doc('test-user-123')
-            .collection('recipes');
-
-        final recipe = RecipeFactory.build(
-          id: 'recipe-1',
-          title: 'PASTA Carbonara',
-          createdBy: 'test-user-123',
-        );
-
-        await collection.doc('recipe-1').set(recipe.toFirestore());
-
-        // Act
-        final results = await repository.searchRecipes('pasta');
-
-        // Assert
-        expect(results, hasLength(1));
-        expect(results.first.title, equals('PASTA Carbonara'));
-      });
-
-      test('should limit search results to 200 recipes', () async {
-        // Arrange
-        final collection = fakeFirestore
-            .collection('users')
-            .doc('test-user-123')
-            .collection('recipes');
-
-        for (int i = 0; i < 250; i++) {
-          final recipe = RecipeFactory.build(
-            id: 'recipe-$i',
-            title: 'Test Recipe $i',
-            createdBy: 'test-user-123',
-            updatedAt: DateTime(2024, 1, 250 - i), // Reverse order
-          );
-          await collection.doc('recipe-$i').set(recipe.toFirestore());
-        }
-
-        // Act
-        final results = await repository.searchRecipes('Test');
-
-        // Assert
-        expect(results.length, lessThanOrEqualTo(200));
-      });
-
-      test('should return empty list when not authenticated', () async {
-        // Arrange
-        mockAuthRepo.setAuthState(user: null, userId: null);
-
-        // Act
-        final results = await repository.searchRecipes('test');
-
-        // Assert
-        expect(results, isEmpty);
       });
     });
 

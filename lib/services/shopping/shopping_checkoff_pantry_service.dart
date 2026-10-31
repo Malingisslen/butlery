@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
 
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// BUT-1050: the policy seam between shopping-list checkoff and the pantry.
 ///
@@ -11,7 +13,7 @@ import 'package:butlery/services/user_service.dart';
 /// [PantryService.addFromShoppingItem] ONLY on a genuine false→true checkoff
 /// AND only when the user has enabled the `autoAddBoughtToPantry` preference. It
 /// also owns the dedup decision — an existing pantry item with a matching
-/// ingredient name (case-insensitive) and unit has its quantity aggregated
+/// ingredient name and unit has its quantity aggregated
 /// instead of a duplicate entry being created.
 ///
 /// Keeping this policy here (rather than in [PantryService.addFromShoppingItem],
@@ -47,13 +49,22 @@ class ShoppingCheckoffPantryService {
     if (profile == null || !profile.autoAddBoughtToPantry) return;
 
     // Dedup: aggregate into an existing pantry item with the same ingredient
-    // name (case-insensitive) + unit, instead of creating a duplicate entry.
+    // name + unit, instead of creating a duplicate entry.
     final existing = await _pantryService.getAll(userId);
-    final name = item.name.toLowerCase();
     final sameName = existing
-        .where((p) => p.ingredientName.toLowerCase() == name)
+        .where(
+          (p) => IngredientIdentity.sameItem(
+            p.ingredientName,
+            p.ingredientId,
+            item.name,
+            item.ingredientId,
+          ),
+        )
         .toList();
-    final match = sameName.firstWhereOrNull((p) => p.unit == item.unit);
+    final unit = UnitDefinitions.canonical(item.unit);
+    final match = sameName.firstWhereOrNull(
+      (p) => UnitDefinitions.canonical(p.unit) == unit,
+    );
 
     if (match != null && match.quantity != null) {
       // What was bought is added as a relative change, never as a new total

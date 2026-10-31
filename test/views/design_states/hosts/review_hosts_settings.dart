@@ -90,7 +90,6 @@ final reviewSettingsHosts = <String, StateHost>{
         const UserAllergenPreferences(
           trackedAllergens: {'gluten', 'mjölk'},
           trackedDietary: {'vegansk'},
-          showOnCards: true,
           showOnDetail: true,
           showCoverage: true,
         ),

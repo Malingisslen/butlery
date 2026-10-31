@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
@@ -38,6 +39,7 @@ IngredientData _ingredient({
   required String swedish,
   String? typicalUnit,
   String? typicalStorage,
+  List<String> aliasesSv = const [],
 }) => IngredientData(
   id: id,
   swedish: swedish,
@@ -46,6 +48,7 @@ IngredientData _ingredient({
   properties: const {},
   typicalUnit: typicalUnit,
   typicalStorage: typicalStorage,
+  aliasesSv: aliasesSv,
 );
 
 Recipe _recipeWithNormalizedIngredients({
@@ -149,6 +152,10 @@ void main() {
       return matches;
     });
 
+    when(
+      () => mockMatchService.keysForNames(any()),
+    ).thenAnswer((_) async => const {});
+
     service = PantryService(
       pantryRepository: mockPantryRepository,
       ingredientRepository: mockIngredientRepository,
@@ -190,6 +197,31 @@ void main() {
         expect(result.first.matchPercent, closeTo(0.75, 1e-9));
       },
     );
+
+    test('a pantry row typed by hand, with no registry link, still counts '
+        '(k10)', () async {
+      final pantryItems = [
+        _pantryItem(id: 'p1', ingredientName: 'Lök'),
+        _pantryItem(id: 'p2', ingredientId: 'rice'),
+      ];
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) async => pantryItems);
+      when(
+        () => mockMatchService.keysForNames(['Lök']),
+      ).thenAnswer((_) async => {'onion'});
+
+      final recipe = _recipeWithNormalizedIngredients(
+        id: 'r1',
+        title: 'Lökris',
+        normalized: const ['onion', 'rice', 'butter', 'salt'],
+      );
+
+      final result = await service.getMatchingRecipes(userId, [recipe]);
+
+      expect(result, hasLength(1));
+      expect(result.first.matchPercent, closeTo(0.5, 1e-9));
+    });
 
     test(
       'should exclude recipes with zero ingredient overlap from the result',
@@ -308,6 +340,92 @@ void main() {
               as PantryItem;
       expect(captured.quantity, isNull);
     });
+
+    test(
+      'a shopping row bought without an amount is added as "har hemma"',
+      () async {
+        when(
+          () => mockIngredientRepository.searchIngredients(
+            'XYZABC123',
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => const []);
+        when(
+          () => mockPantryRepository.add(userId, any()),
+        ).thenAnswer((_) async => 'new-item-id');
+
+        await service.addFromShoppingItem(
+          userId,
+          UnifiedShoppingItem(name: 'XYZABC123', amount: 0, unit: ''),
+        );
+
+        final captured =
+            verify(
+                  () => mockPantryRepository.add(userId, captureAny()),
+                ).captured.single
+                as PantryItem;
+        expect(captured.quantity, isNull);
+      },
+    );
+
+    test('a search hit that is another product is not linked and lends '
+        'nothing (typed "mjöl", hit "Mjölk")', () async {
+      when(
+        () => mockIngredientRepository.searchIngredients('mjöl', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'milk',
+            swedish: 'Mjölk',
+            typicalUnit: 'l',
+            typicalStorage: 'refrigerated',
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'mjöl');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientName, 'mjöl');
+      expect(captured.ingredientId, isNull);
+      expect(captured.unit, isNot('l'));
+    });
+
+    test('a search hit that lists the typed word as an alias is linked and '
+        'named by the registry', () async {
+      when(
+        () =>
+            mockIngredientRepository.searchIngredients('florsocker', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'icing-sugar',
+            swedish: 'Pudersocker',
+            aliasesSv: const ['florsocker'],
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'florsocker');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientId, 'icing-sugar');
+      expect(captured.ingredientName, 'Pudersocker');
+    });
   });
 
   group('PantryService.addFromIngredient', () {
@@ -360,41 +478,6 @@ void main() {
     );
   });
 
-  group('PantryService.getExpiringSoon', () {
-    test(
-      'should return only items expiring within the window, ordered by date',
-      () async {
-        // Arrange: the repository filters by expiry cutoff, so we stub it
-        // to return the items that would survive the query — day+1 and day+2
-        // sorted ascending. day+5 and undated items never reach the service.
-        final today = DateTime.now();
-        DateTime day(int offset) => today.add(Duration(days: offset));
-
-        final day1 = _pantryItem(
-          id: 'd1',
-          ingredientName: 'Milk',
-          expiryDate: day(1),
-        );
-        final day2 = _pantryItem(
-          id: 'd2',
-          ingredientName: 'Yogurt',
-          expiryDate: day(2),
-        );
-
-        when(
-          () => mockPantryRepository.getExpiringSoon(userId, 3),
-        ).thenAnswer((_) async => [day1, day2]);
-
-        // Act
-        final result = await service.getExpiringSoon(userId, days: 3);
-
-        // Assert: only the in-window items, in ascending expiry order.
-        expect(result.map((i) => i.id).toList(), ['d1', 'd2']);
-        verify(() => mockPantryRepository.getExpiringSoon(userId, 3)).called(1);
-      },
-    );
-  });
-
   group('PantryService.restoreItem (BUT-954)', () {
     test(
       're-adds the removed item and returns it with the fresh document id',
@@ -432,7 +515,12 @@ void main() {
   group('PantryService part A (P5-U28)', () {
     setUp(() {
       when(
-        () => mockPantryRepository.updateFields(any(), any(), any()),
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
       ).thenAnswer((_) async {});
       when(
         () => mockPantryRepository.adjustQuantity(any(), any(), any()),
@@ -564,5 +652,74 @@ void main() {
         );
       },
     );
+  });
+
+  group('PantryService failed reads and deletes', () {
+    test('getAll rethrows when the pantry cannot be read, not an empty list '
+        '(an empty list would look like an empty pantry)', () async {
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) => Future<List<PantryItem>>.error(StateError('read')));
+
+      await expectLater(service.getAll(userId), throwsA(isA<StateError>()));
+    });
+
+    test('getAll returns the stored rows when the read works', () async {
+      final rows = [_pantryItem(id: 'p1')];
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) async => rows);
+
+      expect(await service.getAll(userId), rows);
+    });
+
+    test('removeItem rethrows when the repository delete is refused', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.removeItem(userId, 'p1'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('removeItem returns normally when the delete is accepted', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) async {});
+
+      await service.removeItem(userId, 'p1');
+
+      verify(() => mockPantryRepository.remove(userId, 'p1')).called(1);
+    });
+
+    test('updateItem throws when the write fails, instead of returning null '
+        'as if it were saved', () async {
+      final before = _pantryItem(id: 'p1', ingredientName: 'Mjölk');
+      when(
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.updateItem(
+          userId,
+          before.copyWith(note: 'ny'),
+          previous: before,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'updateItem failed',
+          ),
+        ),
+      );
+    });
   });
 }

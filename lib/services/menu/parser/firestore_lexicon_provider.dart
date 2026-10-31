@@ -12,7 +12,7 @@ class FirestoreLexiconProvider implements LexiconProvider {
 
   @override
   Future<Lexicon> load() async {
-    final overrides = await _repository.loadOverrides();
-    return Lexicon(overrides);
+    final result = await _repository.loadOverridesWithStatus();
+    return Lexicon(result.overrides, isComplete: !result.failed);
   }
 }

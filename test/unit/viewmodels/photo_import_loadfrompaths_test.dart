@@ -6,10 +6,8 @@
 /// note, and an all-unreadable batch surfaces an error.
 
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,44 +30,30 @@ class _OfflineConnectivity extends Fake
   bool get isConnectedToInternet => false;
 }
 
-class MockHttpClient extends Mock implements http.Client {}
-
-class MockStreamedResponse extends Mock implements http.StreamedResponse {}
-
-class FakeBaseRequest extends Fake implements http.BaseRequest {}
-
-http.ByteStream _byteStream(String data) =>
-    http.ByteStream.fromBytes(utf8.encode(data));
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late PhotoImportViewModel vm;
   late MockPersonalRecipeOperations mockPersonalOps;
-  late MockHttpClient mockClient;
+  late FakeDeviceTextRecognizer recognizer;
   late Directory tmpDir;
 
   setUpAll(() async {
     SharedPreferences.setMockInitialValues(const <String, Object>{});
     await BaseUnitTest.setupUnit();
-    registerFallbackValue(FakeBaseRequest());
   });
 
   setUp(() {
     tmpDir = Directory.systemTemp.createTempSync('but941_');
 
-    // OCR mock: any send → an OCR.space success body. registerAsInstance wires
-    // it as the singleton the VM reads via OCRExtractionService.instance.
-    mockClient = MockHttpClient();
-    final response = MockStreamedResponse();
-    when(() => response.statusCode).thenReturn(200);
-    when(() => response.stream).thenAnswer(
-      (_) => _byteStream(OCRProviderResponses.ocrSpaceSuccess),
+    // registerAsInstance wires the service as the singleton the VM reads via
+    // OCRExtractionService.instance.
+    recognizer = FakeDeviceTextRecognizer(
+      text: OCRExpectedResults.swedishRecipeText,
     );
-    when(() => mockClient.send(any())).thenAnswer((_) async => response);
     OCRExtractionService.createForTesting(
-      testHttpClient: mockClient,
-      testOcrApiKey: 'test-key',
+      testDeviceRecognizer: recognizer,
+      testOnDeviceEnabled: () => true,
       registerAsInstance: true,
     );
 
@@ -98,9 +82,7 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  /// Write a distinct-content, gate-passing image file (the OCR service
-  /// hard-rejects tiny blobs before the mocked HTTP, so this uses the ~60KB
-  /// fixture image — one mock send per distinct page).
+  /// Write a distinct-content, gate-passing image file.
   String writeImage(int seed) {
     final f = File('${tmpDir.path}/img_$seed.jpg');
     f.writeAsBytesSync(OCRTestImages.uniqueImage(seed));
@@ -158,7 +140,7 @@ void main() {
     expect(vm.hasError, isFalse);
   });
 
-  test('offline: surfaces the offline error, no OCR, no pages', () async {
+  test('offline: shared photos are staged without a network', () async {
     final offlineVm = PhotoImportViewModel(
       importManager: ImportManager.withStrategies(
         mockPersonalOps,
@@ -170,9 +152,9 @@ void main() {
 
     await offlineVm.loadImagesFromPaths([writeImage(1)]);
 
-    expect(offlineVm.pageCount, 0);
-    expect(offlineVm.hasError, isTrue);
-    verifyNever(() => mockClient.send(any()));
+    expect(offlineVm.pageCount, 1);
+    expect(offlineVm.hasError, isFalse);
+    expect(recognizer.calls, 0);
   });
 
   test('shared pages wait unread until readPages, then read once', () async {
@@ -182,13 +164,13 @@ void main() {
     expect(vm.unreadPageCount, 2);
     expect(vm.canReadPages, isTrue);
     expect(vm.hasOcrResult, isFalse);
-    verifyNever(() => mockClient.send(any()));
+    expect(recognizer.calls, 0);
 
     await vm.readPages();
 
     expect(vm.unreadPageCount, 0);
     expect(vm.hasOcrResult, isTrue);
-    verify(() => mockClient.send(any())).called(2);
+    expect(recognizer.calls, 2);
   });
 
   test(
@@ -213,7 +195,7 @@ void main() {
     },
   );
 
-  test('offline: Läs av says so and reads nothing', () async {
+  test('offline: Läs av reads on the phone, with no error', () async {
     final offlineVm = PhotoImportViewModel(
       importManager: ImportManager.withStrategies(
         mockPersonalOps,
@@ -226,9 +208,28 @@ void main() {
 
     await offlineVm.readPages();
 
-    expect(offlineVm.hasError, isTrue);
-    expect(offlineVm.unreadPageCount, 1);
-    verifyNever(() => mockClient.send(any()));
+    expect(offlineVm.hasError, isFalse);
+    expect(offlineVm.unreadPageCount, 0);
+    expect(offlineVm.hasOcrResult, isTrue);
+    expect(recognizer.calls, 1);
+  });
+
+  test('offline: retrying a staged page reads it on the phone', () async {
+    final offlineVm = PhotoImportViewModel(
+      importManager: ImportManager.withStrategies(
+        mockPersonalOps,
+        [TextImportStrategy()],
+      ),
+      connectivity: _OfflineConnectivity(),
+    );
+    addTearDown(offlineVm.dispose);
+    offlineVm.stagePageForTesting(OCRTestImages.uniqueImage(42));
+
+    await offlineVm.retryOcr();
+
+    expect(offlineVm.hasError, isFalse);
+    expect(offlineVm.hasOcrResult, isTrue);
+    expect(recognizer.calls, 1);
   });
 
   group('gallery multi-select', () {
@@ -237,6 +238,23 @@ void main() {
       if (ext == 'jpg') return XFile(path);
       return XFile(File(path).renameSync('${tmpDir.path}/img_$seed.$ext').path);
     }
+
+    test('offline: picking photos still stages them', () async {
+      final offlineVm = PhotoImportViewModel(
+        importManager: ImportManager.withStrategies(
+          mockPersonalOps,
+          [TextImportStrategy()],
+        ),
+        connectivity: _OfflineConnectivity(),
+      )..galleryPickerOverride = (_) async => [pick(51), pick(52)];
+      addTearDown(offlineVm.dispose);
+
+      await offlineVm.pickImageFromGallery();
+
+      expect(offlineVm.pageCount, 2);
+      expect(offlineVm.hasError, isFalse);
+      expect(recognizer.calls, 0);
+    });
 
     test('several photos picked at once become pages in pick order', () async {
       vm.galleryPickerOverride = (_) async => [pick(3), pick(1), pick(2)];

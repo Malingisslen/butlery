@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/allergen_verdict.dart';
 
 /// Trust-guarded allergen/dietary status for MENU filtering (BUT-1464).
 ///
@@ -38,34 +39,11 @@ class MenuAllergenTrust {
 
   /// Effective allergen status for menu filtering: auto verdict, with the
   /// stale-FREE downgrade, then manual override on top.
-  static TriState effectiveAllergenStatus(Recipe recipe, String allergenKey) {
-    final tagResult = recipe.tagResult;
-    // No tag data at all is functionally UNKNOWN (BUT-1394 semantics).
-    var base = tagResult?.getAllergenStatus(allergenKey) ?? TriState.unknown;
-    if (base == TriState.free &&
-        tagResult != null &&
-        (tagResult.needsRetagging || tagResult.coverage < 1.0)) {
-      base = TriState.unknown;
-    }
-    final overrides = recipe.tagOverrides;
-    if (overrides == null) return base;
-    // Human wins over staleness — an explicit per-key override replaces the
-    // (possibly downgraded) auto verdict entirely.
-    return overrides.getEffectiveAllergenStatus(allergenKey, base);
-  }
+  static TriState effectiveAllergenStatus(Recipe recipe, String allergenKey) =>
+      AllergenVerdict.forAllergen(recipe, allergenKey).effective;
 
   /// Dietary counterpart of [effectiveAllergenStatus] with identical
   /// asymmetric semantics (stale FREE → UNKNOWN, CONTAINS kept, override last).
-  static TriState effectiveDietaryStatus(Recipe recipe, String dietaryKey) {
-    final tagResult = recipe.tagResult;
-    var base = tagResult?.getDietaryStatus(dietaryKey) ?? TriState.unknown;
-    if (base == TriState.free &&
-        tagResult != null &&
-        (tagResult.needsRetagging || tagResult.coverage < 1.0)) {
-      base = TriState.unknown;
-    }
-    final overrides = recipe.tagOverrides;
-    if (overrides == null) return base;
-    return overrides.getEffectiveDietaryStatus(dietaryKey, base);
-  }
+  static TriState effectiveDietaryStatus(Recipe recipe, String dietaryKey) =>
+      AllergenVerdict.forDietary(recipe, dietaryKey).effective;
 }

@@ -51,6 +51,8 @@ class LlmService extends BaseService {
   /// flow), so they don't increment the breaker.
   final CircuitBreaker _backendBreaker;
 
+  final Duration _retryDelay;
+
   static const int _failureThreshold = 3;
   static const Duration _resetTime = Duration(seconds: 60);
 
@@ -67,7 +69,9 @@ class LlmService extends BaseService {
     CircuitBreaker? backendBreaker,
     GuestImportSession? guestSession,
     bool Function()? isGuest,
+    Duration retryDelay = const Duration(seconds: 1),
   }) : _rateLimiter = rateLimiter,
+       _retryDelay = retryDelay,
        _consentService = consentService,
        _guestSession = guestSession,
        _isGuest = isGuest ?? (() => false),
@@ -108,7 +112,11 @@ class LlmService extends BaseService {
         : LlmOperationType.fullExtraction;
     final operation = ImportOperation.withLlm('llm', llmType);
     final request = StructureRecipeRequest(
-      text: text,
+      // The server refuses a longer text outright, so a long video transcript
+      // is cut to the limit rather than failing the whole import.
+      text: text.length > llmMaxInputChars
+          ? text.substring(0, llmMaxInputChars)
+          : text,
       mode: mode,
       partialData: partialData,
       sourceUrl: sourceUrl,
@@ -397,7 +405,21 @@ class LlmService extends BaseService {
       if (guestSession != null) {
         scrubbedJson['guestImportId'] = guestSession.currentId;
       }
-      final result = await callable.call<Map<String, dynamic>>(scrubbedJson);
+      Future<HttpsCallableResult<Map<String, dynamic>>> send() =>
+          callable.call<Map<String, dynamic>>(scrubbedJson);
+      HttpsCallableResult<Map<String, dynamic>> result;
+      try {
+        result = await send();
+      } on FirebaseFunctionsException catch (e) {
+        // The function's own `unavailable` is thrown by its cost-ceiling read
+        // (`checkCostCeiling` in functions/src/middleware/llm_cost_ledger.ts),
+        // before any model call. A timeout is not retried: the server may
+        // still be paying for the first call.
+        if (e.code != 'unavailable') rethrow;
+        AppLogger.warning('LlmService: $functionName unavailable, retrying');
+        await Future<void>.delayed(_retryDelay);
+        result = await send();
+      }
       final response = parseResponse(result.data);
       _backendBreaker.recordSuccess();
 
@@ -421,6 +443,7 @@ class LlmService extends BaseService {
         unawaited(_guestSession?.recordLimitReached());
       }
       if (error.code != LlmException.costCeilingCode &&
+          error.code != LlmException.aiConsentRequiredCode &&
           error.code != LlmException.guestImportLimitCode &&
           error.code != LlmException.guestCallLimitCode &&
           error.code != LlmException.guestCapacityCode) {

@@ -11,14 +11,14 @@ Q8-01 = A: package 8 is done when the tests are green and every known failure ha
 - Known failures: 0 ()
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Accepted failures, counted apart (D5 = B): 12
-- Resting transition requirements, counted apart: 3
+- Resting transition requirements, counted apart: 4
 - Tickets: 0 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 0
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). RESTING 3, TESTED 78.
+Required: 81 (block 288: 81). RESTING 4, TESTED 77.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built. RESTING is a requirement Malin has put to rest; it is listed apart and is not a known failure.
 
@@ -26,6 +26,7 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | --- | --- | --- |
 | `TR::FLOW::06::mfa::automatisk-verifiering` | RESTING | BUT-2340 |
 | `TR::FLOW::06::mfa::utmaning-maskerad-ledtrad` | RESTING | BUT-2340 |
+| `TR::FLOW::06::session::utgang` | RESTING | BUT-2480 |
 | `TR::FLOW::08::lagring-slut::varning-innan-nedladdning` | RESTING | BUT-2163 |
 
 ## The 53 visual-only view states
@@ -59,7 +60,7 @@ Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `d34ee818cbb50404438800c03cb018e4efa1737184e3fe4d02f29f88007b4115`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `e51c70eb92da6c8da0661275d33de8e8fb999a1e75eae9fe4084d38e765425b3`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 58; with a generated member: 58
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
@@ -101,7 +102,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_t3_adoption_test.dart` | `_topBarFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_inkSnackbarFiles` | ADOPTION | LIVE | 10 | 10 | 10 |
 | `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 79 | 79 | 79 |
-| `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
+| `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 23 | 23 | 23 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
 | `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 0 | 0 | 0 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | RETIRED | 0 | 0 | 0 |

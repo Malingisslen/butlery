@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
@@ -188,7 +188,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(await hasDraft(), isTrue);
 
-        await AuthService.clearDeviceDraftsOnExplicitSignOut(flowUserId);
+        await LocalUserDataRegistry.clearDrafts(
+          userId: flowUserId,
+          reason: DeviceCleanupReason.explicitSignOut,
+        );
         expect(await hasDraft(), isFalse);
       });
     });

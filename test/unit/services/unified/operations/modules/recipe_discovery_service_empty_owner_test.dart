@@ -196,46 +196,4 @@ void main() {
       expect(stats['owned_collaborative'], 0);
     });
   });
-
-  group('searchRecipes', () {
-    test(
-      'the creator finds their collaborative recipe when ownerId is empty',
-      () async {
-        final result = await _service([
-          _recipe(),
-        ]).searchRecipes(query: 'gryta');
-        expect(_ids(result), ['r1']);
-      },
-    );
-
-    test(
-      'the creator finds their personal recipe when ownerId is empty',
-      () async {
-        final result = await _service([
-          _recipe(type: RecipeType.personal),
-        ]).searchRecipes(query: 'gryta', includePersonal: true);
-        expect(_ids(result), ['r1']);
-      },
-    );
-
-    test('closing: someone else created it', () async {
-      final result = await _service([
-        _recipe(createdBy: 'stranger'),
-        _recipe(
-          id: 'r2',
-          createdBy: 'stranger',
-          type: RecipeType.personal,
-        ),
-      ]).searchRecipes(query: 'gryta', includePersonal: true);
-      expect(result, isEmpty);
-    });
-
-    test('closing: both fields are empty', () async {
-      final result = await _service([
-        _recipe(createdBy: ''),
-        _recipe(id: 'r2', createdBy: '', type: RecipeType.personal),
-      ]).searchRecipes(query: 'gryta', includePersonal: true);
-      expect(result, isEmpty);
-    });
-  });
 }

@@ -15,17 +15,13 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/brand_colors.dart';
+import 'package:butlery/widgets/common/brand/brand_mark_geometry.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart'
     show parseSvgPath;
 
-/// How far the mark is raised in the plate, in drawing units.
-const double _opticalLift = 6.9;
-
-final Path _plate = parseSvgPath('M28 113H132');
-final Path _dome = parseSvgPath(
-  'M40.5 104 C40.5 81.09 57.88 64.5 80 64.5 C102.12 64.5 119.5 81.09 119.5 104',
-);
-final Path _stem = parseSvgPath('M80 55V60');
+final Path _plate = parseSvgPath(brandPlatePath);
+final Path _dome = parseSvgPath(brandDomeOutlinePath);
+final Path _stem = parseSvgPath(brandStemPath);
 final Path _foodLight = parseSvgPath(
   'M46 110 C46 97 57 90 66 90 C75 90 86 97 86 110 Z',
 );
@@ -35,8 +31,13 @@ final Path _foodDark = parseSvgPath(
 final Path _steamLeft = parseSvgPath('M68 90 C64 82 72 78 68 70');
 final Path _steamRight = parseSvgPath('M94 92 C90 84 98 80 94 72');
 final RRect _knob = RRect.fromRectAndRadius(
-  const Rect.fromLTWH(72, 48, 16, 8),
-  const Radius.circular(4),
+  const Rect.fromLTWH(
+    brandKnobLeft,
+    brandKnobTop,
+    brandKnobWidth,
+    brandKnobHeight,
+  ),
+  const Radius.circular(brandKnobRadius),
 );
 
 /// Where the cover, the food and the steam stand: the closed cloche is
@@ -176,11 +177,15 @@ class ButleryClocheMark extends StatelessWidget {
                 ink: BrandColors.markInk,
                 pose: ButleryClochePose.closed,
                 steam: BrandColors.markInk,
-                // The drawing crops to the cloche. The plate and the dome's
-                // weight sit low in the drawing, so the crop is lowered to put
-                // the mark's optical centre, not its bounding box, on the
-                // plate's centre.
-                crop: const Rect.fromLTWH(25, 25 + _opticalLift, 110, 110),
+                // The plate and the dome's weight sit low in the drawing, so
+                // the crop is lowered to put the mark's optical centre, not
+                // its bounding box, on the plate's centre.
+                crop: const Rect.fromLTWH(
+                  brandMarkCropLeft,
+                  brandMarkCropTop + brandOpticalLiftOutline,
+                  brandMarkCropSize,
+                  brandMarkCropSize,
+                ),
               ),
             ),
           ),
@@ -211,7 +216,7 @@ class _ClochePainter extends CustomPainter {
 
     final stroke = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
+      ..strokeWidth = brandPlateStroke
       ..strokeCap = StrokeCap.round
       ..color = ink;
     canvas.drawPath(_plate, stroke);
@@ -250,22 +255,23 @@ class _ClochePainter extends CustomPainter {
       canvas.rotate(pose.coverTurn * math.pi / 180);
       canvas.translate(-43 + pose.coverDx, -104 + pose.coverDy);
       final a = pose.coverOpacity;
-      canvas.drawPath(
-        _dome,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 7
-          ..strokeCap = StrokeCap.butt
-          ..color = ink.withValues(alpha: a),
-      );
       final saffron = BrandColors.markAccent.withValues(alpha: a);
+      // The stem goes first so the dome covers its foot.
       canvas.drawPath(
         _stem,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.5
+          ..strokeWidth = brandStemStroke
           ..strokeCap = StrokeCap.round
           ..color = saffron,
+      );
+      canvas.drawPath(
+        _dome,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = brandDomeStroke
+          ..strokeCap = StrokeCap.butt
+          ..color = ink.withValues(alpha: a),
       );
       canvas.drawRRect(_knob, Paint()..color = saffron);
       canvas.restore();

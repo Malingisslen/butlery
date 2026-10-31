@@ -24,7 +24,6 @@ class AllergenPreferencesViewModel extends BaseViewModel {
   bool get hasChanges => _hasChanges;
   Set<String> get trackedAllergens => _preferences.trackedAllergens;
   Set<String> get trackedDietary => _preferences.trackedDietary;
-  bool get showOnCards => _preferences.showOnCards;
   bool get showOnDetail => _preferences.showOnDetail;
   bool get showCoverage => _preferences.showCoverage;
   bool get includeUnknownInMenu => _preferences.includeUnknownInMenu;
@@ -55,13 +54,6 @@ class AllergenPreferencesViewModel extends BaseViewModel {
     } else {
       _preferences = _preferences.trackDietary(key);
     }
-    _hasChanges = true;
-    notifyListeners();
-  }
-
-  /// Updates the show on cards setting.
-  void setShowOnCards(bool value) {
-    _preferences = _preferences.copyWith(showOnCards: value);
     _hasChanges = true;
     notifyListeners();
   }

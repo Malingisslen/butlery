@@ -2,8 +2,10 @@
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 const _bootstrapSettings = Settings(
@@ -18,6 +20,7 @@ class FirestoreBootstrap {
   static Future<void> configure({
     FirebaseFirestore? firestore,
     void Function(FirebaseFirestore db)? connect,
+    @visibleForTesting Future<bool> Function()? noOneSignedIn,
   }) async {
     final db = firestore ?? FirebaseFirestore.instance;
     try {
@@ -29,12 +32,21 @@ class FirestoreBootstrap {
     }
     connect?.call(db);
 
+    // Before any read: clearPersistence fails on an instance already in use.
+    await FirestoreCacheWipe.runIfRequested(
+      db,
+      noOneSignedIn: noOneSignedIn ?? _authRestoredWithNobody,
+    );
+
     try {
       if (kIsWeb) {
         await _recoverWebPersistenceIfCorrupted(db);
       }
     } catch (_) {}
   }
+
+  static Future<bool> _authRestoredWithNobody() =>
+      FirestoreCacheWipe.nobodyIn(FirebaseAuth.instance.authStateChanges());
 
   // Firestore JS SDK 12.x can leave IndexedDB in a stuck state after an
   // unclean shutdown ("INTERNAL ASSERTION FAILED"). Probe a known doc;

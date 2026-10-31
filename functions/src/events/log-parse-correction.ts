@@ -63,6 +63,9 @@ export const HASH_REGEX = /^[a-f0-9]{16,128}$/i;
 /** Threshold above which we drop a correction as PII-poisoned. */
 export const HEAVY_REDACTION_THRESHOLD = 0.5;
 
+// The TTL policy on `expireAt` deletes the row after this.
+export const CORRECTION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+
 export interface ParseCorrectionData {
   correctedField?: string;
   fromValue?: string;
@@ -216,6 +219,9 @@ export const logParseCorrection = onCall(
     const doc = {
       ...result.doc,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expireAt: admin.firestore.Timestamp.fromMillis(
+        Date.now() + CORRECTION_RETENTION_MS
+      ),
     };
 
     try {

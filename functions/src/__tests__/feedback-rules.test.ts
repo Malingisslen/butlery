@@ -147,8 +147,8 @@ test("user cannot create feedback impersonating another user", async () => {
   );
 });
 
-test("BUT-1407: accepts the full client payload (all 10 keys, optional nulls)", async () => {
-  // Mirrors FeedbackEntry.toMap exactly — the real client write must pass.
+test("BUT-1407: accepts the full older-build client payload (all 10 keys, optional nulls)", async () => {
+  // Mirrors FeedbackEntry.toMap.
   const ownerCtx = env.authenticatedContext(USER_A_UID);
   await assertSucceeds(
     ownerCtx.firestore().collection("feedback").add({
@@ -178,6 +178,79 @@ test("BUT-1407: rejects a create with an unknown extra field", async () => {
       status: "new",
       isAdmin: true, // smuggled field outside the allowlist
     })
+  );
+});
+
+function feedbackBody(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    userId: USER_A_UID,
+    category: "bug",
+    description: "crash on save",
+    recentInteractions: [],
+    createdAt: new Date(),
+    status: "new",
+    ...extra,
+  };
+}
+
+function daysFromNow(days: number): Date {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
+test("accepts a create stamped with a valid expireAt", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertSucceeds(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: daysFromNow(365) }))
+  );
+});
+
+test("accepts a create without expireAt (an older app build)", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertSucceeds(ownerCtx.firestore().collection("feedback").add(feedbackBody()));
+});
+
+test("rejects a create whose expireAt is already past", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: daysFromNow(-1) }))
+  );
+});
+
+test("rejects a create whose expireAt is beyond the ceiling", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: daysFromNow(400) }))
+  );
+});
+
+test("accepts a create with an explicit null expireAt (the trigger stamps it)", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertSucceeds(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: null }))
+  );
+});
+
+test("rejects a create whose expireAt is a number", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: Date.now() + 30 * 864e5 }))
+  );
+});
+
+test("admin cannot rewrite expireAt on a stamped row", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc("feedback/f-stamped").set(feedbackBody({ expireAt: daysFromNow(30) }));
+  });
+  const adminCtx = env.authenticatedContext(ADMIN_UID);
+  await assertFails(
+    adminCtx.firestore().doc("feedback/f-stamped").update({ expireAt: daysFromNow(300) })
+  );
+});
+
+test("rejects a create whose expireAt is not a timestamp", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add(feedbackBody({ expireAt: "2027-01-01" }))
   );
 });
 

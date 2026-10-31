@@ -296,6 +296,70 @@ async function scenario_probeSeesLeftoverRetentionAnalytics(): Promise<void> {
 }
 
 /**
+ * The user-typed parser corrections: every page of the erasing user's rows
+ * goes, another user's rows stay, and a leftover row is what the probe reports.
+ */
+async function scenario_parsingCorrectionsErasedPagedAndProbed(): Promise<void> {
+  const {
+    deleteParsingCorrections,
+    PARSING_CORRECTIONS_PAGE,
+    probeResidualData,
+  } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  for (let i = 0; i < 1203; i++) {
+    store.set(`parsing_corrections/mine-${i}`, { userId: UID });
+  }
+  store.set("parsing_corrections/theirs", { userId: OTHER });
+
+  const ok = await deleteParsingCorrections(asDb(store), UID);
+
+  check(
+    "every page of the user's parsing corrections is deleted",
+    ok === true &&
+      store.idsIn("parsing_corrections").length === 1 &&
+      store.has("parsing_corrections/theirs"),
+    `returned ${ok}; rows left: ${JSON.stringify(store.idsIn("parsing_corrections").length)}`,
+  );
+
+  const stuck = new FakeFirestore();
+  for (let i = 0; i < PARSING_CORRECTIONS_PAGE; i++) {
+    stuck.set(`parsing_corrections/mine-${i}`, { userId: UID });
+  }
+  stuck.batchFailures.set("parsing_corrections/mine-7", 13);
+  const stuckOk = await deleteParsingCorrections(asDb(stuck), UID);
+  check(
+    "a full page that cannot be deleted stops and reports failure",
+    stuckOk === false &&
+      stuck.idsIn("parsing_corrections").length === PARSING_CORRECTIONS_PAGE,
+    `returned ${stuckOk}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set("parsing_corrections/mine", { userId: UID });
+  const result = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  };
+  await probeResidualData(asDb(dirty), UID, result);
+  check(
+    "a leftover parsing correction is reported as residual data",
+    result.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(result.failedCollections)}`,
+  );
+
+  const empty = new FakeFirestore();
+  check(
+    "no corrections to delete still succeeds",
+    (await deleteParsingCorrections(asDb(empty), UID)) === true,
+  );
+}
+
+/**
  * The "nothing to delete" case: the step must still report success. An empty
  * query is knowledge, not a failure.
  */
@@ -1099,6 +1163,7 @@ async function main(): Promise<void> {
   await scenario_shoppingListTemplatesArePaged();
   await scenario_deepLinksErasedWithClicksAndProbed();
   await scenario_deepLinksArePaged();
+  await scenario_parsingCorrectionsErasedPagedAndProbed();
 
   finishSuite("BUT-1766/BUT-1768 deletion cascade own account data");
 }

@@ -22,7 +22,6 @@ import '../infrastructure/mocks/production_mocks.dart';
 const _seedPrefs = UserAllergenPreferences(
   trackedAllergens: {'gluten', 'mjölk'},
   trackedDietary: {'vegansk'},
-  showOnCards: true,
   showOnDetail: true,
   showCoverage: true,
 );
@@ -162,11 +161,11 @@ void main() {
   testWidgets('flipping a display toggle saves at once', (tester) async {
     await pumpView(tester);
 
-    await tester.tap(find.text(sv.allergenDisplayOnCardsTitle));
+    await tester.tap(find.text(sv.allergenDisplayOnDetailTitle));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(lastSaved().showOnCards, isFalse);
+    expect(lastSaved().showOnDetail, isFalse);
   });
 
   testWidgets('reset asks first, then saves the defaults', (tester) async {

@@ -4,6 +4,8 @@
 /// userId.
 library;
 
+import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,6 +38,24 @@ FirebaseFeedbackRepository _repo(
 }
 
 void main() {
+  group('saveFeedback retention', () {
+    test('stamps expireAt a year after the write', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: 'alice');
+
+      await withClock(Clock.fixed(DateTime.utc(2026, 10, 30)), () async {
+        await repo.saveFeedback(_entry(userId: 'alice'));
+      });
+
+      final data = (await firestore.collection('feedback').get()).docs.single
+          .data();
+      expect(
+        (data['expireAt'] as Timestamp).toDate().toUtc(),
+        DateTime.utc(2027, 10, 30),
+      );
+    });
+  });
+
   group('saveFeedback permission gating', () {
     test('writes when the entry is owned by the current user', () async {
       final firestore = FakeFirebaseFirestore();

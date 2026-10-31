@@ -1,14 +1,4 @@
-// BUT-1895 item 2: `MinaReceptRecipeCard` had no tests at all, and it holds the
-// switch that decides whether allergen information reaches a recipe card.
-//
-// One line does it:
-//
-//   userAllergenPrefs: allergenPrefs.showOnCards ? allergenPrefs.trackedAllergens : null
-//
-// If `showOnCards` turns false, `null` travels down, `ContentCard` derives
-// `showAllergenBadges: false`, and no badge appears anywhere — which is exactly
-// the symptom BUT-1780 was reported as. Nothing in any layer pinned that
-// connection, so a regression in it was invisible to the whole suite.
+// Mina recept recipe cards show no allergen information at all.
 //
 // The file lives under `test/views/` because the widget lives under `lib/views/`.
 
@@ -22,13 +12,12 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
-import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
-import 'package:butlery/widgets/tagging/tag_result_display.dart';
+import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 
 import '../infrastructure/builders/recipe_builder.dart';
 import '../infrastructure/helpers/widget_test_app.dart';
@@ -74,18 +63,7 @@ void main() {
     when(() => viewModel.pooledStats).thenReturn(const {});
   });
 
-  UserAllergenPreferences prefs({required bool showOnCards}) =>
-      UserAllergenPreferences(
-        trackedAllergens: const {'gluten', 'mjölk'},
-        trackedDietary: const {},
-        showOnCards: showOnCards,
-      );
-
-  Future<void> pumpCard(
-    WidgetTester tester, {
-    required bool showOnCards,
-    bool gridView = false,
-  }) async {
+  Future<void> pumpCard(WidgetTester tester, {bool gridView = false}) async {
     when(() => viewModel.isGridView).thenReturn(gridView);
 
     await tester.pumpWidget(
@@ -97,7 +75,6 @@ void main() {
             child: MinaReceptRecipeCard(
               viewModel: viewModel,
               recipe: assessed(),
-              allergenPrefs: prefs(showOnCards: showOnCards),
               onDelete: (_) {},
             ),
           ),
@@ -106,43 +83,22 @@ void main() {
     );
   }
 
-  group('the "visa på kort" setting reaches the card', () {
-    testWidgets('badges appear in list view when the setting is on', (
-      tester,
-    ) async {
-      await pumpCard(tester, showOnCards: true);
+  group('allergen info', () {
+    for (final gridView in [false, true]) {
+      testWidgets(
+        'never reaches the card in ${gridView ? 'grid' : 'list'} view',
+        (
+          tester,
+        ) async {
+          await pumpCard(tester, gridView: gridView);
 
-      expect(find.byType(CompactAllergenRow), findsOneWidget);
-    });
-
-    testWidgets('badges appear in GRID view when the setting is on', (
-      tester,
-    ) async {
-      // The half BUT-1895 was filed for: the same setting, the other view.
-      await pumpCard(tester, showOnCards: true, gridView: true);
-
-      expect(find.byType(CompactAllergenRow), findsOneWidget);
-    });
-
-    testWidgets('the setting off silences the badges in list view', (
-      tester,
-    ) async {
-      await pumpCard(tester, showOnCards: false);
-
-      expect(find.byType(CompactAllergenRow), findsNothing);
-    });
-
-    testWidgets('the setting off silences the badges in grid view', (
-      tester,
-    ) async {
-      // Both views are asserted in both directions on purpose: a fix that wired
-      // the grid up but ignored the setting there would satisfy the positive
-      // case above and quietly override a user who opted out.
-      await pumpCard(tester, showOnCards: false, gridView: true);
-
-      expect(find.byType(CompactAllergenRow), findsNothing);
-    });
+          expect(find.byType(AllergenStatusBadge), findsNothing);
+          expect(find.text('Ej kontrollerat'), findsNothing);
+        },
+      );
+    }
   });
+
   group('in selection mode', () {
     Future<void> pumpSelecting(
       WidgetTester tester, {
@@ -164,7 +120,6 @@ void main() {
                 child: MinaReceptRecipeCard(
                   viewModel: viewModel,
                   recipe: assessed(),
-                  allergenPrefs: prefs(showOnCards: true),
                   onDelete: (_) {},
                 ),
               ),
@@ -248,7 +203,6 @@ void main() {
                 child: MinaReceptRecipeCard(
                   viewModel: viewModel,
                   recipe: assessed(),
-                  allergenPrefs: prefs(showOnCards: true),
                   onDelete: (_) {},
                 ),
               ),
@@ -321,7 +275,6 @@ void main() {
                 child: MinaReceptRecipeCard(
                   viewModel: viewModel,
                   recipe: assessed(),
-                  allergenPrefs: prefs(showOnCards: true),
                   onDelete: deleted.add,
                 ),
               ),

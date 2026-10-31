@@ -115,7 +115,7 @@ or auto-acts; Malin decides whether to proceed.** $0/interactive like the rest o
    radius, not "is it a plan"** — a plan is reviewed at the tier its *files* warrant, so mid-risk
    plans get the cheap focused tier instead of always convening the (expensive) full panel:
    - `full-panel` — **high-stakes paths only** (`firestore.rules`/`storage.rules`,
-     `lib/services/{auth,security,llm,account}`, `session_timeout`/`device_integrity`,
+     `lib/services/{auth,security,llm,account}`, `device_integrity`,
      `functions/src/{account,audit_logs,cleanup,llm}`, payments/subscription). Panel = path owners
      ∪ a **high-stakes core** (Security, Privacy/GDPR, Legal, Software Architect, Product Manager,
      FinOps) with veto-level standing. _Owner-COUNT does not trigger the full panel_ — one theme

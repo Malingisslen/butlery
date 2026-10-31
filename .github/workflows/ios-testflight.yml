@@ -21,7 +21,6 @@
 #                                               AuthKey_<id>.p8 text)
 #   IOS_DIST_CERT_KEY                           PEM private key of the kept
 #                                               distribution certificate
-#   OCR_API_KEY, OCR_API_URL                    same .env as build-validation.yml
 #
 # Firebase reads lib/firebase_options.dart, so no GoogleService-Info.plist is
 # needed for the build.
@@ -83,8 +82,6 @@ jobs:
         run: |
           cat > .env << 'ENVEOF'
           ENV=production
-          OCR_API_KEY=${{ secrets.OCR_API_KEY }}
-          OCR_API_URL=${{ secrets.OCR_API_URL }}
           ENVEOF
 
       - name: Write the App Store Connect key
@@ -117,8 +114,7 @@ jobs:
 
       # A one-off key means a one-off certificate, which the revoke step at
       # the end removes to keep the team under Apple's limit on distribution
-      # certificates. use-profiles switches only the Runner target to manual
-      # signing with the profile, on this runner's checkout.
+      # certificates.
       - name: Fetch the signing files
         env:
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
@@ -137,6 +133,11 @@ jobs:
           echo "CERT_KEY=$CERT_KEY" >> "$GITHUB_ENV"
           keychain initialize
           app-store-connect fetch-signing-files se.butlery.app \
+            --platform IOS --type IOS_APP_STORE \
+            --certificate-key "@file:$CERT_KEY" --create
+          # The share extension is signed with its own profile, on the same
+          # certificate so a one-off run still has only one to revoke.
+          app-store-connect fetch-signing-files se.butlery.app.ShareExtension \
             --platform IOS --type IOS_APP_STORE \
             --certificate-key "@file:$CERT_KEY" --create
           keychain add-certificates
@@ -166,6 +167,19 @@ jobs:
             if nm -gU "$BIN" 2>/dev/null | grep -q ' _sqlite3_key$'; then found=1; echo "sqlite3_key exported by $BIN"; fi
           done
           [ "$found" = 1 ] || { echo "::error::No framework in the app exports sqlite3_key." >&2; exit 1; }
+
+      # App Store Connect refuses an extension whose version differs from the
+      # app's, which only the signed archive can show.
+      - name: Check that the share extension ships with the app's version
+        run: |
+          APP=build/ios/Runner.xcarchive/Products/Applications/Runner.app
+          EXT="$APP/PlugIns/ShareExtension.appex"
+          [ -d "$EXT" ] || { echo "::error::ShareExtension.appex is not in the app." >&2; exit 1; }
+          for KEY in CFBundleShortVersionString CFBundleVersion; do
+            A=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$APP/Info.plist")
+            E=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$EXT/Info.plist")
+            [ "$A" = "$E" ] || { echo "::error::$KEY differs: app $A, share extension $E." >&2; exit 1; }
+          done
 
       - name: Export and upload to App Store Connect
         env:

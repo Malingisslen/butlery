@@ -164,6 +164,10 @@ class RecipeCore with JsonSerializableMixin {
 
   String? sourceUrl;
 
+  /// Who wrote the recipe at [sourceUrl], as the page's own recipe data names
+  /// them. Shown beside the source so the credit goes to the writer.
+  String? sourceAuthor;
+
   /// True for the owner's own copy of a shared recipe. Replaces the
   /// " (Min kopia)" text that used to be appended to [title].
   bool isOwnerCopy;
@@ -376,6 +380,7 @@ class RecipeCore with JsonSerializableMixin {
     this.rating,
     required this.mealType,
     this.sourceUrl,
+    this.sourceAuthor,
     this.isOwnerCopy = false,
     this.ratingPoolKey,
     this.relatedRecipeIds,
@@ -446,6 +451,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? sourceAuthor = _sentinel,
     bool? isOwnerCopy,
     Object? ratingPoolKey = _sentinel,
     Object? relatedRecipeIds = _sentinel,
@@ -527,6 +533,9 @@ class RecipeCore with JsonSerializableMixin {
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
+      sourceAuthor: sourceAuthor == _sentinel
+          ? this.sourceAuthor
+          : sourceAuthor as String?,
       isOwnerCopy: isOwnerCopy ?? this.isOwnerCopy,
       ratingPoolKey: ratingPoolKey == _sentinel
           ? this.ratingPoolKey
@@ -663,6 +672,7 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    'sourceAuthor': sourceAuthor,
     // Omitted when false so ordinary recipes stay byte-identical.
     if (isOwnerCopy) 'isOwnerCopy': true,
     'ratingPoolKey': ratingPoolKey,
@@ -718,6 +728,7 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    'sourceAuthor': sourceAuthor,
     // Omitted when false so ordinary recipes stay byte-identical.
     if (isOwnerCopy) 'isOwnerCopy': true,
     'ratingPoolKey': ratingPoolKey,
@@ -833,6 +844,10 @@ class RecipeCore with JsonSerializableMixin {
         ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
+      sourceAuthor: utils.SerializationUtils.safeNullableString(
+        json,
+        'sourceAuthor',
+      ),
       isOwnerCopy:
           utils.SerializationUtils.safeBool(json, 'isOwnerCopy') ||
           title != storedTitle,
@@ -1088,6 +1103,10 @@ class RecipeCore with JsonSerializableMixin {
         ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      sourceAuthor: utils.SerializationUtils.safeNullableString(
+        data,
+        'sourceAuthor',
+      ),
       isOwnerCopy:
           utils.SerializationUtils.safeBool(data, 'isOwnerCopy') ||
           title != storedTitle,
@@ -1523,6 +1542,7 @@ class Recipe {
   double? get rating => core.rating;
   String get mealType => core.mealType;
   String? get sourceUrl => core.sourceUrl;
+  String? get sourceAuthor => core.sourceAuthor;
   bool get isOwnerCopy => core.isOwnerCopy;
   List<String> get imageUrls => core.imageUrls;
   DateTime get createdAt => core.createdAt;
@@ -1771,6 +1791,7 @@ class Recipe {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? sourceAuthor = _sentinel,
     bool? isOwnerCopy,
     Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
@@ -1813,6 +1834,7 @@ class Recipe {
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
+        sourceAuthor: sourceAuthor,
         isOwnerCopy: isOwnerCopy,
         relatedRecipeIds: relatedRecipeIds,
         sourceArtefact: sourceArtefact,

@@ -6,6 +6,10 @@ import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/tagging/tag_editor_allergen_section.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -50,6 +54,8 @@ class TagEditorDialog extends StatefulWidget {
 class _TagEditorDialogState extends State<TagEditorDialog> {
   late Set<String> _addedTags;
   late Set<String> _removedTags;
+  late Map<String, TriState> _allergenOverrides;
+  late List<String> _allergenKeys;
   final _newTagController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -58,6 +64,20 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     super.initState();
     _addedTags = Set.from(widget.recipe.tagOverrides?.addedTags ?? {});
     _removedTags = Set.from(widget.recipe.tagOverrides?.removedTags ?? {});
+    _allergenOverrides = Map.of(
+      widget.recipe.tagOverrides?.allergenOverrides ?? const {},
+    );
+    // Fixed at open so a row does not vanish when its override is cleared.
+    _allergenKeys = editableAllergenKeys(
+      widget.recipe,
+      overrides: _allergenOverrides,
+      tracked:
+          ServiceLocator.tryGet<UserService>()
+              ?.currentUserProfile
+              ?.allergenPreferences
+              ?.trackedAllergens ??
+          const {},
+    );
   }
 
   @override
@@ -121,8 +141,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     final overrides = TagOverrides(
       addedTags: _addedTags,
       removedTags: _removedTags,
-      allergenOverrides:
-          widget.recipe.tagOverrides?.allergenOverrides ?? const {},
+      allergenOverrides: _allergenOverrides,
       dietaryOverrides:
           widget.recipe.tagOverrides?.dietaryOverrides ?? const {},
       lastEditedAt: clock.now(),
@@ -208,6 +227,20 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                     ),
                     const SizedBox(height: AppDimensions.space12),
                   ],
+
+                  if (_allergenKeys.isNotEmpty)
+                    TagEditorAllergenSection(
+                      recipe: widget.recipe,
+                      allergenKeys: _allergenKeys,
+                      overrides: _allergenOverrides,
+                      onChanged: (key, choice) => setState(() {
+                        if (choice == null) {
+                          _allergenOverrides.remove(key);
+                        } else {
+                          _allergenOverrides[key] = choice;
+                        }
+                      }),
+                    ),
 
                   Semantics(
                     header: true,

@@ -87,7 +87,7 @@ void main() {
   });
 
   group(
-    'includeUnknownInMenu default (Malin 2026-10-05: OFF with an allergy)',
+    'includeUnknownInMenu default (Malin 2026-10-30: ON, unchecked recipes are marked)',
     () {
       const withAllergy = UserAllergenPreferences(
         trackedAllergens: {'nötter'},
@@ -102,8 +102,8 @@ void main() {
         trackedDietary: {},
       );
 
-      test('undecided and tracking an allergen reads false', () {
-        expect(withAllergy.includeUnknownInMenu, isFalse);
+      test('undecided and tracking an allergen reads true', () {
+        expect(withAllergy.includeUnknownInMenu, isTrue);
         expect(withAllergy.includeUnknownInMenuChoice, isNull);
       });
 
@@ -114,8 +114,10 @@ void main() {
 
       test('an explicit answer wins over the derived default, both ways', () {
         expect(
-          withAllergy.copyWith(includeUnknownInMenu: true).includeUnknownInMenu,
-          isTrue,
+          withAllergy
+              .copyWith(includeUnknownInMenu: false)
+              .includeUnknownInMenu,
+          isFalse,
         );
         expect(
           nothing.copyWith(includeUnknownInMenu: false).includeUnknownInMenu,
@@ -123,21 +125,29 @@ void main() {
         );
       });
 
-      test('ticking the first allergen flips an undecided switch off, and '
-          'unticking the last flips it back on', () {
-        final ticked = nothing.trackAllergen('gluten');
-        expect(ticked.includeUnknownInMenuChoice, isNull);
+      test(
+        'ticking an allergen leaves an undecided switch on and undecided',
+        () {
+          final ticked = nothing.trackAllergen('gluten');
+          expect(ticked.includeUnknownInMenuChoice, isNull);
+          expect(ticked.includeUnknownInMenu, isTrue);
+        },
+      );
+
+      test('a stored "no" survives ticking and unticking allergens', () {
+        final declined = nothing.copyWith(includeUnknownInMenu: false);
+        final ticked = declined.trackAllergen('gluten');
         expect(ticked.includeUnknownInMenu, isFalse);
-        expect(ticked.untrackAllergen('gluten').includeUnknownInMenu, isTrue);
+        expect(ticked.untrackAllergen('gluten').includeUnknownInMenu, isFalse);
       });
 
-      test('defaults are undecided and, tracking allergens, read false', () {
+      test('defaults are undecided and, tracking allergens, read true', () {
         expect(UserAllergenPreferences.defaults.trackedAllergens, isNotEmpty);
         expect(
           UserAllergenPreferences.defaults.includeUnknownInMenuChoice,
           isNull,
         );
-        expect(UserAllergenPreferences.defaults.includeUnknownInMenu, isFalse);
+        expect(UserAllergenPreferences.defaults.includeUnknownInMenu, isTrue);
       });
 
       test('fromFirestore keeps a stored bool and treats anything else as '
@@ -174,7 +184,7 @@ void main() {
           UserAllergenPreferences.fromFirestore(
             doc('ABSENT'),
           ).includeUnknownInMenu,
-          isFalse,
+          isTrue,
         );
       });
 

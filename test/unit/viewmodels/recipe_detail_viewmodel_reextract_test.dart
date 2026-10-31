@@ -87,7 +87,10 @@ void main() {
           .withImageUrls(['original.jpg'])
           .withCreatedAt(originalCreatedAt)
           .build()
-          .copyWith(sourceArtefact: originalArtefact);
+          .copyWith(
+            sourceArtefact: originalArtefact,
+            sourceUrl: 'https://www.tiktok.com/@a/video/1',
+          );
 
       extracted = RecipeBuilder()
           .withId('recipe-DIFFERENT-from-extraction')
@@ -124,7 +127,10 @@ void main() {
     });
 
     void reimportAnswers(Future<ImportManagerResult> Function() answer) => when(
-      () => importManager.reimportFromArtefact(any()),
+      () => importManager.reimportFromArtefact(
+        any(),
+        sourceUrl: any(named: 'sourceUrl'),
+      ),
     ).thenAnswer((_) => answer());
 
     RecipeDetailViewModel buildViewModel() {
@@ -137,7 +143,8 @@ void main() {
       );
     }
 
-    test('asks the import manager to re-read the original artefact', () async {
+    test('asks the import manager to re-read the original artefact, with '
+        'the post it came from', () async {
       when(
         () => recipeService.updateRecipe(any()),
       ).thenAnswer((_) async => true);
@@ -149,7 +156,10 @@ void main() {
 
       expect(outcome, ReextractOutcome.success);
       verify(
-        () => importManager.reimportFromArtefact(originalArtefact),
+        () => importManager.reimportFromArtefact(
+          originalArtefact,
+          sourceUrl: 'https://www.tiktok.com/@a/video/1',
+        ),
       ).called(1);
     });
 

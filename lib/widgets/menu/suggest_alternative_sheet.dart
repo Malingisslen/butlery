@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/services/search/recipe_search_matcher.dart';
 
 /// Shows a bottom sheet for selecting recipes to suggest as vote alternatives.
 class SuggestAlternativeSheet {
@@ -68,11 +69,7 @@ class _SheetContentState extends State<_SheetContent> {
   List<Recipe> _getFilteredRecipes(String query) {
     return widget.availableRecipes
         .where((r) => !widget.excludeRecipeIds.contains(r.id))
-        .where(
-          (r) =>
-              query.isEmpty ||
-              r.title.toLowerCase().contains(query.toLowerCase()),
-        )
+        .where((r) => RecipeSearchMatcher.matches(r, query))
         .take(20)
         .toList();
   }

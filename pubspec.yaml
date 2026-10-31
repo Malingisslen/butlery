@@ -1,7 +1,7 @@
 name: butlery
 description: "Smart receptapp som automatiserar receptflödet - från import/skapande av recept till veckomeny-generering och automatisk inköpslista."
 publish_to: 'none'
-version: 0.9.0+18
+version: 0.9.0+21
 
 environment:
   sdk: ^3.10.0
@@ -81,9 +81,8 @@ dependencies:
   csv: ^8.0.0                 # BUT-435: bumped to 8.x with Dart 3.10
   xml: ">=6.5.0 <7.0.0"       # .xlsx import parsing (XlsxReader) — replaces excel (BUT-503); 7.x needs Dart 3.11
   flutter_onnxruntime: ^1.7.0  # On-device BERT NER inference (MIT licensed)
-  # Free on-device OCR (tier 0 before the paid OCR.space/Vision/Tesseract
-  # chain). MIT. Caret-pinned like flutter_tts: an OS-bridge plugin, not a
-  # bundled inference engine, so the exact-pin discipline that governs
+  # Free on-device OCR (tier 0). MIT. Caret-pinned like flutter_tts: an
+  # OS-bridge plugin, not a bundled inference engine, so the exact-pin discipline that governs
   # whisper_ggml_plus does not apply. Latin script only — covers Swedish
   # å/ä/ö and keeps the iOS bundle at ML Kit's default Latin model (no extra
   # script pods). Needs iOS >= 15.5 (we ship 17.0) and Android minSdk >= 21
@@ -109,8 +108,6 @@ dependencies:
   app_links: ^6.4.1          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop).
   cloud_functions: ^6.2.0
 
-  # ==================== SEARCH (Algolia - migration-ready) ====================
-  algoliasearch: ^1.46.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
   html_unescape: ^2.0.0
   sqlite3: ^3.0.0
   web: ^1.1.1
@@ -119,7 +116,6 @@ dependencies:
   http_certificate_pinning: 3.0.1  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
   in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
   fl_chart: ^1.2.0
-  dio: ^5.9.2  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
 
@@ -164,6 +160,11 @@ dev_dependencies:
   # sets its database factory (already a transitive dependency via
   # flutter_cache_manager).
   sqflite: ^2.4.2
+
+  # The golden hosts serve recipe photos from disk through a stand-in cache
+  # manager (test/views/golden_linux/golden_hosts.dart).
+  file: ^7.0.1
+  flutter_cache_manager: ^3.4.1
 
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).

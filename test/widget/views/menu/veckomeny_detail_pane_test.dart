@@ -227,6 +227,7 @@ void main() {
       when(() => vm.canEditMenu).thenReturn(true);
       when(() => vm.isUnknownSoft(any())).thenReturn(false);
       when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
+      when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
       when(() => vm.mealAllergenScopeOn).thenReturn(false);
       return Builder(
         builder: (context) => SingleChildScrollView(
@@ -321,6 +322,7 @@ void main() {
       pushed = null;
       service = _MockPlanService();
       recipes = _MockRecipeService();
+      when(() => recipes.stateStream).thenAnswer((_) => const Stream.empty());
       pasta = RecipeFactory.build(id: 'r-mon', title: 'Pasta');
       when(() => recipes.getRecipeById('r-mon')).thenReturn(pasta);
     });

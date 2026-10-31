@@ -13,6 +13,12 @@ import 'package:flutter_test/flutter_test.dart';
 /// The one file allowed to read `commonUndo` for a snackbar.
 const _primitive = 'lib/core/utils/snackbar_utils.dart';
 
+/// Not a snackbar: the line at the top of the shopping list after the list
+/// followed the week menu carries Ångra until the list is left, with no
+/// window (Malin 2026-10-31, decision card variant A).
+const _weekListFollowNotice =
+    'lib/views/unified_shopping/widgets/week_list_follow_notice_bar.dart';
+
 // The week menu's 30 s conflict snackbar no longer reads `commonUndo`: its
 // action carries the drawn words "Behåll min"
 // so the primitive is the only reader left.
@@ -26,7 +32,7 @@ void main() {
       if (path.startsWith('lib/l10n/')) continue;
       // "Dölj delat innehåll" is no longer an exception: PQ-07 = A
       // (produktbeslut 2026-09-23) puts its Ångra on the primitive too.
-      if (path == _primitive) {
+      if (path == _primitive || path == _weekListFollowNotice) {
         continue;
       }
       final lines = entity.readAsLinesSync();

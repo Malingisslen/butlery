@@ -16,6 +16,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../design_states/hosts/recipe_hosts.dart' show fullRecipeDetailHost;
 import '../design_states/hosts/shopping_hosts.dart' show pantryWithItemsHost;
 import '../design_states/state_harness.dart';
 import '../design_states/state_host.dart';
@@ -43,7 +44,6 @@ class _KeyScreen {
 }
 
 final _screens = <_KeyScreen>[
-  const _KeyScreen('hem', row: 'hem::DEFAULT'),
   const _KeyScreen('veckomeny', row: 'veckomeny::DEFAULT'),
   // "Planerar veckan" after 6 s, when the slower line shows
   // (VeckomenyGeneratingOverlay.slowAfter).
@@ -54,7 +54,16 @@ final _screens = <_KeyScreen>[
   ),
   const _KeyScreen('inkopslista', row: 'inköpslista::DEFAULT'),
   const _KeyScreen('receptdetalj', row: 'receptdetalj::DEFAULT'),
+  // A full imported recipe, its whole page in one picture: the parts the
+  // plain recipe never reaches (tags, finished allergen check, a sauce group,
+  // timed steps, Lagade detta, Kommentarer).
+  _KeyScreen('receptdetalj_fullt', host: fullRecipeDetailHost),
   _KeyScreen('mina_recept', host: minaReceptHost),
+  // The same library in list mode.
+  _KeyScreen(
+    'mina_recept_lista',
+    host: minaReceptHostWith(grid: false, photos: true),
+  ),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
   _KeyScreen('skafferi', host: pantryWithItemsHost),
@@ -80,7 +89,7 @@ void main() {
   });
 
   test('every key screen names a harness row or a host', () {
-    expect(_screens, hasLength(14));
+    expect(_screens, hasLength(15));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);

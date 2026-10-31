@@ -34,6 +34,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/views/photo_import/image_preview.dart';
+import 'package:butlery/views/photo_import/photo_ai_offer_card.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
 import 'package:butlery/views/photo_import/photo_permission_notice_card.dart';
 import 'package:butlery/views/photo_import/photo_quality_warning.dart';
@@ -419,6 +420,37 @@ class _PhotoImportViewContent extends StatelessWidget {
                     const SizedBox(height: AppDimensions.space16),
                   ],
 
+                  if (viewModel.aiOffer != null) ...[
+                    PhotoAiOfferCard(
+                      reason: viewModel.aiOffer!,
+                      consented: viewModel.aiConsentAlreadyGiven,
+                      busy: viewModel.isProcessing,
+                      onAccept: viewModel.acceptAiOffer,
+                      onDecline: viewModel.declineAiOffer,
+                    ),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
+                  // After a decline the phone may have read no text, so
+                  // neither the error block nor the OCR result shows; this is
+                  // the way on to typing the recipe.
+                  if (viewModel.hasImage &&
+                      !viewModel.hasOcrResult &&
+                      viewModel.aiOffer == null &&
+                      viewModel.unreadPageCount == 0 &&
+                      !viewModel.hasError &&
+                      !viewModel.isProcessing) ...[
+                    UtilityComponents.secondaryButton(
+                      context,
+                      label: context.l10n.importContinueWithoutOcr,
+                      icon: ButleryIcons.pencil,
+                      onPressed: () =>
+                          _navigateToManualEntry(context, viewModel),
+                      isExpanded: true,
+                    ),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
                   // BUT-684: handwritten-recipe opt-in. Set before picking a
                   // photo — routes the import through the handwriting-tuned
                   // OCR instead of the standard printed-text OCR.
@@ -530,10 +562,12 @@ class _PhotoImportViewContent extends StatelessWidget {
                           viewModel.parsedRecipes.length,
                         ),
                         icon: ButleryIcons.list,
-                        onPressed: () => _navigateToMultiRecipePicker(
-                          context,
-                          viewModel,
-                        ),
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToMultiRecipePicker(
+                                context,
+                                viewModel,
+                              ),
                         isExpanded: true,
                       )
                     else
@@ -541,8 +575,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                         context,
                         label: context.l10n.importProceedToEdit,
                         icon: ButleryIcons.arrowRight,
-                        onPressed: () =>
-                            _navigateToTextImport(context, viewModel),
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToTextImport(context, viewModel),
                         isExpanded: true,
                       ),
                     const SizedBox(height: AppDimensions.space16),

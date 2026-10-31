@@ -209,13 +209,79 @@ void main() {
       });
     });
 
+    group('an account switch while a synced change is in flight', () {
+      RecipeCacheModule switchingModule(
+        FakeJsonCacheHelper cache,
+        List<String> shown, {
+        Future<bool> Function(String id)? hasUnsentWrite,
+      }) => RecipeCacheModule(
+        cacheHelper: cache,
+        getCurrentUserId: () => currentUserId,
+        setError: (error) {},
+        notifyListeners: () => notifyListenersCalled++,
+        onRecipeUpdated: (r) => shown.add(r.id),
+        onRecipeRemoved: shown.add,
+        hasUnsentWrite: hasUnsentWrite,
+      );
+
+      test('a switch before the cache write keeps the change out of the '
+          'next account\'s list and cache', () async {
+        final shown = <String>[];
+        final module = switchingModule(
+          mockCacheHelper,
+          shown,
+          hasUnsentWrite: (id) async {
+            currentUserId = 'next-user';
+            return false;
+          },
+        );
+
+        await module.debugApplyRecipeUpdate(
+          RecipeFactory.build(id: 'old-users', title: 'Lasagne'),
+        );
+
+        expect(shown, isEmpty);
+        expect(await module.loadRecipeFromCache('old-users'), isNull);
+        await module.dispose();
+      });
+
+      test('a switch during the cache write keeps the change out of the '
+          'next account\'s list', () async {
+        final shown = <String>[];
+        final cache = _SwitchingCacheHelper(
+          onWrite: () => currentUserId = 'next-user',
+        );
+        final module = switchingModule(cache, shown);
+
+        await module.debugApplyRecipeUpdate(
+          RecipeFactory.build(id: 'old-users', title: 'Lasagne'),
+        );
+
+        expect(shown, isEmpty);
+        await module.dispose();
+      });
+
+      test('a switch during the cache delete keeps the removal off the next '
+          'account\'s list', () async {
+        final shown = <String>[];
+        final cache = _SwitchingCacheHelper(
+          onWrite: () => currentUserId = 'next-user',
+        );
+        final module = switchingModule(cache, shown);
+
+        await module.debugApplyRecipeRemoval('old-users');
+
+        expect(shown, isEmpty);
+        await module.dispose();
+      });
+    });
+
     // BUT-1256: When a recipe change arrives from the Firebase sync stream,
     // RecipeCacheModule routes it through _updateCachedRecipe / _removeCachedRecipe.
-    // BUT-1252 made that path single-notify-aware: if a direct callback is wired
-    // (the web case, where the local cache is stubbed), the callback owns the
-    // listener signal and the module must NOT also call notifyListeners — else
-    // web would double-fire. If no callback is wired (native), the module owns
-    // the single notify. These tests pin both halves of that contract through
+    // BUT-1252 made that path single-notify-aware: if a direct callback is wired,
+    // the callback owns the listener signal and the module must NOT also call
+    // notifyListeners. If no callback is wired, the module owns the single
+    // notify. These tests pin both halves of that contract through
     // the test seam that drives the exact private path the sync stream invokes.
     // BUT-2162: a recipe with a write in the offline queue is newer on the
     // device than on the server. The server's copy must not replace it on
@@ -430,4 +496,22 @@ void main() {
       );
     });
   });
+}
+
+class _SwitchingCacheHelper extends FakeJsonCacheHelper {
+  _SwitchingCacheHelper({required this.onWrite});
+
+  final void Function() onWrite;
+
+  @override
+  Future<bool> saveJson(String key, Map<String, dynamic> data) async {
+    onWrite();
+    return super.saveJson(key, data);
+  }
+
+  @override
+  Future<bool> delete(String key) async {
+    onWrite();
+    return super.delete(key);
+  }
 }

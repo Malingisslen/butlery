@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -9,7 +11,6 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
@@ -18,61 +19,20 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
+import 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
+import 'package:butlery/services/shopping/week_list_follow_notice.dart';
+import 'package:butlery/services/shopping/week_list_follower.dart';
+import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 
+export 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
 export 'package:butlery/services/shopping/menu_shopping_merge.dart';
-
-/// Outcome of a week→shopping-list generation, for the snackbar/UI.
-///
-/// A null return from [MenuShoppingListGenerator.generateForWeek] means
-/// FAILURE (swallowed by the service error path) — the no-recipes case is
-/// the explicit [MenuShoppingGenerationResult.nothingToGenerate], so the
-/// view can show the right message for each.
-class MenuShoppingGenerationResult {
-  final String listId;
-  final String listName;
-  final int itemCount;
-  final int recipeCount;
-
-  /// Recipe ids on the plan whose Recipe could not be resolved (deleted or
-  /// not yet cached). Logged; carried for observability.
-  final int unresolvedRecipes;
-
-  /// How many rows the pantry touched: left off because enough is at home,
-  /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
-  /// (produktbeslut PQ-11 = A). It replaced
-  /// the BUT-1279 count of whole staple rows.
-  final int excludedStaples;
-
-  /// BUT-1613: how many planned meals had their quantities scaled to who's
-  /// home (present count differs from the recipe's serving count). Surfaced so
-  /// the UI can explain why amounts changed instead of the shrink reading as a
-  /// bug. 0 = nothing was scaled (list matches authored amounts).
-  final int scaledMeals;
-
-  const MenuShoppingGenerationResult({
-    required this.listId,
-    required this.listName,
-    required this.itemCount,
-    required this.recipeCount,
-    required this.unresolvedRecipes,
-    this.excludedStaples = 0,
-    this.scaledMeals = 0,
-  });
-
-  static const nothingToGenerate = MenuShoppingGenerationResult(
-    listId: '',
-    listName: '',
-    itemCount: 0,
-    recipeCount: 0,
-    unresolvedRecipes: 0,
-  );
-
-  bool get isEmptyPlan => listId.isEmpty;
-}
+export 'package:butlery/services/shopping/week_list_follow_notice.dart'
+    show WeekListFollowNotice;
+export 'package:butlery/services/shopping/week_list_reconciler.dart'
+    show ShoppingRowOrigin;
 
 /// BUT-956: generates a shopping list from the weekly menu. Deterministic,
 /// zero LLM.
@@ -91,8 +51,20 @@ class MenuShoppingGenerationResult {
 /// in the week's generated list, created when missing.
 /// Recipe
 /// rows are known by their ids ([UnifiedShoppingList.menuItemIds]), never by
-/// name. Bought status still survives a replace by name and unit (§ 8.7).
+/// name.
+///
+/// Kärnflöde 8B: every write is one sync ([WeekListReconciler]), so pressing
+/// the button twice never doubles a row, a row the user changed or ticked is
+/// left as it is, and the week's list follows later saves of the week
+/// ([followMenuSaves]).
 class MenuShoppingListGenerator extends BaseService {
+  MenuShoppingListGenerator({SharedPreferences? preferences})
+    : _optionsMemory = MenuShoppingOptionsMemory(preferences),
+      _notices = WeekListFollowNoticeStore(preferences);
+
+  final MenuShoppingOptionsMemory _optionsMemory;
+  final WeekListFollowNoticeStore _notices;
+
   @override
   String get serviceName => 'MenuShoppingListGenerator';
 
@@ -106,11 +78,7 @@ class MenuShoppingListGenerator extends BaseService {
     if (source == null) return null;
     if (source.isEmpty) return MenuShoppingGenerationResult.nothingToGenerate;
     final pantry = await readPantry();
-    final merge = preview(
-      source,
-      pantry,
-      const MenuShoppingMergeOptions(replaceList: true),
-    );
+    final merge = preview(source, pantry, const MenuShoppingMergeOptions());
     final receipt = await apply(merge);
     if (receipt == null) return null;
     return MenuShoppingGenerationResult(
@@ -119,7 +87,6 @@ class MenuShoppingListGenerator extends BaseService {
       itemCount: receipt.itemCount,
       recipeCount: source.recipeCount,
       unresolvedRecipes: source.unresolvedRecipes,
-      excludedStaples: merge.atHomeCount,
       scaledMeals: source.scaledMeals,
     );
   }
@@ -201,14 +168,13 @@ class MenuShoppingListGenerator extends BaseService {
       week: week,
       placements: List.unmodifiable(placements),
       recipeCount: placements.map((p) => p.recipe.id).toSet().length,
+      origin: ShoppingRowOrigin.menu,
     );
   }
 
   /// Reads the signed-in user's pantry. A failed or slow read gives
   /// [MenuShoppingPantry.unavailable]: the list is then made without pantry
   /// deduction, and the sheet says so with a way to try again
-  /// [PantryService.getAll] turns a failure into an
-  /// empty pantry, which would hide exactly that, so this reads the stream.
   Future<MenuShoppingPantry> readPantry() async {
     try {
       final userId = ServiceLocator.get<AuthRepository>().currentUserId;
@@ -235,16 +201,20 @@ class MenuShoppingListGenerator extends BaseService {
     MenuShoppingMergeOptions options,
   ) => MenuShoppingMergePlanner.preview(source, pantry, options);
 
-  /// Whether "Ersätt listan" can take anything off the week's list. False for
-  /// a list written before [UnifiedShoppingList.menuItemIds] existed: its
-  /// recipe rows cannot be told from the user's own, so a replace there would
-  /// only add. The sheet then switches "Ersätt listan" off and says why.
-  bool canReplaceWeekList(DateTime week) {
+  /// Whether the week's list already holds rows from [origin], so the sheet
+  /// says it updates them rather than adds. A row written before rows carried
+  /// their origin counts, since the sync takes it over.
+  bool weekListHasRowsFrom(DateTime week, ShoppingRowOrigin origin) {
+    final list = _weekList(week);
+    return list != null &&
+        WeekListReconciler.holdsRowsFrom(list, origin, orLegacy: true);
+  }
+
+  UnifiedShoppingList? _weekList(DateTime week) {
     final weekKey = IsoWeekUtils.weekKeyOf(week);
-    final list = ServiceLocator.get<UnifiedShoppingService>().personalLists
+    return ServiceLocator.get<UnifiedShoppingService>().personalLists
         .where((l) => l.generatedForWeek == weekKey)
         .firstOrNull;
-    return list == null || list.menuItemIds != null;
   }
 
   /// Writes [merge] into the week's generated list, creating it when it is
@@ -252,9 +222,11 @@ class MenuShoppingListGenerator extends BaseService {
   /// so the shopping view opens on it. Returns what was written, or null
   /// when nothing could be written.
   ///
-  /// Adding never touches a row already on the list. "Ersätt listan" takes
-  /// off only the rows an earlier merge put there
-  /// ([UnifiedShoppingList.menuItemIds]) and keeps every other row.
+  /// The write is a sync of [MenuShoppingSource.origin]'s rows
+  /// ([WeekListReconciler]): only rows an earlier sync put there
+  /// ([UnifiedShoppingList.menuItemIds]) are changed or taken off, and only
+  /// while nobody changed or ticked them. [activate] false leaves the active
+  /// list as it is, for a sync nobody pressed a button for.
   ///
   /// The generated list is personal (firestore.rules,
   /// `unified_shopping_lists` is owner-only), so no other person can change
@@ -263,8 +235,9 @@ class MenuShoppingListGenerator extends BaseService {
   /// ([UnifiedShoppingService.applyPersonalMerge], BUT-2140), and the receipt
   /// says when that copy had changed.
   Future<MenuShoppingMergeReceipt?> apply(
-    MenuShoppingMergePreview merge,
-  ) async {
+    MenuShoppingMergePreview merge, {
+    bool activate = true,
+  }) async {
     return executeServiceOperation<MenuShoppingMergeReceipt?>(() async {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final date = merge.source.week;
@@ -292,33 +265,25 @@ class MenuShoppingListGenerator extends BaseService {
 
       final list = shoppingService.lists.firstWhere((l) => l.id == listId);
       final previousMenuIds = list.menuItemIds;
-      // A list written before menuItemIds existed has no known recipe rows,
-      // so a replace there adds, and the receipt says it added
-      // ([canReplaceWeekList]).
-      final replace =
-          merge.options.replaceList && (createdList || previousMenuIds != null);
+      if (activate) unawaited(_optionsMemory.write(merge.options));
 
-      final fresh = [
+      final origin = merge.source.origin;
+      final fresh = WeekListReconciler.stamp([
         for (final line in merge.lines)
-          UnifiedShoppingItem(
-            name: line.name,
-            // Amount-less lines follow the manual-add default of 1 rather
-            // than rendering a misleading "0".
-            amount: line.amount ?? 1,
-            unit: line.unit,
-            category: line.category,
-            note: _noteFor(line),
-          ),
-      ];
+          shoppingService.categoryPreferences.withUserCategory(line.toItem()),
+      ], origin);
       final result = await shoppingService.applyPersonalMerge(
         listId,
         PersonalMergeRequest(
-          rows: (removed) => _carryBought(fresh, removed),
-          replace: replace,
+          sync: (listRows) => WeekListReconciler.reconcile(
+            listRows: listRows,
+            fresh: fresh,
+            origin: origin,
+          ),
           generatedForWeek: weekKey,
         ),
       );
-      await shoppingService.setActiveList(listId);
+      if (activate) await shoppingService.setActiveList(listId);
       final addedIds = [for (final item in result.added) item.id];
 
       // BUT-1681: EXACTLY ONE analytics event per merge, and only for a
@@ -340,8 +305,8 @@ class MenuShoppingListGenerator extends BaseService {
         listName: result.list.name,
         addedItemIds: List.unmodifiable(addedIds),
         removedItems: List.unmodifiable(result.removed),
+        changedItems: List.unmodifiable(result.changedFrom),
         previousMenuItemIds: previousMenuIds,
-        replaced: replace,
         createdList: createdList,
         concurrentChange: result.concurrentChange,
       );
@@ -349,16 +314,29 @@ class MenuShoppingListGenerator extends BaseService {
   }
 
   /// Ångra for a merge: takes off exactly the rows it added and puts back the
-  /// recipe rows a replace took off. Rows changed or added since, here or on
+  /// rows it changed or took off, as they were. Rows changed or added since, here or on
   /// another device, are left alone. A list the merge created that is empty
   /// again is deleted. Returns whether the list is back.
-  Future<bool> undo(MenuShoppingMergeReceipt receipt) async {
+  Future<bool> undo(MenuShoppingMergeReceipt receipt) =>
+      _undoOn(receipt.listId, (_) => receipt);
+
+  Future<bool> _undoOn(
+    String listId,
+    MenuShoppingMergeReceipt Function(UnifiedShoppingList list) receiptFor,
+  ) async {
     final result = await executeServiceOperation<bool>(() async {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final list = shoppingService.lists
-          .where((l) => l.id == receipt.listId)
+          .where((l) => l.id == listId)
           .firstOrNull;
       if (list == null) return false;
+      final receipt = receiptFor(list);
+      // Everything the follows wrote was changed or ticked since.
+      if (receipt.addedItemIds.isEmpty &&
+          receipt.removedItems.isEmpty &&
+          receipt.changedItems.isEmpty) {
+        return true;
+      }
       final added = receipt.addedItemIds.toSet();
       final left =
           list.items.where((item) => !added.contains(item.id)).length +
@@ -369,61 +347,81 @@ class MenuShoppingListGenerator extends BaseService {
       await shoppingService.undoPersonalMerge(
         receipt.listId,
         receipt.addedItemIds,
-        receipt.removedItems,
+        [...receipt.removedItems, ...receipt.changedItems],
       );
       return true;
     }, operationName: 'undoMerge');
     return result ?? false;
   }
 
-  /// § 8.7: bought status survives a replace by name and unit, keyed by the
-  /// same normalization as the aggregation. [removed] is what the write takes
-  /// off, read from the server where it could be.
-  static List<UnifiedShoppingItem> _carryBought(
-    List<UnifiedShoppingItem> fresh,
-    List<UnifiedShoppingItem> removed,
-  ) {
-    String boughtKey(String name, String unit) =>
-        '${SwedishCharacterNormalizer.normalize(name)}|'
-        '${unit.toLowerCase().trim()}';
-    final wasBought = {
-      for (final item in removed)
-        if (item.bought) boughtKey(item.name, item.unit),
-    };
-    return [
-      for (final item in fresh)
-        wasBought.contains(boughtKey(item.name, item.unit))
-            ? item.copyWith(bought: true)
-            : item,
-    ];
-  }
+  WeekListFollower? _follower;
 
-  static String _formatExtra(({double amount, String unit}) extra) {
-    final item = UnifiedShoppingItem(
-      name: '',
-      amount: extra.amount,
-      unit: extra.unit,
+  /// Kärnflöde 8B (i05): once the week menu has been written into a week's
+  /// list, the list follows later saves of that week. A burst of edits
+  /// becomes one sync ([WeekListFollower.defaultPause]). Called once, where
+  /// the menu service is made.
+  void followMenuSaves(Stream<DateTime> savedWeeks) {
+    _follower ??= WeekListFollower(
+      savedWeeks: savedWeeks,
+      sync: syncFollowedWeek,
     );
-    return [
-      item.formattedAmount,
-      item.formattedUnit,
-    ].where((p) => p.isNotEmpty).join(' ');
   }
 
-  /// The row's note: how many recipes it came from ("Raden visar '3
-  /// recept'", #inkopmergeoppen) and the pantry's mark (§ 4.2).
-  static String? _noteFor(MenuShoppingMergeLine line) {
-    final l = AppLocale.current;
-    final parts = [
-      // BUT-2304: amounts that could not join the row's own unit.
-      for (final extra in line.extraAmounts) '+ ${_formatExtra(extra)}',
-      if (line.sourceCount > 1) l.shoppingMergeRowRecipes(line.sourceCount),
-      if (line.mark == MenuShoppingPantryMark.maybeAtHome)
-        l.shoppingMergeMarkMaybeHome,
-      if (line.mark == MenuShoppingPantryMark.checkDate)
-        l.shoppingMergeMarkCheckDate,
-    ];
-    return parts.isEmpty ? null : parts.join(' · ');
+  /// The follow for one saved week. Only a list that already holds rows the
+  /// week plan wrote follows it. An emptied week still syncs, so the rows of
+  /// the dishes taken off come off too. Null when nothing was written.
+  ///
+  /// What it wrote is kept for the notice the list shows the next time it is
+  /// opened ([takeFollowNotice]).
+  Future<MenuShoppingMergeReceipt?> syncFollowedWeek(DateTime week) async {
+    final list = _weekList(week);
+    if (list == null ||
+        !WeekListReconciler.holdsRowsFrom(list, ShoppingRowOrigin.plan)) {
+      return null;
+    }
+
+    final source = await sourceForWeek(week);
+    // A recipe that could not be read (not loaded yet, or deleted) would read
+    // as a dish taken off the week, and its rows would come off unasked.
+    if (source == null || source.unresolvedRecipes > 0) return null;
+    final options = _optionsMemory.read();
+    final pantry = options.subtractPantry
+        ? await readPantry()
+        : const MenuShoppingPantry.read([]);
+    // Without the pantry every covered row would come back at full amount.
+    if (pantry.unavailable) return null;
+    final receipt = await apply(
+      preview(source, pantry, options),
+      activate: false,
+    );
+    // A follow still running at sign-out must not write the user's rows back
+    // after the sign-out cleared them.
+    if (receipt != null && !_disposed) await _notices.record(receipt);
+    return receipt;
+  }
+
+  /// What the follows did to [listId] since it was last opened, taken off
+  /// the device: a notice is shown once.
+  Future<WeekListFollowNotice?> takeFollowNotice(String listId) =>
+      _notices.take(listId);
+
+  /// Puts back a notice taken by [takeFollowNotice] that was never shown.
+  Future<void> putBackFollowNotice(WeekListFollowNotice notice) async {
+    if (!_disposed) await _notices.putBack(notice);
+  }
+
+  /// Ångra for [notice]: the rows the follows wrote go back to how they were,
+  /// except rows changed or ticked since. Returns whether the list is back.
+  Future<bool> undoFollow(WeekListFollowNotice notice) =>
+      _undoOn(notice.listId, notice.undoAgainst);
+
+  var _disposed = false;
+
+  @override
+  Future<void> onDispose() async {
+    _disposed = true;
+    await _follower?.dispose();
+    _follower = null;
   }
 
   /// BUT-1613: the presence-derived scale factor for one plan entry. Returns

@@ -263,6 +263,10 @@ class PersonalShoppingOperations {
       lastModifiedByDisplayName: item.lastModifiedByDisplayName,
       lastModifiedAt: item.lastModifiedAt,
       previous: item.previous,
+      // A renamed row may be another product, so it falls back to its name.
+      ingredientId: name == null || name == item.name
+          ? item.ingredientId
+          : null,
     );
 
     // Update the list

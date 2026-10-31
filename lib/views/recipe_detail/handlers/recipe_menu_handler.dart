@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
+import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 
 /// BUT-999: weekly-menu action handler for the recipe detail view.
 ///
@@ -26,6 +27,7 @@ class RecipeMenuHandler {
     final selection = await showMultiSlotPickerDialog(context);
     if (selection == null) return;
     if (!context.mounted) return;
+    if (!await confirmManualAdd(context, [recipe]) || !context.mounted) return;
 
     try {
       final service = ServiceLocator.get<WeeklyMenuPlanService>();

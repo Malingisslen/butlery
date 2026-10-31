@@ -83,6 +83,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -204,7 +205,6 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
   String? _currentUserId = 'test-user-123';
   Map<String, List<Recipe>> _recipesByUser = {};
   List<Recipe> _archiveRecipes = [];
-  List<Recipe> _searchResults = [];
   Map<String, Recipe> _recipesById = {};
 
   /// Configure mock state for recipe repository
@@ -212,13 +212,11 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
     String? currentUserId,
     Map<String, List<Recipe>>? recipesByUser,
     List<Recipe>? archiveRecipes,
-    List<Recipe>? searchResults,
     Map<String, Recipe>? recipesById,
   }) {
     if (currentUserId != null) _currentUserId = currentUserId;
     if (recipesByUser != null) _recipesByUser = recipesByUser;
     if (archiveRecipes != null) _archiveRecipes = archiveRecipes;
-    if (searchResults != null) _searchResults = searchResults;
     if (recipesById != null) _recipesById = recipesById;
   }
 
@@ -238,7 +236,7 @@ class MockRecipeRepository extends Mock implements RecipeRepository {
   Map<String, Recipe> get recipesById => _recipesById;
 
   // All methods left without implementation to allow stubbing with when()
-  // This includes watchRecipes, subscribeToUserRecipes, searchRecipes,
+  // This includes watchRecipes, subscribeToUserRecipes,
   // create, read, update, delete, etc.
 }
 
@@ -1830,7 +1828,7 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   String? _capturedUserId;
   Map<String, dynamic> _userProperties = {};
   // BUT-1021: capture logEvent calls so tests can assert that production
-  // code emitted the expected analytics event (e.g. sessionTimeoutLogout
+  // code emitted the expected analytics event (e.g. sessionInvalidatedLogout
   // from the auth-stream error path). Stays parallel to _capturedUserId —
   // semantically a Fake, not a Mock with when()/verify().
   final List<({String name, Map<String, Object>? parameters})> _capturedEvents =
@@ -2380,14 +2378,6 @@ class FakeSocialRecipeOperations extends Fake
     int limit = 20,
     Duration? timeWindow,
     List<String>? categoryFilter,
-  }) async => [];
-
-  @override
-  Future<List<Recipe>> searchRecipes({
-    required String query,
-    int limit = 20,
-    List<String>? categoryFilter,
-    bool includePersonal = false,
   }) async => [];
 
   // ===== RECIPE COMMENTS =====
@@ -4430,6 +4420,10 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool get isLoading => _isLoading;
   @override
   String? get error => _error;
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+  @override
+  bool get aiConsentAlreadyGiven => false;
   @override
   bool get hasError => _error != null;
   @override

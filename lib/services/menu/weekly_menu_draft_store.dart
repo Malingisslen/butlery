@@ -12,7 +12,7 @@ import 'package:butlery/models/menu/weekly_menu_draft.dart';
 /// someone else's draft.
 ///
 /// Logout: [clearAll] is the hook, and it belongs in the manual sign-out path
-/// only (`AuthService.clearDeviceDraftsOnExplicitSignOut`). PQ-12 = A keeps
+/// only (`LocalUserDataRegistry.clearDrafts`). PQ-12 = A keeps
 /// device drafts through an automatic sign-out.
 ///
 /// Best-effort: a storage error is logged and never breaks generation. Not a

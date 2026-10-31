@@ -253,15 +253,15 @@ class CacheOperations {
   }
 
   /// Clear all cached recipes
+  ///
+  /// One helper call: the helper reads its user id when it is called, so a
+  /// caller can drop the user straight after starting the clear. A per-key
+  /// loop needed the id again after each await and cleared nothing at sign-out.
   static Future<void> clearCache(JsonCacheHelper cacheHelper) async {
     try {
-      final keys = await cacheHelper.getAllKeys();
-      for (final key in keys) {
-        await cacheHelper.delete(key);
-      }
-      AppLogger.success(
-        '✅ Recipe cache cleared (${keys.length} items removed)',
-      );
+      final cleared = await cacheHelper.clear();
+      if (!cleared) throw StateError('Recipe cache could not be cleared');
+      AppLogger.success('✅ Recipe cache cleared');
     } catch (e) {
       AppLogger.error('Error clearing cache: $e');
       rethrow;

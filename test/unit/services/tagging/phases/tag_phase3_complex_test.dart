@@ -11,6 +11,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
@@ -30,7 +31,7 @@ Phase2Result p2(Phase1Result base, {Set<String> tags = const {}}) =>
 
 Recipe recipe({
   int ingredientCount = 8,
-  int timeMinutes = 45,
+  int? timeMinutes = 45,
   int portions = 4,
   String title = 'Vardagsmat',
 }) => RecipeFactory.build(
@@ -63,6 +64,12 @@ void main() {
     test('in-between → medel', () {
       final r = run(recipe(ingredientCount: 8, timeMinutes: 45));
       expect(r.tags, contains('medel'));
+    });
+
+    test('no stated time → no difficulty at all', () {
+      final r = run(recipe(ingredientCount: 3, timeMinutes: null));
+      expect(r.tags, isNot(anyOf(contains('enkel'), contains('medel'))));
+      expect(r.tags, isNot(contains('avancerad')));
     });
   });
 
@@ -101,6 +108,44 @@ void main() {
         result.allTags,
         containsAll(<String>['p1tag', 'p2tag', 'enkel']),
       );
+    });
+  });
+
+  group('frysbar and meal-prep need enough known ingredients (COV-06)', () {
+    final veg = IngredientData(
+      id: 'morot',
+      swedish: 'morot',
+      english: 'carrot',
+      group: 'vegetable/root',
+      properties: const {},
+    );
+
+    Phase3Result gryta(double coverage) {
+      final base = Phase1Result(
+        tags: const {'gryta'},
+        allergenStatus: const {},
+        dietaryStatus: const {},
+        lookup: IngredientLookupResult(
+          matched: [veg],
+          unmatched: const [],
+          coverage: coverage,
+        ),
+      );
+      return phase3.calculate(base, p2(base), recipe(portions: 4));
+    }
+
+    test('a gryta with every ingredient known is frysbar and meal-prep', () {
+      expect(gryta(1.0).tags, containsAll(<String>['frysbar', 'meal-prep']));
+    });
+
+    test('at exactly 0.60 coverage the tags are still set', () {
+      expect(gryta(0.6).tags, containsAll(<String>['frysbar', 'meal-prep']));
+    });
+
+    test('the same gryta at 0.5 coverage gets neither tag', () {
+      final tags = gryta(0.5).tags;
+      expect(tags, isNot(contains('frysbar')));
+      expect(tags, isNot(contains('meal-prep')));
     });
   });
 }

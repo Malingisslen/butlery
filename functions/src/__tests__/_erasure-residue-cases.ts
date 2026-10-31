@@ -59,6 +59,55 @@ export const CASES: SectionCase[] = [
     overCap: (db) => many(db, ROWS, (i) => `tag_overrides_log/x${i}`, { userId: UID }),
   },
   {
+    section: "parsing_corrections",
+    idKey: "id",
+    rows: ["p1"],
+    seed: (db) => {
+      db.seed("parsing_corrections/p1", {
+        id: "p1", userId: UID, recipeId: "r1", timestamp: T0, source: "url",
+        totalCorrections: 2, ...STRAY,
+        titleCorrection: { original: "Pannkaka", corrected: "Pannkakor", ...STRAY },
+        ingredientCorrections: [
+          { type: "textModified", originalLine: "2 ägg", correctedLine: "3 ägg", ...STRAY },
+        ],
+        instructionCorrections: [{ type: "textModified", originalText: "a", correctedText: "b" }],
+      });
+      db.seed("parsing_corrections/p2", { id: "p2", userId: OTHER, source: "url" });
+    },
+    check: ([row]) => {
+      expect(row.timestamp === T0_ISO, "timestamp as ISO");
+      expect(!("strayKey" in (row.titleCorrection as object)), "stray key dropped in a nested map");
+      const lines = row.ingredientCorrections as Record<string, unknown>[];
+      expect(lines.length === 1 && lines[0].correctedLine === "3 ägg" && !("strayKey" in lines[0]), "nested list projected");
+    },
+    overCap: (db) => many(db, ROWS, (i) => `parsing_corrections/x${i}`, { userId: UID }),
+  },
+  {
+    section: "learned_aliases",
+    idKey: "id",
+    rows: ["a1", "a2"],
+    seed: (db) => {
+      db.seed("analytics/ingredients/learned_aliases/a1", {
+        originalName: "tomatoe", correctedName: "tomat", ingredientId: "i1",
+        status: "pending", userIds: [UID, OTHER], count: 2, firstSeen: T0, lastSeen: T0, ...STRAY,
+      });
+      db.seed("analytics/ingredients/learned_aliases/a2", {
+        originalName: "lok", correctedName: "lök", ingredientId: "i2",
+        status: "approved", userIds: [UID], count: 1, ...STRAY,
+      });
+      db.seed("analytics/ingredients/learned_aliases/a3", {
+        originalName: "gurk", correctedName: "gurka", status: "pending", userIds: [OTHER],
+      });
+    },
+    check: ([row]) => {
+      expect(row.correctedName === "tomat" && row.status === "pending", "alias fields kept");
+      expect(!("userIds" in row) && !("count" in row), "other voters left out");
+      expect(row.firstSeen === T0_ISO, "firstSeen as ISO");
+    },
+    overCap: (db) =>
+      many(db, ROWS, (i) => `analytics/ingredients/learned_aliases/x${i}`, { userIds: [UID] }),
+  },
+  {
     section: "guest_quota",
     idKey: "calls",
     rows: ["2"],

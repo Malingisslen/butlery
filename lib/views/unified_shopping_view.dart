@@ -36,6 +36,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_notices.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
+import 'package:butlery/views/unified_shopping/widgets/week_list_follow_notice_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_lists_pane.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
@@ -80,6 +81,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
+    _viewModel.addListener(_onViewModelChanged);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
@@ -371,6 +373,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
               text: viewModel.updatedByNotice!,
               onDismiss: viewModel.dismissUpdatedByNotice,
             ),
+          WeekListFollowNoticeBar(
+            listId: _currentTabIndex == 0 ? viewModel.activeList?.id : null,
+            canUndo: viewModel.isOnline,
+          ),
           ShoppingListHeader.build(
             context,
             viewModel,
@@ -795,6 +801,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     );
   }
 
+  void _onViewModelChanged() {
+    final name = _viewModel.consumePantryAddError();
+    if (name == null || !mounted) return;
+    _showErrorSnackBar(context.l10n.shoppingPantryAddFailed(name));
+  }
+
   /// Comprehensive resource disposal with proper lifecycle management and cleanup coordination.
   /// Performs complete resource cleanup preventing memory leaks and ensuring proper
   /// lifecycle management through systematic disposal of state resources, event handlers,
@@ -805,6 +817,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// - Event handler cleanup with proper subscription management
   @override
   void dispose() {
+    _viewModel.removeListener(_onViewModelChanged);
     _selection.dispose();
     _pantrySelection.dispose();
     _pantryViewModel?.dispose();

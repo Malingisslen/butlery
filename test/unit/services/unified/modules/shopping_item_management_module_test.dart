@@ -574,6 +574,25 @@ void main() {
       expect(notifyCalls, 1);
     });
 
+    test('merges a prepared name into the plain one', () async {
+      lists.add(
+        _seedList(
+          id: 'L',
+          items: [UnifiedShoppingItem(name: 'lök', amount: 1, unit: 'st')],
+        ),
+      );
+      activeListId = 'L';
+
+      final ok = await buildModule().addItemsBatchToActiveList([
+        UnifiedShoppingItem(name: 'hackad lök', amount: 2, unit: 'st'),
+      ]);
+
+      expect(ok, isTrue);
+      expect(fakeRepo.batchedItems, isEmpty);
+      expect(lists.first.items, hasLength(1));
+      expect(lists.first.items.single.amount, 3);
+    });
+
     /// BUT-2067: the merge is a SUM, and a sum of two finite doubles can be
     /// Infinity. It needs two near-maximal rows rather than one overflowing
     /// product. The merge runs every time the same item is added again.
@@ -597,6 +616,37 @@ void main() {
       expect(fakeRepo.updatedItems, hasLength(1));
       expect(fakeRepo.updatedItems.single.amount.isFinite, isTrue);
       expect(fakeRepo.updatedItems.single.amount, 1.0);
+    });
+
+    /// i07: a recipe's rows go where the user once moved that name, as a
+    /// row typed by hand already does.
+    test('a new row takes the user\'s category for its name', () async {
+      fakePrefsRepo.prefsToReturn = CategoryPreferences(
+        itemCategoryOverrides: {'grädde': 'Skafferi'},
+      );
+      await prefsModule.load();
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+
+      final ok = await buildModule().addItemsBatchToActiveList([
+        UnifiedShoppingItem(
+          name: 'Grädde',
+          amount: 2,
+          unit: 'dl',
+          category: 'Mejeri',
+        ),
+        UnifiedShoppingItem(
+          name: 'Mjölk',
+          amount: 1,
+          unit: 'l',
+          category: 'Mejeri',
+        ),
+      ]);
+
+      expect(ok, isTrue);
+      final added = fakeRepo.batchedItems.single;
+      expect(added.singleWhere((i) => i.name == 'Grädde').category, 'Skafferi');
+      expect(added.singleWhere((i) => i.name == 'Mjölk').category, 'Mejeri');
     });
 
     /// Proves (BUT-1106): when a later repo call throws AFTER some merged
@@ -634,6 +684,35 @@ void main() {
       expect(lists.first.items.single.amount, 1);
       expect(notifyCalls, 0);
     });
+
+    /// Proves: two spellings of one unit ("styck" stored, "st" incoming) are
+    /// the same unit, so the batch merges into the existing row rather than
+    /// leaving two rows for one ingredient.
+    test(
+      'merges rows whose units are different spellings of one unit',
+      () async {
+        final existing = UnifiedShoppingItem(
+          name: 'Ägg',
+          amount: 2,
+          unit: 'styck',
+        );
+        lists.add(_seedList(id: 'L', items: [existing]));
+        activeListId = 'L';
+
+        final incoming = UnifiedShoppingItem(
+          name: 'Ägg',
+          amount: 3,
+          unit: 'st',
+        );
+        final ok = await buildModule().addItemsBatchToActiveList([incoming]);
+
+        expect(ok, isTrue);
+        expect(fakeRepo.batchedItems, isEmpty);
+        expect(fakeRepo.updatedItems.single.amount, 5);
+        expect(lists.first.items, hasLength(1));
+        expect(lists.first.items.single.amount, 5);
+      },
+    );
 
     /// Proves: SAME NAME + DIFFERENT UNIT → no merge. A naive name-only
     /// dedup would silently collapse "1 dl mjölk" and "1 ml mjölk" into a

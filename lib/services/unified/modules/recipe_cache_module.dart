@@ -58,10 +58,10 @@ class RecipeCacheModule {
   final void Function(String) _setError;
   final void Function() _notifyListeners;
 
-  /// BUG-003: Callback for direct recipe updates (used on web where cache is stubbed)
+  /// BUG-003: Callback for direct recipe updates
   final void Function(Recipe recipe)? _onRecipeUpdated;
 
-  /// BUG-003: Callback for direct recipe removals (used on web where cache is stubbed)
+  /// BUG-003: Callback for direct recipe removals
   final void Function(String recipeId)? _onRecipeRemoved;
 
   /// Whether the offline queue holds a write of the recipe the server has
@@ -237,6 +237,9 @@ class RecipeCacheModule {
 
   /// Update cached recipe from Firebase change
   Future<void> _updateCachedRecipe(Recipe recipe, String source) async {
+    // A delivery already past the listener when the account switches would
+    // otherwise land in the next account's list and cache.
+    final userId = _getCurrentUserId();
     try {
       // BUT-2162: the offline queue holds a newer write of this recipe (or
       // its deletion) than the server has, so the server's copy would undo
@@ -246,15 +249,17 @@ class RecipeCacheModule {
         return;
       }
 
+      if (_getCurrentUserId() != userId) return;
+
       // Save to cache using CacheOperations
       await saveRecipeToCache(recipe);
+      if (_getCurrentUserId() != userId) return;
 
-      // BUG-003: Call direct update callback (for web where cache is stubbed)
+      // BUG-003: Call direct update callback
       _onRecipeUpdated?.call(recipe);
 
-      // BUT-1252: When a direct callback handled the update (web), it already
+      // BUT-1252: When a direct callback handled the update, it already
       // mutated _recipes AND notified — notifying again here would double-fire.
-      // Only the cache-owned native path notifies from here.
       if (_onRecipeUpdated == null) {
         _notifyListeners();
       }
@@ -289,13 +294,15 @@ class RecipeCacheModule {
 
   /// Remove cached recipe from Firebase change
   Future<void> _removeCachedRecipe(String recipeId, String source) async {
+    final userId = _getCurrentUserId();
     try {
       // Await the cache delete so a failure (CacheOperations rethrows) is
       // caught here instead of escaping as an unhandled async exception, and
       // so the callback/notify below only fire after the delete settles.
       await removeRecipeFromCache(recipeId);
+      if (_getCurrentUserId() != userId) return;
 
-      // BUG-003: Call direct removal callback (for web where cache is stubbed)
+      // BUG-003: Call direct removal callback
       _onRecipeRemoved?.call(recipeId);
 
       // BUT-1252: see _updateCachedRecipe — skip the redundant notify when the
@@ -394,15 +401,15 @@ class RecipeCacheModule {
   /// Handle user authentication state changes
   void onAuthStateChanged(String? userId) {
     try {
-      // Update cache helper with new user
-      _cacheHelper.setCurrentUser(userId);
-
       if (userId == null) {
-        // User logged out - stop sync and clear cache
+        // Started before the user is dropped: the clear is scoped by the id
+        // the helper still holds.
         stopFirebaseSync();
-        clearCache();
+        unawaited(clearCache().catchError((Object _) {}));
+        _cacheHelper.setCurrentUser(null);
         AppLogger.info('User logged out - cache cleared');
       } else {
+        _cacheHelper.setCurrentUser(userId);
         // User logged in - start sync
         startFirebaseSync();
         AppLogger.info('User logged in - sync started');

@@ -1,3 +1,4 @@
+import 'package:butlery/constants/grocery_brands.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -1223,6 +1224,158 @@ void main() {
       expect(result.matched, isEmpty);
       expect(result.unmatched, ['vitost']);
       verifyNever(() => mockIngredientRepo.findByName('vita'));
+    });
+  });
+
+  group('a grocery brand in front of or after the product', () {
+    test('"Arla mellanmjölk" finds mellanmjölk', () async {
+      final milk = _createIngredient('milk-semi-skimmed', 'mellanmjölk');
+      when(
+        () => mockIngredientRepo.findByName('mellanmjolk'),
+      ).thenAnswer((_) async => milk);
+
+      final result = await service.lookupIngredients(['Arla mellanmjölk']);
+
+      expect(result.matched, [milk]);
+      expect(result.unmatched, isEmpty);
+    });
+
+    test('a trailing brand is dropped too', () async {
+      final oil = _createIngredient('olive-oil', 'olivolja');
+      when(
+        () => mockIngredientRepo.findByName('olivolja'),
+      ).thenAnswer((_) async => oil);
+
+      final result = await service.lookupIngredients(['olivolja zeta']);
+
+      expect(result.matched, [oil]);
+    });
+
+    test('a two-word brand is dropped whole', () async {
+      final tomatoes = _createIngredient(
+        'crushed-tomatoes',
+        'krossade tomater',
+      );
+      when(
+        () => mockIngredientRepo.findByName('krossade tomater'),
+      ).thenAnswer((_) async => tomatoes);
+
+      final result = await service.lookupIngredients([
+        'ica basic krossade tomater',
+      ]);
+
+      expect(result.matched, [tomatoes]);
+      verifyNever(
+        () => mockIngredientRepo.findByName('basic krossade tomater'),
+      );
+    });
+
+    test('a registry entry that carries the brand wins', () async {
+      final mos = _createIngredient('felix-mos', 'felix mos');
+      when(
+        () => mockIngredientRepo.findByName('felix mos'),
+      ).thenAnswer((_) async => mos);
+
+      final result = await service.lookupIngredients(['felix mos']);
+
+      expect(result.matched, [mos]);
+      verifyNever(() => mockIngredientRepo.findByName('mos'));
+    });
+
+    test('a brand alone is not looked up as nothing', () async {
+      final result = await service.lookupIngredients(['arla']);
+
+      expect(result.matched, isEmpty);
+      expect(result.unmatched, ['arla']);
+      verifyNever(() => mockIngredientRepo.findByName(''));
+    });
+
+    test('a brand inside a word is not a brand', () {
+      expect(GroceryBrands.strip('scampi'), isNull);
+      expect(GroceryBrands.strip('icakaka'), isNull);
+      expect(GroceryBrands.strip('scan bacon'), 'bacon');
+    });
+  });
+
+  group('lookupFromRaw lines', () {
+    void stubFound(Map<String, IngredientData> byCleanName) {
+      byCleanName.forEach((name, row) {
+        when(
+          () => mockIngredientRepo.findByName(name),
+        ).thenAnswer((_) async => row);
+      });
+    }
+
+    test('returns one line per raw line, in recipe order', () async {
+      stubFound({
+        'tomat': _createIngredient('tomat', 'tomat'),
+        'mjolk': _createIngredient('mjolk', 'mjölk'),
+      });
+
+      final result = await service.lookupFromRaw([
+        '2 tomater',
+        '3 dl mjölk',
+        '1 dl okandvara',
+      ]);
+
+      expect(result.hasRecipeLines, isTrue);
+      expect(result.lines, hasLength(3));
+      expect(result.lines.map((l) => l.known), [true, true, false]);
+      expect(result.lines[0].ingredients.single.id, 'tomat');
+      expect(result.lines[1].ingredients.single.id, 'mjolk');
+      expect(result.lines[2].ingredients, isEmpty);
+    });
+
+    test(
+      '"salt och peppar" is one line with two names and both rows',
+      () async {
+        stubFound({
+          'salt': _createIngredient('salt', 'salt'),
+          'peppar': _createIngredient('pepper-generic', 'peppar'),
+        });
+
+        final result = await service.lookupFromRaw(['salt och peppar']);
+
+        final line = result.lines.single;
+        expect(line.names, hasLength(2));
+        expect(line.ingredients.map((i) => i.id), ['salt', 'pepper-generic']);
+        expect(line.known, isTrue);
+      },
+    );
+
+    test('a line is not known while one of its names is unmatched', () async {
+      stubFound({'salt': _createIngredient('salt', 'salt')});
+
+      final result = await service.lookupFromRaw(['salt och okandkrydda']);
+
+      final line = result.lines.single;
+      expect(line.names, hasLength(2));
+      expect(line.ingredients.map((i) => i.id), ['salt']);
+      expect(line.known, isFalse);
+    });
+
+    test('an ingredient on two raw lines appears on both lines', () async {
+      stubFound({'tomat': _createIngredient('tomat', 'tomat')});
+
+      final result = await service.lookupFromRaw([
+        '2 tomater',
+        '1 dl okandvara',
+        '1 tomater',
+      ]);
+
+      expect(result.lines, hasLength(3));
+      expect(result.lines[0].ingredients.single.id, 'tomat');
+      expect(result.lines[2].ingredients.single.id, 'tomat');
+      expect(result.lines[0].known && result.lines[2].known, isTrue);
+    });
+
+    test('an unmatched name gives a line that is not known', () async {
+      final result = await service.lookupFromRaw(['2 dl okandvara']);
+
+      final line = result.lines.single;
+      expect(line.known, isFalse);
+      expect(line.ingredients, isEmpty);
+      expect(result.unmatched, isNotEmpty);
     });
   });
 }

@@ -1,5 +1,5 @@
 /// Seam over the platform's built-in text recognizer (ML Kit), used as the
-/// free tier-0 provider in [OCRExtractionService] before any paid provider.
+/// free tier-0 provider in [OCRExtractionService].
 ///
 /// The production implementation is selected by a conditional import in
 /// `ocr_extraction_service.dart`:

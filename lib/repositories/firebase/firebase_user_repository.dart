@@ -10,7 +10,7 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/user_root_deletion_mixin.dart';
 import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';

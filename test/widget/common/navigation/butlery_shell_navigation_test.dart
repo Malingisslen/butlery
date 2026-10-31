@@ -311,6 +311,7 @@ void main() {
       expect(find.text(_sv.recipeFromImage), findsOneWidget);
       expect(find.text(_sv.recipeFromArchive), findsOneWidget);
       expect(find.text(_sv.recipeVoiceImport), findsOneWidget);
+      expect(find.text(_sv.recipeFromFile), findsOneWidget);
     });
 
     final choices = <String, String>{
@@ -320,6 +321,7 @@ void main() {
       'test-add-sheet-btn-photo-import': Routes.photoImport,
       'test-add-sheet-btn-archive-import': Routes.importFromArchive,
       'test-add-sheet-btn-voice-import': Routes.voiceImport,
+      'test-add-sheet-btn-file-import': Routes.fileImport,
     };
     for (final entry in choices.entries) {
       testWidgets('${entry.key} closes the sheet and opens ${entry.value}', (

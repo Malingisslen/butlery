@@ -26,15 +26,16 @@ void main() {
 
   test('a mixed fraction stays one amount, shown like the recipe page', () {
     final s = split('1 1/2 dl panko eller ströbröd');
-    expect(s.quantity, '1,5 dl');
+    expect(s.quantity, '1 ½ dl');
     expect(s.name, 'panko eller ströbröd');
     expect(split('2 ½ dl mjölk').quantity, '2 ½ dl');
     expect(split('2 ½ dl mjölk').name, 'mjölk');
   });
 
-  test('a plain fraction is shown as a decimal', () {
+  test('a plain fraction is shown as a fraction', () {
     final s = split('1/2 dl olja');
-    expect(s.quantity, '0,5 dl');
+    expect(s.quantity, '½ dl');
+    expect(split('3/4 dl ströbröd').quantity, '¾ dl');
     expect(s.name, 'olja');
   });
 

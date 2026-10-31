@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
@@ -11,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
@@ -54,6 +56,7 @@ class PersonalRecipeModule {
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
   final TaggingService? _taggingService;
+  final IngredientIdResolver? _ingredientIdResolver;
   final PersonalTagService? _personalTagService;
 
   /// BUT-2162: the offline queue every create, update and delete goes
@@ -128,6 +131,7 @@ class PersonalRecipeModule {
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
     TaggingService? taggingService,
+    IngredientIdResolver? ingredientIdResolver,
     PersonalTagService? personalTagService,
     void Function(String recipeTitle)? onTaggingFailed,
     OfflineService? Function()? getOfflineQueue,
@@ -143,6 +147,7 @@ class PersonalRecipeModule {
        _notifyListeners = notifyListeners,
        _getServiceAdapter = getServiceAdapter,
        _taggingService = taggingService,
+       _ingredientIdResolver = ingredientIdResolver,
        _personalTagService = personalTagService,
        _onTaggingFailed = onTaggingFailed;
 
@@ -204,6 +209,8 @@ class PersonalRecipeModule {
           // portions) treat a recipe without these as unparsed lines.
           newRecipe.core.structuredIngredients ??=
               StructuredIngredientDeriver.deriveAll(newRecipe.ingredients);
+
+          newRecipe = await _withIngredientIds(newRecipe);
 
           // Generate tags if tagging service is available
           newRecipe = await _applyTagging(newRecipe);
@@ -293,6 +300,8 @@ class PersonalRecipeModule {
             lastEditedByUserId: currentUserId,
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
+
+          editedRecipe = await _withIngredientIds(editedRecipe);
 
           // Regenerate tags if ingredients changed
           editedRecipe = await _applyTagging(editedRecipe);
@@ -428,156 +437,6 @@ class PersonalRecipeModule {
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
       _setError(AppLocale.current.errorCouldNotDeleteRecipe);
-      return false;
-    }
-  }
-
-  Future<bool> markRecipeAsCooked(String recipeId) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Mark recipe as cooked',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need to be implemented with recipe loading first
-      // For now, we'll create a basic implementation
-      AppLogger.info('Recipe marked as cooked: $recipeId');
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not mark recipe as cooked: $e');
-      _setError(AppLocale.current.errorCouldNotMarkAsCooked);
-      return false;
-    }
-  }
-
-  Future<bool> addIngredient(String recipeId, String ingredient) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Add ingredient',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info('Ingredient added to recipe $recipeId: $ingredient');
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not add ingredient: $e');
-      _setError(AppLocale.current.errorCouldNotAddIngredient);
-      return false;
-    }
-  }
-
-  Future<bool> updateIngredient(
-    String recipeId,
-    int index,
-    String newIngredient,
-  ) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Update ingredient',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info(
-        'Ingredient updated in recipe $recipeId at index $index: $newIngredient',
-      );
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not update ingredient: $e');
-      _setError(AppLocale.current.errorCouldNotUpdateIngredient);
-      return false;
-    }
-  }
-
-  Future<bool> removeIngredient(String recipeId, int index) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Remove ingredient',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info(
-        'Ingredient removed from recipe $recipeId at index $index',
-      );
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not remove ingredient: $e');
-      _setError(AppLocale.current.errorCouldNotRemoveIngredient);
-      return false;
-    }
-  }
-
-  Future<bool> addInstruction(String recipeId, String instruction) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Add instruction',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info('Instruction added to recipe $recipeId: $instruction');
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not add instruction: $e');
-      _setError(AppLocale.current.errorCouldNotAddInstruction);
-      return false;
-    }
-  }
-
-  Future<bool> updateInstruction(
-    String recipeId,
-    int index,
-    String newInstruction,
-  ) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Update instruction',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info(
-        'Instruction updated in recipe $recipeId at index $index: $newInstruction',
-      );
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not update instruction: $e');
-      _setError(AppLocale.current.errorCouldNotUpdateInstruction);
-      return false;
-    }
-  }
-
-  Future<bool> removeInstruction(String recipeId, int index) async {
-    final currentUserId = PermissionHelper.requireAuthWithError(
-      getCurrentUserId: _getCurrentUserId,
-      setError: _setError,
-      operationName: 'Remove instruction',
-    );
-    if (currentUserId == null) return false;
-
-    try {
-      // This would need recipe loading implementation
-      AppLogger.info(
-        'Instruction removed from recipe $recipeId at index $index',
-      );
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Could not remove instruction: $e');
-      _setError(AppLocale.current.errorCouldNotRemoveInstruction);
       return false;
     }
   }
@@ -734,6 +593,8 @@ class PersonalRecipeModule {
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
 
+          personalRecipe = await _withIngredientIds(personalRecipe);
+
           // Apply tagging to imported recipes
           personalRecipe = await _applyTagging(
             personalRecipe,
@@ -886,6 +747,17 @@ class PersonalRecipeModule {
   /// queue tags it once the write has reached the server.
   static bool _taggingFailed(Recipe recipe) =>
       recipe.core.tagResult?.generatorVersion == 'failed';
+
+  /// [recipe] with its stored ingredient lines linked to the ingredient
+  /// registry, so the shopping list and the pantry can match them by id.
+  Future<Recipe> _withIngredientIds(Recipe recipe) async {
+    final rows = recipe.core.structuredIngredients;
+    final resolver = _ingredientIdResolver;
+    if (rows == null || resolver == null) return recipe;
+    final linked = await resolver.resolve(rows);
+    if (listEquals(linked, rows)) return recipe;
+    return recipe.copyWith(structuredIngredients: linked);
+  }
 
   /// Applies automatic tagging to a recipe if tagging service is available.
   ///

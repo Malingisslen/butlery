@@ -175,11 +175,6 @@ class RecipeDetailActions {
     await RecipeManagementHandler.shareRecipe(context);
   }
 
-  /// Mark recipe as cooked
-  Future<void> markAsCooked(BuildContext context) async {
-    await RecipeManagementHandler.markAsCooked(context);
-  }
-
   /// Edit recipe
   Future<void> editRecipe(BuildContext context) async {
     await RecipeManagementHandler.editRecipe(

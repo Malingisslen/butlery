@@ -1,0 +1,25 @@
+{
+  "_": "The one source of the cloche mark. tools/generate_brand_assets.dart writes every launcher icon, store icon, splash and web icon, and the Dart constants the in-app cloche is drawn from, from this file; test/architecture/brand_mark_single_source_test.dart fails when one of them, or lib/widgets/common/brand/brand_mark_geometry.dart (which butlery_cloche.dart draws from), stops agreeing with it.",
+  "viewBox": 160,
+  "colors": {
+    "ground": "#24382C",
+    "saffron": "#D68523",
+    "cream": "#F5F4ED"
+  },
+  "shapes": {
+    "domeFilled": "M37 104C39 79 55.92 61 80 61C104.08 61 121 79 123 104L37 104Z",
+    "domeOutline": "M40.5 104C40.5 81.09 57.88 64.5 80 64.5C102.12 64.5 119.5 81.09 119.5 104",
+    "plate": "M28 113H132",
+    "stem": "M80 55V64",
+    "knob": {"x": 72, "y": 48, "width": 16, "height": 8, "radius": 4}
+  },
+  "strokes": {"plate": 7, "dome": 7, "stem": 3.5},
+  "opticalLift": {
+    "_": "Drawing units the mark is raised so the mean of its bounding-box centre and its ink centroid sits on the centre of the plate it is placed on.",
+    "filled": 6.1,
+    "outline": 6.9
+  },
+  "inAppMark": {"crop": [25, 25, 110, 110]},
+  "android": {"canvas": 108, "scale": 0.4125, "offset": 21, "splashCircle": 72},
+  "web": {"maskableScale": 0.75}
+}

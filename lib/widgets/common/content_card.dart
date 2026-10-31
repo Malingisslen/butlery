@@ -99,32 +99,6 @@ class ContentCard extends StatelessWidget {
   /// Optional subtitle text for additional context information
   final String? subtitle;
 
-  /// User allergen preferences for filtering displayed allergen badges (recipe cards only)
-  final Set<String>? userAllergenPrefs;
-
-  /// User dietary preferences for filtering displayed dietary badges (recipe cards only)
-  final Set<String>? userDietaryPrefs;
-
-  /// Whether the recipe card renders allergen badges. Null — the default —
-  /// derives it from [userAllergenPrefs]: handing a card a preference set is
-  /// itself the decision to show badges, and dropping that decision is what
-  /// kept the badges invisible on every card (BUT-1780). Passing `false`
-  /// alongside a preference set suppresses them; passing `true` without one
-  /// falls back to the badge row's own default allergens.
-  ///
-  /// One asymmetry to know before "harmonising" this with the card: an EMPTY
-  /// set derives `true` here, because the question this facade answers is "did
-  /// the caller opt in". `RecipeCard` deliberately reads the same empty set as
-  /// "asked for nothing" and stays silent — it answers a different question,
-  /// "is there anything to say". Both readings are correct for their own layer
-  /// and the rendered result is identical; changing this one to match the card
-  /// would not remove the card's own need for the check, since `RecipeCard` can
-  /// be built directly.
-  final bool? showAllergenBadges;
-
-  /// Same contract as [showAllergenBadges], derived from [userDietaryPrefs].
-  final bool? showDietaryBadges;
-
   /// Pantry match percentage (0.0..1.0) for recipe cards — displayed as
   /// a badge when the "Laga med vad jag har" filter is active.
   final double? matchPercent;
@@ -151,10 +125,6 @@ class ContentCard extends StatelessWidget {
     this.showSharingStatus = false,
     this.trailing,
     this.subtitle,
-    this.userAllergenPrefs,
-    this.userDietaryPrefs,
-    this.showAllergenBadges,
-    this.showDietaryBadges,
     this.matchPercent,
     this.pooledStats,
   });
@@ -193,10 +163,6 @@ class ContentCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       style: _mapToRecipeCardStyle(style),
-      userAllergenPrefs: userAllergenPrefs,
-      userDietaryPrefs: userDietaryPrefs,
-      showAllergenBadges: showAllergenBadges ?? userAllergenPrefs != null,
-      showDietaryBadges: showDietaryBadges ?? userDietaryPrefs != null,
       matchPercent: matchPercent,
       pooledStats: pooledStats,
     );

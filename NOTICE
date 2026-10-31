@@ -61,7 +61,6 @@ Other licenses
     Sweden — downloaded at runtime, not bundled).
   - http_certificate_pinning (Apache-2.0).
   - feature flags via GrowthBook SDK (MIT).
-  - Algolia / algoliasearch_helper_flutter (MIT).
   - share_plus, url_launcher, package_info_plus (BSD-3, Flutter ecosystem).
   - flutter_inappwebview (Apache-2.0).
   - workmanager (MIT).

@@ -394,6 +394,110 @@ void main() {
     });
   });
 
+  // BUT-2455: the row shows its amount the way the recipe page does.
+  group('ParseConfidenceReview — amount as the recipe page writes it', () {
+    testWidgets('a decimal amount reads with a comma and offers no original', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'mjölk',
+                confidence: ParseConfidence.medium,
+                originalLine: '0,4 dl mjölk',
+                quantity: '0.4',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('0,4 dl mjölk'), findsOneWidget);
+      expect(find.textContaining('0.4'), findsNothing);
+      // Only the decimal mark differed, so there is no original to reveal.
+      expect(find.byIcon(ButleryIcons.chevronDown), findsNothing);
+    });
+
+    testWidgets('a common fraction reads as a fraction', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'ströbröd',
+                confidence: ParseConfidence.medium,
+                originalLine: '¾ dl ströbröd',
+                quantity: '0.75',
+                unit: 'dl',
+              ),
+              _ingredient(
+                name: 'grädde',
+                confidence: ParseConfidence.medium,
+                originalLine: '3/4 dl grädde',
+                quantity: '0.75',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('¾ dl ströbröd'), findsOneWidget);
+      expect(find.text('¾ dl grädde'), findsOneWidget);
+      expect(find.textContaining('0,75'), findsNothing);
+    });
+
+    testWidgets('a written range stays a range', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'chilisås',
+                confidence: ParseConfidence.medium,
+                originalLine: '0,5-1 dl chilisås',
+                quantity: '1',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('0,5-1 dl chilisås'), findsOneWidget);
+    });
+
+    testWidgets('a range the original line cannot give keeps a comma', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'chilisås',
+                confidence: ParseConfidence.medium,
+                originalLine: 'chilisås 0,5-1 dl',
+                quantity: '0.5-1',
+                unit: 'dl',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('0,5-1 dl chilisås'), findsOneWidget);
+      expect(find.textContaining('0.5'), findsNothing);
+    });
+  });
+
   group('Accessibility — semantics label includes confidence word', () {
     testWidgets('high-confidence row semantics include confidence word', (
       tester,

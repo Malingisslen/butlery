@@ -876,10 +876,6 @@
     }
   },
   "recipePersonalTags": "Personal tags",
-  "recipeAnalysisFailed": "Analysis failed",
-  "recipeAnalyzing": "Analysing …",
-  "recipeAnalysisFailedA11y": "Ingredient analysis failed",
-  "recipeAnalyzingA11y": "Ingredients being analysed",
   "recipeSearchHint": "Search recipes …",
   "recipeShowMore": "Show more recipes",
   "recipeCountBadge": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
@@ -1213,6 +1209,58 @@
       }
     }
   },
+  "recipeSourceCardTitle": "From {site}",
+  "@recipeSourceCardTitle": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceAuthor": "By {author}",
+  "@recipeSourceAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSourceOpenOriginal": "Open original",
+  "recipeBorrowedImageCredit": "Image: {site}",
+  "@recipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCard": "Recipe from {site}",
+  "@a11yRecipeSourceCard": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeSourceCardWithAuthor": "Recipe from {site}, by {author}",
+  "@a11yRecipeSourceCardWithAuthor": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeBorrowedImageCredit": "Image shown from {site}",
+  "@a11yRecipeBorrowedImageCredit": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
   "errorCouldNotOpenLink": "Could not open link",
   "errorInvalidLink": "Invalid link",
   "shoppingItemRemoved": "{name} removed.",
@@ -1369,7 +1417,6 @@
     "description": "BUT-1322: tooltip/semantics for the household-size plus button"
   },
   "settingsLanguageTitle": "Language",
-  "commonLogoutNow": "Sign out now",
   "commonTakePhoto": "Take photo",
   "commonSelectFromGallery": "Select from gallery",
   "commonSelectFriends": "Select friends",
@@ -1642,8 +1689,6 @@
     "description": "BUT-1306: decline button on the first-checkoff prompt."
   },
   "allergenDisplayTitle": "Display on",
-  "allergenDisplayOnCardsTitle": "Recipe cards",
-  "allergenDisplayOnCardsSubtitle": "Show allergen status on recipe cards in lists",
   "allergenDisplayOnDetailTitle": "Recipe details",
   "allergenDisplayOnDetailSubtitle": "Show complete allergen status on recipe page",
   "allergenDisplayCoverageSubtitle": "Show what proportion of ingredients are known",
@@ -1746,6 +1791,14 @@
   "tagResultCoverage": "Coverage",
   "tagResultUnknownIngredients": "{count, plural, =1{1 unknown ingredient} other{{count} unknown ingredients}}",
   "@tagResultUnknownIngredients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagResultUncertainTags": "Uncertain tags, {count, plural, =1{1 ingredient unknown} other{{count} ingredients unknown}}",
+  "@tagResultUncertainTags": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -1978,6 +2031,14 @@
   "profileRestoreNotRead": "The backup could not be read.",
   "profileRestoreNothingRemoved": "No recipes were deleted.",
   "profileRestoreCompleted": "Restore completed.",
+  "profileRestoreSomeNotRestored": "{count, plural, =1{1 recipe} other{{count} recipes}} could not be restored.",
+  "@profileRestoreSomeNotRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileRestoreFailed": "The restore failed. Nothing has changed. Try again.",
   "@profileRestoreFailed": {
     "placeholders": {
@@ -2387,10 +2448,6 @@
   "rateLimitAiLimit": "AI limit reached",
   "rateLimitDailyQuota": "Daily quota reached",
   "rateLimitSlowDown": "Slow down a bit",
-  "sessionContinue": "Continue session",
-  "sessionContinueOrLogout": "Do you want to continue your session or sign out now?",
-  "sessionExpiringMessage": "Your session will expire in:",
-  "sessionExpiringTitle": "Session expiring soon",
   "shareContentTypeMenu": "menus",
   "shareContentTypeRecipe": "recipes",
   "shareContentTypeShoppingList": "shopping lists",
@@ -3345,6 +3402,7 @@
   "recipeContinueEditing": "Continue editing",
   "recipeCopySaved": "The copy of the recipe has been saved.",
   "recipeFromArchive": "From archive",
+  "recipeFromFile": "From file",
   "recipeFromImage": "From image",
   "recipeImportedFromShare": "Imported from sharing",
   "recipeImportLink": "Import link",
@@ -5165,8 +5223,6 @@
       }
     }
   },
-  "a11yAllergenStatusRow": "Allergen status",
-  "a11yDietaryStatusRow": "Dietary status",
   "a11yShowImage": "Show image",
   "a11yShowMore": "Show more",
   "a11yShoppingItemMoreOptions": "More options for {name}",
@@ -6266,13 +6322,6 @@
   "errorCouldNotAddRecipe": "Could not add the recipe.",
   "errorCouldNotUpdateRecipe": "Could not update the recipe.",
   "errorCouldNotExportRecipes": "Could not export recipes",
-  "errorCouldNotMarkAsCooked": "Could not mark recipe as cooked",
-  "errorCouldNotAddIngredient": "Could not add ingredient",
-  "errorCouldNotUpdateIngredient": "Could not update ingredient",
-  "errorCouldNotRemoveIngredient": "Could not remove ingredient",
-  "errorCouldNotAddInstruction": "Could not add instruction",
-  "errorCouldNotUpdateInstruction": "Could not update instruction",
-  "errorCouldNotRemoveInstruction": "Could not remove instruction",
   "errorCouldNotStartSync": "Could not start synchronisation",
   "errorSyncErrorFor": "Sync error for {syncType}",
   "@errorSyncErrorFor": {
@@ -7784,7 +7833,6 @@
   },
   "importedRecipeLabel": "Imported recipe",
   "labelEmptyMenu": "Empty menu",
-  "errorVideoNoSubtitles": "Video has no subtitles",
   "errorNetworkFallback": "Network error",
   "recipeCollaborationEnable": "Enable collaboration",
   "recipeCollaborationDisable": "Disable collaboration",
@@ -8480,7 +8528,6 @@
   "addRecipe": "Add recipe",
   "editRecipe": "Edit recipe",
   "checkPermissions": "Check permissions",
-  "ingredientParseError": "Could not parse ingredient",
   "portionsUnit": "portions",
   "sharedRecipeFallback": "Shared recipe · {count, plural, =1{1 member} other{{count} members}}",
   "@sharedRecipeFallback": {
@@ -11300,17 +11347,59 @@
   "shoppingMergeConvertTitle": "Convert units",
   "shoppingMergeConvertBody": "2 dl + 100 ml becomes 3 dl. Volume and weight are never converted into each other – they stay two lines.",
   "shoppingMergePantryTitle": "Subtract pantry items",
-  "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}} An unknown amount gives no deduction – the item is added marked “Maybe at home”.",
+  "shoppingMergePantryBody": "{count, plural, =0{None of the items are at home.} =1{1 item is at home.} other{{count} items are at home.}}",
   "shoppingMergePantryCovered": "At home in full: {names}",
   "shoppingMergePantryUnavailable": "The pantry could not be read, so the list is made without pantry deduction.",
-  "shoppingMergeReplaceTitle": "Replace the list instead of adding",
-  "shoppingMergeReplaceBody": "Items you added yourself are always kept.",
-  "shoppingMergeReplaceUnavailable": "This list was made before the app kept the week's items apart from your own, so it cannot be replaced. The week's items are added.",
   "shoppingMergeAdd": "{count, plural, =1{Add 1 item} other{Add {count} items}}",
-  "shoppingMergeReplaceAction": "{count, plural, =1{Replace with 1 item} other{Replace with {count} items}}",
+  "shoppingMergeUpdate": "Update the list",
+  "shoppingMergeUpdateBody": "The list already has items from the week. They are updated, but what you changed or ticked off is left alone and your own items stay. The list then follows along when you change the week.",
+  "shoppingMergeSynced": "{list} is up to date with the week. What you changed yourself is still there.",
   "shoppingMergeAdded": "{count, plural, =1{1 item was added to {list}.} other{{count} items were added to {list}.}}",
-  "shoppingMergeReplaced": "{list} now has {count, plural, =1{1 item} other{{count} items}} from the week. Your own items are still there.",
   "shoppingMergeConcurrentChange": "{count, plural, =1{The list had been changed on another device. Your item was added and nothing was overwritten.} other{The list had been changed on another device. Your {count} items were added and nothing was overwritten.}}",
+  "shoppingFollowNotice": "Updated from the week menu: {changes}",
+  "@shoppingFollowNotice": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFollowAdded": "{count, plural, other{{count} new}}",
+  "@shoppingFollowAdded": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowChanged": "{count, plural, other{{count} changed}}",
+  "@shoppingFollowChanged": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowRemoved": "{count, plural, other{{count} removed}}",
+  "@shoppingFollowRemoved": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowNoticeDismiss": "Dismiss notice",
+  "@shoppingFollowNoticeDismiss": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button."
+  },
+  "shoppingFollowNoticeUndoFailed": "The update could not be undone",
+  "@shoppingFollowNoticeUndoFailed": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed."
+  },
   "shoppingMergeUndoFailed": "The undo could not be completed",
   "shoppingMergeUndoFailedKept": "The items are still on the list.",
   "shoppingMergeRowRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",
@@ -11343,24 +11432,6 @@
   },
   "signOutPendingWait": "Wait for sync",
   "signOutPendingDiscard": "Sign out and discard the changes",
-  "sessionPendingChangesIntro": "{count, plural, =1{1 change has not been saved yet:} other{{count} changes have not been saved yet:}}",
-  "@sessionPendingChangesIntro": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "sessionEndedBackgroundTitle": "You were signed out while the app lay still.",
-  "sessionEndedBackgroundReason": "That happens after 45 minutes without activity, and it is meant to.",
-  "sessionEndedBackgroundPending": "{count, plural, =0{No changes are waiting.} =1{1 change is still on the phone and is sent as soon as you are back in – nothing you did is lost.} other{{count} changes are still on the phone and are sent as soon as you are back in – nothing you did is lost.}}",
-  "@sessionEndedBackgroundPending": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "draftTimeLeftDays": "{count, plural, =1{kept for 1 more day} other{kept for {count} more days}}",
   "@draftTimeLeftDays": {
     "placeholders": {
@@ -12939,6 +13010,10 @@
   "menuMealAllergenScopeHint": "The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can't eat them is away.",
   "@menuMealAllergenScopeHint": {
     "description": "BUT-2362: hint above the generated menu list while the per-meal allergen choice is on"
+  },
+  "menuRecencyReadFailedHint": "Couldn't read earlier weeks, so dishes may repeat.",
+  "@menuRecencyReadFailedHint": {
+    "description": "Hint above the generated menu list when the earlier weeks could not be read, so dishes from them may come back"
   },
   "weeklyMenuOverflowAllergen": "Some of them don't suit someone who is home on the free days.",
   "@weeklyMenuOverflowAllergen": {
@@ -15549,7 +15624,7 @@
   "@pendingDeletionItemHouseholdNote": {
     "description": "Spår 6, v62: what is deleted, detail"
   },
-  "pendingDeletionItemCache": "Search index and local cache",
+  "pendingDeletionItemCache": "Local cache",
   "@pendingDeletionItemCache": {
     "description": "Spår 6, v62: what is deleted"
   },
@@ -16289,6 +16364,75 @@
       }
     }
   },
+  "allergenOverrideOk": "You marked {allergen} as fine. The app found {allergen}.",
+  "@allergenOverrideOk": {
+    "description": "Recipe detail line when the user has marked an allergen as ok that the tagger found. allergen is the allergen name.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideContains": "You marked this recipe as containing {allergen}.",
+  "@allergenOverrideContains": {
+    "description": "Recipe detail line when the user has marked a recipe as containing an allergen the tagger did not find.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "allergenOverrideReset": "Reset",
+  "@allergenOverrideReset": {
+    "description": "Button that removes the user override for one allergen."
+  },
+  "shareAllergensOverridden": "The app found {names}, but the owner has marked it as fine.",
+  "@shareAllergensOverridden": {
+    "description": "Allergen line in a shared recipe text when the owner overrode what the tagger found. names is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddTitle": "Add anyway?",
+  "@menuManualAddTitle": {
+    "description": "Title of the confirmation shown when a recipe added to the menu by hand conflicts with household allergies or dislikes."
+  },
+  "menuManualAddContains": "{recipe} contains {names}.",
+  "@menuManualAddContains": {
+    "description": "Confirmation line: a recipe contains allergens the household avoids. names is a comma-separated list.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddDislikes": "Someone in the household dislikes something in {recipe}.",
+  "@menuManualAddDislikes": {
+    "description": "Confirmation line: someone in the household dislikes an ingredient in the recipe.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddUnchecked": "The allergens have not been checked for {recipe}.",
+  "@menuManualAddUnchecked": {
+    "description": "Confirmation line: the recipe has no settled allergen check for a tracked allergen.",
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "menuManualAddConfirm": "Add anyway",
+  "@menuManualAddConfirm": {
+    "description": "Button that adds the recipe to the menu despite the conflict."
+  },
   "recipeSaveNeedsTitle": "Add a title to save.",
   "recipeSaveNeedsIngredient": "Add at least one ingredient to save.",
   "recipeSaveNeedsInstruction": "Add at least one step to save.",
@@ -16574,25 +16718,8 @@
   "@shoppingMergePantryUnavailable": {
     "description": "P6-U02: degraded mode."
   },
-  "@shoppingMergeReplaceTitle": {
-    "description": "P6-U02: switch, off by default."
-  },
-  "@shoppingMergeReplaceBody": {
-    "description": "P6-U02: switch description (PQ-10 = A)."
-  },
-  "@shoppingMergeReplaceUnavailable": {
-    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
-  },
   "@shoppingMergeAdd": {
     "description": "P6-U02: the sheet hero.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@shoppingMergeReplaceAction": {
-    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -16610,12 +16737,15 @@
       }
     }
   },
-  "@shoppingMergeReplaced": {
-    "description": "P6-U02: receipt with Ångra after a replace.",
+  "@shoppingMergeUpdate": {
+    "description": "Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source."
+  },
+  "@shoppingMergeUpdateBody": {
+    "description": "Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding."
+  },
+  "@shoppingMergeSynced": {
+    "description": "Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.",
     "placeholders": {
-      "count": {
-        "type": "int"
-      },
       "list": {
         "type": "String"
       }
@@ -17202,6 +17332,189 @@
     "placeholders": {
       "first": {"type": "int"},
       "second": {"type": "int"}
+    }
+  },
+  "tagAllergenSection": "Allergens",
+  "@tagAllergenSection": {
+    "description": "Heading of the allergen section in the tag editor dialog."
+  },
+  "tagAllergenHint": "Only change this if the app is wrong for this recipe. The app decides follows the ingredients.",
+  "@tagAllergenHint": {
+    "description": "Hint under the allergen heading in the tag editor."
+  },
+  "tagAllergenChoiceAuto": "App decides",
+  "@tagAllergenChoiceAuto": {
+    "description": "Segment: no manual override, the app decides."
+  },
+  "tagAllergenChoiceContains": "Contains",
+  "@tagAllergenChoiceContains": {
+    "description": "Segment: user overrides the allergen to CONTAINS."
+  },
+  "tagAllergenChoiceFree": "Does not contain",
+  "@tagAllergenChoiceFree": {
+    "description": "Segment: user overrides the allergen to FREE."
+  },
+  "tagAllergenAutoContains": "App: contains",
+  "@tagAllergenAutoContains": {
+    "description": "Secondary line: the app's own verdict is contains."
+  },
+  "tagAllergenAutoFree": "App: does not contain",
+  "@tagAllergenAutoFree": {
+    "description": "Secondary line: the app's own verdict is free."
+  },
+  "tagAllergenAutoUnknown": "App: not checked",
+  "@tagAllergenAutoUnknown": {
+    "description": "Secondary line: the app has not settled this allergen."
+  },
+  "llmAiConsentRequired": "AI reading needs your consent. You can give it under Privacy in settings.",
+  "@llmAiConsentRequired": {
+    "description": "LLM error: the server refused because the user has not consented to AI processing"
+  },
+  "photoAiConsentSaveFailed": "Your answer could not be saved, so the photo was not sent. Try again.",
+  "@photoAiConsentSaveFailed": {
+    "description": "Photo import: saving the AI consent failed, nothing was sent"
+  },
+  "photoAiOfferPhoneCouldNotRead": "The phone could not read the whole recipe.",
+  "@photoAiOfferPhoneCouldNotRead": {
+    "description": "Photo import AI offer: the on-device reading failed"
+  },
+  "photoAiOfferNoRecipeFound": "The phone read the text but found no recipe in it.",
+  "@photoAiOfferNoRecipeFound": {
+    "description": "Photo import AI offer: text read on the phone but no recipe found"
+  },
+  "photoAiOfferHandwriting": "Handwritten recipes can only be read by AI.",
+  "@photoAiOfferHandwriting": {
+    "description": "Photo import AI offer: handwriting mode"
+  },
+  "photoAiOfferQuestion": "Do you want AI to read the photo? The photo is then sent to Google to be read. Your yes covers AI reading in the app until you change it under Privacy.",
+  "@photoAiOfferQuestion": {
+    "description": "Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent"
+  },
+  "photoAiOfferQuestionConsented": "Do you want AI to read the photo? The photo is then sent to Google to be read.",
+  "@photoAiOfferQuestionConsented": {
+    "description": "Photo import AI offer question when consent is already given"
+  },
+  "photoAiOfferAccept": "Yes, send the photo",
+  "@photoAiOfferAccept": {
+    "description": "Photo import AI offer: accept button"
+  },
+  "photoAiOfferDecline": "No, I'll type it myself",
+  "@photoAiOfferDecline": {
+    "description": "Photo import AI offer: decline button, manual entry"
+  },
+  "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 dish} other{{count} dishes}} could not be counted because the recipe no longer exists.",
+  "@shoppingMergeUnresolvedRecipes": {
+    "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPantryAddFailed": "Could not add {name} to the pantry.",
+  "@shoppingPantryAddFailed": {
+    "description": "Snackbar when adding a just-checked-off item to the pantry failed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryTitle": "Take it out of the pantry?",
+  "@cookedPantryTitle": {
+    "description": "Title of the sheet offered after a recipe is marked as cooked."
+  },
+  "cookedPantrySubtitle": "Pantry items the recipe uses, for {portions, plural, =1{1 serving} other{{portions} servings}}.",
+  "@cookedPantrySubtitle": {
+    "description": "Subtitle of the cooked-recipe pantry sheet.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryHasLeft": "have {have}, {left} left",
+  "@cookedPantryHasLeft": {
+    "description": "Grey line under a pantry row in the cooked sheet: what the row holds and what remains.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryHasRemoved": "have {have}, removed from the pantry",
+  "@cookedPantryHasRemoved": {
+    "description": "Grey line under a pantry row that the take empties.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantrySkip": "Skip",
+  "@cookedPantrySkip": {
+    "description": "Outlined button in the cooked pantry sheet."
+  },
+  "cookedPantryConfirm": "{count, plural, =1{Take out 1 item} other{Take out {count} items}}",
+  "@cookedPantryConfirm": {
+    "description": "Primary button in the cooked pantry sheet; disabled at zero.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryTaken": "{count, plural, =1{1 item} other{{count} items}} taken out of the pantry",
+  "@cookedPantryTaken": {
+    "description": "Snackbar after the take; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryFailed": "Could not take everything out of the pantry. What was taken can be undone.",
+  "@cookedPantryFailed": {
+    "description": "Failure snackbar when a pantry write was refused."
+  },
+  "cookedPantryUndoFailed": "Could not undo the pantry take-out",
+  "@cookedPantryUndoFailed": {
+    "description": "Failure snackbar when Ångra could not write back."
+  },
+  "cookedPantryEditTitle": "How much {name}?",
+  "@cookedPantryEditTitle": {
+    "description": "Title of the dialog that edits the amount to take.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryRowSemantics": "{name}, take out {amount}",
+  "@cookedPantryRowSemantics": {
+    "description": "Screen-reader label of a row in the cooked pantry sheet.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryAmountSemantics": "Change the amount for {name}, now {amount}",
+  "@cookedPantryAmountSemantics": {
+    "description": "Screen-reader label of the amount box in a cooked pantry row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   }
 }
