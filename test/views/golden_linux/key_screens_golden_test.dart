@@ -60,7 +60,10 @@ final _screens = <_KeyScreen>[
   _KeyScreen('receptdetalj_fullt', host: fullRecipeDetailHost),
   _KeyScreen('mina_recept', host: minaReceptHost),
   // The same library in list mode.
-  _KeyScreen('mina_recept_lista', host: minaReceptHostWith(grid: false)),
+  _KeyScreen(
+    'mina_recept_lista',
+    host: minaReceptHostWith(grid: false, photos: true),
+  ),
   const _KeyScreen('recepteditor', row: 'recepteditor::DEFAULT'),
   const _KeyScreen('matlagningslage', row: 'matlagningsläge::DEFAULT'),
   _KeyScreen('skafferi', host: pantryWithItemsHost),

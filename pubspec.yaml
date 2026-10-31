@@ -161,6 +161,11 @@ dev_dependencies:
   # flutter_cache_manager).
   sqflite: ^2.4.2
 
+  # The golden hosts serve recipe photos from disk through a stand-in cache
+  # manager (test/views/golden_linux/golden_hosts.dart).
+  file: ^7.0.1
+  flutter_cache_manager: ^3.4.1
+
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).
   plugin_platform_interface: ^2.1.8
