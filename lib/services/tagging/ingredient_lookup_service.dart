@@ -419,8 +419,8 @@ class IngredientLookupService extends BaseService {
         ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
 
     for (final raw in rawIngredients) {
-      for (final norm in namesOf(raw, additionalKnown: enrichedKnown)) {
-        if (seen.add(norm)) normalized.add(norm);
+      for (final part in partsOf(raw, additionalKnown: enrichedKnown)) {
+        if (seen.add(part.normalized)) normalized.add(part.normalized);
       }
     }
 
@@ -435,9 +435,13 @@ class IngredientLookupService extends BaseService {
     return lookupIngredients(normalized, userId: userId);
   }
 
-  /// The normalized ingredient names in one raw line: "2 dl mjölk" is
-  /// "mjölk", "salt och peppar" is two names.
-  static List<String> namesOf(String raw, {Set<String>? additionalKnown}) {
+  /// The ingredient names in one raw line, each as parsed and as normalized:
+  /// "2 dl mjölk" is "mjölk", "salt och peppar" is two names, and the parsed
+  /// name keeps words the normalizer drops ("rökt lax" normalizes to "lax").
+  static List<({String parsed, String normalized})> partsOf(
+    String raw, {
+    Set<String>? additionalKnown,
+  }) {
     // M2: Parse raw ingredient to extract name (strips quantity and unit)
     // BUT-1496: parse och-conjunctions ("salt och peppar") into separate
     // ingredients — the compound parser existed but was never used here, so
@@ -459,11 +463,14 @@ class IngredientLookupService extends BaseService {
     }
     return [
       for (final name in namesToNormalize)
-        IngredientNormalizer.normalize(
-          name,
-          additionalKnown: additionalKnown,
-        ).normalized,
-    ].where((norm) => norm.isNotEmpty).toList();
+        (
+          parsed: name,
+          normalized: IngredientNormalizer.normalize(
+            name,
+            additionalKnown: additionalKnown,
+          ).normalized,
+        ),
+    ].where((part) => part.normalized.isNotEmpty).toList();
   }
 
   /// Searches for ingredients matching a query.

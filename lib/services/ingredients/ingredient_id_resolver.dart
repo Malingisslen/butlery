@@ -2,6 +2,7 @@ import 'package:butlery/constants/grocery_brands.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 /// Links a recipe's ingredient rows to the ingredient registry, so the list
@@ -46,15 +47,25 @@ class IngredientIdResolver {
   }
 
   Future<String?> _idFor(RecipeIngredient row) async {
-    final names = IngredientLookupService.namesOf(row.raw);
-    if (names.length != 1) return null;
-    final key = IngredientLookupService.cleanForLookup(names.single);
-    if (key.isEmpty) return null;
-    var ids = await _repository.idsForKey(key);
-    if (ids.isEmpty) {
-      final unbranded = GroceryBrands.strip(key);
-      if (unbranded != null) ids = await _repository.idsForKey(unbranded);
+    final parts = IngredientLookupService.partsOf(row.raw);
+    if (parts.length != 1) return null;
+    final (:parsed, :normalized) = parts.single;
+    // The name as written first, so a registry entry "rökt lax" wins. The
+    // normalized name only when it is still the same product to the list:
+    // the normalizer drops "rökt", and smoked salmon is not salmon.
+    final keys = {
+      IngredientLookupService.cleanForLookup(parsed),
+      if (IngredientIdentity.same(parsed, normalized))
+        IngredientLookupService.cleanForLookup(normalized),
+    }..remove('');
+    for (final key in keys) {
+      var ids = await _repository.idsForKey(key);
+      if (ids.isEmpty) {
+        final unbranded = GroceryBrands.strip(key);
+        if (unbranded != null) ids = await _repository.idsForKey(unbranded);
+      }
+      if (ids.isNotEmpty) return ids.length == 1 ? ids.single : null;
     }
-    return ids.length == 1 ? ids.single : null;
+    return null;
   }
 }

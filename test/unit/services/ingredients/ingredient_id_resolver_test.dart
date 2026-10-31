@@ -60,6 +60,39 @@ void main() {
     },
   );
 
+  test(
+    'a product state the normalizer drops keeps the plain id away',
+    () async {
+      // Smoked salmon at home must not cover fresh salmon on the list, so
+      // "rökt lax" never takes the id of "lax".
+      final resolver = IngredientIdResolver(
+        ingredientRepository: _FakeIngredients(const {
+          'lax': {'salmon'},
+          'tomat': {'tomato'},
+          'tomater': {'tomato'},
+        }),
+      );
+      final out = await resolver.resolve([
+        RecipeIngredient.rawOnly('200 g rökt lax'),
+        RecipeIngredient.rawOnly('400 g krossade tomater'),
+      ]);
+      expect(out.map((r) => r.ingredientId), [null, null]);
+    },
+  );
+
+  test('a registry entry for the name as written wins', () async {
+    final resolver = IngredientIdResolver(
+      ingredientRepository: _FakeIngredients(const {
+        'lax': {'salmon'},
+        'rokt lax': {'smoked-salmon'},
+      }),
+    );
+    final out = await resolver.resolve([
+      RecipeIngredient.rawOnly('200 g rökt lax'),
+    ]);
+    expect(out.single.ingredientId, 'smoked-salmon');
+  });
+
   test('an ambiguous name gets no id', () async {
     expect(await idOf('500 g bringa'), isNull);
   });
