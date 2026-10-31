@@ -1,3 +1,4 @@
+import 'package:butlery/constants/grocery_brands.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -1223,6 +1224,76 @@ void main() {
       expect(result.matched, isEmpty);
       expect(result.unmatched, ['vitost']);
       verifyNever(() => mockIngredientRepo.findByName('vita'));
+    });
+  });
+
+  group('a grocery brand in front of or after the product', () {
+    test('"Arla mellanmjölk" finds mellanmjölk', () async {
+      final milk = _createIngredient('milk-semi-skimmed', 'mellanmjölk');
+      when(
+        () => mockIngredientRepo.findByName('mellanmjolk'),
+      ).thenAnswer((_) async => milk);
+
+      final result = await service.lookupIngredients(['Arla mellanmjölk']);
+
+      expect(result.matched, [milk]);
+      expect(result.unmatched, isEmpty);
+    });
+
+    test('a trailing brand is dropped too', () async {
+      final oil = _createIngredient('olive-oil', 'olivolja');
+      when(
+        () => mockIngredientRepo.findByName('olivolja'),
+      ).thenAnswer((_) async => oil);
+
+      final result = await service.lookupIngredients(['olivolja zeta']);
+
+      expect(result.matched, [oil]);
+    });
+
+    test('a two-word brand is dropped whole', () async {
+      final tomatoes = _createIngredient(
+        'crushed-tomatoes',
+        'krossade tomater',
+      );
+      when(
+        () => mockIngredientRepo.findByName('krossade tomater'),
+      ).thenAnswer((_) async => tomatoes);
+
+      final result = await service.lookupIngredients([
+        'ica basic krossade tomater',
+      ]);
+
+      expect(result.matched, [tomatoes]);
+      verifyNever(
+        () => mockIngredientRepo.findByName('basic krossade tomater'),
+      );
+    });
+
+    test('a registry entry that carries the brand wins', () async {
+      final mos = _createIngredient('felix-mos', 'felix mos');
+      when(
+        () => mockIngredientRepo.findByName('felix mos'),
+      ).thenAnswer((_) async => mos);
+
+      final result = await service.lookupIngredients(['felix mos']);
+
+      expect(result.matched, [mos]);
+      verifyNever(() => mockIngredientRepo.findByName('mos'));
+    });
+
+    test('a brand alone is not looked up as nothing', () async {
+      final result = await service.lookupIngredients(['arla']);
+
+      expect(result.matched, isEmpty);
+      expect(result.unmatched, ['arla']);
+      verifyNever(() => mockIngredientRepo.findByName(''));
+    });
+
+    test('a brand inside a word is not a brand', () {
+      expect(GroceryBrands.strip('scampi'), isNull);
+      expect(GroceryBrands.strip('icakaka'), isNull);
+      expect(GroceryBrands.strip('scan bacon'), 'bacon');
     });
   });
 }
