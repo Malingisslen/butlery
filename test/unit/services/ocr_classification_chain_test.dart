@@ -43,9 +43,6 @@ OCRResult _failureWithClassification(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // PhotoImportViewModel.<init> kicks off OCRUsageTracker.loadFromPersistence,
-  // which calls SharedPreferences.getInstance — without a mock the platform
-  // channel throws MissingPluginException after the test completes.
   setUpAll(() {
     SharedPreferences.setMockInitialValues({});
   });
@@ -61,7 +58,7 @@ void main() {
     test('HTTP 429 → rate_limit', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'Exception: OCR.space HTTP error: 429',
+          'on_device': 'Exception: HTTP error: 429',
         }),
         equals('rate_limit'),
       );
@@ -70,7 +67,7 @@ void main() {
     test('"rate limit" phrase → rate_limit', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'Exception: rate limit exceeded',
+          'on_device': 'Exception: rate limit exceeded',
         }),
         equals('rate_limit'),
       );
@@ -79,7 +76,7 @@ void main() {
     test('"too many requests" → rate_limit', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'google_vision': 'Too many requests for this api key',
+          'on_device': 'Too many requests for this api key',
         }),
         equals('rate_limit'),
       );
@@ -88,7 +85,7 @@ void main() {
     test('"quota" phrase → rate_limit', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'google_vision': 'Quota exceeded for project',
+          'on_device': 'Quota exceeded for project',
         }),
         equals('rate_limit'),
       );
@@ -97,7 +94,7 @@ void main() {
     test('TimeoutException → timeout', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'TimeoutException after 30 seconds',
+          'on_device': 'TimeoutException after 30 seconds',
         }),
         equals('timeout'),
       );
@@ -106,7 +103,7 @@ void main() {
     test('"timed out" phrase → timeout', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'tesseract': 'Operation timed out',
+          'on_device': 'Operation timed out',
         }),
         equals('timeout'),
       );
@@ -115,7 +112,7 @@ void main() {
     test('SocketException → network', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'SocketException: Failed host lookup',
+          'on_device': 'SocketException: Failed host lookup',
         }),
         equals('network'),
       );
@@ -124,7 +121,7 @@ void main() {
     test('"failed host lookup" → network', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'google_vision': 'Failed host lookup: vision.googleapis.com',
+          'on_device': 'Failed host lookup: example.invalid',
         }),
         equals('network'),
       );
@@ -133,7 +130,7 @@ void main() {
     test('"connection refused" → network', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'tesseract': 'Connection refused',
+          'on_device': 'Connection refused',
         }),
         equals('network'),
       );
@@ -142,7 +139,7 @@ void main() {
     test('generic Exception falls through → generic', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'Exception: boom',
+          'on_device': 'Exception: boom',
         }),
         equals('generic'),
       );
@@ -154,8 +151,8 @@ void main() {
         // Reason: user-facing remedy differs (wait-then-retry vs check-connection).
         expect(
           OCRExtractionService.classifyProviderErrorsForTesting({
-            'ocr_space': 'Exception: rate limit hit',
-            'google_vision': 'TimeoutException after 30s',
+            'on_device': 'Exception: rate limit hit',
+            'recognizer': 'TimeoutException after 30s',
           }),
           equals('rate_limit'),
         );
@@ -165,8 +162,8 @@ void main() {
     test('timeout wins over network when both present', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'TimeoutException',
-          'google_vision': 'SocketException',
+          'on_device': 'TimeoutException',
+          'recognizer': 'SocketException',
         }),
         equals('timeout'),
       );
@@ -175,7 +172,7 @@ void main() {
     test('case-insensitive matching', () {
       expect(
         OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'RATE LIMIT exceeded',
+          'on_device': 'RATE LIMIT exceeded',
         }),
         equals('rate_limit'),
       );
@@ -240,16 +237,14 @@ void main() {
     });
 
     test(
-      'all providers down (circuit-open) → errorOcrServicesUnavailable copy',
+      'on-device reading down (circuit-open) → errorOcrServicesUnavailable copy',
       () {
         // No classification — service-down state wins via circuit-breaker check.
         final result = _failureWithClassification(
           null,
           extra: {
             'circuit_breakers': {
-              'ocr_space_state': 'open',
-              'google_vision_state': 'open',
-              'tesseract_state': 'open',
+              'on_device_state': 'open',
             },
           },
         );

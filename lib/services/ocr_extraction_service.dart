@@ -1,17 +1,14 @@
-/// OCR service with multi-provider fallback (free on-device ML Kit → OCR.space
-/// → Google Vision → Tesseract), Swedish optimization, and smart caching.
+/// On-device OCR service (ML Kit, flag-gated) with image quality gating,
+/// preprocessing and smart caching.
 
 import 'package:clock/clock.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as img;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/lru_map.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
@@ -28,7 +25,6 @@ import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
-import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -42,9 +38,9 @@ class OCRResult {
 
   /// Where the words sat on the page, when the reader measured them.
   ///
-  /// Null for every paid tier and for the on-device tier with
-  /// `enable_layout_recipe_split` off — those readers return characters only,
-  /// and a consumer must fall back to the text rules rather than guess.
+  /// Null when `enable_layout_recipe_split` is off — the reader then returns
+  /// characters only, and a consumer must fall back to the text rules rather
+  /// than guess.
   ///
   /// A TYPED field, deliberately not a key in [metadata]: that map is dumped
   /// wholesale into debugging output, and per-line geometry would blow up every
@@ -176,43 +172,22 @@ class OCRExtractionService extends BaseService {
       _instance ??= OCRExtractionService._();
 
   // Test dependencies (injected for testing only)
-  final http.Client? _testHttpClient;
-  final String? _testOcrApiKey;
-  final String? _testGoogleVisionKey;
-  final String? _testTesseractApiUrl;
   final DateTime Function()? _testTimeProvider;
   final DeviceTextRecognizer? _testDeviceRecognizer;
   final bool Function()? _testOnDeviceEnabled;
   final bool Function()? _testLayoutEnabled;
 
   OCRExtractionService._({
-    http.Client? testHttpClient,
-    String? testOcrApiKey,
-    String? testGoogleVisionKey,
-    String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
     bool Function()? testLayoutEnabled,
-  }) : _testHttpClient = testHttpClient,
-       _testOcrApiKey = testOcrApiKey,
-       _testGoogleVisionKey = testGoogleVisionKey,
-       _testTesseractApiUrl = testTesseractApiUrl,
-       _testTimeProvider = testTimeProvider,
+  }) : _testTimeProvider = testTimeProvider,
        _testDeviceRecognizer = testDeviceRecognizer,
        _testOnDeviceEnabled = testOnDeviceEnabled,
        _testLayoutEnabled = testLayoutEnabled {
     _onDeviceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
-    // Initialize circuit breakers with time provider
-    _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
-    _googleVisionCircuitBreaker = CircuitBreaker(
-      timeProvider: testTimeProvider,
-    );
-    _tesseractCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
-    _usageTracker = OCRUsageTracker(timeProvider: testTimeProvider);
-    // First recordUsage on cold start may race with the load; tracker
-    // reconciles via max() so the in-flight increment isn't lost.
-    unawaited(_usageTracker.loadFromPersistence());
+    _usageTracker = OCRUsageTracker();
   }
 
   /// Create OCR service for testing with injectable dependencies.
@@ -223,10 +198,6 @@ class OCRExtractionService extends BaseService {
   /// a separate default singleton.
   @visibleForTesting
   static OCRExtractionService createForTesting({
-    http.Client? testHttpClient,
-    String? testOcrApiKey,
-    String? testGoogleVisionKey,
-    String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
@@ -234,10 +205,6 @@ class OCRExtractionService extends BaseService {
     bool registerAsInstance = false,
   }) {
     final service = OCRExtractionService._(
-      testHttpClient: testHttpClient,
-      testOcrApiKey: testOcrApiKey,
-      testGoogleVisionKey: testGoogleVisionKey,
-      testTesseractApiUrl: testTesseractApiUrl,
       testTimeProvider: testTimeProvider,
       testDeviceRecognizer: testDeviceRecognizer,
       testOnDeviceEnabled: testOnDeviceEnabled,
@@ -261,8 +228,6 @@ class OCRExtractionService extends BaseService {
 
   @override
   Future<void> onDispose() async {
-    _cachedHttpClient?.close();
-    _cachedHttpClient = null;
     await _deviceRecognizer?.dispose();
     _deviceRecognizer = null;
     await super.onDispose();
@@ -270,9 +235,6 @@ class OCRExtractionService extends BaseService {
 
   // Circuit breakers (late initialized with time provider)
   late final CircuitBreaker _onDeviceCircuitBreaker;
-  late final CircuitBreaker _ocrSpaceCircuitBreaker;
-  late final CircuitBreaker _googleVisionCircuitBreaker;
-  late final CircuitBreaker _tesseractCircuitBreaker;
   late final OCRUsageTracker _usageTracker;
 
   static const int _maxCacheSize = 100;
@@ -301,8 +263,7 @@ class OCRExtractionService extends BaseService {
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
 
-  /// Upper bound on the on-device recognizer, mirroring the paid tiers'
-  /// timeouts. Measured cost is ~400 ms/page, so this only ever fires on a
+  /// Upper bound on the on-device recognizer. Measured cost is ~400 ms/page, so this only ever fires on a
   /// genuinely stuck platform channel.
   static const Duration _onDeviceTimeout = Duration(seconds: 15);
 
@@ -329,8 +290,7 @@ class OCRExtractionService extends BaseService {
   /// photo — not just cookbook spreads — and that is the one part of this work
   /// that can regress a path already working. Gated here, turning it off
   /// returns the exact bytes that shipped before, while the free tier keeps
-  /// running; gated only on the SPLIT (as first planned) the rollback would
-  /// have meant disabling on-device OCR entirely and paying per image again.
+  /// running.
   ///
   /// **The rollback does not reach an image already in this session's cache.**
   /// This getter is read per call, but a cache hit returns the pair that was
@@ -350,43 +310,12 @@ class OCRExtractionService extends BaseService {
     return flags?.isEnabled(FeatureFlags.enableLayoutRecipeSplit) ?? false;
   }
 
-  // Lazily-created HTTP client (reused across calls, closed on dispose).
-  // BUT-427: third-party OCR fallbacks (OCR.space, Google Vision, Tesseract)
-  // are wrapped in PinnedHttpClient so a hostile-wifi attacker cannot
-  // intercept upload bytes via a forged TLS cert. Pinning is no-op for hosts
-  // without configured pins in CertPinConfig (TODO placeholders).
-  http.Client? _cachedHttpClient;
-  http.Client get _httpClient {
-    if (_testHttpClient != null) return _testHttpClient;
-    return _cachedHttpClient ??= PinnedHttpClientFactory.create();
-  }
-
-  String get _ocrApiKey {
-    if (_testOcrApiKey != null) return _testOcrApiKey;
-    return const String.fromEnvironment('OCR_SPACE_API_KEY');
-  }
-
-  String get _ocrApiUrl {
-    return 'https://api.ocr.space/parse/image';
-  }
-
-  String get _googleVisionKey {
-    if (_testGoogleVisionKey != null) return _testGoogleVisionKey;
-    return const String.fromEnvironment('GOOGLE_VISION_API_KEY');
-  }
-
-  String get _tesseractApiUrl {
-    if (_testTesseractApiUrl != null) return _testTesseractApiUrl;
-    return const String.fromEnvironment('TESSERACT_API_URL');
-  }
-
   DateTime get _now => _testTimeProvider?.call() ?? clock.now();
 
   /// Initialize OCR service
   @override
   Future<void> initialize() async {
-    // OCR service ready - providers: on-device ML Kit (free, flag-gated),
-    // OCR.space, Google Vision, Tesseract
+    // OCR service ready - provider: on-device ML Kit (free, flag-gated)
   }
 
   /// Record OCR usage - delegates to usage tracker
@@ -395,7 +324,7 @@ class OCRExtractionService extends BaseService {
   /// Get usage statistics (for monitoring dashboard)
   Map<String, dynamic> getUsageStats() => _usageTracker.getUsageStats();
 
-  /// Extract text from image using multi-tier OCR strategy.
+  /// Extract text from an image with the on-device recognizer.
   ///
   /// Two-level cache:
   /// 1. Fast path: SHA-256 of raw bytes → preprocessed-bytes hash. Repeat
@@ -419,9 +348,9 @@ class OCRExtractionService extends BaseService {
 
     final qualityAssessment = await assessImageQuality(imageBytes);
 
-    // BUT-660: hard-reject before any preprocessing or OCR call. Saves
-    // Mistral/OCR.space quota on inputs that cannot yield usable text
-    // (bytes too small, resolution below [_minOcrShortEdgePx]).
+    // BUT-660: hard-reject before any preprocessing or OCR call, on inputs
+    // that cannot yield usable text (bytes too small, resolution below
+    // [_minOcrShortEdgePx]).
     if (qualityAssessment.isRejected) {
       return OCRResult.failure(
         method: 'pre_ocr_quality_gate',
@@ -454,59 +383,45 @@ class OCRExtractionService extends BaseService {
     // instead of collapsing every failure to "try better lighting."
     final providerErrors = <String, String>{};
 
-    // No provider can run because none is configured (all API keys / URLs
-    // absent). Without this guard the loop below attempts nothing, leaves
-    // [providerErrors] empty, and the failure path classifies as "generic" —
-    // surfacing the misleading "try better lighting" copy for what is actually
-    // a missing-credentials misconfiguration. Mark every breaker `open` so the
-    // message builder's "services unavailable" branch produces accurate copy.
-    // Tier 0 counts as a configured provider: on a device-only build with no
-    // API keys it is the ONLY provider, and reporting "no provider configured"
-    // there would surface a misconfiguration message for a working setup.
+    // Tier 0 unusable (flag off, web stub, or recognizer unavailable): nothing
+    // can be attempted, so providerErrors stays empty and the failure path
+    // would classify as "generic" — surfacing the misleading "try better
+    // lighting" copy for what is really an unavailable service. The breaker
+    // is reported `open` so the message builder's "services unavailable"
+    // branch produces accurate copy.
     final onDeviceUsable = _onDeviceEnabled && _onDeviceRecognizer.isAvailable;
-    final noProviderConfigured =
-        !onDeviceUsable &&
-        _ocrApiKey.isEmpty &&
-        _googleVisionKey.isEmpty &&
-        _tesseractApiUrl.isEmpty;
-    if (noProviderConfigured) {
+    if (!onDeviceUsable) {
       return OCRResult.failure(
         method: 'no_provider_configured',
-        error: 'OCR unavailable: no provider is configured (missing API keys)',
+        error: 'OCR unavailable: on-device recognition is not enabled',
         metadata: {
           'quality_assessment': qualityAssessment.qualityScore,
           'recommendations': qualityAssessment.recommendations,
-          'circuit_breakers': {
-            'ocr_space_state': 'open',
-            'google_vision_state': 'open',
-            'tesseract_state': 'open',
-          },
+          'circuit_breakers': {'on_device_state': 'open'},
           'failure_classification': 'unavailable',
           'provider_errors': const <String, String>{},
         },
       );
     }
 
-    // Tier 0 — the platform's own recognizer. Free, offline, private. Runs
-    // first so the paid providers below are only reached for what it can't
-    // read. TWO independent gates, and each catches what the other cannot:
+    // Tier 0 — the platform's own recognizer. Free, offline, private. TWO
+    // independent gates, and each catches what the other cannot:
     // RecipeTextHeuristic rejects non-recipes (a receipt scores high on text
     // quality), and the confidence threshold below rejects thin or partial
     // reads (a half-read page is recipe-SHAPED but poor). Dropping either one
     // has a live test that reddens; do not "simplify" them into one.
-    if (onDeviceUsable && _onDeviceCircuitBreaker.canExecute) {
+    if (_onDeviceCircuitBreaker.canExecute) {
       try {
         // Sanitize BEFORE the heuristic gate, so the gate judges the text that
         // will actually be stored. This service is the only sanitization
         // boundary on the path — `photo_import_strategy` and
         // `photo_import_viewmodel` consume `ocrResult.text` directly, persist
-        // it to the draft, and it later lands in a GDPR export. Without this
-        // the surviving character set depended on which tier answered, and the
-        // free tier was the only one that skipped it.
-        // Bounded like every other tier. Without it a stalled platform channel
-        // hangs the import forever: the recognizer's contract is "never throw",
-        // so nothing else would fall through to the paid chain or trip the
-        // breaker. Generous against the ~400 ms/page measured on a Pixel 9a.
+        // it to the draft, and it later lands in a GDPR export.
+        //
+        // The call is bounded, because without it a stalled platform channel
+        // hangs the import forever: the recognizer's contract is "never
+        // throw", so nothing else would trip the breaker. Generous against the
+        // ~400 ms/page measured on a Pixel 9a.
         final raw = await _onDeviceRecognizer
             .recognize(preprocessedImage)
             .timeout(_onDeviceTimeout);
@@ -603,54 +518,6 @@ class OCRExtractionService extends BaseService {
       }
     }
 
-    if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
-      try {
-        result = await _extractWithOCRSpace(preprocessedImage);
-        if (result.isSuccessful &&
-            result.confidence >= _minConfidenceThreshold) {
-          _ocrSpaceCircuitBreaker.recordSuccess();
-          _recordUsage('ocr_space');
-          _cacheResult(imageHash, result, rawHash: rawHash);
-          return result;
-        }
-      } catch (e) {
-        _ocrSpaceCircuitBreaker.recordFailure();
-        providerErrors['ocr_space'] = e.toString();
-      }
-    }
-
-    if (_googleVisionCircuitBreaker.canExecute && _googleVisionKey.isNotEmpty) {
-      try {
-        result = await _extractWithGoogleVision(preprocessedImage);
-        if (result.isSuccessful &&
-            result.confidence >= _minConfidenceThreshold) {
-          _googleVisionCircuitBreaker.recordSuccess();
-          _recordUsage('google_vision');
-          _cacheResult(imageHash, result, rawHash: rawHash);
-          return result;
-        }
-      } catch (e) {
-        _googleVisionCircuitBreaker.recordFailure();
-        providerErrors['google_vision'] = e.toString();
-      }
-    }
-
-    if (_tesseractCircuitBreaker.canExecute && _tesseractApiUrl.isNotEmpty) {
-      try {
-        result = await _extractWithTesseract(preprocessedImage);
-        if (result.isSuccessful &&
-            result.confidence >= _minConfidenceThreshold) {
-          _tesseractCircuitBreaker.recordSuccess();
-          _recordUsage('tesseract');
-          _cacheResult(imageHash, result, rawHash: rawHash);
-          return result;
-        }
-      } catch (e) {
-        _tesseractCircuitBreaker.recordFailure();
-        providerErrors['tesseract'] = e.toString();
-      }
-    }
-
     // BUT-963: aggregate the captured provider exceptions into one of a
     // small enum of failure causes. The viewmodel picks user-facing copy
     // from this classification rather than mapping raw exception strings.
@@ -662,25 +529,15 @@ class OCRExtractionService extends BaseService {
         'quality_assessment': qualityAssessment.qualityScore,
         'recommendations': qualityAssessment.recommendations,
         'circuit_breakers': {
-          // Emitted ONLY when tier 0 actually participated. 'closed' cannot
-          // distinguish "ran fine" from "never ran", and the message builder
-          // reads an absent key as down — so publishing it unconditionally
-          // would make "services unavailable" unreachable for every user with
-          // the flag off, which is the default state.
-          if (onDeviceUsable)
-            'on_device_state': _onDeviceCircuitBreaker.state.name,
-          'ocr_space_state': _ocrSpaceCircuitBreaker.state.name,
-          'google_vision_state': _googleVisionCircuitBreaker.state.name,
-          'tesseract_state': _tesseractCircuitBreaker.state.name,
+          'on_device_state': _onDeviceCircuitBreaker.state.name,
         },
         'failure_classification': classification,
         'provider_errors': providerErrors,
       },
     );
 
-    // Don't cache failures — they may be transient (network issues,
-    // temporary provider outages) and caching them for 24h would
-    // prevent successful retries.
+    // Don't cache failures — they may be transient and caching them for 24h
+    // would prevent successful retries.
     return failureResult;
   }
 
@@ -725,235 +582,6 @@ class OCRExtractionService extends BaseService {
     return 'generic';
   }
 
-  /// Reduce a locale tag to its bare ISO 639-1 language code, dropping any
-  /// region/script suffix (`en_US`, `en-GB`, `sv_SE` → `en`/`en`/`sv`). The
-  /// provider-language helpers below switch on the language only, so a
-  /// regional locale must not fall through to the unknown-locale default.
-  static String _languageCode(String localeName) =>
-      localeName.split('_').first.split('-').first;
-
-  /// Maps the active UI locale to the language code expected by OCR.space
-  /// (ISO 639-2, single string). User-locale is the primary hint; 'eng' is the
-  /// fallback for any unrecognised locale (OCR.space accepts only one code).
-  @visibleForTesting
-  static String ocrSpaceLanguage(String localeName) {
-    switch (_languageCode(localeName)) {
-      case 'sv':
-        return 'swe';
-      case 'en':
-        return 'eng';
-      default:
-        return 'eng';
-    }
-  }
-
-  /// Maps the active UI locale to Google Vision language hints (ISO 639-1
-  /// array). User-locale goes first; the fallback language is always included
-  /// so OCR stays robust for bilingual content.
-  @visibleForTesting
-  static List<String> googleVisionLanguageHints(String localeName) {
-    switch (_languageCode(localeName)) {
-      case 'sv':
-        return ['sv', 'en'];
-      case 'en':
-        return ['en', 'sv'];
-      default:
-        // Unknown locale: keep Swedish + English — the app's primary audience.
-        return ['sv', 'en'];
-    }
-  }
-
-  /// Maps the active UI locale to a '+'-joined Tesseract language string
-  /// (ISO 639-2). User-locale goes first; second language retained for
-  /// bilingual robustness.
-  @visibleForTesting
-  static String tesseractLanguage(String localeName) {
-    switch (_languageCode(localeName)) {
-      case 'sv':
-        return 'swe+eng';
-      case 'en':
-        return 'eng+swe';
-      default:
-        // Unknown locale: keep Swedish first (app default audience).
-        return 'swe+eng';
-    }
-  }
-
-  /// Extract text using OCR.space API (Primary - Universal compatibility)
-  Future<OCRResult> _extractWithOCRSpace(Uint8List imageBytes) async {
-    final base64Image = base64Encode(imageBytes);
-
-    final request = http.MultipartRequest('POST', Uri.parse(_ocrApiUrl));
-    request.fields['apikey'] = _ocrApiKey;
-    request.fields['OCREngine'] = '2'; // Best for Swedish text
-    request.fields['base64Image'] = 'data:image/jpeg;base64,$base64Image';
-    // BUT-1053: use active UI locale for primary language hint; fallback to
-    // 'eng' for unknown locales. OCR.space takes a single ISO 639-2 code.
-    request.fields['language'] = ocrSpaceLanguage(AppLocale.current.localeName);
-    request.fields['detectOrientation'] = 'true';
-    request.fields['scale'] = 'true';
-    request.fields['isTable'] = 'false';
-
-    // _httpClient.send(request) routes through the (test-)injected client.
-    // request.send() would create a fresh internal IOClient and bypass the
-    // injected one, breaking testability and the singleton lifecycle.
-    final response = await _httpClient
-        .send(request)
-        .timeout(const Duration(seconds: 30));
-    final responseBody = await response.stream.bytesToString();
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(responseBody);
-
-      if (json['IsErroredOnProcessing'] == false) {
-        final parsedResults = json['ParsedResults'] as List?;
-        final extractedText = HtmlSanitizer.instance.sanitizeText(
-          (parsedResults?.first['ParsedText'] as String?).orEmpty(),
-        );
-
-        return OCRResult(
-          text: extractedText,
-          confidence: _calculateConfidenceFromText(extractedText),
-          processingMethod: 'ocr_space',
-          metadata: {
-            'engine': '2',
-            'language': 'swedish',
-            'processing_time': _now.millisecondsSinceEpoch,
-            'response_size': responseBody.length,
-          },
-          timestamp: _now,
-        );
-      } else {
-        // API responded with success but processing failed
-        final errorMessages = json['ErrorMessage'] as List?;
-        final errorDetails =
-            errorMessages?.join(', ') ?? 'OCR processing failed';
-        throw Exception('OCR.space processing error: $errorDetails');
-      }
-    }
-
-    throw Exception('OCR.space HTTP error: ${response.statusCode}');
-  }
-
-  /// Extract text using Google Vision API (Secondary fallback)
-  Future<OCRResult> _extractWithGoogleVision(Uint8List imageBytes) async {
-    final base64Image = base64Encode(imageBytes);
-
-    final requestBody = jsonEncode({
-      'requests': [
-        {
-          'image': {'content': base64Image},
-          'features': [
-            {'type': 'TEXT_DETECTION', 'maxResults': 1},
-          ],
-          'imageContext': {
-            // BUT-1053: user-locale first, fallback retained for robustness.
-            'languageHints': googleVisionLanguageHints(
-              AppLocale.current.localeName,
-            ),
-          },
-        },
-      ],
-    });
-
-    final response = await _httpClient
-        .post(
-          Uri.parse('https://vision.googleapis.com/v1/images:annotate'),
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': _googleVisionKey,
-          },
-          body: requestBody,
-        )
-        .timeout(const Duration(seconds: 30));
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      final responses = json['responses'] as List?;
-
-      if (responses != null && responses.isNotEmpty) {
-        final textAnnotations = responses.first['textAnnotations'] as List?;
-
-        if (textAnnotations != null && textAnnotations.isNotEmpty) {
-          final extractedText = HtmlSanitizer.instance.sanitizeText(
-            (textAnnotations.first['description'] as String?).orEmpty(),
-          );
-
-          return OCRResult(
-            text: extractedText,
-            confidence: _calculateConfidenceFromText(extractedText),
-            processingMethod: 'google_vision',
-            metadata: {
-              // BUT-1053: reflect the hints actually sent (locale-derived),
-              // not a hardcoded pair — keeps debug/monitoring metadata honest.
-              'language_hints': googleVisionLanguageHints(
-                AppLocale.current.localeName,
-              ),
-              'processing_time': _now.millisecondsSinceEpoch,
-              'annotations_count': textAnnotations.length,
-            },
-            timestamp: _now,
-          );
-        }
-      }
-    }
-
-    throw Exception(
-      'Google Vision API processing failed: ${response.statusCode}',
-    );
-  }
-
-  /// Extract text using Tesseract API (Tertiary fallback)
-  Future<OCRResult> _extractWithTesseract(Uint8List imageBytes) async {
-    // This would connect to a hosted Tesseract service
-    // For now, return a basic implementation
-
-    final base64Image = base64Encode(imageBytes);
-
-    final requestBody = jsonEncode({
-      'image': base64Image,
-      // BUT-1053: user-locale first, second language retained for robustness.
-      'language': tesseractLanguage(AppLocale.current.localeName),
-      'options': {
-        'psm': '6', // Uniform block of text
-        'oem': '3', // Default OCR engine mode
-      },
-    });
-
-    try {
-      final response = await _httpClient
-          .post(
-            Uri.parse(_tesseractApiUrl),
-            headers: {'Content-Type': 'application/json'},
-            body: requestBody,
-          )
-          .timeout(const Duration(seconds: 45));
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        final extractedText = HtmlSanitizer.instance.sanitizeText(
-          (json['text'] as String?).orEmpty(),
-        );
-
-        return OCRResult(
-          text: extractedText,
-          confidence: _calculateConfidenceFromText(extractedText),
-          processingMethod: 'tesseract',
-          metadata: {
-            // BUT-1053: reflect the locale-derived language actually sent.
-            'language': tesseractLanguage(AppLocale.current.localeName),
-            'psm': '6',
-            'processing_time': _now.millisecondsSinceEpoch,
-          },
-          timestamp: _now,
-        );
-      }
-    } catch (e) {
-      // Optional fallback
-    }
-    throw Exception('Tesseract API processing failed or not configured');
-  }
-
   /// Assess image quality for OCR optimization (Phase 2 Enhancement - Now public for ViewModel access).
   /// [imageBytes] Raw image data to assess for OCR suitability
   /// Evaluates image quality metrics including size, resolution, and format to determine
@@ -980,8 +608,7 @@ class OCRExtractionService extends BaseService {
     }
     if (imageBytes.length < UploadConstants.minOcrImageBytes) {
       // BUT-660: bytes below minOcrImageBytes (50 KB) is a hard reject. OCR
-      // backends produce garbage on inputs this small, and the call would
-      // burn Mistral/OCR.space quota on a guaranteed-fail attempt.
+      // backends produce garbage on inputs this small.
       issues.add(AppLocale.current.ocrImageTooSmall);
       recommendations.add(AppLocale.current.ocrUseHigherResolution);
       qualityScore -= 0.3;
@@ -1045,16 +672,16 @@ class OCRExtractionService extends BaseService {
   /// identical output bytes, enabling stable cache keys):
   /// 1. EXIF-orientation correction via `bakeOrientation()` so phone photos
   ///    taken sideways are uprighted before OCR.
-  /// 2. Downscale so the long edge is at most [_maxLongEdge]. Vertex / OCR.space
-  ///    don't benefit beyond ~2K and uploading larger only burns bandwidth/cost.
+  /// 2. Downscale so the long edge is at most [_maxLongEdge]; larger inputs only
+  ///    inflate latency.
   /// 3. Greyscale + mild contrast stretch — helps OCR on low-light and
   ///    low-contrast cookbook photos.
-  /// 4. JPEG re-encode at quality [_jpegQuality] to cap upload size and match
-  ///    the OCR backends' expected input format.
+  /// 4. JPEG re-encode at quality [_jpegQuality] to cap size and give the
+  ///    recognizer a consistent input format.
   ///
   /// On decode failure (corrupted bytes, unsupported format) the original
-  /// bytes are returned so the OCR providers still get a chance — they may
-  /// have format-specific handling we don't.
+  /// bytes are returned so the recognizer still gets a chance — it may have
+  /// format-specific handling we don't.
   Future<Uint8List> _preprocessImage(
     Uint8List imageBytes,
     ImageQualityAssessment assessment,
@@ -1196,30 +823,12 @@ class OCRExtractionService extends BaseService {
           'failures': _onDeviceCircuitBreaker.failures,
           'can_execute': _onDeviceCircuitBreaker.canExecute,
         },
-        'ocr_space': {
-          'state': _ocrSpaceCircuitBreaker.state.name,
-          'failures': _ocrSpaceCircuitBreaker.failures,
-          'can_execute': _ocrSpaceCircuitBreaker.canExecute,
-        },
-        'google_vision': {
-          'state': _googleVisionCircuitBreaker.state.name,
-          'failures': _googleVisionCircuitBreaker.failures,
-          'can_execute': _googleVisionCircuitBreaker.canExecute,
-        },
-        'tesseract': {
-          'state': _tesseractCircuitBreaker.state.name,
-          'failures': _tesseractCircuitBreaker.failures,
-          'can_execute': _tesseractCircuitBreaker.canExecute,
-        },
       },
       'device_compatibility': 'universal_ios_android',
       'api_keys_configured': {
         // Tier 0 needs no key — it is reported here as "usable" so a reader of
         // this map can tell a device-only configuration from a broken one.
         'on_device': _onDeviceEnabled && _onDeviceRecognizer.isAvailable,
-        'ocr_space': _ocrApiKey.isNotEmpty,
-        'google_vision': _googleVisionKey.isNotEmpty,
-        'tesseract': _tesseractApiUrl.isNotEmpty,
       },
       'configuration': {
         'max_image_size_mb': _maxImageSize / (1024 * 1024),

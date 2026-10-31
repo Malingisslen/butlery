@@ -2,8 +2,8 @@
 /// and the manager's strategy fallback.
 ///
 /// Everything external is replaced: pages come from an in-memory HTTP client
-/// with an injected DNS lookup, OCR answers come from a stubbed HTTP client,
-/// and the headless browser is a mock. No test touches the network.
+/// with an injected DNS lookup, and the headless browser is a mock. No test
+/// touches the network.
 ///
 /// The URL strategy runs without a `RecipeParserService`, so the structured
 /// data, scraper-text and HTML-text tiers are the ones under test.
@@ -12,7 +12,6 @@
 @Tags(['integration'])
 library;
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -59,27 +58,11 @@ void main() {
     late UrlImportStrategy urlStrategy;
     late PhotoImportStrategy photoStrategy;
     late OCRExtractionService ocrService;
-    late MockHttpClient ocrClient;
+    late FakeDeviceTextRecognizer ocrRecognizer;
 
     void servePage(String url, String html) => pages[url] = html;
 
-    void stubOcrText(String text) {
-      final response = MockStreamedResponse();
-      when(() => response.statusCode).thenReturn(200);
-      when(() => response.stream).thenAnswer(
-        (_) => http.ByteStream.fromBytes(
-          utf8.encode(
-            jsonEncode({
-              'ParsedResults': [
-                {'ParsedText': text},
-              ],
-              'IsErroredOnProcessing': false,
-            }),
-          ),
-        ),
-      );
-      when(() => ocrClient.send(any())).thenAnswer((_) async => response);
-    }
+    void stubOcrText(String text) => ocrRecognizer.text = text;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
@@ -89,7 +72,7 @@ void main() {
 
       mockWebScraper = MockWebScraper();
       mockPersonalOps = MockPersonalRecipeOperations();
-      ocrClient = MockHttpClient();
+      ocrRecognizer = FakeDeviceTextRecognizer();
 
       when(() => mockWebScraper.fetchRawHtml(any(), any())).thenAnswer(
         (_) async => null,
@@ -104,8 +87,8 @@ void main() {
       when(() => mockWebScraper.dispose()).thenReturn(null);
 
       ocrService = OCRExtractionService.createForTesting(
-        testHttpClient: ocrClient,
-        testOcrApiKey: 'test-ocr-key',
+        testDeviceRecognizer: ocrRecognizer,
+        testOnDeviceEnabled: () => true,
       );
 
       textStrategy = TextImportStrategy();
@@ -294,7 +277,7 @@ void main() {
           expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
           expect(result.recipe!.ingredients, contains('500 g köttfärs'));
           expect(result.recipe!.ingredients, contains('1 ägg'));
-          expect(result.metadata!['ocr_method'], 'ocr_space');
+          expect(result.metadata!['ocr_method'], 'on_device');
           expect(
             result.metadata!['ocr_confidence'],
             greaterThan(0.8),
@@ -308,8 +291,12 @@ void main() {
         },
       );
 
-      test('should warn when the OCR text is garbled', () async {
-        stubOcrText(ImportOCRFixtures.lowConfidenceOCRText);
+      test('should warn when the OCR read is thin', () async {
+        // A thin but recipe-shaped read clears the gate with a confidence
+        // below the warning bar.
+        stubOcrText(
+          'Köttbullar\n500 g köttfärs\n1 ägg\n2 dl ströbröd\nBlanda allt och stek i smör',
+        );
 
         final result = await photoStrategy.import(
           'photo',
@@ -320,7 +307,7 @@ void main() {
         expect(
           result.metadata!['ocr_confidence'],
           lessThan(0.85),
-          reason: 'Garbled text must not be reported as high confidence',
+          reason: 'A thin read must not be reported as high confidence',
         );
         expect(
           result.warnings!.any((w) => w.contains('OCR confidence')),

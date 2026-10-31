@@ -17376,6 +17376,42 @@
   "@tagAllergenAutoUnknown": {
     "description": "Secondary line: the app has not settled this allergen."
   },
+  "llmAiConsentRequired": "AI-tolkning kräver ditt samtycke. Du kan ge det under Integritet i inställningarna.",
+  "@llmAiConsentRequired": {
+    "description": "LLM error: the server refused because the user has not consented to AI processing"
+  },
+  "photoAiConsentSaveFailed": "Ditt svar kunde inte sparas, så fotot skickades inte. Försök igen.",
+  "@photoAiConsentSaveFailed": {
+    "description": "Photo import: saving the AI consent failed, nothing was sent"
+  },
+  "photoAiOfferPhoneCouldNotRead": "Telefonen kunde inte läsa hela receptet.",
+  "@photoAiOfferPhoneCouldNotRead": {
+    "description": "Photo import AI offer: the on-device reading failed"
+  },
+  "photoAiOfferNoRecipeFound": "Telefonen läste texten men hittade inget recept i den.",
+  "@photoAiOfferNoRecipeFound": {
+    "description": "Photo import AI offer: text read on the phone but no recipe found"
+  },
+  "photoAiOfferHandwriting": "Handskrivna recept kan bara läsas av AI.",
+  "@photoAiOfferHandwriting": {
+    "description": "Photo import AI offer: handwriting mode"
+  },
+  "photoAiOfferQuestion": "Vill du att AI läser fotot? Då skickas fotot till Google för att läsas. Ditt ja gäller AI-tolkning i appen tills du ändrar det under Integritet.",
+  "@photoAiOfferQuestion": {
+    "description": "Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent"
+  },
+  "photoAiOfferQuestionConsented": "Vill du att AI läser fotot? Då skickas fotot till Google för att läsas.",
+  "@photoAiOfferQuestionConsented": {
+    "description": "Photo import AI offer question when consent is already given"
+  },
+  "photoAiOfferAccept": "Ja, skicka fotot",
+  "@photoAiOfferAccept": {
+    "description": "Photo import AI offer: accept button"
+  },
+  "photoAiOfferDecline": "Nej, jag skriver själv",
+  "@photoAiOfferDecline": {
+    "description": "Photo import AI offer: decline button, manual entry"
+  },
   "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.",
   "@shoppingMergeUnresolvedRecipes": {
     "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",

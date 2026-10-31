@@ -1,12 +1,12 @@
 /// Test fixtures and data for OCR extraction service tests
 ///
 /// This file contains:
-/// - Sample OCR responses from different providers
 /// - Test image data and quality scenarios
 /// - Expected results for various test cases
 /// - Helper functions for creating test data
 
 import 'dart:typed_data';
+import 'package:butlery/services/ocr/device_text_recognizer.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Test image data generators
@@ -77,86 +77,6 @@ class OCRTestImages {
   ]);
 }
 
-/// Sample OCR provider responses
-class OCRProviderResponses {
-  /// Successful OCR.space response
-  static const String ocrSpaceSuccess = '''
-{
-  "ParsedResults": [
-    {
-      "ParsedText": "Köttbullar med gräddsås\\n\\n500g köttfärs\\n1 ägg\\n2 dl ströbröd\\n1 dl mjölk\\n\\nInstruktioner:\\n1. Blanda alla ingredienser\\n2. Forma till bullar\\n3. Stek i smör tills genomstekta\\n4. Servera med gräddsås\\n\\nPortioner: 4\\nTid: 30 minuter"
-    }
-  ],
-  "IsErroredOnProcessing": false
-}
-''';
-
-  /// OCR.space response with processing error
-  static const String ocrSpaceProcessingError = '''
-{
-  "ParsedResults": null,
-  "IsErroredOnProcessing": true,
-  "ErrorMessage": ["Image quality too poor for text extraction"],
-  "ProcessingTimeInMilliseconds": "152"
-}
-''';
-
-  /// OCR.space response with low quality text
-  static const String ocrSpaceLowQuality = '''
-{
-  "ParsedResults": [
-    {
-      "ParsedText": "Ktt8ullar\\nm3d\\ngr4dds5s"
-    }
-  ],
-  "IsErroredOnProcessing": false
-}
-''';
-
-  /// Successful Google Vision response
-  static const String googleVisionSuccess = '''
-{
-  "responses": [
-    {
-      "textAnnotations": [
-        {
-          "description": "Köttbullar med gräddsås\\n\\n500g köttfärs\\n1 ägg\\n2 dl ströbröd\\n1 dl mjölk\\n\\nInstruktioner:\\n1. Blanda alla ingredienser\\n2. Forma till bullar\\n3. Stek i smör tills genomstekta\\n4. Servera med gräddsås\\n\\nPortioner: 4\\nTid: 30 minuter",
-          "locale": "sv"
-        }
-      ]
-    }
-  ]
-}
-''';
-
-  /// Google Vision response with no text detected
-  static const String googleVisionNoText = '''
-{
-  "responses": [
-    {
-      "textAnnotations": []
-    }
-  ]
-}
-''';
-
-  /// Successful Tesseract response
-  static const String tesseractSuccess = '''
-{
-  "text": "Köttbullar med gräddsås\\n\\n500g köttfärs\\n1 ägg\\n2 dl ströbröd\\n1 dl mjölk\\n\\nInstruktioner:\\n1. Blanda alla ingredienser\\n2. Forma till bullar\\n3. Stek i smör tills genomstekta\\n4. Servera med gräddsås\\n\\nPortioner: 4\\nTid: 30 minuter",
-  "confidence": 0.87
-}
-''';
-
-  /// Tesseract response with low confidence
-  static const String tesseractLowConfidence = '''
-{
-  "text": "K0ttbu11ar m3d gr4ddsos",
-  "confidence": 0.42
-}
-''';
-}
-
 /// Expected OCR text results for testing
 class OCRExpectedResults {
   /// Swedish recipe text (Köttbullar)
@@ -211,7 +131,7 @@ class OCRTestHelpers {
   static OCRResult createTestResult({
     String text = OCRExpectedResults.swedishRecipeText,
     double confidence = 0.85,
-    String processingMethod = 'ocr_space',
+    String processingMethod = 'on_device',
     bool isSuccessful = true,
     String? errorMessage,
     Map<String, dynamic>? metadata,
@@ -284,21 +204,13 @@ class OCRTestHelpers {
 
 /// Test scenarios for comprehensive testing
 class OCRTestScenarios {
-  /// Scenario: Multi-provider fallback (OCR.space fails, Google Vision succeeds)
-  static const String scenario1Description =
-      'OCR.space fails → Google Vision succeeds';
-
-  /// Scenario: All providers fail (circuit breakers trip)
+  /// Scenario: Recognizer keeps failing (circuit breaker trips)
   static const String scenario2Description =
-      'All providers fail → Circuit breakers open';
+      'Recognizer fails repeatedly → Circuit breaker opens';
 
   /// Scenario: Cache hit after successful extraction
   static const String scenario3Description =
       'First extraction succeeds → Second extraction uses cache';
-
-  /// Scenario: Low confidence triggers fallback
-  static const String scenario4Description =
-      'Low confidence result triggers next provider';
 
   /// Scenario: Usage limit warning at 80%
   static const String scenario5Description =
@@ -315,4 +227,26 @@ class OCRTestScenarios {
   /// Scenario: Swedish recipe with keywords
   static const String scenario8Description =
       'Swedish recipe text → High confidence with keyword bonus';
+}
+
+/// Scripted on-device recognizer: returns [text] for every image (null reads
+/// as "nothing usable") and counts how often it was asked.
+class FakeDeviceTextRecognizer implements DeviceTextRecognizer {
+  FakeDeviceTextRecognizer({this.text});
+
+  String? text;
+  int calls = 0;
+
+  @override
+  bool get isAvailable => true;
+
+  @override
+  Future<RecognitionResult?> recognize(Uint8List imageBytes) async {
+    calls++;
+    final t = text;
+    return t == null ? null : RecognitionResult(providerText: t);
+  }
+
+  @override
+  Future<void> dispose() async {}
 }

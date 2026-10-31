@@ -6,10 +6,8 @@
 /// note, and an all-unreadable batch surfaces an error.
 
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,44 +30,30 @@ class _OfflineConnectivity extends Fake
   bool get isConnectedToInternet => false;
 }
 
-class MockHttpClient extends Mock implements http.Client {}
-
-class MockStreamedResponse extends Mock implements http.StreamedResponse {}
-
-class FakeBaseRequest extends Fake implements http.BaseRequest {}
-
-http.ByteStream _byteStream(String data) =>
-    http.ByteStream.fromBytes(utf8.encode(data));
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late PhotoImportViewModel vm;
   late MockPersonalRecipeOperations mockPersonalOps;
-  late MockHttpClient mockClient;
+  late FakeDeviceTextRecognizer recognizer;
   late Directory tmpDir;
 
   setUpAll(() async {
     SharedPreferences.setMockInitialValues(const <String, Object>{});
     await BaseUnitTest.setupUnit();
-    registerFallbackValue(FakeBaseRequest());
   });
 
   setUp(() {
     tmpDir = Directory.systemTemp.createTempSync('but941_');
 
-    // OCR mock: any send → an OCR.space success body. registerAsInstance wires
-    // it as the singleton the VM reads via OCRExtractionService.instance.
-    mockClient = MockHttpClient();
-    final response = MockStreamedResponse();
-    when(() => response.statusCode).thenReturn(200);
-    when(() => response.stream).thenAnswer(
-      (_) => _byteStream(OCRProviderResponses.ocrSpaceSuccess),
+    // registerAsInstance wires the service as the singleton the VM reads via
+    // OCRExtractionService.instance.
+    recognizer = FakeDeviceTextRecognizer(
+      text: OCRExpectedResults.swedishRecipeText,
     );
-    when(() => mockClient.send(any())).thenAnswer((_) async => response);
     OCRExtractionService.createForTesting(
-      testHttpClient: mockClient,
-      testOcrApiKey: 'test-key',
+      testDeviceRecognizer: recognizer,
+      testOnDeviceEnabled: () => true,
       registerAsInstance: true,
     );
 
@@ -98,9 +82,7 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  /// Write a distinct-content, gate-passing image file (the OCR service
-  /// hard-rejects tiny blobs before the mocked HTTP, so this uses the ~60KB
-  /// fixture image — one mock send per distinct page).
+  /// Write a distinct-content, gate-passing image file.
   String writeImage(int seed) {
     final f = File('${tmpDir.path}/img_$seed.jpg');
     f.writeAsBytesSync(OCRTestImages.uniqueImage(seed));
@@ -172,7 +154,7 @@ void main() {
 
     expect(offlineVm.pageCount, 0);
     expect(offlineVm.hasError, isTrue);
-    verifyNever(() => mockClient.send(any()));
+    expect(recognizer.calls, 0);
   });
 
   test('shared pages wait unread until readPages, then read once', () async {
@@ -182,13 +164,13 @@ void main() {
     expect(vm.unreadPageCount, 2);
     expect(vm.canReadPages, isTrue);
     expect(vm.hasOcrResult, isFalse);
-    verifyNever(() => mockClient.send(any()));
+    expect(recognizer.calls, 0);
 
     await vm.readPages();
 
     expect(vm.unreadPageCount, 0);
     expect(vm.hasOcrResult, isTrue);
-    verify(() => mockClient.send(any())).called(2);
+    expect(recognizer.calls, 2);
   });
 
   test(
@@ -228,7 +210,7 @@ void main() {
 
     expect(offlineVm.hasError, isTrue);
     expect(offlineVm.unreadPageCount, 1);
-    verifyNever(() => mockClient.send(any()));
+    expect(recognizer.calls, 0);
   });
 
   group('gallery multi-select', () {

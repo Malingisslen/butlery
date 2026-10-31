@@ -45,7 +45,7 @@ void main() {
         );
       });
 
-      test('corrects di -> dl (OCR.space engine 2 misreads the unit)', () {
+      test('corrects di -> dl (cookbook OCR misreads the unit)', () {
         // The systematic cookbook-OCR error: "4 di apelsinjuice" should be dl.
         expect(
           OcrErrorCorrector.correctLine('4 di apelsinjuice'),

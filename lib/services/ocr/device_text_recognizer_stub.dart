@@ -2,8 +2,7 @@ import 'dart:typed_data';
 
 import 'package:butlery/services/ocr/device_text_recognizer.dart';
 
-/// Web factory. ML Kit is mobile-only, so the tier reports itself unavailable
-/// and the existing paid provider chain runs unchanged on web.
+/// Web factory. ML Kit is mobile-only, so the tier reports itself unavailable.
 DeviceTextRecognizer createDeviceTextRecognizer() =>
     const _UnavailableRecognizer();
 

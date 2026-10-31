@@ -83,6 +83,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -4419,6 +4420,10 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool get isLoading => _isLoading;
   @override
   String? get error => _error;
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+  @override
+  bool get aiConsentAlreadyGiven => false;
   @override
   bool get hasError => _error != null;
   @override

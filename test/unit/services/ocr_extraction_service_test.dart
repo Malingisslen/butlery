@@ -1,15 +1,9 @@
 /// Comprehensive tests for OCRExtractionService
-///
-/// Test Coverage Target: 85-90%
-/// Total Tests: 92
-/// Test Groups: 10
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,34 +15,14 @@ import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import '../../fixtures/ocr_test_data.dart';
 
-// Helper to create ByteStream from string
-http.ByteStream _createByteStream(String data) {
-  return http.ByteStream.fromBytes(utf8.encode(data));
-}
-
-// Mocks
-class MockHttpClient extends Mock implements http.Client {}
-
-class MockStreamedResponse extends Mock implements http.StreamedResponse {}
-
-// Fake URI for mocktail
-class FakeUri extends Fake implements Uri {}
-
-// Fake BaseRequest for mocktail
-class FakeBaseRequest extends Fake implements http.BaseRequest {}
-
 void main() {
   // OCRExtractionService.instance reads ServicesBinding during init;
   // initializing the test binding first lets every test in this file
   // construct the service.
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Register fallback values for mocktail + stub SharedPreferences
-  // (OcrUsageTracker reads it during service init).
   setUpAll(() {
     SharedPreferences.setMockInitialValues({});
-    registerFallbackValue(FakeUri());
-    registerFallbackValue(FakeBaseRequest());
   });
 
   group('OCRExtractionService - Service Initialization', () {
@@ -59,14 +33,11 @@ void main() {
     });
 
     test('should create service for testing with injected dependencies', () {
-      final mockClient = MockHttpClient();
       final testTime = DateTime(2025, 1, 15, 12, 0, 0);
 
       final service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
-        testTesseractApiUrl: 'http://test-tesseract.com/api',
+        testDeviceRecognizer: _FakeDeviceRecognizer(text: null),
+        testOnDeviceEnabled: () => true,
         testTimeProvider: () => testTime,
       );
 
@@ -84,16 +55,14 @@ void main() {
     });
 
     test('should initialize with correct service name', () async {
-      final service = OCRExtractionService.createForTesting(
-        testOcrApiKey: 'test-key',
-      );
+      final service = OCRExtractionService.createForTesting();
 
       await service.initialize();
       expect(service.serviceName, equals('OCRExtractionService'));
     });
 
     test(
-      'should initialize without errors when API keys are missing',
+      'should initialize without errors when on-device OCR is disabled',
       () async {
         final service = OCRExtractionService.createForTesting();
 
@@ -101,45 +70,34 @@ void main() {
       },
     );
 
-    test('should track month start date during initialization', () async {
-      final testTime = DateTime(2025, 1, 15, 12, 0, 0);
-      final service = OCRExtractionService.createForTesting(
-        testTimeProvider: () => testTime,
-      );
-
-      await service.initialize();
-      final stats = service.getUsageStats();
-      expect(stats['monthly_count'], equals(0));
-    });
-
     test('should initialize circuit breakers in closed state', () {
       final service = OCRExtractionService.createForTesting();
       final status = service.getServiceStatus();
 
       expect(
-        status['circuit_breakers']['ocr_space']['state'],
-        equals('closed'),
-      );
-      expect(
-        status['circuit_breakers']['google_vision']['state'],
-        equals('closed'),
-      );
-      expect(
-        status['circuit_breakers']['tesseract']['state'],
+        status['circuit_breakers']['on_device']['state'],
         equals('closed'),
       );
     });
 
-    test('should report correct API key configuration status', () {
-      final service = OCRExtractionService.createForTesting(
-        testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
+    test('should report the on-device tier as usable only when enabled', () {
+      final enabled = OCRExtractionService.createForTesting(
+        testDeviceRecognizer: _FakeDeviceRecognizer(text: null),
+        testOnDeviceEnabled: () => true,
+      );
+      final disabled = OCRExtractionService.createForTesting(
+        testDeviceRecognizer: _FakeDeviceRecognizer(text: null),
+        testOnDeviceEnabled: () => false,
       );
 
-      final status = service.getServiceStatus();
-      expect(status['api_keys_configured']['ocr_space'], isTrue);
-      expect(status['api_keys_configured']['google_vision'], isTrue);
-      expect(status['api_keys_configured']['tesseract'], isFalse);
+      expect(
+        enabled.getServiceStatus()['api_keys_configured']['on_device'],
+        isTrue,
+      );
+      expect(
+        disabled.getServiceStatus()['api_keys_configured']['on_device'],
+        isFalse,
+      );
     });
   });
 
@@ -148,26 +106,26 @@ void main() {
       final result = OCRTestHelpers.createTestResult(
         text: 'Test text',
         confidence: 0.85,
-        processingMethod: 'ocr_space',
+        processingMethod: 'on_device',
       );
 
       expect(result.text, equals('Test text'));
       expect(result.confidence, equals(0.85));
-      expect(result.processingMethod, equals('ocr_space'));
+      expect(result.processingMethod, equals('on_device'));
       expect(result.isSuccessful, isTrue);
       expect(result.errorMessage, isNull);
     });
 
     test('should create failure OCRResult using factory', () {
       final result = OCRResult.failure(
-        method: 'ocr_space',
+        method: 'on_device',
         error: 'API key invalid',
         metadata: {'status_code': 401},
       );
 
       expect(result.text, isEmpty);
       expect(result.confidence, equals(0.0));
-      expect(result.processingMethod, equals('ocr_space'));
+      expect(result.processingMethod, equals('on_device'));
       expect(result.isSuccessful, isFalse);
       expect(result.errorMessage, equals('API key invalid'));
       expect(result.metadata['status_code'], equals(401));
@@ -466,15 +424,17 @@ void main() {
 
   group('OCRExtractionService - Caching System', () {
     late OCRExtractionService service;
-    late MockHttpClient mockClient;
+    late _FakeDeviceRecognizer recognizer;
     late DateTime testTime;
 
     setUp(() {
       testTime = DateTime(2025, 1, 15, 12, 0, 0);
-      mockClient = MockHttpClient();
+      recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
         testTimeProvider: () => testTime,
       );
     });
@@ -486,16 +446,7 @@ void main() {
 
     test('should cache successful OCR results', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      // First extraction (should hit API)
+      // First extraction (should read the image)
       final result1 = await service.extractText(imageBytes);
       expect(result1.isSuccessful, isTrue);
 
@@ -504,45 +455,27 @@ void main() {
       expect(result2.isSuccessful, isTrue);
       expect(result2.text, equals(result1.text));
 
-      // Verify API was only called once
-      verify(() => mockClient.send(any())).called(1);
+      // Verify the image was only read once
+      expect(recognizer.calls, equals(1));
     });
 
     test('should expire cache after 24 hours', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // First extraction
       await service.extractText(imageBytes);
 
       // Advance time by 25 hours
       testTime = testTime.add(const Duration(hours: 25));
 
-      // Second extraction (cache expired, should hit API again)
+      // Second extraction (cache expired, should read the image again)
       await service.extractText(imageBytes);
 
-      // Verify API was called twice
-      verify(() => mockClient.send(any())).called(2);
+      // Verify the image was read twice
+      expect(recognizer.calls, equals(2));
     });
 
     test('should not expire cache before 24 hours', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // First extraction
       await service.extractText(imageBytes);
 
@@ -552,21 +485,12 @@ void main() {
       // Second extraction (cache still valid)
       await service.extractText(imageBytes);
 
-      // Verify API was only called once
-      verify(() => mockClient.send(any())).called(1);
+      // Verify the image was only read once
+      expect(recognizer.calls, equals(1));
     });
 
     test('should track cache hits in usage stats', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // First extraction
       await service.extractText(imageBytes);
 
@@ -579,16 +503,7 @@ void main() {
 
     test('should calculate cache hit rate correctly', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      // First extraction (API call)
+      // First extraction (read)
       await service.extractText(imageBytes);
 
       // Second extraction (cache hit)
@@ -606,15 +521,6 @@ void main() {
 
     test('should evict oldest entries when cache is full', () async {
       // Note: Max cache size is 100, we'll create 101 unique images
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // Extract 101 unique images
       for (var i = 0; i < 101; i++) {
         final uniqueImage = OCRTestImages.uniqueImage(i);
@@ -630,26 +536,17 @@ void main() {
       final imageBytes1 = OCRTestImages.mediumQuality;
       final imageBytes2 = Uint8List.fromList(imageBytes1); // Same content
 
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       await service.extractText(imageBytes1);
       await service.extractText(imageBytes2);
 
-      // Should only call API once (same hash)
-      verify(() => mockClient.send(any())).called(1);
+      // Should only read once (same hash)
+      expect(recognizer.calls, equals(1));
     });
 
     test('should NOT cache failure results (transient errors retried)', () async {
       final imageBytes = OCRTestImages.mediumQuality;
 
-      when(() => mockClient.send(any())).thenThrow(Exception('Network error'));
+      recognizer.throws = true;
 
       // First extraction (failure)
       final result1 = await service.extractText(imageBytes);
@@ -659,21 +556,12 @@ void main() {
       final result2 = await service.extractText(imageBytes);
       expect(result2.isSuccessful, isFalse);
 
-      // Both attempts hit the API (no caching of failures)
-      verify(() => mockClient.send(any())).called(2);
+      // Both attempts re-read the image (no caching of failures)
+      expect(recognizer.calls, equals(2));
     });
 
     test('should clear cache on dispose', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       await service.extractText(imageBytes);
       expect(service.getServiceStatus()['cache_size'], greaterThan(0));
 
@@ -687,26 +575,14 @@ void main() {
         // BUT-1253: clearCacheForTesting() previously only cleared the
         // BaseService cache, leaving _cache (OCR results) and
         // _rawHashToPreprocessedHash populated. A repeat extraction of the same
-        // bytes would then return a stale cache hit instead of re-hitting the
-        // API — so the only behavior that proves the LruMaps were actually
-        // cleared is that the second extraction calls the provider again.
+        // bytes would then return a stale cache hit instead of re-reading the
+        // image.
         final imageBytes = OCRTestImages.mediumQuality;
-        final mockResponse = MockStreamedResponse();
-
-        when(() => mockResponse.statusCode).thenReturn(200);
-        when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-        );
-
-        when(
-          () => mockClient.send(any()),
-        ).thenAnswer((_) async => mockResponse);
-
         // Register this mock-driven service as the singleton so the static
         // clearCacheForTesting() hook (which operates on `instance`) acts on it.
         final singletonService = OCRExtractionService.createForTesting(
-          testHttpClient: mockClient,
-          testOcrApiKey: 'test-key',
+          testDeviceRecognizer: recognizer,
+          testOnDeviceEnabled: () => true,
           testTimeProvider: () => testTime,
           registerAsInstance: true,
         );
@@ -724,11 +600,11 @@ void main() {
         expect(singletonService.getServiceStatus()['cache_size'], equals(0));
 
         // Same bytes again: with both the result cache AND the raw-hash
-        // fast-path index cleared, this must re-hit the provider (2 calls
+        // fast-path index cleared, this must re-read the image (2 calls
         // total). If only the BaseService cache had been cleared, the raw-hash
         // index would still short-circuit to a stale result (1 call).
         await singletonService.extractText(imageBytes);
-        verify(() => mockClient.send(any())).called(2);
+        expect(recognizer.calls, equals(2));
 
         await singletonService.dispose();
       },
@@ -739,15 +615,6 @@ void main() {
       // insert past the bound evicts exactly the eldest entry, not a 25%
       // batch. The contract that callers actually depend on is "cache stays
       // bounded", and that's what this test pins.
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // Fill cache to 100 entries.
       for (var i = 0; i < 100; i++) {
         final uniqueImage = OCRTestImages.uniqueImage(i);
@@ -767,17 +634,17 @@ void main() {
 
   group('OCRExtractionService - OCR Extraction', () {
     late OCRExtractionService service;
-    late MockHttpClient mockClient;
+    late _FakeDeviceRecognizer recognizer;
     late DateTime testTime;
 
     setUp(() {
       testTime = DateTime(2025, 1, 15, 12, 0, 0);
-      mockClient = MockHttpClient();
+      recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
-        testTesseractApiUrl: 'http://test-tesseract.com/api',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
         testTimeProvider: () => testTime,
       );
     });
@@ -787,637 +654,87 @@ void main() {
       OCRExtractionService.resetForTesting();
     });
 
-    test('should successfully extract text using OCR.space', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
+    test('should successfully extract text on-device', () async {
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('ocr_space'));
+      expect(result.processingMethod, equals('on_device'));
       expect(result.text, contains('Köttbullar'));
-      expect(result.confidence, greaterThan(0.6));
-    });
-
-    test('should handle OCR.space processing error', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceProcessingError),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should successfully extract text using Google Vision', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-
-      // OCR.space fails
-      when(() => mockClient.send(any())).thenThrow(Exception('OCR.space down'));
-
-      // Google Vision succeeds
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-      expect(result.text, contains('Köttbullar'));
-    });
-
-    test('should successfully extract text using Tesseract', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-
-      // OCR.space fails
-      when(() => mockClient.send(any())).thenThrow(Exception('OCR.space down'));
-
-      // Google Vision fails
-      when(
-        () => mockClient.post(
-          Uri.parse(
-            'https://vision.googleapis.com/v1/images:annotate?key=test-google-key',
-          ),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenThrow(Exception('Google Vision down'));
-
-      // Tesseract succeeds
-      when(
-        () => mockClient.post(
-          Uri.parse('http://test-tesseract.com/api'),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async => http.Response(OCRProviderResponses.tesseractSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('tesseract'));
+      expect(result.text, contains('500g köttfärs'));
     });
 
     test('should include metadata in OCR result', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
-
-      expect(result.metadata, isNotEmpty);
-      expect(result.metadata['engine'], equals('2'));
-      expect(result.metadata['language'], equals('swedish'));
-      expect(result.metadata['processing_time'], isNotNull);
+      expect(result.metadata['provider'], equals('mlkit'));
+      expect(result.metadata['cost_usd'], equals(0));
     });
 
     test('should calculate confidence from text content', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       // Long text with Swedish keywords should have high confidence
       expect(result.confidence, greaterThan(0.8));
     });
 
-    test('should handle empty text extraction', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(
-          '{"ParsedResults": [{"ParsedText": ""}], "IsErroredOnProcessing": false}',
-        ),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionNoText, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Empty text should have zero confidence
-      expect(result.confidence, equals(0.0));
-    });
-
     test('should include timestamp in result', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       expect(result.timestamp, equals(testTime));
     });
 
-    test('should fail with helpful message when all providers fail', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
+    test('should fail with helpful message when nothing is read', () async {
+      recognizer.text = null;
 
-      // All providers fail
-      when(() => mockClient.send(any())).thenThrow(Exception('Network error'));
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenThrow(Exception('Network error'));
-
-      final result = await service.extractText(imageBytes);
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       expect(result.isSuccessful, isFalse);
       expect(result.processingMethod, equals('user_recovery'));
       expect(result.errorMessage, contains('better lighting'));
     });
 
-    test('should handle HTTP timeout', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
+    test(
+      'should fail with helpful message when the recognizer throws',
+      () async {
+        recognizer.throws = true;
 
-      when(() => mockClient.send(any())).thenAnswer(
-        (_) async => throw Exception('Timeout'),
-      );
+        final result = await service.extractText(OCRTestImages.mediumQuality);
 
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should handle invalid JSON response', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(
-        () => mockResponse.stream,
-      ).thenAnswer((_) => _createByteStream('invalid json'));
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should handle HTTP 401 (unauthorized)', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(401);
-      when(
-        () => mockResponse.stream,
-      ).thenAnswer((_) => _createByteStream('Unauthorized'));
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should handle HTTP 500 (server error)', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(500);
-      when(
-        () => mockResponse.stream,
-      ).thenAnswer((_) => _createByteStream('Server error'));
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision
-      expect(result.isSuccessful, isTrue);
-      expect(result.processingMethod, equals('google_vision'));
-    });
+        expect(result.isSuccessful, isFalse);
+        expect(result.processingMethod, equals('user_recovery'));
+        expect(result.errorMessage, contains('better lighting'));
+      },
+    );
 
     test('should boost confidence for Swedish keywords', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       // Text contains multiple Swedish keywords (ingrediens, stek, portioner, minut)
       expect(result.confidence, greaterThan(0.85));
     });
-  });
-
-  group('OCRExtractionService - Multi-Provider Fallback', () {
-    late OCRExtractionService service;
-    late MockHttpClient mockClient;
-    late DateTime testTime;
-
-    setUp(() {
-      testTime = DateTime(2025, 1, 15, 12, 0, 0);
-      mockClient = MockHttpClient();
-      service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
-        testTesseractApiUrl: 'http://test-tesseract.com/api',
-        testTimeProvider: () => testTime,
-      );
-    });
-
-    tearDown(() async {
-      await service.dispose();
-      OCRExtractionService.resetForTesting();
-    });
-
-    test('should try OCR.space first', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      final result = await service.extractText(imageBytes);
-
-      expect(result.processingMethod, equals('ocr_space'));
-      verifyNever(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      );
-    });
-
-    test('should fall back to Google Vision when OCR.space fails', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-
-      when(
-        () => mockClient.send(any()),
-      ).thenThrow(Exception('OCR.space error'));
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test(
-      'should fall back to Tesseract when both OCR.space and Google Vision fail',
-      () async {
-        final imageBytes = OCRTestImages.mediumQuality;
-
-        when(
-          () => mockClient.send(any()),
-        ).thenThrow(Exception('OCR.space error'));
-
-        when(
-          () => mockClient.post(
-            Uri.parse(
-              'https://vision.googleapis.com/v1/images:annotate?key=test-google-key',
-            ),
-            headers: any(named: 'headers'),
-            body: any(named: 'body'),
-          ),
-        ).thenThrow(Exception('Google Vision error'));
-
-        when(
-          () => mockClient.post(
-            Uri.parse('http://test-tesseract.com/api'),
-            headers: any(named: 'headers'),
-            body: any(named: 'body'),
-          ),
-        ).thenAnswer(
-          (_) async =>
-              http.Response(OCRProviderResponses.tesseractSuccess, 200),
-        );
-
-        final result = await service.extractText(imageBytes);
-
-        expect(result.processingMethod, equals('tesseract'));
-      },
-    );
-
-    test('should skip provider when circuit breaker is open', () async {
-      // Stub Google Vision to succeed throughout, so only OCR.space trips
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      // Trigger circuit breaker for OCR.space (5 failures)
-      when(
-        () => mockClient.send(any()),
-      ).thenThrow(Exception('OCR.space error'));
-
-      for (var i = 0; i < 5; i++) {
-        final uniqueImage = OCRTestImages.uniqueImage(i);
-        await service.extractText(uniqueImage);
-        testTime = testTime.add(const Duration(seconds: 1));
-      }
-
-      // Now OCR.space circuit breaker is open — should fall through to Google Vision
-      final uniqueImage = OCRTestImages.uniqueImage(99);
-      final result = await service.extractText(uniqueImage);
-
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should skip provider with low confidence result', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceLowQuality),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      final result = await service.extractText(imageBytes);
-
-      // Should fall back to Google Vision due to low confidence
-      expect(result.processingMethod, equals('google_vision'));
-    });
-
-    test('should not try provider if API key is missing', () async {
-      final serviceNoGoogleKey = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
-        // No Google Vision key
-        testTesseractApiUrl: 'http://test-tesseract.com/api',
-        testTimeProvider: () => testTime,
-      );
-
-      final imageBytes = OCRTestImages.mediumQuality;
-
-      when(
-        () => mockClient.send(any()),
-      ).thenThrow(Exception('OCR.space error'));
-
-      when(
-        () => mockClient.post(
-          Uri.parse('http://test-tesseract.com/api'),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async => http.Response(OCRProviderResponses.tesseractSuccess, 200),
-      );
-
-      final result = await serviceNoGoogleKey.extractText(imageBytes);
-
-      // Should skip Google Vision and go straight to Tesseract
-      expect(result.processingMethod, equals('tesseract'));
-
-      await serviceNoGoogleKey.dispose();
-    });
-
-    test('returns unavailable (not generic "better lighting") when no provider '
-        'is configured', () async {
-      // BUG-25: with every API key / URL absent, no provider runs, so the
-      // generic failure path used to surface "try better lighting" — wrong for
-      // a missing-credentials misconfiguration. Now it short-circuits to an
-      // "unavailable" classification and never touches the network.
-      final serviceNoKeys = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testTimeProvider: () => testTime,
-      );
-
-      final result = await serviceNoKeys.extractText(
-        OCRTestImages.mediumQuality,
-      );
-
-      expect(result.isSuccessful, isFalse);
-      expect(result.processingMethod, equals('no_provider_configured'));
-      expect(result.metadata['failure_classification'], equals('unavailable'));
-      // All breakers reported open so the message builder picks the accurate
-      // "services unavailable" Swedish copy rather than the generic tip.
-      final breakers =
-          result.metadata['circuit_breakers'] as Map<String, dynamic>;
-      expect(breakers['ocr_space_state'], equals('open'));
-      expect(breakers['google_vision_state'], equals('open'));
-      expect(breakers['tesseract_state'], equals('open'));
-      // No HTTP attempted at all.
-      verifyNever(() => mockClient.send(any()));
-      verifyNever(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      );
-
-      await serviceNoKeys.dispose();
-    });
-
-    test('should record usage for successful provider', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-
-      when(
-        () => mockClient.send(any()),
-      ).thenThrow(Exception('OCR.space error'));
-
-      when(
-        () => mockClient.post(
-          any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
-      );
-
-      await service.extractText(imageBytes);
-
-      final stats = service.getUsageStats();
-      expect(stats['provider_usage']['google_vision'], equals(1));
-      expect(stats['provider_usage']['ocr_space'], equals(0));
-    });
 
     test('should reset circuit breaker after successful retry', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
 
       // Trigger 5 failures to open circuit breaker
-      when(
-        () => mockClient.send(any()),
-      ).thenThrow(Exception('OCR.space error'));
-
+      recognizer.throws = true;
       for (var i = 0; i < 5; i++) {
-        try {
-          await service.extractText(imageBytes);
-        } catch (_) {}
+        await service.extractText(imageBytes);
       }
 
       var status = service.getServiceStatus();
-      expect(status['circuit_breakers']['ocr_space']['state'], equals('open'));
+      expect(status['circuit_breakers']['on_device']['state'], equals('open'));
 
       // Advance time to allow retry
       testTime = testTime.add(const Duration(minutes: 3));
 
-      // Now OCR.space works
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
+      recognizer.throws = false;
+      final result = await service.extractText(imageBytes);
 
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-
+      expect(result.processingMethod, equals('on_device'));
       status = service.getServiceStatus();
       expect(
-        status['circuit_breakers']['ocr_space']['state'],
+        status['circuit_breakers']['on_device']['state'],
         equals('closed'),
       );
     });
@@ -1425,21 +742,18 @@ void main() {
 
   group('OCRExtractionService - Usage Tracking', () {
     late OCRExtractionService service;
-    late MockHttpClient mockClient;
+    late _FakeDeviceRecognizer recognizer;
     late DateTime testTime;
 
     setUp(() {
-      // OCRUsageTracker.loadFromPersistence() reads SharedPreferences. Earlier
-      // tests in this file call recordUsage(), which persists incrementing
-      // counters into the same mock prefs (setMockInitialValues only runs once
-      // in setUpAll). Reset prefs here so this group's counter assertions
-      // observe a clean slate.
       SharedPreferences.setMockInitialValues({});
       testTime = DateTime(2025, 1, 15, 12, 0, 0);
-      mockClient = MockHttpClient();
+      recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
         testTimeProvider: () => testTime,
       );
     });
@@ -1449,257 +763,48 @@ void main() {
       OCRExtractionService.resetForTesting();
     });
 
-    test('should track daily request count', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-
-      final stats = service.getUsageStats();
-      expect(stats['daily_count'], equals(1));
-    });
-
-    test('should reset daily count on new day', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-      expect(service.getUsageStats()['daily_count'], equals(1));
-
-      // Advance to next day
-      testTime = DateTime(2025, 1, 16, 12, 0, 0);
-
-      // Different image to avoid cache
-      final newImage = OCRTestImages.validJPEG;
-      await service.extractText(newImage);
-
-      expect(service.getUsageStats()['daily_count'], equals(1));
-    });
-
-    test('should track monthly request count', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-
-      final stats = service.getUsageStats();
-      expect(stats['monthly_count'], equals(1));
-    });
-
-    test('should reset monthly count on new month', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-      expect(service.getUsageStats()['monthly_count'], equals(1));
-
-      // Advance to next month
-      testTime = DateTime(2025, 2, 1, 12, 0, 0);
-
-      final newImage = OCRTestImages.validJPEG;
-      await service.extractText(newImage);
-
-      expect(service.getUsageStats()['monthly_count'], equals(1));
-    });
-
     test('should track provider usage separately', () async {
       final imageBytes1 = OCRTestImages.mediumQuality;
       final imageBytes2 = OCRTestImages.validJPEG;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       await service.extractText(imageBytes1);
       await service.extractText(imageBytes2);
 
       final stats = service.getUsageStats();
-      expect(stats['provider_usage']['ocr_space'], equals(2));
-    });
-
-    test('should not warn below 80% of monthly limit (500)', () async {
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      // 20 requests out of 500 limit = 4%, well under 80% warning threshold
-      for (var i = 0; i < 20; i++) {
-        final uniqueImage = OCRTestImages.uniqueImage(i);
-        await service.extractText(uniqueImage);
-      }
-
-      final stats = service.getUsageStats();
-      // No warning at 4% usage (warning triggers at 80% = 400 requests)
-      final warnings = stats['warnings'] as List;
-      expect(
-        warnings.where((w) => w.toString().contains('monthly limit')),
-        isEmpty,
-      );
-    });
-
-    test('should calculate usage percentage correctly', () async {
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      for (var i = 0; i < 10; i++) {
-        final uniqueImage = OCRTestImages.uniqueImage(i);
-        await service.extractText(uniqueImage);
-      }
-
-      final stats = service.getUsageStats();
-      expect(stats['usage_percentage'], closeTo(2.0, 0.1)); // 10/500 = 2.0%
-    });
-
-    test('should calculate remaining requests', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-
-      final stats = service.getUsageStats();
-      expect(stats['remaining'], equals(499)); // 500 - 1
-    });
-
-    test('should estimate monthly cost at \$0 within free tier', () async {
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes);
-
-      final stats = service.getUsageStats();
-      // Within free tier — cost is negligible (≤ $0.01)
-      expect(stats['estimated_monthly_cost'], lessThanOrEqualTo(0.01));
+      expect(stats['provider_usage']['on_device'], equals(2));
     });
 
     test('should not count cache hits toward provider usage', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes); // API call
+      await service.extractText(imageBytes); // Read
       await service.extractText(imageBytes); // Cache hit
 
       final stats = service.getUsageStats();
-      expect(stats['provider_usage']['ocr_space'], equals(1));
+      expect(stats['provider_usage']['on_device'], equals(1));
       expect(stats['provider_usage']['cache_hits'], equals(1));
     });
 
     test('should track cache hit rate', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      await service.extractText(imageBytes); // API call
+      await service.extractText(imageBytes); // Read
       await service.extractText(imageBytes); // Cache hit
       await service.extractText(imageBytes); // Cache hit
 
       final stats = service.getUsageStats();
       expect(stats['cache_hit_rate'], closeTo(0.666, 0.01)); // 2/3
     });
-
-    test('should warn about low cache hit rate', () async {
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
-      // Create 101 unique images (no cache hits)
-      for (var i = 0; i < 101; i++) {
-        final uniqueImage = OCRTestImages.uniqueImage(i);
-        await service.extractText(uniqueImage);
-      }
-
-      final stats = service.getUsageStats();
-      final warnings = stats['warnings'] as List;
-      expect(
-        warnings.any((w) => w.toString().contains('cache hit rate')),
-        isTrue,
-      );
-    });
   });
 
   group('OCRExtractionService - Edge Cases', () {
     late OCRExtractionService service;
-    late MockHttpClient mockClient;
+    late _FakeDeviceRecognizer recognizer;
 
     setUp(() {
-      mockClient = MockHttpClient();
+      recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
       );
     });
 
@@ -1710,15 +815,6 @@ void main() {
 
     test('should handle very large images', () async {
       final largeImage = OCRTestImages.tooLarge;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       final result = await service.extractText(largeImage);
 
       // Should still process but with quality warning
@@ -1727,15 +823,6 @@ void main() {
 
     test('should handle very small images', () async {
       final smallImage = OCRTestImages.tooSmall;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       final result = await service.extractText(smallImage);
 
       // Should still process but with quality warning
@@ -1744,32 +831,14 @@ void main() {
 
     test('should handle invalid image format', () async {
       final invalidImage = OCRTestImages.invalidFormat;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       final result = await service.extractText(invalidImage);
 
-      // Should still process (OCR API accepts base64)
+      // Should return a result rather than throw
       expect(result, isNotNull);
     });
 
     test('should handle concurrent extractions', () async {
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       // Fire 10 concurrent extractions
       final futures = List<Future<OCRResult>>.generate(
         10,
@@ -1854,10 +923,7 @@ Line 5''';
     late OCRExtractionService service;
 
     setUp(() {
-      service = OCRExtractionService.createForTesting(
-        testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
-      );
+      service = OCRExtractionService.createForTesting();
     });
 
     tearDown(() async {
@@ -1878,44 +944,24 @@ Line 5''';
     test('should report circuit breaker states', () {
       final status = service.getServiceStatus();
       expect(
-        status['circuit_breakers']['ocr_space']['state'],
-        equals('closed'),
-      );
-      expect(
-        status['circuit_breakers']['google_vision']['state'],
-        equals('closed'),
-      );
-      expect(
-        status['circuit_breakers']['tesseract']['state'],
+        status['circuit_breakers']['on_device']['state'],
         equals('closed'),
       );
     });
 
     test('should report circuit breaker failure counts', () {
       final status = service.getServiceStatus();
-      expect(status['circuit_breakers']['ocr_space']['failures'], equals(0));
-      expect(
-        status['circuit_breakers']['google_vision']['failures'],
-        equals(0),
-      );
-      expect(status['circuit_breakers']['tesseract']['failures'], equals(0));
+      expect(status['circuit_breakers']['on_device']['failures'], equals(0));
     });
 
     test('should report circuit breaker can_execute status', () {
       final status = service.getServiceStatus();
-      expect(status['circuit_breakers']['ocr_space']['can_execute'], isTrue);
-      expect(
-        status['circuit_breakers']['google_vision']['can_execute'],
-        isTrue,
-      );
-      expect(status['circuit_breakers']['tesseract']['can_execute'], isTrue);
+      expect(status['circuit_breakers']['on_device']['can_execute'], isTrue);
     });
 
-    test('should report API key configuration', () {
+    test('should report the on-device tier as not usable by default', () {
       final status = service.getServiceStatus();
-      expect(status['api_keys_configured']['ocr_space'], isTrue);
-      expect(status['api_keys_configured']['google_vision'], isTrue);
-      expect(status['api_keys_configured']['tesseract'], isFalse);
+      expect(status['api_keys_configured']['on_device'], isFalse);
     });
 
     test('should report configuration limits', () {
@@ -1932,22 +978,15 @@ Line 5''';
     });
 
     test('should update status after operations', () async {
-      final mockClient = MockHttpClient();
+      final recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       final serviceWithClient = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
       );
 
       final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
-
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-
       await serviceWithClient.extractText(imageBytes);
 
       final status = serviceWithClient.getServiceStatus();
@@ -1968,16 +1007,18 @@ Line 5''';
     });
 
     test('should report correct status after circuit breaker trips', () async {
-      final mockClient = MockHttpClient();
+      final recognizer = _FakeDeviceRecognizer(
+        text: OCRExpectedResults.swedishRecipeText,
+      );
       final serviceWithClient = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
       );
 
       final imageBytes = OCRTestImages.mediumQuality;
 
       // Trigger 5 failures
-      when(() => mockClient.send(any())).thenThrow(Exception('Error'));
+      recognizer.throws = true;
 
       for (var i = 0; i < 5; i++) {
         try {
@@ -1986,9 +1027,9 @@ Line 5''';
       }
 
       final status = serviceWithClient.getServiceStatus();
-      expect(status['circuit_breakers']['ocr_space']['state'], equals('open'));
-      expect(status['circuit_breakers']['ocr_space']['can_execute'], isFalse);
-      expect(status['circuit_breakers']['ocr_space']['failures'], equals(5));
+      expect(status['circuit_breakers']['on_device']['state'], equals('open'));
+      expect(status['circuit_breakers']['on_device']['can_execute'], isFalse);
+      expect(status['circuit_breakers']['on_device']['failures'], equals(5));
 
       await serviceWithClient.dispose();
     });
@@ -2011,23 +1052,12 @@ Line 5''';
     });
   });
 
-  // Tier 0: the free on-device recognizer that runs before any paid provider.
-  // The behaviour that matters is the money: a device-readable image must not
-  // reach the network, and anything the device can't read must still fall
-  // through to the existing chain unchanged.
+  // The behaviour that matters is the gate: what the device reads must be accepted only when it is
+  // a confident recipe, and everything else must fail with a classification the
+  // message builder can act on.
   group('OCRExtractionService - on-device tier', () {
-    late MockHttpClient mockClient;
-    late MockStreamedResponse mockResponse;
-
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockClient = MockHttpClient();
-      mockResponse = MockStreamedResponse();
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
-      );
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
     });
 
     /// [layout] drives `enable_layout_recipe_split`, which decides WHICH of the
@@ -2040,8 +1070,6 @@ Line 5''';
       required bool enabled,
       bool layout = false,
     }) => OCRExtractionService.createForTesting(
-      testHttpClient: mockClient,
-      testOcrApiKey: 'test-ocr-key',
       testDeviceRecognizer: recognizer,
       testOnDeviceEnabled: () => enabled,
       testLayoutEnabled: () => layout,
@@ -2058,17 +1086,15 @@ Line 5''';
           text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
         );
         final service = OCRExtractionService.createForTesting(
-          testHttpClient: mockClient,
-          testOcrApiKey: 'test-ocr-key',
           testDeviceRecognizer: recognizer,
           // testOnDeviceEnabled deliberately omitted — exercise the real lookup.
         );
         addTearDown(service.dispose);
 
-        await service.extractText(OCRTestImages.mediumQuality);
+        final result = await service.extractText(OCRTestImages.mediumQuality);
 
         expect(recognizer.calls, equals(0));
-        verify(() => mockClient.send(any())).called(1);
+        expect(result.processingMethod, equals('no_provider_configured'));
       },
     );
 
@@ -2101,8 +1127,6 @@ Line 5''';
         text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
       );
       final service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
         testDeviceRecognizer: recognizer,
       );
       addTearDown(service.dispose);
@@ -2120,18 +1144,12 @@ Line 5''';
     });
 
     test(
-      'with the tier off, failure metadata omits the on-device breaker',
+      'with the tier off, the failure says "unavailable" with the breaker open',
       () async {
-        // Regression guard for a fix that over-corrected: publishing
-        // `on_device_state` unconditionally reads as "closed" (healthy) when
-        // the tier never ran, which made the "OCR-tjänsterna är otillgängliga"
-        // message unreachable for every user with the flag off — the default.
-        // The message builder treats an ABSENT key as down, so absence is the
-        // contract when tier 0 did not participate.
-        when(() => mockResponse.statusCode).thenReturn(500);
+        // The message builder's "services unavailable" branch reads these two
+        // facts; with the flag off (the default) it must be reachable, and the
+        // network must never be consulted.
         final service = OCRExtractionService.createForTesting(
-          testHttpClient: mockClient,
-          testOcrApiKey: 'test-ocr-key',
           testDeviceRecognizer: _FakeDeviceRecognizer(text: null),
           testOnDeviceEnabled: () => false,
         );
@@ -2140,10 +1158,15 @@ Line 5''';
         final result = await service.extractText(OCRTestImages.mediumQuality);
 
         expect(result.isSuccessful, isFalse);
-        final breakers =
-            result.metadata['circuit_breakers'] as Map<String, dynamic>;
-        expect(breakers.containsKey('on_device_state'), isFalse);
-        expect(breakers.containsKey('ocr_space_state'), isTrue);
+        expect(result.processingMethod, equals('no_provider_configured'));
+        expect(
+          result.metadata['failure_classification'],
+          equals('unavailable'),
+        );
+        expect(
+          result.metadata['circuit_breakers'],
+          equals({'on_device_state': 'open'}),
+        );
       },
     );
 
@@ -2169,7 +1192,7 @@ Line 5''';
 
       expect(recognizer.calls, equals(1));
       expect(result.processingMethod, isNot(equals('on_device')));
-      verify(() => mockClient.send(any())).called(1);
+      expect(result.isSuccessful, isFalse);
     });
 
     test('the reported confidence is scored, not a constant', () async {
@@ -2224,11 +1247,10 @@ Line 5''';
 
         expect(first.text, equals(second.text));
         expect(recognizer.calls, equals(1));
-        verifyNever(() => mockClient.send(any()));
       },
     );
 
-    test('a device-read recipe never reaches a paid provider', () async {
+    test('a device-read recipe is accepted as an on-device read', () async {
       final recognizer = _FakeDeviceRecognizer(
         text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
       );
@@ -2240,20 +1262,18 @@ Line 5''';
       expect(result.isSuccessful, isTrue);
       expect(result.processingMethod, equals('on_device'));
       expect(recognizer.calls, equals(1));
-      verifyNever(() => mockClient.send(any()));
     });
 
     test('device-read text is SANITIZED before it is stored', () async {
-      // The three paid tiers already run sanitizeText; tier 0 shipped without
-      // it, and every other fixture in this group is plain Swedish — on which
-      // the sanitizer is the identity function. So the missing call was
+      // Every other fixture in this group is plain Swedish — on which the
+      // sanitizer is the identity function, so a missing call would be
       // invisible to the whole suite. This fixture carries the two things
       // sanitizeText actually removes: a Cyrillic homoglyph 'а' (U+0430) hiding
       // inside an ordinary word, and a C0 control byte.
       //
       // It matters because `photo_import_strategy` persists `ocrResult.text`
       // straight to the draft and it later leaves the device in a GDPR export,
-      // so which characters survive must not depend on which tier answered.
+      // so the characters that survive must be the sanitized ones.
       final recognizer = _FakeDeviceRecognizer(
         // Escapes, not literal characters: a Cyrillic homoglyph and a
         // control byte are invisible in an editor and would be silently
@@ -2271,17 +1291,17 @@ Line 5''';
         result.processingMethod,
         equals('on_device'),
         reason:
-            'positive control — without this, a fall-through to a paid tier '
-            'would satisfy the two absence assertions just as well',
+            'positive control — without this, a rejected read would satisfy '
+            'the two absence assertions just as well',
       );
       expect(result.text.contains('а'), isFalse);
       expect(result.text.contains(''), isFalse);
       expect(result.text, contains('Vispa smeten'));
     });
 
-    test('text that is not recipe-shaped falls through to OCR.space', () async {
+    test('text that is not recipe-shaped is rejected', () async {
       // A parking receipt: no measurements, no cooking verbs. The gate must
-      // reject it rather than let a non-recipe short-circuit the chain.
+      // reject it rather than hand a non-recipe on as the user's recipe.
       final recognizer = _FakeDeviceRecognizer(
         text: 'PARKERINGSBILJETT\nZon 4\nGiltig till 14:32',
       );
@@ -2292,7 +1312,7 @@ Line 5''';
 
       expect(recognizer.calls, equals(1));
       expect(result.processingMethod, isNot(equals('on_device')));
-      verify(() => mockClient.send(any())).called(1);
+      expect(result.isSuccessful, isFalse);
     });
 
     test('a PARTIAL read clears the heuristic but not the confidence '
@@ -2304,9 +1324,8 @@ Line 5''';
       // makes this the sole shape in the suite that can see the >= 0.6 bar —
       // every other fixture here is long enough to score 0.7 regardless.
       //
-      // It matters because an accepted partial read is cached for 24 h and the
-      // paid chain is never consulted, so the user keeps half a recipe while
-      // the identical string from OCR.space would have been rejected.
+      // It matters because an accepted partial read is cached for 24 h, so the
+      // user keeps half a recipe.
       final partial = _FakeDeviceRecognizer(text: '2 dl mjöl\nvispa');
       final partialService = buildService(
         recognizer: partial,
@@ -2341,15 +1360,15 @@ Line 5''';
       expect(acceptedResult.processingMethod, equals('on_device'));
     });
 
-    test('an empty device read falls through to OCR.space', () async {
+    test('an empty device read is a failure, not a success', () async {
       final recognizer = _FakeDeviceRecognizer(text: null);
       final service = buildService(recognizer: recognizer, enabled: true);
       addTearDown(service.dispose);
 
-      await service.extractText(OCRTestImages.mediumQuality);
+      final result = await service.extractText(OCRTestImages.mediumQuality);
 
       expect(recognizer.calls, equals(1));
-      verify(() => mockClient.send(any())).called(1);
+      expect(result.isSuccessful, isFalse);
     });
 
     test('flag off means the recognizer is never touched', () async {
@@ -2362,12 +1381,11 @@ Line 5''';
       final result = await service.extractText(OCRTestImages.mediumQuality);
 
       expect(recognizer.calls, equals(0));
-      expect(result.processingMethod, isNot(equals('on_device')));
-      verify(() => mockClient.send(any())).called(1);
+      expect(result.processingMethod, equals('no_provider_configured'));
     });
 
     test(
-      'an unavailable recognizer (web stub) is skipped, not failed',
+      'an unavailable recognizer (web stub) is skipped and reported unavailable',
       () async {
         final recognizer = _FakeDeviceRecognizer(text: null, available: false);
         final service = buildService(recognizer: recognizer, enabled: true);
@@ -2376,20 +1394,22 @@ Line 5''';
         final result = await service.extractText(OCRTestImages.mediumQuality);
 
         expect(recognizer.calls, equals(0));
-        expect(result.isSuccessful, isTrue);
-        verify(() => mockClient.send(any())).called(1);
+        expect(result.processingMethod, equals('no_provider_configured'));
+        expect(
+          result.metadata['failure_classification'],
+          equals('unavailable'),
+        );
       },
     );
 
-    test('a throwing recognizer degrades to the paid chain', () async {
+    test('a throwing recognizer fails the import and is counted', () async {
       final recognizer = _FakeDeviceRecognizer(text: null, throws: true);
       final service = buildService(recognizer: recognizer, enabled: true);
       addTearDown(service.dispose);
 
       final result = await service.extractText(OCRTestImages.mediumQuality);
 
-      expect(result.isSuccessful, isTrue);
-      verify(() => mockClient.send(any())).called(1);
+      expect(result.isSuccessful, isFalse);
 
       // The catch is the ONLY branch the on-device timeout can reach, so a
       // stuck platform channel — the exact event the timeout exists for — was
@@ -2405,11 +1425,6 @@ Line 5''';
         reason: 'a throw is not a heuristic rejection — the two must not merge',
       );
       expect(
-        stats['daily_count'],
-        equals(1),
-        reason: 'only the paid leg spends quota; the failed free read is free',
-      );
-      expect(
         (service.getServiceStatus()['circuit_breakers']
             as Map<String, dynamic>)['on_device']['failures'],
         equals(1),
@@ -2420,8 +1435,7 @@ Line 5''';
     test('a stalled recognizer is bounded by the timeout', () {
       // The recognizer's contract is "never throw", so a stuck platform
       // channel emits no signal at all: without the .timeout() the import
-      // hangs forever — it never falls through to the paid chain and never
-      // trips the breaker. fakeAsync, never a real wait.
+      // hangs forever — it never fails over and never trips the breaker. fakeAsync, never a real wait.
       fakeAsync((async) {
         final recognizer = _FakeDeviceRecognizer(text: null, stalls: true);
         final service = buildService(recognizer: recognizer, enabled: true);
@@ -2440,7 +1454,7 @@ Line 5''';
 
         async.elapse(const Duration(seconds: 2));
         async.flushMicrotasks();
-        expect(result?.processingMethod, equals('ocr_space'));
+        expect(result?.processingMethod, equals('user_recovery'));
         expect(recognizer.calls, equals(1));
       });
     });
@@ -2450,7 +1464,6 @@ Line 5''';
       // pick the user's Swedish copy. Misclassifying it as `generic` tells a
       // user with a wedged ML Kit to improve their lighting forever.
       fakeAsync((async) {
-        when(() => mockResponse.statusCode).thenReturn(500);
         final service = buildService(
           recognizer: _FakeDeviceRecognizer(text: null, stalls: true),
           enabled: true,
@@ -2512,9 +1525,7 @@ Line 5''';
     test('repeated broken reads open the tier-0 breaker', () async {
       // Without recordFailure() on the null arm the breaker can never open, so
       // a device with permanently broken ML Kit pays a platform round-trip on
-      // every import forever. Paid tier fails too, so nothing is cached and
-      // each call really re-enters tier 0.
-      when(() => mockResponse.statusCode).thenReturn(500);
+      // every import forever.
       final recognizer = _FakeDeviceRecognizer(text: null);
       final service = buildService(recognizer: recognizer, enabled: true);
       addTearDown(service.dispose);
@@ -2527,9 +1538,6 @@ Line 5''';
       // 5, not 6: the sixth import found the breaker open and skipped the
       // round-trip entirely.
       expect(recognizer.calls, equals(5));
-      // Mirror of the "tier off omits the key" test above: when tier 0 DID
-      // participate the key must be present and carry the real state, which is
-      // what makes the message builder's "services unavailable" reachable.
       final breakers =
           last!.metadata['circuit_breakers'] as Map<String, dynamic>;
       expect(breakers['on_device_state'], equals('open'));
@@ -2539,7 +1547,6 @@ Line 5''';
       // The discriminator against folding the two arms together: a device that
       // keeps reading non-recipes is working perfectly, and backing off would
       // silently disable the free tier for anyone photographing receipts.
-      when(() => mockResponse.statusCode).thenReturn(500);
       final recognizer = _FakeDeviceRecognizer(
         text: 'PARKERINGSBILJETT\nZon 4\nGiltig till 14:32',
       );
@@ -2600,8 +1607,8 @@ Line 5''';
         result.processingMethod,
         equals('on_device'),
         reason:
-            'positive control - a fall-through to a paid tier would store '
-            'entirely different text and satisfy nothing below by accident',
+            'positive control - a rejected read would store no text at all and '
+            'satisfy nothing below by accident',
       );
       final rows = result.text.split('\n');
       expect(rows, hasLength(recognizer.lastLayout!.lines.length));
@@ -2696,8 +1703,6 @@ Line 5''';
       );
       final recognizer = _FakeDeviceRecognizer(text: page);
       final service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
         testDeviceRecognizer: recognizer,
         testOnDeviceEnabled: () => true,
         // testLayoutEnabled deliberately omitted — exercise the real lookup.
@@ -2732,7 +1737,6 @@ Line 5''';
       expect(recognizer.lastLayout, isNull);
       expect(result.processingMethod, equals('on_device'));
       expect(result.text, equals(page));
-      verifyNever(() => mockClient.send(any()));
     });
 
     test('the geometry travels WITH the text, or not at all', () async {
@@ -2805,8 +1809,6 @@ Line 5''';
       final recognizer = _FakeDeviceRecognizer(text: page);
       var layoutFlag = true;
       final service = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-ocr-key',
         testDeviceRecognizer: recognizer,
         testOnDeviceEnabled: () => true,
         testLayoutEnabled: () => layoutFlag,
@@ -2833,10 +1835,7 @@ Line 5''';
         final recognizer = _FakeDeviceRecognizer(
           text: 'Ingredienser\n2 dl mjöl\nVispa smeten.',
         );
-        // No API keys at all — before tier 0 existed this was a hard
-        // misconfiguration; now it is a valid device-only configuration.
         final service = OCRExtractionService.createForTesting(
-          testHttpClient: mockClient,
           testDeviceRecognizer: recognizer,
           testOnDeviceEnabled: () => true,
         );
@@ -2865,9 +1864,9 @@ class _FakeDeviceRecognizer implements DeviceTextRecognizer {
     this.measures = true,
   });
 
-  final String? text;
+  String? text;
   final bool available;
-  final bool throws;
+  bool throws;
 
   /// Models the failure the recognizer's "never throw" contract cannot
   /// express: a platform channel that simply never answers.

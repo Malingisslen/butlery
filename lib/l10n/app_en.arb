@@ -17363,6 +17363,42 @@
   "@tagAllergenAutoUnknown": {
     "description": "Secondary line: the app has not settled this allergen."
   },
+  "llmAiConsentRequired": "AI reading needs your consent. You can give it under Privacy in settings.",
+  "@llmAiConsentRequired": {
+    "description": "LLM error: the server refused because the user has not consented to AI processing"
+  },
+  "photoAiConsentSaveFailed": "Your answer could not be saved, so the photo was not sent. Try again.",
+  "@photoAiConsentSaveFailed": {
+    "description": "Photo import: saving the AI consent failed, nothing was sent"
+  },
+  "photoAiOfferPhoneCouldNotRead": "The phone could not read the whole recipe.",
+  "@photoAiOfferPhoneCouldNotRead": {
+    "description": "Photo import AI offer: the on-device reading failed"
+  },
+  "photoAiOfferNoRecipeFound": "The phone read the text but found no recipe in it.",
+  "@photoAiOfferNoRecipeFound": {
+    "description": "Photo import AI offer: text read on the phone but no recipe found"
+  },
+  "photoAiOfferHandwriting": "Handwritten recipes can only be read by AI.",
+  "@photoAiOfferHandwriting": {
+    "description": "Photo import AI offer: handwriting mode"
+  },
+  "photoAiOfferQuestion": "Do you want AI to read the photo? The photo is then sent to Google to be read. Your yes covers AI reading in the app until you change it under Privacy.",
+  "@photoAiOfferQuestion": {
+    "description": "Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent"
+  },
+  "photoAiOfferQuestionConsented": "Do you want AI to read the photo? The photo is then sent to Google to be read.",
+  "@photoAiOfferQuestionConsented": {
+    "description": "Photo import AI offer question when consent is already given"
+  },
+  "photoAiOfferAccept": "Yes, send the photo",
+  "@photoAiOfferAccept": {
+    "description": "Photo import AI offer: accept button"
+  },
+  "photoAiOfferDecline": "No, I'll type it myself",
+  "@photoAiOfferDecline": {
+    "description": "Photo import AI offer: decline button, manual entry"
+  },
   "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 dish} other{{count} dishes}} could not be counted because the recipe no longer exists.",
   "@shoppingMergeUnresolvedRecipes": {
     "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",

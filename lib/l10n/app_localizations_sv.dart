@@ -20810,6 +20810,40 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagAllergenAutoUnknown => 'Appen: ej kontrollerat';
 
   @override
+  String get llmAiConsentRequired =>
+      'AI-tolkning kräver ditt samtycke. Du kan ge det under Integritet i inställningarna.';
+
+  @override
+  String get photoAiConsentSaveFailed =>
+      'Ditt svar kunde inte sparas, så fotot skickades inte. Försök igen.';
+
+  @override
+  String get photoAiOfferPhoneCouldNotRead =>
+      'Telefonen kunde inte läsa hela receptet.';
+
+  @override
+  String get photoAiOfferNoRecipeFound =>
+      'Telefonen läste texten men hittade inget recept i den.';
+
+  @override
+  String get photoAiOfferHandwriting =>
+      'Handskrivna recept kan bara läsas av AI.';
+
+  @override
+  String get photoAiOfferQuestion =>
+      'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas. Ditt ja gäller AI-tolkning i appen tills du ändrar det under Integritet.';
+
+  @override
+  String get photoAiOfferQuestionConsented =>
+      'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas.';
+
+  @override
+  String get photoAiOfferAccept => 'Ja, skicka fotot';
+
+  @override
+  String get photoAiOfferDecline => 'Nej, jag skriver själv';
+
+  @override
   String shoppingMergeUnresolvedRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

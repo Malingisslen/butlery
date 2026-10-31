@@ -27,7 +27,10 @@ import { scrubPii } from "./pii-scrubber";
 import { isGuestRequest } from "./guest-import-quota";
 import { checkRateLimit, RateLimitCheckResult } from "../middleware/rate_limiter";
 import { hashUid } from "../shared/hash-uid";
+import { hasAiConsentIn } from "./ai-consent";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
+
+export { hasAiConsentIn };
 
 export const SHADOW_OPERATION = "shadowCompareImport";
 
@@ -117,16 +120,6 @@ function errorFields(e: unknown): { errName?: string; errCode?: unknown } {
 async function defaultLoadConfig(): Promise<ShadowConfig | undefined> {
   const doc = await admin.firestore().doc("system/config").get();
   return doc.exists ? (doc.data() as ShadowConfig) : undefined;
-}
-
-export async function hasAiConsentIn(
-  db: admin.firestore.Firestore,
-  uid: string
-): Promise<boolean> {
-  const doc = await db.doc(`users/${uid}/consent/current`).get();
-  if (!doc.exists) return false;
-  const purposes = doc.get("purposes") as Record<string, unknown> | undefined;
-  return purposes?.aiProcessing === true;
 }
 
 const defaultHasAiConsent = (uid: string) => hasAiConsentIn(admin.firestore(), uid);

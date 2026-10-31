@@ -2,13 +2,12 @@
 ///
 /// Tests OCR-based recipe import including:
 /// - Image byte validation and handling
-/// - OCR text extraction (multi-provider fallback)
+/// - OCR text extraction
 /// - Text-to-recipe parsing integration
 /// - Confidence threshold warnings
 /// - Swedish recipe content optimization
 /// - Metadata tracking (OCR method, confidence, image size)
 /// - Error handling (invalid images, OCR failures, parsing errors)
-/// - Multi-provider fallback (OCR.space → Google Vision → Tesseract)
 library;
 
 import 'dart:typed_data';
@@ -189,7 +188,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Test recipe text',
             confidence: 0.9,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -224,7 +223,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Test recipe',
             confidence: 0.85,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -271,7 +270,7 @@ void main() {
           (_) async => _createOCRResult(
             text: expectedText,
             confidence: 0.92,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
             metadata: {'language': 'sv'},
           ),
@@ -294,7 +293,7 @@ void main() {
 
         // Assert
         expect(result.isSuccess, isTrue);
-        expect(result.metadata?['ocr_method'], equals('ocr_space'));
+        expect(result.metadata?['ocr_method'], equals('on_device'));
         expect(result.metadata?['ocr_confidence'], equals(0.92));
         verify(() => mockOcrService.initialize()).called(1);
         verify(() => mockOcrService.extractText(testImageBytes)).called(1);
@@ -312,7 +311,7 @@ void main() {
           (_) async => _createOCRResult(
             text: '',
             confidence: 0.0,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: false,
             errorMessage: 'OCR service unavailable',
           ),
@@ -337,7 +336,7 @@ void main() {
           (_) async => _createOCRResult(
             text: '',
             confidence: 0.5,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -355,103 +354,38 @@ void main() {
         expect(result.errorMessage, contains('No text could be extracted'));
       });
 
-      test('should track Google Vision fallback', () async {
-        // Arrange
-        when(() => mockOcrService.extractText(any())).thenAnswer(
-          (_) async => _createOCRResult(
-            text: 'Recipe text',
-            confidence: 0.88,
-            processingMethod: 'google_vision',
-            isSuccessful: true,
-          ),
-        );
+      test(
+        'an on-device read at medium confidence carries the medium-confidence '
+        'warning',
+        () async {
+          when(() => mockOcrService.extractText(any())).thenAnswer(
+            (_) async => _createOCRResult(
+              text: 'Recipe text',
+              confidence: 0.75,
+              processingMethod: 'on_device',
+              isSuccessful: true,
+            ),
+          );
 
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+          when(
+            () =>
+                mockTextStrategy.import(any(), options: any(named: 'options')),
+          ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
-        // Act
-        final result = await strategy.import(
-          'photo',
-          options: {
-            'imageBytes': testImageBytes,
-          },
-        );
+          // Act
+          final result = await strategy.import(
+            'photo',
+            options: {
+              'imageBytes': testImageBytes,
+            },
+          );
 
-        // Assert
-        expect(result.isSuccess, isTrue);
-        expect(result.metadata?['ocr_method'], equals('google_vision'));
-        expect(result.warnings, contains(contains('google_vision')));
-      });
-
-      test('should track Tesseract fallback', () async {
-        // Arrange
-        when(() => mockOcrService.extractText(any())).thenAnswer(
-          (_) async => _createOCRResult(
-            text: 'Recipe text',
-            confidence: 0.75,
-            processingMethod: 'tesseract',
-            isSuccessful: true,
-          ),
-        );
-
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
-
-        // Act
-        final result = await strategy.import(
-          'photo',
-          options: {
-            'imageBytes': testImageBytes,
-          },
-        );
-
-        // Assert
-        expect(result.isSuccess, isTrue);
-        expect(result.metadata?['ocr_method'], equals('tesseract'));
-        expect(result.warnings, contains(contains('tesseract')));
-      });
-
-      test('should NOT report the on-device tier as a fallback', () async {
-        // `on_device` runs FIRST by design, so reaching it says nothing about
-        // the paid chain's health. The two tests above are this one's control:
-        // they prove the "(primary unavailable)" warning still fires for a
-        // genuine fallback, so a green here means suppression, not a dead
-        // warning path. Without this, treating on-device as a fallback puts
-        // "primary unavailable" on every free import — the normal path.
-        when(() => mockOcrService.extractText(any())).thenAnswer(
-          (_) async => _createOCRResult(
-            text: 'Recipe text',
-            confidence: 0.75,
-            processingMethod: 'on_device',
-            isSuccessful: true,
-          ),
-        );
-
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
-
-        // Act
-        final result = await strategy.import(
-          'photo',
-          options: {
-            'imageBytes': testImageBytes,
-          },
-        );
-
-        // Assert
-        expect(result.isSuccess, isTrue);
-        expect(result.metadata?['ocr_method'], equals('on_device'));
-        expect(
-          result.warnings ?? const <String>[],
-          isNot(contains(contains('primary unavailable'))),
-        );
-        // Positive control: warnings WERE built for this result, so the
-        // absence above is suppression rather than an empty list.
-        expect(result.warnings, contains(contains('Medium OCR confidence')));
-      });
+          // Assert
+          expect(result.isSuccess, isTrue);
+          expect(result.metadata?['ocr_method'], equals('on_device'));
+          expect(result.warnings, contains(contains('Medium OCR confidence')));
+        },
+      );
     });
 
     group('Confidence Threshold Warnings', () {
@@ -461,7 +395,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.90,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -495,7 +429,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.78,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -525,7 +459,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.62,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -556,7 +490,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.35,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -590,7 +524,7 @@ void main() {
           (_) async => _createOCRResult(
             text: ocrText,
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -628,7 +562,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Some non-recipe text',
             confidence: 0.90,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -660,7 +594,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -699,7 +633,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -730,7 +664,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -760,7 +694,7 @@ void main() {
           (_) async => _createOCRResult(
             text: longText,
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -790,7 +724,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -817,7 +751,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
             metadata: {
               'language': 'sv',
@@ -876,7 +810,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -918,7 +852,7 @@ void main() {
           (_) async => _createOCRResult(
             text: 'Recipe text',
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -948,7 +882,7 @@ void main() {
           (_) async => _createOCRResult(
             text: longText,
             confidence: 0.88,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -980,7 +914,7 @@ void main() {
           (_) async => _createOCRResult(
             text: '   \n\n   ',
             confidence: 0.50,
-            processingMethod: 'ocr_space',
+            processingMethod: 'on_device',
             isSuccessful: true,
           ),
         );
@@ -1093,6 +1027,117 @@ void main() {
       );
     });
 
+    group('printed photo never reaches the LLM without the offer', () {
+      late _FakeLlmEnhancementService fakeLlm;
+
+      setUp(() {
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        fakeLlm = _FakeLlmEnhancementService()
+          ..result = ImportSuccess(
+            recipe: _createTestRecipe(
+              title: 'Skulle aldrig synts',
+              ingredients: ['1 dl mjöl'],
+              instructions: ['Blanda'],
+            ),
+            confidence: 0.9,
+            pipeline: 'photo',
+            tier: 4,
+            method: 'llm-vision',
+            usedLlm: true,
+          );
+        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      test(
+        'visionOnly sends the photo to LLM vision once, without char-OCR',
+        () async {
+          final result = await strategy.import(
+            'photo',
+            options: {'imageBytes': testImageBytes, 'visionOnly': true},
+          );
+
+          expect(result.isSuccess, isTrue);
+          expect(fakeLlm.extractFromImageCalls, 1);
+          expect(fakeLlm.lastIsHandwritten, isFalse);
+          verifyNever(() => mockOcrService.extractText(any()));
+        },
+      );
+
+      test('a failed on-device OCR returns failure, no LLM call', () async {
+        when(() => mockOcrService.extractText(any())).thenAnswer(
+          (_) async => _createOCRResult(
+            text: '',
+            confidence: 0.0,
+            processingMethod: 'on_device',
+            isSuccessful: false,
+            errorMessage: 'OCR service unavailable',
+          ),
+        );
+
+        final result = await strategy.import(
+          'photo',
+          options: {'imageBytes': testImageBytes},
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(fakeLlm.extractFromImageCalls, 0);
+      });
+
+      test('an empty OCR result returns failure, no LLM call', () async {
+        when(() => mockOcrService.extractText(any())).thenAnswer(
+          (_) async => _createOCRResult(
+            text: '',
+            confidence: 0.5,
+            processingMethod: 'on_device',
+            isSuccessful: true,
+          ),
+        );
+
+        final result = await strategy.import(
+          'photo',
+          options: {'imageBytes': testImageBytes},
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(fakeLlm.extractFromImageCalls, 0);
+      });
+
+      test('text that does not parse returns failure, no LLM call', () async {
+        when(() => mockOcrService.extractText(any())).thenAnswer(
+          (_) async => _createOCRResult(
+            text: 'Some non-recipe text',
+            confidence: 0.90,
+            processingMethod: 'on_device',
+            isSuccessful: true,
+          ),
+        );
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.failure('No recipe structure'));
+
+        final result = await strategy.import(
+          'photo',
+          options: {'imageBytes': testImageBytes},
+        );
+
+        expect(result.isSuccess, isFalse);
+        expect(fakeLlm.extractFromImageCalls, 0);
+      });
+    });
+
     group('BUT-1469/BUT-1614 correction-capture wiring', () {
       // A successful photo import must store a correction snapshot tagged
       // ImportSource.photo (OCR→text and every LLM-vision route), overriding
@@ -1129,7 +1174,7 @@ void main() {
             (_) async => _createOCRResult(
               text: 'Pannkakor\n3 ägg\n5 dl mjölk',
               confidence: 0.9,
-              processingMethod: 'ocr_space',
+              processingMethod: 'on_device',
               isSuccessful: true,
             ),
           );
@@ -1176,7 +1221,7 @@ void main() {
             (_) async => _createOCRResult(
               text: 'Pannkakor\n3 ägg\n5 dl mjölk',
               confidence: 0.9,
-              processingMethod: 'ocr_space',
+              processingMethod: 'on_device',
               isSuccessful: true,
             ),
           );
@@ -1227,7 +1272,7 @@ Recipe _createTestRecipe({
 OCRResult _createOCRResult({
   required String text,
   required double confidence,
-  String processingMethod = 'ocr_space',
+  String processingMethod = 'on_device',
   bool isSuccessful = true,
   String? errorMessage,
   Map<String, dynamic>? metadata,

@@ -20978,6 +20978,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagAllergenAutoUnknown => 'App: not checked';
 
   @override
+  String get llmAiConsentRequired =>
+      'AI reading needs your consent. You can give it under Privacy in settings.';
+
+  @override
+  String get photoAiConsentSaveFailed =>
+      'Your answer could not be saved, so the photo was not sent. Try again.';
+
+  @override
+  String get photoAiOfferPhoneCouldNotRead =>
+      'The phone could not read the whole recipe.';
+
+  @override
+  String get photoAiOfferNoRecipeFound =>
+      'The phone read the text but found no recipe in it.';
+
+  @override
+  String get photoAiOfferHandwriting =>
+      'Handwritten recipes can only be read by AI.';
+
+  @override
+  String get photoAiOfferQuestion =>
+      'Do you want AI to read the photo? The photo is then sent to Google to be read. Your yes covers AI reading in the app until you change it under Privacy.';
+
+  @override
+  String get photoAiOfferQuestionConsented =>
+      'Do you want AI to read the photo? The photo is then sent to Google to be read.';
+
+  @override
+  String get photoAiOfferAccept => 'Yes, send the photo';
+
+  @override
+  String get photoAiOfferDecline => 'No, I\'ll type it myself';
+
+  @override
   String shoppingMergeUnresolvedRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

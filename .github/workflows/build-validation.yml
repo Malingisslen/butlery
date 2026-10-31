@@ -225,14 +225,11 @@ jobs:
     - name: Create .env from secrets
       # Firebase platform credentials are NOT in .env — they live in
       # lib/firebase_options.dart as committed, client-safe literals (BUT-762).
-      # Only OCR_API_* + ENV are actually consumed at build time.
       # shell: bash for Windows-runner POSIX parity (BUT-491).
       shell: bash
       run: |
         cat > .env << 'ENVEOF'
         ENV=production
-        OCR_API_KEY=${{ secrets.OCR_API_KEY }}
-        OCR_API_URL=${{ secrets.OCR_API_URL }}
         ENVEOF
 
     - name: Decode google-services.json

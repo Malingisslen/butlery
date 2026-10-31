@@ -8,6 +8,7 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { withGuestImportQuota } from "./guest-import-quota";
+import { withAiConsent } from "./ai-consent";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { isAllowedUrl } from "../shared/url-safety";
@@ -124,14 +125,14 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
-  withCostLedger(withGuestImportQuota(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
+  withCostLedger(withAiConsent(withGuestImportQuota(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
     // Authentication is handled by withRateLimit middleware
     return runOcrRecipeImage({
       data: request.data,
       authUidHash: hashUid(request.auth!.uid),
       userId: request.auth!.uid,
     });
-  })))
+  }))))
 );
 
 // =============================================================================

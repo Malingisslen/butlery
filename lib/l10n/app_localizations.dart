@@ -31972,6 +31972,60 @@ abstract class AppLocalizations {
   /// **'Appen: ej kontrollerat'**
   String get tagAllergenAutoUnknown;
 
+  /// LLM error: the server refused because the user has not consented to AI processing
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tolkning kräver ditt samtycke. Du kan ge det under Integritet i inställningarna.'**
+  String get llmAiConsentRequired;
+
+  /// Photo import: saving the AI consent failed, nothing was sent
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt svar kunde inte sparas, så fotot skickades inte. Försök igen.'**
+  String get photoAiConsentSaveFailed;
+
+  /// Photo import AI offer: the on-device reading failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Telefonen kunde inte läsa hela receptet.'**
+  String get photoAiOfferPhoneCouldNotRead;
+
+  /// Photo import AI offer: text read on the phone but no recipe found
+  ///
+  /// In sv, this message translates to:
+  /// **'Telefonen läste texten men hittade inget recept i den.'**
+  String get photoAiOfferNoRecipeFound;
+
+  /// Photo import AI offer: handwriting mode
+  ///
+  /// In sv, this message translates to:
+  /// **'Handskrivna recept kan bara läsas av AI.'**
+  String get photoAiOfferHandwriting;
+
+  /// Photo import AI offer question when the user has not yet consented; yes records the AI-processing consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas. Ditt ja gäller AI-tolkning i appen tills du ändrar det under Integritet.'**
+  String get photoAiOfferQuestion;
+
+  /// Photo import AI offer question when consent is already given
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du att AI läser fotot? Då skickas fotot till Google för att läsas.'**
+  String get photoAiOfferQuestionConsented;
+
+  /// Photo import AI offer: accept button
+  ///
+  /// In sv, this message translates to:
+  /// **'Ja, skicka fotot'**
+  String get photoAiOfferAccept;
+
+  /// Photo import AI offer: decline button, manual entry
+  ///
+  /// In sv, this message translates to:
+  /// **'Nej, jag skriver själv'**
+  String get photoAiOfferDecline;
+
   /// Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.
   ///
   /// In sv, this message translates to:
