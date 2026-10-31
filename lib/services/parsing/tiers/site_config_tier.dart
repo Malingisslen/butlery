@@ -318,10 +318,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
   FieldResult<int> _parsePortions(String? text) {
     if (text == null || text.isEmpty) {
-      return FieldResult.lowConfidence(
-        ParsingTier.kDefaultPortions,
-        'Defaulting to ${ParsingTier.kDefaultPortions} portions',
-      );
+      return FieldResult.failed('No portions found');
     }
 
     final match = RegExp(r'(\d+)').firstMatch(text);
@@ -332,7 +329,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
       }
     }
 
-    return FieldResult.lowConfidence(4, 'Could not parse portions');
+    return FieldResult.failed('Could not parse portions');
   }
 
   FieldResult<Duration> _parseTime(String? text) {

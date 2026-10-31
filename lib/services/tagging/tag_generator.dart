@@ -37,7 +37,10 @@ typedef ConfigBackedPhases = ({
 /// 2.3.0: a matched trigger gives CONTAINS regardless of coverage (BUT-2247)
 /// and skaldjur no longer fires on the generic 'seafood' property
 /// (BUT-2234) — retag flushes the all-UNKNOWN and fish-as-shellfish verdicts.
-const String kTagGeneratorVersion = '2.3.0';
+/// 2.4.0: kärnflöde steg 5 (seasons in English, title words, scored
+/// cuisines, holiday pairs, main ingredients by weight, coverage bars) —
+/// retag gives every recipe the new rules at once.
+const String kTagGeneratorVersion = '2.4.0';
 
 /// Orchestrates the 5-phase tag generation process.
 ///
@@ -268,7 +271,9 @@ class TagGenerator {
         FeatureFlags.tagAdvancedMinIngredients,
       ),
       advancedMinMinutes: flags.getInt(FeatureFlags.tagAdvancedMinMinutes),
-      highProteinRatio: flags.getDouble(FeatureFlags.tagHighProteinRatio),
+      proteinGramsPerPortion: flags.getInt(
+        FeatureFlags.tagProteinGramsPerPortion,
+      ),
       spiceRichCount: flags.getInt(FeatureFlags.tagSpiceRichCount),
       veggieRichCount: flags.getInt(FeatureFlags.tagVeggieRichCount),
     );

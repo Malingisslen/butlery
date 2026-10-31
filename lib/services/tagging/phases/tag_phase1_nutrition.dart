@@ -1,5 +1,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
+import 'package:butlery/services/tagging/main_ingredients.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 
 /// Protein and carb/base tag calculation for Phase 1.
@@ -80,8 +82,25 @@ class Phase1NutritionCalculator {
     return _ostPattern.hasMatch(nameLower);
   }
 
-  /// Calculates protein tags from ingredient groups.
+  /// Calculates protein tags from ingredient groups. Below
+  /// [TaggingThresholds.proteinCoverage] only a main ingredient is clear
+  /// enough to name the protein: the unknown lines may be the real one (Malin
+  /// 2026-10-30, kärnflöde steg 5 beslut 5).
   static Set<String> calculateProteinTags(IngredientLookupResult lookup) {
+    final tags = _proteinTagsOf(lookup);
+    if (lookup.coverage >= TaggingThresholds.proteinCoverage) return tags;
+    final mains = MainIngredients.of(lookup.lines);
+    return tags.intersection(
+      _proteinTagsOf(
+        IngredientLookupResult.fromLists(
+          matched: [for (final line in mains) ...line.ingredients],
+          unmatched: const [],
+        ),
+      ),
+    );
+  }
+
+  static Set<String> _proteinTagsOf(IngredientLookupResult lookup) {
     final tags = <String>{};
 
     // Poultry: a generic 'fågel' fallback for the whole group (mirrors the

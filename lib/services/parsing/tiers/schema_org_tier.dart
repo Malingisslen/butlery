@@ -210,10 +210,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       }
     }
 
-    return FieldResult.lowConfidence(
-      ParsingTier.kDefaultPortions,
-      'Defaulting to ${ParsingTier.kDefaultPortions} portions',
-    );
+    return FieldResult.failed('No portions found');
   }
 
   Future<FieldResult<List<ParsedIngredient>>> _extractIngredients(

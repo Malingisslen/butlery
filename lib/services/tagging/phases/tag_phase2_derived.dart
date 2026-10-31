@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
+import 'package:butlery/services/tagging/main_ingredients.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 
 /// Phase 2: Simple derived tags that depend on Phase 1 results.
@@ -50,11 +51,12 @@ class TagPhase2Derived {
     // Phase 1's dietaryStatus map provides tri-state logic which is
     // more accurate than simple tags.
 
-    // Few ingredients: threshold of 6 or fewer is based on Swedish cooking
-    // conventions where "5-ingredient recipes" (5-ingrediensrecept) are popular.
-    // Using 6 to be slightly more inclusive while maintaining the concept.
-    final ingredientCount = recipe.core.ingredients.length;
-    if (ingredientCount <= 6) {
+    // Staples do not count (Malin 2026-10-30, kärnflöde steg 5 beslut 8);
+    // a lookup without the recipe's lines cannot tell which they are.
+    final ingredientCount = phase1.lookup.hasRecipeLines
+        ? MainIngredients.countable(phase1.lookup.lines).length
+        : recipe.core.ingredients.length;
+    if (ingredientCount <= TaggingThresholds.fewIngredientsMax) {
       tags.add('få-ingredienser');
     }
 

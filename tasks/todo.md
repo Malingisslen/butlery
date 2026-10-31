@@ -1,3 +1,51 @@
+# Malins svar 2026-10-31: rad utan mängd mot skafferiet, och portioner som källan inte anger
+
+Malin svarade på beslutskort i tråden 2026-10-31 07:54 (frågorna 2 och 4 i
+`/mnt/project-files/steg3/fragor-till-malin.md`).
+
+- [x] 1. Fråga 2 = B: en rad utan mängd ("salt") räknas som täckt av skafferiet när varan
+      finns och inte gått ut. En ändring i `MenuShoppingMergePlanner._deduct`, som både
+      veckolistan och receptknappen (`toBuy`) går igenom. Utgången vara ger fortfarande
+      "Kolla datum".
+- [x] 2. Fråga 4 = A: parsningsnivåerna (schema.org, sajtkonfig, regelbaserad, AI-nivån)
+      sparar inga portioner när källan inte anger några, i stället för en gissad 4:a. De
+      returnerar `FieldResult.failed` som de redan gör för tid. `kDefaultPortions` tas bort.
+      Risk: kvalitetspoängen sjunker med portionsfältets vikt (0,10 × låg säkerhet) för sådana
+      recept. Golden-testerna för parsning körs för att se om nivåvalet ändras.
+- [ ] 3. Tester per punkt, `flutter analyze`, grindarna, PR med auto-merge.
+
+Utanför: kalkylarksimporten (`spreadsheet_recipe_mapper`) sätter fortfarande 4. Den är en egen
+importväg som frågan inte gällde.
+
+Sammanfattning för Malin: har du salt hemma och receptet bara säger "salt" hamnar det inte på
+listan. Ett recept från en sajt eller inklistrad text som inte säger hur många portioner det
+ger sparas med tomma portioner, så du fyller i dem själv om du vill.
+
+# Kärnflöde steg 5D: täckningskrav, osäkra taggar och omtaggning
+
+Del av den godkända steg 5-planen (`/mnt/project-files/steg5/plan.md`, 5D; Malins beslut 5
+2026-10-30, "kör" 21:45). Bygger på 5C (#1077). Regeln följer Drive-arket "Butlery TagRules
+v1.0", fliken CoverageConfig, kolumnen `vid_osäkerhet`, och testfallen COV-05/COV-06.
+
+- [x] 1. Protein under 80 % täckning: bara proteintaggar som en huvudingrediens ger
+      ("sätt ändå om tydlig huvudingrediens"). Över gränsen som i dag.
+- [x] 2. Kök under 60 %: ingredienserna ger inga poäng; titel och receptets eget kök
+      (schema.org) räcker fortfarande ("italiensk sätts ej" vid pasta + tomat + två okända).
+- [x] 3. Stämning/praktiskt under 60 %: taggar som bygger på att något SAKNAS bland
+      ingredienserna (frysbar, meal-prep: inget som inte tål frysning) sätts inte. Taggar som
+      bygger på något som FINNS sätts på tillgänglig info, som Drive säger.
+- [x] 4. Receptdetaljens taggruta visar "Osäkra taggar, X ingredienser okända" när täckningen
+      är under 80 % och minst en ingrediens är okänd. Bara i detaljen.
+- [x] 5. `kTagGeneratorVersion` 2.3.0 → 2.4.0, en gång, så appen taggar om alla recept med
+      steg 5A–5D.
+- [x] 6. Tester per punkt, `flutter analyze`, grindarna, PR med auto-merge.
+
+Sammanfattning för Malin: när appen inte känner igen alla ingredienser i ett recept blir den
+försiktigare. Under 80 % kända ingredienser sätts bara proteintaggar för det receptet faktiskt
+är byggt på, och under 60 % gissar appen inte kök utifrån ingredienserna eller lovar "frysbar".
+Receptet visar då "Osäkra taggar, 3 ingredienser okända" vid taggarna. Till sist taggas alla
+dina recept om automatiskt med allt nytt från steg 5.
+
 # Kärnflöde steg 3B-2b: receptrader och inköpsrader får ingrediens-id
 
 Del av den godkända steg 3-planen (`/mnt/project-files/steg3/plan.md`, 3B punkt 2–4; Malin "kör"

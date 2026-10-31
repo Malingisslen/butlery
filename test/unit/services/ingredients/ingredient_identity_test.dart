@@ -14,6 +14,14 @@ void main() {
       ('krossade tomater Mutti', 'krossade tomater'),
       ('ICA Basic gul lök', 'lök'),
       ('Zeta kapris', 'kapris'),
+      ('röd lök', 'rödlök'),
+      ('röda lökar', 'rödlök'),
+      ('gullök', 'lök'),
+      ('gula lökar', 'lök'),
+      ('matlök', 'lök'),
+      ('svarta bönor', 'svart böna'),
+      ('gul stor lök', 'lök'),
+      ('svart peppar', 'peppar'),
     ];
     for (final (a, b) in same) {
       test('"$a" is "$b"', () => expect(IngredientIdentity.same(a, b), isTrue));
@@ -28,6 +36,14 @@ void main() {
       ('torkade tomater', 'tomater'),
       ('krossade tomater', 'tomat'),
       ('Felix ketchup', 'Felix'),
+      ('röd lök', 'lök'),
+      ('rödlök', 'lök'),
+      ('rödlök', 'gul lök'),
+      ('svarta bönor', 'vita bönor'),
+      ('röd paprika', 'grön paprika'),
+      ('mörk choklad', 'ljus choklad'),
+      ('vit lök', 'vitlök'),
+      ('vitpeppar', 'peppar'),
     ];
     for (final (a, b) in different) {
       test(

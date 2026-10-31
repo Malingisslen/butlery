@@ -27,6 +27,7 @@ import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
+import 'package:butlery/services/tagging/ingredient_line_weigher.dart';
 import 'package:butlery/services/tagging/tagging_pipeline_runner.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -73,6 +74,7 @@ void main() {
     phase4,
     Future<Phase5Result> Function(Phase4Result, Recipe)? phase5,
     Future<Phase5ResultPartial> Function(Phase1Result, Recipe)? phase5FromP1,
+    LineWeigher? weigh,
   }) {
     return TaggingPhaseCallables(
       lookup: lookup ?? (_, __) async => lookupResult,
@@ -117,6 +119,7 @@ void main() {
             tags: const {'p5-fallback-tag'},
             phase1: p1,
           ),
+      weigh: weigh,
     );
   }
 
@@ -410,6 +413,67 @@ void main() {
           isFalse,
           reason: 'No phases skipped → not partial',
         );
+      });
+    });
+  });
+
+  // Kärnflöde steg 5 beslut 7: weights only pick the main ingredients, so
+  // weighing must never cost a recipe its tags.
+  group('weighing the ingredient lines', () {
+    test('phases read the weighed lookup', () {
+      fakeAsync((async) {
+        IngredientLookupResult? seenByPhase1;
+        final weighed = TaggingTestHelper.weighedLookup([
+          (TaggingTestHelper.ingredient('rice', 'grain', const {}), 300),
+        ]);
+        final runner = buildRunner(
+          buildCallables(
+            weigh: (_, __, ___) async => weighed,
+            phase1: (lk, r) async {
+              seenByPhase1 = lk;
+              return Phase1Result(
+                tags: const {'p1-tag'},
+                allergenStatus: const {},
+                dietaryStatus: const {},
+                lookup: lk,
+              );
+            },
+          ),
+        );
+
+        runner.run(recipe: recipe, ingredients: ['rice', 'chicken']);
+        drain(async);
+
+        expect(seenByPhase1, same(weighed));
+      });
+    });
+
+    test('a weighing that throws leaves the lookup unweighed', () {
+      fakeAsync((async) {
+        IngredientLookupResult? seenByPhase1;
+        final runner = buildRunner(
+          buildCallables(
+            weigh: (_, __, ___) async => throw StateError('no table'),
+            phase1: (lk, r) async {
+              seenByPhase1 = lk;
+              return Phase1Result(
+                tags: const {'p1-tag'},
+                allergenStatus: const {},
+                dietaryStatus: const {},
+                lookup: lk,
+              );
+            },
+          ),
+        );
+
+        TaggingPipelineResult? result;
+        runner
+            .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+            .then((r) => result = r);
+        drain(async);
+
+        expect(seenByPhase1, same(lookupResult));
+        expect(result!.tagResult.tags, contains('p1-tag'));
       });
     });
   });

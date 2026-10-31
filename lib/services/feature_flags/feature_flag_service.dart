@@ -271,7 +271,7 @@ class FeatureFlagService {
     'tag_easy_max_minutes': TaggingThresholds.easyMaxMinutes,
     'tag_advanced_min_ingredients': TaggingThresholds.advancedMinIngredients,
     'tag_advanced_min_minutes': TaggingThresholds.advancedMinMinutes,
-    'tag_high_protein_ratio': TaggingThresholds.highProteinRatio,
+    'tag_protein_grams_per_portion': TaggingThresholds.proteinGramsPerPortion,
     'tag_season_threshold': 2,
     'tag_spice_rich_count': TaggingThresholds.spiceRichCount,
     'tag_veggie_rich_count': TaggingThresholds.veggieRichCount,
@@ -531,7 +531,7 @@ abstract final class FeatureFlags {
   static const tagEasyMaxMinutes = 'tag_easy_max_minutes';
   static const tagAdvancedMinIngredients = 'tag_advanced_min_ingredients';
   static const tagAdvancedMinMinutes = 'tag_advanced_min_minutes';
-  static const tagHighProteinRatio = 'tag_high_protein_ratio';
+  static const tagProteinGramsPerPortion = 'tag_protein_grams_per_portion';
   static const tagSeasonThreshold = 'tag_season_threshold';
   static const tagSpiceRichCount = 'tag_spice_rich_count';
   static const tagVeggieRichCount = 'tag_veggie_rich_count';

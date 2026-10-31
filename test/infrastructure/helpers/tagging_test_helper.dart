@@ -6,6 +6,7 @@ library;
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/tagging/ingredient_line.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -331,6 +332,29 @@ class TaggingTestHelper {
       matched: ingredients,
       unmatched: unmatched,
     );
+  }
+
+  /// A lookup whose lines are [rows] in recipe order, each with its weight
+  /// (null when the amount could not be weighed), followed by [unmatched]
+  /// lines, as the tagging pipeline builds one.
+  static IngredientLookupResult weighedLookup(
+    List<(IngredientData, double?)> rows, {
+    List<String> unmatched = const [],
+  }) {
+    return IngredientLookupResult.fromLists(
+      matched: [for (final (row, _) in rows) row],
+      unmatched: unmatched,
+    ).withLines([
+      for (final (row, grams) in rows)
+        IngredientLine(
+          names: [row.swedish],
+          ingredients: [row],
+          known: true,
+          grams: grams,
+        ),
+      for (final name in unmatched)
+        IngredientLine(names: [name], ingredients: const [], known: false),
+    ]);
   }
 
   /// Creates a [TagResult] that needs retagging (outdated version).

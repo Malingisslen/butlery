@@ -1741,6 +1741,120 @@ void main() {
       });
 
       // -------------------------------------------------------------------------
+      // Kid-friendly is tag-backed (founder decision 2026-10-31): shown iff the
+      // recipe carries the 'barnvänlig' tag, never by dietaryStatus.
+      // -------------------------------------------------------------------------
+      TagResult kidTagResult({
+        required bool hasTag,
+        required TriState status,
+        double coverage = 1.0,
+      }) => TagResult(
+        tags: hasTag ? const {'barnvänlig'} : const {},
+        allergenStatus: const {},
+        dietaryStatus: {'barnvänlig': status},
+        coverage: coverage,
+        generatedAt: DateTime(2024),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
+
+      List<String> shownIds() => viewModel.recipes.map((r) => r.id).toList();
+
+      test('kid-friendly SHOWS a recipe carrying the barnvänlig tag even when '
+          'its dietary status is not free and coverage < 1.0', () {
+        final tagged = RecipeFactory.build(id: 'tagged').copyWith(
+          tagResult: kidTagResult(
+            hasTag: true,
+            status: TriState.unknown,
+            coverage: 0.5,
+          ),
+        );
+        mockRecipeService.setRecipeState(recipes: [tagged]);
+
+        viewModel.toggleDietaryFilter('kid-friendly');
+
+        expect(shownIds(), ['tagged']);
+      });
+
+      test('kid-friendly HIDES a recipe whose dietary status is free but '
+          'which lacks the barnvänlig tag', () {
+        final tagged =
+            RecipeFactory.build(
+              id: 'tagged',
+            ).copyWith(
+              tagResult: kidTagResult(hasTag: true, status: TriState.free),
+            );
+        final untagged = RecipeFactory.build(id: 'untagged').copyWith(
+          tagResult: kidTagResult(hasTag: false, status: TriState.free),
+        );
+        mockRecipeService.setRecipeState(recipes: [tagged, untagged]);
+
+        viewModel.toggleDietaryFilter('kid-friendly');
+
+        expect(shownIds(), ['tagged']);
+      });
+
+      test('kid-friendly follows user tag overrides: an added barnvänlig tag '
+          'shows the recipe, a removed one hides it', () {
+        final added = RecipeFactory.build(id: 'added').copyWith(
+          tagResult: kidTagResult(hasTag: false, status: TriState.unknown),
+          tagOverrides: const TagOverrides(addedTags: {'barnvänlig'}),
+        );
+        final removed = RecipeFactory.build(id: 'removed').copyWith(
+          tagResult: kidTagResult(hasTag: true, status: TriState.free),
+          tagOverrides: const TagOverrides(removedTags: {'barnvänlig'}),
+        );
+        mockRecipeService.setRecipeState(recipes: [added, removed]);
+
+        viewModel.toggleDietaryFilter('kid-friendly');
+
+        expect(shownIds(), ['added']);
+      });
+
+      test('kid-friendly combined with vegetarian still applies the status '
+          'safety gates to the vegetarian half', () {
+        TagResult both({required double coverage}) => TagResult(
+          tags: const {'barnvänlig'},
+          allergenStatus: const {},
+          dietaryStatus: const {'vegetarisk': TriState.free},
+          coverage: coverage,
+          generatedAt: DateTime(2024),
+          generatorVersion: kTagGeneratorVersion,
+          hasCoverageAnomaly: false,
+        );
+        final complete = RecipeFactory.build(
+          id: 'complete',
+        ).copyWith(tagResult: both(coverage: 1.0));
+        final partial = RecipeFactory.build(
+          id: 'partial',
+        ).copyWith(tagResult: both(coverage: 0.6));
+        mockRecipeService.setRecipeState(recipes: [complete, partial]);
+
+        viewModel.toggleDietaryFilter('kid-friendly');
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(shownIds(), ['complete']);
+      });
+
+      test('kid-friendly alone does not report untagged recipes as hidden; '
+          'adding vegetarian does', () {
+        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+        mockRecipeService.setRecipeState(recipes: [unanalysed]);
+
+        viewModel.toggleDietaryFilter('kid-friendly');
+
+        expect(viewModel.hasTagBasedFilters, isFalse);
+        expect(viewModel.untaggedRecipeCount, 0);
+        expect(viewModel.untaggedExclusionMessage, isNull);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(viewModel.hasTagBasedFilters, isTrue);
+        expect(viewModel.untaggedRecipeCount, 1);
+        expect(viewModel.untaggedExclusionMessage, isNotNull);
+      });
+
+      // -------------------------------------------------------------------------
       // AC-5: untaggedExclusionMessage surfaced / absent
       // -------------------------------------------------------------------------
       test(
