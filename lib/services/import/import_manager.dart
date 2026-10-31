@@ -12,6 +12,7 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/spoken_text_reimport_strategy.dart';
+import 'package:butlery/services/import/caption_rules_reader.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
@@ -633,8 +634,9 @@ class ImportManager {
   /// BUT-2279: re-reads a saved recipe from the capture it was made from. A
   /// link is fetched again; every other capture is parsed as text. Only a
   /// caption or a video transcript, whose loose wording the rules often miss,
-  /// may then be read with AI; the rules always go first, so a re-read they
-  /// manage costs nothing. [sourceUrl] is the post or video it came from.
+  /// may then be read with AI, when the rules found no recipe by
+  /// [CaptionRulesReader.holdsRecipe]; a re-read they manage costs nothing.
+  /// [sourceUrl] is the post or video it came from.
   Future<ImportManagerResult> reimportFromArtefact(
     SourceArtefact artefact, {
     String? sourceUrl,
@@ -652,9 +654,11 @@ class ImportManager {
           null,
           missing: 'No ${artefact.type.name} import strategy is available',
         );
-        if (parsed.isSuccess ||
-            parsed.rateLimitDenied != null ||
-            !_spokenText.contains(artefact.type)) {
+        if (!_spokenText.contains(artefact.type) ||
+            parsed.rateLimitDenied != null) {
+          return parsed;
+        }
+        if (parsed.isSuccess && CaptionRulesReader.holdsRecipe(parsed.recipe)) {
           return parsed;
         }
         return _rateLimitedParse(

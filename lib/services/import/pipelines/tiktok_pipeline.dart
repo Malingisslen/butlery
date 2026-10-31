@@ -16,6 +16,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/import/caption_rules_reader.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -38,7 +39,7 @@ class TikTokMetadata {
 /// TikTok recipe import pipeline.
 ///
 /// Tier structure:
-/// 1. oEmbed caption parsing (free)
+/// 1. oEmbed caption parsing, read with the rule-based parser first (free)
 /// 2. Emoji-based ingredient detection (free)
 /// 3. LLM extraction from caption (paid)
 /// 4. Request user screenshot (free)
@@ -121,13 +122,16 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   ];
 
   final LlmEnhancementService _llmService;
+  final CaptionRulesReader _rules;
   final http.Client _client;
   final bool _ownsClient;
 
   TikTokPipeline({
     required LlmEnhancementService llmService,
     http.Client? client,
+    CaptionRulesReader? rules,
   }) : _llmService = llmService,
+       _rules = rules ?? CaptionRulesReader(),
        _client = client ?? http.Client(),
        _ownsClient = client == null;
 
@@ -184,6 +188,29 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
 
     AppLogger.info('TikTokPipeline: Got caption (${caption.length} chars)');
 
+    final byRules = await _rules.read(
+      caption,
+      artefactType: SourceArtefactType.tiktokCaption,
+      sourceUrl: input,
+      fallbackTitle: _extractTitleFromCaption(caption),
+    );
+    if (byRules != null) {
+      return ImportSuccess(
+        recipe: byRules,
+        confidence: 0.6,
+        pipeline: 'tiktok',
+        tier: 1,
+        method: 'caption-rules',
+        requiresReview: true,
+        metadata: {
+          'successfulTier': 'RuleBased',
+          'videoUrl': input,
+          'authorName': metadata?.authorName,
+          'thumbnailUrl': metadata?.thumbnailUrl,
+        },
+      );
+    }
+
     // Tier 2: an emoji-formatted caption is structured before the model
     // reads it. Either way the model is asked once (BUT-2239).
     final emojiParsed = _parseEmojiIngredients(caption);
@@ -233,6 +260,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         requiresReview: true,
         metadata: {
           ...llmResult.llmUse,
+          'successfulTier': 'LLM',
           'videoUrl': input,
           'authorName': metadata?.authorName,
           'thumbnailUrl': metadata?.thumbnailUrl,

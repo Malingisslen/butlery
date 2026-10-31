@@ -3887,7 +3887,7 @@
         {
           "from": "vm-recipe-detail",
           "to": "svc-import-manager",
-          "payload": "reimportFromArtefact(artefact) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
+          "payload": "reimportFromArtefact(artefact, sourceUrl) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text; transkript/bildtext utan recept enligt reglerna läses om med AI (extractFromTranscript)",
           "transport": "method call",
           "verified": true
         },
@@ -4341,7 +4341,7 @@
         {
           "from": "svc-instagram-pipeline",
           "to": "svc-llm-enhancement",
-          "payload": "Tier 2: strukturera bildtext till recept",
+          "payload": "Tier 2: strukturera bildtext till recept, bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         },
@@ -4355,7 +4355,7 @@
         {
           "from": "svc-import-manager",
           "to": "svc-tiktok-pipeline",
-          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → emoji-heuristik → LLM)",
+          "payload": "canHandle(tiktok-URL) → importV2 (oEmbed → regeltolkning → emoji-heuristik → LLM)",
           "transport": "method-call",
           "verified": true
         },
@@ -4390,7 +4390,7 @@
         {
           "from": "svc-youtube-import-strategy",
           "to": "svc-llm-enhancement",
-          "payload": "Transkript → strukturera recept (structureRecipe)",
+          "payload": "Transkript → strukturera recept (structureRecipe), bara när regeltolkningen inte hittade ett",
           "transport": "method-call",
           "verified": true
         }

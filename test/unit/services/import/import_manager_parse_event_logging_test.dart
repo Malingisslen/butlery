@@ -473,6 +473,32 @@ void main() {
       }
     });
 
+    test('a caption the rules read with one ingredient and no step still '
+        'reaches AI', () async {
+      installLimiter();
+      final ai = _RecordingAiReread(recipe);
+      final empty = Recipe.personal(
+        title: 'Bästa pastan',
+        description: '',
+        mealType: 'dinner',
+        ingredients: const ['300 g pasta'],
+        instructions: const [],
+      );
+
+      final r =
+          await ImportManager.withStrategies(
+            ops,
+            [_CannedTextStrategy(ImportResult.success(empty))],
+            eventLogger: spy,
+            spokenTextReimport: ai,
+          ).reimportFromArtefact(
+            artefact(SourceArtefactType.tiktokCaption, 'Bästa pastan #pasta'),
+          );
+
+      expect(ai.calls, 1);
+      expect(r.recipe?.id, recipe.id);
+    });
+
     test('a caption the rules can read never reaches AI', () async {
       installLimiter();
       final ai = _RecordingAiReread(recipe);
