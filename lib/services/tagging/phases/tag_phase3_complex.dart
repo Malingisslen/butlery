@@ -35,8 +35,8 @@ class TagPhase3Complex {
   Phase3Result calculate(Phase1Result p1, Phase2Result p2, Recipe recipe) {
     final tags = <String>{};
 
-    // Difficulty level
-    tags.add(_calculateDifficulty(p1, p2, recipe));
+    final difficulty = _calculateDifficulty(p1, p2, recipe);
+    if (difficulty != null) tags.add(difficulty);
 
     // Texture and flavor profiles
     if (_isCreamy(p1, recipe)) tags.add('krämig');
@@ -71,9 +71,16 @@ class TagPhase3Complex {
     return Phase3Result(tags: tags, phase1: p1, phase2: p2);
   }
 
-  String _calculateDifficulty(Phase1Result p1, Phase2Result p2, Recipe recipe) {
+  /// Null when the recipe states no time: a guessed time would make the
+  /// difficulty a guess too (Malin 2026-10-30, kärnflöde steg 5 beslut 9).
+  String? _calculateDifficulty(
+    Phase1Result p1,
+    Phase2Result p2,
+    Recipe recipe,
+  ) {
+    final time = recipe.core.timeMinutes;
+    if (time == null || time <= 0) return null;
     final ingredientCount = recipe.core.ingredients.length;
-    final time = recipe.core.timeMinutes ?? 30;
     final hasAdvancedTechniques = _hasAdvancedTechniques(recipe);
 
     // L2: Use named constants for difficulty thresholds

@@ -63,7 +63,7 @@ class TagPhase4Mood {
     Recipe recipe,
   ) {
     final tags = <String>{};
-    final time = recipe.core.timeMinutes ?? 30;
+    final time = recipe.core.timeMinutes ?? 0;
 
     // Weeknight: under 45 min AND easy/medium
     if (p1.hasTag('under-45-min') &&
@@ -193,6 +193,25 @@ class TagPhase4Mood {
     return tags;
   }
 
+  /// The season tags one `seasonAvailability` value counts towards. The
+  /// ingredient data writes seasons in English (`summer`, `spring-summer`),
+  /// older data and tests in Swedish, so both are read. `year-round` and
+  /// `seasonal` name no season and count towards none.
+  static Set<String> seasonTagsFor(String value) {
+    final tags = <String>{};
+    for (final part in value.toLowerCase().trim().split('-')) {
+      final tag = switch (part) {
+        'spring' || 'vår' => OccasionVocabulary.springTag,
+        'summer' || 'sommar' => OccasionVocabulary.summerTag,
+        'autumn' || 'fall' || 'höst' => OccasionVocabulary.autumnTag,
+        'winter' || 'vinter' => OccasionVocabulary.winterTag,
+        _ => null,
+      };
+      if (tag != null) tags.add(tag);
+    }
+    return tags;
+  }
+
   /// Sprint 3: Hybrid season detection using seasonAvailability field + name inference.
   Set<String> _calculateSeasonTags(Phase1Result p1) {
     final tags = <String>{};
@@ -211,10 +230,8 @@ class TagPhase4Mood {
       if (ingredient.seasonAvailability.isNotEmpty) {
         ingredientsWithSeasonData++;
         for (final season in ingredient.seasonAvailability) {
-          final normalizedSeason = season.toLowerCase();
-          if (seasonCounts.containsKey(normalizedSeason)) {
-            seasonCounts[normalizedSeason] =
-                seasonCounts[normalizedSeason]! + 1;
+          for (final tag in seasonTagsFor(season)) {
+            seasonCounts[tag] = seasonCounts[tag]! + 1;
           }
         }
       }

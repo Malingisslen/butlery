@@ -291,5 +291,93 @@ void main() {
         expect(result.hasTag('vinter'), isFalse);
       });
     });
+
+    group('the values the ingredient data actually holds', () {
+      Set<String> seasonsOf(List<List<String>> values, {List<String>? names}) {
+        final n = names ?? [for (var i = 0; i < values.length; i++) 'i$i'];
+        final recipe = RecipeBuilder()
+            .withTitle('Test Recipe')
+            .withTimeMinutes(30)
+            .withIngredients(n)
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          for (var i = 0; i < values.length; i++)
+            TaggingTestHelper.ingredient(
+              n[i],
+              'vegetable',
+              {},
+              seasonAvailability: values[i],
+            ),
+        ]);
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+        return {
+          for (final t in ['vår', 'sommar', 'höst', 'vinter'])
+            if (result.hasTag(t)) t,
+        };
+      }
+
+      test('English season names count', () {
+        expect(
+          seasonsOf([
+            ['summer'],
+            ['summer'],
+          ]),
+          {'sommar'},
+        );
+        expect(
+          seasonsOf([
+            ['autumn'],
+            ['Autumn'],
+          ]),
+          {'höst'},
+        );
+      });
+
+      test('spring-summer counts towards both seasons', () {
+        expect(
+          seasonsOf([
+            ['spring-summer'],
+            ['spring'],
+            ['summer'],
+          ]),
+          {'vår', 'sommar'},
+        );
+      });
+
+      test('summer-seasonal counts towards summer', () {
+        expect(
+          seasonsOf([
+            ['summer-seasonal'],
+            ['summer-seasonal'],
+          ]),
+          {'sommar'},
+        );
+      });
+
+      test('year-round is known data, so the name guess stays off', () {
+        // Strawberries and raspberries would read as summer by name alone.
+        expect(
+          seasonsOf(
+            [
+              ['year-round'],
+              ['summer'],
+            ],
+            names: ['jordgubb', 'hallon'],
+          ),
+          isEmpty,
+        );
+      });
+
+      test('year-round ingredients outvote nothing and set no season', () {
+        expect(
+          seasonsOf([
+            ['year-round'],
+            ['year-round'],
+            ['summer'],
+          ]),
+          isEmpty,
+        );
+      });
+    });
   });
 }
