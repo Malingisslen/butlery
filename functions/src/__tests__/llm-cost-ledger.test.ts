@@ -314,12 +314,13 @@ const cases: UnitCase[] = [
       // The callables cannot be invoked here without Vertex, so the wiring is
       // pinned on the source: without it every case above passes and no call
       // is ever counted.
-      for (const [file, op] of [
-        ["structure-recipe.ts", "structureRecipe"],
-        ["ocr-recipe-image.ts", "ocrRecipeImage"],
+      for (const [file, op, gate] of [
+        ["structure-recipe.ts", "structureRecipe", ""],
+        // The image call also passes the consent gate (ai-consent.ts).
+        ["ocr-recipe-image.ts", "ocrRecipeImage", "withAiConsent("],
       ]) {
         const src = fs.readFileSync(path.join(__dirname, "..", "llm", file), "utf8");
-        const wired = `withCostLedger(withGuestImportQuota(withRateLimit("${op}",`;
+        const wired = `withCostLedger(${gate}withGuestImportQuota(withRateLimit("${op}",`;
         assertEqual(src.split(wired).length - 1, 1, `${file} wraps ${op} once`);
       }
     },

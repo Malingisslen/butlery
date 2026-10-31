@@ -21,7 +21,6 @@
 #                                               AuthKey_<id>.p8 text)
 #   IOS_DIST_CERT_KEY                           PEM private key of the kept
 #                                               distribution certificate
-#   OCR_API_KEY, OCR_API_URL                    same .env as build-validation.yml
 #
 # Firebase reads lib/firebase_options.dart, so no GoogleService-Info.plist is
 # needed for the build.
@@ -83,8 +82,6 @@ jobs:
         run: |
           cat > .env << 'ENVEOF'
           ENV=production
-          OCR_API_KEY=${{ secrets.OCR_API_KEY }}
-          OCR_API_URL=${{ secrets.OCR_API_URL }}
           ENVEOF
 
       - name: Write the App Store Connect key
