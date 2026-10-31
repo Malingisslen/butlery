@@ -104,7 +104,9 @@ class SharedShoppingList
   /// writes `listName` and `shareMessage`; both shapes are read.
   static String _listNameOf(Map<String, dynamic> data) {
     final name = SerializationUtils.safeString(data, 'listName');
-    return name.isNotEmpty ? name : SerializationUtils.safeString(data, 'title');
+    return name.isNotEmpty
+        ? name
+        : SerializationUtils.safeString(data, 'title');
   }
 
   static String? _shareMessageOf(
