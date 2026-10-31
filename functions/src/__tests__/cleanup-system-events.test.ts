@@ -283,6 +283,37 @@ async function emptyCollectionNoop(): Promise<void> {
   );
 }
 
+async function prunesTheUnmatchedTallyToo(): Promise<void> {
+  const store = emptyStore([]);
+  let calledWith: Date | null = null;
+  await runSystemEventsCleanup(makeFakeDb(store) as never, now as never, async (_db: unknown, at: Date) => {
+    calledWith = at;
+    return 0;
+  });
+  record(
+    "the weekly run also prunes the unknown-ingredient tally, at the job's clock",
+    (calledWith as Date | null)?.getTime() === NOW_MS,
+    `calledWith=${String(calledWith)}`
+  );
+}
+
+async function aFailedTallyPruneDoesNotFailTheJob(): Promise<void> {
+  const store = emptyStore([]);
+  let threw = false;
+  try {
+    await runSystemEventsCleanup(makeFakeDb(store) as never, now as never, async () => {
+      throw new Error("boom");
+    });
+  } catch {
+    threw = true;
+  }
+  record(
+    "a failed tally prune is logged, and the system_events receipt still lands",
+    !threw && store.written.length === 1,
+    `threw=${threw} written=${store.written.length}`
+  );
+}
+
 async function receiptKeySetIsExact(): Promise<void> {
   // Both the admin ops-log tab and `runOpsSnapshot` key on `executedAt`, and
   // the snapshot sums `totalDeleted ?? deletionAuditDeletedCount`, so a renamed
@@ -348,6 +379,8 @@ async function runAll(): Promise<void> {
   await pagesBeyondOneBatch();
   await emptyCollectionNoop();
   await receiptKeySetIsExact();
+  await prunesTheUnmatchedTallyToo();
+  await aFailedTallyPruneDoesNotFailTheJob();
   await timeoutSecondsIsDeclared();
 
   console.log(

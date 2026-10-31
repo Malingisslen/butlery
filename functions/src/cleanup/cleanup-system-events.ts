@@ -29,6 +29,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { pruneUnmatchedIngredients } from "../analytics/track-unmatched-ingredients";
 
 const SYSTEM_EVENTS = "system_events";
 
@@ -148,7 +149,8 @@ export async function pruneRateLimitViolations(
  */
 export async function runSystemEventsCleanup(
   db: admin.firestore.Firestore,
-  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now()
+  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now(),
+  pruneUnmatched: typeof pruneUnmatchedIngredients = pruneUnmatchedIngredients
 ): Promise<number> {
   const totalDeleted = await pruneRateLimitViolations(db, now);
 
@@ -157,6 +159,15 @@ export async function runSystemEventsCleanup(
     totalDeleted,
     executedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+
+  // Rides this weekly slot so the unknown-ingredient tally needs no scheduler
+  // of its own; its failure is logged and does not fail the job.
+  try {
+    const pruned = await pruneUnmatched(db, new Date(now.toMillis()));
+    logger.info("unmatched_ingredients_pruned", { pruned });
+  } catch (e) {
+    logger.error("unmatched_ingredients prune failed", e);
+  }
 
   return totalDeleted;
 }

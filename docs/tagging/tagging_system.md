@@ -1067,7 +1067,7 @@ class TagOverrides {
 | `cleanupOldAuditLogs` | Weekly (Sun 3 AM) | Delete audit logs older than retention period |
 | `onIngredientSoftDeleted` | On update | Cascade retag recipes using deleted ingredient |
 | `bulkMarkForRetagging` | Callable | Admin function to mark recipes for retagging |
-| `trackUnmatchedIngredients` | On recipe update | Track unknown ingredients for admin analytics |
+| `trackUnmatchedIngredients` | On recipe write (users/{uid}/recipes) | Track unknown ingredients for admin analytics |
 | `getUnmatchedIngredientStats` | Callable | Query top unmatched ingredients by frequency |
 
 ---
