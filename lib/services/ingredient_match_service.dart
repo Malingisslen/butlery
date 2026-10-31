@@ -112,6 +112,24 @@ class IngredientMatchService extends BaseService {
     return expanded;
   }
 
+  /// Match keys for ingredients the user named without picking a registry
+  /// entry (a pantry row typed by hand). They go through the same lookup as
+  /// a recipe's rows, so "lök" here meets "1 hackad lök" there, and a name
+  /// the registry lacks still meets the same unmatched name in a recipe.
+  Future<Set<String>> keysForNames(List<String> names) async {
+    if (names.isEmpty) return const {};
+    try {
+      final lookupResult = await _lookupService.lookupFromRaw(names);
+      return {
+        ...lookupResult.matched.map((m) => m.id),
+        ...lookupResult.unmatched,
+      };
+    } catch (e) {
+      AppLogger.warning('Failed to look up ingredient names: $e');
+      return const {};
+    }
+  }
+
   Future<List<IngredientMatchResult>> _matchWithResolver({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,

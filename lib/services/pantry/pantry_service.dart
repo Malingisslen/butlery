@@ -316,10 +316,13 @@ class PantryService extends BaseService {
             final items = pantryItems ?? await _pantryRepository.getAll(userId);
             if (items.isEmpty) return const [];
 
-            final pantryIngredientIds = items
-                .map((item) => item.ingredientId)
-                .whereType<String>()
-                .toSet();
+            final pantryIngredientIds = {
+              ...items.map((item) => item.ingredientId).whereType<String>(),
+              ...await _matchService.keysForNames([
+                for (final item in items)
+                  if (item.ingredientId == null) item.ingredientName,
+              ]),
+            };
             if (pantryIngredientIds.isEmpty) return const [];
 
             final matchResults = await _matchService.matchRecipes(

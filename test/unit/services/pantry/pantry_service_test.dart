@@ -150,6 +150,10 @@ void main() {
       return matches;
     });
 
+    when(
+      () => mockMatchService.keysForNames(any()),
+    ).thenAnswer((_) async => const {});
+
     service = PantryService(
       pantryRepository: mockPantryRepository,
       ingredientRepository: mockIngredientRepository,
@@ -191,6 +195,31 @@ void main() {
         expect(result.first.matchPercent, closeTo(0.75, 1e-9));
       },
     );
+
+    test('a pantry row typed by hand, with no registry link, still counts '
+        '(k10)', () async {
+      final pantryItems = [
+        _pantryItem(id: 'p1', ingredientName: 'Lök'),
+        _pantryItem(id: 'p2', ingredientId: 'rice'),
+      ];
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) async => pantryItems);
+      when(
+        () => mockMatchService.keysForNames(['Lök']),
+      ).thenAnswer((_) async => {'onion'});
+
+      final recipe = _recipeWithNormalizedIngredients(
+        id: 'r1',
+        title: 'Lökris',
+        normalized: const ['onion', 'rice', 'butter', 'salt'],
+      );
+
+      final result = await service.getMatchingRecipes(userId, [recipe]);
+
+      expect(result, hasLength(1));
+      expect(result.first.matchPercent, closeTo(0.5, 1e-9));
+    });
 
     test(
       'should exclude recipes with zero ingredient overlap from the result',
