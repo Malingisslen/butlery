@@ -301,14 +301,16 @@ class MenuShoppingListGenerator extends BaseService {
 
       final fresh = [
         for (final line in merge.lines)
-          UnifiedShoppingItem(
-            name: line.name,
-            // The line states no amount, and 0 shows the name alone
-            // ([UnifiedShoppingItem.quantityText]).
-            amount: line.amount ?? 0,
-            unit: line.unit,
-            category: line.category,
-            note: _noteFor(line),
+          shoppingService.categoryPreferences.withUserCategory(
+            UnifiedShoppingItem(
+              name: line.name,
+              // The line states no amount, and 0 shows the name alone
+              // ([UnifiedShoppingItem.quantityText]).
+              amount: line.amount ?? 0,
+              unit: line.unit,
+              category: line.category,
+              note: _noteFor(line),
+            ),
           ),
       ];
       final result = await shoppingService.applyPersonalMerge(

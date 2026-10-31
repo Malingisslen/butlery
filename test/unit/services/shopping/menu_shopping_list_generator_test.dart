@@ -994,6 +994,46 @@ void main() {
       expect(written.items.single.quantityText, '');
     });
 
+    test(
+      'a row lands in the category the user moved that name to (i07)',
+      () async {
+        when(
+          () => menuService.readWeek(any()),
+        ).thenAnswer((_) async => _read(_plan(['r1'])));
+        recipeService.setRecipeState(
+          recipes: [
+            _recipe('r1', [
+              RecipeIngredient.rawOnly('2 dl grädde'),
+              RecipeIngredient.rawOnly('1 gul lök'),
+            ]),
+          ],
+          isInitialized: true,
+        );
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+        when(
+          () => shoppingService.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async {
+          shoppingService.setShoppingState(
+            lists: [_list('new-list-1', _expectedListName)],
+            personalLists: [_list('new-list-1', _expectedListName)],
+          );
+          return 'new-list-1';
+        });
+        await stubCategoryOverrides(shoppingService, {'grädde': 'Skafferi'});
+
+        await generator.generateForWeek(_date);
+
+        final items = capturedUpdate().items;
+        final cream = items.singleWhere((i) => i.name.contains('grädde'));
+        final onion = items.singleWhere((i) => i.name.contains('lök'));
+        expect(cream.category, 'Skafferi');
+        expect(onion.category, isNot('Skafferi'));
+      },
+    );
+
     test('PQ-11 = A: the pantry subtracts known amounts — enough at home '
         'leaves the row off, less adds the difference', () async {
       // 5 dl needed, 2 dl at home -> 3

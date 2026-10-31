@@ -265,7 +265,7 @@ class ShoppingItemManagementModule {
           );
           itemsToUpdate.add(merged);
         } else {
-          itemsToAdd.add(newItem);
+          itemsToAdd.add(getCategoryPreferences().withUserCategory(newItem));
         }
       }
 
