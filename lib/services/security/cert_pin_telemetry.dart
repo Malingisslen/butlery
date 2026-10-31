@@ -1,8 +1,7 @@
 /// Shared telemetry for SSL pin mismatches (BUT-427).
 ///
-/// Both [PinnedHttpClient] (http package) and [PinningDioInterceptor] (Dio,
-/// for Algolia) report mismatches via this helper so the analytics shape
-/// stays in one place.
+/// [PinnedHttpClient] (http package) reports mismatches via this helper so
+/// the analytics shape stays in one place.
 library;
 
 import 'package:butlery/services/analytics/analytics_events.dart';

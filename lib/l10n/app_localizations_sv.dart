@@ -19761,7 +19761,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'du lyfts ur, listorna finns kvar hos de andra';
 
   @override
-  String get pendingDeletionItemCache => 'Sökindex och lokal cache';
+  String get pendingDeletionItemCache => 'Lokal cache';
 
   @override
   String get pendingDeletionItemCacheNote => 'rensas först av allt';

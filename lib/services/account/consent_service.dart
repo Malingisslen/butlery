@@ -26,9 +26,8 @@ class _ConsentChangeNotifier extends ChangeNotifier {
 /// Handles consent tracking, storage, and validation for GDPR compliance.
 /// Now uses FirebaseConsentRepository for secure, validated data access.
 ///
-/// Implements [Listenable] (BUT-752) so multiple subscribers (FCMService
-/// for push permissions, SearchModule for Algolia delegate re-init) can
-/// observe consent changes via the standard `addListener` /
+/// Implements [Listenable] (BUT-752) so multiple subscribers can observe
+/// consent changes via the standard `addListener` /
 /// `removeListener` contract that the rest of the codebase already uses.
 class ConsentService extends BaseService implements Listenable {
   @override
@@ -302,11 +301,7 @@ class ConsentService extends BaseService implements Listenable {
 /// explicitly granted [ConsentPurpose.analytics]. "Not registered", "no
 /// consent doc", and "lookup threw" all collapse to `false` so a pre-sign-in
 /// init can never enable analytics-bound infrastructure (Firebase Analytics
-/// collection toggle, Algolia provider swap).
-///
-/// Single canonical implementation per BUT-751 — replaces 2 inline copies
-/// of the same pattern (main.dart `_enableCollectionIfConsented`,
-/// search_module.dart `_hasAnalyticsConsent`).
+/// collection toggle).
 Future<bool> hasAnalyticsConsent(
   GetIt container, {
   String logTag = 'AnalyticsConsentGate',

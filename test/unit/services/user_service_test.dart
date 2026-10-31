@@ -8,7 +8,7 @@ import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';

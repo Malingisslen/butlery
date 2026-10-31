@@ -12,7 +12,6 @@
 /// deletion.test.ts`.
 library;
 
-import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -43,8 +42,6 @@ class _FakeCallableResult extends Fake
   @override
   Map<dynamic, dynamic> get data => _data;
 }
-
-class _MockSearchRepo extends Mock implements SearchRepository {}
 
 class _MockOfflineService extends Mock implements OfflineService {}
 
@@ -233,43 +230,6 @@ void main() {
       },
     );
 
-    /// Test 3: search-index pre-cleanup runs before the CF call. The
-    /// post-deletion search-SDK call would fail (user is gone), so it must
-    /// happen pre-CF or never.
-    test('runs search-index cleanup before CF call when SearchRepository '
-        'registered', () async {
-      final search = _MockSearchRepo();
-      when(() => search.removeUser(any())).thenAnswer((_) async {});
-
-      callResult = _FakeCallableResult({
-        'success': true,
-        'deletedCollections': <String>[],
-        'failedCollections': <String>[],
-        'errors': <String>[],
-        'auditLogId': null,
-      });
-      when(
-        () => callable.call<Map<dynamic, dynamic>>(any()),
-      ).thenAnswer((_) async => callResult);
-
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-        searchRepository: search,
-      );
-
-      final result = await service.deleteUserAccount(reason: 'r');
-
-      // Single verifyInOrder asserts BOTH "search ran" and "search ran before
-      // the CF call". Calling `verify` first would consume the search call
-      // from mocktail's pending-verify list and break the order check.
-      verifyInOrder([
-        () => search.removeUser('uid-alice'),
-        () => callable.call<Map<dynamic, dynamic>>(any()),
-      ]);
-      expect(result['deletedCollections'], contains('search_index_user'));
-    });
-
     /// Test 4: offline-cache cleanup runs before CF. Local SQLite/Drift state
     /// can't be cleaned post-deletion from the same session.
     test(
@@ -441,46 +401,6 @@ void main() {
               'can prompt for re-login',
         );
         verifyNever(() => auth.signOut());
-      },
-    );
-
-    /// Criterion 3 (BUT-1334): BOTH search-index cleanup and offline-cache
-    /// cleanup run BEFORE the CF callable.  `verifyInOrder` asserts the
-    /// three-step ordering: search → offline → CF.
-    test(
-      'BUT-1334/crit-3: search AND offline cleanup both run before CF call',
-      () async {
-        final search = _MockSearchRepo();
-        final offline = _MockOfflineService();
-        when(() => search.removeUser(any())).thenAnswer((_) async {});
-        when(() => offline.clearUserData(any())).thenAnswer((_) async {});
-
-        final successResult = _FakeCallableResult({
-          'success': true,
-          'deletedCollections': <String>[],
-          'failedCollections': <String>[],
-          'errors': <String>[],
-          'auditLogId': null,
-        });
-        when(
-          () => callable.call<Map<dynamic, dynamic>>(any()),
-        ).thenAnswer((_) async => successResult);
-
-        final service = AccountDeletionService(
-          authService: auth,
-          functions: functions,
-          searchRepository: search,
-          offlineService: offline,
-        );
-
-        await service.deleteUserAccount(reason: 'test');
-
-        // Three-step ordering: search cleanup, then offline cleanup, then CF.
-        verifyInOrder([
-          () => search.removeUser('uid-alice'),
-          () => offline.clearUserData('uid-alice'),
-          () => callable.call<Map<dynamic, dynamic>>(any()),
-        ]);
       },
     );
   });

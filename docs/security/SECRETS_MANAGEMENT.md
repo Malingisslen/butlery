@@ -47,10 +47,6 @@ See `.env.example` for the current authoritative list. Typical contents:
 # OCR Service (photo import feature)
 OCR_API_KEY=your_ocr_space_key
 
-# Algolia Search (optional)
-ALGOLIA_APP_ID=your_algolia_app_id
-ALGOLIA_API_KEY=your_algolia_search_key
-
 # Google Vision API (optional, fallback OCR)
 GOOGLE_VISION_API_KEY=your_vision_key
 ```
@@ -116,7 +112,6 @@ GitHub Actions composes `.env` at build time from repository secrets:
    - name: Create .env file
      run: |
        echo "OCR_API_KEY=${{ secrets.OCR_API_KEY }}" >> .env
-       echo "ALGOLIA_APP_ID=${{ secrets.ALGOLIA_APP_ID }}" >> .env
        # ... add all required variables
    - name: Build
      run: flutter build appbundle --release --dart-define-from-file=.env
@@ -126,7 +121,7 @@ GitHub Actions composes `.env` at build time from repository secrets:
 
 If credentials are exposed (committed to git, shared publicly, etc.):
 
-1. **Revoke exposed credentials** at the provider (Firebase Console, OCR.space, Algolia dashboard, etc.)
+1. **Revoke exposed credentials** at the provider (Firebase Console, OCR.space, etc.)
 2. **Generate new credentials**
 3. **Update locally:** edit `.env` with the new values
 4. **Update CI:** update the corresponding GitHub Actions secrets

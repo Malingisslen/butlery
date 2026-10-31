@@ -1,6 +1,6 @@
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -19,7 +19,6 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
-import 'package:butlery/core/di/modules/search_module.dart';
 import 'package:butlery/core/di/modules/tagging_module.dart';
 import 'package:butlery/core/di/modules/pantry_module.dart';
 
@@ -28,7 +27,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// DI modules in dependency order.
 List<DIModule> buildDiModules() => [
   CoreModule(),
-  SearchModule(),
   TaggingModule(),
   PantryModule(),
   ContentModule(),

@@ -95,7 +95,6 @@ All Firebase pods ship `PrivacyInfo.xcprivacy` since Firebase iOS SDK 10.17
 | flutter_inappwebview | ^6.1.5 | UNVERIFIED_LOCAL — manifest added in 6.1.0 | OK pending CI verification; app-level UserDefaults CA92.1 covers worst case |
 | flutter_onnxruntime | ^1.6.4 | NOT_REQUIRED — on-device inference, no API usage requiring declaration | OK |
 | receive_intent | ^0.2.0 | NOT_REQUIRED — Android-only plugin, no iOS native target | OK |
-| algoliasearch | ^1.46.1 | NOT_REQUIRED — pure-Dart REST client | OK; data-collection (search queries) declared at app level |
 
 ### Pure-Dart packages (no iOS native target)
 
