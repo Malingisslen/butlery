@@ -17,7 +17,10 @@ import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/cook_snap_service.dart';
@@ -27,6 +30,8 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -106,6 +111,102 @@ Recipe _recipe() => RecipeFactory.build(
   ],
 );
 
+/// The recipe detail of a full, imported recipe: no time or rating, finished
+/// tagging with the reader's tracked allergen and diet free, tags, a sauce
+/// group and steps with times. [scrollTo] scrolls to the text it names, and
+/// [toEnd] scrolls to the bottom of the page.
+StateHost fullRecipeDetailHost({String? scrollTo, bool toEnd = false}) =>
+    StateHost(
+      build: (ctx) async => _detail(
+        ctx,
+        shown: _fullRecipe(),
+        prefs: const UserAllergenPreferences(
+          trackedAllergens: {'skaldjur'},
+          trackedDietary: {'graviditetssäker'},
+        ),
+      ),
+      reach: scrollTo == null && !toEnd
+          ? null
+          : (tester, ctx) async {
+              await tester.pump(const Duration(milliseconds: 400));
+              if (toEnd) {
+                final position = tester
+                    .state<ScrollableState>(find.byType(Scrollable).first)
+                    .position;
+                position.jumpTo(position.maxScrollExtent);
+                await tester.pump();
+                return;
+              }
+              final target = find.text(scrollTo!).first;
+              await Scrollable.ensureVisible(tester.element(target));
+              // Down by the app bar's height, so the text is not under it.
+              final position = Scrollable.of(tester.element(target)).position;
+              position.jumpTo(
+                (position.pixels - kToolbarHeight).clamp(
+                  0,
+                  position.maxScrollExtent,
+                ),
+              );
+              await tester.pump();
+            },
+    );
+
+Recipe _fullRecipe() {
+  const main = [
+    '500 g köttfärs',
+    '¾ dl ströbröd',
+    '1 ½ dl mjölk',
+    '1 ägg',
+    '5 soltorkade tomater',
+    '½ tsk salt',
+    'salt o peppar',
+    'mozzarella',
+    'färsk basilika',
+    'skivad tomat',
+  ];
+  const sauce = [
+    '3 dl grädde',
+    '1 msk mjöl',
+    '1 tsk timjan',
+    '0,5-1 dl chilisås',
+    'salt',
+  ];
+  final recipe = RecipeFactory.build(
+    id: 'recipe-medelhavsbiffar',
+    title: 'Medelhavsbiffar med soltorkade tomater',
+    description: '',
+    mealType: 'Middag',
+    timeMinutes: null,
+    rating: null,
+    personalTagIds: const [],
+    createdBy: _me,
+    ingredients: [...main, ...sauce],
+    instructions: [
+      'Blanda ingredienserna till biffarna, hacka de soltorkade tomaterna väl.',
+      'Forma till biffar och stek hastigt för yta.',
+      'Lägg i form.',
+      'Blanda ingredienserna till såsen och häll runt biffarna.',
+      'Gratinera på 225 grader i ca 20 min.',
+      'Efter ca 10 min lägg på mozzarella, tomat och basilikablad.',
+    ],
+  );
+  recipe.core.structuredIngredients = [
+    for (final line in main) RecipeIngredient.rawOnly(line),
+    for (final line in sauce)
+      RecipeIngredient(name: line, raw: line, section: 'Sås'),
+  ];
+  recipe.core.tagResult = TagResult(
+    tags: const {'nötkött', 'ägg', 'bröd', 'italienskt', 'budgetvänlig'},
+    allergenStatus: const {'skaldjur': TriState.free},
+    dietaryStatus: const {'graviditetssäker': TriState.free},
+    coverage: 1,
+    generatedAt: DateTime(2026, 9, 1),
+    generatorVersion: kTagGeneratorVersion,
+    hasDraftIngredients: true,
+  );
+  return recipe;
+}
+
 StreamController<ConflictEvent> _realtime(HostContext ctx) {
   final conflicts = StreamController<ConflictEvent>.broadcast();
   ctx.disposers.add(() => unawaited(conflicts.close()));
@@ -131,8 +232,12 @@ StreamController<ConflictEvent> _realtime(HostContext ctx) {
   return conflicts;
 }
 
-Widget _detail(HostContext ctx) {
-  final recipe = _recipe();
+Widget _detail(
+  HostContext ctx, {
+  Recipe? shown,
+  UserAllergenPreferences prefs = UserAllergenPreferences.defaults,
+}) {
+  final recipe = shown ?? _recipe();
   final recipes = MockUnifiedRecipeService()
     ..setRecipeState(recipes: [recipe], isInitialized: true);
   when(
@@ -145,7 +250,7 @@ Widget _detail(HostContext ctx) {
   final users = MockUserService();
   when(
     () => users.allergenPreferences,
-  ).thenReturn(UserAllergenPreferences.defaults);
+  ).thenReturn(prefs);
   when(() => users.addListener(any())).thenReturn(null);
   when(() => users.removeListener(any())).thenReturn(null);
   TestServiceLocator.registerMock<UserService>(users);
