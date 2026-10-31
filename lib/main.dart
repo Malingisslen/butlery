@@ -22,7 +22,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Bootstrap system
+import 'package:butlery/app/local_data_locked_app.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
+import 'package:butlery/core/storage/drift/local_database_reset_stub.dart'
+    if (dart.library.io) 'package:butlery/core/storage/drift/local_database_reset.dart';
 import 'package:butlery/core/bootstrap/emulator_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
@@ -168,6 +171,18 @@ Future<void> main() async {
           unawaited(runDeferredBootstrap());
         });
       } catch (e, stackTrace) {
+        if (isLocalDataLocked(e)) {
+          runApp(
+            LocalDataLockedApp(
+              onRetry: main,
+              onStartOver: () async {
+                await resetLocalDatabase();
+                main();
+              },
+            ),
+          );
+          return;
+        }
         runApp(
           ErrorApp(
             kDebugMode
