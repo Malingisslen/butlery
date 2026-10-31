@@ -132,13 +132,47 @@ void main() {
       expect(list.items.map((i) => i.name).toSet(), {'Mjölk', 'Bröd'});
     });
 
+    test('gives each list its own rows, and the lists come out '
+        'newest first', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedPersonalList(
+        firestore,
+        id: 'big',
+        name: 'Stor',
+        updatedAt: DateTime.utc(2026, 1, 1),
+        items: [
+          _itemDoc(name: 'Mjölk'),
+          _itemDoc(name: 'Bröd'),
+          _itemDoc(name: 'Ost'),
+        ],
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'empty',
+        name: 'Tom',
+        updatedAt: DateTime.utc(2026, 1, 2),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'small',
+        name: 'Liten',
+        updatedAt: DateTime.utc(2026, 1, 3),
+        items: [_itemDoc(name: 'Ägg')],
+      );
+      final result = await _module(firestore).readAll();
+
+      expect(result.map((l) => l.id), ['small', 'empty', 'big']);
+      final byId = {for (final l in result) l.id: l};
+      expect(
+        byId['big']!.items.map((i) => i.name),
+        unorderedEquals(['Mjölk', 'Bröd', 'Ost']),
+      );
+      expect(byId['empty']!.items, isEmpty);
+      expect(byId['small']!.items.map((i) => i.name), ['Ägg']);
+    });
+
     test('returns all personal lists regardless of seed order', () async {
-      // NOTE: production readAll() calls copyWith(items: ...) on every
-      // list, which resets `updatedAt` to clock.now() (see copyWith
-      // defaults at unified_shopping_list.dart:425). The subsequent
-      // `allLists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt))`
-      // then degenerates to insertion order. We assert membership only,
-      // not the sort key.
+      // We assert membership only, not the sort key.
       final firestore = FakeFirebaseFirestore();
       await _seedPersonalList(
         firestore,
