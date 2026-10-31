@@ -1193,18 +1193,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipePersonalTags => 'Egna taggar';
 
   @override
-  String get recipeAnalysisFailed => 'Analys misslyckades';
-
-  @override
-  String get recipeAnalyzing => 'Analyseras …';
-
-  @override
-  String get recipeAnalysisFailedA11y => 'Ingrediensanalys misslyckades';
-
-  @override
-  String get recipeAnalyzingA11y => 'Ingredienser analyseras';
-
-  @override
   String get recipeSearchHint => 'Sök bland recepten …';
 
   @override
@@ -2350,13 +2338,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get allergenDisplayTitle => 'Visa på';
-
-  @override
-  String get allergenDisplayOnCardsTitle => 'Receptkort';
-
-  @override
-  String get allergenDisplayOnCardsSubtitle =>
-      'Visa allergenstatus på receptkort i listor';
 
   @override
   String get allergenDisplayOnDetailTitle => 'Receptdetaljer';

@@ -1219,18 +1219,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipePersonalTags => 'Personal tags';
 
   @override
-  String get recipeAnalysisFailed => 'Analysis failed';
-
-  @override
-  String get recipeAnalyzing => 'Analysing …';
-
-  @override
-  String get recipeAnalysisFailedA11y => 'Ingredient analysis failed';
-
-  @override
-  String get recipeAnalyzingA11y => 'Ingredients being analysed';
-
-  @override
   String get recipeSearchHint => 'Search recipes …';
 
   @override
@@ -2386,13 +2374,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allergenDisplayTitle => 'Display on';
-
-  @override
-  String get allergenDisplayOnCardsTitle => 'Recipe cards';
-
-  @override
-  String get allergenDisplayOnCardsSubtitle =>
-      'Show allergen status on recipe cards in lists';
 
   @override
   String get allergenDisplayOnDetailTitle => 'Recipe details';

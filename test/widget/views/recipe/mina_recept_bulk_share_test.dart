@@ -9,7 +9,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -104,10 +103,6 @@ void main() {
           body: MinaReceptRecipeCard(
             viewModel: viewModel,
             recipe: recipe('r2'),
-            allergenPrefs: const UserAllergenPreferences(
-              trackedAllergens: {},
-              trackedDietary: {},
-            ),
             onDelete: (_) {},
             index: 0,
           ),

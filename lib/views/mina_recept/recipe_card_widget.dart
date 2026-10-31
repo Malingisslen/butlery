@@ -12,7 +12,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -34,14 +33,12 @@ class MinaReceptRecipeCard extends StatelessWidget {
     super.key,
     required this.viewModel,
     required this.recipe,
-    required this.allergenPrefs,
     required this.onDelete,
     this.index,
   });
 
   final RecipeListViewModel viewModel;
   final Recipe recipe;
-  final UserAllergenPreferences allergenPrefs;
   final void Function(Recipe recipe) onDelete;
   final int? index;
 
@@ -99,7 +96,6 @@ class MinaReceptRecipeCard extends StatelessWidget {
         DetailPaneScope.maybeOf(context)?.isSelected(recipe.id) ?? false;
     final cs = Theme.of(context).colorScheme;
 
-    final showBadges = allergenPrefs.showOnCards;
     // RecipeCard directly rather than through ContentCard, so the card can
     // draw its own selected state (surface.selected with a real border,
     // #flerbar) instead of a tinted layer on top.
@@ -112,10 +108,6 @@ class MinaReceptRecipeCard extends StatelessWidget {
       style: viewModel.isGridView
           ? RecipeCardStyle.grid
           : RecipeCardStyle.detailed,
-      userAllergenPrefs: showBadges ? allergenPrefs.trackedAllergens : null,
-      userDietaryPrefs: showBadges ? allergenPrefs.trackedDietary : null,
-      showAllergenBadges: showBadges,
-      showDietaryBadges: showBadges,
       matchPercent: viewModel.pantryOnly
           ? viewModel.pantryMatches[recipe.id]
           : null,

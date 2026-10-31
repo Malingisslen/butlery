@@ -99,7 +99,6 @@ import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/models/user_allergen_preferences.dart';
 
 // BUT-441 facade extractions
 import 'package:butlery/views/mina_recept/discovery_shelves_widget.dart';
@@ -417,9 +416,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final isOnline = context.select<offline_service.OfflineService, bool>(
       (svc) => svc.isOnline,
     );
-    final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
-      (svc) => svc.allergenPreferences,
-    );
     final tagViewModel = context.watch<PersonalTagViewModel>();
     final personalTags = tagViewModel.tags;
     final libraryEmpty =
@@ -485,7 +481,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                           value: _cookbooks!,
                           child: const CookbookShelf(),
                         )
-                      : _buildContent(viewModel, isOnline, allergenPrefs),
+                      : _buildContent(viewModel, isOnline),
                 ),
               ),
             ],
@@ -674,7 +670,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     BuildContext context, {
     required RecipeListViewModel viewModel,
     required List<Recipe> recipes,
-    required UserAllergenPreferences allergenPrefs,
   }) {
     return SliverPadding(
       padding: AppDimensions.responsiveContentPadding(context),
@@ -685,7 +680,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         itemBuilder: (context, index) => MinaReceptRecipeCard(
           viewModel: viewModel,
           recipe: recipes[index],
-          allergenPrefs: allergenPrefs,
           onDelete: (recipe) => _handleDeleteWithUndo(viewModel, recipe),
           index: index,
         ),
@@ -715,7 +709,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   Widget _buildContent(
     RecipeListViewModel viewModel,
     bool isOnline,
-    UserAllergenPreferences allergenPrefs,
   ) {
     if (viewModel.isLoading && viewModel.recipes.isEmpty) {
       return HemLibraryScroll.boxBody(
@@ -833,7 +826,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               context,
               viewModel: viewModel,
               recipes: recipes,
-              allergenPrefs: allergenPrefs,
             )
           else if (Breakpoints.isMobile(context))
             // Rows draw their own hairline, so
@@ -846,7 +838,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               itemBuilder: (context, recipe) => MinaReceptRecipeCard(
                 viewModel: viewModel,
                 recipe: recipe,
-                allergenPrefs: allergenPrefs,
                 onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
                 index: recipes.indexOf(recipe),
               ),
@@ -863,7 +854,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 itemBuilder: (context, index) => MinaReceptRecipeCard(
                   viewModel: viewModel,
                   recipe: recipes[index],
-                  allergenPrefs: allergenPrefs,
                   onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
                   index: index,
                 ),
