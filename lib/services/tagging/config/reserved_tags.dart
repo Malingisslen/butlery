@@ -44,7 +44,7 @@ class ReservedTags {
     'enkel', 'medel', 'avancerad', 'krämig', 'krispig', 'ostig', 'kall-rätt',
     'varm-rätt', 'proteinrik', 'fiberrik', 'grönsaksrik', 'kryddrik',
     'barnvänlig', 'frysbar', 'meal-prep', 'storkok', 'klimatsmart',
-    'budgetvänlig',
+    'budgetvänlig', 'örtig', 'lite-jobb', 'fisk-och-skaldjur',
     // Phase 4: Mood & occasion
     'vardagsmiddag', 'helgmat', 'middagsbjudning', 'snabblagat',
     'fredagsmys', 'söndagsmiddag',

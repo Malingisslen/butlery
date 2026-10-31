@@ -2281,23 +2281,37 @@ void main() {
           expect(result.hasTag('krämig'), isTrue);
         });
 
-        test('adds ostig for cheesy dishes', () {
+        test('adds ostig when the cheeses weigh 100 g together', () {
           final recipe = RecipeBuilder()
               .withTitle('Ostgratäng')
               .withTimeMinutes(40)
               .withIngredients(['potato', 'cheddar', 'parmesan', 'mozzarella'])
               .build();
-          final lookup = TaggingTestHelper.createLookup([
-            TaggingTestHelper.ingredient('potato', 'vegetable/potato', {}),
-            TaggingTestHelper.ingredient('cheddar', 'protein/dairy/cheese', {
-              'dairy',
-            }),
-            TaggingTestHelper.ingredient('parmesan', 'protein/dairy/cheese', {
-              'dairy',
-            }),
-            TaggingTestHelper.ingredient('mozzarella', 'protein/dairy/cheese', {
-              'dairy',
-            }),
+          final lookup = TaggingTestHelper.weighedLookup([
+            (
+              TaggingTestHelper.ingredient('potato', 'vegetable/potato', {}),
+              800,
+            ),
+            (
+              TaggingTestHelper.ingredient('cheddar', 'protein/dairy/cheese', {
+                'dairy',
+              }),
+              50,
+            ),
+            (
+              TaggingTestHelper.ingredient('parmesan', 'protein/dairy/cheese', {
+                'dairy',
+              }),
+              20,
+            ),
+            (
+              TaggingTestHelper.ingredient(
+                'mozzarella',
+                'protein/dairy/cheese',
+                {'dairy'},
+              ),
+              30,
+            ),
           ]);
 
           final result = generator.generate(
@@ -2362,21 +2376,28 @@ void main() {
       });
 
       group('nutritional tags', () {
-        test('adds proteinrik for protein-heavy dishes', () {
+        test('adds proteinrik at 200 g protein per portion', () {
           final recipe = RecipeBuilder()
               .withTitle('Protein Bowl')
               .withTimeMinutes(30)
+              .withPortions(2)
               .withIngredients(['chicken', 'eggs', 'tofu'])
               .build();
-          final lookup = TaggingTestHelper.createLookup([
-            TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {
-              'meat',
-              'poultry',
-            }),
-            TaggingTestHelper.ingredient('eggs', 'protein/egg', {'egg'}),
-            TaggingTestHelper.ingredient('tofu', 'protein/legume', {
-              'plant-based',
-            }),
+          final lookup = TaggingTestHelper.weighedLookup([
+            (
+              TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {
+                'meat',
+                'poultry',
+              }),
+              250,
+            ),
+            (TaggingTestHelper.ingredient('eggs', 'protein/egg', {'egg'}), 100),
+            (
+              TaggingTestHelper.ingredient('tofu', 'protein/legume', {
+                'plant-based',
+              }),
+              50,
+            ),
           ]);
 
           final result = generator.generate(
@@ -3130,40 +3151,56 @@ void main() {
           },
         );
 
-        test('adds klimatsmart when 80% have low/medium carbon', () {
+        test('a high-carbon ingredient that is not a main one is allowed', () {
           final recipe = RecipeBuilder()
               .withTitle('Mixed Dish')
               .withIngredients(['a', 'b', 'c', 'd', 'e'])
               .build();
-          // 4 low/medium + 1 high = 80% meet criteria
-          final lookup = TaggingTestHelper.createLookup([
-            TaggingTestHelper.ingredient(
-              'a',
-              'vegetable',
-              {},
-              carbonFootprintCategory: 'low',
+          // Malin 2026-10-30, kärnflöde steg 5 beslut 8: only the main
+          // ingredients count, and 50 g of 850 g is not one.
+          final lookup = TaggingTestHelper.weighedLookup([
+            (
+              TaggingTestHelper.ingredient(
+                'a',
+                'vegetable',
+                {},
+                carbonFootprintCategory: 'low',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'b',
-              'vegetable',
-              {},
-              carbonFootprintCategory: 'low',
+            (
+              TaggingTestHelper.ingredient(
+                'b',
+                'vegetable',
+                {},
+                carbonFootprintCategory: 'low',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'c',
-              'vegetable',
-              {},
-              carbonFootprintCategory: 'medium',
+            (
+              TaggingTestHelper.ingredient(
+                'c',
+                'vegetable',
+                {},
+                carbonFootprintCategory: 'medium',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'd',
-              'vegetable',
-              {},
-              carbonFootprintCategory: 'low',
+            (
+              TaggingTestHelper.ingredient(
+                'd',
+                'vegetable',
+                {},
+                carbonFootprintCategory: 'low',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient('e', 'protein/meat', {
-              'meat',
-            }, carbonFootprintCategory: 'high'),
+            (
+              TaggingTestHelper.ingredient('e', 'protein/meat', {
+                'meat',
+              }, carbonFootprintCategory: 'high'),
+              50,
+            ),
           ]);
 
           final result = generator.generate(
@@ -3179,7 +3216,6 @@ void main() {
               .withTitle('Beef Steak')
               .withIngredients(['beef', 'butter', 'vegetables'])
               .build();
-          // 1 low + 2 high = 33% meet criteria (below 80%)
           final lookup = TaggingTestHelper.createLookup([
             TaggingTestHelper.ingredient('beef', 'protein/meat', {
               'meat',
@@ -3221,12 +3257,11 @@ void main() {
           expect(result.hasTag('klimatsmart'), isFalse);
         });
 
-        test('klimatsmart ignores ingredients without carbon data', () {
+        test('a main ingredient without carbon data withholds klimatsmart', () {
           final recipe = RecipeBuilder()
               .withTitle('Mixed Data')
               .withIngredients(['tofu', 'unknown'])
               .build();
-          // Only tofu has carbon data (low), unknown is excluded
           final lookup = TaggingTestHelper.createLookup([
             TaggingTestHelper.ingredient(
               'tofu',
@@ -3246,8 +3281,7 @@ void main() {
             recipe: recipe,
           );
 
-          // 100% of ingredients with data are low carbon
-          expect(result.hasTag('klimatsmart'), isTrue);
+          expect(result.hasTag('klimatsmart'), isFalse);
         });
       });
 
@@ -3289,42 +3323,58 @@ void main() {
           },
         );
 
-        test('adds budgetvänlig when 80% are budget/medium', () {
+        test('a premium ingredient that is not a main one is allowed', () {
           final recipe = RecipeBuilder()
               .withTitle('Mixed Budget')
               .withIngredients(['a', 'b', 'c', 'd', 'e'])
               .build();
-          // 4 budget/medium + 1 premium = 80% meet criteria
-          final lookup = TaggingTestHelper.createLookup([
-            TaggingTestHelper.ingredient(
-              'a',
-              'vegetable',
-              {},
-              priceCategory: 'budget',
+          // Malin 2026-10-30, kärnflöde steg 5 beslut 8: only the main
+          // ingredients count, and 20 g of 820 g is not one.
+          final lookup = TaggingTestHelper.weighedLookup([
+            (
+              TaggingTestHelper.ingredient(
+                'a',
+                'vegetable',
+                {},
+                priceCategory: 'budget',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'b',
-              'vegetable',
-              {},
-              priceCategory: 'budget',
+            (
+              TaggingTestHelper.ingredient(
+                'b',
+                'vegetable',
+                {},
+                priceCategory: 'budget',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'c',
-              'vegetable',
-              {},
-              priceCategory: 'medium',
+            (
+              TaggingTestHelper.ingredient(
+                'c',
+                'vegetable',
+                {},
+                priceCategory: 'medium',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'd',
-              'vegetable',
-              {},
-              priceCategory: 'budget',
+            (
+              TaggingTestHelper.ingredient(
+                'd',
+                'vegetable',
+                {},
+                priceCategory: 'budget',
+              ),
+              200,
             ),
-            TaggingTestHelper.ingredient(
-              'e',
-              'protein/seafood',
-              {},
-              priceCategory: 'premium',
+            (
+              TaggingTestHelper.ingredient(
+                'e',
+                'protein/seafood',
+                {},
+                priceCategory: 'premium',
+              ),
+              20,
             ),
           ]);
 
@@ -3388,12 +3438,11 @@ void main() {
           expect(result.hasTag('budgetvänlig'), isFalse);
         });
 
-        test('budgetvänlig ignores ingredients without price data', () {
+        test('a main ingredient without price data withholds budgetvänlig', () {
           final recipe = RecipeBuilder()
               .withTitle('Mixed Data')
               .withIngredients(['rice', 'unknown'])
               .build();
-          // Only rice has price data (budget), unknown is excluded
           final lookup = TaggingTestHelper.createLookup([
             TaggingTestHelper.ingredient(
               'rice',
@@ -3413,8 +3462,7 @@ void main() {
             recipe: recipe,
           );
 
-          // 100% of ingredients with data are budget
-          expect(result.hasTag('budgetvänlig'), isTrue);
+          expect(result.hasTag('budgetvänlig'), isFalse);
         });
       });
     });

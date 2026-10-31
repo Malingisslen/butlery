@@ -357,12 +357,6 @@ Depends on Phase 1 results.
 | `stark` | Any ingredient has property `is-spicy` |
 | `mild` | No ingredients have `is-spicy` AND hasFullCoverage |
 
-### Few Ingredients
-
-| Tag | Rule |
-|-----|------|
-| `få-ingredienser` | ingredient count ≤ 6 |
-
 ### Practical Tags
 
 | Tag | Rule |
@@ -405,7 +399,6 @@ Depends on Phase 1 + Phase 2 results.
 |-----|------|
 | `krämig` | Creamy ingredient in **top 5** (grädde, creme, créme, kokosmjölk, mascarpone) AND (instructions contain "sås"/"rör" OR has `pastabaserad`) |
 | `krispig` | Phase 1 has `friterad` OR instructions contain: krispig, frasig, knaprig |
-| `ostig` | More than 1 cheese ingredient OR title contains "ost" |
 
 ### Temperature Tags
 
@@ -418,7 +411,6 @@ Depends on Phase 1 + Phase 2 results.
 
 | Tag | Rule |
 |-----|------|
-| `proteinrik` | ≥ 2 protein ingredients AND protein ratio > 25% of matched |
 | `fiberrik` | Phase 1 has `baljväxter`/`fullkorn` OR has group `vegetable/legume` |
 | `grönsaksrik` | ≥ 3 vegetable ingredients |
 | `kryddrik` | ≥ 3 ingredients in `spice` group |
@@ -427,19 +419,9 @@ Depends on Phase 1 + Phase 2 results.
 
 | Tag | Rule |
 |-----|------|
-| `barnvänlig` | Phase 2 has `mild` AND alkohol is FREE AND has recognizable protein (kyckling, köttbullar, fläskkött, nötkött, fisk, ägg) |
 | `frysbar` | NO property `doesnt-freeze-well` AND NOT `sallad` AND (has gryta OR soppa OR köttbullar OR pastabaserad) |
 | `meal-prep` | NOT `sallad` AND NO `doesnt-freeze-well` AND portions ≥ 4 AND (has gryta OR soppa OR köttbullar OR gratäng) |
 | `storkok` | portions ≥ 6 OR title contains "storkok" |
-
-### Sustainability Tags
-
-Based on ingredient metadata (requires 80% coverage of ingredients with data):
-
-| Tag | Rule |
-|-----|------|
-| `klimatsmart` | ≥80% of ingredients with carbon data have `carbonFootprintCategory` = 'low' or 'medium' |
-| `budgetvänlig` | ≥80% of ingredients with price data have `priceCategory` = 'budget' or 'medium' |
 
 ---
 

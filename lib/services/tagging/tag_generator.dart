@@ -268,7 +268,9 @@ class TagGenerator {
         FeatureFlags.tagAdvancedMinIngredients,
       ),
       advancedMinMinutes: flags.getInt(FeatureFlags.tagAdvancedMinMinutes),
-      highProteinRatio: flags.getDouble(FeatureFlags.tagHighProteinRatio),
+      proteinGramsPerPortion: flags.getInt(
+        FeatureFlags.tagProteinGramsPerPortion,
+      ),
       spiceRichCount: flags.getInt(FeatureFlags.tagSpiceRichCount),
       veggieRichCount: flags.getInt(FeatureFlags.tagVeggieRichCount),
     );
