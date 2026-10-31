@@ -359,9 +359,11 @@ class UnifiedRecipeService
       getCurrentUserId: () => currentUserId,
       setError: _setError,
       notifyListeners: notifyListeners,
-      // BUG-003: On web, cache is stubbed so we update _recipes directly
-      onRecipeUpdated: kIsWeb ? _handleDirectRecipeUpdate : null,
-      onRecipeRemoved: kIsWeb ? _handleDirectRecipeRemoval : null,
+      // Every platform takes a synced change into the list on screen. On
+      // native the change is also cached, but nothing re-reads the cache
+      // after the first sync, so a fresh install would stay empty.
+      onRecipeUpdated: _handleDirectRecipeUpdate,
+      onRecipeRemoved: _handleDirectRecipeRemoval,
       hasUnsentWrite: (recipeId) async {
         final userId = currentUserId;
         final queue = ServiceLocator.tryGet<OfflineService>();
@@ -572,10 +574,8 @@ class UnifiedRecipeService
     }
   }
 
-  /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache).
-  ///
-  /// BUT-1252: Self-contained — calls [notifyListeners] itself at the end. On
-  /// web the cache module therefore skips its own notify (it notifies only when
+  /// BUT-1252: Self-contained — calls [notifyListeners] itself at the end. The
+  /// cache module therefore skips its own notify (it notifies only when
   /// its direct callback is null — see RecipeCacheModule._updateCachedRecipe),
   /// so the listener signal fires exactly once. This keeps the mutation and the
   /// signal in one place and guarantees the O(1) index is rebuilt for the
@@ -587,16 +587,14 @@ class UnifiedRecipeService
     } else {
       _recipes.add(recipe);
     }
-    AppLogger.debug('📝 [Web] Direct recipe update: ${recipe.title}');
+    AppLogger.debug('📝 Direct recipe update: ${recipe.title}');
     notifyListeners();
   }
 
-  /// BUG-003: Handle direct recipe removals on web (bypasses stubbed cache).
-  ///
   /// BUT-1252: Self-contained — see [_handleDirectRecipeUpdate].
   void _handleDirectRecipeRemoval(String recipeId) {
     _recipes.removeWhere((r) => r.id == recipeId);
-    AppLogger.debug('🗑️ [Web] Direct recipe removal: $recipeId');
+    AppLogger.debug('🗑️ Direct recipe removal: $recipeId');
     notifyListeners();
   }
 
