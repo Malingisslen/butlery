@@ -618,6 +618,37 @@ void main() {
       expect(fakeRepo.updatedItems.single.amount, 1.0);
     });
 
+    /// i07: a recipe's rows go where the user once moved that name, as a
+    /// row typed by hand already does.
+    test('a new row takes the user\'s category for its name', () async {
+      fakePrefsRepo.prefsToReturn = CategoryPreferences(
+        itemCategoryOverrides: {'grädde': 'Skafferi'},
+      );
+      await prefsModule.load();
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+
+      final ok = await buildModule().addItemsBatchToActiveList([
+        UnifiedShoppingItem(
+          name: 'Grädde',
+          amount: 2,
+          unit: 'dl',
+          category: 'Mejeri',
+        ),
+        UnifiedShoppingItem(
+          name: 'Mjölk',
+          amount: 1,
+          unit: 'l',
+          category: 'Mejeri',
+        ),
+      ]);
+
+      expect(ok, isTrue);
+      final added = fakeRepo.batchedItems.single;
+      expect(added.singleWhere((i) => i.name == 'Grädde').category, 'Skafferi');
+      expect(added.singleWhere((i) => i.name == 'Mjölk').category, 'Mejeri');
+    });
+
     /// Proves (BUT-1106): when a later repo call throws AFTER some merged
     /// updates already committed, the committed merges are rolled back to
     /// their original amounts and the method returns false. The bug-shape:

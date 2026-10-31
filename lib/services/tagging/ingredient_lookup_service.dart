@@ -1,3 +1,4 @@
+import 'package:butlery/constants/grocery_brands.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -123,6 +124,7 @@ class IngredientLookupService extends BaseService {
   /// 3. Global database by exact name
   /// 4. Global database by alias
   /// 5. Fuzzy match (compound words, common variations)
+  /// 6. The same steps without a grocery brand ([GroceryBrands])
   ///
   /// CRIT-3: Captures cache version before async lookup to detect invalidation.
   Future<IngredientData?> _findIngredient(
@@ -210,6 +212,14 @@ class IngredientLookupService extends BaseService {
 
       final aliasResults = await _ingredientRepository.findByAlias(variation);
       if (aliasResults.isNotEmpty) return aliasResults.first;
+    }
+
+    // 5. Last, the same name without a brand ("arla mellanmjolk"). Only
+    // after every form of the whole name, so a registry entry that carries
+    // the brand ("felix mos") still wins.
+    final unbranded = GroceryBrands.strip(cleanName);
+    if (unbranded != null) {
+      return _performLookup(unbranded, userId: userId);
     }
 
     return null;

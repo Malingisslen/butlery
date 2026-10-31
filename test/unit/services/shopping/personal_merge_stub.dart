@@ -7,9 +7,12 @@ library;
 
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/category_preferences.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
+import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -37,6 +40,13 @@ void stubPersonalMerge(
       personalLists: swap(shopping.personalLists),
     );
   }
+
+  // Unloaded, so no row is moved to a category of the user's.
+  when(() => shopping.categoryPreferences).thenReturn(
+    ShoppingCategoryPreferencesModule(
+      repository: _Prefs(CategoryPreferences()),
+    ),
+  );
 
   when(() => shopping.applyPersonalMerge(any(), any())).thenAnswer((
     invocation,
@@ -93,4 +103,32 @@ void stubPersonalMerge(
       ),
     );
   });
+}
+
+/// The user has moved each name in [overrides] to its category.
+Future<void> stubCategoryOverrides(
+  MockUnifiedShoppingService shopping,
+  Map<String, String> overrides,
+) async {
+  final module = ShoppingCategoryPreferencesModule(
+    repository: _Prefs(
+      CategoryPreferences(
+        itemCategoryOverrides: {
+          for (final e in overrides.entries)
+            CategoryPreferences.normalizeItemName(e.key): e.value,
+        },
+      ),
+    ),
+  );
+  await module.load();
+  when(() => shopping.categoryPreferences).thenReturn(module);
+}
+
+class _Prefs extends Fake implements CategoryPreferencesRepository {
+  _Prefs(this.prefs);
+
+  final CategoryPreferences prefs;
+
+  @override
+  Future<CategoryPreferences?> getPreferences() async => prefs;
 }

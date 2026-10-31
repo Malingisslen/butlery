@@ -30,6 +30,15 @@ class ShoppingCategoryPreferencesModule {
     return _preferences!.itemCategoryOverrides[normalized];
   }
 
+  /// [item] in the category the user once moved this name to, so a row a
+  /// recipe or the menu adds lands where the user's own rows already do.
+  UnifiedShoppingItem withUserCategory(UnifiedShoppingItem item) {
+    final override = getUserCategoryOverride(item.name);
+    return override == null || override == item.category
+        ? item
+        : item.copyWith(category: override);
+  }
+
   /// Set item→category override for the user and record globally
   Future<void> setItemCategory(String itemName, String category) async {
     final normalized = CategoryPreferences.normalizeItemName(itemName);

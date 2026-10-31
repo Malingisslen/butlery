@@ -240,6 +240,66 @@ void main() {
     });
   });
 
+  group('keysForNames', () {
+    test(
+      'a typed name meets the same row in a recipe, matched or not',
+      () async {
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((inv) async {
+          final rows = inv.positionalArguments[0] as List<String>;
+          return IngredientLookupResult(
+            matched: [
+              if (rows.any((r) => r.toLowerCase().contains('lök')))
+                _ingredientData('onion', 'lök'),
+            ],
+            unmatched: [if (rows.any((r) => r.contains('zaatar'))) 'zaatar'],
+            coverage: 0.5,
+          );
+        });
+
+        final keys = await service.keysForNames(['Lök', 'zaatar']);
+        final results = await service.matchRecipes(
+          selectedIngredientIds: keys,
+          recipes: [
+            _recipe(
+              id: 'r1',
+              title: 'Lök med zaatar',
+              raw: const ['1 hackad lök', '1 msk zaatar'],
+            ),
+          ],
+        );
+
+        expect(keys, {'onion', 'zaatar'});
+        expect(results.single.matchPercent, 1.0);
+      },
+    );
+
+    test('no names asks the registry nothing', () async {
+      expect(await service.keysForNames(const []), isEmpty);
+      verifyNever(
+        () => mockLookupService.lookupFromRaw(
+          any(),
+          userId: any(named: 'userId'),
+        ),
+      );
+    });
+
+    test('a failed lookup gives no keys instead of throwing', () async {
+      when(
+        () => mockLookupService.lookupFromRaw(
+          any(),
+          userId: any(named: 'userId'),
+        ),
+      ).thenThrow(StateError('registry down'));
+
+      expect(await service.keysForNames(const ['lök']), isEmpty);
+    });
+  });
+
   group('matchRecipesWithNormalization', () {
     test('normalizes legacy recipes via lookupFromRaw', () async {
       final recipes = [
