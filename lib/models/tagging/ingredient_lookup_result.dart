@@ -1,4 +1,5 @@
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/tagging/ingredient_line.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 
 /// Result of looking up ingredients from the database.
@@ -15,11 +16,37 @@ class IngredientLookupResult {
   /// Percentage of ingredients found (0.0 - 1.0).
   final double coverage;
 
+  final List<IngredientLine>? _lines;
+
   const IngredientLookupResult({
     required this.matched,
     required this.unmatched,
     required this.coverage,
-  });
+    List<IngredientLine>? lines,
+  }) : _lines = lines;
+
+  /// The recipe's lines in recipe order. A result built without them counts
+  /// each matched row and each unmatched name as a line of its own, matched
+  /// rows first.
+  List<IngredientLine> get lines =>
+      _lines ??
+      [
+        for (final i in matched)
+          IngredientLine(names: [i.swedish], ingredients: [i], known: true),
+        for (final name in unmatched)
+          IngredientLine(names: [name], ingredients: const [], known: false),
+      ];
+
+  /// The lines came from the recipe, one per looked-up line.
+  bool get hasRecipeLines => _lines != null;
+
+  IngredientLookupResult withLines(List<IngredientLine> lines) =>
+      IngredientLookupResult(
+        matched: matched,
+        unmatched: unmatched,
+        coverage: coverage,
+        lines: lines,
+      );
 
   /// Creates an empty result for recipes with no ingredients.
   /// HIGH-1: Coverage is 0.0 because we have no ingredient data to analyze.

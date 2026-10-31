@@ -23,6 +23,7 @@ class TagDisplayUtils {
       'torsk',
       'sill',
       'skaldjur',
+      'fisk-och-skaldjur',
       'räkor',
       'tofu',
       'baljväxter',
@@ -104,6 +105,8 @@ class TagDisplayUtils {
       'klimatsmart',
       'budgetvänlig',
       'få-ingredienser',
+      'lite-jobb',
+      'örtig',
     },
   ];
 
@@ -154,6 +157,9 @@ class TagDisplayUtils {
     'budgetvänlig': 'Budgetvänlig',
     'få-ingredienser': 'Få ingredienser',
     'snabblagat': 'Snabblagat',
+    'lite-jobb': 'Lite jobb',
+    'örtig': 'Örtig',
+    'fisk-och-skaldjur': 'Fisk & skaldjur',
     // Proteins
     'kyckling': 'Kyckling',
     'nötkött': 'Nötkött',
