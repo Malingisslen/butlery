@@ -2474,7 +2474,7 @@
         {
           "from": "svc-import-manager",
           "to": "v-recipe-form",
-          "payload": "ParsedRecipe → Recipe som förifyllt formulär (granska före spar)",
+          "payload": "ParsedRecipe → Recipe som förifyllt formulär (granska före spar). Formuläret skriver sedan ingrediensradernas inledande mängd som vanligt bråk (1,5 dl → 1 ½ dl, ImportFractions), efter tolkningsgranskningen",
           "transport": "return + Navigator",
           "verified": true
         },
@@ -3129,7 +3129,7 @@
         {
           "from": "cf-request-deletion",
           "to": "ds-users",
-          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), parsningskorrigeringar (parsing_corrections), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → efter Tier 1: receptägarens uid tas bort från andras betyg, betyget ligger kvar (BUT-2072); uid tas bort från andras kommentarer (ägare, delningslista) och egna gillamarkeringar raderas (BUT-2112) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+          "payload": "erasure_hold FÖRST (öppet modereringsärende ⇒ underlaget behålls, GDPR 17.3(e), BUT-2046) → Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), parsningskorrigeringar (parsing_corrections), inlärda ingrediensalias (learned_aliases: uid tas bort, en obeslutad kandidat utan andra röster raderas; samma steg körs i onUserDeleted för en Auth-användare som raderats på annat sätt), snaps, skafferi, familj, delat, notiser, moderationsrader i system_events (BUT-2032), Storage; anmälningar användaren SJÄLV gjort: stängt ärende raderas, öppet behålls utan reporterId men med fritexten, tills ärendet stängs eller senast 180 d — sveps dagligen av sweepRetainedReporterReports, 2026-09-18) → efter Tier 1: receptägarens uid tas bort från andras betyg, betyget ligger kvar (BUT-2072); uid tas bort från andras kommentarer (ägare, delningslista) och egna gillamarkeringar raderas (BUT-2112) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
           "transport": "Admin SDK delete + write",
           "verified": true
         },
@@ -3609,7 +3609,7 @@
         {
           "from": "vm-recipe-list",
           "to": "svc-search",
-          "payload": "searchRecipes(filtered, query) — substrängmatchning på titel/beskrivning/ingredienser/instruktioner/personliga taggar, ENDAST över redan cachade recept",
+          "payload": "searchRecipes(filtered, query) → RecipeSearchMatcher, samma regel som veckomenyns receptdialog, relaterade recept, föreslå alternativ och delningsväljaren: varje sökord ska finnas någonstans i receptet, olika ord får träffa olika fält — titel, beskrivning, måltidstyp, ingredienser, instruktioner, kök, författare, personliga taggar och kokböcker, autotaggar efter egna ändringar (lagrat ord och visat namn) samt kost- och allergenfri-etiketter; accenter viks bort och ett tal matchar portioner, tid eller betyg. ENDAST över redan cachade recept",
           "transport": "method call",
           "verified": true
         },
@@ -4116,7 +4116,7 @@
         {
           "from": "vm-photo-import",
           "to": "svc-import-manager",
-          "payload": "saveSelectedRecipes → saveImportedRecipe (efter granskning)",
+          "payload": "saveSelectedRecipes → saveImportedRecipe (efter granskning); mängderna skrivs som vanliga bråk först (ImportFractions.recipe)",
           "transport": "method-call",
           "verified": true
         },
@@ -4204,7 +4204,7 @@
         {
           "from": "v-fran-sociala-medier",
           "to": "svc-import-manager",
-          "payload": "saveImportedRecipe (efter redigering)",
+          "payload": "Spara valda: saveSelectedRecipes → saveImportedRecipe; mängderna skrivs som vanliga bråk först (ImportFractions.recipe)",
           "transport": "method-call",
           "verified": true
         },
@@ -4759,7 +4759,7 @@
         {
           "from": "svc-menu-shopping-generator",
           "to": "svc-unified-shopping",
-          "payload": "skapa ny lista eller uppdatera veckans redan genererade lista (markör generatedForWeek), bevara ikryssat-status",
+          "payload": "skapa ny lista eller synka veckans redan genererade lista (markör generatedForWeek): orörda rader uppdateras, rader användaren ändrat eller bockat av och handskrivna rader lämnas, en rätt som tagits bort ur menyn tar sina orörda rader med sig (WeekListReconciler), och Ångra lägger tillbaka överskrivna rader. Därefter följer listan varje sparning av veckan, 2 s efter den sista (WeekListFollower), men bara en lista som redan har rader från veckoplanen",
           "transport": "method call",
           "verified": true
         },
@@ -6765,7 +6765,7 @@
         {
           "from": "vm-unified-shopping",
           "to": "svc-checkoff-pantry",
-          "payload": "onItemCheckedOff(userId, item, wasBought)",
+          "payload": "onItemCheckedOff(userId, item, wasBought); avbockningen väntar aldrig, och ett misslyckat skafferiskrivande loggas och visas som snackbar",
           "transport": "method-call (fire-and-forget)",
           "verified": true,
           "status": "live"
