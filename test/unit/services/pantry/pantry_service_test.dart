@@ -478,41 +478,6 @@ void main() {
     );
   });
 
-  group('PantryService.getExpiringSoon', () {
-    test(
-      'should return only items expiring within the window, ordered by date',
-      () async {
-        // Arrange: the repository filters by expiry cutoff, so we stub it
-        // to return the items that would survive the query — day+1 and day+2
-        // sorted ascending. day+5 and undated items never reach the service.
-        final today = DateTime.now();
-        DateTime day(int offset) => today.add(Duration(days: offset));
-
-        final day1 = _pantryItem(
-          id: 'd1',
-          ingredientName: 'Milk',
-          expiryDate: day(1),
-        );
-        final day2 = _pantryItem(
-          id: 'd2',
-          ingredientName: 'Yogurt',
-          expiryDate: day(2),
-        );
-
-        when(
-          () => mockPantryRepository.getExpiringSoon(userId, 3),
-        ).thenAnswer((_) async => [day1, day2]);
-
-        // Act
-        final result = await service.getExpiringSoon(userId, days: 3);
-
-        // Assert: only the in-window items, in ascending expiry order.
-        expect(result.map((i) => i.id).toList(), ['d1', 'd2']);
-        verify(() => mockPantryRepository.getExpiringSoon(userId, 3)).called(1);
-      },
-    );
-  });
-
   group('PantryService.restoreItem (BUT-954)', () {
     test(
       're-adds the removed item and returns it with the fresh document id',

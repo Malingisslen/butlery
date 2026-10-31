@@ -341,18 +341,6 @@ class PantryService extends BaseService {
     return _pantryRepository.watchAll(userId);
   }
 
-  Future<List<PantryItem>> getExpiringSoon(
-    String userId, {
-    int days = 3,
-  }) async {
-    return await executeServiceOperation<List<PantryItem>>(
-          () => _pantryRepository.getExpiringSoon(userId, days),
-          operationName: 'getExpiringSoon',
-          defaultValue: const [],
-        ) ??
-        const [];
-  }
-
   /// Scores [recipes] by pantry ingredient coverage. Recipes without
   /// `ingredientsNormalized` are skipped (pre-MODUL1 legacy). Callers
   /// holding a fresh pantry snapshot can pass it via [pantryItems] to

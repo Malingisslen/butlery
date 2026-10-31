@@ -189,20 +189,6 @@ class ShoppingRepositoryQueryModule {
     return readList(activeListId);
   }
 
-  /// Stream of user's personal lists
-  Stream<List<UnifiedShoppingList>> personalListsStream() {
-    try {
-      final uid = requireCurrentUserId();
-      return getUserCollection(uid)
-          .orderBy('updatedAt', descending: true)
-          .limit(20) // Limit personal lists to 20 most recent
-          .snapshots()
-          .map((snap) => snap.docs.map(fromFirestore).toList());
-    } catch (e) {
-      return const Stream.empty();
-    }
-  }
-
   /// Stream of collaborative lists where user is a member
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() {
     try {
