@@ -70,12 +70,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         onChanged: notifyListeners,
         scopeOn: _allergenScopeOn,
       );
-      // An entry whose recipe has not loaded yet is not judged, so the marks
-      // are recomputed once the recipe list arrives (cold start, web).
-      _recipesForMarksSub = _recipeService.stateStream.listen((_) {
-        if (!isDisposed) notifyListeners();
-      });
     }
+    // Allergen marks and dish titles both read the loaded recipes, so the
+    // calendar redraws when the recipe list arrives or a recipe changes.
+    _recipesForMarksSub = _recipeService.stateStream.listen((_) {
+      if (!isDisposed) notifyListeners();
+    });
   }
 
   static bool _never() => false;
@@ -458,6 +458,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       guarded: false,
     );
   }
+
+  /// What the calendar calls [entry]: the recipe's current title when it is
+  /// loaded. No read is made for it.
+  String entryTitle(WeeklyMenuPlanEntry entry) =>
+      entry.titleFor(_recipeService.getRecipeById(entry.recipeId));
 
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>

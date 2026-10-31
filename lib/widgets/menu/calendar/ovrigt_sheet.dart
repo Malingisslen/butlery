@@ -35,6 +35,7 @@ Future<OvrigtSheetResult?> showOvrigtSheet(
   BuildContext context, {
   required String dayName,
   required List<WeeklyMenuPlanEntry> entries,
+  required String Function(WeeklyMenuPlanEntry entry) titleOf,
 }) {
   return showButlerySheet<OvrigtSheetResult>(
     context: context,
@@ -84,7 +85,7 @@ Future<OvrigtSheetResult?> showOvrigtSheet(
                               children: [
                                 Expanded(
                                   child: Text(
-                                    entries[i].recipeTitle,
+                                    titleOf(entries[i]),
                                     style: AppTextStyles.labelLargeBold
                                         .copyWith(
                                           color: cs.onSurface,

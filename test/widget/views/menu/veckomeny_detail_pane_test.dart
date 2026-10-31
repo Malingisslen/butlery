@@ -322,6 +322,7 @@ void main() {
       pushed = null;
       service = _MockPlanService();
       recipes = _MockRecipeService();
+      when(() => recipes.stateStream).thenAnswer((_) => const Stream.empty());
       pasta = RecipeFactory.build(id: 'r-mon', title: 'Pasta');
       when(() => recipes.getRecipeById('r-mon')).thenReturn(pasta);
     });

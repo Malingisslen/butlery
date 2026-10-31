@@ -43,6 +43,8 @@ class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
 class _MockPlacementViewModel extends Mock implements MenuPlacementViewModel {}
 
+class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
+
 class _NoopUrlLauncher extends UrlLauncherPlatform
     with MockPlatformInterfaceMixin {
   @override
@@ -72,6 +74,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(DayOfWeek.mon);
     registerFallbackValue(MealSlot.ovrigt);
+    registerFallbackValue(_FakeEntry());
   });
 
   test('the premise: cs.primary is ink in both schemes, onSurface is not', () {
@@ -256,6 +259,10 @@ void main() {
         when(() => vm.isEligible(any(), any())).thenReturn(false);
         when(() => vm.selectedItem).thenReturn(null);
         when(() => vm.isSessionEntry(any())).thenReturn(true);
+        when(() => vm.entryTitle(any())).thenAnswer(
+          (i) =>
+              (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
+        );
 
         await tester.pumpWidget(
           _app(theme, SingleChildScrollView(child: PlacementGrid(vm: vm))),
