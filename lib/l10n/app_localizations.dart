@@ -1886,30 +1886,6 @@ abstract class AppLocalizations {
   /// **'Egna taggar'**
   String get recipePersonalTags;
 
-  /// No description provided for @recipeAnalysisFailed.
-  ///
-  /// In sv, this message translates to:
-  /// **'Analys misslyckades'**
-  String get recipeAnalysisFailed;
-
-  /// No description provided for @recipeAnalyzing.
-  ///
-  /// In sv, this message translates to:
-  /// **'Analyseras …'**
-  String get recipeAnalyzing;
-
-  /// No description provided for @recipeAnalysisFailedA11y.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingrediensanalys misslyckades'**
-  String get recipeAnalysisFailedA11y;
-
-  /// No description provided for @recipeAnalyzingA11y.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingredienser analyseras'**
-  String get recipeAnalyzingA11y;
-
   /// No description provided for @recipeSearchHint.
   ///
   /// In sv, this message translates to:
@@ -3637,18 +3613,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa på'**
   String get allergenDisplayTitle;
-
-  /// No description provided for @allergenDisplayOnCardsTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Receptkort'**
-  String get allergenDisplayOnCardsTitle;
-
-  /// No description provided for @allergenDisplayOnCardsSubtitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa allergenstatus på receptkort i listor'**
-  String get allergenDisplayOnCardsSubtitle;
 
   /// No description provided for @allergenDisplayOnDetailTitle.
   ///
