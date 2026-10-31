@@ -11651,6 +11651,50 @@
       }
     }
   },
+  "shoppingFollowNotice": "Uppdaterad från veckomenyn: {changes}",
+  "@shoppingFollowNotice": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFollowAdded": "{count, plural, =1{1 ny} other{{count} nya}}",
+  "@shoppingFollowAdded": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowChanged": "{count, plural, =1{1 ändrad} other{{count} ändrade}}",
+  "@shoppingFollowChanged": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowRemoved": "{count, plural, =1{1 borttagen} other{{count} borttagna}}",
+  "@shoppingFollowRemoved": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowNoticeDismiss": "Stäng meddelandet",
+  "@shoppingFollowNoticeDismiss": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button."
+  },
+  "shoppingFollowNoticeUndoFailed": "Kunde inte ångra uppdateringen",
+  "@shoppingFollowNoticeUndoFailed": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed."
+  },
   "shoppingMergeUndoFailed": "Kunde inte ångra sammanslagningen",
   "@shoppingMergeUndoFailed": {
     "description": "P6-U02: failure, what happened."

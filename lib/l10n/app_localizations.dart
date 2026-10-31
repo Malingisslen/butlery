@@ -24568,6 +24568,42 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.} other{Listan hade ändrats på en annan enhet. Dina {count} varor lades till och inget skrevs över.}}'**
   String shoppingMergeConcurrentChange(int count);
 
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdaterad från veckomenyn: {changes}'**
+  String shoppingFollowNotice(String changes);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ny} other{{count} nya}}'**
+  String shoppingFollowAdded(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändrad} other{{count} ändrade}}'**
+  String shoppingFollowChanged(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 borttagen} other{{count} borttagna}}'**
+  String shoppingFollowRemoved(int count);
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng meddelandet'**
+  String get shoppingFollowNoticeDismiss;
+
+  /// Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra uppdateringen'**
+  String get shoppingFollowNoticeUndoFailed;
+
   /// P6-U02: failure, what happened.
   ///
   /// In sv, this message translates to:

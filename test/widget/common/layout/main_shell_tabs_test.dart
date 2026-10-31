@@ -11,6 +11,7 @@ import 'package:butlery/core/keyboard/app_actions.dart'
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/main_tab_shown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -124,5 +125,39 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('test-rail-${Routes.more}')));
     await tester.pump();
     expect(_shown(tester), LayoutScaffolds.moreTab);
+  });
+
+  testWidgets('only the chosen tab is told it is on screen', (tester) async {
+    _phone(tester);
+    final seen = <int, bool>{};
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.lightTheme,
+        home: LayoutScaffolds.mainMenu(
+          tabBuilder: (i) => Builder(
+            builder: (context) {
+              seen[i] = MainTabShown.of(context);
+              return Text(_names[i]);
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(seen, {0: true, 1: false, 2: false, 3: false});
+
+    await tester.tap(
+      find.byKey(const ValueKey('test-nav-${Routes.shoppingList}')),
+    );
+    await tester.pump();
+    expect(seen, {0: false, 1: false, 2: true, 3: false});
   });
 }

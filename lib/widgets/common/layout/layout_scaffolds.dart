@@ -14,6 +14,7 @@ import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:butlery/widgets/common/layout/main_tab_shown.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -194,7 +195,13 @@ class _MainMenuLayoutState extends State<_MainMenuLayout>
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: List.generate(LayoutScaffolds._tabCount, _buildTab),
+                children: List.generate(
+                  LayoutScaffolds._tabCount,
+                  (index) => MainTabShown(
+                    shown: index == _selectedIndex,
+                    child: _buildTab(index),
+                  ),
+                ),
               ),
             ),
           ],

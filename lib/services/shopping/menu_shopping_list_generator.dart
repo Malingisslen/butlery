@@ -20,64 +20,20 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
+import 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
+import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/services/shopping/week_list_follower.dart';
 import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
+export 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
 export 'package:butlery/services/shopping/menu_shopping_merge.dart';
+export 'package:butlery/services/shopping/week_list_follow_notice.dart'
+    show WeekListFollowNotice;
 export 'package:butlery/services/shopping/week_list_reconciler.dart'
     show ShoppingRowOrigin;
-
-/// Outcome of a week→shopping-list generation, for the snackbar/UI.
-///
-/// A null return from [MenuShoppingListGenerator.generateForWeek] means
-/// FAILURE (swallowed by the service error path) — the no-recipes case is
-/// the explicit [MenuShoppingGenerationResult.nothingToGenerate], so the
-/// view can show the right message for each.
-class MenuShoppingGenerationResult {
-  final String listId;
-  final String listName;
-  final int itemCount;
-  final int recipeCount;
-
-  /// Recipe ids on the plan whose Recipe could not be resolved (deleted or
-  /// not yet cached). Logged; carried for observability.
-  final int unresolvedRecipes;
-
-  /// How many rows the pantry touched: left off because enough is at home,
-  /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
-  /// (produktbeslut PQ-11 = A). It replaced
-  /// the BUT-1279 count of whole staple rows.
-  final int excludedStaples;
-
-  /// BUT-1613: how many planned meals had their quantities scaled to who's
-  /// home (present count differs from the recipe's serving count). Surfaced so
-  /// the UI can explain why amounts changed instead of the shrink reading as a
-  /// bug. 0 = nothing was scaled (list matches authored amounts).
-  final int scaledMeals;
-
-  const MenuShoppingGenerationResult({
-    required this.listId,
-    required this.listName,
-    required this.itemCount,
-    required this.recipeCount,
-    required this.unresolvedRecipes,
-    this.excludedStaples = 0,
-    this.scaledMeals = 0,
-  });
-
-  static const nothingToGenerate = MenuShoppingGenerationResult(
-    listId: '',
-    listName: '',
-    itemCount: 0,
-    recipeCount: 0,
-    unresolvedRecipes: 0,
-  );
-
-  bool get isEmptyPlan => listId.isEmpty;
-}
 
 /// BUT-956: generates a shopping list from the weekly menu. Deterministic,
 /// zero LLM.
@@ -104,9 +60,11 @@ class MenuShoppingGenerationResult {
 /// ([followMenuSaves]).
 class MenuShoppingListGenerator extends BaseService {
   MenuShoppingListGenerator({SharedPreferences? preferences})
-    : _optionsMemory = MenuShoppingOptionsMemory(preferences);
+    : _optionsMemory = MenuShoppingOptionsMemory(preferences),
+      _notices = WeekListFollowNoticeStore(preferences);
 
   final MenuShoppingOptionsMemory _optionsMemory;
+  final WeekListFollowNoticeStore _notices;
 
   @override
   String get serviceName => 'MenuShoppingListGenerator';
@@ -374,13 +332,26 @@ class MenuShoppingListGenerator extends BaseService {
   /// rows it changed or took off, as they were. Rows changed or added since, here or on
   /// another device, are left alone. A list the merge created that is empty
   /// again is deleted. Returns whether the list is back.
-  Future<bool> undo(MenuShoppingMergeReceipt receipt) async {
+  Future<bool> undo(MenuShoppingMergeReceipt receipt) =>
+      _undoOn(receipt.listId, (_) => receipt);
+
+  Future<bool> _undoOn(
+    String listId,
+    MenuShoppingMergeReceipt Function(UnifiedShoppingList list) receiptFor,
+  ) async {
     final result = await executeServiceOperation<bool>(() async {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final list = shoppingService.lists
-          .where((l) => l.id == receipt.listId)
+          .where((l) => l.id == listId)
           .firstOrNull;
       if (list == null) return false;
+      final receipt = receiptFor(list);
+      // Everything the follows wrote was changed or ticked since.
+      if (receipt.addedItemIds.isEmpty &&
+          receipt.removedItems.isEmpty &&
+          receipt.changedItems.isEmpty) {
+        return true;
+      }
       final added = receipt.addedItemIds.toSet();
       final left =
           list.items.where((item) => !added.contains(item.id)).length +
@@ -414,6 +385,9 @@ class MenuShoppingListGenerator extends BaseService {
   /// The follow for one saved week. Only a list that already holds rows the
   /// week plan wrote follows it. An emptied week still syncs, so the rows of
   /// the dishes taken off come off too. Null when nothing was written.
+  ///
+  /// What it wrote is kept for the notice the list shows the next time it is
+  /// opened ([takeFollowNotice]).
   Future<MenuShoppingMergeReceipt?> syncFollowedWeek(DateTime week) async {
     final list = _weekList(week);
     if (list == null ||
@@ -431,11 +405,36 @@ class MenuShoppingListGenerator extends BaseService {
         : const MenuShoppingPantry.read([]);
     // Without the pantry every covered row would come back at full amount.
     if (pantry.unavailable) return null;
-    return apply(preview(source, pantry, options), activate: false);
+    final receipt = await apply(
+      preview(source, pantry, options),
+      activate: false,
+    );
+    // A follow still running at sign-out must not write the user's rows back
+    // after the sign-out cleared them.
+    if (receipt != null && !_disposed) await _notices.record(receipt);
+    return receipt;
   }
+
+  /// What the follows did to [listId] since it was last opened, taken off
+  /// the device: a notice is shown once.
+  Future<WeekListFollowNotice?> takeFollowNotice(String listId) =>
+      _notices.take(listId);
+
+  /// Puts back a notice taken by [takeFollowNotice] that was never shown.
+  Future<void> putBackFollowNotice(WeekListFollowNotice notice) async {
+    if (!_disposed) await _notices.putBack(notice);
+  }
+
+  /// Ångra for [notice]: the rows the follows wrote go back to how they were,
+  /// except rows changed or ticked since. Returns whether the list is back.
+  Future<bool> undoFollow(WeekListFollowNotice notice) =>
+      _undoOn(notice.listId, notice.undoAgainst);
+
+  var _disposed = false;
 
   @override
   Future<void> onDispose() async {
+    _disposed = true;
     await _follower?.dispose();
     _follower = null;
   }
