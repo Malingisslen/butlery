@@ -310,6 +310,7 @@ class MenuShoppingListGenerator extends BaseService {
               unit: line.unit,
               category: line.category,
               note: _noteFor(line),
+              ingredientId: line.ingredientId,
             ),
           ),
       ];

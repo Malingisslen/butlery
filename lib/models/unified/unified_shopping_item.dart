@@ -274,6 +274,13 @@ class UnifiedShoppingItem {
   /// [ShoppingRowSnapshot].
   final ShoppingRowSnapshot? previous;
 
+  /// The ingredient registry entry this row is, carried from the recipe line
+  /// it came from (`RecipeIngredient.ingredientId`), so the pantry can match
+  /// "lök" here to its "gul lök" by id. Null for a row typed by hand, a row
+  /// whose recipe lines disagreed, and every row saved before rows carried
+  /// it; those match by name.
+  final String? ingredientId;
+
   /// Creates a new unified shopping item with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping item initialization with support for both basic
   /// personal shopping and collaborative shared shopping experiences. All collaborative metadata
@@ -319,6 +326,7 @@ class UnifiedShoppingItem {
     this.assignedToDisplayName,
     this.assignedAt,
     this.previous,
+    this.ingredientId,
   }) : id = id ?? const Uuid().v4();
 
   /// Factory constructors for simplified shopping item creation with specific use cases.
@@ -525,6 +533,7 @@ class UnifiedShoppingItem {
     String? lastModifiedByUserId,
     String? lastModifiedByDisplayName,
     DateTime? lastModifiedAt,
+    String? ingredientId,
   }) {
     // Effective bought state — copyWith callers editing an already-bought
     // item's name/amount don't pass `bought`, so keying purchase attribution
@@ -567,6 +576,10 @@ class UnifiedShoppingItem {
       assignedToDisplayName: assignedToDisplayName,
       assignedAt: assignedAt,
       previous: previous,
+      // A renamed row may be another product, so it falls back to its name.
+      ingredientId:
+          ingredientId ??
+          (name == null || name == this.name ? this.ingredientId : null),
     );
   }
 
@@ -597,6 +610,7 @@ class UnifiedShoppingItem {
       assignedToDisplayName: assignedToDisplayName,
       assignedAt: assignedAt,
       previous: snapshot,
+      ingredientId: ingredientId,
     );
   }
 
@@ -633,6 +647,7 @@ class UnifiedShoppingItem {
       assignedToDisplayName: displayName,
       assignedAt: now,
       previous: previous,
+      ingredientId: ingredientId,
     );
   }
 
@@ -668,6 +683,7 @@ class UnifiedShoppingItem {
       assignedToDisplayName: null,
       assignedAt: null,
       previous: previous,
+      ingredientId: ingredientId,
     );
   }
 
@@ -710,6 +726,7 @@ class UnifiedShoppingItem {
       assignedToDisplayName: assignedToDisplayName,
       assignedAt: assignedAt,
       previous: previous,
+      ingredientId: ingredientId,
     );
   }
 
@@ -743,6 +760,7 @@ class UnifiedShoppingItem {
       'assignedToDisplayName': assignedToDisplayName,
       'assignedAt': assignedAt?.toIso8601String(),
       'previous': previous?.toJson(),
+      'ingredientId': ingredientId,
     };
   }
 
@@ -778,6 +796,7 @@ class UnifiedShoppingItem {
       'assignedToDisplayName': assignedToDisplayName,
       'assignedAt': assignedAt != null ? Timestamp.fromDate(assignedAt!) : null,
       'previous': previous?.toFirestore(),
+      'ingredientId': ingredientId,
     };
   }
 
@@ -845,6 +864,7 @@ class UnifiedShoppingItem {
         'previous',
         ShoppingRowSnapshot.fromMap,
       ),
+      ingredientId: SerializationUtils.safeNullableString(json, 'ingredientId'),
     );
   }
 
@@ -913,6 +933,7 @@ class UnifiedShoppingItem {
         'previous',
         ShoppingRowSnapshot.fromMap,
       ),
+      ingredientId: SerializationUtils.safeNullableString(data, 'ingredientId'),
     );
   }
 

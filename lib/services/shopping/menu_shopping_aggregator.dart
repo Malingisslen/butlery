@@ -28,6 +28,10 @@ class AggregatedShoppingItem {
   /// be converted into [unit] ("100 g" + "3 dl"), kept visible on the one row.
   final List<({double amount, String unit})> extraAmounts;
 
+  /// The registry entry every source line with an id agreed on, or null
+  /// when none had one or two disagreed.
+  final String? ingredientId;
+
   const AggregatedShoppingItem({
     required this.name,
     this.amount,
@@ -35,6 +39,7 @@ class AggregatedShoppingItem {
     required this.category,
     required this.sourceCount,
     this.extraAmounts = const [],
+    this.ingredientId,
   });
 }
 
@@ -125,6 +130,7 @@ class MenuShoppingAggregator {
           ),
         );
         acc.sourceCount++;
+        if (entry.ingredientId case final id?) acc.ingredientIds.add(id);
         if (hasAmount) {
           // BUT-1613: scale the numeric amount by the placement factor. Never
           // round here — the summed double is displayed downstream; a tiny
@@ -162,6 +168,7 @@ class MenuShoppingAggregator {
                 category: IngredientCategorizer.categorize(acc.displayName),
                 sourceCount: acc.sourceCount,
                 extraAmounts: acc.extraAmounts,
+                ingredientId: acc.ingredientId,
               ),
             )
             .toList()
@@ -208,6 +215,7 @@ class MenuShoppingAggregator {
       ..sum = primary.sum
       ..hasAmount = primary.hasAmount
       ..sourceCount = group.fold(0, (n, r) => n + r.sourceCount)
+      ..ingredientIds.addAll(group.expand((r) => r.ingredientIds))
       ..extraAmounts = [
         for (final r in withAmount.skip(1)) (amount: r.sum, unit: r.unit),
       ];
@@ -253,6 +261,7 @@ class MenuShoppingAggregator {
       );
       group.sourceCount += acc.sourceCount;
       group.memberUnits.add(acc.unit);
+      group.ingredientIds.addAll(acc.ingredientIds);
     }
 
     final result = <_Accumulator>[...passthrough];
@@ -314,6 +323,12 @@ class _Accumulator {
   bool hasAmount = false;
   int sourceCount = 0;
   List<({double amount, String unit})> extraAmounts = const [];
+
+  /// Every registry id the joined lines carried.
+  final Set<String> ingredientIds = {};
+
+  String? get ingredientId =>
+      ingredientIds.length == 1 ? ingredientIds.single : null;
 }
 
 /// BUT-1278: in-progress merge of compatible-unit lines for one ingredient,
@@ -331,6 +346,7 @@ class _MergeGroup {
 
   /// The unit each joined row was written in, one entry per row.
   final List<String> memberUnits = [];
+  final Set<String> ingredientIds = {};
 
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
@@ -346,7 +362,8 @@ class _MergeGroup {
       )
       ..sum = display.quantity
       ..hasAmount = true
-      ..sourceCount = sourceCount;
+      ..sourceCount = sourceCount
+      ..ingredientIds.addAll(ingredientIds);
   }
 
   static const _spoonMl = {'msk': 15.0, 'tsk': 5.0, 'krm': 1.0};

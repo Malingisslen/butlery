@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports
 import 'package:butlery/utils/text/shopping_list_generator.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Test infrastructure
@@ -126,6 +127,83 @@ void main() {
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('registry id from the recipe line', () {
+      Recipe withLines(
+        List<String> ingredients,
+        List<RecipeIngredient> structured,
+      ) => Recipe(
+        core: RecipeCore(
+          title: 'Test',
+          description: '',
+          ingredients: ingredients,
+          structuredIngredients: structured,
+          instructions: const [],
+          mealType: '',
+        ),
+        type: RecipeType.personal,
+      );
+
+      test('each shopping row carries the id of its own line', () {
+        final recipe = withLines(
+          ['2 dl mellanmjölk', '500 g bringa', '1 hackad lök'],
+          const [
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'mellanmjölk',
+              raw: '2 dl mellanmjölk',
+              ingredientId: 'milk',
+            ),
+            RecipeIngredient(
+              amount: 500,
+              unit: 'g',
+              name: 'bringa',
+              raw: '500 g bringa',
+            ),
+            RecipeIngredient(
+              amount: 1,
+              name: 'lök',
+              raw: '1 hackad lök',
+              ingredientId: 'onion',
+            ),
+          ],
+        );
+
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+        );
+
+        expect(items.map((i) => i.ingredientId), ['milk', null, 'onion']);
+      });
+
+      test('a recipe without stored lines gives rows without ids', () {
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          _makeRecipe(['2 dl mjölk', '3 ägg']),
+        );
+        expect(items, hasLength(2));
+        expect(items.map((i) => i.ingredientId), [null, null]);
+      });
+
+      test('stored lines that no longer match the text give no ids', () {
+        final recipe = withLines(
+          ['4 dl mellanmjölk'],
+          const [
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'mellanmjölk',
+              raw: '2 dl mellanmjölk',
+              ingredientId: 'milk',
+            ),
+          ],
+        );
+        final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+          recipe,
+        );
+        expect(items.single.ingredientId, isNull);
+      });
     });
 
     group('Basic Shopping List Generation', () {

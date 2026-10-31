@@ -812,4 +812,87 @@ void main() {
       expect(items.map((i) => i.amount), [3, 3]);
     });
   });
+
+  group('registry id on merged lines', () {
+    RecipeIngredient ing(
+      double amount,
+      String unit,
+      String name, {
+      String? id,
+    }) => RecipeIngredient(
+      amount: amount,
+      unit: unit,
+      name: name,
+      raw: '$amount $unit $name',
+      ingredientId: id,
+    );
+
+    List<AggregatedShoppingItem> aggregate(List<RecipeIngredient> lines) =>
+        MenuShoppingAggregator.aggregate([
+          for (final (i, line) in lines.indexed) _p(_recipe('r$i', [line])),
+        ]);
+
+    test('lines that agree on the id keep it', () {
+      final items = aggregate([
+        ing(2, 'dl', 'mellanmjölk', id: 'milk'),
+        ing(1, 'dl', 'mellanmjölk', id: 'milk'),
+      ]);
+      expect(items.single.amount, 3);
+      expect(items.single.ingredientId, 'milk');
+    });
+
+    test('a line without an id does not veto the one that has it', () {
+      final items = aggregate([
+        ing(2, 'dl', 'mellanmjölk'),
+        ing(1, 'dl', 'mellanmjölk', id: 'milk'),
+      ]);
+      expect(items.single.sourceCount, 2);
+      expect(items.single.ingredientId, 'milk');
+    });
+
+    test('lines with no id at all stay without one', () {
+      final items = aggregate([ing(2, 'dl', 'mjölk'), ing(1, 'dl', 'mjölk')]);
+      expect(items.single.ingredientId, isNull);
+    });
+
+    test('two different ids on one merged row give no id', () {
+      // "bringa" is one name key for beef and lamb; guessing either would
+      // let the pantry cover a cut the recipe does not use.
+      final items = aggregate([
+        ing(500, 'g', 'bringa', id: 'beef-brisket'),
+        ing(300, 'g', 'bringa', id: 'lamb-brisket'),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.ingredientId, isNull);
+    });
+
+    test('the id survives converting dl and ml into one amount', () {
+      final items = aggregate([
+        ing(2, 'dl', 'mellanmjölk', id: 'milk'),
+        ing(50, 'ml', 'mellanmjölk', id: 'milk'),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.amount, closeTo(2.5, 1e-9));
+      expect(items.single.ingredientId, 'milk');
+    });
+
+    test('the id survives the weight-and-volume fold', () {
+      final items = aggregate([
+        ing(350, 'g', 'vetemjöl', id: 'wheat-flour'),
+        ing(3, 'dl', 'vetemjöl'),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.extraAmounts, [(amount: 3.0, unit: 'dl')]);
+      expect(items.single.ingredientId, 'wheat-flour');
+    });
+
+    test('the fold does not hide a disagreement', () {
+      final items = aggregate([
+        ing(350, 'g', 'bringa', id: 'beef-brisket'),
+        ing(3, 'dl', 'bringa', id: 'lamb-brisket'),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.ingredientId, isNull);
+    });
+  });
 }

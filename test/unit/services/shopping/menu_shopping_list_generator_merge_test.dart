@@ -66,13 +66,19 @@ MenuShoppingSource _source() => MenuShoppingListGenerator.sourceForMenu({
   ],
 }, _date);
 
-PantryItem _pantry(String name, double? quantity, String unit) => PantryItem(
+PantryItem _pantry(
+  String name,
+  double? quantity,
+  String unit, {
+  String? ingredientId,
+}) => PantryItem(
   id: 'p-$name',
   ingredientName: name,
   quantity: quantity,
   unit: unit,
   location: PantryLocation.pantry,
   addedAt: DateTime(2026, 6, 1),
+  ingredientId: ingredientId,
 );
 
 UnifiedShoppingList _weekList({
@@ -205,6 +211,97 @@ void main() {
       expect(merge.coveredAtHome, ['lök']);
     });
 
+    group('pantry match by registry id', () {
+      // "rödlök" and "lök" have different name keys (rodlok / lok), so only
+      // a shared id can make the pantry cover the row.
+      MenuShoppingSource sourceFor(String? recipeLineId) =>
+          MenuShoppingListGenerator.sourceForMenu({
+            'Middag': [
+              _recipe('r1', [
+                RecipeIngredient(
+                  amount: 1,
+                  unit: 'st',
+                  name: 'rödlök',
+                  raw: '1 st rödlök',
+                  ingredientId: recipeLineId,
+                ),
+              ]),
+            ],
+          }, _date);
+
+      MenuShoppingMergePreview previewWith(
+        String? recipeLineId,
+        String? pantryId,
+      ) => MenuShoppingListGenerator.preview(
+        sourceFor(recipeLineId),
+        MenuShoppingPantry.read([
+          _pantry('lök', 2, 'st', ingredientId: pantryId),
+        ]),
+        const MenuShoppingMergeOptions(),
+      );
+
+      test('the same id covers the row although the names differ', () {
+        final merge = previewWith('onion', 'onion');
+        expect(merge.lines, isEmpty);
+        expect(merge.coveredAtHome, ['rödlök']);
+      });
+
+      test('without ids the differing names do not match', () {
+        final merge = previewWith(null, null);
+        expect(merge.lines.single.name, 'rödlök');
+        expect(merge.atHomeCount, 0);
+      });
+
+      test('an id on only one side does not match', () {
+        expect(previewWith('onion', null).atHomeCount, 0);
+        expect(previewWith(null, 'onion').atHomeCount, 0);
+      });
+
+      test('different ids with different names do not match', () {
+        expect(previewWith('onion', 'leek').atHomeCount, 0);
+      });
+
+      test('the merge line carries the id for the list row', () {
+        expect(previewWith('onion', null).lines.single.ingredientId, 'onion');
+      });
+    });
+
+    group('toBuy (recipe "Lägg varor i inköpslistan")', () {
+      test('the same id covers the row although the names differ', () {
+        final left = MenuShoppingMergePlanner.toBuy(
+          name: 'rödlök',
+          amount: 1,
+          unit: 'st',
+          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
+          ingredientId: 'onion',
+        );
+        expect(left.covered, isTrue);
+      });
+
+      test('without the row id the differing names stay unmatched', () {
+        final left = MenuShoppingMergePlanner.toBuy(
+          name: 'rödlök',
+          amount: 1,
+          unit: 'st',
+          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
+        );
+        expect(left.covered, isFalse);
+        expect(left.amount, 1);
+      });
+
+      test('an id match still subtracts only what is at home', () {
+        final left = MenuShoppingMergePlanner.toBuy(
+          name: 'rödlök',
+          amount: 3,
+          unit: 'st',
+          pantry: [_pantry('lök', 2, 'st', ingredientId: 'onion')],
+          ingredientId: 'onion',
+        );
+        expect(left.covered, isFalse);
+        expect(left.amount, closeTo(1, 1e-9));
+      });
+    });
+
     test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
         '1 dl on the list (PQ-11 = A)', () {
       final merge = MenuShoppingListGenerator.preview(
@@ -289,6 +386,52 @@ void main() {
       final back = writes.last;
       expect(back.items.map((i) => i.id), ['own', 'earlier']);
       expect(back.menuItemIds, ['earlier']);
+    });
+
+    test('a written row carries the registry id of its recipe lines, and a '
+        'row whose lines disagree carries none', () async {
+      const lok = RecipeIngredient(
+        amount: 1,
+        unit: 'st',
+        name: 'gul lök',
+        raw: '1 st gul lök',
+        ingredientId: 'onion',
+      );
+      RecipeIngredient bringa(String id) => RecipeIngredient(
+        amount: 500,
+        unit: 'g',
+        name: 'bringa',
+        raw: '500 g bringa',
+        ingredientId: id,
+      );
+      shopping.setShoppingState(
+        lists: [_weekList()],
+        personalLists: [_weekList()],
+      );
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [lok, bringa('beef-brisket')]),
+          _recipe('r2', [lok, bringa('lamb-brisket')]),
+        ],
+      }, _date);
+
+      await generator.apply(
+        MenuShoppingListGenerator.preview(
+          source,
+          const MenuShoppingPantry.read([]),
+          const MenuShoppingMergeOptions(),
+        ),
+      );
+
+      final written = writes.single.items;
+      expect(
+        written.singleWhere((i) => i.name == 'gul lök').ingredientId,
+        'onion',
+      );
+      expect(
+        written.singleWhere((i) => i.name == 'bringa').ingredientId,
+        isNull,
+      );
     });
 
     test(
