@@ -10,6 +10,10 @@ void main() {
       ('gul lök (ca 1 st)', 'gul lök'),
       ('finhackad persilja', 'persilja'),
       ('stora potatisar', 'potatis'),
+      ('Arla mellanmjölk', 'mellanmjölk'),
+      ('krossade tomater Mutti', 'krossade tomater'),
+      ('ICA Basic gul lök', 'lök'),
+      ('Zeta kapris', 'kapris'),
     ];
     for (final (a, b) in same) {
       test('"$a" is "$b"', () => expect(IngredientIdentity.same(a, b), isTrue));
@@ -23,6 +27,7 @@ void main() {
       ('soltorkade tomater', 'tomater'),
       ('torkade tomater', 'tomater'),
       ('krossade tomater', 'tomat'),
+      ('Felix ketchup', 'Felix'),
     ];
     for (final (a, b) in different) {
       test(

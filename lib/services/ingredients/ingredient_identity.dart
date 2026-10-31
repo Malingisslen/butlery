@@ -1,3 +1,4 @@
+import 'package:butlery/constants/grocery_brands.dart';
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
@@ -76,8 +77,18 @@ class IngredientIdentity {
         )
         .toList();
     // A name made only of descriptors ("stor") is still a name.
-    final base = kept.isEmpty ? words : kept;
+    var base = kept.isEmpty ? words : kept;
     if (base.isEmpty) return '';
+    // "Arla mellanmjölk" on the list is the mellanmjölk the pantry holds,
+    // as the registry lookup already treats it.
+    final folded = SwedishCharacterNormalizer.normalize(base.join(' '));
+    final unbranded = GroceryBrands.strip(folded);
+    if (unbranded != null) {
+      final brandWords = base.length - unbranded.split(' ').length;
+      base = folded.endsWith(unbranded)
+          ? base.sublist(brandWords)
+          : base.sublist(0, base.length - brandWords);
+    }
     // Only the head noun of a compound phrase carries the plural.
     base[base.length - 1] = SwedishPluralization.normalizeToSingular(
       base.last,
