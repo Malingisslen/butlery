@@ -17413,5 +17413,102 @@
         "type": "String"
       }
     }
+  },
+  "cookedPantryTitle": "Take it out of the pantry?",
+  "@cookedPantryTitle": {
+    "description": "Title of the sheet offered after a recipe is marked as cooked."
+  },
+  "cookedPantrySubtitle": "Pantry items the recipe uses, for {portions, plural, =1{1 serving} other{{portions} servings}}.",
+  "@cookedPantrySubtitle": {
+    "description": "Subtitle of the cooked-recipe pantry sheet.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryHasLeft": "have {have}, {left} left",
+  "@cookedPantryHasLeft": {
+    "description": "Grey line under a pantry row in the cooked sheet: what the row holds and what remains.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryHasRemoved": "have {have}, removed from the pantry",
+  "@cookedPantryHasRemoved": {
+    "description": "Grey line under a pantry row that the take empties.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantrySkip": "Skip",
+  "@cookedPantrySkip": {
+    "description": "Outlined button in the cooked pantry sheet."
+  },
+  "cookedPantryConfirm": "{count, plural, =1{Take out 1 item} other{Take out {count} items}}",
+  "@cookedPantryConfirm": {
+    "description": "Primary button in the cooked pantry sheet; disabled at zero.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryTaken": "{count, plural, =1{1 item} other{{count} items}} taken out of the pantry",
+  "@cookedPantryTaken": {
+    "description": "Snackbar after the take; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryFailed": "Could not take everything out of the pantry. What was taken can be undone.",
+  "@cookedPantryFailed": {
+    "description": "Failure snackbar when a pantry write was refused."
+  },
+  "cookedPantryUndoFailed": "Could not undo the pantry take-out",
+  "@cookedPantryUndoFailed": {
+    "description": "Failure snackbar when Ångra could not write back."
+  },
+  "cookedPantryEditTitle": "How much {name}?",
+  "@cookedPantryEditTitle": {
+    "description": "Title of the dialog that edits the amount to take.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryRowSemantics": "{name}, take out {amount}",
+  "@cookedPantryRowSemantics": {
+    "description": "Screen-reader label of a row in the cooked pantry sheet.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryAmountSemantics": "Change the amount for {name}, now {amount}",
+  "@cookedPantryAmountSemantics": {
+    "description": "Screen-reader label of the amount box in a cooked pantry row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
   }
 }

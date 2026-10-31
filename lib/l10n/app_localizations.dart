@@ -32001,6 +32001,78 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte lägga {name} i skafferiet.'**
   String shoppingPantryAddFailed(String name);
+
+  /// Title of the sheet offered after a recipe is marked as cooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dra av från skafferiet?'**
+  String get cookedPantryTitle;
+
+  /// Subtitle of the cooked-recipe pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varor i skafferiet som receptet använder, för {portions, plural, =1{1 portion} other{{portions} portioner}}.'**
+  String cookedPantrySubtitle(int portions);
+
+  /// Grey line under a pantry row in the cooked sheet: what the row holds and what remains.
+  ///
+  /// In sv, this message translates to:
+  /// **'har {have}, kvar {left}'**
+  String cookedPantryHasLeft(String have, String left);
+
+  /// Grey line under a pantry row that the take empties.
+  ///
+  /// In sv, this message translates to:
+  /// **'har {have}, tas bort ur skafferiet'**
+  String cookedPantryHasRemoved(String have);
+
+  /// Outlined button in the cooked pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hoppa över'**
+  String get cookedPantrySkip;
+
+  /// Primary button in the cooked pantry sheet; disabled at zero.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Dra av 1 vara} other{Dra av {count} varor}}'**
+  String cookedPantryConfirm(int count);
+
+  /// Snackbar after the take; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara dragen} other{{count} varor dragna}} från skafferiet'**
+  String cookedPantryTaken(int count);
+
+  /// Failure snackbar when a pantry write was refused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte dra av allt från skafferiet. Det som hann dras av kan ångras.'**
+  String get cookedPantryFailed;
+
+  /// Failure snackbar when Ångra could not write back.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra avdraget i skafferiet'**
+  String get cookedPantryUndoFailed;
+
+  /// Title of the dialog that edits the amount to take.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur mycket {name}?'**
+  String cookedPantryEditTitle(String name);
+
+  /// Screen-reader label of a row in the cooked pantry sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}, dra av {amount}'**
+  String cookedPantryRowSemantics(String name, String amount);
+
+  /// Screen-reader label of the amount box in a cooked pantry row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra mängd för {name}, nu {amount}'**
+  String cookedPantryAmountSemantics(String name, String amount);
 }
 
 class _AppLocalizationsDelegate

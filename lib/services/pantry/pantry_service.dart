@@ -10,6 +10,7 @@ import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
+import 'package:butlery/services/pantry/cooked_pantry_plan.dart';
 
 /// Business logic layer for the pantry ("skafferi") feature.
 class PantryService extends BaseService {
@@ -262,6 +263,54 @@ class PantryService extends BaseService {
       defaultValue: false,
     );
     return written ?? false;
+  }
+
+  /// Kärnflöde steg 9C: takes what a cooked recipe used out of the pantry.
+  /// A take that empties its row removes the row. A refused write stops the
+  /// pass and throws [CookedPantryTakeFailed], which carries the takes
+  /// already written so Ångra can still put them back.
+  Future<List<CookedPantryTake>> takeCooked(
+    String userId,
+    List<CookedPantryTake> takes,
+  ) async {
+    final written = <CookedPantryTake>[];
+    for (final take in takes) {
+      try {
+        if (take.emptiesRow) {
+          await _pantryRepository.remove(userId, take.item.id);
+        } else {
+          await _pantryRepository.adjustQuantity(
+            userId,
+            take.item.id,
+            -take.amount,
+          );
+        }
+      } catch (e) {
+        throw CookedPantryTakeFailed(List.unmodifiable(written), e);
+      }
+      written.add(take);
+    }
+    return List.unmodifiable(written);
+  }
+
+  /// Ångra for [takeCooked]: a removed row is written back whole, under its
+  /// own id, and a lessened row gets its amount back as a relative change,
+  /// so a purchase checked off meanwhile is kept.
+  Future<void> undoTakeCooked(
+    String userId,
+    List<CookedPantryTake> written,
+  ) async {
+    for (final take in written) {
+      if (take.emptiesRow) {
+        await _pantryRepository.add(userId, take.item);
+      } else {
+        await _pantryRepository.adjustQuantity(
+          userId,
+          take.item.id,
+          take.amount,
+        );
+      }
+    }
   }
 
   /// Throws when the delete is refused, so the row is not dropped from the

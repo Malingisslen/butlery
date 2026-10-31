@@ -18,6 +18,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
+import 'package:butlery/views/pantry/cooked_pantry_flow.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -134,8 +135,12 @@ class RecipeManagementHandler {
     }
   }
 
-  /// Mark recipe as cooked
-  static Future<void> markAsCooked(BuildContext context) async {
+  /// Mark recipe as cooked, then offer to take what it used out of the pantry
+  /// at [portions] (the recipe's own count when null).
+  static Future<void> markAsCooked(
+    BuildContext context, {
+    int? portions,
+  }) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -179,6 +184,10 @@ class RecipeManagementHandler {
             presentMemberIds: who.attendeeMemberIds,
           );
         }
+        // After the rating screen: opening a route clears snackbars, which
+        // would take the pantry's Ångra with it.
+        if (!context.mounted) return;
+        await offerCookedPantry(context, viewModel.recipe, portions);
       } else {
         SnackBarUtils.showInfo(context, context.l10n.recipeAlreadyCookedToday);
       }
@@ -188,6 +197,23 @@ class RecipeManagementHandler {
         context,
         what: context.l10n.recipeCouldNotMarkAsCooked,
       );
+    }
+  }
+
+  /// [portions] at or below zero, or null, falls back to the recipe's own
+  /// count.
+  static Future<void> offerCookedPantry(
+    BuildContext context,
+    Recipe recipe,
+    int? portions,
+  ) async {
+    final count = portions != null && portions > 0
+        ? portions
+        : (recipe.portions ?? 1);
+    try {
+      await CookedPantryFlow().offer(context, recipe, portions: count);
+    } catch (e, st) {
+      AppLogger.error('Cooked pantry offer failed: $e\n$st');
     }
   }
 
