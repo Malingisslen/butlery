@@ -1,3 +1,28 @@
+# Kärnflöde steg 5D: täckningskrav, osäkra taggar och omtaggning
+
+Del av den godkända steg 5-planen (`/mnt/project-files/steg5/plan.md`, 5D; Malins beslut 5
+2026-10-30, "kör" 21:45). Bygger på 5C (#1077). Regeln följer Drive-arket "Butlery TagRules
+v1.0", fliken CoverageConfig, kolumnen `vid_osäkerhet`, och testfallen COV-05/COV-06.
+
+- [x] 1. Protein under 80 % täckning: bara proteintaggar som en huvudingrediens ger
+      ("sätt ändå om tydlig huvudingrediens"). Över gränsen som i dag.
+- [x] 2. Kök under 60 %: ingredienserna ger inga poäng; titel och receptets eget kök
+      (schema.org) räcker fortfarande ("italiensk sätts ej" vid pasta + tomat + två okända).
+- [x] 3. Stämning/praktiskt under 60 %: taggar som bygger på att något SAKNAS bland
+      ingredienserna (frysbar, meal-prep: inget som inte tål frysning) sätts inte. Taggar som
+      bygger på något som FINNS sätts på tillgänglig info, som Drive säger.
+- [x] 4. Receptdetaljens taggruta visar "Osäkra taggar, X ingredienser okända" när täckningen
+      är under 80 % och minst en ingrediens är okänd. Bara i detaljen.
+- [x] 5. `kTagGeneratorVersion` 2.3.0 → 2.4.0, en gång, så appen taggar om alla recept med
+      steg 5A–5D.
+- [x] 6. Tester per punkt, `flutter analyze`, grindarna, PR med auto-merge.
+
+Sammanfattning för Malin: när appen inte känner igen alla ingredienser i ett recept blir den
+försiktigare. Under 80 % kända ingredienser sätts bara proteintaggar för det receptet faktiskt
+är byggt på, och under 60 % gissar appen inte kök utifrån ingredienserna eller lovar "frysbar".
+Receptet visar då "Osäkra taggar, 3 ingredienser okända" vid taggarna. Till sist taggas alla
+dina recept om automatiskt med allt nytt från steg 5.
+
 # Kärnflöde steg 3B-2b: receptrader och inköpsrader får ingrediens-id
 
 Del av den godkända steg 3-planen (`/mnt/project-files/steg3/plan.md`, 3B punkt 2–4; Malin "kör"

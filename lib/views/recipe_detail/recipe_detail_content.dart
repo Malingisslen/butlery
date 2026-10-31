@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
+import 'package:butlery/widgets/tagging/uncertain_tags_line.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -737,6 +738,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               );
             }).toList(),
           ),
+          if (UncertainTagsLine.appliesTo(recipe.tagResult)) ...[
+            const SizedBox(height: AppDimensions.space8),
+            UncertainTagsLine(tagResult: recipe.tagResult!),
+          ],
         ],
       ),
     );

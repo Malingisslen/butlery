@@ -1809,6 +1809,14 @@
       }
     }
   },
+  "tagResultUncertainTags": "Osäkra taggar, {count, plural, =1{1 ingrediens okänd} other{{count} ingredienser okända}}",
+  "@tagResultUncertainTags": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tagResultUnknownIngredientsA11y": "{count, plural, =1{1 okänd ingrediens} other{{count} okända ingredienser}}",
   "@tagResultUnknownIngredientsA11y": {
     "placeholders": {

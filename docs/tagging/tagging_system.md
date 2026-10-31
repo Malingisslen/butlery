@@ -92,9 +92,9 @@ CONTAINS > UNKNOWN > FREE
 |----------|---------------------|---------------------------|
 | Allergen (contains/free) | 100% for FREE | FREE withheld (UNKNOWN); a matched trigger is still CONTAINS |
 | Dietary (vegetarian, vegan) | 100% for FREE | FREE withheld (UNKNOWN); a matched exclusion is still CONTAINS |
-| Protein identity | 80% | Set anyway if clear main ingredient |
-| Cuisine | 60% | Set based on key ingredients |
-| Practical/Mood | 60% | Set based on available info |
+| Protein identity | 80% | Only from a main ingredient |
+| Cuisine | 60% | Only from the title or the recipe's own cuisine |
+| Practical/Mood | 60% | `frysbar` and `meal-prep` withheld |
 
 ---
 

@@ -4082,6 +4082,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 okänd ingrediens} other{{count} okända ingredienser}}'**
   String tagResultUnknownIngredients(int count);
 
+  /// No description provided for @tagResultUncertainTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Osäkra taggar, {count, plural, =1{1 ingrediens okänd} other{{count} ingredienser okända}}'**
+  String tagResultUncertainTags(int count);
+
   /// No description provided for @tagResultUnknownIngredientsA11y.
   ///
   /// In sv, this message translates to:

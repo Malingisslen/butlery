@@ -1,6 +1,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 import 'package:butlery/services/tagging/title_keyword_rules.dart';
 
 /// One cuisine as the scoring sees it, from the repo config or from the
@@ -49,11 +50,19 @@ abstract final class CuisineScoring {
   static const generalCuisines = {'asiatisk', 'medelhavsmat'};
 
   /// [candidates] in priority order: on equal points an earlier one wins.
+  ///
+  /// Below [TaggingThresholds.cuisineAndMoodCoverage] the ingredients give no
+  /// points, so only the title or the recipe's own cuisine can name one:
+  /// pasta and tomato beside two unknown lines are not Italian on their own
+  /// (Malin 2026-10-30, kärnflöde steg 5 beslut 5). A negative word still
+  /// rules a cuisine out.
   static Set<String> detect(
     Recipe recipe,
     IngredientLookupResult lookup,
     List<CuisineCandidate> candidates,
   ) {
+    final ingredientsCount =
+        lookup.coverage >= TaggingThresholds.cuisineAndMoodCoverage;
     final title = recipe.core.title.toLowerCase();
     final names = [for (final i in lookup.matched) i.swedish.toLowerCase()];
     final schema = recipe.cuisine?.toLowerCase();
@@ -75,9 +84,12 @@ abstract final class CuisineScoring {
           schema != null &&
           schema.isNotEmpty &&
           cuisine.titleKeywords.any((kw) => schema.contains(kw.toLowerCase()));
-      final ingredientHits = _ingredientHits(cuisine, lookup);
+      final ingredientHits = ingredientsCount
+          ? _ingredientHits(cuisine, lookup)
+          : 0;
 
-      final ingredientMatch = ingredientHits >= cuisine.minIngredientMatches;
+      final ingredientMatch =
+          ingredientsCount && ingredientHits >= cuisine.minIngredientMatches;
       final eligible =
           schemaHit ||
           switch (cuisine.matchMode) {

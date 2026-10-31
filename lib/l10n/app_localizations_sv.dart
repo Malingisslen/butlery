@@ -2598,6 +2598,17 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String tagResultUncertainTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredienser okända',
+      one: '1 ingrediens okänd',
+    );
+    return 'Osäkra taggar, $_temp0';
+  }
+
+  @override
   String tagResultUnknownIngredientsA11y(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

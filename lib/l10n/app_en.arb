@@ -1803,6 +1803,14 @@
       }
     }
   },
+  "tagResultUncertainTags": "Uncertain tags, {count, plural, =1{1 ingredient unknown} other{{count} ingredients unknown}}",
+  "@tagResultUncertainTags": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tagResultUnknownIngredientsA11y": "{count, plural, =1{1 unknown ingredient} other{{count} unknown ingredients}}",
   "@tagResultUnknownIngredientsA11y": {
     "placeholders": {
