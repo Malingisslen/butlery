@@ -2,7 +2,7 @@
 // "Golden" in the view bar puts the app's own picture of a screen beside the lab's, so a screen that
 // has drifted from the app is seen at once. The pictures are the key-screen goldens of the app; a
 // published copy of the lab carries them in window.LAB_GOLDENS, the repo copy reads them from the tree.
-const GOLDEN_OF = ['mina_recept', 'hem', 'receptdetalj', 'recepteditor', 'matlagningslage', 'inloggning', 'mer', 'inkopslista', 'skafferi', 'veckomeny', 'veckogenerering_6s', 'vantar_pa_synk', null, 'receptdetalj_fullt'];
+const GOLDEN_OF = ['mina_recept', 'hem', 'receptdetalj_fullt', 'recepteditor', 'matlagningslage', 'inloggning', 'mer', 'inkopslista', 'skafferi', 'veckomeny', 'veckogenerering_6s', 'vantar_pa_synk'];
 const GOLDEN_DIR = '../../test/views/golden_linux/goldens/';
 // Offsets measured against the goldens (design/tools/lab-golden-nudge.mjs), applied as a CSS translate.
 (function nudgeToGolden() {
