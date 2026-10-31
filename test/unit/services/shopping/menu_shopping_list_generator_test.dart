@@ -22,6 +22,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -41,6 +42,8 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/shopping/week_list_follow_notice.dart';
+import 'package:butlery/services/shopping/week_list_follower.dart';
 import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -1671,6 +1674,147 @@ void main() {
 
       expect(receipt, isNull);
       expect(writes, isEmpty);
+    });
+
+    group('the notice of what a follow did', () {
+      late SharedPreferences prefs;
+      late MenuShoppingListGenerator withDevice;
+
+      setUp(() async {
+        SharedPreferences.setMockInitialValues({});
+        prefs = await SharedPreferences.getInstance();
+        withDevice = MenuShoppingListGenerator(preferences: prefs);
+      });
+
+      test('a follow that wrote rows leaves one notice for that list, taken '
+          'once', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        final receipt = await withDevice.syncFollowedWeek(_date);
+        final notice = await withDevice.takeFollowNotice('existing-1');
+
+        expect(receipt, isNotNull, reason: 'the follow must reach the write');
+        expect(notice, isNotNull);
+        expect(notice!.listId, 'existing-1');
+        expect(notice.addedCount, 2, reason: 'mjöl and ägg');
+        expect(notice.removedCount, 1, reason: 'the stale row');
+        expect(notice.removed.single.name, 'gammal vara');
+        expect(await withDevice.takeFollowNotice('existing-1'), isNull);
+      });
+
+      test('a follow that writes nothing leaves no notice', () async {
+        seedTwoRecipePlan();
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+
+        await withDevice.syncFollowedWeek(_date);
+
+        expect(await withDevice.takeFollowNotice('existing-1'), isNull);
+      });
+
+      test('the rules saved for the menu reach the follow: no pantry is read '
+          'when it is off, and the list is still written', () async {
+        await MenuShoppingOptionsMemory(
+          prefs,
+        ).write(const MenuShoppingMergeOptions(subtractPantry: false));
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        final receipt = await withDevice.syncFollowedWeek(_date);
+
+        expect(receipt, isNotNull);
+        expect(writes, hasLength(1));
+        verifyNever(() => pantryService.watchAll(any()));
+      });
+
+      test('without a saved choice the pantry is read', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+
+        await withDevice.syncFollowedWeek(_date);
+
+        verify(() => pantryService.watchAll(any())).called(greaterThan(0));
+      });
+
+      test('Ångra on a taken notice puts the follow back through the '
+          'shopping service', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        final receipt = await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+
+        final undone = await withDevice.undoFollow(notice);
+
+        expect(undone, isTrue);
+        final captured = verify(
+          () => shoppingService.undoPersonalMerge(
+            captureAny(),
+            captureAny(),
+            captureAny(),
+          ),
+        ).captured;
+        expect(captured[0], 'existing-1');
+        expect(captured[1], unorderedEquals(receipt!.addedItemIds));
+        expect(
+          (captured[2] as List<UnifiedShoppingItem>).map((i) => i.name),
+          ['gammal vara'],
+        );
+        final names = shoppingService.lists.single.items.map((i) => i.name);
+        expect(names, ['gammal vara']);
+      });
+
+      test('a follow that ends after sign-out leaves no notice', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.onDispose();
+
+        await withDevice.syncFollowedWeek(_date);
+
+        expect(
+          prefs.containsKey(WeekListFollowNoticeStore.storageKey),
+          isFalse,
+        );
+      });
+
+      test('Ångra when every row was ticked since writes nothing', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+        final list = shoppingService.lists.single;
+        final ticked = list.copyWith(
+          items: [for (final i in list.items) i.copyWith(bought: true)],
+        );
+        // The removed row is back on the list too, so nothing is left to undo.
+        final withRemoved = ticked.copyWith(
+          items: [
+            ...ticked.items,
+            ...notice.removed.map((r) => r.copyWith(bought: true)),
+          ],
+        );
+        shoppingService.setShoppingState(
+          lists: [withRemoved],
+          personalLists: [withRemoved],
+        );
+
+        expect(await withDevice.undoFollow(notice), isTrue);
+        verifyNever(
+          () => shoppingService.undoPersonalMerge(any(), any(), any()),
+        );
+      });
+
+      test('Ångra for a list that is gone is not claimed as done', () async {
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        await withDevice.syncFollowedWeek(_date);
+        final notice = (await withDevice.takeFollowNotice('existing-1'))!;
+        shoppingService.setShoppingState(lists: [], personalLists: []);
+
+        expect(await withDevice.undoFollow(notice), isFalse);
+        verifyNever(
+          () => shoppingService.undoPersonalMerge(any(), any(), any()),
+        );
+      });
     });
   });
 }

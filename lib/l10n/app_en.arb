@@ -11357,6 +11357,50 @@
   "shoppingMergeSynced": "{list} is up to date with the week. What you changed yourself is still there.",
   "shoppingMergeAdded": "{count, plural, =1{1 item was added to {list}.} other{{count} items were added to {list}.}}",
   "shoppingMergeConcurrentChange": "{count, plural, =1{The list had been changed on another device. Your item was added and nothing was overwritten.} other{The list had been changed on another device. Your {count} items were added and nothing was overwritten.}}",
+  "shoppingFollowNotice": "Updated from the week menu: {changes}",
+  "@shoppingFollowNotice": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu. {changes} is the joined counts.",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingFollowAdded": "{count, plural, other{{count} new}}",
+  "@shoppingFollowAdded": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowChanged": "{count, plural, other{{count} changed}}",
+  "@shoppingFollowChanged": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows whose amount changed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowRemoved": "{count, plural, other{{count} removed}}",
+  "@shoppingFollowRemoved": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: rows taken off.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingFollowNoticeDismiss": "Dismiss notice",
+  "@shoppingFollowNoticeDismiss": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: a11y label of its close button."
+  },
+  "shoppingFollowNoticeUndoFailed": "The update could not be undone",
+  "@shoppingFollowNoticeUndoFailed": {
+    "description": "Kärnflöde 8: the line at the top of the shopping list after the list followed the week menu: Ångra failed."
+  },
   "shoppingMergeUndoFailed": "The undo could not be completed",
   "shoppingMergeUndoFailedKept": "The items are still on the list.",
   "shoppingMergeRowRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",

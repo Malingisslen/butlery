@@ -16038,6 +16038,47 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String shoppingFollowNotice(String changes) {
+    return 'Updated from the week menu: $changes';
+  }
+
+  @override
+  String shoppingFollowAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingFollowNoticeDismiss => 'Dismiss notice';
+
+  @override
+  String get shoppingFollowNoticeUndoFailed => 'The update could not be undone';
+
+  @override
   String get shoppingMergeUndoFailed => 'The undo could not be completed';
 
   @override

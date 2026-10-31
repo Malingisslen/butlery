@@ -71,7 +71,7 @@ abstract final class WeekListReconciler {
       final mine = own[key];
       if (mine != null && mine.isNotEmpty) {
         final row = mine.removeAt(0);
-        if (_untouched(row) && !row.bought && _differs(row, next)) {
+        if (isUntouched(row) && !row.bought && _differs(row, next)) {
           update.add(_overwrite(row, next));
         }
         continue;
@@ -98,7 +98,7 @@ abstract final class WeekListReconciler {
     final remove = [
       for (final rows in own.values)
         for (final row in rows)
-          if (_untouched(row) && !row.bought) row,
+          if (isUntouched(row) && !row.bought) row,
     ];
     return PersonalMergeWrite(
       add: List.unmodifiable(add),
@@ -140,7 +140,8 @@ abstract final class WeekListReconciler {
       ? amount.toInt().toString()
       : amount.toString();
 
-  static bool _untouched(UnifiedShoppingItem row) =>
+  /// Whether [row] still holds the values the sync wrote: nobody changed it.
+  static bool isUntouched(UnifiedShoppingItem row) =>
       row.generatedAs == fingerprint(row);
 
   static bool _differs(UnifiedShoppingItem row, UnifiedShoppingItem next) =>

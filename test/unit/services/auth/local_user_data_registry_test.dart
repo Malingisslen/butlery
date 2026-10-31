@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_io.dart'
     as image_store;
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +21,8 @@ Map<String, Object> _everyDraft() {
   final commentKey = LocalUserDataRegistry.commentDraftKey('r1');
   values[commentKey] = 'text';
   values[AutoSaveManager.ownerKeyFor(commentKey)] = 'alice';
+  // The notice of what the week menu did to a list names the user's rows.
+  values[WeekListFollowNoticeStore.storageKey] = '{}';
   values['unrelated_setting'] = 'keep';
   return values;
 }

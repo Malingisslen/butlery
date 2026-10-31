@@ -15924,6 +15924,50 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String shoppingFollowNotice(String changes) {
+    return 'Uppdaterad från veckomenyn: $changes';
+  }
+
+  @override
+  String shoppingFollowAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nya',
+      one: '1 ny',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändrade',
+      one: '1 ändrad',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingFollowRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count borttagna',
+      one: '1 borttagen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingFollowNoticeDismiss => 'Stäng meddelandet';
+
+  @override
+  String get shoppingFollowNoticeUndoFailed => 'Kunde inte ångra uppdateringen';
+
+  @override
   String get shoppingMergeUndoFailed => 'Kunde inte ångra sammanslagningen';
 
   @override

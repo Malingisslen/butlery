@@ -36,6 +36,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_notices.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
+import 'package:butlery/views/unified_shopping/widgets/week_list_follow_notice_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_lists_pane.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
@@ -372,6 +373,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
               text: viewModel.updatedByNotice!,
               onDismiss: viewModel.dismissUpdatedByNotice,
             ),
+          WeekListFollowNoticeBar(
+            listId: _currentTabIndex == 0 ? viewModel.activeList?.id : null,
+            canUndo: viewModel.isOnline,
+          ),
           ShoppingListHeader.build(
             context,
             viewModel,
