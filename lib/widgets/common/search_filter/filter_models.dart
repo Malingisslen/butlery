@@ -145,6 +145,10 @@ class RecipeFilters {
   static String? dietaryFilterValue(String filterId) =>
       _dietaryFilterValues[filterId];
 
+  /// Dietary filters that show the recipes carrying the tag of the same
+  /// value, so the filter and the tag never disagree (Malin 2026-10-31).
+  static const Set<String> tagBackedDietaryFilterIds = {'kid-friendly'};
+
   /// Primary allergen-free filters (always visible).
   static List<FilterOption> allergenFreeFilters(BuildContext context) => [
     FilterOption(
