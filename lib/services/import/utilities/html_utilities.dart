@@ -1,3 +1,5 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+
 /// Utility functions for processing HTML content during recipe import.
 class HtmlUtilities {
   HtmlUtilities._();
@@ -54,7 +56,7 @@ class HtmlUtilities {
     ).allMatches(html)) {
       final attrs = <String, String>{
         for (final m in attr.allMatches(tag.group(0)!))
-          m.group(1)!.toLowerCase(): m.group(2) ?? m.group(3) ?? '',
+          m.group(1)!.toLowerCase(): (m.group(2) ?? m.group(3)).orEmpty(),
       };
       final key = (attrs['property'] ?? attrs['name'])?.toLowerCase();
       if (key != 'og:image' && key != 'og:image:secure_url') continue;
