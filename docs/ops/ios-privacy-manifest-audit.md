@@ -104,7 +104,6 @@ Columns:
 | cloud_functions | 6.0.4 | Y | none | Request/response payloads to our Functions | github.com/firebase/firebase-ios-sdk |
 | flutter_inappwebview | 6.1.5 | N *(verify)* | UserDefaults (CA92.1) — covered | depends on loaded URLs (user-controlled imports) | github.com/pichillilorenzo/flutter_inappwebview |
 | flutter_onnxruntime | 1.6.4 | N *(verify)* | none needed (pure compute) | none (on-device inference) | github.com/microsoft/onnxruntime |
-| algoliasearch | 1.46.1 | pure-Dart REST client | n/a | Search queries (hashed user IDs) | github.com/algolia/algoliasearch-client-dart |
 
 *(Packages omitted: pure-Dart utility libs with no native code — uuid, intl, collection, rxdart, clock, path, html, html_unescape, csv, excel, timeago, archive, sembast, sembast_web, sqlite3, web.)*
 

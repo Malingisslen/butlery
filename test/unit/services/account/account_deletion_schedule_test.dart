@@ -6,7 +6,6 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' show IdTokenResult, User;
 import 'package:flutter_test/flutter_test.dart';
@@ -28,8 +27,6 @@ class _MockCallable extends Mock implements HttpsCallable {}
 
 class _MockNotifications extends Mock implements notif.NotificationService {}
 
-class _MockSearch extends Mock implements SearchRepository {}
-
 class _MockOffline extends Mock implements OfflineService {}
 
 class _Result extends Fake
@@ -47,7 +44,6 @@ void main() {
   late _MockCallable scheduleCallable;
   late _MockCallable cancelCallable;
   late _MockNotifications notifications;
-  late _MockSearch search;
   late _MockOffline offline;
   late AccountDeletionService service;
 
@@ -65,7 +61,6 @@ void main() {
     scheduleCallable = _MockCallable();
     cancelCallable = _MockCallable();
     notifications = _MockNotifications();
-    search = _MockSearch();
     offline = _MockOffline();
 
     when(() => auth.currentUserId).thenReturn('uid-alice');
@@ -88,7 +83,6 @@ void main() {
     service = AccountDeletionService(
       authService: auth,
       functions: functions,
-      searchRepository: search,
       offlineService: offline,
     );
   });
@@ -147,7 +141,6 @@ void main() {
         // Signing out waits until the date has been shown.
         verifyNever(() => auth.signOut());
         // The account still exists during the window.
-        verifyNever(() => search.removeUser(any()));
         verifyNever(() => offline.clearUserData(any()));
       },
     );

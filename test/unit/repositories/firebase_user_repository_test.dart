@@ -1050,6 +1050,30 @@ void main() {
         expect(visible.map((p) => p.uid), ['user-1']);
       });
 
+      // BUT-1454: a minor's profile is written through UserProfile.toFirestore,
+      // which stores isSearchable:false whatever the in-memory toggle says.
+      test('leaves out a minor even when their search toggle is on', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          'adult',
+          _createUserProfile('adult', displayName: 'Adult Alva').toFirestore(),
+        );
+        await _seedUserProfile(
+          fakeFirestore,
+          'minor',
+          _createUserProfile(
+            'minor',
+            displayName: 'Minor Mina',
+          ).copyWith(isMinor: true).toFirestore(),
+        );
+
+        final minor = await repository.searchProfiles('minor');
+        final adult = await repository.searchProfiles('adult');
+
+        expect(minor, isEmpty);
+        expect(adult.map((p) => p.uid), ['adult']);
+      });
+
       test('should return empty list for empty query', () async {
         // Act
         final results = await repository.searchProfiles('');

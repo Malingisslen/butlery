@@ -716,9 +716,8 @@ void main() {
       });
 
       test(
-        'multiple listeners all fire (FCM + SearchModule co-subscribe)',
+        'multiple listeners all fire',
         () async {
-          // Real-world wiring: FCMService and SearchModule both subscribe.
           // The prior single-callback API would have lost one of them.
           var fcmFired = false;
           var searchFired = false;

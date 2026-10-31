@@ -329,13 +329,7 @@ abstract final class AnalyticsUserProperties {
 
   // BUT-1500 follow-up: `has_algolia_search` retired. Its only emitter lived
   // in `RecipeSearchRouter`, deleted on 2026-07-16 when the Algolia text-search
-  // routing path was removed as dead code. Recipe search is now 100% local
-  // substring matching, and the surviving Algolia delegate is reachable only
-  // from account-deletion index cleanup — so the property no longer describes
-  // anything about a user's search experience. Not re-wired in SearchModule:
-  // the flag is off in production, so it would emit a constant `false` for
-  // every user — the same zero-information dimension `subscription_tier` was
-  // retired for below.
+  // routing path was removed as dead code.
 
   // --- Locale / device / lifecycle (BUT-636 / BUT-637 / BUT-639) ---
   /// User's active app locale (`sv`, `en`). Re-emitted on locale change.

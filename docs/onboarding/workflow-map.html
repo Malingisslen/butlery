@@ -480,12 +480,6 @@
       "path": "lib/services/unified/operations/modules/recipe_member_manager.dart"
     },
     {
-      "id": "repo-search",
-      "label": "SearchRepository — sökindex",
-      "context": "repository",
-      "path": "Algolia/Meili-index"
-    },
-    {
       "id": "cf-structure",
       "label": "structureRecipe — LLM-parse",
       "context": "cloud-function",
@@ -3110,13 +3104,6 @@
           "to": "cf-request-deletion",
           "payload": "runDueAccountDeletions varje timme: förfallna förfrågningar, högst 5 per körning, lås 15 min, runAccountDeletionWithDeps; ofullständig radering läggs tillbaka, högst 3 försök",
           "transport": "onSchedule",
-          "verified": true
-        },
-        {
-          "from": "svc-account-deletion",
-          "to": "repo-search",
-          "payload": "uid → sökindexradering (före CF, klientsidigt)",
-          "transport": "index delete",
           "verified": true
         },
         {

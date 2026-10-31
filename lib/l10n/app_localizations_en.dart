@@ -19948,7 +19948,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'you are removed, the lists stay with the others';
 
   @override
-  String get pendingDeletionItemCache => 'Search index and local cache';
+  String get pendingDeletionItemCache => 'Local cache';
 
   @override
   String get pendingDeletionItemCacheNote => 'cleared first of all';

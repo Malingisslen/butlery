@@ -387,8 +387,6 @@
       ".claude/rules/accepted-deviations-ocr.md",
       "CLAUDE.md",
       "lib/core/circuit_breaker.dart",
-      "lib/repositories/algolia/**",
-      "lib/repositories/algolia/algolia_search_repository.dart",
       "lib/services/extraction/**",
       "lib/services/extraction/extraction_manager.dart",
       "lib/services/extraction/extractors/**",
@@ -516,10 +514,7 @@
       "functions/src/middleware/**",
       "functions/src/middleware/rate_limiter.ts",
       "lib/core/di/modules/**",
-      "lib/core/di/modules/search_module.dart",
       "lib/firebase_options.dart",
-      "lib/repositories/algolia/**",
-      "lib/repositories/algolia/algolia_search_repository.dart",
       "pubspec.yaml"
     ],
     "Monetization / Subscriptions Lead": [

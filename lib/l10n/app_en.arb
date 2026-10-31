@@ -15579,7 +15579,7 @@
   "@pendingDeletionItemHouseholdNote": {
     "description": "Spår 6, v62: what is deleted, detail"
   },
-  "pendingDeletionItemCache": "Search index and local cache",
+  "pendingDeletionItemCache": "Local cache",
   "@pendingDeletionItemCache": {
     "description": "Spår 6, v62: what is deleted"
   },

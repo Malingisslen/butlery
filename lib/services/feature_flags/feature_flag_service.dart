@@ -11,14 +11,6 @@ import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 
 /// Feature flag service using Firebase Remote Config.
 /// Enables gradual rollouts, A/B testing, and kill switches without code deploys.
-///
-/// Usage:
-/// ```dart
-/// final flags = ServiceLocator.get<FeatureFlagService>();
-/// if (flags.isEnabled(FeatureFlags.enableAlgoliaSearch)) {
-///   // Use Algolia search
-/// }
-/// ```
 class FeatureFlagService {
   final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
@@ -43,7 +35,6 @@ class FeatureFlagService {
   /// Default flag values - used when Remote Config is unavailable or flag not set
   static const Map<String, dynamic> _defaults = {
     // Phase 2 Scalability Flags
-    'enable_algolia_search': false,
     'enable_subcollection_participants': true,
     'max_inline_participants': 10,
     'enable_reference_shared_content': true,
@@ -480,7 +471,6 @@ class FeatureFlagService {
 /// Use these instead of string literals.
 abstract final class FeatureFlags {
   // Phase 2 Scalability Flags
-  static const enableAlgoliaSearch = 'enable_algolia_search';
   static const enableSubcollectionParticipants =
       'enable_subcollection_participants';
   static const maxInlineParticipants = 'max_inline_participants';

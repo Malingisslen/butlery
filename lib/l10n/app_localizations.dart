@@ -30385,7 +30385,7 @@ abstract class AppLocalizations {
   /// Spår 6, v62: what is deleted
   ///
   /// In sv, this message translates to:
-  /// **'Sökindex och lokal cache'**
+  /// **'Lokal cache'**
   String get pendingDeletionItemCache;
 
   /// Spår 6, v62: what is deleted, detail

@@ -21,9 +21,7 @@ void main() {
     });
 
     test('pinsForHost is case-insensitive', () {
-      // DNS hostnames are case-insensitive; the lookup must be too,
-      // otherwise an Algolia retry that hands us `BUTLERY-APP-DSN.algolia.net`
-      // would silently bypass pinning.
+      // DNS hostnames are case-insensitive; the lookup must be too.
       final lower = CertPinConfig.pinsForHost('butlery-app-dsn.algolia.net');
       final upper = CertPinConfig.pinsForHost('Butlery-App-DSN.Algolia.NET');
       expect(upper, equals(lower));
@@ -57,8 +55,7 @@ void main() {
 
     test('isPinnedHost is false for every host while hostPins is empty', () {
       // BUT-814: with no hosts pinned, `isPinnedHost` must report every host
-      // as unpinned so the HTTP wrappers (PinnedHttpClient /
-      // PinningDioInterceptor) fall through to the platform trust store rather
+      // as unpinned so the HTTP wrappers fall through to the platform trust store rather
       // than fail-closing against a missing pin list. Covers both the former
       // placeholder hosts and an arbitrary host.
       expect(CertPinConfig.isPinnedHost('api.ocr.space'), isFalse);

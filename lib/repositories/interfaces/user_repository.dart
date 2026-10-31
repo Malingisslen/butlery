@@ -1,5 +1,5 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
-import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
