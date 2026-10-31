@@ -328,5 +328,28 @@ void main() {
         );
       },
     );
+
+    test('a pantry that cannot be read adds nothing: the throw reaches the '
+        'caller and no duplicate row is written', () async {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(
+        () => pantry.getAll('u1'),
+      ).thenAnswer((_) => Future<List<PantryItem>>.error(StateError('read')));
+
+      await expectLater(
+        service.onItemCheckedOff(
+          'u1',
+          _shoppingItem(name: 'Mjölk'),
+          wasBought: false,
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+      verifyNever(
+        () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+      );
+    });
   });
 }

@@ -39,6 +39,7 @@ IngredientData _ingredient({
   required String swedish,
   String? typicalUnit,
   String? typicalStorage,
+  List<String> aliasesSv = const [],
 }) => IngredientData(
   id: id,
   swedish: swedish,
@@ -47,6 +48,7 @@ IngredientData _ingredient({
   properties: const {},
   typicalUnit: typicalUnit,
   typicalStorage: typicalStorage,
+  aliasesSv: aliasesSv,
 );
 
 Recipe _recipeWithNormalizedIngredients({
@@ -365,6 +367,65 @@ void main() {
         expect(captured.quantity, isNull);
       },
     );
+
+    test('a search hit that is another product is not linked and lends '
+        'nothing (typed "mjöl", hit "Mjölk")', () async {
+      when(
+        () => mockIngredientRepository.searchIngredients('mjöl', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'milk',
+            swedish: 'Mjölk',
+            typicalUnit: 'l',
+            typicalStorage: 'refrigerated',
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'mjöl');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientName, 'mjöl');
+      expect(captured.ingredientId, isNull);
+      expect(captured.unit, isNot('l'));
+    });
+
+    test('a search hit that lists the typed word as an alias is linked and '
+        'named by the registry', () async {
+      when(
+        () =>
+            mockIngredientRepository.searchIngredients('florsocker', limit: 1),
+      ).thenAnswer(
+        (_) async => [
+          _ingredient(
+            id: 'icing-sugar',
+            swedish: 'Pudersocker',
+            aliasesSv: const ['florsocker'],
+          ),
+        ],
+      );
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'florsocker');
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.ingredientId, 'icing-sugar');
+      expect(captured.ingredientName, 'Pudersocker');
+    });
   });
 
   group('PantryService.addFromIngredient', () {
@@ -489,7 +550,12 @@ void main() {
   group('PantryService part A (P5-U28)', () {
     setUp(() {
       when(
-        () => mockPantryRepository.updateFields(any(), any(), any()),
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
       ).thenAnswer((_) async {});
       when(
         () => mockPantryRepository.adjustQuantity(any(), any(), any()),
@@ -621,5 +687,74 @@ void main() {
         );
       },
     );
+  });
+
+  group('PantryService failed reads and deletes', () {
+    test('getAll rethrows when the pantry cannot be read, not an empty list '
+        '(an empty list would look like an empty pantry)', () async {
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) => Future<List<PantryItem>>.error(StateError('read')));
+
+      await expectLater(service.getAll(userId), throwsA(isA<StateError>()));
+    });
+
+    test('getAll returns the stored rows when the read works', () async {
+      final rows = [_pantryItem(id: 'p1')];
+      when(
+        () => mockPantryRepository.getAll(userId),
+      ).thenAnswer((_) async => rows);
+
+      expect(await service.getAll(userId), rows);
+    });
+
+    test('removeItem rethrows when the repository delete is refused', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.removeItem(userId, 'p1'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('removeItem returns normally when the delete is accepted', () async {
+      when(
+        () => mockPantryRepository.remove(userId, 'p1'),
+      ).thenAnswer((_) async {});
+
+      await service.removeItem(userId, 'p1');
+
+      verify(() => mockPantryRepository.remove(userId, 'p1')).called(1);
+    });
+
+    test('updateItem throws when the write fails, instead of returning null '
+        'as if it were saved', () async {
+      final before = _pantryItem(id: 'p1', ingredientName: 'Mjölk');
+      when(
+        () => mockPantryRepository.updateFields(
+          any(),
+          any(),
+          any(),
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((_) => Future<void>.error(StateError('refused')));
+
+      await expectLater(
+        service.updateItem(
+          userId,
+          before.copyWith(note: 'ny'),
+          previous: before,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'updateItem failed',
+          ),
+        ),
+      );
+    });
   });
 }

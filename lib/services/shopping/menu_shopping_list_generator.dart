@@ -176,8 +176,6 @@ class MenuShoppingListGenerator extends BaseService {
   /// Reads the signed-in user's pantry. A failed or slow read gives
   /// [MenuShoppingPantry.unavailable]: the list is then made without pantry
   /// deduction, and the sheet says so with a way to try again
-  /// [PantryService.getAll] turns a failure into an
-  /// empty pantry, which would hide exactly that, so this reads the stream.
   Future<MenuShoppingPantry> readPantry() async {
     try {
       final userId = ServiceLocator.get<AuthRepository>().currentUserId;

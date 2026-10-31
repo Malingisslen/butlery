@@ -1,7 +1,7 @@
 /// BUT-2140: the week menu's merge into a personal list, written per operation
 /// against the server's copy (`lägga till` → the
 /// list was changed at the same time → your rows are added and nothing is
-/// overwritten). Every merge, add or sync, is one transaction.
+/// overwritten).
 ///
 /// Every fixture makes the copy in memory and the stored list differ the way
 /// another device signed in to the same account would: rows it added, a merge
@@ -629,6 +629,205 @@ void main() {
     },
   );
 
+  group('a sync the server copy already settles costs no transaction', () {
+    var transactionRuns = 0;
+
+    PersonalMergeTransactionRunner countedRunner() => (handler) {
+      transactionRuns++;
+      return firestore.runTransaction(
+        (tx) => handler(_CountingTransaction(tx, firestore.counts)),
+      );
+    };
+
+    setUp(() => transactionRuns = 0);
+
+    test('nothing to change: the transaction never runs, the server list is '
+        'returned and the change made elsewhere is still reported', () async {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+      await seedServer(
+        _list(
+          [_row('own', 'kaffe'), _row('old', 'pasta'), _row('brod', 'bröd')],
+          menuItemIds: ['old'],
+        ),
+      );
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 0);
+      expect(firestore.counts.transactionReads, 0);
+      expect(audit, ['menu_merge'], reason: 'the permission log still runs');
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(result.updated, isEmpty);
+      expect(result.concurrentChange, isTrue);
+      expect(
+        result.list.items.map((i) => i.id),
+        unorderedEquals(['own', 'old', 'brod']),
+        reason: 'the view gets the server rows, including the other device\'s',
+      );
+      expect(result.list.menuItemIds, ['old']);
+      expect(
+        (await storedRows()).keys,
+        unorderedEquals(['own', 'old', 'brod']),
+      );
+    });
+
+    test('nothing to change while this device\'s own writes wait to sync: '
+        'no change is reported', () async {
+      final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+      await seedServer(
+        _list(
+          [_row('own', 'kaffe'), _row('old', 'pasta')],
+          menuItemIds: ['old'],
+        ),
+      );
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+            pending: true,
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 0);
+      expect(audit, ['menu_merge']);
+      expect(result.concurrentChange, isFalse);
+    });
+
+    test('a sync that only touches rows outside menuItemIds changes nothing '
+        'and costs no transaction', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest(
+              (_) => PersonalMergeWrite(
+                update: [_row('own', 'kaffe').copyWith(amount: 9)],
+                remove: [_row('own', 'kaffe')],
+              ),
+            ),
+          );
+
+      expect(transactionRuns, 0);
+      expect(audit, ['menu_merge']);
+      expect(result.updated, isEmpty);
+      expect(result.removed, isEmpty);
+      expect((await storedRows())['own']!.amount, 1);
+    });
+
+    test('a server copy that looked changed but is clean when the transaction '
+        'reads it writes nothing', () async {
+      final own = _row('own', 'kaffe');
+      final old = _row('old', 'pasta');
+      final memory = _list([own, old], menuItemIds: ['old']);
+      // What is stored needs nothing; the copy read first still names a dead
+      // id, as it would if another device had cleaned it up in between.
+      await seedServer(memory);
+      firestore.counts.transactionWrites = 0;
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+            serverRead: (_, _) async =>
+                _list([own, old], menuItemIds: ['old', 'gone']),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 1);
+      expect(firestore.counts.transactionWrites, 0);
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(await storedMenuIds(), ['old']);
+    });
+
+    test('a sync that changes a row still runs exactly one transaction and '
+        'stores the change', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest(
+              (_) => PersonalMergeWrite(
+                update: [_row('old', 'pasta').copyWith(amount: 3)],
+              ),
+            ),
+          );
+
+      expect(transactionRuns, 1);
+      expect(result.updated.single.amount, 3);
+      expect((await storedRows())['old']!.amount, 3);
+    });
+
+    test('a sync whose only difference is the week still runs the '
+        'transaction and stores the new week', () async {
+      final memory = _list([_row('old', 'pasta')], menuItemIds: ['old']);
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            PersonalMergeRequest(
+              generatedForWeek: '2026-W25',
+              sync: (_) => const PersonalMergeWrite(),
+            ),
+          );
+
+      expect(transactionRuns, 1);
+      expect(result.list.generatedForWeek, '2026-W25');
+      expect(
+        (await lists().doc(_listId).get()).data()!['generatedForWeek'],
+        '2026-W25',
+      );
+    });
+
+    test('a menuItemIds naming a row that no longer exists still runs the '
+        'transaction, which drops the dead id', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old', 'gone'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            transactionRunner: countedRunner(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+
+      expect(transactionRuns, 1);
+      expect(await storedMenuIds(), ['old']);
+      expect(result.added, isEmpty);
+    });
+  });
+
   group('cost (BUT-2140 acceptance: N+R+2 writes at most)', () {
     test('an add reads the parent, writes N rows and one parent update, all '
         'in one transaction', () async {
@@ -662,6 +861,30 @@ void main() {
 
       expect(firestore.counts.transactionWrites, 0);
       expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
+    });
+
+    test('offline, a sync with nothing to change queues no write', () async {
+      final memory = _list(
+        [_row('own', 'kaffe'), _row('old', 'pasta')],
+        menuItemIds: ['old'],
+      );
+      await seedServer(memory);
+
+      final result =
+          await module(
+            serverRead: (_, _) async => throw _offline(),
+          ).applyPersonalMerge(
+            memory,
+            _syncRequest((_) => const PersonalMergeWrite()),
+          );
+      await pumpEventQueue();
+
+      expect(firestore.counts.batchWrites, 0);
+      expect(result.added, isEmpty);
+      expect(result.removed, isEmpty);
+      expect(result.updated, isEmpty);
+      expect((await storedRows()).keys, unorderedEquals(['own', 'old']));
+      expect(await storedMenuIds(), ['old']);
     });
 
     test('a sync with nothing to change still drops the id of a row deleted '

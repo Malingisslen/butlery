@@ -139,7 +139,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
   }
 
   /// BUT-954: undo for the snackbar-undo delete flow — re-persists [item]
-  /// (it gets a fresh document ID) and puts it back in the list. Pantry
+  /// and puts it back in the list. Pantry
   /// rows are the reversible-destructive class: swipe deletes immediately,
   /// the snackbar's "Ångra" calls this.
   Future<void> restoreItem(PantryItem item) async {
@@ -158,27 +158,36 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
   /// BUT-948: bulk delete for multi-select. Removes every id in one pass.
   /// Class-1 reversible (like single swipe) — the view shows one snackbar whose
   /// "Ångra" calls [restoreItems] with the captured items.
-  Future<void> bulkRemoveItems(Iterable<String> itemIds) async {
+  ///
+  /// Returns the ids actually deleted. A refused delete stops the pass; the
+  /// rows deleted before it are gone and still need their Ångra.
+  Future<Set<String>> bulkRemoveItems(Iterable<String> itemIds) async {
     final userId = _currentUserId();
-    if (userId == null) return;
+    if (userId == null) return const {};
     final ids = itemIds.toSet();
-    if (ids.isEmpty) return;
+    if (ids.isEmpty) return const {};
 
+    final removed = <String>{};
     await executeAsyncVoid(
       () async {
-        for (final id in ids) {
-          await _pantryService.removeItem(userId, id);
+        try {
+          for (final id in ids) {
+            await _pantryService.removeItem(userId, id);
+            removed.add(id);
+          }
+        } finally {
+          // Immutable replacement (consistent with every other write here) so
+          // a caller holding a pre-delete snapshot of `items` is never mutated.
+          _items = _items.where((i) => !removed.contains(i.id)).toList();
         }
-        // Immutable replacement (consistent with every other write here) so a
-        // caller holding a pre-delete snapshot of `items` is never mutated.
-        _items = _items.where((i) => !ids.contains(i.id)).toList();
       },
       errorPrefix: AppLocale.current.pantryRemoveItemsFailed,
     );
+    return removed;
   }
 
   /// BUT-948: bulk undo counterpart to [bulkRemoveItems] — re-persists each
-  /// removed item (each gets a fresh document ID, mirroring [restoreItem]).
+  /// removed item.
   Future<void> restoreItems(List<PantryItem> items) async {
     final userId = _currentUserId();
     if (userId == null || items.isEmpty) return;

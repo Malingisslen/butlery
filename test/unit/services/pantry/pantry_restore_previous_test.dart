@@ -191,14 +191,16 @@ void main() {
       );
     });
 
-    test('updateItem returns no kept version', () async {
-      final kept = await failing.updateItem(
-        _userId,
-        base.copyWith(note: 'ny'),
-        previous: base,
+    test('updateItem throws, so the edit does not look saved', () async {
+      await expectLater(
+        failing.updateItem(
+          _userId,
+          base.copyWith(note: 'ny'),
+          previous: base,
+        ),
+        throwsA(isA<StateError>()),
       );
-
-      expect(kept, isNull);
+      expect((await stored()).note, isNull);
     });
 
     test(

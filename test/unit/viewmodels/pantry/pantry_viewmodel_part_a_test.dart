@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
@@ -86,6 +87,29 @@ void main() {
     expect(vm.items.single.updatedAt, isNotNull);
     vm.dispose();
   });
+
+  test(
+    'a refused edit leaves the old row on screen and sets an error',
+    () async {
+      final (vm, service) = await loaded();
+      when(
+        () => service.updateItem(
+          any(),
+          any(),
+          previous: any(named: 'previous'),
+        ),
+      ).thenAnswer(
+        (_) => Future<PantryPreviousVersion?>.error(StateError('x')),
+      );
+
+      await vm.updateItem(stored.copyWith(note: 'ekologiskt'));
+
+      expect(vm.items.single.note, isNull);
+      expect(vm.items.single.updatedAt, isNull);
+      expect(vm.hasError, isTrue);
+      vm.dispose();
+    },
+  );
 
   test('an edit without an amount keeps the known amount on the row', () async {
     final (vm, service) = await loaded();

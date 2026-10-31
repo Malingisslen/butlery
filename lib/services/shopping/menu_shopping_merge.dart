@@ -95,10 +95,10 @@ enum MenuShoppingPantryMark {
   none,
 
   /// "Kanske hemma": at home in an unknown amount, or in a unit that cannot
-  /// be converted. No deduction.
+  /// be converted.
   maybeAtHome,
 
-  /// "Kolla datum": at home, but past its date. No deduction.
+  /// "Kolla datum": at home, but past its date.
   checkDate,
 }
 
@@ -322,7 +322,7 @@ class MenuShoppingMergePlanner {
 
   /// [rows] against [pantry], matched by [IngredientIdentity.sameItem].
   /// Enough at home leaves a row off, some at home leaves the difference,
-  /// and a unit that cannot be converted or a date passed subtracts nothing
+  /// and a unit that cannot be converted subtracts nothing
   /// and marks the row. The week and the recipe button both count this way.
   static MenuShoppingPantryPass againstPantry(
     List<AggregatedShoppingItem> rows,
@@ -353,9 +353,9 @@ class MenuShoppingMergePlanner {
       switch (_deduct(row, matches)) {
         case _Covered():
           covered.add(row.name);
-        case _Remaining(:final amount):
+        case _Remaining(:final amount, :final mark):
           lessened.add(row.name);
-          lines.add(_line(row, amount));
+          lines.add(_line(row, amount, mark: mark));
         case _Marked(:final mark):
           lines.add(_line(row, row.amount, mark: mark));
       }
@@ -385,13 +385,23 @@ class MenuShoppingMergePlanner {
   );
 
   static _Deduction _deduct(AggregatedShoppingItem row, List<PantryItem> at) {
-    if (at.any((p) => p.expiryStatus == PantryExpiryStatus.expired)) {
-      return const _Marked(MenuShoppingPantryMark.checkDate);
-    }
+    // Stock past its date never counts as at home (Malin 2026-10-30, k07):
+    // fresh stock is deducted, the rest is bought and the row says Kolla
+    // datum. With nothing fresh the row stays, marked.
+    final fresh = [
+      for (final item in at)
+        if (item.expiryStatus != PantryExpiryStatus.expired) item,
+    ];
+    final anyExpired = fresh.length < at.length;
+    if (fresh.isEmpty) return const _Marked(MenuShoppingPantryMark.checkDate);
     // BUT-2304: several amounts in unconvertible units cannot be deducted in
     // one unit.
     if (row.extraAmounts.isNotEmpty) {
-      return const _Marked(MenuShoppingPantryMark.maybeAtHome);
+      return _Marked(
+        anyExpired
+            ? MenuShoppingPantryMark.checkDate
+            : MenuShoppingPantryMark.maybeAtHome,
+      );
     }
     final need = row.amount;
     // A row without an amount ("salt") is covered by any stock in date
@@ -399,13 +409,17 @@ class MenuShoppingMergePlanner {
     if (need == null || need <= 0) return const _Covered();
     final needBase = SmartUnitConverter.toCanonicalBase(need, row.unit);
     var have = 0.0;
-    for (final item in at) {
+    // Stock with no amount, or in a unit that cannot be converted, is at
+    // home in an amount nobody can count.
+    var uncounted = false;
+    for (final item in fresh) {
       final quantity = item.quantity;
       if (quantity == null) {
-        return const _Marked(MenuShoppingPantryMark.maybeAtHome);
+        uncounted = true;
+        continue;
       }
       final unit = UnitDefinitions.canonical(item.unit);
-      if (unit == row.unit) {
+      if (unit == row.unit || (_isCount(unit) && _isCount(row.unit))) {
         have += quantity;
         continue;
       }
@@ -413,14 +427,24 @@ class MenuShoppingMergePlanner {
       if (needBase == null ||
           haveBase == null ||
           haveBase.baseUnit != needBase.baseUnit) {
-        return const _Marked(MenuShoppingPantryMark.maybeAtHome);
+        uncounted = true;
+        continue;
       }
       // Into the row's own unit through the family's base unit.
       have += haveBase.quantity * need / needBase.quantity;
     }
     if (have >= need) return const _Covered();
-    return _Remaining(need - have);
+    final mark = anyExpired
+        ? MenuShoppingPantryMark.checkDate
+        : uncounted
+        ? MenuShoppingPantryMark.maybeAtHome
+        : MenuShoppingPantryMark.none;
+    if (have <= 0) return _Marked(mark);
+    return _Remaining(need - have, mark: mark);
   }
+
+  /// "3 ägg" carries no unit and the pantry's "12 st" does: both count pieces.
+  static bool _isCount(String unit) => unit.isEmpty || unit == 'st';
 }
 
 sealed class _Deduction {
@@ -434,11 +458,12 @@ final class _Covered extends _Deduction {
 
 /// Some is at home: the difference goes on the list.
 final class _Remaining extends _Deduction {
-  const _Remaining(this.amount);
+  const _Remaining(this.amount, {this.mark = MenuShoppingPantryMark.none});
   final double amount;
+  final MenuShoppingPantryMark mark;
 }
 
-/// At home, but nothing can be subtracted.
+/// At home, but nothing can be subtracted: the row stays at its full amount.
 final class _Marked extends _Deduction {
   const _Marked(this.mark);
   final MenuShoppingPantryMark mark;
