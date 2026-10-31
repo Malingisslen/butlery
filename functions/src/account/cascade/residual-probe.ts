@@ -19,6 +19,7 @@ import { COMMENT_REACTION_KEYS } from "./recipe-members-reactions";
 import { SYSTEM_EVENTS, USER_MODERATION, REPORT_HISTORY } from "./moderation";
 import { liveMenuBallotRows } from "./realtime";
 import { TRIGGER_OWNED_SUBCOLLECTIONS } from "./user-subcollections";
+import { learnedAliasesCollection } from "./learned-aliases";
 
 /**
  * GDPR canary — query the highest-risk collections AFTER the cascade.
@@ -174,6 +175,26 @@ export async function probeResidualData(
         errName: err instanceof Error ? err.name : typeof err,
       },
     );
+  }
+  // Alias candidates hold voters in a `userIds` array, so they cannot join
+  // the `userId` list above.
+  try {
+    const snap = await learnedAliasesCollection(db)
+      .where("userIds", "array-contains", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(`[deletion-cascade] residual in learned_aliases: ${count} docs`);
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: learned_aliases", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
   }
   // BUT-1801: recipes are a SUBCOLLECTION, so they need a path-scoped probe
   // rather than a userId-field filter. Counted directly under the user document:
