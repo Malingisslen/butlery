@@ -13,6 +13,7 @@ import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/storage/drift/database_key_store.dart';
+import 'package:butlery/core/storage/drift/local_database_reset.dart';
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/core/storage/drift/tables/json_cache.dart';
@@ -402,7 +403,7 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     // Use a new filename to avoid conflicts with old unencrypted database
-    final file = File(p.join(dbFolder.path, 'butlery_drift_encrypted.sqlite'));
+    final file = File(p.join(dbFolder.path, encryptedDatabaseFileName));
 
     final encryptionKey = await DatabaseKeyStore().keyFor(file);
 

@@ -51,6 +51,9 @@ class OfflineInitialization {
       );
     } catch (e) {
       AppLogger.error('❌ Error initializing Drift database: $e');
+      // A failed start runs again from the top, which subscribes again.
+      await _connectivitySubscription?.cancel();
+      _connectivitySubscription = null;
       rethrow;
     }
   }
