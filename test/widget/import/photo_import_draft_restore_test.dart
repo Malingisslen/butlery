@@ -23,6 +23,7 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
@@ -81,6 +82,12 @@ class _FakePhotoImportViewModel extends ChangeNotifier
 
   @override
   bool get isProcessing => processing;
+
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+
+  @override
+  bool get aiConsentAlreadyGiven => false;
 
   @override
   bool get hasError => false;

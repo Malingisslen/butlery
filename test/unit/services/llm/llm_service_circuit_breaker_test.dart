@@ -176,6 +176,38 @@ void main() {
         expect(breaker.isOpen, isFalse);
       });
 
+      test('repeated consent refusals do not open the breaker', () async {
+        final callable = _ThrowingHttpsCallable(
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'x',
+            details: const {'reason': 'ai-consent-required'},
+          ),
+        );
+        final breaker = CircuitBreaker(
+          failureThreshold: 3,
+          resetTime: const Duration(seconds: 60),
+        );
+        final service = serviceThrowing(callable, breaker);
+
+        for (var i = 0; i < 4; i++) {
+          await expectLater(
+            () => service.structureRecipe(text: 'a' * 50),
+            throwsA(
+              isA<LlmException>().having(
+                (e) => e.code,
+                'code',
+                LlmException.aiConsentRequiredCode,
+              ),
+            ),
+          );
+        }
+
+        expect(callable.callCount, 4);
+        expect(breaker.failureCount, 0);
+        expect(breaker.isOpen, isFalse);
+      });
+
       // The control: the same catch still counts any other Firebase error.
       // The BUT-589 case above throws a plain Exception, which takes the
       // OTHER catch, so without this nothing pins this branch's count.

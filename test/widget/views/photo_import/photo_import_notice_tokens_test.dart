@@ -20,6 +20,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/views/photo_import_view.dart';
@@ -50,6 +51,12 @@ class _QualityFakeViewModel extends ChangeNotifier
 
   @override
   List<String>? get recommendations => ['Fotografera i bättre ljus'];
+
+  @override
+  PhotoAiOfferReason? get aiOffer => null;
+
+  @override
+  bool get aiConsentAlreadyGiven => false;
 
   @override
   bool get hasError => false;

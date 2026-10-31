@@ -193,6 +193,35 @@ void main() {
       });
     });
 
+    group('the AI consent refusal', () {
+      test('failed-precondition with its reason maps to its own message', () {
+        final ex = LlmException.fromFirebase(
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'x',
+            details: const {'reason': 'ai-consent-required'},
+          ),
+        );
+
+        expect(ex.code, LlmException.aiConsentRequiredCode);
+        expect(ex.message, AppLocale.current.llmAiConsentRequired);
+        expect(ex.isRateLimited, isFalse);
+        expect(ex.retryAfter, isNull);
+      });
+
+      // The reason string is typed in two languages; a rename on the server
+      // must redden here.
+      test('the server denies with the reason mapped here', () {
+        final ts = File('functions/src/llm/ai-consent.ts').readAsStringSync();
+        final match = RegExp(
+          r'AI_CONSENT_REQUIRED\s*=\s*"([a-z-]+)"',
+        ).firstMatch(ts);
+
+        expect(match, isNotNull);
+        expect(match!.group(1), LlmException.aiConsentRequiredCode);
+      });
+    });
+
     test('Swedish ↔ English copy parity: all 8 messages are distinct', () {
       // Catches a regression where two codes accidentally share the same copy
       // (e.g. timeout and unavailable both falling back to a generic string).

@@ -443,6 +443,7 @@ class LlmService extends BaseService {
         unawaited(_guestSession?.recordLimitReached());
       }
       if (error.code != LlmException.costCeilingCode &&
+          error.code != LlmException.aiConsentRequiredCode &&
           error.code != LlmException.guestImportLimitCode &&
           error.code != LlmException.guestCallLimitCode &&
           error.code != LlmException.guestCapacityCode) {

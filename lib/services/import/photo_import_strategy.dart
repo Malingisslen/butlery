@@ -1,19 +1,14 @@
 /// Photo Import Strategy - Extracts recipes from images using OCR technology.
 /// Implements a comprehensive OCR-to-recipe workflow:
 /// 1. Extract image bytes from input or options parameter
-/// 2. Perform OCR text extraction (multi-provider fallback)
+/// 2. Perform OCR text extraction
 /// 3. Parse extracted text to recipe structure using TextImportStrategy
 /// 4. Return recipe with OCR metadata and confidence tracking
-/// **Multi-Provider OCR:**
-/// - Primary: OCR.space (free tier 25,000/month)
-/// - Secondary: Google Vision API (premium quality)
-/// - Tertiary: Tesseract (self-hosted fallback)
 /// **HEIC handling (BUT-662):** iOS HEIC inputs are detected by magic
 /// bytes and converted to JPEG via flutter_image_compress before OCR.
 /// The original format is preserved as `image_format` on analytics
 /// events; the format actually sent to OCR is `image_format_sent`.
 /// **Swedish Recipe Optimization:**
-/// - Swedish language hints enabled
 /// - Swedish keyword detection (ingredienser, portioner, etc.)
 /// - Swedish measurement units preserved (dl, msk, tsk, krm)
 /// **Usage Examples:**
@@ -49,7 +44,7 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 /// Strategy for importing recipes from photos using OCR technology.
 /// **Extraction Workflow:**
 /// 1. **Image Validation**: Check image data presence and format
-/// 2. **OCR Extraction**: Extract text using multi-provider system
+/// 2. **OCR Extraction**: Extract text
 /// 3. **Text Parsing**: Convert OCR text to recipe structure
 /// 4. **Quality Assessment**: Evaluate confidence and provide warnings
 /// **Supported Sources:**
@@ -75,9 +70,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
        _textStrategy = textStrategy ?? TextImportStrategy(),
        _heicConverter = heicConverter ?? HeicConverter();
 
-  /// BUT-1460: both LLM-vision routes (printed Tier-4 fallback + handwritten
-  /// opt-in) live in [PhotoLlmVision] — extracted to keep this file under the
-  /// 500-line limit and to share one result conversion between the routes.
+  /// BUT-1460: LLM vision lives in [PhotoLlmVision], extracted to keep this
+  /// file under the 500-line limit.
   late final PhotoLlmVision _llmVision = PhotoLlmVision(
     strategyName: strategyName,
   );
@@ -158,22 +152,17 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         // error path.
       }
 
-      // BUT-684: handwritten recipes are LLM-vision-only — the char-OCR
-      // providers (OCR.space / Google Vision / Tesseract) reliably produce
-      // garbage on handwriting, so trying them first would only burn quota.
-      // The handwriting-tuned Cloud Function prompt is the only path with a
-      // real chance, gated behind an explicit user opt-in (so the extra LLM
-      // cost is intentional). We ALWAYS return the vision result here —
-      // success, assistance, OR failure — and never fall through to the
-      // char-OCR cascade. Falling through would re-enter the Tier-4 LLM
-      // fallback with the PRINTED prompt: a second billed vision call that
-      // also drops the handwriting tuning (review BUG 1).
+      // Handwriting (BUT-684) and a photo the person chose to send to the AI
+      // reading go to LLM vision only. We ALWAYS return the vision result
+      // here — success, assistance, OR failure — and never fall through to
+      // the char-OCR path.
       final isHandwritten = options?['isHandwritten'] == true;
-      if (isHandwritten) {
+      if (isHandwritten || options?['visionOnly'] == true) {
         return _captureSnapshot(
-          await _llmVision.handwrittenImport(
+          await _llmVision.visionImport(
             bytesToOcr,
             options?['sourceType'] as String?,
+            handwritten: isHandwritten,
             formatBefore: formatBefore,
             formatAfter: formatAfter,
           ),
@@ -187,18 +176,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       final ocrResult = await _ocrService.extractText(bytesToOcr);
 
       if (!ocrResult.isSuccessful) {
-        // OCR failed - try LLM vision as Tier 4 fallback
-        final llmResult = await _llmVision.tryFallback(
-          bytesToOcr,
-          options?['sourceType'] as String?,
-          formatBefore: formatBefore,
-          formatAfter: formatAfter,
-        );
-        if (llmResult != null) {
-          return _captureSnapshot(llmResult);
-        }
-
-        // LLM also unavailable or failed
         return ImportResult.failure(
           ocrResult.errorMessage ?? 'OCR extraction failed',
           errorCode: ImportErrorCode.ocrFailed,
@@ -214,18 +191,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Check if OCR extracted any text
       if (ocrResult.text.isEmpty) {
-        // No text extracted - try LLM vision as Tier 4 fallback
-        final llmResult = await _llmVision.tryFallback(
-          bytesToOcr,
-          options?['sourceType'] as String?,
-          formatBefore: formatBefore,
-          formatAfter: formatAfter,
-        );
-        if (llmResult != null) {
-          return _captureSnapshot(llmResult);
-        }
-
-        // LLM also unavailable or failed
         return ImportResult.failure(
           'No text could be extracted from the image. Please ensure the image is clear and contains readable text.',
           errorCode: ImportErrorCode.ocrFailed,
@@ -243,18 +208,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       final textResult = await _textStrategy.import(ocrResult.text);
 
       if (!textResult.isSuccess || textResult.recipe == null) {
-        // Text parsing failed - try LLM vision as Tier 4 fallback
-        final llmResult = await _llmVision.tryFallback(
-          bytesToOcr,
-          options?['sourceType'] as String?,
-          formatBefore: formatBefore,
-          formatAfter: formatAfter,
-        );
-        if (llmResult != null) {
-          return _captureSnapshot(llmResult);
-        }
-
-        // LLM also unavailable or failed
         return ImportResult.failure(
           'Could not parse recipe from extracted text. ${textResult.errorMessage ?? "The text may not contain a valid recipe structure."}',
           errorCode: ImportErrorCode.noRecipeContent,
@@ -427,18 +380,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         warnings.add(
           'Medium OCR confidence (${(confidence * 100).toInt()}%). '
           'Review recipe for accuracy.',
-        );
-      }
-
-      // Add OCR method warning if using fallback
-      // `on_device` is a PRIMARY provider, not a fallback — it runs first by
-      // design — so reaching it says nothing about the paid chain's health.
-      // Without this it would be reported as "primary unavailable" on the
-      // normal path once the on-device tier is enabled.
-      const primaryMethods = {'ocr_space', 'on_device'};
-      if (!primaryMethods.contains(ocrResult.processingMethod)) {
-        warnings.add(
-          'Used ${ocrResult.processingMethod} OCR provider (primary unavailable).',
         );
       }
     }

@@ -9,10 +9,9 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
-/// BUT-610: the photo-import offline pre-check must fail fast BEFORE the
-/// multi-provider OCR cascade (OCR.space → Google Vision → Tesseract), which
-/// otherwise spins 30–90s on provider timeouts when offline. We assert the
-/// offline error is set and that no parse (the step downstream of OCR) runs.
+/// BUT-610: the photo-import offline pre-check must fail fast BEFORE OCR is
+/// attempted. We assert the offline error is set and that no parse (the step
+/// downstream of OCR) runs.
 void main() {
   // ImagePicker plugin lookups + OCR service construction require the binding
   // to exist before any VM (which captures it) is built.

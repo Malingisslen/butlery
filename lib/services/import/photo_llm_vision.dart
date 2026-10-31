@@ -1,8 +1,6 @@
 /// LLM-vision extraction for photo imports (BUT-684 / BUT-1460).
 ///
-/// Extracted from [PhotoImportStrategy] (500-line limit): both vision routes —
-/// the printed Tier-4 fallback and the handwritten opt-in — live here and share
-/// ONE ImportResultV2→ImportResult conversion so they cannot silently drift.
+/// Extracted from [PhotoImportStrategy] (500-line limit).
 ///
 /// Not a `BaseService`: pure delegation helper owned by the strategy (no
 /// Firebase ops, no DI registration of its own) — it resolves
@@ -19,7 +17,7 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 
-/// The two LLM-vision routes of the photo-import strategy.
+/// The LLM-vision route of the photo-import strategy.
 class PhotoLlmVision {
   /// [strategyName] rides on failure metadata so analytics keep attributing
   /// vision outcomes to the owning strategy, exactly as before the extraction.
@@ -36,18 +34,16 @@ class PhotoLlmVision {
     }
   }
 
-  /// BUT-684: LLM-vision import for the handwritten opt-in.
+  /// LLM-vision import for the handwritten opt-in (BUT-684), and a printed
+  /// photo the person chose to send after the phone could not read it.
   ///
-  /// Unlike [tryFallback] (which returns null so the char-OCR cascade can
-  /// try the next tier), this ALWAYS returns a terminal [ImportResult] —
-  /// success, assistance, or failure — because handwriting has no viable
-  /// char-OCR fallback. Returning a failure here (rather than null) stops
-  /// the import from re-entering the LLM fallback with the printed prompt (a
-  /// second billed call) and preserves the vision call's own message — notably
-  /// the structured rate-limit retry text (BUT-1144).
-  Future<ImportResult> handwrittenImport(
+  /// This ALWAYS returns a terminal [ImportResult] — success, assistance, or
+  /// failure — and so preserves the vision call's own message, notably the
+  /// structured rate-limit retry text (BUT-1144).
+  Future<ImportResult> visionImport(
     Uint8List imageBytes,
     String? sourceType, {
+    required bool handwritten,
     ImageFormat formatBefore = ImageFormat.unknown,
     ImageFormat formatAfter = ImageFormat.unknown,
   }) async {
@@ -58,7 +54,7 @@ class PhotoLlmVision {
         metadata: {
           'strategy': strategyName,
           'error_type': 'llm_unavailable',
-          'handwritten': true,
+          'handwritten': handwritten,
         },
       );
     }
@@ -66,8 +62,10 @@ class PhotoLlmVision {
     try {
       final llmResult = await llmService.extractFromImage(
         imageBytes,
-        context: 'Handwritten recipe image from photo import',
-        isHandwritten: true,
+        context: handwritten
+            ? 'Handwritten recipe image from photo import'
+            : 'Recipe image from photo import',
+        isHandwritten: handwritten,
       );
 
       final converted = _visionResultToImport(
@@ -76,76 +74,39 @@ class PhotoLlmVision {
         sourceType: sourceType,
         formatBefore: formatBefore,
         formatAfter: formatAfter,
-        handwritten: true,
+        handwritten: handwritten,
       );
       if (converted != null) return converted;
 
       // ImportFailure — surface its (already localized) message, including the
       // structured rate-limit retry text, instead of falling through to the
-      // char-OCR cascade (which would fire a second, printed-prompt LLM call).
+      // char-OCR path.
       final failure = llmResult as ImportFailure;
       return ImportResult.failure(
         failure.message,
         errorCode: failure.errorCode,
         metadata: {
           'strategy': strategyName,
-          'method': 'llm-vision-handwritten',
-          'handwritten': true,
+          'method': handwritten ? 'llm-vision-handwritten' : 'llm-vision',
+          'handwritten': handwritten,
           'error_code': failure.errorCode.name,
         },
       );
     } catch (e) {
-      AppLogger.error('Handwritten photo import failed', e);
+      AppLogger.error('Vision photo import failed', e);
       return ImportResult.failure(
         AppLocale.current.errorGeneric,
         metadata: {
           'strategy': strategyName,
-          'handwritten': true,
+          'handwritten': handwritten,
         },
       );
     }
   }
 
-  /// Try LLM vision extraction as Tier 4 fallback when char-OCR fails
-  /// (printed path). Returns null on failure/unavailability so the strategy
-  /// falls through to its original error.
-  Future<ImportResult?> tryFallback(
-    Uint8List imageBytes,
-    String? sourceType, {
-    ImageFormat formatBefore = ImageFormat.unknown,
-    ImageFormat formatAfter = ImageFormat.unknown,
-  }) async {
-    final llmService = _llmService;
-    if (llmService == null) {
-      return null; // LLM service not available
-    }
-
-    try {
-      final llmResult = await llmService.extractFromImage(
-        imageBytes,
-        context: 'Recipe image from photo import',
-      );
-
-      // LLM failure converts to null here: fall through to original error.
-      return _visionResultToImport(
-        llmResult,
-        imageBytes: imageBytes,
-        sourceType: sourceType,
-        formatBefore: formatBefore,
-        formatAfter: formatAfter,
-        handwritten: false,
-      );
-    } catch (e) {
-      // LLM error - return null to fall through to original error
-      return null;
-    }
-  }
-
-  /// Shared ImportResultV2→ImportResult conversion for BOTH vision routes
-  /// (BUT-1460 review FIX 2 — previously copy-pasted, only the
-  /// method/strategy metadata strings differed). Handles success and
-  /// assistance; returns null for failure so each caller applies its own
-  /// failure semantics (terminal for handwritten, fall-through for printed).
+  /// ImportResultV2→ImportResult conversion. Handles success and
+  /// assistance; returns null for failure so the caller applies its own
+  /// failure semantics.
   ImportResult? _visionResultToImport(
     ImportResultV2 llmResult, {
     required Uint8List imageBytes,

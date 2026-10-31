@@ -197,7 +197,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `ui_module.dart` | 516 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |
 | `edit_recipe_view.dart` | 847 | Recipe editing screen. |
 | `user_profile_edit_view.dart` | 353 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
-| `ocr_extraction_service.dart` | 1,256 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
+| `ocr_extraction_service.dart` | 865 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 711 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 463 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
@@ -213,7 +213,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `tag_detail_view.dart` | 176 | Tag detail/editing screen |
 | `menu_viewmodel.dart` | 1155 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 684 | Shopping list member management dialog |
-| `photo_import_view.dart` | 571 | Photo import screen |
+| `photo_import_view.dart` | 606 | Photo import screen |
 | `layout_components.dart` | 171 | Common layout component widgets |
 | `group_weekly_menu_widget.dart` | 347 | The group's weekly menu screen (BUT-1971). Row added 2026-08-30. Grew past 500 with the provenance row and the voter sheet, which the Art. 15 keep decision rests on. The day rows, the face row and the week arrows are already separate widgets; the next split is the sheet. |
 | `menu_preview_view.dart` | 326 | Shared menu preview screen |
@@ -240,7 +240,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `collaborative_shopping_items.dart` | 534 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
 | `tag_result_display.dart` | 605 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
 | `onboarding_viewmodel.dart` | 614 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
-| `photo_import_viewmodel.dart` | 1,006 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
+| `photo_import_viewmodel.dart` | 1,146 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 691 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 524 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 616 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
@@ -264,7 +264,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `collaborative_shopping_items.dart` | 534 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 605 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 614 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
-| `photo_import_viewmodel.dart` | 1,006 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
+| `photo_import_viewmodel.dart` | 1,146 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 691 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
 | `fcm_service.dart` | 738 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
 | `menu_generator.dart` | 922 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
