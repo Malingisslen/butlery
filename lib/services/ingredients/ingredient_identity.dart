@@ -60,6 +60,50 @@ class IngredientIdentity {
     'malda',
   };
 
+  // A colour names a different product too: "röd lök" is the rödlök on
+  // the shelf, not lök, and black beans do not cover white ones. The colour
+  // joins the next word, so "röd lök" and "rödlök" read the same.
+  static const _colourStems = {
+    'gul': 'gul',
+    'gula': 'gul',
+    'gult': 'gul',
+    'röd': 'röd',
+    'röda': 'röd',
+    'rött': 'röd',
+    'vit': 'vit',
+    'vita': 'vit',
+    'vitt': 'vit',
+    'grön': 'grön',
+    'gröna': 'grön',
+    'grönt': 'grön',
+    'svart': 'svart',
+    'svarta': 'svart',
+    'brun': 'brun',
+    'bruna': 'brun',
+    'brunt': 'brun',
+    'orange': 'orange',
+    'orangea': 'orange',
+    'rosa': 'rosa',
+    'ljus': 'ljus',
+    'ljusa': 'ljus',
+    'ljust': 'ljus',
+    'mörk': 'mörk',
+    'mörka': 'mörk',
+    'mörkt': 'mörk',
+  };
+
+  // In a recipe "lök" means the yellow onion (Malin 2026-10-31), and
+  // "peppar" the black pepper, so their other names are the same product.
+  static const _sameProduct = {
+    'gullok': 'lok',
+    'matlok': 'lok',
+    'svartpeppar': 'peppar',
+  };
+
+  // Joining would turn these into another product: white onion is not the
+  // vitlök (garlic) on the shelf.
+  static const _notJoined = {'vitlök'};
+
   static final _whitespace = RegExp(r'\s+');
   static final _parenthetical = RegExp(r'\([^)]*\)');
 
@@ -73,7 +117,9 @@ class IngredientIdentity {
     final kept = words
         .where(
           (w) =>
-              _productStates.contains(w) || !PreparationWords.shouldRemove(w),
+              _productStates.contains(w) ||
+              _colourStems.containsKey(w) ||
+              !PreparationWords.shouldRemove(w),
         )
         .toList();
     // A name made only of descriptors ("stor") is still a name.
@@ -93,8 +139,27 @@ class IngredientIdentity {
     base[base.length - 1] = SwedishPluralization.normalizeToSingular(
       base.last,
     );
+    // Joined after the plural is read, which does not see into a compound.
+    base = _joinColours(base);
     // Folded last so "lok" keeps matching "lök", as the pantry deduction does.
-    return SwedishCharacterNormalizer.normalize(base.join(' '));
+    final key = SwedishCharacterNormalizer.normalize(base.join(' '));
+    return _sameProduct[key] ?? key;
+  }
+
+  // A colour joins the word after it. Where there is none, or the join
+  // would name another product, the colour is dropped as before.
+  static List<String> _joinColours(List<String> words) {
+    final joined = <String>[];
+    for (var i = 0; i < words.length; i++) {
+      final stem = _colourStems[words[i]];
+      if (stem == null) {
+        joined.add(words[i]);
+      } else if (i + 1 < words.length &&
+          !_notJoined.contains('$stem${words[i + 1]}')) {
+        joined.add('$stem${words[++i]}');
+      }
+    }
+    return joined.isEmpty ? words : joined;
   }
 
   /// Whether two rows are one product: the same registry id
