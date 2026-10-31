@@ -241,6 +241,47 @@ void main() {
         editViewModel.dispose();
       });
 
+      test('a web import keeps the photo from the original page', () {
+        const photo = 'https://cdn.example.com/pasta.jpg';
+        final imported = RecipeBuilder()
+            .withId('imported-1')
+            .withTitle('Pasta')
+            .withSourceUrl('https://example.com/pasta')
+            .withImageUrls([photo])
+            .build();
+        final vm = RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: imported,
+          isTemplate: true,
+        );
+
+        expect(vm.isEditing, isFalse);
+        expect(vm.imageUrls, equals([photo]));
+
+        vm.dispose();
+      });
+
+      test('a duplicate does not share the original Storage image', () {
+        const own =
+            'https://firebasestorage.googleapis.com/v0/b/'
+            'butlery-prod.firebasestorage.app/o/users%2Fa%2Fp.jpg?alt=media';
+        final original = RecipeBuilder()
+            .withId('own-1')
+            .withTitle('Pasta')
+            .withSourceUrl('https://example.com/pasta')
+            .withImageUrls([own])
+            .build();
+        final vm = RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: original,
+          isTemplate: true,
+        );
+
+        expect(vm.imageUrls, isEmpty);
+
+        vm.dispose();
+      });
+
       test('should initialize with default values', () {
         // Assert
         expect(viewModel.isSaving, isFalse);

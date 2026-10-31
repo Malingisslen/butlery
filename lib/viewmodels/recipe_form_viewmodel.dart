@@ -6,6 +6,7 @@
 
 // lib/viewmodels/recipe_form_viewmodel.dart
 
+import 'package:butlery/core/utils/borrowed_image.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -167,6 +168,22 @@ class RecipeFormViewModel extends BaseViewModel
 
       // BUT-1057: seed the mutable related-recipe list from the initial recipe.
       _relatedRecipeIds.addAll(initialRecipe.core.relatedRecipeIds ?? const []);
+    }
+
+    // An import opens as a template, so the block above is skipped for it. The
+    // photo taken from the original page still has to reach the saved recipe,
+    // otherwise the source credit has no image to sit on. Own-Storage images
+    // (a duplicated recipe) are deliberately left out.
+    if (initialRecipe != null && isTemplate) {
+      final borrowed = initialRecipe.imageUrls
+          .where(
+            (url) => isBorrowedImage(
+              imageUrl: url,
+              sourceUrl: initialRecipe.sourceUrl,
+            ),
+          )
+          .toList();
+      if (borrowed.isNotEmpty) _imageManager.setUploadedImageUrls(borrowed);
     }
 
     // Register lifecycle observer for auto-save on app background/kill
