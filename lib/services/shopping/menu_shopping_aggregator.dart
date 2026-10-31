@@ -1,10 +1,10 @@
 // lib/services/shopping/menu_shopping_aggregator.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
 import 'package:butlery/utils/text/ingredient_quantity.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
-import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 
 /// BUT-956: one aggregated shopping line produced from the week's recipes.
@@ -62,14 +62,14 @@ typedef ScaledRecipe = ({Recipe recipe, double factor});
 /// - [IngredientQuantity.shoppingLine] reads each line's amount: a range
 ///   counts at its highest value, and a line stating no amount aggregates by
 ///   name into a single amount-less line — present, un-summed.
-/// - Name key: [SwedishCharacterNormalizer] + lowercase/trim, so "Mjöl" and
-///   "mjol" merge; display keeps the first-seen casing.
+/// - Name key: [IngredientIdentity.nameKey], so "Mjöl" and "mjol" merge;
+///   display keeps the first-seen casing.
 class MenuShoppingAggregator {
   const MenuShoppingAggregator._();
 
   /// [excludeNames] (BUT-1279): normalized ingredient names to drop from the
   /// result — used to keep pantry staples off the generated list. Each name
-  /// must already be passed through [SwedishCharacterNormalizer.normalize].
+  /// must already be passed through [IngredientIdentity.nameKey].
   /// Retained as public API: since BUT-1613 the generator splits staples from
   /// a single unfiltered pass, so the only current caller is the unit test.
   static List<AggregatedShoppingItem> aggregate(
@@ -106,7 +106,7 @@ class MenuShoppingAggregator {
         final line = IngredientQuantity.shoppingLine(entry);
         final displayName = line.name;
         if (displayName.isEmpty) continue;
-        final nameKey = SwedishCharacterNormalizer.normalize(displayName);
+        final nameKey = IngredientIdentity.nameKey(displayName);
         if (excludeNames.contains(nameKey)) continue;
         rawRows++;
         final amount = line.amount;

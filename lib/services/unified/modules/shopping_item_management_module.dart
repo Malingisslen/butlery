@@ -1,5 +1,6 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -237,9 +238,9 @@ class ShoppingItemManagementModule {
 
       // Dedup: merge quantities for matching items (same name, compatible units)
       for (final newItem in items) {
-        final normalizedName = newItem.name.trim().toLowerCase();
+        final normalizedName = IngredientIdentity.nameKey(newItem.name);
         final matchIndex = existingItems.indexWhere((existing) {
-          final existingName = existing.name.trim().toLowerCase();
+          final existingName = IngredientIdentity.nameKey(existing.name);
           if (existingName != normalizedName) return false;
           // Compatible units: same unit or both empty
           final unitsMatch =

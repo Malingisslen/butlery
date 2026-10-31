@@ -190,6 +190,21 @@ void main() {
       expect(line.amount, 350);
     });
 
+    test('a prepared pantry row covers the plain ingredient', () {
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [_ing(1, 'st', 'lök')]),
+        ],
+      }, _date);
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([_pantry('hackad lök', 2, 'st')]),
+        const MenuShoppingMergeOptions(),
+      );
+      expect(merge.lines, isEmpty);
+      expect(merge.coveredAtHome, ['lök']);
+    });
+
     test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
         '1 dl on the list (PQ-11 = A)', () {
       final merge = MenuShoppingListGenerator.preview(
@@ -379,6 +394,32 @@ void main() {
       final back = writes.last;
       expect(back.items.map((i) => i.id), unorderedEquals(['own', 'old']));
       expect(back.menuItemIds, ['old']);
+    });
+
+    test('bought status survives a replace when the old row had a '
+        'preparation word', () async {
+      final old = UnifiedShoppingItem(
+        id: 'old',
+        name: 'hackad gul lök',
+        amount: 1,
+        unit: 'st',
+        bought: true,
+      );
+      final list = _weekList(items: [old], menuItemIds: ['old']);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+
+      await generator.apply(
+        MenuShoppingListGenerator.preview(
+          _source(),
+          const MenuShoppingPantry.read([]),
+          const MenuShoppingMergeOptions(replaceList: true),
+        ),
+      );
+
+      expect(
+        writes.single.items.firstWhere((i) => i.name == 'gul lök').bought,
+        isTrue,
+      );
     });
 
     test('a list written before menuItemIds existed cannot be replaced: '

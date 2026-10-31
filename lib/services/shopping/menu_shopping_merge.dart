@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
-import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
@@ -215,7 +215,7 @@ class MenuShoppingMergePlanner {
       for (final item in pantry.items) {
         byName
             .putIfAbsent(
-              SwedishCharacterNormalizer.normalize(item.ingredientName),
+              IngredientIdentity.nameKey(item.ingredientName),
               () => [],
             )
             .add(item);
@@ -226,8 +226,7 @@ class MenuShoppingMergePlanner {
     final covered = <String>[];
     var atHome = 0;
     for (final row in aggregation.items) {
-      final matches =
-          byName[SwedishCharacterNormalizer.normalize(row.name)] ?? const [];
+      final matches = byName[IngredientIdentity.nameKey(row.name)] ?? const [];
       if (matches.isEmpty) {
         lines.add(_line(row, row.amount));
         continue;
@@ -285,11 +284,9 @@ class MenuShoppingMergePlanner {
     required String unit,
     required List<PantryItem> pantry,
   }) {
-    final key = SwedishCharacterNormalizer.normalize(name);
     final matches = [
       for (final item in pantry)
-        if (SwedishCharacterNormalizer.normalize(item.ingredientName) == key)
-          item,
+        if (IngredientIdentity.same(item.ingredientName, name)) item,
     ];
     if (matches.isEmpty) {
       return (

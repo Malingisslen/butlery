@@ -799,5 +799,17 @@ void main() {
       expect(items.single.amount, 4);
       expect(items.single.unit, 'tsk');
     });
+
+    test('a preparation word or a plural is the same row', () {
+      // One row per ingredient, so the pantry is counted against it once.
+      final items = aggregate([
+        '1 lök',
+        '2 hackade lökar',
+        '2 tomater',
+        '1 tomat',
+      ]);
+      expect(items, hasLength(2));
+      expect(items.map((i) => i.amount), [3, 3]);
+    });
   });
 }

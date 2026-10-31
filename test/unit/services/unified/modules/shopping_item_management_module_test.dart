@@ -574,6 +574,25 @@ void main() {
       expect(notifyCalls, 1);
     });
 
+    test('merges a prepared name into the plain one', () async {
+      lists.add(
+        _seedList(
+          id: 'L',
+          items: [UnifiedShoppingItem(name: 'lök', amount: 1, unit: 'st')],
+        ),
+      );
+      activeListId = 'L';
+
+      final ok = await buildModule().addItemsBatchToActiveList([
+        UnifiedShoppingItem(name: 'hackad lök', amount: 2, unit: 'st'),
+      ]);
+
+      expect(ok, isTrue);
+      expect(fakeRepo.batchedItems, isEmpty);
+      expect(lists.first.items, hasLength(1));
+      expect(lists.first.items.single.amount, 3);
+    });
+
     /// BUT-2067: the merge is a SUM, and a sum of two finite doubles can be
     /// Infinity. It needs two near-maximal rows rather than one overflowing
     /// product. The merge runs every time the same item is added again.
