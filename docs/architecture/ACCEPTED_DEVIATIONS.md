@@ -477,6 +477,8 @@ changes `menuItemIds` with `arrayUnion`/`arrayRemove`. A tick the same account m
 device in the meantime, on a row the memory copy holds as untouched and unticked, can be lost when
 that row is overwritten or taken off. It retires "An add is safe" and "sets `menuItemIds`
 outright".
+**Accepted** by Malin 2026-10-31 13:36 on the decision card "Är det ok att en avbockning gjord
+utan nät ibland försvinner när listan uppdateras?": "Ja, det är ok".
 
 ### [Shopping/Offline] A version lost to an offline cached-base replay is not kept for restore (BUT-2140, PR 3)
 The 30-day restore keeps a row's earlier version (`previous`) and a removed row
