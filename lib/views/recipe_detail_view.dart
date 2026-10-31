@@ -26,6 +26,7 @@ import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
 import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_action_bar.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_note_banner.dart';
@@ -365,7 +366,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             // picker, and cooking mode knows no member ids, so none are
             // passed (Q-P6-E18).
             case CookingModeExit.finished:
-              await viewModel.markAsCooked();
+              if (await viewModel.markAsCooked() && context.mounted) {
+                await RecipeManagementHandler.offerCookedPantry(
+                  context,
+                  viewModel.recipe,
+                  _actions.currentPortions,
+                );
+              }
             // Q6-05 = C: "Spara min kopia" does exactly that, through the
             // same copy path as "Spara till mitt kök".
             case CookingModeExit.saveCopy:

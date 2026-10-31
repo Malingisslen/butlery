@@ -494,6 +494,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     // Delegate to the shared handler so the "vem åt?" picker and the family
     // rating chain fire here too — this is the live "Lagat idag" button, and
     // the handler is the single implementation of the cook flow.
-    await RecipeManagementHandler.markAsCooked(context);
+    await RecipeManagementHandler.markAsCooked(
+      context,
+      portions: widget.currentPortions,
+    );
   }
 }

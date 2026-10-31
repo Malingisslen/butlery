@@ -17432,5 +17432,102 @@
         "type": "String"
       }
     }
+  },
+  "cookedPantryTitle": "Dra av från skafferiet?",
+  "@cookedPantryTitle": {
+    "description": "Title of the sheet offered after a recipe is marked as cooked."
+  },
+  "cookedPantrySubtitle": "Varor i skafferiet som receptet använder, för {portions, plural, =1{1 portion} other{{portions} portioner}}.",
+  "@cookedPantrySubtitle": {
+    "description": "Subtitle of the cooked-recipe pantry sheet.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryHasLeft": "har {have}, kvar {left}",
+  "@cookedPantryHasLeft": {
+    "description": "Grey line under a pantry row in the cooked sheet: what the row holds and what remains.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryHasRemoved": "har {have}, tas bort ur skafferiet",
+  "@cookedPantryHasRemoved": {
+    "description": "Grey line under a pantry row that the take empties.",
+    "placeholders": {
+      "have": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantrySkip": "Hoppa över",
+  "@cookedPantrySkip": {
+    "description": "Outlined button in the cooked pantry sheet."
+  },
+  "cookedPantryConfirm": "{count, plural, =1{Dra av 1 vara} other{Dra av {count} varor}}",
+  "@cookedPantryConfirm": {
+    "description": "Primary button in the cooked pantry sheet; disabled at zero.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryTaken": "{count, plural, =1{1 vara dragen} other{{count} varor dragna}} från skafferiet",
+  "@cookedPantryTaken": {
+    "description": "Snackbar after the take; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPantryFailed": "Kunde inte dra av allt från skafferiet. Det som hann dras av kan ångras.",
+  "@cookedPantryFailed": {
+    "description": "Failure snackbar when a pantry write was refused."
+  },
+  "cookedPantryUndoFailed": "Kunde inte ångra avdraget i skafferiet",
+  "@cookedPantryUndoFailed": {
+    "description": "Failure snackbar when Ångra could not write back."
+  },
+  "cookedPantryEditTitle": "Hur mycket {name}?",
+  "@cookedPantryEditTitle": {
+    "description": "Title of the dialog that edits the amount to take.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryRowSemantics": "{name}, dra av {amount}",
+  "@cookedPantryRowSemantics": {
+    "description": "Screen-reader label of a row in the cooked pantry sheet.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedPantryAmountSemantics": "Ändra mängd för {name}, nu {amount}",
+  "@cookedPantryAmountSemantics": {
+    "description": "Screen-reader label of the amount box in a cooked pantry row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
   }
 }

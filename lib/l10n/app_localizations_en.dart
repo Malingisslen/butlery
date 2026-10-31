@@ -21027,4 +21027,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingPantryAddFailed(String name) {
     return 'Could not add $name to the pantry.';
   }
+
+  @override
+  String get cookedPantryTitle => 'Take it out of the pantry?';
+
+  @override
+  String cookedPantrySubtitle(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions servings',
+      one: '1 serving',
+    );
+    return 'Pantry items the recipe uses, for $_temp0.';
+  }
+
+  @override
+  String cookedPantryHasLeft(String have, String left) {
+    return 'have $have, $left left';
+  }
+
+  @override
+  String cookedPantryHasRemoved(String have) {
+    return 'have $have, removed from the pantry';
+  }
+
+  @override
+  String get cookedPantrySkip => 'Skip';
+
+  @override
+  String cookedPantryConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Take out $count items',
+      one: 'Take out 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookedPantryTaken(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0 taken out of the pantry';
+  }
+
+  @override
+  String get cookedPantryFailed =>
+      'Could not take everything out of the pantry. What was taken can be undone.';
+
+  @override
+  String get cookedPantryUndoFailed => 'Could not undo the pantry take-out';
+
+  @override
+  String cookedPantryEditTitle(String name) {
+    return 'How much $name?';
+  }
+
+  @override
+  String cookedPantryRowSemantics(String name, String amount) {
+    return '$name, take out $amount';
+  }
+
+  @override
+  String cookedPantryAmountSemantics(String name, String amount) {
+    return 'Change the amount for $name, now $amount';
+  }
 }

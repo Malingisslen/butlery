@@ -20859,4 +20859,75 @@ class AppLocalizationsSv extends AppLocalizations {
   String shoppingPantryAddFailed(String name) {
     return 'Kunde inte lägga $name i skafferiet.';
   }
+
+  @override
+  String get cookedPantryTitle => 'Dra av från skafferiet?';
+
+  @override
+  String cookedPantrySubtitle(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions portioner',
+      one: '1 portion',
+    );
+    return 'Varor i skafferiet som receptet använder, för $_temp0.';
+  }
+
+  @override
+  String cookedPantryHasLeft(String have, String left) {
+    return 'har $have, kvar $left';
+  }
+
+  @override
+  String cookedPantryHasRemoved(String have) {
+    return 'har $have, tas bort ur skafferiet';
+  }
+
+  @override
+  String get cookedPantrySkip => 'Hoppa över';
+
+  @override
+  String cookedPantryConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dra av $count varor',
+      one: 'Dra av 1 vara',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookedPantryTaken(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor dragna',
+      one: '1 vara dragen',
+    );
+    return '$_temp0 från skafferiet';
+  }
+
+  @override
+  String get cookedPantryFailed =>
+      'Kunde inte dra av allt från skafferiet. Det som hann dras av kan ångras.';
+
+  @override
+  String get cookedPantryUndoFailed => 'Kunde inte ångra avdraget i skafferiet';
+
+  @override
+  String cookedPantryEditTitle(String name) {
+    return 'Hur mycket $name?';
+  }
+
+  @override
+  String cookedPantryRowSemantics(String name, String amount) {
+    return '$name, dra av $amount';
+  }
+
+  @override
+  String cookedPantryAmountSemantics(String name, String amount) {
+    return 'Ändra mängd för $name, nu $amount';
+  }
 }
