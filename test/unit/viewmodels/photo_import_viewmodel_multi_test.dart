@@ -139,6 +139,23 @@ Stek små plättar i plättlagg.''';
       },
     );
 
+    test('saveSelectedRecipes saves the amounts as fractions', () async {
+      final ok = await vm.saveSelectedRecipes([
+        RecipeFactory.build(
+          id: 'r1',
+          title: 'A',
+        ).copyWith(ingredients: const ['1,5 dl mjölk', '2 ägg']),
+      ]);
+
+      expect(ok, isTrue);
+      final saved =
+          verify(
+                () => mockPersonalOps.addUnifiedRecipe(captureAny()),
+              ).captured.single
+              as Recipe;
+      expect(saved.ingredients, ['1 ½ dl mjölk', '2 ägg']);
+    });
+
     test('saveSelectedRecipes saves each selected recipe', () async {
       final recipes = [
         RecipeFactory.build(id: 'r1', title: 'A'),

@@ -2236,7 +2236,6 @@ void main() {
         addedItemIds: ['a'],
         removedItems: [],
         previousMenuItemIds: null,
-        replaced: false,
         createdList: false,
       );
 

@@ -15877,18 +15877,6 @@ class AppLocalizationsSv extends AppLocalizations {
       'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.';
 
   @override
-  String get shoppingMergeReplaceTitle =>
-      'Ersätt listan i stället för att lägga till';
-
-  @override
-  String get shoppingMergeReplaceBody =>
-      'Dina egna, manuellt tillagda varor behålls alltid.';
-
-  @override
-  String get shoppingMergeReplaceUnavailable =>
-      'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.';
-
-  @override
   String shoppingMergeAdd(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -15900,14 +15888,15 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String shoppingMergeReplaceAction(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Ersätt med $count varor',
-      one: 'Ersätt med 1 vara',
-    );
-    return '$_temp0';
+  String get shoppingMergeUpdate => 'Uppdatera listan';
+
+  @override
+  String get shoppingMergeUpdateBody =>
+      'Listan har redan varor från veckan. De uppdateras, men det du har ändrat eller bockat av rörs inte och dina egna varor finns kvar. Listan följer sedan med när du ändrar veckan.';
+
+  @override
+  String shoppingMergeSynced(String list) {
+    return '$list är uppdaterad med veckan. Det du har ändrat själv finns kvar.';
   }
 
   @override
@@ -15919,17 +15908,6 @@ class AppLocalizationsSv extends AppLocalizations {
       one: '1 vara lades till i $list.',
     );
     return '$_temp0';
-  }
-
-  @override
-  String shoppingMergeReplaced(int count, String list) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count varor',
-      one: '1 vara',
-    );
-    return '$list har nu $_temp0 från veckan. Dina egna varor finns kvar.';
   }
 
   @override
@@ -20820,4 +20798,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get photoAiOfferDecline => 'Nej, jag skriver själv';
+
+  @override
+  String shoppingMergeUnresolvedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter kunde inte räknas med',
+      one: '1 rätt kunde inte räknas med',
+    );
+    return '$_temp0, eftersom receptet inte finns kvar.';
+  }
+
+  @override
+  String shoppingPantryAddFailed(String name) {
+    return 'Kunde inte lägga $name i skafferiet.';
+  }
 }

@@ -305,26 +305,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
         .toList();
   }
 
-  List<Recipe> searchPersonalRecipes(String query) {
-    if (query.trim().isEmpty) return personalRecipes;
-
-    final lowercaseQuery = query.toLowerCase();
-    return personalRecipes.where((recipe) {
-      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
-          recipe.description.toLowerCase().contains(lowercaseQuery) ||
-          recipe.ingredients.any(
-            (ingredient) => ingredient.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          recipe.instructions.any(
-            (instruction) => instruction.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          (recipe.personalTagIds?.any(
-                (tag) => tag.toLowerCase().contains(lowercaseQuery),
-              ) ??
-              false);
-    }).toList();
-  }
-
   Map<String, int> getPersonalMealTypeCounts() {
     final mealTypeCounts = <String, int>{};
     for (final recipe in personalRecipes) {

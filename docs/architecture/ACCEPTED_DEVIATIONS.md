@@ -469,6 +469,15 @@ without reception is worse than the narrow window. Do NOT file "the offline repl
 another device's tick" against `_mergeFromMemory` — decided. The alternative, B2, is switching
 "Ersätt listan" off offline with the sheet saying why. — 2026-10-08
 
+**Superseded 2026-10-31 (kärnflöde steg 8B):** there is no "Ersätt listan" and no add-only
+branch any more. Every merge is one sync (`WeekListReconciler`). Online it runs one transaction
+that reads the rows `menuItemIds` names. Offline, `_mergeFromMemory` computes the sync from the
+copy in memory, writes added and overwritten rows with `set`, deletes the rows it takes off, and
+changes `menuItemIds` with `arrayUnion`/`arrayRemove`. A tick the same account made on another
+device in the meantime, on a row the memory copy holds as untouched and unticked, can be lost when
+that row is overwritten or taken off. It retires "An add is safe" and "sets `menuItemIds`
+outright".
+
 ### [Shopping/Offline] A version lost to an offline cached-base replay is not kept for restore (BUT-2140, PR 3)
 The 30-day restore keeps a row's earlier version (`previous`) and a removed row
 (`recentlyRemoved`) in the same write as the change, computed from the document that write

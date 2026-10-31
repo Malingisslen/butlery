@@ -17,6 +17,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/models/recipe/recipe_insights.dart';
+import 'package:butlery/services/search/recipe_search_matcher.dart';
 
 /// Recipe Query ViewModel
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
@@ -95,24 +96,8 @@ class RecipeQueryViewModel extends ChangeNotifier
     return allRecipes.where((r) => r.type == type).toList();
   }
 
-  List<Recipe> searchRecipes(String query) {
-    if (query.trim().isEmpty) return allRecipes;
-
-    final lowercaseQuery = query.toLowerCase();
-    return allRecipes.where((recipe) {
-      return recipe.title.toLowerCase().contains(lowercaseQuery) ||
-          recipe.description.toLowerCase().contains(lowercaseQuery) ||
-          recipe.ingredients.any(
-            (ingredient) => ingredient.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          recipe.instructions.any(
-            (instruction) => instruction.toLowerCase().contains(lowercaseQuery),
-          ) ||
-          (recipe.core.personalTags?.any(
-            (t) => t.name.toLowerCase().contains(lowercaseQuery),
-          )).orFalse();
-    }).toList();
-  }
+  List<Recipe> searchRecipes(String query) =>
+      RecipeSearchMatcher.filter(allRecipes, query);
 
   /// Update search query with debouncing (300ms)
   /// Prevents excessive filtering during typing

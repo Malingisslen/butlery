@@ -273,6 +273,35 @@ class _SwitchRow extends StatelessWidget {
   }
 }
 
+/// Without this the list silently misses the dishes whose recipe is gone.
+class _UnresolvedRecipes extends StatelessWidget {
+  const _UnresolvedRecipes({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      key: ShoppingMergeSheet.unresolvedRecipesKey,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        border: Border(left: BorderSide(color: cs.secondary, width: 3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.space12),
+        child: Semantics(
+          liveRegion: true,
+          child: Text(
+            context.l10n.shoppingMergeUnresolvedRecipes(count),
+            style: AppTextStyles.captionBase.copyWith(color: cs.onSurface),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The notice says what happened and what it means, and offers Försök igen
 /// (content-style-guide.md:87-97).
 class _PantryUnavailable extends StatelessWidget {

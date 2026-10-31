@@ -23,6 +23,7 @@ import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 
 /// Import phases for the state machine.
 enum ImportPhase {
@@ -464,7 +465,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     clearError();
     try {
       for (final recipe in recipes) {
-        final result = await _importManager.saveImportedRecipe(recipe);
+        final result = await _importManager.saveImportedRecipe(
+          // These skip the editor, which writes an import's amounts as fractions.
+          ImportFractions.recipe(recipe),
+        );
         if (!result.isSuccess) {
           AppLogger.error(
             'Multi-recipe save failed: ${result.errorMessage.orEmpty()}',

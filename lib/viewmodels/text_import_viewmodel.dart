@@ -37,6 +37,7 @@
 // lib/viewmodels/text_import_viewmodel.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -200,7 +201,10 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
           if (withScan == null) throw Exception('Heirloom upload failed');
           toSave = withScan;
         }
-        final result = await importManager.saveImportedRecipe(toSave);
+        final result = await importManager.saveImportedRecipe(
+          // These skip the editor, which writes an import's amounts as fractions.
+          ImportFractions.recipe(toSave),
+        );
         if (!result.isSuccess) {
           throw Exception(result.errorMessage ?? 'Failed to save recipe');
         }

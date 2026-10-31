@@ -205,6 +205,8 @@ class RecipeFormViewModel extends BaseViewModel
               ImportCorrectionSnapshot.snapshotParserVersion) {
             _state.setOriginalParsedRecipe(parsed);
           }
+          // After the review, which matches the lines as they were read.
+          _state.applyImportFractions();
           AppLogger.debug(
             '📊 Retrieved parse snapshot for feedback loop: ${initialRecipe.id}',
           );

@@ -24532,47 +24532,35 @@ abstract class AppLocalizations {
   /// **'Skafferiet gick inte att läsa, så listan görs utan skafferiavdrag.'**
   String get shoppingMergePantryUnavailable;
 
-  /// P6-U02: switch, off by default.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ersätt listan i stället för att lägga till'**
-  String get shoppingMergeReplaceTitle;
-
-  /// P6-U02: switch description (PQ-10 = A).
-  ///
-  /// In sv, this message translates to:
-  /// **'Dina egna, manuellt tillagda varor behålls alltid.'**
-  String get shoppingMergeReplaceBody;
-
-  /// P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows.
-  ///
-  /// In sv, this message translates to:
-  /// **'Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.'**
-  String get shoppingMergeReplaceUnavailable;
-
   /// P6-U02: the sheet hero.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}'**
   String shoppingMergeAdd(int count);
 
-  /// P6-U02: the sheet hero while Ersätt listan is on.
+  /// Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}'**
-  String shoppingMergeReplaceAction(int count);
+  /// **'Uppdatera listan'**
+  String get shoppingMergeUpdate;
+
+  /// Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan har redan varor från veckan. De uppdateras, men det du har ändrat eller bockat av rörs inte och dina egna varor finns kvar. Listan följer sedan med när du ändrar veckan.'**
+  String get shoppingMergeUpdateBody;
+
+  /// Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{list} är uppdaterad med veckan. Det du har ändrat själv finns kvar.'**
+  String shoppingMergeSynced(String list);
 
   /// P6-U02: receipt with Ångra after Lägg till.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}'**
   String shoppingMergeAdded(int count, String list);
-
-  /// P6-U02: receipt with Ångra after a replace.
-  ///
-  /// In sv, this message translates to:
-  /// **'{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.'**
-  String shoppingMergeReplaced(int count, String list);
 
   /// BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.
   ///
@@ -32001,6 +31989,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Nej, jag skriver själv'**
   String get photoAiOfferDecline;
+
+  /// Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.'**
+  String shoppingMergeUnresolvedRecipes(int count);
+
+  /// Snackbar when adding a just-checked-off item to the pantry failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga {name} i skafferiet.'**
+  String shoppingPantryAddFailed(String name);
 }
 
 class _AppLocalizationsDelegate

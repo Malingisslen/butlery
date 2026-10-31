@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/suggest_alternative_sheet.dart';
@@ -45,6 +46,55 @@ void main() {
       await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pump();
       expect(find.text('Ärtsoppa'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'typing an auto-tag word finds a dish whose title does not contain it',
+    (tester) async {
+      final recipes = [
+        RecipeFactory.build(
+          id: 'a',
+          title: 'Mammas special',
+          imageUrls: const [],
+          personalTagIds: const [],
+        ).copyWith(
+          tagResult: TagResult(
+            tags: const {'noodle-dish'},
+            allergenStatus: const {},
+            dietaryStatus: const {},
+            coverage: 1.0,
+            generatedAt: DateTime(2026, 1, 1),
+          ),
+        ),
+        RecipeFactory.build(
+          id: 'b',
+          title: 'Ärtsoppa',
+          imageUrls: const [],
+          personalTagIds: const [],
+        ),
+      ];
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => SuggestAlternativeSheet.show(
+                context,
+                availableRecipes: recipes,
+              ),
+              child: const Text('öppna'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('öppna'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'nudlar');
+      await tester.pump();
+
+      expect(find.text('Mammas special'), findsOneWidget);
+      expect(find.text('Ärtsoppa'), findsNothing);
     },
   );
 

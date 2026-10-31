@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/utils/text/import_fractions.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
@@ -1061,7 +1062,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
         final toSave = await withHeirloomScan(recipe);
         final result = toSave == null
             ? null
-            : await importManager.saveImportedRecipe(toSave);
+            // These skip the editor, which writes an import's amounts as fractions.
+            : await importManager.saveImportedRecipe(
+                ImportFractions.recipe(toSave),
+              );
         if (result?.isSuccess != true) _lastSaveFailureCount++;
       }
       if (_lastSaveFailureCount == recipes.length) {

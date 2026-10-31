@@ -11604,18 +11604,6 @@
   "@shoppingMergePantryUnavailable": {
     "description": "P6-U02: degraded mode."
   },
-  "shoppingMergeReplaceTitle": "Ersätt listan i stället för att lägga till",
-  "@shoppingMergeReplaceTitle": {
-    "description": "P6-U02: switch, off by default."
-  },
-  "shoppingMergeReplaceBody": "Dina egna, manuellt tillagda varor behålls alltid.",
-  "@shoppingMergeReplaceBody": {
-    "description": "P6-U02: switch description (PQ-10 = A)."
-  },
-  "shoppingMergeReplaceUnavailable": "Listan gjordes innan appen höll isär veckans varor och dina egna, så den kan inte ersättas. Veckans varor läggs till.",
-  "@shoppingMergeReplaceUnavailable": {
-    "description": "P6-U02: why Ersätt listan is switched off: the week's list was written before recipe rows were tracked by id, so a replace could not tell them from the user's own rows."
-  },
   "shoppingMergeAdd": "{count, plural, =1{Lägg till 1 vara} other{Lägg till {count} varor}}",
   "@shoppingMergeAdd": {
     "description": "P6-U02: the sheet hero.",
@@ -11625,30 +11613,26 @@
       }
     }
   },
-  "shoppingMergeReplaceAction": "{count, plural, =1{Ersätt med 1 vara} other{Ersätt med {count} varor}}",
-  "@shoppingMergeReplaceAction": {
-    "description": "P6-U02: the sheet hero while Ersätt listan is on.",
+  "shoppingMergeUpdate": "Uppdatera listan",
+  "@shoppingMergeUpdate": {
+    "description": "Kärnflöde 8B: the sheet hero when the week's list already holds rows from this source."
+  },
+  "shoppingMergeUpdateBody": "Listan har redan varor från veckan. De uppdateras, men det du har ändrat eller bockat av rörs inte och dina egna varor finns kvar. Listan följer sedan med när du ändrar veckan.",
+  "@shoppingMergeUpdateBody": {
+    "description": "Kärnflöde 8B: under the figures when the sheet updates the week's list instead of adding."
+  },
+  "shoppingMergeSynced": "{list} är uppdaterad med veckan. Det du har ändrat själv finns kvar.",
+  "@shoppingMergeSynced": {
+    "description": "Kärnflöde 8B: receipt with Ångra after a sync that changed or took off rows already on the list.",
     "placeholders": {
-      "count": {
-        "type": "int"
+      "list": {
+        "type": "String"
       }
     }
   },
   "shoppingMergeAdded": "{count, plural, =1{1 vara lades till i {list}.} other{{count} varor lades till i {list}.}}",
   "@shoppingMergeAdded": {
     "description": "P6-U02: receipt with Ångra after Lägg till.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "list": {
-        "type": "String"
-      }
-    }
-  },
-  "shoppingMergeReplaced": "{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.",
-  "@shoppingMergeReplaced": {
-    "description": "P6-U02: receipt with Ångra after a replace.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -17383,5 +17367,23 @@
   "photoAiOfferDecline": "Nej, jag skriver själv",
   "@photoAiOfferDecline": {
     "description": "Photo import AI offer: decline button, manual entry"
+  },
+  "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.",
+  "@shoppingMergeUnresolvedRecipes": {
+    "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPantryAddFailed": "Kunde inte lägga {name} i skafferiet.",
+  "@shoppingPantryAddFailed": {
+    "description": "Snackbar when adding a just-checked-off item to the pantry failed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

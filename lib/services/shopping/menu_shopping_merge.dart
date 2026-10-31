@@ -9,36 +9,43 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
+import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
-/// "Ersätt listan" is always off by default ("Ersätt
-/// listan är alltid av som standard"); the other three are drawn on.
+/// The sheet's three rules, all drawn on.
 @immutable
 class MenuShoppingMergeOptions {
   const MenuShoppingMergeOptions({
     this.mergeDuplicates = true,
     this.convertUnits = true,
     this.subtractPantry = true,
-    this.replaceList = false,
   });
 
   final bool mergeDuplicates;
   final bool convertUnits;
   final bool subtractPantry;
-  final bool replaceList;
 
   MenuShoppingMergeOptions copyWith({
     bool? mergeDuplicates,
     bool? convertUnits,
     bool? subtractPantry,
-    bool? replaceList,
   }) => MenuShoppingMergeOptions(
     mergeDuplicates: mergeDuplicates ?? this.mergeDuplicates,
     convertUnits: convertUnits ?? this.convertUnits,
     subtractPantry: subtractPantry ?? this.subtractPantry,
-    replaceList: replaceList ?? this.replaceList,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      other is MenuShoppingMergeOptions &&
+      other.mergeDuplicates == mergeDuplicates &&
+      other.convertUnits == convertUnits &&
+      other.subtractPantry == subtractPantry;
+
+  @override
+  int get hashCode =>
+      Object.hash(mergeDuplicates, convertUnits, subtractPantry);
 }
 
 /// P6-U02: what a week gives the merge, one scaled placement per planned
@@ -49,12 +56,17 @@ class MenuShoppingSource {
     required this.week,
     required this.placements,
     required this.recipeCount,
+    this.origin = ShoppingRowOrigin.plan,
     this.unresolvedRecipes = 0,
     this.scaledMeals = 0,
   });
 
   /// A day in the week whose generated list receives the rows.
   final DateTime week;
+
+  /// Which of the week's two sources this is. Each keeps only its own rows
+  /// on the list in step.
+  final ShoppingRowOrigin origin;
   final List<ScaledRecipe> placements;
 
   /// Distinct recipes ("5 rätter ger 24 rader").
@@ -162,6 +174,8 @@ class MenuShoppingMergePreview {
 
   int get recipeCount => source.recipeCount;
 
+  int get unresolvedRecipes => source.unresolvedRecipes;
+
   /// "Efter sammanslagning blir det 18 varor" and "Lägg till 18 varor".
   int get itemCount => lines.length;
 }
@@ -174,8 +188,8 @@ class MenuShoppingMergeReceipt {
     required this.addedItemIds,
     required this.removedItems,
     required this.previousMenuItemIds,
-    required this.replaced,
     required this.createdList,
+    this.changedItems = const [],
     this.concurrentChange = false,
   });
 
@@ -183,15 +197,21 @@ class MenuShoppingMergeReceipt {
   final String listName;
   final List<String> addedItemIds;
 
-  /// The recipe rows "Ersätt listan" took off, put back by Ångra.
+  /// The rows the sync took off, put back by Ångra.
   final List<UnifiedShoppingItem> removedItems;
+
+  /// The rows the sync overwrote, as they were before, put back by Ångra.
+  final List<UnifiedShoppingItem> changedItems;
   final List<String>? previousMenuItemIds;
-  final bool replaced;
   final bool createdList;
 
   /// BUT-2140: the list had been changed on another device before the write.
-  /// Nothing was overwritten, and the receipt says so.
+  /// Nothing the user did there was overwritten, and the receipt says so.
   final bool concurrentChange;
+
+  /// Whether the sync changed or took off rows that were already on the
+  /// list, rather than only adding.
+  bool get updatedList => removedItems.isNotEmpty || changedItems.isNotEmpty;
 
   int get itemCount => addedItemIds.length;
 }

@@ -396,6 +396,19 @@ void main() {
         expect(viewModel.filteredRecipes.first.title, 'Köttbullar');
       });
 
+      test(
+        'uses the app-wide rule: folds accents and ignores word order',
+        () async {
+          viewModel = createViewModel();
+          await viewModel.loadRecipes();
+
+          viewModel.setSearchQuery('kottbullar svenska');
+
+          expect(viewModel.filteredCount, 1);
+          expect(viewModel.filteredRecipes.first.title, 'Köttbullar');
+        },
+      );
+
       test('should be case insensitive', () async {
         // Arrange
         viewModel = createViewModel();
