@@ -2031,6 +2031,14 @@
   "profileRestoreNotRead": "The backup could not be read.",
   "profileRestoreNothingRemoved": "No recipes were deleted.",
   "profileRestoreCompleted": "Restore completed.",
+  "profileRestoreSomeNotRestored": "{count, plural, =1{1 recipe} other{{count} recipes}} could not be restored.",
+  "@profileRestoreSomeNotRestored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileRestoreFailed": "The restore failed. Nothing has changed. Try again.",
   "@profileRestoreFailed": {
     "placeholders": {

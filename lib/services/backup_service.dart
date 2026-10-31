@@ -243,7 +243,7 @@ class BackupService extends BaseService {
               throw StateError('addUnifiedRecipe refused the recipe');
             }
           } else {
-            await recipeService.personal.createRecipe(
+            final createdId = await recipeService.personal.createRecipe(
               title: newRecipe.title,
               description: newRecipe.description,
               ingredients: newRecipe.ingredients,
@@ -256,6 +256,10 @@ class BackupService extends BaseService {
               personalTagIds: newRecipe.personalTagIds,
               sourceUrl: newRecipe.sourceUrl,
             );
+            // createRecipe reports a failed save as null instead of throwing.
+            if (createdId == null) {
+              throw StateError('createRecipe returned no id');
+            }
           }
           successCount++;
         } catch (e, stackTrace) {
@@ -384,6 +388,9 @@ class ImportResult {
   final List<String> errors;
   final List<String> skippedTitles;
   final String? errorMessage;
+
+  /// Recipes that were not saved; each one has an entry in [errors].
+  int get failedCount => errors.length;
 
   /// True when an exception stopped the import. [errorMessage] then carries
   /// no exception text; the cause is only in the log.

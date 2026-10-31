@@ -2906,6 +2906,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileRestoreCompleted => 'Restore completed.';
 
   @override
+  String profileRestoreSomeNotRestored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0 could not be restored.';
+  }
+
+  @override
   String profileRestoreFailed(String error) {
     return 'The restore failed. Nothing has changed. Try again.';
   }

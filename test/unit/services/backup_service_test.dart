@@ -585,6 +585,41 @@ void main() {
     });
   });
 
+  group('importFromFile — createRecipe reports no id', () {
+    test('a null id counts as failed, not as restored', () async {
+      final recipes = [
+        RecipeFactory.build(title: 'Saved'),
+        RecipeFactory.build(title: 'Not Saved'),
+      ];
+
+      when(
+        () => mockPersonalOps.createRecipe(
+          title: 'Not Saved',
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer((_) async => null);
+
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: recipes)),
+      );
+
+      final result = await service.importFromFile();
+
+      expect(result.successCount, equals(1));
+      expect(result.failedCount, equals(1));
+      expect(result.errors, equals(['Not Saved']));
+    });
+  });
+
   group('importFromFile — round-trip integrity', () {
     /// A recipe carried through toJson → fromJson must preserve every
     /// user-facing field that BackupService forwards to createRecipe.

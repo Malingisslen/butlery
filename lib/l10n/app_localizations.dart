@@ -4394,6 +4394,12 @@ abstract class AppLocalizations {
   /// **'Återställningen är genomförd.'**
   String get profileRestoreCompleted;
 
+  /// No description provided for @profileRestoreSomeNotRestored.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept kunde inte återställas.'**
+  String profileRestoreSomeNotRestored(int count);
+
   /// No description provided for @profileRestoreFailed.
   ///
   /// In sv, this message translates to:

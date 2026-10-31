@@ -2873,6 +2873,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileRestoreCompleted => 'Återställningen är genomförd.';
 
   @override
+  String profileRestoreSomeNotRestored(int count) {
+    return '$count recept kunde inte återställas.';
+  }
+
+  @override
   String profileRestoreFailed(String error) {
     return 'Återställningen misslyckades. Inget har ändrats. Försök igen.';
   }
