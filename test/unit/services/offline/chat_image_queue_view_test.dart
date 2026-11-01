@@ -56,8 +56,9 @@ void main() {
     when(() => messaging.deleteMessage(any())).thenAnswer((_) async {});
     TestServiceLocator.registerMock<MessagingRepository>(messaging);
     source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => messaging,
     );
     await db.uploadQueueDao.queueUpload(
       id: 'row-1',

@@ -11,15 +11,20 @@ import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/messaging/pending_image_status.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline/avatar_queue_metadata.dart';
 import 'package:butlery/services/offline/chat_image_queue_metadata.dart';
+import 'package:butlery/services/offline/comment_queue_metadata.dart';
 import 'package:butlery/services/offline/cook_snap_queue_metadata.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/upload_queue_wiring.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/storage_service.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -28,8 +33,11 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../infrastructure/mocks/service_mocks.dart'
+    show MockStorageService;
 import '../../../infrastructure/mocks/widget_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'offline_links_support.dart';
 
 class _Repository extends Fake implements CookSnapRepository {
   final List<CookSnap> created = [];
@@ -42,6 +50,38 @@ class _Repository extends Fake implements CookSnapRepository {
     created.add(snap);
     return snap;
   }
+}
+
+class _Comments extends Fake implements CommentsRepository {
+  final List<String> created = [];
+
+  @override
+  Future<bool> ownCommentExists(String commentId) async => false;
+
+  @override
+  Future<RecipeComment> createQueuedComment({
+    required String commentId,
+    required String recipeId,
+    required String userId,
+    required String content,
+    String? parentCommentId,
+    List<String> imageUrls = const [],
+  }) async {
+    created.add('$commentId:${imageUrls.join(',')}');
+    return RecipeComment(
+      id: commentId,
+      recipeId: recipeId,
+      authorId: userId,
+      authorDisplayName: 'Malin',
+      text: content,
+      createdAt: DateTime(2026, 10, 20),
+    );
+  }
+}
+
+class _SignedOut extends Fake implements AuthRepository {
+  @override
+  User? get currentUser => null;
 }
 
 class _Messaging extends Fake implements MessagingRepository {
@@ -89,6 +129,8 @@ void main() {
   late _Announcer announcer;
   late _Messaging messaging;
   late MockUserService userService;
+  late _Comments comments;
+  late MockStorageService storageService;
 
   setUp(() async {
     await BaseUnitTest.setupUnit();
@@ -104,10 +146,8 @@ void main() {
     announcer = _Announcer();
     messaging = _Messaging();
     userService = MockUserService();
-    TestServiceLocator.registerMock<CookSnapRepository>(repository);
-    TestServiceLocator.registerMock<CookSnapService>(announcer);
-    TestServiceLocator.registerMock<UserService>(userService);
-    TestServiceLocator.registerMock<MessagingRepository>(messaging);
+    comments = _Comments();
+    storageService = MockStorageService();
   });
 
   tearDown(() async {
@@ -147,12 +187,25 @@ void main() {
 
   Future<void> pass() => withClock(
     Clock.fixed(t0),
-    () => buildUploadQueueProcessor(database: db, storage: storage).runPass(
-      uid,
-      now: t0,
-      isCurrentUser: () => true,
-      force: true,
-    ),
+    () =>
+        buildUploadQueueProcessor(
+          database: db,
+          storage: storage,
+          links: testLinks(
+            storage: () => storageService,
+            auth: _SignedOut.new,
+            users: () => userService,
+            comments: () => comments,
+            messaging: () => messaging,
+            cookSnaps: () => repository,
+            cookSnapService: () => announcer,
+          ),
+        ).runPass(
+          uid,
+          now: t0,
+          isCurrentUser: () => true,
+          force: true,
+        ),
   );
 
   test('a snap is not published while the loaded profile is missing or '
@@ -275,5 +328,93 @@ void main() {
       ),
     );
     expect((await db.uploadQueueDao.getUpload(rowId))!.status, 'uploaded');
+  });
+
+  test('a queued comment is created through the comments repository with the '
+      'address of its uploaded photo', () async {
+    final file = File('${root.path}/comment.jpg')..writeAsBytesSync([1]);
+    final ids = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueImageGroupForUser(
+        imagePaths: [file.path],
+        entityType: SyncQueueEntityType.comment,
+        entityId: 'comment-1',
+        userId: uid,
+        targetPath: 'users/$uid/comment_images',
+        metadata: commentQueueMetadata(
+          recipeId: 'recipe-1',
+          recipeName: 'Kladdkaka',
+          text: 'Supergott',
+        ),
+      ),
+    );
+    await db.uploadQueueDao.markUploaded(
+      ids.single,
+      url: 'https://img/${ids.single}.jpg',
+      thumbnailUrl: null,
+    );
+
+    await pass();
+
+    expect(comments.created, ['comment-1:https://img/${ids.single}.jpg']);
+  });
+
+  test('a photo goes up through the storage service under the name of its '
+      'row', () async {
+    final file = File('${root.path}/photo.jpg')..writeAsBytesSync([1]);
+    final ids = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueImageGroupForUser(
+        imagePaths: [file.path],
+        entityType: SyncQueueEntityType.cookSnap,
+        entityId: 'snap-2',
+        userId: uid,
+        targetPath: 'users/$uid/recipes',
+        metadata: cookSnapQueueMetadata(
+          recipeId: 'recipe-1',
+          recipeAuthorId: 'author-1',
+          recipeName: 'Kladdkaka',
+          visibility: CookSnapVisibility.onlyMe,
+        ),
+      ),
+    );
+    when(
+      () => storageService.uploadImageFile(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer(
+      (_) async => const ImageUploadResult(
+        imageUrl: 'https://img/up.jpg',
+        thumbnailUrl: 'https://img/up_thumb.jpg',
+      ),
+    );
+    when(() => userService.currentUserProfile).thenReturn(
+      WidgetMockFactory.createTestUserProfile(id: uid, displayName: 'Malin'),
+    );
+
+    await pass();
+
+    verify(
+      () => storageService.uploadImageFile(any(), uid, objectId: ids.single),
+    ).called(1);
+    expect(repository.created.single.id, 'snap-2');
+  });
+
+  test('clearing a user takes their uploaded photos back out of Storage '
+      'through the storage service', () async {
+    final rowId = await queueUploadedSnap();
+    when(() => storageService.deleteImage(any())).thenAnswer((_) async => true);
+
+    await buildUploadQueueProcessor(
+      database: db,
+      storage: storage,
+      links: testLinks(storage: () => storageService),
+    ).takeBackAllUploaded(uid);
+
+    verify(
+      () => storageService.deleteImage('https://img/$rowId.jpg'),
+    ).called(1);
   });
 }

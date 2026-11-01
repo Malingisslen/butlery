@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../test_support/base_unit_test.dart';
 import 'queue_harness.dart' show MidRandom;
+import 'offline_links_support.dart';
 
 class _MockAuth extends Mock implements AuthRepository {}
 
@@ -234,7 +235,7 @@ void main() {
     test('forces a new token for the signed-in account', () async {
       when(() => user.getIdToken(true)).thenAnswer((_) async => 'token');
 
-      await refreshUploadSession(uid, storage);
+      await refreshUploadSession(uid, storage, auth: auth);
 
       verify(() => user.getIdToken(true)).called(1);
     });
@@ -242,7 +243,7 @@ void main() {
     test('leaves another signed-in account alone', () async {
       when(() => user.uid).thenReturn('someone-else');
 
-      await refreshUploadSession(uid, storage);
+      await refreshUploadSession(uid, storage, auth: auth);
 
       verifyNever(() => user.getIdToken(any()));
     });
@@ -254,7 +255,7 @@ void main() {
       ).thenThrow(FirebaseAuthException(code: 'user-not-found'));
 
       await expectLater(
-        refreshUploadSession(uid, storage),
+        refreshUploadSession(uid, storage, auth: auth),
         throwsA(isA<SessionEnded>()),
       );
 
@@ -269,7 +270,7 @@ void main() {
       ).thenThrow(FirebaseAuthException(code: 'user-token-expired'));
 
       await expectLater(
-        refreshUploadSession(uid, storage),
+        refreshUploadSession(uid, storage, auth: auth),
         throwsA(isA<SessionEnded>()),
       );
 
@@ -283,7 +284,7 @@ void main() {
       ).thenThrow(FirebaseAuthException(code: 'invalid-user-token'));
 
       await expectLater(
-        refreshUploadSession(uid, storage),
+        refreshUploadSession(uid, storage, auth: auth),
         throwsA(isA<SessionEnded>()),
       );
 
@@ -298,7 +299,7 @@ void main() {
         ).thenThrow(FirebaseAuthException(code: 'user-not-found'));
 
         await expectLater(
-          refreshUploadSession(uid, storage),
+          refreshUploadSession(uid, storage, auth: auth),
           throwsA(isA<SessionEnded>()),
         );
 
@@ -312,7 +313,7 @@ void main() {
       ).thenThrow(FirebaseAuthException(code: 'user-not-found'));
 
       await expectLater(
-        refreshUploadSession(uid, _StorageThatCannotClear()),
+        refreshUploadSession(uid, _StorageThatCannotClear(), auth: auth),
         throwsA(isA<FileSystemException>()),
       );
 
@@ -329,6 +330,7 @@ void main() {
         final processor = buildUploadQueueProcessor(
           database: db,
           storage: storage,
+          links: testLinks(auth: () => auth),
         );
 
         final sent = await withClock(
@@ -355,7 +357,7 @@ void main() {
       ).thenThrow(FirebaseAuthException(code: 'user-disabled'));
 
       await expectLater(
-        refreshUploadSession(uid, storage),
+        refreshUploadSession(uid, storage, auth: auth),
         throwsA(isA<SessionEnded>()),
       );
 
@@ -368,7 +370,7 @@ void main() {
         await queue('a');
         when(() => user.getIdToken(true)).thenThrow(StateError('no channel'));
 
-        await refreshUploadSession(uid, storage);
+        await refreshUploadSession(uid, storage, auth: auth);
 
         expect(await db.uploadQueueDao.getUpload('a'), isNotNull);
       },
@@ -382,7 +384,7 @@ void main() {
           () => user.getIdToken(true),
         ).thenThrow(FirebaseAuthException(code: 'network-request-failed'));
 
-        await refreshUploadSession(uid, storage);
+        await refreshUploadSession(uid, storage, auth: auth);
 
         expect(await db.uploadQueueDao.getUpload('a'), isNotNull);
       },

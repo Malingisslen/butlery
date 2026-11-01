@@ -4,16 +4,11 @@
 
 import 'dart:io';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as prod_locator;
 import 'package:butlery/services/offline/queued_image_transport.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/fallback_values.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
@@ -27,16 +22,8 @@ void main() {
     registerFallbackValue(File('/fallback.jpg'));
   });
 
-  setUp(() async {
-    await TestServiceLocator.initialize();
-    prod_locator.ServiceLocator.initialize(DIContainer());
+  setUp(() {
     storage = MockStorageService();
-    GetIt.instance.unregister<StorageService>();
-    GetIt.instance.registerSingleton<StorageService>(storage);
-  });
-
-  tearDown(() async {
-    await TestServiceLocator.reset();
   });
 
   test('the upload carries the row id as the object name and returns both '
@@ -55,6 +42,7 @@ void main() {
     );
 
     final uploaded = await uploadQueuedImage(
+      storage,
       '/device/a.jpg',
       'u1',
       'row-1',
@@ -89,6 +77,7 @@ void main() {
 
       await expectLater(
         () => uploadQueuedImage(
+          storage,
           '/device/a.jpg',
           'u1',
           'row-1',
@@ -110,6 +99,7 @@ void main() {
     ).thenAnswer((_) async => 'https://img/row-2.jpg');
 
     final uploaded = await uploadQueuedImage(
+      storage,
       '/device/b.jpg',
       'u1',
       'row-2',
@@ -143,7 +133,8 @@ void main() {
       '',
     ]) {
       await expectLater(
-        () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1', folder),
+        () =>
+            uploadQueuedImage(storage, '/device/a.jpg', 'u1', 'row-1', folder),
         throwsStateError,
       );
     }
@@ -154,7 +145,7 @@ void main() {
       'address and passes its answer on', () async {
     when(() => storage.deleteImage(any())).thenAnswer((_) async => false);
 
-    final gone = await deleteQueuedImage((
+    final gone = await deleteQueuedImage(storage, (
       url: 'https://img/row-1.jpg',
       thumbnailUrl: null,
     ));
@@ -174,6 +165,7 @@ void main() {
     ).thenAnswer((_) async => 'https://img/row-3.jpg');
 
     final uploaded = await uploadQueuedImage(
+      storage,
       '/device/c.jpg',
       'u1',
       'row-3',
@@ -203,6 +195,7 @@ void main() {
 
       await expectLater(
         () => uploadQueuedImage(
+          storage,
           '/device/c.jpg',
           'u1',
           'row-3',
@@ -224,6 +217,7 @@ void main() {
     ).thenAnswer((_) async => 'https://img/row-5.jpg');
 
     final uploaded = await uploadQueuedImage(
+      storage,
       '/device/a.jpg',
       'u1',
       'row-5',
@@ -251,8 +245,13 @@ void main() {
     ).thenAnswer((_) async => null);
 
     await expectLater(
-      () =>
-          uploadQueuedImage('/device/a.jpg', 'u1', 'row-5', 'users/u1/avatars'),
+      () => uploadQueuedImage(
+        storage,
+        '/device/a.jpg',
+        'u1',
+        'row-5',
+        'users/u1/avatars',
+      ),
       throwsStateError,
     );
   });

@@ -45,8 +45,9 @@ void main() {
   test('counts and changes come from the signed-in user', () async {
     when(() => auth.currentUserId).thenReturn('u1');
     final source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
 
     final counts = await source.watchCounts().first;
@@ -59,8 +60,9 @@ void main() {
   test('nobody signed in reads as nothing waiting', () async {
     when(() => auth.currentUserId).thenReturn(null);
     final source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
 
     expect(await source.watchCounts().first, QueueCounts.empty);
@@ -70,8 +72,9 @@ void main() {
   test('discard acts on the signed-in user', () async {
     when(() => auth.currentUserId).thenReturn('u1');
     final source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
     final change = (await source.watchChanges().first).draining.single;
 
@@ -93,8 +96,9 @@ void main() {
       opId: 'op-2',
     );
     final source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
     final change = (await source.watchChanges().first).draining.firstWhere(
       (c) => c.id == 'op-2',
@@ -130,8 +134,10 @@ void main() {
         );
       }
       final source = OfflineSyncQueueSource(
-        offlineService: offline,
-        authRepository: auth,
+        offlineService: () => offline,
+        authRepository: () => auth,
+        messaging: () =>
+            throw StateError('no messaging repository in this test'),
       );
       final album = (await source.watchChanges().first).needsUser.single;
 
@@ -187,8 +193,10 @@ void settledTests() {
     test('offline is never settled; online with an empty queue is, even '
         'when nothing in the queue changed', () async {
       final source = OfflineSyncQueueSource(
-        offlineService: connectivity,
-        authRepository: auth,
+        offlineService: () => connectivity,
+        authRepository: () => auth,
+        messaging: () =>
+            throw StateError('no messaging repository in this test'),
       );
       final seen = <bool>[];
       final sub = source.watchSettled().listen(seen.add);
@@ -211,8 +219,10 @@ void settledTests() {
         opId: 'op-1',
       );
       final source = OfflineSyncQueueSource(
-        offlineService: connectivity,
-        authRepository: auth,
+        offlineService: () => connectivity,
+        authRepository: () => auth,
+        messaging: () =>
+            throw StateError('no messaging repository in this test'),
       );
       final seen = <bool>[];
       final sub = source.watchSettled().listen(seen.add);

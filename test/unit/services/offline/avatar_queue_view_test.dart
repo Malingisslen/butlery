@@ -48,10 +48,10 @@ void main() {
     when(() => offline.database).thenReturn(db);
     when(() => offline.refreshSyncState()).thenAnswer((_) async {});
     when(() => auth.currentUserId).thenReturn('u1');
-    TestServiceLocator.registerMock<MessagingRepository>(messaging);
     source = OfflineSyncQueueSource(
-      offlineService: offline,
-      authRepository: auth,
+      offlineService: () => offline,
+      authRepository: () => auth,
+      messaging: () => messaging,
     );
     await db.uploadQueueDao.queueUpload(
       id: 'row-1',
