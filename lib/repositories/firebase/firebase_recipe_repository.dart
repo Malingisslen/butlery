@@ -302,7 +302,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // shared recipe builds on a recipe that may be on the profile; showing the
     // new one is a separate update.
     Recipe recipeToSave = sanitizeRecipeText(
-      entity.copyWith(showOnProfile: false, showOnProfileChangedAt: null),
+      entity.copyWith(
+        showOnProfile: false,
+        showOnProfileChangedAt: null,
+        updatedAt: entity.updatedAt,
+      ),
     );
 
     final firestoreData = recipeToSave.toFirestore();
@@ -661,7 +665,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Use the base class batch method
     await createBatch([
       for (final r in recipes)
-        r.copyWith(showOnProfile: false, showOnProfileChangedAt: null),
+        r.copyWith(
+          showOnProfile: false,
+          showOnProfileChangedAt: null,
+          updatedAt: r.updatedAt,
+        ),
     ]);
   }
 
