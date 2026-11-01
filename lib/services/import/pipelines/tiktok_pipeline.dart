@@ -7,6 +7,7 @@
 /// 4. Request user screenshot
 library;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
@@ -123,6 +124,9 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
 
   final LlmEnhancementService _llmService;
   final CaptionRulesReader _rules;
+
+  @visibleForTesting
+  CaptionRulesReader get rules => _rules;
   final http.Client _client;
   final bool _ownsClient;
 

@@ -9,6 +9,7 @@
 /// 5. Falling back to user-assisted import if needed
 library;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -39,6 +40,9 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
   final YouTubeTranscriptService _transcriptService;
   final LlmEnhancementService _llmService;
   final CaptionRulesReader _rules;
+
+  @visibleForTesting
+  CaptionRulesReader get rules => _rules;
 
   YouTubeImportStrategy({
     required YouTubeTranscriptService transcriptService,

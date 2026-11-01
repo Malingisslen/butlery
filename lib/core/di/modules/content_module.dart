@@ -402,6 +402,7 @@ class ContentModule implements DIModule {
       () => YouTubeImportStrategy(
         transcriptService: app<YouTubeTranscriptService>(),
         llmService: container<LlmEnhancementService>(),
+        rules: ImportRegistrations.captionRules(container),
       ),
     );
 
@@ -410,11 +411,15 @@ class ContentModule implements DIModule {
       () => TikTokPipeline(
         llmService: container<LlmEnhancementService>(),
         client: app<http.Client>(),
+        rules: ImportRegistrations.captionRules(container),
       ),
     );
 
     container.registerLazySingleton<InstagramPipeline>(
-      () => InstagramPipeline(llmService: container<LlmEnhancementService>()),
+      () => InstagramPipeline(
+        llmService: container<LlmEnhancementService>(),
+        rules: ImportRegistrations.captionRules(container),
+      ),
     );
 
     // BUT-202: substitution suggestions — user-scoped because it depends on

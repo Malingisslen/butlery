@@ -28,8 +28,6 @@ const _residue = <String, int>{
   'lib/services/family/household_roster_service.dart': 3,
   'lib/services/family/own_allergen_share_mirror.dart': 2,
   'lib/services/household_service.dart': 6,
-  'lib/services/import/photo_llm_vision.dart': 1,
-  'lib/services/import/text_import_strategy.dart': 1,
   'lib/services/menu/meal_dislikes.dart': 3,
   'lib/services/menu/present_diner_prefs_resolver.dart': 12,
   'lib/services/messaging/message_sending_operations.dart': 1,

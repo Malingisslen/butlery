@@ -8,6 +8,7 @@
 /// 4. Request user screenshot (free)
 library;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -23,6 +24,9 @@ import 'package:butlery/services/import/models/import_result_v2.dart';
 class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
   final LlmEnhancementService _llmService;
   final CaptionRulesReader _rules;
+
+  @visibleForTesting
+  CaptionRulesReader get rules => _rules;
 
   /// `caseSensitive: false` because share-sheets and iOS Safari often emit
   /// mixed-case hosts (BUT-1113).

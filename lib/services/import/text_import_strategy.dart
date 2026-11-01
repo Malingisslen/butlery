@@ -3,7 +3,6 @@
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -33,12 +32,23 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   // BUT-1501: the shared CRF → BERT NER ingredient cascade (the same one URL
   // imports get via RecipeParserService). Resolved lazily and best-effort:
   // absent (tests / early boot) → fall back to the deterministic regex deriver.
+  TextImportStrategy({
+    IngredientParsingStrategy? Function() ingredientStrategy = _noStrategy,
+  }) : _lookUpIngredientStrategy = ingredientStrategy;
+
+  static IngredientParsingStrategy? _noStrategy() => null;
+
+  final IngredientParsingStrategy? Function() _lookUpIngredientStrategy;
   bool _strategyResolved = false;
   IngredientParsingStrategy? _cachedStrategy;
   IngredientParsingStrategy? get _ingredientStrategy {
     if (_strategyResolved) return _cachedStrategy;
     _strategyResolved = true;
-    _cachedStrategy = ServiceLocator.tryGet<IngredientParsingStrategy>();
+    try {
+      _cachedStrategy = _lookUpIngredientStrategy();
+    } catch (_) {
+      _cachedStrategy = null;
+    }
     return _cachedStrategy;
   }
 

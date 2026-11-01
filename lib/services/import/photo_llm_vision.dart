@@ -4,13 +4,12 @@
 ///
 /// Not a `BaseService`: pure delegation helper owned by the strategy (no
 /// Firebase ops, no DI registration of its own) — it resolves
-/// [LlmEnhancementService] lazily exactly the way the strategy used to.
+/// [LlmEnhancementService] lazily.
 library;
 
 import 'dart:typed_data';
 
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -21,14 +20,18 @@ import 'package:butlery/services/import/models/import_result_v2.dart';
 class PhotoLlmVision {
   /// [strategyName] rides on failure metadata so analytics keep attributing
   /// vision outcomes to the owning strategy, exactly as before the extraction.
-  const PhotoLlmVision({required this.strategyName});
+  const PhotoLlmVision({
+    required this.strategyName,
+    required this.llmEnhancement,
+  });
 
   final String strategyName;
+  final LlmEnhancementService? Function() llmEnhancement;
 
-  /// Lazy lookup with graceful fallback (unchanged from the strategy).
+  /// Lazy lookup with graceful fallback.
   LlmEnhancementService? get _llmService {
     try {
-      return ServiceLocator.get<LlmEnhancementService>();
+      return llmEnhancement();
     } catch (e) {
       return null;
     }

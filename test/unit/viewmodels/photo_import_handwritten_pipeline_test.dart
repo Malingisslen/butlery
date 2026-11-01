@@ -115,9 +115,6 @@ void main() {
     if (getIt.isRegistered<ImportRateLimiter>()) {
       getIt.unregister<ImportRateLimiter>();
     }
-    if (getIt.isRegistered<LlmEnhancementService>()) {
-      getIt.unregister<LlmEnhancementService>();
-    }
     app_provider.ServiceLocator.reset();
     BaseUnitTest.resetMocks();
     await TestServiceLocator.reset();
@@ -182,10 +179,6 @@ void main() {
     () async {
       final fakeLlm = _FakeLlmFailure('kunde inte tolka handstilen');
       final getIt = GetIt.instance;
-      if (getIt.isRegistered<LlmEnhancementService>()) {
-        getIt.unregister<LlmEnhancementService>();
-      }
-      getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
       // No ImportRateLimiter registered → _rateLimiter resolves null → the
       // rate-limit check is skipped and we reach the strategy.
       if (getIt.isRegistered<ImportRateLimiter>()) {
@@ -194,7 +187,7 @@ void main() {
 
       final manager = ImportManager.withStrategies(
         MockPersonalRecipeOperations(),
-        [PhotoImportStrategy()],
+        [PhotoImportStrategy(llmEnhancement: () => fakeLlm)],
       );
       viewModel = PhotoImportViewModel(importManager: manager);
       viewModel.setHandwritten(true);

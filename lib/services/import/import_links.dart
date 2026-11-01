@@ -10,6 +10,7 @@ import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
@@ -29,6 +30,7 @@ class ImportLinks {
     this.recipeParser = _absent,
     this.parsedRecipeCache = _absent,
     this.llmEnhancement = _absent,
+    this.ingredientStrategy = _absent,
   });
 
   /// Nothing available: every step that needs a service is skipped.
@@ -44,4 +46,5 @@ class ImportLinks {
   final RecipeParserService? Function() recipeParser;
   final ParsedRecipeCache? Function() parsedRecipeCache;
   final LlmEnhancementService? Function() llmEnhancement;
+  final IngredientParsingStrategy? Function() ingredientStrategy;
 }

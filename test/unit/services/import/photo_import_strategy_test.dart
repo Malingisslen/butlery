@@ -944,24 +944,13 @@ void main() {
       late _FakeLlmEnhancementService fakeLlm;
 
       setUp(() {
-        // The strategy resolves LlmEnhancementService via the production
-        // ServiceLocator; wire it to a fake we can observe.
-        app_provider.ServiceLocator.reset();
-        app_provider.ServiceLocator.initialize(DIContainer());
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<LlmEnhancementService>()) {
-          getIt.unregister<LlmEnhancementService>();
-        }
+        // The strategy is handed a fake we can observe.
         fakeLlm = _FakeLlmEnhancementService();
-        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<LlmEnhancementService>()) {
-          getIt.unregister<LlmEnhancementService>();
-        }
-        app_provider.ServiceLocator.reset();
+        strategy = PhotoImportStrategy(
+          ocrService: mockOcrService,
+          textStrategy: mockTextStrategy,
+          llmEnhancement: () => fakeLlm,
+        );
       });
 
       test(
@@ -1031,12 +1020,6 @@ void main() {
       late _FakeLlmEnhancementService fakeLlm;
 
       setUp(() {
-        app_provider.ServiceLocator.reset();
-        app_provider.ServiceLocator.initialize(DIContainer());
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<LlmEnhancementService>()) {
-          getIt.unregister<LlmEnhancementService>();
-        }
         fakeLlm = _FakeLlmEnhancementService()
           ..result = ImportSuccess(
             recipe: _createTestRecipe(
@@ -1050,15 +1033,11 @@ void main() {
             method: 'llm-vision',
             usedLlm: true,
           );
-        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<LlmEnhancementService>()) {
-          getIt.unregister<LlmEnhancementService>();
-        }
-        app_provider.ServiceLocator.reset();
+        strategy = PhotoImportStrategy(
+          ocrService: mockOcrService,
+          textStrategy: mockTextStrategy,
+          llmEnhancement: () => fakeLlm,
+        );
       });
 
       test(
