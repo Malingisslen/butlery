@@ -14,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
-import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/social_media_extractor.dart';
