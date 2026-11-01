@@ -96,8 +96,10 @@ void main() {
   });
 
   test('a menu dish does not tell readers the recipe is on the profile', () {
-    final recipe = RecipeFactory.build(id: 'p1', createdBy: 'owner-uid')
-        .copyWith(showOnProfile: true, showOnProfileChangedAt: _at);
+    final recipe = RecipeFactory.build(
+      id: 'p1',
+      createdBy: 'owner-uid',
+    ).copyWith(showOnProfile: true, showOnProfileChangedAt: _at);
     // Premise: the core does carry the profile choice.
     expect(recipe.core.toFirestore(), contains('showOnProfile'));
     expect(recipe.core.toFirestore(), contains('showOnProfileChangedAt'));
