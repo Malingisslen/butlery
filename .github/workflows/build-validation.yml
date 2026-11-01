@@ -14,12 +14,6 @@ on:
     # A draft gets no CI; marking it ready for review starts the run.
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'tasks/**'
-      - '.claude/**'
-      - 'memory/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,9 +23,42 @@ env:
   FLUTTER_VERSION: '3.38.5'
 
 jobs:
+  # A required check that never starts blocks the pull request forever, which is
+  # what `paths-ignore` did to documentation-only pull requests. The workflow now
+  # always starts; this job decides, and the heavy jobs skip themselves so the
+  # required check names still report.
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Documentation-only pull request?
+      id: scope
+      env:
+        GH_TOKEN: ${{ github.token }}
+        EVENT: ${{ github.event_name }}
+        PR: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+      run: |
+        bash scripts/__tests__/ci_docs_only_test.sh
+        result=false
+        if [ "$EVENT" = "pull_request" ]; then
+          if files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[] | .filename, (.previous_filename // empty)'); then
+            result=$(printf '%s\n' "$files" | bash scripts/ci_docs_only.sh)
+          fi
+        fi
+        echo "docs_only=$result" >> "$GITHUB_OUTPUT"
+        echo "docs_only=$result" >> "$GITHUB_STEP_SUMMARY"
+
   # Validation job - must pass before builds run
   validate:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -127,7 +154,8 @@ jobs:
 
   # Secret scanning - runs independently, scans full git history
   secret-scan:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -150,7 +178,8 @@ jobs:
   # develop and a manual run always build iOS, so a regression still shows up
   # on the merge that caused it.
   platforms:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -414,19 +443,29 @@ jobs:
   # Summary job
   build-summary:
     runs-on: ubuntu-latest
-    needs: [validate, build, security-scan, secret-scan]
-    if: always() && github.event.pull_request.draft != true
+    needs: [scope, validate, build, security-scan, secret-scan]
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
 
     steps:
     - name: Check results
+      env:
+        DOCS_ONLY: ${{ needs.scope.outputs.docs_only }}
+        RESULTS: ${{ needs.scope.result }} ${{ needs.validate.result }} ${{ needs.build.result }} ${{ needs.security-scan.result }} ${{ needs.secret-scan.result }}
       run: |
-        if [ "${{ needs.validate.result }}" == "success" ] && [ "${{ needs.build.result }}" == "success" ] && [ "${{ needs.security-scan.result }}" == "success" ] && [ "${{ needs.secret-scan.result }}" == "success" ]; then
-          echo "✅ All validations passed!"
-          echo "✅ Architecture compliance verified"
-          echo "✅ Code analysis passed"
-          echo "✅ Builds completed successfully"
-          echo "✅ Security scans passed"
+        # A documentation-only pull request skips every job but `scope` on
+        # purpose; any other pull request must see every job succeed.
+        ok=true
+        set -- $RESULTS
+        [ "$1" = "success" ] || ok=false
+        shift
+        for r in "$@"; do
+          if [ "$r" = "success" ]; then continue; fi
+          if [ "$r" = "skipped" ] && [ "$DOCS_ONLY" = "true" ]; then continue; fi
+          ok=false
+        done
+        if [ "$ok" = true ]; then
+          echo "Build validation passed (documentation-only: $DOCS_ONLY)"
         else
-          echo "❌ Build validation failed"
+          echo "Build validation failed: $RESULTS"
           exit 1
         fi
