@@ -2,7 +2,7 @@
 /// previously zero direct coverage).
 ///
 /// These are pure static helpers extracted from MenuGenerator (BUT-1349): menu
-/// quality analysis, prompt validation, and the prompt-optimality heuristic.
+/// quality analysis and the prompt-optimality heuristic.
 /// They hold no dependencies, so the tests are plain input→output assertions
 /// with no mocks. Recipes come from RecipeFactory, so no real-clock calls live
 /// in this test file (keeps the flaky-time guard happy).
@@ -96,26 +96,6 @@ void main() {
 
     test('keyword match is case-insensitive', () {
       expect(MenuQualityAnalyzer.isPromptOptimal('MIDDAG till helgen'), isTrue);
-    });
-  });
-
-  group('MenuQualityAnalyzer.validatePromptNotEmpty', () {
-    test('throws ArgumentError on an empty or whitespace-only prompt', () {
-      expect(
-        () => MenuQualityAnalyzer.validatePromptNotEmpty(''),
-        throwsArgumentError,
-      );
-      expect(
-        () => MenuQualityAnalyzer.validatePromptNotEmpty('   '),
-        throwsArgumentError,
-      );
-    });
-
-    test('does not throw for a non-empty prompt', () {
-      expect(
-        () => MenuQualityAnalyzer.validatePromptNotEmpty('veckomeny'),
-        returnsNormally,
-      );
     });
   });
 

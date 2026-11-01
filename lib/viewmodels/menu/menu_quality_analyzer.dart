@@ -11,14 +11,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class MenuQualityAnalyzer {
   const MenuQualityAnalyzer._();
 
-  /// Throws if the prompt is empty. The caller is responsible for the
-  /// availability check, which depends on generator state.
-  static void validatePromptNotEmpty(String prompt) {
-    if (prompt.trim().isEmpty) {
-      throw ArgumentError(AppLocale.current.errorFillRequiredFields);
-    }
-  }
-
   /// Analyze generated menu quality.
   static Map<String, dynamic> analyzeMenuQuality(
     Map<String, List<Recipe>> menu,

@@ -114,7 +114,6 @@ class MenuNoRecipesException implements Exception {
 /// This module handles ONLY menu generation:
 /// - AI-powered menu generation from prompts
 /// - Menu section regeneration
-/// - Recipe availability validation
 /// - Generation error handling
 /// - Allergen-safe recipe filtering
 /// ❌ DOES NOT CONTAIN: State management, persistence, social features
