@@ -1,0 +1,110 @@
+# Builds the admin web (lib/admin_main.dart) and publishes it to the `admin`
+# hosting target. Before this workflow the admin web was built and deployed by
+# hand from a developer machine, so a merged admin change reached nobody until
+# someone did that; Malin is not a developer and approves deploys from her
+# phone. Runs on manual dispatch only, in the `production` environment, so
+# every run waits for her approval like deploy-firebase.yml.
+#
+# Mirrors deploy-hosting.yml (legal pages): same WIF sign-in, same project
+# guard. Deploys ONLY hosting:admin; the app site and the legal site are not
+# touched.
+name: Deploy admin web
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to publish the current ref to the admin web"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-admin-web
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+    timeout-minutes: 30
+    steps:
+      - name: Refuse without the confirmation word
+        if: inputs.confirm != 'DEPLOY'
+        run: |
+          echo "::error::Type DEPLOY in the confirm field to publish. Nothing was deployed." >&2
+          exit 1
+
+      # Compiled app code talking to production: only what is merged ships.
+      - name: Refuse anything but main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Admin web deploys only from main (got $GITHUB_REF). Nothing was deployed." >&2
+          exit 1
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # Same .env the CI web build uses (build-validation.yml).
+      - name: Create .env
+        run: |
+          cat > .env << 'ENVEOF'
+          ENV=production
+          ENVEOF
+
+      - name: Build the admin web
+        run: |
+          flutter pub get
+          flutter build web --release -t lib/admin_main.dart -o build/web-admin --dart-define-from-file=.env
+          test -s build/web-admin/index.html || { echo "::error::build/web-admin/index.html missing" >&2; exit 1; }
+          test -s build/web-admin/main.dart.js || { echo "::error::build/web-admin/main.dart.js missing" >&2; exit 1; }
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.13.0
+
+      - name: Authenticate to Google Cloud (WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — project matches the environment
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'." >&2; exit 1; }
+          SITE=$(jq -r --arg p "$FIREBASE_PROJECT_ID" '.targets[$p].hosting.admin[0]' .firebaserc)
+          test -n "$SITE" && test "$SITE" != "null" || { echo "::error::no admin hosting target in .firebaserc" >&2; exit 1; }
+          echo "SITE=$SITE" >> "$GITHUB_ENV"
+
+      - name: Deploy hosting target admin
+        run: |
+          firebase deploy --only hosting:admin --project "$FIREBASE_PROJECT_ID" --non-interactive \
+            --message "admin web ${GITHUB_SHA::7} via deploy-admin-web.yml"
+          echo "Published: https://${SITE}.web.app/"
