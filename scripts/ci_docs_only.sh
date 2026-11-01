@@ -3,7 +3,6 @@
 # documentation path and "false" otherwise. Empty input prints "false" so a
 # failed file listing runs the full suite rather than skipping it.
 #
-# The pattern list mirrors the `paths-ignore` the push triggers still carry.
 # A required check cannot rely on `paths-ignore`: a workflow that never starts
 # never reports, and the pull request waits on it forever.
 set -uo pipefail
@@ -12,7 +11,7 @@ set -uo pipefail
 # the prompt-changelog guard, and docs/onboarding/ plus docs/feature_inventory.csv
 # are what the workflow-map linter checks. Those are code for CI purposes.
 docs_re='(\.md$|^docs/|^tasks/|^\.claude/|^memory/)'
-code_re='(^assets/|^test/|^lib/|^functions/|^docs/onboarding/|^docs/feature_inventory\.csv$)'
+code_re='(^assets/|^test/|^lib/|^functions/|^docs/onboarding/|^docs/analysis|^docs/feature_inventory\.csv$)'
 seen=0
 while IFS= read -r path; do
   [ -z "$path" ] && continue
