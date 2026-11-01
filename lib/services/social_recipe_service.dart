@@ -20,6 +20,8 @@
 /// state changes without an explicit `await`), add `with ChangeNotifier` and
 /// call `notifyListeners()` after every state mutation, then remove this comment.
 
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -45,7 +47,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final PermissionService _permissionService;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final FirebaseSharedMenuRepository _sharedMenuRepository;
-  final FirebaseSocialRequestRepository _socialRequestRepository;
 
   /// Resolved lazily to avoid cross-module dependency ordering issues
   /// (UnifiedShoppingService lives in CollaborationModule)
@@ -69,14 +70,15 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
     required FirebaseSocialRequestRepository socialRequestRepository,
+    required SocialRecipeCoordinator Function() getRecipeCoordinator,
+    required NotificationService? Function() getNotificationService,
     UnifiedShoppingService? Function()? getShoppingService,
   }) : _getShoppingService = getShoppingService ?? (() => null),
        _userService = userService,
        _recipeService = recipeService,
        _permissionService = permissionService,
        _sharedRecipeRepository = sharedRecipeRepository,
-       _sharedMenuRepository = sharedMenuRepository,
-       _socialRequestRepository = socialRequestRepository {
+       _sharedMenuRepository = sharedMenuRepository {
     _participantResolver = SocialParticipantResolverModule(
       userService: _userService,
       getSharedRecipes: () => _sharedRecipes,
@@ -86,9 +88,11 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       getShoppingService: () => _shoppingService,
     );
     _recipeShareRequestModule = RecipeShareRequestModule(
-      socialRequestRepository: _socialRequestRepository,
+      socialRequestRepository: socialRequestRepository,
       permissionService: _permissionService,
       userService: _userService,
+      getRecipeCoordinator: getRecipeCoordinator,
+      getNotificationService: getNotificationService,
     );
   }
 
@@ -98,9 +102,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-
-  // For compatibility with old code
-  List<SharedRecipe> get sharedWithMe => sharedRecipes;
 
   /// Clears `_error` at the entry-point of every public mutator. UI banners
   /// gated on [hasError] stay stale until the next initialize() otherwise — a

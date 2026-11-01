@@ -10,8 +10,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -60,6 +59,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   final Future<bool> Function(Recipe) _saveRecipe;
   final void Function() _notifyListeners;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
+  final FriendCategory? Function(String groupId) _findFriendGroup;
 
   SocialRecipeSharingService({
     required String? Function() getCurrentUserId,
@@ -69,7 +69,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
-  }) : _getCurrentUserId = getCurrentUserId,
+    required FriendCategory? Function(String groupId) findFriendGroup,
+  }) : _findFriendGroup = findFriendGroup,
+       _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _setError = setError,
        _notifyListeners = notifyListeners,
@@ -476,9 +478,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
   Future<List<String>> _resolveGroupMemberIds(String groupId) async {
     try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-
-      final group = friendsService.getCategoryByIdInternal(groupId);
+      final group = _findFriendGroup(groupId);
       if (group == null) {
         AppLogger.warning('Group $groupId not found');
         return const <String>[];

@@ -1,5 +1,6 @@
 // lib/services/unified/unified_recipe_service.dart
 
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
@@ -79,6 +80,7 @@ class UnifiedRecipeService
   final RecipeRepository _recipeRepository;
   final TrashRepository _trashRepository;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
+  final FriendCategory? Function(String groupId) _findFriendGroup;
   final CommentsRepository? _commentsRepository;
   final BlockedUserFilter? _blockedUserFilter;
   final RatingsRepository _ratingsRepository;
@@ -225,6 +227,7 @@ class UnifiedRecipeService
     required TrashRepository trashRepository,
     required FirestoreRepository firestoreRepository,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
+    required FriendCategory? Function(String groupId) findFriendGroup,
     CommentsRepository? commentsRepository,
     BlockedUserFilter? blockedUserFilter,
     required RatingsRepository ratingsRepository,
@@ -254,6 +257,7 @@ class UnifiedRecipeService
        _recipeRepository = recipeRepository,
        _trashRepository = trashRepository,
        _sharedRecipeRepository = sharedRecipeRepository,
+       _findFriendGroup = findFriendGroup,
        _commentsRepository = commentsRepository,
        _blockedUserFilter = blockedUserFilter,
        _ratingsRepository = ratingsRepository,
@@ -372,6 +376,7 @@ class UnifiedRecipeService
         notificationsRepository: _notificationsRepository,
       ),
       sharedRecipeRepository: _sharedRecipeRepository,
+      findFriendGroup: _findFriendGroup,
     );
 
     _cacheModule = RecipeCacheModule(

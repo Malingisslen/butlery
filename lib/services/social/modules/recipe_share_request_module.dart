@@ -13,7 +13,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Module handling the recipe-share *request* flow: a user asking a friend
 /// (the owner) to share a recipe, and the owner accepting that request.
@@ -29,7 +28,13 @@ class RecipeShareRequestModule {
     required this.socialRequestRepository,
     required this.permissionService,
     required this.userService,
-  });
+    required SocialRecipeCoordinator Function() getRecipeCoordinator,
+    required NotificationService? Function() getNotificationService,
+  }) : _getRecipeCoordinator = getRecipeCoordinator,
+       _getNotificationService = getNotificationService;
+
+  final SocialRecipeCoordinator Function() _getRecipeCoordinator;
+  final NotificationService? Function() _getNotificationService;
 
   /// Last sanitized error for the most recent operation, mirroring the
   /// service's `_error` semantics so callers can surface a banner.
@@ -120,10 +125,13 @@ class RecipeShareRequestModule {
       // memberPermissions. The read path (fetchFriendRecipe) and the firestore
       // rule both key off the original doc, so a new collaborative copy would
       // leave the requester unable to open the recipe.
-      final shareResult = await ServiceLocator.get<SocialRecipeCoordinator>()
-          .shareRecipeWithUsers(recipeId, [
-            request.fromUserId,
-          ], ResourcePermission.viewer);
+      final shareResult = await _getRecipeCoordinator().shareRecipeWithUsers(
+        recipeId,
+        [
+          request.fromUserId,
+        ],
+        ResourcePermission.viewer,
+      );
       // BUT-1503: accept once access was actually granted (the primary
       // memberPermissions write succeeded — the requester can open the recipe).
       // A failed secondary discovery-doc write (accessGranted but not
@@ -153,7 +161,7 @@ class RecipeShareRequestModule {
     required String requestId,
     required String fromUserId,
   }) async {
-    final notificationService = ServiceLocator.tryGet<NotificationService>();
+    final notificationService = _getNotificationService();
     if (notificationService == null) return;
 
     final sv = lookupAppLocalizations(const Locale('sv'));

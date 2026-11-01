@@ -9,6 +9,7 @@
 // - SocialRecipeQueryService: Queries and analytics operations
 
 import 'dart:async';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -78,6 +79,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required Future<bool> Function(Recipe) saveRecipe,
     required RecipeServiceAdapter serviceAdapter,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
+    required FriendCategory? Function(String groupId) findFriendGroup,
   }) {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
@@ -93,6 +95,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
       saveRecipe: saveRecipe,
       serviceAdapter: serviceAdapter,
       sharedRecipeRepository: sharedRecipeRepository,
+      findFriendGroup: findFriendGroup,
     );
   }
 

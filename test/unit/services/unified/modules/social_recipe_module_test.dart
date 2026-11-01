@@ -9,7 +9,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -38,6 +40,15 @@ void main() {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(ResourcePermission.viewer);
+      registerFallbackValue(
+        SharedRecipe.create(
+          originalRecipeId: 'fallback',
+          sharedByUserId: 'fallback',
+          sharedByDisplayName: 'fallback',
+          sharedToUserIds: const [],
+          recipeSnapshot: RecipeFactory.build(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -90,6 +101,7 @@ void main() {
         },
         serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
         sharedRecipeRepository: mockSharedRecipeRepo,
+        findFriendGroup: (_) => null,
       );
     });
 
@@ -195,6 +207,53 @@ void main() {
     });
 
     group('Sharing', () {
+      /// BUT-1508: the module forwards its group lookup to the coordinator,
+      /// so a group share reaches that group's members.
+      test('a group share reaches the members of the injected group', () async {
+        when(
+          () => mockSharedRecipeRepo.createSharedRecipe(
+            any(),
+            recipientIds: any(named: 'recipientIds'),
+            groupIds: any(named: 'groupIds'),
+          ),
+        ).thenAnswer((_) async => 'shared-doc');
+        final withGroups = SocialRecipeModule(
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) {},
+          notifyListeners: () {},
+          getRecipe: (id) async => recipeDatabase[id],
+          saveRecipe: (recipe) async {
+            recipeDatabase[recipe.id] = recipe;
+            return true;
+          },
+          serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+          sharedRecipeRepository: mockSharedRecipeRepo,
+          findFriendGroup: (groupId) => groupId == 'grp-fam'
+              ? FriendCategory(
+                  id: 'grp-fam',
+                  ownerId: 'test-user-123',
+                  name: 'Familj',
+                  friendUserIds: const ['mom-uid'],
+                )
+              : null,
+        );
+
+        final ok = await withGroups.shareRecipeWithGroups('test-recipe-1', [
+          'grp-fam',
+        ], ResourcePermission.viewer);
+
+        expect(ok, isTrue);
+        verify(
+          () => mockSharedRecipeRepo.createSharedRecipe(
+            any(),
+            recipientIds: ['mom-uid'],
+            groupIds: ['grp-fam'],
+          ),
+        ).called(1);
+      });
+
       test('should unshare recipe', () async {
         final result = await module.unshareRecipe('test-recipe-1');
         expect(result, isA<bool>());

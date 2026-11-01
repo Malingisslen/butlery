@@ -4252,9 +4252,6 @@ class MockSocialRecipeService extends Mock implements SocialRecipeService {
   @override
   List<SharedMenu> get sharedMenus => List.unmodifiable(_sharedMenus);
 
-  @override
-  List<SharedRecipe> get sharedWithMe => sharedRecipes;
-
   // ===== QUERY METHODS =====
 
   /// Common methods expected by tests (can be stubbed with when())

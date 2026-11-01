@@ -11,6 +11,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -119,6 +120,7 @@ void main() {
         },
         serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
         sharedRecipeRepository: mockSharedRecipeRepo,
+        findFriendGroup: (_) => null,
       );
     });
 
@@ -144,6 +146,58 @@ void main() {
 
       verify(() => mockSharedRecipeRepo.getSharedRecipe('shared-1')).called(1);
       verifyNever(() => inLocator.getSharedRecipe(any()));
+    });
+
+    /// BUT-1508: a group share resolves members through the lookup the
+    /// coordinator was built with. The share dialog calls this coordinator,
+    /// so a link that stopped forwarding the lookup would make every group
+    /// share fail with "no group members found".
+    test('a group share reaches the members of the injected group', () async {
+      when(
+        () => mockSharedRecipeRepo.createSharedRecipe(
+          any(),
+          recipientIds: any(named: 'recipientIds'),
+          groupIds: any(named: 'groupIds'),
+        ),
+      ).thenAnswer((_) async => 'shared-doc');
+      final withGroups = SocialRecipeCoordinator(
+        getCacheHelper: () => mockCacheHelper,
+        getCurrentUserId: () => currentUserId,
+        getCurrentUserDisplayName: () => currentUserDisplayName,
+        setError: (error) {},
+        notifyListeners: () {},
+        getRecipe: (id) async => testRecipesMap[id],
+        saveRecipe: (recipe) async {
+          testRecipesMap[recipe.id] = recipe;
+          return true;
+        },
+        serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+        sharedRecipeRepository: mockSharedRecipeRepo,
+        findFriendGroup: (groupId) => groupId == 'grp-fam'
+            ? FriendCategory(
+                id: 'grp-fam',
+                ownerId: currentUserId,
+                name: 'Familj',
+                friendUserIds: const ['mom-uid'],
+              )
+            : null,
+      );
+
+      final ok = await withGroups.shareRecipeWithGroups('recipe-2', [
+        'grp-fam',
+      ], ResourcePermission.viewer);
+
+      expect(ok, isTrue);
+      expect(testRecipesMap['recipe-2']!.socialData?.grants?['mom-uid'], [
+        'group:grp-fam',
+      ]);
+      verify(
+        () => mockSharedRecipeRepo.createSharedRecipe(
+          any(),
+          recipientIds: ['mom-uid'],
+          groupIds: ['grp-fam'],
+        ),
+      ).called(1);
     });
 
     tearDownAll(() async {
@@ -341,6 +395,7 @@ void main() {
           saveRecipe: (recipe) async => true,
           serviceAdapter: adapter,
           sharedRecipeRepository: mockSharedRecipeRepo,
+          findFriendGroup: (_) => null,
         );
 
         final result = await owner.startCollaborativeEditing(
@@ -379,6 +434,7 @@ void main() {
           saveRecipe: (recipe) async => false,
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
           sharedRecipeRepository: mockSharedRecipeRepo,
+          findFriendGroup: (_) => null,
         );
 
         final result = await unauthCoordinator.dismissSharedRecipe('shared-1');
@@ -407,6 +463,7 @@ void main() {
           saveRecipe: (recipe) async => false,
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
           sharedRecipeRepository: mockSharedRecipeRepo,
+          findFriendGroup: (_) => null,
         );
 
         final result = await unauthCoordinator.markRecipeAsViewed('shared-1');

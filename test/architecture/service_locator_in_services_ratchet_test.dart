@@ -56,7 +56,6 @@ const _residue = <String, int>{
   'lib/services/shopping/menu_shopping_list_generator.dart': 8,
   'lib/services/shopping/recipe_pantry_check.dart': 2,
   'lib/services/social/blocking/blocked_user_filter.dart': 1,
-  'lib/services/social/modules/recipe_share_request_module.dart': 2,
   'lib/services/storage_service.dart': 7,
   'lib/services/tagging/cookbook_cover_cleanup.dart': 1,
   'lib/services/tagging/cookbook_service.dart': 4,
@@ -65,8 +64,6 @@ const _residue = <String, int>{
   'lib/services/unified/friends/friends_internal_operations.dart': 3,
   'lib/services/unified/modules/personal_recipe_module.dart': 3,
   'lib/services/unified/modules/shopping_item_management_module.dart': 1,
-  'lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart':
-      1,
   'lib/services/unified/operations/friend_categories_operations.dart': 7,
   'lib/services/unified/operations/friends_management_operations.dart': 5,
   'lib/services/unified/operations/list_invitation_operations.dart': 1,

@@ -175,26 +175,35 @@ class _Harness {
         return true;
       },
       sharedRecipeRepository: repo,
+      findFriendGroup: _findFriendGroup,
     );
   }
 }
 
-// -------------------- ServiceLocator wiring for group tests --------------
+// -------------------- Group lookup for group tests ------------------------
 
-/// Wires a `_FakeFriendsService` into the global GetIt instance so
-/// `ServiceLocator.get<UnifiedFriendsService>()` (called from the production
-/// `_resolveGroupMemberIds`) resolves to our fake. Both production and test
-/// ServiceLocators share `GetIt.instance`, so direct registration is enough.
+/// The group lookup every harness injects. Outside the group tests it throws,
+/// as the production lookup does when the friends service is not available.
+FriendCategory? Function(String groupId) _findFriendGroup = _noFriendsService;
+
+FriendCategory? _noFriendsService(String groupId) =>
+    throw StateError('UnifiedFriendsService is not available');
+
+/// Injects [fake]'s groups, and registers an empty friends service in the
+/// locator as a decoy: a lookup that comes back finds no group, so every
+/// group test that expects members fails.
 void _registerFakeFriendsService(_FakeFriendsService fake) {
+  _findFriendGroup = fake.getCategoryByIdInternal;
   final g = GetIt.instance;
   if (g.isRegistered<UnifiedFriendsService>()) {
     g.unregister<UnifiedFriendsService>();
   }
-  g.registerSingleton<UnifiedFriendsService>(fake);
+  g.registerSingleton<UnifiedFriendsService>(_FakeFriendsService());
   prod.ServiceLocator.initialize(DIContainer());
 }
 
 void _unregisterFakeFriendsService() {
+  _findFriendGroup = _noFriendsService;
   final g = GetIt.instance;
   if (g.isRegistered<UnifiedFriendsService>()) {
     g.unregister<UnifiedFriendsService>();
@@ -1330,14 +1339,13 @@ void main() {
     });
   });
 
-  group('shareRecipeWithGroups — no service locator registered', () {
-    /// Pinned: if UnifiedFriendsService isn't registered in the
-    /// ServiceLocator (e.g. mid-startup), the resolver catches the throw
+  group('shareRecipeWithGroups — friends service unavailable', () {
+    /// Pinned: if UnifiedFriendsService is not available (e.g. mid-startup),
+    /// the group lookup throws, the resolver catches the throw
     /// and returns an empty member map → operation returns false with
     /// "no group members found", NOT a crash.
     test('no UnifiedFriendsService → false, no crash', () async {
-      // Make sure neither GetIt nor the production ServiceLocator has
-      // anything registered for UnifiedFriendsService.
+      // Restores the default lookup, which throws.
       _unregisterFakeFriendsService();
       final h = _Harness(currentUserId: 'me-uid');
       h.seed(_personal(id: 'r1'));
