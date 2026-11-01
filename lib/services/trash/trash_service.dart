@@ -11,12 +11,9 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
-import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/trash/trash_restore.dart';
 
 /// Why one item's restore or delete did not happen.
@@ -69,12 +66,12 @@ class TrashService extends BaseService {
   TrashService({
     required TrashRepository repository,
     required TrashRestore restorer,
-    bool Function()? isOnline,
-    String? Function()? currentUserId,
+    required bool Function() isOnline,
+    required String? Function() currentUserId,
   }) : _repository = repository,
        _restorer = restorer,
-       _isOnline = isOnline ?? _offlineServiceSaysOnline,
-       _currentUserId = currentUserId ?? _signedInUserId;
+       _isOnline = isOnline,
+       _currentUserId = currentUserId;
 
   final TrashRepository _repository;
   final TrashRestore _restorer;
@@ -83,13 +80,6 @@ class TrashService extends BaseService {
 
   @override
   String get serviceName => 'TrashService';
-
-  /// The signed-in user, from the auth source (not the profile).
-  static String? _signedInUserId() =>
-      ServiceLocator.tryGet<PermissionService>()?.currentUserId;
-
-  static bool _offlineServiceSaysOnline() =>
-      ServiceLocator.tryGet<OfflineService>()?.isOnline ?? true;
 
   /// The signed-in user's trash, newest first, without anything past its 30
   /// days at the moment each list arrives. Errors (signed out, a failed

@@ -6,7 +6,6 @@
 import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -55,21 +54,18 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
   static const Duration ttl = Duration(seconds: 60);
 
   final FirebaseShoppingPresenceRepository _repository;
-  final PermissionService? _permissionServiceOverride;
+  final PermissionService _permissionService;
   final AttributionSource _attribution;
 
   final Map<String, StreamSubscription<void>> _heartbeatSubscriptions = {};
 
   FirebaseShoppingPresenceModule({
     required FirebaseShoppingPresenceRepository repository,
-    PermissionService? permissionService,
+    required PermissionService permissionService,
     AttributionSource? attribution,
   }) : _repository = repository,
-       _permissionServiceOverride = permissionService,
+       _permissionService = permissionService,
        _attribution = attribution ?? AttributionSource();
-
-  PermissionService get _permissionService =>
-      _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
 
   @override
   Future<bool> showPresence(String listId) async {

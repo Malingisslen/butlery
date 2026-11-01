@@ -14,6 +14,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -27,6 +28,7 @@ import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 
 import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
@@ -104,6 +106,7 @@ class TaggingModule implements DIModule {
       () => IngredientLookupService(
         ingredientRepository: app<IngredientRepository>(),
         userIngredientRepository: container<UserIngredientRepository>(),
+        registry: ServiceLocator.tryGet<IngredientRegistryService>,
       ),
     );
 

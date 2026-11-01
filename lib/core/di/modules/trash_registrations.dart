@@ -8,6 +8,7 @@ import 'package:butlery/repositories/firebase/firebase_trash_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/trash/trash_restore.dart';
 import 'package:butlery/services/trash/trash_service.dart';
@@ -26,6 +27,11 @@ abstract final class TrashRegistrations {
     container.registerLazySingleton<TrashService>(
       () => TrashService(
         repository: container<TrashRepository>(),
+        // The signed-in user comes from the auth source, not the profile.
+        currentUserId: () =>
+            ServiceLocator.tryGet<PermissionService>()?.currentUserId,
+        isOnline: () =>
+            ServiceLocator.tryGet<OfflineService>()?.isOnline ?? true,
         restorer: TrashRestore(
           repository: container<TrashRepository>(),
           taggingService: ServiceLocator.tryGet<TaggingService>,

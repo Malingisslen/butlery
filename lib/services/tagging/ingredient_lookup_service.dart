@@ -1,6 +1,5 @@
 import 'package:butlery/constants/grocery_brands.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_line.dart';
@@ -40,8 +39,13 @@ class IngredientLookupService extends BaseService {
   IngredientLookupService({
     required IngredientRepository ingredientRepository,
     required UserIngredientRepository userIngredientRepository,
+    IngredientRegistryService? Function()? registry,
   }) : _ingredientRepository = ingredientRepository,
-       _userIngredientRepository = userIngredientRepository;
+       _userIngredientRepository = userIngredientRepository,
+       _registry = registry ?? (() => null);
+
+  // A closure because the registry is registered after this service.
+  final IngredientRegistryService? Function() _registry;
 
   @override
   String get serviceName => 'IngredientLookupService';
@@ -428,8 +432,7 @@ class IngredientLookupService extends BaseService {
     final seen = <String>{};
     final normalized = <String>[];
     final lineNames = <List<String>>[];
-    final enrichedKnown =
-        ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
+    final enrichedKnown = _registry()?.allIngredients;
 
     for (final raw in rawIngredients) {
       final names = [

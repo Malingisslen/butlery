@@ -3,10 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 // Mocks
 class MockIngredientRepository extends Mock implements IngredientRepository {}
+
+class _MockRegistry extends Mock implements IngredientRegistryService {}
 
 class MockUserIngredientRepository extends Mock
     implements UserIngredientRepository {}
@@ -1378,6 +1381,23 @@ void main() {
       expect(result.unmatched, isNotEmpty);
     });
   });
+
+  test(
+    'lookupFromRaw reads known ingredients from the injected registry',
+    () async {
+      final registry = _MockRegistry();
+      when(() => registry.allIngredients).thenReturn({'tomat'});
+      final withRegistry = IngredientLookupService(
+        ingredientRepository: mockIngredientRepo,
+        userIngredientRepository: mockUserIngredientRepo,
+        registry: () => registry,
+      );
+
+      await withRegistry.lookupFromRaw(['2 dl mjölk']);
+
+      verify(() => registry.allIngredients).called(1);
+    },
+  );
 }
 
 /// Helper to create test ingredient data
