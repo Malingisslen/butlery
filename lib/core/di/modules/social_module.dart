@@ -252,6 +252,8 @@ class SocialModule implements DIModule {
               : null,
         ),
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
+        findFriendGroup: (groupId) =>
+            container<UnifiedFriendsService>().getCategoryByIdInternal(groupId),
       );
     });
 

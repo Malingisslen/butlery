@@ -216,6 +216,7 @@ void main() {
       trashRepository: trashRepository,
       firestoreRepository: mockFirestoreRepository,
       sharedRecipeRepository: MockFirebaseSharedRecipeRepository(),
+      findFriendGroup: (_) => null,
       commentsRepository: commentsRepository,
       blockedUserFilter: blockedUserFilter,
       ratingsRepository: ratingsRepository ?? mockRatingsRepository,

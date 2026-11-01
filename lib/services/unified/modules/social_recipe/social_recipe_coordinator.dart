@@ -1,5 +1,6 @@
 // lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart
 import 'dart:async';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -60,6 +61,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     required Future<bool> Function(Recipe) saveRecipe,
     required RecipeServiceAdapter serviceAdapter,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
+    required FriendCategory? Function(String groupId) findFriendGroup,
   }) : _serviceAdapter = serviceAdapter,
        _sharedRecipeRepository = sharedRecipeRepository,
        _getCurrentUserId = getCurrentUserId {
@@ -92,6 +94,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       getRecipe: getRecipe,
       saveRecipe: saveRecipe,
       sharedRecipeRepository: _sharedRecipeRepository,
+      findFriendGroup: findFriendGroup,
     );
 
     _permissionService = SocialRecipePermissionService(

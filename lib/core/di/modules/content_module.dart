@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core interfaces
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
@@ -278,6 +279,8 @@ class ContentModule implements DIModule {
         trashRepository: app<TrashRepository>(),
         firestoreRepository: app<FirestoreRepository>(),
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
+        findFriendGroup: (groupId) =>
+            container<UnifiedFriendsService>().getCategoryByIdInternal(groupId),
         commentsRepository: app.isRegistered<CommentsRepository>()
             ? app<CommentsRepository>()
             : null,
