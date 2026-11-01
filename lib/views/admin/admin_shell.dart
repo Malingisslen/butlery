@@ -5,10 +5,12 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
+import 'package:butlery/views/admin/ingredient_review_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/signup_allowlist_view.dart';
+import 'package:butlery/views/admin/tag_rules_view.dart';
 import 'package:butlery/views/admin/widgets/admin_top_bar.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
 import 'package:butlery/views/admin/admin_url_state_stub.dart'
@@ -90,6 +92,8 @@ class _AdminShellState extends State<AdminShell>
     ),
     const OpsLogView(),
     const SignupAllowlistView(),
+    const IngredientReviewView(),
+    const TagRulesView(),
   ];
 
   @override
@@ -109,6 +113,8 @@ class _AdminShellState extends State<AdminShell>
               l10n.adminNavRecipes,
               l10n.adminNavOps,
               l10n.adminNavGuestList,
+              l10n.adminNavIngredients,
+              l10n.adminNavTagRules,
             ],
             email: auth.currentUserEmail,
             onSignOut: auth.signOut,
