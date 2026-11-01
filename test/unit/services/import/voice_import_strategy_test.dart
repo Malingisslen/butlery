@@ -20,6 +20,7 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -235,7 +236,7 @@ void main() {
       if (getIt.isRegistered<ImportRateLimiter>()) {
         getIt.unregister<ImportRateLimiter>();
       }
-      getIt.registerSingleton<ImportRateLimiter>(limiter);
+      getIt.registerSingleton<ImportRateLimiter>(_RecordingRateLimiter());
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(DIContainer());
       addTearDown(() {
@@ -253,6 +254,7 @@ void main() {
           ),
         ],
         eventLogger: _SpyParseEventLogger(),
+        links: ImportLinks(rateLimiter: () => limiter),
       );
       final okResult = await okManager.importVoiceTranscript(
         _assembledTranscript,
@@ -274,6 +276,7 @@ void main() {
           ),
         ],
         eventLogger: _SpyParseEventLogger(),
+        links: ImportLinks(rateLimiter: () => limiter),
       );
       final failResult = await failManager.importVoiceTranscript('brus');
       expect(failResult.isSuccess, isFalse);

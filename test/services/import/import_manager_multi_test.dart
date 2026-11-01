@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -113,7 +114,9 @@ Vispa ihop smeten och stek i smör.''';
       if (getIt.isRegistered<ImportRateLimiter>()) {
         getIt.unregister<ImportRateLimiter>();
       }
-      getIt.registerSingleton<ImportRateLimiter>(limiter);
+      // The manager gets `limiter` through its link; this one only catches a
+      // manager that still looks in the locator.
+      getIt.registerSingleton<ImportRateLimiter>(_CountingRateLimiter());
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(DIContainer());
     });
@@ -135,6 +138,7 @@ Vispa ihop smeten och stek i smör.''';
     ImportManager manager() => ImportManager.withStrategies(
       MockPersonalRecipeOperations(),
       [TextImportStrategy()],
+      links: ImportLinks(rateLimiter: () => limiter),
     );
 
     test('a denied limit parses nothing and says why', () async {

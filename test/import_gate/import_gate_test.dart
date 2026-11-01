@@ -100,6 +100,7 @@ void main() {
   late _RefuseNetwork network;
   late _CountingLlmService llm;
   late _CountingLlmEnhancement llmEnhancement;
+  late RecipeParserService gateParser;
   var webScraperCalls = 0;
   final corpora = <CorpusScore>[];
 
@@ -127,10 +128,8 @@ void main() {
       cache: FakeLocalRecipeCache(),
     );
     await parser.init();
-    getIt
-      ..registerSingleton<IngredientParsingStrategy>(ingredientStrategy)
-      ..registerSingleton<RecipeParserService>(parser)
-      ..registerSingleton<LlmEnhancementService>(llmEnhancement);
+    getIt.registerSingleton<IngredientParsingStrategy>(ingredientStrategy);
+    gateParser = parser;
   });
 
   tearDownAll(() async {
@@ -167,6 +166,8 @@ void main() {
       final url = j['url'] as String;
 
       final strategy = UrlImportStrategy(
+        recipeParser: () => gateParser,
+        llmEnhancement: () => llmEnhancement,
         httpClient: MockClient(
           (req) async => req.url.toString() == url
               ? http.Response(

@@ -12,7 +12,12 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -142,6 +147,18 @@ class _SucceedingStrategy extends _FailingStrategy {
   }) async => ImportResult.success(recipe);
 }
 
+class _PreviewTagging extends Fake implements TaggingService {
+  _PreviewTagging(this._preview);
+  final TagResult? _preview;
+  int calls = 0;
+
+  @override
+  Future<TagResult?> generatePhase1Preview(Recipe recipe) async {
+    calls++;
+    return _preview;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -172,19 +189,30 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
+  ImportRateLimiter? linkedLimiter;
+
   ImportManager managerWith(List<ImportStrategy> strategies) =>
-      ImportManager.withStrategies(ops, strategies, eventLogger: spy);
+      ImportManager.withStrategies(
+        ops,
+        strategies,
+        eventLogger: spy,
+        links: ImportLinks(rateLimiter: () => linkedLimiter),
+      );
 
   _RecordingRateLimiter installLimiter({bool deny = false}) {
     final limiter = _RecordingRateLimiter(deny: deny);
+    linkedLimiter = limiter;
+    // A different limiter in the locator: a manager that looks there instead
+    // of using its link writes to this one and the test sees nothing.
     final getIt = GetIt.instance;
     if (getIt.isRegistered<ImportRateLimiter>()) {
       getIt.unregister<ImportRateLimiter>();
     }
-    getIt.registerSingleton<ImportRateLimiter>(limiter);
+    getIt.registerSingleton<ImportRateLimiter>(_RecordingRateLimiter());
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
     addTearDown(() {
+      linkedLimiter = null;
       if (getIt.isRegistered<ImportRateLimiter>()) {
         getIt.unregister<ImportRateLimiter>();
       }
@@ -343,6 +371,44 @@ void main() {
     });
   });
 
+  group('preview tags', () {
+    test('a parsed recipe gets the tags of the tagging service the manager '
+        'is linked to', () async {
+      final preview = TagResult(
+        tags: const {'pasta'},
+        allergenStatus: const {},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026, 1, 1),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
+      final linked = _PreviewTagging(preview);
+      final decoy = _PreviewTagging(null);
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<TaggingService>()) {
+        getIt.unregister<TaggingService>();
+      }
+      getIt.registerSingleton<TaggingService>(decoy);
+      addTearDown(() {
+        if (getIt.isRegistered<TaggingService>()) {
+          getIt.unregister<TaggingService>();
+        }
+      });
+
+      final r = await ImportManager.withStrategies(
+        ops,
+        [_SucceedingStrategy(recipe)],
+        eventLogger: spy,
+        links: ImportLinks(tagging: () => linked),
+      ).importWithStrategy('Text Import', 'text');
+
+      expect(r.recipe!.core.tagResult?.tags, {'pasta'});
+      expect(linked.calls, 1);
+      expect(decoy.calls, 0);
+    });
+  });
+
   group('the import quota', () {
     test('a failed import is counted once, under its channel', () async {
       final limiter = installLimiter();
@@ -458,6 +524,7 @@ void main() {
               [text],
               eventLogger: spy,
               spokenTextReimport: ai,
+              links: ImportLinks(rateLimiter: () => linkedLimiter),
             ).reimportFromArtefact(
               artefact(type, 'gör en god pasta med lite grädde'),
               sourceUrl: 'https://www.tiktok.com/@a/video/1',
@@ -491,6 +558,7 @@ void main() {
             [_CannedTextStrategy(ImportResult.success(empty))],
             eventLogger: spy,
             spokenTextReimport: ai,
+            links: ImportLinks(rateLimiter: () => linkedLimiter),
           ).reimportFromArtefact(
             artefact(SourceArtefactType.tiktokCaption, 'Bästa pastan #pasta'),
           );
@@ -509,6 +577,7 @@ void main() {
             [_CannedTextStrategy(ImportResult.success(recipe))],
             eventLogger: spy,
             spokenTextReimport: ai,
+            links: ImportLinks(rateLimiter: () => linkedLimiter),
           ).reimportFromArtefact(
             artefact(SourceArtefactType.instagramCaption, 'Pannkakor\n3 ägg'),
           );
@@ -560,6 +629,7 @@ void main() {
           ],
           eventLogger: spy,
           spokenTextReimport: ai,
+          links: ImportLinks(rateLimiter: () => linkedLimiter),
         ).reimportFromArtefact(artefact(type, 'https://a.se/x'));
 
         expect(r.isSuccess, isFalse, reason: '$type');
@@ -579,6 +649,7 @@ void main() {
             [text],
             eventLogger: spy,
             spokenTextReimport: ai,
+            links: ImportLinks(rateLimiter: () => linkedLimiter),
           ).reimportFromArtefact(
             artefact(SourceArtefactType.tiktokCaption, 'pasta'),
           );

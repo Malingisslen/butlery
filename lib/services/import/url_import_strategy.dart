@@ -10,6 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
@@ -19,7 +20,6 @@ import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:butlery/utils/recipe_scraper.dart';
@@ -38,9 +38,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   final HttpContentFetcher _fetcher;
   final LlmExtractionFallback _llmFallback;
   RecipeParserService? _parserService;
+  final RecipeParserService? Function() _lookUpParser;
+  final ParsedRecipeCache? Function() _lookUpParsedRecipeCache;
 
   UrlImportStrategy({
     http.Client? httpClient,
+    RecipeParserService? Function() recipeParser = _noParser,
+    ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
+    LlmEnhancementService? Function() llmEnhancement = _noLlm,
     WebScraper Function()? webScraperFactory,
     // BUT-1078: forward a DNS lookup seam to HttpContentFetcher so the
     // DNS-rebinding gate can be driven end-to-end in tests (e.g. a hostname
@@ -52,12 +57,18 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
          webScraperFactory: webScraperFactory,
          dnsLookup: dnsLookup,
        ),
-       _llmFallback = LlmExtractionFallback();
+       _llmFallback = LlmExtractionFallback(llmEnhancement: llmEnhancement),
+       _lookUpParser = recipeParser,
+       _lookUpParsedRecipeCache = parsedRecipeCache;
+
+  static RecipeParserService? _noParser() => null;
+  static ParsedRecipeCache? _noCache() => null;
+  static LlmEnhancementService? _noLlm() => null;
 
   RecipeParserService? get _recipeParser {
     if (_parserService != null) return _parserService;
     try {
-      _parserService = ServiceLocator.get<RecipeParserService>();
+      _parserService = _lookUpParser();
       return _parserService;
     } catch (e) {
       AppLogger.debug(
@@ -598,7 +609,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     // BUT-1469: key the correction-capture snapshot by recipe id (not sourceUrl)
     // so every import path shares one cache scheme. URL keeps its rich, genuine
     // ParsedRecipe here — the other strategies store a lighter snapshot.
-    final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
+    final cache = _lookUpParsedRecipeCache();
     if (cache != null) {
       cache.store(recipeId, parsed);
       AppLogger.debug(

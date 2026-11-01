@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -131,8 +132,19 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
+  ImportRateLimiter? linkedLimiter;
+  AnalyticsService? linkedAnalytics;
+
   ImportManager managerWith(_CannedFileStrategy strategy) =>
-      ImportManager.withStrategies(ops, [strategy], eventLogger: spy);
+      ImportManager.withStrategies(
+        ops,
+        [strategy],
+        eventLogger: spy,
+        links: ImportLinks(
+          rateLimiter: () => linkedLimiter,
+          analytics: () => linkedAnalytics,
+        ),
+      );
 
   ({_RecordingRateLimiter limiter, _RecordingAnalytics analytics}) install({
     bool deny = false,
@@ -150,11 +162,17 @@ void main() {
     }
 
     clear();
-    getIt.registerSingleton<ImportRateLimiter>(limiter);
-    getIt.registerSingleton<AnalyticsService>(analytics);
+    linkedLimiter = limiter;
+    linkedAnalytics = analytics;
+    // Other instances in the locator: a manager that looks there instead of
+    // using its links writes to these and the test sees nothing.
+    getIt.registerSingleton<ImportRateLimiter>(_RecordingRateLimiter());
+    getIt.registerSingleton<AnalyticsService>(_RecordingAnalytics());
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
     addTearDown(() {
+      linkedLimiter = null;
+      linkedAnalytics = null;
       clear();
       app_provider.ServiceLocator.reset();
     });
