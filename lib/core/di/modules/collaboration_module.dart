@@ -10,6 +10,8 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
@@ -171,6 +173,14 @@ class CollaborationModule implements DIModule {
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
         shoppingRepository: app<ShoppingRepository>(),
+        permissionService: app<PermissionService>(),
+        categoryPreferencesRepository: app<CategoryPreferencesRepository>(),
+        userService: app<UserService>(),
+        getAnalyticsService: () => app.isRegistered<AnalyticsService>()
+            ? app<AnalyticsService>()
+            : null,
+        getFriendsService: () => container<UnifiedFriendsService>(),
+        getOfflineService: () => container<OfflineService>(),
       ),
       dispose: (s) => s.resetForLogout(),
     );
