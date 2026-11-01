@@ -333,6 +333,40 @@ async function scenarios(): Promise<void> {
         images.count(uid, "r") === 0,
       JSON.stringify(r),
     );
+    const shared = await recipeRef(uid, "r").get();
+    check(
+      "sharing turns the owner's profile choice off",
+      shared.get("core.showOnProfile") === false &&
+        shared.get("core.showOnProfileChangedAt") instanceof admin.firestore.Timestamp,
+    );
+    const stamp = shared.get("core.showOnProfileChangedAt") as admin.firestore.Timestamp;
+    const again = await sync(uid, "r", ADULT);
+    check(
+      "the trigger's own write is a no-op",
+      again.refusal === "not-requested" &&
+        (await recipeRef(uid, "r").get()).get("core.showOnProfileChangedAt").isEqual(stamp),
+      JSON.stringify(again),
+    );
+    await recipeRef(uid, "r").update({ "socialData.memberPermissions": {} });
+    const unshared = await sync(uid, "r", ADULT);
+    check(
+      "unsharing it later does not put it back on the profile",
+      unshared.refusal === "not-requested" && !(await copyRef(uid, "r").get()).exists && (await countOf(uid)) === 0,
+      JSON.stringify(unshared),
+    );
+  }
+
+  {
+    // Shared while another refusal comes first: the choice is still turned off.
+    const uid = nextUid();
+    await seedOwner(uid, { isMinor: true });
+    await recipeRef(uid, "r").set(recipe(uid, {}, { socialData: { memberPermissions: { friend: "view" } } }));
+    const r = await sync(uid, "r", ADULT);
+    check(
+      "a shared recipe loses the profile choice even when the owner is refused first",
+      r.refusal === "minor" && (await recipeRef(uid, "r").get()).get("core.showOnProfile") === false,
+      JSON.stringify(r),
+    );
   }
 
   {

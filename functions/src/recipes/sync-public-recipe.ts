@@ -206,6 +206,20 @@ export async function reconcilePublicRecipe(
     }
 
     if (refusal) {
+      // Co-owners never agreed to publish, and unsharing later must not put
+      // the recipe back on the profile without the owner choosing it again.
+      if (
+        data !== null &&
+        wantsProfile(data) &&
+        isSharedWithOthers(data) &&
+        refusal !== "erasure" &&
+        refusal !== "account-gone"
+      ) {
+        tx.update(recipeRef, {
+          "core.showOnProfile": false,
+          "core.showOnProfileChangedAt": admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
       if (!copy.exists) return { action: "unchanged", refusal };
       tx.delete(copyRef);
       // update() never creates: an erasure that already removed the profile
