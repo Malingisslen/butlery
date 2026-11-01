@@ -49,7 +49,6 @@ abstract final class FirestoreCollections {
   /// explicit consent (BUT-1693). Household-scoped read, owner-only write.
   static const String householdAllergenShares = 'household_allergen_shares';
   static const String familyRatings = 'family_ratings';
-  static const String menuTemplates = 'menu_templates';
   static const String userNotifications = 'user_notifications';
 
   /// The `users/{uid}/notifications` SUBCOLLECTION (BUT-1957) — not

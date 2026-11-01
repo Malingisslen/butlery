@@ -35,13 +35,8 @@ Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
 /// pre-BUT-1613 behaviour test asserting the SAME numbers it always did.
 ScaledRecipe _p(Recipe r, [double factor = 1.0]) => (recipe: r, factor: factor);
 
-List<AggregatedShoppingItem> _aggregate(
-  List<ScaledRecipe> placements, {
-  Set<String> excludeNames = const {},
-}) => MenuShoppingAggregator.aggregateForMerge(
-  placements,
-  excludeNames: excludeNames,
-).items;
+List<AggregatedShoppingItem> _aggregate(List<ScaledRecipe> placements) =>
+    MenuShoppingAggregator.aggregateForMerge(placements).items;
 
 void main() {
   group('MenuShoppingAggregator (BUT-956)', () {
@@ -351,40 +346,6 @@ void main() {
         expect(items, hasLength(1));
         expect(items.single.amount, 5);
         expect(items.single.unit, 'st');
-      },
-    );
-
-    test(
-      'BUT-1279: excludeNames drops matching lines from the aggregation',
-      () {
-        // Names passed in excludeNames (already normalized) never reach the
-        // output — this is how pantry staples are kept off the list.
-        final items = _aggregate(
-          [
-            _p(
-              _recipe('r1', const [
-                RecipeIngredient(
-                  amount: 1,
-                  unit: 'tsk',
-                  name: 'salt',
-                  raw: 'salt',
-                ),
-                RecipeIngredient(
-                  amount: 2,
-                  unit: 'dl',
-                  name: 'mjöl',
-                  raw: '2 dl mjöl',
-                ),
-              ]),
-            ),
-          ],
-          excludeNames: {'salt'},
-        );
-        expect(
-          items.map((i) => i.name),
-          ['mjöl'],
-          reason: 'the excluded staple "salt" must not appear',
-        );
       },
     );
 
