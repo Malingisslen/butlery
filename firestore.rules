@@ -34,7 +34,7 @@ service cloud.firestore {
     //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
     //   ingredient_suggestions, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
-    //   user_shared_shopping_lists, user_shared_menus, menu_templates
+    //   user_shared_shopping_lists, user_shared_menus
     //
     // Collection groups: members, engagements, comments, ratings
     //
@@ -3907,31 +3907,6 @@ service cloud.firestore {
     match /users/{userId}/canonical_rating_events/{poolKey} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow create, update, delete: if false;  // CF-only via Admin SDK
-    }
-
-    // MENU TEMPLATES - Reusable menu templates
-
-    match /menu_templates/{templateId} {
-      // Can read public templates and your own templates
-      allow read: if isAuthenticated() && (
-        resource.data.get('isPublic', false) == true ||
-        request.auth.uid == resource.data.ownerId
-      );
-
-      // Can create if authenticated and creating as yourself
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.ownerId
-        && hasRequiredFields(['templateName', 'ownerId', 'menuSnapshot', 'createdAt']);
-
-      // Can update only your own templates. BUT-2359: and the owner stays the
-      // owner, so nobody can plant a template under someone else's uid.
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId
-        && request.resource.data.ownerId == resource.data.ownerId;
-
-      // Can delete only your own templates
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
     }
 
     // SITE CONFIGS - Dynamic parsing configurations
