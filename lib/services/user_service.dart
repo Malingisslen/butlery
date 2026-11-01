@@ -56,7 +56,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.3';
+  static const String currentTermsVersion = '1.4';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
@@ -602,31 +602,23 @@ class UserService extends ChangeNotifier
     }
   }
 
-  /// Update profile statistics (friend count, recipe count)
-  Future<void> updateProfileStats({
-    int? friendsCount,
-    int? publicRecipeCount,
-  }) async {
+  /// Update profile statistics (friend count)
+  Future<void> updateProfileStats({int? friendsCount}) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) return;
 
     try {
       final updates = <String, dynamic>{};
       if (friendsCount != null) updates['friendsCount'] = friendsCount;
-      if (publicRecipeCount != null) {
-        updates['publicRecipeCount'] = publicRecipeCount;
-      }
 
       if (updates.isNotEmpty) {
         await _repository.updateProfileStats(
           userId,
           friendsCount: friendsCount,
-          publicRecipeCount: publicRecipeCount,
         );
 
         _currentUserProfile = _currentUserProfile!.copyWith(
           friendsCount: friendsCount,
-          publicRecipeCount: publicRecipeCount,
         );
 
         _cacheProfile(userId, _currentUserProfile!);
@@ -1197,6 +1189,33 @@ class UserService extends ChangeNotifier
       AppLogger.error('❌ Failed to set nutrition strip', e);
       rethrow;
     }
+  }
+
+  /// Persist the new-recipes-are-public preference, then update the in-memory
+  /// profile and notify. Returns false on failure so the caller can say so.
+  Future<bool> setNewRecipesShowOnProfile(bool enabled) async {
+    _clearError();
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot set new recipes public - no current user');
+      return false;
+    }
+    try {
+      await _repository.setNewRecipesShowOnProfile(userId, enabled);
+    } catch (e) {
+      AppLogger.error('❌ Failed to set new recipes public', e);
+      _setError(AppLocale.current.errorCouldNotSaveNewRecipesPublic);
+      return false;
+    }
+    // Re-read after the await: a sign-out may have replaced the profile.
+    final current = _currentUserProfile;
+    if (current != null && current.uid == userId) {
+      _currentUserProfile = current.copyWith(newRecipesShowOnProfile: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+    }
+    notifyListeners();
+    return true;
   }
 
   /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,

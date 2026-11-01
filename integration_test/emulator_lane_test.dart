@@ -12,6 +12,8 @@ library;
 
 import 'package:integration_test/integration_test.dart';
 
+import '../test/integration/firebase/repositories/firebase_recipe_repository_public_recipes_integration_test.dart'
+    as public_recipes;
 import '../test/integration/firebase/repositories/firebase_shared_recipe_repository_integration_test.dart'
     as shared_recipes;
 import '../test/integration/firebase/repositories/friends_repository_integration_test.dart'
@@ -39,5 +41,6 @@ void main() {
   messaging.main();
   shopping.main();
   users.main();
+  public_recipes.main();
   offline_writes.main();
 }

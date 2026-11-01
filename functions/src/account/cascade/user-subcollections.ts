@@ -263,6 +263,9 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // account goes. Their photos
   // sit under `users/{uid}/recipes/`, which the Storage prefix delete covers.
   "trash",
+  // Steg 10E: the profile copy of each recipe its owner chose to show, written
+  // only by `syncPublicRecipe`. Exported in the account-subcollections section.
+  "public_recipes",
   // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
   // an account predating a writer's removal can still hold rows, and by the
   // superset rule above such a row would otherwise be permanently residual.

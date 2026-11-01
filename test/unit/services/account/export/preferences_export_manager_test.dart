@@ -145,6 +145,7 @@ class _FakeAccountSubsRepository extends Fake
     this.acquisition = const [],
     this.overwrittenVersions = const [],
     this.trash = const [],
+    this.publicRecipes = const [],
     this.settings = const [],
     this.failing = const <String>{},
   });
@@ -153,6 +154,7 @@ class _FakeAccountSubsRepository extends Fake
   final List<Map<String, dynamic>> acquisition;
   final List<Map<String, dynamic>> overwrittenVersions;
   final List<Map<String, dynamic>> trash;
+  final List<Map<String, dynamic>> publicRecipes;
   final List<Map<String, dynamic>> settings;
 
   /// Leg keys (`ingredients`, `onboarding`, `acquisition`) whose read throws.
@@ -206,6 +208,12 @@ class _FakeAccountSubsRepository extends Fake
     String userId, {
     int maxDocuments = 200,
   }) async => _page('trash', trash, maxDocuments);
+
+  @override
+  Future<List<Map<String, dynamic>>> exportPublicRecipes(
+    String userId, {
+    int maxDocuments = 200,
+  }) async => _page('public_recipes', publicRecipes, maxDocuments);
 
   // Honours the cap, like the real collection query does. That is what lets a
   // fixture push `preferences` outside the page — the BUT-2003 case.
@@ -1196,6 +1204,27 @@ void main() {
       expect(result.containsKey('trash_truncated'), isFalse);
     });
 
+    // Steg 10E: the cascade erases users/{uid}/public_recipes, so the bundle
+    // carries the profile copies too (Art. 15 ⊇ Art. 17).
+    test('the profile copies are exported in the section', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          publicRecipes: [
+            {
+              'id': 'recipe-1',
+              'data': <String, dynamic>{'title': 'Kanelbullar'},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      final rows = result['public_recipes'] as List;
+      expect((rows.single as Map)['id'], 'recipe-1');
+      expect(result.containsKey('error_code'), isFalse);
+    });
+
     test(
       'a failed trash read is a partial failure, not a lost section',
       () async {
@@ -1329,6 +1358,10 @@ void main() {
         expect(
           repo.capturedMax['trash'],
           ExportPaginationHelper.getLimitForType('user_trash') + 1,
+        );
+        expect(
+          repo.capturedMax['public_recipes'],
+          ExportPaginationHelper.getLimitForType('user_public_recipes') + 1,
         );
       });
     });

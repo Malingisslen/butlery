@@ -58,6 +58,8 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       // the unknown-collection report reads this inventory: without it the
       // report fires on every account that uses the pantry (BUT-2043).
       "pantry",
+      // The profile copies written by `syncPublicRecipe` (steg 10E).
+      "public_recipes",
       // BOTH spellings, deliberately (BUT-2040). `rate_limits` is the live one
       // (`FirestoreCollections.userRateLimits`); `rateLimits` is the
       // pre-rename name, with no writer and rows still standing in production
@@ -542,6 +544,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "members", // shared_recipes/{id}, shared_menus/{id}
   "participants", // conversations/{conversationId}
   "poll_votes", // messages/{messageId}
+  "public_recipes", // users/{uid} (steg 10E)
   "report_history", // user_moderation/{contentOwnerId} (BUT-2046)
   "ratings", // menu_ratings/{menuId}
   "votes", // realtime_menus/{menuId}, realtime_resources/{menuId} (BUT-2118)

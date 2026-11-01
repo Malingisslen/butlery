@@ -199,6 +199,10 @@ void main() {
       expect(ExportPaginationHelper.exportLimits['user_trash'], 200);
     });
 
+    test('the profile-copy cap is declared', () {
+      expect(ExportPaginationHelper.exportLimits['user_public_recipes'], 200);
+    });
+
     test('the recipe-suggestion caps are declared per direction', () {
       expect(
         ExportPaginationHelper.exportLimits['recipe_suggestions_made'],

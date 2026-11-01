@@ -43,7 +43,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 /// - **Search Privacy**: Users can control searchability through `isSearchable` flag
 /// - **Result Ranking**: Prioritizes exact matches and alphabetical ordering
 /// **Profile Statistics:**
-/// Tracks and maintains user statistics including friend counts, recipe counts,
+/// Tracks and maintains user statistics including friend counts,
 /// and activity metrics for profile display and social features integration.
 /// **Notification Integration:**
 /// - **FCM Token Management**: Secure FCM token storage and updates for push notifications
@@ -334,6 +334,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               s,
               'showNutritionStrip',
             ),
+            newRecipesShowOnProfile: SerializationUtils.safeBool(
+              s,
+              'newRecipesShowOnProfile',
+            ),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable
@@ -398,13 +402,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     return results;
   }
 
-  /// Update profile statistics such as friend count or recipe count.
+  /// Update profile statistics such as friend count.
   @override
-  Future<void> updateProfileStats(
-    String userId, {
-    int? friendsCount,
-    int? publicRecipeCount,
-  }) async {
+  Future<void> updateProfileStats(String userId, {int? friendsCount}) async {
     // Validate user is updating their own stats
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
@@ -415,9 +415,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     final updates = <String, dynamic>{};
     if (friendsCount != null) updates['friendsCount'] = friendsCount;
-    if (publicRecipeCount != null) {
-      updates['publicRecipeCount'] = publicRecipeCount;
-    }
 
     if (updates.isNotEmpty) {
       await awaitOrLeaveQueued(
@@ -784,52 +781,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     );
   }
 
-  /// Increment public recipe count when a recipe is created or shared publicly
-  @override
-  Future<void> incrementPublicRecipeCount(String userId) async {
-    // Validate user is updating their own recipe count
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'increment public recipe count',
-    );
-
-    await collection.doc(userId).update({
-      'publicRecipeCount': FieldValue.increment(1),
-    });
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'user_profile',
-      operation: 'increment_public_recipe_count',
-      granted: true,
-    );
-  }
-
-  /// Decrement public recipe count when a recipe is deleted or made private
-  @override
-  Future<void> decrementPublicRecipeCount(String userId) async {
-    // Validate user is updating their own recipe count
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'decrement public recipe count',
-    );
-
-    await collection.doc(userId).update({
-      'publicRecipeCount': FieldValue.increment(-1),
-    });
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'user_profile',
-      operation: 'decrement_public_recipe_count',
-      granted: true,
-    );
-  }
-
   // Profile propagation is handled by Cloud Function (on-profile-updated.ts)
 
   /// Update allergen preferences for a user
@@ -1009,6 +960,30 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_show_nutrition_strip',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setNewRecipesShowOnProfile(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set new-recipes-show-on-profile',
+    );
+
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'newRecipesShowOnProfile': enabled}, SetOptions(merge: true)),
+      what: 'new recipes public',
+    );
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_new_recipes_show_on_profile',
       granted: true,
     );
   }

@@ -60,12 +60,15 @@ class RecipeSerialization {
   }
 
   /// A dish as a menu stores it (BUT-2214): the recipe's core, flat, without
-  /// the owner's personal tags. A menu is read by other people, so the
-  /// social and realtime blocks, which carry display names, stay out.
+  /// the owner's personal tags or profile choice. A menu is read by other
+  /// people, so the social and realtime blocks, which carry display names,
+  /// stay out.
   static Map<String, dynamic> toMenuDish(Recipe recipe) =>
       recipe.core.toFirestore()
         ..remove('personalTagIds')
-        ..remove('personalTags');
+        ..remove('personalTags')
+        ..remove('showOnProfile')
+        ..remove('showOnProfileChangedAt');
 
   /// Deserialize recipe from repository data map (removes Firebase dependency)
   static Recipe fromMap(String id, Map<String, dynamic> data) {

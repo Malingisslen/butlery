@@ -1,7 +1,7 @@
 # TERMS OF SERVICE FOR BUTLERY
 
-Version: 1.3
-Last updated: 2026-10-11
+Version: 1.4
+Last updated: 2026-10-31
 
 ---
 
@@ -37,6 +37,8 @@ You agree to:
 
 5.1 Your Content
 You retain ownership of recipes and other content you create in the Service. By sharing content with other users, you grant them the right to view and use the shared content within the Service.
+
+If you choose to show a recipe on your profile, every signed-in user may see it and save their own copy within the Service. You confirm that you have the right to share what you show, for example that the text and photos are your own or that you have permission to share them. We may remove a recipe that breaks these terms or the community guidelines.
 
 5.2 AI Processing
 The Service may use AI (artificial intelligence) to extract and structure recipes from text and images. This processing requires your explicit consent under GDPR.

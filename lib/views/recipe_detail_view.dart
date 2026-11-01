@@ -23,6 +23,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/fork_placement.dart';
 import 'package:butlery/views/recipe_detail/recipe_menu_role.dart';
+import 'package:butlery/views/recipe_detail/recipe_profile_visibility.dart';
 import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_action_bar.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
@@ -93,6 +94,7 @@ enum _MenuAction {
   generateShoppingList,
   reTag,
   editTags,
+  profileVisibility,
   delete,
   toggleCollaboration,
   source,
@@ -119,6 +121,11 @@ class RecipeDetailView extends StatefulWidget {
   // Use this when showing a friend's recipe that the current user cannot edit.
   final bool readOnly;
 
+  // A server-written public profile copy of someone else's recipe. Implies
+  // readOnly, and additionally hides everything that reads or writes the
+  // original's social data, because the copy carries none of it.
+  final bool publicCopy;
+
   // When non-null, the owner is viewing their own recipe via a share-request
   // notification. A banner is shown prompting them to share the recipe with
   // the requester.
@@ -143,6 +150,7 @@ class RecipeDetailView extends StatefulWidget {
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
+    this.publicCopy = false,
     this.shareRequest,
     this.presentServings,
     this.backTo,
@@ -186,7 +194,8 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
       child: _RecipeDetailViewContent(
         recipe: widget.recipe,
         scrollToComments: widget.scrollToComments,
-        readOnly: widget.readOnly,
+        readOnly: widget.readOnly || widget.publicCopy,
+        publicCopy: widget.publicCopy,
         shareRequest: widget.shareRequest,
         presentServings: widget.presentServings,
         backTo: widget.backTo,
@@ -201,6 +210,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
   final Recipe recipe;
   final bool scrollToComments;
   final bool readOnly;
+  final bool publicCopy;
   final SocialRequest? shareRequest;
 
   /// BUT-1613: present count forwarded to cooking mode (see RecipeDetailView).
@@ -213,6 +223,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
+    this.publicCopy = false,
     this.shareRequest,
     this.presentServings,
     this.backTo,
@@ -232,7 +243,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   // P5-U26b: this recipe's versions of the owner's that another person's save
   // overwrote, kept 30 days behind "Återställ". Keyed
   // by the recipe's id, as the ConflictBanner below is.
-  late final RestorableVersionsWatcher _restorable;
+  RestorableVersionsWatcher? _restorable;
 
   // Q4-03: the pantry the add-to-shopping-list button counts against.
   late final RecipePantryWatcher _pantry;
@@ -246,13 +257,16 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (mounted) setState(() {});
       },
     );
-    _restorable = RestorableVersionsWatcher(
-      entity: ConflictEntity.recipeOwn,
-      resourceId: widget.recipe.id,
-      onChanged: () {
-        if (mounted) setState(() {});
-      },
-    );
+    // A public copy is someone else's data: nothing about it is watched.
+    if (!widget.publicCopy) {
+      _restorable = RestorableVersionsWatcher(
+        entity: ConflictEntity.recipeOwn,
+        resourceId: widget.recipe.id,
+        onChanged: () {
+          if (mounted) setState(() {});
+        },
+      );
+    }
 
     // BUT-1322: portion state initialized synchronously (household-size
     // default, recipe portions as scaling base) so the first frame already
@@ -296,7 +310,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
   @override
   void dispose() {
-    _restorable.dispose();
+    _restorable?.dispose();
     _pantry.dispose();
     _userService?.removeListener(_onUserServiceChanged);
     super.dispose();
@@ -366,7 +380,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             // picker, and cooking mode knows no member ids, so none are
             // passed (Q-P6-E18).
             case CookingModeExit.finished:
-              if (await viewModel.markAsCooked() && context.mounted) {
+              if (!widget.publicCopy &&
+                  await viewModel.markAsCooked() &&
+                  context.mounted) {
                 await RecipeManagementHandler.offerCookedPantry(
                   context,
                   viewModel.recipe,
@@ -475,16 +491,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 // The owner is found from the  claim-lint:ok reindented only
                 // recipe's owner id, never from what the page shows. Collapses
                 // when nothing is kept.
-                SliverToBoxAdapter(
-                  child: RecipeSuggestionNotice(
-                    recipeId: recipe.id,
-                    isOwner:
-                        recipe.ownerUid != null &&
-                        recipe.ownerUid ==
-                            ServiceLocator.get<PermissionService>()
-                                .currentUserId,
+                if (!widget.publicCopy)
+                  SliverToBoxAdapter(
+                    child: RecipeSuggestionNotice(
+                      recipeId: recipe.id,
+                      isOwner:
+                          recipe.ownerUid != null &&
+                          recipe.ownerUid ==
+                              ServiceLocator.get<PermissionService>()
+                                  .currentUserId,
+                    ),
                   ),
-                ),
                 // App bar with recipe title and actions
                 // BUT-706: a SliverAppBar, because the hero image collapses
                 // into the bar. One bar on both platforms (B-45).
@@ -599,22 +616,24 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                         ),
                       ),
-                    // Internal sharing with friends and groups
-                    Padding(
-                      key: const ValueKey('test-recipe-detail-share-friends'),
-                      padding: AppDimensions.paddingVertical4,
-                      child: Semantics(
-                        identifier: 'btn-share-friends',
-                        button: true,
-                        child: RecipeHeroButton(
-                          ringVisible: recipe.imageUrls.isNotEmpty,
-                          icon: ButleryIcons.users,
-                          onPressed: () =>
-                              _actions.showSocialShareDialog(context),
-                          tooltip: context.l10n.recipeShareWithFriends,
+                    // Internal sharing writes the recipe's social data, which a
+                    // public copy does not own.
+                    if (!widget.publicCopy)
+                      Padding(
+                        key: const ValueKey('test-recipe-detail-share-friends'),
+                        padding: AppDimensions.paddingVertical4,
+                        child: Semantics(
+                          identifier: 'btn-share-friends',
+                          button: true,
+                          child: RecipeHeroButton(
+                            ringVisible: recipe.imageUrls.isNotEmpty,
+                            icon: ButleryIcons.users,
+                            onPressed: () =>
+                                _actions.showSocialShareDialog(context),
+                            tooltip: context.l10n.recipeShareWithFriends,
+                          ),
                         ),
                       ),
-                    ),
                     // External sharing
                     Padding(
                       key: const ValueKey('test-recipe-detail-share-recipe'),
@@ -732,6 +751,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               label: context.l10n.recipeEditTags,
                             ),
                           if (ownsMenu)
+                            ?profileVisibilityChoice<_MenuAction>(
+                              context,
+                              recipe: recipe,
+                              value: _MenuAction.profileVisibility,
+                            ),
+                          if (ownsMenu)
                             ButleryMenuChoice(
                               itemKey: const ValueKey(
                                 'test-recipe-detail-delete',
@@ -742,9 +767,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               danger: true,
                             ),
                           // Collaboration toggle (owner only)
-                          if (recipe.createdBy ==
-                              ServiceLocator.get<PermissionService>()
-                                  .currentUserId)
+                          if (!widget.publicCopy &&
+                              recipe.createdBy ==
+                                  ServiceLocator.get<PermissionService>()
+                                      .currentUserId)
                             ButleryMenuChoice(
                               value: _MenuAction.toggleCollaboration,
                               icon: recipe.isCollaborative
@@ -783,7 +809,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           // overwritten versions, and the row shows only
                           // while one is kept.
                           if (!widget.readOnly &&
-                              _restorable.versions.isNotEmpty)
+                              (_restorable?.versions.isNotEmpty ?? false))
                             ButleryMenuChoice(
                               itemKey: const ValueKey(
                                 'test-recipe-detail-restore-version',
@@ -849,6 +875,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             scrollToComments: widget.scrollToComments,
                             actions: _actions,
                             canAddPhoto: _canAddPhoto(recipe),
+                            publicCopy: widget.publicCopy,
                           ),
                         ),
                 ),
@@ -909,6 +936,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             viewModel: viewModel,
             actions: _actions,
             canAddPhoto: _canAddPhoto(recipe),
+            publicCopy: widget.publicCopy,
           ),
           const SizedBox(height: AppDimensions.space16),
           // BUT-410: render heirloom scan above recipe content so the
@@ -950,18 +978,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               );
             },
           ),
-          RecipeDetailSharingStatus(
-            recipe: recipe,
-            onSharingChanged: () => setState(() {}),
-          ),
-          const SizedBox(height: AppDimensions.space16),
-          _buildCookSnapGallery(recipe),
-          const SizedBox(height: AppDimensions.space16),
-          RecipeDetailComments(
-            recipe: recipe,
-            initiallyExpanded: widget.scrollToComments,
-            onCommentPosted: () => setState(() {}),
-          ),
+          // Sharing state, cook snaps and comments belong to the owner's
+          // social data, which a public copy never shows.
+          if (!widget.publicCopy) ...[
+            RecipeDetailSharingStatus(
+              recipe: recipe,
+              onSharingChanged: () => setState(() {}),
+            ),
+            const SizedBox(height: AppDimensions.space16),
+            _buildCookSnapGallery(recipe),
+            const SizedBox(height: AppDimensions.space16),
+            RecipeDetailComments(
+              recipe: recipe,
+              initiallyExpanded: widget.scrollToComments,
+              onCommentPosted: () => setState(() {}),
+            ),
+          ],
           SizedBox(height: bottomPadding + AppDimensions.space32),
         ],
       ),
@@ -1130,9 +1162,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           context,
           Routes.manualEntry,
           arguments: {
-            'initialRecipe': recipe.copyWith(
-              title: context.l10n.recipeDuplicateTitle(recipe.title),
-            ),
+            'initialRecipe':
+                (widget.publicCopy ? withoutPublicPhotos(recipe) : recipe)
+                    .copyWith(
+                      title: context.l10n.recipeDuplicateTitle(recipe.title),
+                    ),
             'isTemplate': true,
           },
         );
@@ -1161,6 +1195,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             );
           }
         }
+      case _MenuAction.profileVisibility:
+        assert(
+          !widget.readOnly,
+          'profileVisibility must be unreachable in readOnly mode',
+        );
+        await changeProfileVisibility(context, viewModel);
       case _MenuAction.delete:
         assert(!widget.readOnly, 'delete must be unreachable in readOnly mode');
         await _actions.deleteRecipe(context);
@@ -1191,7 +1231,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           !widget.readOnly,
           'restoreVersion must be unreachable in readOnly mode',
         );
-        await RestoreOverwrittenVersion.start(context, _restorable.versions);
+        await RestoreOverwrittenVersion.start(
+          context,
+          _restorable?.versions ?? const [],
+        );
       case _MenuAction.report:
         ReportContentDialog.show(
           context: context,

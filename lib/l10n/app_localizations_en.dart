@@ -17855,6 +17855,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not available for accounts under 18.';
 
   @override
+  String get privacyNewRecipesPublicTitle => 'New recipes are public';
+
+  @override
+  String get privacyNewRecipesPublicSubtitle =>
+      'Applies to recipes you save from now on. Existing recipes don\'t change.';
+
+  @override
+  String get privacyPublicRecipesMinor => 'Public recipes require you to be 18';
+
+  @override
+  String get errorCouldNotSaveNewRecipesPublic =>
+      'Couldn\'t save the setting for new recipes';
+
+  @override
   String menuDishCreatorCredit(String name) {
     return 'Recipe by $name';
   }
@@ -20228,6 +20242,53 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get publicProfileShowMoreRecipes => 'Show more';
+
+  @override
+  String get recipeProfileVisibilityShow => 'Show on my profile';
+
+  @override
+  String get recipeProfileVisibilityHide => 'Stop showing on profile';
+
+  @override
+  String get recipeProfileVisibilityMinorHint =>
+      'Public recipes require you to be 18';
+
+  @override
+  String recipeProfileVisibilityConfirmTitle(String title) {
+    return 'Show $title on your profile?';
+  }
+
+  @override
+  String get recipeProfileVisibilityConfirmBody =>
+      'Everyone signed in to Butlery who opens your profile can see the recipe, with its photo, ingredients and steps. Your notes and ratings are not shown. Only share recipes you have the right to share. Anyone who has already seen the recipe may have saved their own copy.';
+
+  @override
+  String get recipeProfileVisibilityConfirmAction => 'Show on profile';
+
+  @override
+  String get recipeProfileVisibilityCancel => 'Cancel';
+
+  @override
+  String get recipeProfileVisibilityBlockedContent =>
+      'The recipe contains text that cannot be shown publicly';
+
+  @override
+  String get recipeProfileVisibilityShownSnack =>
+      'The recipe is shown on your profile';
+
+  @override
+  String get recipeProfileVisibilityHiddenSnack =>
+      'The recipe is no longer shown on your profile';
+
+  @override
+  String get recipeProfileVisibilityFailed =>
+      'Could not change whether the recipe is shown on the profile';
+
+  @override
+  String get recipeProfileVisibilityBadge => 'Public';
 
   @override
   String get friendProfileBetweenYou => 'Between you';

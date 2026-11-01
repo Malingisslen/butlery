@@ -49,7 +49,11 @@ void main() {
 
     final recipes = MockRecipeRepository();
     when(
-      () => recipes.fetchPublicUserRecipes(them),
+      () => recipes.fetchPublicUserRecipes(
+        them,
+        limit: any(named: 'limit'),
+        after: any(named: 'after'),
+      ),
     ).thenAnswer((_) async => <Recipe>[]);
     TestServiceLocator.registerMock<RecipeRepository>(recipes);
 

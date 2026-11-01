@@ -252,19 +252,6 @@ void main() {
         );
         expect((await publicData('someone-else'))?['friendsCount'], 1);
       });
-
-      test('concurrent recipe-count increments and a decrement are all '
-          'applied', () async {
-        await seedPublicProfile(testUserId, extra: {'publicRecipeCount': 0});
-
-        await Future.wait([
-          for (var i = 0; i < 5; i++)
-            repository.incrementPublicRecipeCount(testUserId),
-        ]);
-        await repository.decrementPublicRecipeCount(testUserId);
-
-        expect((await publicData(testUserId))?['publicRecipeCount'], 4);
-      });
     });
 
     group('fetchProfiles', () {

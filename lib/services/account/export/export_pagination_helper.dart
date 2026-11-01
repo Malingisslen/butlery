@@ -365,6 +365,7 @@ class ExportPaginationHelper {
     'user_overwritten_versions': 200,
     // BUT-907: the trash keeps 30 days of deleted recipes.
     'user_trash': 200,
+    'user_public_recipes': 200,
     // The `settings` collection, `preferences` INCLUDED — the query is not
     // filtered, so the section additionally reads that one document by id
     // (`exportUserPreferencesDocument`) and drops it from the page afterwards

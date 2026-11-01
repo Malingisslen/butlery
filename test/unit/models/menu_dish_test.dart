@@ -87,10 +87,27 @@ void main() {
     }
     final core = recipe.core.toFirestore()
       ..remove('personalTagIds')
-      ..remove('personalTags');
+      ..remove('personalTags')
+      ..remove('showOnProfile')
+      ..remove('showOnProfileChangedAt');
     expect(dish, core);
     expect(dish['tagResult'], isNotNull);
     expect(dish['createdBy'], 'owner-uid');
+  });
+
+  test('a menu dish does not tell readers the recipe is on the profile', () {
+    final recipe = RecipeFactory.build(
+      id: 'p1',
+      createdBy: 'owner-uid',
+    ).copyWith(showOnProfile: true, showOnProfileChangedAt: _at);
+    // Premise: the core does carry the profile choice.
+    expect(recipe.core.toFirestore(), contains('showOnProfile'));
+    expect(recipe.core.toFirestore(), contains('showOnProfileChangedAt'));
+
+    final dish = recipe.toMenuDish();
+
+    expect(dish.containsKey('showOnProfile'), isFalse);
+    expect(dish.containsKey('showOnProfileChangedAt'), isFalse);
   });
 
   test('a live menu stores menu dishes and reads them back', () {

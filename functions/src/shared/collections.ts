@@ -7,6 +7,9 @@ export const Collections = {
   users: "users",
   publicProfiles: "public_profiles",
   recipes: "recipes",
+  // Steg 10E: `users/{uid}/public_recipes`, the profile copy written by
+  // `syncPublicRecipe`. The Dart reader is `FirestoreCollections.userPublicRecipes`.
+  publicRecipes: "public_recipes",
   ingredients: "ingredients",
   // Every share the app makes (recipe, menu, shopping list), told apart by
   // `contentType`.

@@ -95,6 +95,10 @@ class UserProfile with JsonSerializableMixin {
   /// title. Defaults FALSE; private, so it lives only in the settings sub-doc.
   final bool showNutritionStrip;
 
+  /// Private preference for whether a newly created recipe starts on the
+  /// profile. Only applies to recipes saved after it is changed.
+  final bool newRecipesShowOnProfile;
+
   /// BUT-1050: whether the one-time "add bought items to your pantry?" prompt
   /// has been shown on the first shopping-checkoff. Flipped true after it fires
   /// once so it never re-nags. Defaults false.
@@ -183,6 +187,7 @@ class UserProfile with JsonSerializableMixin {
     this.useHouseholdAllergens = true,
     this.useMealAllergenScope = false,
     this.showNutritionStrip = false,
+    this.newRecipesShowOnProfile = false,
     this.pantryAutoAddPrompted = false,
     this.householdSize,
     this.fcmToken,
@@ -255,6 +260,7 @@ class UserProfile with JsonSerializableMixin {
     bool? useHouseholdAllergens,
     bool? useMealAllergenScope,
     bool? showNutritionStrip,
+    bool? newRecipesShowOnProfile,
     bool? pantryAutoAddPrompted,
     Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
@@ -304,6 +310,8 @@ class UserProfile with JsonSerializableMixin {
           useHouseholdAllergens ?? this.useHouseholdAllergens,
       useMealAllergenScope: useMealAllergenScope ?? this.useMealAllergenScope,
       showNutritionStrip: showNutritionStrip ?? this.showNutritionStrip,
+      newRecipesShowOnProfile:
+          newRecipesShowOnProfile ?? this.newRecipesShowOnProfile,
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
       householdSize: householdSize == _sentinel
@@ -430,7 +438,7 @@ class UserProfile with JsonSerializableMixin {
   /// Owner-editable subset of the public profile, for a `merge:true` write.
   ///
   /// BUT-1285: this is the merge-write acceptance surface — it deliberately
-  /// EXCLUDES three server-owned fields that a stale in-memory profile would
+  /// EXCLUDES server-owned fields that a stale in-memory profile would
   /// otherwise clobber on a full `set()`:
   /// - `friendsCount` — maintained by OTHER users' friend-creation transactions
   ///   (firestore.rules lets any authed user change only this field). A stale
@@ -446,6 +454,9 @@ class UserProfile with JsonSerializableMixin {
     data.remove('friendsCount');
     data.remove('isHidden');
     data.remove('hiddenAt');
+    // Maintained by the syncPublicRecipe Cloud Function; a stale in-memory
+    // value would trip the rules' diff guard and reject the whole profile save.
+    data.remove('publicRecipeCount');
     // BUT-1386 (ADR-0002): birthYear is written ONLY by the verifySignupAge
     // Cloud Function; firestore.rules deny any client write of it. Strip it from
     // every client write surface so a stale in-memory null can't collide with
@@ -510,6 +521,7 @@ class UserProfile with JsonSerializableMixin {
       'useHouseholdAllergens': useHouseholdAllergens,
       'useMealAllergenScope': useMealAllergenScope,
       'showNutritionStrip': showNutritionStrip,
+      'newRecipesShowOnProfile': newRecipesShowOnProfile,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
       'householdSize': householdSize,
       // Notification fields
@@ -604,6 +616,10 @@ class UserProfile with JsonSerializableMixin {
       showNutritionStrip: utils.SerializationUtils.safeBool(
         data,
         'showNutritionStrip',
+      ),
+      newRecipesShowOnProfile: utils.SerializationUtils.safeBool(
+        data,
+        'newRecipesShowOnProfile',
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         data,
@@ -722,6 +738,10 @@ class UserProfile with JsonSerializableMixin {
       showNutritionStrip: utils.SerializationUtils.safeBool(
         json,
         'showNutritionStrip',
+      ),
+      newRecipesShowOnProfile: utils.SerializationUtils.safeBool(
+        json,
+        'newRecipesShowOnProfile',
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         json,

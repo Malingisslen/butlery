@@ -249,6 +249,7 @@ class AppRouter {
               recipe: recipe,
               scrollToComments: args.scrollToComments,
               readOnly: args.readOnly,
+              publicCopy: args.publicCopy,
               shareRequest: args.shareRequest,
               presentServings: args.presentServings,
               cookbookName: args.cookbookName,

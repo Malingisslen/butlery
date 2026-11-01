@@ -152,14 +152,12 @@ void main() {
         // Arrange
         const userId = 'test-user-123';
         const friendsCount = 5;
-        const publicRecipeCount = 10;
 
         // Stub the repository method
         when(
           () => mockRepository.updateProfileStats(
             userId,
             friendsCount: friendsCount,
-            publicRecipeCount: publicRecipeCount,
           ),
         ).thenAnswer((_) async {});
 
@@ -167,7 +165,6 @@ void main() {
         await mockRepository.updateProfileStats(
           userId,
           friendsCount: friendsCount,
-          publicRecipeCount: publicRecipeCount,
         );
 
         // Assert
@@ -175,7 +172,6 @@ void main() {
           () => mockRepository.updateProfileStats(
             userId,
             friendsCount: friendsCount,
-            publicRecipeCount: publicRecipeCount,
           ),
         ).called(1);
       });

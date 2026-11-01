@@ -12,6 +12,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
+import 'package:butlery/viewmodels/recipe_form/new_recipe_profile_default.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/offline_image_handoff.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -264,7 +265,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
               recipe,
             );
             if (result.isSuccess) {
-              savedRecipe = recipe;
+              savedRecipe = await _applyNewRecipeProfileDefault(recipe);
               _logRecipeCreated(validImageUrls, recipe);
             } else {
               throw Exception(result.message ?? 'Failed to create recipe');
@@ -524,6 +525,33 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         source: source,
       );
     }
+  }
+
+  /// A second write after the create, so a refusal by the rules (an account
+  /// not yet verified) costs the profile entry and never the recipe.
+  Future<Recipe> _applyNewRecipeProfileDefault(Recipe created) async {
+    final profile = ServiceLocator.tryGet<UserService>()?.currentUserProfile;
+    if (!showsNewRecipeOnProfile(
+      profile: profile,
+      recipe: created,
+      fromTemplate: _state.startedFromTemplate,
+    )) {
+      return created;
+    }
+    final shown = created.copyWith(
+      showOnProfile: true,
+      showOnProfileChangedAt: clock.now(),
+    );
+    try {
+      final result = await _recipeService.personal.updateUnifiedRecipe(shown);
+      if (result.isSuccess) return shown;
+      AppLogger.warning('[RecipeForm] new recipe not put on the profile');
+    } catch (e) {
+      AppLogger.warning(
+        '[RecipeForm] new recipe not put on the profile: ${e.runtimeType}',
+      );
+    }
+    return created;
   }
 
   void _trackFirstRecipeMetrics() {

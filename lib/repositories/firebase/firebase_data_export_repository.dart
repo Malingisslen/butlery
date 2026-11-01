@@ -35,6 +35,8 @@ enum ExportResourceType {
   userOverwrittenVersions('users/{uid}/overwritten_versions'),
   // BUT-907: deleted own recipes kept 30 days.
   userTrash('users/{uid}/trash'),
+  // Steg 10E: the profile copies of recipes the user chose to show.
+  userPublicRecipes('users/{uid}/public_recipes'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -764,6 +766,23 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .collection(FirestoreCollections.userTrash),
     userId,
     ExportResourceType.userTrash,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/public_recipes` — what other signed-in users see on the
+  /// profile, one row per recipe shown there, with `syncedAt` saying since
+  /// when that version has been visible. Exported because the deletion
+  /// cascade erases it (Art. 15 ⊇ Art. 17).
+  Future<List<Map<String, dynamic>>> exportPublicRecipes(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userPublicRecipes),
+    userId,
+    ExportResourceType.userPublicRecipes,
     limit: maxDocuments,
   );
 

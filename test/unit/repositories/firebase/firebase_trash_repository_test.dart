@@ -292,6 +292,30 @@ void main() {
       expect((await trashOf(_me).doc('r1').get()).exists, isFalse);
     });
 
+    test('a recipe that was on the profile comes back private', () async {
+      final edited = DateTime.utc(2026, 9, 1, 8);
+      final recipe = _ownRecipe('shown').copyWith(
+        showOnProfile: true,
+        showOnProfileChangedAt: DateTime.utc(2026, 10, 1),
+        updatedAt: edited,
+      );
+      await storeRecipe(_me, recipe);
+      await repository.moveRecipeToTrash(recipe);
+      final item = (await repository.listTrash()).singleWhere(
+        (i) => i.id == 'shown',
+      );
+
+      final restored = await repository.restoreRecipe(item);
+
+      expect(restored.showOnProfile, isFalse);
+      final core =
+          (await recipesOf(_me).doc('shown').get()).data()!['core'] as Map;
+      expect(core['showOnProfile'], isFalse);
+      expect(core.containsKey('showOnProfileChangedAt'), isFalse);
+      // Turning the flag off is not an edit, so the list order stays put.
+      expect(restored.updatedAt.toUtc(), edited);
+    });
+
     test('given tags replace the stored ones', () async {
       final item = await trashed('r1');
       final tags = TagResult.failed(reason: 'probe');

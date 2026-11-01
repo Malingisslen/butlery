@@ -214,6 +214,13 @@ class RecipeCore with JsonSerializableMixin {
 
   bool isPublic;
 
+  /// The owner's choice to show this recipe on their profile. Separate from
+  /// [isPublic], which released apps set on collaborative recipes; only this
+  /// flag makes the server write the profile copy.
+  bool showOnProfile;
+
+  DateTime? showOnProfileChangedAt;
+
   DateTime? lastCookedAt;
 
   /// Number of times this recipe has been marked as cooked.
@@ -391,6 +398,8 @@ class RecipeCore with JsonSerializableMixin {
     DateTime? updatedAt,
     this.createdBy,
     this.isPublic = false,
+    this.showOnProfile = false,
+    this.showOnProfileChangedAt,
     this.lastCookedAt,
     this.cookCount,
     this.ingredientsNormalized,
@@ -461,6 +470,8 @@ class RecipeCore with JsonSerializableMixin {
     DateTime? updatedAt,
     Object? createdBy = _sentinel,
     bool? isPublic,
+    bool? showOnProfile,
+    Object? showOnProfileChangedAt = _sentinel,
     Object? lastCookedAt = _sentinel,
     Object? cookCount = _sentinel,
     Object? ingredientsNormalized = _sentinel,
@@ -554,6 +565,10 @@ class RecipeCore with JsonSerializableMixin {
       updatedAt: updatedAt ?? clock.now(),
       createdBy: createdBy == _sentinel ? this.createdBy : createdBy as String?,
       isPublic: isPublic ?? this.isPublic,
+      showOnProfile: showOnProfile ?? this.showOnProfile,
+      showOnProfileChangedAt: showOnProfileChangedAt == _sentinel
+          ? this.showOnProfileChangedAt
+          : showOnProfileChangedAt as DateTime?,
       lastCookedAt: lastCookedAt == _sentinel
           ? this.lastCookedAt
           : lastCookedAt as DateTime?,
@@ -684,6 +699,9 @@ class RecipeCore with JsonSerializableMixin {
     'updatedAt': updatedAt.toIso8601String(),
     'createdBy': createdBy,
     'isPublic': isPublic,
+    'showOnProfile': showOnProfile,
+    if (showOnProfileChangedAt != null)
+      'showOnProfileChangedAt': showOnProfileChangedAt!.toIso8601String(),
     'lastCookedAt': lastCookedAt?.toIso8601String(),
     // Omit cookCount when null so legacy recipes stay legacy — readers
     // treat absence as "pre-counter era," distinct from an explicit 0.
@@ -740,6 +758,11 @@ class RecipeCore with JsonSerializableMixin {
     'updatedAt': Timestamp.fromDate(updatedAt),
     'createdBy': createdBy,
     'isPublic': isPublic,
+    // Always written: a save from a model read with the flag on keeps it on,
+    // and the rules only gate turning it on.
+    'showOnProfile': showOnProfile,
+    if (showOnProfileChangedAt != null)
+      'showOnProfileChangedAt': Timestamp.fromDate(showOnProfileChangedAt!),
     'lastCookedAt': lastCookedAt != null
         ? Timestamp.fromDate(lastCookedAt!)
         : null,
@@ -878,6 +901,11 @@ class RecipeCore with JsonSerializableMixin {
       ),
       createdBy: utils.SerializationUtils.safeNullableString(json, 'createdBy'),
       isPublic: utils.SerializationUtils.safeBool(json, 'isPublic'),
+      showOnProfile: utils.SerializationUtils.safeBool(json, 'showOnProfile'),
+      showOnProfileChangedAt: utils.SerializationUtils.safeDateTime(
+        json,
+        'showOnProfileChangedAt',
+      ),
       lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
       cookCount: utils.SerializationUtils.safeNullableInt(json, 'cookCount'),
       ingredientsNormalized: json['ingredientsNormalized'] != null
@@ -1140,6 +1168,15 @@ class RecipeCore with JsonSerializableMixin {
         data,
         'isPublic',
         defaultValue: false,
+      ),
+      showOnProfile: utils.SerializationUtils.safeBool(
+        data,
+        'showOnProfile',
+        defaultValue: false,
+      ),
+      showOnProfileChangedAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'showOnProfileChangedAt',
       ),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
       cookCount: utils.SerializationUtils.safeNullableInt(data, 'cookCount'),
@@ -1549,6 +1586,7 @@ class Recipe {
   DateTime get updatedAt => core.updatedAt;
   String? get createdBy => core.createdBy;
   bool get isPublic => core.isPublic;
+  bool get showOnProfile => core.showOnProfile;
   DateTime? get lastCookedAt => core.lastCookedAt;
 
   /// Display-facing cook count — null legacy values surface as 0 so UI,
@@ -1798,6 +1836,8 @@ class Recipe {
     List<String>? imageUrls,
     Object? createdBy = _sentinel,
     bool? isPublic,
+    bool? showOnProfile,
+    Object? showOnProfileChangedAt = _sentinel,
     Object? lastCookedAt = _sentinel,
     Object? cookCount = _sentinel,
     Object? ingredientsNormalized = _sentinel,
@@ -1841,6 +1881,8 @@ class Recipe {
         imageUrls: imageUrls,
         createdBy: createdBy,
         isPublic: isPublic,
+        showOnProfile: showOnProfile,
+        showOnProfileChangedAt: showOnProfileChangedAt,
         lastCookedAt: lastCookedAt,
         cookCount: cookCount,
         ingredientsNormalized: ingredientsNormalized,

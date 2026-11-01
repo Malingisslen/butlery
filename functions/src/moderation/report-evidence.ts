@@ -110,8 +110,19 @@ function resolveSource(
         textFields: (["title", "description", "ingredients", "instructions"] as const)
           .map((f): [string, string[]] => [f, [f]]),
         textRoot: (d) => (typeof d.core === "object" && d.core !== null ? d.core as Data : d),
-        reporterCanRead: async (d, uid) =>
-          mapHas((d.socialData as Data | undefined)?.memberPermissions, uid),
+        // A member of the recipe, or a reader the rules let read its copy on
+        // the owner's profile (steg 10E): the copy exists, the owner has not
+        // blocked the reporter, and the profile is not hidden.
+        reporterCanRead: async (d, uid, tx) => {
+          if (mapHas((d.socialData as Data | undefined)?.memberPermissions, uid)) return true;
+          const owner = db.collection("users").doc(ownerId);
+          const [copy, block, profile] = await Promise.all([
+            tx.get(owner.collection("public_recipes").doc(contentId)),
+            tx.get(db.collection("blocks").doc(`${ownerId}_${uid}`)),
+            tx.get(db.collection("public_profiles").doc(ownerId)),
+          ]);
+          return copy.exists && !block.exists && profile.get("isHidden") !== true;
+        },
       };
     case "comment":
       return {

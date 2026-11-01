@@ -213,7 +213,13 @@ final reviewSocial2Hosts = <String, StateHost>{
       ).thenAnswer((_) async => true);
       TestServiceLocator.registerMock<UserRepository>(users);
       final recipes = MockRecipeRepository();
-      when(() => recipes.fetchPublicUserRecipes('them-uid')).thenAnswer(
+      when(
+        () => recipes.fetchPublicUserRecipes(
+          'them-uid',
+          limit: any(named: 'limit'),
+          after: any(named: 'after'),
+        ),
+      ).thenAnswer(
         (_) async => [
           RecipeFactory.build(id: 'p1', title: 'Rabarberpaj'),
           RecipeFactory.build(id: 'p2', title: 'Kanelbullar'),
@@ -355,6 +361,7 @@ final reviewSocial2Hosts = <String, StateHost>{
       when(() => vm.showOnlineStatus).thenReturn(true);
       when(() => vm.showNameOnSharedDishes).thenReturn(true);
       when(() => vm.isMinor).thenReturn(false);
+      when(() => vm.newRecipesShowOnProfile).thenReturn(false);
       registerFallbackValue(ActivityEventType.values.first);
       when(() => vm.isActivityEventTypeEnabled(any())).thenReturn(true);
       TestServiceLocator.registerMock<UserProfileViewModel>(vm);

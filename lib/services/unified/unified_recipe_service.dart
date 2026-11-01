@@ -10,7 +10,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -324,7 +323,6 @@ class UnifiedRecipeService
   void _initializeModules() {
     _personalModule = PersonalRecipeModule(
       recipeRepository: _getRecipeRepository(),
-      userRepository: ServiceLocator.get<UserRepository>(),
       getCacheHelper: () => _cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,

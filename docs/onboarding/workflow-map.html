@@ -1518,6 +1518,18 @@
       "path": "Firestore"
     },
     {
+      "id": "ds-public-recipes",
+      "label": "users/{uid}/public_recipes",
+      "context": "datastore",
+      "path": "Firestore"
+    },
+    {
+      "id": "cf-sync-public-recipe",
+      "label": "syncPublicRecipe",
+      "context": "cloud-function",
+      "path": "functions/src/recipes/sync-public-recipe.ts, functions/src/recipes/public-recipe-copy.ts, functions/src/recipes/public-recipe-images.ts"
+    },
+    {
       "id": "ds-recipe-comments",
       "label": "recipe_comments",
       "context": "datastore",
@@ -5419,6 +5431,67 @@
           "to": "ds-public-profiles",
           "payload": "Admin-SDK merge-set av public_profiles/{uid}.isSearchable (kringgår firestore.rules-hard-deny). Fail-closed om profilen inte finns; rör aldrig isMinor/birthYear. Svaret {searchable} är auktoritativt över det begärda värdet",
           "transport": "Firestore write (Admin SDK)",
+          "verified": true
+        }
+      ],
+      "area": "socialt"
+    },
+    {
+      "id": "flow-soc-public-recipes",
+      "label": "recept på profilen",
+      "description": "Steg 10E. Ägaren väljer \"Visa på min profil\" i receptets ⋯-meny (eller inställningen \"Nya recept är publika\" för recept hen skriver själv). Appen skriver bara flaggan core.showOnProfile på det egna receptet; reglerna låter bara en verifierad vuxen slå på den. Funktionen syncPublicRecipe läser om receptet, kontot och kopian i en transaktion och skriver en kopia med en vitlista av visningsfält i users/{uid}/public_recipes, med egna bildkopior i Storage, och flyttar public_profiles.publicRecipeCount med ±1. Andra inloggade läser bara kopian, 20 åt gången; själva receptet förblir stängt för dem.",
+      "features": [
+        "SOC-06",
+        "SOC-21"
+      ],
+      "steps": [
+        {
+          "from": "v-recipe-detail",
+          "to": "repo-recipe",
+          "payload": "updateRecipe(recipe.copyWith(showOnProfile, showOnProfileChangedAt)) — samma sparväg som favoriter",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-recipe",
+          "to": "ds-recipes",
+          "payload": "users/{uid}/recipes/{id}.core.showOnProfile",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "ds-recipes",
+          "to": "cf-sync-public-recipe",
+          "payload": "onDocumentWritten users/{uid}/recipes/{id}, retry:true",
+          "transport": "Firestore trigger",
+          "verified": true
+        },
+        {
+          "from": "cf-sync-public-recipe",
+          "to": "ds-public-recipes",
+          "payload": "skriv eller radera kopian; public_profiles.publicRecipeCount ±1 i samma transaktion",
+          "transport": "Firestore write (Admin SDK)",
+          "verified": true
+        },
+        {
+          "from": "v-public-profile",
+          "to": "vm-public-profile",
+          "payload": "loadProfile / loadMoreRecipes",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-public-profile",
+          "to": "repo-recipe",
+          "payload": "fetchPublicUserRecipes(userId, limit: 20, after)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-recipe",
+          "to": "ds-public-recipes",
+          "payload": "läs users/{uid}/public_recipes, updatedAt fallande; recipeFromPublicCopy",
+          "transport": "Firestore read",
           "verified": true
         }
       ],

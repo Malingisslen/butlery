@@ -392,6 +392,43 @@ service cloud.firestore {
           .data.get('isMinor', false) != true;
     }
 
+    // Steg 10E: may this account show a recipe on its profile, where every
+    // signed-in user can read it? Only a verified adult past the anti-spam
+    // cooldown.
+    function mayShowRecipeOnProfile(userId) {
+      return isAgeCompliant()
+        && isAccountMatured()
+        && get(/databases/$(database)/documents/users/$(userId))
+          .data.get('isMinor', false) != true;
+    }
+
+    // Steg 10E: turning `core.showOnProfile` on is gated; leaving it as it was
+    // or turning it off is always allowed, so an ordinary save pays no read.
+    function showOnProfileUnchangedOrOff(before) {
+      let after = request.resource.data.get('core', {}).get('showOnProfile', false);
+      return after != true || after == before;
+    }
+
+    // Steg 10E: a save that turns `core.showOnProfile` back on must carry a
+    // later `showOnProfileChangedAt` than the stored one. A whole-recipe save
+    // from a device that still holds a copy from before the owner turned it
+    // off carries the older stamp, and must not put the recipe back.
+    // The stamp must also be close to now: a recipe restored from the trash
+    // stores no stamp to compare against. A queued turn-on that reaches
+    // the server outside the window is refused and the recipe stays private.
+    function showOnProfileTurnOnIsNewer() {
+      let beforeCore = resource.data.get('core', {});
+      let afterCore = request.resource.data.get('core', {});
+      let stamp = afterCore.get('showOnProfileChangedAt', null);
+      return afterCore.get('showOnProfile', false) != true
+        || beforeCore.get('showOnProfile', false) == true
+        || (stamp is timestamp
+            && stamp > request.time - duration.value(1, 'h')
+            && stamp < request.time + duration.value(10, 'm')
+            && (!('showOnProfileChangedAt' in beforeCore)
+                || stamp > beforeCore.showOnProfileChangedAt));
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -547,7 +584,8 @@ service cloud.firestore {
 
         // TagResult validation on create/update (allergen safety critical)
         allow create: if isOwner(userId)
-          && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null));
+          && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null))
+          && (showOnProfileUnchangedOrOff(false) || mayShowRecipeOnProfile(userId));
 
         // Update: tagResult valid AND cookCount, if present, only moves by +1
         // or stays equal. Handles three legal cases:
@@ -560,6 +598,10 @@ service cloud.firestore {
         // live in their own collections, not on this document.
         allow update: if isOwner(userId)
           && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null))
+          && (showOnProfileUnchangedOrOff(
+                resource.data.get('core', {}).get('showOnProfile', false))
+              || mayShowRecipeOnProfile(userId))
+          && showOnProfileTurnOnIsNewer()
           && (
             !('cookCount' in request.resource.data.get('core', {}))
             || request.resource.data.core.cookCount
@@ -574,6 +616,26 @@ service cloud.firestore {
         // via the reports workflow. Read is needed so the moderator view can
         // fetch a preview before acting.
         allow read, delete: if isAdmin();
+      }
+
+      // Steg 10E: the profile copy of each recipe the owner chose to show.
+      // Only `syncPublicRecipe` (Admin SDK) writes it, from an allowlist of
+      // display fields, so a reader never reaches the owner's rating, cook
+      // history, captured source text or sharing list on `recipes` above.
+      // Not a guest, not someone the owner blocked, not while a moderator has
+      // hidden the profile. The block is one-directional like the rest of the
+      // app: the owner's own block of the reader is what is checked.
+      match /public_recipes/{recipeId} {
+        allow read: if isOwner(userId)
+          || (isAuthenticated()
+              && !isGuest()
+              && isNotBlockedBy(userId)
+              && get(/databases/$(database)/documents/public_profiles/$(userId))
+                   .data.get('isHidden', false) != true);
+        // No delete, an admin's included: only syncPublicRecipe removes a copy,
+        // in the transaction that also moves publicRecipeCount. A moderator
+        // removes the recipe itself, and the copy follows.
+        allow read: if isAdmin();
       }
 
       // User's unified shopping lists
@@ -941,6 +1003,8 @@ service cloud.firestore {
         // isSearchable:true for a minor is denied here.
         && (request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // Steg 10E: `syncPublicRecipe` owns the count of profile recipes.
+        && request.resource.data.get('publicRecipeCount', 0) == 0
         // BUT-2221: the opt-in is set on an existing profile only, by the
         // targeted update below.
         && !request.resource.data.keys().hasAny([
@@ -963,7 +1027,9 @@ service cloud.firestore {
           'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',
           // Moderation-controlled fields — owner can read but never write,
           // so a hidden user cannot un-hide themselves.
-          'isHidden', 'hiddenAt'
+          'isHidden', 'hiddenAt',
+          // Steg 10E: counted by `syncPublicRecipe` only.
+          'publicRecipeCount'
         ])
         // BUT-2264: an address may be removed, never written or changed. A
         // document saved before the change loses it on the owner's next
@@ -994,7 +1060,9 @@ service cloud.firestore {
         (request.resource.data.friendsCount == resource.data.get('friendsCount', 0) + 1 ||
          request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1)
       );
-      allow delete: if isOwner(userId);
+      // No client delete. Deleting and recreating the document would drop a
+      // moderator's isHidden and reset publicRecipeCount, which nothing else
+      // lets the owner write. Account erasure deletes it with the Admin SDK.
 
       // Hard delete is intentionally NOT granted — hide is reversible;
       // delete would orphan the auth account and break friendships/groups.

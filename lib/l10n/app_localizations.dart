@@ -27160,6 +27160,30 @@ abstract class AppLocalizations {
   /// **'Inte tillgängligt för konton under 18 år.'**
   String get privacyShowNameOnDishesMinor;
 
+  /// Privacy toggle title: whether recipes the user saves from now on start public. Off by default.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nya recept är publika'**
+  String get privacyNewRecipesPublicTitle;
+
+  /// Toggle subtitle: the setting is not retroactive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller recept du sparar från nu. Befintliga recept ändras inte.'**
+  String get privacyNewRecipesPublicSubtitle;
+
+  /// Subtitle in place of the description when the account is a minor; the toggle is disabled and off.
+  ///
+  /// In sv, this message translates to:
+  /// **'Publika recept kräver att du är 18 år'**
+  String get privacyPublicRecipesMinor;
+
+  /// Snackbar when saving the new-recipes-are-public setting fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara inställningen för nya recept'**
+  String get errorCouldNotSaveNewRecipesPublic;
+
   /// BUT-2221: the line under a dish in a shared menu naming who made it. 'Recept av' rather than 'Av' so it is not confused with 'Delad av'.
   ///
   /// In sv, this message translates to:
@@ -30759,6 +30783,84 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 publikt recept} other{{count} publika recept}}'**
   String publicProfileRecipeCount(int count);
+
+  /// Steg 10E: loads the next page of recipes on a public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa fler'**
+  String get publicProfileShowMoreRecipes;
+
+  /// Menu row that publishes a recipe on the owner's public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa på min profil'**
+  String get recipeProfileVisibilityShow;
+
+  /// Menu row that removes a recipe from the owner's public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta visa på profilen'**
+  String get recipeProfileVisibilityHide;
+
+  /// Second line under the disabled menu row for a minor
+  ///
+  /// In sv, this message translates to:
+  /// **'Publika recept kräver att du är 18 år'**
+  String get recipeProfileVisibilityMinorHint;
+
+  /// Title of the confirmation before a recipe is published on the profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa {title} på din profil?'**
+  String recipeProfileVisibilityConfirmTitle(String title);
+
+  /// Body of the confirmation before a recipe is published on the profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla som är inloggade i Butlery och öppnar din profil kan se receptet, med bild, ingredienser och steg. Dina anteckningar och betyg syns inte. Dela bara recept du har rätt att dela. Den som redan sett receptet kan ha sparat en egen kopia.'**
+  String get recipeProfileVisibilityConfirmBody;
+
+  /// Primary button of the publish confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa på profilen'**
+  String get recipeProfileVisibilityConfirmAction;
+
+  /// Cancel button of the publish confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt'**
+  String get recipeProfileVisibilityCancel;
+
+  /// Failure snackbar when the content filter flags the recipe text
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet innehåller text som inte kan visas publikt'**
+  String get recipeProfileVisibilityBlockedContent;
+
+  /// Success snackbar after publishing on the profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet visas på din profil'**
+  String get recipeProfileVisibilityShownSnack;
+
+  /// Success snackbar after removing from the profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet visas inte längre på din profil'**
+  String get recipeProfileVisibilityHiddenSnack;
+
+  /// Failure snackbar when saving the profile visibility fails
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ändra om receptet visas på profilen'**
+  String get recipeProfileVisibilityFailed;
+
+  /// Neutral pill in the recipe header while the recipe is shown on the owner's profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Publikt'**
+  String get recipeProfileVisibilityBadge;
 
   /// Skiss rättad spår 7 (2026-10-12): section title on the friend profile
   ///

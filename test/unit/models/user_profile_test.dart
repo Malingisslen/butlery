@@ -538,6 +538,55 @@ void main() {
         expect(profile.useMealAllergenScope, isFalse);
       });
 
+      test(
+        'newRecipesShowOnProfile defaults FALSE when absent and round-trips',
+        () {
+          final json = {
+            'uid': 'u1',
+            'displayName': 'Test',
+            'email': 't@example.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          };
+          expect(UserProfile.fromJson(json).newRecipesShowOnProfile, isFalse);
+          expect(
+            UserProfile.fromMap('u1', json).newRecipesShowOnProfile,
+            isFalse,
+          );
+
+          final on = UserProfile.fromJson(
+            json,
+          ).copyWith(newRecipesShowOnProfile: true);
+          expect(on.newRecipesShowOnProfile, isTrue);
+          expect(
+            UserProfile.fromJson(on.toJson()).newRecipesShowOnProfile,
+            isTrue,
+          );
+          // A full settings save is built from an in-memory profile that can
+          // be older than a change made on another device, so it never carries
+          // this publish choice; setNewRecipesShowOnProfile is its writer.
+          expect(
+            on.toPrivateSettings().containsKey('newRecipesShowOnProfile'),
+            isFalse,
+          );
+          expect(
+            on.toFirestore().containsKey('newRecipesShowOnProfile'),
+            isFalse,
+          );
+        },
+      );
+
+      test('fromMap reads a stored newRecipesShowOnProfile true', () {
+        final profile = UserProfile.fromMap('u1', {
+          'displayName': 'Test',
+          'email': 't@example.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+          'newRecipesShowOnProfile': true,
+        });
+        expect(profile.newRecipesShowOnProfile, isTrue);
+      });
+
       test('should handle null fields in JSON', () {
         // Arrange
         final jsonWithNulls = {
@@ -898,10 +947,18 @@ void main() {
         expect(firestore.containsKey('uid'), isFalse);
       });
 
-      test('toFirestoreEditable excludes the three server-owned fields and '
+      test('toFirestoreEditable does not carry publicRecipeCount', () {
+        final editable = testProfile
+            .copyWith(publicRecipeCount: 7)
+            .toFirestoreEditable();
+
+        expect(editable.containsKey('publicRecipeCount'), isFalse);
+      });
+
+      test('toFirestoreEditable excludes the server-owned fields and '
           'keeps every owner-editable public field (BUT-1285)', () {
         // Intent: toFirestoreEditable() is the merge-write surface for a
-        // stale-safe profile save. It must drop exactly friendsCount (owned by
+        // stale-safe profile save. It must drop friendsCount (owned by
         // other users' friend transactions), isHidden, and hiddenAt (moderator-
         // owned) so a merge:true write never reverts them — while still carrying
         // every field the owner is allowed to change. Tested at the model level
@@ -917,7 +974,7 @@ void main() {
 
         final editable = hidden.toFirestoreEditable();
 
-        // The three server-owned keys are absent entirely (so merge:true leaves
+        // The server-owned keys are absent entirely (so merge:true leaves
         // the server values untouched — not present in affectedKeys()).
         expect(
           editable.containsKey('friendsCount'),

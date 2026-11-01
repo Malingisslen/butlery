@@ -79,6 +79,23 @@ void main() {
       expect(args.cookbookNote, isNull);
     });
 
+    test('publicCopy is read on its own key, apart from readOnly', () {
+      final copy = decodeRecipeDetailRouteArgs(<String, dynamic>{
+        'recipe': recipe('r4'),
+        'readOnly': true,
+        'publicCopy': true,
+      });
+      final friend = decodeRecipeDetailRouteArgs(<String, dynamic>{
+        'recipe': recipe('r5'),
+        'readOnly': true,
+      });
+
+      expect(copy.publicCopy, isTrue);
+      expect(copy.readOnly, isTrue);
+      expect(friend.publicCopy, isFalse);
+      expect(friend.readOnly, isTrue);
+    });
+
     // BUT-1325: the book's name and the recipe's note travel to the detail
     // view through these two keys. Distinct strings so a decoder that read one
     // key into the other field cannot pass.

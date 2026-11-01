@@ -326,11 +326,18 @@ void main() {
       expect(detail, contains('resourceId: widget.recipe.id'));
       expect(
         RegExp(
-          r'if \(!widget\.readOnly &&\s*_restorable\.versions\.isNotEmpty\)',
+          r'if \(!widget\.readOnly &&\s*\(_restorable\?\.versions\.isNotEmpty \?\? false\)\)',
         ).hasMatch(detail),
         isTrue,
       );
-      expect(detail, contains('_restorable.dispose()'));
+      // Steg 10E: a public copy is someone else's recipe, so nothing is watched.
+      expect(
+        RegExp(
+          r'if \(!widget\.publicCopy\) \{\s*_restorable = RestorableVersionsWatcher\(',
+        ).hasMatch(detail),
+        isTrue,
+      );
+      expect(detail, contains('_restorable?.dispose()'));
     });
   });
 }

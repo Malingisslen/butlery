@@ -2,8 +2,7 @@
 ///
 /// The server write is the repository's (the recipe back, the trash row
 /// gone, in one write). What follows it here is what a recipe coming back
-/// changes on this side: its tags, the user's public recipe count and the
-/// copy this device shows.
+/// changes on this side: its tags and the copy this device shows.
 library;
 
 import 'package:butlery/core/utils/logger.dart';
@@ -11,25 +10,21 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 
 class TrashRestore {
   TrashRestore({
     required TrashRepository repository,
-    required UserRepository? Function() userRepository,
     required TaggingService? Function() taggingService,
     required Future<bool> Function(String recipeId, String userId)
     hasUnsentWrite,
     required Future<void> Function(Recipe recipe) adoptRecipe,
   }) : _repository = repository,
-       _userRepository = userRepository,
        _taggingService = taggingService,
        _hasUnsentWrite = hasUnsentWrite,
        _adoptRecipe = adoptRecipe;
 
   final TrashRepository _repository;
-  final UserRepository? Function() _userRepository;
   final TaggingService? Function() _taggingService;
 
   /// Whether the offline queue holds a write of the recipe the server has
@@ -47,14 +42,6 @@ class TrashRestore {
       item,
       tagResult: await _tagsFor(item.recipe),
     );
-
-    // As a delete decrements it (PersonalRecipeModule.deletePersonalRecipe),
-    // and like it, a counter failure does not fail what already happened.
-    try {
-      await _userRepository()?.incrementPublicRecipeCount(userId);
-    } catch (e) {
-      AppLogger.warning('Failed to increment recipe count after restore: $e');
-    }
 
     // A device copy with an unsent write is newer than the restore to the
     // user; the queue sends it against the restored revision (a conflict

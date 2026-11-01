@@ -94,11 +94,7 @@ abstract class UserRepository extends Repository<UserProfile> {
   Future<List<UserProfile>> fetchProfiles(List<String> userIds);
 
   /// Update statistics for a profile.
-  Future<void> updateProfileStats(
-    String userId, {
-    int? friendsCount,
-    int? publicRecipeCount,
-  });
+  Future<void> updateProfileStats(String userId, {int? friendsCount});
 
   /// Update the online status for a user.
   Future<void> updateOnlineStatus(String userId, bool isOnline);
@@ -130,12 +126,6 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Ensure base user document exists in 'users' collection for friends system
   Future<void> ensureBaseUserDocument(String userId);
-
-  /// Increment public recipe count when a recipe is created or shared publicly
-  Future<void> incrementPublicRecipeCount(String userId);
-
-  /// Decrement public recipe count when a recipe is deleted or made private
-  Future<void> decrementPublicRecipeCount(String userId);
 
   /// Update allergen preferences for a user, and in the SAME batch every
   /// allergen share of theirs in [sharedCopies] (DPIA R4, BUT-2267): either
@@ -172,6 +162,10 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// BUT-643: persist the nutrition-strip choice with a targeted single-field
   /// set in the private settings doc.
   Future<void> setShowNutritionStrip(String userId, bool enabled);
+
+  /// Persist the new-recipes-are-public preference with a targeted
+  /// single-field set in the private settings doc.
+  Future<void> setNewRecipesShowOnProfile(String userId, bool enabled);
 
   /// BUT-2221: a targeted
   /// `update()` of the flag and a server-stamped change time, which the rules
