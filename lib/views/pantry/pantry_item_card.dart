@@ -28,6 +28,8 @@ class PantryItemCard extends StatelessWidget {
 
   final PantryItem item;
 
+  static const stapleBadgeKey = ValueKey('pantry-staple-badge');
+
   /// When the row was last changed, per content-style-guide.md:34-36:
   /// relative only for the latest days (`nu` · `5 min sedan` · `i dag 14:02`
   /// · `i går`), then the date (`9 juli`, with the year when it is not this
@@ -64,7 +66,9 @@ class PantryItemCard extends StatelessWidget {
     // An unknown amount says "har hemma" (Q5-03 = B, produktbeslut
     // 2026-09-24),
     // never a unit on its own, with or without a change time.
-    final amount = item.quantity == null
+    final amount = item.isStaple
+        ? context.l10n.pantryStapleAmount
+        : item.quantity == null
         ? context.l10n.pantryItemAmountUnknown
         : '${item.formattedQuantity} ${item.unit}'.trim();
     final changedAt = item.updatedAt;
@@ -199,21 +203,32 @@ class PantryItemCard extends StatelessWidget {
                 ),
                 // Large text: the badge sits under the amount, where it
                 // cannot squeeze the amount into a column a letter wide.
-                if (item.expiryDate != null && stackBadge) ...[
+                if (_hasBadge && stackBadge) ...[
                   const SizedBox(height: AppDimensions.space8),
-                  _ExpiryBadge(item: item),
+                  _badge(context),
                 ],
               ],
             ),
           ),
-          if (item.expiryDate != null && !stackBadge) ...[
+          if (_hasBadge && !stackBadge) ...[
             const SizedBox(width: AppDimensions.space8),
-            _ExpiryBadge(item: item),
+            _badge(context),
           ],
         ],
       ),
     );
   }
+
+  bool get _hasBadge => item.isStaple || item.expiryDate != null;
+
+  // A staple is never deducted or bought, so its date would say nothing.
+  Widget _badge(BuildContext context) => item.isStaple
+      ? UnifiedBadge.status(
+          key: PantryItemCard.stapleBadgeKey,
+          label: context.l10n.pantryStapleBadge,
+          tone: BadgeTone.neutral,
+        )
+      : _ExpiryBadge(item: item);
 
   Future<void> _removeWithUndo(
     PantryViewModel viewModel, {

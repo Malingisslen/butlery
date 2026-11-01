@@ -17,6 +17,7 @@ import 'package:butlery/core/di/modules/core_module.dart';
 
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
@@ -110,6 +111,7 @@ class TaggingModule implements DIModule {
     container.registerLazySingleton<TaggingService>(
       () => TaggingService(
         lookupService: container<IngredientLookupService>(),
+        permissionService: app<PermissionService>(),
         tagConfigService: app<TagConfigService>(),
         userIngredientRepository: container<UserIngredientRepository>(),
         eventsTracker: app<TaggingEventsTracker>(),
@@ -124,6 +126,7 @@ class TaggingModule implements DIModule {
     container.registerLazySingleton<PersonalTagRuleEvaluator>(
       () => PersonalTagRuleEvaluator(
         lookupService: container<IngredientLookupService>(),
+        authRepository: app<AuthRepository>(),
       ),
     );
 

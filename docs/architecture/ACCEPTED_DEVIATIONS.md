@@ -2167,6 +2167,14 @@ harmonisation mutant — test 8 is the one that catches it.
 that line carries a pointer back. It existed before, but this change makes it durable, because
 opening and saving no longer normalises the unit away.
 
+### An empty unit no longer leaves a trailing space — supersedes the BUT-1858 "Known and out of scope" paragraph (2026-10-21)
+
+**Supersedes** the paragraph reading *"an empty unit renders a trailing space in the pantry list, at
+`pantry_item_card.dart`'s `'${item.formattedQuantity} ${item.unit}'`. Filed as BUT-1863, and that
+line carries a pointer back."* What the code does today: `pantry_item_card.dart` builds that string
+with `.trim()` (`'${item.formattedQuantity} ${item.unit}'.trim()`), so an empty unit leaves no
+trailing space, and the line carries no pointer comment. Closes BUT-2120.
+
 ## Pantry — Återställ the previous version (BUT-2140, 2026-10-08)
 
 ### An older version stays in the document after 30 days (Malin, 2026-10-08)

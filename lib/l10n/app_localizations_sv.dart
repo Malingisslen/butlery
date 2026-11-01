@@ -16741,6 +16741,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryItemAmountUnknown => 'har hemma';
 
   @override
+  String get pantryStapleTitle => 'Finns alltid hemma';
+
+  @override
+  String get pantryStapleBody => 'Kommer aldrig på inköpslistan';
+
+  @override
+  String get pantryStapleAmount => 'alltid hemma';
+
+  @override
+  String get pantryStapleBadge => 'Basvara';
+
+  @override
   String recipePantryAllAtHome(String names) {
     return 'Allt finns hemma i tillräcklig mängd, så inget läggs i inköpslistan: $names';
   }

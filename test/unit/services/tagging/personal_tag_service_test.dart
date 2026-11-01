@@ -72,7 +72,10 @@ void main() {
     // Reset and reinitialize GetIt with mock repositories
     final getIt = GetIt.instance;
     await getIt.reset();
-    getIt.registerSingleton<AuthRepository>(mockAuthRepository);
+    // The locator holds its own repository, apart from the evaluator's.
+    final locatorAuthRepository = MockAuthRepository();
+    when(() => locatorAuthRepository.currentUserId).thenReturn('locator-user');
+    getIt.registerSingleton<AuthRepository>(locatorAuthRepository);
     getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
 
     // Initialize production ServiceLocator with DIContainer
@@ -96,6 +99,7 @@ void main() {
 
     final ruleEvaluator = PersonalTagRuleEvaluator(
       lookupService: mockLookupService,
+      authRepository: mockAuthRepository,
     );
 
     service = PersonalTagService(

@@ -36,6 +36,7 @@ import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -830,6 +831,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     final notificationRouter = NotificationDeepLinkRouter(
       navigatorResolver: () => appNavigatorKey.currentState,
       analyticsResolver: () => ServiceLocator.tryGet<AnalyticsService>(),
+      // Null for a recipe the current user can't read (e.g. another user's
+      // recipe referenced by a stale notification).
+      fetchRecipe: (id) => ServiceLocator.get<RecipeRepository>().read(id),
     );
     NotificationService.onNotificationTapped = notificationRouter.handle;
   }

@@ -10,7 +10,6 @@ library;
 
 import 'package:clock/clock.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/post_import_edit_decider.dart';
@@ -21,7 +20,7 @@ class RecipeEditAnalyticsEmitter {
   final AnalyticsService? _analytics;
 
   RecipeEditAnalyticsEmitter({AnalyticsService? analytics})
-    : _analytics = analytics ?? ServiceLocator.tryGet<AnalyticsService>();
+    : _analytics = analytics;
 
   /// Compute the diff between [original] and [savedRecipe] and emit:
   ///   - `recipe_edited` (always when the recipe has a previous state).

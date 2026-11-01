@@ -30,8 +30,6 @@ library;
 
 import 'package:clock/clock.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
-
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -175,8 +173,10 @@ class RecipeSuggestionService {
   /// firestore.rules pins to the writer's own account, through the signed-in
   /// user's friends (the people a recipe is shared with); never from text the
   /// suggester stored, so a member cannot pose as someone else.
-  static String suggesterNameOf(RecipeSuggestion suggestion) {
-    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+  static String suggesterNameOf(
+    RecipeSuggestion suggestion,
+    UnifiedFriendsService? friends,
+  ) {
     if (friends == null) return '';
     for (final f in friends.friendsList) {
       if (f.uid == suggestion.suggesterId) return f.displayName.trim();

@@ -25,7 +25,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_actions.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
@@ -67,17 +66,11 @@ class NotificationDeepLinkRouter {
     required NavigatorState? Function() navigatorResolver,
     required AnalyticsService? Function() analyticsResolver,
     RecordNotificationOpenedFn? recordOpened,
-    RecipeFetchFn? fetchRecipe,
+    required RecipeFetchFn fetchRecipe,
   }) : _navigatorResolver = navigatorResolver,
        _analyticsResolver = analyticsResolver,
        _recordOpened = recordOpened ?? _defaultRecordOpened,
-       _fetchRecipe = fetchRecipe ?? _defaultFetchRecipe;
-
-  /// Default production wiring — resolves a recipeId through the user-scoped
-  /// [RecipeRepository]. Returns null for a recipe the current user can't
-  /// read (e.g. another user's recipe referenced by a stale notification).
-  static Future<Recipe?> _defaultFetchRecipe(String id) =>
-      ServiceLocator.get<RecipeRepository>().read(id);
+       _fetchRecipe = fetchRecipe;
 
   /// Default production wiring — invokes the `recordNotificationOpened`
   /// callable in the europe-west1 region (where every Cloud Function for

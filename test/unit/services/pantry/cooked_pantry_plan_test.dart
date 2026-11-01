@@ -38,6 +38,7 @@ PantryItem _item(
   String unit, {
   DateTime? expiry,
   String? ingredientId,
+  bool isStaple = false,
 }) => PantryItem(
   id: id,
   ingredientName: name,
@@ -47,6 +48,7 @@ PantryItem _item(
   location: PantryLocation.pantry,
   addedAt: DateTime.utc(2026, 1, 1),
   expiryDate: expiry,
+  isStaple: isStaple,
 );
 
 void main() {
@@ -137,6 +139,25 @@ void main() {
     );
 
     expect(takes, isEmpty);
+  });
+
+  test('a staple with a quantity is never offered as a take, its non-staple '
+      'twin is', () {
+    final recipe = _recipe([_ing(2, 'dl', 'mjöl')]);
+
+    final staple = plan(recipe, [
+      _item('s', 'Mjöl', 10, 'dl', isStaple: true),
+    ]);
+    final twin = plan(recipe, [_item('t', 'Mjöl', 10, 'dl')]);
+    final both = plan(recipe, [
+      _item('s', 'Mjöl', 10, 'dl', isStaple: true),
+      _item('t', 'Mjöl', 10, 'dl'),
+    ]);
+
+    expect(staple, isEmpty);
+    expect(twin.single.item.id, 't');
+    expect([for (final t in both) t.item.id], ['t']);
+    expect(both.single.amount, closeTo(2, 1e-9));
   });
 
   test('two rows of one item: the one closest to its date goes first', () {

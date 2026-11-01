@@ -10,6 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
@@ -25,6 +26,8 @@ class _MockGroupRepo extends Mock
     implements FirebasePersonalTagGroupRepository {}
 
 class _MockLookup extends Mock implements IngredientLookupService {}
+
+class _MockAuthRepository extends Mock implements AuthRepository {}
 
 /// A PersonalTagService whose `tagsMutated` stream and `getAllTags` result are
 /// directly controllable, so a test can swap "user scope" instances and drive
@@ -68,7 +71,10 @@ _FakePersonalTagService _makeService({
       tagRepository: tagRepo,
       groupRepository: groupRepo,
     ),
-    evaluator: PersonalTagRuleEvaluator(lookupService: _MockLookup()),
+    evaluator: PersonalTagRuleEvaluator(
+      lookupService: _MockLookup(),
+      authRepository: _MockAuthRepository(),
+    ),
     tagRepo: tagRepo,
     groupRepo: groupRepo,
   );

@@ -40,6 +40,8 @@ import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import '../../infrastructure/mocks/production_mocks.dart'
+    show FakePermissionService;
 
 /// autoImport never saves (it only parses + previews), so PersonalRecipeOperations
 /// is constructed but never invoked. A bare mock with no stubs is therefore safe.
@@ -56,7 +58,10 @@ void main() {
     );
 
     final lookupService = await _buildFixtureLookupService();
-    taggingService = TaggingService(lookupService: lookupService);
+    taggingService = TaggingService(
+      lookupService: lookupService,
+      permissionService: FakePermissionService(),
+    );
   });
 
   /// Runs the full chain for [recipeText]: parse it via the real import

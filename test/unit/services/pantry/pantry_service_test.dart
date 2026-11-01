@@ -341,6 +341,32 @@ void main() {
       expect(captured.quantity, isNull);
     });
 
+    // Kärnflöde 10G.
+    test('a staple typed as text is stored flagged', () async {
+      when(
+        () => mockIngredientRepository.searchIngredients(
+          'XYZABC123',
+          limit: 1,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(
+        userId,
+        'XYZABC123',
+        quantity: null,
+        isStaple: true,
+      );
+      await service.addFromText(userId, 'XYZABC123');
+
+      final captured = verify(
+        () => mockPantryRepository.add(userId, captureAny()),
+      ).captured.cast<PantryItem>();
+      expect([for (final item in captured) item.isStaple], [true, false]);
+    });
+
     test(
       'a shopping row bought without an amount is added as "har hemma"',
       () async {
@@ -464,6 +490,23 @@ void main() {
         () => service.addFromIngredient(userId, salt),
       );
       expect(captured.quantity, 1);
+    });
+
+    // Kärnflöde 10G.
+    test('a staple is stored flagged, an ordinary add is not', () async {
+      final staple = await addedWith(
+        () => service.addFromIngredient(
+          userId,
+          salt,
+          quantity: null,
+          isStaple: true,
+        ),
+      );
+      expect(staple.isStaple, isTrue);
+      final ordinary = await addedWith(
+        () => service.addFromIngredient(userId, salt),
+      );
+      expect(ordinary.isStaple, isFalse);
     });
 
     test(

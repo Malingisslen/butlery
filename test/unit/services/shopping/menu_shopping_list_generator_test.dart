@@ -74,6 +74,7 @@ PantryItem _pantryItem(
   double? quantity,
   String unit = 'st',
   DateTime? expiryDate,
+  bool isStaple = false,
 }) => PantryItem(
   id: 'pantry-$name',
   ingredientName: name,
@@ -82,6 +83,7 @@ PantryItem _pantryItem(
   location: PantryLocation.pantry,
   addedAt: DateTime(2026, 6, 8),
   expiryDate: expiryDate,
+  isStaple: isStaple,
 );
 
 /// 2026-06-10 is a Wednesday in ISO week 24 — the expected list name and
@@ -1706,8 +1708,8 @@ void main() {
         expect(await withDevice.takeFollowNotice('existing-1'), isNull);
       });
 
-      test('the rules saved for the menu reach the follow: no pantry is read '
-          'when it is off, and the list is still written', () async {
+      test('the rules saved for the menu reach the follow: the pantry is '
+          'still read so staples stay off, and the list is written', () async {
         await MenuShoppingOptionsMemory(
           prefs,
         ).write(const MenuShoppingMergeOptions(subtractPantry: false));
@@ -1718,7 +1720,28 @@ void main() {
 
         expect(receipt, isNotNull);
         expect(writes, hasLength(1));
-        verifyNever(() => pantryService.watchAll(any()));
+        verify(() => pantryService.watchAll(any())).called(greaterThan(0));
+      });
+
+      test('with the pantry switch off a staple is left off the follow and a '
+          'non-staple is still bought', () async {
+        await MenuShoppingOptionsMemory(
+          prefs,
+        ).write(const MenuShoppingMergeOptions(subtractPantry: false));
+        seedTwoRecipePlan();
+        seedList([weekRow('stale-row', 'gammal vara', ShoppingRowOrigin.plan)]);
+        when(() => pantryService.watchAll(any())).thenAnswer(
+          (_) => Stream.value([
+            _pantryItem('mjöl', isStaple: true),
+            _pantryItem('ägg', quantity: 12, unit: 'st'),
+          ]),
+        );
+
+        await withDevice.syncFollowedWeek(_date);
+
+        final names = capturedUpdate().items.map((i) => i.name.toLowerCase());
+        expect(names, contains('ägg'));
+        expect(names, isNot(contains('mjöl')));
       });
 
       test('without a saved choice the pantry is read', () async {

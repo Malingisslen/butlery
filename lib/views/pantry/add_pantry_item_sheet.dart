@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_switch.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -29,6 +30,8 @@ class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});
 
   final PantryItem? existingItem;
+
+  static const stapleSwitchKey = ValueKey('pantry-staple-switch');
 
   /// The units this sheet offers, in display order.
   static const List<String> offeredUnits = [
@@ -95,6 +98,10 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   IngredientData? _selectedIngredient;
   bool _showSuggestions = false;
 
+  /// "Finns alltid hemma": a staple needs neither an amount nor a date, so
+  /// those fields are hidden.
+  bool _isStaple = false;
+
   /// The last save failed; the sheet shows the error line (P5-U14).
   bool _saveFailed = false;
 
@@ -134,6 +141,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       _location = existing.location;
       _expiryDate = existing.expiryDate;
       _noteController.text = existing.note.orEmpty();
+      _isStaple = existing.isStaple;
     }
   }
 
@@ -201,8 +209,10 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     // An empty or unreadable field is never turned into an amount: on edit it
     // keeps what the item had, otherwise it means "har hemma" without one.
     final existing = widget.existingItem;
-    final quantity =
-        parseSwedishDecimal(_quantityController.text) ?? existing?.quantity;
+    final quantity = _isStaple
+        ? null
+        : parseSwedishDecimal(_quantityController.text) ?? existing?.quantity;
+    final expiryDate = _isStaple ? null : _expiryDate;
     final note = _noteController.text.trim().isEmpty
         ? null
         : _noteController.text.trim();
@@ -216,9 +226,11 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
         quantity: quantity,
         unit: _unit,
         location: _location,
-        expiryDate: _expiryDate,
+        expiryDate: expiryDate,
         note: note,
-        clearExpiryDate: _expiryDate == null,
+        isStaple: _isStaple,
+        clearQuantity: quantity == null,
+        clearExpiryDate: expiryDate == null,
         clearNote: note == null,
       );
       await viewModel.updateItem(updated);
@@ -228,8 +240,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
         quantity: quantity,
         unit: _unit,
         location: _location,
-        expiryDate: _expiryDate,
+        expiryDate: expiryDate,
         note: note,
+        isStaple: _isStaple,
       );
     } else {
       await viewModel.addItemFromText(
@@ -237,8 +250,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
         quantity: quantity,
         unit: _unit,
         location: _location,
-        expiryDate: _expiryDate,
+        expiryDate: expiryDate,
         note: note,
+        isStaple: _isStaple,
       );
     }
 
@@ -301,42 +315,49 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 results: viewModel.searchResults,
                 onTap: _onSuggestionTap,
               ),
-            const SizedBox(height: AppDimensions.space24),
-            Row(
-              children: [
-                Expanded(
-                  child: StyledInput(
-                    label: l10n.pantryQuantityLabel,
-                    controller: _quantityController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: const [SwedishDecimalInputFormatter()],
-                    // Empty with "1" as a hint, never a prefilled "1": the
-                    // cursor landed after it, so typing 6 gave 16 (BUT-2261).
-                    hint: _isEditing ? null : '1',
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: LabeledField(
-                    label: l10n.pantryUnitLabel,
-                    child: ButleryDropdown<String>(
-                      semanticLabel: l10n.pantryUnitLabel,
-                      value: _unit,
-                      // Derived from the STORED unit, not from `_unit`, so an
-                      // off-list row stays on offer after the user picks
-                      // something else and can be picked back.
-                      options: [
-                        for (final unit in unitValues)
-                          ButleryDropdownOption(value: unit, label: unit),
-                      ],
-                      onChanged: (value) => setState(() => _unit = value),
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: AppDimensions.space16),
+            _StapleRow(
+              value: _isStaple,
+              onChanged: (v) => setState(() => _isStaple = v),
             ),
+            if (!_isStaple) ...[
+              const SizedBox(height: AppDimensions.space24),
+              Row(
+                children: [
+                  Expanded(
+                    child: StyledInput(
+                      label: l10n.pantryQuantityLabel,
+                      controller: _quantityController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: const [SwedishDecimalInputFormatter()],
+                      // Empty with "1" as a hint, never a prefilled "1": the
+                      // cursor landed after it, so typing 6 gave 16 (BUT-2261).
+                      hint: _isEditing ? null : '1',
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.space8),
+                  Expanded(
+                    child: LabeledField(
+                      label: l10n.pantryUnitLabel,
+                      child: ButleryDropdown<String>(
+                        semanticLabel: l10n.pantryUnitLabel,
+                        value: _unit,
+                        // Derived from the STORED unit, not from `_unit`, so an
+                        // off-list row stays on offer after the user picks
+                        // something else and can be picked back.
+                        options: [
+                          for (final unit in unitValues)
+                            ButleryDropdownOption(value: unit, label: unit),
+                        ],
+                        onChanged: (value) => setState(() => _unit = value),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: AppDimensions.space24),
             LabeledField(
               label: l10n.pantryLocationLabel,
@@ -364,29 +385,31 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 onChanged: (value) => setState(() => _location = value),
               ),
             ),
-            const SizedBox(height: AppDimensions.space24),
-            Semantics(
-              label: l10n.a11yPantryPickExpiry,
-              button: true,
-              onTap: _pickExpiryDate,
-              child: StyledInput(
-                label: l10n.pantryExpiryLabel,
-                hint: l10n.pantryExpiryNone,
-                controller: _expiryController,
-                readOnly: true,
+            if (!_isStaple) ...[
+              const SizedBox(height: AppDimensions.space24),
+              Semantics(
+                label: l10n.a11yPantryPickExpiry,
+                button: true,
                 onTap: _pickExpiryDate,
-                suffixIcon: _expiryDate != null
-                    ? AppIconButton(
-                        icon: ButleryIcons.x,
-                        semanticLabel: l10n.commonClear,
-                        onPressed: () {
-                          setState(() => _expiryDate = null);
-                          _syncExpiryText();
-                        },
-                      )
-                    : const ButleryIcon(ButleryIcons.calendar),
+                child: StyledInput(
+                  label: l10n.pantryExpiryLabel,
+                  hint: l10n.pantryExpiryNone,
+                  controller: _expiryController,
+                  readOnly: true,
+                  onTap: _pickExpiryDate,
+                  suffixIcon: _expiryDate != null
+                      ? AppIconButton(
+                          icon: ButleryIcons.x,
+                          semanticLabel: l10n.commonClear,
+                          onPressed: () {
+                            setState(() => _expiryDate = null);
+                            _syncExpiryText();
+                          },
+                        )
+                      : const ButleryIcon(ButleryIcons.calendar),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: AppDimensions.space24),
             StyledInput(
               label: l10n.pantryNoteLabel,
@@ -419,6 +442,43 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StapleRow extends StatelessWidget {
+  const _StapleRow({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return MergeSemantics(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.pantryStapleTitle, style: AppTextStyles.bodyMedium),
+                Text(
+                  l10n.pantryStapleBody,
+                  style: AppTextStyles.captionBase.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ButlerySwitch(
+            key: AddPantryItemSheet.stapleSwitchKey,
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
       ),
     );
   }

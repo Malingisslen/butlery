@@ -23,6 +23,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/content_time_labels.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -118,7 +119,10 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
             ? l.recipeSuggestionFromMany(rows.length)
             : l.recipeSuggestionFromManyUpdated(rows.length, updated);
       }
-      final name = RecipeSuggestionService.suggesterNameOf(newest);
+      final name = RecipeSuggestionService.suggesterNameOf(
+        newest,
+        ServiceLocator.tryGet<UnifiedFriendsService>(),
+      );
       if (newest.wasReplaced) {
         return name.isEmpty
             ? l.recipeSuggestionFromOneUpdatedUnnamed

@@ -5,7 +5,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Shopping share operations coordinator.
 /// Orchestrates shopping list sharing via export, import, templates, external sharing, and social collaboration.
@@ -93,10 +92,9 @@ class ShoppingShareOperations {
   final PermissionService _permissionService;
 
   ShoppingShareOperations({
-    FirestoreRepository? firestoreRepository,
+    required FirestoreRepository firestoreRepository,
     required PermissionService permissionService,
-  }) : _firestoreRepository =
-           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+  }) : _firestoreRepository = firestoreRepository,
        _permissionService = permissionService {
     _initializeModules();
   }
