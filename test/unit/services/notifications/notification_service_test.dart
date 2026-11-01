@@ -7,6 +7,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -27,6 +28,8 @@ class _MockAuthRepo extends Mock implements AuthRepository {
   @override
   String? get currentUserId => 'test-user-123';
 }
+
+class _MockFcm extends Mock implements FCMService {}
 
 class _MockHistoryRepo extends Mock implements NotificationHistoryRepository {}
 
@@ -111,6 +114,8 @@ void main() {
         batchRepository: mockBatchRepo,
         deviceRepository: mockDeviceRepo,
         analyticsRepository: _MockAnalyticsRepo(),
+        fcmService: _MockFcm(),
+        getConsentService: () => null,
       );
     });
 

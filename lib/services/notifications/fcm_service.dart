@@ -27,7 +27,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -46,15 +45,33 @@ class FCMService extends BaseService {
   FCMService({
     FirebaseMessaging? messaging,
     FlutterLocalNotificationsPlugin? localNotifications,
+    required UserService? Function() getUserService,
+    required RecipeRepository Function() getRecipeRepository,
+    required FirebaseSharedMenuRepository Function() getSharedMenuRepository,
+    required UnifiedRecipeService Function() getRecipeService,
+    required PermissionService Function() getPermissionService,
   }) : _messaging = messaging ?? FirebaseMessaging.instance,
        _localNotifications =
-           localNotifications ?? FlutterLocalNotificationsPlugin();
+           localNotifications ?? FlutterLocalNotificationsPlugin(),
+       _getUserService = getUserService,
+       _getRecipeRepository = getRecipeRepository,
+       _getSharedMenuRepository = getSharedMenuRepository,
+       _getRecipeService = getRecipeService,
+       _getPermissionService = getPermissionService;
 
   @override
   String get serviceName => 'FCMService';
 
   final FirebaseMessaging _messaging;
   final FlutterLocalNotificationsPlugin _localNotifications;
+
+  // Lookups, not instances: the user-scoped services change with the signed-in
+  // user and UserService may not be registered yet when a consent change fires.
+  final UserService? Function() _getUserService;
+  final RecipeRepository Function() _getRecipeRepository;
+  final FirebaseSharedMenuRepository Function() _getSharedMenuRepository;
+  final UnifiedRecipeService Function() _getRecipeService;
+  final PermissionService Function() _getPermissionService;
 
   String? _currentToken;
   bool _isInitialized = false;
@@ -248,14 +265,15 @@ class FCMService extends BaseService {
   /// (SDK + Firestore + memory); FCMTokenManager is per-user (SecureStorage +
   /// instance memory). Each half owns its own lifecycle scope.
   Future<void> _revokePushAccess() async {
-    final hasUserService = ServiceLocator.isRegistered<UserService>();
+    final userService = _getUserService();
+    final hasUserService = userService != null;
 
     await Future.wait<void>([
       _messaging.deleteToken().catchError((e) {
         AppLogger.warning('⚠️ FCM: Failed to delete SDK token: $e');
       }),
       if (hasUserService)
-        ServiceLocator.get<UserService>().clearFCMToken().catchError((e) {
+        userService.clearFCMToken().catchError((e) {
           AppLogger.warning('⚠️ FCM: Failed to clear profile token: $e');
         }),
     ]);
@@ -461,7 +479,10 @@ class FCMService extends BaseService {
           'Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...',
         );
 
-        final userService = ServiceLocator.get<UserService>();
+        final userService = _getUserService();
+        if (userService == null) {
+          throw StateError('UserService is not registered');
+        }
         await userService.updateFCMToken(token);
       },
       operationName: 'FCMService: Update user token',
@@ -581,7 +602,7 @@ class FCMService extends BaseService {
     final recipeId = data['recipeId'] as String?;
     if (recipeId == null) return;
 
-    final recipeRepo = ServiceLocator.get<RecipeRepository>();
+    final recipeRepo = _getRecipeRepository();
     final recipe = await recipeRepo.read(recipeId);
     if (recipe != null) {
       final arguments = scrollToComments
@@ -615,12 +636,12 @@ class FCMService extends BaseService {
     if (fromUserId == null || fromUserId.isEmpty) return;
     final fromUserName = shareRequestSenderName(data);
 
-    final recipe = ServiceLocator.get<UnifiedRecipeService>().getRecipeById(
+    final recipe = _getRecipeService().getRecipeById(
       recipeId,
     );
     if (recipe == null) return;
 
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final currentUserId = _getPermissionService().currentUserId;
 
     final request = SocialRequest(
       id: requestId,
@@ -648,14 +669,14 @@ class FCMService extends BaseService {
 
     switch (resourceType) {
       case 'recipe':
-        final recipeRepo = ServiceLocator.get<RecipeRepository>();
+        final recipeRepo = _getRecipeRepository();
         final recipe = await recipeRepo.read(resourceId);
         if (recipe != null) {
           navigator.pushNamed(Routes.recipeDetail, arguments: recipe);
         }
         break;
       case 'menu':
-        final menuRepo = ServiceLocator.get<FirebaseSharedMenuRepository>();
+        final menuRepo = _getSharedMenuRepository();
         final menu = await menuRepo.getSharedMenu(resourceId);
         if (menu != null) {
           navigator.pushNamed(Routes.menuPreview, arguments: menu);

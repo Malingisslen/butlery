@@ -1,7 +1,7 @@
 /// Unit tests for FCMService - Firebase Cloud Messaging integration.
 ///
 /// BUT-782: FCMService is now instance-based with constructor-injected
-/// [FirebaseMessaging]. Tests construct `FCMService(messaging: mock)`
+/// [FirebaseMessaging]. Tests build it through `_newFcm(mock)`
 /// directly — the legacy `setMessagingForTest` seam is gone.
 ///
 /// Tests cover:
@@ -166,6 +166,18 @@ class _RecordingConsent extends Mock implements ConsentService {
   }
 }
 
+/// The lookups are inert here: this file tests FCMService's own behaviour.
+/// Which service each lookup reaches is pinned by
+/// messaging_module_fcm_wiring_test.dart.
+FCMService _newFcm(FirebaseMessaging messaging) => FCMService(
+  messaging: messaging,
+  getUserService: () => null,
+  getRecipeRepository: () => throw StateError('not wired in this test'),
+  getSharedMenuRepository: () => throw StateError('not wired in this test'),
+  getRecipeService: () => throw StateError('not wired in this test'),
+  getPermissionService: () => throw StateError('not wired in this test'),
+);
+
 void main() {
   group('FCMService', () {
     late MockRemoteMessage mockMessage;
@@ -187,7 +199,7 @@ void main() {
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
 
-      service = FCMService(messaging: mockMessaging);
+      service = _newFcm(mockMessaging);
     });
 
     tearDown(() async {
@@ -212,7 +224,7 @@ void main() {
       test('should cache the token across repeated calls', () async {
         final recording = _RecordingMessaging()
           ..setFirebaseMessagingState(token: 'cached-token');
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         final first = await service.getToken();
         final second = await service.getToken();
@@ -227,7 +239,7 @@ void main() {
         // BUT-1008: composable flag, no subclass needed.
         final m = MockFirebaseMessaging()
           ..setFirebaseMessagingState(clearToken: true);
-        service = FCMService(messaging: m);
+        service = _newFcm(m);
 
         final token = await service.getToken();
 
@@ -238,7 +250,7 @@ void main() {
     group('Topic Management', () {
       test('subscribeToTopic forwards to the injected messaging', () async {
         final recording = _RecordingMessaging();
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         await service.subscribeToTopic('recipes_updates');
 
@@ -247,7 +259,7 @@ void main() {
 
       test('unsubscribeFromTopic forwards to the injected messaging', () async {
         final recording = _RecordingMessaging();
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         await service.unsubscribeFromTopic('social_updates');
 
@@ -263,7 +275,7 @@ void main() {
               throwOnSubscribe: true,
               throwOnUnsubscribe: true,
             );
-          service = FCMService(messaging: m);
+          service = _newFcm(m);
 
           // safeExecute swallowed the throw. Stronger than 'completes': after
           // the error, a follow-up call must still resolve normally — proving
@@ -281,7 +293,7 @@ void main() {
               throwOnSubscribe: true,
               throwOnUnsubscribe: true,
             );
-          service = FCMService(messaging: m);
+          service = _newFcm(m);
 
           await service.unsubscribeFromTopic('topic_a');
           await service.unsubscribeFromTopic('topic_b');
@@ -290,7 +302,7 @@ void main() {
 
       test('should accept various topic names without throwing', () async {
         final recording = _RecordingMessaging();
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         const topics = ['', 'topic with spaces', 'topic/with/slashes'];
         for (final topic in topics) {
@@ -469,7 +481,7 @@ void main() {
         // BUT-1008: composable throw flag replaces _ThrowingSettingsMessaging.
         final m = MockFirebaseMessaging()
           ..setFirebaseMessagingState(throwOnSettings: true);
-        service = FCMService(messaging: m);
+        service = _newFcm(m);
 
         final enabled = await service.areNotificationsEnabled();
 
@@ -484,7 +496,7 @@ void main() {
       test('getNotificationSettings rethrows on error', () async {
         final m = MockFirebaseMessaging()
           ..setFirebaseMessagingState(throwOnSettings: true);
-        service = FCMService(messaging: m);
+        service = _newFcm(m);
 
         await expectLater(
           service.getNotificationSettings(),
@@ -587,7 +599,7 @@ void main() {
       test('grant path requests permissions + refreshes token', () async {
         final recording = _RecordingMessaging()
           ..setFirebaseMessagingState(token: 'fresh-token');
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
         final consent = _RecordingConsent()..setConsent(false);
 
         await service.bindUserContext(consentService: consent);
@@ -606,7 +618,7 @@ void main() {
       test('revoke path deletes SDK token + clears cached value', () async {
         final recording = _RecordingMessaging()
           ..setFirebaseMessagingState(token: 'live-token');
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
         final consent = _RecordingConsent()..setConsent(true);
 
         // Seed: grant first so revoke has a state to undo.
@@ -632,7 +644,7 @@ void main() {
         () async {
           final recording = _RecordingMessaging()
             ..setFirebaseMessagingState(token: 'tok');
-          service = FCMService(messaging: recording);
+          service = _newFcm(recording);
           final consent = _RecordingConsent();
 
           await service.bindUserContext(consentService: consent);
@@ -663,7 +675,7 @@ void main() {
       test('token-refresh handler bypasses cache (test seam)', () async {
         final recording = _RecordingMessaging()
           ..setFirebaseMessagingState(token: 'stale-token');
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         // Seed: cache the initial token.
         await service.getToken();
@@ -696,7 +708,7 @@ void main() {
 
       test('empty topic name does not throw', () async {
         final recording = _RecordingMessaging();
-        service = FCMService(messaging: recording);
+        service = _newFcm(recording);
 
         await expectLater(service.subscribeToTopic(''), completes);
         expect(recording.subscribedTopics, equals(['']));

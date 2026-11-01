@@ -37,8 +37,6 @@ const _residue = <String, int>{
   'lib/services/menu/present_diner_prefs_resolver.dart': 12,
   'lib/services/messaging/message_sending_operations.dart': 1,
   'lib/services/messaging_service.dart': 6,
-  'lib/services/notifications/fcm_service.dart': 8,
-  'lib/services/notifications/notification_service.dart': 3,
   'lib/services/nutrition/nutrition_service.dart': 1,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/offline/queued_image_transport.dart': 5,
