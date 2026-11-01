@@ -8,7 +8,6 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -16,12 +15,19 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class BackupService extends BaseService {
+  BackupService({required UnifiedRecipeService Function() recipeService})
+    : _recipeService = recipeService;
+
+  // A closure: the recipe service is user-scoped and may not exist yet when
+  // this service is registered.
+  final UnifiedRecipeService Function() _recipeService;
+
   @override
   String get serviceName => 'BackupService';
 
   Future<BackupResult> exportToFile() async {
     try {
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final recipeService = _recipeService();
       final recipes = recipeService.recipes;
 
       if (recipes.isEmpty) {
@@ -186,7 +192,7 @@ class BackupService extends BaseService {
           jsonData['butlery_backup'] ?? jsonData['butlery_export'];
       final recipesJson = backupData['recipes'] as List;
 
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final recipeService = _recipeService();
       int successCount = 0;
       int skipCount = 0;
       final errors = <String>[];

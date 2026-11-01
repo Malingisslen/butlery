@@ -9,7 +9,6 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -37,8 +36,13 @@ class RealtimeMenuService extends ChangeNotifier
   RealtimeMenuService({
     required RealtimeSyncService syncService,
     required AuthService authService,
+    required UserService? Function() userService,
   }) : _syncService = syncService,
-       _authService = authService;
+       _authService = authService,
+       _userService = userService;
+
+  // A closure: the profile service can be registered after this one.
+  final UserService? Function() _userService;
 
   /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;
@@ -69,11 +73,10 @@ class RealtimeMenuService extends ChangeNotifier
   /// profile-sourced name is reachable by erasure everywhere and by rename on
   /// every durable field; an Auth-sourced one would be reachable by neither.
   ///
-  /// `tryGet` keeps a service built before/without the service graph working;
-  /// an unresolved name stamps empty (readers show their own "unknown" label),
+  /// An unresolved name stamps empty (readers show their own "unknown" label),
   /// never an Auth-sourced one.
   String get _currentUserDisplayName =>
-      (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
+      (_userService()?.profileDisplayName).orEmpty();
 
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];

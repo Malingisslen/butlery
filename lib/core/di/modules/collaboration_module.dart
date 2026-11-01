@@ -8,6 +8,8 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
@@ -203,6 +205,7 @@ class CollaborationModule implements DIModule {
       () => RealtimeMenuService(
         syncService: container<RealtimeSyncService>(),
         authService: app<AuthService>(),
+        userService: ServiceLocator.tryGet<UserService>,
       ),
     );
   }

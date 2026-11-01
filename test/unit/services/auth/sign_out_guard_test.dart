@@ -122,7 +122,7 @@ void main() {
 
   group('OfflinePendingChangesSource without an offline service', () {
     test('reads nothing', () async {
-      const offline = OfflinePendingChangesSource();
+      final offline = OfflinePendingChangesSource(offlineService: () => null);
 
       expect(await offline.read('user-1'), PendingChanges.none);
       await offline.discard('user-1');

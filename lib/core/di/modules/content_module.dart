@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core interfaces
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/di/modules/trash_registrations.dart';
@@ -719,7 +720,11 @@ class ContentModule implements DIModule {
       );
 
       // Backup service for recipe data export and import
-      container.registerLazySingleton<BackupService>(() => BackupService());
+      container.registerLazySingleton<BackupService>(
+        () => BackupService(
+          recipeService: ServiceLocator.get<UnifiedRecipeService>,
+        ),
+      );
 
       // Social media extractor for content extraction from social platforms
       container.registerLazySingleton<SocialMediaExtractor>(
