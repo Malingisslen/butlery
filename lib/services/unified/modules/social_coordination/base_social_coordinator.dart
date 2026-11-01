@@ -29,7 +29,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart' as user_service;
@@ -46,6 +45,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   final String? Function() _getCurrentUserDisplayName;
   final void Function(String) _rawSetError;
   final void Function() _rawNotifyListeners;
+  final user_service.UserService _userService;
 
   // BUT-1110: guards against a slow Firestore round-trip resolving after the
   // coordinator (and its parent ViewModel) is disposed. Without this, the late
@@ -57,7 +57,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
+    required user_service.UserService userService,
   }) : _getCurrentUserId = getCurrentUserId,
+       _userService = userService,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _rawSetError = setError,
        _rawNotifyListeners = notifyListeners {
@@ -149,8 +151,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       }
 
       // Get current user's display name
-      final userService = ServiceLocator.get<user_service.UserService>();
-      final currentUserProfile = userService.currentUserProfile;
+      final currentUserProfile = _userService.currentUserProfile;
       if (currentUserProfile == null) {
         AppLogger.error('Cannot get current user profile for invitation');
         return null;
@@ -178,7 +179,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       AppLogger.info(
         '🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId',
       );
-      final inviteeBatch = await userService.getUserProfiles(inviteeUserIds);
+      final inviteeBatch = await _userService.getUserProfiles(inviteeUserIds);
       if (inviteeBatch.unavailableIds.isNotEmpty) {
         // The member subcollection row is denormalised display data, not the
         // membership grant — that is `sharedToUserIds` on the invitation

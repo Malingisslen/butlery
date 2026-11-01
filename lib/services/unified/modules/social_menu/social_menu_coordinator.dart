@@ -50,7 +50,6 @@ import 'package:butlery/repositories/firebase/base_shared_content_repository.dar
 import 'package:butlery/services/unified/modules/social_coordination/base_social_coordinator.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Result of joining a shared menu.
 /// Indicates whether the join connected to a collaborative realtime session.
@@ -76,6 +75,8 @@ class SocialMenuCoordinator
   late final BaseSharedContentRepository<SharedMenu> _sharedMenuRepository;
   final Future<Map<String, List<Recipe>>?> Function(String) _getMenu;
   final Future<String?> Function(Map<String, List<Recipe>>) _saveMenu;
+  final UnifiedMenuService _menuService;
+  final RealtimeMenuService Function() _getRealtimeMenuService;
 
   /// Cached viewed status (menuId → bool)
   final Map<String, bool> _viewedStatusCache = {};
@@ -91,12 +92,17 @@ class SocialMenuCoordinator
     required super.getCurrentUserDisplayName,
     required super.setError,
     required super.notifyListeners,
+    required super.userService,
     required Future<Map<String, List<Recipe>>?> Function(String) getMenu,
     required Future<String?> Function(Map<String, List<Recipe>>) saveMenu,
+    required UnifiedMenuService menuService,
+    required RealtimeMenuService Function() getRealtimeMenuService,
     BaseSharedContentRepository<SharedMenu>? sharedMenuRepository,
     JsonCacheHelper? cacheHelper,
   }) : _getMenu = getMenu,
-       _saveMenu = saveMenu {
+       _saveMenu = saveMenu,
+       _menuService = menuService,
+       _getRealtimeMenuService = getRealtimeMenuService {
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
 
@@ -258,7 +264,7 @@ class SocialMenuCoordinator
 
         // Add user as participant to the realtime menu (Bug fix: without this, the menu doesn't appear in saved menus)
         try {
-          final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
+          final realtimeMenuService = _getRealtimeMenuService();
           await realtimeMenuService.addParticipant(
             resourceId: sharedMenu.realtimeMenuId!,
             userId: currentUserId!,
@@ -289,8 +295,7 @@ class SocialMenuCoordinator
       AppLogger.info('📥 Importing static menu $sharedMenuId');
 
       // Use UnifiedMenuService.importSharedMenu for proper import with all data
-      final menuService = ServiceLocator.get<UnifiedMenuService>();
-      final importResult = await menuService.importSharedMenu(
+      final importResult = await _menuService.importSharedMenu(
         sharedMenuId: sharedMenuId,
         newTitle: newTitle,
       );

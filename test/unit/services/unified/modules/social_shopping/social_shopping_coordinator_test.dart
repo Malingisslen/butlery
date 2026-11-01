@@ -65,12 +65,6 @@
 ///   The base class's `markAsViewed` (base line 408) and `getUnreadCount`
 ///   (base line 425) also lack `_error`. File as "BUT-1094 family extension".
 ///
-/// - **BUT-1095 (hardwired repo in constructor) — PARTIALLY ADDRESSED**:
-///   `_sharedShoppingRepository` still resolves via
-///   `ServiceLocator.get<FirebaseSharedShoppingRepository>()` in the
-///   constructor (mockable via GetIt). The shared-repo constructor seam
-///   remains a follow-up.
-///
 /// - **Save-through throws UnsupportedError (BUT-1105 fix)**:
 ///   `ShoppingListServiceAdapter.saveShoppingList` now throws [UnsupportedError]
 ///   instead of silently returning the list id without persisting anything.
@@ -91,12 +85,15 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../test_support/base_unit_test.dart';
 
 class _MockSharedShoppingRepo extends Mock
     implements FirebaseSharedShoppingRepository {}
+
+class _MockUserService extends Mock implements UserService {}
 
 /// Fake adapter so we don't need the real UnifiedShoppingService chain
 /// when validating the coordinator's `_serviceAdapter` injection path.
@@ -178,6 +175,7 @@ void main() {
   group('SocialShoppingCoordinator', () {
     late SocialShoppingCoordinator coordinator;
     late _MockSharedShoppingRepo mockRepo;
+    late _MockSharedShoppingRepo decoyRepo;
     late Map<String, UnifiedShoppingList> store;
     late String? currentUserId;
     late String? currentUserDisplayName;
@@ -189,17 +187,18 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      // The coordinator constructor calls
-      // ServiceLocator.get<FirebaseSharedShoppingRepository>(); register
-      // a mock in the SAME GetIt instance that backs both ServiceLocators.
       production.ServiceLocator.initialize(DIContainer());
 
+      // The coordinator takes its repository in the constructor. The locator
+      // holds a different one, so a lookup that comes back reads the decoy
+      // and the verify() calls on mockRepo fail.
       mockRepo = _MockSharedShoppingRepo();
+      decoyRepo = _MockSharedShoppingRepo();
       final getIt = GetIt.instance;
       if (getIt.isRegistered<FirebaseSharedShoppingRepository>()) {
         getIt.unregister<FirebaseSharedShoppingRepository>();
       }
-      getIt.registerSingleton<FirebaseSharedShoppingRepository>(mockRepo);
+      getIt.registerSingleton<FirebaseSharedShoppingRepository>(decoyRepo);
 
       currentUserId = 'me-uid';
       currentUserDisplayName = 'Anna';
@@ -215,12 +214,14 @@ void main() {
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (e) => lastError = e,
         notifyListeners: () => notifyCount++,
+        userService: _MockUserService(),
         getShoppingList: (id) async => store[id],
         saveShoppingList: (list) async {
           savedLists.add(list);
           return saveResult;
         },
         serviceAdapter: fakeAdapter,
+        sharedShoppingRepository: mockRepo,
       );
     });
 
@@ -728,11 +729,13 @@ void main() {
             getCurrentUserDisplayName: () => 'Anna',
             setError: (_) {},
             notifyListeners: () {},
+            userService: _MockUserService(),
             getShoppingList: (_) async => null,
             // Wired with the failing adapter path: calling saveShoppingList throws.
             saveShoppingList: (list) =>
                 _FakeServiceAdapter().saveShoppingList(list),
             serviceAdapter: _FakeServiceAdapter(),
+            sharedShoppingRepository: mockRepo,
           );
 
           expect(
@@ -763,6 +766,22 @@ void main() {
 
         expect(out, hasLength(2));
         verify(() => mockRepo.getSharedContentForUser('uid-1')).called(1);
+      });
+
+      /// BUT-1508: the inbox reads from the repository the coordinator was
+      /// built with, never from one registered in the locator.
+      test('reads the injected repository, not the locator', () async {
+        when(
+          () => mockRepo.getSharedContentForUser(any()),
+        ).thenAnswer((_) async => [_sharedList(id: 'injected')]);
+        when(
+          () => decoyRepo.getSharedContentForUser(any()),
+        ).thenAnswer((_) async => [_sharedList(id: 'decoy')]);
+
+        final out = await coordinator.getSharedShoppingListsForUser('uid-1');
+
+        expect(out.map((l) => l.id), ['injected']);
+        verifyNever(() => decoyRepo.getSharedContentForUser(any()));
       });
 
       /// Permission-denied / offline → empty list, no rethrow. The

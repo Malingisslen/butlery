@@ -193,6 +193,21 @@ class _AddParticipantThrowsRealtimeMenuService extends MockRealtimeMenuService {
 
 // -------------------- Test fixtures --------------------------------------
 
+/// Records who was added, so a test can tell which instance the join used.
+class _RecordingRealtimeMenuService extends MockRealtimeMenuService {
+  final List<String> addedUserIds = [];
+
+  @override
+  Future<void> addParticipant({
+    required String resourceId,
+    required String userId,
+    required String userDisplayName,
+    ResourcePermission permission = ResourcePermission.viewer,
+  }) async {
+    addedUserIds.add(userId);
+  }
+}
+
 /// A collaborative shared menu (has a realtimeMenuId) — routes joinSharedMenu
 /// into the realtime/addParticipant branch rather than the static-import one.
 SharedMenu _collaborativeSharedMenu() => SharedMenu(
@@ -263,6 +278,9 @@ void main() {
 
   group('SocialMenuCoordinator', () {
     late SocialMenuCoordinator coordinator;
+    late MockUserService userService;
+    late MockUnifiedMenuService menuService;
+    late RealtimeMenuService realtimeMenuService;
     late Map<String, Map<String, List<Recipe>>> menuStore;
     late String? currentUserId;
     late String? currentUserDisplayName;
@@ -302,17 +320,23 @@ void main() {
       menuStore = {};
       savedMenus = [];
       saveResult = 'saved-menu-id';
+      userService = MockUserService();
+      menuService = MockUnifiedMenuService();
+      realtimeMenuService = MockRealtimeMenuService();
 
       coordinator = SocialMenuCoordinator(
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (e) => lastError = e,
         notifyListeners: () => notifyCount++,
+        userService: userService,
         getMenu: (id) async => menuStore[id],
         saveMenu: (menu) async {
           savedMenus.add(menu);
           return saveResult;
         },
+        menuService: menuService,
+        getRealtimeMenuService: () => realtimeMenuService,
       );
     });
 
@@ -850,11 +874,14 @@ void main() {
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
           notifyListeners: () => notifyCount++,
+          userService: userService,
           getMenu: (id) async => menuStore[id],
           saveMenu: (menu) async {
             savedMenus.add(menu);
             return saveResult;
           },
+          menuService: menuService,
+          getRealtimeMenuService: () => realtimeMenuService,
           sharedMenuRepository: _ThrowingSharedMenuRepository(),
         );
         addTearDown(() async => await throwingCoord.dispose());
@@ -889,20 +916,21 @@ void main() {
         final repo = _CollaborativeSharedMenuRepository(
           _collaborativeSharedMenu(),
         );
-        TestServiceLocator.registerMock<RealtimeMenuService>(
-          _AddParticipantThrowsRealtimeMenuService(),
-        );
+        realtimeMenuService = _AddParticipantThrowsRealtimeMenuService();
 
         final coord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
           notifyListeners: () => notifyCount++,
+          userService: userService,
           getMenu: (id) async => menuStore[id],
           saveMenu: (menu) async {
             savedMenus.add(menu);
             return saveResult;
           },
+          menuService: menuService,
+          getRealtimeMenuService: () => realtimeMenuService,
           sharedMenuRepository: repo,
         );
         addTearDown(() async => await coord.dispose());
@@ -950,20 +978,20 @@ void main() {
         );
         // addParticipant must NOT throw here, so the failure originates at the
         // mark step (outer catch), not the inner participant catch.
-        TestServiceLocator.registerMock<RealtimeMenuService>(
-          MockRealtimeMenuService(),
-        );
 
         final coord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
           notifyListeners: () => notifyCount++,
+          userService: userService,
           getMenu: (id) async => menuStore[id],
           saveMenu: (menu) async {
             savedMenus.add(menu);
             return saveResult;
           },
+          menuService: menuService,
+          getRealtimeMenuService: () => realtimeMenuService,
           sharedMenuRepository: repo,
         );
         addTearDown(() async => await coord.dispose());
@@ -988,25 +1016,26 @@ void main() {
       test('BUT-1123: importSharedMenu throw (static branch) → null via outer '
           'catch, no rethrow', () async {
         final repo = _CollaborativeSharedMenuRepository(_staticSharedMenu());
-        final menuService = MockUnifiedMenuService();
         when(
           () => menuService.importSharedMenu(
             sharedMenuId: any(named: 'sharedMenuId'),
             newTitle: any(named: 'newTitle'),
           ),
         ).thenThrow(Exception('simulated importSharedMenu failure'));
-        TestServiceLocator.registerMock<UnifiedMenuService>(menuService);
 
         final coord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
           notifyListeners: () => notifyCount++,
+          userService: userService,
           getMenu: (id) async => menuStore[id],
           saveMenu: (menu) async {
             savedMenus.add(menu);
             return saveResult;
           },
+          menuService: menuService,
+          getRealtimeMenuService: () => realtimeMenuService,
           sharedMenuRepository: repo,
         );
         addTearDown(() async => await coord.dispose());
@@ -1023,6 +1052,89 @@ void main() {
           isNotNull,
           reason: 'outer catch surfaces a sanitised banner; no rethrow',
         );
+      });
+
+      /// BUT-1508: both join branches use the services the coordinator was
+      /// built with. The locator holds ones that throw, so a lookup that
+      /// comes back fails these: the static import returns null, and the
+      /// participant write never reaches the recorder.
+      group('uses the injected services, not the locator', () {
+        setUp(() {
+          final lookedUp = MockUnifiedMenuService();
+          when(
+            () => lookedUp.importSharedMenu(
+              sharedMenuId: any(named: 'sharedMenuId'),
+              newTitle: any(named: 'newTitle'),
+            ),
+          ).thenThrow(Exception('looked up from the locator'));
+          TestServiceLocator.registerMock<UnifiedMenuService>(lookedUp);
+          TestServiceLocator.registerMock<RealtimeMenuService>(
+            _AddParticipantThrowsRealtimeMenuService(),
+          );
+        });
+
+        test('static join imports through the injected menu service', () async {
+          when(
+            () => menuService.importSharedMenu(
+              sharedMenuId: 'shared-static-1',
+              newTitle: any(named: 'newTitle'),
+            ),
+          ).thenAnswer(
+            (_) async => const MenuImportResult(
+              menuId: 'imported-1',
+              isCollaborative: false,
+            ),
+          );
+          final coord = SocialMenuCoordinator(
+            getCurrentUserId: () => currentUserId,
+            getCurrentUserDisplayName: () => currentUserDisplayName,
+            setError: (e) => lastError = e,
+            notifyListeners: () => notifyCount++,
+            userService: userService,
+            getMenu: (id) async => menuStore[id],
+            saveMenu: (menu) async => saveResult,
+            menuService: menuService,
+            getRealtimeMenuService: () => realtimeMenuService,
+            sharedMenuRepository: _CollaborativeSharedMenuRepository(
+              _staticSharedMenu(),
+            ),
+          );
+          addTearDown(() async => await coord.dispose());
+
+          final out = await coord.joinSharedMenu(
+            sharedMenuId: 'shared-static-1',
+          );
+
+          expect(out?.menuId, 'imported-1');
+          expect(lastError, isNull);
+        });
+
+        test('collaborative join adds the participant through the injected '
+            'realtime service', () async {
+          final recorder = _RecordingRealtimeMenuService();
+          final coord = SocialMenuCoordinator(
+            getCurrentUserId: () => currentUserId,
+            getCurrentUserDisplayName: () => currentUserDisplayName,
+            setError: (e) => lastError = e,
+            notifyListeners: () => notifyCount++,
+            userService: userService,
+            getMenu: (id) async => menuStore[id],
+            saveMenu: (menu) async => saveResult,
+            menuService: menuService,
+            getRealtimeMenuService: () => recorder,
+            sharedMenuRepository: _CollaborativeSharedMenuRepository(
+              _collaborativeSharedMenu(),
+            ),
+          );
+          addTearDown(() async => await coord.dispose());
+
+          final out = await coord.joinSharedMenu(
+            sharedMenuId: 'shared-collab-1',
+          );
+
+          expect(out?.isCollaborative, isTrue);
+          expect(recorder.addedUserIds, ['me-uid']);
+        });
       });
     });
 
@@ -1056,11 +1168,14 @@ void main() {
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
           notifyListeners: () => notifyCount++,
+          userService: userService,
           getMenu: (id) async => menuStore[id],
           saveMenu: (menu) async {
             savedMenus.add(menu);
             return saveResult;
           },
+          menuService: menuService,
+          getRealtimeMenuService: () => realtimeMenuService,
           sharedMenuRepository: _ThrowingSharedMenuRepository(),
         );
         addTearDown(() async => await throwingCoord.dispose());

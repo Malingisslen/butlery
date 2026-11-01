@@ -65,13 +65,8 @@ const _residue = <String, int>{
   'lib/services/unified/friends/friends_internal_operations.dart': 3,
   'lib/services/unified/modules/personal_recipe_module.dart': 3,
   'lib/services/unified/modules/shopping_item_management_module.dart': 1,
-  'lib/services/unified/modules/social_coordination/base_social_coordinator.dart':
-      1,
-  'lib/services/unified/modules/social_menu/social_menu_coordinator.dart': 2,
   'lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart':
       1,
-  'lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart':
-      2,
   'lib/services/unified/operations/friend_categories_operations.dart': 7,
   'lib/services/unified/operations/friends_management_operations.dart': 5,
   'lib/services/unified/operations/list_invitation_operations.dart': 1,
