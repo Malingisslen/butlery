@@ -58,7 +58,7 @@ jobs:
   # Validation job - must pass before builds run
   validate:
     needs: scope
-    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -155,7 +155,7 @@ jobs:
   # Secret scanning - runs independently, scans full git history
   secret-scan:
     needs: scope
-    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -179,7 +179,7 @@ jobs:
   # on the merge that caused it.
   platforms:
     needs: scope
-    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -444,7 +444,7 @@ jobs:
   build-summary:
     runs-on: ubuntu-latest
     needs: [scope, validate, build, security-scan, secret-scan]
-    if: always() && github.event.pull_request.draft != true
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
 
     steps:
     - name: Check results

@@ -95,7 +95,7 @@ jobs:
   # more shards. Coverage lives in coverage.yml, not here.
   unit-tests:
     needs: scope
-    if: always() && github.event.pull_request.draft != true
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
     name: unit (ubuntu shard ${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -191,7 +191,7 @@ jobs:
   # (BUT-1443). Verified green at wiring time.
   suite-tests:
     needs: scope
-    if: always() && github.event.pull_request.draft != true
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
     name: ${{ matrix.suite }} (ubuntu)
     strategy:
       fail-fast: false
@@ -391,7 +391,7 @@ jobs:
   # it stays on the per-commit path unchanged.
   integration-tests:
     needs: scope
-    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20

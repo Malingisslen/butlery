@@ -57,7 +57,7 @@ jobs:
 
   architecture-validation:
     needs: scope
-    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
+    if: ${{ !cancelled() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

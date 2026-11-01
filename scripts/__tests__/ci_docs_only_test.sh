@@ -15,13 +15,19 @@ check() {
 }
 
 check true  'docs/a.md\n'
-check true  'README.md\ntasks/todo.md\n.claude/rules/x.md\nmemory/m.txt\nlib/notes/readme.md\n'
+check true  'README.md\ntasks/todo.md\n.claude/rules/x.md\nmemory/m.txt\ndocs/ops/y.md\n'
 check false 'docs/a.md\nlib/main.dart\n'
 check false '.github/workflows/test.yml\n'
 check false 'pubspec.yaml\n'
 check false 'functions/src/index.ts\n'
 check false ''
 check false '\n'
+check false 'assets/legal/privacy_policy_sv.md\n'
+check false 'docs/onboarding/workflow-map.html\n'
+check false 'docs/feature_inventory.csv\n'
+check false 'test/unit/x/baseline.md\n'
+check false 'functions/src/llm/PROMPT_CHANGELOG.md\n'
+check false 'lib/notes/readme.md\n'
 check false 'docsfoo/x.dart\n'
 
 if [ "$fail" -eq 0 ]; then echo "ci_docs_only: all fixtures passed"; fi
