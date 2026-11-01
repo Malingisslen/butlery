@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
@@ -47,6 +48,7 @@ class FriendsInvitationsOperations {
   final bool Function() _getHasError;
   final String? Function() _getError;
   final FriendsCategoriesOperations Function() _getCategories;
+  final AnalyticsService? Function() _getAnalyticsService;
 
   /// Shared shopping list invitations (BUT-2089). Lazy, so the repository is
   /// only touched by callers that use them.
@@ -54,6 +56,7 @@ class FriendsInvitationsOperations {
       ListInvitationOperations(
         repository: _friendsRepository.listInvitations,
         getCurrentUserId: _getCurrentUserId,
+        analytics: _getAnalyticsService(),
       );
 
   // Modules
@@ -91,6 +94,7 @@ class FriendsInvitationsOperations {
     required bool Function() getHasError,
     required String? Function() getError,
     required FriendsCategoriesOperations Function() getCategories,
+    AnalyticsService? Function()? getAnalyticsService,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _getAllSentInvitationsInternal = getAllSentInvitationsInternal,
@@ -110,7 +114,8 @@ class FriendsInvitationsOperations {
        _getIsLoading = getIsLoading,
        _getHasError = getHasError,
        _getError = getError,
-       _getCategories = getCategories {
+       _getCategories = getCategories,
+       _getAnalyticsService = getAnalyticsService ?? (() => null) {
     _validation = InvitationValidationModule();
     _statistics = InvitationStatisticsModule();
   }

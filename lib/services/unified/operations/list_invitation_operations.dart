@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/repositories/firebase/friends/list_invitation_repository.dart';
@@ -63,7 +62,7 @@ class ListInvitationOperations {
     AnalyticsService? analytics,
   }) : _repository = repository,
        _getCurrentUserId = getCurrentUserId,
-       _analytics = analytics ?? ServiceLocator.tryGet<AnalyticsService>();
+       _analytics = analytics;
 
   final ListInvitationRepository _repository;
   final String? Function() _getCurrentUserId;

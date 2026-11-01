@@ -10,6 +10,7 @@ import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import '../../../../test_support/base_unit_test.dart';
@@ -65,6 +66,8 @@ void main() {
     late _MockFriendRelationshipRepository mockRelationshipRepo;
     late FakeFirebaseFirestore fakeFirestore;
     late FriendsManagementOperations managementOperations;
+    late _MockFirebaseBlockRepository injectedBlockRepo;
+    AnalyticsService? injectedAnalytics;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -114,7 +117,21 @@ void main() {
         isInitialized: true,
       );
 
+      // Decoys in the locator: the operations must use what they were built
+      // with, so a lookup that slips back to the locator finds the wrong one.
+      injectedBlockRepo = _MockFirebaseBlockRepository();
+      injectedAnalytics = null;
+      TestServiceLocator.registerMock<FirebaseBlockRepository>(
+        _MockFirebaseBlockRepository(),
+      );
+      TestServiceLocator.registerMock<AnalyticsService>(
+        _MockAnalyticsService(),
+      );
+
       managementOperations = FriendsManagementOperations(
+        userService: TestServiceLocator.get<UserService>(),
+        blockRepository: injectedBlockRepo,
+        getAnalyticsService: () => injectedAnalytics,
         getCurrentUserId: () => 'current_user',
         getCurrentUserDisplayName: () => 'Test User',
         getFriends: () => mockParentService.friends,
@@ -292,15 +309,14 @@ void main() {
       late _RecordingSocialTracker socialTracker;
 
       setUp(() {
-        mockBlockRepo = _MockFirebaseBlockRepository();
-        TestServiceLocator.registerMock<FirebaseBlockRepository>(mockBlockRepo);
+        mockBlockRepo = injectedBlockRepo;
         when(() => mockBlockRepo.blockUser(any())).thenAnswer((_) async {});
         when(() => mockBlockRepo.unblockUser(any())).thenAnswer((_) async {});
 
         socialTracker = _RecordingSocialTracker();
         final analytics = _MockAnalyticsService();
         when(() => analytics.social).thenReturn(socialTracker);
-        TestServiceLocator.registerMock<AnalyticsService>(analytics);
+        injectedAnalytics = analytics;
       });
 
       // The analytics used to sit on FriendsViewModel, so every caller that
@@ -629,7 +645,7 @@ void main() {
           throwingTracker = _ThrowingSocialTracker();
           final analytics = _MockAnalyticsService();
           when(() => analytics.social).thenReturn(throwingTracker);
-          TestServiceLocator.registerMock<AnalyticsService>(analytics);
+          injectedAnalytics = analytics;
         });
 
         test(

@@ -78,20 +78,21 @@ void main() {
       // before touching the relationship repository.
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepo);
 
-      // UnifiedFriendsService._initializeModules() resolves FirebaseBlockRepository
-      // from ServiceLocator. Register one wired to the same FakeFirebaseFirestore
-      // that FakeFirestoreRepository falls through to (FirestoreSingleton.instance)
+      // Wired to the same FakeFirebaseFirestore that FakeFirestoreRepository
+      // falls through to (FirestoreSingleton.instance)
       // so the block repo, the friends repo, and the test all see one Firestore.
-      TestServiceLocator.registerMock<FirebaseBlockRepository>(
-        FirebaseBlockRepository(
-          firestore: FirestoreSingleton.instance,
-          authRepository: mockAuthRepo,
-        ),
+      final blockRepo = FirebaseBlockRepository(
+        firestore: FirestoreSingleton.instance,
+        authRepository: mockAuthRepo,
       );
+      TestServiceLocator.registerMock<FirebaseBlockRepository>(blockRepo);
 
       friendsService = UnifiedFriendsService(
         firestoreRepository: mockFirestoreRepo,
         authRepository: mockAuthRepo,
+        permissionService: mockPermissionService,
+        userService: mockUserService,
+        blockRepository: blockRepo,
       );
     });
 

@@ -211,6 +211,9 @@ void main() {
     ops = FriendsInternalOperations(
       categoryRepository: categoryRepo,
       authRepository: authRepo,
+      permissionService: permissionService,
+      friendsRepository: friendsRepo,
+      userService: userService,
     );
     ops.setStateManager(stateManager);
   });
@@ -822,10 +825,11 @@ void main() {
 
   group('updateInvitationStatusInternal', () {
     setUp(() {
-      // Production code grabs FriendsRepository through the production
-      // ServiceLocator. Replace the auto-registered mock so we can verify.
-      friendsRepo = _MockFriendsRepository();
-      TestServiceLocator.registerMock<FriendsRepository>(friendsRepo);
+      // A different repository in the locator: the operations must use the
+      // one they were constructed with, not whatever the locator resolves.
+      TestServiceLocator.registerMock<FriendsRepository>(
+        _MockFriendsRepository(),
+      );
     });
 
     /// CONTRACT: a `cancelled` status (sender cancels their own invite)
@@ -1035,7 +1039,7 @@ void main() {
 
   group('getCurrentUserDisplayNameInternal', () {
     setUp(() {
-      TestServiceLocator.registerMock<UserService>(userService);
+      TestServiceLocator.registerMock<UserService>(_MockUserService());
     });
 
     test('returns displayName from UserService profile', () {

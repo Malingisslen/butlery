@@ -13,7 +13,9 @@ import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/firestore_singleton.dart';
@@ -52,16 +54,17 @@ void main() {
       () => authRepo.authStateChanges(),
     ).thenAnswer((_) => const Stream<User?>.empty());
     TestServiceLocator.registerMock<AuthRepository>(authRepo);
-    TestServiceLocator.registerMock<FirebaseBlockRepository>(
-      FirebaseBlockRepository(
-        firestore: FirestoreSingleton.instance,
-        authRepository: authRepo,
-      ),
+    final blockRepo = FirebaseBlockRepository(
+      firestore: FirestoreSingleton.instance,
+      authRepository: authRepo,
     );
 
     friendsService = UnifiedFriendsService(
       firestoreRepository: FakeFirestoreRepository(),
       authRepository: authRepo,
+      permissionService: TestServiceLocator.get<PermissionService>(),
+      userService: TestServiceLocator.get<UserService>(),
+      blockRepository: blockRepo,
       auditRepository: FirebaseAuditRepository(FirestoreSingleton.instance),
     );
   });

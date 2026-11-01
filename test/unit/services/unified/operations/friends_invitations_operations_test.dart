@@ -5,6 +5,8 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/repositories/firebase/friends/list_invitation_repository.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../test_support/base_unit_test.dart';
@@ -20,6 +22,10 @@ class _MockCategoryRepository extends Mock
 
 class _MockListInvitationRepository extends Mock
     implements ListInvitationRepository {}
+
+class _MockAnalytics extends Mock implements AnalyticsService {}
+
+class _MockSocial extends Mock implements SocialEventsTracker {}
 
 void main() {
   group('FriendsInvitationsOperations', () {
@@ -45,6 +51,38 @@ void main() {
       registerFallbackValue(GroupInvitationStatus.pending);
     });
 
+    FriendsInvitationsOperations buildOperations({
+      AnalyticsService? Function()? getAnalytics,
+    }) => FriendsInvitationsOperations(
+      getCurrentUserId: () => mockParentService.currentUserId,
+      getCurrentUserDisplayName: () => mockParentService.currentUserDisplayName,
+      getAllSentInvitationsInternal: () =>
+          mockParentService.getAllSentInvitationsInternal(),
+      getReceivedGroupInvitationsInternal:
+          mockParentService.getReceivedGroupInvitationsInternal,
+      getSentInvitationByIdInternal:
+          mockParentService.getSentInvitationByIdInternal,
+      addSentInvitationInternal: mockParentService.addSentInvitationInternal,
+      updateSentInvitationInternal:
+          mockParentService.updateSentInvitationInternal,
+      addCategoryInternal: mockParentService.addCategoryInternal,
+      notifyListeners: mockParentService.notifyListenersInternal,
+      friendsRepository: mockFriendsRepository,
+      categoryRepository: mockCategoryRepository,
+      sendEmailInvitationInternal:
+          mockParentService.sendEmailInvitationInternal,
+      sendSMSInvitationInternal: mockParentService.sendSMSInvitationInternal,
+      createInvitationLinkInternal:
+          mockParentService.createInvitationLinkInternal,
+      updateInvitationStatusInternal:
+          mockParentService.updateInvitationStatusInternal,
+      getIsLoading: () => mockParentService.isLoading,
+      getHasError: () => mockParentService.hasError,
+      getError: () => mockParentService.error,
+      getCategories: () => mockParentService.categories,
+      getAnalyticsService: getAnalytics,
+    );
+
     setUp(() async {
       await TestServiceLocator.initialize();
 
@@ -60,36 +98,7 @@ void main() {
       mockFriendsRepository = _MockFriendsRepository();
       mockCategoryRepository = _MockCategoryRepository();
 
-      // Create operations instance with local mock repos
-      operations = FriendsInvitationsOperations(
-        getCurrentUserId: () => mockParentService.currentUserId,
-        getCurrentUserDisplayName: () =>
-            mockParentService.currentUserDisplayName,
-        getAllSentInvitationsInternal: () =>
-            mockParentService.getAllSentInvitationsInternal(),
-        getReceivedGroupInvitationsInternal:
-            mockParentService.getReceivedGroupInvitationsInternal,
-        getSentInvitationByIdInternal:
-            mockParentService.getSentInvitationByIdInternal,
-        addSentInvitationInternal: mockParentService.addSentInvitationInternal,
-        updateSentInvitationInternal:
-            mockParentService.updateSentInvitationInternal,
-        addCategoryInternal: mockParentService.addCategoryInternal,
-        notifyListeners: mockParentService.notifyListenersInternal,
-        friendsRepository: mockFriendsRepository,
-        categoryRepository: mockCategoryRepository,
-        sendEmailInvitationInternal:
-            mockParentService.sendEmailInvitationInternal,
-        sendSMSInvitationInternal: mockParentService.sendSMSInvitationInternal,
-        createInvitationLinkInternal:
-            mockParentService.createInvitationLinkInternal,
-        updateInvitationStatusInternal:
-            mockParentService.updateInvitationStatusInternal,
-        getIsLoading: () => mockParentService.isLoading,
-        getHasError: () => mockParentService.hasError,
-        getError: () => mockParentService.error,
-        getCategories: () => mockParentService.categories,
-      );
+      operations = buildOperations();
     });
 
     tearDown(() async {
@@ -102,6 +111,40 @@ void main() {
     });
 
     group('listInvitations', () {
+      test('the analytics the service hands over records a sent invitation, '
+          'looked up when the list invitations are first used', () async {
+        final listRepo = _MockListInvitationRepository();
+        when(() => mockFriendsRepository.listInvitations).thenReturn(listRepo);
+        when(
+          () => listRepo.sendListInvitationsViaFunction(
+            listId: any(named: 'listId'),
+            userIds: any(named: 'userIds'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenAnswer(
+          (_) async => const SendListInvitationsResult(sent: {'u1': 'inv-1'}),
+        );
+        final social = _MockSocial();
+        when(
+          () => social.logListInvitationSent(count: any(named: 'count')),
+        ).thenAnswer((_) async {});
+        final analytics = _MockAnalytics();
+        when(() => analytics.social).thenReturn(social);
+        // Handed over after the operations were built: the lookup is lazy.
+        AnalyticsService? handedOver;
+        final ops = buildOperations(getAnalytics: () => handedOver);
+        handedOver = analytics;
+
+        await ops.listInvitations.invite(
+          listId: 'l1',
+          userIds: const ['u1'],
+          permission: 'edit',
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        verify(() => social.logListInvitationSent(count: 1)).called(1);
+      });
+
       test('is built on first use from the friends repository and the '
           'signed-in user', () async {
         final listRepo = _MockListInvitationRepository();
