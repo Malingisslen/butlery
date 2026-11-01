@@ -80,6 +80,7 @@ void main() {
       // Create rating system instance
       ratingSystem = RecipeRatingSystem(
         ratingsRepository: mockRatingsRepository,
+        analyticsService: mockAnalytics,
       );
     });
 

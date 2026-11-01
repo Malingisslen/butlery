@@ -9,6 +9,7 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 
@@ -65,6 +66,8 @@ void main() {
       ratingsRepository: MockRatingsRepository(),
       firestoreRepository:
           app_provider.ServiceLocator.get<FirestoreRepository>(),
+      analyticsService: TestServiceLocator.get<AnalyticsService>(),
+      notificationService: null,
     );
     final result = await ops.getLegacySharedRecipes();
     expect(result, hasLength(1));

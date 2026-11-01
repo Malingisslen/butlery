@@ -157,6 +157,7 @@ import 'package:butlery/services/voice/whisper_model_manager.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/notifications/local_timer_notification_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
@@ -277,9 +278,8 @@ class ContentModule implements DIModule {
         commentsRepository: app.isRegistered<CommentsRepository>()
             ? app<CommentsRepository>()
             : null,
-        ratingsRepository: app.isRegistered<RatingsRepository>()
-            ? app<RatingsRepository>()
-            : null,
+        ratingsRepository: app<RatingsRepository>(),
+        analyticsService: app<AnalyticsService>(),
         notificationsRepository: app.isRegistered<NotificationsRepository>()
             ? app<NotificationsRepository>()
             : null,
@@ -287,6 +287,10 @@ class ContentModule implements DIModule {
         getPersonalTagService: () => container<PersonalTagService>(),
         getOfflineService: () => container.isRegistered<OfflineService>()
             ? container<OfflineService>()
+            : null,
+        getNotificationService: () =>
+            container.isRegistered<NotificationService>()
+            ? container<NotificationService>()
             : null,
         ingredientIdResolver: app.isRegistered<IngredientIdResolver>()
             ? app<IngredientIdResolver>()

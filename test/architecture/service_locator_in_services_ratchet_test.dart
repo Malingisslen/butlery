@@ -63,7 +63,6 @@ const _residue = <String, int>{
   'lib/services/tagging/tag_editing_service.dart': 1,
   'lib/services/tagging/tag_generator.dart': 3,
   'lib/services/unified/friends/friends_internal_operations.dart': 3,
-  'lib/services/unified/helpers/social_operations_initializer.dart': 6,
   'lib/services/unified/modules/personal_recipe_module.dart': 3,
   'lib/services/unified/modules/shopping_item_management_module.dart': 1,
   'lib/services/unified/modules/social_coordination/base_social_coordinator.dart':
@@ -89,14 +88,12 @@ const _residue = <String, int>{
   'lib/services/unified/operations/friends_management_operations.dart': 5,
   'lib/services/unified/operations/list_invitation_operations.dart': 1,
   'lib/services/unified/operations/modules/comment_crud_operations.dart': 4,
-  'lib/services/unified/operations/modules/recipe_rating_system.dart': 2,
   'lib/services/unified/operations/modules/recipe_sharing_manager.dart': 5,
   'lib/services/unified/operations/modules/shopping_social_share_module.dart':
       2,
   'lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart':
       2,
   'lib/services/unified/operations/social_menu_operations.dart': 18,
-  'lib/services/unified/operations/social_recipe_operations.dart': 1,
   'lib/services/unified/unified_friends_service.dart': 2,
   'lib/services/unified/unified_menu_service.dart': 5,
   'lib/services/upload/image_upload_service.dart': 1,

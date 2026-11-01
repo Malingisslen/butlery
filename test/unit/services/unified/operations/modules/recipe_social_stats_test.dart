@@ -1,17 +1,15 @@
 // Unit tests for RecipeSocialStats
 //
 // Tests the facade for recipe rating, social engagement, and statistics.
-// Requires production ServiceLocator bridge because RecipeRatingSystem
-// constructor calls ServiceLocator.get() for RatingsRepository and
-// AnalyticsService.
+// No production ServiceLocator bridge: the rating system gets its
+// repository and analytics from the facade, so a lookup would fail here.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_social_stats.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/services/analytics_service.dart';
 
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
@@ -23,6 +21,7 @@ void main() {
     late FakeFirestoreRepository mockFirestoreRepository;
     late MockNotificationService mockNotificationService;
     late MockRatingsRepository mockRatingsRepository;
+    late AnalyticsService analyticsService;
     late Recipe testRecipe;
     late Recipe anotherRecipe;
 
@@ -32,8 +31,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      // Bridge so RecipeRatingSystem can call ServiceLocator.get<T>()
-      production.ServiceLocator.initialize(DIContainer());
+      analyticsService = TestServiceLocator.get<AnalyticsService>();
 
       mockFirestoreRepository = FakeFirestoreRepository();
       mockNotificationService = MockNotificationService();
@@ -88,6 +86,7 @@ void main() {
         getRecipes: () => [testRecipe, anotherRecipe],
         ratingsRepository: mockRatingsRepository,
         firestoreRepository: mockFirestoreRepository,
+        analyticsService: analyticsService,
         notificationService: mockNotificationService,
       );
     });
@@ -209,6 +208,7 @@ void main() {
           getRecipes: () => [emptyOwnerRecipe, anotherRecipe],
           ratingsRepository: mockRatingsRepository,
           firestoreRepository: mockFirestoreRepository,
+          analyticsService: analyticsService,
           notificationService: mockNotificationService,
         );
 
@@ -284,6 +284,7 @@ void main() {
           getRecipes: () => [testRecipe],
           ratingsRepository: mockRatingsRepository,
           firestoreRepository: mockFirestoreRepository,
+          analyticsService: analyticsService,
           notificationService: mockNotificationService,
         );
 
@@ -301,6 +302,7 @@ void main() {
           getRecipes: () => [testRecipe],
           ratingsRepository: mockRatingsRepository,
           firestoreRepository: mockFirestoreRepository,
+          analyticsService: analyticsService,
           notificationService: mockNotificationService,
         );
 
@@ -315,6 +317,7 @@ void main() {
           getRecipes: () => [testRecipe],
           ratingsRepository: mockRatingsRepository,
           firestoreRepository: mockFirestoreRepository,
+          analyticsService: analyticsService,
           notificationService: mockNotificationService,
         );
 
@@ -349,6 +352,7 @@ void main() {
           getRecipes: () => [],
           ratingsRepository: mockRatingsRepository,
           firestoreRepository: mockFirestoreRepository,
+          analyticsService: analyticsService,
           notificationService: mockNotificationService,
         );
 
