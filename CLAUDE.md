@@ -69,6 +69,7 @@ green` ruleset still holds a red PR back. Never turn it on while commits remain 
 the PR merges as soon as the commit already there goes green, without the rest.
 - Push once, when the work is done: every push cancels and restarts the ~17 min CI run.
 - Don't regenerate `docs/design-migration/census.md` in a PR; the nightly job does.
+- A PR that changes only documentation (`scripts/ci_docs_only.sh` decides) skips the heavy jobs but still reports the required checks, so it goes green on its own. Markdown that tests read (`assets/`, `test/`, `lib/`, `functions/`) counts as code.
 
 ## Stop hook response
 
