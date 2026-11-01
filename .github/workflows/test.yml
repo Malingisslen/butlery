@@ -33,12 +33,6 @@ on:
     # A draft gets no CI; marking it ready for review starts the run.
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'tasks/**'
-      - '.claude/**'
-      - 'memory/**'
   schedule:
     # 04:00 UTC nightly — off-peak, and clear of e2e (02:00), adoption (03:00)
     # and golden-llm (03:17) so the cross-OS leg does not contend for
@@ -54,6 +48,38 @@ env:
   FLUTTER_VERSION: '3.38.5'
 
 jobs:
+  # A required check that never starts blocks the pull request forever, which is
+  # what `paths-ignore` did to documentation-only pull requests. The workflow now
+  # always starts; this job decides, and the heavy jobs skip themselves so the
+  # required check names still report.
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Documentation-only pull request?
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          bash scripts/__tests__/ci_docs_only_test.sh
+          result=false
+          if [ "$EVENT" = "pull_request" ]; then
+            if files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[] | .filename, (.previous_filename // empty)'); then
+              result=$(printf '%s\n' "$files" | bash scripts/ci_docs_only.sh)
+            fi
+          fi
+          echo "docs_only=$result" >> "$GITHUB_OUTPUT"
+          echo "docs_only=$result" >> "$GITHUB_STEP_SUMMARY"
+
   # ── Per-commit fast path ────────────────────────────────────────────────
   # Ubuntu-only, no coverage, unit suite sharded 3 ways. Each shard runs ~1/3
   # of test/unit. Measured on PR #179 (4- vs 6-shard A/B): a shard's wall-clock
@@ -68,7 +94,8 @@ jobs:
   # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
   # more shards. Coverage lives in coverage.yml, not here.
   unit-tests:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: always() && github.event.pull_request.draft != true
     name: unit (ubuntu shard ${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -85,6 +112,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        if: needs.scope.outputs.docs_only != 'true'
 
       # BUT-495: record job start so the Report duration step can emit a
       # structured timing line. Lives in $GITHUB_ENV so it survives between
@@ -94,12 +122,14 @@ jobs:
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        if: needs.scope.outputs.docs_only != 'true'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
 
       - run: flutter pub get
+        if: needs.scope.outputs.docs_only != 'true'
 
       # Real-time guard (BUT-393). Static grep over test files — only needs to
       # run once per pipeline, so gate it to shard 0.
@@ -107,16 +137,17 @@ jobs:
       # the staged files for speed, and this full-tree run is what makes that
       # scoping safe. Do not narrow it here.
       - name: Real-time regression guard
-        if: matrix.shard == 0
+        if: matrix.shard == 0 && needs.scope.outputs.docs_only != 'true'
         run: bash scripts/check_test_real_time.sh
 
       # The guard's own fixtures (BUT-1894). It had none, and a rewrite that
       # failed open on two inputs got as far as review before anyone built one.
       - name: Real-time guard fixtures
-        if: matrix.shard == 0
+        if: matrix.shard == 0 && needs.scope.outputs.docs_only != 'true'
         run: bash scripts/__tests__/check_test_real_time_test.sh
 
       - name: Run unit tests (shard ${{ matrix.shard }}/3, no coverage)
+        if: needs.scope.outputs.docs_only != 'true'
         run: |
           echo "Running test/unit shard ${{ matrix.shard }} of 3..."
           flutter test test/unit \
@@ -159,7 +190,8 @@ jobs:
   # against a 433-entry golden set, so parser-accuracy regressions fail CI
   # (BUT-1443). Verified green at wiring time.
   suite-tests:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: always() && github.event.pull_request.draft != true
     name: ${{ matrix.suite }} (ubuntu)
     strategy:
       fail-fast: false
@@ -181,20 +213,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        if: needs.scope.outputs.docs_only != 'true'
 
       - name: Record job start time
         shell: bash
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        if: needs.scope.outputs.docs_only != 'true'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
 
       - run: flutter pub get
+        if: needs.scope.outputs.docs_only != 'true'
 
       - name: Run ${{ matrix.suite }} tests
+        if: needs.scope.outputs.docs_only != 'true'
         run: |
           paths="${{ matrix.paths || format('test/{0}', matrix.suite) }}"
           echo "Running $paths..."
@@ -354,7 +390,8 @@ jobs:
   # Mock-tier integration suite. Ubuntu-only already and not a bottleneck, so
   # it stays on the per-commit path unchanged.
   integration-tests:
-    if: github.event.pull_request.draft != true
+    needs: scope
+    if: always() && github.event.pull_request.draft != true && needs.scope.outputs.docs_only != 'true'
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
