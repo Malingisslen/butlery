@@ -9,6 +9,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
@@ -54,6 +56,8 @@ class SocialRecipeOperations {
     required PermissionService permissionService,
     required UserService userService,
     required ActivityFeedService activityFeedService,
+    required CommentsRepository? commentsRepository,
+    required BlockedUserFilter? blockedUserFilter,
     void Function(String)? onShareError,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
@@ -89,6 +93,10 @@ class SocialRecipeOperations {
       getCurrentUserDisplayName: getCurrentUserDisplayName,
       getRecipes: getRecipes,
       notificationService: _notificationService,
+      commentsRepository: commentsRepository,
+      analyticsService: analyticsService,
+      userService: userService,
+      blockedUserFilter: blockedUserFilter,
     );
     _discoveryService = RecipeDiscoveryService(
       getCurrentUserId: getCurrentUserId,

@@ -2,11 +2,6 @@
 
 /// Tests for CommentCrudOperations — comment creation, reading, editing,
 /// deletion, and query methods.
-///
-/// Root cause of original 14/14 failures: the production ServiceLocator
-/// was never initialized, so the fallback `ServiceLocator.get<AnalyticsService>()`
-/// in the CommentCrudOperations constructor always threw. Fix: pass both
-/// dependencies explicitly so the constructor never hits ServiceLocator.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +10,9 @@ import 'package:butlery/services/unified/operations/modules/comment_crud_operati
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/services/user_service.dart';
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -24,10 +22,26 @@ class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
 class _MockSocialEventsTracker extends Mock implements SocialEventsTracker {}
 
+class _MockUserService extends Mock implements UserService {}
+
+class _StubBlockedUserFilter implements BlockedUserFilter {
+  _StubBlockedUserFilter(this._blocked);
+
+  final Set<String> _blocked;
+
+  @override
+  Future<Set<String>> currentBlockedIds() async => _blocked;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   group('CommentCrudOperations', () {
     late MockCommentsRepository mockCommentsRepository;
     late _MockAnalyticsService mockAnalyticsService;
+    late _MockUserService mockUserService;
+    late _MockSocialEventsTracker mockSocialTracker;
     late CommentCrudOperations operations;
     late RecipeComment testComment;
 
@@ -62,7 +76,7 @@ void main() {
       // (BUT-593). Stub the tracker so the milestone path is a no-op in this
       // suite — milestone behavior itself is covered in
       // social_events_tracker_milestone_test.dart.
-      final mockSocialTracker = _MockSocialEventsTracker();
+      mockSocialTracker = _MockSocialEventsTracker();
       when(
         () => mockSocialTracker.logFirstCommentIfMilestone(
           userId: any(named: 'userId'),
@@ -71,10 +85,13 @@ void main() {
       ).thenAnswer((_) async => false);
       when(() => mockAnalyticsService.social).thenReturn(mockSocialTracker);
 
-      // Pass both deps explicitly — avoids ServiceLocator entirely
+      mockUserService = _MockUserService();
+      when(() => mockUserService.currentUserProfile).thenReturn(null);
+
       operations = CommentCrudOperations(
         commentsRepository: mockCommentsRepository,
         analyticsService: mockAnalyticsService,
+        userService: mockUserService,
       );
 
       testComment = RecipeComment(
@@ -434,6 +451,71 @@ void main() {
 
         expect(count, equals(1));
       });
+    });
+    group('injected collaborators (BUT-1508)', () {
+      test('the first-comment milestone reads joinedAt from the injected '
+          'profile service', () async {
+        final joined = DateTime(2025, 3, 4);
+        when(() => mockUserService.currentUserProfile).thenReturn(
+          UserProfile(
+            uid: 'user_456',
+            displayName: 'Test User',
+            email: 'test@example.com',
+            joinedAt: joined,
+            lastActiveAt: joined,
+          ),
+        );
+        when(
+          () => mockCommentsRepository.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenAnswer((_) async => testComment);
+
+        await operations.createComment(
+          recipeId: 'recipe_1',
+          content: 'Great recipe!',
+          authorId: 'user_456',
+          authorDisplayName: 'Test User',
+        );
+
+        verify(
+          () => mockSocialTracker.logFirstCommentIfMilestone(
+            userId: 'user_456',
+            joinedAt: joined,
+          ),
+        ).called(1);
+      });
+
+      test(
+        'getComments drops authors blocked by the injected filter',
+        () async {
+          final filtered = CommentCrudOperations(
+            commentsRepository: mockCommentsRepository,
+            analyticsService: mockAnalyticsService,
+            userService: mockUserService,
+            blockedFilter: _StubBlockedUserFilter(const {'blocked_author'}),
+          );
+          final blockedComment = RecipeComment(
+            id: 'comment_2',
+            recipeId: 'recipe_1',
+            authorId: 'blocked_author',
+            authorDisplayName: 'Blocked',
+            text: 'Hidden',
+            createdAt: DateTime.now(),
+          );
+          when(
+            () => mockCommentsRepository.getCommentsForRecipe('recipe_1'),
+          ).thenAnswer((_) async => [testComment, blockedComment]);
+
+          final result = await filtered.getComments(recipeId: 'recipe_1');
+
+          expect(result.map((c) => c.id), ['comment_1']);
+        },
+      );
     });
   });
 }

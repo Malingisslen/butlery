@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
@@ -77,6 +78,7 @@ class UnifiedRecipeService
   final RecipeRepository _recipeRepository;
   final TrashRepository _trashRepository;
   final CommentsRepository? _commentsRepository;
+  final BlockedUserFilter? _blockedUserFilter;
   final RatingsRepository _ratingsRepository;
   final AnalyticsService _analyticsService;
   final PermissionService _permissionService;
@@ -221,6 +223,7 @@ class UnifiedRecipeService
     required TrashRepository trashRepository,
     required FirestoreRepository firestoreRepository,
     CommentsRepository? commentsRepository,
+    BlockedUserFilter? blockedUserFilter,
     required RatingsRepository ratingsRepository,
     required AnalyticsService analyticsService,
     required PermissionService permissionService,
@@ -248,6 +251,7 @@ class UnifiedRecipeService
        _recipeRepository = recipeRepository,
        _trashRepository = trashRepository,
        _commentsRepository = commentsRepository,
+       _blockedUserFilter = blockedUserFilter,
        _ratingsRepository = ratingsRepository,
        _analyticsService = analyticsService,
        _permissionService = permissionService,
@@ -461,6 +465,8 @@ class UnifiedRecipeService
     permissionService: _permissionService,
     userService: _userService,
     activityFeedService: _activityFeedService,
+    commentsRepository: _commentsRepository,
+    blockedUserFilter: _blockedUserFilter,
   );
 
   void _initializeLegacyInterfaces() {

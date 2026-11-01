@@ -6,6 +6,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/services/user_service.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
@@ -30,20 +34,39 @@ class RecipeCommentsManager {
   // Stream controllers for managed streams
   final Map<String, StreamController<List<RecipeComment>>> _commentStreams = {};
 
-  // Module instances (only the ones we use as instances)
-  late final CommentCrudOperations _crudOperations;
+  final CommentsRepository? _commentsRepository;
+  final AnalyticsService _analyticsService;
+  final UserService _userService;
+  final BlockedUserFilter? _blockedUserFilter;
+
+  // Built on first use: callers that never touch comments may be constructed
+  // without a comments repository, and comments without one is a wiring bug.
+  late final CommentCrudOperations _crudOperations = CommentCrudOperations(
+    commentsRepository:
+        _commentsRepository ??
+        (throw StateError('RecipeCommentsManager: no CommentsRepository')),
+    analyticsService: _analyticsService,
+    userService: _userService,
+    blockedFilter: _blockedUserFilter,
+  );
 
   RecipeCommentsManager({
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required List<Recipe> Function() getRecipes,
     required NotificationService? notificationService,
+    required CommentsRepository? commentsRepository,
+    required AnalyticsService analyticsService,
+    required UserService userService,
+    required BlockedUserFilter? blockedUserFilter,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _getRecipes = getRecipes,
-       _notificationService = notificationService {
-    _crudOperations = CommentCrudOperations();
-  }
+       _notificationService = notificationService,
+       _commentsRepository = commentsRepository,
+       _analyticsService = analyticsService,
+       _userService = userService,
+       _blockedUserFilter = blockedUserFilter;
   String? get currentUserId => _getCurrentUserId();
   String get currentUserDisplayName => _getCurrentUserDisplayName().orEmpty();
   List<Recipe> get recipes => _getRecipes();

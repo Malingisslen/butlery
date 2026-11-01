@@ -563,6 +563,8 @@ void main() {
           permissionService: TestServiceLocator.get<PermissionService>(),
           userService: TestServiceLocator.get<UserService>(),
           activityFeedService: FakeActivityFeedService(),
+          commentsRepository: null,
+          blockedUserFilter: null,
           onShareError: (m) => surfaced = m,
         );
 
@@ -648,6 +650,8 @@ void main() {
         permissionService: TestServiceLocator.get<PermissionService>(),
         userService: TestServiceLocator.get<UserService>(),
         activityFeedService: FakeActivityFeedService(),
+        commentsRepository: null,
+        blockedUserFilter: null,
         removeRecipientsFromOwnShares: trim,
       );
 
