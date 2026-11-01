@@ -13772,6 +13772,336 @@ abstract class AppLocalizations {
   /// **'Det gick inte att spara. Försök igen.'**
   String get adminGuestListSaveFailed;
 
+  /// No description provided for @adminNavIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get adminNavIngredients;
+
+  /// No description provided for @adminNavTagRules.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggregler'**
+  String get adminNavTagRules;
+
+  /// No description provided for @adminIngredientsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get adminIngredientsTitle;
+
+  /// No description provided for @adminIngredientsLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar ingredienser …'**
+  String get adminIngredientsLoading;
+
+  /// No description provided for @adminIngredientsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda ingredienserna. Listan kan inte visas förrän laddningen lyckas.'**
+  String get adminIngredientsLoadFailed;
+
+  /// No description provided for @adminIngredientsSearchHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök namn, alias eller id'**
+  String get adminIngredientsSearchHint;
+
+  /// No description provided for @adminIngredientsShownOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar {shown} av {total}'**
+  String adminIngredientsShownOf(int shown, int total);
+
+  /// No description provided for @adminIngredientsLastSynced.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senast synkad: {date}'**
+  String adminIngredientsLastSynced(String date);
+
+  /// No description provided for @adminIngredientsLastSyncedUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senast synkad: okänt'**
+  String get adminIngredientsLastSyncedUnknown;
+
+  /// No description provided for @adminIngredientsNoMatches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen ingrediens matchar filtret'**
+  String get adminIngredientsNoMatches;
+
+  /// No description provided for @adminIngredientsNoTagConfig.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggkonfigurationen är inte laddad, så allergener och koster kan inte visas.'**
+  String get adminIngredientsNoTagConfig;
+
+  /// No description provided for @adminIngredientStatusDraft.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utkast'**
+  String get adminIngredientStatusDraft;
+
+  /// No description provided for @adminIngredientStatusValidated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Validerad'**
+  String get adminIngredientStatusValidated;
+
+  /// No description provided for @adminIngredientStatusVerified.
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifierad'**
+  String get adminIngredientStatusVerified;
+
+  /// No description provided for @adminIngredientStatusNeedsReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behöver granskas'**
+  String get adminIngredientStatusNeedsReview;
+
+  /// No description provided for @adminIngredientStatusOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt'**
+  String get adminIngredientStatusOther;
+
+  /// No description provided for @adminIngredientsFilterAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla'**
+  String get adminIngredientsFilterAll;
+
+  /// No description provided for @adminIngredientsFilterGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get adminIngredientsFilterGroup;
+
+  /// No description provided for @adminIngredientsFilterAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergen'**
+  String get adminIngredientsFilterAllergen;
+
+  /// No description provided for @adminIngredientsFilterNoAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ger ingen allergen'**
+  String get adminIngredientsFilterNoAllergen;
+
+  /// No description provided for @adminIngredientsFilterMissingPrice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Saknar pris'**
+  String get adminIngredientsFilterMissingPrice;
+
+  /// No description provided for @adminIngredientsAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get adminIngredientsAllergens;
+
+  /// No description provided for @adminIngredientsBrokenDiets.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bryter kost'**
+  String get adminIngredientsBrokenDiets;
+
+  /// No description provided for @adminIngredientsNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga'**
+  String get adminIngredientsNone;
+
+  /// No description provided for @adminIngredientFieldId.
+  ///
+  /// In sv, this message translates to:
+  /// **'Id'**
+  String get adminIngredientFieldId;
+
+  /// No description provided for @adminIngredientFieldSwedish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svenskt namn'**
+  String get adminIngredientFieldSwedish;
+
+  /// No description provided for @adminIngredientFieldEnglish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Engelskt namn'**
+  String get adminIngredientFieldEnglish;
+
+  /// No description provided for @adminIngredientFieldGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get adminIngredientFieldGroup;
+
+  /// No description provided for @adminIngredientFieldStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Status'**
+  String get adminIngredientFieldStatus;
+
+  /// No description provided for @adminIngredientFieldProperties.
+  ///
+  /// In sv, this message translates to:
+  /// **'Egenskaper'**
+  String get adminIngredientFieldProperties;
+
+  /// No description provided for @adminIngredientFieldAliasesSv.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alias (svenska)'**
+  String get adminIngredientFieldAliasesSv;
+
+  /// No description provided for @adminIngredientFieldAliasesEn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alias (engelska)'**
+  String get adminIngredientFieldAliasesEn;
+
+  /// No description provided for @adminIngredientFieldSearchTerms.
+  ///
+  /// In sv, this message translates to:
+  /// **'Söktermer'**
+  String get adminIngredientFieldSearchTerms;
+
+  /// No description provided for @adminIngredientFieldLearnedAliases.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inlärda alias'**
+  String get adminIngredientFieldLearnedAliases;
+
+  /// No description provided for @adminIngredientFieldSeasons.
+  ///
+  /// In sv, this message translates to:
+  /// **'Säsong'**
+  String get adminIngredientFieldSeasons;
+
+  /// No description provided for @adminIngredientFieldPriceCategory.
+  ///
+  /// In sv, this message translates to:
+  /// **'Prisklass'**
+  String get adminIngredientFieldPriceCategory;
+
+  /// No description provided for @adminIngredientFieldAvgPrice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snittpris (kr)'**
+  String get adminIngredientFieldAvgPrice;
+
+  /// No description provided for @adminIngredientFieldCarbon.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klimatavtryck'**
+  String get adminIngredientFieldCarbon;
+
+  /// No description provided for @adminIngredientFieldNotesSv.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anteckning (svenska)'**
+  String get adminIngredientFieldNotesSv;
+
+  /// No description provided for @adminIngredientFieldNotesEn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anteckning (engelska)'**
+  String get adminIngredientFieldNotesEn;
+
+  /// No description provided for @adminIngredientFieldStorage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förvaring'**
+  String get adminIngredientFieldStorage;
+
+  /// No description provided for @adminIngredientFieldUnit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enhet'**
+  String get adminIngredientFieldUnit;
+
+  /// No description provided for @adminIngredientFieldCompound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sammansatt namn'**
+  String get adminIngredientFieldCompound;
+
+  /// No description provided for @adminIngredientFieldCreated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapad'**
+  String get adminIngredientFieldCreated;
+
+  /// No description provided for @adminIngredientFieldUpdated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdaterad'**
+  String get adminIngredientFieldUpdated;
+
+  /// No description provided for @adminIngredientYes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ja'**
+  String get adminIngredientYes;
+
+  /// No description provided for @adminIngredientNo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nej'**
+  String get adminIngredientNo;
+
+  /// No description provided for @adminTagRulesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggregler'**
+  String get adminTagRulesTitle;
+
+  /// No description provided for @adminTagRulesLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggkonfigurationen är inte laddad.'**
+  String get adminTagRulesLoadFailed;
+
+  /// No description provided for @adminTagRulesAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get adminTagRulesAllergens;
+
+  /// No description provided for @adminTagRulesDiets.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koster'**
+  String get adminTagRulesDiets;
+
+  /// No description provided for @adminTagRulesTriggers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utlöses av'**
+  String get adminTagRulesTriggers;
+
+  /// No description provided for @adminTagRulesEuAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'EU-allergen'**
+  String get adminTagRulesEuAllergen;
+
+  /// No description provided for @adminTagRulesExcluded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bryts av'**
+  String get adminTagRulesExcluded;
+
+  /// No description provided for @adminTagRulesRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräver'**
+  String get adminTagRulesRequired;
+
   /// No description provided for @adminOpsTitle.
   ///
   /// In sv, this message translates to:

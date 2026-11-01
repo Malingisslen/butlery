@@ -5790,6 +5790,78 @@
   "adminGuestListInvalidEmail": "Enter a full email address, for example name@example.com.",
   "adminGuestListDuplicate": "That address is already invited.",
   "adminGuestListSaveFailed": "Couldn't save. Try again.",
+  "adminNavIngredients": "Ingredients",
+  "adminNavTagRules": "Tag rules",
+  "adminIngredientsTitle": "Ingredients",
+  "adminIngredientsLoading": "Loading ingredients …",
+  "adminIngredientsLoadFailed": "Couldn't load the ingredients. The list can't be shown until loading succeeds.",
+  "adminIngredientsSearchHint": "Search name, alias or id",
+  "adminIngredientsShownOf": "Showing {shown} of {total}",
+  "@adminIngredientsShownOf": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "adminIngredientsLastSynced": "Last synced: {date}",
+  "@adminIngredientsLastSynced": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminIngredientsLastSyncedUnknown": "Last synced: unknown",
+  "adminIngredientsNoMatches": "No ingredient matches the filter",
+  "adminIngredientsNoTagConfig": "The tag configuration isn't loaded, so allergens and diets can't be shown.",
+  "adminIngredientStatusDraft": "Draft",
+  "adminIngredientStatusValidated": "Validated",
+  "adminIngredientStatusVerified": "Verified",
+  "adminIngredientStatusNeedsReview": "Needs review",
+  "adminIngredientStatusOther": "Other",
+  "adminIngredientsFilterAll": "All",
+  "adminIngredientsFilterGroup": "Group",
+  "adminIngredientsFilterAllergen": "Allergen",
+  "adminIngredientsFilterNoAllergen": "Gives no allergen",
+  "adminIngredientsFilterMissingPrice": "Missing price",
+  "adminIngredientsAllergens": "Allergens",
+  "adminIngredientsBrokenDiets": "Breaks diets",
+  "adminIngredientsNone": "None",
+  "adminIngredientFieldId": "Id",
+  "adminIngredientFieldSwedish": "Swedish name",
+  "adminIngredientFieldEnglish": "English name",
+  "adminIngredientFieldGroup": "Group",
+  "adminIngredientFieldStatus": "Status",
+  "adminIngredientFieldProperties": "Properties",
+  "adminIngredientFieldAliasesSv": "Aliases (Swedish)",
+  "adminIngredientFieldAliasesEn": "Aliases (English)",
+  "adminIngredientFieldSearchTerms": "Search terms",
+  "adminIngredientFieldLearnedAliases": "Learned aliases",
+  "adminIngredientFieldSeasons": "Season",
+  "adminIngredientFieldPriceCategory": "Price category",
+  "adminIngredientFieldAvgPrice": "Average price (SEK)",
+  "adminIngredientFieldCarbon": "Carbon footprint",
+  "adminIngredientFieldNotesSv": "Notes (Swedish)",
+  "adminIngredientFieldNotesEn": "Notes (English)",
+  "adminIngredientFieldStorage": "Storage",
+  "adminIngredientFieldUnit": "Unit",
+  "adminIngredientFieldCompound": "Compound name",
+  "adminIngredientFieldCreated": "Created",
+  "adminIngredientFieldUpdated": "Updated",
+  "adminIngredientYes": "Yes",
+  "adminIngredientNo": "No",
+  "adminTagRulesTitle": "Tag rules",
+  "adminTagRulesLoadFailed": "The tag configuration isn't loaded.",
+  "adminTagRulesAllergens": "Allergens",
+  "adminTagRulesDiets": "Diets",
+  "adminTagRulesTriggers": "Triggered by",
+  "adminTagRulesEuAllergen": "EU allergen",
+  "adminTagRulesExcluded": "Broken by",
+  "adminTagRulesRequired": "Requires",
   "adminOpsTitle": "Operations",
   "adminOpsEmpty": "No operations events yet",
   "adminOpsColType": "Type",

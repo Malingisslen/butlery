@@ -8866,6 +8866,177 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminGuestListSaveFailed => 'Couldn\'t save. Try again.';
 
   @override
+  String get adminNavIngredients => 'Ingredients';
+
+  @override
+  String get adminNavTagRules => 'Tag rules';
+
+  @override
+  String get adminIngredientsTitle => 'Ingredients';
+
+  @override
+  String get adminIngredientsLoading => 'Loading ingredients …';
+
+  @override
+  String get adminIngredientsLoadFailed =>
+      'Couldn\'t load the ingredients. The list can\'t be shown until loading succeeds.';
+
+  @override
+  String get adminIngredientsSearchHint => 'Search name, alias or id';
+
+  @override
+  String adminIngredientsShownOf(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String adminIngredientsLastSynced(String date) {
+    return 'Last synced: $date';
+  }
+
+  @override
+  String get adminIngredientsLastSyncedUnknown => 'Last synced: unknown';
+
+  @override
+  String get adminIngredientsNoMatches => 'No ingredient matches the filter';
+
+  @override
+  String get adminIngredientsNoTagConfig =>
+      'The tag configuration isn\'t loaded, so allergens and diets can\'t be shown.';
+
+  @override
+  String get adminIngredientStatusDraft => 'Draft';
+
+  @override
+  String get adminIngredientStatusValidated => 'Validated';
+
+  @override
+  String get adminIngredientStatusVerified => 'Verified';
+
+  @override
+  String get adminIngredientStatusNeedsReview => 'Needs review';
+
+  @override
+  String get adminIngredientStatusOther => 'Other';
+
+  @override
+  String get adminIngredientsFilterAll => 'All';
+
+  @override
+  String get adminIngredientsFilterGroup => 'Group';
+
+  @override
+  String get adminIngredientsFilterAllergen => 'Allergen';
+
+  @override
+  String get adminIngredientsFilterNoAllergen => 'Gives no allergen';
+
+  @override
+  String get adminIngredientsFilterMissingPrice => 'Missing price';
+
+  @override
+  String get adminIngredientsAllergens => 'Allergens';
+
+  @override
+  String get adminIngredientsBrokenDiets => 'Breaks diets';
+
+  @override
+  String get adminIngredientsNone => 'None';
+
+  @override
+  String get adminIngredientFieldId => 'Id';
+
+  @override
+  String get adminIngredientFieldSwedish => 'Swedish name';
+
+  @override
+  String get adminIngredientFieldEnglish => 'English name';
+
+  @override
+  String get adminIngredientFieldGroup => 'Group';
+
+  @override
+  String get adminIngredientFieldStatus => 'Status';
+
+  @override
+  String get adminIngredientFieldProperties => 'Properties';
+
+  @override
+  String get adminIngredientFieldAliasesSv => 'Aliases (Swedish)';
+
+  @override
+  String get adminIngredientFieldAliasesEn => 'Aliases (English)';
+
+  @override
+  String get adminIngredientFieldSearchTerms => 'Search terms';
+
+  @override
+  String get adminIngredientFieldLearnedAliases => 'Learned aliases';
+
+  @override
+  String get adminIngredientFieldSeasons => 'Season';
+
+  @override
+  String get adminIngredientFieldPriceCategory => 'Price category';
+
+  @override
+  String get adminIngredientFieldAvgPrice => 'Average price (SEK)';
+
+  @override
+  String get adminIngredientFieldCarbon => 'Carbon footprint';
+
+  @override
+  String get adminIngredientFieldNotesSv => 'Notes (Swedish)';
+
+  @override
+  String get adminIngredientFieldNotesEn => 'Notes (English)';
+
+  @override
+  String get adminIngredientFieldStorage => 'Storage';
+
+  @override
+  String get adminIngredientFieldUnit => 'Unit';
+
+  @override
+  String get adminIngredientFieldCompound => 'Compound name';
+
+  @override
+  String get adminIngredientFieldCreated => 'Created';
+
+  @override
+  String get adminIngredientFieldUpdated => 'Updated';
+
+  @override
+  String get adminIngredientYes => 'Yes';
+
+  @override
+  String get adminIngredientNo => 'No';
+
+  @override
+  String get adminTagRulesTitle => 'Tag rules';
+
+  @override
+  String get adminTagRulesLoadFailed => 'The tag configuration isn\'t loaded.';
+
+  @override
+  String get adminTagRulesAllergens => 'Allergens';
+
+  @override
+  String get adminTagRulesDiets => 'Diets';
+
+  @override
+  String get adminTagRulesTriggers => 'Triggered by';
+
+  @override
+  String get adminTagRulesEuAllergen => 'EU allergen';
+
+  @override
+  String get adminTagRulesExcluded => 'Broken by';
+
+  @override
+  String get adminTagRulesRequired => 'Requires';
+
+  @override
   String get adminOpsTitle => 'Operations';
 
   @override

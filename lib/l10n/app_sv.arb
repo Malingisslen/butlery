@@ -5824,6 +5824,78 @@
   "adminGuestListInvalidEmail": "Skriv en hel e-postadress, till exempel namn@exempel.se.",
   "adminGuestListDuplicate": "Den adressen är redan inbjuden.",
   "adminGuestListSaveFailed": "Det gick inte att spara. Försök igen.",
+  "adminNavIngredients": "Ingredienser",
+  "adminNavTagRules": "Taggregler",
+  "adminIngredientsTitle": "Ingredienser",
+  "adminIngredientsLoading": "Laddar ingredienser …",
+  "adminIngredientsLoadFailed": "Kunde inte ladda ingredienserna. Listan kan inte visas förrän laddningen lyckas.",
+  "adminIngredientsSearchHint": "Sök namn, alias eller id",
+  "adminIngredientsShownOf": "Visar {shown} av {total}",
+  "@adminIngredientsShownOf": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "adminIngredientsLastSynced": "Senast synkad: {date}",
+  "@adminIngredientsLastSynced": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminIngredientsLastSyncedUnknown": "Senast synkad: okänt",
+  "adminIngredientsNoMatches": "Ingen ingrediens matchar filtret",
+  "adminIngredientsNoTagConfig": "Taggkonfigurationen är inte laddad, så allergener och koster kan inte visas.",
+  "adminIngredientStatusDraft": "Utkast",
+  "adminIngredientStatusValidated": "Validerad",
+  "adminIngredientStatusVerified": "Verifierad",
+  "adminIngredientStatusNeedsReview": "Behöver granskas",
+  "adminIngredientStatusOther": "Övrigt",
+  "adminIngredientsFilterAll": "Alla",
+  "adminIngredientsFilterGroup": "Grupp",
+  "adminIngredientsFilterAllergen": "Allergen",
+  "adminIngredientsFilterNoAllergen": "Ger ingen allergen",
+  "adminIngredientsFilterMissingPrice": "Saknar pris",
+  "adminIngredientsAllergens": "Allergener",
+  "adminIngredientsBrokenDiets": "Bryter kost",
+  "adminIngredientsNone": "Inga",
+  "adminIngredientFieldId": "Id",
+  "adminIngredientFieldSwedish": "Svenskt namn",
+  "adminIngredientFieldEnglish": "Engelskt namn",
+  "adminIngredientFieldGroup": "Grupp",
+  "adminIngredientFieldStatus": "Status",
+  "adminIngredientFieldProperties": "Egenskaper",
+  "adminIngredientFieldAliasesSv": "Alias (svenska)",
+  "adminIngredientFieldAliasesEn": "Alias (engelska)",
+  "adminIngredientFieldSearchTerms": "Söktermer",
+  "adminIngredientFieldLearnedAliases": "Inlärda alias",
+  "adminIngredientFieldSeasons": "Säsong",
+  "adminIngredientFieldPriceCategory": "Prisklass",
+  "adminIngredientFieldAvgPrice": "Snittpris (kr)",
+  "adminIngredientFieldCarbon": "Klimatavtryck",
+  "adminIngredientFieldNotesSv": "Anteckning (svenska)",
+  "adminIngredientFieldNotesEn": "Anteckning (engelska)",
+  "adminIngredientFieldStorage": "Förvaring",
+  "adminIngredientFieldUnit": "Enhet",
+  "adminIngredientFieldCompound": "Sammansatt namn",
+  "adminIngredientFieldCreated": "Skapad",
+  "adminIngredientFieldUpdated": "Uppdaterad",
+  "adminIngredientYes": "Ja",
+  "adminIngredientNo": "Nej",
+  "adminTagRulesTitle": "Taggregler",
+  "adminTagRulesLoadFailed": "Taggkonfigurationen är inte laddad.",
+  "adminTagRulesAllergens": "Allergener",
+  "adminTagRulesDiets": "Koster",
+  "adminTagRulesTriggers": "Utlöses av",
+  "adminTagRulesEuAllergen": "EU-allergen",
+  "adminTagRulesExcluded": "Bryts av",
+  "adminTagRulesRequired": "Kräver",
   "adminOpsTitle": "Drift",
   "adminOpsEmpty": "Inga driftshändelser än",
   "adminOpsColType": "Typ",
