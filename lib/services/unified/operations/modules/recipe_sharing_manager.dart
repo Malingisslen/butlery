@@ -11,7 +11,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -83,6 +82,9 @@ class RecipeSharingManager {
   final Future<bool> Function(Recipe) _updateRecipe;
   final NotificationService? _notificationService;
   final FirestoreRepository _firestoreRepository;
+  final PermissionService _permissionService;
+  final UserService _userService;
+  final ActivityFeedService _activityFeedService;
 
   /// BUT-1056: optional sink for user-facing share errors (e.g. cap reached).
   /// Mirrors the `_setError` pattern in `SocialRecipeSharingService` so the
@@ -99,7 +101,10 @@ class RecipeSharingManager {
     required CreatePersonalRecipeFn createPersonalRecipe,
     required Future<bool> Function(Recipe) updateRecipe,
     required NotificationService? notificationService,
-    FirestoreRepository? firestoreRepository,
+    required FirestoreRepository firestoreRepository,
+    required PermissionService permissionService,
+    required UserService userService,
+    required ActivityFeedService activityFeedService,
     void Function(String)? onShareError,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
@@ -109,8 +114,10 @@ class RecipeSharingManager {
        _updateRecipe = updateRecipe,
        _notificationService = notificationService,
        _onShareError = onShareError,
-       _firestoreRepository =
-           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+       _firestoreRepository = firestoreRepository,
+       _permissionService = permissionService,
+       _userService = userService,
+       _activityFeedService = activityFeedService;
 
   /// Share a personal recipe with other users (convert to collaborative)
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
@@ -262,7 +269,7 @@ class RecipeSharingManager {
 
       // Emit activity event (fire-and-forget)
       try {
-        ServiceLocator.get<ActivityFeedService>().emitEvent(
+        _activityFeedService.emitEvent(
           ActivityEventType.shared,
           finalRecipeId,
           recipeToShare.title,
@@ -703,9 +710,7 @@ class RecipeSharingManager {
     List<String>? groupIds,
   }) async {
     try {
-      final permissionService = ServiceLocator.get<PermissionService>();
-
-      final currentUserId = permissionService.currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) {
         AppLogger.warning(
           'Cannot write to shared_recipes: No authenticated user',
@@ -772,14 +777,10 @@ class RecipeSharingManager {
         // member reads and lands verbatim in their GDPR export, so an
         // Auth-sourced stamp would be both unconsented and un-erasable.
         //
-        // `tryGet` keeps the module working before/without the service
-        // graph; an unresolved name stamps empty (readers show their own
+        // An unresolved name stamps empty (readers show their own
         // "unknown" label), never an Auth-sourced one.
-        'sharedByDisplayName':
-            (ServiceLocator.tryGet<UserService>()?.profileDisplayName)
-                .orEmpty(),
-        'sharedByAvatarUrl':
-            ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
+        'sharedByDisplayName': _userService.profileDisplayName.orEmpty(),
+        'sharedByAvatarUrl': _userService.profileAvatarUrl,
         // The single membership field. `firestore.rules` grants
         // recipient read on this, and it is what
         // `BaseSharedContentRepository`, the GDPR export and the deletion

@@ -21,6 +21,9 @@ import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -76,6 +79,9 @@ class UnifiedRecipeService
   final CommentsRepository? _commentsRepository;
   final RatingsRepository _ratingsRepository;
   final AnalyticsService _analyticsService;
+  final PermissionService _permissionService;
+  final UserService _userService;
+  final ActivityFeedService _activityFeedService;
   final NotificationsRepository? _notificationsRepository;
   final IngredientIdResolver? _ingredientIdResolver;
   final FirestoreRepository _firestoreRepository;
@@ -217,6 +223,9 @@ class UnifiedRecipeService
     CommentsRepository? commentsRepository,
     required RatingsRepository ratingsRepository,
     required AnalyticsService analyticsService,
+    required PermissionService permissionService,
+    required UserService userService,
+    required ActivityFeedService activityFeedService,
     NotificationsRepository? notificationsRepository,
     IngredientIdResolver? ingredientIdResolver,
     TaggingService? Function()? getTaggingService,
@@ -241,6 +250,9 @@ class UnifiedRecipeService
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
        _analyticsService = analyticsService,
+       _permissionService = permissionService,
+       _userService = userService,
+       _activityFeedService = activityFeedService,
        _notificationsRepository = notificationsRepository {
     // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
@@ -446,6 +458,9 @@ class UnifiedRecipeService
     firestoreRepository: _firestoreRepository,
     analyticsService: _analyticsService,
     notificationService: _getNotificationService?.call(),
+    permissionService: _permissionService,
+    userService: _userService,
+    activityFeedService: _activityFeedService,
   );
 
   void _initializeLegacyInterfaces() {
@@ -456,6 +471,7 @@ class UnifiedRecipeService
       createCollaborativeRecipe: createCollaborativeRecipe,
       createPersonalRecipe: createPersonalRecipe,
       deleteRecipe: deleteRecipe,
+      permissionService: _permissionService,
     );
 
     social = _buildSocialOperations();

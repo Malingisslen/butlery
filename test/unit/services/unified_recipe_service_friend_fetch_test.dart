@@ -15,6 +15,8 @@ import 'package:butlery/repositories/firebase/firebase_recipe_presence_repositor
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -72,6 +74,9 @@ class _FakeUnifiedRecipeService extends UnifiedRecipeService {
     required super.commentsRepository,
     required super.ratingsRepository,
     required super.analyticsService,
+    required super.permissionService,
+    required super.userService,
+    required super.activityFeedService,
     required super.notificationsRepository,
     required super.firestoreRepository,
     required super.trashRepository,
@@ -162,6 +167,9 @@ void main() {
         commentsRepository: mockCommentsRepository,
         ratingsRepository: mockRatingsRepository,
         analyticsService: mocks.MockAnalyticsService(),
+        permissionService: TestServiceLocator.get<PermissionService>(),
+        userService: TestServiceLocator.get<UserService>(),
+        activityFeedService: mocks.FakeActivityFeedService(),
         notificationsRepository: mockNotificationsRepository,
         firestoreRepository: mockFirestoreRepository,
         trashRepository: mocks.FakeTrashRepository(),

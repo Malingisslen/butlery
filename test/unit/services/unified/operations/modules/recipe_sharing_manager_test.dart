@@ -26,6 +26,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import '../../../../../test_support/base_unit_test.dart';
@@ -38,6 +40,7 @@ void main() {
     late MockUnifiedRecipeService mockParentService;
     late MockNotificationService mockNotificationService;
     late RecipeSharingManager sharingManager;
+    late _CapturingActivityFeedService activityFeed;
     late List<Recipe> savedRecipes;
     late Recipe testPersonalRecipe;
     late Recipe testDirtyTitleRecipe;
@@ -84,6 +87,7 @@ void main() {
       // Create mocks
       mockParentService = MockUnifiedRecipeService();
       mockNotificationService = MockNotificationService();
+      activityFeed = _CapturingActivityFeedService();
 
       // Create sharing manager instance
       sharingManager = RecipeSharingManager(
@@ -98,6 +102,10 @@ void main() {
           return true;
         },
         notificationService: mockNotificationService,
+        firestoreRepository: _locatorFirestore(),
+        permissionService: _locatorPermissions(),
+        userService: _locatorUsers(),
+        activityFeedService: activityFeed,
       );
 
       // Create test data
@@ -269,6 +277,77 @@ void main() {
             actions: any(named: 'actions'),
           ),
         ).called(1);
+      });
+
+      group('injected dependencies (BUT-1508)', () {
+        void stubNotifications() {
+          when(
+            () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+              imageUrl: any(named: 'imageUrl'),
+              actions: any(named: 'actions'),
+            ),
+          ).thenAnswer((_) async {});
+        }
+
+        test('a share is announced on the injected activity feed', () async {
+          mockParentService.setCollaborativeState(shouldSucceed: true);
+          stubNotifications();
+
+          final sharedId = await sharingManager.shareRecipe(
+            recipeId: 'personal_1',
+            memberIds: ['user_456'],
+            memberDisplayNames: {'user_456': 'Member One'},
+          );
+
+          expect(sharedId, isNotNull);
+          expect(activityFeed.events, [
+            (type: ActivityEventType.shared, recipeId: sharedId!),
+          ]);
+        });
+
+        test('the name stamped on shared_content comes from the injected '
+            'profile service, not the one in the locator', () async {
+          final inLocator =
+              app_provider.ServiceLocator.get<UserService>() as MockUserService;
+          when(() => inLocator.profileDisplayName).thenReturn('Fel namn');
+          when(() => inLocator.profileAvatarUrl).thenReturn(null);
+          final injected = MockUserService();
+          when(() => injected.profileDisplayName).thenReturn('Rätt namn');
+          when(() => injected.profileAvatarUrl).thenReturn(null);
+          mockParentService.setCollaborativeState(shouldSucceed: true);
+          stubNotifications();
+
+          final manager = RecipeSharingManager(
+            getCurrentUserId: () => mockParentService.currentUserId,
+            getCurrentUserDisplayName: () =>
+                mockParentService.currentUserDisplayName,
+            getRecipes: () => mockParentService.recipes,
+            createCollaborativeRecipe:
+                mockParentService.createCollaborativeRecipe,
+            createPersonalRecipe: mockParentService.createPersonalRecipe,
+            updateRecipe: (_) async => true,
+            notificationService: mockNotificationService,
+            firestoreRepository: _locatorFirestore(),
+            permissionService: _locatorPermissions(),
+            userService: injected,
+            activityFeedService: activityFeed,
+          );
+          await manager.shareRecipe(
+            recipeId: 'personal_1',
+            memberIds: ['user_456'],
+            memberDisplayNames: {'user_456': 'Member One'},
+          );
+
+          final repository = _locatorFirestore() as FakeFirestoreRepository;
+          final docs = await repository.collection('shared_content').get();
+          expect(docs.docs, isNotEmpty);
+          expect(docs.docs.first.data()['sharedByDisplayName'], 'Rätt namn');
+        });
       });
 
       /// BUT-1775, the BUT-1705/BUT-1736 class. The name written here lands on
@@ -483,6 +562,9 @@ void main() {
             updateRecipe: (_) async => true,
             notificationService: mockNotificationService,
             firestoreRepository: repository,
+            permissionService: _locatorPermissions(),
+            userService: _locatorUsers(),
+            activityFeedService: activityFeed,
           );
 
           await manager.shareRecipe(
@@ -712,6 +794,10 @@ void main() {
             createPersonalRecipe: mockParentService.createPersonalRecipe,
             updateRecipe: (_) async => true,
             notificationService: mockNotificationService,
+            firestoreRepository: _locatorFirestore(),
+            permissionService: _locatorPermissions(),
+            userService: _locatorUsers(),
+            activityFeedService: activityFeed,
             onShareError: (msg) => surfacedError = msg,
           );
 
@@ -851,6 +937,10 @@ void main() {
             return true;
           },
           notificationService: mockNotificationService,
+          firestoreRepository: _locatorFirestore(),
+          permissionService: _locatorPermissions(),
+          userService: _locatorUsers(),
+          activityFeedService: activityFeed,
           onShareError: (msg) => surfaced = msg,
         );
 
@@ -900,6 +990,10 @@ void main() {
               },
           updateRecipe: (_) async => true,
           notificationService: mockNotificationService,
+          firestoreRepository: _locatorFirestore(),
+          permissionService: _locatorPermissions(),
+          userService: _locatorUsers(),
+          activityFeedService: activityFeed,
           onShareError: (msg) => surfaced = msg,
         );
 
@@ -945,6 +1039,10 @@ void main() {
               },
           updateRecipe: (_) async => true,
           notificationService: mockNotificationService,
+          firestoreRepository: _locatorFirestore(),
+          permissionService: _locatorPermissions(),
+          userService: _locatorUsers(),
+          activityFeedService: activityFeed,
         );
 
         final newId = await manager.duplicateAndShareRecipe(
@@ -1200,6 +1298,27 @@ class _MockSharedContentDoc extends Mock
 class _MockFirestore extends Mock implements FirebaseFirestore {}
 
 class _MockWriteBatch extends Mock implements WriteBatch {}
+
+FirestoreRepository _locatorFirestore() =>
+    app_provider.ServiceLocator.get<FirestoreRepository>();
+PermissionService _locatorPermissions() =>
+    app_provider.ServiceLocator.get<PermissionService>();
+UserService _locatorUsers() => app_provider.ServiceLocator.get<UserService>();
+
+class _CapturingActivityFeedService extends Fake
+    implements ActivityFeedService {
+  final List<({ActivityEventType type, String recipeId})> events = [];
+
+  @override
+  Future<void> emitEvent(
+    ActivityEventType type,
+    String recipeId,
+    String recipeTitle, {
+    Map<String, dynamic>? extraData,
+  }) async {
+    events.add((type: type, recipeId: recipeId));
+  }
+}
 
 class _CapturingRepository extends Fake implements FirestoreRepository {
   _CapturingRepository(this.docRef) {

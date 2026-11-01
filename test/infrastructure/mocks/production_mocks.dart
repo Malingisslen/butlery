@@ -6,6 +6,8 @@ library;
 
 // ignore_for_file: unused_field
 
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -1672,6 +1674,18 @@ class FakePermissionService extends Fake implements PermissionService {
   }
 
   // Methods left without implementation to allow stubbing
+}
+
+/// Activity feed that records nothing; for code that announces events as a
+/// side effect the test does not look at.
+class FakeActivityFeedService extends Fake implements ActivityFeedService {
+  @override
+  Future<void> emitEvent(
+    ActivityEventType type,
+    String recipeId,
+    String recipeTitle, {
+    Map<String, dynamic>? extraData,
+  }) async {}
 }
 
 /// Mock implementation of UserService

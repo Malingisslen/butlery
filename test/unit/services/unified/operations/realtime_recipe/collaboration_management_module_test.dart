@@ -142,6 +142,7 @@ void main() {
         createCollaborativeRecipe: mockParentService.createCollaborativeRecipe,
         createPersonalRecipe: mockParentService.createPersonalRecipe,
         deleteRecipe: mockParentService.deleteRecipe,
+        permissionService: fakePermissionService,
       );
     });
 

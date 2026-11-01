@@ -85,6 +85,7 @@ import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
 
 // Recipe presence repository (for realtime operations)
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
@@ -280,6 +281,9 @@ class ContentModule implements DIModule {
             : null,
         ratingsRepository: app<RatingsRepository>(),
         analyticsService: app<AnalyticsService>(),
+        permissionService: app<PermissionService>(),
+        userService: app<UserService>(),
+        activityFeedService: app<ActivityFeedService>(),
         notificationsRepository: app.isRegistered<NotificationsRepository>()
             ? app<NotificationsRepository>()
             : null,
