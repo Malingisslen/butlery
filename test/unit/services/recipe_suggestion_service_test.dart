@@ -50,12 +50,22 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
+import '../../infrastructure/builders/user_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart' hide SyncError;
 
 class _MockAuthRepository extends Mock implements auth.AuthRepository {}
+
+class _FakeFriends extends Fake implements UnifiedFriendsService {
+  _FakeFriends(this.friendsList);
+
+  @override
+  final List<UserProfile> friendsList;
+}
 
 class _FailingStore extends Fake implements RecipeSuggestionRepository {
   int calls = 0;
@@ -887,6 +897,37 @@ void main() {
       await service.dismiss(s);
       expect(written, isEmpty);
       expect((await rows()).single.status, RecipeSuggestionStatus.dismissed);
+    });
+  });
+  group('suggesterNameOf', () {
+    final suggestion = RecipeSuggestion.create(
+      recipeId: 'r1',
+      ownerId: _owner,
+      suggesterId: _member,
+      suggestion: const {},
+      at: DateTime.utc(2026, 1, 1),
+    );
+
+    test('returns the trimmed display name of the friend who suggested', () {
+      final friends = _FakeFriends([
+        UserBuilder().withId('other').withName('Olle').build(),
+        UserBuilder().withId(_member).withName('  Mia  ').build(),
+      ]);
+      expect(
+        RecipeSuggestionService.suggesterNameOf(suggestion, friends),
+        'Mia',
+      );
+    });
+
+    test('is empty when the suggester is not a friend', () {
+      final friends = _FakeFriends([
+        UserBuilder().withId('other').withName('Olle').build(),
+      ]);
+      expect(RecipeSuggestionService.suggesterNameOf(suggestion, friends), '');
+    });
+
+    test('is empty when no friends service is registered', () {
+      expect(RecipeSuggestionService.suggesterNameOf(suggestion, null), '');
     });
   });
 }
