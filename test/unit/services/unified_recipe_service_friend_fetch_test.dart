@@ -11,10 +11,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/repositories/interfaces/comments_repository.dart';
-import 'package:butlery/repositories/interfaces/ratings_repository.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -77,6 +73,10 @@ class _FakeUnifiedRecipeService extends UnifiedRecipeService {
     required super.ratingsRepository,
     required super.notificationsRepository,
     required super.firestoreRepository,
+    required super.trashRepository,
+    super.getOfflineService,
+    super.getTaggingService,
+    super.getPersonalTagService,
   });
 
   final Map<String, Recipe> _injectedCache = {};
@@ -133,17 +133,8 @@ void main() {
         ),
       ).thenAnswer((_) => Stream.empty().listen((_) {}));
 
+      // FirebaseSyncManager starts the live sync with its own GetIt lookup.
       TestServiceLocator.registerMock<RecipeRepository>(mockRecipeRepository);
-      TestServiceLocator.registerMock<CommentsRepository>(
-        mockCommentsRepository,
-      );
-      TestServiceLocator.registerMock<RatingsRepository>(mockRatingsRepository);
-      TestServiceLocator.registerMock<NotificationsRepository>(
-        mockNotificationsRepository,
-      );
-      TestServiceLocator.registerMock<FirestoreRepository>(
-        mockFirestoreRepository,
-      );
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
         _MockFirebaseRecipePresenceRepository(),
       );
@@ -157,11 +148,8 @@ void main() {
       when(() => mockAppDatabase.cacheDao).thenReturn(mockCacheDao);
       final mockOfflineService = _MockOfflineService();
       when(() => mockOfflineService.database).thenReturn(mockAppDatabase);
-      TestServiceLocator.registerMock<OfflineService>(mockOfflineService);
-      TestServiceLocator.registerMock<TaggingService>(_MockTaggingService());
-      TestServiceLocator.registerMock<PersonalTagService>(
-        _MockPersonalTagService(),
-      );
+      final mockTaggingService = _MockTaggingService();
+      final mockPersonalTagService = _MockPersonalTagService();
       TestServiceLocator.registerMock<StorageService>(_MockStorageService());
 
       app_provider.ServiceLocator.reset();
@@ -174,6 +162,10 @@ void main() {
         ratingsRepository: mockRatingsRepository,
         notificationsRepository: mockNotificationsRepository,
         firestoreRepository: mockFirestoreRepository,
+        trashRepository: mocks.FakeTrashRepository(),
+        getOfflineService: () => mockOfflineService,
+        getTaggingService: () => mockTaggingService,
+        getPersonalTagService: () => mockPersonalTagService,
       );
     });
 

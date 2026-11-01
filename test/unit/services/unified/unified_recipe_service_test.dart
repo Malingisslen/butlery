@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
@@ -22,7 +23,6 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -48,6 +48,8 @@ class MockFirebaseSharedRecipeRepository extends Mock
 class MockOfflineService extends Mock implements OfflineService {}
 
 class MockTaggingService extends Mock implements TaggingService {}
+
+class _FakeQueuedRecipeWriter extends Fake implements QueuedRecipeWriter {}
 
 class MockPersonalTagService extends Mock implements PersonalTagService {}
 
@@ -161,6 +163,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(RecipeFactory.build());
     registerFallbackValue(SyncOperation.update);
+    registerFallbackValue(_FakeQueuedRecipeWriter());
   });
 
   group('UnifiedRecipeService', () {
@@ -175,6 +178,33 @@ void main() {
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
     late mocks.FakeFirestoreRepository mockFirestoreRepository;
+    late mocks.FakeTrashRepository trashRepository;
+    late MockTaggingService mockTaggingService;
+    late MockPersonalTagService mockPersonalTagService;
+
+    // The service gets its repositories and optional services through the
+    // constructor.
+    UnifiedRecipeService buildService({
+      CommentsRepository? commentsRepository,
+      RatingsRepository? ratingsRepository,
+      NotificationsRepository? notificationsRepository,
+      Future<void> Function(String recipeId, List<String> userIds)?
+      removeRecipientsFromOwnShares,
+      OfflineService? Function()? getOfflineService,
+      TaggingService? Function()? getTaggingService,
+    }) => UnifiedRecipeService(
+      authRepository: mockAuthRepository,
+      recipeRepository: mockRecipeRepository,
+      trashRepository: trashRepository,
+      firestoreRepository: mockFirestoreRepository,
+      commentsRepository: commentsRepository,
+      ratingsRepository: ratingsRepository,
+      notificationsRepository: notificationsRepository,
+      removeRecipientsFromOwnShares: removeRecipientsFromOwnShares,
+      getOfflineService: getOfflineService ?? () => mockOfflineService,
+      getTaggingService: getTaggingService ?? () => mockTaggingService,
+      getPersonalTagService: () => mockPersonalTagService,
+    );
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
@@ -192,6 +222,9 @@ void main() {
       mockRatingsRepository = mocks.MockRatingsRepository();
       mockNotificationsRepository = mocks.MockNotificationsRepository();
       mockFirestoreRepository = mocks.FakeFirestoreRepository();
+      trashRepository = mocks.FakeTrashRepository();
+      mockTaggingService = MockTaggingService();
+      mockPersonalTagService = MockPersonalTagService();
 
       // Setup auth repository defaults - create mock user
       final mockUser = MockFactory.createMockUser(uid: 'test_user_123');
@@ -214,18 +247,8 @@ void main() {
         (_) => Stream.empty().listen((_) {}),
       );
 
-      // Register mocks in test service locator
+      // FirebaseSyncManager starts the live sync with its own GetIt lookup.
       TestServiceLocator.registerMock<RecipeRepository>(mockRecipeRepository);
-      TestServiceLocator.registerMock<CommentsRepository>(
-        mockCommentsRepository,
-      );
-      TestServiceLocator.registerMock<RatingsRepository>(mockRatingsRepository);
-      TestServiceLocator.registerMock<NotificationsRepository>(
-        mockNotificationsRepository,
-      );
-      TestServiceLocator.registerMock<FirestoreRepository>(
-        mockFirestoreRepository,
-      );
 
       // Register mocks for eager ServiceLocator.get<>() calls in constructor chain
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
@@ -271,12 +294,6 @@ void main() {
       when(
         () => mockOfflineService.hasUnsentRecipeWrite(any(), any()),
       ).thenAnswer((_) async => false);
-      TestServiceLocator.registerMock<OfflineService>(mockOfflineService);
-
-      TestServiceLocator.registerMock<TaggingService>(MockTaggingService());
-      TestServiceLocator.registerMock<PersonalTagService>(
-        MockPersonalTagService(),
-      );
       TestServiceLocator.registerMock<StorageService>(MockStorageService());
 
       // Initialize production ServiceLocator bridge so ServiceLocator.get<T>()
@@ -294,13 +311,10 @@ void main() {
       trimCalls.clear();
 
       // Create service with mocked dependencies
-      service = UnifiedRecipeService(
-        authRepository: mockAuthRepository,
-        recipeRepository: mockRecipeRepository,
+      service = buildService(
         commentsRepository: mockCommentsRepository,
         ratingsRepository: mockRatingsRepository,
         notificationsRepository: mockNotificationsRepository,
-        firestoreRepository: mockFirestoreRepository,
         removeRecipientsFromOwnShares: (recipeId, userIds) async {
           trimCalls.add((recipeId: recipeId, userIds: userIds));
         },
@@ -363,6 +377,45 @@ void main() {
       });
     });
 
+    group('injected dependencies (BUT-1508)', () {
+      test('the injected offline queue gets the recipe writer, not one in '
+          'the locator', () async {
+        final injected = MockOfflineService();
+        when(() => injected.database).thenReturn(mockOfflineService.database);
+        when(
+          () => injected.recipesSent,
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => injected.recipesDropped,
+        ).thenAnswer((_) => const Stream.empty());
+        final inLocator = MockOfflineService();
+        TestServiceLocator.registerMock<OfflineService>(inLocator);
+
+        final fresh = buildService(getOfflineService: () => injected);
+        await Future<void>.delayed(Duration.zero);
+
+        verify(() => injected.attachRecipeWriter(any())).called(1);
+        verifyNever(() => inLocator.attachRecipeWriter(any()));
+        fresh.dispose();
+      });
+
+      test('the tagging lookups run when the modules are built, and one that '
+          'throws leaves the service usable', () async {
+        var taggingLookups = 0;
+        final fresh = buildService(
+          getTaggingService: () {
+            taggingLookups++;
+            throw StateError('tagging not registered');
+          },
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(taggingLookups, 1);
+        expect(fresh.error, isNull);
+        fresh.dispose();
+      });
+    });
+
     group('Initial State', () {
       test('should start with empty recipes list', () {
         expect(service.recipes, isEmpty);
@@ -417,10 +470,7 @@ void main() {
         );
 
         // Create new service that will fail
-        final failingService = UnifiedRecipeService(
-          authRepository: mockAuthRepository,
-          recipeRepository: mockRecipeRepository,
-        );
+        final failingService = buildService();
 
         // Act - initialize rethrows, so catch it
         try {
@@ -1076,10 +1126,7 @@ void main() {
 
       test('should filter personal recipes', () {
         // Create a fresh service to ensure no recipes from previous tests
-        final freshService = UnifiedRecipeService(
-          authRepository: mockAuthRepository,
-          recipeRepository: mockRecipeRepository,
-        );
+        final freshService = buildService();
 
         // The getter should work correctly when recipes list is empty
         expect(freshService.personalRecipes, isEmpty);
@@ -1375,13 +1422,10 @@ void main() {
         // Skip cache clearing in unit tests - integration tests handle this
 
         // Create a completely fresh service instance
-        final freshService = UnifiedRecipeService(
-          authRepository: mockAuthRepository,
-          recipeRepository: mockRecipeRepository,
+        final freshService = buildService(
           commentsRepository: mockCommentsRepository,
           ratingsRepository: mockRatingsRepository,
           notificationsRepository: mockNotificationsRepository,
-          firestoreRepository: mockFirestoreRepository,
         );
 
         // Arrange
@@ -1483,10 +1527,7 @@ void main() {
         );
 
         // Create new service with auth stream
-        final testService = UnifiedRecipeService(
-          authRepository: mockAuthRepository,
-          recipeRepository: mockRecipeRepository,
-        );
+        final testService = buildService();
 
         await testService.initialize();
 
