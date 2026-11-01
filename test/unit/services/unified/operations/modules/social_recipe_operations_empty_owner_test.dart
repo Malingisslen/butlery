@@ -10,6 +10,8 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 
@@ -68,6 +70,9 @@ void main() {
           app_provider.ServiceLocator.get<FirestoreRepository>(),
       analyticsService: TestServiceLocator.get<AnalyticsService>(),
       notificationService: null,
+      permissionService: TestServiceLocator.get<PermissionService>(),
+      userService: TestServiceLocator.get<UserService>(),
+      activityFeedService: FakeActivityFeedService(),
     );
     final result = await ops.getLegacySharedRecipes();
     expect(result, hasLength(1));

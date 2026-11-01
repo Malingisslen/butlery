@@ -26,6 +26,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
@@ -202,6 +203,9 @@ void main() {
       commentsRepository: commentsRepository,
       ratingsRepository: ratingsRepository ?? mockRatingsRepository,
       analyticsService: mocks.MockAnalyticsService(),
+      permissionService: TestServiceLocator.get<PermissionService>(),
+      userService: TestServiceLocator.get<UserService>(),
+      activityFeedService: mocks.FakeActivityFeedService(),
       notificationsRepository: notificationsRepository,
       getNotificationService: getNotificationService,
       removeRecipientsFromOwnShares: removeRecipientsFromOwnShares,

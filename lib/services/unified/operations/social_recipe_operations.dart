@@ -10,6 +10,9 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -48,6 +51,9 @@ class SocialRecipeOperations {
     required FirestoreRepository firestoreRepository,
     required AnalyticsService analyticsService,
     required NotificationService? notificationService,
+    required PermissionService permissionService,
+    required UserService userService,
+    required ActivityFeedService activityFeedService,
     void Function(String)? onShareError,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
@@ -64,6 +70,10 @@ class SocialRecipeOperations {
       createPersonalRecipe: createPersonalRecipe,
       updateRecipe: updateRecipe,
       notificationService: _notificationService,
+      firestoreRepository: _firestoreRepository,
+      permissionService: permissionService,
+      userService: userService,
+      activityFeedService: activityFeedService,
       onShareError: onShareError,
     );
     _memberManager = RecipeMemberManager(

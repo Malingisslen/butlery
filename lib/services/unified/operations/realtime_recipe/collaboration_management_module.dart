@@ -3,7 +3,6 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart'
     show CreateCollaborativeRecipeFn, CreatePersonalRecipeFn;
 
@@ -15,16 +14,19 @@ class CollaborationManagementModule {
   final CreateCollaborativeRecipeFn _createCollaborativeRecipe;
   final CreatePersonalRecipeFn _createPersonalRecipe;
   final Future<bool> Function(String) _deleteRecipe;
+  final PermissionService _permissionService;
 
   CollaborationManagementModule({
     required List<Recipe> Function() getRecipes,
     required CreateCollaborativeRecipeFn createCollaborativeRecipe,
     required CreatePersonalRecipeFn createPersonalRecipe,
     required Future<bool> Function(String) deleteRecipe,
+    required PermissionService permissionService,
   }) : _getRecipes = getRecipes,
        _createCollaborativeRecipe = createCollaborativeRecipe,
        _createPersonalRecipe = createPersonalRecipe,
-       _deleteRecipe = deleteRecipe;
+       _deleteRecipe = deleteRecipe,
+       _permissionService = permissionService;
 
   /// Enable collaborative editing for a personal recipe
   Future<bool> enableCollaborativeEditing(
@@ -45,7 +47,7 @@ class CollaborationManagementModule {
         return true;
       }
 
-      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!_permissionService.isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can enable collaborative editing');
         return false;
       }
@@ -106,7 +108,7 @@ class CollaborationManagementModule {
         return true;
       }
 
-      if (!ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId)) {
+      if (!_permissionService.isRecipeOwner(recipeId)) {
         AppLogger.error('Only recipe owner can disable collaborative editing');
         return false;
       }

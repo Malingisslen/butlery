@@ -3,13 +3,6 @@
 /// Most coverage targets the independently-constructible modules:
 /// 1. RecipePermissionHelper — pure permission logic
 /// 2. RecipeDiscoveryService — in-memory recipe filtering
-///
-/// The full `SocialRecipeOperations` constructor creates RecipeSharingManager,
-/// which calls `ServiceLocator.get<FirestoreRepository>()` at construction time.
-/// That is resolvable in tests by bridging the production ServiceLocator to a
-/// `MockDIContainer` (which delegates `.get<T>()` to `TestServiceLocator`) — see
-/// the BUT-1174 group below, which exercises the onShareError DI forwarding the
-/// leaf-level `recipe_sharing_manager_test` structurally cannot reach.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +11,8 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
@@ -490,10 +485,9 @@ void main() {
   //
   // The leaf-level recipe_sharing_manager_test constructs RecipeSharingManager
   // directly with a local sink, so it can't see the DI hop. This group builds
-  // the REAL SocialRecipeOperations (bridging the production ServiceLocator to a
-  // MockDIContainer so RecipeSharingManager's ServiceLocator.get<FirestoreRepository>
-  // resolves) and proves the onShareError callback actually survives the
-  // SocialRecipeOperations → RecipeSharingManager forward. A refactor dropping
+  // the REAL SocialRecipeOperations and proves the onShareError callback
+  // actually survives the SocialRecipeOperations → RecipeSharingManager
+  // forward. A refactor dropping
   // `onShareError: onShareError` in the constructor would turn this red while all
   // manager-level tests stayed green.
   // -----------------------------------------------------------------------
@@ -566,6 +560,9 @@ void main() {
               app_provider.ServiceLocator.get<FirestoreRepository>(),
           analyticsService: TestServiceLocator.get<AnalyticsService>(),
           notificationService: null,
+          permissionService: TestServiceLocator.get<PermissionService>(),
+          userService: TestServiceLocator.get<UserService>(),
+          activityFeedService: FakeActivityFeedService(),
           onShareError: (m) => surfaced = m,
         );
 
@@ -648,6 +645,9 @@ void main() {
             app_provider.ServiceLocator.get<FirestoreRepository>(),
         analyticsService: TestServiceLocator.get<AnalyticsService>(),
         notificationService: null,
+        permissionService: TestServiceLocator.get<PermissionService>(),
+        userService: TestServiceLocator.get<UserService>(),
+        activityFeedService: FakeActivityFeedService(),
         removeRecipientsFromOwnShares: trim,
       );
 
