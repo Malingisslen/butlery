@@ -18,7 +18,6 @@ import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -75,7 +74,10 @@ class FriendsManagementOperations extends BaseService {
   final Future<void> Function(FriendRequest) _updateFriendRequestStatus;
   final Future<void> Function() _refresh;
 
-  late final user_svc.UserService _userService;
+  final user_svc.UserService _userService;
+  final FirebaseBlockRepository _blockRepository;
+  final notif.NotificationService? Function() _getNotificationService;
+  final AnalyticsService? Function() _getAnalyticsService;
 
   FriendsManagementOperations({
     required String? Function() getCurrentUserId,
@@ -94,7 +96,15 @@ class FriendsManagementOperations extends BaseService {
     required Future<void> Function(FriendRequest) syncFriendRequestToFirebase,
     required Future<void> Function(FriendRequest) updateFriendRequestStatus,
     required Future<void> Function() refresh,
-  }) : _getCurrentUserId = getCurrentUserId,
+    required user_svc.UserService userService,
+    required FirebaseBlockRepository blockRepository,
+    notif.NotificationService? Function()? getNotificationService,
+    AnalyticsService? Function()? getAnalyticsService,
+  }) : _userService = userService,
+       _blockRepository = blockRepository,
+       _getNotificationService = getNotificationService ?? (() => null),
+       _getAnalyticsService = getAnalyticsService ?? (() => null),
+       _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _getFriends = getFriends,
        _getIncomingRequests = getIncomingRequests,
@@ -109,21 +119,17 @@ class FriendsManagementOperations extends BaseService {
        _removeFriendInternal = removeFriendInternal,
        _syncFriendRequestToFirebase = syncFriendRequestToFirebase,
        _updateFriendRequestStatus = updateFriendRequestStatus,
-       _refresh = refresh {
-    _userService = ServiceLocator.get<user_svc.UserService>();
-  }
+       _refresh = refresh;
 
-  /// Get NotificationService from DI (registered by MessagingModule)
   notif.NotificationService? get _notificationService =>
-      ServiceLocator.tryGet<notif.NotificationService>();
+      _getNotificationService();
 
   /// Block/unblock analytics live here rather than on FriendsViewModel so that
   /// every caller records them — the settings screen manages its own state and
   /// calls this class directly, and [blockUsers]/[unblockUsers] never go near a
   /// ViewModel at all. Optional because a unit test may stand this class up
   /// without the analytics singleton.
-  AnalyticsService? get _analyticsService =>
-      ServiceLocator.tryGet<AnalyticsService>();
+  AnalyticsService? get _analyticsService => _getAnalyticsService();
 
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
     // Validate input
@@ -372,7 +378,7 @@ class FriendsManagementOperations extends BaseService {
   /// three different things to tell someone who just blocked a person:
   /// protected, protected-but-something-is-left-over, and not protected.
   Future<BlockOutcome> blockUser(String userId) async {
-    final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
+    final blockRepo = _blockRepository;
     try {
       await blockRepo.blockUser(userId);
     } catch (e) {
@@ -459,7 +465,7 @@ class FriendsManagementOperations extends BaseService {
   /// That is the accepted price of not letting telemetry decide what the user
   /// is told, and it is the same trade [blockUser] already makes.
   Future<bool> unblockUser(String userId) async {
-    final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
+    final blockRepo = _blockRepository;
     try {
       // Delete from blocks collection (real-time stream updates in-memory cache)
       await blockRepo.unblockUser(userId);

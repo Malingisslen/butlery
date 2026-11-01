@@ -63,7 +63,9 @@ void main() {
       if (getIt.isRegistered<PermissionService>()) {
         getIt.unregister<PermissionService>();
       }
-      getIt.registerSingleton<PermissionService>(mockPermissionService);
+      // A different instance in the locator: the operations must use the
+      // one they were constructed with.
+      getIt.registerSingleton<PermissionService>(FakePermissionService());
 
       // Create test data
       testCategory1 = FriendCategory(
@@ -165,6 +167,7 @@ void main() {
 
       // Create operations instance with typed deps from mock
       operations = FriendsCategoriesOperations(
+        permissionService: mockPermissionService,
         getCurrentUserId: () => mockParentService.currentUserId,
         getCategoriesList: () => mockParentService.categoriesList,
         getFriendsList: () => mockParentService.friendsList,

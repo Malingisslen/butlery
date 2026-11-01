@@ -55,10 +55,12 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -85,6 +87,11 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
+  final PermissionService _permissionService;
+  final UserService _userService;
+  final FirebaseBlockRepository _blockRepository;
+  final NotificationService? Function()? _getNotificationService;
+  final AnalyticsService? Function()? _getAnalyticsService;
   late final FirebaseFriendsRepository _friendsRepository;
   late final FriendRelationshipRepository _relationshipRepository;
   late final FriendCategoryRepository _categoryRepository;
@@ -112,9 +119,19 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   UnifiedFriendsService({
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
+    required PermissionService permissionService,
+    required UserService userService,
+    required FirebaseBlockRepository blockRepository,
     FirebaseAuditRepository? auditRepository,
+    NotificationService? Function()? getNotificationService,
+    AnalyticsService? Function()? getAnalyticsService,
   }) : _firestoreRepository = firestoreRepository,
-       _authRepository = authRepository {
+       _authRepository = authRepository,
+       _permissionService = permissionService,
+       _userService = userService,
+       _blockRepository = blockRepository,
+       _getNotificationService = getNotificationService,
+       _getAnalyticsService = getAnalyticsService {
     // Forward the firestore instance from the injected repo into the
     // sub-repos so tests can wire a FakeFirebaseFirestore end-to-end
     // without each sub-repo falling through to FirebaseFirestore.instance
@@ -210,8 +227,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   String? get error => _stateManager.error;
   bool get hasError => _stateManager.hasError;
 
-  String? get currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId => _permissionService.currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
   FriendRelationshipRepository get relationshipRepository =>
       _relationshipRepository;
@@ -286,13 +302,16 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     _stateManager = FriendsStateManager(
       repository: _friendsRepository,
       categoryRepository: _categoryRepository,
-      blockRepository: ServiceLocator.get<FirebaseBlockRepository>(),
+      blockRepository: _blockRepository,
     );
 
     // Initialize internal operations
     _internalOps = FriendsInternalOperations(
       categoryRepository: _categoryRepository,
       authRepository: _authRepository,
+      permissionService: _permissionService,
+      friendsRepository: _friendsRepository,
+      userService: _userService,
     );
 
     // Initialize Firebase sync operations
@@ -343,8 +362,13 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
       syncFriendRequestToFirebase: syncFriendRequestToFirebase,
       updateFriendRequestStatus: updateFriendRequestStatus,
       refresh: refresh,
+      userService: _userService,
+      blockRepository: _blockRepository,
+      getNotificationService: _getNotificationService,
+      getAnalyticsService: _getAnalyticsService,
     );
     _categoriesOps = FriendsCategoriesOperations(
+      permissionService: _permissionService,
       getCurrentUserId: () => currentUserId,
       getCategoriesList: () => categoriesList,
       getFriendsList: () => friendsList,
@@ -380,6 +404,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
       getHasError: () => hasError,
       getError: () => error,
       getCategories: () => _categoriesOps,
+      getAnalyticsService: _getAnalyticsService,
     );
     AppLogger.debug('Feature interfaces initialized');
   }

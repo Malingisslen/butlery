@@ -7,7 +7,6 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
@@ -21,13 +20,22 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 class FriendsInternalOperations {
   final FriendCategoryRepository _categoryRepository;
   final AuthRepository _authRepository;
+  final PermissionService _permissionService;
+  final FriendsRepository _friendsRepository;
+  final UserService _userService;
   late final FriendsStateManager _stateManager;
 
   FriendsInternalOperations({
     required FriendCategoryRepository categoryRepository,
     required AuthRepository authRepository,
+    required PermissionService permissionService,
+    required FriendsRepository friendsRepository,
+    required UserService userService,
   }) : _categoryRepository = categoryRepository,
-       _authRepository = authRepository;
+       _authRepository = authRepository,
+       _permissionService = permissionService,
+       _friendsRepository = friendsRepository,
+       _userService = userService;
 
   /// Set state manager reference after initialization
   void setStateManager(FriendsStateManager stateManager) {
@@ -317,8 +325,7 @@ class FriendsInternalOperations {
     required dynamic invitation,
   }) async => false;
   Future<String> createInvitationLinkInternal(String invitationId) async {
-    final userId = ServiceLocator.get<PermissionService>().currentUserId
-        .orEmpty();
+    final userId = _permissionService.currentUserId.orEmpty();
     final longUrl = DeepLinkService.generateFriendInvitationLink(
       invitationId: invitationId,
       fromUserId: userId,
@@ -338,7 +345,7 @@ class FriendsInternalOperations {
     }
 
     try {
-      final repo = ServiceLocator.get<FriendsRepository>();
+      final repo = _friendsRepository;
 
       if (status == GroupInvitationStatus.cancelled) {
         // Sender cancellation: delete the doc (Firestore rules block sender updates)
@@ -365,10 +372,7 @@ class FriendsInternalOperations {
   String? getCurrentUserDisplayNameInternal() {
     try {
       // ✅ FIXED: Fetch real user display name from UserService
-      return ServiceLocator.get<UserService>()
-              .currentUserProfile
-              ?.displayName ??
-          'Unknown';
+      return _userService.currentUserProfile?.displayName ?? 'Unknown';
     } catch (e) {
       AppLogger.warning('Failed to get current user display name: $e');
       return 'Unknown';

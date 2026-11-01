@@ -45,6 +45,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/household_service.dart';
@@ -154,7 +155,16 @@ class SocialModule implements DIModule {
       () => UnifiedFriendsService(
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
+        permissionService: app<PermissionService>(),
+        userService: app<UserService>(),
+        blockRepository: app<FirebaseBlockRepository>(),
         auditRepository: app<FirebaseAuditRepository>(),
+        getNotificationService: () => app.isRegistered<NotificationService>()
+            ? app<NotificationService>()
+            : null,
+        getAnalyticsService: () => app.isRegistered<AnalyticsService>()
+            ? app<AnalyticsService>()
+            : null,
       ),
       dispose: (s) => s.dispose(),
     );

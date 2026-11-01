@@ -4,7 +4,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
@@ -15,6 +14,7 @@ enum MemberRemovalFailure { groupMissing, noPermission, notSaved }
 
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
+  final PermissionService _permissionService;
   final String? Function() _getCurrentUserId;
   final List<FriendCategory> Function() _getCategoriesList;
   final List<UserProfile> Function() _getFriendsList;
@@ -32,6 +32,7 @@ class FriendsCategoriesOperations {
   final FriendsInvitationsOperations Function() _getInvitations;
 
   FriendsCategoriesOperations({
+    required PermissionService permissionService,
     required String? Function() getCurrentUserId,
     required List<FriendCategory> Function() getCategoriesList,
     required List<UserProfile> Function() getFriendsList,
@@ -47,7 +48,8 @@ class FriendsCategoriesOperations {
     required Future<void> Function() refresh,
     required FriendsManagementOperations Function() getManagement,
     required FriendsInvitationsOperations Function() getInvitations,
-  }) : _getCurrentUserId = getCurrentUserId,
+  }) : _permissionService = permissionService,
+       _getCurrentUserId = getCurrentUserId,
        _getCategoriesList = getCategoriesList,
        _getFriendsList = getFriendsList,
        _getFriendCategoryRelationshipsInternal =
@@ -69,7 +71,7 @@ class FriendsCategoriesOperations {
     String? icon,
     List<String>? initialMemberIds,
   }) async {
-    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+    if (!_permissionService.isAuthenticated) {
       AppLogger.warning('Cannot create category: User not logged in');
       return null;
     }
@@ -350,7 +352,7 @@ class FriendsCategoriesOperations {
       return null; // Not an error, just already removed
     }
 
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final currentUserId = _permissionService.currentUserId;
     final isLeaving =
         currentUserId != null &&
         friendId == currentUserId &&
@@ -498,7 +500,7 @@ class FriendsCategoriesOperations {
   }
 
   List<FriendCategory> getMemberCategories() {
-    if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
+    if (!_permissionService.isAuthenticated) return [];
 
     return _getCategoriesList()
         .where((category) => category.memberIds.contains(_getCurrentUserId()))
@@ -572,7 +574,7 @@ class FriendsCategoriesOperations {
   }
 
   bool _canEditCategory(FriendCategory category) {
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final currentUserId = _permissionService.currentUserId;
 
     // Can edit if owner
     if (currentUserId == category.ownerId) {
@@ -580,11 +582,11 @@ class FriendsCategoriesOperations {
     }
 
     // Or if has admin permissions
-    return ServiceLocator.get<PermissionService>().isGroupAdmin(category.id);
+    return _permissionService.isGroupAdmin(category.id);
   }
 
   bool _canDeleteCategory(FriendCategory category) {
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final currentUserId = _permissionService.currentUserId;
 
     // Can delete if owner
     if (currentUserId == category.ownerId) {
@@ -592,7 +594,7 @@ class FriendsCategoriesOperations {
     }
 
     // Or if has delete permissions
-    return ServiceLocator.get<PermissionService>().canDeleteGroup(category.id);
+    return _permissionService.canDeleteGroup(category.id);
   }
 
   // FUTURE IMPLEMENTATION NOTE: Public/private friend categories
