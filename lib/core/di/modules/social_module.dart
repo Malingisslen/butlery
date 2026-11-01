@@ -67,6 +67,7 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -266,6 +267,7 @@ class SocialModule implements DIModule {
         setError: (error) =>
             AppLogger.error('SocialMenuCoordinator error: $error'),
         notifyListeners: () {},
+        userService: userService,
         getMenu: (id) async => menuService.getMenuById(id)?.menuSnapshot,
         saveMenu: (Map<String, List<Recipe>> menu) async {
           try {
@@ -291,6 +293,8 @@ class SocialModule implements DIModule {
             return null;
           }
         },
+        menuService: menuService,
+        getRealtimeMenuService: () => container<RealtimeMenuService>(),
         cacheHelper: app<JsonCacheHelper>(),
       );
     });
@@ -306,6 +310,7 @@ class SocialModule implements DIModule {
         setError: (error) =>
             AppLogger.error('SocialShoppingCoordinator error: $error'),
         notifyListeners: () {},
+        userService: userService,
         getShoppingList: (id) async =>
             shoppingService.lists.where((l) => l.id == id).firstOrNull,
         saveShoppingList: (list) async {
@@ -314,6 +319,10 @@ class SocialModule implements DIModule {
           );
           return null;
         },
+        serviceAdapter: ShoppingListServiceAdapter(
+          shoppingService: shoppingService,
+        ),
+        sharedShoppingRepository: app<FirebaseSharedShoppingRepository>(),
         cacheHelper: app<JsonCacheHelper>(),
       );
     });

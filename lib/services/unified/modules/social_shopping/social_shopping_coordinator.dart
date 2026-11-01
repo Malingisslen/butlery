@@ -16,15 +16,13 @@ import 'package:butlery/repositories/firebase/firebase_shared_shopping_repositor
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/services/unified/modules/social_coordination/base_social_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Shopping list-specific service adapter for shopping list operations
 class ShoppingListServiceAdapter {
   final UnifiedShoppingService _shoppingService;
 
-  ShoppingListServiceAdapter({UnifiedShoppingService? shoppingService})
-    : _shoppingService =
-          shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
+  ShoppingListServiceAdapter({required UnifiedShoppingService shoppingService})
+    : _shoppingService = shoppingService;
 
   Future<UnifiedShoppingList?> getShoppingListById(String listId) async {
     try {
@@ -56,7 +54,7 @@ class SocialShoppingCoordinator
 
   // Shopping list-specific dependencies
   final ShoppingListServiceAdapter _serviceAdapter;
-  late final FirebaseSharedShoppingRepository _sharedShoppingRepository;
+  final FirebaseSharedShoppingRepository _sharedShoppingRepository;
   final Future<UnifiedShoppingList?> Function(String) _getShoppingList;
   final Future<String?> Function(UnifiedShoppingList) _saveShoppingList;
 
@@ -74,17 +72,16 @@ class SocialShoppingCoordinator
     required super.getCurrentUserDisplayName,
     required super.setError,
     required super.notifyListeners,
+    required super.userService,
     required Future<UnifiedShoppingList?> Function(String) getShoppingList,
     required Future<String?> Function(UnifiedShoppingList) saveShoppingList,
+    required ShoppingListServiceAdapter serviceAdapter,
+    required FirebaseSharedShoppingRepository sharedShoppingRepository,
     JsonCacheHelper? cacheHelper,
-    ShoppingListServiceAdapter? serviceAdapter,
-  }) : _serviceAdapter = serviceAdapter ?? ShoppingListServiceAdapter(),
+  }) : _serviceAdapter = serviceAdapter,
+       _sharedShoppingRepository = sharedShoppingRepository,
        _getShoppingList = getShoppingList,
        _saveShoppingList = saveShoppingList {
-    // Initialize SharedShoppingList repository from DI
-    _sharedShoppingRepository =
-        ServiceLocator.get<FirebaseSharedShoppingRepository>();
-
     AppLogger.info(
       '✅ SocialShoppingCoordinator initialized for shopping list sharing and collaboration using $_serviceAdapter',
     );

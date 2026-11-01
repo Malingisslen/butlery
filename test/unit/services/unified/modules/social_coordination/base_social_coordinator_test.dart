@@ -179,6 +179,7 @@ class _TestSocialCoordinator
     required super.getCurrentUserDisplayName,
     required super.setError,
     required super.notifyListeners,
+    required super.userService,
     required BaseSharedContentRepository<_TestShared> repo,
   }) : _repo = repo;
 
@@ -276,9 +277,9 @@ class _TestSocialCoordinator
 }
 
 // ============================================================================
-// DI shim: production_mocks expects ServiceLocator to be initialised so
-// createInvitation can fetch the UserService. We register a minimal mock
-// container that returns a MockUserService.
+// Decoy container: the coordinator takes its UserService in the constructor.
+// The locator holds a different one, with no profile, so a lookup that comes
+// back would make every invitation in this file fail.
 // ============================================================================
 
 class _StubDIContainer extends Mock implements DIContainer {
@@ -315,6 +316,7 @@ void main() {
     late _TestSocialCoordinator coordinator;
     late _MockSharedRepo mockRepo;
     late _FakeUserService fakeUserService;
+    late _FakeUserService decoyUserService;
 
     String? currentUserId;
     String? currentUserDisplayName;
@@ -329,11 +331,18 @@ void main() {
       notifyCount = 0;
       errors.clear();
 
-      // The user-profile lookup inside createInvitation goes through
-      // ServiceLocator.get<UserService>(). Stand up a tiny container with
-      // just that one binding.
+      decoyUserService = _FakeUserService()
+        ..profilesToReturn = [
+          UserProfile(
+            uid: 'friend-1',
+            displayName: 'Decoy',
+            email: 'decoy@example.com',
+            joinedAt: DateTime(2024, 1, 1),
+            lastActiveAt: DateTime(2024, 1, 1),
+          ),
+        ];
       app_prov.ServiceLocator.reset();
-      app_prov.ServiceLocator.initialize(_StubDIContainer(fakeUserService));
+      app_prov.ServiceLocator.initialize(_StubDIContainer(decoyUserService));
 
       // Default UserService state — individual tests override fields directly.
       fakeUserService.currentProfile = UserProfile(
@@ -383,6 +392,7 @@ void main() {
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: errors.add,
         notifyListeners: () => notifyCount++,
+        userService: fakeUserService,
         repo: mockRepo,
       );
     });
@@ -543,6 +553,45 @@ void main() {
               avatarUrl: any(named: 'avatarUrl'),
             ),
           ]);
+        },
+      );
+
+      /// BUT-1508: names come from the UserService the coordinator was built
+      /// with. The locator's decoy has no current profile and calls friend-1
+      /// "Decoy", so reading it would either drop the invitation or write the
+      /// wrong name on the member row.
+      test(
+        'names come from the injected UserService, not the locator',
+        () async {
+          coordinator.contentStore['c-1'] = const _TestContent(
+            id: 'c-1',
+            title: 'Pannkakor',
+          );
+          fakeUserService.profilesToReturn = [
+            UserProfile(
+              uid: 'friend-1',
+              displayName: 'Bob',
+              email: 'b@example.com',
+              joinedAt: DateTime(2024, 1, 1),
+              lastActiveAt: DateTime(2024, 1, 1),
+            ),
+          ];
+
+          final out = await coordinator.createInvitation(
+            contentId: 'c-1',
+            inviteeUserIds: const ['friend-1'],
+          );
+
+          expect(out, 'invitation-id');
+          verify(
+            () => mockRepo.addMember(
+              'invitation-id',
+              'friend-1',
+              addedBy: 'me-uid',
+              displayName: 'Bob',
+              avatarUrl: any(named: 'avatarUrl'),
+            ),
+          ).called(1);
         },
       );
 
