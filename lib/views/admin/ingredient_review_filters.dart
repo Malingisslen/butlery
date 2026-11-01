@@ -8,6 +8,7 @@ import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 
 /// Counters per status bucket, computed over all ingredients and unaffected by
 /// the filters below.
@@ -143,6 +144,9 @@ class _Dropdown extends StatelessWidget {
   final List<(String, String)> options;
   final ValueChanged<String?> onChanged;
 
+  // ButleryDropdown has no null option, so "all" is an empty-string value.
+  static const _all = '';
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -150,14 +154,19 @@ class _Dropdown extends StatelessWidget {
       children: [
         Text(label),
         const SizedBox(width: AppDimensions.space8),
-        DropdownButton<String?>(
-          value: value,
-          onChanged: onChanged,
-          items: [
-            DropdownMenuItem<String?>(value: null, child: Text(allLabel)),
-            for (final (v, text) in options)
-              DropdownMenuItem<String?>(value: v, child: Text(text)),
-          ],
+        SizedBox(
+          width: 200,
+          child: ButleryDropdown<String>(
+            dense: true,
+            semanticLabel: label,
+            value: value ?? _all,
+            onChanged: (v) => onChanged(v == _all ? null : v),
+            options: [
+              ButleryDropdownOption<String>(value: _all, label: allLabel),
+              for (final (v, text) in options)
+                ButleryDropdownOption<String>(value: v, label: text),
+            ],
+          ),
         ),
       ],
     );

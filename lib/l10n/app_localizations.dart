@@ -13874,12 +13874,6 @@ abstract class AppLocalizations {
   /// **'Alla'**
   String get adminIngredientsFilterAll;
 
-  /// No description provided for @adminIngredientsFilterStatus.
-  ///
-  /// In sv, this message translates to:
-  /// **'Status'**
-  String get adminIngredientsFilterStatus;
-
   /// No description provided for @adminIngredientsFilterGroup.
   ///
   /// In sv, this message translates to:
@@ -14107,12 +14101,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kräver'**
   String get adminTagRulesRequired;
-
-  /// No description provided for @adminTagRulesNoProperties.
-  ///
-  /// In sv, this message translates to:
-  /// **'—'**
-  String get adminTagRulesNoProperties;
 
   /// No description provided for @adminOpsTitle.
   ///

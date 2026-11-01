@@ -8923,9 +8923,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminIngredientsFilterAll => 'All';
 
   @override
-  String get adminIngredientsFilterStatus => 'Status';
-
-  @override
   String get adminIngredientsFilterGroup => 'Group';
 
   @override
@@ -9038,9 +9035,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminTagRulesRequired => 'Requires';
-
-  @override
-  String get adminTagRulesNoProperties => '—';
 
   @override
   String get adminOpsTitle => 'Operations';

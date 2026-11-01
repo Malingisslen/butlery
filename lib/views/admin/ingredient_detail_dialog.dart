@@ -10,20 +10,17 @@ import 'package:butlery/views/admin/ingredient_copy.dart';
 import 'package:butlery/views/admin/ingredient_labels.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 Future<void> showIngredientDetail(
   BuildContext context,
   IngredientReviewViewModel vm,
   IngredientData ingredient,
 ) {
-  return showDialog<void>(
+  return showButlerySheet<void>(
     context: context,
-    builder: (_) => Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640, maxHeight: 720),
-        child: _Detail(vm: vm, ingredient: ingredient),
-      ),
-    ),
+    maxHeightFraction: 0.9,
+    builder: (_) => _Detail(vm: vm, ingredient: ingredient),
   );
 }
 
@@ -41,6 +38,7 @@ class _Detail extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(i.swedish, style: AppTextStyles.headlineSmall),
@@ -52,8 +50,9 @@ class _Detail extends StatelessWidget {
               onPressed: () => copyIngredientForClaude(context, vm, i),
             ),
           ),
-          Expanded(
+          Flexible(
             child: ListView(
+              shrinkWrap: true,
               children: [
                 _field(
                   l10n.adminIngredientsAllergens,

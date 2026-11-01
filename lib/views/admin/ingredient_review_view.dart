@@ -14,6 +14,7 @@ import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only "Ingredienser" tab: a read-only review of the ingredient
@@ -168,47 +169,51 @@ class IngredientRow extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final allergens = vm.previewOf(ingredient)?.allergenKeys;
-    return InkWell(
-      onTap: () => showIngredientDetail(context, vm, ingredient),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space16,
-          vertical: AppDimensions.space8,
-        ),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(ingredient.swedish, style: AppTextStyles.titleSmall),
-                  Text(
-                    '${ingredient.id} · ${ingredient.group}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                  if (allergens != null && allergens.isNotEmpty)
+    return PressFill(
+      surface: PressSurface.base,
+      child: InkWell(
+        onTap: () => showIngredientDetail(context, vm, ingredient),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
+          ),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(ingredient.swedish, style: AppTextStyles.titleSmall),
                     Text(
-                      '${l10n.adminIngredientsAllergens}: '
-                      '${allergens.join(', ')}',
-                      style: AppTextStyles.bodySmall,
+                      '${ingredient.id} · ${ingredient.group}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
-                ],
+                    if (allergens != null && allergens.isNotEmpty)
+                      Text(
+                        '${l10n.adminIngredientsAllergens}: '
+                        '${allergens.join(', ')}',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                  ],
+                ),
               ),
-            ),
-            StatusPill(
-              label: ingredientStatusLabel(l10n, ingredient.status),
-            ),
-            AppIconButton(
-              icon: ButleryIcons.copy,
-              semanticLabel: l10n.adminCopyForClaude,
-              onPressed: () => copyIngredientForClaude(context, vm, ingredient),
-            ),
-          ],
+              StatusPill(
+                label: ingredientStatusLabel(l10n, ingredient.status),
+              ),
+              AppIconButton(
+                icon: ButleryIcons.copy,
+                semanticLabel: l10n.adminCopyForClaude,
+                onPressed: () =>
+                    copyIngredientForClaude(context, vm, ingredient),
+              ),
+            ],
+          ),
         ),
       ),
     );

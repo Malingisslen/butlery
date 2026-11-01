@@ -8884,9 +8884,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminIngredientsFilterAll => 'Alla';
 
   @override
-  String get adminIngredientsFilterStatus => 'Status';
-
-  @override
   String get adminIngredientsFilterGroup => 'Grupp';
 
   @override
@@ -8999,9 +8996,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminTagRulesRequired => 'Kräver';
-
-  @override
-  String get adminTagRulesNoProperties => '—';
 
   @override
   String get adminOpsTitle => 'Drift';
