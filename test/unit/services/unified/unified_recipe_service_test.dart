@@ -215,6 +215,7 @@ void main() {
       recipeRepository: mockRecipeRepository,
       trashRepository: trashRepository,
       firestoreRepository: mockFirestoreRepository,
+      sharedRecipeRepository: MockFirebaseSharedRecipeRepository(),
       commentsRepository: commentsRepository,
       blockedUserFilter: blockedUserFilter,
       ratingsRepository: ratingsRepository ?? mockRatingsRepository,
@@ -277,9 +278,6 @@ void main() {
       // Register mocks for eager ServiceLocator.get<>() calls in constructor chain
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
         MockFirebaseRecipePresenceRepository(),
-      );
-      TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(
-        MockFirebaseSharedRecipeRepository(),
       );
       TestServiceLocator.registerMock<UserRepository>(MockUserRepository());
 

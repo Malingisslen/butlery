@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Social Recipe Query Service
 /// Handles ONLY query operations for collaborative recipes.
@@ -25,12 +24,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
-    RecipeServiceAdapter? serviceAdapter,
+    required RecipeServiceAdapter serviceAdapter,
   }) : _getCacheHelper = getCacheHelper,
        _getCurrentUserId = getCurrentUserId,
-       _serviceAdapter =
-           serviceAdapter ??
-           SocialRecipeQueryService._createDefaultServiceAdapter() {
+       _serviceAdapter = serviceAdapter {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -297,16 +294,5 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
       AppLogger.error('Failed to get cache stats: $e');
       return {'total_cached': 0, 'collaborative_cached': 0};
     }
-  }
-
-  /// Create default service adapter using ServiceLocator
-  static RecipeServiceAdapter _createDefaultServiceAdapter() {
-    return RecipeServiceAdapter(
-      recipeRepository: ServiceLocator.get(),
-      trashRepository: ServiceLocator.get(),
-      commentsRepository: ServiceLocator.get(),
-      ratingsRepository: ServiceLocator.get(),
-      notificationsRepository: ServiceLocator.get(),
-    );
   }
 }

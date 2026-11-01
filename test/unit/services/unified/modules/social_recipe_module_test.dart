@@ -1,15 +1,10 @@
 // Unit tests for SocialRecipeModule
 //
 // Tests the facade that delegates to SocialRecipeCoordinator.
-// Requires production ServiceLocator bridge because the coordinator
-// constructor calls ServiceLocator.get() for FirebaseSharedRecipeRepository
-// and _createDefaultServiceAdapter() calls ServiceLocator.get() for
-// repository types.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:get_it/get_it.dart';
 
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
@@ -58,15 +53,6 @@ void main() {
       notifyListenersCalled = 0;
       recipeDatabase = {};
 
-      // Register shared recipe repo in GetIt
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FirebaseSharedRecipeRepository>()) {
-        getIt.unregister<FirebaseSharedRecipeRepository>();
-      }
-      getIt.registerSingleton<FirebaseSharedRecipeRepository>(
-        mockSharedRecipeRepo,
-      );
-
       // Build test recipes
       final testRecipe = RecipeFactory.build(
         id: 'test-recipe-1',
@@ -103,14 +89,11 @@ void main() {
           return true;
         },
         serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+        sharedRecipeRepository: mockSharedRecipeRepo,
       );
     });
 
     tearDown(() async {
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FirebaseSharedRecipeRepository>()) {
-        getIt.unregister<FirebaseSharedRecipeRepository>();
-      }
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
     });

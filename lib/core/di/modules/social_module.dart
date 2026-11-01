@@ -24,6 +24,10 @@ import 'package:butlery/repositories/firebase/firebase_recipe_ownership_resolver
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
@@ -233,6 +237,20 @@ class SocialModule implements DIModule {
         getRecipe: (id) async => recipeService.getRecipeById(id),
         saveRecipe: (recipe) async =>
             await recipeService.saveRecipeForSocialModule(recipe),
+        serviceAdapter: RecipeServiceAdapter(
+          recipeRepository: app<RecipeRepository>(),
+          trashRepository: app<TrashRepository>(),
+          commentsRepository: app.isRegistered<CommentsRepository>()
+              ? app<CommentsRepository>()
+              : null,
+          ratingsRepository: app.isRegistered<RatingsRepository>()
+              ? app<RatingsRepository>()
+              : null,
+          notificationsRepository: app.isRegistered<NotificationsRepository>()
+              ? app<NotificationsRepository>()
+              : null,
+        ),
+        sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
       );
     });
 

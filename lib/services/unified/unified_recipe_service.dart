@@ -38,6 +38,7 @@ import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -77,6 +78,7 @@ class UnifiedRecipeService
   final FirebaseAuthRepository _authRepository;
   final RecipeRepository _recipeRepository;
   final TrashRepository _trashRepository;
+  final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final CommentsRepository? _commentsRepository;
   final BlockedUserFilter? _blockedUserFilter;
   final RatingsRepository _ratingsRepository;
@@ -222,6 +224,7 @@ class UnifiedRecipeService
     required RecipeRepository recipeRepository,
     required TrashRepository trashRepository,
     required FirestoreRepository firestoreRepository,
+    required FirebaseSharedRecipeRepository sharedRecipeRepository,
     CommentsRepository? commentsRepository,
     BlockedUserFilter? blockedUserFilter,
     required RatingsRepository ratingsRepository,
@@ -250,6 +253,7 @@ class UnifiedRecipeService
        _authRepository = authRepository ?? FirebaseAuthRepository(),
        _recipeRepository = recipeRepository,
        _trashRepository = trashRepository,
+       _sharedRecipeRepository = sharedRecipeRepository,
        _commentsRepository = commentsRepository,
        _blockedUserFilter = blockedUserFilter,
        _ratingsRepository = ratingsRepository,
@@ -360,6 +364,14 @@ class UnifiedRecipeService
       notifyListeners: notifyListeners,
       getRecipe: (String id) async => getRecipeById(id),
       saveRecipe: saveRecipeForSocialModule,
+      serviceAdapter: RecipeServiceAdapter(
+        recipeRepository: _recipeRepository,
+        trashRepository: _trashRepository,
+        commentsRepository: _commentsRepository,
+        ratingsRepository: _ratingsRepository,
+        notificationsRepository: _notificationsRepository,
+      ),
+      sharedRecipeRepository: _sharedRecipeRepository,
     );
 
     _cacheModule = RecipeCacheModule(
