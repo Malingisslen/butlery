@@ -304,6 +304,8 @@ class SocialModule implements DIModule {
       () => SocialMenuOperations(
         firestore: app<FirestoreRepository>().firestore,
         friendsService: container<UnifiedFriendsService>(),
+        permissionService: app<PermissionService>(),
+        userService: app<UserService>(),
       ),
     );
   }

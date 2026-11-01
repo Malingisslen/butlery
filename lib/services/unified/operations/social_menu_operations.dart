@@ -8,7 +8,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
@@ -23,12 +22,18 @@ import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 class SocialMenuOperations {
   final FirebaseFirestore _firestore;
   final UnifiedFriendsService _friendsService;
+  final PermissionService _permissionService;
+  final UserService _userService;
 
   SocialMenuOperations({
     required FirebaseFirestore firestore,
     required UnifiedFriendsService friendsService,
+    required PermissionService permissionService,
+    required UserService userService,
   }) : _firestore = firestore,
-       _friendsService = friendsService;
+       _friendsService = friendsService,
+       _permissionService = permissionService,
+       _userService = userService;
 
   /// Share menu with selected friends
   Future<bool> shareMenuWithFriends({
@@ -51,12 +56,12 @@ class SocialMenuOperations {
       friendUserIds = await BlockedUserFilter.shareRecipients(friendUserIds);
       if (friendUserIds.isEmpty) return false;
 
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+      if (!_permissionService.isAuthenticated) {
         AppLogger.error('User must be authenticated to share menu');
         return false;
       }
 
-      final currentUser = ServiceLocator.get<PermissionService>().currentUser;
+      final currentUser = _permissionService.currentUser;
       if (currentUser == null) return false;
 
       // BUT-1775, applying BUT-1705/BUT-1736: `profileDisplayName`, NOT
@@ -67,10 +72,8 @@ class SocialMenuOperations {
       // recipient reads and lands verbatim in their GDPR export, and it is the
       // PROFILE name that `on-profile-updated.ts` renames and that account
       // deletion scrubs, so an Auth-sourced stamp would be both unconsented and
-      // un-erasable. `tryGet` keeps this working before/without the service
-      // graph; an unresolved name stamps empty (readers show their own label).
-      final sharedByDisplayName =
-          (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
+      // un-erasable.
+      final sharedByDisplayName = _userService.profileDisplayName.orEmpty();
 
       // Validate that all friend IDs are actual friends
       final userFriends = _friendsService.friends.map((f) => f.uid).toSet();
@@ -116,8 +119,7 @@ class SocialMenuOperations {
         'totalRecipes': totalRecipes,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': sharedByDisplayName,
-        'sharedByAvatarUrl':
-            ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
+        'sharedByAvatarUrl': _userService.profileAvatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
         // Same list under the spelling `firestore.rules` and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.
@@ -225,10 +227,9 @@ class SocialMenuOperations {
   /// Get menus shared by current user
   Future<List<Map<String, dynamic>>> getMenusSharedByMe() async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
+      if (!_permissionService.isAuthenticated) return [];
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -259,10 +260,9 @@ class SocialMenuOperations {
   /// Get menus shared with current user
   Future<List<Map<String, dynamic>>> getMenusSharedWithMe() async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
+      if (!_permissionService.isAuthenticated) return [];
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -323,12 +323,11 @@ class SocialMenuOperations {
   /// Import shared menu to local saved menus
   Future<bool> importSharedMenu(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+      if (!_permissionService.isAuthenticated) {
         return false;
       }
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu data
@@ -375,10 +374,9 @@ class SocialMenuOperations {
   /// Mark shared menu as viewed
   Future<void> markMenuAsViewed(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return;
+      if (!_permissionService.isAuthenticated) return;
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return;
 
       await _firestore
@@ -400,10 +398,9 @@ class SocialMenuOperations {
   /// Get shared menu data for display/import
   Future<Map<String, dynamic>?> getSharedMenuData(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return null;
+      if (!_permissionService.isAuthenticated) return null;
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return null;
 
       // Get shared menu data
@@ -464,12 +461,11 @@ class SocialMenuOperations {
   /// Delete shared menu (only by owner)
   Future<bool> deleteSharedMenu(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+      if (!_permissionService.isAuthenticated) {
         return false;
       }
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu to verify ownership
@@ -509,10 +505,9 @@ class SocialMenuOperations {
   /// Get sharing statistics for analytics
   Future<Map<String, dynamic>> getSharingStats() async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return {};
+      if (!_permissionService.isAuthenticated) return {};
 
-      final currentUserId =
-          ServiceLocator.get<PermissionService>().currentUserId;
+      final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return {};
 
       // Get menus shared by user

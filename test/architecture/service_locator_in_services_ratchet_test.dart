@@ -95,7 +95,6 @@ const _residue = <String, int>{
       2,
   'lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart':
       2,
-  'lib/services/unified/operations/social_menu_operations.dart': 18,
   'lib/services/unified/operations/social_recipe_operations.dart': 1,
   'lib/services/unified/unified_friends_service.dart': 2,
   'lib/services/unified/unified_menu_service.dart': 5,

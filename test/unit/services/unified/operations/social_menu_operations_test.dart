@@ -101,6 +101,8 @@ void main() {
       operations = SocialMenuOperations(
         firestore: mockFirestoreRepository.firestore,
         friendsService: mockFriendsService,
+        permissionService: TestServiceLocator.get<PermissionService>(),
+        userService: TestServiceLocator.get<UserService>(),
       );
     });
 
@@ -151,6 +153,59 @@ void main() {
           expect(sharedDocs.docs.first.data()['title'], 'Weekly Menu Plan');
         },
       );
+
+      test('the sign-in check and the stamped name come from the injected '
+          'services, not from the ones in the locator (BUT-1508)', () async {
+        when(
+          () => (app.ServiceLocator.get<UserService>() as MockUserService)
+              .profileDisplayName,
+        ).thenReturn('Namn i lokatorn');
+        final injectedProfile = MockUserService();
+        when(() => injectedProfile.profileDisplayName).thenReturn('Injicerad');
+        when(() => injectedProfile.profileAvatarUrl).thenReturn(null);
+        final injectedPermissions = FakePermissionService()
+          ..setPermissionState(
+            currentUserId: 'test-user-123',
+            userDisplayName: 'Test User',
+          );
+        final injectedOps = SocialMenuOperations(
+          firestore: mockFirestoreRepository.firestore,
+          friendsService: mockFriendsService,
+          permissionService: injectedPermissions,
+          userService: injectedProfile,
+        );
+
+        expect(
+          await injectedOps.shareMenuWithFriends(
+            menu: testMenu,
+            friendUserIds: ['friend-1'],
+            customTitle: 'Veckomeny',
+          ),
+          isTrue,
+        );
+        final sharedDocs = await mockFirestoreRepository.firestore
+            .collection('shared_content')
+            .get();
+        expect(
+          sharedDocs.docs.single.data()['sharedByDisplayName'],
+          'Injicerad',
+        );
+
+        // Signed out in the injected service, still signed in in the locator.
+        injectedPermissions.setPermissionState(
+          currentUserId: null,
+          userDisplayName: null,
+        );
+        expect(await injectedOps.getMenusSharedByMe(), isEmpty);
+        expect(
+          await injectedOps.shareMenuWithFriends(
+            menu: testMenu,
+            friendUserIds: ['friend-1'],
+            customTitle: 'Veckomeny',
+          ),
+          isFalse,
+        );
+      });
 
       /// BUT-1775, mirror of the `recipe_sharing_manager` case: the name
       /// persisted here lands on a document every recipient reads AND verbatim
