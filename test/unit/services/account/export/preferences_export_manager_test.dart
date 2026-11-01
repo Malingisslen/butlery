@@ -1359,6 +1359,10 @@ void main() {
           repo.capturedMax['trash'],
           ExportPaginationHelper.getLimitForType('user_trash') + 1,
         );
+        expect(
+          repo.capturedMax['public_recipes'],
+          ExportPaginationHelper.getLimitForType('user_public_recipes') + 1,
+        );
       });
     });
 

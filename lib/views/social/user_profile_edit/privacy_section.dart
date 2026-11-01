@@ -83,6 +83,25 @@ class PrivacySettingsSection extends StatelessWidget {
               },
             ),
             ButleryListRow.toggle(
+              label: l10n.privacyNewRecipesPublicTitle,
+              subtitle: viewModel.isMinor
+                  ? l10n.privacyPublicRecipesMinor
+                  : l10n.privacyNewRecipesPublicSubtitle,
+              checked: !viewModel.isMinor && viewModel.newRecipesShowOnProfile,
+              enabled: !viewModel.isMinor,
+              onChanged: (value) async {
+                final ok = await viewModel.setNewRecipesShowOnProfile(value);
+                if (!ok && context.mounted) {
+                  SnackBarUtils.showFailure(
+                    context,
+                    what:
+                        viewModel.error ??
+                        context.l10n.errorCouldNotSaveNewRecipesPublic,
+                  );
+                }
+              },
+            ),
+            ButleryListRow.toggle(
               label: l10n.privacyShareActivityTitle,
               subtitle: l10n.privacyShareActivitySubtitle,
               checked: viewModel.shareActivityToFeed,

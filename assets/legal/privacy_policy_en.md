@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 31, 2026
-**Version:** 1.28
+**Version:** 1.29
 
 ---
 
@@ -102,6 +102,8 @@ We use your personal data for the following purposes:
 - Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
 - Handle reports: the person who reported something, and the person whose content was removed or whose profile was hidden, get a notification and a notice in the app with the decision and the reason for it, and can appeal the decision in the app. If a moderator reviews a decision and changes it, both get a new notice.
 - Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. If you enter your own amount for an ingredient, it is saved on your household in the same way, either for one recipe or for all recipes. For one recipe, the recipe's id is saved too, and the amount is included in the export of your data. The app does not record what you eat and has no personal goals or daily values.
+
+**Recipes you show on your profile:** If you choose "Show on my profile" on a recipe, or turn on "New recipes are public", everyone signed in to Butlery who opens your profile can see the recipe. Guests and people you have blocked cannot. What shows is the title, description, servings, times, ingredients, steps, the recipe's photos, the source and the source's author. Your rating, your notes and tags, how often you have cooked the recipe and who you share it with do not show. The photos are shown as separate copies, which stop working when you stop showing the recipe. We store the choice and when you last changed it on the recipe, and what is shown on your profile is included in your data export. If you stop showing the recipe, delete it or delete your account, it is removed from your profile within a minute or so. Someone who has seen the recipe may have saved their own copy with "Create copy". That copy is theirs and is not removed, but it does not carry your name, your user id or your photos. Collaborative recipes are never shown on the profile, and people under 18 cannot show recipes there. The processing is based on **performance of a contract (Art. 6.1 b)**: it happens because you ask for it.
 
 ### 5.2 Optional features (require consent)
 
@@ -277,6 +279,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Recipes you show on your profile (what others see, with separate photo copies) | Until you stop showing the recipe, delete it or delete your account | Performance of contract |
 | Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
@@ -417,7 +420,7 @@ We may update this policy when:
 For significant changes:
 - We may request renewed consent (if applicable)
 
-**Last change:** October 29, 2026
+**Last change:** October 31, 2026
 **Version history:** Available upon request
 
 ---

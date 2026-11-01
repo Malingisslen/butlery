@@ -133,7 +133,8 @@ class RecipeFormState extends ChangeNotifier {
   static const int maxIngredients = 100;
   static const int maxInstructions = 50;
 
-  RecipeFormState({Recipe? initialRecipe, bool isTemplate = false}) {
+  RecipeFormState({Recipe? initialRecipe, bool isTemplate = false})
+    : startedFromTemplate = isTemplate && initialRecipe != null {
     _initializeFormFields();
     _autoSaveManager = RecipeFormAutoSaveManager();
     _autoSaveManager.initialize(isTemplate: isTemplate);
@@ -322,6 +323,9 @@ class RecipeFormState extends ChangeNotifier {
   String? get error => _error;
   bool get hasError => _error != null;
   bool get isEditing => _originalRecipe != null;
+
+  /// Opened with another recipe as the starting point ("Skapa kopia").
+  final bool startedFromTemplate;
 
   // Form data getters
   String get title => _title;
@@ -955,6 +959,11 @@ class RecipeFormState extends ChangeNotifier {
         sourceArtefact: _sourceArtefact,
         heirloom: heirloom ?? _originalRecipe?.core.heirloom,
         isOwnerCopy: _originalRecipe?.core.isOwnerCopy ?? false,
+        // An edit keeps the profile choice; the save writes the flag, so a
+        // missing value here would take the recipe off the profile. A template
+        // (a copy) has no original and starts private.
+        showOnProfile: _originalRecipe?.core.showOnProfile ?? false,
+        showOnProfileChangedAt: _originalRecipe?.core.showOnProfileChangedAt,
       ),
       type: RecipeType.personal,
       // BUT-2213: the revision the opened recipe was read at, so a queued

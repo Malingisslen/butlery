@@ -13,7 +13,6 @@
 /// - searchProfiles (indexed path + email path)
 /// - isDisplayNameAvailable
 /// - ensureBaseUserDocument
-/// - incrementPublicRecipeCount / decrementPublicRecipeCount
 /// - deletePublicProfile / deleteUserRootDoc
 library;
 
@@ -290,29 +289,21 @@ void main() {
   });
 
   group('updateProfileStats / updateOnlineStatus', () {
-    test(
-      'updateProfileStats writes friendsCount + publicRecipeCount',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final repo = _repo(firestore);
-        await _seedProfile(firestore, _profile());
+    test('updateProfileStats writes friendsCount', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      await _seedProfile(firestore, _profile());
 
-        await repo.updateProfileStats(
-          _alice,
-          friendsCount: 5,
-          publicRecipeCount: 12,
-        );
+      await repo.updateProfileStats(_alice, friendsCount: 5);
 
-        final doc = await firestore
-            .collection('public_profiles')
-            .doc(_alice)
-            .get();
-        expect(doc.data()?['friendsCount'], 5);
-        expect(doc.data()?['publicRecipeCount'], 12);
-      },
-    );
+      final doc = await firestore
+          .collection('public_profiles')
+          .doc(_alice)
+          .get();
+      expect(doc.data()?['friendsCount'], 5);
+    });
 
-    test('updateProfileStats no-op when both args null', () async {
+    test('updateProfileStats no-op when no args given', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await _seedProfile(firestore, _profile());
@@ -603,38 +594,6 @@ void main() {
       expect(doc.exists, isTrue);
       expect(doc.data()?['uid'], _alice);
       expect(doc.data()?['initialized'], isTrue);
-    });
-  });
-
-  group('publicRecipeCount increment + decrement', () {
-    test('incrementPublicRecipeCount bumps the field', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedProfile(firestore, _profile());
-
-      await repo.incrementPublicRecipeCount(_alice);
-
-      final doc = await firestore
-          .collection('public_profiles')
-          .doc(_alice)
-          .get();
-      expect(doc.data()?['publicRecipeCount'], 1);
-    });
-
-    test('decrementPublicRecipeCount decrements', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedProfile(firestore, _profile());
-      await repo.incrementPublicRecipeCount(_alice);
-      await repo.incrementPublicRecipeCount(_alice);
-
-      await repo.decrementPublicRecipeCount(_alice);
-
-      final doc = await firestore
-          .collection('public_profiles')
-          .doc(_alice)
-          .get();
-      expect(doc.data()?['publicRecipeCount'], 1);
     });
   });
 

@@ -74,7 +74,11 @@ void main() {
           () => mockUserRepo.fetchProfile(testUserId),
         ).thenAnswer((_) async => testProfile);
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => recipes);
 
         final viewModel = createViewModel();
@@ -138,7 +142,11 @@ void main() {
           () => mockUserRepo.fetchProfile(testUserId),
         ).thenAnswer((_) async => testProfile);
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenThrow(Exception('Firestore unavailable'));
 
         final viewModel = createViewModel();
@@ -159,7 +167,11 @@ void main() {
           () => mockUserRepo.fetchProfile(testUserId),
         ).thenAnswer((_) async => testProfile);
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => <Recipe>[]);
 
         final viewModel = createViewModel();
@@ -198,7 +210,11 @@ void main() {
 
         // Need recipe stub too for the second part
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => <Recipe>[]);
 
         await Future.delayed(Duration.zero);
@@ -224,7 +240,11 @@ void main() {
           () => mockUserRepo.fetchPersistedSearchable(testUserId),
         ).thenAnswer((_) => searchable());
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => <Recipe>[]);
         final viewModel = createViewModel();
         for (var i = 0; i < 5; i++) {
@@ -256,7 +276,11 @@ void main() {
           () => mockUserRepo.fetchPersistedSearchable(testUserId),
         ).thenAnswer((_) async => true);
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => <Recipe>[]);
         final viewModel = createViewModel();
         for (var i = 0; i < 5; i++) {
@@ -288,7 +312,11 @@ void main() {
           () => mockUserRepo.fetchProfile(testUserId),
         ).thenAnswer((_) async => testProfile);
         when(
-          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after'),
+          ),
         ).thenAnswer((_) async => <Recipe>[]);
 
         final viewModel = createViewModel();
@@ -308,7 +336,11 @@ void main() {
             () => mockUserRepo.fetchProfile(testUserId),
           ).thenAnswer((_) async => testProfile);
           when(
-            () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+            () => mockRecipeRepo.fetchPublicUserRecipes(
+              testUserId,
+              limit: any(named: 'limit'),
+              after: any(named: 'after'),
+            ),
           ).thenAnswer((_) async => <Recipe>[]);
 
           final viewModel = createViewModel();
@@ -316,12 +348,146 @@ void main() {
           await Future.delayed(Duration.zero);
 
           verify(
-            () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+            () => mockRecipeRepo.fetchPublicUserRecipes(
+              testUserId,
+              limit: any(named: 'limit'),
+              after: any(named: 'after'),
+            ),
           ).called(1);
 
           viewModel.dispose();
         },
       );
+    });
+
+    group('paging', () {
+      List<Recipe> page(String prefix, int n) => [
+        for (var i = 0; i < n; i++)
+          RecipeFactory.build(id: '$prefix$i', title: 'Recept $prefix$i'),
+      ];
+
+      Future<PublicProfileViewModel> loadFirst(List<Recipe> first) async {
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: null,
+          ),
+        ).thenAnswer((_) async => first);
+        final viewModel = createViewModel();
+        for (var i = 0; i < 5; i++) {
+          await Future.delayed(Duration.zero);
+        }
+        return viewModel;
+      }
+
+      test('a full first page of 20 has more', () async {
+        final viewModel = await loadFirst(page('a', 20));
+
+        expect(PublicProfileViewModel.recipePageSize, 20);
+        expect(viewModel.hasMoreRecipes, isTrue);
+        verify(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: 20,
+            after: null,
+          ),
+        ).called(1);
+        viewModel.dispose();
+      });
+
+      test('a short first page has no more', () async {
+        final viewModel = await loadFirst(page('a', 19));
+
+        expect(viewModel.hasMoreRecipes, isFalse);
+        viewModel.dispose();
+      });
+
+      test('loadMoreRecipes appends and asks after the last recipe', () async {
+        final first = page('a', 20);
+        final viewModel = await loadFirst(first);
+        final second = page('b', 5);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: first.last,
+          ),
+        ).thenAnswer((_) async => second);
+
+        await viewModel.loadMoreRecipes();
+
+        expect(viewModel.publicRecipes, [...first, ...second]);
+        expect(viewModel.hasMoreRecipes, isFalse);
+        expect(viewModel.isLoadingMore, isFalse);
+        verify(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: 20,
+            after: first.last,
+          ),
+        ).called(1);
+        viewModel.dispose();
+      });
+
+      test('a full second page keeps hasMoreRecipes true', () async {
+        final first = page('a', 20);
+        final viewModel = await loadFirst(first);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: first.last,
+          ),
+        ).thenAnswer((_) async => page('b', 20));
+
+        await viewModel.loadMoreRecipes();
+
+        expect(viewModel.publicRecipes, hasLength(40));
+        expect(viewModel.hasMoreRecipes, isTrue);
+        viewModel.dispose();
+      });
+
+      test(
+        'a failing loadMoreRecipes keeps the list, no error, can retry',
+        () async {
+          final first = page('a', 20);
+          final viewModel = await loadFirst(first);
+          when(
+            () => mockRecipeRepo.fetchPublicUserRecipes(
+              testUserId,
+              limit: any(named: 'limit'),
+              after: first.last,
+            ),
+          ).thenThrow(Exception('offline'));
+
+          await viewModel.loadMoreRecipes();
+
+          expect(viewModel.publicRecipes, first);
+          expect(viewModel.hasError, isFalse);
+          expect(viewModel.hasMoreRecipes, isTrue);
+          expect(viewModel.isLoadingMore, isFalse);
+          viewModel.dispose();
+        },
+      );
+
+      test('loadMoreRecipes does nothing without more', () async {
+        final viewModel = await loadFirst(page('a', 3));
+
+        await viewModel.loadMoreRecipes();
+
+        verifyNever(
+          () => mockRecipeRepo.fetchPublicUserRecipes(
+            testUserId,
+            limit: any(named: 'limit'),
+            after: any(named: 'after', that: isNotNull),
+          ),
+        );
+        viewModel.dispose();
+      });
     });
   });
 }

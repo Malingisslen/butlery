@@ -35,8 +35,13 @@ class RecipeDetailMetadata extends StatefulWidget {
   final int currentPortions;
   final bool isScaled;
 
+  /// A public copy: the owner's rating, cook count and household rating are
+  /// not shown and nothing here writes.
+  final bool publicCopy;
+
   const RecipeDetailMetadata({
     super.key,
+    this.publicCopy = false,
     required this.viewModel,
     required this.currentPortions,
     required this.isScaled,
@@ -66,6 +71,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   @override
   void initState() {
     super.initState();
+    if (widget.publicCopy) return;
     _checkUserRating();
     _pooledEnabled =
         ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
@@ -175,39 +181,41 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       );
     }
 
-    metadataWidgets.add(_buildRatingSummary(context));
+    if (!widget.publicCopy) metadataWidgets.add(_buildRatingSummary(context));
 
-    // "Lagat idag" chip — disabled after first tap per calendar day.
-    // BUT-403: `btn-mark-cooked` identifier for browser a11y tree queries.
-    final cookedToday = widget.viewModel.wasCookedToday;
-    final cookCount = widget.viewModel.recipe.cookCount;
-    metadataWidgets.add(
-      Semantics(
-        identifier: 'btn-mark-cooked',
-        button: true,
-        enabled: !cookedToday,
-        child: ButleryStatusChipButton(
-          key: const ValueKey('test-recipe-detail-mark-cooked'),
-          onPressed: cookedToday ? null : () => _markAsCooked(context),
-          icon: ButleryIcons.circleCheck,
-          label: cookCount > 0
-              ? context.l10n.recipeCookedCount(cookCount)
-              : context.l10n.recipeCookedToday,
+    if (!widget.publicCopy) {
+      // "Lagat idag" chip — disabled after first tap per calendar day.
+      // BUT-403: `btn-mark-cooked` identifier for browser a11y tree queries.
+      final cookedToday = widget.viewModel.wasCookedToday;
+      final cookCount = widget.viewModel.recipe.cookCount;
+      metadataWidgets.add(
+        Semantics(
+          identifier: 'btn-mark-cooked',
+          button: true,
+          enabled: !cookedToday,
+          child: ButleryStatusChipButton(
+            key: const ValueKey('test-recipe-detail-mark-cooked'),
+            onPressed: cookedToday ? null : () => _markAsCooked(context),
+            icon: ButleryIcons.circleCheck,
+            label: cookCount > 0
+                ? context.l10n.recipeCookedCount(cookCount)
+                : context.l10n.recipeCookedToday,
+          ),
         ),
-      ),
-    );
+      );
 
-    // Manual "Betygsätt som familj" entry — the second trigger for family
-    // rating (the first is the auto-chain after "Lagat idag"). Square outlined
-    // button mirroring the cook chip's treatment.
-    metadataWidgets.add(
-      ButleryStatusChipButton(
-        onPressed: () => RecipeManagementHandler.rateAsFamily(context),
-        icon: ButleryIcons.users,
-        label: context.l10n.familyRatingManualButton,
-        tone: ButleryStatusChipTone.gold,
-      ),
-    );
+      // Manual "Betygsätt som familj" entry — the second trigger for family
+      // rating (the first is the auto-chain after "Lagat idag"). Square outlined
+      // button mirroring the cook chip's treatment.
+      metadataWidgets.add(
+        ButleryStatusChipButton(
+          onPressed: () => RecipeManagementHandler.rateAsFamily(context),
+          icon: ButleryIcons.users,
+          label: context.l10n.familyRatingManualButton,
+          tone: ButleryStatusChipTone.gold,
+        ),
+      );
+    }
 
     final metadataRow = Wrap(
       spacing: AppDimensions.space16,

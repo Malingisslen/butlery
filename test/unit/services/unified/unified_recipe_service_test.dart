@@ -2070,14 +2070,8 @@ void main() {
             service.deleteRecipe(recipeId),
           ]);
 
-          // Assert - the second finds its deletion already queued and
-          // counts nothing again (BUT-2162)
+          // Assert - the second finds its deletion already queued (BUT-2162)
           expect(results, [true, true]);
-          verify(
-            () =>
-                (TestServiceLocator.get<UserRepository>() as MockUserRepository)
-                    .decrementPublicRecipeCount(any()),
-          ).called(1);
         });
 
         test('should handle conflicting archive operations', () async {

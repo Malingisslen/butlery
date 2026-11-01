@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
+import 'package:butlery/views/recipe_detail/recipe_profile_visibility.dart';
 import 'package:butlery/views/recipe_detail/recipe_source_card.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
@@ -94,6 +95,7 @@ abstract final class RecipeDetailSharedWidgets {
     required RecipeDetailViewModel viewModel,
     required RecipeDetailActions actions,
     bool canAddPhoto = false,
+    bool publicCopy = false,
   }) {
     final cs = Theme.of(context).colorScheme;
     // Without a photo the head is a typographic composition on paper, not a
@@ -139,9 +141,11 @@ abstract final class RecipeDetailSharedWidgets {
                 label: context.l10n.recipeOwnerCopyLabel,
               ),
             ),
+          RecipeProfileVisibilityPill(recipe: recipe),
           buildSourceRow(context, recipe),
           const SizedBox(height: AppDimensions.space8),
           RecipeDetailMetadata(
+            publicCopy: publicCopy,
             viewModel: viewModel,
             currentPortions: actions.currentPortions,
             isScaled: actions.currentPortions != (recipe.portions ?? 1),
@@ -154,7 +158,7 @@ abstract final class RecipeDetailSharedWidgets {
                 ? () => actions.editRecipe(context)
                 : null,
           ),
-          FamilyRatingBreakdown(recipe: recipe),
+          if (!publicCopy) FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
             selector: (_, svc) => svc.allergenPreferences,
             builder: (context, allergenPrefs, _) {

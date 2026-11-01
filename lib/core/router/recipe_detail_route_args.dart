@@ -17,6 +17,7 @@ class RecipeDetailRouteArgs {
     this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
+    this.publicCopy = false,
     this.shareRequest,
     this.presentServings,
     this.cookbookName,
@@ -26,6 +27,9 @@ class RecipeDetailRouteArgs {
   final Recipe? recipe;
   final bool scrollToComments;
   final bool readOnly;
+
+  /// A public profile copy; the caller also sets [readOnly].
+  final bool publicCopy;
   final SocialRequest? shareRequest;
 
   /// Present count from the weekly-menu calendar, forwarded to cooking mode so
@@ -49,6 +53,7 @@ RecipeDetailRouteArgs decodeRecipeDetailRouteArgs(Object? arguments) {
       recipe: arguments['recipe'] as Recipe?,
       scrollToComments: arguments['scrollToComments'] as bool? ?? false,
       readOnly: arguments['readOnly'] as bool? ?? false,
+      publicCopy: arguments['publicCopy'] as bool? ?? false,
       shareRequest: arguments['shareRequest'] as SocialRequest?,
       presentServings: arguments['presentServings'] as int?,
       cookbookName: arguments['cookbookName'] as String?,

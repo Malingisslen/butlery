@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 31 oktober 2026
-**Version:** 1.28
+**Version:** 1.29
 
 ---
 
@@ -102,6 +102,8 @@ Vi använder dina personuppgifter för följande ändamål:
 - Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
 - Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen. Om en moderator omprövar ett beslut och ändrar det får ni ett nytt besked.
 - Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Om du anger en egen mängd för en ingrediens sparas den på hushållet på samma sätt, antingen för ett recept eller för alla recept. Då sparas även receptets id för det receptet, och mängden följer med i exporten av dina uppgifter. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
+
+**Recept du visar på din profil:** Om du väljer ”Visa på min profil” på ett recept, eller slår på ”Nya recept är publika”, kan alla som är inloggade i Butlery och öppnar din profil se receptet. Gäster och den du har blockerat ser det inte. Det som syns är titel, beskrivning, portioner, tider, ingredienser, steg, receptets bilder, källa och källans författare. Ditt betyg, dina anteckningar och taggar, hur ofta du har lagat receptet och vilka du delar det med syns inte. Bilderna visas som egna kopior, som slutar fungera när du slutar visa receptet. Vi sparar valet och tidpunkten då du senast ändrade det på receptet, och det som visas på profilen ingår i din dataexport. Slutar du visa receptet, raderar det eller raderar kontot tas det bort från profilen inom någon minut. Den som har sett receptet kan ha sparat en egen kopia med ”Skapa kopia”. Den kopian är deras och tas inte bort, men den bär inte ditt namn, ditt användar-id eller dina bilder. Samarbetsrecept visas aldrig på profilen, och den som är under 18 år kan inte visa recept där. Behandlingen bygger på **fullgörande av avtal (art. 6.1 b)**: den sker för att du ber om den.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
@@ -278,6 +280,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
+| Recept du visar på din profil (det andra ser, med egna bildkopior) | Tills du slutar visa receptet, raderar det eller raderar kontot | Fullgörande av avtal |
 | Kortlänkar när du delar eller bjuder in med en länk (ditt användar-id, länkadressen och när den skapades) | 14 dagar efter att länken skapades, eller tills du raderar kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
@@ -418,7 +421,7 @@ Vi kan uppdatera denna policy när:
 Vid väsentliga ändringar:
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 29 oktober 2026
+**Senaste ändring:** 31 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

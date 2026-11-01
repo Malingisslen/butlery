@@ -228,7 +228,6 @@ class QueueJourney {
     );
     j.recipes = PersonalRecipeModule(
       recipeRepository: MockRecipeRepository(),
-      userRepository: MockUserRepository(),
       getCacheHelper: FakeJsonCacheHelper.new,
       getCurrentUserId: () => uid,
       getCurrentUserDisplayName: () => 'Anna',

@@ -12955,6 +12955,22 @@
   "privacyShowNameOnDishesTitle": "Show my name on my dishes in shared menus",
   "privacyShowNameOnDishesSubtitle": "Anyone who opens a shared menu sees your name under the dishes you have made and can go to your profile. This applies to every shared menu that contains your dishes, older ones and ones others have forwarded too. If you turn it off, your name disappears within 30 minutes.",
   "privacyShowNameOnDishesMinor": "Not available for accounts under 18.",
+  "privacyNewRecipesPublicTitle": "New recipes are public",
+  "@privacyNewRecipesPublicTitle": {
+    "description": "Privacy toggle title: whether recipes the user saves from now on start public. Off by default."
+  },
+  "privacyNewRecipesPublicSubtitle": "Applies to recipes you save from now on. Existing recipes don't change.",
+  "@privacyNewRecipesPublicSubtitle": {
+    "description": "Toggle subtitle: the setting is not retroactive."
+  },
+  "privacyPublicRecipesMinor": "Public recipes require you to be 18",
+  "@privacyPublicRecipesMinor": {
+    "description": "Subtitle in place of the description when the account is a minor; the toggle is disabled and off."
+  },
+  "errorCouldNotSaveNewRecipesPublic": "Couldn't save the setting for new recipes",
+  "@errorCouldNotSaveNewRecipesPublic": {
+    "description": "Snackbar when saving the new-recipes-are-public setting fails."
+  },
   "menuDishCreatorCredit": "Recipe by {name}",
   "@menuDishCreatorCredit": {
     "placeholders": {
@@ -15952,6 +15968,64 @@
         "type": "int"
       }
     }
+  },
+  "publicProfileShowMoreRecipes": "Show more",
+  "@publicProfileShowMoreRecipes": {
+    "description": "Steg 10E: loads the next page of recipes on a public profile"
+  },
+  "recipeProfileVisibilityShow": "Show on my profile",
+  "@recipeProfileVisibilityShow": {
+    "description": "Menu row that publishes a recipe on the owner's public profile"
+  },
+  "recipeProfileVisibilityHide": "Stop showing on profile",
+  "@recipeProfileVisibilityHide": {
+    "description": "Menu row that removes a recipe from the owner's public profile"
+  },
+  "recipeProfileVisibilityMinorHint": "Public recipes require you to be 18",
+  "@recipeProfileVisibilityMinorHint": {
+    "description": "Second line under the disabled menu row for a minor"
+  },
+  "recipeProfileVisibilityConfirmTitle": "Show {title} on your profile?",
+  "@recipeProfileVisibilityConfirmTitle": {
+    "description": "Title of the confirmation before a recipe is published on the profile",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Recipe title"
+      }
+    }
+  },
+  "recipeProfileVisibilityConfirmBody": "Everyone signed in to Butlery who opens your profile can see the recipe, with its photo, ingredients and steps. Your notes and ratings are not shown. Only share recipes you have the right to share. Anyone who has already seen the recipe may have saved their own copy.",
+  "@recipeProfileVisibilityConfirmBody": {
+    "description": "Body of the confirmation before a recipe is published on the profile"
+  },
+  "recipeProfileVisibilityConfirmAction": "Show on profile",
+  "@recipeProfileVisibilityConfirmAction": {
+    "description": "Primary button of the publish confirmation"
+  },
+  "recipeProfileVisibilityCancel": "Cancel",
+  "@recipeProfileVisibilityCancel": {
+    "description": "Cancel button of the publish confirmation"
+  },
+  "recipeProfileVisibilityBlockedContent": "The recipe contains text that cannot be shown publicly",
+  "@recipeProfileVisibilityBlockedContent": {
+    "description": "Failure snackbar when the content filter flags the recipe text"
+  },
+  "recipeProfileVisibilityShownSnack": "The recipe is shown on your profile",
+  "@recipeProfileVisibilityShownSnack": {
+    "description": "Success snackbar after publishing on the profile"
+  },
+  "recipeProfileVisibilityHiddenSnack": "The recipe is no longer shown on your profile",
+  "@recipeProfileVisibilityHiddenSnack": {
+    "description": "Success snackbar after removing from the profile"
+  },
+  "recipeProfileVisibilityFailed": "Could not change whether the recipe is shown on the profile",
+  "@recipeProfileVisibilityFailed": {
+    "description": "Failure snackbar when saving the profile visibility fails"
+  },
+  "recipeProfileVisibilityBadge": "Public",
+  "@recipeProfileVisibilityBadge": {
+    "description": "Neutral pill in the recipe header while the recipe is shown on the owner's profile"
   },
   "friendProfileBetweenYou": "Between you",
   "@friendProfileBetweenYou": {

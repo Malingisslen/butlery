@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/recipe_row_meta.dart';
 import 'package:butlery/widgets/common/recipe_thumb.dart';
 import 'package:butlery/widgets/social/profile_header.dart';
@@ -185,6 +186,14 @@ class _PublicProfileContent extends StatelessWidget {
                 _PublicRecipesSection(
                   recipes: vm.publicRecipes,
                   hasRecipes: vm.hasPublicRecipes,
+                  // The server's count covers pages not loaded yet; the
+                  // loaded length is the floor if the count lags behind.
+                  count: profile.publicRecipeCount > vm.publicRecipes.length
+                      ? profile.publicRecipeCount
+                      : vm.publicRecipes.length,
+                  hasMore: vm.hasMoreRecipes,
+                  isLoadingMore: vm.isLoadingMore,
+                  onShowMore: vm.loadMoreRecipes,
                 ),
               ],
             ),
@@ -239,10 +248,18 @@ class _CookingSkillBadge extends StatelessWidget {
 class _PublicRecipesSection extends StatelessWidget {
   final List<Recipe> recipes;
   final bool hasRecipes;
+  final int count;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final VoidCallback onShowMore;
 
   const _PublicRecipesSection({
     required this.recipes,
     required this.hasRecipes,
+    required this.count,
+    required this.hasMore,
+    required this.isLoadingMore,
+    required this.onShowMore,
   });
 
   @override
@@ -259,7 +276,7 @@ class _PublicRecipesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          context.l10n.publicProfileRecipeCount(recipes.length),
+          context.l10n.publicProfileRecipeCount(count),
           style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
         ),
         ButleryListSection(
@@ -268,6 +285,14 @@ class _PublicRecipesSection extends StatelessWidget {
               _PublicRecipeRow(key: ValueKey(recipe.id), recipe: recipe),
           ],
         ),
+        if (hasMore)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ButleryTextButton(
+              onPressed: isLoadingMore ? null : onShowMore,
+              label: context.l10n.publicProfileShowMoreRecipes,
+            ),
+          ),
       ],
     );
   }
@@ -281,17 +306,24 @@ class _PublicRecipeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final minutes = recipe.timeMinutes;
-    final rating = recipe.core.averageRating;
     return Semantics(
       label: context.l10n.a11yPublicProfileRecipeCard,
       container: true,
       child: ButleryMediaRow(
         leading: RecipeThumb(imageUrl: recipe.primaryImageUrl),
         title: recipe.title,
-        meta: RecipeRowMeta(minutes: minutes, rating: rating),
-        onTap: () => Navigator.of(
-          context,
-        ).pushNamed(Routes.recipeDetail, arguments: recipe),
+        // No stars: the profile copy carries no rating (steg 10E).
+        meta: RecipeRowMeta(minutes: minutes),
+        // Read-only: the reader sees the copy and can save their own, never
+        // the owner's recipe or its ratings and comments.
+        onTap: () => Navigator.of(context).pushNamed(
+          Routes.recipeDetail,
+          arguments: <String, dynamic>{
+            'recipe': recipe,
+            'readOnly': true,
+            'publicCopy': true,
+          },
+        ),
       ),
     );
   }

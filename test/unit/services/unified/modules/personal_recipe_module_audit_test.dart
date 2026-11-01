@@ -64,7 +64,6 @@ void main() {
 
     module = PersonalRecipeModule(
       recipeRepository: MockRecipeRepository(),
-      userRepository: MockUserRepository(),
       getCacheHelper: FakeJsonCacheHelper.new,
       getCurrentUserId: () => 'test-user-123',
       getCurrentUserDisplayName: () => 'Test User',

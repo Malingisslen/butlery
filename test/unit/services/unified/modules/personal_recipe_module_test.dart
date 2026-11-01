@@ -35,7 +35,6 @@ void main() {
   group('PersonalRecipeModule', () {
     late PersonalRecipeModule module;
     late MockRecipeRepository mockRepository;
-    late MockUserRepository mockUserRepository;
     late FakeJsonCacheHelper mockCacheHelper;
     late MockRecipeServiceAdapter mockServiceAdapter;
     late Recipe testRecipe;
@@ -55,7 +54,6 @@ void main() {
       await TestServiceLocator.initialize();
 
       mockRepository = MockRecipeRepository();
-      mockUserRepository = MockUserRepository();
       mockCacheHelper = FakeJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
 
@@ -66,7 +64,6 @@ void main() {
 
       module = PersonalRecipeModule(
         recipeRepository: mockRepository,
-        userRepository: mockUserRepository,
         getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -197,7 +194,6 @@ void main() {
         PersonalRecipeModule moduleWith(IngredientIdResolver? resolver) =>
             PersonalRecipeModule(
               recipeRepository: mockRepository,
-              userRepository: mockUserRepository,
               getCacheHelper: () => mockCacheHelper,
               getCurrentUserId: () => currentUserId,
               getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -573,7 +569,6 @@ void main() {
         final adapter = _RecordingAdapter();
         module = PersonalRecipeModule(
           recipeRepository: mockRepository,
-          userRepository: mockUserRepository,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -612,12 +607,8 @@ void main() {
         when(
           () => queue.queueRecipeDelete(any(), any()),
         ).thenAnswer((_) async => true);
-        when(
-          () => mockUserRepository.decrementPublicRecipeCount(any()),
-        ).thenAnswer((_) async {});
         module = PersonalRecipeModule(
           recipeRepository: mockRepository,
-          userRepository: mockUserRepository,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -663,7 +654,6 @@ void main() {
         when(() => tagging.generateTags(any())).thenThrow(Exception('down'));
         module = PersonalRecipeModule(
           recipeRepository: mockRepository,
-          userRepository: mockUserRepository,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -698,8 +688,8 @@ void main() {
         expect(await mockCacheHelper.loadJson(testRecipe.id), isNull);
       });
 
-      test('deleting a recipe whose deletion is already queued counts it '
-          'down once', () async {
+      test('deleting a recipe whose deletion is already queued still '
+          'succeeds', () async {
         when(
           () => queue.queueRecipeDelete(any(), any()),
         ).thenAnswer((_) async => false);
@@ -707,7 +697,6 @@ void main() {
         final ok = await module.deletePersonalRecipe(testRecipe.id);
 
         expect(ok, isTrue);
-        verifyNever(() => mockUserRepository.decrementPublicRecipeCount(any()));
       });
 
       test('without a ready queue the write goes to the server and is '
@@ -735,7 +724,6 @@ void main() {
 
       PersonalRecipeModule build() => PersonalRecipeModule(
         recipeRepository: mockRepository,
-        userRepository: mockUserRepository,
         getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -801,7 +789,6 @@ void main() {
           adapter.conflictWith = remote;
           final web = PersonalRecipeModule(
             recipeRepository: mockRepository,
-            userRepository: mockUserRepository,
             getCacheHelper: () => mockCacheHelper,
             getCurrentUserId: () => currentUserId,
             getCurrentUserDisplayName: () => currentUserDisplayName,

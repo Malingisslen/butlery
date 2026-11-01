@@ -50,6 +50,8 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0041](ADR-0041-public-recipe-photo-copies.md) — a recipe shown on the profile shows its own photo copies, deleted when it stops being shown, so the link stops working; Malin chose the copy over pointing at the owner's photo — escalated to Malin (steg 10E plan, 2026-10-31).
+- [ADR-0040](ADR-0040-public-recipes-imports-allowed.md) — imported recipes may be shown on the profile; Legal Counsel asked for hand-written only, Malin chose "Allt kan bli publikt" — escalated to Malin (steg 10E plan, 2026-10-31).
 - [ADR-0039](ADR-0039-no-inactivity-logout.md) — the 45-minute inactivity logout is removed; the user stays signed in until she signs out herself, Malin accepted the unattended-device risk — accepted (session-timeout removal plan, 2026-10-30).
 - [ADR-0038](ADR-0038-llm-samples-keep-running-until-policy-1-25.md) — the existing `llm_response_samples` capture keeps running although policy 1.24 does not mention it; the DPO asked to switch it off until 1.25, Malin chose to keep it and order 1.25 first — escalated to Malin (parser-shadow plan, 2026-10-29).
 - [ADR-0037](ADR-0037-parser-shadow-ai-consent-only.md) — parser shadow sampling runs only for users with AI consent, not on legitimate interest — escalated to Malin (parser-shadow plan, 2026-10-29).

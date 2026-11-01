@@ -29,6 +29,9 @@ class RecipeDetailTabletContent extends StatefulWidget {
   final RecipeDetailActions actions;
   final bool canAddPhoto;
 
+  /// A public copy: nothing that reads or writes the owner's social data.
+  final bool publicCopy;
+
   const RecipeDetailTabletContent({
     super.key,
     required this.recipe,
@@ -36,6 +39,7 @@ class RecipeDetailTabletContent extends StatefulWidget {
     required this.scrollToComments,
     required this.actions,
     this.canAddPhoto = false,
+    this.publicCopy = false,
   });
 
   @override
@@ -70,6 +74,7 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                   viewModel: widget.viewModel,
                   actions: _actions,
                   canAddPhoto: widget.canAddPhoto,
+                  publicCopy: widget.publicCopy,
                 ),
                 const SizedBox(height: AppDimensions.space16),
                 // BUT-410: heirloom scan sits in the narrower left column so
@@ -81,16 +86,18 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                   ),
                   const SizedBox(height: AppDimensions.space16),
                 ],
-                RecipeDetailSharingStatus(
-                  recipe: recipe,
-                  onSharingChanged: () => setState(() {}),
-                ),
-                const SizedBox(height: AppDimensions.space16),
-                RecipeDetailComments(
-                  recipe: recipe,
-                  initiallyExpanded: widget.scrollToComments,
-                  onCommentPosted: () => setState(() {}),
-                ),
+                if (!widget.publicCopy) ...[
+                  RecipeDetailSharingStatus(
+                    recipe: recipe,
+                    onSharingChanged: () => setState(() {}),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  RecipeDetailComments(
+                    recipe: recipe,
+                    initiallyExpanded: widget.scrollToComments,
+                    onCommentPosted: () => setState(() {}),
+                  ),
+                ],
               ],
             ),
           ),

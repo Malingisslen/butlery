@@ -66,9 +66,14 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Fetch recipes for a specific user with optional limit.
   Future<List<Recipe>> fetchUserRecipes(String userId, {int limit = 50});
 
-  /// Fetch only public recipes for a specific user.
-  /// Used for public profile views where only isPublic == true recipes are shown.
-  Future<List<Recipe>> fetchPublicUserRecipes(String userId, {int limit = 50});
+  /// One page of the recipes [userId] shows on their profile, newest change
+  /// first, read from the server-written copies rather than the recipes
+  /// themselves. [after] is the last recipe of the previous page.
+  Future<List<Recipe>> fetchPublicUserRecipes(
+    String userId, {
+    int limit = 20,
+    Recipe? after,
+  });
 
   /// Read a single recipe owned by [ownerId] (cross-user). Authorized by
   /// Firestore rules — succeeds only when the current user is the owner or a

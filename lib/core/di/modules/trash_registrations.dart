@@ -7,7 +7,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_trash_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/trash/trash_restore.dart';
@@ -29,7 +28,6 @@ abstract final class TrashRegistrations {
         repository: container<TrashRepository>(),
         restorer: TrashRestore(
           repository: container<TrashRepository>(),
-          userRepository: ServiceLocator.tryGet<UserRepository>,
           taggingService: ServiceLocator.tryGet<TaggingService>,
           hasUnsentWrite: (recipeId, userId) async =>
               await ServiceLocator.tryGet<OfflineService>()

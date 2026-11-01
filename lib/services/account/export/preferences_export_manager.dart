@@ -151,7 +151,7 @@ class PreferencesExportManager {
   /// inclusions it is the counterpart to — a reader comparing "what is deleted"
   /// against "what I got" finds both answers in one place.
   ///
-  /// BUT-2004: the three reads are isolated from each other. They used to share
+  /// BUT-2004: the reads are isolated from each other. They used to share
   /// one `try`, so a refusal on the third discarded two collections that had
   /// already been fetched — and the bundle then said the whole section failed
   /// rather than naming the one lookup that did. BUT-2003: each read goes
@@ -180,7 +180,7 @@ class PreferencesExportManager {
       if (page == null) return;
       reads.section[key] = sanitizeForJson(page.items);
       if (page.truncated) {
-        // Per collection, not one flag for the section: three collections
+        // Per collection, not one flag for the section: collections
         // that grow at different rates share this section, and a single
         // `truncated` cannot say WHICH of them lost rows. A nested
         // `*_truncated` makes the whole SECTION appear in

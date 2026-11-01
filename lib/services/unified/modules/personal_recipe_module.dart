@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
@@ -29,7 +28,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// HIGH-10: Recipe sync status of a write this module sent to Firebase
 /// itself. A write that went through the offline queue is not tracked here;
@@ -48,7 +46,6 @@ enum RecipeSyncStatus {
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
-  final UserRepository _userRepository;
   final JsonCacheHelper Function() _getCacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -123,7 +120,6 @@ class PersonalRecipeModule {
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
-    required UserRepository userRepository,
     required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
@@ -139,7 +135,6 @@ class PersonalRecipeModule {
   }) : _onRevisionConflict = onRevisionConflict,
        _getOfflineQueue = getOfflineQueue ?? _noOfflineQueue,
        _recipeRepository = recipeRepository,
-       _userRepository = userRepository,
        _getCacheHelper = getCacheHelper,
        _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
@@ -220,17 +215,6 @@ class PersonalRecipeModule {
 
           // Optimistic update - save to cache immediately, sync to Firebase in background
           await _saveToCache(newRecipe);
-
-          // Increment user's public recipe count
-          try {
-            await _userRepository.incrementPublicRecipeCount(currentUserId);
-            AppLogger.debug(
-              '✅ Incremented public recipe count for user ${currentUserId.maskedUserId}',
-            );
-          } catch (e) {
-            AppLogger.warning('⚠️ Failed to increment recipe count: $e');
-            // Continue anyway - don't fail recipe creation for counter issues
-          }
 
           final queue = _readyOfflineQueue();
           if (queue != null) {
@@ -399,7 +383,7 @@ class PersonalRecipeModule {
           final queue = _readyOfflineQueue();
           final bool deleteSuccess;
           if (queue != null) {
-            // Its deletion is already queued, and counted.
+            // Its deletion is already queued.
             if (!await queue.queueRecipeDelete(recipeId, currentUserId)) {
               return true;
             }
@@ -409,17 +393,6 @@ class PersonalRecipeModule {
             deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
           }
           if (deleteSuccess) {
-            // Decrement user's public recipe count
-            try {
-              await _userRepository.decrementPublicRecipeCount(currentUserId);
-              AppLogger.debug(
-                '✅ Decremented public recipe count for user ${currentUserId.maskedUserId}',
-              );
-            } catch (e) {
-              AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
-              // Continue anyway - don't fail recipe deletion for counter issues
-            }
-
             AppLogger.success('✅ Personal recipe deleted');
           } else {
             _setError(AppLocale.current.errorCouldNotDeleteFromServer);

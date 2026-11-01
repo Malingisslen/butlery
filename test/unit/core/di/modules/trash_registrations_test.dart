@@ -20,7 +20,6 @@ import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/repositories/firebase/firebase_trash_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/trash/trash_service.dart';
@@ -39,7 +38,6 @@ void main() {
   late GetIt container;
   late MockOfflineService offline;
   late MockUnifiedRecipeService recipes;
-  late MockUserRepository users;
   late TrashService service;
 
   // The production ServiceLocator and TestServiceLocator share GetIt.instance.
@@ -89,12 +87,6 @@ void main() {
     recipes = MockUnifiedRecipeService();
     when(() => recipes.adoptRestoredRecipe(any())).thenAnswer((_) async {});
     replaceGlobal<UnifiedRecipeService>(recipes);
-
-    users = MockUserRepository();
-    when(
-      () => users.incrementPublicRecipeCount(any()),
-    ).thenAnswer((_) async {});
-    replaceGlobal<UserRepository>(users);
 
     firestore = FakeFirebaseFirestore();
     repository = FirebaseTrashRepository(

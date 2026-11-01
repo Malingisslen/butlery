@@ -1,7 +1,7 @@
 /// BUT-907: restoring from the trash, and what the trash service reports.
 ///
 /// The repository is the real one over a fake Firestore, so a restore really
-/// moves the documents; the user counter, the tagger and the device side
+/// moves the documents; the tagger and the device side
 /// (cache and list) are recorded at their seams.
 library;
 
@@ -38,7 +38,6 @@ const _me = 'user-me';
 void main() {
   late FakeFirebaseFirestore firestore;
   late FirebaseTrashRepository repository;
-  late MockUserRepository users;
   late _MockTagging tagging;
   late List<Recipe> adopted;
   late Set<String> unsent;
@@ -65,10 +64,6 @@ void main() {
       firestore: firestore,
       authRepository: auth,
     );
-    users = MockUserRepository();
-    when(
-      () => users.incrementPublicRecipeCount(any()),
-    ).thenAnswer((_) async {});
     tagging = _MockTagging();
     when(() => tagging.needsRetagging(any())).thenReturn(false);
     adopted = [];
@@ -78,7 +73,6 @@ void main() {
       repository: repository,
       restorer: TrashRestore(
         repository: repository,
-        userRepository: () => users,
         taggingService: () => tagging,
         hasUnsentWrite: (id, _) async => unsent.contains(id),
         adoptRecipe: (r) async => adopted.add(r),
@@ -113,7 +107,6 @@ void main() {
         repository: repository,
         restorer: TrashRestore(
           repository: repository,
-          userRepository: () => users,
           taggingService: () => tagging,
           hasUnsentWrite: (id, _) async => false,
           adoptRecipe: (_) async => throw StateError('device store closed'),
@@ -128,8 +121,7 @@ void main() {
       expect(outcome.failures, isEmpty);
     });
 
-    test('puts the recipe back on the server, the device and the count, '
-        'once', () async {
+    test('puts the recipe back on the server and the device, once', () async {
       final item = await trashed('r1');
 
       final outcome = await service.restore([item]);
@@ -152,20 +144,17 @@ void main() {
             'the device copy carries the '
             'revision the server now holds, so its next edit compares right',
       );
-      verify(() => users.incrementPublicRecipeCount(_me)).called(1);
     });
 
     test(
-      'a second restore of the same item is refused and counts nothing',
+      'a second restore of the same item is refused',
       () async {
         final item = await trashed('r1');
         await service.restore([item]);
-        clearInteractions(users);
 
         final again = await service.restore([item]);
 
         expect(again.failures, {'r1': TrashFailure.gone});
-        verifyNever(() => users.incrementPublicRecipeCount(any()));
         expect(adopted, hasLength(1));
       },
     );
@@ -184,7 +173,6 @@ void main() {
         isFalse,
       );
       expect(adopted, isEmpty);
-      verifyNever(() => users.incrementPublicRecipeCount(any()));
     });
 
     test('offline, nothing is attempted and the outcome says so', () async {
@@ -199,7 +187,6 @@ void main() {
         (await col(FirestoreCollections.userTrash).doc('r1').get()).exists,
         isTrue,
       );
-      verifyNever(() => users.incrementPublicRecipeCount(any()));
     });
 
     test('stale tags are made again, as a save makes them', () async {
@@ -249,7 +236,6 @@ void main() {
       final last = await trashed('r4');
       final real = TrashRestore(
         repository: repository,
-        userRepository: () => users,
         taggingService: () => tagging,
         hasUnsentWrite: (_, _) async => false,
         adoptRecipe: (_) async {},
@@ -296,18 +282,6 @@ void main() {
 
       expect(outcome.isComplete, isTrue);
       expect(adopted, isEmpty);
-    });
-
-    test('a counter failure does not undo the restore', () async {
-      final item = await trashed('r1');
-      when(
-        () => users.incrementPublicRecipeCount(any()),
-      ).thenThrow(Exception('counter down'));
-
-      final outcome = await service.restore([item]);
-
-      expect(outcome.isComplete, isTrue);
-      expect(adopted.single.id, 'r1');
     });
   });
 

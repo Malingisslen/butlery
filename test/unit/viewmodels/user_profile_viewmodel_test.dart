@@ -1487,6 +1487,31 @@ void main() {
       });
     });
 
+    group('new recipes public default', () {
+      test('a minor is refused without calling the service', () async {
+        mockUserService.setUserState(
+          currentUser: UserProfileBuilder.build(
+            uid: testUserId,
+            isMinor: true,
+          ),
+          users: {},
+          isLoading: false,
+          error: null,
+        );
+        final vm = UserProfileViewModel(
+          mockUserService,
+          mockImagePickerService,
+          uploadService: mockImageUploadService,
+        );
+        addTearDown(vm.dispose);
+
+        expect(await vm.setNewRecipesShowOnProfile(true), isFalse);
+
+        expect(vm.newRecipesShowOnProfile, isFalse);
+        verifyNever(() => mockUserService.setNewRecipesShowOnProfile(any()));
+      });
+    });
+
     // BUT-1629: search discoverability for a 15–17-year-old. The client can
     // never write it (firestore.rules denies it and UserProfile.toFirestore
     // zeroes it), so the toggle routes through the server callable via

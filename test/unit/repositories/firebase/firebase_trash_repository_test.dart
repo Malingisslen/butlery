@@ -292,6 +292,26 @@ void main() {
       expect((await trashOf(_me).doc('r1').get()).exists, isFalse);
     });
 
+    test('a recipe that was on the profile comes back private', () async {
+      final recipe = _ownRecipe('shown').copyWith(
+        showOnProfile: true,
+        showOnProfileChangedAt: DateTime.utc(2026, 10, 1),
+      );
+      await storeRecipe(_me, recipe);
+      await repository.moveRecipeToTrash(recipe);
+      final item = (await repository.listTrash()).singleWhere(
+        (i) => i.id == 'shown',
+      );
+
+      final restored = await repository.restoreRecipe(item);
+
+      expect(restored.showOnProfile, isFalse);
+      final core =
+          (await recipesOf(_me).doc('shown').get()).data()!['core'] as Map;
+      expect(core['showOnProfile'], isFalse);
+      expect(core.containsKey('showOnProfileChangedAt'), isFalse);
+    });
+
     test('given tags replace the stored ones', () async {
       final item = await trashed('r1');
       final tags = TagResult.failed(reason: 'probe');

@@ -22,7 +22,9 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
@@ -33,6 +35,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -44,6 +47,8 @@ class _MockRecipePermissionManager extends Mock
     implements RecipePermissionManager {}
 
 class _MockOfflineService extends Mock implements OfflineService {}
+
+class _MockUserService extends Mock implements UserService {}
 
 class _MockPersonalRecipeOperations extends Mock
     implements PersonalRecipeOperations {}
@@ -87,6 +92,7 @@ void main() {
 
     // Create-new-recipe branch (isEditing = false → uuid-generated id).
     when(() => mockState.isEditing).thenReturn(false);
+    when(() => mockState.startedFromTemplate).thenReturn(false);
     when(
       () => mockState.createRecipe(
         recipeId: any(named: 'recipeId'),
@@ -612,6 +618,153 @@ void main() {
 
       expect(deleted, isTrue);
       verifyNever(() => mockImageManager.clearAllImages());
+    });
+  });
+
+  group('new recipe goes on the profile (steg 10E)', () {
+    late _MockUserService userService;
+
+    void setProfile(UserProfile? profile) {
+      when(() => userService.currentUserProfile).thenReturn(profile);
+    }
+
+    UserProfile profileWith({bool on = true}) => MockFactory.createUserProfile(
+      userId: 'u1',
+    ).copyWith(newRecipesShowOnProfile: on);
+
+    setUp(() {
+      userService = _MockUserService();
+      GetIt.instance.registerSingleton<UserService>(userService);
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Recipe saved'));
+      when(
+        () => mockPersonalOps.updateUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Recipe saved'));
+    });
+
+    tearDown(() {
+      app_provider.ServiceLocator.reset();
+      GetIt.instance.unregister<UserService>();
+    });
+
+    test('setting on: a second write sets showOnProfile and the shown recipe '
+        'is returned', () async {
+      setProfile(profileWith());
+
+      final result = await manager.saveRecipe(onNotify: () {});
+
+      final written =
+          verify(
+                () => mockPersonalOps.updateUnifiedRecipe(captureAny()),
+              ).captured.single
+              as Recipe;
+      expect(written.showOnProfile, isTrue);
+      expect(written.core.showOnProfileChangedAt, isNotNull);
+      verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
+      expect(result, isNotNull);
+      expect(result!.showOnProfile, isTrue);
+      expect(result.id, written.id);
+    });
+
+    test('setting off: no second write, recipe stays private', () async {
+      setProfile(profileWith(on: false));
+
+      final result = await manager.saveRecipe(onNotify: () {});
+
+      verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+      expect(result!.showOnProfile, isFalse);
+    });
+
+    test('no profile: no second write', () async {
+      setProfile(null);
+
+      final result = await manager.saveRecipe(onNotify: () {});
+
+      verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+      expect(result, isNotNull);
+    });
+
+    test('a template start: no second write', () async {
+      setProfile(profileWith());
+      when(() => mockState.startedFromTemplate).thenReturn(true);
+
+      await manager.saveRecipe(onNotify: () {});
+
+      verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+    });
+
+    test(
+      'an edit issues exactly one update and no profile-default write',
+      () async {
+        setProfile(profileWith());
+        when(() => mockState.isEditing).thenReturn(true);
+        when(
+          () => mockState.originalRecipe,
+        ).thenReturn(RecipeFactory.build(id: 'r1'));
+        when(() => mockImageManager.networkFailedImages).thenReturn(const []);
+        when(() => mockImageManager.hasTooLargeImage).thenReturn(false);
+
+        final result = await manager.saveRecipe(onNotify: () {});
+
+        expect(result, isNotNull);
+        verify(() => mockPersonalOps.updateUnifiedRecipe(any())).called(1);
+        verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+      },
+    );
+
+    test(
+      'a fork is added once and never put on the profile afterwards',
+      () async {
+        setProfile(profileWith());
+        when(
+          () => mockState.originalRecipe,
+        ).thenReturn(RecipeFactory.build(id: 'original'));
+        when(() => mockState.setForking(any())).thenAnswer((_) {});
+        when(
+          () => mockState.createRecipe(recipeId: any(named: 'recipeId')),
+        ).thenAnswer((invocation) {
+          final id = invocation.namedArguments[#recipeId] as String;
+          return RecipeFactory.build(id: id, title: 'Fork');
+        });
+
+        final result = await manager.forkRecipe();
+
+        expect(result, isNotNull);
+        verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
+        verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+      },
+    );
+
+    test('a refused second write keeps the created recipe and the save '
+        'succeeds', () async {
+      setProfile(profileWith());
+      when(() => mockPersonalOps.updateUnifiedRecipe(any())).thenAnswer(
+        (_) async => RecipeOperationResult.failure('permission-denied'),
+      );
+
+      final result = await manager.saveRecipe(onNotify: () {});
+
+      expect(result, isNotNull);
+      expect(result!.showOnProfile, isFalse);
+      verifyNever(() => mockState.setError(any()));
+      verify(() => mockImageManager.commitPendingStorageDeletes()).called(1);
+    });
+
+    test('a throwing second write keeps the created recipe and the save '
+        'succeeds', () async {
+      setProfile(profileWith());
+      when(
+        () => mockPersonalOps.updateUnifiedRecipe(any()),
+      ).thenThrow(StateError('boom'));
+
+      final result = await manager.saveRecipe(onNotify: () {});
+
+      expect(result, isNotNull);
+      expect(result!.showOnProfile, isFalse);
+      verifyNever(() => mockState.setError(any()));
     });
   });
 }

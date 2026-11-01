@@ -6,6 +6,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/public_recipe_mapper.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_query_operations.dart';
@@ -297,7 +298,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // draft and is Malin's call, not a quiet addition here. An earlier
     // version of this comment claimed the rejection happened; a reviewer
     // opened the mixin and disproved it.
-    Recipe recipeToSave = sanitizeRecipeText(entity);
+    // Steg 10E: a recipe is born private. A fork or a static copy of a
+    // shared recipe builds on a recipe that may be on the profile; showing the
+    // new one is a separate update.
+    Recipe recipeToSave = sanitizeRecipeText(
+      entity.copyWith(showOnProfile: false, showOnProfileChangedAt: null),
+    );
 
     final firestoreData = recipeToSave.toFirestore();
     final coreData = (firestoreData['core'] as Map<String, dynamic>?).orEmpty();
@@ -653,7 +659,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<void> addRecipes(List<Recipe> recipes) async {
     // Use the base class batch method
-    await createBatch(recipes);
+    await createBatch([
+      for (final r in recipes)
+        r.copyWith(showOnProfile: false, showOnProfileChangedAt: null),
+    ]);
   }
 
   @override
@@ -743,22 +752,43 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<List<Recipe>> fetchPublicUserRecipes(
     String userId, {
-    int limit = 50,
+    int limit = 20,
+    Recipe? after,
   }) async {
     return await FirebasePerformanceService.traceFirebaseQuery(
       (trace) async {
-        final snap = await getCollectionForUser(userId)
-            .where('isPublic', isEqualTo: true)
-            .orderBy('core.updatedAt', descending: true)
-            .limit(limit)
-            .get();
+        // The id breaks ties between copies with the same updatedAt, so a
+        // page boundary never skips or repeats one.
+        var query = firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userPublicRecipes)
+            .orderBy('updatedAt', descending: true)
+            .orderBy(FieldPath.documentId, descending: true);
+        if (after != null) {
+          query = query.startAfter([
+            Timestamp.fromDate(after.updatedAt),
+            after.id,
+          ]);
+        }
+        final QuerySnapshot<Map<String, dynamic>> snap;
+        try {
+          snap = await query.limit(limit).get();
+        } on FirebaseException catch (e) {
+          // The rules refuse a guest and someone the owner blocked. To them
+          // the profile shows no recipes, as readSharedRecipe answers a
+          // refusal with "absent", rather than an error that tells them why.
+          if (e.code == 'permission-denied') return const <Recipe>[];
+          rethrow;
+        }
 
-        final recipes = snap.docs.map(fromFirestore).toList();
-        trace.putAttribute('user_id', userId);
+        final recipes = snap.docs
+            .map((d) => recipeFromPublicCopy(userId, d.id, d.data()))
+            .toList();
         trace.setMetric('limit', limit);
         return recipes;
       },
-      collection: 'recipes',
+      collection: 'public_recipes',
       resultCount: null,
     );
   }

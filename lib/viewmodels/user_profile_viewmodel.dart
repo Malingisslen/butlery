@@ -200,6 +200,29 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return ok;
   }
 
+  bool get newRecipesShowOnProfile =>
+      _editedProfile?.newRecipesShowOnProfile ?? false;
+
+  /// Takes effect at once on its own write path, not on Save.
+  Future<bool> setNewRecipesShowOnProfile(bool value) async {
+    if (isMinor) return false;
+    final ok = await _userService.setNewRecipesShowOnProfile(value);
+    _operationError = ok
+        ? null
+        : _userService.error ??
+              AppLocale.current.errorCouldNotSaveNewRecipesPublic;
+    if (ok) {
+      _originalProfile = _originalProfile?.copyWith(
+        newRecipesShowOnProfile: value,
+      );
+      _editedProfile = _editedProfile?.copyWith(
+        newRecipesShowOnProfile: value,
+      );
+    }
+    notifyListeners();
+    return ok;
+  }
+
   void updateAllowEmailSearch(bool value) {
     _editedProfile = _editedProfile?.copyWith(allowEmailSearch: value);
     notifyListeners();

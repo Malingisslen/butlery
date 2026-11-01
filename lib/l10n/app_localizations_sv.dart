@@ -17694,6 +17694,21 @@ class AppLocalizationsSv extends AppLocalizations {
       'Inte tillgängligt för konton under 18 år.';
 
   @override
+  String get privacyNewRecipesPublicTitle => 'Nya recept är publika';
+
+  @override
+  String get privacyNewRecipesPublicSubtitle =>
+      'Gäller recept du sparar från nu. Befintliga recept ändras inte.';
+
+  @override
+  String get privacyPublicRecipesMinor =>
+      'Publika recept kräver att du är 18 år';
+
+  @override
+  String get errorCouldNotSaveNewRecipesPublic =>
+      'Kunde inte spara inställningen för nya recept';
+
+  @override
   String menuDishCreatorCredit(String name) {
     return 'Recept av $name';
   }
@@ -20047,6 +20062,53 @@ class AppLocalizationsSv extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get publicProfileShowMoreRecipes => 'Visa fler';
+
+  @override
+  String get recipeProfileVisibilityShow => 'Visa på min profil';
+
+  @override
+  String get recipeProfileVisibilityHide => 'Sluta visa på profilen';
+
+  @override
+  String get recipeProfileVisibilityMinorHint =>
+      'Publika recept kräver att du är 18 år';
+
+  @override
+  String recipeProfileVisibilityConfirmTitle(String title) {
+    return 'Visa $title på din profil?';
+  }
+
+  @override
+  String get recipeProfileVisibilityConfirmBody =>
+      'Alla som är inloggade i Butlery och öppnar din profil kan se receptet, med bild, ingredienser och steg. Dina anteckningar och betyg syns inte. Dela bara recept du har rätt att dela. Den som redan sett receptet kan ha sparat en egen kopia.';
+
+  @override
+  String get recipeProfileVisibilityConfirmAction => 'Visa på profilen';
+
+  @override
+  String get recipeProfileVisibilityCancel => 'Avbryt';
+
+  @override
+  String get recipeProfileVisibilityBlockedContent =>
+      'Receptet innehåller text som inte kan visas publikt';
+
+  @override
+  String get recipeProfileVisibilityShownSnack =>
+      'Receptet visas på din profil';
+
+  @override
+  String get recipeProfileVisibilityHiddenSnack =>
+      'Receptet visas inte längre på din profil';
+
+  @override
+  String get recipeProfileVisibilityFailed =>
+      'Kunde inte ändra om receptet visas på profilen';
+
+  @override
+  String get recipeProfileVisibilityBadge => 'Publikt';
 
   @override
   String get friendProfileBetweenYou => 'Mellan er';

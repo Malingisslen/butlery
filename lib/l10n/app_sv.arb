@@ -13480,6 +13480,22 @@
   "@privacyShowNameOnDishesMinor": {
     "description": "BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled."
   },
+  "privacyNewRecipesPublicTitle": "Nya recept är publika",
+  "@privacyNewRecipesPublicTitle": {
+    "description": "Privacy toggle title: whether recipes the user saves from now on start public. Off by default."
+  },
+  "privacyNewRecipesPublicSubtitle": "Gäller recept du sparar från nu. Befintliga recept ändras inte.",
+  "@privacyNewRecipesPublicSubtitle": {
+    "description": "Toggle subtitle: the setting is not retroactive."
+  },
+  "privacyPublicRecipesMinor": "Publika recept kräver att du är 18 år",
+  "@privacyPublicRecipesMinor": {
+    "description": "Subtitle in place of the description when the account is a minor; the toggle is disabled and off."
+  },
+  "errorCouldNotSaveNewRecipesPublic": "Kunde inte spara inställningen för nya recept",
+  "@errorCouldNotSaveNewRecipesPublic": {
+    "description": "Snackbar when saving the new-recipes-are-public setting fails."
+  },
   "menuDishCreatorCredit": "Recept av {name}",
   "@menuDishCreatorCredit": {
     "description": "BUT-2221: the line under a dish in a shared menu naming who made it. 'Recept av' rather than 'Av' so it is not confused with 'Delad av'.",
@@ -16526,6 +16542,64 @@
         "type": "int"
       }
     }
+  },
+  "publicProfileShowMoreRecipes": "Visa fler",
+  "@publicProfileShowMoreRecipes": {
+    "description": "Steg 10E: loads the next page of recipes on a public profile"
+  },
+  "recipeProfileVisibilityShow": "Visa på min profil",
+  "@recipeProfileVisibilityShow": {
+    "description": "Menu row that publishes a recipe on the owner's public profile"
+  },
+  "recipeProfileVisibilityHide": "Sluta visa på profilen",
+  "@recipeProfileVisibilityHide": {
+    "description": "Menu row that removes a recipe from the owner's public profile"
+  },
+  "recipeProfileVisibilityMinorHint": "Publika recept kräver att du är 18 år",
+  "@recipeProfileVisibilityMinorHint": {
+    "description": "Second line under the disabled menu row for a minor"
+  },
+  "recipeProfileVisibilityConfirmTitle": "Visa {title} på din profil?",
+  "@recipeProfileVisibilityConfirmTitle": {
+    "description": "Title of the confirmation before a recipe is published on the profile",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Recipe title"
+      }
+    }
+  },
+  "recipeProfileVisibilityConfirmBody": "Alla som är inloggade i Butlery och öppnar din profil kan se receptet, med bild, ingredienser och steg. Dina anteckningar och betyg syns inte. Dela bara recept du har rätt att dela. Den som redan sett receptet kan ha sparat en egen kopia.",
+  "@recipeProfileVisibilityConfirmBody": {
+    "description": "Body of the confirmation before a recipe is published on the profile"
+  },
+  "recipeProfileVisibilityConfirmAction": "Visa på profilen",
+  "@recipeProfileVisibilityConfirmAction": {
+    "description": "Primary button of the publish confirmation"
+  },
+  "recipeProfileVisibilityCancel": "Avbryt",
+  "@recipeProfileVisibilityCancel": {
+    "description": "Cancel button of the publish confirmation"
+  },
+  "recipeProfileVisibilityBlockedContent": "Receptet innehåller text som inte kan visas publikt",
+  "@recipeProfileVisibilityBlockedContent": {
+    "description": "Failure snackbar when the content filter flags the recipe text"
+  },
+  "recipeProfileVisibilityShownSnack": "Receptet visas på din profil",
+  "@recipeProfileVisibilityShownSnack": {
+    "description": "Success snackbar after publishing on the profile"
+  },
+  "recipeProfileVisibilityHiddenSnack": "Receptet visas inte längre på din profil",
+  "@recipeProfileVisibilityHiddenSnack": {
+    "description": "Success snackbar after removing from the profile"
+  },
+  "recipeProfileVisibilityFailed": "Kunde inte ändra om receptet visas på profilen",
+  "@recipeProfileVisibilityFailed": {
+    "description": "Failure snackbar when saving the profile visibility fails"
+  },
+  "recipeProfileVisibilityBadge": "Publikt",
+  "@recipeProfileVisibilityBadge": {
+    "description": "Neutral pill in the recipe header while the recipe is shown on the owner's profile"
   },
   "friendProfileBetweenYou": "Mellan er",
   "@friendProfileBetweenYou": {

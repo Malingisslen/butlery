@@ -32,6 +32,7 @@ class ButleryMenuChoice<T> {
     this.selected = false,
     this.trailingIcon,
     this.iconColor,
+    this.subtitle,
   });
 
   final T value;
@@ -61,6 +62,9 @@ class ButleryMenuChoice<T> {
   /// The glyph in this colour, when only it should stand out, as the flag of
   /// a report choice; [danger] colours the words too.
   final Color? iconColor;
+
+  /// A second line under the label, to say why a disabled choice is disabled.
+  final String? subtitle;
 }
 
 /// A button that opens a menu of [choices] and reports the one picked.
@@ -129,18 +133,31 @@ class ButleryMenu<T> extends StatelessWidget {
                     const SizedBox(width: AppDimensions.space8),
                   ],
                   Flexible(
-                    child: Text(
-                      c.label,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: !c.enabled
-                            ? AppModeColors.textDisabled(cs.brightness)
-                            : c.danger
-                            ? cs.error
-                            : null,
-                        fontFeatures: c.tabularFigures
-                            ? const [FontFeature.tabularFigures()]
-                            : null,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          c.label,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: !c.enabled
+                                ? AppModeColors.textDisabled(cs.brightness)
+                                : c.danger
+                                ? cs.error
+                                : null,
+                            fontFeatures: c.tabularFigures
+                                ? const [FontFeature.tabularFigures()]
+                                : null,
+                          ),
+                        ),
+                        if (c.subtitle != null)
+                          Text(
+                            c.subtitle!,
+                            style: AppTextStyles.captionBase.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   if (c.trailingIcon != null) ...[

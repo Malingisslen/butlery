@@ -1704,4 +1704,60 @@ void main() {
       });
     });
   });
+
+  group('RecipeFormState - showOnProfile (steg 10E)', () {
+    final changedAt = DateTime.utc(2026, 10, 20, 12);
+
+    setUpAll(() async {
+      await TestServiceLocator.initialize();
+    });
+
+    tearDownAll(() async {
+      await TestServiceLocator.reset();
+    });
+
+    Recipe shown() => RecipeFactory.build(
+      id: 'r1',
+    ).copyWith(showOnProfile: true, showOnProfileChangedAt: changedAt);
+
+    test('editing keeps showOnProfile true and its changed-at', () {
+      final state = RecipeFormState(initialRecipe: shown());
+
+      final recipe = state.createRecipe();
+
+      expect(recipe.showOnProfile, isTrue);
+      expect(recipe.core.showOnProfileChangedAt, changedAt);
+      state.dispose();
+    });
+
+    test('editing keeps showOnProfile false', () {
+      final state = RecipeFormState(
+        initialRecipe: RecipeFactory.build(id: 'r1'),
+      );
+
+      expect(state.createRecipe().showOnProfile, isFalse);
+      state.dispose();
+    });
+
+    test('a template load starts false and is flagged as from a template', () {
+      final state = RecipeFormState(initialRecipe: shown(), isTemplate: true);
+
+      final recipe = state.createRecipe(recipeId: 'copy');
+
+      expect(state.startedFromTemplate, isTrue);
+      expect(recipe.showOnProfile, isFalse);
+      expect(recipe.core.showOnProfileChangedAt, isNull);
+      state.dispose();
+    });
+
+    test('a blank form and an edit are not from a template', () {
+      final blank = RecipeFormState();
+      final edit = RecipeFormState(initialRecipe: shown());
+
+      expect(blank.startedFromTemplate, isFalse);
+      expect(edit.startedFromTemplate, isFalse);
+      blank.dispose();
+      edit.dispose();
+    });
+  });
 }

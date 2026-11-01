@@ -261,8 +261,12 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
               type: kept.type,
             ),
     );
+    // Steg 10E: a restored recipe is born private, like any created recipe.
     return Recipe(
-      core: recipe.core,
+      core: recipe.core.copyWith(
+        showOnProfile: false,
+        showOnProfileChangedAt: null,
+      ),
       type: RecipeType.personal,
       rev: (kept.rev ?? 0) + 1,
     );

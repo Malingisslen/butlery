@@ -849,89 +849,6 @@ void main() {
             .get();
         expect(doc.data()!['friendsCount'], equals(10));
       });
-
-      test('should update public recipe count', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-          fakeFirestore,
-          userId,
-          _createUserProfile(userId).toFirestore(),
-        );
-
-        // Act
-        await repository.updateProfileStats(userId, publicRecipeCount: 25);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(userId)
-            .get();
-        expect(doc.data()!['publicRecipeCount'], equals(25));
-      });
-
-      test('should update multiple stats simultaneously', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-          fakeFirestore,
-          userId,
-          _createUserProfile(userId).toFirestore(),
-        );
-
-        // Act
-        await repository.updateProfileStats(
-          userId,
-          friendsCount: 15,
-          publicRecipeCount: 30,
-        );
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(userId)
-            .get();
-        expect(doc.data()!['friendsCount'], equals(15));
-        expect(doc.data()!['publicRecipeCount'], equals(30));
-      });
-
-      test('should increment public recipe count', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(fakeFirestore, userId, {
-          ..._createUserProfile(userId).toFirestore(),
-          'publicRecipeCount': 4,
-        });
-
-        // Act
-        await repository.incrementPublicRecipeCount(userId);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(userId)
-            .get();
-        expect(doc.data()!['publicRecipeCount'], equals(5));
-      });
-
-      test('should decrement public recipe count', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(fakeFirestore, userId, {
-          ..._createUserProfile(userId).toFirestore(),
-          'publicRecipeCount': 4,
-        });
-
-        // Act
-        await repository.decrementPublicRecipeCount(userId);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(userId)
-            .get();
-        expect(doc.data()!['publicRecipeCount'], equals(3));
-      });
     });
 
     group('Online Status', () {
@@ -1764,6 +1681,76 @@ void main() {
         );
       });
 
+      test('setNewRecipesShowOnProfile stores the flag in the settings doc '
+          'only, keeps its sibling field, and survives a fetch', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await settingsRef(userId).set({'hasSeenActivityFeedHint': true});
+
+        await repository.setNewRecipesShowOnProfile(userId, true);
+
+        final settings = (await settingsRef(userId).get()).data()!;
+        expect(settings['newRecipesShowOnProfile'], isTrue);
+        expect(
+          settings['hasSeenActivityFeedHint'],
+          isTrue,
+          reason: 'a merge write must not wipe the other private prefs',
+        );
+        final publicDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(
+          publicDoc.data()!.containsKey('newRecipesShowOnProfile'),
+          isFalse,
+          reason: 'a private preference must never reach the public profile',
+        );
+        expect(
+          (await repository.fetchProfile(userId))!.newRecipesShowOnProfile,
+          isTrue,
+        );
+
+        await repository.setNewRecipesShowOnProfile(userId, false);
+        expect(
+          (await repository.fetchProfile(userId))!.newRecipesShowOnProfile,
+          isFalse,
+        );
+      });
+
+      test('a full profile save from an older copy keeps the stored choice '
+          'off', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await repository.setNewRecipesShowOnProfile(userId, false);
+
+        await repository.saveProfile(
+          _createUserProfile(
+            userId,
+          ).copyWith(bio: 'Ny bio', newRecipesShowOnProfile: true),
+        );
+
+        expect(
+          (await settingsRef(userId).get()).data()!['newRecipesShowOnProfile'],
+          isFalse,
+        );
+      });
+
+      test('setNewRecipesShowOnProfile for another uid is denied and writes '
+          'nothing', () async {
+        await expectLater(
+          repository.setNewRecipesShowOnProfile('other-user', true),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect((await settingsRef('other-user').get()).exists, isFalse);
+        expect((await settingsRef(userId).get()).exists, isFalse);
+      });
+
       test('setShowNutritionStrip for another uid is denied and writes '
           'nothing (validateSelfOperation)', () async {
         await expectLater(
@@ -1805,10 +1792,10 @@ void main() {
 
           expect(doc.exists, isTrue);
           final data = doc.data()!;
-          expect(data['termsVersion'], '1.3');
+          expect(data['termsVersion'], '1.4');
           expect(
             UserService.currentTermsVersion,
-            '1.3',
+            '1.4',
             reason:
                 'the test asserts the literal version it writes — keep them '
                 'in lockstep so a version bump is a deliberate, visible edit',
@@ -1848,7 +1835,7 @@ void main() {
             'Existing Name',
             reason: 'merge-write must preserve pre-existing fields',
           );
-          expect(data['termsVersion'], '1.3');
+          expect(data['termsVersion'], '1.4');
         },
       );
 

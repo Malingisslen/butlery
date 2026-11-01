@@ -1362,22 +1362,17 @@ void main() {
           () => mockUserRepository.updateProfileStats(
             'test_user_123',
             friendsCount: any(named: 'friendsCount'),
-            publicRecipeCount: any(named: 'publicRecipeCount'),
           ),
         ).thenAnswer((_) async {});
 
         // Act
-        await userService.updateProfileStats(
-          friendsCount: 5,
-          publicRecipeCount: 3,
-        );
+        await userService.updateProfileStats(friendsCount: 5);
 
         // Assert
         verify(
           () => mockUserRepository.updateProfileStats(
             'test_user_123',
             friendsCount: 5,
-            publicRecipeCount: 3,
           ),
         ).called(1);
       });
@@ -1910,6 +1905,75 @@ void main() {
             any(),
             sharedCopies: any(named: 'sharedCopies'),
           ),
+        );
+      });
+    });
+
+    group('setNewRecipesShowOnProfile', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+      });
+
+      test('writes through the repository, updates the profile and notifies '
+          'listeners', () async {
+        await userService.initialize();
+        expect(
+          userService.currentUserProfile!.newRecipesShowOnProfile,
+          isFalse,
+        );
+        when(
+          () => mockUserRepository.setNewRecipesShowOnProfile(any(), any()),
+        ).thenAnswer((_) async {});
+        await pumpEventQueue();
+        var notifications = 0;
+        userService.addListener(() => notifications++);
+
+        final ok = await userService.setNewRecipesShowOnProfile(true);
+
+        expect(ok, isTrue);
+        verify(
+          () => mockUserRepository.setNewRecipesShowOnProfile(
+            'test_user_123',
+            true,
+          ),
+        ).called(1);
+        expect(userService.currentUserProfile!.newRecipesShowOnProfile, isTrue);
+        expect(notifications, 1);
+      });
+
+      test('a refused write returns false, sets the error and keeps the old '
+          'value', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setNewRecipesShowOnProfile(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+
+        final ok = await userService.setNewRecipesShowOnProfile(true);
+
+        expect(ok, isFalse);
+        expect(
+          userService.currentUserProfile!.newRecipesShowOnProfile,
+          isFalse,
+        );
+        expect(userService.error, isNotNull);
+      });
+
+      test('with no profile loaded it returns false without a write', () async {
+        final ok = await userService.setNewRecipesShowOnProfile(true);
+
+        expect(ok, isFalse);
+        verifyNever(
+          () => mockUserRepository.setNewRecipesShowOnProfile(any(), any()),
         );
       });
     });

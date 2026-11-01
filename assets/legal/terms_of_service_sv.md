@@ -1,7 +1,7 @@
 # ANVÄNDARVILLKOR FÖR BUTLERY
 
-Version: 1.3
-Senast uppdaterad: 2026-10-11
+Version: 1.4
+Senast uppdaterad: 2026-10-31
 
 ---
 
@@ -37,6 +37,8 @@ Du förbinder dig att:
 
 5.1 Ditt innehåll
 Du behåller äganderätten till recept och annat innehåll som du skapar i Tjänsten. Genom att dela innehåll med andra användare ger du dem rätt att se och använda det delade innehållet inom Tjänsten.
+
+Väljer du att visa ett recept på din profil får alla inloggade användare se det och spara en egen kopia inom Tjänsten. Du intygar att du har rätt att dela det du visar, till exempel att texten och bilderna är dina egna eller att du har tillstånd att dela dem. Vi kan ta bort ett recept som bryter mot dessa villkor eller mot riktlinjerna för gemenskapen.
 
 5.2 AI-bearbetning
 Tjänsten kan använda AI (artificiell intelligens) för att extrahera och strukturera recept från text och bilder. Denna bearbetning kräver ditt uttryckliga samtycke enligt GDPR.
