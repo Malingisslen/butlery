@@ -409,6 +409,26 @@ service cloud.firestore {
       return after != true || after == before;
     }
 
+    // Steg 10E: a save that turns `core.showOnProfile` back on must carry a
+    // later `showOnProfileChangedAt` than the stored one. A whole-recipe save
+    // from a device that still holds a copy from before the owner turned it
+    // off carries the older stamp, and must not put the recipe back.
+    // The stamp must also be close to now: a recipe restored from the trash
+    // stores no stamp to compare against. A queued turn-on that reaches
+    // the server outside the window is refused and the recipe stays private.
+    function showOnProfileTurnOnIsNewer() {
+      let beforeCore = resource.data.get('core', {});
+      let afterCore = request.resource.data.get('core', {});
+      let stamp = afterCore.get('showOnProfileChangedAt', null);
+      return afterCore.get('showOnProfile', false) != true
+        || beforeCore.get('showOnProfile', false) == true
+        || (stamp is timestamp
+            && stamp > request.time - duration.value(1, 'h')
+            && stamp < request.time + duration.value(10, 'm')
+            && (!('showOnProfileChangedAt' in beforeCore)
+                || stamp > beforeCore.showOnProfileChangedAt));
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -581,6 +601,7 @@ service cloud.firestore {
           && (showOnProfileUnchangedOrOff(
                 resource.data.get('core', {}).get('showOnProfile', false))
               || mayShowRecipeOnProfile(userId))
+          && showOnProfileTurnOnIsNewer()
           && (
             !('cookCount' in request.resource.data.get('core', {}))
             || request.resource.data.core.cookCount

@@ -110,6 +110,45 @@ async function recipes(): Promise<void> {
       (await evidence(priv))?.text === undefined,
   );
 
+  // Steg 10E: a recipe on the owner's profile is readable by a reporter who is
+  // no member.
+  await recipes.doc(`shown${RUN}`).set({
+    core: { title: "Publik", showOnProfile: true },
+    socialData: { memberPermissions: {} },
+  });
+  await db.collection("users").doc(OWNER).collection("public_recipes").doc(`shown${RUN}`)
+    .set({ id: `shown${RUN}`, title: "Publik" });
+  const shown = await report("recipe", `shown${RUN}`);
+  check(
+    "a recipe shown on the owner's profile is captured for any reporter",
+    (await captureReportEvidence(db, shown, NOW)) === "captured" &&
+      (await evidence(shown))?.text !== undefined,
+  );
+
+  // The rules shut a blocked reader and a hidden profile out of the copy.
+  const shutOut = [
+    [`ownb${RUN}`, "the owner blocked the reporter"],
+    [`ownh${RUN}`, "the owner's profile is hidden"],
+  ];
+  for (const [owner] of shutOut) {
+    const ownerDoc = db.collection("users").doc(owner);
+    await ownerDoc.collection("recipes").doc(`shown${RUN}`).set({
+      core: { title: "Publik", showOnProfile: true },
+      socialData: { memberPermissions: {} },
+    });
+    await ownerDoc.collection("public_recipes").doc(`shown${RUN}`).set({ id: `shown${RUN}`, title: "Publik" });
+  }
+  await db.collection("blocks").doc(`ownb${RUN}_${REPORTER}`).set({ blockerId: `ownb${RUN}`, blockedId: REPORTER });
+  await db.collection("public_profiles").doc(`ownh${RUN}`).set({ displayName: "Dold", isHidden: true });
+  for (const [owner, label] of shutOut) {
+    const id = await report("recipe", `shown${RUN}`, { contentOwnerId: owner });
+    check(
+      `a shown recipe keeps no text when ${label}`,
+      (await captureReportEvidence(db, id, NOW)) === "not_visible_to_reporter" &&
+        (await evidence(id))?.text === undefined,
+    );
+  }
+
   const missing = await report("recipe", `gone${RUN}`);
   check(
     "a recipe that no longer exists records missing",

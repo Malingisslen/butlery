@@ -6,8 +6,10 @@
  *     non-guest the owner has not blocked while the profile is not hidden,
  *     and by an admin. No client creates, updates or deletes it, an admin
  *     included.
- *   - Turning `core.showOnProfile` on needs a verified, matured adult. Turning
- *     it off, or a save that leaves it as it was, needs nothing more.
+ *   - Turning `core.showOnProfile` on an existing recipe needs a verified,
+ *     matured adult and a `showOnProfileChangedAt` close to the server's time,
+ *     later than the stored one where there is one. Turning it off, or a save
+ *     that leaves it as it was, needs nothing more.
  *   - `public_profiles.publicRecipeCount` is not client-writable: 0 or absent on
  *     create, untouched on update.
  *
@@ -168,7 +170,12 @@ test("a verified adult creates a recipe shown on the profile", async () => {
 test("a verified adult turns it on and off on an existing recipe", async () => {
   const id = freshId();
   await assertSucceeds(as(OWNER).doc(recipeDoc(OWNER, id)).set(recipeMap(OWNER)));
-  await assertSucceeds(as(OWNER).doc(recipeDoc(OWNER, id)).update({ "core.showOnProfile": true }));
+  await assertSucceeds(
+    as(OWNER).doc(recipeDoc(OWNER, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date()),
+    }),
+  );
   await assertSucceeds(as(OWNER).doc(recipeDoc(OWNER, id)).update({ "core.showOnProfile": false }));
 });
 
@@ -176,7 +183,12 @@ test("a minor cannot turn it on", async () => {
   const id = freshId();
   const db = as(MINOR);
   await assertSucceeds(db.doc(recipeDoc(MINOR, id)).set(recipeMap(MINOR)));
-  await assertFails(db.doc(recipeDoc(MINOR, id)).update({ "core.showOnProfile": true }));
+  await assertFails(
+    db.doc(recipeDoc(MINOR, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date()),
+    }),
+  );
   await assertFails(db.doc(recipeDoc(MINOR, freshId())).set(recipeMap(MINOR, { showOnProfile: true })));
 });
 
@@ -212,7 +224,117 @@ test("a minor cannot turn it back on after deleting the field", async () => {
     await ctx.firestore().doc(recipeDoc(MINOR, id)).set(recipeMap(MINOR, { showOnProfile: true }));
   });
   await assertSucceeds(as(MINOR).doc(recipeDoc(MINOR, id)).update({ "core.showOnProfile": deleteField() }));
-  await assertFails(as(MINOR).doc(recipeDoc(MINOR, id)).update({ "core.showOnProfile": true }));
+  await assertFails(
+    as(MINOR).doc(recipeDoc(MINOR, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date()),
+    }),
+  );
+});
+
+test("a save from an older copy cannot turn it back on after the owner turned it off", async () => {
+  const id = freshId();
+  // Both stamps fall inside the freshness window, so only the stored-stamp comparison can refuse.
+  const on = Timestamp.fromDate(new Date(Date.now() - 20 * 60 * 1000));
+  const off = Timestamp.fromDate(new Date(Date.now() - 10 * 60 * 1000));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { showOnProfile: false, showOnProfileChangedAt: off }),
+    );
+  });
+  // The whole-recipe save a stale device sends: its copy still says on, with the older stamp.
+  await assertFails(
+    as(OWNER).doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { title: "Omtaggad", showOnProfile: true, showOnProfileChangedAt: on }),
+    ),
+  );
+  // Without any stamp it is refused too.
+  await assertFails(as(OWNER).doc(recipeDoc(OWNER, id)).update({ "core.showOnProfile": true }));
+  // A turn-on that keeps the stored stamp is not later than it.
+  await assertFails(as(OWNER).doc(recipeDoc(OWNER, id)).update({ "core.showOnProfile": true, "core.showOnProfileChangedAt": off }));
+});
+
+test("turning it on again with a later stamp is allowed", async () => {
+  const id = freshId();
+  const off = Timestamp.fromDate(new Date(Date.now() - HOUR_MS));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { showOnProfile: false, showOnProfileChangedAt: off }),
+    );
+  });
+  await assertSucceeds(
+    as(OWNER).doc(recipeDoc(OWNER, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date()),
+    }),
+  );
+});
+
+test("a save that keeps it on with its old stamp is not refused", async () => {
+  const id = freshId();
+  const on = Timestamp.fromDate(new Date(Date.now() - HOUR_MS));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { showOnProfile: true, showOnProfileChangedAt: on }),
+    );
+  });
+  await assertSucceeds(
+    as(OWNER).doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { title: "Ändrad", showOnProfile: true, showOnProfileChangedAt: on }),
+    ),
+  );
+});
+
+test("an ordinary save of a turned-off recipe with its stamp is not refused", async () => {
+  const id = freshId();
+  const off = Timestamp.fromDate(new Date(Date.now() - HOUR_MS));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { showOnProfile: false, showOnProfileChangedAt: off }),
+    );
+  });
+  await assertSucceeds(
+    as(OWNER).doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { title: "Ändrad", showOnProfile: false, showOnProfileChangedAt: off }),
+    ),
+  );
+});
+
+test("a recipe restored from the trash cannot be put back by an older copy", async () => {
+  const id = freshId();
+  const on = Timestamp.fromDate(new Date(Date.now() - 2 * HOUR_MS));
+  // The restore stores the recipe as private with no stamp at all.
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(recipeMap(OWNER, { showOnProfile: false }));
+  });
+  await assertFails(
+    as(OWNER).doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { title: "Omtaggad", showOnProfile: true, showOnProfileChangedAt: on }),
+    ),
+  );
+  await assertFails(as(OWNER).doc(recipeDoc(OWNER, id)).update({ "core.showOnProfile": true }));
+  await assertSucceeds(
+    as(OWNER).doc(recipeDoc(OWNER, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date()),
+    }),
+  );
+});
+
+test("a turn-on stamped ahead of the server's clock is refused", async () => {
+  const id = freshId();
+  const off = Timestamp.fromDate(new Date(Date.now() - HOUR_MS));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(recipeDoc(OWNER, id)).set(
+      recipeMap(OWNER, { showOnProfile: false, showOnProfileChangedAt: off }),
+    );
+  });
+  await assertFails(
+    as(OWNER).doc(recipeDoc(OWNER, id)).update({
+      "core.showOnProfile": true,
+      "core.showOnProfileChangedAt": Timestamp.fromDate(new Date(Date.now() + HOUR_MS)),
+    }),
+  );
 });
 
 // ── The counter ──
