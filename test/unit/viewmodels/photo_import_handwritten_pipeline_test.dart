@@ -27,6 +27,7 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -141,17 +142,12 @@ void main() {
         firestoreRepository: FirestoreRepository(firestore: firestore),
         authRepository: auth,
       );
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<ImportRateLimiter>()) {
-        getIt.unregister<ImportRateLimiter>();
-      }
-      getIt.registerSingleton<ImportRateLimiter>(limiter);
-
       // Real ImportManager + real PhotoImportStrategy — no mocking of the
       // routing under test.
       final manager = ImportManager.withStrategies(
         MockPersonalRecipeOperations(),
         [PhotoImportStrategy()],
+        links: ImportLinks(rateLimiter: () => limiter),
       );
       viewModel = PhotoImportViewModel(importManager: manager);
       viewModel.setHandwritten(true);

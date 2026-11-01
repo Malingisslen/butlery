@@ -2,7 +2,6 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// What the AI fallback did for one import: the recipe it found, if any, and
@@ -28,12 +27,19 @@ class LlmExtractionFallback {
       ? pageText.substring(0, maxInputChars)
       : pageText;
 
+  LlmExtractionFallback({
+    LlmEnhancementService? Function() llmEnhancement = _noLlm,
+  }) : _lookUpLlm = llmEnhancement;
+
+  static LlmEnhancementService? _noLlm() => null;
+
+  final LlmEnhancementService? Function() _lookUpLlm;
   LlmEnhancementService? _llmService;
 
   LlmEnhancementService? get _llmEnhancement {
     if (_llmService != null) return _llmService;
     try {
-      _llmService = ServiceLocator.get<LlmEnhancementService>();
+      _llmService = _lookUpLlm();
       return _llmService;
     } catch (e) {
       AppLogger.debug(

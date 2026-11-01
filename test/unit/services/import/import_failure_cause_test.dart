@@ -21,6 +21,7 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -239,7 +240,6 @@ void main() {
           metadata: {'needsScreenshot': true, 'url': video},
         ),
       );
-      GetIt.instance.registerSingleton<YouTubeImportStrategy>(youtube);
     });
 
     tearDown(() async {
@@ -254,6 +254,7 @@ void main() {
           MockPersonalRecipeOperations(),
           [_FailingStrategy('URL Import', ImportErrorCode.noRecipeContent)],
           eventLogger: _SilentEventLogger(),
+          links: ImportLinks(youtube: () => youtube),
         ).autoImport(video);
         expect(r.needsAssistance, isTrue);
         // The platform's message is not recipe text to split into lines.
@@ -307,6 +308,8 @@ void main() {
       app_provider.ServiceLocator.reset();
     });
 
+    ImportLinks links = ImportLinks.none;
+
     Future<void> register<T extends ImportStrategy>(T pipeline) async {
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(DIContainer());
@@ -321,7 +324,10 @@ void main() {
           metadata: {'needsScreenshot': true, 'url': 'https://x/p/1'},
         ),
       );
-      GetIt.instance.registerSingleton<T>(pipeline);
+      final Object linked = pipeline;
+      links = linked is TikTokPipeline
+          ? ImportLinks(tiktok: () => linked)
+          : ImportLinks(instagram: () => linked as InstagramPipeline);
     }
 
     for (final (name, make) in [
@@ -340,6 +346,7 @@ void main() {
             MockPersonalRecipeOperations(),
             [scraper],
             eventLogger: _SilentEventLogger(),
+            links: links,
           ).autoImport('https://x/p/1');
 
           expect(r.needsAssistance, isTrue);

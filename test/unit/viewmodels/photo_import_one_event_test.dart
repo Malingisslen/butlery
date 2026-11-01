@@ -15,6 +15,7 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -129,7 +130,9 @@ void main() {
     if (getIt.isRegistered<ImportRateLimiter>()) {
       getIt.unregister<ImportRateLimiter>();
     }
-    getIt.registerSingleton<ImportRateLimiter>(limiter);
+    // The manager gets `limiter` through its link; this one catches a manager
+    // that looks in the locator instead.
+    getIt.registerSingleton<ImportRateLimiter>(_RecordingRateLimiter());
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
 
@@ -144,6 +147,7 @@ void main() {
         textStrategy,
       ],
       eventLogger: spy,
+      links: ImportLinks(rateLimiter: () => limiter),
     );
     viewModel = PhotoImportViewModel(importManager: manager);
   });

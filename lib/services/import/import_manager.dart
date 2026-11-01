@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
@@ -21,7 +22,6 @@ import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/voice_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
-import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
@@ -33,8 +33,6 @@ import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
-import 'package:http/http.dart' as http;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 export 'package:butlery/services/import/import_manager_result.dart';
@@ -51,17 +49,23 @@ class ImportManager {
 
   final ParserShadowSampler? _shadowSampler;
   final ImportStrategy? _spokenTextReimport;
+  final ImportLinks _links;
 
   ImportManager(
     this._personalOperations, {
     ParseEventLogger? eventLogger,
     ParserShadowSampler? shadowSampler,
     ImportStrategy? spokenTextReimport,
+    ImportLinks links = ImportLinks.none,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
        _shadowSampler = shadowSampler,
-       _spokenTextReimport = spokenTextReimport {
+       _spokenTextReimport = spokenTextReimport,
+       _links = links {
     _initializeStrategies();
   }
+
+  @visibleForTesting
+  ImportLinks get links => _links;
 
   /// Test-only constructor that accepts pre-built strategies, avoiding
   /// Firebase/network initialisation that `_initializeStrategies` triggers.
@@ -72,16 +76,18 @@ class ImportManager {
     ParseEventLogger? eventLogger,
     ParserShadowSampler? shadowSampler,
     ImportStrategy? spokenTextReimport,
+    ImportLinks links = ImportLinks.none,
   }) : _eventLogger = eventLogger ?? ParseEventLogger(),
        _shadowSampler = shadowSampler,
-       _spokenTextReimport = spokenTextReimport {
+       _spokenTextReimport = spokenTextReimport,
+       _links = links {
     _strategies.addAll(strategies);
   }
 
   /// Get the YouTube import strategy (lazy initialization with graceful fallback)
   YouTubeImportStrategy? get _youtubeStrategy {
     try {
-      return ServiceLocator.get<YouTubeImportStrategy>();
+      return _links.youtube();
     } catch (e) {
       AppLogger.debug('ImportManager: YouTubeImportStrategy not available: $e');
       return null;
@@ -91,7 +97,7 @@ class ImportManager {
   /// Get the TikTok import pipeline (lazy initialization with graceful fallback)
   TikTokPipeline? get _tiktokPipeline {
     try {
-      return ServiceLocator.get<TikTokPipeline>();
+      return _links.tiktok();
     } catch (e) {
       AppLogger.debug('ImportManager: TikTokPipeline not available: $e');
       return null;
@@ -100,7 +106,7 @@ class ImportManager {
 
   InstagramPipeline? get _instagramPipeline {
     try {
-      return ServiceLocator.get<InstagramPipeline>();
+      return _links.instagram();
     } catch (e) {
       AppLogger.debug('ImportManager: InstagramPipeline not available: $e');
       return null;
@@ -110,7 +116,7 @@ class ImportManager {
   /// Get the rate limiter (lazy initialization with graceful fallback)
   ImportRateLimiter? get _rateLimiter {
     try {
-      return ServiceLocator.get<ImportRateLimiter>();
+      return _links.rateLimiter();
     } catch (e) {
       AppLogger.debug('ImportManager: ImportRateLimiter not available: $e');
       return null;
@@ -120,7 +126,7 @@ class ImportManager {
   /// Get the tagging service (lazy initialization with graceful fallback)
   TaggingService? get _taggingService {
     try {
-      return ServiceLocator.get<TaggingService>();
+      return _links.tagging();
     } catch (e) {
       AppLogger.warning(
         '⚠️ TaggingService unavailable during import: $e. '
@@ -135,7 +141,10 @@ class ImportManager {
     _strategies.addAll([
       ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
       UrlImportStrategy(
-        httpClient: ServiceLocator.tryGet<http.Client>(),
+        httpClient: _links.httpClient(),
+        recipeParser: _links.recipeParser,
+        parsedRecipeCache: _links.parsedRecipeCache,
+        llmEnhancement: _links.llmEnhancement,
       ), // 2. Try URL import (web scraping)
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
       PhotoImportStrategy(), // 4. Photo import (OCR extraction)
@@ -543,7 +552,7 @@ class ImportManager {
   }
 
   Future<void> _trackImport(ImportEvent event) async {
-    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    final analytics = _links.analytics();
     if (analytics == null) return;
     try {
       final source = event.channel.name;

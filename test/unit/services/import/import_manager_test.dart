@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart'
     as import_strategy;
@@ -653,13 +654,24 @@ Gör så här:
         if (getIt.isRegistered<ImportRateLimiter>()) {
           getIt.unregister<ImportRateLimiter>();
         }
-        getIt.registerSingleton<ImportRateLimiter>(_StubRateLimiter(denied));
+        getIt.registerSingleton<ImportRateLimiter>(
+          _StubRateLimiter(
+            const RateLimitAllowed(
+              remainingInWindow: 10,
+              limitType: LimitType.perMinute,
+            ),
+          ),
+        );
         app_provider.ServiceLocator.reset();
         app_provider.ServiceLocator.initialize(DIContainer());
 
-        final mgr = ImportManager.withStrategies(mockPersonalOps, [
-          PhotoImportStrategy(),
-        ]);
+        final mgr = ImportManager.withStrategies(
+          mockPersonalOps,
+          [
+            PhotoImportStrategy(),
+          ],
+          links: ImportLinks(rateLimiter: () => _StubRateLimiter(denied)),
+        );
 
         final result = await mgr.importSinglePhoto(
           'photo',

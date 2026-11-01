@@ -15,10 +15,8 @@
 ///    URLs use public-IP hosts (`http://8.8.8.8/...`) so that
 ///    `InternetAddress.lookup` short-circuits without touching DNS.
 ///
-///    The production `ServiceLocator` is intentionally left uninitialized,
-///    which makes `_recipeParser` (Tier 1) and `_llmEnhancement` (Tier 6)
-///    return `null` cleanly. We then drive Tiers 2 / 5 / 7 / hard-failure
-///    through the HTTP response body.
+///    The parser (Tier 1), cache and LLM links default to nothing. We then
+///    drive Tiers 2 / 5 / 7 / hard-failure through the HTTP response body.
 ///
 ///    Pins:
 ///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
@@ -49,7 +47,6 @@
 ///   - Tier 3/4 web-scraper paths (WebScraper requires `flutter_inappwebview`
 ///     platform code; the existing
 ///     `test/unit/services/extraction/web_scraper_test.dart` covers it).
-///   - ParsedRecipeCache.store (requires production DI registration).
 library;
 
 import 'dart:convert';
@@ -65,6 +62,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/import_links.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -161,6 +159,13 @@ http.Response _htmlResponse(String body, {int status = 200}) {
   );
 }
 
+// What the strategy under test is linked to. A group sets the one it drives
+// and puts a DIFFERENT instance in the locator, so a strategy that still looks
+// there finds the wrong object and the group fails.
+RecipeParserService? _linkedParser;
+ParsedRecipeCache? _linkedCache;
+LlmEnhancementService? _linkedLlm;
+
 /// Build a strategy whose HTTP fetcher is driven by [responder]. URLs in the
 /// tests use IP hosts (e.g. `http://8.8.8.8/recipe`) so `InternetAddress.lookup`
 /// short-circuits without going to real DNS.
@@ -168,7 +173,12 @@ UrlImportStrategy _strategyWith(
   Future<http.Response> Function(http.Request req) responder,
 ) {
   final client = MockClient((req) async => responder(req));
-  return UrlImportStrategy(httpClient: client);
+  return UrlImportStrategy(
+    httpClient: client,
+    recipeParser: () => _linkedParser,
+    parsedRecipeCache: () => _linkedCache,
+    llmEnhancement: () => _linkedLlm,
+  );
 }
 
 void main() {
@@ -831,10 +841,14 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       if (getIt.isRegistered<ParsedRecipeCache>()) {
         getIt.unregister<ParsedRecipeCache>();
       }
+      _linkedCache = cache;
+      // The inner text strategy still stores through the locator, so it holds
+      // the same cache; the witness test below pulls them apart.
       getIt.registerSingleton<ParsedRecipeCache>(cache);
     });
 
     tearDown(() {
+      _linkedCache = null;
       final getIt = GetIt.instance;
       if (getIt.isRegistered<ParsedRecipeCache>()) {
         getIt.unregister<ParsedRecipeCache>();
@@ -1274,10 +1288,12 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       if (getIt.isRegistered<RecipeParserService>()) {
         getIt.unregister<RecipeParserService>();
       }
-      getIt.registerSingleton<RecipeParserService>(parser);
+      _linkedParser = parser;
+      getIt.registerSingleton<RecipeParserService>(_MockRecipeParserService());
     });
 
     tearDown(() {
+      _linkedParser = null;
       final getIt = GetIt.instance;
       if (getIt.isRegistered<RecipeParserService>()) {
         getIt.unregister<RecipeParserService>();
@@ -1505,6 +1521,51 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(result.recipe!.core.title, 'Rough Dish');
       expect(result.metadata?['pageText'], contains('Pannkakor'));
     });
+
+    test('a Tier 1 recipe is stored for correction in the cache the strategy '
+        'is linked to, not the locator one', () async {
+      final linked = ParsedRecipeCache();
+      _linkedCache = linked;
+      addTearDown(() => _linkedCache = null);
+      final decoy = ParsedRecipeCache();
+      GetIt.instance.registerSingleton<ParsedRecipeCache>(decoy);
+      addTearDown(() => GetIt.instance.unregister<ParsedRecipeCache>());
+      stubParse(() => parseWithQuality(aboveThreshold: true));
+
+      final result = await _strategyWith(
+        (req) async => _htmlResponse(_jsonLdRecipeHtml()),
+      ).import('http://8.8.8.8/recipe');
+
+      expect(linked.retrieve(result.recipe!.id), isNotNull);
+      expect(decoy.retrieve(result.recipe!.id), isNull);
+    });
+
+    test('the import manager hands its parser and cache links on to the URL '
+        'strategy', () async {
+      final linked = ParsedRecipeCache();
+      stubParse(() => parseWithQuality(aboveThreshold: true));
+      final client = MockClient(
+        (req) async => _htmlResponse(_jsonLdRecipeHtml()),
+      );
+
+      final result = await ImportManager(
+        _MockPersonalRecipeOperations(),
+        eventLogger: _SpyParseEventLogger(),
+        links: ImportLinks(
+          httpClient: () => client,
+          recipeParser: () => parser,
+          parsedRecipeCache: () => linked,
+        ),
+      ).autoImport('http://8.8.8.8/recipe');
+
+      expect(result.recipe, isNotNull);
+      expect(
+        result.metadata?['extraction_method'],
+        'enhanced_parser',
+        reason: 'the parser link reached the URL strategy',
+      );
+      expect(linked.retrieve(result.recipe!.id), isNotNull);
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -1521,10 +1582,12 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       if (getIt.isRegistered<LlmEnhancementService>()) {
         getIt.unregister<LlmEnhancementService>();
       }
-      getIt.registerSingleton<LlmEnhancementService>(llm);
+      _linkedLlm = llm;
+      getIt.registerSingleton<LlmEnhancementService>(_CountingLlm());
     });
 
     tearDown(() {
+      _linkedLlm = null;
       final getIt = GetIt.instance;
       if (getIt.isRegistered<LlmEnhancementService>()) {
         getIt.unregister<LlmEnhancementService>();
@@ -1573,8 +1636,8 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       'the held rough parse carries the cost of the call before it',
       () async {
         final parser = _MockRecipeParserService();
-        GetIt.instance.registerSingleton<RecipeParserService>(parser);
-        addTearDown(() => GetIt.instance.unregister<RecipeParserService>());
+        _linkedParser = parser;
+        addTearDown(() => _linkedParser = null);
         when(
           () => parser.parseFromUrl(
             url: any(named: 'url'),
@@ -1626,19 +1689,15 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
     test("a link import makes one call with the app's strategy list", () async {
       TestWidgetsFlutterBinding.ensureInitialized();
       SharedPreferences.setMockInitialValues({});
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
-      getIt.registerSingleton<http.Client>(
-        MockClient((req) async => _htmlResponse(_unstructuredHtml())),
+      final client = MockClient(
+        (req) async => _htmlResponse(_unstructuredHtml()),
       );
-      addTearDown(() {
-        if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
-      });
 
       final spy = _SpyParseEventLogger();
       await ImportManager(
         _MockPersonalRecipeOperations(),
         eventLogger: spy,
+        links: ImportLinks(httpClient: () => client, llmEnhancement: () => llm),
       ).autoImport('http://8.8.8.8/blog');
 
       expect(llm.seen, hasLength(1));
@@ -1664,20 +1723,20 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       );
       if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
       getIt.registerSingleton<http.Client>(client);
-      getIt.registerSingleton<TikTokPipeline>(
-        TikTokPipeline(llmService: llm, client: client),
-      );
+      final tiktok = TikTokPipeline(llmService: llm, client: client);
       addTearDown(() {
         if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
-        if (getIt.isRegistered<TikTokPipeline>()) {
-          getIt.unregister<TikTokPipeline>();
-        }
       });
 
       final spy = _SpyParseEventLogger();
       await ImportManager(
         _MockPersonalRecipeOperations(),
         eventLogger: spy,
+        links: ImportLinks(
+          tiktok: () => tiktok,
+          httpClient: () => client,
+          llmEnhancement: () => llm,
+        ),
       ).autoImport('https://www.tiktok.com/@kock/video/123');
 
       expect(
