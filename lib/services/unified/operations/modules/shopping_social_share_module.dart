@@ -7,7 +7,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -19,12 +18,15 @@ import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 class ShoppingSocialShareModule {
   final FirebaseFirestore _firestore;
   final PermissionService _permissionService;
+  final UserService _userService;
 
   ShoppingSocialShareModule({
     required FirebaseFirestore firestore,
     required PermissionService permissionService,
+    required UserService userService,
   }) : _firestore = firestore,
-       _permissionService = permissionService;
+       _permissionService = permissionService,
+       _userService = userService;
 
   /// Share shopping list with friends
   Future<bool> shareWithFriends({
@@ -57,11 +59,9 @@ class ShoppingSocialShareModule {
       // on a row in THEIR subtree, and it lands verbatim in their Art. 15
       // bundle — while `on-profile-updated.ts` only propagates the PROFILE name
       // and account deletion only scrubs that one, so an Auth-sourced stamp is
-      // both unconsented and un-erasable. `tryGet` keeps the module working
-      // before/without the service graph; an unresolved name stamps empty
+      // both unconsented and un-erasable. An unresolved name stamps empty
       // (readers show their own "unknown" label), never an Auth-sourced one.
-      final sharedByDisplayName =
-          (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
+      final sharedByDisplayName = _userService.profileDisplayName.orEmpty();
 
       // Get shopping list data from user's personal lists
       final listDoc = await _firestore
@@ -97,8 +97,7 @@ class ShoppingSocialShareModule {
             : 0,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': sharedByDisplayName,
-        'sharedByAvatarUrl':
-            ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
+        'sharedByAvatarUrl': _userService.profileAvatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
         // Same list under the spelling `firestore.rules` and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.

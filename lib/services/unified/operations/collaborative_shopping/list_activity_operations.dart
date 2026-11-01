@@ -1,15 +1,15 @@
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:clock/clock.dart';
 
 /// Handles collaborative shopping list activity tracking, stats, and notifications.
 class ListActivityOperations {
   final ListLifecycleOperations _lifecycleOps;
+  final PermissionService _permissionService;
 
-  ListActivityOperations(this._lifecycleOps);
+  ListActivityOperations(this._lifecycleOps, this._permissionService);
 
   List<Map<String, dynamic>> getRecentActivity(String listId) {
     final list = _lifecycleOps.getListById(listId);
@@ -60,39 +60,36 @@ class ListActivityOperations {
   }
 
   bool canEdit(String listId) {
-    return ServiceLocator.get<PermissionService>().canEditShoppingList(listId);
+    return _permissionService.canEditShoppingList(listId);
   }
 
   bool canView(String listId) {
-    return ServiceLocator.get<PermissionService>().canViewShoppingList(listId);
+    return _permissionService.canViewShoppingList(listId);
   }
 
   bool canManageMembers(String listId) {
-    return ServiceLocator.get<PermissionService>().canManageShoppingList(
+    return _permissionService.canManageShoppingList(
       listId,
     );
   }
 
   bool canDelete(String listId) {
-    return ServiceLocator.get<PermissionService>().canDeleteShoppingList(
+    return _permissionService.canDeleteShoppingList(
       listId,
     );
   }
 
   SharedListPermission? getUserPermission(String listId) {
     final list = _lifecycleOps.getListById(listId);
-    if (list == null ||
-        !ServiceLocator.get<PermissionService>().isAuthenticated) {
+    if (list == null || !_permissionService.isAuthenticated) {
       return null;
     }
 
-    final permissionService = ServiceLocator.get<PermissionService>();
-
-    if (permissionService.canManageShoppingList(listId)) {
+    if (_permissionService.canManageShoppingList(listId)) {
       return SharedListPermission.admin;
-    } else if (permissionService.canEditShoppingList(listId)) {
+    } else if (_permissionService.canEditShoppingList(listId)) {
       return SharedListPermission.edit;
-    } else if (permissionService.canViewShoppingList(listId)) {
+    } else if (_permissionService.canViewShoppingList(listId)) {
       return SharedListPermission.view;
     }
 

@@ -9,7 +9,6 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe rating system
 /// This module handles ONLY recipe rating operations:
@@ -23,12 +22,10 @@ class RecipeRatingSystem {
   final AnalyticsService _analyticsService;
 
   RecipeRatingSystem({
-    RatingsRepository? ratingsRepository,
-    AnalyticsService? analyticsService,
-  }) : _ratingsRepository =
-           ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-       _analyticsService =
-           analyticsService ?? ServiceLocator.get<AnalyticsService>();
+    required RatingsRepository ratingsRepository,
+    required AnalyticsService analyticsService,
+  }) : _ratingsRepository = ratingsRepository,
+       _analyticsService = analyticsService;
 
   /// Rate a recipe with validation
   Future<bool> rateRecipe({

@@ -1,7 +1,6 @@
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:clock/clock.dart';
 
@@ -10,6 +9,7 @@ import 'package:clock/clock.dart';
 /// invitation (BUT-2089), and the rules refuse a client write that adds a key.
 class ListMemberOperations {
   final String? Function() _getCurrentUserId;
+  final PermissionService _permissionService;
 
   /// BUT-1726: membership does NOT go through the ordinary list update.
   ///
@@ -56,6 +56,7 @@ class ListMemberOperations {
 
   ListMemberOperations({
     required String? Function() getCurrentUserId,
+    required PermissionService permissionService,
     required Future<bool> Function(
       UnifiedShoppingList updated,
       UnifiedShoppingList base,
@@ -69,6 +70,7 @@ class ListMemberOperations {
     required void Function() beginMutation,
     required ListLifecycleOperations lifecycleOps,
   }) : _getCurrentUserId = getCurrentUserId,
+       _permissionService = permissionService,
        _updateMembership = updateMembership,
        _leaveMembership = leaveMembership,
        _beginMutation = beginMutation,
@@ -214,12 +216,12 @@ class ListMemberOperations {
       return false;
     }
 
-    if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+    if (!_permissionService.isAuthenticated) {
       AppLogger.error('Cannot leave: User not authenticated');
       return false;
     }
 
-    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId)) {
+    if (_permissionService.isShoppingListOwner(listId)) {
       AppLogger.error(
         'Owner cannot leave list. Transfer ownership or delete list.',
       );
@@ -261,8 +263,6 @@ class ListMemberOperations {
   }
 
   bool canManageMembers(String listId) {
-    return ServiceLocator.get<PermissionService>().canManageShoppingList(
-      listId,
-    );
+    return _permissionService.canManageShoppingList(listId);
   }
 }

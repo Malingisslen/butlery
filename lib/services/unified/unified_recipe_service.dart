@@ -20,6 +20,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -38,9 +39,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
-import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
-import 'package:butlery/services/unified/helpers/social_operations_initializer.dart';
 import 'package:butlery/services/unified/helpers/recipe_content_operations.dart';
 import 'package:butlery/services/unified/helpers/recipe_auth_state_handler.dart';
 import 'package:butlery/services/unified/helpers/personal_recipe_crud.dart';
@@ -75,13 +74,15 @@ class UnifiedRecipeService
   final RecipeRepository _recipeRepository;
   final TrashRepository _trashRepository;
   final CommentsRepository? _commentsRepository;
-  final RatingsRepository? _ratingsRepository;
+  final RatingsRepository _ratingsRepository;
+  final AnalyticsService _analyticsService;
   final NotificationsRepository? _notificationsRepository;
   final IngredientIdResolver? _ingredientIdResolver;
   final FirestoreRepository _firestoreRepository;
   final Future<void> Function(String recipeId, List<String> userIds)?
   _removeRecipientsFromOwnShares;
   final Future<void> Function(String recipeId)? _removeFromWeeklyMenus;
+  final NotificationService? Function()? _getNotificationService;
   // User-scoped and optional: read when the modules are built, not when the
   // service is constructed.
   final TaggingService? Function()? _getTaggingService;
@@ -105,12 +106,6 @@ class UnifiedRecipeService
   late final SocialRecipeOperations social;
   late final CollaborationManagementModule collaboration;
 
-  // Explicit initialization tracking (replaces try-catch pattern)
-  bool _socialInitialized = false;
-
-  // Cancellable timer for social operations retry
-  Timer? _socialRetryTimer;
-
   // Content operations helper
   late final RecipeContentOperations _contentOps;
 
@@ -122,13 +117,6 @@ class UnifiedRecipeService
 
   // Utility operations helper
   late final RecipeUtilityOperations _utilityOps;
-
-  // Discovery service accessor
-  RecipeDiscoveryService get discovery {
-    // Ensure social operations are initialized before accessing
-    _initializeSocialOperations();
-    return social.discoveryService;
-  }
 
   // State
   final List<Recipe> _recipes = [];
@@ -227,12 +215,14 @@ class UnifiedRecipeService
     required TrashRepository trashRepository,
     required FirestoreRepository firestoreRepository,
     CommentsRepository? commentsRepository,
-    RatingsRepository? ratingsRepository,
+    required RatingsRepository ratingsRepository,
+    required AnalyticsService analyticsService,
     NotificationsRepository? notificationsRepository,
     IngredientIdResolver? ingredientIdResolver,
     TaggingService? Function()? getTaggingService,
     PersonalTagService? Function()? getPersonalTagService,
     OfflineService? Function()? getOfflineService,
+    NotificationService? Function()? getNotificationService,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
     Future<void> Function(String recipeId)? removeFromWeeklyMenus,
@@ -242,6 +232,7 @@ class UnifiedRecipeService
        _getTaggingService = getTaggingService,
        _getPersonalTagService = getPersonalTagService,
        _getOfflineService = getOfflineService,
+       _getNotificationService = getNotificationService,
        _firestoreRepository = firestoreRepository,
        _firestore = firestoreRepository.firestore,
        _authRepository = authRepository ?? FirebaseAuthRepository(),
@@ -249,6 +240,7 @@ class UnifiedRecipeService
        _trashRepository = trashRepository,
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
+       _analyticsService = analyticsService,
        _notificationsRepository = notificationsRepository {
     // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
@@ -423,7 +415,7 @@ class UnifiedRecipeService
   String? _displayNameGetter() => currentUserDisplayName;
   List<Recipe> _recipesGetter() => recipes;
 
-  SocialOpsContext get _socialContext => SocialOpsContext(
+  SocialRecipeOperations _buildSocialOperations() => SocialRecipeOperations(
     getCurrentUserId: _userIdGetter,
     getCurrentUserDisplayName: _displayNameGetter,
     getRecipes: _recipesGetter,
@@ -450,6 +442,10 @@ class UnifiedRecipeService
     // path through the same error sink the UI already observes.
     onShareError: _setError,
     removeRecipientsFromOwnShares: _removeRecipientsFromOwnShares,
+    ratingsRepository: _ratingsRepository,
+    firestoreRepository: _firestoreRepository,
+    analyticsService: _analyticsService,
+    notificationService: _getNotificationService?.call(),
   );
 
   void _initializeLegacyInterfaces() {
@@ -462,66 +458,7 @@ class UnifiedRecipeService
       deleteRecipe: deleteRecipe,
     );
 
-    // SocialRecipeOperations needs repositories - try immediate initialization or defer
-    final initializedSocial = SocialOperationsInitializer.tryInitialize(
-      _socialContext,
-      _ratingsRepository,
-      _firestoreRepository,
-    );
-
-    if (initializedSocial != null) {
-      social = initializedSocial;
-      _socialInitialized = true;
-    } else {
-      // Defer initialization. Guard the unawaited microtask so a deferred
-      // social-init failure surfaces cleanly rather than as an uncaught
-      // async error on first launch.
-      Future.microtask(() {
-        try {
-          _initializeSocialOperations();
-        } catch (e, stackTrace) {
-          AppLogger.error(
-            '❌ [UnifiedRecipeService] Deferred social init failed: $e\n$stackTrace',
-          );
-        }
-      });
-    }
-  }
-
-  void _initializeSocialOperations() {
-    // Check if already initialized using explicit flag
-    if (_socialInitialized) return;
-
-    // Try to initialize with available repositories
-    final initialized = SocialOperationsInitializer.tryInitialize(
-      _socialContext,
-      _ratingsRepository,
-      _firestoreRepository,
-    );
-
-    if (initialized != null) {
-      social = initialized;
-      _socialInitialized = true;
-    } else {
-      // Create with fallback repositories and schedule retry
-      social = SocialOperationsInitializer.initializeWithFallback(
-        _socialContext,
-        _ratingsRepository,
-        _firestoreRepository,
-        _authRepository,
-      );
-      _socialInitialized = true;
-
-      _socialRetryTimer = SocialOperationsInitializer.scheduleRetry(
-        _socialContext,
-        (operations) {
-          social = operations;
-          _socialInitialized = true;
-        },
-        const Duration(milliseconds: 500),
-        onTimerCreated: (timer) => _socialRetryTimer = timer,
-      );
-    }
+    social = _buildSocialOperations();
   }
 
   bool _areModulesInitialized() => _modulesInitialized;
@@ -1139,8 +1076,6 @@ class UnifiedRecipeService
     // Cancel subscriptions first to prevent callbacks during reset
     _authSubscription?.cancel();
     _authSubscription = null;
-    _socialRetryTimer?.cancel();
-    _socialRetryTimer = null;
 
     // Note: _taggingFailureController kept open — broadcast stream, new listeners after re-login OK
 
@@ -1154,7 +1089,6 @@ class UnifiedRecipeService
     _isInitialized = false;
     _isLoading = false;
     _error = null;
-    _socialInitialized = false;
     _serviceAdapter = null;
 
     if (_areModulesInitialized()) {
@@ -1170,7 +1104,6 @@ class UnifiedRecipeService
     _authSubscription?.cancel();
     _queueSentSubscription?.cancel();
     _queueDroppedSubscription?.cancel();
-    _socialRetryTimer?.cancel();
     _taggingFailureController.close();
     _stateSubject.close();
 

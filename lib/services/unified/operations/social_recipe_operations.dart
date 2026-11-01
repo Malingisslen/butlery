@@ -9,7 +9,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -28,7 +28,7 @@ class SocialRecipeOperations {
   final List<Recipe> Function() _getRecipes;
   final RatingsRepository _ratingsRepository;
   final FirestoreRepository _firestoreRepository;
-  late final NotificationService? _notificationService;
+  final NotificationService? _notificationService;
 
   // Focused modules for each responsibility area
   late final RecipeSharingManager _sharingManager;
@@ -46,14 +46,16 @@ class SocialRecipeOperations {
     required CreatePersonalRecipeFn createPersonalRecipe,
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
+    required AnalyticsService analyticsService,
+    required NotificationService? notificationService,
     void Function(String)? onShareError,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
   }) : _getCurrentUserId = getCurrentUserId,
        _getRecipes = getRecipes,
        _ratingsRepository = ratingsRepository,
-       _firestoreRepository = firestoreRepository {
-    _notificationService = ServiceLocator.tryGet<NotificationService>();
+       _firestoreRepository = firestoreRepository,
+       _notificationService = notificationService {
     _sharingManager = RecipeSharingManager(
       getCurrentUserId: getCurrentUserId,
       getCurrentUserDisplayName: getCurrentUserDisplayName,
@@ -88,6 +90,7 @@ class SocialRecipeOperations {
       getRecipes: getRecipes,
       ratingsRepository: _ratingsRepository,
       firestoreRepository: _firestoreRepository,
+      analyticsService: analyticsService,
       notificationService: _notificationService,
     );
     _permissionHelper = RecipePermissionHelper(

@@ -7,6 +7,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
@@ -38,13 +39,17 @@ class RecipeSocialStats {
     required List<Recipe> Function() getRecipes,
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
+    required AnalyticsService analyticsService,
     required NotificationService? notificationService,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _getRecipes = getRecipes,
        _firestoreRepository = firestoreRepository,
        _notificationService = notificationService {
-    _ratingSystem = RecipeRatingSystem();
+    _ratingSystem = RecipeRatingSystem(
+      ratingsRepository: ratingsRepository,
+      analyticsService: analyticsService,
+    );
   }
   String? get currentUserId => _getCurrentUserId();
   String get currentUserDisplayName => _getCurrentUserDisplayName().orEmpty();

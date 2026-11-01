@@ -26,6 +26,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -192,14 +193,17 @@ void main() {
       removeRecipientsFromOwnShares,
       OfflineService? Function()? getOfflineService,
       TaggingService? Function()? getTaggingService,
+      NotificationService? Function()? getNotificationService,
     }) => UnifiedRecipeService(
       authRepository: mockAuthRepository,
       recipeRepository: mockRecipeRepository,
       trashRepository: trashRepository,
       firestoreRepository: mockFirestoreRepository,
       commentsRepository: commentsRepository,
-      ratingsRepository: ratingsRepository,
+      ratingsRepository: ratingsRepository ?? mockRatingsRepository,
+      analyticsService: mocks.MockAnalyticsService(),
       notificationsRepository: notificationsRepository,
+      getNotificationService: getNotificationService,
       removeRecipientsFromOwnShares: removeRecipientsFromOwnShares,
       getOfflineService: getOfflineService ?? () => mockOfflineService,
       getTaggingService: getTaggingService ?? () => mockTaggingService,
@@ -414,6 +418,39 @@ void main() {
         expect(fresh.error, isNull);
         fresh.dispose();
       });
+
+      test('ratings read through the social part use the injected '
+          'repository, not one in the locator', () async {
+        final injected = mocks.MockRatingsRepository();
+        when(
+          () => injected.getUserRating(any(), any()),
+        ).thenAnswer((_) async => null);
+        final inLocator = mocks.MockRatingsRepository();
+        TestServiceLocator.registerMock<RatingsRepository>(inLocator);
+
+        final fresh = buildService(ratingsRepository: injected);
+        await fresh.social.getUserRating('recipe_1');
+
+        verify(
+          () => injected.getUserRating('recipe_1', 'test_user_123'),
+        ).called(1);
+        verifyNever(() => inLocator.getUserRating(any(), any()));
+        fresh.dispose();
+      });
+
+      test('the notification service is looked up once, when the social '
+          'part is built', () {
+        var lookups = 0;
+        final fresh = buildService(
+          getNotificationService: () {
+            lookups++;
+            return null;
+          },
+        );
+
+        expect(lookups, 1);
+        fresh.dispose();
+      });
     });
 
     group('Initial State', () {
@@ -579,10 +616,8 @@ void main() {
 
     /// BUT-1785 root cause — the seam, not the manager.
     ///
-    /// `SocialOpsContext.updateRecipe` is handed to exactly one consumer,
-    /// `RecipeMemberManager`, and every entry point there filters
-    /// `r.isCollaborative`. Bound to `updateRecipe` it resolved to
-    /// `PersonalRecipeCrud.updateRecipe`, whose first guard is
+    /// `SocialRecipeOperations`' `updateRecipe` bound to `updateRecipe`
+    /// resolved to `PersonalRecipeCrud.updateRecipe`, whose first guard is
     /// `if (!updatedRecipe.isPersonal) return false;` — so add-member,
     /// remove-member and remove-group could never write, and each surfaced as a
     /// generic error.
@@ -599,7 +634,7 @@ void main() {
         'removeGroup actually WRITES - it drives the seam, not a stub',
         () async {
           // The whole point: this goes through service.social -> the real
-          // SocialOpsContext binding. recipe_member_manager_test.dart stubs
+          // binding. recipe_member_manager_test.dart stubs
           // that seam to `true`, which is exactly why it could not see that
           // the binding rejected every collaborative recipe.
           final collaborative =
