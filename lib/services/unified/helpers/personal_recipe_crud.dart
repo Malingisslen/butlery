@@ -3,10 +3,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/utils/retry_policy.dart';
@@ -24,7 +22,10 @@ class PersonalRecipeCrud {
     required this.cacheModule,
     required this.recipes,
     required this.notifyListeners,
-  });
+    Future<void> Function(String recipeId)? removeFromWeeklyMenus,
+  }) : _removeFromWeeklyMenus = removeFromWeeklyMenus;
+
+  final Future<void> Function(String recipeId)? _removeFromWeeklyMenus;
 
   /// Create a personal recipe and add to local list.
   Future<String?> createPersonalRecipe({
@@ -151,9 +152,7 @@ class PersonalRecipeCrud {
 
   Future<void> _cascadeRemoveFromWeeklyMenus(String recipeId) async {
     try {
-      final menuService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
-      if (menuService == null) return;
-      await menuService.removeRecipeFromAllPlans(recipeId);
+      await _removeFromWeeklyMenus?.call(recipeId);
     } catch (e, st) {
       AppLogger.warning(
         'BUT-893 cascade failed for recipe $recipeId: $e\n$st',

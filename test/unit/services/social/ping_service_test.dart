@@ -138,9 +138,9 @@ void main() {
     notifications = _RecordingNotificationService();
     service = PingService(
       firestoreRepository: repo,
-      permissionService: perm,
-      friendsService: friends,
-      notificationService: notifications,
+      getPermissionService: () => perm,
+      getFriendsService: () => friends,
+      getNotificationService: () => notifications,
     );
   });
 

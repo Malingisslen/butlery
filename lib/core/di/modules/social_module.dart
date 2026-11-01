@@ -40,6 +40,7 @@ import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/household_service.dart';
@@ -447,6 +448,12 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<PingService>(
         () => PingService(
           firestoreRepository: container<FirestoreRepository>(),
+          getPermissionService: () => container<PermissionService>(),
+          getFriendsService: () => container<UnifiedFriendsService>(),
+          getNotificationService: () =>
+              container.isRegistered<NotificationService>()
+              ? container<NotificationService>()
+              : null,
         ),
       );
 

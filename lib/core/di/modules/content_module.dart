@@ -281,6 +281,10 @@ class ContentModule implements DIModule {
               recipeId: recipeId,
               userIds: userIds,
             ),
+        removeFromWeeklyMenus: (recipeId) async {
+          if (!app.isRegistered<WeeklyMenuPlanService>()) return;
+          await app<WeeklyMenuPlanService>().removeRecipeFromAllPlans(recipeId);
+        },
       ),
       dispose: (s) => s.dispose(),
     );
