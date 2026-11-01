@@ -99,7 +99,6 @@ const _residue = <String, int>{
   'lib/services/unified/operations/social_recipe_operations.dart': 1,
   'lib/services/unified/unified_friends_service.dart': 2,
   'lib/services/unified/unified_menu_service.dart': 5,
-  'lib/services/unified/unified_recipe_service.dart': 16,
   'lib/services/unified/unified_shopping_service.dart': 7,
   'lib/services/upload/image_upload_service.dart': 1,
   'lib/services/user_service.dart': 3,

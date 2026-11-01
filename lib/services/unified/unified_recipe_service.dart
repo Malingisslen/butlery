@@ -15,7 +15,6 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -73,7 +72,8 @@ class UnifiedRecipeService
     implements PersonalRecipeDelegate {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
-  final RecipeRepository? _recipeRepository;
+  final RecipeRepository _recipeRepository;
+  final TrashRepository _trashRepository;
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
@@ -82,6 +82,11 @@ class UnifiedRecipeService
   final Future<void> Function(String recipeId, List<String> userIds)?
   _removeRecipientsFromOwnShares;
   final Future<void> Function(String recipeId)? _removeFromWeeklyMenus;
+  // User-scoped and optional: read when the modules are built, not when the
+  // service is constructed.
+  final TaggingService? Function()? _getTaggingService;
+  final PersonalTagService? Function()? _getPersonalTagService;
+  final OfflineService? Function()? _getOfflineService;
 
   // BUT-1360: Upper bound on the web cold-start direct Firebase fetch so a
   // stalled/offline `.get()` can never leave the loading skeleton spinning.
@@ -218,25 +223,30 @@ class UnifiedRecipeService
 
   UnifiedRecipeService({
     FirebaseAuthRepository? authRepository,
-    RecipeRepository? recipeRepository,
+    required RecipeRepository recipeRepository,
+    required TrashRepository trashRepository,
+    required FirestoreRepository firestoreRepository,
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
-    FirestoreRepository? firestoreRepository,
     IngredientIdResolver? ingredientIdResolver,
+    TaggingService? Function()? getTaggingService,
+    PersonalTagService? Function()? getPersonalTagService,
+    OfflineService? Function()? getOfflineService,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
     Future<void> Function(String recipeId)? removeFromWeeklyMenus,
   }) : _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares,
        _removeFromWeeklyMenus = removeFromWeeklyMenus,
        _ingredientIdResolver = ingredientIdResolver,
-       _firestoreRepository =
-           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-       _firestore =
-           (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
-               .firestore,
+       _getTaggingService = getTaggingService,
+       _getPersonalTagService = getPersonalTagService,
+       _getOfflineService = getOfflineService,
+       _firestoreRepository = firestoreRepository,
+       _firestore = firestoreRepository.firestore,
        _authRepository = authRepository ?? FirebaseAuthRepository(),
        _recipeRepository = recipeRepository,
+       _trashRepository = trashRepository,
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
        _notificationsRepository = notificationsRepository {
@@ -265,30 +275,19 @@ class UnifiedRecipeService
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 
-  /// Get recipe repository with fallback to service locator
-  RecipeRepository _getRecipeRepository() {
-    return _recipeRepository ?? ServiceLocator.get<RecipeRepository>();
-  }
+  RecipeRepository _getRecipeRepository() => _recipeRepository;
 
-  /// Try to get TaggingService from service locator.
-  /// Returns null if not registered (tagging is optional).
-  TaggingService? _tryGetTaggingService() {
+  // Tagging is optional: a lookup that fails leaves the recipe untagged
+  // rather than failing module setup.
+  T? _tryResolve<T>(T? Function()? lookup) {
     try {
-      return ServiceLocator.get<TaggingService>();
+      return lookup?.call();
     } catch (_) {
       return null;
     }
   }
 
-  /// Try to get PersonalTagService from service locator.
-  /// Returns null if not registered (personal tags are optional).
-  PersonalTagService? _tryGetPersonalTagService() {
-    try {
-      return ServiceLocator.get<PersonalTagService>();
-    } catch (_) {
-      return null;
-    }
-  }
+  OfflineService? _tryGetOfflineService() => _getOfflineService?.call();
 
   /// Create service adapter with all dependencies
   /// Made lazy to avoid circular dependency issues during initialization
@@ -296,16 +295,11 @@ class UnifiedRecipeService
   RecipeServiceAdapter _getServiceAdapter() {
     // Lazy initialization to avoid circular dependencies
     _serviceAdapter ??= RecipeServiceAdapter(
-      recipeRepository:
-          _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
-      trashRepository: ServiceLocator.get<TrashRepository>(),
-      commentsRepository:
-          _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
-      ratingsRepository:
-          _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>(),
-      notificationsRepository:
-          _notificationsRepository ??
-          ServiceLocator.tryGet<NotificationsRepository>(),
+      recipeRepository: _recipeRepository,
+      trashRepository: _trashRepository,
+      commentsRepository: _commentsRepository,
+      ratingsRepository: _ratingsRepository,
+      notificationsRepository: _notificationsRepository,
     );
     return _serviceAdapter!;
   }
@@ -314,7 +308,12 @@ class UnifiedRecipeService
   JsonCacheHelper? _cacheHelperField;
   JsonCacheHelper get _cacheHelper {
     if (_cacheHelperField == null) {
-      final offlineService = ServiceLocator.get<OfflineService>();
+      final offlineService = _tryGetOfflineService();
+      if (offlineService == null) {
+        throw StateError(
+          'UnifiedRecipeService: no OfflineService for the cache',
+        );
+      }
       _cacheHelperField = JsonCacheHelper(
         'unified_recipes_cache',
         offlineService.database.cacheDao,
@@ -332,16 +331,16 @@ class UnifiedRecipeService
       setError: _setError,
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
-      taggingService: _tryGetTaggingService(),
+      taggingService: _tryResolve(_getTaggingService),
       ingredientIdResolver: _ingredientIdResolver,
-      personalTagService: _tryGetPersonalTagService(),
+      personalTagService: _tryResolve(_getPersonalTagService),
       // CRIT-7: Wire up tagging failure notifications to stream
       onTaggingFailed: (recipeTitle) {
         _taggingFailureController.add(recipeTitle);
       },
-      getOfflineQueue: ServiceLocator.tryGet<OfflineService>,
+      getOfflineQueue: _tryGetOfflineService,
     );
-    ServiceLocator.tryGet<OfflineService>()?.attachRecipeWriter(
+    _tryGetOfflineService()?.attachRecipeWriter(
       LazyQueuedRecipeWriter(_getServiceAdapter),
     );
 
@@ -367,20 +366,20 @@ class UnifiedRecipeService
       onRecipeRemoved: _handleDirectRecipeRemoval,
       hasUnsentWrite: (recipeId) async {
         final userId = currentUserId;
-        final queue = ServiceLocator.tryGet<OfflineService>();
+        final queue = _tryGetOfflineService();
         if (userId == null || queue == null) return false;
         return queue.hasUnsentRecipeWrite(recipeId, userId);
       },
       readRecipe: (recipeId) => _getRecipeRepository().read(recipeId),
     );
     unawaited(_queueSentSubscription?.cancel());
-    _queueSentSubscription = ServiceLocator.tryGet<OfflineService>()
-        ?.recipesSent
-        .listen(_cacheModule.refreshAfterQueueSend);
+    _queueSentSubscription = _tryGetOfflineService()?.recipesSent.listen(
+      _cacheModule.refreshAfterQueueSend,
+    );
     unawaited(_queueDroppedSubscription?.cancel());
-    _queueDroppedSubscription = ServiceLocator.tryGet<OfflineService>()
-        ?.recipesDropped
-        .listen(_cacheModule.dropDiscardedRecipe);
+    _queueDroppedSubscription = _tryGetOfflineService()?.recipesDropped.listen(
+      _cacheModule.dropDiscardedRecipe,
+    );
 
     _contentOps = RecipeContentOperations(
       lookupRecipe: getRecipeById,
