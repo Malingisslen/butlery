@@ -267,7 +267,10 @@ void main() {
         final pushed = await pumpNavigator(tester);
 
         await fcm.handleNotificationNavigation(
-          push({'type': NotificationPayloadType.recipeShared, 'recipeId': 'r1'}),
+          push({
+            'type': NotificationPayloadType.recipeShared,
+            'recipeId': 'r1',
+          }),
         );
         await tester.pumpAndSettle();
 
