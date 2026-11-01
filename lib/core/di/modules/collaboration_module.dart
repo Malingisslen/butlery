@@ -179,6 +179,7 @@ class CollaborationModule implements DIModule {
     container.registerLazySingleton<ShoppingPresenceModule>(
       () => FirebaseShoppingPresenceModule(
         repository: container<FirebaseShoppingPresenceRepository>(),
+        permissionService: container<PermissionService>(),
       ),
       dispose: (m) => m.dispose(),
     );

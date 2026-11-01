@@ -443,7 +443,11 @@ class CoreModule implements DIModule {
         () => InteractionLogger(),
       );
       container.registerLazySingleton<FeedbackService>(
-        () => FeedbackService(),
+        () => FeedbackService(
+          interactionLogger: container<InteractionLogger>(),
+          feedbackRepository: container<FeedbackRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       // BUT-743: Onboarding progress service. Lazy because the cold-start

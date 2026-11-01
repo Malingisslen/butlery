@@ -3,10 +3,8 @@
 import 'package:clock/clock.dart';
 
 import 'package:flutter/foundation.dart';
-import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/models/feedback_entry.dart';
@@ -19,11 +17,17 @@ class FeedbackService extends BaseService {
   @override
   String get serviceName => 'FeedbackService';
 
-  InteractionLogger get _interactionLogger =>
-      ServiceLocator.get<InteractionLogger>();
+  FeedbackService({
+    required InteractionLogger interactionLogger,
+    required FeedbackRepository feedbackRepository,
+    required AuthRepository authRepository,
+  }) : _interactionLogger = interactionLogger,
+       _feedbackRepository = feedbackRepository,
+       _authRepository = authRepository;
 
-  FeedbackRepository get _feedbackRepository =>
-      ServiceLocator.get<FeedbackRepository>();
+  final InteractionLogger _interactionLogger;
+  final FeedbackRepository _feedbackRepository;
+  final AuthRepository _authRepository;
 
   /// Submit user feedback with optional screenshot.
   Future<bool> submitFeedback({
@@ -33,7 +37,7 @@ class FeedbackService extends BaseService {
     Uint8List? screenshot,
   }) async {
     try {
-      final userId = GetIt.instance.get<AuthRepository>().currentUserId;
+      final userId = _authRepository.currentUserId;
       if (userId == null) throw Exception('User not authenticated');
 
       String? screenshotUrl;
