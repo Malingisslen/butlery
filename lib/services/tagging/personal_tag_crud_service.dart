@@ -15,7 +15,6 @@ import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/tagging/cookbook_cover_cleanup.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Handles CRUD operations for personal tags, groups, and embedded rules.
@@ -26,6 +25,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class PersonalTagCrudService extends BaseService {
   final FirebasePersonalTagRepository _tagRepository;
   final FirebasePersonalTagGroupRepository _groupRepository;
+  final RecipeRepository Function() _getRecipeRepositoryFn;
   final CookbookCoverCleanup _coverCleanup;
 
   static const String tagsCacheKey = 'personal_tags';
@@ -48,9 +48,11 @@ class PersonalTagCrudService extends BaseService {
   PersonalTagCrudService({
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
+    required RecipeRepository Function() getRecipeRepository,
     StorageService? storageService,
   }) : _tagRepository = tagRepository,
        _groupRepository = groupRepository,
+       _getRecipeRepositoryFn = getRecipeRepository,
        _coverCleanup = CookbookCoverCleanup(storageService: storageService);
 
   @override
@@ -732,7 +734,7 @@ class PersonalTagCrudService extends BaseService {
 
   RecipeRepository? _getRecipeRepository() {
     try {
-      return ServiceLocator.get<RecipeRepository>();
+      return _getRecipeRepositoryFn();
     } catch (e) {
       AppLogger.warning(
         'RecipeRepository unavailable for tag cascade — '

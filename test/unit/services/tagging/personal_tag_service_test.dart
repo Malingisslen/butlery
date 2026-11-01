@@ -76,7 +76,6 @@ void main() {
     final locatorAuthRepository = MockAuthRepository();
     when(() => locatorAuthRepository.currentUserId).thenReturn('locator-user');
     getIt.registerSingleton<AuthRepository>(locatorAuthRepository);
-    getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
 
     // Initialize production ServiceLocator with DIContainer
     final container = DIContainer();
@@ -95,6 +94,7 @@ void main() {
     final crudService = PersonalTagCrudService(
       tagRepository: mockTagRepository,
       groupRepository: mockGroupRepository,
+      getRecipeRepository: () => mockRecipeRepository,
     );
 
     final ruleEvaluator = PersonalTagRuleEvaluator(
@@ -1107,23 +1107,30 @@ void main() {
       });
 
       test('should still delete tag when recipe repo is unavailable', () async {
-        // Re-register GetIt without recipe repository to simulate unavailability
-        final getIt = GetIt.instance;
-        getIt.unregister<RecipeRepository>();
+        final unavailable = PersonalTagService(
+          crudService: PersonalTagCrudService(
+            tagRepository: mockTagRepository,
+            groupRepository: mockGroupRepository,
+            getRecipeRepository: () => throw StateError('unavailable'),
+          ),
+          ruleEvaluator: PersonalTagRuleEvaluator(
+            lookupService: mockLookupService,
+            authRepository: mockAuthRepository,
+          ),
+          tagRepository: mockTagRepository,
+          groupRepository: mockGroupRepository,
+        );
 
         when(
           () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
         ).thenReturn(null);
 
-        await service.deleteTag('tag-1');
+        await unavailable.deleteTag('tag-1');
 
         verify(
           () => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'),
         ).called(1);
         verify(() => mockBatch.commit()).called(1);
-
-        // Re-register for other tests
-        getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
       });
     });
 

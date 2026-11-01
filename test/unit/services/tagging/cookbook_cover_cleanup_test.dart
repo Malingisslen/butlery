@@ -14,7 +14,6 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_group_reposi
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
 
@@ -65,7 +64,6 @@ void main() {
     final getIt = GetIt.instance;
     await getIt.reset();
     getIt.registerSingleton<AuthRepository>(auth);
-    getIt.registerSingleton<RecipeRepository>(recipes);
     ServiceLocator.initialize(DIContainer());
     when(() => auth.currentUserId).thenReturn('u1');
 
@@ -87,6 +85,7 @@ void main() {
     service = PersonalTagCrudService(
       tagRepository: tags,
       groupRepository: _MockGroupRepository(),
+      getRecipeRepository: () => recipes,
       storageService: storage,
     );
   });

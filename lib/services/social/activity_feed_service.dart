@@ -4,7 +4,6 @@ library;
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
@@ -14,9 +13,19 @@ import 'package:butlery/services/user_service.dart';
 
 class ActivityFeedService extends BaseService {
   final ActivityEventRepository _repository;
+  final PermissionService Function() _getPermissionService;
+  final UserService Function() _getUserService;
+  final FriendsRepository Function() _getFriendsRepository;
 
-  ActivityFeedService({required ActivityEventRepository repository})
-    : _repository = repository;
+  ActivityFeedService({
+    required ActivityEventRepository repository,
+    required PermissionService Function() getPermissionService,
+    required UserService Function() getUserService,
+    required FriendsRepository Function() getFriendsRepository,
+  }) : _repository = repository,
+       _getPermissionService = getPermissionService,
+       _getUserService = getUserService,
+       _getFriendsRepository = getFriendsRepository;
 
   @override
   String get serviceName => 'ActivityFeedService';
@@ -37,8 +46,8 @@ class ActivityFeedService extends BaseService {
     Map<String, dynamic>? extraData,
   }) async {
     try {
-      final permissionService = ServiceLocator.get<PermissionService>();
-      final userService = ServiceLocator.get<UserService>();
+      final permissionService = _getPermissionService();
+      final userService = _getUserService();
 
       final userId = permissionService.currentUserId;
       if (userId == null) return;
@@ -87,8 +96,8 @@ class ActivityFeedService extends BaseService {
   }) async {
     return await executeServiceOperation<List<ActivityEvent>>(
           () async {
-            final permissionService = ServiceLocator.get<PermissionService>();
-            final friendsRepo = ServiceLocator.get<FriendsRepository>();
+            final permissionService = _getPermissionService();
+            final friendsRepo = _getFriendsRepository();
 
             final userId = permissionService.currentUserId;
             if (userId == null) return [];

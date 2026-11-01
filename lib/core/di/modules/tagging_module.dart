@@ -19,6 +19,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
@@ -137,6 +138,7 @@ class TaggingModule implements DIModule {
       () => PersonalTagCrudService(
         tagRepository: app<FirebasePersonalTagRepository>(),
         groupRepository: app<FirebasePersonalTagGroupRepository>(),
+        getRecipeRepository: () => app<RecipeRepository>(),
       ),
       // BUT-1055: run full dispose on user-scope teardown so the
       // `tagsMutated` broadcast controller is closed (onDispose). Without
