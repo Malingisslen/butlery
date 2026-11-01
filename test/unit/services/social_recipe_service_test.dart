@@ -333,6 +333,9 @@ void main() {
       sharedRecipeRepository: recipeRepo,
       sharedMenuRepository: menuRepo,
       socialRequestRepository: _FakeSocialRequestRepository(),
+      getRecipeCoordinator: () =>
+          throw StateError('no share request in this suite'),
+      getNotificationService: () => null,
     );
   });
 
@@ -1039,6 +1042,9 @@ void main() {
         sharedRecipeRepository: recipeRepo,
         sharedMenuRepository: menuRepo,
         socialRequestRepository: _FakeSocialRequestRepository(),
+        getRecipeCoordinator: () =>
+            throw StateError('no share request in this suite'),
+        getNotificationService: () => null,
         getShoppingService: () {
           asked++;
           return null;

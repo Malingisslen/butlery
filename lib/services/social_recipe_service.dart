@@ -20,6 +20,8 @@
 /// state changes without an explicit `await`), add `with ChangeNotifier` and
 /// call `notifyListeners()` after every state mutation, then remove this comment.
 
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -69,6 +71,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
     required FirebaseSocialRequestRepository socialRequestRepository,
+    required SocialRecipeCoordinator Function() getRecipeCoordinator,
+    required NotificationService? Function() getNotificationService,
     UnifiedShoppingService? Function()? getShoppingService,
   }) : _getShoppingService = getShoppingService ?? (() => null),
        _userService = userService,
@@ -89,6 +93,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       socialRequestRepository: _socialRequestRepository,
       permissionService: _permissionService,
       userService: _userService,
+      getRecipeCoordinator: getRecipeCoordinator,
+      getNotificationService: getNotificationService,
     );
   }
 

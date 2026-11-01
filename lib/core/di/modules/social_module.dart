@@ -217,6 +217,11 @@ class SocialModule implements DIModule {
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         sharedMenuRepository: app<FirebaseSharedMenuRepository>(),
         socialRequestRepository: app<FirebaseSocialRequestRepository>(),
+        getRecipeCoordinator: () => container<SocialRecipeCoordinator>(),
+        getNotificationService: () =>
+            container.isRegistered<NotificationService>()
+            ? container<NotificationService>()
+            : null,
         getShoppingService: () => app.isRegistered<UnifiedShoppingService>()
             ? app<UnifiedShoppingService>()
             : null,

@@ -155,6 +155,7 @@ void main() {
   late _FakeSocialRequestRepository requestRepo;
   late _MockSocialRecipeCoordinator coordinator;
   late _SpyNotificationService notifier;
+  late NotificationService? notificationService;
   late RecipeShareRequestModule module;
 
   setUpAll(() {
@@ -175,20 +176,31 @@ void main() {
       () => coordinator.shareRecipeWithUsers(any(), any(), any()),
     ).thenAnswer((_) async => RecipeShareResult.full);
 
+    notificationService = notifier;
+
+    // The module takes both in its constructor. The locator holds other
+    // instances, so a lookup that comes back sends no counted notification
+    // and shares through an unstubbed coordinator, and the tests below fail.
     if (GetIt.instance.isRegistered<NotificationService>()) {
       GetIt.instance.unregister<NotificationService>();
     }
-    GetIt.instance.registerSingleton<NotificationService>(notifier);
+    GetIt.instance.registerSingleton<NotificationService>(
+      _SpyNotificationService(),
+    );
 
     if (GetIt.instance.isRegistered<SocialRecipeCoordinator>()) {
       GetIt.instance.unregister<SocialRecipeCoordinator>();
     }
-    GetIt.instance.registerSingleton<SocialRecipeCoordinator>(coordinator);
+    GetIt.instance.registerSingleton<SocialRecipeCoordinator>(
+      _MockSocialRecipeCoordinator(),
+    );
 
     module = RecipeShareRequestModule(
       socialRequestRepository: requestRepo,
       permissionService: permission,
       userService: userService,
+      getRecipeCoordinator: () => coordinator,
+      getNotificationService: () => notificationService,
     );
   });
 
@@ -365,10 +377,7 @@ void main() {
       'notification failure is non-fatal: returns true and request is persisted',
       () async {
         // Replace the spy with one that throws on send.
-        GetIt.instance.unregister<NotificationService>();
-        GetIt.instance.registerSingleton<NotificationService>(
-          _ThrowingNotificationService(),
-        );
+        notificationService = _ThrowingNotificationService();
 
         final ok = await module.requestRecipeShare(
           ownerId: 'owner-uid',
