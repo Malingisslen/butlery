@@ -12,6 +12,7 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/user_profile.dart';
 
 import '../../../test_support/base_unit_test.dart';
@@ -58,6 +59,8 @@ void main() {
       socialOps = SocialMenuOperations(
         firestore: fakeFirestore,
         friendsService: mockFriendsService,
+        permissionService: mockPermissionService,
+        userService: TestServiceLocator.get<UserService>(),
       );
 
       testRecipe = RecipeFactory.build(
