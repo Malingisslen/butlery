@@ -163,7 +163,7 @@ final _requiredLists = <_Required>[
 /// Required lists in `firestore.rules` that no entry above compares, because no
 /// writer key set exists for them yet. A new one, or a removed one, moves the
 /// total and fails the census below.
-const _unguardedRequiredLists = 35;
+const _unguardedRequiredLists = 34;
 
 Set<String> _requiredAfter(String rules, _Required entry) {
   final block = rulesBlock(rules, entry.anchor);

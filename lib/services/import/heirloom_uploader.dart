@@ -63,7 +63,6 @@ class HeirloomUploader extends BaseService {
       imageData: draft.imageBytes,
       userId: userId,
       path: 'users/$userId/recipes/$recipeId/heirloom/$digest.$ext',
-      // Content-addressed → safe to cache for a year.
       cacheControl: 'public, max-age=31536000, immutable',
       metadata: {'purpose': 'heirloom', 'recipeId': recipeId},
     );

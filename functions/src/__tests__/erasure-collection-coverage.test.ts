@@ -36,7 +36,6 @@ const UNREVIEWED: Record<string, string> = {
   connectivity_test: "not looked at",
   ingredient_substitutions: "not looked at",
   menu_lexicon: "not looked at",
-  menu_templates: "rules mention ownerId; no writer found in functions/src",
   metrics: "aggregate; not looked at for user ids",
   notification_metrics: "aggregate; not looked at for user ids",
   recipe_social_stats: "aggregate; not looked at for user ids",

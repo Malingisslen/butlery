@@ -1,11 +1,10 @@
 /**
- * Firestore rules tests for `menu_templates` (BUT-2359).
+ * Firestore rules tests for `menu_templates`.
  *
- * The update limb checked only that the caller owned the stored template, so
- * the owner could rewrite `ownerId` to another uid and plant a public template
- * under someone else's account. These tests pin that the owner stays the
- * owner, and that the owner's ordinary edits and the read and delete limbs
- * are unchanged.
+ * No rule opens this collection, so the terminal `match /{document=**}`
+ * decides.
+ * These tests pin that every client operation is refused, including the
+ * owner's own and a document marked public.
  *
  * Run with: npx ts-node src/__tests__/menu-templates-rules.test.ts
  */
@@ -16,7 +15,6 @@ import {
   initializeTestEnvironment,
   RulesTestEnvironment,
   assertFails,
-  assertSucceeds,
 } from "@firebase/rules-unit-testing";
 
 const PROJECT_ID = "butlery-rules-menu-templates";
@@ -69,70 +67,48 @@ async function seedTemplate(id: string, ownerId: string): Promise<void> {
   });
 }
 
-test("T1 the owner can edit their template's name", async () => {
-  await seedTemplate("t1", OWNER);
+test("T1 creating a template as yourself is refused", async () => {
   const db = env.authenticatedContext(OWNER).firestore();
-  await assertSucceeds(
-    db.doc(`${COLLECTION}/t1`).update({ templateName: "Fest" }),
-  );
+  await assertFails(db.doc(`${COLLECTION}/t1-new`).set(template(OWNER)));
 });
 
-test("T2 the owner can rewrite the template keeping ownerId", async () => {
+test("T2 the owner cannot read their own template", async () => {
   await seedTemplate("t2", OWNER);
   const db = env.authenticatedContext(OWNER).firestore();
-  await assertSucceeds(
-    db.doc(`${COLLECTION}/t2`).set(template(OWNER, { templateName: "Ny" })),
-  );
+  await assertFails(db.doc(`${COLLECTION}/t2`).get());
 });
 
-test("T3 the owner cannot move the template to another uid", async () => {
+test("T3 a public template is not readable by another signed-in user", async () => {
   await seedTemplate("t3", OWNER);
-  const db = env.authenticatedContext(OWNER).firestore();
-  await assertFails(db.doc(`${COLLECTION}/t3`).update({ ownerId: VICTIM }));
+  const db = env.authenticatedContext(STRANGER).firestore();
+  await assertFails(db.doc(`${COLLECTION}/t3`).get());
 });
 
-test("T4 the owner cannot move it by rewriting the whole document", async () => {
+test("T4 the owner cannot edit their template", async () => {
   await seedTemplate("t4", OWNER);
   const db = env.authenticatedContext(OWNER).firestore();
   await assertFails(
-    db.doc(`${COLLECTION}/t4`).set(template(VICTIM)),
+    db.doc(`${COLLECTION}/t4`).update({ templateName: "Fest" }),
   );
 });
 
-test("T5 the owner cannot drop ownerId", async () => {
+test("T5 the owner cannot move the template to another uid", async () => {
   await seedTemplate("t5", OWNER);
   const db = env.authenticatedContext(OWNER).firestore();
-  const data = template(OWNER);
-  delete data.ownerId;
-  await assertFails(db.doc(`${COLLECTION}/t5`).set(data));
+  await assertFails(db.doc(`${COLLECTION}/t5`).update({ ownerId: VICTIM }));
 });
 
-test("T6 another user cannot edit the template", async () => {
+test("T6 the owner cannot delete their template", async () => {
   await seedTemplate("t6", OWNER);
-  const db = env.authenticatedContext(STRANGER).firestore();
-  await assertFails(db.doc(`${COLLECTION}/t6`).update({ templateName: "Kapad" }));
-});
-
-test("T7 creating a template under another uid is refused", async () => {
   const db = env.authenticatedContext(OWNER).firestore();
-  await assertFails(db.doc(`${COLLECTION}/t7-new`).set(template(VICTIM)));
+  await assertFails(db.doc(`${COLLECTION}/t6`).delete());
 });
 
-test("T8 creating a template as yourself is allowed", async () => {
+test("T7 listing the collection is refused", async () => {
   const db = env.authenticatedContext(OWNER).firestore();
-  await assertSucceeds(db.doc(`${COLLECTION}/t8-new`).set(template(OWNER)));
-});
-
-test("T9 a public template is readable by another signed-in user", async () => {
-  await seedTemplate("t9", OWNER);
-  const db = env.authenticatedContext(STRANGER).firestore();
-  await assertSucceeds(db.doc(`${COLLECTION}/t9`).get());
-});
-
-test("T10 the owner can delete their template", async () => {
-  await seedTemplate("t10", OWNER);
-  const db = env.authenticatedContext(OWNER).firestore();
-  await assertSucceeds(db.doc(`${COLLECTION}/t10`).delete());
+  await assertFails(
+    db.collection(COLLECTION).where("ownerId", "==", OWNER).get(),
+  );
 });
 
 async function run(): Promise<void> {

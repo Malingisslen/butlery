@@ -22,7 +22,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { ref, uploadBytes, deleteObject } from "firebase/storage";
+import { ref, uploadBytes, deleteObject, getMetadata } from "firebase/storage";
 
 const PROJECT_ID = "butlery-rules-owner-delete";
 const RULES_PATH = path.resolve(__dirname, "../../../storage.rules");
@@ -85,6 +85,26 @@ for (const [label, objectPath] of Object.entries(PATHS)) {
     await assertFails(deleteObject(ref(ctx.storage(), objectPath)));
   });
 }
+
+// Nothing in the app uploads to shared/recipes/, so no rule opens it and the
+// default deny must hold there.
+const SHARED_RECIPE_PATH = "shared/recipes/r1/cover.jpg";
+
+test("shared/recipes: a signed-in user cannot upload there", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    uploadBytes(ref(ctx.storage(), SHARED_RECIPE_PATH), IMAGE_BYTES, {
+      ...IMAGE_META,
+      customMetadata: { uploadedBy: OWNER_UID },
+    }),
+  );
+});
+
+test("shared/recipes: a signed-in user cannot read an existing object", async () => {
+  await seedObject(SHARED_RECIPE_PATH);
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(getMetadata(ref(ctx.storage(), SHARED_RECIPE_PATH)));
+});
 
 async function run(): Promise<void> {
   console.log("storage owner delete rules tests (BUT-2294)");

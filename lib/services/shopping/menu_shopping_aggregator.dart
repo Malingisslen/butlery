@@ -90,7 +90,6 @@ class MenuShoppingAggregator {
   /// nothing (an interpretation: the drawing shows both switches on).
   static MenuShoppingAggregation aggregateForMerge(
     List<ScaledRecipe> placements, {
-    Set<String> excludeNames = const {},
     bool mergeDuplicates = true,
     bool convertUnits = true,
   }) {
@@ -108,7 +107,6 @@ class MenuShoppingAggregator {
         final displayName = line.name;
         if (displayName.isEmpty) continue;
         final nameKey = IngredientIdentity.nameKey(displayName);
-        if (excludeNames.contains(nameKey)) continue;
         rawRows++;
         final amount = line.amount;
         final hasAmount = amount != null;

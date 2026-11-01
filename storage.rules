@@ -58,29 +58,6 @@ service firebase.storage {
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Shared recipe images - publicly readable, upload-validated writes
-    match /shared/recipes/{recipeId}/{allPaths=**} {
-      allow read: if request.auth != null;
-
-      // Allow creating new files if authenticated and setting correct uploader metadata
-      // Application must set metadata.uploadedBy = userId when uploading
-      // Max 10 MB, must be image format
-      allow create: if request.auth != null
-        && request.resource.metadata.uploadedBy == request.auth.uid
-        && isValidImage()
-        && isWithinSizeLimit(10);
-
-      // Allow updating/deleting only files you uploaded
-      // Update also requires size/type validation if changing content
-      allow update: if request.auth != null
-        && resource.metadata.uploadedBy == request.auth.uid
-        && isValidImage()
-        && isWithinSizeLimit(10);
-
-      allow delete: if request.auth != null
-        && resource.metadata.uploadedBy == request.auth.uid;
-    }
-
     // ML model files - read-only for authenticated users
     match /models/{allPaths=**} {
       allow read: if request.auth != null;
