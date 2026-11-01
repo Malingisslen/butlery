@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:clock/clock.dart';
 
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -15,6 +16,9 @@ class CaptionRulesReader {
   CaptionRulesReader({TextImportStrategy? text}) : _text = text;
 
   final TextImportStrategy? _text;
+
+  @visibleForTesting
+  TextImportStrategy? get text => _text;
 
   static const _minIngredients = 2;
   static const _maxTitleLength = 100;

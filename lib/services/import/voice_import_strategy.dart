@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:clock/clock.dart';
 
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -20,6 +21,9 @@ class VoiceImportStrategy implements ImportStrategy {
     : _textStrategy = textStrategy ?? TextImportStrategy();
 
   final TextImportStrategy _textStrategy;
+
+  @visibleForTesting
+  TextImportStrategy get textStrategy => _textStrategy;
 
   @override
   String get strategyName => 'Voice Import';

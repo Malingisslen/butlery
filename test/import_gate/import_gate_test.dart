@@ -101,6 +101,7 @@ void main() {
   late _CountingLlmService llm;
   late _CountingLlmEnhancement llmEnhancement;
   late RecipeParserService gateParser;
+  late IngredientParsingStrategy gateIngredients;
   var webScraperCalls = 0;
   final corpora = <CorpusScore>[];
 
@@ -128,7 +129,7 @@ void main() {
       cache: FakeLocalRecipeCache(),
     );
     await parser.init();
-    getIt.registerSingleton<IngredientParsingStrategy>(ingredientStrategy);
+    gateIngredients = ingredientStrategy;
     gateParser = parser;
   });
 
@@ -167,6 +168,7 @@ void main() {
 
       final strategy = UrlImportStrategy(
         recipeParser: () => gateParser,
+        ingredientStrategy: () => gateIngredients,
         llmEnhancement: () => llmEnhancement,
         httpClient: MockClient(
           (req) async => req.url.toString() == url
@@ -205,7 +207,9 @@ void main() {
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
 
-    final strategy = TextImportStrategy();
+    final strategy = TextImportStrategy(
+      ingredientStrategy: () => gateIngredients,
+    );
     final scores = <RecipeScore>[];
     for (final f in files) {
       final stem = f.path.substring(0, f.path.length - '.txt'.length);
@@ -254,7 +258,9 @@ void main() {
             .where((f) => f.path.endsWith('.pages.json'))
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
-    final strategy = TextImportStrategy();
+    final strategy = TextImportStrategy(
+      ingredientStrategy: () => gateIngredients,
+    );
     final scores = <RecipeScore>[];
     for (final f in files) {
       final stem = f.path.substring(0, f.path.length - '.pages.json'.length);

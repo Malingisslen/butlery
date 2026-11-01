@@ -692,18 +692,13 @@ Gör så här:
       test('a strategy failure surfaces the strategy own message, preserved '
           '(NOT the generic multi-strategy miss)', () async {
         final fakeLlm = _FakeLlmFailure('kunde inte tolka handstilen');
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<LlmEnhancementService>()) {
-          getIt.unregister<LlmEnhancementService>();
-        }
-        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
         // No ImportRateLimiter registered → _rateLimiter resolves null → the
         // rate-limit check is skipped and we reach the strategy.
         app_provider.ServiceLocator.reset();
         app_provider.ServiceLocator.initialize(DIContainer());
 
         final mgr = ImportManager.withStrategies(mockPersonalOps, [
-          PhotoImportStrategy(),
+          PhotoImportStrategy(llmEnhancement: () => fakeLlm),
         ]);
 
         final result = await mgr.importSinglePhoto(

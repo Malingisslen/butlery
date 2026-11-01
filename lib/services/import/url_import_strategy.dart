@@ -9,6 +9,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -46,6 +47,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     RecipeParserService? Function() recipeParser = _noParser,
     ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
     LlmEnhancementService? Function() llmEnhancement = _noLlm,
+    IngredientParsingStrategy? Function() ingredientStrategy = _noIngredients,
     WebScraper Function()? webScraperFactory,
     // BUT-1078: forward a DNS lookup seam to HttpContentFetcher so the
     // DNS-rebinding gate can be driven end-to-end in tests (e.g. a hostname
@@ -59,11 +61,21 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
        ),
        _llmFallback = LlmExtractionFallback(llmEnhancement: llmEnhancement),
        _lookUpParser = recipeParser,
-       _lookUpParsedRecipeCache = parsedRecipeCache;
+       _lookUpParsedRecipeCache = parsedRecipeCache,
+       _lookUpIngredients = ingredientStrategy;
 
   static RecipeParserService? _noParser() => null;
   static ParsedRecipeCache? _noCache() => null;
   static LlmEnhancementService? _noLlm() => null;
+  static IngredientParsingStrategy? _noIngredients() => null;
+
+  final IngredientParsingStrategy? Function() _lookUpIngredients;
+
+  @visibleForTesting
+  TextImportStrategy newTextStrategy() => _newTextStrategy();
+
+  TextImportStrategy _newTextStrategy() =>
+      TextImportStrategy(ingredientStrategy: _lookUpIngredients);
 
   RecipeParserService? get _recipeParser {
     if (_parserService != null) return _parserService;
@@ -329,7 +341,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final webScraperResult = await _fetcher.tryWebScraper(url);
     if (webScraperResult == null) return null;
 
-    final textStrategy = TextImportStrategy();
+    final textStrategy = _newTextStrategy();
     final textResult = await textStrategy.import(webScraperResult);
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
@@ -387,7 +399,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     // the result is unlikely to be a real recipe.
     final nonRecipeJsonLdDetected = hasOnlyNonRecipeJsonLd(html);
 
-    final textStrategy = TextImportStrategy();
+    final textStrategy = _newTextStrategy();
     final textResult = await textStrategy.import(plainText);
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;

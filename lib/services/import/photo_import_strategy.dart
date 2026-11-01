@@ -24,6 +24,7 @@
 /// }
 /// ```
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -33,6 +34,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/heic_converter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -66,14 +68,24 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     OCRExtractionService? ocrService,
     TextImportStrategy? textStrategy,
     HeicConverter? heicConverter,
+    LlmEnhancementService? Function() llmEnhancement = _noLlm,
   }) : _ocrService = ocrService ?? OCRExtractionService.instance,
        _textStrategy = textStrategy ?? TextImportStrategy(),
-       _heicConverter = heicConverter ?? HeicConverter();
+       _heicConverter = heicConverter ?? HeicConverter(),
+       _lookUpLlm = llmEnhancement;
+
+  static LlmEnhancementService? _noLlm() => null;
+
+  @visibleForTesting
+  TextImportStrategy get textStrategy => _textStrategy;
+
+  final LlmEnhancementService? Function() _lookUpLlm;
 
   /// BUT-1460: LLM vision lives in [PhotoLlmVision], extracted to keep this
   /// file under the 500-line limit.
   late final PhotoLlmVision _llmVision = PhotoLlmVision(
     strategyName: strategyName,
+    llmEnhancement: _lookUpLlm,
   );
 
   @override

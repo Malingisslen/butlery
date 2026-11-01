@@ -2176,17 +2176,12 @@ Instructions:
         'BUT-2158: the reader\'s per-line confidences reach the snapshot, '
         'and an unread line is failed whatever the reader said',
         () async {
-          GetIt.instance.registerSingleton<IngredientParsingStrategy>(
-            _ConfidenceSpy(const [
-              ParseConfidence.high,
-              ParseConfidence.high,
-              ParseConfidence.low,
-            ]),
-          );
-          addTearDown(
-            () => GetIt.instance.unregister<IngredientParsingStrategy>(),
-          );
-          final spied = TextImportStrategy();
+          final spy = _ConfidenceSpy(const [
+            ParseConfidence.high,
+            ParseConfidence.high,
+            ParseConfidence.low,
+          ]);
+          final spied = TextImportStrategy(ingredientStrategy: () => spy);
 
           final result = await spied.import(
             'Potatisbullar\n'
