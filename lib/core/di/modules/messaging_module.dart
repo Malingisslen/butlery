@@ -123,6 +123,7 @@ class MessagingModule implements DIModule {
         historyRepository: appScope<NotificationHistoryRepository>(),
         batchRepository: appScope<NotificationBatchRepository>(),
         deviceRepository: appScope<DeviceRepository>(),
+        analyticsRepository: appScope<NotificationAnalyticsRepository>(),
       ),
       dispose: (s) => s.resetForLogout(),
     );

@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Notification analytics with delivery tracking and engagement metrics.
@@ -24,9 +23,8 @@ class NotificationAnalyticsManager {
 
   NotificationAnalyticsManager({
     required String userId,
-    NotificationAnalyticsRepository? repository,
-  }) : _repository =
-           repository ?? ServiceLocator.get<NotificationAnalyticsRepository>(),
+    required NotificationAnalyticsRepository repository,
+  }) : _repository = repository,
        _userId = userId;
 
   /// Record notification sent (call after FCM send attempt)

@@ -34,10 +34,6 @@ class _MockBatchRepo extends Mock implements NotificationBatchRepository {}
 
 class _MockDeviceRepo extends Mock implements DeviceRepository {}
 
-// BUT-1181: NotificationAnalyticsManager resolves this via
-// ServiceLocator.get<NotificationAnalyticsRepository>() at construction, so it
-// must be registered before NotificationService is built or every test throws
-// "not registered inside GetIt".
 class _MockAnalyticsRepo extends Mock
     implements NotificationAnalyticsRepository {}
 
@@ -52,8 +48,6 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      // TestServiceLocator registers FirestoreRepository (needed by
-      // NotificationAnalyticsManager constructor via ServiceLocator.get)
       await TestServiceLocator.initialize();
 
       // Bridge production ServiceLocator to test GetIt instance
@@ -110,20 +104,13 @@ void main() {
         mockNotificationsRepo,
       );
 
-      // BUT-1181: NotificationAnalyticsManager resolves its repo via
-      // ServiceLocator.get at construction — register a mock so the service
-      // builds. The 15 preferences/quiet-hours/utility tests don't drive the
-      // analytics write/read paths, so a bare mock is sufficient.
-      TestServiceLocator.registerMock<NotificationAnalyticsRepository>(
-        _MockAnalyticsRepo(),
-      );
-
       service = NotificationService(
         notificationsRepository: mockNotificationsRepo,
         authRepository: mockAuthRepo,
         historyRepository: mockHistoryRepo,
         batchRepository: mockBatchRepo,
         deviceRepository: mockDeviceRepo,
+        analyticsRepository: _MockAnalyticsRepo(),
       );
     });
 

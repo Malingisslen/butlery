@@ -11,6 +11,7 @@ import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
+import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
@@ -53,6 +54,7 @@ class NotificationService extends BaseService {
   final NotificationHistoryRepository _historyRepository;
   final NotificationBatchRepository _batchRepository;
   final DeviceRepository _deviceRepository;
+  final NotificationAnalyticsRepository _analyticsRepository;
 
   /// Dynamic userId read from AuthRepository (survives logout/login cycles)
   String get _userId {
@@ -87,11 +89,13 @@ class NotificationService extends BaseService {
     required NotificationHistoryRepository historyRepository,
     required NotificationBatchRepository batchRepository,
     required DeviceRepository deviceRepository,
+    required NotificationAnalyticsRepository analyticsRepository,
   }) : _notificationsRepository = notificationsRepository,
        _authRepository = authRepository,
        _historyRepository = historyRepository,
        _batchRepository = batchRepository,
-       _deviceRepository = deviceRepository;
+       _deviceRepository = deviceRepository,
+       _analyticsRepository = analyticsRepository;
 
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
@@ -136,6 +140,7 @@ class NotificationService extends BaseService {
 
     _analyticsManager = NotificationAnalyticsManager(
       userId: userId,
+      repository: _analyticsRepository,
     );
 
     _modulesCreated = true;
