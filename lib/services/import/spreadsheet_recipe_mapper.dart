@@ -112,8 +112,8 @@ class SpreadsheetRecipeMapper {
                 : mealTypeFor([explicitMealType])) ??
             categoryMealType ??
             'Middag',
-        portions: _firstInt(_first(data, _servingKeys)) ?? 4,
-        timeMinutes: _firstInt(_first(data, _timeKeys)) ?? 30,
+        portions: _firstInt(_first(data, _servingKeys)),
+        timeMinutes: _firstInt(_first(data, _timeKeys)),
         // Still NAMES here; FileImportViewModel turns them into tag ids before
         // the recipe is saved.
         personalTagIds: tags.toSet().toList(),
