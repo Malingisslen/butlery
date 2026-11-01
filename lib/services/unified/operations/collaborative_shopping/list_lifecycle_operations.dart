@@ -3,7 +3,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// BUT-1723: what a conversion actually did, not just whether it started.
 ///
@@ -58,6 +57,7 @@ class ListLifecycleOperations {
   /// BUT-1723: server-confirmed item count for a list, or null when it could
   /// not be confirmed. See `ShoppingRepository.confirmPersistedItemCount`.
   final Future<int?> Function(String listId) _confirmPersistedItemCount;
+  final PermissionService _permissionService;
 
   ListLifecycleOperations({
     required List<UnifiedShoppingList> Function() getCollaborativeLists,
@@ -84,13 +84,15 @@ class ListLifecycleOperations {
     })
     createPersonalList,
     required Future<int?> Function(String listId) confirmPersistedItemCount,
+    required PermissionService permissionService,
   }) : _getCollaborativeLists = getCollaborativeLists,
        _getPersonalLists = getPersonalLists,
        _createCollaborativeList = createCollaborativeList,
        _deleteList = deleteList,
        _createPersonalList = createPersonalList,
        _inviteMembers = inviteMembers,
-       _confirmPersistedItemCount = confirmPersistedItemCount;
+       _confirmPersistedItemCount = confirmPersistedItemCount,
+       _permissionService = permissionService;
 
   /// Creates the list with only the caller seated, then invites [memberIds].
   /// A failed invite keeps the list: [CreatedSharedList.notInvited] names who
@@ -141,23 +143,21 @@ class ListLifecycleOperations {
   }
 
   List<UnifiedShoppingList> getOwnedLists() {
-    final permissionService = ServiceLocator.get<PermissionService>();
-    if (!permissionService.isAuthenticated) return [];
+    if (!_permissionService.isAuthenticated) return [];
 
     return _getCollaborativeLists()
-        .where((list) => permissionService.isShoppingListOwner(list.id))
+        .where((list) => _permissionService.isShoppingListOwner(list.id))
         .toList();
   }
 
   List<UnifiedShoppingList> getSharedWithMe() {
-    final permissionService = ServiceLocator.get<PermissionService>();
-    if (!permissionService.isAuthenticated) return [];
+    if (!_permissionService.isAuthenticated) return [];
 
     return _getCollaborativeLists()
         .where(
           (list) =>
-              !permissionService.isShoppingListOwner(list.id) &&
-              permissionService.canViewShoppingList(list.id),
+              !_permissionService.isShoppingListOwner(list.id) &&
+              _permissionService.canViewShoppingList(list.id),
         )
         .toList();
   }
@@ -245,9 +245,7 @@ class ListLifecycleOperations {
       );
     }
 
-    if (!ServiceLocator.get<PermissionService>().isShoppingListOwner(
-      collaborativeList.id,
-    )) {
+    if (!_permissionService.isShoppingListOwner(collaborativeList.id)) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
       return (
         newListId: null,
@@ -300,7 +298,7 @@ class ListLifecycleOperations {
   List<UnifiedShoppingItem> _withoutForeignAttribution(
     List<UnifiedShoppingItem> items,
   ) {
-    final me = ServiceLocator.get<PermissionService>().currentUserId;
+    final me = _permissionService.currentUserId;
     return items.map((item) => _stripForeignIdentities(item, me)).toList();
   }
 

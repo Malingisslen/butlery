@@ -3,7 +3,6 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 
 /// Handles collaborative shopping list item operations (add, remove, toggle).
@@ -16,6 +15,7 @@ import 'package:butlery/services/unified/operations/collaborative_shopping/list_
 class ListItemOperations {
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
+  final PermissionService _permissionService;
   final Future<bool> Function(
     String listId,
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
@@ -26,6 +26,7 @@ class ListItemOperations {
   ListItemOperations({
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
+    required PermissionService permissionService,
     required Future<bool> Function(
       String listId,
       UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
@@ -34,6 +35,7 @@ class ListItemOperations {
     required ListLifecycleOperations lifecycleOps,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _permissionService = permissionService,
        _mutateSharedList = mutateSharedList,
        _lifecycleOps = lifecycleOps;
 
@@ -175,6 +177,6 @@ class ListItemOperations {
   }
 
   bool canEdit(String listId) {
-    return ServiceLocator.get<PermissionService>().canEditShoppingList(listId);
+    return _permissionService.canEditShoppingList(listId);
   }
 }

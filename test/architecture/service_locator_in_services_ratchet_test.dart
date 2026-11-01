@@ -76,21 +76,11 @@ const _residue = <String, int>{
       1,
   'lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart':
       2,
-  'lib/services/unified/operations/collaborative_shopping/list_activity_operations.dart':
-      6,
-  'lib/services/unified/operations/collaborative_shopping/list_item_operations.dart':
-      1,
-  'lib/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart':
-      4,
-  'lib/services/unified/operations/collaborative_shopping/list_member_operations.dart':
-      3,
   'lib/services/unified/operations/friend_categories_operations.dart': 7,
   'lib/services/unified/operations/friends_management_operations.dart': 5,
   'lib/services/unified/operations/list_invitation_operations.dart': 1,
   'lib/services/unified/operations/modules/comment_crud_operations.dart': 4,
   'lib/services/unified/operations/modules/recipe_sharing_manager.dart': 5,
-  'lib/services/unified/operations/modules/shopping_social_share_module.dart':
-      2,
   'lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart':
       2,
   'lib/services/unified/operations/social_menu_operations.dart': 18,

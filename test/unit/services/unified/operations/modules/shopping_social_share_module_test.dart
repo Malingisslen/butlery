@@ -151,7 +151,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
@@ -185,13 +184,18 @@ UserProfile _meProfile({
   );
 }
 
+/// The profile service every module in a test is built with; set in `setUp`.
+late UserService _userService;
+
 ShoppingSocialShareModule _build(
   FakeFirebaseFirestore firestore,
-  FakePermissionService perms,
-) {
+  FakePermissionService perms, {
+  UserService? userService,
+}) {
   return ShoppingSocialShareModule(
     firestore: firestore,
     permissionService: perms,
+    userService: userService ?? _userService,
   );
 }
 
@@ -281,32 +285,6 @@ const _myProfileName = 'Anna i appen';
 /// The PROFILE picture, different from [_myAvatar] (the Auth account's photo).
 const _myProfileAvatar = 'https://example.com/anna-profile.jpg';
 
-/// A DIContainer that resolves exactly one service.
-///
-/// Deliberately NOT `TestServiceLocator.initialize()`: that installs
-/// `MockFieldValuePlatform`, which is the conflict this whole suite is built
-/// to avoid (see the header). The module only ever asks the locator for
-/// `UserService`, so one entry is the whole dependency.
-class _SingleServiceContainer extends Mock implements DIContainer {
-  _SingleServiceContainer(this.userService);
-
-  /// Null models "the service graph is not up yet" — the `tryGet` fallback.
-  final UserService? userService;
-
-  @override
-  T get<T extends Object>() {
-    if (T == UserService && userService != null) return userService! as T;
-    throw StateError('not registered: $T');
-  }
-
-  @override
-  bool isRegistered<T extends Object>() =>
-      T == UserService && userService != null;
-
-  @override
-  bool get isInitialized => true;
-}
-
 void main() {
   late FakeFirebaseFirestore firestore;
   late FakePermissionService perms;
@@ -322,8 +300,9 @@ void main() {
     final userService = MockUserService();
     when(() => userService.profileDisplayName).thenReturn(_myProfileName);
     when(() => userService.profileAvatarUrl).thenReturn(_myProfileAvatar);
+    _userService = userService;
+    // No locator: the module gets its profile service injected.
     ServiceLocator.reset();
-    ServiceLocator.initialize(_SingleServiceContainer(userService));
     module = _build(firestore, perms);
   });
 
@@ -667,20 +646,26 @@ void main() {
       }
     });
 
-    /// The fallback half of BUT-1775, and the reason `tryGet` is used rather
-    /// than `get`: with no service graph the module must stamp an empty name. What it must NEVER do is quietly reach for
+    /// The fallback half of BUT-1775: with no profile name the module must
+    /// stamp an empty name. What it must NEVER do is quietly reach for
     /// `PermissionService.currentUser.displayName` — the Auth-sourced name —
     /// as the "sensible default", because that is the exact value the whole
     /// fix exists to keep out of other people's documents.
     test(
-      'BUT-1775: with no UserService the name is empty, '
+      'BUT-1775: with no profile name the name is empty, '
       'never the Auth handle',
       () async {
-        ServiceLocator.reset();
-        ServiceLocator.initialize(_SingleServiceContainer(null));
+        final noProfile = MockUserService();
+        when(() => noProfile.profileDisplayName).thenReturn(null);
+        when(() => noProfile.profileAvatarUrl).thenReturn(null);
+        final noProfileModule = _build(
+          firestore,
+          perms,
+          userService: noProfile,
+        );
 
         await _seedPersonalList(firestore, listId: 'l1');
-        final ok = await module.shareWithFriends(
+        final ok = await noProfileModule.shareWithFriends(
           listId: 'l1',
           friendIds: const ['friend-1'],
         );

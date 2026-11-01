@@ -99,6 +99,7 @@ class UnifiedShoppingService
       __shareOps ??= ShoppingShareOperations(
         firestoreRepository: _firestoreRepository,
         permissionService: _permissionService,
+        userService: _userService,
       );
   ShoppingShareOperations? __shareOps;
 
@@ -160,6 +161,7 @@ class UnifiedShoppingService
       deleteList: deleteList,
       createPersonalList: createPersonalList,
       confirmPersistedItemCount: _shoppingRepository.confirmPersistedItemCount,
+      permissionService: _permissionService,
       inviteMembers: (listId, userIds, permission) =>
           _getFriendsService().invitations.listInvitations.invite(
             listId: listId,
@@ -170,6 +172,7 @@ class UnifiedShoppingService
 
     final memberOps = ListMemberOperations(
       getCurrentUserId: () => currentUserId,
+      permissionService: _permissionService,
       updateMembership: updateSharedListMembership,
       leaveMembership: leaveSharedList,
       // The clear must happen HERE, at the true entry point, not inside
@@ -184,11 +187,15 @@ class UnifiedShoppingService
     final itemOps = ListItemOperations(
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
+      permissionService: _permissionService,
       mutateSharedList: mutateSharedList,
       lifecycleOps: lifecycleOps,
     );
 
-    final activityOps = ListActivityOperations(lifecycleOps);
+    final activityOps = ListActivityOperations(
+      lifecycleOps,
+      _permissionService,
+    );
 
     _collaborativeOps = CollaborativeShoppingOperations(
       lifecycleOps: lifecycleOps,

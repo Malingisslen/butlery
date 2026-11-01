@@ -3156,6 +3156,7 @@ class MockShoppingSocialShareModule extends ShoppingSocialShareModule {
     : super(
         firestore: FakeFirebaseFirestore(),
         permissionService: FakePermissionService(),
+        userService: MockUserService(),
       );
 }
 

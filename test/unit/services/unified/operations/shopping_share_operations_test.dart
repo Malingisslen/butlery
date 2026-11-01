@@ -48,6 +48,7 @@ void main() {
       operations = ShoppingShareOperations(
         firestoreRepository: mockFirestoreRepository,
         permissionService: mockPermissionService,
+        userService: MockUserService(),
       );
 
       // Replace internal social module with mock to avoid

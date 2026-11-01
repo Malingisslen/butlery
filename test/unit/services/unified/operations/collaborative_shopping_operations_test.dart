@@ -82,12 +82,14 @@ void main() {
       mockParentService = MockUnifiedShoppingService();
       mockPermissionService = FakePermissionService();
 
-      // Register permission service
+      // The operations get [mockPermissionService] injected. The locator holds
+      // a different, signed-out one, so an operation that looked it up there
+      // would be refused.
       if (GetIt.instance.isRegistered<PermissionService>()) {
         GetIt.instance.unregister<PermissionService>();
       }
       GetIt.instance.registerSingleton<PermissionService>(
-        mockPermissionService,
+        FakePermissionService(),
       );
 
       // Create test items
@@ -284,6 +286,7 @@ void main() {
         deleteList: mockParentService.deleteList,
         createPersonalList: mockParentService.createPersonalList,
         confirmPersistedItemCount: (_) async => confirmedItemCount,
+        permissionService: mockPermissionService,
         inviteMembers: (listId, userIds, permission) async {
           inviteCalls.add((listId, userIds.join(','), permission));
           if (inviteThrows) throw Exception('callable unreachable');
@@ -293,6 +296,7 @@ void main() {
 
       final memberOps = ListMemberOperations(
         getCurrentUserId: () => mockParentService.currentUserId,
+        permissionService: mockPermissionService,
         updateMembership: mockParentService.updateSharedListMembership,
         leaveMembership: mockParentService.leaveSharedList,
         beginMutation: () => beginMutationCalls++,
@@ -303,11 +307,15 @@ void main() {
         getCurrentUserId: () => mockParentService.currentUserId,
         getCurrentUserDisplayName: () =>
             mockParentService.currentUserDisplayName,
+        permissionService: mockPermissionService,
         mutateSharedList: mockParentService.mutateSharedList,
         lifecycleOps: lifecycleOps,
       );
 
-      final activityOps = ListActivityOperations(lifecycleOps);
+      final activityOps = ListActivityOperations(
+        lifecycleOps,
+        mockPermissionService,
+      );
 
       // Create operations under test
       operations = CollaborativeShoppingOperations(
