@@ -298,6 +298,7 @@ function pathsUnder(workflow: string, trigger: string): string[] {
  */
 const PRODUCTION_CLOUD_WORKFLOWS = [
   "backfill-age-claim.yml",
+  "deploy-admin-web.yml",
   "deploy-app-link-files.yml",
   "deploy-firebase.yml",
   "deploy-hosting.yml",

@@ -2,7 +2,7 @@
 # site by hand.
 #
 # MANUAL ONLY (workflow_dispatch), behind the `production` environment's
-# reviewer gate like deploy-firebase.yml. Nothing else deploys hosting.
+# reviewer gate like deploy-firebase.yml.
 #
 # Deliberately NOT the app's site (target `app`): that would publish the whole
 # Flutter web app to the public before any store review, and would need a
