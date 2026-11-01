@@ -7,7 +7,6 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for comment CRUD operations
 /// This module handles ONLY comment content management:
@@ -19,21 +18,21 @@ import 'package:butlery/core/providers/application_provider.dart';
 class CommentCrudOperations {
   final CommentsRepository _commentsRepository;
   final AnalyticsService _analyticsService;
-  // BUT-544: tryGet so test contexts that don't register the filter behave
-  // as if no users are blocked (filter is a soft-fail surface, never a
-  // permission gate — rules layer enforces the security contract).
+  final UserService _userService;
+  // BUT-544: null behaves as if no users are blocked (filter is a soft-fail
+  // surface, never a permission gate — rules layer enforces the security
+  // contract).
   final BlockedUserFilter? _blockedFilter;
 
   CommentCrudOperations({
-    CommentsRepository? commentsRepository,
-    AnalyticsService? analyticsService,
+    required CommentsRepository commentsRepository,
+    required AnalyticsService analyticsService,
+    required UserService userService,
     BlockedUserFilter? blockedFilter,
-  }) : _commentsRepository =
-           commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
-       _analyticsService =
-           analyticsService ?? ServiceLocator.get<AnalyticsService>(),
-       _blockedFilter =
-           blockedFilter ?? ServiceLocator.tryGet<BlockedUserFilter>();
+  }) : _commentsRepository = commentsRepository,
+       _analyticsService = analyticsService,
+       _userService = userService,
+       _blockedFilter = blockedFilter;
 
   /// Create comment — access control enforced by Firestore security rules
   Future<String?> createComment({
@@ -68,10 +67,9 @@ class CommentCrudOperations {
     );
 
     // First-comment milestone fires at most once per user (BUT-593).
-    final userService = ServiceLocator.tryGet<UserService>();
     await _analyticsService.social.logFirstCommentIfMilestone(
       userId: authorId,
-      joinedAt: userService?.currentUserProfile?.joinedAt,
+      joinedAt: _userService.currentUserProfile?.joinedAt,
     );
 
     return comment.id;

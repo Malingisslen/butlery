@@ -22,6 +22,7 @@ import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.
 import 'package:butlery/core/di/modules/trash_registrations.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
@@ -278,6 +279,9 @@ class ContentModule implements DIModule {
         firestoreRepository: app<FirestoreRepository>(),
         commentsRepository: app.isRegistered<CommentsRepository>()
             ? app<CommentsRepository>()
+            : null,
+        blockedUserFilter: app.isRegistered<BlockedUserFilter>()
+            ? app<BlockedUserFilter>()
             : null,
         ratingsRepository: app<RatingsRepository>(),
         analyticsService: app<AnalyticsService>(),

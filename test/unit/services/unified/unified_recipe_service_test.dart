@@ -36,6 +36,8 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/cache/cache_dao_interface.dart';
@@ -52,6 +54,18 @@ class MockOfflineService extends Mock implements OfflineService {}
 class MockTaggingService extends Mock implements TaggingService {}
 
 class _FakeQueuedRecipeWriter extends Fake implements QueuedRecipeWriter {}
+
+class _StubBlockedUserFilter implements BlockedUserFilter {
+  _StubBlockedUserFilter(this._blocked);
+
+  final Set<String> _blocked;
+
+  @override
+  Future<Set<String>> currentBlockedIds() async => _blocked;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class MockPersonalTagService extends Mock implements PersonalTagService {}
 
@@ -188,6 +202,7 @@ void main() {
     // constructor.
     UnifiedRecipeService buildService({
       CommentsRepository? commentsRepository,
+      BlockedUserFilter? blockedUserFilter,
       RatingsRepository? ratingsRepository,
       NotificationsRepository? notificationsRepository,
       Future<void> Function(String recipeId, List<String> userIds)?
@@ -201,6 +216,7 @@ void main() {
       trashRepository: trashRepository,
       firestoreRepository: mockFirestoreRepository,
       commentsRepository: commentsRepository,
+      blockedUserFilter: blockedUserFilter,
       ratingsRepository: ratingsRepository ?? mockRatingsRepository,
       analyticsService: mocks.MockAnalyticsService(),
       permissionService: TestServiceLocator.get<PermissionService>(),
@@ -439,6 +455,38 @@ void main() {
           () => injected.getUserRating('recipe_1', 'test_user_123'),
         ).called(1);
         verifyNever(() => inLocator.getUserRating(any(), any()));
+        fresh.dispose();
+      });
+
+      test('comments read through the social part drop authors blocked by '
+          'the injected filter', () async {
+        final comments = mocks.MockCommentsRepository();
+        when(() => comments.getCommentsForRecipe('recipe_1')).thenAnswer(
+          (_) async => [
+            RecipeComment(
+              id: 'shown',
+              recipeId: 'recipe_1',
+              authorId: 'friend',
+              authorDisplayName: 'Vän',
+              text: 'Gott',
+            ),
+            RecipeComment(
+              id: 'hidden',
+              recipeId: 'recipe_1',
+              authorId: 'blocked_author',
+              authorDisplayName: 'Blockerad',
+              text: 'Dold',
+            ),
+          ],
+        );
+
+        final fresh = buildService(
+          commentsRepository: comments,
+          blockedUserFilter: _StubBlockedUserFilter(const {'blocked_author'}),
+        );
+        final result = await fresh.social.getComments(recipeId: 'recipe_1');
+
+        expect(result.map((c) => c.id), ['shown']);
         fresh.dispose();
       });
 

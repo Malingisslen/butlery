@@ -1,10 +1,8 @@
 /// Unit tests for RecipeCommentsManager and CommentCrudOperations
 ///
-/// RecipeCommentsManager creates CommentCrudOperations() in its constructor,
-/// which calls `ServiceLocator.get<CommentsRepository>()` and
-/// `ServiceLocator.get<AnalyticsService>()`. We test:
+/// We test:
 /// 1. CommentCrudOperations — directly with injected mocks
-/// 2. RecipeCommentsManager auth guards — via production ServiceLocator bridge
+/// 2. RecipeCommentsManager auth guards
 library;
 
 import 'dart:async';
@@ -13,8 +11,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/interfaces/comments_repository.dart';
-import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
 import 'package:butlery/services/unified/operations/modules/comment_utilities.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_comments_manager.dart';
@@ -43,6 +39,7 @@ void main() {
       crud = CommentCrudOperations(
         commentsRepository: mockCommentsRepo,
         analyticsService: mockAnalytics,
+        userService: MockUserService(),
       );
     });
 
@@ -479,7 +476,7 @@ void main() {
   });
 
   // -----------------------------------------------------------------------
-  // Part 2: RecipeCommentsManager auth guards — needs ServiceLocator bridge
+  // Part 2: RecipeCommentsManager auth guards
   // -----------------------------------------------------------------------
   group('RecipeCommentsManager auth guards', () {
     late RecipeCommentsManager manager;
@@ -493,22 +490,21 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
 
-      // Bridge production ServiceLocator to test GetIt
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
 
       mockCommentsRepo = MockCommentsRepository();
       mockAnalytics = MockAnalyticsService();
 
-      // Register mocks into shared GetIt so production ServiceLocator finds them
-      TestServiceLocator.registerMock<CommentsRepository>(mockCommentsRepo);
-      TestServiceLocator.registerMock<AnalyticsService>(mockAnalytics);
-
       manager = RecipeCommentsManager(
         getCurrentUserId: () => null, // unauthenticated by default
         getCurrentUserDisplayName: () => null,
         getRecipes: () => [],
         notificationService: null,
+        commentsRepository: mockCommentsRepo,
+        analyticsService: mockAnalytics,
+        userService: MockUserService(),
+        blockedUserFilter: null,
       );
     });
 
@@ -547,6 +543,26 @@ void main() {
       final result = await manager.toggleCommentLike('c1');
       expect(result, isFalse);
     });
+
+    test('a manager without a comments repository fails on first comment '
+        'read, and still disposes', () async {
+      final noRepo = RecipeCommentsManager(
+        getCurrentUserId: () => 'user-1',
+        getCurrentUserDisplayName: () => 'Anna',
+        getRecipes: () => [],
+        notificationService: null,
+        commentsRepository: null,
+        analyticsService: mockAnalytics,
+        userService: MockUserService(),
+        blockedUserFilter: null,
+      );
+
+      await expectLater(
+        noRepo.getComments(recipeId: 'r1'),
+        throwsA(isA<StateError>()),
+      );
+      noRepo.dispose();
+    });
   });
 
   group('RecipeCommentsManager authenticated', () {
@@ -568,9 +584,6 @@ void main() {
       mockCommentsRepo = MockCommentsRepository();
       mockAnalytics = MockAnalyticsService();
 
-      TestServiceLocator.registerMock<CommentsRepository>(mockCommentsRepo);
-      TestServiceLocator.registerMock<AnalyticsService>(mockAnalytics);
-
       recipes = [];
 
       manager = RecipeCommentsManager(
@@ -578,6 +591,10 @@ void main() {
         getCurrentUserDisplayName: () => 'Anna',
         getRecipes: () => recipes,
         notificationService: null,
+        commentsRepository: mockCommentsRepo,
+        analyticsService: mockAnalytics,
+        userService: MockUserService(),
+        blockedUserFilter: null,
       );
     });
 

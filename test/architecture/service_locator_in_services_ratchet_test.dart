@@ -79,8 +79,6 @@ const _residue = <String, int>{
   'lib/services/unified/operations/friend_categories_operations.dart': 7,
   'lib/services/unified/operations/friends_management_operations.dart': 5,
   'lib/services/unified/operations/list_invitation_operations.dart': 1,
-  'lib/services/unified/operations/modules/comment_crud_operations.dart': 4,
-  'lib/services/unified/operations/social_menu_operations.dart': 18,
   'lib/services/unified/unified_friends_service.dart': 2,
   'lib/services/unified/unified_menu_service.dart': 5,
   'lib/services/upload/image_upload_service.dart': 1,
