@@ -140,7 +140,10 @@ class RecipeProfileVisibilityPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!recipe.showOnProfile) return const SizedBox.shrink();
+    // A shared recipe is never on the profile, whatever its flag says.
+    if (!recipe.showOnProfile || !canOfferProfileVisibility(recipe)) {
+      return const SizedBox.shrink();
+    }
     final isOwner =
         recipe.ownerUid == null ||
         recipe.ownerUid ==

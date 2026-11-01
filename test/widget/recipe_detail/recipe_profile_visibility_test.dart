@@ -341,6 +341,25 @@ void main() {
       );
     });
 
+    testWidgets('is not shown once the recipe has been shared', (tester) async {
+      recipe = RecipeFactory.build(
+        id: 'recipe-pv-1',
+        title: 'Delad',
+        createdBy: _me,
+        socialData: const RecipeSocialData(
+          ownerId: _me,
+          memberPermissions: {'friend': ResourcePermission.viewer},
+        ),
+      ).copyWith(showOnProfile: true);
+      await pump(tester);
+
+      expect(find.text('Delad'), findsWidgets);
+      expect(
+        find.text(l10n(tester).recipeProfileVisibilityBadge.toUpperCase()),
+        findsNothing,
+      );
+    });
+
     testWidgets('is not shown to someone viewing another user\'s recipe', (
       tester,
     ) async {
