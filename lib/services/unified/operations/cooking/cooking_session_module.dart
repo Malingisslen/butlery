@@ -6,7 +6,6 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -43,9 +42,9 @@ const Duration stepDebounce = Duration(milliseconds: 500);
 /// RTDB-backed implementation used in production.
 class FirebaseCookingSessionModule implements CookingSessionModule {
   final FirebaseCookingSessionRepository _repository;
-  final PermissionService? _permissionServiceOverride;
-  final UnifiedFriendsService? _friendsServiceOverride;
-  final UserService? _userServiceOverride;
+  final PermissionService _permissionService;
+  final UnifiedFriendsService _friendsService;
+  final UserService _userService;
 
   /// Group IDs where the current user currently has an active session row,
   /// captured at [startSession] time. Used by [updateStep] to target the
@@ -64,22 +63,13 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
 
   FirebaseCookingSessionModule({
     required FirebaseCookingSessionRepository repository,
-    PermissionService? permissionService,
-    UnifiedFriendsService? friendsService,
-    UserService? userService,
+    required PermissionService permissionService,
+    required UnifiedFriendsService friendsService,
+    required UserService userService,
   }) : _repository = repository,
-       _permissionServiceOverride = permissionService,
-       _friendsServiceOverride = friendsService,
-       _userServiceOverride = userService;
-
-  PermissionService get _permissionService =>
-      _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
-
-  UnifiedFriendsService get _friendsService =>
-      _friendsServiceOverride ?? ServiceLocator.get<UnifiedFriendsService>();
-
-  UserService get _userService =>
-      _userServiceOverride ?? ServiceLocator.get<UserService>();
+       _permissionService = permissionService,
+       _friendsService = friendsService,
+       _userService = userService;
 
   @override
   Future<void> startSession(Recipe recipe) async {

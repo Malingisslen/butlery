@@ -32,6 +32,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
@@ -200,6 +201,9 @@ class CollaborationModule implements DIModule {
     container.registerLazySingleton<CookingSessionModule>(
       () => FirebaseCookingSessionModule(
         repository: container<FirebaseCookingSessionRepository>(),
+        permissionService: app<PermissionService>(),
+        friendsService: container<UnifiedFriendsService>(),
+        userService: app<UserService>(),
       ),
       dispose: (m) => m.dispose(),
     );

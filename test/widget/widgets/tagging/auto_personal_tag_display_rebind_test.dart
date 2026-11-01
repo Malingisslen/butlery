@@ -70,6 +70,7 @@ _FakePersonalTagService _makeService({
     crud: PersonalTagCrudService(
       tagRepository: tagRepo,
       groupRepository: groupRepo,
+      getRecipeRepository: () => throw StateError('no recipe repository'),
     ),
     evaluator: PersonalTagRuleEvaluator(
       lookupService: _MockLookup(),

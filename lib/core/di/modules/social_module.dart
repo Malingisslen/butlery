@@ -439,6 +439,9 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<ActivityFeedService>(
         () => ActivityFeedService(
           repository: container<ActivityEventRepository>(),
+          getPermissionService: () => container<PermissionService>(),
+          getUserService: () => container<UserService>(),
+          getFriendsRepository: () => container<FriendsRepository>(),
         ),
       );
 
