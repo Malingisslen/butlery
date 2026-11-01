@@ -36,7 +36,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 
@@ -50,8 +49,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   /// Resolved lazily to avoid cross-module dependency ordering issues
   /// (UnifiedShoppingService lives in CollaborationModule)
-  UnifiedShoppingService? get _shoppingService =>
-      ServiceLocator.tryGet<UnifiedShoppingService>();
+  final UnifiedShoppingService? Function() _getShoppingService;
+  UnifiedShoppingService? get _shoppingService => _getShoppingService();
 
   // Modules
   late final SocialParticipantResolverModule _participantResolver;
@@ -70,7 +69,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
     required FirebaseSocialRequestRepository socialRequestRepository,
-  }) : _userService = userService,
+    UnifiedShoppingService? Function()? getShoppingService,
+  }) : _getShoppingService = getShoppingService ?? (() => null),
+       _userService = userService,
        _recipeService = recipeService,
        _permissionService = permissionService,
        _sharedRecipeRepository = sharedRecipeRepository,

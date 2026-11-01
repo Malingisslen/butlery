@@ -2,7 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/share_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -13,6 +17,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
+import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -701,7 +706,77 @@ void main() {
       });
     });
 
+    group('injected resolvers', () {
+      test('first-share milestone gets the user service\'s id and join date, '
+          'not the permission service\'s', () async {
+        final tracker = _CapturingRecipeTracker();
+        final joined = DateTime(2026, 1, 2);
+        final injected = ShareService(
+          getAnalytics: () => _FakeAnalytics(tracker),
+          getUserService: () => _FakeUserService('user-svc-id', joined),
+          getPermissionService: () => MockFactory.createPermissionService(
+            currentUserId: 'permission-svc-id',
+          ),
+        );
+
+        await injected.copyRecipe(testRecipe);
+
+        expect(tracker.userId, 'user-svc-id');
+        expect(tracker.joinedAt, joined);
+      });
+
+      test('the share link carries the permission service\'s id', () async {
+        String? sharedText;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+              const MethodChannel('dev.fluttercommunity.plus/share'),
+              (call) async {
+                final args = call.arguments;
+                if (args is Map) sharedText = args['text'] as String?;
+                return 'dev.fluttercommunity.plus/share/success';
+              },
+            );
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(
+                const MethodChannel('dev.fluttercommunity.plus/share'),
+                null,
+              ),
+        );
+        final injected = ShareService(
+          getUserService: () => _FakeUserService('user-svc-id', null),
+          getPermissionService: () => MockFactory.createPermissionService(
+            currentUserId: 'permission-svc-id',
+          ),
+        );
+
+        await injected.shareRecipe(testRecipe);
+
+        expect(sharedText, contains('permission-svc-id'));
+        expect(sharedText, isNot(contains('user-svc-id')));
+      });
+    });
+
     group('Copy to Clipboard', () {
+      test(
+        'asks the injected resolver for analytics, not the locator',
+        () async {
+          var asked = 0;
+          final injected = ShareService(
+            getAnalytics: () {
+              asked++;
+              return null;
+            },
+          );
+
+          await injected.copyRecipe(testRecipe);
+
+          expect(asked, 1);
+        },
+      );
+
       test('should copy recipe to clipboard', () async {
         // Arrange
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -1214,4 +1289,52 @@ void main() {
       });
     });
   });
+}
+
+class _CapturingRecipeTracker extends Fake implements RecipeEventsTracker {
+  String? userId;
+  DateTime? joinedAt;
+
+  @override
+  Future<bool> logFirstShareIfMilestone({
+    required String? userId,
+    required String shareMethod,
+    DateTime? joinedAt,
+  }) async {
+    this.userId = userId;
+    this.joinedAt = joinedAt;
+    return true;
+  }
+}
+
+class _FakeAnalytics extends Fake implements AnalyticsService {
+  _FakeAnalytics(this._tracker);
+  final RecipeEventsTracker _tracker;
+
+  @override
+  RecipeEventsTracker get recipe => _tracker;
+
+  @override
+  Future<void> logRecipeShared({
+    required String method,
+    String? recipeId,
+    int recipientCount = 0,
+  }) async {}
+}
+
+class _FakeUserService extends Fake implements UserService {
+  _FakeUserService(this._id, DateTime? joinedAt)
+    : _profile = joinedAt == null
+          ? null
+          : MockFactory.createUserProfile(
+              userId: _id,
+            ).copyWith(joinedAt: joinedAt);
+  final String _id;
+  final UserProfile? _profile;
+
+  @override
+  String? get currentUserId => _id;
+
+  @override
+  UserProfile? get currentUserProfile => _profile;
 }

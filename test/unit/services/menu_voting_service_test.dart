@@ -17,7 +17,6 @@ import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_menu_voting_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/interfaces/menu_voting_repository.dart';
 import 'package:butlery/services/menu_voting_service.dart';
 import 'package:butlery/services/permission_service.dart';
 
@@ -62,10 +61,13 @@ void main() {
       authRepository: auth,
       firestore: firestore,
     );
+    // BaseService's requiresAuth check still reads these from the locator.
     TestServiceLocator.registerMock<AuthRepository>(auth);
     TestServiceLocator.registerMock<PermissionService>(permissions);
-    TestServiceLocator.registerMock<MenuVotingRepository>(repository);
-    service = MenuVotingService();
+    service = MenuVotingService(
+      repository: repository,
+      permissionService: permissions,
+    );
     signInAs(_starter);
   });
 

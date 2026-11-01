@@ -159,7 +159,10 @@ class CollaborationModule implements DIModule {
     );
 
     container.registerLazySingleton<MenuVotingService>(
-      () => MenuVotingService(),
+      () => MenuVotingService(
+        repository: container<MenuVotingRepository>(),
+        permissionService: app<PermissionService>(),
+      ),
     );
 
     container.registerLazySingleton<UnifiedShoppingService>(

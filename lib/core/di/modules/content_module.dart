@@ -66,6 +66,7 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
@@ -694,7 +695,17 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<SearchService>(() => SearchService());
 
       // Share service for content sharing
-      container.registerLazySingleton<ShareService>(() => ShareService());
+      container.registerLazySingleton<ShareService>(
+        () => ShareService(
+          getAnalytics: () => container.isRegistered<AnalyticsService>()
+              ? container<AnalyticsService>()
+              : null,
+          getUserService: () => container.isRegistered<UserService>()
+              ? container<UserService>()
+              : null,
+          getPermissionService: () => container<PermissionService>(),
+        ),
+      );
 
       // Storage repository for storage operations
       container.registerLazySingleton<StorageRepository>(

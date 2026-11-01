@@ -1029,14 +1029,31 @@ void main() {
       expect(await service.isMenuSharedByUser('sm-1', 'owner-B'), isFalse);
     });
 
+    test('isShoppingListSharedByUser asks the injected resolver, not the '
+        'service locator', () async {
+      var asked = 0;
+      final injected = SocialRecipeService(
+        userService: userService,
+        recipeService: recipeService,
+        permissionService: permission,
+        sharedRecipeRepository: recipeRepo,
+        sharedMenuRepository: menuRepo,
+        socialRequestRepository: _FakeSocialRequestRepository(),
+        getShoppingService: () {
+          asked++;
+          return null;
+        },
+      );
+
+      expect(await injected.isShoppingListSharedByUser('l', 'me-uid'), isFalse);
+      expect(asked, 1);
+    });
+
     /// Proves the shopping-service-absent branch is safe (returns false,
-    /// no exception). The service is resolved lazily via ServiceLocator and
-    /// may be unregistered in unit-test environments — this guards against
-    /// crashing the whole shared-content load on that path.
+    /// no exception).
     test(
       'isShoppingListSharedByUser: shopping service unregistered → false',
       () async {
-        // No ServiceLocator.initialize call in this test → tryGet returns null.
         expect(
           await service.isShoppingListSharedByUser('list-1', 'me-uid'),
           isFalse,
