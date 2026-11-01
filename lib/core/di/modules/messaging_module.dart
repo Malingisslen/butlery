@@ -43,6 +43,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -124,6 +130,10 @@ class MessagingModule implements DIModule {
         batchRepository: appScope<NotificationBatchRepository>(),
         deviceRepository: appScope<DeviceRepository>(),
         analyticsRepository: appScope<NotificationAnalyticsRepository>(),
+        fcmService: appScope<FCMService>(),
+        getConsentService: () => container.isRegistered<ConsentService>()
+            ? container<ConsentService>()
+            : null,
       ),
       dispose: (s) => s.resetForLogout(),
     );
@@ -209,7 +219,16 @@ class MessagingModule implements DIModule {
       // notification channels are app-level). User-scoped callbacks +
       // ConsentService are passed via initialize() from NotificationService.
       container.registerLazySingleton<FCMService>(
-        () => FCMService(),
+        () => FCMService(
+          getUserService: () => container.isRegistered<UserService>()
+              ? container<UserService>()
+              : null,
+          getRecipeRepository: () => container<RecipeRepository>(),
+          getSharedMenuRepository: () =>
+              container<FirebaseSharedMenuRepository>(),
+          getRecipeService: () => container<UnifiedRecipeService>(),
+          getPermissionService: () => container<PermissionService>(),
+        ),
         dispose: (s) => s.dispose(),
       );
     } catch (e) {

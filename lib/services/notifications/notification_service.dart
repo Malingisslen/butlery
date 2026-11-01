@@ -17,7 +17,6 @@ import 'package:butlery/repositories/interfaces/notification_batch_repository.da
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_offline_manager.dart';
@@ -83,6 +82,10 @@ class NotificationService extends BaseService {
   /// per-user FCMTokenManager and shouldn't (different lifecycle).
   ConsentService? _subscribedConsentService;
 
+  final FCMService _fcmService;
+  // A lookup: ConsentService is user-scoped and may be absent.
+  final ConsentService? Function() _getConsentService;
+
   NotificationService({
     required interface_repo.NotificationsRepository notificationsRepository,
     required auth_repo.AuthRepository authRepository,
@@ -90,12 +93,16 @@ class NotificationService extends BaseService {
     required NotificationBatchRepository batchRepository,
     required DeviceRepository deviceRepository,
     required NotificationAnalyticsRepository analyticsRepository,
+    required FCMService fcmService,
+    required ConsentService? Function() getConsentService,
   }) : _notificationsRepository = notificationsRepository,
        _authRepository = authRepository,
        _historyRepository = historyRepository,
        _batchRepository = batchRepository,
        _deviceRepository = deviceRepository,
-       _analyticsRepository = analyticsRepository;
+       _analyticsRepository = analyticsRepository,
+       _fcmService = fcmService,
+       _getConsentService = getConsentService;
 
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
@@ -173,9 +180,8 @@ class NotificationService extends BaseService {
         );
 
         // Initialize FCM service (consent-gated for permissions/token).
-        // BUT-782: FCMService is now instance-based, resolved via DI.
-        final consentService = ServiceLocator.tryGet<ConsentService>();
-        final fcmService = ServiceLocator.get<FCMService>();
+        final consentService = _getConsentService();
+        final fcmService = _fcmService;
         await fcmService.initialize(
           onMessageReceived: _handleForegroundMessage,
           onMessageOpenedApp: _handleMessageOpened,
@@ -472,8 +478,7 @@ class NotificationService extends BaseService {
       );
 
       // Show in-app notification or update UI.
-      // BUT-782: FCMService is now instance-based, resolved via DI.
-      ServiceLocator.get<FCMService>().showForegroundNotification(message);
+      _fcmService.showForegroundNotification(message);
 
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
