@@ -42,7 +42,6 @@ const _residue = <String, int>{
   'lib/services/messaging/message_sending_operations.dart': 1,
   'lib/services/messaging_service.dart': 6,
   'lib/services/notifications/fcm_service.dart': 8,
-  'lib/services/notifications/modules/notification_analytics_manager.dart': 1,
   'lib/services/notifications/notification_service.dart': 3,
   'lib/services/nutrition/nutrition_service.dart': 1,
   'lib/services/ocr_extraction_service.dart': 2,
