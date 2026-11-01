@@ -75,8 +75,9 @@ void main() {
     await container.initialize();
     ServiceLocator.initialize(container);
     SyncQueueSource.debugOverride = OfflineSyncQueueSource(
-      offlineService: j.offline,
-      authRepository: j.auth,
+      offlineService: () => j.offline,
+      authRepository: () => j.auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
   });
 
@@ -246,8 +247,10 @@ void main() {
         'with it', (tester) async {
       final id = await real(tester, () => j.write('Linsgryta'));
       final counts = OfflineSyncQueueSource(
-        offlineService: j.offline,
-        authRepository: j.auth,
+        offlineService: () => j.offline,
+        authRepository: () => j.auth,
+        messaging: () =>
+            throw StateError('no messaging repository in this test'),
       ).watchCounts();
       expect((await real(tester, () => counts.first)).waiting, 1);
       await pumpApp(tester);

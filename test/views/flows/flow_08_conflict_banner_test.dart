@@ -90,8 +90,9 @@ void main() {
     container.container.registerSingleton<RealtimeSyncService>(sync);
     ServiceLocator.initialize(container);
     SyncQueueSource.debugOverride = OfflineSyncQueueSource(
-      offlineService: j.offline,
-      authRepository: j.auth,
+      offlineService: () => j.offline,
+      authRepository: () => j.auth,
+      messaging: () => throw StateError('no messaging repository in this test'),
     );
   });
 

@@ -43,27 +43,21 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
 import 'package:butlery/services/offline/offline_purge_store.dart';
+import 'package:butlery/services/offline/offline_service_links.dart';
 import 'package:butlery/services/offline/read_cache_sweep.dart';
 import 'package:butlery/services/offline/upload_queue_wiring.dart'
     if (dart.library.html) 'package:butlery/services/offline/upload_queue_wiring_stub.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
-import 'package:butlery/services/realtime_sync_service.dart';
-import 'package:butlery/services/tagging/tagging_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 // Export focused components for external usage
 export 'offline/sync_result.dart';
 
-/// Offline data management service providing comprehensive multi-user storage and synchronization capabilities.
-/// This service serves as the primary facade for offline functionality, coordinating specialized components
-/// to provide seamless offline/online transitions, user-specific data isolation, and intelligent synchronization.
-/// Now uses Drift database instead of Hive for improved security and maintainability.
+/// Facade for offline use: per-user device storage and the sync queue, built
+/// on the Drift database.
 class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
-  // Singleton pattern using SingletonServiceMixin approach
   static OfflineService? _instance;
 
-  // Private constructor for singleton
   OfflineService._internal({
     auth_repo.AuthRepository? authRepository,
     OfflinePurgeStore? purgeStore,
@@ -72,10 +66,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     _purgeStore = purgeStore ?? OfflinePurgeStore();
   }
 
-  // Factory constructor with dependency injection
   factory OfflineService({
     auth_repo.AuthRepository? authRepository,
     OfflinePurgeStore? purgeStore,
+    OfflineServiceLinks? links,
   }) {
     _instance ??= OfflineService._internal(
       authRepository: authRepository,
@@ -85,6 +79,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     // Update dependencies if provided on subsequent calls
     if (authRepository != null) _instance!._authRepository = authRepository;
     if (purgeStore != null) _instance!._purgeStore = purgeStore;
+    if (links != null) _instance!.links = links;
 
     return _instance!;
   }
@@ -94,6 +89,9 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   static void resetForTesting() {
     _instance = null;
   }
+
+  /// Without links the upload queue does not run and retagging fails.
+  OfflineServiceLinks? links;
 
   late auth_repo.AuthRepository _authRepository;
   late OfflinePurgeStore _purgeStore;
@@ -283,6 +281,14 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
+  @visibleForTesting
+  void announceQueuedConflict(Recipe local, Recipe remote) =>
+      links?.realtimeSync()?.announceQueuedRecipeConflict(local, remote);
+
+  @visibleForTesting
+  void attachUserStorageForTesting(OfflineUserStorage storage) =>
+      _userStorage = storage;
+
   /// Initialize Drift database and offline service
   Future<void> initialize() async {
     if (isInitialized) return;
@@ -321,20 +327,21 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
         refreshSyncState();
       },
       // H9: Callback for retagging recipes when connectivity restores
-      onTagRecipe: _retagRecipe,
+      onTagRecipe: retagRecipe,
       onRecipeSent: (recipeId) {
         if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
       },
       // BUT-2213: a queued edit the server's newer version stopped becomes
       // the conflict banner, through the gate that holds it until the queue
       // has emptied.
-      onRecipeConflict: (local, remote) =>
-          ServiceLocator.tryGet<RealtimeSyncService>()
-              ?.announceQueuedRecipeConflict(local, remote),
-      uploads: buildUploadQueueProcessor(
-        database: _initialization.database,
-        storage: _userStorage,
-      ),
+      onRecipeConflict: announceQueuedConflict,
+      uploads: links == null
+          ? null
+          : buildUploadQueueProcessor(
+              database: _initialization.database,
+              storage: _userStorage,
+              links: links!,
+            ),
       userStorage: _userStorage,
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
@@ -406,25 +413,16 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
   /// H9: Retag a recipe when connectivity is restored.
   /// Called by OfflineSyncManager for pending tag operations.
-  Future<void> _retagRecipe(String recipeId, String userId) async {
+  @visibleForTesting
+  Future<void> retagRecipe(String recipeId, String userId) async {
     try {
-      // CRIT-8: Get TaggingService with defensive error handling
-      // Service might not be available during early startup or on web platform
-      TaggingService? taggingService;
-      try {
-        taggingService = ServiceLocator.get<TaggingService>();
-      } catch (e) {
-        AppLogger.warning(
-          '⚠️ CRIT-8: TaggingService not available, cannot retag recipe. '
-          'Will retry on next sync: $e',
-        );
-        rethrow; // Propagate to trigger retry
-      }
+      final tagging = links?.tagging;
+      if (tagging == null) throw StateError('No tagging service is wired');
 
       final retagged = await _userStorage.retagRecipeForUser(
         recipeId,
         userId,
-        taggingService.generateTags,
+        tagging().generateTags,
       );
       if (!retagged) {
         AppLogger.warning('⚠️ Recipe $recipeId was not retagged');

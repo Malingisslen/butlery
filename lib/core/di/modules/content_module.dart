@@ -20,6 +20,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/core/di/modules/offline_registrations.dart';
 import 'package:butlery/core/di/modules/trash_registrations.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
@@ -355,9 +356,11 @@ class ContentModule implements DIModule {
     container.registerLazySingleton<OfflineService>(
       () => OfflineService(
         authRepository: app<auth.AuthRepository>(),
+        links: OfflineRegistrations.links(container),
       ),
       dispose: (s) => s.resetForLogout(),
     );
+    OfflineRegistrations.wireSyncQueueSource(container);
 
     // LLM service for recipe extraction (depends on ConsentService — user-scoped)
     container.registerLazySingleton<GuestImportSession>(

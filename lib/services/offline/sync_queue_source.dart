@@ -11,7 +11,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/storage/drift/queue_counts.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -32,9 +31,12 @@ abstract class SyncQueueSource {
   @visibleForTesting
   static SyncQueueSource? debugOverride;
 
+  /// Set by the app's DI wiring when a user signs in. Until then the queue
+  /// reads as empty.
+  static SyncQueueSource appSource = const OfflineSyncQueueSource.unwired();
+
   /// The source the app uses: the offline database of the signed-in user.
-  static SyncQueueSource resolve() =>
-      debugOverride ?? const OfflineSyncQueueSource();
+  static SyncQueueSource resolve() => debugOverride ?? appSource;
 
   /// The counts, live. Both queues, one number (AppDatabase.watchQueueCounts).
   Stream<QueueCounts> watchCounts();
@@ -85,28 +87,36 @@ abstract class SyncQueueSource {
 /// the sync manager sends the queue for (OfflineSyncManager reads
 /// `AuthRepository.currentUserId`).
 class OfflineSyncQueueSource extends SyncQueueSource {
-  const OfflineSyncQueueSource({this.offlineService, this.authRepository});
+  const OfflineSyncQueueSource({
+    required this.offlineService,
+    required this.authRepository,
+    required this.messaging,
+  });
 
-  /// The offline store, for tests. The app resolves it from the locator.
-  final OfflineService? offlineService;
+  /// Nothing is wired: every read says nothing waits.
+  const OfflineSyncQueueSource.unwired()
+    : offlineService = _none,
+      authRepository = _none,
+      messaging = _noMessaging;
 
-  /// Who is signed in, for tests. The app resolves it from the locator.
-  final AuthRepository? authRepository;
+  static Null _none() => null;
+
+  static MessagingRepository _noMessaging() =>
+      throw StateError('No messaging repository is wired');
+
+  /// Null while the offline store is not registered.
+  final OfflineService? Function() offlineService;
+
+  /// Who is signed in. Null while auth is not registered.
+  final AuthRepository? Function() authRepository;
+
+  final MessagingRepository Function() messaging;
 
   ({OfflineService offline, String userId})? _signedIn() {
     try {
-      final service =
-          offlineService ??
-          (ServiceLocator.isRegistered<OfflineService>()
-              ? ServiceLocator.get<OfflineService>()
-              : null);
+      final service = offlineService();
       if (service == null || !service.isInitialized) return null;
-      final auth =
-          authRepository ??
-          (ServiceLocator.isRegistered<AuthRepository>()
-              ? ServiceLocator.get<AuthRepository>()
-              : null);
-      final userId = auth?.currentUserId;
+      final userId = authRepository()?.currentUserId;
       if (userId == null || userId.isEmpty) return null;
       return (offline: service, userId: userId);
     } catch (e) {
@@ -257,7 +267,7 @@ class OfflineSyncQueueSource extends SyncQueueSource {
   /// offline, so it reaches the server after the message it removes.
   Future<void> _takeDownChatMessage(String messageId) async {
     try {
-      await ServiceLocator.get<MessagingRepository>().deleteMessage(messageId);
+      await messaging().deleteMessage(messageId);
     } catch (e) {
       AppLogger.warning('SyncQueueSource: chat message not taken down: $e');
     }
