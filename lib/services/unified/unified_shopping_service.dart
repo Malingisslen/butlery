@@ -19,7 +19,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
@@ -70,13 +69,20 @@ class UnifiedShoppingService
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
   final ShoppingRepository _shoppingRepository;
+  final PermissionService _permissionService;
+  final CategoryPreferencesRepository _categoryPreferencesRepository;
+  final UserService _userService;
+  // Read on first use rather than at construction.
+  final AnalyticsService? Function()? _getAnalyticsService;
+  final UnifiedFriendsService Function() _getFriendsService;
+  final OfflineService Function() _getOfflineService;
   JsonCacheHelper? _cacheHelper;
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Lazy getter for cache helper - initializes from OfflineService when first accessed
   JsonCacheHelper get cacheHelper {
     if (_cacheHelper == null) {
-      final offlineService = ServiceLocator.get<OfflineService>();
+      final offlineService = _getOfflineService();
       _cacheHelper = JsonCacheHelper(
         'unified_shopping_lists_cache',
         offlineService.database.cacheDao,
@@ -89,11 +95,10 @@ class UnifiedShoppingService
   late final PersonalShoppingOperations _personalOps;
   late final CollaborativeShoppingOperations _collaborativeOps;
 
-  // Lazy getter to avoid circular dependency during DI initialization
   ShoppingShareOperations get _shareOps =>
       __shareOps ??= ShoppingShareOperations(
         firestoreRepository: _firestoreRepository,
-        permissionService: ServiceLocator.get<PermissionService>(),
+        permissionService: _permissionService,
       );
   ShoppingShareOperations? __shareOps;
 
@@ -109,9 +114,21 @@ class UnifiedShoppingService
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     required ShoppingRepository shoppingRepository,
+    required PermissionService permissionService,
+    required CategoryPreferencesRepository categoryPreferencesRepository,
+    required UserService userService,
+    required UnifiedFriendsService Function() getFriendsService,
+    required OfflineService Function() getOfflineService,
+    AnalyticsService? Function()? getAnalyticsService,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
-       _shoppingRepository = shoppingRepository {
+       _shoppingRepository = shoppingRepository,
+       _permissionService = permissionService,
+       _categoryPreferencesRepository = categoryPreferencesRepository,
+       _userService = userService,
+       _getFriendsService = getFriendsService,
+       _getOfflineService = getOfflineService,
+       _getAnalyticsService = getAnalyticsService {
     _initializeModules();
   }
 
@@ -144,14 +161,11 @@ class UnifiedShoppingService
       createPersonalList: createPersonalList,
       confirmPersistedItemCount: _shoppingRepository.confirmPersistedItemCount,
       inviteMembers: (listId, userIds, permission) =>
-          ServiceLocator.get<UnifiedFriendsService>()
-              .invitations
-              .listInvitations
-              .invite(
-                listId: listId,
-                userIds: userIds,
-                permission: permission,
-              ),
+          _getFriendsService().invitations.listInvitations.invite(
+            listId: listId,
+            userIds: userIds,
+            permission: permission,
+          ),
     );
 
     final memberOps = ListMemberOperations(
@@ -182,8 +196,6 @@ class UnifiedShoppingService
       itemOps: itemOps,
       activityOps: activityOps,
     );
-    // Lazy initialize shareOps to avoid circular dependency during DI setup
-    // PermissionService will be retrieved when first needed
 
     // Initialize feature modules with dependency injection
     _initialization = ShoppingInitializationModule(
@@ -228,7 +240,7 @@ class UnifiedShoppingService
     );
 
     _categoryPreferences = ShoppingCategoryPreferencesModule(
-      repository: ServiceLocator.get<CategoryPreferencesRepository>(),
+      repository: _categoryPreferencesRepository,
     );
 
     _firebaseSync = ShoppingFirebaseSync();
@@ -307,8 +319,7 @@ class UnifiedShoppingService
   bool get hasError => _error != null;
 
   @override
-  String? get currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId => _permissionService.currentUserId;
 
   /// BUT-1697: the PROFILE name, not the Auth handle, and never a placeholder.
   ///
@@ -327,8 +338,7 @@ class UnifiedShoppingService
   /// is also when a shopper opens the list. `profileDisplayName` has no such
   /// fallback, so THIS getter can no longer stamp a Google/Apple account name
   /// onto a shared shopping list.
-  String? get currentUserDisplayName =>
-      ServiceLocator.tryGet<UserService>()?.profileDisplayName;
+  String? get currentUserDisplayName => _userService.profileDisplayName;
   @override
   FirebaseFirestore get firestore => _firestore;
 
@@ -781,12 +791,11 @@ class UnifiedShoppingService
     final listId = _activeListId;
     final added = await _itemManagement.addItemsBatchToActiveList(items);
     if (added && items.isNotEmpty && listId != null) {
-      ServiceLocator.tryGet<AnalyticsService>()?.shopping
-          .logShoppingListItemAdded(
-            listId: listId,
-            source: source,
-            itemCount: items.length,
-          );
+      _getAnalyticsService?.call()?.shopping.logShoppingListItemAdded(
+        listId: listId,
+        source: source,
+        itemCount: items.length,
+      );
     }
     return added;
   }

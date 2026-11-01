@@ -62,6 +62,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
@@ -289,6 +290,8 @@ class _MockCacheDao extends Mock implements CacheDao {}
 
 class _MockFirebaseAuthRepository extends Mock implements AuthRepository {}
 
+class _MockUserService extends Mock implements UserService {}
+
 // ---------------------------------------------------------------------------
 // Test entry
 // ---------------------------------------------------------------------------
@@ -300,6 +303,9 @@ void main() {
   late _FakePermissionService fakePermissionService;
   late mocks.FakeFirestoreRepository fakeFirestoreRepo;
   late _MockFirebaseAuthRepository mockAuthRepository;
+  late _MockOfflineService mockOfflineService;
+  late _MockUserService mockUserService;
+  AnalyticsService? analyticsSpy;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -330,7 +336,7 @@ void main() {
     when(() => analytics.shopping).thenReturn(
       ShoppingEventsTracker(repository: repo)..setConsentService(consent),
     );
-    TestServiceLocator.registerMock<AnalyticsService>(analytics);
+    analyticsSpy = analytics;
     return events;
   }
 
@@ -352,30 +358,22 @@ void main() {
     when(() => mockAuthRepository.currentUser).thenReturn(null);
     when(() => mockAuthRepository.getCurrentUser()).thenReturn(null);
 
-    // ServiceLocator dependencies that the service constructor / lazy getters
-    // resolve at runtime. Registering through TestServiceLocator only — the
-    // production ServiceLocator bridge is what `ServiceLocator.get<T>()`
-    // inside the service hits.
-    TestServiceLocator.registerMock<CategoryPreferencesRepository>(
-      fakePrefsRepo,
-    );
-    TestServiceLocator.registerMock<PermissionService>(fakePermissionService);
     TestServiceLocator.registerMock<IngredientLookupService>(
       _MockIngredientLookupService(),
     );
 
     // Stub the OfflineService → AppDatabase → CacheDao chain used by the
-    // lazy `cacheHelper` getter. We never exercise initialize() in most tests
-    // so this rarely runs, but registering keeps the lazy path safe.
+    // lazy `cacheHelper` getter.
     final mockCacheDao = _MockCacheDao();
     final mockDatabase = _MockAppDatabase();
     when(() => mockDatabase.cacheDao).thenReturn(mockCacheDao);
-    final mockOfflineService = _MockOfflineService();
+    mockOfflineService = _MockOfflineService();
     when(() => mockOfflineService.database).thenReturn(mockDatabase);
-    TestServiceLocator.registerMock<OfflineService>(mockOfflineService);
 
-    // Bridge production ServiceLocator to TestServiceLocator so the in-service
-    // `ServiceLocator.get<PermissionService>()` resolves our fakes.
+    mockUserService = _MockUserService();
+    when(() => mockUserService.profileDisplayName).thenReturn(null);
+    analyticsSpy = null;
+
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(mocks.MockDIContainer());
 
@@ -383,6 +381,12 @@ void main() {
       firestoreRepository: fakeFirestoreRepo,
       authRepository: mockAuthRepository,
       shoppingRepository: fakeRepo,
+      permissionService: fakePermissionService,
+      categoryPreferencesRepository: fakePrefsRepo,
+      userService: mockUserService,
+      getFriendsService: () => throw StateError('no invitations in this suite'),
+      getOfflineService: () => mockOfflineService,
+      getAnalyticsService: () => analyticsSpy,
     );
   });
 
@@ -404,6 +408,31 @@ void main() {
   // -------------------------------------------------------------------------
   // State emission
   // -------------------------------------------------------------------------
+
+  group('injected dependencies (BUT-1508)', () {
+    test('the user id and the attribution name come from the injected '
+        'services, not from ones in the locator', () {
+      final inLocator = _FakePermissionService()..userId = 'locator-user';
+      TestServiceLocator.registerMock<PermissionService>(inLocator);
+      final locatorProfile = _MockUserService();
+      when(() => locatorProfile.profileDisplayName).thenReturn('Locator');
+      TestServiceLocator.registerMock<UserService>(locatorProfile);
+      when(() => mockUserService.profileDisplayName).thenReturn('Injicerad');
+
+      expect(service.currentUserId, 'test-user-123');
+      expect(service.currentUserDisplayName, 'Injicerad');
+    });
+
+    test('the list cache is built on the injected offline service', () {
+      final inLocator = _MockOfflineService();
+      TestServiceLocator.registerMock<OfflineService>(inLocator);
+
+      service.cacheHelper;
+
+      verify(() => mockOfflineService.database).called(1);
+      verifyNever(() => inLocator.database);
+    });
+  });
 
   group('state stream', () {
     /// Proves: a fresh service exposes Loading until the first emission so
