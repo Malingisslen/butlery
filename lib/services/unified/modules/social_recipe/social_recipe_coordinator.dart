@@ -13,7 +13,6 @@ import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.
 // import 'package:butlery/services/notifications/notification_service.dart' as notif;
 // import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 // Import the focused services
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_creation_service.dart';
@@ -37,7 +36,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
   // Dependencies (passed to focused services)
   final RecipeServiceAdapter _serviceAdapter;
-  late final FirebaseSharedRecipeRepository _sharedRecipeRepository;
+  final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final String? Function() _getCurrentUserId;
 
   /// Notification service for social notifications (temporarily disabled)
@@ -59,17 +58,13 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
-    RecipeServiceAdapter? serviceAdapter,
-  }) : _serviceAdapter =
-           serviceAdapter ??
-           SocialRecipeCoordinator._createDefaultServiceAdapter(),
+    required RecipeServiceAdapter serviceAdapter,
+    required FirebaseSharedRecipeRepository sharedRecipeRepository,
+  }) : _serviceAdapter = serviceAdapter,
+       _sharedRecipeRepository = sharedRecipeRepository,
        _getCurrentUserId = getCurrentUserId {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
-
-    // Initialize SharedRecipeRepository from DI
-    _sharedRecipeRepository =
-        ServiceLocator.get<FirebaseSharedRecipeRepository>();
 
     // Initialize focused services
     _creationService = SocialRecipeCreationService(
@@ -109,8 +104,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       setError: setError,
       serviceAdapter: _serviceAdapter,
     );
-
-    // Note: _sharedRecipeRepository initialized from DI at line 73
 
     // _initializeNotificationService(); // Temporarily disabled
   }
@@ -663,15 +656,4 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   // Note: _hasAdminPermission removed - now handled by SocialRecipePermissionService
-
-  /// Create default service adapter using ServiceLocator
-  static RecipeServiceAdapter _createDefaultServiceAdapter() {
-    return RecipeServiceAdapter(
-      recipeRepository: ServiceLocator.get(),
-      trashRepository: ServiceLocator.get(),
-      commentsRepository: ServiceLocator.tryGet(),
-      ratingsRepository: ServiceLocator.tryGet(),
-      notificationsRepository: ServiceLocator.tryGet(),
-    );
-  }
 }

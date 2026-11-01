@@ -68,10 +68,6 @@ const _residue = <String, int>{
   'lib/services/unified/modules/social_coordination/base_social_coordinator.dart':
       1,
   'lib/services/unified/modules/social_menu/social_menu_coordinator.dart': 2,
-  'lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart':
-      6,
-  'lib/services/unified/modules/social_recipe/social_recipe_query_service.dart':
-      5,
   'lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart':
       1,
   'lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart':

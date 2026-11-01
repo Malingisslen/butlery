@@ -15,6 +15,7 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 
 /// Comprehensive social recipe module providing coordinated social cooking and sharing functionality.
@@ -75,7 +76,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
-    RecipeServiceAdapter? serviceAdapter,
+    required RecipeServiceAdapter serviceAdapter,
+    required FirebaseSharedRecipeRepository sharedRecipeRepository,
   }) {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
@@ -90,6 +92,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
       getRecipe: getRecipe,
       saveRecipe: saveRecipe,
       serviceAdapter: serviceAdapter,
+      sharedRecipeRepository: sharedRecipeRepository,
     );
   }
 

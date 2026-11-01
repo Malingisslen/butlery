@@ -1,8 +1,7 @@
 // Unit tests for SocialRecipeCoordinator
 //
 // Tests creation, membership, sharing, permissions, queries, and
-// validation. Requires production ServiceLocator bridge because the
-// constructor calls ServiceLocator.get() for FirebaseSharedRecipeRepository.
+// validation.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -75,15 +74,6 @@ void main() {
       mockServiceAdapter = MockRecipeServiceAdapter();
       mockSharedRecipeRepo = _MockSharedRecipeRepo();
 
-      // Register the shared recipe repo in GetIt so the coordinator finds it
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FirebaseSharedRecipeRepository>()) {
-        getIt.unregister<FirebaseSharedRecipeRepository>();
-      }
-      getIt.registerSingleton<FirebaseSharedRecipeRepository>(
-        mockSharedRecipeRepo,
-      );
-
       // Build test recipes
       final recipe1 = Recipe(
         core: RecipeCore(
@@ -128,16 +118,32 @@ void main() {
           return true;
         },
         serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+        sharedRecipeRepository: mockSharedRecipeRepo,
       );
     });
 
     tearDown(() async {
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FirebaseSharedRecipeRepository>()) {
-        getIt.unregister<FirebaseSharedRecipeRepository>();
-      }
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
+    });
+
+    test('shared recipes are read from the injected repository, not one in '
+        'the locator', () async {
+      final inLocator = _MockSharedRecipeRepo();
+      GetIt.instance.registerSingleton<FirebaseSharedRecipeRepository>(
+        inLocator,
+      );
+      addTearDown(
+        () => GetIt.instance.unregister<FirebaseSharedRecipeRepository>(),
+      );
+      when(
+        () => mockSharedRecipeRepo.getSharedRecipe('shared-1'),
+      ).thenAnswer((_) async => null);
+
+      await coordinator.getSharedRecipeById('shared-1');
+
+      verify(() => mockSharedRecipeRepo.getSharedRecipe('shared-1')).called(1);
+      verifyNever(() => inLocator.getSharedRecipe(any()));
     });
 
     tearDownAll(() async {
@@ -334,6 +340,7 @@ void main() {
           getRecipe: (id) async => testRecipesMap[id],
           saveRecipe: (recipe) async => true,
           serviceAdapter: adapter,
+          sharedRecipeRepository: mockSharedRecipeRepo,
         );
 
         final result = await owner.startCollaborativeEditing(
@@ -371,6 +378,7 @@ void main() {
           getRecipe: (id) async => null,
           saveRecipe: (recipe) async => false,
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+          sharedRecipeRepository: mockSharedRecipeRepo,
         );
 
         final result = await unauthCoordinator.dismissSharedRecipe('shared-1');
@@ -398,6 +406,7 @@ void main() {
           getRecipe: (id) async => null,
           saveRecipe: (recipe) async => false,
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
+          sharedRecipeRepository: mockSharedRecipeRepo,
         );
 
         final result = await unauthCoordinator.markRecipeAsViewed('shared-1');

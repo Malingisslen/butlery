@@ -80,6 +80,7 @@ class _FakeUnifiedRecipeService extends UnifiedRecipeService {
     required super.notificationsRepository,
     required super.firestoreRepository,
     required super.trashRepository,
+    required super.sharedRecipeRepository,
     super.getOfflineService,
     super.getTaggingService,
     super.getPersonalTagService,
@@ -144,9 +145,6 @@ void main() {
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
         _MockFirebaseRecipePresenceRepository(),
       );
-      TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(
-        _MockFirebaseSharedRecipeRepository(),
-      );
       TestServiceLocator.registerMock<UserRepository>(_MockUserRepository());
 
       final mockCacheDao = _MockCacheDao();
@@ -173,6 +171,7 @@ void main() {
         notificationsRepository: mockNotificationsRepository,
         firestoreRepository: mockFirestoreRepository,
         trashRepository: mocks.FakeTrashRepository(),
+        sharedRecipeRepository: _MockFirebaseSharedRecipeRepository(),
         getOfflineService: () => mockOfflineService,
         getTaggingService: () => mockTaggingService,
         getPersonalTagService: () => mockPersonalTagService,

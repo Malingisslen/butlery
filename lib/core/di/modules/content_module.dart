@@ -277,6 +277,7 @@ class ContentModule implements DIModule {
         recipeRepository: app<RecipeRepository>(),
         trashRepository: app<TrashRepository>(),
         firestoreRepository: app<FirestoreRepository>(),
+        sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         commentsRepository: app.isRegistered<CommentsRepository>()
             ? app<CommentsRepository>()
             : null,
