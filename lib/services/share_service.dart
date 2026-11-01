@@ -12,7 +12,6 @@ import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/tagging/allergen_verdict.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -25,6 +24,18 @@ enum RecipeShareFormat { complete, compact, markdown }
 
 /// Content sharing service with multi-format output and platform-native sharing.
 class ShareService extends BaseService {
+  ShareService({
+    AnalyticsService? Function()? getAnalytics,
+    UserService? Function()? getUserService,
+    PermissionService? Function()? getPermissionService,
+  }) : _getAnalytics = getAnalytics ?? (() => null),
+       _getUserService = getUserService ?? (() => null),
+       _getPermissionService = getPermissionService ?? (() => null);
+
+  final AnalyticsService? Function() _getAnalytics;
+  final UserService? Function() _getUserService;
+  final PermissionService? Function() _getPermissionService;
+
   @override
   String get serviceName => 'ShareService';
 
@@ -474,14 +485,14 @@ class ShareService extends BaseService {
     required String recipeId,
     required String method,
   }) async {
-    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    final analytics = _getAnalytics();
     if (analytics == null) return;
     await analytics.logRecipeShared(
       method: method,
       recipeId: recipeId,
       recipientCount: 0,
     );
-    final userService = ServiceLocator.tryGet<UserService>();
+    final userService = _getUserService();
     await analytics.recipe.logFirstShareIfMilestone(
       userId: userService?.currentUserId,
       shareMethod: method,
@@ -491,7 +502,7 @@ class ShareService extends BaseService {
 
   Future<String> _appendDeepLink(String text, String recipeId) async {
     try {
-      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      final userId = _getPermissionService()?.currentUserId;
       if (userId == null) return text;
       final longUrl = DeepLinkService.generateRecipeShareLink(
         recipeId: recipeId,
