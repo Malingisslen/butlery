@@ -81,6 +81,7 @@ class UnifiedRecipeService
   final FirestoreRepository _firestoreRepository;
   final Future<void> Function(String recipeId, List<String> userIds)?
   _removeRecipientsFromOwnShares;
+  final Future<void> Function(String recipeId)? _removeFromWeeklyMenus;
 
   // BUT-1360: Upper bound on the web cold-start direct Firebase fetch so a
   // stalled/offline `.get()` can never leave the loading skeleton spinning.
@@ -225,7 +226,9 @@ class UnifiedRecipeService
     IngredientIdResolver? ingredientIdResolver,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
+    Future<void> Function(String recipeId)? removeFromWeeklyMenus,
   }) : _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares,
+       _removeFromWeeklyMenus = removeFromWeeklyMenus,
        _ingredientIdResolver = ingredientIdResolver,
        _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
@@ -400,6 +403,7 @@ class UnifiedRecipeService
       cacheModule: _cacheModule,
       recipes: _recipes,
       notifyListeners: notifyListeners,
+      removeFromWeeklyMenus: _removeFromWeeklyMenus,
     );
 
     _utilityOps = RecipeUtilityOperations(

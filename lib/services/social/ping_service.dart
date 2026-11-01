@@ -14,7 +14,6 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/social/ping.dart';
@@ -39,37 +38,32 @@ const Duration kPingRateWindow = Duration(hours: 1);
 
 class PingService extends BaseService with PermissionValidationMixin {
   final FirestoreRepository _firestoreRepository;
-  final PermissionService? _permissionServiceOverride;
-  final UnifiedFriendsService? _friendsServiceOverride;
-  final NotificationService? _notificationServiceOverride;
+  final PermissionService Function() _getPermissionService;
+  final UnifiedFriendsService Function() _getFriendsService;
+  final NotificationService? Function() _getNotificationService;
 
   PingService({
     required FirestoreRepository firestoreRepository,
-    PermissionService? permissionService,
-    UnifiedFriendsService? friendsService,
-    NotificationService? notificationService,
+    required PermissionService Function() getPermissionService,
+    required UnifiedFriendsService Function() getFriendsService,
+    NotificationService? Function()? getNotificationService,
   }) : _firestoreRepository = firestoreRepository,
-       _permissionServiceOverride = permissionService,
-       _friendsServiceOverride = friendsService,
-       _notificationServiceOverride = notificationService;
+       _getPermissionService = getPermissionService,
+       _getFriendsService = getFriendsService,
+       _getNotificationService = getNotificationService ?? (() => null);
 
   @override
   String get serviceName => 'PingService';
 
-  PermissionService get _permissionService =>
-      _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
+  PermissionService get _permissionService => _getPermissionService();
 
-  UnifiedFriendsService get _friendsService =>
-      _friendsServiceOverride ?? ServiceLocator.get<UnifiedFriendsService>();
+  UnifiedFriendsService get _friendsService => _getFriendsService();
 
   // Optional: tests and offline-first flows can skip the FCM leg entirely by
-  // not registering a NotificationService.
+  // not providing a NotificationService.
   NotificationService? get _notificationService {
-    if (_notificationServiceOverride != null) {
-      return _notificationServiceOverride;
-    }
     try {
-      return ServiceLocator.get<NotificationService>();
+      return _getNotificationService();
     } catch (_) {
       return null;
     }

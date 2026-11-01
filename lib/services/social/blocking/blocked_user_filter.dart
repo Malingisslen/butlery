@@ -39,10 +39,10 @@ import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 /// Anything reaching for `blockedByIds` for a DISPLAY surface should stop and
 /// re-read the bullets above.
 class BlockedUserFilter {
-  BlockedUserFilter({FirebaseBlockRepository? blockRepository})
-    : _blockRepository = blockRepository;
+  BlockedUserFilter({required FirebaseBlockRepository blockRepository})
+    : _repo = blockRepository;
 
-  final FirebaseBlockRepository? _blockRepository;
+  final FirebaseBlockRepository _repo;
 
   /// Bumped by [dispose]. Both caches read it through a callback rather than
   /// keeping their own, so one dispose invalidates every in-flight read on both
@@ -55,9 +55,6 @@ class BlockedUserFilter {
 
   _BlockSetCache? _outgoing;
   _BlockSetCache? _incoming;
-
-  FirebaseBlockRepository get _repo =>
-      _blockRepository ?? ServiceLocator.get<FirebaseBlockRepository>();
 
   _BlockSetCache get _outgoingCache => _outgoing ??= _BlockSetCache(
     label: 'blocked',

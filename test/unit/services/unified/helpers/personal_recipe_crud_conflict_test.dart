@@ -70,4 +70,42 @@ void main() {
 
     expect(recipes.single.title, 'Min version');
   });
+
+  test('a deleted recipe is scrubbed from the weekly menus', () async {
+    final scrubbed = <String>[];
+    final withCascade = PersonalRecipeCrud(
+      personalModule: personal,
+      cacheModule: _MockCacheModule(),
+      recipes: recipes,
+      notifyListeners: () {},
+      removeFromWeeklyMenus: (id) async => scrubbed.add(id),
+    );
+    when(
+      () => personal.deletePersonalRecipe('r1'),
+    ).thenAnswer((_) async => true);
+
+    await withCascade.deleteRecipe('r1');
+    await pumpEventQueue();
+
+    expect(scrubbed, ['r1']);
+  });
+
+  test('a failed delete leaves the weekly menus alone', () async {
+    final scrubbed = <String>[];
+    final withCascade = PersonalRecipeCrud(
+      personalModule: personal,
+      cacheModule: _MockCacheModule(),
+      recipes: recipes,
+      notifyListeners: () {},
+      removeFromWeeklyMenus: (id) async => scrubbed.add(id),
+    );
+    when(
+      () => personal.deletePersonalRecipe('r1'),
+    ).thenAnswer((_) async => false);
+
+    await withCascade.deleteRecipe('r1');
+    await pumpEventQueue();
+
+    expect(scrubbed, isEmpty);
+  });
 }
