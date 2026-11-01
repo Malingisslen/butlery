@@ -60,6 +60,8 @@ void main() {
       expect(recipe.instructions, isEmpty);
       expect(recipe.sourceUrl, isNull);
       expect(recipe.personalTagIds, isEmpty);
+      expect(recipe.portions, isNull);
+      expect(recipe.timeMinutes, isNull);
     });
 
     test('proves a decimal comma in Betyg is read as a number', () {
