@@ -9,6 +9,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/deletion_schedule_dialogs.dart';
@@ -71,8 +72,12 @@ class AuthActionHandler {
 
   /// Builds the sign-out guard. Replaced in tests.
   @visibleForTesting
-  static SignOutGuard Function() guardFactory = () =>
-      SignOutGuard(authService: ServiceLocator.get<AuthService>());
+  static SignOutGuard Function() guardFactory = () => SignOutGuard(
+    authService: ServiceLocator.get<AuthService>(),
+    source: const OfflinePendingChangesSource(
+      offlineService: ServiceLocator.tryGet<OfflineService>,
+    ),
+  );
 
   /// Handle logout flow.
   ///

@@ -4,7 +4,6 @@
 // "Utloggning med kö — Blockeras med förklaring: ”N ändringar har inte
 // sparats.” Alternativ: Vänta på synk · Logga ut och släng. Aldrig tyst kast."
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -70,13 +69,16 @@ abstract class PendingChangesSource {
 /// `AppDatabase.watchQueueCounts` (app_database.dart), so the three surfaces
 /// cannot disagree about the number.
 class OfflinePendingChangesSource implements PendingChangesSource {
-  const OfflinePendingChangesSource();
+  const OfflinePendingChangesSource({
+    required OfflineService? Function() offlineService,
+  }) : _offlineService = offlineService;
+
+  final OfflineService? Function() _offlineService;
 
   OfflineService? _offline() {
     try {
-      if (!ServiceLocator.isRegistered<OfflineService>()) return null;
-      final service = ServiceLocator.get<OfflineService>();
-      return service.isInitialized ? service : null;
+      final service = _offlineService();
+      return service != null && service.isInitialized ? service : null;
     } catch (e) {
       AppLogger.warning('SignOutGuard: offline service unavailable: $e');
       return null;
@@ -114,7 +116,7 @@ class OfflinePendingChangesSource implements PendingChangesSource {
 class SignOutGuard {
   SignOutGuard({
     required AuthService authService,
-    PendingChangesSource source = const OfflinePendingChangesSource(),
+    required PendingChangesSource source,
   }) : _authService = authService,
        _source = source;
 

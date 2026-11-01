@@ -20,7 +20,6 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
-import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/views/sync/sync_queue_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -63,7 +62,6 @@ void main() {
   late QueueJourney j;
   late JourneyAuthService auth;
   late JourneyProfileViewModel profile;
-  late SignOutGuard Function() originalGuard;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -80,12 +78,9 @@ void main() {
       offlineService: j.offline,
       authRepository: j.auth,
     );
-    originalGuard = AuthActionHandler.guardFactory;
-    AuthActionHandler.guardFactory = () => SignOutGuard(authService: auth);
   });
 
   tearDown(() async {
-    AuthActionHandler.guardFactory = originalGuard;
     SyncQueueSource.debugOverride = null;
     await j.close();
     await DIContainer().reset();

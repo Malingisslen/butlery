@@ -55,6 +55,8 @@
 // lib/viewmodels/auth_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -149,7 +151,14 @@ class AuthViewModel extends ChangeNotifier
     required AuthService authService,
     SignOutGuard? signOutGuard,
   }) : _authService = authService,
-       _signOutGuard = signOutGuard ?? SignOutGuard(authService: authService) {
+       _signOutGuard =
+           signOutGuard ??
+           SignOutGuard(
+             authService: authService,
+             source: const OfflinePendingChangesSource(
+               offlineService: ServiceLocator.tryGet<OfflineService>,
+             ),
+           ) {
     // Clear any existing errors on initialization
     _validationError = null;
     _authService.clearError();

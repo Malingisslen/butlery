@@ -35,7 +35,6 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:clock/clock.dart';
 import 'package:file_picker/file_picker.dart';
 // ignore: implementation_imports
@@ -163,7 +162,6 @@ void main() {
       personalOperations: mockPersonalOps,
     );
 
-    TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
     TestServiceLocator.registerMock<FirebaseAuthRepository>(mockAuthRepo);
 
     // Default: createRecipe returns a fake id so the loop counts a success.
@@ -189,7 +187,7 @@ void main() {
     fakeFilePicker = _FakeFilePickerPlatform();
     FilePickerPlatform.instance = fakeFilePicker;
 
-    service = BackupService();
+    service = BackupService(recipeService: () => mockRecipeService);
   });
 
   tearDown(() async {

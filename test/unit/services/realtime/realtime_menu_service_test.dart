@@ -120,16 +120,14 @@ void main() {
     }
     GetIt.instance.registerSingleton<PermissionService>(mockPermissionService);
 
-    // BUT-1736: the persisted display name now resolves through UserService.
+    // BUT-1736: the persisted display name resolves through UserService,
+    // handed in only through the constructor.
     fakeUserService = _FakeUserService();
-    if (GetIt.instance.isRegistered<UserService>()) {
-      GetIt.instance.unregister<UserService>();
-    }
-    GetIt.instance.registerSingleton<UserService>(fakeUserService);
 
     service = RealtimeMenuService(
       syncService: mockSyncService,
       authService: mockAuthService,
+      userService: () => fakeUserService,
     );
   });
 

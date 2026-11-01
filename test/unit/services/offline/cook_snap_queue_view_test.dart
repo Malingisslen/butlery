@@ -313,11 +313,11 @@ void main() {
         recipeId: 'r1',
         operation: SyncOperation.update,
       );
-      TestServiceLocator.registerMock<OfflineService>(
-        _FakeOfflineService(db),
-      );
+      final offline = _FakeOfflineService(db);
 
-      final pending = await const OfflinePendingChangesSource().read(uid);
+      final pending = await OfflinePendingChangesSource(
+        offlineService: () => offline,
+      ).read(uid);
 
       expect(pending.imageUploads, 1);
       expect(pending.recipeChanges, 1);
