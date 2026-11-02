@@ -231,7 +231,8 @@ const allowlists = <Allowlist>[
     label: 'ingredient_change_requests changes columns',
     mustContain: 'avg_price_sek',
     anchor: 'function changesOk',
-    writer: 'lib/models/tagging/ingredient_column.dart IngredientColumn.csvName',
+    writer:
+        'lib/models/tagging/ingredient_column.dart IngredientColumn.csvName',
   ),
 ];
 
