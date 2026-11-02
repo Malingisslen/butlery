@@ -28,10 +28,13 @@ class ShareService extends BaseService {
     AnalyticsService? Function()? getAnalytics,
     UserService? Function()? getUserService,
     PermissionService? Function()? getPermissionService,
-  }) : _getAnalytics = getAnalytics ?? (() => null),
+    ShortUrlGenerator? generateShortUrl,
+  }) : _generateShortUrl = generateShortUrl ?? ((longUrl) async => longUrl),
+       _getAnalytics = getAnalytics ?? (() => null),
        _getUserService = getUserService ?? (() => null),
        _getPermissionService = getPermissionService ?? (() => null);
 
+  final ShortUrlGenerator _generateShortUrl;
   final AnalyticsService? Function() _getAnalytics;
   final UserService? Function() _getUserService;
   final PermissionService? Function() _getPermissionService;
@@ -508,7 +511,7 @@ class ShareService extends BaseService {
         recipeId: recipeId,
         fromUserId: userId,
       );
-      final url = await DeepLinkService.generateShortUrl(
+      final url = await _generateShortUrl(
         longUrl,
       ).timeout(const Duration(seconds: 3), onTimeout: () => longUrl);
       return '$text\n\n$url';

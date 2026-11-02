@@ -99,6 +99,7 @@ void main() {
 
       // Create operations instance
       operations = SocialMenuOperations(
+        filterShareRecipients: (ids) async => ids,
         firestore: mockFirestoreRepository.firestore,
         friendsService: mockFriendsService,
         permissionService: TestServiceLocator.get<PermissionService>(),
@@ -169,6 +170,7 @@ void main() {
             userDisplayName: 'Test User',
           );
         final injectedOps = SocialMenuOperations(
+          filterShareRecipients: (ids) async => ids,
           firestore: mockFirestoreRepository.firestore,
           friendsService: mockFriendsService,
           permissionService: injectedPermissions,

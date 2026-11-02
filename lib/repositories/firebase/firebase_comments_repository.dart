@@ -1,5 +1,6 @@
 // lib/repositories/firebase/firebase_comments_repository.dart
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
@@ -37,7 +38,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     this.recipeAccessValidator,
     this.recipeOwnershipResolver,
     AttributionSource? attribution,
-  }) : attribution = attribution ?? AttributionSource();
+  }) : attribution = attribution ?? attributionSourceFromLocator();
 
   @override
   String get collectionName => FirestoreCollections.recipeComments;

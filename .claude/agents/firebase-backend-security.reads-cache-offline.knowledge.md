@@ -155,6 +155,13 @@
 - Per-item analytics loops over a REPLACEMENT set double-count on regeneration — log once
   with a count. A consent check with no in-flight dedupe means N fire-and-forget events on a
   cold cache issue N concurrent reads — wrap the whole emit in one `unawaited(...)`.
+- A safety collaborator moved from a CALL-TIME locator lookup (`tryGet<T>()` at use) to a
+  CONSTRUCTION-TIME capture (`isRegistered<T>() ? get<T>() : null` in a DI factory) fails
+  open more often only if the capture can run before `T` is registered or outlive a
+  re-registration. Decide it from `DIContainer`'s order, not the diff: every module's
+  app-scope `configure` completes before `pushUserScope`, so a USER-scope lazy factory
+  capturing an APP-scope registration sees it exactly when a live lookup would. Re-check
+  if `T` moves to user scope or anything `resetLazySingleton`/`unregister`s it.
 - Grade a new DEVICE-LOCAL store of user rows (SharedPreferences, files) against what
   Firestore's on-device cache already holds for the same account (ADR-0039 empties it only
   on an explicit, settled sign-out): a store holding a subset of cached rows widens nothing,

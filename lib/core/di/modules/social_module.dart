@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/di/share_links_from_locator.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -166,6 +167,7 @@ class SocialModule implements DIModule {
         permissionService: app<PermissionService>(),
         userService: app<UserService>(),
         blockRepository: app<FirebaseBlockRepository>(),
+        generateShortUrl: shortUrlFromLocator,
         auditRepository: app<FirebaseAuditRepository>(),
         getNotificationService: () => app.isRegistered<NotificationService>()
             ? app<NotificationService>()
@@ -293,6 +295,7 @@ class SocialModule implements DIModule {
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         findFriendGroup: (groupId) =>
             container<UnifiedFriendsService>().getCategoryByIdInternal(groupId),
+        filterShareRecipients: shareRecipientsFromLocator,
       );
     });
 
@@ -337,6 +340,7 @@ class SocialModule implements DIModule {
         menuService: menuService,
         getRealtimeMenuService: () => container<RealtimeMenuService>(),
         cacheHelper: app<JsonCacheHelper>(),
+        filterShareRecipients: shareRecipientsFromLocator,
       );
     });
 
@@ -365,6 +369,7 @@ class SocialModule implements DIModule {
         ),
         sharedShoppingRepository: app<FirebaseSharedShoppingRepository>(),
         cacheHelper: app<JsonCacheHelper>(),
+        filterShareRecipients: shareRecipientsFromLocator,
       );
     });
 
@@ -374,6 +379,7 @@ class SocialModule implements DIModule {
         friendsService: container<UnifiedFriendsService>(),
         permissionService: app<PermissionService>(),
         userService: app<UserService>(),
+        filterShareRecipients: shareRecipientsFromLocator,
       ),
     );
   }
@@ -594,6 +600,7 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<DeepLinkService>(
         () => DeepLinkService(
           deepLinkRepository: container<DeepLinkRepository>(),
+          isAuthenticated: () => container<PermissionService>().isAuthenticated,
         ),
       );
 

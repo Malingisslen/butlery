@@ -54,6 +54,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/deep_link_service.dart' show ShortUrlGenerator;
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -90,6 +91,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   final PermissionService _permissionService;
   final UserService _userService;
   final FirebaseBlockRepository _blockRepository;
+  final ShortUrlGenerator _generateShortUrl;
   final NotificationService? Function()? _getNotificationService;
   final AnalyticsService? Function()? _getAnalyticsService;
   late final FirebaseFriendsRepository _friendsRepository;
@@ -122,6 +124,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     required PermissionService permissionService,
     required UserService userService,
     required FirebaseBlockRepository blockRepository,
+    required ShortUrlGenerator generateShortUrl,
     FirebaseAuditRepository? auditRepository,
     NotificationService? Function()? getNotificationService,
     AnalyticsService? Function()? getAnalyticsService,
@@ -130,6 +133,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
        _permissionService = permissionService,
        _userService = userService,
        _blockRepository = blockRepository,
+       _generateShortUrl = generateShortUrl,
        _getNotificationService = getNotificationService,
        _getAnalyticsService = getAnalyticsService {
     // Forward the firestore instance from the injected repo into the
@@ -312,6 +316,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
       permissionService: _permissionService,
       friendsRepository: _friendsRepository,
       userService: _userService,
+      generateShortUrl: _generateShortUrl,
     );
 
     // Initialize Firebase sync operations

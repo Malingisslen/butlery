@@ -210,6 +210,7 @@ void main() {
 
       fakeAdapter = _FakeServiceAdapter();
       coordinator = SocialShoppingCoordinator(
+        filterShareRecipients: (ids) async => ids,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (e) => lastError = e,
@@ -725,6 +726,7 @@ void main() {
         'saveImportedContent propagates UnsupportedError from saveShoppingList',
         () {
           final throwingCoordinator = SocialShoppingCoordinator(
+            filterShareRecipients: (ids) async => ids,
             getCurrentUserId: () => 'me-uid',
             getCurrentUserDisplayName: () => 'Anna',
             setError: (_) {},

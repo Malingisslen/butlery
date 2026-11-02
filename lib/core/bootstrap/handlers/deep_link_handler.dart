@@ -262,7 +262,11 @@ class DeepLinkHandler {
       }
 
       if (shortCodeOf(uri) != null) {
-        final longUrl = await resolveShortLink(uri);
+        final longUrl = await resolveShortLink(
+          uri,
+          resolve: (code) async =>
+              ServiceLocator.tryGet<DeepLinkService>()?.resolveShortUrl(code),
+        );
         if (!context.mounted) return;
         if (longUrl == null) {
           _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);

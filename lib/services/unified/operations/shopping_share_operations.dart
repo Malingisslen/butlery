@@ -3,6 +3,8 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    show ShareRecipientFilter;
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/user_service.dart';
@@ -31,9 +33,13 @@ class ShoppingExportModule {
 /// Consolidated shopping external share module (simplified)
 class ShoppingExternalShareModule {
   final PermissionService _permissionService;
+  final ShortUrlGenerator _generateShortUrl;
 
-  ShoppingExternalShareModule({required PermissionService permissionService})
-    : _permissionService = permissionService;
+  ShoppingExternalShareModule({
+    required PermissionService permissionService,
+    required ShortUrlGenerator generateShortUrl,
+  }) : _permissionService = permissionService,
+       _generateShortUrl = generateShortUrl;
 
   Future<bool> shareList({
     required String listId,
@@ -47,7 +53,7 @@ class ShoppingExternalShareModule {
       listId: listId,
       fromUserId: userId,
     );
-    return DeepLinkService.generateShortUrl(longUrl);
+    return _generateShortUrl(longUrl);
   }
 }
 
@@ -92,14 +98,20 @@ class ShoppingShareOperations {
   final FirestoreRepository _firestoreRepository;
   final PermissionService _permissionService;
   final UserService _userService;
+  final ShortUrlGenerator _generateShortUrl;
+  final ShareRecipientFilter _filterShareRecipients;
 
   ShoppingShareOperations({
     required FirestoreRepository firestoreRepository,
     required PermissionService permissionService,
     required UserService userService,
+    required ShortUrlGenerator generateShortUrl,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _firestoreRepository = firestoreRepository,
        _permissionService = permissionService,
-       _userService = userService {
+       _userService = userService,
+       _generateShortUrl = generateShortUrl,
+       _filterShareRecipients = filterShareRecipients {
     _initializeModules();
   }
 
@@ -108,6 +120,7 @@ class ShoppingShareOperations {
     _exportModule = ShoppingExportModule();
     _externalShareModule = ShoppingExternalShareModule(
       permissionService: _permissionService,
+      generateShortUrl: _generateShortUrl,
     );
     _templateModule = ShoppingTemplateModule();
     _importModule = ShoppingImportModule();
@@ -115,6 +128,7 @@ class ShoppingShareOperations {
       firestore: _firestoreRepository.firestore,
       permissionService: _permissionService,
       userService: _userService,
+      filterShareRecipients: _filterShareRecipients,
     );
   }
 

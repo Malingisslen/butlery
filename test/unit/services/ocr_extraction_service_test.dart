@@ -4,11 +4,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/ocr/device_text_recognizer.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
@@ -1110,24 +1107,12 @@ Line 5''';
       when(
         () => flags.isEnabled('enable_layout_recipe_split'),
       ).thenReturn(false);
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FeatureFlagService>()) {
-        getIt.unregister<FeatureFlagService>();
-      }
-      getIt.registerSingleton<FeatureFlagService>(flags);
-      ServiceLocator.initialize(DIContainer());
-      addTearDown(() {
-        if (getIt.isRegistered<FeatureFlagService>()) {
-          getIt.unregister<FeatureFlagService>();
-        }
-        ServiceLocator.reset();
-      });
-
       final recognizer = _FakeDeviceRecognizer(
         text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
       );
       final service = OCRExtractionService.createForTesting(
         testDeviceRecognizer: recognizer,
+        testFeatureFlags: () => flags,
       );
       addTearDown(service.dispose);
 
@@ -1686,21 +1671,39 @@ Line 5''';
       );
     });
 
+    test(
+      'the source bound at registration is what the real lookup reads',
+      () async {
+        final flags = _MockFeatureFlags();
+        when(() => flags.isEnabled('enable_on_device_ocr')).thenReturn(true);
+        when(
+          () => flags.isEnabled('enable_layout_recipe_split'),
+        ).thenReturn(false);
+        OCRExtractionService.bindFeatureFlags(() => flags);
+        addTearDown(OCRExtractionService.resetForTesting);
+        final recognizer = _FakeDeviceRecognizer(
+          text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
+        );
+        final service = OCRExtractionService.createForTesting(
+          testDeviceRecognizer: recognizer,
+        );
+        addTearDown(service.dispose);
+
+        final result = await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(result.processingMethod, equals('on_device'));
+        verify(() => flags.isEnabled('enable_on_device_ocr')).called(1);
+      },
+    );
+
     test('with no flag service registered the geometry stays off', () async {
       // Sibling of the tier's own fail-closed test, for the second flag: with
-      // no FeatureFlagService in the locator (unit tests, early startup) the
+      // no flag source bound (unit tests, early startup) the
       // getter's `?? false` must keep the PROVIDER string. A `?? true` there
       // would ship the new string to everyone the moment Remote Config was
       // unreachable — the one state a kill switch has to survive.
       const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
-      expect(
-        ServiceLocator.tryGet<FeatureFlagService>(),
-        isNull,
-        reason:
-            'premise — a flag service left registered by an earlier test would '
-            'answer false too, and this test would pass without ever reaching '
-            'the fail-closed default it exists for',
-      );
+      OCRExtractionService.resetForTesting(); // drops any bound source
       final recognizer = _FakeDeviceRecognizer(text: page);
       final service = OCRExtractionService.createForTesting(
         testDeviceRecognizer: recognizer,

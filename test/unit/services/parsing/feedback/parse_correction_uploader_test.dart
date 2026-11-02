@@ -428,6 +428,7 @@ void main() {
 
       prod.ServiceLocator.initialize(DIContainer());
       GetIt.instance.registerSingleton<AnalyticsService>(service);
+      AnalyticsService.bindTryLog(prod.ServiceLocator.tryGet<AnalyticsService>);
     }
 
     // `tryLog` fires the event without awaiting; the consent check and
@@ -458,6 +459,7 @@ void main() {
       // setMockInitialValues, so the platform store stays the method-channel
       // one both handlers drive.
       SharedPreferences.resetStatic();
+      AnalyticsService.unbindTryLog();
       prod.ServiceLocator.reset();
       await GetIt.instance.reset();
     });

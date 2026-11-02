@@ -8,6 +8,8 @@
 // - SocialRecipePermissionService: Permission validation logic
 // - SocialRecipeQueryService: Queries and analytics operations
 
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    show ShareRecipientFilter;
 import 'dart:async';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -77,6 +79,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
+    required ShareRecipientFilter filterShareRecipients,
     required RecipeServiceAdapter serviceAdapter,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FriendCategory? Function(String groupId) findFriendGroup,
@@ -96,6 +99,7 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
       serviceAdapter: serviceAdapter,
       sharedRecipeRepository: sharedRecipeRepository,
       findFriendGroup: findFriendGroup,
+      filterShareRecipients: filterShareRecipients,
     );
   }
 

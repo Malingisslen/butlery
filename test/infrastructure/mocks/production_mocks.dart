@@ -3154,7 +3154,10 @@ class MockShoppingExportModule extends ShoppingExportModule {
 
 class MockShoppingExternalShareModule extends ShoppingExternalShareModule {
   MockShoppingExternalShareModule()
-    : super(permissionService: FakePermissionService());
+    : super(
+        generateShortUrl: (url) async => url,
+        permissionService: FakePermissionService(),
+      );
 }
 
 class MockShoppingTemplateModule extends ShoppingTemplateModule {
@@ -3168,6 +3171,7 @@ class MockShoppingImportModule extends ShoppingImportModule {
 class MockShoppingSocialShareModule extends ShoppingSocialShareModule {
   MockShoppingSocialShareModule()
     : super(
+        filterShareRecipients: (ids) async => ids,
         firestore: FakeFirebaseFirestore(),
         permissionService: FakePermissionService(),
         userService: MockUserService(),

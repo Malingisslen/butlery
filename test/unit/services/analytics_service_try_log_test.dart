@@ -43,9 +43,16 @@ void main() {
   });
 
   tearDown(() async {
+    AnalyticsService.unbindTryLog();
     prod.ServiceLocator.reset();
     await GetIt.instance.reset();
   });
+
+  void bindToRegistry() => AnalyticsService.bindTryLog(
+    () => GetIt.instance.isRegistered<AnalyticsService>()
+        ? GetIt.instance<AnalyticsService>()
+        : null,
+  );
 
   group('BUT-766: AnalyticsService.tryLog', () {
     test('forwards event when AnalyticsService is registered', () async {
@@ -60,6 +67,7 @@ void main() {
 
       prod.ServiceLocator.initialize(DIContainer());
       GetIt.instance.registerSingleton<AnalyticsService>(service);
+      bindToRegistry();
 
       AnalyticsService.tryLog('demo_event', parameters: {'flag': 'on'});
 
@@ -79,6 +87,7 @@ void main() {
 
     test('no-ops when AnalyticsService is NOT registered', () {
       prod.ServiceLocator.initialize(DIContainer());
+      bindToRegistry();
       // No registerSingleton<AnalyticsService>(...) — service is missing.
 
       // Must not throw.
@@ -88,8 +97,8 @@ void main() {
       );
     });
 
-    test('no-ops when ServiceLocator has not been initialized', () {
-      prod.ServiceLocator.reset();
+    test('no-ops when nothing has been bound', () {
+      AnalyticsService.unbindTryLog();
       expect(() => AnalyticsService.tryLog('demo'), returnsNormally);
     });
 
@@ -105,6 +114,7 @@ void main() {
 
       prod.ServiceLocator.initialize(DIContainer());
       GetIt.instance.registerSingleton<AnalyticsService>(service);
+      bindToRegistry();
 
       // Must not surface the StateError to the caller.
       expect(

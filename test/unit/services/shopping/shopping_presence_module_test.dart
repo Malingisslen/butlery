@@ -6,6 +6,7 @@
 
 library;
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -188,6 +189,7 @@ void main() {
           isAuthenticated: false,
         );
       final unauthModule = FirebaseShoppingPresenceModule(
+        attribution: attributionSourceFromLocator(),
         repository: repository,
         permissionService: unauth,
       );

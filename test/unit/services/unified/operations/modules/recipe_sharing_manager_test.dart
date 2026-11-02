@@ -91,6 +91,7 @@ void main() {
 
       // Create sharing manager instance
       sharingManager = RecipeSharingManager(
+        blockedUserFilter: null,
         getCurrentUserId: () => mockParentService.currentUserId,
         getCurrentUserDisplayName: () =>
             mockParentService.currentUserDisplayName,
@@ -310,6 +311,41 @@ void main() {
           ]);
         });
 
+        test('shareRecipient drops a blocked friend before anything is '
+            'written', () async {
+          mockParentService.setCollaborativeState(shouldSucceed: true);
+          stubNotifications();
+          final manager = RecipeSharingManager(
+            blockedUserFilter: _StubBlockedUserFilter(const {'blocked_friend'}),
+            getCurrentUserId: () => mockParentService.currentUserId,
+            getCurrentUserDisplayName: () =>
+                mockParentService.currentUserDisplayName,
+            getRecipes: () => mockParentService.recipes,
+            createCollaborativeRecipe:
+                mockParentService.createCollaborativeRecipe,
+            createPersonalRecipe: mockParentService.createPersonalRecipe,
+            updateRecipe: (_) async => true,
+            notificationService: mockNotificationService,
+            firestoreRepository: _locatorFirestore(),
+            permissionService: _locatorPermissions(),
+            userService: _locatorUsers(),
+            activityFeedService: activityFeed,
+          );
+
+          await manager.shareRecipe(
+            recipeId: 'personal_1',
+            memberIds: ['user_456', 'blocked_friend'],
+            memberDisplayNames: {'user_456': 'Member One'},
+          );
+
+          final repository = _locatorFirestore() as FakeFirestoreRepository;
+          final docs = await repository.collection('shared_content').get();
+          expect(docs.docs, isNotEmpty);
+          for (final doc in docs.docs) {
+            expect(doc.data().toString(), isNot(contains('blocked_friend')));
+          }
+        });
+
         test('the name stamped on shared_content comes from the injected '
             'profile service, not the one in the locator', () async {
           final inLocator =
@@ -323,6 +359,7 @@ void main() {
           stubNotifications();
 
           final manager = RecipeSharingManager(
+            blockedUserFilter: null,
             getCurrentUserId: () => mockParentService.currentUserId,
             getCurrentUserDisplayName: () =>
                 mockParentService.currentUserDisplayName,
@@ -552,6 +589,7 @@ void main() {
           final repository = _CapturingRepository(docRef);
 
           final manager = RecipeSharingManager(
+            blockedUserFilter: null,
             getCurrentUserId: () => mockParentService.currentUserId,
             getCurrentUserDisplayName: () =>
                 mockParentService.currentUserDisplayName,
@@ -785,6 +823,7 @@ void main() {
           // bare null it can't distinguish from "not found" / "save failed".
           String? surfacedError;
           final manager = RecipeSharingManager(
+            blockedUserFilter: null,
             getCurrentUserId: () => mockParentService.currentUserId,
             getCurrentUserDisplayName: () =>
                 mockParentService.currentUserDisplayName,
@@ -925,6 +964,7 @@ void main() {
           'with the group message', () async {
         String? surfaced;
         final manager = RecipeSharingManager(
+          blockedUserFilter: null,
           getCurrentUserId: () => mockParentService.currentUserId,
           getCurrentUserDisplayName: () =>
               mockParentService.currentUserDisplayName,
@@ -958,12 +998,10 @@ void main() {
 
       test('a roster left with only the sharer once blocked friends are '
           'dropped leaves no copy and shows no group message', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const {'blocked_friend'}),
-        );
         var copies = 0;
         String? surfaced;
         final manager = RecipeSharingManager(
+          blockedUserFilter: _StubBlockedUserFilter(const {'blocked_friend'}),
           getCurrentUserId: () => mockParentService.currentUserId,
           getCurrentUserDisplayName: () =>
               mockParentService.currentUserDisplayName,
@@ -1013,6 +1051,7 @@ void main() {
           'behind', () async {
         var copies = 0;
         final manager = RecipeSharingManager(
+          blockedUserFilter: null,
           getCurrentUserId: () => mockParentService.currentUserId,
           getCurrentUserDisplayName: () =>
               mockParentService.currentUserDisplayName,

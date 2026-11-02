@@ -85,6 +85,7 @@ class RecipeSharingManager {
   final PermissionService _permissionService;
   final UserService _userService;
   final ActivityFeedService _activityFeedService;
+  final BlockedUserFilter? _blockedUserFilter;
 
   /// BUT-1056: optional sink for user-facing share errors (e.g. cap reached).
   /// Mirrors the `_setError` pattern in `SocialRecipeSharingService` so the
@@ -105,6 +106,7 @@ class RecipeSharingManager {
     required PermissionService permissionService,
     required UserService userService,
     required ActivityFeedService activityFeedService,
+    required BlockedUserFilter? blockedUserFilter,
     void Function(String)? onShareError,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
@@ -117,7 +119,8 @@ class RecipeSharingManager {
        _firestoreRepository = firestoreRepository,
        _permissionService = permissionService,
        _userService = userService,
-       _activityFeedService = activityFeedService;
+       _activityFeedService = activityFeedService,
+       _blockedUserFilter = blockedUserFilter;
 
   /// Share a personal recipe with other users (convert to collaborative)
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
@@ -133,7 +136,10 @@ class RecipeSharingManager {
     try {
       // BUT-2169: nothing new is shared across a block, in either direction.
       if (!_hasRecipients(memberIds)) return null;
-      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      memberIds = await BlockedUserFilter.filterShareRecipients(
+        _blockedUserFilter,
+        memberIds,
+      );
       if (!_hasOtherThanSharer(memberIds)) {
         return null;
       }
@@ -365,7 +371,10 @@ class RecipeSharingManager {
     try {
       // Before the copy exists, so a share nobody can receive leaves no copy.
       if (!_hasRecipients(memberIds)) return null;
-      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      memberIds = await BlockedUserFilter.filterShareRecipients(
+        _blockedUserFilter,
+        memberIds,
+      );
       if (!_hasOtherThanSharer(memberIds)) {
         return null;
       }

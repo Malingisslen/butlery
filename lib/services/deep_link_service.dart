@@ -5,7 +5,6 @@
 /// social sharing workflows and content distribution strategies throughout the application.
 /// **Architecture Integration:**
 /// - Uses [DeepLinkRepository] interface for flexible backend storage and URL management
-/// - Integrates with [PermissionService] for secure authenticated operations and access control
 /// - Coordinates with navigation systems for seamless app routing and user experience
 /// **Deep Link Capabilities:**
 /// - **URL Generation**: Comprehensive URL generation for friend invitations, recipe sharing, menu distribution
@@ -23,8 +22,6 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/permission_service.dart' as perm_service;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 
@@ -47,7 +44,7 @@ import 'package:butlery/core/base/base_service.dart';
 ///   customMessage: 'Join me on Butlery!',
 /// );
 /// // Create short URL for sharing
-/// final shortUrl = await DeepLinkService.generateShortUrl(inviteUrl);
+/// final shortUrl = await deepLinkService.generateShortUrl(inviteUrl);
 /// // Deep links are handled by DeepLinkHandler (in core/bootstrap/handlers)
 /// ```
 class DeepLinkService extends BaseService {
@@ -62,8 +59,13 @@ class DeepLinkService extends BaseService {
   static const String _shoppingPath = '/shopping';
   static const String _profilePath = '/profile';
 
-  DeepLinkService({required DeepLinkRepository deepLinkRepository})
-    : _deepLinkRepository = deepLinkRepository;
+  DeepLinkService({
+    required DeepLinkRepository deepLinkRepository,
+    required bool Function() isAuthenticated,
+  }) : _deepLinkRepository = deepLinkRepository,
+       _isAuthenticated = isAuthenticated;
+
+  final bool Function() _isAuthenticated;
 
   /// Generates a secure deep link for friend invitation sharing.
   /// This method creates a properly formatted invitation URL with secure parameter encoding and comprehensive
@@ -273,7 +275,7 @@ class DeepLinkService extends BaseService {
   }
 
   /// Generate a short URL using a URL shortening service
-  static Future<String> generateShortUrl(String longUrl) async {
+  Future<String> generateShortUrl(String longUrl) async {
     try {
       // First try to use our internal short URL service
       final shortUrl = await _generateInternalShortUrl(longUrl);
@@ -299,12 +301,9 @@ class DeepLinkService extends BaseService {
   }
 
   /// Generate internal short URL using Firestore
-  static Future<String?> _generateInternalShortUrl(String longUrl) async {
+  Future<String?> _generateInternalShortUrl(String longUrl) async {
     try {
-      if (!ServiceLocator.get<perm_service.PermissionService>()
-          .isAuthenticated) {
-        return null;
-      }
+      if (!_isAuthenticated()) return null;
 
       // Use the repository to create short URL
       final metadata = {
@@ -315,12 +314,10 @@ class DeepLinkService extends BaseService {
             .toIso8601String(),
       };
 
-      final shortCode = await ServiceLocator.get<DeepLinkService>()
-          ._deepLinkRepository
-          .createShortUrl(
-            longUrl,
-            metadata,
-          );
+      final shortCode = await _deepLinkRepository.createShortUrl(
+        longUrl,
+        metadata,
+      );
 
       return '$baseUrl/s/$shortCode';
     } catch (e) {
@@ -415,12 +412,10 @@ class DeepLinkService extends BaseService {
   }
 
   /// Resolve short URL to original URL
-  static Future<String?> resolveShortUrl(String shortCode) async {
+  Future<String?> resolveShortUrl(String shortCode) async {
     try {
       // Get the long URL from repository
-      final longUrl = await ServiceLocator.get<DeepLinkService>()
-          ._deepLinkRepository
-          .getLongUrl(shortCode);
+      final longUrl = await _deepLinkRepository.getLongUrl(shortCode);
 
       if (longUrl == null) {
         AppLogger.warning('Short URL not found: $shortCode');
@@ -435,6 +430,10 @@ class DeepLinkService extends BaseService {
     }
   }
 }
+
+/// What a service is handed when all it needs from [DeepLinkService] is to
+/// shorten a link it has just built.
+typedef ShortUrlGenerator = Future<String> Function(String longUrl);
 
 /// Deep link data structure
 class DeepLinkData {

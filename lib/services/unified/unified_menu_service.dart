@@ -75,6 +75,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final UserService Function() _userServiceLink;
   final RealtimeMenuService Function() _realtimeMenuServiceLink;
   final PermissionService Function() _permissionServiceLink;
+  final ShareRecipientFilter _filterShareRecipients;
 
   // State
   final List<SharedMenu> _menus = [];
@@ -114,12 +115,14 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     required UserService Function() userService,
     required RealtimeMenuService Function() realtimeMenuService,
     required PermissionService Function() permissionService,
+    required ShareRecipientFilter filterShareRecipients,
     FirebaseSharedMenuRepository? sharedMenuRepository,
   }) : _firestoreRepository = firestoreRepository,
        _firestore = firestoreRepository.firestore,
        _userServiceLink = userService,
        _realtimeMenuServiceLink = realtimeMenuService,
-       _permissionServiceLink = permissionService {
+       _permissionServiceLink = permissionService,
+       _filterShareRecipients = filterShareRecipients {
     // Initialize SharedMenu repository (override-aware for testability)
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
@@ -371,7 +374,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     final result = await safeExecute<String?>(() async {
       try {
         // BUT-2169: nothing new is shared across a block, in either direction.
-        inviteeUserIds = await BlockedUserFilter.shareRecipients(
+        inviteeUserIds = await _filterShareRecipients(
           inviteeUserIds,
         );
         if (inviteeUserIds.isEmpty) {
@@ -622,7 +625,15 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
   String? get currentUserId => _permissionServiceLink().currentUserId;
   // BUT-2009: stamped as `sharedByDisplayName`, so the profile name.
-  String? get currentUserDisplayName => AttributionSource().displayName;
+  String? get currentUserDisplayName => AttributionSource(
+    userService: () {
+      try {
+        return _userServiceLink();
+      } catch (_) {
+        return null;
+      }
+    },
+  ).displayName;
   void resetForLogout() {
     _menus.clear();
     _isInitialized = false;

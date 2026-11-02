@@ -24,9 +24,13 @@ class ShoppingSocialShareModule {
     required FirebaseFirestore firestore,
     required PermissionService permissionService,
     required UserService userService,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _firestore = firestore,
        _permissionService = permissionService,
-       _userService = userService;
+       _userService = userService,
+       _filterShareRecipients = filterShareRecipients;
+
+  final ShareRecipientFilter _filterShareRecipients;
 
   /// Share shopping list with friends
   Future<bool> shareWithFriends({
@@ -40,7 +44,7 @@ class ShoppingSocialShareModule {
         return false;
       }
       // BUT-2169: nothing new is shared across a block, in either direction.
-      friendIds = await BlockedUserFilter.shareRecipients(friendIds);
+      friendIds = await _filterShareRecipients(friendIds);
       if (friendIds.isEmpty) return false;
 
       if (!_permissionService.isAuthenticated) {

@@ -4,6 +4,7 @@
 /// Computed from existing events: recipe_viewed, recipe_cooked, recipe_edited.
 /// Define as a Firebase Analytics audience or BigQuery query over these events.
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
@@ -11,7 +12,6 @@ import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/trackers.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Analytics service facade that delegates to specialized tracker modules.
@@ -68,13 +68,30 @@ class AnalyticsService extends BaseService {
   ParseEventsTracker get parse => _parseTracker;
   SystemEventsTracker get system => _systemTracker;
 
+  /// Where [tryLog] finds the service. Static because its callers include
+  /// static helpers and widgets that hold no service; bound once, at
+  /// registration, and read on every call so a re-registered service is the
+  /// one that answers.
+  static AnalyticsService? Function() _tryLogSource = _noAnalytics;
+
+  static AnalyticsService? _noAnalytics() => null;
+
+  static void bindTryLog(AnalyticsService? Function() source) {
+    _tryLogSource = source;
+  }
+
+  @visibleForTesting
+  static void unbindTryLog() {
+    _tryLogSource = _noAnalytics;
+  }
+
   /// BUT-766: fire-and-forget null-guarded analytics emission helper.
   ///
-  /// Centralises the `tryGet → null-guard → logEvent` shape that recurred at
-  /// 7 call sites pre-extraction. Resolves [AnalyticsService] from
-  /// [ServiceLocator], no-ops in degraded mode (service not registered),
-  /// and swallows internal `logEvent` failures so a best-effort metric
-  /// never cascades into a user-visible failure.
+  /// Centralises the `null-guard → logEvent` shape that recurred at 7 call
+  /// sites pre-extraction. Resolves [AnalyticsService] through the source
+  /// bound at registration, no-ops in degraded mode (nothing bound or
+  /// registered), and swallows internal `logEvent` failures so a best-effort
+  /// metric never cascades into a user-visible failure.
   ///
   /// Sites that need a different shape (e.g. dedup, async/await on completion,
   /// custom error reaction) should still call [logEvent] directly. Sites
@@ -82,14 +99,14 @@ class AnalyticsService extends BaseService {
   /// unaffected.
   static void tryLog(String name, {Map<String, Object>? parameters}) {
     try {
-      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      final analytics = _tryLogSource();
       if (analytics == null) return;
       analytics
           .logEvent(name: name, parameters: parameters)
           .catchError((Object _) {});
     } catch (_) {
-      // ServiceLocator.tryGet should not throw, but be defensive — a logging
-      // helper that throws is worse than one that silently misses an event.
+      // The source should not throw, but be defensive — a logging helper that
+      // throws is worse than one that silently misses an event.
     }
   }
 

@@ -108,6 +108,7 @@ void main() {
       testRecipesMap['recipe-2'] = recipe2;
 
       coordinator = SocialRecipeCoordinator(
+        filterShareRecipients: (ids) async => ids,
         getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -161,6 +162,7 @@ void main() {
         ),
       ).thenAnswer((_) async => 'shared-doc');
       final withGroups = SocialRecipeCoordinator(
+        filterShareRecipients: (ids) async => ids,
         getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -386,6 +388,7 @@ void main() {
         when(() => mockSharedRecipeRepo.update(any())).thenAnswer((_) async {});
         final adapter = _CapturingAdapter();
         final owner = SocialRecipeCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -425,6 +428,7 @@ void main() {
       test('should fail dismiss when not authenticated', () async {
         // Replace coordinator with unauthenticated one
         final unauthCoordinator = SocialRecipeCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => null,
           getCurrentUserDisplayName: () => null,
@@ -454,6 +458,7 @@ void main() {
 
       test('should fail when not authenticated', () async {
         final unauthCoordinator = SocialRecipeCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => null,
           getCurrentUserDisplayName: () => null,

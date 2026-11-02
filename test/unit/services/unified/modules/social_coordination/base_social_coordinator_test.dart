@@ -180,6 +180,7 @@ class _TestSocialCoordinator
     required super.setError,
     required super.notifyListeners,
     required super.userService,
+    required super.filterShareRecipients,
     required BaseSharedContentRepository<_TestShared> repo,
   }) : _repo = repo;
 
@@ -388,6 +389,7 @@ void main() {
       ).thenAnswer((_) async => 0);
 
       coordinator = _TestSocialCoordinator(
+        filterShareRecipients: (ids) async => ids,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: errors.add,

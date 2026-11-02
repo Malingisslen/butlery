@@ -5,9 +5,13 @@ import 'package:web/web.dart' as web;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/pwa/pwa_install_gate.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 
 class PwaInstallService extends BaseService {
+  PwaInstallService({required PersistenceService Function() persistence})
+    : _persistence = persistence;
+
+  final PersistenceService Function() _persistence;
+
   @override
   String get serviceName => 'PwaInstallService';
 
@@ -31,7 +35,7 @@ class PwaInstallService extends BaseService {
   @override
   Future<void> onInitialize() async {
     try {
-      final persistence = ServiceLocator.get<PersistenceService>();
+      final persistence = _persistence();
       final alreadyDismissed = _gate.restore(
         sessionCount: await persistence.getInt(_sessionCountKey) ?? 0,
         dismissed: await persistence.getBool(_installDismissedKey) ?? false,
@@ -57,7 +61,7 @@ class PwaInstallService extends BaseService {
   void dismissInstall() {
     _gate.markDismissed();
     try {
-      ServiceLocator.get<PersistenceService>().setBool(
+      _persistence().setBool(
         _installDismissedKey,
         true,
       );

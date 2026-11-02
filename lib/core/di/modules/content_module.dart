@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/di/share_links_from_locator.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/di/modules/import_registrations.dart';
 import 'package:butlery/core/di/modules/offline_registrations.dart';
@@ -372,6 +373,7 @@ class ContentModule implements DIModule {
         userService: () => app<UserService>(),
         realtimeMenuService: () => app<RealtimeMenuService>(),
         permissionService: () => app<PermissionService>(),
+        filterShareRecipients: shareRecipientsFromLocator,
       ),
       dispose: (s) => s.dispose(),
     );
@@ -792,6 +794,7 @@ class ContentModule implements DIModule {
               ? container<UserService>()
               : null,
           getPermissionService: () => container<PermissionService>(),
+          generateShortUrl: shortUrlFromLocator,
         ),
       );
 

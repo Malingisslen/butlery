@@ -65,6 +65,7 @@ void main() {
       permissionService: TestServiceLocator.get<PermissionService>(),
       userService: TestServiceLocator.get<UserService>(),
       blockRepository: blockRepo,
+      generateShortUrl: (url) async => url,
       auditRepository: FirebaseAuditRepository(FirestoreSingleton.instance),
     );
   });

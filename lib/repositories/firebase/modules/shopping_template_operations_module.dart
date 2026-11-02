@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/shopping_template_operations_module.dart
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -39,7 +40,7 @@ class ShoppingTemplateOperationsModule {
     required this.validateOwnership,
     this.timestampProvider = const ServerTimestampProvider(),
     AttributionSource? attribution,
-  }) : _attribution = attribution ?? AttributionSource();
+  }) : _attribution = attribution ?? attributionSourceFromLocator();
 
   /// What a template keeps of a list row. BUT-2356: a public template is
   /// readable by every signed-in user and outlives the people on its source

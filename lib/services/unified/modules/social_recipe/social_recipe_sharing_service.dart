@@ -60,6 +60,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   final void Function() _notifyListeners;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final FriendCategory? Function(String groupId) _findFriendGroup;
+  final ShareRecipientFilter _filterShareRecipients;
 
   SocialRecipeSharingService({
     required String? Function() getCurrentUserId,
@@ -70,7 +71,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     required Future<bool> Function(Recipe) saveRecipe,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FriendCategory? Function(String groupId) findFriendGroup,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _findFriendGroup = findFriendGroup,
+       _filterShareRecipients = filterShareRecipients,
        _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _setError = setError,
@@ -105,7 +108,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
     try {
       // BUT-2169: nothing new is shared across a block, in either direction.
-      userIds = await BlockedUserFilter.shareRecipients(userIds);
+      userIds = await _filterShareRecipients(userIds);
       if (userIds.isEmpty) {
         _setError(AppLocale.current.errorNoRecipientsFound);
         return RecipeShareResult.failed;

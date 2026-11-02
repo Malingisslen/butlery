@@ -196,6 +196,7 @@ ShoppingSocialShareModule _build(
     firestore: firestore,
     permissionService: perms,
     userService: userService ?? _userService,
+    filterShareRecipients: (ids) async => ids,
   );
 }
 

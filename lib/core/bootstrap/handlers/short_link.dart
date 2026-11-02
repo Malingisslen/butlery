@@ -6,8 +6,6 @@
 /// own host is followed.
 library;
 
-import 'package:butlery/services/deep_link_service.dart';
-
 const _hosts = {'butlery.se', 'www.butlery.se'};
 
 // `FirebaseDeepLinkRepository` mints eight alphanumerics.
@@ -34,8 +32,7 @@ bool isRoutableTarget(String longUrl) {
 /// link, the code is unknown, or the long link may not be routed.
 Future<String?> resolveShortLink(
   Uri uri, {
-  Future<String?> Function(String code) resolve =
-      DeepLinkService.resolveShortUrl,
+  required Future<String?> Function(String code) resolve,
 }) async {
   final code = shortCodeOf(uri);
   if (code == null) return null;

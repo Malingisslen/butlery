@@ -90,19 +90,23 @@ void main() {
     GetIt.instance.registerSingleton<AuthRepository>(authRepository);
     GetIt.instance.registerSingleton<AnalyticsService>(analytics);
     ServiceLocator.initialize(DIContainer());
+    AnalyticsService.bindTryLog(ServiceLocator.tryGet<AnalyticsService>);
 
     // Asserted HERE rather than in each test body: a future test that forgot the
     // call is exactly the vacuous case this guards. An unregistered
     // `AuthRepository` makes `ServiceLocator.get` throw inside the reader closure,
     // which `classify` catches and turns into the GENERIC arm — so the whole file
     // would pass with the clock branch deleted. An unregistered `AnalyticsService`
-    // makes `tryLog` a silent no-op. `tryGet` below is the identical lookup
-    // `AnalyticsService.tryLog` performs, not a proxy for it.
+    // makes `tryLog` a silent no-op. `tryGet` below is the very source bound
+    // above, not a proxy for it.
     expect(ServiceLocator.get<AuthRepository>(), same(authRepository));
     expect(ServiceLocator.tryGet<AnalyticsService>(), same(analytics));
   });
 
-  tearDown(() async => GetIt.instance.reset());
+  tearDown(() async {
+    AnalyticsService.unbindTryLog();
+    await GetIt.instance.reset();
+  });
 
   Widget subject({required Future<void> Function() onSend}) {
     return createLocalizedTestApp(

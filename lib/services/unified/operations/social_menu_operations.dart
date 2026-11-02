@@ -24,13 +24,16 @@ class SocialMenuOperations {
   final UnifiedFriendsService _friendsService;
   final PermissionService _permissionService;
   final UserService _userService;
+  final ShareRecipientFilter _filterShareRecipients;
 
   SocialMenuOperations({
     required FirebaseFirestore firestore,
     required UnifiedFriendsService friendsService,
     required PermissionService permissionService,
     required UserService userService,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _firestore = firestore,
+       _filterShareRecipients = filterShareRecipients,
        _friendsService = friendsService,
        _permissionService = permissionService,
        _userService = userService;
@@ -53,7 +56,7 @@ class SocialMenuOperations {
         return false;
       }
       // BUT-2169: nothing new is shared across a block, in either direction.
-      friendUserIds = await BlockedUserFilter.shareRecipients(friendUserIds);
+      friendUserIds = await _filterShareRecipients(friendUserIds);
       if (friendUserIds.isEmpty) return false;
 
       if (!_permissionService.isAuthenticated) {

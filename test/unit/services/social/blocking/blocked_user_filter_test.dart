@@ -12,12 +12,9 @@ library;
 
 import 'dart:async';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockBlockRepo extends Mock implements FirebaseBlockRepository {}
@@ -557,17 +554,8 @@ void main() {
     );
   });
 
-  // The share services call the static helper, so this is what they rely on
-  // to find the registered filter rather than pass the list through.
-  group('shareRecipients', () {
-    tearDown(() async {
-      if (GetIt.instance.isRegistered<BlockedUserFilter>()) {
-        await GetIt.instance.unregister<BlockedUserFilter>();
-      }
-      ServiceLocator.reset();
-    });
-
-    test('uses the registered filter', () async {
+  group('filterShareRecipients', () {
+    test('uses the filter it is given', () async {
       final repo = _MockBlockRepo();
       when(
         () => repo.getBlockedUserIdsFromServer(),
@@ -575,19 +563,20 @@ void main() {
       when(
         () => repo.getBlockedByUserIdsFromServer(),
       ).thenAnswer((_) async => {'bob'});
-      ServiceLocator.initialize(DIContainer());
-      GetIt.instance.registerSingleton<BlockedUserFilter>(
-        BlockedUserFilter(blockRepository: repo),
-      );
 
       expect(
-        await BlockedUserFilter.shareRecipients(['alice', 'bob', 'carol']),
+        await BlockedUserFilter.filterShareRecipients(
+          BlockedUserFilter(blockRepository: repo),
+          ['alice', 'bob', 'carol'],
+        ),
         ['carol'],
       );
     });
 
-    test('passes the list through when no filter is registered', () async {
-      expect(await BlockedUserFilter.shareRecipients(['alice']), ['alice']);
+    test('passes the list through when there is no filter', () async {
+      expect(await BlockedUserFilter.filterShareRecipients(null, ['alice']), [
+        'alice',
+      ]);
     });
   });
 }

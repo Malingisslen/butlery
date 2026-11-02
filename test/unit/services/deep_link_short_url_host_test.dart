@@ -14,10 +14,9 @@ import '../../test_support/base_unit_test.dart';
 void main() {
   late MockDeepLinkRepository repository;
   late FakePermissionService permissions;
+  late DeepLinkService service;
 
   setUp(() async {
-    // The production ServiceLocator is what the static method resolves
-    // through; without it the success arm is never entered.
     await BaseUnitTest.setupUnitWithProductionLocator();
     repository = MockDeepLinkRepository();
     permissions = FakePermissionService()
@@ -26,8 +25,9 @@ void main() {
         currentUserId: 'test-user-id',
       );
     TestServiceLocator.registerMock<PermissionService>(permissions);
-    TestServiceLocator.registerMock<DeepLinkService>(
-      DeepLinkService(deepLinkRepository: repository),
+    service = DeepLinkService(
+      deepLinkRepository: repository,
+      isAuthenticated: () => permissions.isAuthenticated,
     );
   });
 
@@ -41,7 +41,7 @@ void main() {
       () => repository.createShortUrl(any(), any()),
     ).thenAnswer((_) async => 'abc123');
 
-    final shortUrl = await DeepLinkService.generateShortUrl(
+    final shortUrl = await service.generateShortUrl(
       'https://butlery.se/recipe?id=123',
     );
 

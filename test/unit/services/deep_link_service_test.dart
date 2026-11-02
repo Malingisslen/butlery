@@ -65,7 +65,10 @@ void main() {
     // Register mocks with TestServiceLocator
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
 
-    service = DeepLinkService(deepLinkRepository: mockRepository);
+    service = DeepLinkService(
+      deepLinkRepository: mockRepository,
+      isAuthenticated: () => mockPermissionService.isAuthenticated,
+    );
     TestServiceLocator.registerMock<DeepLinkService>(service);
 
     // Configure permission service using state methods
@@ -595,24 +598,16 @@ void main() {
 
     group('Short URL Generation', () {
       test('should generate internal short URL when authenticated', () async {
-        // Arrange
-        // Note: isAuthenticated is properly configured via setPermissionState above
         when(
           () => mockRepository.createShortUrl(any(), any()),
         ).thenAnswer((_) async => 'abc123');
 
-        // Act
-        // The actual implementation returns a short URL path with the code
-        // Since the internal method requires authentication and service registration,
-        // it will return the original URL as fallback
-        final shortUrl = await DeepLinkService.generateShortUrl(
+        final shortUrl = await service.generateShortUrl(
           'https://butlery.se/recipe?id=123',
         );
 
-        // Assert
-        // Static methods can't use our mock properly, so it will return original URL
-        expect(shortUrl, equals('https://butlery.se/recipe?id=123'));
-        // Cannot verify mock calls due to static method limitation
+        expect(shortUrl, equals('https://butlery.se/s/abc123'));
+        verify(() => mockRepository.createShortUrl(any(), any())).called(1);
       });
 
       test('should fallback to original URL when not authenticated', () async {
@@ -625,7 +620,7 @@ void main() {
         final originalUrl = 'https://butlery.se/recipe?id=123';
 
         // Act
-        final shortUrl = await DeepLinkService.generateShortUrl(originalUrl);
+        final shortUrl = await service.generateShortUrl(originalUrl);
 
         // Assert
         expect(shortUrl, equals(originalUrl));
@@ -641,30 +636,25 @@ void main() {
         final originalUrl = 'https://butlery.se/recipe?id=123';
 
         // Act
-        final shortUrl = await DeepLinkService.generateShortUrl(originalUrl);
+        final shortUrl = await service.generateShortUrl(originalUrl);
 
         // Assert
         expect(shortUrl, equals(originalUrl));
       });
 
       test('should include expiration metadata', () async {
-        // Arrange
-        // Note: isAuthenticated is properly configured via setPermissionState above
-
+        Map<String, dynamic>? metadata;
         when(() => mockRepository.createShortUrl(any(), any())).thenAnswer((
           invocation,
         ) async {
-          // Would capture metadata here: invocation.positionalArguments[1]
-          // But static method doesn't properly use DI
+          metadata = invocation.positionalArguments[1] as Map<String, dynamic>;
           return 'abc123';
         });
 
-        // Act & Assert
-        // Static method doesn't properly use DI, so metadata capture is limited
-        await expectLater(
-          DeepLinkService.generateShortUrl('https://butlery.se/recipe?id=123'),
-          completes,
-        );
+        await service.generateShortUrl('https://butlery.se/recipe?id=123');
+
+        expect(metadata?['isActive'], isTrue);
+        expect(DateTime.parse(metadata?['expiresAt'] as String), isNotNull);
       });
     });
 
@@ -676,7 +666,7 @@ void main() {
         ).thenAnswer((_) async => null);
 
         // Act
-        final longUrl = await DeepLinkService.resolveShortUrl('invalid');
+        final longUrl = await service.resolveShortUrl('invalid');
 
         // Assert
         expect(longUrl, isNull);
@@ -689,7 +679,7 @@ void main() {
         ).thenAnswer((_) async => throw Exception('Database error'));
 
         // Act
-        final longUrl = await DeepLinkService.resolveShortUrl('abc123');
+        final longUrl = await service.resolveShortUrl('abc123');
 
         // Assert
         expect(longUrl, isNull);
@@ -1075,9 +1065,11 @@ void main() {
           ).thenAnswer((_) => hang.future);
 
           // Act
-          final longUrl = await DeepLinkService.resolveShortUrl(
-            'abc123',
-          ).timeout(const Duration(seconds: 1), onTimeout: () => null);
+          final longUrl = await service
+              .resolveShortUrl(
+                'abc123',
+              )
+              .timeout(const Duration(seconds: 1), onTimeout: () => null);
 
           // Assert
           expect(longUrl, isNull);
@@ -1279,7 +1271,7 @@ void main() {
           ).thenAnswer((_) async => null);
 
           // Act
-          final longUrl = await DeepLinkService.resolveShortUrl(
+          final longUrl = await service.resolveShortUrl(
             'deleted_content',
           );
 
@@ -1325,7 +1317,7 @@ void main() {
           );
 
           // Act
-          final shortUrl = await DeepLinkService.generateShortUrl(
+          final shortUrl = await service.generateShortUrl(
             'https://butlery.se/recipe?id=123',
           );
 
@@ -1343,7 +1335,7 @@ void main() {
           );
 
           // Act
-          final shortUrl = await DeepLinkService.generateShortUrl(
+          final shortUrl = await service.generateShortUrl(
             'https://butlery.se/menu?id=456',
           );
 
@@ -1370,7 +1362,7 @@ void main() {
           // Act
           final results = <String>[];
           for (int i = 0; i < 10; i++) {
-            final url = await DeepLinkService.generateShortUrl(
+            final url = await service.generateShortUrl(
               'https://butlery.se/recipe?id=$i',
             );
             results.add(url);
@@ -1588,7 +1580,7 @@ void main() {
           String? result;
           for (int i = 0; i <= maxRetries + 1; i++) {
             try {
-              result = await DeepLinkService.resolveShortUrl('retry_test');
+              result = await service.resolveShortUrl('retry_test');
               break;
             } catch (_) {
               if (i >= maxRetries) {
