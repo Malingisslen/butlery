@@ -507,6 +507,10 @@ class ContentModule implements DIModule {
         () => PermissionService(
           authRepository: container<auth.AuthRepository>(),
           recipeRepository: container<RecipeRepository>(),
+          recipeService: () => container<UnifiedRecipeService>(),
+          shoppingService: () => container<UnifiedShoppingService>(),
+          friendsService: () => container<UnifiedFriendsService>(),
+          userService: () => container<UserService>(),
         ),
       );
 

@@ -20,7 +20,6 @@ const _residue = <String, int>{
   'lib/services/account/export/social_export_manager.dart': 1,
   'lib/services/analytics_service.dart': 1,
   'lib/services/attribution_source.dart': 1,
-  'lib/services/auth/guest_auth_service.dart': 1,
   'lib/services/cook_snap_service.dart': 11,
   'lib/services/deep_link_service.dart': 3,
   'lib/services/family/active_household.dart': 3,
@@ -30,13 +29,10 @@ const _residue = <String, int>{
   'lib/services/household_service.dart': 6,
   'lib/services/menu/meal_dislikes.dart': 3,
   'lib/services/menu/present_diner_prefs_resolver.dart': 12,
-  'lib/services/messaging_service.dart': 6,
   'lib/services/nutrition/nutrition_service.dart': 1,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/parsing/feedback/import_correction_snapshot.dart': 1,
   'lib/services/parsing/tiers/parsing_tier.dart': 1,
-  'lib/services/permission_service.dart': 3,
-  'lib/services/permissions/group_permission_module.dart': 1,
   'lib/services/pwa_install_service_web.dart': 2,
   'lib/services/social/blocking/blocked_user_filter.dart': 1,
   'lib/services/storage_service.dart': 7,
@@ -45,7 +41,6 @@ const _residue = <String, int>{
   'lib/services/tagging/tag_generator.dart': 3,
   'lib/services/unified/modules/personal_recipe_module.dart': 3,
   'lib/services/upload/image_upload_service.dart': 1,
-  'lib/services/user_service.dart': 3,
 };
 
 final _lookup = RegExp(r'ServiceLocator\.(?:get|tryGet|isRegistered)\b');

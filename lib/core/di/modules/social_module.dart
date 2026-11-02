@@ -47,6 +47,8 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -367,6 +369,10 @@ class SocialModule implements DIModule {
         () => UserService(
           repository: container<UserRepository>(),
           authRepository: container<AuthRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
+          permissionService: () => container<PermissionService>(),
+          profileSearchability:
+              ServiceLocator.tryGet<ProfileSearchabilityService>,
         ),
       );
 

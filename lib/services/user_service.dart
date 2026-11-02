@@ -22,32 +22,32 @@ import 'package:butlery/services/account/terms_acceptance.dart';
 import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// User profile service with 30-min caching, social discovery, auth monitoring, and privacy controls.
-/// ```dart
-/// final svc = UserService(repository: ServiceLocator.get(), authRepository: ServiceLocator.get());
-/// await svc.initialize(); // Monitor auth state
-/// await svc.createOrUpdateProfile(displayName: 'John', isSearchable: true);
 class UserService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;
   final AuthRepository _authRepository;
   final FirestoreRepository _firestoreRepository;
 
+  final PermissionService Function() _permissionService;
+  final ProfileSearchabilityService? Function() _profileSearchability;
+
   UserService({
     required UserRepository repository,
     required AuthRepository authRepository,
-    FirestoreRepository? firestoreRepository,
+    required FirestoreRepository firestoreRepository,
+    required PermissionService Function() permissionService,
+    required ProfileSearchabilityService? Function() profileSearchability,
   }) : _repository = repository,
        _authRepository = authRepository,
-       _firestoreRepository =
-           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+       _firestoreRepository = firestoreRepository,
+       _permissionService = permissionService,
+       _profileSearchability = profileSearchability;
 
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
@@ -102,8 +102,7 @@ class UserService extends ChangeNotifier
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId => _permissionService().currentUserId;
 
   /// BUT-1705: the profile name and NOTHING else — no Firebase Auth fallback.
   ///
@@ -433,7 +432,7 @@ class UserService extends ChangeNotifier
   /// the distinction between "server said false" and "we never reached the
   /// server" is what lets callers avoid reporting a state they don't hold.
   Future<bool?> _callSetSearchable(bool value) async {
-    final service = ServiceLocator.tryGet<ProfileSearchabilityService>();
+    final service = _profileSearchability();
     if (service == null) {
       AppLogger.warning(
         'ProfileSearchabilityService unavailable — searchability left unchanged',
