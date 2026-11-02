@@ -1,8 +1,12 @@
 // Literals stay non-const so each test can derive from the sample freely.
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
+import 'dart:async';
+
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
+import 'package:butlery/models/tagging/ingredient_change_request.dart';
+import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
@@ -113,6 +117,15 @@ class FakeIngredientRepository implements IngredientRepository {
   }
 
   @override
+  Future<IngredientData?> getByIdFromServer(String id) async {
+    if (error != null) throw error!;
+    for (final i in items) {
+      if (i.id == id) return i;
+    }
+    return null;
+  }
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -124,4 +137,37 @@ class FakeTagConfigService extends TagConfigService {
 
   @override
   FirebaseTagConfig? get configOrNull => _config;
+}
+
+class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
+  FakeChangeRequestRepository({this.failWrites = false});
+
+  final bool failWrites;
+  final List<IngredientChangeRequest> created = [];
+  final List<List<IngredientChangeRequest>> batches = [];
+  final List<String> withdrawn = [];
+  final StreamController<List<IngredientChangeRequest>> pending =
+      StreamController<List<IngredientChangeRequest>>.broadcast();
+
+  @override
+  Future<IngredientChangeRequest> create(IngredientChangeRequest entity) async {
+    if (failWrites) throw StateError('write failed');
+    created.add(entity);
+    return entity;
+  }
+
+  @override
+  Future<void> createBatch(List<IngredientChangeRequest> entities) async {
+    if (failWrites) throw StateError('write failed');
+    batches.add(entities);
+  }
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchPending() => pending.stream;
+
+  @override
+  Future<void> withdraw(String id) async {
+    if (failWrites) throw StateError('write failed');
+    withdrawn.add(id);
+  }
 }

@@ -594,9 +594,12 @@ void main() {
     // in allowlists.
     // BUT-2463 removed two on deep_links: the clicks create's keys().hasOnly
     // (guarded in allowlists) and the update's affectedKeys().hasOnly.
+    // ingredient_change_requests added three: the create's keys().hasOnly and
+    // changesOk's column list (both guarded in allowlists), and the
+    // withdrawal's affectedKeys().hasOnly, a diff restriction.
     expect(
       'hasOnly('.allMatches(rules).length,
-      60,
+      63,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

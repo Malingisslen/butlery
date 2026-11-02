@@ -38,6 +38,9 @@ class FakeIngredientRepository implements IngredientRepository {
   Future<IngredientData?> getById(String id) async => null;
 
   @override
+  Future<IngredientData?> getByIdFromServer(String id) async => null;
+
+  @override
   Future<IngredientData?> findByName(
     String name, {
     String language = 'sv',
