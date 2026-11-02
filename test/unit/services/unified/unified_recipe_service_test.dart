@@ -28,6 +28,9 @@ import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -50,6 +53,10 @@ class MockFirebaseSharedRecipeRepository extends Mock
     implements FirebaseSharedRecipeRepository {}
 
 class MockOfflineService extends Mock implements OfflineService {}
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
+
+class _MockAuditRepository extends Mock implements FirebaseAuditRepository {}
 
 class MockTaggingService extends Mock implements TaggingService {}
 
@@ -210,6 +217,8 @@ void main() {
       OfflineService? Function()? getOfflineService,
       TaggingService? Function()? getTaggingService,
       NotificationService? Function()? getNotificationService,
+      FeatureFlagService? Function()? getFeatureFlags,
+      FirebaseAuditRepository? Function()? getAuditRepository,
     }) => UnifiedRecipeService(
       authRepository: mockAuthRepository,
       recipeRepository: mockRecipeRepository,
@@ -230,6 +239,8 @@ void main() {
       getOfflineService: getOfflineService ?? () => mockOfflineService,
       getTaggingService: getTaggingService ?? () => mockTaggingService,
       getPersonalTagService: () => mockPersonalTagService,
+      getFeatureFlags: getFeatureFlags,
+      getAuditRepository: getAuditRepository,
     );
 
     setUp(() async {
@@ -419,6 +430,73 @@ void main() {
 
         verify(() => injected.attachRecipeWriter(any())).called(1);
         verifyNever(() => inLocator.attachRecipeWriter(any()));
+        fresh.dispose();
+      });
+
+      test(
+        'a save reads the pooled-ratings switch from the injected flags',
+        () async {
+          final flags = _MockFeatureFlags();
+          when(
+            () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+          ).thenReturn(false);
+          final fresh = buildService(getFeatureFlags: () => flags);
+          await Future<void>.delayed(Duration.zero);
+
+          await fresh.saveRecipeRaw(RecipeFactory.build());
+
+          verify(
+            () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+          ).called(1);
+          fresh.dispose();
+        },
+      );
+
+      test('a created recipe writes its tag audit row through the injected '
+          'audit repository', () async {
+        final audit = _MockAuditRepository();
+        when(
+          () => audit.logTagModification(
+            userId: any(named: 'userId'),
+            recipeId: any(named: 'recipeId'),
+            previousTags: any(named: 'previousTags'),
+            newTags: any(named: 'newTags'),
+            source: any(named: 'source'),
+          ),
+        ).thenAnswer((_) async {});
+        when(() => mockTaggingService.generateTags(any())).thenAnswer(
+          (_) async => TagResult(
+            tags: const {},
+            allergenStatus: const {},
+            dietaryStatus: const {},
+            coverage: 1.0,
+            generatedAt: DateTime(2026),
+          ),
+        );
+        when(() => mockRecipeRepository.create(any())).thenAnswer(
+          (invocation) async => invocation.positionalArguments[0] as Recipe,
+        );
+        final fresh = buildService(getAuditRepository: () => audit);
+        await fresh.initialize();
+
+        await fresh.createRecipe(
+          title: 'Pannkakor',
+          description: 'Goda',
+          ingredients: ['mjölk'],
+          instructions: ['Vispa'],
+          imageUrls: [],
+          mealType: 'Lunch',
+        );
+
+        verify(
+          () => audit.logTagModification(
+            userId: any(named: 'userId'),
+            recipeId: any(named: 'recipeId'),
+            previousTags: any(named: 'previousTags'),
+            newTags: any(named: 'newTags'),
+            source: any(named: 'source'),
+          ),
+        ).called(greaterThanOrEqualTo(1));
         fresh.dispose();
       });
 

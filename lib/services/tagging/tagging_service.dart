@@ -13,6 +13,7 @@ import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/tagging_events_tracker.dart';
@@ -58,11 +59,16 @@ class TaggingService extends BaseService {
     UserIngredientRepository? userIngredientRepository,
     TaggingEventsTracker? eventsTracker,
     NutritionService? nutritionService,
+    FeatureFlagService? featureFlags,
   }) : _lookupService = lookupService,
        _permissionService = permissionService,
        _tagGenerator =
            tagGenerator ??
-           TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
+           TagGenerator(
+             firebaseConfig: tagConfigService?.configOrNull,
+             featureFlags: featureFlags,
+             getTagConfig: () => tagConfigService,
+           ),
        _userIngredientRepository = userIngredientRepository,
        _eventsTracker = eventsTracker,
        _nutritionService = nutritionService;

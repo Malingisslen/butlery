@@ -234,6 +234,9 @@ class QueueJourney {
       setError: j.errors.add,
       notifyListeners: () {},
       getServiceAdapter: MockRecipeServiceAdapter.new,
+      getFeatureFlags: () => null,
+      getRealtimeSync: () => null,
+      getAuditRepository: () => null,
       getOfflineQueue: () => j.offline,
     );
     return j;

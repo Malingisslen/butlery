@@ -1,8 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -90,7 +87,7 @@ void main() {
 
   setUp(() {
     mockLlmService = MockLlmService();
-    tier = LlmTier(llmService: mockLlmService);
+    tier = LlmTier(llmService: mockLlmService, getFeatureFlags: () => null);
   });
 
   group('LlmTier retry policy (BUT-1397)', () {
@@ -308,7 +305,7 @@ void main() {
     });
 
     test('skips when llmService is null', () {
-      final nullTier = LlmTier(llmService: null);
+      final nullTier = LlmTier(llmService: null, getFeatureFlags: () => null);
       final context = createContext();
       expect(nullTier.shouldSkip(context), isTrue);
     });
@@ -713,8 +710,7 @@ void main() {
       group('kill switch OFF (acceptance criterion 19)', () {
         // With ingredient_section_capture OFF, sections are stripped BEFORE
         // dedup so same-name rows merge exactly as pre-feature — the mirror
-        // of the 'stays two rows' test above. Registers a flag service
-        // returning false through the ServiceLocator the tier reads.
+        // of the 'stays two rows' test above.
         late _MockFeatureFlags flags;
 
         setUp(() {
@@ -722,20 +718,10 @@ void main() {
           when(
             () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
           ).thenReturn(false);
-          final getIt = GetIt.instance;
-          if (getIt.isRegistered<FeatureFlagService>()) {
-            getIt.unregister<FeatureFlagService>();
-          }
-          getIt.registerSingleton<FeatureFlagService>(flags);
-          ServiceLocator.initialize(DIContainer());
-        });
-
-        tearDown(() {
-          final getIt = GetIt.instance;
-          if (getIt.isRegistered<FeatureFlagService>()) {
-            getIt.unregister<FeatureFlagService>();
-          }
-          ServiceLocator.reset();
+          tier = LlmTier(
+            llmService: mockLlmService,
+            getFeatureFlags: () => flags,
+          );
         });
 
         test('same name+unit across sections MERGE when capture off', () async {

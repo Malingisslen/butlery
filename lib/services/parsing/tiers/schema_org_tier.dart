@@ -1,3 +1,4 @@
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 
@@ -23,8 +24,16 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   static final _unescape = HtmlUnescape();
   final IngredientParsingStrategy _ingredientStrategy;
 
-  SchemaOrgTier({IngredientParsingStrategy? ingredientStrategy})
-    : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
+  final FeatureFlagService? Function() _getFeatureFlags;
+
+  SchemaOrgTier({
+    IngredientParsingStrategy? ingredientStrategy,
+    required FeatureFlagService? Function() getFeatureFlags,
+  }) : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy(),
+       _getFeatureFlags = getFeatureFlags;
+
+  @override
+  FeatureFlagService? Function() get featureFlagsSource => _getFeatureFlags;
 
   static const tierIdentifier = 'SchemaOrg';
 

@@ -1,3 +1,4 @@
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -20,11 +21,18 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
   final IngredientParsingStrategy _ingredientStrategy;
   final NeuralLineClassifier? _neuralClassifier;
 
+  final FeatureFlagService? Function() _getFeatureFlags;
+
   RuleBasedTier({
     IngredientParsingStrategy? ingredientStrategy,
     NeuralLineClassifier? neuralClassifier,
+    required FeatureFlagService? Function() getFeatureFlags,
   }) : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy(),
-       _neuralClassifier = neuralClassifier;
+       _neuralClassifier = neuralClassifier,
+       _getFeatureFlags = getFeatureFlags;
+
+  @override
+  FeatureFlagService? Function() get featureFlagsSource => _getFeatureFlags;
 
   static const tierIdentifier = 'RuleBased';
 

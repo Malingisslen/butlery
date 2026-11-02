@@ -22,6 +22,9 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
@@ -100,6 +103,9 @@ class UnifiedRecipeService
   final TaggingService? Function()? _getTaggingService;
   final PersonalTagService? Function()? _getPersonalTagService;
   final OfflineService? Function()? _getOfflineService;
+  final FeatureFlagService? Function()? _getFeatureFlags;
+  final RealtimeSyncService? Function()? _getRealtimeSync;
+  final FirebaseAuditRepository? Function()? _getAuditRepository;
 
   // BUT-1360: Upper bound on the web cold-start direct Firebase fetch so a
   // stalled/offline `.get()` can never leave the loading skeleton spinning.
@@ -240,6 +246,9 @@ class UnifiedRecipeService
     TaggingService? Function()? getTaggingService,
     PersonalTagService? Function()? getPersonalTagService,
     OfflineService? Function()? getOfflineService,
+    FeatureFlagService? Function()? getFeatureFlags,
+    RealtimeSyncService? Function()? getRealtimeSync,
+    FirebaseAuditRepository? Function()? getAuditRepository,
     NotificationService? Function()? getNotificationService,
     Future<void> Function(String recipeId, List<String> userIds)?
     removeRecipientsFromOwnShares,
@@ -250,6 +259,9 @@ class UnifiedRecipeService
        _getTaggingService = getTaggingService,
        _getPersonalTagService = getPersonalTagService,
        _getOfflineService = getOfflineService,
+       _getFeatureFlags = getFeatureFlags,
+       _getRealtimeSync = getRealtimeSync,
+       _getAuditRepository = getAuditRepository,
        _getNotificationService = getNotificationService,
        _firestoreRepository = firestoreRepository,
        _firestore = firestoreRepository.firestore,
@@ -355,6 +367,9 @@ class UnifiedRecipeService
         _taggingFailureController.add(recipeTitle);
       },
       getOfflineQueue: _tryGetOfflineService,
+      getFeatureFlags: () => _getFeatureFlags?.call(),
+      getRealtimeSync: () => _getRealtimeSync?.call(),
+      getAuditRepository: () => _getAuditRepository?.call(),
     );
     _tryGetOfflineService()?.attachRecipeWriter(
       LazyQueuedRecipeWriter(_getServiceAdapter),

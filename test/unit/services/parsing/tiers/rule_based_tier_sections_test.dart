@@ -9,11 +9,8 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -95,7 +92,10 @@ void main() {
   test(
     'flag ON (default): the classifier sections are stamped onto lines',
     () async {
-      final tier = RuleBasedTier(ingredientStrategy: _EchoStrategy());
+      final tier = RuleBasedTier(
+        ingredientStrategy: _EchoStrategy(),
+        getFeatureFlags: () => null,
+      );
       final parsed = await sectionsOf(tier);
 
       expect(parsed.map((p) => p.name), [
@@ -115,7 +115,10 @@ void main() {
 
   test('length mismatch fails open: a strategy that drops a line leaves all '
       'sections null rather than misaligning them', () async {
-    final tier = RuleBasedTier(ingredientStrategy: _ShrinkingStrategy());
+    final tier = RuleBasedTier(
+      ingredientStrategy: _ShrinkingStrategy(),
+      getFeatureFlags: () => null,
+    );
     final parsed = await sectionsOf(tier);
 
     expect(
@@ -126,32 +129,23 @@ void main() {
   });
 
   group('kill switch OFF', () {
+    late _MockFeatureFlags flags;
+
     setUp(() {
-      final flags = _MockFeatureFlags();
+      flags = _MockFeatureFlags();
       when(
         () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
       ).thenReturn(false);
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FeatureFlagService>()) {
-        getIt.unregister<FeatureFlagService>();
-      }
-      getIt.registerSingleton<FeatureFlagService>(flags);
-      ServiceLocator.initialize(DIContainer());
-    });
-
-    tearDown(() {
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<FeatureFlagService>()) {
-        getIt.unregister<FeatureFlagService>();
-      }
-      ServiceLocator.reset();
     });
 
     test(
       'capture off ⇒ no sections stamped AND heading lines RETAINED as '
       'ingredients (Finding B: the flag fully reverts the text path)',
       () async {
-        final tier = RuleBasedTier(ingredientStrategy: _EchoStrategy());
+        final tier = RuleBasedTier(
+          ingredientStrategy: _EchoStrategy(),
+          getFeatureFlags: () => flags,
+        );
         final parsed = await sectionsOf(tier);
 
         expect(parsed, isNotEmpty);

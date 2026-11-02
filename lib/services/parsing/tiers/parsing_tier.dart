@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
@@ -45,9 +45,14 @@ abstract class ParsingTier {
   /// matching the flag's `true` default. Flip the Remote Config flag off to
   /// disable heading capture app-wide without a release.
   bool get isSectionCaptureEnabled {
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    final flags = featureFlagsSource?.call();
     return flags?.isEnabled(FeatureFlags.ingredientSectionCapture) ?? true;
   }
+
+  /// Where a capture tier reads the kill switch from; the tiers that never
+  /// capture headings leave it null.
+  @protected
+  FeatureFlagService? Function()? get featureFlagsSource => null;
 
   /// Execute the parsing logic.
   ///

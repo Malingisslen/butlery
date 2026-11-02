@@ -39,6 +39,7 @@ import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
 import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
 import 'package:butlery/services/tagging/cookbook_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
 import 'package:butlery/services/tagging/tag_resolution_service.dart';
@@ -125,6 +126,9 @@ class TaggingModule implements DIModule {
         // Weighs ingredient lines so tagging can find the main ingredients.
         nutritionService: container.isRegistered<NutritionService>()
             ? container<NutritionService>()
+            : null,
+        featureFlags: container.isRegistered<FeatureFlagService>()
+            ? container<FeatureFlagService>()
             : null,
       ),
     );

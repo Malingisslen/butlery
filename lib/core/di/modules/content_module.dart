@@ -38,6 +38,8 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
 import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Recipe repositories and interfaces
@@ -306,6 +308,16 @@ class ContentModule implements DIModule {
         getOfflineService: () => container.isRegistered<OfflineService>()
             ? container<OfflineService>()
             : null,
+        getFeatureFlags: () => container.isRegistered<FeatureFlagService>()
+            ? container<FeatureFlagService>()
+            : null,
+        getRealtimeSync: () => container.isRegistered<RealtimeSyncService>()
+            ? container<RealtimeSyncService>()
+            : null,
+        getAuditRepository: () =>
+            container.isRegistered<FirebaseAuditRepository>()
+            ? container<FirebaseAuditRepository>()
+            : null,
         getNotificationService: () =>
             container.isRegistered<NotificationService>()
             ? container<NotificationService>()
@@ -464,6 +476,9 @@ class ContentModule implements DIModule {
         llmService: container<LlmService>(),
         ingredientStrategy: app<IngredientParsingStrategy>(),
         neuralLineClassifier: app<NeuralLineClassifier>(),
+        getFeatureFlags: () => container.isRegistered<FeatureFlagService>()
+            ? container<FeatureFlagService>()
+            : null,
         cacheDao: () => app<OfflineService>().database.cacheDao,
         parseTracker: () => app<AnalyticsService>().parse,
       );

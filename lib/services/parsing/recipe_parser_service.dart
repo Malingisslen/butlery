@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/analytics/platform_bucket.dart';
 import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
@@ -190,6 +192,7 @@ class RecipeParserService extends BaseService {
     LlmService? llmService,
     IngredientParsingStrategy? ingredientStrategy,
     NeuralLineClassifier? neuralLineClassifier,
+    FeatureFlagService? Function()? getFeatureFlags,
     LocalRecipeCache? cache,
     // Test seam (BUT-1064): inject tiers directly to test orchestration logic
     // without relying on production tier implementations. When null, the
@@ -207,11 +210,15 @@ class RecipeParserService extends BaseService {
     // Shared strategy: CRF when weights available, regex fallback
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
     _ingredientStrategy = strategy;
+    FeatureFlagService? flagsSource() => getFeatureFlags?.call();
 
     _tiers =
         tiers ??
         [
-          SchemaOrgTier(ingredientStrategy: strategy),
+          SchemaOrgTier(
+            ingredientStrategy: strategy,
+            getFeatureFlags: flagsSource,
+          ),
           SiteConfigTier(
             configLoader: _siteConfigRepository?.getConfigIfExists,
             ingredientStrategy: strategy,
@@ -219,10 +226,14 @@ class RecipeParserService extends BaseService {
           RuleBasedTier(
             ingredientStrategy: strategy,
             neuralClassifier: neuralLineClassifier,
+            getFeatureFlags: flagsSource,
           ),
-          LlmTier(llmService: _llmService),
+          LlmTier(llmService: _llmService, getFeatureFlags: flagsSource),
         ];
   }
+
+  @visibleForTesting
+  List<ParsingTier> get tiers => List.unmodifiable(_tiers);
 
   /// Initialize the parser service.
   Future<void> init() async {

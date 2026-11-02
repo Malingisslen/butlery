@@ -7,11 +7,8 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -37,7 +34,6 @@ void main() {
   });
 
   setUp(() {
-    production.ServiceLocator.initialize(DIContainer());
     audit = _MockAuditRepository();
     // Never completes, like a Firestore write made offline.
     when(
@@ -49,7 +45,6 @@ void main() {
         source: any(named: 'source'),
       ),
     ).thenAnswer((_) => Completer<void>().future);
-    GetIt.instance.registerSingleton<FirebaseAuditRepository>(audit);
 
     tagging = _MockTaggingService();
     when(() => tagging.generateTags(any())).thenAnswer(
@@ -70,13 +65,11 @@ void main() {
       setError: (_) {},
       notifyListeners: () {},
       getServiceAdapter: MockRecipeServiceAdapter.new,
+      getFeatureFlags: () => null,
+      getRealtimeSync: () => null,
+      getAuditRepository: () => audit,
       taggingService: tagging,
     );
-  });
-
-  tearDown(() async {
-    await GetIt.instance.unregister<FirebaseAuditRepository>();
-    production.ServiceLocator.reset();
   });
 
   tearDownAll(() async {
