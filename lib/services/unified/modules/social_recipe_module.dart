@@ -79,10 +79,10 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
+    required ShareRecipientFilter filterShareRecipients,
     required RecipeServiceAdapter serviceAdapter,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FriendCategory? Function(String groupId) findFriendGroup,
-    required ShareRecipientFilter filterShareRecipients,
   }) {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
