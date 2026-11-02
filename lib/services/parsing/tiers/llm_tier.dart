@@ -1,3 +1,4 @@
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:clock/clock.dart';
 import 'dart:convert';
 
@@ -37,9 +38,15 @@ class LlmTier extends ParsingTier with QualityScoring {
   /// LLM service for making extraction calls.
   final LlmService? llmService;
 
+  final FeatureFlagService? Function() _getFeatureFlags;
+
   LlmTier({
     this.llmService,
-  });
+    required FeatureFlagService? Function() getFeatureFlags,
+  }) : _getFeatureFlags = getFeatureFlags;
+
+  @override
+  FeatureFlagService? Function() get featureFlagsSource => _getFeatureFlags;
 
   static const tierIdentifier = 'LLM';
   static const _maxTextLength = 15000;

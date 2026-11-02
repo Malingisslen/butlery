@@ -23,12 +23,9 @@ const _residue = <String, int>{
   'lib/services/deep_link_service.dart': 3,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/parsing/feedback/import_correction_snapshot.dart': 1,
-  'lib/services/parsing/tiers/parsing_tier.dart': 1,
   'lib/services/pwa_install_service_web.dart': 2,
   'lib/services/social/blocking/blocked_user_filter.dart': 1,
   'lib/services/tagging/tag_editing_service.dart': 1,
-  'lib/services/tagging/tag_generator.dart': 3,
-  'lib/services/unified/modules/personal_recipe_module.dart': 3,
 };
 
 final _lookup = RegExp(r'ServiceLocator\.(?:get|tryGet|isRegistered)\b');

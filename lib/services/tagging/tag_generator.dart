@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
@@ -68,6 +67,8 @@ class TagGenerator {
   /// this (the version hash is not monotonic, so a rollback also counts).
   final int? _bootConfigVersion;
 
+  final TagConfigService? Function()? _getTagConfig;
+
   /// BUT-1483: True only when this generator built [_phase1] and [_phase5]
   /// itself from config — i.e. neither was injected. When a caller injects
   /// either phase (tests), [resolveConfigPhases] must never rebuild over
@@ -94,10 +95,13 @@ class TagGenerator {
     TagPhase3Complex? phase3,
     TagPhase4Mood? phase4,
     TagPhase5Cuisine? phase5,
-  }) : _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
+    FeatureFlagService? featureFlags,
+    TagConfigService? Function()? getTagConfig,
+  }) : _getTagConfig = getTagConfig,
+       _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
        _phase2 = phase2 ?? TagPhase2Derived(),
-       _phase3 = phase3 ?? _createPhase3(),
-       _phase4 = phase4 ?? _createPhase4(),
+       _phase3 = phase3 ?? _createPhase3(featureFlags),
+       _phase4 = phase4 ?? _createPhase4(featureFlags),
        _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig),
        _bootConfigVersion = firebaseConfig?.combinedVersion,
        _canRebuildConfigPhases = phase1 == null && phase5 == null;
@@ -122,9 +126,7 @@ class TagGenerator {
   /// consistent config version.
   ///
   /// Returns the boot phases when they were injected (tests) or no different
-  /// live config is available. Resolving [TagConfigService] via
-  /// [ServiceLocator] mirrors how [_createPhase3]/[_createPhase4] resolve
-  /// [FeatureFlagService], keeping the wiring self-contained in this file.
+  /// live config is available.
   ConfigBackedPhases resolveConfigPhases() {
     // BUT-1482: configVersion tracks the config revision each returned pair was
     // built from, so [generate]/[assembleResult] can stamp it onto the result.
@@ -135,7 +137,7 @@ class TagGenerator {
         configVersion: _bootConfigVersion,
       );
     }
-    final live = ServiceLocator.tryGet<TagConfigService>()?.configOrNull;
+    final live = _getTagConfig?.call()?.configOrNull;
     if (live == null || live.combinedVersion == _bootConfigVersion) {
       return (
         phase1: _phase1,
@@ -261,8 +263,7 @@ class TagGenerator {
     );
   }
 
-  static TagPhase3Complex _createPhase3() {
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+  static TagPhase3Complex _createPhase3(FeatureFlagService? flags) {
     if (flags == null) return TagPhase3Complex();
     return TagPhase3Complex(
       easyMaxIngredients: flags.getInt(FeatureFlags.tagEasyMaxIngredients),
@@ -279,8 +280,7 @@ class TagGenerator {
     );
   }
 
-  static TagPhase4Mood _createPhase4() {
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+  static TagPhase4Mood _createPhase4(FeatureFlagService? flags) {
     if (flags == null) return TagPhase4Mood();
     return TagPhase4Mood(
       seasonThreshold: flags.getInt(FeatureFlags.tagSeasonThreshold),

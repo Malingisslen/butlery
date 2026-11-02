@@ -15,6 +15,10 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/parsing/tiers/llm_tier.dart';
+import 'package:butlery/services/parsing/tiers/rule_based_tier.dart';
+import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -56,6 +60,8 @@ class _ParseTracker extends Fake implements ParseEventsTracker {
 }
 
 class _Llm extends Mock implements LlmService {}
+
+class _Flags extends Mock implements FeatureFlagService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -136,6 +142,29 @@ void main() {
       );
 
       expect(tracker.reported, greaterThan(0));
+    },
+  );
+
+  test(
+    'every heading-capture tier reads the kill switch from the app flags',
+    () async {
+      final flags = _Flags();
+      when(
+        () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
+      ).thenReturn(false);
+      userScope.registerSingleton<FeatureFlagService>(flags);
+
+      final parser = await buildParser();
+      await parser.init();
+
+      final capture = parser.tiers.where(
+        (t) => t is SchemaOrgTier || t is RuleBasedTier || t is LlmTier,
+      );
+      expect(capture, hasLength(3));
+      expect(
+        capture.map((t) => t.isSectionCaptureEnabled),
+        everyElement(false),
+      );
     },
   );
 }

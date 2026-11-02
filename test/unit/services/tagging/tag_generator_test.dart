@@ -3,14 +3,12 @@ import 'dart:io';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    show ServiceLocator;
+import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
@@ -21,6 +19,8 @@ import '../../../infrastructure/helpers/tagging_test_helper.dart';
 /// BUT-1483: a [TagConfigService] test double whose config arrives *after*
 /// construction — mirrors the real boot race where [TagGenerator] is built
 /// before [TagConfigService] finishes its late Firebase load.
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
+
 class _LateArrivingTagConfigService extends TagConfigService {
   FirebaseTagConfig? _late;
 
@@ -1694,6 +1694,26 @@ void main() {
 
         // Phase 3 complexity tag
         expect(result.hasTag('enkel'), isTrue);
+      });
+
+      test('thresholds come from the injected feature flags', () {
+        final flags = _MockFeatureFlags();
+        when(() => flags.getInt(any())).thenReturn(5);
+        final strict = TagGenerator(featureFlags: flags);
+        final recipe = RecipeBuilder()
+            .withTitle('Simple Salad')
+            .withTimeMinutes(10)
+            .withIngredients(['lettuce', 'tomato', 'cucumber'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('lettuce', 'vegetable', {}),
+          TaggingTestHelper.ingredient('tomato', 'vegetable', {}),
+          TaggingTestHelper.ingredient('cucumber', 'vegetable', {}),
+        ]);
+
+        final result = strict.generate(ingredients: lookup, recipe: recipe);
+
+        expect(result.hasTag('enkel'), isFalse);
       });
 
       test('result includes Phase 4 mood tags when all phases complete', () {
@@ -3479,15 +3499,6 @@ void main() {
 
     setUp(() {
       configService = _LateArrivingTagConfigService();
-      GetIt.instance.registerSingleton<TagConfigService>(configService);
-      ServiceLocator.initialize(DIContainer());
-    });
-
-    tearDown(() {
-      ServiceLocator.reset();
-      if (GetIt.instance.isRegistered<TagConfigService>()) {
-        GetIt.instance.unregister<TagConfigService>();
-      }
     });
 
     test(
@@ -3495,7 +3506,7 @@ void main() {
       () {
         // Built during "boot": no live config yet (configOrNull == null), so
         // the config-backed phases start on the static fallback.
-        final generator = TagGenerator();
+        final generator = TagGenerator(getTagConfig: () => configService);
         final recipe = RecipeBuilder()
             .withTitle('Zzcuisine Testrätt')
             .withIngredients(['ris'])
@@ -3574,6 +3585,7 @@ void main() {
         // late config must not change this generator's output.
         final generator = TagGenerator(
           phase5: TagPhase5Cuisine(firebaseConfig: null),
+          getTagConfig: () => configService,
         );
         final recipe = RecipeBuilder()
             .withTitle('Zzcuisine Testrätt')
@@ -3602,7 +3614,10 @@ void main() {
       () {
         // Built WITH the marker config, so phase 5 already emits testkök.
         final markerConfig = _lateConfigWithMarkerCuisine();
-        final generator = TagGenerator(firebaseConfig: markerConfig);
+        final generator = TagGenerator(
+          firebaseConfig: markerConfig,
+          getTagConfig: () => configService,
+        );
         final recipe = RecipeBuilder()
             .withTitle('Zzcuisine Testrätt')
             .withIngredients(['ris'])
@@ -3643,7 +3658,7 @@ void main() {
         // This is the core of the cross-recipe fix: a run captures its phase
         // pair once, so a config that arrives mid-run (another recipe rebuild)
         // cannot swap phase 5 out from under it.
-        final generator = TagGenerator();
+        final generator = TagGenerator(getTagConfig: () => configService);
         final recipe = RecipeBuilder()
             .withTitle('Zzcuisine Testrätt')
             .withIngredients(['ris'])

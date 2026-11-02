@@ -24,7 +24,6 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
@@ -55,6 +54,9 @@ class PersonalRecipeModule {
   final TaggingService? _taggingService;
   final IngredientIdResolver? _ingredientIdResolver;
   final PersonalTagService? _personalTagService;
+  final FeatureFlagService? Function() _getFeatureFlags;
+  final RealtimeSyncService? Function() _getRealtimeSync;
+  final FirebaseAuditRepository? Function() _getAuditRepository;
 
   /// BUT-2162: the offline queue every create, update and delete goes
   /// through when the device has one. Without it (the web, or a device
@@ -126,6 +128,9 @@ class PersonalRecipeModule {
     required void Function(String) setError,
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
+    required FeatureFlagService? Function() getFeatureFlags,
+    required RealtimeSyncService? Function() getRealtimeSync,
+    required FirebaseAuditRepository? Function() getAuditRepository,
     TaggingService? taggingService,
     IngredientIdResolver? ingredientIdResolver,
     PersonalTagService? personalTagService,
@@ -134,6 +139,9 @@ class PersonalRecipeModule {
     Future<void> Function(Recipe local, Recipe remote)? onRevisionConflict,
   }) : _onRevisionConflict = onRevisionConflict,
        _getOfflineQueue = getOfflineQueue ?? _noOfflineQueue,
+       _getFeatureFlags = getFeatureFlags,
+       _getRealtimeSync = getRealtimeSync,
+       _getAuditRepository = getAuditRepository,
        _recipeRepository = recipeRepository,
        _getCacheHelper = getCacheHelper,
        _getCurrentUserId = getCurrentUserId,
@@ -454,7 +462,7 @@ class PersonalRecipeModule {
     // server stays authoritative for actual pool routing. Null poolKey =
     // fail-closed (generic/no-anchor dish) — display falls back to the per-copy.
     final pooledOn =
-        ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
+        _getFeatureFlags()?.isEnabled(
           FeatureFlags.enablePooledRatings,
         ) ??
         false;
@@ -692,8 +700,7 @@ class PersonalRecipeModule {
       try {
         final announce =
             _onRevisionConflict ??
-            ServiceLocator.tryGet<RealtimeSyncService>()
-                ?.announceQueuedRecipeConflict;
+            _getRealtimeSync()?.announceQueuedRecipeConflict;
         await announce?.call(recipe, remote);
       } catch (e) {
         AppLogger.error('❌ [Web] conflict notice failed for ${recipe.id}: $e');
@@ -824,8 +831,7 @@ class PersonalRecipeModule {
     if (userId == null) return;
 
     try {
-      final auditRepository = ServiceLocator.get<FirebaseAuditRepository>();
-      await auditRepository.logTagModification(
+      await _getAuditRepository()?.logTagModification(
         userId: userId,
         recipeId: recipe.id,
         previousTags: previousTags?.toFirestore(),

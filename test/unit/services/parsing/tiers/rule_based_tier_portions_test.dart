@@ -30,7 +30,10 @@ class _EchoStrategy extends IngredientParsingStrategy {
 }
 
 Future<FieldResult<int>> portionsOf(String text) async {
-  final tier = RuleBasedTier(ingredientStrategy: _EchoStrategy());
+  final tier = RuleBasedTier(
+    ingredientStrategy: _EchoStrategy(),
+    getFeatureFlags: () => null,
+  );
   final result = await tier.parse(
     ParsingContext.fromText(
       text: text,

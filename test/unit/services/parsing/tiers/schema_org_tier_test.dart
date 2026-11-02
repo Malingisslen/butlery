@@ -19,11 +19,8 @@
 /// - Cuisine/category accept string or first element of List.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -132,7 +129,10 @@ void main() {
 
   setUp(() {
     strategy = _RecordingStrategy();
-    tier = SchemaOrgTier(ingredientStrategy: strategy);
+    tier = SchemaOrgTier(
+      ingredientStrategy: strategy,
+      getFeatureFlags: () => null,
+    );
   });
 
   // ----- shouldSkip contract -------------------------------------------------
@@ -984,6 +984,7 @@ void main() {
         'stamped rather than misaligned', () async {
       final shrinkTier = SchemaOrgTier(
         ingredientStrategy: _ShrinkingStrategy(),
+        getFeatureFlags: () => null,
       );
       final result = await shrinkTier.parse(urlContextFor(groupedHtml()));
 
@@ -1032,20 +1033,10 @@ void main() {
         when(
           () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
         ).thenReturn(false);
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<FeatureFlagService>()) {
-          getIt.unregister<FeatureFlagService>();
-        }
-        getIt.registerSingleton<FeatureFlagService>(flags);
-        ServiceLocator.initialize(DIContainer());
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<FeatureFlagService>()) {
-          getIt.unregister<FeatureFlagService>();
-        }
-        ServiceLocator.reset();
+        tier = SchemaOrgTier(
+          ingredientStrategy: strategy,
+          getFeatureFlags: () => flags,
+        );
       });
 
       test('capture off ⇒ a block title entry still leaves the list', () async {

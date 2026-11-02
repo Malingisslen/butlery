@@ -50,8 +50,8 @@ void main() {
   final file = File('test/golden/parsing_golden_dataset.json');
   final dataset = jsonDecode(file.readAsStringSync()) as List;
 
-  final schemaOrgTier = SchemaOrgTier();
-  final ruleBasedTier = RuleBasedTier();
+  final schemaOrgTier = SchemaOrgTier(getFeatureFlags: () => null);
+  final ruleBasedTier = RuleBasedTier(getFeatureFlags: () => null);
   final merger = RecipeMerger();
 
   final fixtures = <String, String>{
@@ -283,7 +283,7 @@ Future<dynamic> _runLlm({
       recipe: ExtractedRecipe.fromJson(mockJson),
       estimatedCost: 0.01,
     );
-  final tier = LlmTier(llmService: mockService);
+  final tier = LlmTier(llmService: mockService, getFeatureFlags: () => null);
 
   final context = ParsingContext.fromText(
     text: text,

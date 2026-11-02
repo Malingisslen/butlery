@@ -13,10 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/ingredients/ingredient_id_resolver.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
@@ -70,6 +69,9 @@ void main() {
         setError: (error) => lastError = error,
         notifyListeners: () => notifyListenersCalled++,
         getServiceAdapter: () => mockServiceAdapter,
+        getFeatureFlags: () => null,
+        getRealtimeSync: () => null,
+        getAuditRepository: () => null,
       );
 
       testRecipe = RecipeFactory.build(
@@ -200,6 +202,9 @@ void main() {
               setError: (error) => lastError = error,
               notifyListeners: () => notifyListenersCalled++,
               getServiceAdapter: () => mockServiceAdapter,
+              getFeatureFlags: () => null,
+              getRealtimeSync: () => null,
+              getAuditRepository: () => null,
               ingredientIdResolver: resolver,
             );
 
@@ -575,6 +580,9 @@ void main() {
           setError: (error) => lastError = error,
           notifyListeners: () => notifyListenersCalled++,
           getServiceAdapter: () => adapter,
+          getFeatureFlags: () => null,
+          getRealtimeSync: () => null,
+          getAuditRepository: () => null,
         );
 
         await module.saveRecipeRaw(testRecipe);
@@ -615,6 +623,9 @@ void main() {
           setError: (error) => lastError = error,
           notifyListeners: () => notifyListenersCalled++,
           getServiceAdapter: () => adapter,
+          getFeatureFlags: () => null,
+          getRealtimeSync: () => null,
+          getAuditRepository: () => null,
           getOfflineQueue: () => queue,
         );
       });
@@ -660,6 +671,9 @@ void main() {
           setError: (error) => lastError = error,
           notifyListeners: () => notifyListenersCalled++,
           getServiceAdapter: () => adapter,
+          getFeatureFlags: () => null,
+          getRealtimeSync: () => null,
+          getAuditRepository: () => null,
           getOfflineQueue: () => queue,
           taggingService: tagging,
         );
@@ -730,6 +744,9 @@ void main() {
         setError: (error) => lastError = error,
         notifyListeners: () => notifyListenersCalled++,
         getServiceAdapter: () => adapter,
+        getFeatureFlags: () => null,
+        getRealtimeSync: () => null,
+        getAuditRepository: () => null,
         onRevisionConflict: (local, remote) async {
           announced.add((local, remote));
           if (announceFails) throw StateError('no banner');
@@ -784,8 +801,6 @@ void main() {
           when(
             () => realtime.announceQueuedRecipeConflict(any(), any()),
           ).thenAnswer((_) async {});
-          prod.ServiceLocator.initialize(DIContainer());
-          TestServiceLocator.registerMock<RealtimeSyncService>(realtime);
           adapter.conflictWith = remote;
           final web = PersonalRecipeModule(
             recipeRepository: mockRepository,
@@ -795,6 +810,9 @@ void main() {
             setError: (error) => lastError = error,
             notifyListeners: () => notifyListenersCalled++,
             getServiceAdapter: () => adapter,
+            getFeatureFlags: () => null,
+            getRealtimeSync: () => realtime,
+            getAuditRepository: () => null,
           );
 
           await web.saveRecipeRaw(testRecipe);
@@ -803,6 +821,34 @@ void main() {
             () => realtime.announceQueuedRecipeConflict(testRecipe, remote),
           ).called(1);
           expect(announced, isEmpty);
+        },
+      );
+
+      test(
+        'a save reads the pooled-ratings switch from the injected flags',
+        () async {
+          final flags = _MockFeatureFlagService();
+          when(
+            () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+          ).thenReturn(false);
+          final web = PersonalRecipeModule(
+            recipeRepository: mockRepository,
+            getCacheHelper: () => mockCacheHelper,
+            getCurrentUserId: () => currentUserId,
+            getCurrentUserDisplayName: () => currentUserDisplayName,
+            setError: (error) => lastError = error,
+            notifyListeners: () => notifyListenersCalled++,
+            getServiceAdapter: () => adapter,
+            getFeatureFlags: () => flags,
+            getRealtimeSync: () => null,
+            getAuditRepository: () => null,
+          );
+
+          await web.saveRecipeRaw(testRecipe);
+
+          verify(
+            () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+          ).called(1);
         },
       );
 
@@ -871,6 +917,8 @@ void main() {
 }
 
 class _MockOfflineQueue extends Mock implements OfflineService {}
+
+class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
