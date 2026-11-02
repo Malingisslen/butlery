@@ -32,7 +32,9 @@ void main() {
     late PwaInstallService service;
 
     setUp(() {
-      service = PwaInstallService();
+      service = PwaInstallService(
+        persistence: () => throw StateError('web only'),
+      );
     });
 
     // Intent: proves canPromptInstall is always false on non-web platforms

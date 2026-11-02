@@ -1,4 +1,6 @@
 // lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    show ShareRecipientFilter;
 import 'dart:async';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -62,6 +64,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     required RecipeServiceAdapter serviceAdapter,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FriendCategory? Function(String groupId) findFriendGroup,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _serviceAdapter = serviceAdapter,
        _sharedRecipeRepository = sharedRecipeRepository,
        _getCurrentUserId = getCurrentUserId {
@@ -95,6 +98,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       saveRecipe: saveRecipe,
       sharedRecipeRepository: _sharedRecipeRepository,
       findFriendGroup: findFriendGroup,
+      filterShareRecipients: filterShareRecipients,
     );
 
     _permissionService = SocialRecipePermissionService(

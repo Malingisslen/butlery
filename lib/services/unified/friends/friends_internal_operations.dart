@@ -31,11 +31,15 @@ class FriendsInternalOperations {
     required PermissionService permissionService,
     required FriendsRepository friendsRepository,
     required UserService userService,
+    required ShortUrlGenerator generateShortUrl,
   }) : _categoryRepository = categoryRepository,
        _authRepository = authRepository,
        _permissionService = permissionService,
        _friendsRepository = friendsRepository,
-       _userService = userService;
+       _userService = userService,
+       _generateShortUrl = generateShortUrl;
+
+  final ShortUrlGenerator _generateShortUrl;
 
   /// Set state manager reference after initialization
   void setStateManager(FriendsStateManager stateManager) {
@@ -330,7 +334,7 @@ class FriendsInternalOperations {
       invitationId: invitationId,
       fromUserId: userId,
     );
-    return DeepLinkService.generateShortUrl(longUrl);
+    return _generateShortUrl(longUrl);
   }
 
   Future<void> updateInvitationStatusInternal(

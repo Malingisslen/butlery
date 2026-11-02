@@ -49,6 +49,8 @@ void main() {
         firestoreRepository: mockFirestoreRepository,
         permissionService: mockPermissionService,
         userService: MockUserService(),
+        generateShortUrl: (url) async => url,
+        filterShareRecipients: (ids) async => ids,
       );
 
       // Replace internal social module with mock to avoid

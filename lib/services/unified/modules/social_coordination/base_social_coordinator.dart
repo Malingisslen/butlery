@@ -52,13 +52,17 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   // continuation would call notifyListeners()/setError on a dead ViewModel.
   bool _disposed = false;
 
+  final ShareRecipientFilter _filterShareRecipients;
+
   BaseSocialCoordinator({
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
     required user_service.UserService userService,
+    required ShareRecipientFilter filterShareRecipients,
   }) : _getCurrentUserId = getCurrentUserId,
+       _filterShareRecipients = filterShareRecipients,
        _userService = userService,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _rawSetError = setError,
@@ -135,7 +139,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
 
     try {
       // BUT-2169: nothing new is shared across a block, in either direction.
-      inviteeUserIds = await BlockedUserFilter.shareRecipients(inviteeUserIds);
+      inviteeUserIds = await _filterShareRecipients(inviteeUserIds);
       if (inviteeUserIds.isEmpty) return null;
       AppLogger.info(
         '📨 Creating $contentTypeName invitation for $contentId to ${inviteeUserIds.length} users',

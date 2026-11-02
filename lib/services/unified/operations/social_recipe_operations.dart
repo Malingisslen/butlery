@@ -78,6 +78,7 @@ class SocialRecipeOperations {
       permissionService: permissionService,
       userService: userService,
       activityFeedService: activityFeedService,
+      blockedUserFilter: blockedUserFilter,
       onShareError: onShareError,
     );
     _memberManager = RecipeMemberManager(

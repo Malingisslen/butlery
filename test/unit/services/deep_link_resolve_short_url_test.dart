@@ -13,15 +13,16 @@ import '../../test_support/base_unit_test.dart';
 
 void main() {
   late MockDeepLinkRepository repository;
+  late DeepLinkService service;
 
   setUp(() async {
-    // Without the production locator the static method returns null before it
-    // reaches the repository.
     await BaseUnitTest.setupUnitWithProductionLocator();
     repository = MockDeepLinkRepository();
-    TestServiceLocator.registerMock<DeepLinkService>(
-      DeepLinkService(deepLinkRepository: repository),
+    service = DeepLinkService(
+      deepLinkRepository: repository,
+      isAuthenticated: () => true,
     );
+    TestServiceLocator.registerMock<DeepLinkService>(service);
   });
 
   tearDown(() async {
@@ -34,7 +35,7 @@ void main() {
       () => repository.getLongUrl('Ab3dE5gH'),
     ).thenAnswer((_) async => 'https://butlery.se/recipe?id=abc');
 
-    final longUrl = await DeepLinkService.resolveShortUrl('Ab3dE5gH');
+    final longUrl = await service.resolveShortUrl('Ab3dE5gH');
 
     expect(longUrl, 'https://butlery.se/recipe?id=abc');
     verify(() => repository.getLongUrl('Ab3dE5gH')).called(1);
@@ -46,7 +47,7 @@ void main() {
       () => repository.getLongUrl('Zz9Zz9Zz'),
     ).thenAnswer((_) async => null);
 
-    expect(await DeepLinkService.resolveShortUrl('Zz9Zz9Zz'), isNull);
+    expect(await service.resolveShortUrl('Zz9Zz9Zz'), isNull);
   });
 
   test('a failing lookup resolves to null', () async {
@@ -54,6 +55,6 @@ void main() {
       () => repository.getLongUrl('Ab3dE5gH'),
     ).thenAnswer((_) async => throw Exception('Database error'));
 
-    expect(await DeepLinkService.resolveShortUrl('Ab3dE5gH'), isNull);
+    expect(await service.resolveShortUrl('Ab3dE5gH'), isNull);
   });
 }

@@ -1,8 +1,12 @@
 import 'dart:async';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+
+/// What a sharing service is handed so it can drop people a block stands
+/// between before it writes a share.
+typedef ShareRecipientFilter =
+    Future<List<String>> Function(List<String> recipientIds);
 
 /// Shared block-aware predicate used by comment + chat read paths to
 /// retroactively hide content authored by users the viewer has blocked.
@@ -151,12 +155,12 @@ class BlockedUserFilter {
         .toList();
   }
 
-  /// [withoutBlocksEitherWay] through the registered filter, or [recipientIds]
-  /// unchanged when none is registered.
-  static Future<List<String>> shareRecipients(
+  /// [withoutBlocksEitherWay] through [filter], or [recipientIds] unchanged
+  /// when there is none.
+  static Future<List<String>> filterShareRecipients(
+    BlockedUserFilter? filter,
     List<String> recipientIds,
   ) async {
-    final filter = ServiceLocator.tryGet<BlockedUserFilter>();
     if (filter == null) {
       AppLogger.warning('[BlockedUserFilter] not registered; share unfiltered');
       return recipientIds;

@@ -209,7 +209,7 @@
 - Pure decisions locked in a DI-heavy widget → extract `@visibleForTesting static`, not a DI bridge.
   When the SAME behaviour is re-implemented in 2+ classes, demand a test PER COPY.
 - An OPT-IN parameter gating a SECURITY behaviour is OFF everywhere until a `lib/` caller passes it —
-  grep the name in `lib/` and `test/` separately; "test-only hits" IS the finding.
+  grep the name in `lib/` and `test/` separately; "test-only hits" IS the finding. After a locator→constructor move every consumer suite injecting identity `(ids) async => ids` leaves the call deletable-green: one non-identity stub per consumer (BUT-1508).
 - READ THE MUTATED LINE BACK before believing a red count — a shell heredoc can mangle backslashes
   silently. Write probes with the Write tool, raw Dart strings, never a bash heredoc. Never pipe a
   mutation driver into `head` (SIGPIPE kills its own cleanup).

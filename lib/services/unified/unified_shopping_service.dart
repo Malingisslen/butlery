@@ -2,6 +2,9 @@
 /// Implements facade pattern coordinating personal operations, collaborative sharing,
 /// and real-time synchronization with Firebase.
 
+import 'package:butlery/services/deep_link_service.dart' show ShortUrlGenerator;
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    show ShareRecipientFilter;
 import 'dart:async';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:rxdart/rxdart.dart';
@@ -78,6 +81,8 @@ class UnifiedShoppingService
   final UnifiedFriendsService Function() _getFriendsService;
   final OfflineService Function() _getOfflineService;
   final IngredientLookupService Function() _getLookupService;
+  final ShortUrlGenerator _generateShortUrl;
+  final ShareRecipientFilter _filterShareRecipients;
   JsonCacheHelper? _cacheHelper;
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
@@ -102,6 +107,8 @@ class UnifiedShoppingService
         firestoreRepository: _firestoreRepository,
         permissionService: _permissionService,
         userService: _userService,
+        generateShortUrl: _generateShortUrl,
+        filterShareRecipients: _filterShareRecipients,
       );
   ShoppingShareOperations? __shareOps;
 
@@ -123,6 +130,8 @@ class UnifiedShoppingService
     required UnifiedFriendsService Function() getFriendsService,
     required OfflineService Function() getOfflineService,
     required IngredientLookupService Function() getLookupService,
+    required ShortUrlGenerator generateShortUrl,
+    required ShareRecipientFilter filterShareRecipients,
     AnalyticsService? Function()? getAnalyticsService,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
@@ -133,6 +142,8 @@ class UnifiedShoppingService
        _getFriendsService = getFriendsService,
        _getOfflineService = getOfflineService,
        _getLookupService = getLookupService,
+       _generateShortUrl = generateShortUrl,
+       _filterShareRecipients = filterShareRecipients,
        _getAnalyticsService = getAnalyticsService {
     _initializeModules();
   }

@@ -57,6 +57,7 @@ void main() {
           TestServiceLocator.get<PermissionService>() as FakePermissionService;
 
       socialOps = SocialMenuOperations(
+        filterShareRecipients: (ids) async => ids,
         firestore: fakeFirestore,
         friendsService: mockFriendsService,
         permissionService: mockPermissionService,

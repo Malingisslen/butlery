@@ -12,6 +12,7 @@
 ///   when `isGroup` is false. No path closes a poll and shares a menu.
 library;
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -292,6 +293,7 @@ void main() {
     ).thenAnswer((_) async => true);
 
     service = MessagingService(
+      attribution: attributionSourceFromLocator(),
       messagingRepository: messagingRepo,
       chatGroupRepository: chatGroupRepo,
       authRepository: authRepo,

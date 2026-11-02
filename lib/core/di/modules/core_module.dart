@@ -19,6 +19,7 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 
 // Repositories and interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
@@ -190,6 +191,11 @@ class CoreModule implements DIModule {
 
       // Feature flags for gradual rollouts and kill switches
       container.registerSingleton<FeatureFlagService>(FeatureFlagService());
+      OCRExtractionService.bindFeatureFlags(
+        () => container.isRegistered<FeatureFlagService>()
+            ? container<FeatureFlagService>()
+            : null,
+      );
 
       // Core repositories form the foundation of the data access layer
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
@@ -233,6 +239,11 @@ class CoreModule implements DIModule {
           repository: container<AnalyticsRepository>(),
           winbackAttribution: () => container<WinbackAttributionService>(),
         ),
+      );
+      AnalyticsService.bindTryLog(
+        () => container.isRegistered<AnalyticsService>()
+            ? container<AnalyticsService>()
+            : null,
       );
 
       // BUT-639/830: lifecycle-stage emitter. Single instance shared by
@@ -420,7 +431,9 @@ class CoreModule implements DIModule {
 
       // PWA install service (web only, lazy)
       container.registerLazySingleton<PwaInstallService>(
-        () => PwaInstallService(),
+        () => PwaInstallService(
+          persistence: () => container<PersistenceService>(),
+        ),
       );
 
       // Beta feedback services

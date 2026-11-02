@@ -3,8 +3,10 @@ library;
 
 import 'package:get_it/get_it.dart';
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
+import 'package:butlery/core/di/share_links_from_locator.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -183,6 +185,8 @@ class CollaborationModule implements DIModule {
         getFriendsService: () => container<UnifiedFriendsService>(),
         getOfflineService: () => container<OfflineService>(),
         getLookupService: () => container<IngredientLookupService>(),
+        generateShortUrl: shortUrlFromLocator,
+        filterShareRecipients: shareRecipientsFromLocator,
       ),
       dispose: (s) => s.resetForLogout(),
     );
@@ -198,6 +202,7 @@ class CollaborationModule implements DIModule {
       () => FirebaseShoppingPresenceModule(
         repository: container<FirebaseShoppingPresenceRepository>(),
         permissionService: container<PermissionService>(),
+        attribution: attributionSourceFromLocator(),
       ),
       dispose: (m) => m.dispose(),
     );

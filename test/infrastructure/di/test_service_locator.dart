@@ -199,6 +199,7 @@ class TestServiceLocator {
         // it passed Type objects to isRegistered(instance:), which always
         // returned false).
         await ServiceLocator._getIt.reset(dispose: true);
+        AnalyticsService.unbindTryLog();
         ServiceLocator._initialized = false;
 
         // BUT-1155: no real-timer await here. `reset()` runs inside the
@@ -442,6 +443,11 @@ class TestServiceLocator {
     // Analytics Service
     getIt.registerSingleton<AnalyticsService>(
       MockFactory.createAnalyticsService(),
+    );
+    AnalyticsService.bindTryLog(
+      () => getIt.isRegistered<AnalyticsService>()
+          ? getIt<AnalyticsService>()
+          : null,
     );
 
     // Storage Service

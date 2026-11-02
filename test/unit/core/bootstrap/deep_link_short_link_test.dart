@@ -47,7 +47,10 @@ void main() {
     deepLinks = MockDeepLinkRepository();
     recipes = MockRecipeRepository();
     TestServiceLocator.registerMock<DeepLinkService>(
-      DeepLinkService(deepLinkRepository: deepLinks),
+      DeepLinkService(
+        deepLinkRepository: deepLinks,
+        isAuthenticated: () => true,
+      ),
     );
     TestServiceLocator.registerMock<RecipeRepository>(recipes);
     when(() => recipes.read(recipeId)).thenAnswer(

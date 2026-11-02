@@ -11,6 +11,7 @@ library;
 import 'package:get_it/get_it.dart';
 
 // Core interfaces
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
@@ -119,6 +120,7 @@ class MessagingModule implements DIModule {
         weeklyPlanService: ServiceLocator.tryGet<WeeklyMenuPlanService>,
         groupPlanService: ServiceLocator.tryGet<GroupWeeklyMenuPlanService>,
         recipeService: ServiceLocator.tryGet<UnifiedRecipeService>,
+        attribution: attributionSourceFromLocator(),
       ),
     );
 

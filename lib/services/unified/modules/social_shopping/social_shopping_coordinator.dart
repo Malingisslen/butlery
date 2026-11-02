@@ -73,6 +73,7 @@ class SocialShoppingCoordinator
     required super.setError,
     required super.notifyListeners,
     required super.userService,
+    required super.filterShareRecipients,
     required Future<UnifiedShoppingList?> Function(String) getShoppingList,
     required Future<String?> Function(UnifiedShoppingList) saveShoppingList,
     required ShoppingListServiceAdapter serviceAdapter,

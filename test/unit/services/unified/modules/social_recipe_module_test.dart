@@ -89,6 +89,7 @@ void main() {
       recipeDatabase[collaborativeRecipe.id] = collaborativeRecipe;
 
       module = SocialRecipeModule(
+        filterShareRecipients: (ids) async => ids,
         getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -218,6 +219,7 @@ void main() {
           ),
         ).thenAnswer((_) async => 'shared-doc');
         final withGroups = SocialRecipeModule(
+          filterShareRecipients: (ids) async => ids,
           getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,

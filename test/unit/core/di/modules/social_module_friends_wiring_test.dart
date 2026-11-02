@@ -294,6 +294,7 @@ void main() {
       permissionService: permission,
       userService: userService,
       blockRepository: blockRepo,
+      generateShortUrl: (url) async => url,
       getNotificationService: () => _getIt.isRegistered<NotificationService>()
           ? _getIt<NotificationService>()
           : null,

@@ -392,6 +392,8 @@ void main() {
       getOfflineService: () => mockOfflineService,
       getLookupService: () => lookup,
       getAnalyticsService: () => analyticsSpy,
+      generateShortUrl: (url) async => url,
+      filterShareRecipients: (ids) async => ids,
     );
   });
 

@@ -93,6 +93,7 @@ void main() {
         permissionService: mockPermissionService,
         userService: mockUserService,
         blockRepository: blockRepo,
+        generateShortUrl: (url) async => url,
       );
     });
 

@@ -159,6 +159,7 @@ class _Harness {
 
   SocialRecipeSharingService build() {
     return SocialRecipeSharingService(
+      filterShareRecipients: (ids) async => ids,
       getCurrentUserId: () => _currentUserId,
       getCurrentUserDisplayName: () => _displayName,
       setError: errors.add,

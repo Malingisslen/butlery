@@ -13,7 +13,6 @@ import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/ocr/device_text_recognizer.dart';
 // Compile-time platform select: google_mlkit_text_recognition has no web
@@ -176,16 +175,32 @@ class OCRExtractionService extends BaseService {
   final DeviceTextRecognizer? _testDeviceRecognizer;
   final bool Function()? _testOnDeviceEnabled;
   final bool Function()? _testLayoutEnabled;
+  final FeatureFlagService? Function()? _testFeatureFlags;
+
+  /// The singleton is built lazily with no DI constructor, so the app-scope
+  /// flag service reaches it through this source, bound once at registration.
+  static FeatureFlagService? Function() _featureFlagSource = _noFeatureFlags;
+
+  static FeatureFlagService? _noFeatureFlags() => null;
+
+  static void bindFeatureFlags(FeatureFlagService? Function() source) {
+    _featureFlagSource = source;
+  }
+
+  FeatureFlagService? get _featureFlags =>
+      (_testFeatureFlags ?? _featureFlagSource)();
 
   OCRExtractionService._({
     DateTime Function()? testTimeProvider,
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
     bool Function()? testLayoutEnabled,
+    FeatureFlagService? Function()? testFeatureFlags,
   }) : _testTimeProvider = testTimeProvider,
        _testDeviceRecognizer = testDeviceRecognizer,
        _testOnDeviceEnabled = testOnDeviceEnabled,
-       _testLayoutEnabled = testLayoutEnabled {
+       _testLayoutEnabled = testLayoutEnabled,
+       _testFeatureFlags = testFeatureFlags {
     _onDeviceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
     _usageTracker = OCRUsageTracker();
   }
@@ -202,6 +217,7 @@ class OCRExtractionService extends BaseService {
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
     bool Function()? testLayoutEnabled,
+    FeatureFlagService? Function()? testFeatureFlags,
     bool registerAsInstance = false,
   }) {
     final service = OCRExtractionService._(
@@ -209,6 +225,7 @@ class OCRExtractionService extends BaseService {
       testDeviceRecognizer: testDeviceRecognizer,
       testOnDeviceEnabled: testOnDeviceEnabled,
       testLayoutEnabled: testLayoutEnabled,
+      testFeatureFlags: testFeatureFlags,
     );
     if (registerAsInstance) {
       _instance = service;
@@ -221,6 +238,7 @@ class OCRExtractionService extends BaseService {
   static void resetForTesting() {
     _instance?.dispose();
     _instance = null;
+    _featureFlagSource = _noFeatureFlags;
   }
 
   @override
@@ -279,7 +297,7 @@ class OCRExtractionService extends BaseService {
   /// registered (unit tests, early startup) so the tier can never sneak on.
   bool get _onDeviceEnabled {
     if (_testOnDeviceEnabled != null) return _testOnDeviceEnabled();
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    final flags = _featureFlags;
     return flags?.isEnabled(FeatureFlags.enableOnDeviceOcr) ?? false;
   }
 
@@ -306,7 +324,7 @@ class OCRExtractionService extends BaseService {
   /// one image rather than asserting this in prose.
   bool get _layoutEnabled {
     if (_testLayoutEnabled != null) return _testLayoutEnabled();
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    final flags = _featureFlags;
     return flags?.isEnabled(FeatureFlags.enableLayoutRecipeSplit) ?? false;
   }
 

@@ -93,6 +93,7 @@ class SocialMenuCoordinator
     required super.setError,
     required super.notifyListeners,
     required super.userService,
+    required super.filterShareRecipients,
     required Future<Map<String, List<Recipe>>?> Function(String) getMenu,
     required Future<String?> Function(Map<String, List<Recipe>>) saveMenu,
     required UnifiedMenuService menuService,

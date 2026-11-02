@@ -36,6 +36,8 @@
 ///   (unauthenticated short-circuit), which never reaches the repo.
 library;
 
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    show ShareRecipientFilter;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 // ignore: depend_on_referenced_packages
@@ -158,7 +160,9 @@ UnifiedMenuService _menuService(
   FirebaseSharedMenuRepository? sharedMenuRepository,
   UserService? userService,
   PermissionService? permissionService,
+  ShareRecipientFilter? filterShareRecipients,
 }) => UnifiedMenuService(
+  filterShareRecipients: filterShareRecipients ?? (ids) async => ids,
   firestoreRepository: firestoreRepo,
   sharedMenuRepository: sharedMenuRepository,
   userService: () => userService ?? TestServiceLocator.get<UserService>(),
@@ -837,6 +841,8 @@ void main() {
 
     group('BUT-2271: a menu shared to a group names the group', () {
       late UnifiedMenuService sharingService;
+      late FakeAuthRepository sharingAuth;
+      late MockUserService sharingUsers;
 
       setUp(() {
         final auth = FakeAuthRepository()
@@ -846,6 +852,8 @@ void main() {
             isAuthenticated: true,
           );
         final users = MockUserService();
+        sharingAuth = auth;
+        sharingUsers = users;
         when(
           () => users.currentUserProfile,
         ).thenReturn(testUserProfile(uid: 'user-1', displayName: 'Anna'));
@@ -876,6 +884,39 @@ void main() {
 
         expect(ok, isTrue);
         expect((await onlySharedRow())['groupIds'], ['grp-1']);
+      });
+
+      test('createMenuInvitation drops invitees the block filter removes, '
+          'and shares nothing when none are left', () async {
+        final filtered = _menuService(
+          firestoreRepo,
+          sharedMenuRepository: FirebaseSharedMenuRepository(
+            firestore: fakeFirestore,
+            authRepository: sharingAuth,
+          ),
+          userService: sharingUsers,
+          filterShareRecipients: (ids) async =>
+              ids.where((id) => id != 'blocked-1').toList(),
+        );
+        addTearDown(filtered.dispose);
+
+        final id = await filtered.createMenuInvitation(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: const <String, List<Recipe>>{},
+          inviteeUserIds: const ['friend-1', 'blocked-1'],
+        );
+        final row = (await onlySharedRow()).toString();
+
+        expect(id, isNotNull);
+        expect(row, contains('friend-1'));
+        expect(row, isNot(contains('blocked-1')));
+
+        final none = await filtered.createMenuInvitation(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: const <String, List<Recipe>>{},
+          inviteeUserIds: const ['blocked-1'],
+        );
+        expect(none, isNull);
       });
 
       test('createMenuInvitation writes groupIds on the shared row', () async {

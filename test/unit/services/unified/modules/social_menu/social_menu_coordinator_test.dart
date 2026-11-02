@@ -325,6 +325,7 @@ void main() {
       realtimeMenuService = MockRealtimeMenuService();
 
       coordinator = SocialMenuCoordinator(
+        filterShareRecipients: (ids) async => ids,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (e) => lastError = e,
@@ -870,6 +871,7 @@ void main() {
       test('repo throw is swallowed → null AND setError called '
           '(BUT-1090 regression)', () async {
         final throwingCoord = SocialMenuCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
@@ -919,6 +921,7 @@ void main() {
         realtimeMenuService = _AddParticipantThrowsRealtimeMenuService();
 
         final coord = SocialMenuCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
@@ -980,6 +983,7 @@ void main() {
         // mark step (outer catch), not the inner participant catch.
 
         final coord = SocialMenuCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
@@ -1024,6 +1028,7 @@ void main() {
         ).thenThrow(Exception('simulated importSharedMenu failure'));
 
         final coord = SocialMenuCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,
@@ -1086,6 +1091,7 @@ void main() {
             ),
           );
           final coord = SocialMenuCoordinator(
+            filterShareRecipients: (ids) async => ids,
             getCurrentUserId: () => currentUserId,
             getCurrentUserDisplayName: () => currentUserDisplayName,
             setError: (e) => lastError = e,
@@ -1113,6 +1119,7 @@ void main() {
             'realtime service', () async {
           final recorder = _RecordingRealtimeMenuService();
           final coord = SocialMenuCoordinator(
+            filterShareRecipients: (ids) async => ids,
             getCurrentUserId: () => currentUserId,
             getCurrentUserDisplayName: () => currentUserDisplayName,
             setError: (e) => lastError = e,
@@ -1164,6 +1171,7 @@ void main() {
       test('BUT-1124: repo throw is swallowed → null AND setError called '
           '(legacy path)', () async {
         final throwingCoord = SocialMenuCoordinator(
+          filterShareRecipients: (ids) async => ids,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (e) => lastError = e,

@@ -36,9 +36,9 @@ class MessageSendingOperations {
     required this.authRepository,
     required notifications.NotificationService Function()
     getNotificationService,
-    AttributionSource? attribution,
+    required AttributionSource attribution,
   }) : _getNotificationService = getNotificationService,
-       _attribution = attribution ?? AttributionSource();
+       _attribution = attribution;
 
   /// Send a text message
   Future<void> sendTextMessage({

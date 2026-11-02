@@ -62,10 +62,10 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
   FirebaseShoppingPresenceModule({
     required FirebaseShoppingPresenceRepository repository,
     required PermissionService permissionService,
-    AttributionSource? attribution,
+    required AttributionSource attribution,
   }) : _repository = repository,
        _permissionService = permissionService,
-       _attribution = attribution ?? AttributionSource();
+       _attribution = attribution;
 
   @override
   Future<bool> showPresence(String listId) async {

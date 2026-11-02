@@ -75,12 +75,9 @@ void main() {
   setUpAll(() async {
     registerFallbackValue(DateTime(2026));
     await TestServiceLocator.initialize();
-    // The production DIContainer reads off the same GetIt that
-    // TestServiceLocator populates. Bridging it lets production code's
-    // `AnalyticsService.tryLog` (which resolves via the production
-    // ServiceLocator) see mocks we register — needed to observe the
-    // BUT-1474 swap event. Safe here: every test only exercises the swap
-    // path, which never touches the scoring context / feature flags.
+    // Bridging the production DIContainer to the GetIt that TestServiceLocator
+    // populates. Safe here: every test only exercises the swap path, which
+    // never touches the scoring context / feature flags.
     production.ServiceLocator.initialize(DIContainer());
   });
 

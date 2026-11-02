@@ -2,6 +2,7 @@
 /// the constructor, not the locator.
 library;
 
+import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -50,6 +51,7 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     ops = MessageSendingOperations(
+      attribution: attributionSourceFromLocator(),
       messagingRepository: repo,
       authRepository: auth,
       getNotificationService: () => injected,

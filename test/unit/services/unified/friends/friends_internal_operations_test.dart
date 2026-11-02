@@ -214,6 +214,7 @@ void main() {
       permissionService: permissionService,
       friendsRepository: friendsRepo,
       userService: userService,
+      generateShortUrl: (url) async => url,
     );
     ops.setStateManager(stateManager);
   });

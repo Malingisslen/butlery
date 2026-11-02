@@ -392,6 +392,8 @@ class UnifiedRecipeService
       ),
       sharedRecipeRepository: _sharedRecipeRepository,
       findFriendGroup: _findFriendGroup,
+      filterShareRecipients: (ids) =>
+          BlockedUserFilter.filterShareRecipients(_blockedUserFilter, ids),
     );
 
     _cacheModule = RecipeCacheModule(
@@ -540,7 +542,8 @@ class UnifiedRecipeService
   String? get currentUserId => _authRepository.currentUserId;
   // BUT-2009: every social writer below this service reads its name here, so
   // it is the profile name — never the Google/Apple account name.
-  String? get currentUserDisplayName => AttributionSource().displayName;
+  String? get currentUserDisplayName =>
+      AttributionSource(userService: () => _userService).displayName;
   bool get isSyncing {
     try {
       return _cacheModule.isSyncing;
