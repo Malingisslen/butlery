@@ -34,8 +34,6 @@ const _residue = <String, int>{
   'lib/services/nutrition/nutrition_service.dart': 1,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/parsing/feedback/import_correction_snapshot.dart': 1,
-  'lib/services/parsing/ingredient_parsing_strategy.dart': 1,
-  'lib/services/parsing/recipe_parser_service.dart': 2,
   'lib/services/parsing/tiers/parsing_tier.dart': 1,
   'lib/services/performance/intelligent_cache_manager.dart': 6,
   'lib/services/permission_service.dart': 3,
