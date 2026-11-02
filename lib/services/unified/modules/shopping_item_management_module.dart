@@ -10,7 +10,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/shopping_category_mapper.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
@@ -25,6 +24,7 @@ class ShoppingItemManagementModule {
   final String? Function() getActiveListId;
   final void Function() notifyListeners;
   final ShoppingCategoryPreferencesModule Function() getCategoryPreferences;
+  final IngredientLookupService Function() getLookupService;
 
   /// BUT-1696: records a user-facing reason when an optimistic change is
   /// rolled back. Optional so the module stays constructible in tests that
@@ -37,6 +37,7 @@ class ShoppingItemManagementModule {
     required this.getActiveListId,
     required this.notifyListeners,
     required this.getCategoryPreferences,
+    required this.getLookupService,
     this.reportFailure,
   });
 
@@ -550,7 +551,7 @@ class ShoppingItemManagementModule {
     if (userOverride != null) return userOverride;
 
     try {
-      final lookupService = ServiceLocator.get<IngredientLookupService>();
+      final lookupService = getLookupService();
       final result = await lookupService.lookupFromRaw([name]);
       if (result.matched.isNotEmpty) {
         return ShoppingCategoryMapper.categoryFromIngredientGroup(

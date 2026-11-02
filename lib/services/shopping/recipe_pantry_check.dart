@@ -9,12 +9,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
@@ -87,8 +85,12 @@ class RecipePantryCheck {
 /// failed read. The button then says "Lägg i inköpslistan" and adds every
 /// ingredient, as before: nothing is left off on a guess.
 class RecipePantryWatcher {
-  RecipePantryWatcher({required this.onChanged}) {
-    _start();
+  RecipePantryWatcher({
+    required this.onChanged,
+    required PantryService? pantryService,
+    required String? userId,
+  }) {
+    _start(pantryService, userId);
   }
 
   /// Called when [pantry] changes.
@@ -101,9 +103,7 @@ class RecipePantryWatcher {
   /// The pantry as last read, or null when it is not known.
   List<PantryItem>? get pantry => _pantry;
 
-  void _start() {
-    final service = ServiceLocator.tryGet<PantryService>();
-    final userId = ServiceLocator.tryGet<AuthRepository>()?.currentUserId;
+  void _start(PantryService? service, String? userId) {
     if (service == null || userId == null) return;
     try {
       _sub = service

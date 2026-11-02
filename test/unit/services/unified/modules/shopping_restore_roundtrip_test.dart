@@ -97,6 +97,7 @@ void main() {
         getActiveListId: () => 'L',
         notifyListeners: () {},
         getCategoryPreferences: () => throw StateError('not used by a removal'),
+        getLookupService: () => throw StateError('not used by a removal'),
       );
       final restore = ShoppingRestoreModule(
         repository: repository,

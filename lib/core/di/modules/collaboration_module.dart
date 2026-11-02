@@ -9,6 +9,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -181,6 +182,7 @@ class CollaborationModule implements DIModule {
             : null,
         getFriendsService: () => container<UnifiedFriendsService>(),
         getOfflineService: () => container<OfflineService>(),
+        getLookupService: () => container<IngredientLookupService>(),
       ),
       dispose: (s) => s.resetForLogout(),
     );

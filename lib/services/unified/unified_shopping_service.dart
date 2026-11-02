@@ -31,6 +31,7 @@ import 'package:butlery/services/unified/operations/collaborative_shopping/list_
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 // Module imports
 import 'package:butlery/services/unified/modules/shopping_initialization_module.dart';
@@ -76,6 +77,7 @@ class UnifiedShoppingService
   final AnalyticsService? Function()? _getAnalyticsService;
   final UnifiedFriendsService Function() _getFriendsService;
   final OfflineService Function() _getOfflineService;
+  final IngredientLookupService Function() _getLookupService;
   JsonCacheHelper? _cacheHelper;
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
@@ -120,6 +122,7 @@ class UnifiedShoppingService
     required UserService userService,
     required UnifiedFriendsService Function() getFriendsService,
     required OfflineService Function() getOfflineService,
+    required IngredientLookupService Function() getLookupService,
     AnalyticsService? Function()? getAnalyticsService,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
@@ -129,6 +132,7 @@ class UnifiedShoppingService
        _userService = userService,
        _getFriendsService = getFriendsService,
        _getOfflineService = getOfflineService,
+       _getLookupService = getLookupService,
        _getAnalyticsService = getAnalyticsService {
     _initializeModules();
   }
@@ -233,6 +237,7 @@ class UnifiedShoppingService
       getActiveListId: () => _activeListId,
       notifyListeners: notifyListeners,
       getCategoryPreferences: () => _categoryPreferences,
+      getLookupService: _getLookupService,
       // BUT-1696: the checkbox on a shared list reaches Firestore through this
       // module, not through mutateSharedList, so it needs the same seam to
       // report WHY an optimistic tick was rolled back.

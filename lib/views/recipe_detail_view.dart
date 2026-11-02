@@ -72,6 +72,8 @@ import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/recipe_pantry_check.dart';
 import 'package:butlery/widgets/guest/guest_account_sheet.dart';
 import 'package:butlery/widgets/guest/guest_gate.dart';
@@ -253,6 +255,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     super.initState();
     _actions = RecipeDetailActions();
     _pantry = RecipePantryWatcher(
+      pantryService: ServiceLocator.tryGet<PantryService>(),
+      userId: ServiceLocator.tryGet<AuthRepository>()?.currentUserId,
       onChanged: () {
         if (mounted) setState(() {});
       },

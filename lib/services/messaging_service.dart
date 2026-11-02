@@ -36,6 +36,7 @@ import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/services/attribution_source.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 /// The plan write a poll close has prepared but not yet performed (BUT-1925).
 ///
@@ -80,6 +81,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required ChatGroupRepository chatGroupRepository,
     required auth_repo.AuthRepository authRepository,
     required MessageReactionsService reactionsService,
+    required NotificationService Function() getNotificationService,
     AttributionSource? attribution,
   }) : _messagingRepository = messagingRepository,
        _attribution = attribution ?? AttributionSource(),
@@ -89,6 +91,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     _sendingOps = MessageSendingOperations(
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
+      getNotificationService: getNotificationService,
       attribution: _attribution,
     );
     _actionOps = ConversationActionOperations(

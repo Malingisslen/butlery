@@ -64,6 +64,7 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
@@ -298,6 +299,7 @@ class _MockUserService extends Mock implements UserService {}
 
 void main() {
   late UnifiedShoppingService service;
+  late _MockIngredientLookupService lookup;
   late _FakeShoppingRepository fakeRepo;
   late _FakeCategoryPreferencesRepository fakePrefsRepo;
   late _FakePermissionService fakePermissionService;
@@ -358,6 +360,8 @@ void main() {
     when(() => mockAuthRepository.currentUser).thenReturn(null);
     when(() => mockAuthRepository.getCurrentUser()).thenReturn(null);
 
+    lookup = _MockIngredientLookupService();
+    // A decoy in the locator: only the injected instance may answer.
     TestServiceLocator.registerMock<IngredientLookupService>(
       _MockIngredientLookupService(),
     );
@@ -386,6 +390,7 @@ void main() {
       userService: mockUserService,
       getFriendsService: () => throw StateError('no invitations in this suite'),
       getOfflineService: () => mockOfflineService,
+      getLookupService: () => lookup,
       getAnalyticsService: () => analyticsSpy,
     );
   });
@@ -567,6 +572,25 @@ void main() {
       );
       expect(result, isFalse);
       expect(fakeRepo.addedItems, isEmpty);
+    });
+  });
+
+  group('addItemToActiveList category lookup', () {
+    /// BUT-1508: the item module resolves a category through the lookup
+    /// service the shopping service was built with, not the locator.
+    test('an uncategorized item asks the injected lookup service', () async {
+      when(() => lookup.lookupFromRaw(any())).thenAnswer(
+        (_) async => IngredientLookupResult.fromLists(
+          matched: const [],
+          unmatched: const [],
+        ),
+      );
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+
+      await service.addItemToActiveList(name: 'Mjölk');
+
+      verify(() => lookup.lookupFromRaw(['Mjölk'])).called(1);
     });
   });
 
