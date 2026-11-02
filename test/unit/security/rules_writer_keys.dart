@@ -20,6 +20,8 @@ import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/user_counters.dart';
+import 'package:butlery/models/tagging/ingredient_change_request.dart';
+import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -214,6 +216,23 @@ const allowlists = <Allowlist>[
     writer:
         'lib/repositories/firebase/firebase_signup_allowlist_repository.dart '
         'FirebaseSignupAllowlistRepository.toFirestore',
+  ),
+  // Admin ingredient proposals: the document's keys on create, and the
+  // editable CSV columns allowed inside `changes`.
+  Allowlist(
+    label: 'ingredient_change_requests create',
+    mustContain: 'createdBy',
+    anchor: 'match /ingredient_change_requests/{requestId}',
+    writer:
+        'lib/models/tagging/ingredient_change_request.dart '
+        'IngredientChangeRequest.toFirestore',
+  ),
+  Allowlist(
+    label: 'ingredient_change_requests changes columns',
+    mustContain: 'avg_price_sek',
+    anchor: 'function changesOk',
+    writer:
+        'lib/models/tagging/ingredient_column.dart IngredientColumn.csvName',
   ),
 ];
 
@@ -456,4 +475,22 @@ Map<String, Set<String>> writtenKeys() => {
       authRepository: auth,
     ).toFirestore(const SignupInvite(email: 'x@example.com')).keys.toSet();
   }(),
+  // WIDEST set: every optional key present.
+  'ingredient_change_requests create': IngredientChangeRequest(
+    ingredientId: 'garlic',
+    changes: const [
+      IngredientFieldChange(
+        column: IngredientColumn.status,
+        oldValue: 'draft',
+        newValue: 'validated',
+      ),
+    ],
+    ingredientUpdatedAt: DateTime(2026),
+    note: 'n',
+    batchId: 'b',
+    createdBy: 'u',
+  ).toFirestore().keys.toSet(),
+  'ingredient_change_requests changes columns': {
+    for (final c in IngredientColumn.values) c.csvName,
+  },
 };

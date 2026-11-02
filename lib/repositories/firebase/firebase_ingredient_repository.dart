@@ -422,6 +422,16 @@ class FirebaseIngredientRepository
   }
 
   @override
+  Future<IngredientData?> getByIdFromServer(String id) async {
+    final doc = await _collection
+        .doc(id)
+        .get(
+          const GetOptions(source: Source.server),
+        );
+    return doc.exists ? IngredientData.fromFirestore(doc) : null;
+  }
+
+  @override
   Future<IngredientData?> findByName(
     String name, {
     String language = 'sv',

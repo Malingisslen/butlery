@@ -21155,4 +21155,198 @@ class AppLocalizationsSv extends AppLocalizations {
   String cookedPantryAmountSemantics(String name, String amount) {
     return 'Ändra mängd för $name, nu $amount';
   }
+
+  @override
+  String get adminNavProposals => 'Förslag';
+
+  @override
+  String get adminProposalsTitle => 'Väntande förslag';
+
+  @override
+  String get adminProposalsLoadFailed =>
+      'Kunde inte ladda förslagen. Listan kan inte visas förrän laddningen lyckas.';
+
+  @override
+  String get adminProposalsEmpty => 'Inga väntande förslag';
+
+  @override
+  String adminProposalsMoreWaiting(int count) {
+    return 'Visar $count förslag. Fler väntar och visas när några av dessa har tagits tillbaka eller hanterats.';
+  }
+
+  @override
+  String get adminProposalWithdrawFailed => 'Kunde inte ta tillbaka förslaget';
+
+  @override
+  String get adminProposalSaveFailed => 'Kunde inte spara förslaget';
+
+  @override
+  String get adminProposalFormLoadFailed =>
+      'Kunde inte hämta ingrediensen från servern';
+
+  @override
+  String get adminProposalSuggest => 'Föreslå ändring';
+
+  @override
+  String adminProposalFormTitle(String name) {
+    return 'Föreslå ändring: $name';
+  }
+
+  @override
+  String get adminProposalChangedMark => 'Ändrad';
+
+  @override
+  String get adminProposalNoteLabel => 'Kommentar (valfri)';
+
+  @override
+  String get adminProposalNoteHelp => 'Skriv inga personuppgifter här.';
+
+  @override
+  String adminProposalNoteTooLong(int max) {
+    return 'Kommentaren får vara högst $max tecken.';
+  }
+
+  @override
+  String get adminProposalListHelp => 'En post per rad';
+
+  @override
+  String get adminProposalSave => 'Spara förslag';
+
+  @override
+  String get adminProposalNothingChanged => 'Inget är ändrat än.';
+
+  @override
+  String get adminProposalSaved =>
+      'Förslaget är sparat. Det gäller först när det har förts in i ingrediensfilen.';
+
+  @override
+  String get adminProposalAffectsAllergens => 'Påverkar allergener';
+
+  @override
+  String get adminProposalAllergenConfirmTitle =>
+      'Ändringen påverkar allergener';
+
+  @override
+  String get adminProposalAllergenConfirmMessage =>
+      'Du tar bort en allergenrelevant egenskap eller markerar en ingrediens med animalisk eller allergen egenskap som vegansk. Spara förslaget ändå?';
+
+  @override
+  String get adminProposalAllergenConfirm => 'Spara ändå';
+
+  @override
+  String adminProposalChangeLine(
+    String field,
+    String oldValue,
+    String newValue,
+  ) {
+    return '$field: $oldValue → $newValue';
+  }
+
+  @override
+  String get adminProposalEmptyValue => '(tomt)';
+
+  @override
+  String get adminProposalWithdraw => 'Ta tillbaka';
+
+  @override
+  String get adminProposalWithdrawn => 'Förslaget är tillbakataget.';
+
+  @override
+  String adminProposalWhen(String date) {
+    return 'Föreslaget $date';
+  }
+
+  @override
+  String get adminProposalBatchMark => 'Del av massändring';
+
+  @override
+  String get adminProposalPendingMark => 'Väntande förslag';
+
+  @override
+  String get adminBulkSetStatus => 'Sätt status på valda';
+
+  @override
+  String adminBulkSelectedCount(String count) {
+    return '$count valda';
+  }
+
+  @override
+  String get adminBulkClear => 'Rensa val';
+
+  @override
+  String adminBulkSelect(String name) {
+    return 'Välj $name';
+  }
+
+  @override
+  String adminBulkTooMany(String max) {
+    return 'Välj högst $max ingredienser åt gången.';
+  }
+
+  @override
+  String get adminBulkNothingToChange => 'Alla valda har redan den statusen.';
+
+  @override
+  String adminBulkConfirmTitle(String status) {
+    return 'Sätt status till $status?';
+  }
+
+  @override
+  String adminBulkConfirmMessage(
+    String changed,
+    String count,
+    String distribution,
+  ) {
+    return '$changed av $count valda ingredienser får ett förslag om ny status. Nuvarande status: $distribution.';
+  }
+
+  @override
+  String get adminBulkConfirm => 'Spara förslag';
+
+  @override
+  String adminIssueTooLong(String max) {
+    return 'Högst $max tecken.';
+  }
+
+  @override
+  String get adminIssueControl =>
+      'Radbrytningar och styrtecken är inte tillåtna.';
+
+  @override
+  String get adminIssueEmpty => 'Får inte vara tomt.';
+
+  @override
+  String adminIssueUnknownProperty(String value) {
+    return 'Okänd egenskap: $value';
+  }
+
+  @override
+  String get adminIssueGroup =>
+      'Gruppen måste börja med protein, vegetable, fruit, grain, fat, other eller spice.';
+
+  @override
+  String get adminIssueStatus =>
+      'Status måste vara draft, validated, verified eller needs-review.';
+
+  @override
+  String get adminIssuePriceCategory =>
+      'Prisklass måste vara budget, standard, medium eller premium.';
+
+  @override
+  String get adminIssueCarbon =>
+      'Klimatavtryck måste vara low, medium eller high.';
+
+  @override
+  String adminIssueSeparator(String value) {
+    return 'Får inte innehålla ; | eller , (en post per rad): $value';
+  }
+
+  @override
+  String adminIssueTooMany(String max) {
+    return 'Högst $max poster.';
+  }
+
+  @override
+  String get adminIssuePrice =>
+      'Priset måste vara ett tal som är noll eller större.';
 }

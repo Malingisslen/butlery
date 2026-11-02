@@ -20,6 +20,47 @@ const ROWS = 2001;
 
 export const CASES_2: SectionCase[] = [
   {
+    section: "ingredient_change_requests",
+    idKey: "id",
+    rows: ["icr1", "icr2", "icr3"],
+    seed: (db) => {
+      db.seed("ingredient_change_requests/icr1", {
+        ingredientId: "tomat", status: "withdrawn", createdBy: UID, withdrawnBy: OTHER,
+        createdAt: T0, withdrawnAt: T0, note: "rätta allergen", ...STRAY,
+        changes: {
+          properties: { old: ["gluten", 3], new: [], ...STRAY },
+          avg_price_sek: { old: 12.5, new: 14 },
+          swedish: { old: "Tomat", new: "Tomater" },
+          bogus_column: { old: "x", new: "y" },
+        },
+      });
+      db.seed("ingredient_change_requests/icr2", {
+        ingredientId: "lok", status: "withdrawn", createdBy: OTHER, withdrawnBy: UID,
+        withdrawnAt: T0, note: "deras text", changes: { swedish: { old: "a", new: "b" } }, ...STRAY,
+      });
+      db.seed("ingredient_change_requests/icr3", {
+        ingredientId: "gurka", status: "withdrawn", createdBy: UID, withdrawnBy: UID, ...STRAY,
+      });
+      db.seed("ingredient_change_requests/icr4", { ingredientId: "x", createdBy: OTHER });
+    },
+    check: ([own, theirs, both]) => {
+      expect(own.created_by_you === true && own.withdrawn_by_you === false, "own flags");
+      expect(own.note === "rätta allergen" && own.createdAt === T0_ISO, "own fields");
+      expect(!("createdBy" in own) && !("withdrawnBy" in own), "no uid fields");
+      const changes = own.changes as Record<string, Record<string, unknown>>;
+      expect(JSON.stringify(Object.keys(changes).sort()) === '["avg_price_sek","properties","swedish"]', "rules columns only");
+      expect(JSON.stringify(changes.properties) === '{"old":["gluten"],"new":[]}', "list change");
+      expect(changes.avg_price_sek.old === 12.5 && changes.swedish.new === "Tomater", "scalar changes");
+      expect(
+        JSON.stringify(theirs) ===
+          `{"id":"icr2","ingredientId":"lok","status":"withdrawn","withdrawnAt":"${T0_ISO}","created_by_you":false,"withdrawn_by_you":true}`,
+        `a withdrawn-only row carries none of the other admin's proposal: ${JSON.stringify(theirs)}`,
+      );
+      expect(both.created_by_you === true && both.withdrawn_by_you === true, "both flags");
+    },
+    overCap: (db) => many(db, ROWS, (i) => `ingredient_change_requests/x${i}`, { createdBy: UID }),
+  },
+  {
     section: "messages_in_left_conversations",
     idKey: "messageId",
     rows: ["m1", "m4", "p1", "p3"],

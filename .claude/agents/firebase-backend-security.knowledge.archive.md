@@ -11415,3 +11415,28 @@ Client-only change: `onRecipeUpdated`/`onRecipeRemoved` are now wired on every p
 ## 2026-10-31 — Re-review of the same diff after the uid-guard fix
 
 `_updateCachedRecipe` captures `_getCurrentUserId()` before its first await and re-checks it after `_hasUnsentWrite` and after `saveRecipeToCache`. `_removeCachedRecipe` captures it and re-checks after `removeRecipeFromCache`. That closes the Medium for listener deliveries. Each guard has its own test in `recipe_cache_module_test.dart`. `FakeJsonCacheHelper` is not user-keyed, so the cache assertion in the first test is live; the module suite ran green, 34 tests. Residual Low: `refreshAfterQueueSend` awaits `_hasUnsentWrite` and `read(recipeId)` before calling `_updateCachedRecipe`. The uid is therefore captured AFTER that read, so a read that straddles a switch is not covered. Fix shape: capture at `refreshAfterQueueSend` entry. Verdict pass.
+
+## 2026-11-02 — Commit-gate review: `ingredient_change_requests` Dart data layer (admin-vy B)
+
+Staged: `FirebaseIngredientChangeRequestRepository` + interface, `IngredientRepository.getByIdFromServer`
+(+ `FirebaseIngredientRepository` impl). Rules block and GDPR erasure leg were already at HEAD.
+Verified clean: create payload = model `toFirestore()` (pinned against the rules `hasOnly` by
+`rules_writer_keys.dart`), `createdBy` overwritten from `authRepository.currentUserId` via
+`withIdentity` (same source as `permissionService.currentUserId`), status hard-coded pending,
+`createdAt` serverTimestamp; withdraw writes exactly the four keys of the update limb's
+`affectedKeys().hasOnly`, `withdrawnAt` serverTimestamp vs `== request.time`, `expireAt` now+365d
+against `hasRetentionStamp()` (<= 372d, so 7 days of fast device clock tolerated); createBatch one
+WriteBatch, refuses >50 before any write; validate* true/true/true/false (delete false matches
+`allow delete: if false`); no `ingredients` name in the repo; `getByIdFromServer` is
+`Source.server`, so null means server-confirmed absent. Findings, none blocking: `watchPending`
+`.snapshots()` with no `.limit()` (pending accumulates until step C exists); the withdraw test
+named "exactly the four withdrawal keys" asserts values per key on a merging fake `update()` and
+stays green with an extra key — the update limb's hasOnly is a diff restriction with no writer
+comparison in the drift guard; no `logPermissionCheck` in create/createBatch/withdraw, but each
+operation's actor is a rules-pinned field on the doc and withdraw happens once, so a granted row
+would add nothing; interface docstring "nothing is ever deleted" is false under the TTL policy
+(prose). Tests: 7/7 pass.
+
+## 2026-11-02 — Re-review of the same diff after fixes
+
+`watchPending` now ends in `.limit(IngredientChangeRequestRepository.maxPending)` (500; the interface doc says a full page means more are waiting, and the view's note is deferred to the next commit). The withdraw test now compares the added keys == {withdrawnAt, withdrawnBy, expireAt} and the deep-equal changed existing keys == {status}. "nothing is ever deleted" is struck. The coordinator reports an emulator probe: one batch of 50 proposals, each changing all 16 columns plus note and batchId, committed against the committed rules (not re-run by me). Tests 7/7, analyze clean. Pass.

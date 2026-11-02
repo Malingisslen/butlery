@@ -21328,4 +21328,203 @@ class AppLocalizationsEn extends AppLocalizations {
   String cookedPantryAmountSemantics(String name, String amount) {
     return 'Change the amount for $name, now $amount';
   }
+
+  @override
+  String get adminNavProposals => 'Proposals';
+
+  @override
+  String get adminProposalsTitle => 'Pending proposals';
+
+  @override
+  String get adminProposalsLoadFailed =>
+      'Could not load the proposals. The list cannot be shown until loading succeeds.';
+
+  @override
+  String get adminProposalsEmpty => 'No pending proposals';
+
+  @override
+  String adminProposalsMoreWaiting(int count) {
+    return 'Showing $count proposals. More are waiting and appear once some of these are withdrawn or handled.';
+  }
+
+  @override
+  String get adminProposalWithdrawFailed => 'Could not withdraw the proposal';
+
+  @override
+  String get adminProposalSaveFailed => 'Could not save the proposal';
+
+  @override
+  String get adminProposalFormLoadFailed =>
+      'Could not fetch the ingredient from the server';
+
+  @override
+  String get adminProposalSuggest => 'Suggest a change';
+
+  @override
+  String adminProposalFormTitle(String name) {
+    return 'Suggest a change: $name';
+  }
+
+  @override
+  String get adminProposalChangedMark => 'Changed';
+
+  @override
+  String get adminProposalNoteLabel => 'Comment (optional)';
+
+  @override
+  String get adminProposalNoteHelp => 'Do not write personal data here.';
+
+  @override
+  String adminProposalNoteTooLong(int max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max characters',
+      one: '1 character',
+    );
+    return 'The comment can be at most $_temp0.';
+  }
+
+  @override
+  String get adminProposalListHelp => 'One entry per line';
+
+  @override
+  String get adminProposalSave => 'Save proposal';
+
+  @override
+  String get adminProposalNothingChanged => 'Nothing changed yet.';
+
+  @override
+  String get adminProposalSaved =>
+      'The proposal is saved. It takes effect only once it has been applied to the ingredient file.';
+
+  @override
+  String get adminProposalAffectsAllergens => 'Affects allergens';
+
+  @override
+  String get adminProposalAllergenConfirmTitle =>
+      'This change affects allergens';
+
+  @override
+  String get adminProposalAllergenConfirmMessage =>
+      'You are removing an allergen-relevant property, or marking an ingredient with an animal or allergen property as vegan. Save the proposal anyway?';
+
+  @override
+  String get adminProposalAllergenConfirm => 'Save anyway';
+
+  @override
+  String adminProposalChangeLine(
+    String field,
+    String oldValue,
+    String newValue,
+  ) {
+    return '$field: $oldValue → $newValue';
+  }
+
+  @override
+  String get adminProposalEmptyValue => '(empty)';
+
+  @override
+  String get adminProposalWithdraw => 'Withdraw';
+
+  @override
+  String get adminProposalWithdrawn => 'The proposal is withdrawn.';
+
+  @override
+  String adminProposalWhen(String date) {
+    return 'Proposed $date';
+  }
+
+  @override
+  String get adminProposalBatchMark => 'Part of a bulk change';
+
+  @override
+  String get adminProposalPendingMark => 'Pending proposal';
+
+  @override
+  String get adminBulkSetStatus => 'Set status on selected';
+
+  @override
+  String adminBulkSelectedCount(String count) {
+    return '$count selected';
+  }
+
+  @override
+  String get adminBulkClear => 'Clear selection';
+
+  @override
+  String adminBulkSelect(String name) {
+    return 'Select $name';
+  }
+
+  @override
+  String adminBulkTooMany(String max) {
+    return 'Select at most $max ingredients at a time.';
+  }
+
+  @override
+  String get adminBulkNothingToChange =>
+      'All selected already have that status.';
+
+  @override
+  String adminBulkConfirmTitle(String status) {
+    return 'Set status to $status?';
+  }
+
+  @override
+  String adminBulkConfirmMessage(
+    String changed,
+    String count,
+    String distribution,
+  ) {
+    return '$changed of $count selected ingredients get a proposal for a new status. Current status: $distribution.';
+  }
+
+  @override
+  String get adminBulkConfirm => 'Save proposals';
+
+  @override
+  String adminIssueTooLong(String max) {
+    return 'At most $max characters.';
+  }
+
+  @override
+  String get adminIssueControl =>
+      'Line breaks and control characters are not allowed.';
+
+  @override
+  String get adminIssueEmpty => 'Cannot be empty.';
+
+  @override
+  String adminIssueUnknownProperty(String value) {
+    return 'Unknown property: $value';
+  }
+
+  @override
+  String get adminIssueGroup =>
+      'The group must start with protein, vegetable, fruit, grain, fat, other or spice.';
+
+  @override
+  String get adminIssueStatus =>
+      'Status must be draft, validated, verified or needs-review.';
+
+  @override
+  String get adminIssuePriceCategory =>
+      'Price class must be budget, standard, medium or premium.';
+
+  @override
+  String get adminIssueCarbon => 'Climate impact must be low, medium or high.';
+
+  @override
+  String adminIssueSeparator(String value) {
+    return 'Must not contain ; | or , (one entry per line): $value';
+  }
+
+  @override
+  String adminIssueTooMany(String max) {
+    return 'At most $max entries.';
+  }
+
+  @override
+  String get adminIssuePrice => 'The price must be a number, zero or greater.';
 }

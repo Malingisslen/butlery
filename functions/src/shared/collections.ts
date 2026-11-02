@@ -120,4 +120,7 @@ export const Collections = {
   // BUT-2463: the short links `createShortUrl` stores, keyed on the short code
   // and carrying the creator's uid in `createdBy` and in `longUrl`.
   deepLinks: "deep_links",
+  // Admin proposals to change an ingredient row. The Dart writer is
+  // `FirestoreCollections.ingredientChangeRequests`.
+  ingredientChangeRequests: "ingredient_change_requests",
 } as const;

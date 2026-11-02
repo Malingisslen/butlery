@@ -6,6 +6,8 @@ import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ingredient_review_viewmodel.dart';
+import 'package:butlery/viewmodels/admin/pending_proposals_viewmodel.dart';
+import 'package:butlery/views/admin/ingredient_bulk_status.dart';
 import 'package:butlery/views/admin/ingredient_copy.dart';
 import 'package:butlery/views/admin/ingredient_detail_dialog.dart';
 import 'package:butlery/views/admin/ingredient_labels.dart';
@@ -14,16 +16,22 @@ import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only "Ingredienser" tab: a read-only review of the ingredient
 /// database and what the tagger derives from each row.
 class IngredientReviewView extends StatefulWidget {
-  const IngredientReviewView({super.key, this.viewModel});
+  const IngredientReviewView({
+    super.key,
+    this.viewModel,
+    this.pendingViewModel,
+  });
 
   /// Injected by tests; the tab builds its own otherwise.
   final IngredientReviewViewModel? viewModel;
+  final PendingProposalsViewModel? pendingViewModel;
 
   @override
   State<IngredientReviewView> createState() => _IngredientReviewViewState();
@@ -31,24 +39,33 @@ class IngredientReviewView extends StatefulWidget {
 
 class _IngredientReviewViewState extends State<IngredientReviewView> {
   late final IngredientReviewViewModel _vm;
+  late final PendingProposalsViewModel _pending;
 
   @override
   void initState() {
     super.initState();
     _vm = widget.viewModel ?? IngredientReviewViewModel();
+    _pending = widget.pendingViewModel ?? PendingProposalsViewModel();
     _vm.load();
+    _pending.start();
   }
 
   @override
   void dispose() {
     _vm.dispose();
+    _pending.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<IngredientReviewViewModel>.value(
-      value: _vm,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<IngredientReviewViewModel>.value(value: _vm),
+        ChangeNotifierProvider<PendingProposalsViewModel>.value(
+          value: _pending,
+        ),
+      ],
       child: const _Content(),
     );
   }
@@ -87,8 +104,24 @@ class _Content extends StatelessWidget {
       );
     }
     final list = vm.ingredients;
+    final pendingVm = context.watch<PendingProposalsViewModel>();
+    final pendingIds = pendingVm.pendingIngredientIds;
     return Column(
       children: [
+        if (pendingVm.error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space4,
+            ),
+            child: Text(
+              pendingVm.error!,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
+        if (vm.selectedIds.isNotEmpty) IngredientBulkBar(vm: vm),
         Flexible(
           flex: 0,
           child: SingleChildScrollView(
@@ -126,6 +159,7 @@ class _Content extends StatelessWidget {
                     key: ValueKey(list[i].id),
                     ingredient: list[i],
                     vm: vm,
+                    hasPendingProposal: pendingIds.contains(list[i].id),
                   ),
                 ),
         ),
@@ -159,10 +193,16 @@ class _SyncedLine extends StatelessWidget {
 }
 
 class IngredientRow extends StatelessWidget {
-  const IngredientRow({super.key, required this.ingredient, required this.vm});
+  const IngredientRow({
+    super.key,
+    required this.ingredient,
+    required this.vm,
+    this.hasPendingProposal = false,
+  });
 
   final IngredientData ingredient;
   final IngredientReviewViewModel vm;
+  final bool hasPendingProposal;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +223,14 @@ class IngredientRow extends StatelessWidget {
           ),
           child: Row(
             children: [
+              Semantics(
+                label: l10n.adminBulkSelect(ingredient.swedish),
+                child: ButleryCheckbox(
+                  key: ValueKey('select-${ingredient.id}'),
+                  value: vm.selectedIds.contains(ingredient.id),
+                  onChanged: (_) => vm.toggleSelected(ingredient.id),
+                ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,6 +251,16 @@ class IngredientRow extends StatelessWidget {
                   ],
                 ),
               ),
+              if (hasPendingProposal)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.space8,
+                  ),
+                  child: StatusPill(
+                    key: ValueKey('pending-${ingredient.id}'),
+                    label: l10n.adminProposalPendingMark,
+                  ),
+                ),
               StatusPill(
                 label: ingredientStatusLabel(l10n, ingredient.status),
               ),

@@ -9,6 +9,7 @@ import 'package:butlery/views/admin/ingredient_review_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
+import 'package:butlery/views/admin/proposals_view.dart';
 import 'package:butlery/views/admin/signup_allowlist_view.dart';
 import 'package:butlery/views/admin/tag_rules_view.dart';
 import 'package:butlery/views/admin/widgets/admin_top_bar.dart';
@@ -94,6 +95,7 @@ class _AdminShellState extends State<AdminShell>
     const SignupAllowlistView(),
     const IngredientReviewView(),
     const TagRulesView(),
+    const ProposalsView(),
   ];
 
   @override
@@ -115,6 +117,7 @@ class _AdminShellState extends State<AdminShell>
               l10n.adminNavGuestList,
               l10n.adminNavIngredients,
               l10n.adminNavTagRules,
+              l10n.adminNavProposals,
             ],
             email: auth.currentUserEmail,
             onSignOut: auth.signOut,

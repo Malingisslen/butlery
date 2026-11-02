@@ -15,6 +15,7 @@ import {
 } from "../../account/mfa-recovery-attempts";
 import {
   Allowlist,
+  FieldSpec,
   FileLister,
   Row,
   cappedDocs,
@@ -177,6 +178,79 @@ export const DEEP_LINK_KEYS: Allowlist = {
 export const LEARNED_ALIAS_KEYS: Allowlist = scalars(
   "originalName", "correctedName", "ingredientId", "status", "firstSeen", "lastSeen",
 );
+
+const TEXT_CHANGE: FieldSpec = { map: scalars("old", "new") };
+const LIST_CHANGE: FieldSpec = { map: { old: "strings", new: "strings" } };
+
+/**
+ * The columns `firestore.rules` admits in a proposal's `changes`, each typed
+ * as its rules check (`textOk`, `listOk`, `priceOk`) types it.
+ */
+export const INGREDIENT_CHANGE_COLUMNS: Allowlist = {
+  swedish: TEXT_CHANGE,
+  english: TEXT_CHANGE,
+  group: TEXT_CHANGE,
+  properties: LIST_CHANGE,
+  aliases_sv: LIST_CHANGE,
+  aliases_en: LIST_CHANGE,
+  search_terms: LIST_CHANGE,
+  notes_sv: TEXT_CHANGE,
+  notes_en: TEXT_CHANGE,
+  season_availability: LIST_CHANGE,
+  typical_storage: TEXT_CHANGE,
+  typical_unit: TEXT_CHANGE,
+  price_category: TEXT_CHANGE,
+  avg_price_sek: TEXT_CHANGE,
+  carbon_footprint_category: TEXT_CHANGE,
+  status: TEXT_CHANGE,
+};
+
+/**
+ * A proposal the requester made. `createdBy` and `withdrawnBy` are left out:
+ * the first is the requester, the second can be another admin.
+ */
+export const INGREDIENT_CHANGE_REQUEST_KEYS: Allowlist = {
+  ...scalars(
+    "ingredientId", "ingredientUpdatedAt", "note", "batchId", "status",
+    "createdAt", "withdrawnAt", "expireAt",
+  ),
+  changes: { map: INGREDIENT_CHANGE_COLUMNS },
+};
+
+/** Another admin's proposal the requester withdrew: what they did, not its content. */
+export const WITHDRAWN_PROPOSAL_KEYS: Allowlist = scalars(
+  "ingredientId", "status", "withdrawnAt",
+);
+
+async function ingredientChangeRequestRows(
+  database: admin.firestore.Firestore,
+  uid: string,
+): Promise<Row[]> {
+  const col = database.collection(Collections.ingredientChangeRequests);
+  const [created, withdrawn] = await Promise.all([
+    cappedDocs(col.where("createdBy", "==", uid), MAX_SECTION_ROWS, "ingredient_change_requests.createdBy"),
+    cappedDocs(col.where("withdrawnBy", "==", uid), MAX_SECTION_ROWS, "ingredient_change_requests.withdrawnBy"),
+  ]);
+  const rows = new Map<string, Row>();
+  for (const doc of created) {
+    rows.set(doc.id, {
+      id: doc.id,
+      ...project(doc.data(), INGREDIENT_CHANGE_REQUEST_KEYS),
+      created_by_you: true,
+      withdrawn_by_you: doc.get("withdrawnBy") === uid,
+    });
+  }
+  for (const doc of withdrawn) {
+    if (rows.has(doc.id)) continue;
+    rows.set(doc.id, {
+      id: doc.id,
+      ...project(doc.data(), WITHDRAWN_PROPOSAL_KEYS),
+      created_by_you: false,
+      withdrawn_by_you: true,
+    });
+  }
+  return sortRows([...rows.values()], "id");
+}
 
 function rowsWithId(
   docs: admin.firestore.QueryDocumentSnapshot[],
@@ -348,6 +422,8 @@ export const ACCOUNT_SECTIONS: readonly SectionDef[] = [
         DEEP_LINK_KEYS,
       ),
   },
+  // scrubIngredientChangeRequestAuthors
+  { name: "ingredient_change_requests", read: ingredientChangeRequestRows },
   // onUserDeleted's per-user subcollection purge
   {
     name: "notification_counters",

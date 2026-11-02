@@ -332,6 +332,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // deletes.
   { name: "signup_allowlist" },
 
+  // Admin proposals to change ingredient rows. `createdBy` and `withdrawnBy`
+  // are admin uids, whose Auth accounts Phase 1 deletes.
+  { name: "ingredient_change_requests" },
+
   // BUT-2010: `tag_configs` does NOT belong here and must not come back. It is
   // SEED data: `firestore.rules` gives it `allow write: if false`, so no user
   // can write it, and `TagConfigService` reads it as runtime config — wiping it

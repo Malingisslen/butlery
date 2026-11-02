@@ -21337,3 +21337,50 @@ Production fixes were made by the main session; this run only changed tests (no 
 ### 2026-10-28 — BUT-2397 strike rule rebuilt to five strips, re-review [data-pipelines]
 - Staged after 96905926 (HEAD 8671fdb2): `.claude/shared-plugin.json` only (blob 405b4d17). The four strips are rebuilt to also cover Skarmar/Skärmar vN [del|etapp N] [#anchor], Grafisk manual vN, plattformsmatris.md, `fas\d/<file>.json`, `ux-beslut D-NN`, as a list inside one parenthesis that opens on a named document. A fifth strip (lookbehind on the comment marker) removes a parenthesised reference that opens a comment, plus its closing punctuation. `parseMechanicalRewrites` reports no errors, and the rule has 5 strips.
 - MEASURED: real `stripComments` with the staged rule over EVERY tracked functions/src file (465 files, all in scope). One file changes: `llm/gemini-client.ts`, where "// (flows-roles-budget.md), so the marker must match" becomes "// so the marker must match". That is a comment line and reads cleanly. The TS literal scan still finds 0 string/template literals with a comment-shaped interior line (463 .ts). The only other new-name hit, the `account/mfa-backup-codes.ts` "(Skarmar v12 etapp 6" reference, is wrapped across lines and is not struck, because stripping works per line; that file stays reviewed. `flutter test test/unit/theme/mechanical_rewrites_test.dart`: 38 passed.
+
+### 2026-11-02 — ingredient_change_requests rules suite: type conjuncts unpinned [rules-test]
+Commit-gate review of `ingredient-change-requests-rules.test.ts` (admin-vy-b). Scratchpad
+mutation probe against the emulator (127.0.0.1:8080), rules copy + suite copy with fresh
+PROJECT_IDs, repo untouched: deleting `ingredientId is string`, `textOk`'s `c.new is string`,
+`textOk`'s `c.old is string`, `listOk`'s `c.old is list`, and `note is string` each left the
+suite 71/71 green. Cause: the deny payloads were numbers (`42`, `5`), refused by `size()`'s
+evaluation error anyway; `listOk` old had only an over-size deny. Replacing the payloads with
+`["garlic"]`/`["x"]` and adding per-column `old: ["x"]` (text) and `old: "egg"` (list) denies
+killed every mutant (86/86 on base rules, 1–10 reds per mutant). Folded into the client-guards
+`is string` bullet: the `is list` mirror and the per-side rule.
+- Re-review same day: fix applied as prescribed. Staged suite 86/86 on base rules; each of the five
+  mutants plus a separate `batchId is string` deletion now fails 1–10 tests. Verdict pass.
+
+### 2026-11-02 — ingredient_change_requests erasure leg, batch 1 review [gdpr-erasure][ci-wiring]
+- Reviewed `account/cascade/ingredient-change-requests.ts`, `request-account-deletion.ts`,
+  `cleanup/on-user-deleted.ts`, `account/cascade/residual-probe.ts` (staged = worktree, blob hashes
+  matched). Deleter and probe use the same two predicates (`createdBy ==`, `withdrawnBy ==`); rules
+  pin both fields to `request.auth.uid`, so no planted-uid false residue. Page size 250 x 2 ops = one
+  chunk per page, so a failed `strict:false` chunk returns the identical page and the no-shrink guard
+  stops the loop. Dart `fromFirestore` tolerates null `createdBy`.
+- tsc clean; `test:request-account-deletion` green; emulator `request-account-deletion.integration`
+  71/71. `test:ingredient-change-requests-erasure` 19/22: `rulesBlock()` slices from the match line to
+  the first `allow delete`, and `ch.keys().hasOnly` sits at offset 230483 vs slice end 229513 — the
+  `changesOk` helpers are declared after `allow delete`. Test defect, not a rules drift. Principle
+  folded into the ci-wiring chapter.
+
+### 2026-11-02 — ingredient_change_requests erasure leg, batch 2 review [gdpr-erasure][ci-wiring]
+- Reviewed `exports/erasure-residue/account-sections.ts`, `shared/collections.ts`,
+  `__tests__/ingredient-change-requests-erasure.test.ts`, `__tests__/_erasure-residue-cases-2.ts`
+  (staged = worktree). Export predicates equal the deleter's (`createdBy ==`, `withdrawnBy ==`), so
+  Art. 15 reaches nothing Art. 17 cannot; a withdrawn-only row exports ingredientId/status/withdrawnAt.
+- Coordinator's `rulesBlock()` fix (brace-depth scan to the match block's close) verified: suite 22/22.
+  Mutation via a `-r` preload redirecting `fs.readFileSync` to a scratch rules copy: unmutated copy
+  22/22; renaming `'carbon_footprint_category'` in `changesOk` -> 21/22 (columns pin); flipping
+  `textOk(ch.get('typical_unit'` to `listOk` -> 21/22 (list/scalar pin).
+- `test:erasure-residue` 124/124, `test:erasure-export-coverage` 17/17. Over-cap fixture seeds only
+  `createdBy`; the `withdrawnBy` cap path is unexercised (Low).
+
+### 2026-11-02 — ingredient_change_requests erasure leg, batch 3 + whole-diff verdict [gdpr-erasure]
+- Reviewed `erasure-export-coverage.test.ts` (COVERAGE entry -> residue section),
+  `request-account-deletion.test.ts` (step name in `expected`; the empty fake makes the scrub return
+  true, so dropping the tier entry reddens it), `request-account-deletion.integration.test.ts`
+  (seeds own/withdrawn/control, asserts nulls, kept note, 2 audit rows; runs in CI via
+  `test:rules:all`). Staged `package.json` registers `test:ingredient-change-requests-erasure`; the
+  suite file is staged beside it. `check-test-registration.js` OK (4 pre-existing BUT-1702 warnings).
+  Whole 12-file diff: pass, no blocking. No new principle.

@@ -151,7 +151,12 @@ impossible anyway — a user-scoped parent path needs the very uid being resolve
   census counts every `hasOnly(` in the file and reddens on the new one until it is either
   compared against a writer or registered in `_knowinglyUncovered` with an anchor. A
   TypeScript-only verification run ships it red, and this file's own docstring records that
-  chronic red is what disarmed the guard last time.
+  chronic red is what disarmed the guard last time. An `affectedKeys().hasOnly` on an UPDATE
+  limb is classified there as a diff restriction and has NO writer comparison, so the Dart
+  side of a hand-built `update({...})` map is pinned only by its repository test — and a
+  fake-Firestore `update()` MERGES, so a test asserting each expected key's value passes with
+  an extra key added. "Writes exactly these keys" needs a whole-document before/after
+  key-set comparison (or a captured-map mock), not per-key `expect`s.
 - Moving a denied client write into a CALLABLE puts the doc behind an Admin-SDK read, so
   every distinguishable response is an oracle for a doc the caller can't read — collapse
   not-found/not-a-member/already-done into one reply, but first prove the doc EXISTS on the

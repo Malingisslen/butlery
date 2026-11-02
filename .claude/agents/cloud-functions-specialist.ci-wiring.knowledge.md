@@ -59,4 +59,11 @@
   patches `process.stdout/stderr.write`; patching `console.*` captured nothing from
   `firebase-functions/logger`.
 - A callable whose handler is not `async` lets the App Check guard's scan run on to the next `async` in the file, so a second `enforceAppCheck: true` before that point could hide the flag's removal; keep one callable per file or make the handler `async`.
+- **A source pin slicing a `firestore.rules` match block must end where the BLOCK ends, never at
+  its first `allow delete`** — helper `function`s (`changesOk`, `textOk`) are declared below the
+  `allow` lines, so such a slice cannot see them and the pin is red on the committed rules. Prove
+  each anchor sits inside the slice (`indexOf(anchor) < end`) before trusting a FAIL as drift.
+  Prove such a pin bites WITHOUT touching the tree: `ts-node -r <preload>` that patches
+  `fs.readFileSync` to serve a mutated scratch copy, run once on an UNMUTATED copy (must stay green)
+  and once per mutant.
 - **A guard on how CI names a project must parse every spelling the CLI and actions accept** — `--project`, `-P`, `firebase use`, and action `projectId:`/`project_id:` inputs; a guard reading one spelling passes the others.

@@ -815,6 +815,15 @@ async function seedFixtures(): Promise<void> {
     .doc(`v1:pool-b-${RUN}`)
     .set({ poolKey: `v1:pool-b-${RUN}`, ratingValue: 5, recipeId: "r-other" });
 
+  // --- ingredient_change_requests: the target's uid is nulled, the proposal
+  //     kept; OTHER's proposal is the scope control. ---
+  await db.collection("ingredient_change_requests").doc(`icr-own-${RUN}`)
+    .set({ ingredientId: "tomat", status: "pending", createdBy: TARGET, note: "kvar" });
+  await db.collection("ingredient_change_requests").doc(`icr-withdrawn-${RUN}`)
+    .set({ ingredientId: "lok", status: "withdrawn", createdBy: OTHER, withdrawnBy: TARGET });
+  await db.collection("ingredient_change_requests").doc(`icr-control-${RUN}`)
+    .set({ ingredientId: "gurka", status: "withdrawn", createdBy: OTHER, withdrawnBy: OTHER });
+
   // --- users/{target} root doc (deleted last) ---
   await db.collection("users").doc(TARGET).set({ displayName: "Target" });
 }
@@ -1960,6 +1969,23 @@ test("canonical_rating_events: another user's pool event is retained", async () 
     await exists(`users/${OTHER}/canonical_rating_events/v1:pool-b-${RUN}`),
     "control pool event owned by OTHER must survive",
   );
+});
+
+test("ingredient_change_requests: the target's uid is nulled and the proposals kept", async () => {
+  const own = await dataAt(`ingredient_change_requests/icr-own-${RUN}`);
+  assert(own.createdBy === null && own.note === "kvar", `own: ${JSON.stringify(own)}`);
+  const withdrawn = await dataAt(`ingredient_change_requests/icr-withdrawn-${RUN}`);
+  assert(
+    withdrawn.withdrawnBy === null && withdrawn.createdBy === OTHER,
+    `withdrawn: ${JSON.stringify(withdrawn)}`,
+  );
+  const control = await dataAt(`ingredient_change_requests/icr-control-${RUN}`);
+  assert(control.createdBy === OTHER && control.withdrawnBy === OTHER, "control untouched");
+  const audits = await db
+    .collection("audit_logs")
+    .where("resourceType", "==", "ingredient_change_requests")
+    .get();
+  assert(audits.size === 2, `expected 2 audit rows, got ${audits.size}`);
 });
 
 // I-CRE3: the residual probe found no leftover events — otherwise the cascade

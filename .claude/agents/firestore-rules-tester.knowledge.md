@@ -32,6 +32,7 @@ chapter over 20,000.
 | `users/{uid}/friend_categories` (owner create/update, member self-edit) | `friend-categories-rules.test.ts` | `test:rules:friend-categories` |
 | `/shopping_list_templates`, `/menu_templates` (block REMOVED; every client op denied) | `shopping-list-templates-rules.test.ts`, `menu-templates-rules.test.ts` | `test:rules:shopping-list-templates`, `test:rules:menu-templates` |
 | BUT-920 guest mode: every `!isGuest()` limb, `isAgeCompliant()`'s guest clause, `/guest_quotas` | `guest-mode-rules.test.ts` | `test:rules:guest-mode` |
+| `/ingredient_change_requests` (admin read/create, withdraw-only update) | `ingredient-change-requests-rules.test.ts` | `test:rules:ingredient-change-requests` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---
@@ -160,10 +161,10 @@ chapter over 20,000.
   file in the scratchpad; run with those env vars set. The real file stays
   byte-identical by construction — no restore step to skip on a timeout — and a fresh
   project id keeps mutant writes out of the real namespace.
-- **`firestore.rules` is CRLF** — a literal template-string `.replace()`/`.includes()`
-  never matches; use a whitespace-tolerant regex, assert the match count, and use the
-  `/g` flag whenever the mutated literal appears more than once (a non-global replace
-  silently patches only the first occurrence and reports a false "still denied"). Write
-  the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
-  string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
-  identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
+- **Line endings in `firestore.rules` depend on the checkout** (0 CR bytes on the Linux
+  sandbox, 2026-11-02) — count with `grep -c $'\r'` before relying on either. Mutate with a
+  whitespace-tolerant regex or an exact-count splice, assert the match count, and use `/g`
+  when the literal recurs (a non-global replace patches only the first and reports a false
+  "still denied"). Write the mutator to a heredoc FILE and `diff` the mutant before running
+  it — a CEL string list quoted inside `node -e '...'` loses its quotes to bash and yields a
+  deny-everything mutant.

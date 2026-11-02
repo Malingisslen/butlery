@@ -30,6 +30,8 @@ import 'dart:io';
 
 import 'package:butlery/models/cook_event.dart';
 import 'package:butlery/models/feedback_entry.dart';
+import 'package:butlery/models/tagging/ingredient_change_request.dart';
+import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'rules_source.dart';
@@ -157,6 +159,57 @@ final _requiredLists = <_Required>[
       'createdBy',
       'clickCount',
     },
+  ),
+  // The narrowest create: no optional key, so every required key must still
+  // be in it.
+  _Required(
+    label: 'ingredient_change_requests create',
+    anchor: 'match /ingredient_change_requests/{requestId}',
+    mustContain: 'createdBy',
+    writer: 'IngredientChangeRequest.toFirestore',
+    sent: () => const IngredientChangeRequest(
+      ingredientId: 'garlic',
+      changes: [
+        IngredientFieldChange(
+          column: IngredientColumn.status,
+          oldValue: 'draft',
+          newValue: 'validated',
+        ),
+      ],
+    ).toFirestore().keys.toSet(),
+  ),
+  _Required(
+    label: 'ingredient_change_requests textOk',
+    anchor: 'function textOk',
+    mustContain: 'old',
+    writer: 'IngredientFieldChange.toMap',
+    sent: () => const IngredientFieldChange(
+      column: IngredientColumn.swedish,
+      oldValue: '',
+      newValue: 'x',
+    ).toMap().keys.toSet(),
+  ),
+  _Required(
+    label: 'ingredient_change_requests listOk',
+    anchor: 'function listOk',
+    mustContain: 'old',
+    writer: 'IngredientFieldChange.toMap',
+    sent: () => const IngredientFieldChange(
+      column: IngredientColumn.properties,
+      oldValue: <String>[],
+      newValue: <String>['egg'],
+    ).toMap().keys.toSet(),
+  ),
+  _Required(
+    label: 'ingredient_change_requests priceOk',
+    anchor: 'function priceOk',
+    mustContain: 'old',
+    writer: 'IngredientFieldChange.toMap',
+    sent: () => const IngredientFieldChange(
+      column: IngredientColumn.avgPriceSek,
+      oldValue: null,
+      newValue: 12.5,
+    ).toMap().keys.toSet(),
   ),
 ];
 

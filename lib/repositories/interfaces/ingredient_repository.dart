@@ -8,6 +8,10 @@ abstract class IngredientRepository {
   /// Get ingredient by ID.
   Future<IngredientData?> getById(String id);
 
+  /// The ingredient as the server holds it right now, bypassing the local
+  /// cache. Throws when the server cannot be reached.
+  Future<IngredientData?> getByIdFromServer(String id);
+
   /// Find ingredient by exact name match.
   ///
   /// Searches Swedish and English names.
