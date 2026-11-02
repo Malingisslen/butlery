@@ -8,6 +8,7 @@ library;
 
 import 'package:clock/clock.dart';
 
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -115,7 +116,8 @@ class MenuPlacementViewModel extends BaseViewModel {
   }) : _service = service,
        _recipeById = recipeById,
        _readDislikes =
-           readDislikes ?? const MealDislikesResolver().readDislikes,
+           readDislikes ??
+           MealDislikesResolver(householdLinksFromLocator()).readDislikes,
        _allergenScope = allergenScope,
        _allergenScopeOn = allergenScopeOn ?? _never,
        _parsedRequest = parsedRequest,

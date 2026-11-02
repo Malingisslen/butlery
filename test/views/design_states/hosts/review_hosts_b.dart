@@ -114,7 +114,11 @@ Future<void> _household() async {
   TestServiceLocator.registerSingleton<HouseholdRepository>(households);
   TestServiceLocator.registerSingleton<DinerProfileRepository>(diners);
   TestServiceLocator.registerSingleton<HouseholdRosterService>(
-    HouseholdRosterService(),
+    HouseholdRosterService(
+      householdRepository: households,
+      dinerProfileRepository: diners,
+      userService: TestServiceLocator.get<UserService>(),
+    ),
   );
   final household = await households.ensureForUser(_me);
   for (final (name, band) in [

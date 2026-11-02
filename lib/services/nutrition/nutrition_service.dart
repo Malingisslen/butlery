@@ -1,14 +1,12 @@
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/services/nutrition/nutrition_table.dart';
-import 'package:butlery/services/permission_service.dart';
 
 /// Nutrition values for a recipe (BUT-643), computed on the device from
 /// Livsmedelsverket's bundled table and the household's own food choices.
@@ -18,14 +16,20 @@ import 'package:butlery/services/permission_service.dart';
 class NutritionService extends BaseService {
   NutritionService({
     required HouseholdRepository householdRepository,
+    required String? Function() currentUserId,
     AssetBundle? bundle,
   }) : _households = householdRepository,
+       _currentUserId = currentUserId,
        _bundle = bundle ?? rootBundle;
 
   static const String foodsAsset = 'assets/data/livsmedel_naring.json';
   static const String matchingAsset = 'assets/data/naring_matchning.json';
 
   final HouseholdRepository _households;
+
+  // The auth handle: the household repository refuses any caller that is not
+  // the named user.
+  final String? Function() _currentUserId;
   final AssetBundle _bundle;
 
   Future<NutritionTable>? _table;
@@ -38,10 +42,7 @@ class NutritionService extends BaseService {
   @override
   String get serviceName => 'NutritionService';
 
-  // The auth handle: the household repository refuses any caller that is not
-  // the named user.
-  String? get _userId =>
-      ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+  String? get _userId => _currentUserId();
 
   Future<NutritionTable> table() => _table ??= _loadTable();
 

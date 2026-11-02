@@ -99,7 +99,9 @@ void main() {
     auth = TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
     auth.setAuthState(userId: _userId, isAuthenticated: true);
     final permissions = _MockPermissionService();
-    when(() => permissions.currentUserId).thenReturn(_userId);
+    // BUT-1508: the locator's PermissionService is a decoy with another user
+    // id; the service must use the id it was handed.
+    when(() => permissions.currentUserId).thenReturn('decoy-user');
     TestServiceLocator.registerSingleton<PermissionService>(permissions);
 
     households = _MockHouseholdRepository();
@@ -115,6 +117,7 @@ void main() {
     ).thenAnswer((_) async => _household({}, id: 'hh-ensured'));
     service = NutritionService(
       householdRepository: households,
+      currentUserId: () => _userId,
       bundle: _bundle,
     );
   });

@@ -1,15 +1,13 @@
 // lib/services/menu/meal_dislikes.dart
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/dislike_vocabulary.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/active_household.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
-import 'package:butlery/services/permission_service.dart';
 
 /// Who dislikes what, read against one week's who's-home (BUT-1625).
 ///
@@ -83,16 +81,18 @@ class MealDislikes {
 /// apart from it on purpose: a failure here must never touch the allergen
 /// path.
 class MealDislikesResolver {
-  const MealDislikesResolver();
+  const MealDislikesResolver(this._links);
+
+  final HouseholdLinks _links;
 
   /// memberId → dislike keys. Empty when there is no household, nothing is
   /// wired, or the read fails: a dislike is not a safety control, so the
   /// menu then simply places dishes as it did before dislikes counted.
   Future<Map<String, Set<String>>> readDislikes() async {
     try {
-      final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
-      final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
-      final uid = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+      final rosterService = _links.roster();
+      final householdRepo = _links.households();
+      final uid = _links.currentUserId();
       if (rosterService == null || householdRepo == null || uid == null) {
         return const {};
       }

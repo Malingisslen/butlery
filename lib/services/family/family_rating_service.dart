@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -28,13 +27,23 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 ///    via `enteredByUid` ("inmatat av X"), and never touches that member's personal
 ///    rating.
 class FamilyRatingService extends BaseService {
+  FamilyRatingService({
+    required FamilyRatingRepository ratings,
+    required UnifiedRecipeService recipeService,
+    required auth.AuthRepository authRepository,
+    required FirestoreRepository firestoreRepository,
+  }) : _ratings = ratings,
+       _recipeService = recipeService,
+       _authRepository = authRepository,
+       _firestoreRepository = firestoreRepository;
+
   @override
   String get serviceName => 'FamilyRatingService';
 
-  FamilyRatingRepository get _ratings =>
-      ServiceLocator.get<FamilyRatingRepository>();
-  UnifiedRecipeService get _recipeService =>
-      ServiceLocator.get<UnifiedRecipeService>();
+  final FamilyRatingRepository _ratings;
+  final UnifiedRecipeService _recipeService;
+  final auth.AuthRepository _authRepository;
+  final FirestoreRepository _firestoreRepository;
 
   /// Record [member]'s star verdict on [recipeId]. Upserts (latest-verdict-wins)
   /// and, for an adult self-rating on their own device, mirrors to the personal
@@ -138,10 +147,10 @@ class FamilyRatingService extends BaseService {
       final recipe = _recipeService.getRecipeById(recipeId);
       if (recipe == null || !recipe.isPersonal) return;
 
-      final uid = ServiceLocator.get<auth.AuthRepository>().currentUserId;
+      final uid = _authRepository.currentUserId;
       if (uid == null) return;
 
-      final firestore = ServiceLocator.get<FirestoreRepository>().firestore;
+      final firestore = _firestoreRepository.firestore;
       final recipeRef = firestore
           .collection(FirestoreCollections.users)
           .doc(uid)

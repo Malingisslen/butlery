@@ -36,6 +36,7 @@ class UserService extends ChangeNotifier
 
   final PermissionService Function() _permissionService;
   final ProfileSearchabilityService? Function() _profileSearchability;
+  final OwnAllergenShareMirror _allergenShareMirror;
 
   UserService({
     required UserRepository repository,
@@ -43,11 +44,13 @@ class UserService extends ChangeNotifier
     required FirestoreRepository firestoreRepository,
     required PermissionService Function() permissionService,
     required ProfileSearchabilityService? Function() profileSearchability,
+    required OwnAllergenShareMirror allergenShareMirror,
   }) : _repository = repository,
        _authRepository = authRepository,
        _firestoreRepository = firestoreRepository,
        _permissionService = permissionService,
-       _profileSearchability = profileSearchability;
+       _profileSearchability = profileSearchability,
+       _allergenShareMirror = allergenShareMirror;
 
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
@@ -1016,7 +1019,7 @@ class UserService extends ChangeNotifier
         '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}',
       );
 
-      final sharedCopies = await const OwnAllergenShareMirror().sharesFor(
+      final sharedCopies = await _allergenShareMirror.sharesFor(
         userId,
         preferences,
       );

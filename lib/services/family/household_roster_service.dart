@@ -1,5 +1,4 @@
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/profile_lookup.dart';
@@ -15,14 +14,20 @@ import 'package:butlery/services/user_service.dart';
 /// membership-gated by the underlying repositories; a non-member caller (or an
 /// unknown household) yields an empty roster rather than an error.
 class HouseholdRosterService extends BaseService {
+  HouseholdRosterService({
+    required HouseholdRepository householdRepository,
+    required DinerProfileRepository dinerProfileRepository,
+    required UserService userService,
+  }) : _householdRepository = householdRepository,
+       _dinerProfileRepository = dinerProfileRepository,
+       _userService = userService;
+
   @override
   String get serviceName => 'HouseholdRosterService';
 
-  HouseholdRepository get _householdRepository =>
-      ServiceLocator.get<HouseholdRepository>();
-  DinerProfileRepository get _dinerProfileRepository =>
-      ServiceLocator.get<DinerProfileRepository>();
-  UserService get _userService => ServiceLocator.get<UserService>();
+  final HouseholdRepository _householdRepository;
+  final DinerProfileRepository _dinerProfileRepository;
+  final UserService _userService;
 
   /// Resolve every member of [householdId] — accounts first (in stored member
   /// order), then diner profiles. Returns an empty list if the household is

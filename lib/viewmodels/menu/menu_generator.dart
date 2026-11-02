@@ -1,6 +1,7 @@
 // lib/viewmodels/menu/menu_generator.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -316,7 +317,9 @@ class MenuGenerator {
   _resolveActivePrefs() async {
     final present = presentMemberIds;
     if (present != null && present.isNotEmpty) {
-      final resolved = await const PresentDinerPrefsResolver().resolve(present);
+      final resolved = await PresentDinerPrefsResolver(
+        householdLinksFromLocator(),
+      ).resolve(present);
       if (resolved != null) {
         return (
           resolved.preferences,
@@ -357,8 +360,9 @@ class MenuGenerator {
     // is only shown with a friend-based household, so without one a stale
     // `false` must not silently drop a child's allergens.
     if (useHouseholdAllergens || !hasFriendHousehold) {
-      final withDiners = await const PresentDinerPrefsResolver()
-          .addHouseholdDiners(prefs);
+      final withDiners = await PresentDinerPrefsResolver(
+        householdLinksFromLocator(),
+      ).addHouseholdDiners(prefs);
       if (withDiners != null && withDiners.changed) {
         final complete =
             withDiners.prefs.isComplete && !source.isRosterIncomplete;

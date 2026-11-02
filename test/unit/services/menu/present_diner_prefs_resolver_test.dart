@@ -16,6 +16,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/household_service.dart';
@@ -44,6 +45,30 @@ class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 class _MockUserService extends Mock implements UserService {}
 
+class _MockHouseholdService extends Mock implements HouseholdService {}
+
+/// What the links resolve to; a test nulls a field to stage a collaborator
+/// that is not wired.
+class _Linked {
+  _Linked({this.households, this.roster, this.flags, this.userId});
+
+  HouseholdRepository? households;
+  HouseholdRosterService? roster;
+  FeatureFlagService? flags;
+  HouseholdService? householdService;
+  String? userId;
+}
+
+HouseholdLinks _links(_Linked linked) => HouseholdLinks(
+  featureFlags: () => linked.flags,
+  households: () => linked.households,
+  dinerProfiles: () => null,
+  roster: () => linked.roster,
+  householdService: () => linked.householdService,
+  allergenShares: () => null,
+  currentUserId: () => linked.userId,
+);
+
 const _self = 'u1';
 const _kid = 'm-kid';
 
@@ -68,6 +93,8 @@ void main() {
   late _MockUserService userService;
   late _MockHouseholdRosterService roster;
   late _MockHouseholdRepository hhRepo;
+  late _Linked linked;
+  late HouseholdLinks links;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
@@ -102,9 +129,6 @@ void main() {
       ),
     );
 
-    final perm = _MockPermissionService();
-    when(() => perm.currentUserId).thenReturn(_self);
-
     hhRepo = _MockHouseholdRepository();
     when(() => hhRepo.getActiveForUser(_self)).thenAnswer(
       (_) async => Household(
@@ -132,23 +156,48 @@ void main() {
     when(() => friends.categories).thenReturn(categoriesOps);
     when(() => categoriesOps.categoriesList).thenReturn(const []);
 
-    TestServiceLocator.registerSingleton<UserService>(userService);
-    TestServiceLocator.registerSingleton<PermissionService>(perm);
-    TestServiceLocator.registerSingleton<HouseholdRepository>(hhRepo);
-    TestServiceLocator.registerSingleton<HouseholdRosterService>(roster);
-    TestServiceLocator.registerSingleton<FeatureFlagService>(flags);
-    TestServiceLocator.registerSingleton<UnifiedFriendsService>(friends);
-    TestServiceLocator.registerSingleton<HouseholdService>(HouseholdService());
+    linked = _Linked(
+      households: hhRepo,
+      roster: roster,
+      flags: flags,
+      userId: _self,
+    );
+    links = _links(linked);
+    linked.householdService = HouseholdService(
+      friendsService: friends,
+      userService: userService,
+      links: links,
+    );
+
+    // BUT-1508: the locator holds unstubbed decoys of every linked type
+    // (signed out, no household, no roster), so a resolver that reached past
+    // its links would answer null or the cautious floor and fail the tests.
+    TestServiceLocator.registerSingleton<UserService>(_MockUserService());
+    TestServiceLocator.registerSingleton<PermissionService>(
+      _MockPermissionService(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdRepository>(
+      _MockHouseholdRepository(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdRosterService>(
+      _MockHouseholdRosterService(),
+    );
+    TestServiceLocator.registerSingleton<FeatureFlagService>(
+      _MockFeatureFlags(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdService>(
+      _MockHouseholdService(),
+    );
     (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
         .setAuthState(userId: _self);
   });
 
   group('no HouseholdService to resolve the adults', () {
-    setUp(TestServiceLocator.unregister<HouseholdService>);
+    setUp(() => linked.householdService = null);
 
     test('a present adult gets the floor with UNKNOWN closed, reported '
         'incomplete — never "no allergies"', () async {
-      final result = await const PresentDinerPrefsResolver().resolve([
+      final result = await PresentDinerPrefsResolver(links).resolve([
         _self,
         _kid,
       ]);
@@ -163,7 +212,7 @@ void main() {
         'diet', () async {
       useRoster(null);
 
-      final result = await const PresentDinerPrefsResolver().resolve([_self]);
+      final result = await PresentDinerPrefsResolver(links).resolve([_self]);
 
       expect(result, isNotNull);
       expect(result!.preferences.trackedAllergens, _floor);
@@ -175,7 +224,7 @@ void main() {
 
   test('a meal eaten only by diner profiles is complete, carries their '
       'allergens and reads no account', () async {
-    final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+    final result = await PresentDinerPrefsResolver(links).resolve([_kid]);
 
     expect(result, isNotNull);
     expect(result!.preferences.trackedAllergens, {'sesam'});
@@ -195,7 +244,7 @@ void main() {
       ]);
 
       // The child alone, so nothing but the derived default decides the hatch.
-      final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+      final result = await PresentDinerPrefsResolver(links).resolve([_kid]);
 
       expect(result, isNotNull);
       expect(result!.preferences.trackedAllergens, {'sesam'});
@@ -211,7 +260,7 @@ void main() {
       _kidDiner(includeUnknownInMenu: false),
     ]);
 
-    final result = await const PresentDinerPrefsResolver().resolve([
+    final result = await PresentDinerPrefsResolver(links).resolve([
       _self,
       _kid,
     ]);
@@ -258,7 +307,7 @@ void main() {
     });
 
     test('her own child, ticked as eating, brings their allergies', () async {
-      final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+      final result = await PresentDinerPrefsResolver(links).resolve([_kid]);
 
       expect(result, isNotNull);
       expect(result!.preferences.trackedAllergens, {'sesam'});
@@ -267,7 +316,8 @@ void main() {
     });
   });
   group('resolveAllExcept (BUT-2362)', () {
-    const resolver = PresentDinerPrefsResolver();
+    late PresentDinerPrefsResolver resolver;
+    setUp(() => resolver = PresentDinerPrefsResolver(links));
 
     test('the child marked away takes their allergens with them', () async {
       final result = await resolver.resolveAllExcept({_kid});
@@ -328,7 +378,7 @@ void main() {
     });
 
     test('without a HouseholdService there is no answer', () async {
-      TestServiceLocator.unregister<HouseholdService>();
+      linked.householdService = null;
       expect(await resolver.resolveAllExcept({_kid}), isNull);
     });
   });
