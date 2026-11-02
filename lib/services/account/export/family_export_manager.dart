@@ -1,6 +1,5 @@
 // lib/services/account/export/family_export_manager.dart
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -32,32 +31,28 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// cover — not a new consent flow (it only exposes already-consented stored
 /// data).
 class FamilyExportManager {
-  // Test seams: production resolves via ServiceLocator on first use.
-  final HouseholdRepository? _householdRepo;
-  final DinerProfileRepository? _dinerRepo;
-  final FamilyRatingRepository? _familyRatingRepo;
-  final FirebaseDataExportRepository? _exportRepo;
+  // Read at each call, never kept: these three are user-scoped and replaced at
+  // sign-in, while this manager lives in the app-scoped DataExportService.
+  final HouseholdRepository Function() _householdsLink;
+  final DinerProfileRepository Function() _dinersLink;
+  final FamilyRatingRepository Function() _familyRatingsLink;
+  final FirebaseDataExportRepository _exports;
 
   static const String _logTag = 'FamilyExportManager';
 
   FamilyExportManager({
-    HouseholdRepository? householdRepository,
-    DinerProfileRepository? dinerProfileRepository,
-    FamilyRatingRepository? familyRatingRepository,
-    FirebaseDataExportRepository? dataExportRepository,
-  }) : _householdRepo = householdRepository,
-       _dinerRepo = dinerProfileRepository,
-       _familyRatingRepo = familyRatingRepository,
-       _exportRepo = dataExportRepository;
+    required HouseholdRepository Function() households,
+    required DinerProfileRepository Function() dinerProfiles,
+    required FamilyRatingRepository Function() familyRatings,
+    required FirebaseDataExportRepository dataExportRepository,
+  }) : _householdsLink = households,
+       _dinersLink = dinerProfiles,
+       _familyRatingsLink = familyRatings,
+       _exports = dataExportRepository;
 
-  HouseholdRepository get _households =>
-      _householdRepo ?? ServiceLocator.get<HouseholdRepository>();
-  DinerProfileRepository get _diners =>
-      _dinerRepo ?? ServiceLocator.get<DinerProfileRepository>();
-  FamilyRatingRepository get _familyRatings =>
-      _familyRatingRepo ?? ServiceLocator.get<FamilyRatingRepository>();
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+  HouseholdRepository get _households => _householdsLink();
+  DinerProfileRepository get _diners => _dinersLink();
+  FamilyRatingRepository get _familyRatings => _familyRatingsLink();
 
   /// The fields of a share this section carries. An allowlist, so a field
   /// nobody has decided about is withheld rather than exported. `userId` is

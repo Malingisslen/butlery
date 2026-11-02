@@ -4,6 +4,7 @@ library;
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' show UserInfo;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
@@ -11,6 +12,8 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
 class _NoFunctions extends Fake implements FirebaseFunctions {}
+
+class _NoExports extends Fake implements FirebaseDataExportRepository {}
 
 class _Info extends Fake implements UserInfo {
   _Info(this.providerId, this.email, {this.photoURL});
@@ -32,6 +35,7 @@ ComplianceExportManager _manager(String uid, List<UserInfo> providers) {
   when(() => user.providerData).thenReturn(providers);
   return ComplianceExportManager(
     functions: _NoFunctions(),
+    dataExportRepository: _NoExports(),
     authRepository: FakeAuthRepository()
       ..setAuthState(user: user, userId: uid, isAuthenticated: true),
   );

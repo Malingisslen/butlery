@@ -78,12 +78,16 @@ void main() {
     if (GetIt.instance.isRegistered<notif.NotificationService>()) {
       GetIt.instance.unregister<notif.NotificationService>();
     }
-    GetIt.instance.registerSingleton<notif.NotificationService>(notifications);
+    // A decoy in the locator: the service must reset the one it was handed.
+    GetIt.instance.registerSingleton<notif.NotificationService>(
+      _MockNotifications(),
+    );
 
     service = AccountDeletionService(
       authService: auth,
       functions: functions,
-      offlineService: offline,
+      offlineService: () => offline,
+      resetNotificationsForLogout: notifications.resetForLogout,
     );
   });
 
@@ -201,6 +205,20 @@ void main() {
         () => notifications.resetForLogout(),
         () => auth.signOut(),
       ]);
+    });
+
+    test('a failing notification reset still signs out', () async {
+      final failing = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+        offlineService: () => offline,
+        resetNotificationsForLogout: () async =>
+            throw StateError('no user scope'),
+      );
+
+      await failing.signOutAfterScheduling();
+
+      verify(() => auth.signOut()).called(1);
     });
   });
 

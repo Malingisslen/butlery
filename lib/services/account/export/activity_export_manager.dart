@@ -2,7 +2,6 @@
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
@@ -17,35 +16,24 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// instead of direct Firestore access. The repos enforce that the
 /// authenticated caller can only export their own data.
 class ActivityExportManager {
-  // Test seams: production resolves via ServiceLocator on first use; tests
-  // inject fakes that share state with the test fake firestore.
-  final CommentsRepository? _commentsRepo;
-  final RatingsRepository? _ratingsRepo;
-  final FeedbackRepository? _feedbackRepo;
+  final CommentsRepository _comments;
+  final RatingsRepository _ratings;
+  final FeedbackRepository _feedback;
   // Increment 5: the pooled-rating events have no typed repository (CF-only
   // writes), so they read through the export gateway like other residuals.
-  final FirebaseDataExportRepository? _exportRepo;
+  final FirebaseDataExportRepository _exports;
 
   static const String _logTag = 'ActivityExportManager';
 
   ActivityExportManager({
-    CommentsRepository? commentsRepository,
-    RatingsRepository? ratingsRepository,
-    FeedbackRepository? feedbackRepository,
-    FirebaseDataExportRepository? dataExportRepository,
-  }) : _commentsRepo = commentsRepository,
-       _ratingsRepo = ratingsRepository,
-       _feedbackRepo = feedbackRepository,
-       _exportRepo = dataExportRepository;
-
-  CommentsRepository get _comments =>
-      _commentsRepo ?? ServiceLocator.get<CommentsRepository>();
-  RatingsRepository get _ratings =>
-      _ratingsRepo ?? ServiceLocator.get<RatingsRepository>();
-  FeedbackRepository get _feedback =>
-      _feedbackRepo ?? ServiceLocator.get<FeedbackRepository>();
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+    required CommentsRepository commentsRepository,
+    required RatingsRepository ratingsRepository,
+    required FeedbackRepository feedbackRepository,
+    required FirebaseDataExportRepository dataExportRepository,
+  }) : _comments = commentsRepository,
+       _ratings = ratingsRepository,
+       _feedback = feedbackRepository,
+       _exports = dataExportRepository;
 
   /// What a `recipe_comments` row contributes to the bundle (BUT-2062).
   ///

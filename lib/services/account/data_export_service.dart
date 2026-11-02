@@ -82,26 +82,24 @@ class DataExportService extends BaseService {
   DataExportService({
     required auth_repo.AuthRepository authRepository,
     required FirestoreRepository firestoreRepository,
-    // BUT-501: optional repo injections for tests; production resolves
-    // via ServiceLocator on first use inside each manager.
-    CommentsRepository? commentsRepository,
-    RatingsRepository? ratingsRepository,
-    FeedbackRepository? feedbackRepository,
-    CookSnapRepository? cookSnapRepository,
-    CookEventRepository? cookEventRepository,
-    ActivityEventRepository? activityEventRepository,
-    WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
-    GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
-    PantryRepository? pantryRepository,
-    RecipeRepository? recipeRepository,
-    FirebasePersonalTagRepository? personalTagRepository,
-    FirebasePersonalTagGroupRepository? personalTagGroupRepository,
+    required CommentsRepository commentsRepository,
+    required RatingsRepository ratingsRepository,
+    required FeedbackRepository feedbackRepository,
+    required CookSnapRepository cookSnapRepository,
+    required CookEventRepository cookEventRepository,
+    required ActivityEventRepository activityEventRepository,
+    required WeeklyMenuPlanRepository weeklyMenuPlanRepository,
+    required GroupWeeklyMenuPlanRepository groupWeeklyMenuPlanRepository,
+    required PantryRepository pantryRepository,
+    required RecipeRepository recipeRepository,
+    required FirebasePersonalTagRepository personalTagRepository,
+    required FirebasePersonalTagGroupRepository personalTagGroupRepository,
     FirebaseDataExportRepository? dataExportRepository,
-    // Family (Phase 5 item 14) — optional seams; production resolves via
-    // ServiceLocator inside FamilyExportManager.
-    HouseholdRepository? householdRepository,
-    DinerProfileRepository? dinerProfileRepository,
-    FamilyRatingRepository? familyRatingRepository,
+    // User-scoped, so links read at each export rather than instances: this
+    // service is app-scoped and outlives a sign-in.
+    required HouseholdRepository Function() households,
+    required DinerProfileRepository Function() dinerProfiles,
+    required FamilyRatingRepository Function() familyRatings,
     // Test seam: ComplianceExportManager's default ctor calls
     // FirebaseFunctions.instanceFor() which requires Firebase.initializeApp.
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
@@ -158,9 +156,9 @@ class DataExportService extends BaseService {
     _commentReactionsManager = commentReactionsExportManager;
     _moderationAppealsManager = moderationAppealsExportManager;
     _familyManager = FamilyExportManager(
-      householdRepository: householdRepository,
-      dinerProfileRepository: dinerProfileRepository,
-      familyRatingRepository: familyRatingRepository,
+      households: households,
+      dinerProfiles: dinerProfiles,
+      familyRatings: familyRatings,
       dataExportRepository: _exportRepo,
     );
   }

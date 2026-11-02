@@ -4,8 +4,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tag_override_log_entry.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -29,9 +27,11 @@ class _NeverCompletingLogRepository extends TagOverridesLogRepository {
 
 void main() {
   late TagEditingService service;
+  TagOverridesLogRepository? logRepository;
 
   setUp(() {
-    service = TagEditingService();
+    logRepository = null;
+    service = TagEditingService(overridesLog: () => logRepository);
   });
 
   TagResult createTagResult({
@@ -153,18 +153,21 @@ void main() {
       });
 
       // BUT-1473: fire-and-forget capture of the correction into
-      // `tag_overrides_log` via ServiceLocator.tryGet<TagOverridesLogRepository>.
+      // `tag_overrides_log`.
       group('override capture (BUT-1473)', () {
-        // The service reads the PRODUCTION ServiceLocator (DIContainer over
-        // GetIt.instance). Bridging is safe here: applyAllergenOverride's only
-        // locator touch is this repository.
+        late FakeFirebaseFirestore decoyStore;
+
+        // A decoy in the locator: the service must write to the repository it
+        // was handed, never to whatever is registered.
         setUp(() {
-          prod.ServiceLocator.initialize(DIContainer());
+          decoyStore = FakeFirebaseFirestore();
+          GetIt.instance.registerSingleton<TagOverridesLogRepository>(
+            TagOverridesLogRepository(firestore: decoyStore),
+          );
         });
 
         tearDown(() async {
           await GetIt.instance.reset();
-          prod.ServiceLocator.reset();
         });
 
         Future<void> drainFireAndForget() async {
@@ -176,9 +179,7 @@ void main() {
           'captures ONE log entry with the correct correction fields',
           () async {
             final fake = FakeFirebaseFirestore();
-            GetIt.instance.registerSingleton<TagOverridesLogRepository>(
-              TagOverridesLogRepository(firestore: fake),
-            );
+            logRepository = TagOverridesLogRepository(firestore: fake);
 
             final recipe = RecipeBuilder()
                 .withId('recipe-42')
@@ -231,14 +232,16 @@ void main() {
               data['triggeringIngredients'],
               ['vetemjöl', 'ströbröd'],
             );
+            final decoy = await decoyStore
+                .collection(TagOverridesLogRepository.collectionName)
+                .get();
+            expect(decoy.docs, isEmpty);
           },
         );
 
         test(
-          'is a no-op that never throws when no repository is registered',
+          'is a no-op that never throws when the link returns no repository',
           () async {
-            // DIContainer initialized but no TagOverridesLogRepository → tryGet
-            // resolves null (the fire-and-forget guard path).
             final recipe = RecipeBuilder()
                 .withTagResult(createTagResult())
                 .build();
@@ -259,6 +262,10 @@ void main() {
               result.updatedRecipe!.tagOverrides?.allergenOverrides['gluten'],
               TriState.free,
             );
+            final decoy = await decoyStore
+                .collection(TagOverridesLogRepository.collectionName)
+                .get();
+            expect(decoy.docs, isEmpty);
           },
         );
 
@@ -267,9 +274,7 @@ void main() {
           () {
             // A repository whose save future never completes. If the edit
             // awaited capture, applyAllergenOverride could not return here.
-            GetIt.instance.registerSingleton<TagOverridesLogRepository>(
-              _NeverCompletingLogRepository(),
-            );
+            logRepository = _NeverCompletingLogRepository();
 
             final recipe = RecipeBuilder()
                 .withTagResult(createTagResult())

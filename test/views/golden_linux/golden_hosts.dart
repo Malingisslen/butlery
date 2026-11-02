@@ -112,7 +112,7 @@ StateHost minaReceptHostWith({
       () => RecipeListViewModel(
         recipeService: recipeService,
         searchService: search,
-        tagEditingService: TagEditingService(),
+        tagEditingService: TagEditingService(overridesLog: () => null),
       ),
     );
 

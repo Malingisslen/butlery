@@ -6,10 +6,6 @@
 /// guards against is a refactor silently dropping a record type from a
 /// data-subject export — the DataExportService integration test would still
 /// assemble a bundle, so only a direct shape assertion catches it.
-///
-/// Mocking strategy: the manager exposes constructor seams for each
-/// repository (`_commentsRepo ?? ServiceLocator.get<...>()`), so we inject
-/// `Fake` repos that return canned rows — no emulator, no ServiceLocator.
 library;
 
 import 'dart:convert';
@@ -105,6 +101,7 @@ ActivityExportManager _manager({
     commentsRepository: _FakeCommentsRepository(comments),
     ratingsRepository: _FakeRatingsRepository(ratings),
     feedbackRepository: _FakeFeedbackRepository(feedback),
+    dataExportRepository: _FakePooledEventsRepository(const []),
   );
 }
 
@@ -185,6 +182,7 @@ void main() {
         commentsRepository: _ThrowingCommentsRepository(),
         ratingsRepository: _FakeRatingsRepository(const []),
         feedbackRepository: _FakeFeedbackRepository(const []),
+        dataExportRepository: _FakePooledEventsRepository(const []),
       );
 
       final result = await manager.exportCommentsAndRatings('u1');
@@ -292,6 +290,7 @@ void main() {
         commentsRepository: commentsRepo,
         ratingsRepository: _FakeRatingsRepository(const []),
         feedbackRepository: _FakeFeedbackRepository(const []),
+        dataExportRepository: _FakePooledEventsRepository(const []),
       );
 
       await manager.exportCommentsAndRatings('user-42');
@@ -404,6 +403,7 @@ void main() {
         commentsRepository: commentsRepo,
         ratingsRepository: ratingsRepo,
         feedbackRepository: _FakeFeedbackRepository(const []),
+        dataExportRepository: _FakePooledEventsRepository(const []),
       );
 
       await manager.exportCommentsAndRatings('user-uid');
@@ -466,6 +466,7 @@ void main() {
         commentsRepository: _FakeCommentsRepository(const []),
         ratingsRepository: _FakeRatingsRepository(const []),
         feedbackRepository: feedbackRepo,
+        dataExportRepository: _FakePooledEventsRepository(const []),
       );
 
       await manager.exportFeedback('user-uid');

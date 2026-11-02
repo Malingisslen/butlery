@@ -20,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 
@@ -55,6 +56,8 @@ class _ThrowingCommentsRepository extends Fake implements CommentsRepository {
 
 /// BUT-2082: answers the title lookup from [titles], as the rules would: a
 /// recipe the requester cannot open is simply absent.
+class _UnusedFeedbackRepository extends Fake implements FeedbackRepository {}
+
 class _FakeTitleLookup extends Fake implements FirebaseDataExportRepository {
   _FakeTitleLookup({this.titles = const {}, this.throwOnRead = false});
   final Map<String, String> titles;
@@ -85,6 +88,7 @@ ActivityExportManager _manager({
 }) => ActivityExportManager(
   commentsRepository: _FakeCommentsRepository(comments),
   ratingsRepository: _FakeRatingsRepository(ratings),
+  feedbackRepository: _UnusedFeedbackRepository(),
   dataExportRepository: titles ?? _FakeTitleLookup(),
 );
 
@@ -336,6 +340,8 @@ void main() {
       final failed = await ActivityExportManager(
         commentsRepository: _ThrowingCommentsRepository(),
         ratingsRepository: _FakeRatingsRepository(const []),
+        feedbackRepository: _UnusedFeedbackRepository(),
+        dataExportRepository: _FakeTitleLookup(),
       ).exportCommentsAndRatings('me');
 
       final note = empty['data_minimisation'] as String;

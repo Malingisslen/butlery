@@ -71,11 +71,9 @@ class _FakeUserMetadata extends Fake implements UserMetadata {
   DateTime? get lastSignInTime => DateTime.utc(2026, 5, 1);
 }
 
-// BUT-1449: the GDPR export's family section (FamilyExportManager) resolves
-// HouseholdRepository via the production ServiceLocator, which this test does
-// not bridge. Inject a stub whose getForUser returns empty so exportFamily
+// BUT-1449: Inject a stub whose getForUser returns empty so exportFamily
 // short-circuits to an empty section (no 'family-export-failed' warning)
-// instead of throwing on an unregistered/unstubbed repo.
+// instead of throwing on an unstubbed repo.
 class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
 
 class _MockDinerProfileRepository extends Mock
@@ -522,8 +520,7 @@ void main() {
     });
 
     // BUT-501: wire fake-firestore-backed repos so the new export-via-repo
-    // paths exercise end-to-end instead of falling through to ServiceLocator
-    // and silently turning into `{'error': ...}` payloads.
+    // paths exercise end-to-end.
     //
     // BUT-2000: extracted from `setUp` so ONE test can hand in a populated
     // family household without changing what every other test in this group
@@ -534,18 +531,22 @@ void main() {
       DinerProfileRepository? dinerProfileRepository,
       FamilyRatingRepository? familyRatingRepository,
       SharedResidueExportManager? sharedResidueExportManager,
+      FirebaseFunctions? complianceFunctions,
+      FirebaseDataExportRepository? dataExportRepository,
+      FirebaseAuditRepository? auditRepository,
     }) {
+      final households = householdRepository ?? _emptyFamilyHouseholdRepo();
+      final diners = dinerProfileRepository ?? _MockDinerProfileRepository();
+      final familyRatings =
+          familyRatingRepository ?? _MockFamilyRatingRepository();
       return DataExportService(
         authRepository: mockAuthRepository,
         firestoreRepository: mockFirestoreRepository,
-        householdRepository: householdRepository ?? _emptyFamilyHouseholdRepo(),
-        dinerProfileRepository: dinerProfileRepository,
-        familyRatingRepository: familyRatingRepository,
+        households: () => households,
+        dinerProfiles: () => diners,
+        familyRatings: () => familyRatings,
         // Inject a manager wired to the fake-functions stub so the
         // constructor doesn't hit FirebaseFunctions.instanceFor().
-        // BUT-842: also inject a fake-firestore-backed dataExportRepository so
-        // exportConsentRecords doesn't fall through to ServiceLocator (the
-        // manager re-throws unknown errors instead of swallowing them).
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
         erasureResidueExportManager: _erasureResidueOk(),
@@ -553,7 +554,7 @@ void main() {
         moderationAppealsExportManager: _moderationAppealsOk(),
         complianceExportManager: ComplianceExportManager(
           authRepository: mockAuthRepository,
-          functions: _FakeFirebaseFunctions(),
+          functions: complianceFunctions ?? _FakeFirebaseFunctions(),
           dataExportRepository: FirebaseDataExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
@@ -610,10 +611,13 @@ void main() {
           firestore: fakeFirestore,
           authRepository: mockAuthRepository,
         ),
-        dataExportRepository: FirebaseDataExportRepository(
-          firestore: fakeFirestore,
-          authRepository: mockAuthRepository,
-        ),
+        dataExportRepository:
+            dataExportRepository ??
+            FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+        auditRepository: auditRepository,
       );
     }
 
@@ -682,26 +686,7 @@ void main() {
 
       setUp(() {
         spyAudit = _SpyAuditRepository(fakeFirestore);
-        auditedService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          householdRepository: _emptyFamilyHouseholdRepo(),
-          sharedResidueExportManager: _sharedResidueOk(),
-          erasureResidueExportManager: _erasureResidueOk(),
-          commentReactionsExportManager: _commentReactionsOk(),
-          moderationAppealsExportManager: _moderationAppealsOk(),
-          complianceExportManager: ComplianceExportManager(
-            authRepository: mockAuthRepository,
-            functions: _FakeFirebaseFunctions(),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
-          ),
-          dataExportRepository: FirebaseDataExportRepository(
-            firestore: fakeFirestore,
-            authRepository: mockAuthRepository,
-          ),
+        auditedService = buildService(
           auditRepository: spyAudit,
         );
       });
@@ -2023,26 +2008,8 @@ void main() {
           // transient FirebaseFunctionsException. ComplianceExportManager will
           // catch + return the BUT-842 envelope; DataExportService should then
           // aggregate it into a top-level `warnings` array on export_metadata.
-          final transientService = DataExportService(
-            authRepository: mockAuthRepository,
-            firestoreRepository: mockFirestoreRepository,
-            householdRepository: _emptyFamilyHouseholdRepo(),
-            sharedResidueExportManager: _sharedResidueOk(),
-            erasureResidueExportManager: _erasureResidueOk(),
-            commentReactionsExportManager: _commentReactionsOk(),
-            moderationAppealsExportManager: _moderationAppealsOk(),
-            complianceExportManager: ComplianceExportManager(
-              authRepository: mockAuthRepository,
-              functions: _TransientFirebaseFunctions(),
-              dataExportRepository: FirebaseDataExportRepository(
-                firestore: fakeFirestore,
-                authRepository: mockAuthRepository,
-              ),
-            ),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
+          final transientService = buildService(
+            complianceFunctions: _TransientFirebaseFunctions(),
           );
 
           final jsonString = await transientService.exportUserData();
@@ -2062,11 +2029,8 @@ void main() {
                 'bundle without scanning every section.',
           );
           // Scoped to audit_logs rather than asserting the whole array's
-          // length: this fixture does not wire every manager, so sections it
-          // leaves unwired fail here and always did. BUT-1721 is precisely the
-          // change that stopped those failures being invisible at bundle level.
-          // The over-warning direction is guarded by the fully-wired happy-path
-          // test below, which asserts NO warnings key.
+          // length. The over-warning direction is guarded by the fully-wired
+          // happy-path test below, which asserts NO warnings key.
           final auditEntries = warnings!
               .cast<Map<String, dynamic>>()
               .where((w) => w['section'] == 'audit_logs')
@@ -2130,22 +2094,7 @@ void main() {
         // a LIST — so the pre-fix walk (`for (final nested in value.values)`
         // with an `is Map` test) could never see it: the list itself is not a
         // Map, and the flag is one level further down.
-        final clippedService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          householdRepository: _emptyFamilyHouseholdRepo(),
-          sharedResidueExportManager: _sharedResidueOk(),
-          erasureResidueExportManager: _erasureResidueOk(),
-          commentReactionsExportManager: _commentReactionsOk(),
-          moderationAppealsExportManager: _moderationAppealsOk(),
-          complianceExportManager: ComplianceExportManager(
-            authRepository: mockAuthRepository,
-            functions: _FakeFirebaseFunctions(),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
-          ),
+        final clippedService = buildService(
           dataExportRepository: _ClippedConversationsExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
@@ -2197,22 +2146,7 @@ void main() {
         // Most export sections still fail with `{'error': ...}` alone; keying
         // the lift on `error_code` meant a whole Art. 15 section could be
         // missing while the metadata claimed the bundle was complete.
-        final failingService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          householdRepository: _emptyFamilyHouseholdRepo(),
-          sharedResidueExportManager: _sharedResidueOk(),
-          erasureResidueExportManager: _erasureResidueOk(),
-          commentReactionsExportManager: _commentReactionsOk(),
-          moderationAppealsExportManager: _moderationAppealsOk(),
-          complianceExportManager: ComplianceExportManager(
-            authRepository: mockAuthRepository,
-            functions: _FakeFirebaseFunctions(),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
-          ),
+        final failingService = buildService(
           dataExportRepository: _FailingProfileExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
@@ -2288,22 +2222,7 @@ void main() {
       /// authority, so an over-claim costs as much as an under-claim.
       test('a section that sets error_code WITHOUT error is reported as '
           'incomplete, not as failed', () async {
-        final partialService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          householdRepository: _emptyFamilyHouseholdRepo(),
-          sharedResidueExportManager: _sharedResidueOk(),
-          erasureResidueExportManager: _erasureResidueOk(),
-          commentReactionsExportManager: _commentReactionsOk(),
-          moderationAppealsExportManager: _moderationAppealsOk(),
-          complianceExportManager: ComplianceExportManager(
-            authRepository: mockAuthRepository,
-            functions: _FakeFirebaseFunctions(),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
-          ),
+        final partialService = buildService(
           dataExportRepository: _PartialSettingsExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
@@ -2360,26 +2279,8 @@ void main() {
           // `'message': value['error'] ?? value['note'] ?? 'Unknown error'` in
           // `data_export_service.dart` and both isNot(contains(...)) assertions
           // below redden.
-          final leakyService = DataExportService(
-            authRepository: mockAuthRepository,
-            firestoreRepository: mockFirestoreRepository,
-            householdRepository: _emptyFamilyHouseholdRepo(),
-            sharedResidueExportManager: _sharedResidueOk(),
-            erasureResidueExportManager: _erasureResidueOk(),
-            commentReactionsExportManager: _commentReactionsOk(),
-            moderationAppealsExportManager: _moderationAppealsOk(),
-            complianceExportManager: ComplianceExportManager(
-              authRepository: mockAuthRepository,
-              functions: _LeakyAuditLogFirebaseFunctions(),
-              dataExportRepository: FirebaseDataExportRepository(
-                firestore: fakeFirestore,
-                authRepository: mockAuthRepository,
-              ),
-            ),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
+          final leakyService = buildService(
+            complianceFunctions: _LeakyAuditLogFirebaseFunctions(),
           );
 
           final data =
@@ -2450,22 +2351,7 @@ void main() {
         'BUT-1760: a failed content/preferences section carries an authored '
         'sentence, so no raw exception text exists to suppress',
         () async {
-          final service = DataExportService(
-            authRepository: mockAuthRepository,
-            firestoreRepository: mockFirestoreRepository,
-            householdRepository: _emptyFamilyHouseholdRepo(),
-            sharedResidueExportManager: _sharedResidueOk(),
-            erasureResidueExportManager: _erasureResidueOk(),
-            commentReactionsExportManager: _commentReactionsOk(),
-            moderationAppealsExportManager: _moderationAppealsOk(),
-            complianceExportManager: ComplianceExportManager(
-              authRepository: mockAuthRepository,
-              functions: _FakeFirebaseFunctions(),
-              dataExportRepository: FirebaseDataExportRepository(
-                firestore: fakeFirestore,
-                authRepository: mockAuthRepository,
-              ),
-            ),
+          final service = buildService(
             dataExportRepository: _LeakySettingsExportRepository(
               firestore: fakeFirestore,
               authRepository: mockAuthRepository,
@@ -2585,26 +2471,8 @@ void main() {
         'transient throw)', () {
       test('partial rows from page #1 are discarded when page #2 throws — '
           'try/catch wraps the whole pagination loop', () async {
-        final partialService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          householdRepository: _emptyFamilyHouseholdRepo(),
-          sharedResidueExportManager: _sharedResidueOk(),
-          erasureResidueExportManager: _erasureResidueOk(),
-          commentReactionsExportManager: _commentReactionsOk(),
-          moderationAppealsExportManager: _moderationAppealsOk(),
-          complianceExportManager: ComplianceExportManager(
-            authRepository: mockAuthRepository,
-            functions: _SuccessThenTransientFirebaseFunctions(),
-            dataExportRepository: FirebaseDataExportRepository(
-              firestore: fakeFirestore,
-              authRepository: mockAuthRepository,
-            ),
-          ),
-          dataExportRepository: FirebaseDataExportRepository(
-            firestore: fakeFirestore,
-            authRepository: mockAuthRepository,
-          ),
+        final partialService = buildService(
+          complianceFunctions: _SuccessThenTransientFirebaseFunctions(),
         );
 
         final jsonString = await partialService.exportUserData();
@@ -2634,9 +2502,6 @@ void main() {
         // see the partial-bundle signal without scanning every section.
         final warnings = data['export_metadata']['warnings'] as List<dynamic>?;
         expect(warnings, isNotNull);
-        // Scoped to audit_logs — same reason as the BUT-864 test above: this
-        // fixture wires only the compliance manager, so the sections that fall
-        // through to an uninitialised ServiceLocator now warn too (BUT-1721).
         final auditEntries = warnings!
             .cast<Map<String, dynamic>>()
             .where((w) => w['section'] == 'audit_logs')
