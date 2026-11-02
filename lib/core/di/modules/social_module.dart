@@ -79,7 +79,11 @@ import 'package:butlery/models/recipe_unified.dart';
 
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_cook_snap_repository.dart';
+import 'package:butlery/services/cook_snap_links.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
@@ -499,6 +503,22 @@ class SocialModule implements DIModule {
         () => CookSnapService(
           repository: container<CookSnapRepository>(),
           friendsRepository: container<FriendsRepository>(),
+          links: CookSnapLinks(
+            connectivity: () => container<ConnectivityMonitoringService>(),
+            offline: () => container.isRegistered<OfflineService>()
+                ? container<OfflineService>()
+                : null,
+            contentFilter: () => container<ContentFilterService>(),
+            imagePicker: () => container<ImagePickerService>(),
+            permissions: () => container<PermissionService>(),
+            imageUpload: () => container<ImageUploadService>(),
+            users: () => container<UserService>(),
+            activityFeed: () => container<ActivityFeedService>(),
+            friends: () => container.isRegistered<UnifiedFriendsService>()
+                ? container<UnifiedFriendsService>()
+                : null,
+            notifications: () => container<NotificationService>(),
+          ),
         ),
       );
 

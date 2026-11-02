@@ -49,7 +49,7 @@ class PersonalTagCrudService extends BaseService {
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
     required RecipeRepository Function() getRecipeRepository,
-    StorageService? storageService,
+    required StorageService? Function() storageService,
   }) : _tagRepository = tagRepository,
        _groupRepository = groupRepository,
        _getRecipeRepositoryFn = getRecipeRepository,

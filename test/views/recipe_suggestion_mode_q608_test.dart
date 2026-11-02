@@ -46,6 +46,7 @@ import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/helpers/widget_test_app.dart';
 import '../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../test_support/base_unit_test.dart';
+import '../infrastructure/helpers/image_upload_service_from_get_it.dart';
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
@@ -91,7 +92,9 @@ void main() {
     TestServiceLocator.registerFactory<CollaborativeStatusViewModel>(
       () => CollaborativeStatusViewModel(),
     );
-    TestServiceLocator.registerMock<ImageUploadService>(ImageUploadService());
+    TestServiceLocator.registerMock<ImageUploadService>(
+      imageUploadServiceFromGetIt(),
+    );
     final tags = mocks.MockPersonalTagService();
     TestServiceLocator.registerMock<PersonalTagService>(tags);
     TestServiceLocator.registerMock<OfflineService>(

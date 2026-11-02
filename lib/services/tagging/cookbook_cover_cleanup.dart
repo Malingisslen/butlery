@@ -1,4 +1,3 @@
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -13,15 +12,14 @@ import 'package:butlery/services/storage_service.dart';
 /// logged and never reaches the caller.
 ///
 /// [StorageService] lives in the Content module, which is configured after
-/// Tagging, so it is resolved on first use.
+/// Tagging, so it is resolved on first use through [storageService].
 class CookbookCoverCleanup {
-  CookbookCoverCleanup({StorageService? storageService})
-    : _storageOverride = storageService;
+  CookbookCoverCleanup({required StorageService? Function() storageService})
+    : _storageLink = storageService;
 
-  final StorageService? _storageOverride;
+  final StorageService? Function() _storageLink;
 
-  StorageService? get _storage =>
-      _storageOverride ?? ServiceLocator.tryGet<StorageService>();
+  StorageService? get _storage => _storageLink();
 
   /// The URL of [cookbook]'s own cover photo, or null for any other cover.
   static String? ownPhotoUrl(CookbookDetails? cookbook) {

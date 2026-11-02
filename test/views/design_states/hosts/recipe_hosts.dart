@@ -50,6 +50,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
 import '../state_harness.dart';
 import '../state_host.dart';
+import '../../../infrastructure/helpers/image_upload_service_from_get_it.dart';
 
 const _me = 'test-user-123';
 
@@ -268,7 +269,9 @@ Widget _editor(HostContext ctx) {
   TestServiceLocator.registerFactory<CollaborativeStatusViewModel>(
     CollaborativeStatusViewModel.new,
   );
-  TestServiceLocator.registerMock<ImageUploadService>(ImageUploadService());
+  TestServiceLocator.registerMock<ImageUploadService>(
+    imageUploadServiceFromGetIt(),
+  );
   final tags = MockPersonalTagService();
   TestServiceLocator.registerMock<PersonalTagService>(tags);
   TestServiceLocator.registerFactory<PersonalTagViewModel>(

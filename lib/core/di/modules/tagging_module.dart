@@ -142,6 +142,8 @@ class TaggingModule implements DIModule {
         tagRepository: app<FirebasePersonalTagRepository>(),
         groupRepository: app<FirebasePersonalTagGroupRepository>(),
         getRecipeRepository: () => app<RecipeRepository>(),
+        storageService: () =>
+            app.isRegistered<StorageService>() ? app<StorageService>() : null,
       ),
       // BUT-1055: run full dispose on user-scope teardown so the
       // `tagsMutated` broadcast controller is closed (onDispose). Without

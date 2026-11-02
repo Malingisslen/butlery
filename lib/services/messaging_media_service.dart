@@ -68,11 +68,11 @@ class MessagingMediaService extends BaseService {
   MessagingMediaService({
     required MessagingService messagingService,
     required auth_repo.AuthRepository authRepository,
-    ImageUploadService? uploadService,
+    required ImageUploadService uploadService,
     ImagePicker? imagePicker,
     required OfflineService? Function() offlineService,
   }) : _offline = offlineService,
-       _uploadService = uploadService ?? ImageUploadService(),
+       _uploadService = uploadService,
        _messagingService = messagingService,
        _authRepository = authRepository,
        _imagePicker = imagePicker ?? ImagePicker();

@@ -68,6 +68,7 @@ import '../../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/helpers/image_upload_service_from_get_it.dart';
 
 /// Shared harness: focus the top-most focusable control, press Tab repeatedly,
 /// and assert each control is reached strictly top-to-bottom (visual reading
@@ -263,10 +264,9 @@ void main() {
         () => CollaborativeStatusViewModel(),
       );
       // RecipeFormViewModel's image manager resolves ImageUploadService on
-      // construction; the real (no-arg) service resolves the already-registered
-      // mock StorageService, so it's safe to register without uploading.
+      // construction.
       TestServiceLocator.registerMock<ImageUploadService>(
-        ImageUploadService(),
+        imageUploadServiceFromGetIt(),
       );
       // EditRecipeView's body resolves these from the locator while building:
       // the offline indicator reads OfflineService (real no-arg singleton —

@@ -15,8 +15,20 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:get_it/get_it.dart';
+
+StorageService _storageService(MockStorageRepository repository) =>
+    StorageService(
+      repository: repository,
+      firestoreRepository: GetIt.instance<FirestoreRepository>(),
+      offlineService: () => GetIt.instance.isRegistered<OfflineService>()
+          ? GetIt.instance<OfflineService>()
+          : null,
+      permissionService: () => GetIt.instance<PermissionService>(),
+    );
 
 void main() {
   group('StorageService', () {
@@ -63,7 +75,7 @@ void main() {
       mockFile = MockFile();
 
       // Create service with mock repository
-      storageService = StorageService(repository: mockRepository);
+      storageService = _storageService(mockRepository);
 
       // Setup basic mock file responses
       when(() => mockFile.path).thenReturn('/path/to/image.jpg');
@@ -98,8 +110,8 @@ void main() {
 
       test('should be singleton instance with same repository', () {
         // Arrange & Act
-        final instance1 = StorageService(repository: mockRepository);
-        final instance2 = StorageService(repository: mockRepository);
+        final instance1 = _storageService(mockRepository);
+        final instance2 = _storageService(mockRepository);
 
         // Assert
         expect(identical(instance1, instance2), isTrue);
@@ -735,9 +747,9 @@ void main() {
     group('Singleton Pattern', () {
       test('should maintain same instance across multiple factory calls', () {
         // Act
-        final instance1 = StorageService(repository: mockRepository);
-        final instance2 = StorageService(repository: mockRepository);
-        final instance3 = StorageService(repository: mockRepository);
+        final instance1 = _storageService(mockRepository);
+        final instance2 = _storageService(mockRepository);
+        final instance3 = _storageService(mockRepository);
 
         // Assert
         expect(identical(instance1, instance2), isTrue);
@@ -746,11 +758,11 @@ void main() {
 
       test('should reset singleton for testing', () {
         // Arrange
-        final instance1 = StorageService(repository: mockRepository);
+        final instance1 = _storageService(mockRepository);
 
         // Act
         SingletonServiceMixin.resetForTesting();
-        final instance2 = StorageService(repository: mockRepository);
+        final instance2 = _storageService(mockRepository);
 
         // Assert
         expect(identical(instance1, instance2), isFalse);

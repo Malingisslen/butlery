@@ -18,7 +18,6 @@ import 'package:butlery/services/upload/upload_progress_tracker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/firebase_error_messages.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/retry_policy.dart';
@@ -58,7 +57,7 @@ class UploadResult {
 /// - Support for single and batch uploads
 /// **Usage Example:**
 /// ```dart
-/// final service = ImageUploadService();
+/// final service = ImageUploadService(storageService: storage);
 /// // Single upload with progress tracking
 /// final result = await service.uploadImage(
 ///   file: imageFile,
@@ -95,11 +94,11 @@ class ImageUploadService extends BaseService {
     UploadQueueManager? queueManager,
     UploadRetryManager? retryManager,
     UploadProgressTracker? progressTracker,
-    StorageService? storageService,
+    required StorageService storageService,
   }) : _queueManager = queueManager ?? UploadQueueManager(),
        _retryManager = retryManager ?? UploadRetryManager(),
        _progressTracker = progressTracker ?? UploadProgressTracker(),
-       _storageService = storageService ?? ServiceLocator.get<StorageService>();
+       _storageService = storageService;
 
   /// Upload a single image with automatic retry and progress tracking.
   /// Path construction is handled by StorageService — callers should not specify paths.

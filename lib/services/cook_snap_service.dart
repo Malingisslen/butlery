@@ -9,24 +9,15 @@ import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
-import 'package:butlery/services/connectivity_monitoring_service.dart';
-import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/cook_snap_links.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/offline/cook_snap_queue_metadata.dart';
 import 'package:butlery/services/offline/queued_change.dart';
-import 'package:butlery/services/moderation/content_filter_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/upload/image_upload_service.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
 
 /// What [CookSnapService.addCookSnap] did with the picked photos.
@@ -44,11 +35,15 @@ class CookSnapService extends BaseService {
   final CookSnapRepository _repository;
   final FriendsRepository _friendsRepository;
 
+  final CookSnapLinks _links;
+
   CookSnapService({
     required CookSnapRepository repository,
     required FriendsRepository friendsRepository,
+    required CookSnapLinks links,
   }) : _repository = repository,
-       _friendsRepository = friendsRepository;
+       _friendsRepository = friendsRepository,
+       _links = links;
 
   @override
   String get serviceName => 'CookSnapService';
@@ -74,11 +69,10 @@ class CookSnapService extends BaseService {
   }) async {
     return executeServiceOperation<CookSnapAddResult?>(
       () async {
-        final online = ServiceLocator.get<ConnectivityMonitoringService>()
-            .isConnectedToInternet;
+        final online = _links.connectivity().isConnectedToInternet;
         // Refused before the picker opens, so photos are never picked only to
         // be lost (the web has no queue).
-        final offline = ServiceLocator.tryGet<OfflineService>();
+        final offline = _links.offline();
         if (!online && !(offline?.isQueueReady ?? false)) {
           throw Exception('Cannot upload photos while offline');
         }
@@ -89,7 +83,7 @@ class CookSnapService extends BaseService {
         // names, and profile bios (BUT-517).
         var validCaption = caption;
         if (validCaption != null && validCaption.trim().isNotEmpty) {
-          final filter = ServiceLocator.get<ContentFilterService>();
+          final filter = _links.contentFilter();
           final result = filter.ensureClean(
             validCaption,
             fieldName: 'cook_snap_caption',
@@ -106,7 +100,7 @@ class CookSnapService extends BaseService {
 
         // Pick image(s). BUT-949: album pick is gallery-only; the camera
         // path is inherently single-shot.
-        final imagePicker = ServiceLocator.get<ImagePickerService>();
+        final imagePicker = _links.imagePicker();
         final files = <File>[];
         if (allowMultiple && source == ImageSource.gallery) {
           files.addAll(
@@ -118,7 +112,7 @@ class CookSnapService extends BaseService {
         }
         if (files.isEmpty) return null;
 
-        final permissionService = ServiceLocator.get<PermissionService>();
+        final permissionService = _links.permissions();
         final userId = permissionService.currentUserId;
         if (userId == null) throw Exception('Not authenticated');
 
@@ -140,7 +134,7 @@ class CookSnapService extends BaseService {
 
         // Upload each photo, preserving pick order (cover first). The first
         // photo's thumbnail is used as the album thumbnail.
-        final uploadService = ServiceLocator.get<ImageUploadService>();
+        final uploadService = _links.imageUpload();
         final photoUrls = <String>[];
         String? coverThumbnailUrl;
         for (final file in files) {
@@ -156,7 +150,7 @@ class CookSnapService extends BaseService {
         }
 
         // Build CookSnap
-        final userService = ServiceLocator.get<UserService>();
+        final userService = _links.users();
         final profile = userService.currentUserProfile;
 
         final snap = CookSnap.create(
@@ -227,7 +221,7 @@ class CookSnapService extends BaseService {
     required String senderName,
   }) {
     try {
-      ServiceLocator.get<ActivityFeedService>().emitEvent(
+      _links.activityFeed().emitEvent(
         ActivityEventType.cooked,
         snap.recipeId,
         recipeName,
@@ -300,14 +294,13 @@ class CookSnapService extends BaseService {
         );
   }
 
-  String? _currentUserId() =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+  String? _currentUserId() => _links.permissions().currentUserId;
 
   /// Friend ids — read from the in-memory `UnifiedFriendsService` cache
   /// when available (saves a Firestore round-trip on the recipe-detail
   /// hot path) and fall back to a fresh repo fetch on cold start.
   Future<Iterable<String>> _resolveFriendIds(String userId) async {
-    final unified = ServiceLocator.tryGet<UnifiedFriendsService>();
+    final unified = _links.friends();
     if (unified != null && unified.isInitialized) {
       return unified.friends.map((u) => u.uid);
     }
@@ -331,7 +324,7 @@ class CookSnapService extends BaseService {
     required String recipeName,
   }) {
     try {
-      final notificationService = ServiceLocator.get<NotificationService>();
+      final notificationService = _links.notifications();
       notificationService.sendImmediateNotification(
         targetUserIds: [recipeAuthorId],
         strategy: NotificationStrategy.cookSnapAdded,

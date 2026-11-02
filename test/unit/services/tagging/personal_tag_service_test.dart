@@ -95,6 +95,7 @@ void main() {
       tagRepository: mockTagRepository,
       groupRepository: mockGroupRepository,
       getRecipeRepository: () => mockRecipeRepository,
+      storageService: () => null,
     );
 
     final ruleEvaluator = PersonalTagRuleEvaluator(
@@ -1112,6 +1113,7 @@ void main() {
             tagRepository: mockTagRepository,
             groupRepository: mockGroupRepository,
             getRecipeRepository: () => throw StateError('unavailable'),
+            storageService: () => null,
           ),
           ruleEvaluator: PersonalTagRuleEvaluator(
             lookupService: mockLookupService,

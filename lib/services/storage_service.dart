@@ -8,7 +8,6 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
 
@@ -33,21 +32,35 @@ class StorageService extends BaseService
     with FirebaseServiceMixin, SingletonServiceMixin<StorageService> {
   final StorageRepository _repository;
   final FirestoreRepository _firestoreRepository;
+  final OfflineService? Function() _offlineLink;
+  final permission.PermissionService Function() _permissionLink;
 
-  StorageService._internal(this._repository, this._firestoreRepository);
+  StorageService._internal(
+    this._repository,
+    this._firestoreRepository,
+    this._offlineLink,
+    this._permissionLink,
+  );
 
   /// Factory constructor with dependency injection support.
-  /// Requires [repository] and [firestoreRepository] parameters from DI container.
   /// Use `ServiceLocator.get<StorageService>()` to obtain instance.
+  ///
+  /// [offlineService] returns null when offline support is not registered, in
+  /// which case uploads skip the offline pre-flight.
   factory StorageService({
     required StorageRepository repository,
-    FirestoreRepository? firestoreRepository,
+    required FirestoreRepository firestoreRepository,
+    required OfflineService? Function() offlineService,
+    required permission.PermissionService Function() permissionService,
   }) {
-    final actualFirestoreRepo =
-        firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
     return SingletonServiceMixin.createSingletonWithDependencies(
-      () => StorageService._internal(repository, actualFirestoreRepo),
-      dependencies: [repository, actualFirestoreRepo],
+      () => StorageService._internal(
+        repository,
+        firestoreRepository,
+        offlineService,
+        permissionService,
+      ),
+      dependencies: [repository, firestoreRepository],
     );
   }
 
@@ -83,7 +96,7 @@ class StorageService extends BaseService
       // `ImageUploadErrorType.network`. Reads from `OfflineService` (DI-
       // registered) rather than a static connectivity utility so tests can
       // toggle the state without DNS-mocking.
-      final offline = ServiceLocator.tryGet<OfflineService>();
+      final offline = _offlineLink();
       if (offline != null && !offline.isOnline) {
         throw const StorageUploadException(
           'network-request-failed',
@@ -147,7 +160,7 @@ class StorageService extends BaseService
   }) async {
     try {
       // BUT-1020: same offline pre-flight as `uploadImageFile`.
-      final offline = ServiceLocator.tryGet<OfflineService>();
+      final offline = _offlineLink();
       if (offline != null && !offline.isOnline) {
         throw const StorageUploadException(
           'network-request-failed',
@@ -246,9 +259,7 @@ class StorageService extends BaseService
     Function(double)? onProgress,
   }) async {
     // Get authenticated user ID from permission service
-    final permissionService =
-        ServiceLocator.get<permission.PermissionService>();
-    final userId = permissionService.currentUserId;
+    final userId = _permissionLink().currentUserId;
 
     if (userId == null) {
       AppLogger.error(
@@ -282,9 +293,7 @@ class StorageService extends BaseService
     File imageFile, {
     Function(double)? onProgress,
   }) async {
-    final permissionService =
-        ServiceLocator.get<permission.PermissionService>();
-    final userId = permissionService.currentUserId;
+    final userId = _permissionLink().currentUserId;
 
     if (userId == null) {
       AppLogger.error(
@@ -294,7 +303,7 @@ class StorageService extends BaseService
     }
 
     try {
-      final offline = ServiceLocator.tryGet<OfflineService>();
+      final offline = _offlineLink();
       if (offline != null && !offline.isOnline) {
         throw const StorageUploadException(
           'network-request-failed',
@@ -354,7 +363,7 @@ class StorageService extends BaseService
     String objectId,
   ) async {
     try {
-      final offline = ServiceLocator.tryGet<OfflineService>();
+      final offline = _offlineLink();
       if (offline != null && !offline.isOnline) {
         throw const StorageUploadException(
           'network-request-failed',
