@@ -29,6 +29,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/cookbook_fixtures.dart';
 import '../../../widget/views/recipe/fake_personal_tag_viewmodel.dart';
 import '../state_host.dart';
+import '../../../infrastructure/helpers/image_upload_service_from_get_it.dart';
 
 class _MockCookbookService extends Mock implements CookbookService {}
 
@@ -153,7 +154,9 @@ final reviewRecipeHosts = <String, StateHost>{
       TestServiceLocator.registerFactory<CollaborativeStatusViewModel>(
         CollaborativeStatusViewModel.new,
       );
-      TestServiceLocator.registerMock<ImageUploadService>(ImageUploadService());
+      TestServiceLocator.registerMock<ImageUploadService>(
+        imageUploadServiceFromGetIt(),
+      );
       final tags = MockPersonalTagService();
       TestServiceLocator.registerMock<PersonalTagService>(tags);
       TestServiceLocator.registerFactory<PersonalTagViewModel>(

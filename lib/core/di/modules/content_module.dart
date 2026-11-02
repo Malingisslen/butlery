@@ -790,7 +790,14 @@ class ContentModule implements DIModule {
 
       // Storage service for file management
       container.registerLazySingleton<StorageService>(
-        () => StorageService(repository: container<StorageRepository>()),
+        () => StorageService(
+          repository: container<StorageRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
+          offlineService: () => container.isRegistered<OfflineService>()
+              ? container<OfflineService>()
+              : null,
+          permissionService: () => container<PermissionService>(),
+        ),
       );
 
       // Image picker service for photo handling

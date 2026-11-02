@@ -71,6 +71,7 @@ _FakePersonalTagService _makeService({
       tagRepository: tagRepo,
       groupRepository: groupRepo,
       getRecipeRepository: () => throw StateError('no recipe repository'),
+      storageService: () => null,
     ),
     evaluator: PersonalTagRuleEvaluator(
       lookupService: _MockLookup(),

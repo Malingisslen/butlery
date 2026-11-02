@@ -44,6 +44,7 @@ import '../../infrastructure/helpers/field_finder.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../../test_support/base_unit_test.dart';
+import '../../infrastructure/helpers/image_upload_service_from_get_it.dart';
 
 void main() {
   group('the rating field reads a Swedish decimal comma', () {
@@ -71,7 +72,9 @@ void main() {
       TestServiceLocator.registerFactory<CollaborativeStatusViewModel>(
         () => CollaborativeStatusViewModel(),
       );
-      TestServiceLocator.registerMock<ImageUploadService>(ImageUploadService());
+      TestServiceLocator.registerMock<ImageUploadService>(
+        imageUploadServiceFromGetIt(),
+      );
       final mockTagService = mocks.MockPersonalTagService();
       TestServiceLocator.registerMock<PersonalTagService>(mockTagService);
       TestServiceLocator.registerMock<OfflineService>(

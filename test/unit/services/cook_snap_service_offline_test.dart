@@ -29,6 +29,7 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/cook_snap_links_from_get_it.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
@@ -154,6 +155,7 @@ void main() {
     service = CookSnapService(
       repository: repository,
       friendsRepository: _FakeFriendsRepository(),
+      links: cookSnapLinksFromGetIt(),
     );
   });
 

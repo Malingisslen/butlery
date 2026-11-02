@@ -86,7 +86,7 @@ void main() {
       tagRepository: tags,
       groupRepository: _MockGroupRepository(),
       getRecipeRepository: () => recipes,
-      storageService: storage,
+      storageService: () => storage,
     );
   });
 
