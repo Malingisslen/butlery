@@ -473,6 +473,7 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     // suite `require()`s the deleter directly, so removing this tier entry
     // stops the erasure without reddening anything there.
     "ingredient_suggestions",
+    "ingredient_change_requests",
     // BUT-1693, same reason: the cascade suite requires the deleter directly.
     "household_allergen_shares",
     // P5-U27b, same reason.

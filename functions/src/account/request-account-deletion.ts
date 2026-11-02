@@ -96,6 +96,7 @@ import {
 import { applyErasureHold } from "../moderation/erasure-hold";
 import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
 import { cleanUserFromLearnedAliases } from "./cascade/learned-aliases";
+import { scrubIngredientChangeRequestAuthors } from "./cascade/ingredient-change-requests";
 import { Collections } from "../shared/collections";
 import { CallerAuth, isGuestCaller } from "../shared/caller-eligibility";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
@@ -362,6 +363,12 @@ export async function runAccountDeletionWithDeps(
     // Was only in `onUserDeleted`, which runs after the residual probe, so the
     // probe could not check it.
     ["learned_aliases", () => cleanUserFromLearnedAliases(database, uid)],
+    // An admin's uid on ingredient proposals; the proposals stay. Ships with
+    // its two probe legs.
+    [
+      "ingredient_change_requests",
+      () => scrubIngredientChangeRequestAuthors(database, uid),
+    ],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
     [

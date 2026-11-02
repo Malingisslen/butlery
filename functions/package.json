@@ -225,6 +225,7 @@
     "test:ai-consent": "ts-node src/__tests__/ai-consent.test.ts",
     "test:learned-aliases-probe": "ts-node src/__tests__/learned-aliases-probe.test.ts",
     "test:learned-aliases-cleanup": "ts-node src/__tests__/learned-aliases-cleanup.test.ts",
+    "test:ingredient-change-requests-erasure": "ts-node src/__tests__/ingredient-change-requests-erasure.test.ts",
     "test:ai-cap-signal": "ts-node src/__tests__/ai-cap-signal.test.ts",
     "test:vertex-region": "ts-node src/__tests__/vertex-region.test.ts",
     "test:web-origins": "ts-node src/__tests__/web-origins.test.ts",

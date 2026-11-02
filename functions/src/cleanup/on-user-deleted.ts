@@ -18,6 +18,7 @@ import { Collections } from "../shared/collections";
 import { anonymizeReportsUnlessHeldWithDb } from "../moderation/erasure-hold";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../account/cascade/learned-aliases";
+import { scrubIngredientChangeRequestAuthors } from "../account/cascade/ingredient-change-requests";
 import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
 import {
   stageCascadeAuditEntry,
@@ -194,6 +195,7 @@ export async function cleanupUserSocialData(
   // deletion cascade runs the same step before the residual probe; this one
   // covers an auth user deleted some other way.
   await cleanUserFromLearnedAliases(db, userId);
+  await scrubIngredientChangeRequestAuthors(db, userId);
 
   // 7. Delete public profile
   // BUT-886: own-data delete — audit row records the cascade for GDPR Art. 17

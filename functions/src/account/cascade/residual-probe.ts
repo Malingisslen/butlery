@@ -730,6 +730,9 @@ export async function probeResidualData(
     // a hold keeps the evidence of an open case, and an appeal is only ever on
     // a closed one.
     [MODERATION_APPEALS, APPELLANT_ID, "=="],
+    // `scrubIngredientChangeRequestAuthors`, both fields it nulls.
+    [Collections.ingredientChangeRequests, "createdBy", "=="],
+    [Collections.ingredientChangeRequests, "withdrawnBy", "=="],
     ...(held
       ? []
       : ([[SYSTEM_EVENTS, "details.contentOwnerId", "=="]] as const)),

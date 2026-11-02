@@ -52,6 +52,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   tag_overrides_log: [{ residue: ["tag_overrides_log"] }],
   parsing_corrections: [{ residue: ["parsing_corrections"] }],
   learned_aliases: [{ residue: ["learned_aliases"] }],
+  ingredient_change_requests: [{ residue: ["ingredient_change_requests"] }],
   cook_snaps: [{ client: "cook_snaps" }],
   activity_events: [{ client: "activity_events" }],
   shopping_list_templates: [{ client: "shopping_list_templates" }],
