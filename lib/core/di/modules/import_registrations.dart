@@ -40,6 +40,7 @@ abstract final class ImportRegistrations {
   static CaptionRulesReader captionRules(GetIt container) => CaptionRulesReader(
     text: TextImportStrategy(
       ingredientStrategy: links(container).ingredientStrategy,
+      parsedRecipeCache: links(container).parsedRecipeCache,
     ),
   );
 

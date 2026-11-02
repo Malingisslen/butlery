@@ -12,16 +12,12 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as app_provider;
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -2052,28 +2048,12 @@ Instructions:
     group('BUT-1469/BUT-1614 correction-capture wiring', () {
       // A successful text import must anchor the parser feedback loop: it
       // stores an ImportCorrectionSnapshot in the shared ParsedRecipeCache,
-      // keyed by the produced recipe id and tagged ImportSource.text. The
-      // strategy resolves that cache from the production ServiceLocator (no
-      // cache arg), so these tests wire a real cache in and read it back.
+      // keyed by the produced recipe id and tagged ImportSource.text.
       late ParsedRecipeCache cache;
 
       setUp(() {
         cache = ParsedRecipeCache();
-        app_provider.ServiceLocator.reset();
-        app_provider.ServiceLocator.initialize(DIContainer());
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<ParsedRecipeCache>()) {
-          getIt.unregister<ParsedRecipeCache>();
-        }
-        getIt.registerSingleton<ParsedRecipeCache>(cache);
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<ParsedRecipeCache>()) {
-          getIt.unregister<ParsedRecipeCache>();
-        }
-        app_provider.ServiceLocator.reset();
+        strategy = TextImportStrategy(parsedRecipeCache: () => cache);
       });
 
       const validText =
@@ -2181,7 +2161,10 @@ Instructions:
             ParseConfidence.high,
             ParseConfidence.low,
           ]);
-          final spied = TextImportStrategy(ingredientStrategy: () => spy);
+          final spied = TextImportStrategy(
+            ingredientStrategy: () => spy,
+            parsedRecipeCache: () => cache,
+          );
 
           final result = await spied.import(
             'Potatisbullar\n'
@@ -2213,12 +2196,10 @@ Instructions:
       );
 
       test(
-        'capture is best-effort: with no cache registered, import still '
+        'capture is best-effort: with no cache reachable, import still '
         'succeeds and nothing is stored',
         () async {
-          // Drop the production container so tryGet<ParsedRecipeCache> returns
-          // null — the capture path must swallow that and never fail import.
-          app_provider.ServiceLocator.reset();
+          strategy = TextImportStrategy();
 
           final result = await strategy.import(validText);
           expect(result.isSuccess, isTrue);

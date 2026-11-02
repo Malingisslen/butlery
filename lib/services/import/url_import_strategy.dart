@@ -74,8 +74,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   @visibleForTesting
   TextImportStrategy newTextStrategy() => _newTextStrategy();
 
-  TextImportStrategy _newTextStrategy() =>
-      TextImportStrategy(ingredientStrategy: _lookUpIngredients);
+  TextImportStrategy _newTextStrategy() => TextImportStrategy(
+    ingredientStrategy: _lookUpIngredients,
+    parsedRecipeCache: _lookUpParsedRecipeCache,
+  );
 
   RecipeParserService? get _recipeParser {
     if (_parserService != null) return _parserService;
@@ -370,6 +372,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       recipe,
       source: ImportSource.url,
       domain: _extractDomain(url),
+      cache: _lookUpParsedRecipeCache(),
     );
     return ImportResult.success(
       recipe,
@@ -426,6 +429,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       recipe,
       source: ImportSource.url,
       domain: _extractDomain(url),
+      cache: _lookUpParsedRecipeCache(),
     );
     return ImportResult.success(
       recipe,

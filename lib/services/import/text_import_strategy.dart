@@ -1,5 +1,6 @@
 /// Text Import Strategy - Parses structured/unstructured text into recipes (social media, manual input).
 
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -34,9 +35,15 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   // absent (tests / early boot) → fall back to the deterministic regex deriver.
   TextImportStrategy({
     IngredientParsingStrategy? Function() ingredientStrategy = _noStrategy,
-  }) : _lookUpIngredientStrategy = ingredientStrategy;
+    ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
+  }) : _lookUpIngredientStrategy = ingredientStrategy,
+       _lookUpParsedRecipeCache = parsedRecipeCache;
 
   static IngredientParsingStrategy? _noStrategy() => null;
+
+  static ParsedRecipeCache? _noCache() => null;
+
+  final ParsedRecipeCache? Function() _lookUpParsedRecipeCache;
 
   final IngredientParsingStrategy? Function() _lookUpIngredientStrategy;
   bool _strategyResolved = false;
@@ -138,6 +145,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         recipe,
         source: ImportSource.text,
         confidences: result.confidences,
+        cache: _lookUpParsedRecipeCache(),
       );
 
       return ImportResult.success(

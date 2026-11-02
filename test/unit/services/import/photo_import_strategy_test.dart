@@ -13,7 +13,6 @@ library;
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/photo_import_strategy.dart';
@@ -22,9 +21,6 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as app_provider;
-import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
@@ -1122,27 +1118,17 @@ void main() {
       // ImportSource.photo (OCR→text and every LLM-vision route), overriding
       // any snapshot the inner text strategy stored under the same recipe id
       // (last write wins) so OCR corrections never land in the pasted-text
-      // training bucket. The strategy resolves the cache from the production
-      // ServiceLocator, so we wire a real one in here.
+      // training bucket. The strategy gets the cache as a lookup, so we hand
+      // a real one in here.
       late ParsedRecipeCache cache;
 
       setUp(() {
         cache = ParsedRecipeCache();
-        app_provider.ServiceLocator.reset();
-        app_provider.ServiceLocator.initialize(DIContainer());
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<ParsedRecipeCache>()) {
-          getIt.unregister<ParsedRecipeCache>();
-        }
-        getIt.registerSingleton<ParsedRecipeCache>(cache);
-      });
-
-      tearDown(() {
-        final getIt = GetIt.instance;
-        if (getIt.isRegistered<ParsedRecipeCache>()) {
-          getIt.unregister<ParsedRecipeCache>();
-        }
-        app_provider.ServiceLocator.reset();
+        strategy = PhotoImportStrategy(
+          ocrService: mockOcrService,
+          textStrategy: mockTextStrategy,
+          parsedRecipeCache: () => cache,
+        );
       });
 
       test(

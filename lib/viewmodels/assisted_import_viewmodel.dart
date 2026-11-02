@@ -6,6 +6,8 @@
 /// 3. Review and edit recipe details
 library;
 
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -373,6 +375,7 @@ class AssistedImportViewModel extends BaseViewModel {
       recipe,
       source: source,
       domain: _domainOf(sourceUrl),
+      cache: ServiceLocator.tryGet<ParsedRecipeCache>(),
     );
 
     return recipe;

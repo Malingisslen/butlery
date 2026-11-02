@@ -13,7 +13,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/import_registrations.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/archive_import_strategy.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/voice_import_strategy.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
@@ -158,6 +164,86 @@ void main() {
     expect(manager.links.parsedRecipeCache(), same(cache));
     expect(manager.links.llmEnhancement(), same(llm));
   });
+
+  test(
+    'the text, voice, archive, link and caption routes store their correction snapshots in the '
+    'container\'s parse cache',
+    () async {
+      final scope = GetIt.asNewInstance();
+      addTearDown(scope.reset);
+      await ContentModule().configureUserScope(scope);
+      void swap<T extends Object>(T fake) {
+        if (scope.isRegistered<T>()) scope.unregister<T>();
+        scope.registerSingleton<T>(fake);
+      }
+
+      swap<UnifiedRecipeService>(_stubRecipes());
+      swap<ParserShadowSampler>(_Sampler());
+      swap<YouTubeImportStrategy>(youtube);
+      swap<TikTokPipeline>(tiktok);
+      swap<InstagramPipeline>(instagram);
+      swap<ImportRateLimiter>(limiter);
+      swap<TaggingService>(tagging);
+      swap<AnalyticsService>(analytics);
+      swap<http.Client>(client);
+      swap<RecipeParserService>(parser);
+      swap<ParsedRecipeCache>(cache);
+      swap<LlmEnhancementService>(llm);
+      const dictated =
+          'Pannkakor\n'
+          'Ingredienser:\n'
+          '3 dl vetemjöl\n'
+          '2 ägg\n'
+          'Gör så här:\n'
+          'Vispa ihop och stek i smör.';
+      final manager = scope<ImportManager>();
+
+      final text = manager.availableStrategies
+          .whereType<TextImportStrategy>()
+          .single;
+      final textResult = await text.import(dictated);
+      expect(
+        cache.retrieve(textResult.recipe!.id)!.metadata.source,
+        ImportSource.text,
+      );
+
+      final voice = manager.availableStrategies
+          .whereType<VoiceImportStrategy>()
+          .single;
+      final voiceResult = await voice.import(dictated);
+      expect(
+        cache.retrieve(voiceResult.recipe!.id)!.metadata.source,
+        ImportSource.voice,
+      );
+
+      final archive = manager.availableStrategies
+          .whereType<ArchiveImportStrategy>()
+          .single;
+      final archiveResult = await archive.import(
+        'archive:${archive.getAvailableRecipes().first.title}',
+      );
+      expect(
+        cache.retrieve(archiveResult.recipe!.id)!.metadata.source,
+        ImportSource.archive,
+      );
+
+      final url = manager.availableStrategies
+          .whereType<UrlImportStrategy>()
+          .single;
+      final urlText = await url.newTextStrategy().import(dictated);
+      expect(
+        cache.retrieve(urlText.recipe!.id)!.metadata.source,
+        ImportSource.text,
+      );
+
+      final caption = await ImportRegistrations.captionRules(scope).read(
+        dictated,
+        artefactType: SourceArtefactType.youtubeTranscript,
+        sourceUrl: 'https://youtu.be/x',
+      );
+      expect(cache.contains(caption!.id), isTrue);
+    },
+  );
 }
 
 UnifiedRecipeService _stubRecipes() {
