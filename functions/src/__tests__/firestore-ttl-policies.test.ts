@@ -288,6 +288,15 @@ const TARGETS: {
     writer: "lib/repositories/firebase/firebase_feedback_repository.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(clock\.now\(\)\.add\(kFeedbackRetention\)\)/,
   },
+  // Admin ingredient proposals: one year after a proposal is withdrawn
+  // (Malin's decision 2026-11-02). Pending proposals carry no stamp.
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "365d",
+    writer: "lib/repositories/firebase/firebase_ingredient_change_request_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
+  },
   {
     group: "parse_corrections_v2",
     field: "expireAt",
@@ -328,6 +337,7 @@ const EXPECTED_TTL_GROUPS = [
   "engagements",
   "erasures_in_progress",
   "feedback",
+  "ingredient_change_requests",
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
