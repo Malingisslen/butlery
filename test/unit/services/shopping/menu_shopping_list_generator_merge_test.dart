@@ -23,6 +23,8 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
+import 'package:butlery/services/shopping/menu_shopping_links.dart';
+
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -98,6 +100,16 @@ void main() {
   late MockUnifiedShoppingService shopping;
   late MenuShoppingListGenerator generator;
   late List<UnifiedShoppingList> writes;
+  late AuthRepository authRepo;
+
+  MenuShoppingLinks linksWith({PantryService? pantry}) => MenuShoppingLinks(
+    menuPlans: () => throw StateError('not used by the merge'),
+    recipes: () => throw StateError('not used by the merge'),
+    auth: () => authRepo,
+    pantry: () => pantry ?? (throw StateError('not used by the merge')),
+    shopping: () => shopping,
+    analytics: () => null,
+  );
 
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
@@ -110,16 +122,18 @@ void main() {
   setUp(() async {
     await BaseUnitTest.setupUnit();
     await TestServiceLocator.initialize();
-    TestServiceLocator.registerMock<AuthRepository>(
-      MockFactory.createAuthRepository(isAuthenticated: true, userId: _userId),
+    authRepo = MockFactory.createAuthRepository(
+      isAuthenticated: true,
+      userId: _userId,
     );
+    TestServiceLocator.registerMock<AuthRepository>(authRepo);
     shopping = MockUnifiedShoppingService();
     TestServiceLocator.registerMock<UnifiedShoppingService>(shopping);
     writes = [];
     stubPersonalMerge(shopping, writes);
     when(() => shopping.setActiveList(any())).thenAnswer((_) async => true);
     when(() => shopping.deleteList(any())).thenAnswer((_) async => true);
-    generator = MenuShoppingListGenerator();
+    generator = MenuShoppingListGenerator(links: linksWith());
   });
 
   tearDown(() async {
@@ -804,9 +818,9 @@ void main() {
       when(
         () => pantry.watchAll(_userId),
       ).thenAnswer((_) => Stream.error(StateError('offline')));
-      TestServiceLocator.registerMock<PantryService>(pantry);
-
-      final result = await generator.readPantry();
+      final result = await MenuShoppingListGenerator(
+        links: linksWith(pantry: pantry),
+      ).readPantry();
 
       expect(result.unavailable, isTrue);
     });
@@ -816,9 +830,9 @@ void main() {
       when(() => pantry.watchAll(_userId)).thenAnswer(
         (_) => Stream.value([_pantry('mjölk', 2, 'dl')]),
       );
-      TestServiceLocator.registerMock<PantryService>(pantry);
-
-      final result = await generator.readPantry();
+      final result = await MenuShoppingListGenerator(
+        links: linksWith(pantry: pantry),
+      ).readPantry();
 
       expect(result.unavailable, isFalse);
       expect(result.items.single.ingredientName, 'mjölk');

@@ -6,25 +6,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest;
-import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
-import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
+import 'package:butlery/services/shopping/menu_shopping_links.dart';
 import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/services/shopping/week_list_follower.dart';
 import 'package:butlery/services/shopping/week_list_reconciler.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
 export 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
@@ -58,9 +53,14 @@ export 'package:butlery/services/shopping/week_list_reconciler.dart'
 /// left as it is, and the week's list follows later saves of the week
 /// ([followMenuSaves]).
 class MenuShoppingListGenerator extends BaseService {
-  MenuShoppingListGenerator({SharedPreferences? preferences})
-    : _optionsMemory = MenuShoppingOptionsMemory(preferences),
-      _notices = WeekListFollowNoticeStore(preferences);
+  MenuShoppingListGenerator({
+    required MenuShoppingLinks links,
+    SharedPreferences? preferences,
+  }) : _links = links,
+       _optionsMemory = MenuShoppingOptionsMemory(preferences),
+       _notices = WeekListFollowNoticeStore(preferences);
+
+  final MenuShoppingLinks _links;
 
   final MenuShoppingOptionsMemory _optionsMemory;
   final WeekListFollowNoticeStore _notices;
@@ -96,8 +96,8 @@ class MenuShoppingListGenerator extends BaseService {
   /// apart.
   Future<MenuShoppingSource?> sourceForWeek(DateTime date) async {
     return executeServiceOperation<MenuShoppingSource?>(() async {
-      final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final menuService = _links.menuPlans();
+      final recipeService = _links.recipes();
 
       // BUT-1962: `getWeek` answers a failed read with an empty plan, which
       // would read as "your week has no meals" for a week we never read.
@@ -177,9 +177,10 @@ class MenuShoppingListGenerator extends BaseService {
   /// deduction, and the sheet says so with a way to try again
   Future<MenuShoppingPantry> readPantry() async {
     try {
-      final userId = ServiceLocator.get<AuthRepository>().currentUserId;
+      final userId = _links.auth().currentUserId;
       if (userId == null) return const MenuShoppingPantry.read([]);
-      final items = await ServiceLocator.get<PantryService>()
+      final items = await _links
+          .pantry()
           .watchAll(userId)
           .first
           .timeout(pantryReadTimeout);
@@ -212,7 +213,9 @@ class MenuShoppingListGenerator extends BaseService {
 
   UnifiedShoppingList? _weekList(DateTime week) {
     final weekKey = IsoWeekUtils.weekKeyOf(week);
-    return ServiceLocator.get<UnifiedShoppingService>().personalLists
+    return _links
+        .shopping()
+        .personalLists
         .where((l) => l.generatedForWeek == weekKey)
         .firstOrNull;
   }
@@ -239,7 +242,7 @@ class MenuShoppingListGenerator extends BaseService {
     bool activate = true,
   }) async {
     return executeServiceOperation<MenuShoppingMergeReceipt?>(() async {
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final shoppingService = _links.shopping();
       final date = merge.source.week;
       final weekKey = IsoWeekUtils.weekKeyOf(date);
       final listName = AppLocale.current.menuGeneratedShoppingListName(
@@ -289,13 +292,12 @@ class MenuShoppingListGenerator extends BaseService {
       // BUT-1681: EXACTLY ONE analytics event per merge, and only for a
       // genuine creation. `initial_item_count` carries the volume.
       if (createdList) {
-        ServiceLocator.tryGet<AnalyticsService>()?.shopping
-            .logShoppingListCreated(
-              listId: listId,
-              listType: 'personal',
-              initialItemCount: addedIds.length,
-              source: 'menu_generated',
-            );
+        _links.analytics()?.shopping.logShoppingListCreated(
+          listId: listId,
+          listType: 'personal',
+          initialItemCount: addedIds.length,
+          source: 'menu_generated',
+        );
       }
 
       return MenuShoppingMergeReceipt(
@@ -325,7 +327,7 @@ class MenuShoppingListGenerator extends BaseService {
     MenuShoppingMergeReceipt Function(UnifiedShoppingList list) receiptFor,
   ) async {
     final result = await executeServiceOperation<bool>(() async {
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final shoppingService = _links.shopping();
       final list = shoppingService.lists
           .where((l) => l.id == listId)
           .firstOrNull;

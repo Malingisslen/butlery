@@ -38,7 +38,10 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_links.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -196,6 +199,17 @@ Recipe flowDinner(int n) => RecipeFactory.build(
   instructions: const ['Laga.'],
 );
 
+/// The flows register what they use in [TestServiceLocator]; a service they
+/// never register fails loudly when the generator asks for it.
+MenuShoppingLinks _flowLinks() => MenuShoppingLinks(
+  menuPlans: () => TestServiceLocator.get<WeeklyMenuPlanService>(),
+  recipes: () => TestServiceLocator.get<UnifiedRecipeService>(),
+  auth: () => TestServiceLocator.get<AuthRepository>(),
+  pantry: () => TestServiceLocator.get<PantryService>(),
+  shopping: () => TestServiceLocator.get<UnifiedShoppingService>(),
+  analytics: () => TestServiceLocator.get<AnalyticsService>(),
+);
+
 class VeckomenyFlowHarness {
   late final MemoryPlanRepository repository;
   late final HeldMenuService menu;
@@ -277,7 +291,7 @@ class VeckomenyFlowHarness {
       () => WeeklyMenuPlanViewModel(
         service: planService,
         recipeService: recipes,
-        shoppingListGenerator: MenuShoppingListGenerator(),
+        shoppingListGenerator: MenuShoppingListGenerator(links: _flowLinks()),
         readDislikes: readDislikes,
       ),
     );
@@ -289,7 +303,7 @@ class VeckomenyFlowHarness {
   }) => WeeklyMenuPlanViewModel(
     service: planService,
     recipeService: _recipes,
-    shoppingListGenerator: MenuShoppingListGenerator(),
+    shoppingListGenerator: MenuShoppingListGenerator(links: _flowLinks()),
     readDislikes: readDislikes,
   );
 

@@ -18,6 +18,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
@@ -158,7 +161,13 @@ class TaggingModule implements DIModule {
     );
 
     container.registerLazySingleton<CookbookService>(
-      () => CookbookService(tagService: container<PersonalTagService>()),
+      () => CookbookService(
+        tagService: container<PersonalTagService>(),
+        getRecipeService: () => container<UnifiedRecipeService>(),
+        getUploadService: () => container<ImageUploadService>(),
+        getStorageService: () => container<StorageService>(),
+        getPermissionService: () => container<PermissionService>(),
+      ),
       dispose: (s) => s.dispose(),
     );
   }
