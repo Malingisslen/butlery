@@ -6323,3 +6323,20 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Masked by construction, not probed: `email == email.trim()` beside a regex excluding `\s` (ASCII whitespace); `hasAll` beside per-key `==`/`is timestamp` conjuncts; `expireAt is timestamp` beside timestamp comparisons that CEL-error on other types.
 - Regex sub-parts with no deny: domain without a dot (`a@example`), two `@`.
 - Map row for this suite NOT added to the core card: card at 14,993 chars of 15,000; adding it needs a principle moved to a chapter first.
+
+## 2026-11-02 — `ingredient_change_requests` commit-gate review (admin-vy steg B), two rounds
+- New block: admin read/create, withdraw-only update with `hasRetentionStamp()`, delete false; `changesOk` unrolls 16 named columns over flat `textOk`/`listOk`/`priceOk` helpers fed `ch.get(col, <empty stand-in>)`.
+- Round 1 (suite 29/29): renaming one column's key inside `changesOk` (`ch.get('english', …)` -> `ch.get('englishZZ', …)`) left the suite green for 11 of 16 columns; `ingredientUpdatedAt is timestamp`, `ingredientId` length/type, `note`/`batchId` type, `ch is map`, the old-side bounds and `listOk`/`priceOk` `size() == 2` were also unkilled. Column `hasOnly` -> `hasAny` survived (unknown-column tests carried only unknown keys).
+- Round 1 registration: the index lacked the `functions/package.json` hunks; `check-test-registration.js` run on a `git checkout-index -a --prefix=<dir>/` export of the index reported the suite unregistered, while the worktree run said OK. Run the checker on an index export, not the worktree.
+- Round 2 (suite 71/71, 0 "maximum of" lines): every column mutant kills its own named tests; `ingredientUpdatedAt`, `ingredientId` length, list/price extra-key, old-side bounds, price-old type and `hasOnly` -> `hasAny` each kill their named test.
+- Still unkilled in round 2: `ingredientId is string`, `note is string`, `batchId is string`, `ch is map`. Each deny uses an int (or a list for `changes`); `.size()` on an int, and `.keys()` on a list, CEL-errors anyway, so the type guard is masked. A list-typed `ingredientId`/`note`/`batchId` would pin the first three; `ch is map` sits before `.keys()`, which errors on every non-map, so it is masked by construction.
+- Masked by construction: `ch.size() <= 16` (hasOnly over 16 names caps it); create-limb `keys().hasAll([...])` (each key also carries a type/value conjunct).
+- Measured on real rules: a 30 x 30,000-char `aliases_sv.new` list is ALLOWED, as is a list of nested maps; rules cannot bound list elements.
+- Retired verbatim from the core card in round 2 (superseded in place by a line-ending bullet that says to measure first; 0 CR bytes in `firestore.rules` on the Linux sandbox):
+  > - **`firestore.rules` is CRLF** — a literal template-string `.replace()`/`.includes()`
+  >   never matches; use a whitespace-tolerant regex, assert the match count, and use the
+  >   `/g` flag whenever the mutated literal appears more than once (a non-global replace
+  >   silently patches only the first occurrence and reports a false "still denied"). Write
+  >   the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
+  >   string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
+  >   identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
