@@ -32,8 +32,15 @@ class AnalyticsService extends BaseService {
   late final ParseEventsTracker _parseTracker;
   late final SystemEventsTracker _systemTracker;
 
-  AnalyticsService({required AnalyticsRepository repository})
-    : _repository = repository {
+  /// A link rather than the instance because the win-back service itself
+  /// holds this service, so neither can be built first.
+  final WinbackAttributionService Function() _winbackLink;
+
+  AnalyticsService({
+    required AnalyticsRepository repository,
+    required WinbackAttributionService Function() winbackAttribution,
+  }) : _repository = repository,
+       _winbackLink = winbackAttribution {
     _recipeTracker = RecipeEventsTracker(repository: _repository);
     _menuTracker = MenuEventsTracker(repository: _repository);
     _shoppingTracker = ShoppingEventsTracker(repository: _repository);
@@ -239,7 +246,7 @@ class AnalyticsService extends BaseService {
   void _probeWinbackAttribution(String eventName) {
     if (!_winbackResolved) {
       try {
-        _winbackAttribution = ServiceLocator.get<WinbackAttributionService>();
+        _winbackAttribution = _winbackLink();
       } catch (_) {
         // Service unregistered — typical in unit tests.
       }

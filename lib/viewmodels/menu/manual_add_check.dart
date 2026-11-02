@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/manual_add_check.dart
 
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -77,7 +78,8 @@ class ManualAddCheck {
     Map<String, Set<String>> dislikesByMember;
     try {
       dislikesByMember =
-          await (_readDislikes ?? const MealDislikesResolver().readDislikes)();
+          await (_readDislikes ??
+              MealDislikesResolver(householdLinksFromLocator()).readDislikes)();
     } catch (e) {
       AppLogger.warning('Manual add: dislikes unreadable ($e)');
       dislikesByMember = const {};

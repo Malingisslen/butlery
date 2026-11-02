@@ -15,13 +15,11 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// User behavior pattern data
@@ -165,18 +163,24 @@ class IntelligentCacheManager {
   UnifiedFriendsService? _friendsService;
   PermissionService? _permissionService;
 
-  IntelligentCacheManager();
+  final UnifiedRecipeService Function() _recipeServiceLink;
+  final UnifiedFriendsService Function() _friendsServiceLink;
+  final PermissionService Function() _permissionServiceLink;
+  final JsonCacheHelper Function() _behaviorCacheLink;
+
+  IntelligentCacheManager({
+    required UnifiedRecipeService Function() recipeService,
+    required UnifiedFriendsService Function() friendsService,
+    required PermissionService Function() permissionService,
+    required JsonCacheHelper Function() behaviorCache,
+  }) : _recipeServiceLink = recipeService,
+       _friendsServiceLink = friendsService,
+       _permissionServiceLink = permissionService,
+       _behaviorCacheLink = behaviorCache;
 
   /// Lazy getter for behavior cache - initializes from OfflineService when first accessed
   JsonCacheHelper get _behaviorCache {
-    if (_behaviorCacheField == null) {
-      final offlineService = ServiceLocator.get<OfflineService>();
-      _behaviorCacheField = JsonCacheHelper(
-        'intelligent_cache_behavior',
-        offlineService.database.cacheDao,
-      );
-    }
-    return _behaviorCacheField!;
+    return _behaviorCacheField ??= _behaviorCacheLink();
   }
 
   JsonCacheHelper? _behaviorCacheField;
@@ -213,7 +217,7 @@ class IntelligentCacheManager {
 
     // Try to load from service
     try {
-      _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
+      _recipeService ??= _recipeServiceLink();
       // ignore: await_only_futures
       final recipe = await _recipeService!.getRecipeById(recipeId);
 
@@ -292,7 +296,7 @@ class IntelligentCacheManager {
 
   /// Preload multiple recipes
   Future<void> _preloadRecipes(List<String> recipeIds) async {
-    _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
+    _recipeService ??= _recipeServiceLink();
 
     // Filter out already cached recipes
     final toLoad = recipeIds
@@ -327,8 +331,8 @@ class IntelligentCacheManager {
     if (friendIds.isEmpty) return;
 
     try {
-      _friendsService ??= ServiceLocator.get<UnifiedFriendsService>();
-      _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
+      _friendsService ??= _friendsServiceLink();
+      _recipeService ??= _recipeServiceLink();
 
       // Get friends' recent recipes (would need to implement this method)
       // For now, we'll simulate by preloading some recipes
@@ -451,7 +455,7 @@ class IntelligentCacheManager {
   /// Load behavior pattern from cache
   Future<void> _loadBehaviorPattern() async {
     try {
-      _permissionService ??= ServiceLocator.get<PermissionService>();
+      _permissionService ??= _permissionServiceLink();
       final userId = _permissionService!.currentUserId;
 
       if (userId == null) return;

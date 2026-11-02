@@ -4,10 +4,9 @@
 /// cautious.
 ///
 /// `aggregateAllergenPreferences` runs through the auth-gated
-/// `executeServiceOperation`, and `HouseholdService` resolves its collaborators
-/// from the global `ServiceLocator`, so this suite wires the production locator
-/// with an authenticated `AuthRepository` and registers mocks for the friends
-/// and user services.
+/// `executeServiceOperation`, and `HouseholdService` is handed its friends and user
+/// services and a `HouseholdLinks`; the production locator is still wired with
+/// an authenticated `AuthRepository`, and carries decoys for the linked types.
 ///
 /// The structural fact these tests build on — that another member's declared
 /// allergens are unreadable by design — is pinned against real serialization in
@@ -28,6 +27,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -103,6 +103,13 @@ void main() {
   late _MockUserService userService;
   late HouseholdService service;
 
+  // What the service's links resolve to; `useShares` fills them and a test can
+  // null one to stage a collaborator that is not wired.
+  FeatureFlagService? linkedFlags;
+  HouseholdRepository? linkedHouseholds;
+  HouseholdAllergenShareRepository? linkedShares;
+  String? linkedUserId;
+
   setUpAll(() async {
     // executeServiceOperation's auth pre-flight reads the PRODUCTION locator.
     await BaseUnitTest.setupUnitWithProductionLocator();
@@ -135,12 +142,42 @@ void main() {
     useHousehold(const ['partner', 'kid']);
     when(() => userService.currentUserProfile).thenReturn(_profile('owner'));
 
-    TestServiceLocator.registerSingleton<UnifiedFriendsService>(friendsService);
-    TestServiceLocator.registerSingleton<UserService>(userService);
     (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
         .setAuthState(userId: 'owner');
 
-    service = HouseholdService();
+    // BUT-1508: the locator holds decoys of every type the links read, so a
+    // service that reached past its constructor arguments to the locator
+    // would read the decoy (flag off, no household, no shares, no user id).
+    TestServiceLocator.registerSingleton<FeatureFlagService>(
+      _MockFeatureFlags(),
+    );
+    TestServiceLocator.registerSingleton<PermissionService>(
+      _MockPermissionService(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdRepository>(
+      _MockHouseholdRepository(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdAllergenShareRepository>(
+      _MockShareRepository(),
+    );
+    linkedFlags = null;
+    linkedHouseholds = null;
+    linkedShares = null;
+    linkedUserId = null;
+
+    service = HouseholdService(
+      friendsService: friendsService,
+      userService: userService,
+      links: HouseholdLinks(
+        featureFlags: () => linkedFlags,
+        households: () => linkedHouseholds,
+        dinerProfiles: () => null,
+        roster: () => null,
+        householdService: () => null,
+        allergenShares: () => linkedShares,
+        currentUserId: () => linkedUserId,
+      ),
+    );
   });
 
   /// BUT-1693: wires the share repository so [shares] are what the household
@@ -178,13 +215,11 @@ void main() {
       enabled,
       reason: 'the stub for the real flag must win over the wildcard',
     );
-    TestServiceLocator.registerSingleton<FeatureFlagService>(flags);
+    linkedFlags = flags;
 
-    // The share read is permission-gated, so the service asks PermissionService
-    // for the caller's id rather than the cached profile.
-    final permissions = _MockPermissionService();
-    when(() => permissions.currentUserId).thenReturn('owner');
-    TestServiceLocator.registerSingleton<PermissionService>(permissions);
+    // The share read is permission-gated, so the service asks for the
+    // caller's permission-handle id rather than the cached profile.
+    linkedUserId = 'owner';
 
     when(() => householdRepository.getActiveForUser('owner')).thenAnswer(
       (_) async =>
@@ -210,12 +245,8 @@ void main() {
       return shares;
     });
 
-    TestServiceLocator.registerSingleton<HouseholdRepository>(
-      householdRepository,
-    );
-    TestServiceLocator.registerSingleton<HouseholdAllergenShareRepository>(
-      shareRepository,
-    );
+    linkedHouseholds = householdRepository;
+    linkedShares = shareRepository;
   }
 
   void stubLookup(String uid, ProfileLookup lookup) {
@@ -444,7 +475,7 @@ void main() {
         useShares([
           _share('partner', allergens: {'ägg'}),
         ]);
-        TestServiceLocator.unregister<FeatureFlagService>();
+        linkedFlags = null;
 
         final aggregate = await service.aggregateAllergenPreferences();
 

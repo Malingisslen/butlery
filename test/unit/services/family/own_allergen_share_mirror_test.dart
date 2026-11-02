@@ -10,6 +10,7 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 
 class _MockHouseholds extends Mock implements HouseholdRepository {}
@@ -60,8 +61,15 @@ void main() {
     households = _MockHouseholds();
     shares = _MockShares();
     mirror = OwnAllergenShareMirror(
-      householdRepository: households,
-      shareRepository: shares,
+      HouseholdLinks(
+        featureFlags: () => null,
+        households: () => households,
+        dinerProfiles: () => null,
+        roster: () => null,
+        householdService: () => null,
+        allergenShares: () => shares,
+        currentUserId: () => _me,
+      ),
     );
     when(
       () => households.getForUser(_me),
@@ -121,5 +129,22 @@ void main() {
       mirror.sharesFor(_me, _newPrefs),
       throwsA(isA<StateError>()),
     );
+  });
+
+  test('with no share repository wired there is nothing to mirror', () async {
+    final unwired = OwnAllergenShareMirror(
+      HouseholdLinks(
+        featureFlags: () => null,
+        households: () => households,
+        dinerProfiles: () => null,
+        roster: () => null,
+        householdService: () => null,
+        allergenShares: () => null,
+        currentUserId: () => _me,
+      ),
+    );
+
+    expect(await unwired.sharesFor(_me, _newPrefs), isEmpty);
+    verifyNever(() => households.getForUser(any()));
   });
 }

@@ -15,6 +15,7 @@ import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
@@ -42,6 +43,13 @@ class _MockSocialRecipeOperations extends Mock
 const _malin = 'user-malin';
 
 class _FailingRatings extends FamilyRatingService {
+  _FailingRatings({
+    required super.ratings,
+    required super.recipeService,
+    required super.authRepository,
+    required super.firestoreRepository,
+  });
+
   int calls = 0;
 
   @override
@@ -62,6 +70,14 @@ void main() {
   final sv = AppLocalizationsSv();
   late FakeFirebaseFirestore fs;
   late String householdId;
+  late FamilyRatingRepository ratingRepo;
+  late ({
+    FamilyRatingRepository ratings,
+    UnifiedRecipeService recipeService,
+    AuthRepository authRepository,
+    FirestoreRepository firestoreRepository,
+  })
+  deps;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
@@ -103,22 +119,34 @@ void main() {
     );
     TestServiceLocator.registerSingleton<HouseholdRepository>(householdRepo);
     TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
-    TestServiceLocator.registerSingleton<FamilyRatingRepository>(
-      FirebaseFamilyRatingRepository(
-        firestore: fs,
-        authRepository: TestServiceLocator.get<AuthRepository>(),
-        householdRepository: householdRepo,
-      ),
+    ratingRepo = FirebaseFamilyRatingRepository(
+      firestore: fs,
+      authRepository: TestServiceLocator.get<AuthRepository>(),
+      householdRepository: householdRepo,
     );
     TestServiceLocator.registerSingleton<HouseholdRosterService>(
-      HouseholdRosterService(),
+      HouseholdRosterService(
+        householdRepository: householdRepo,
+        dinerProfileRepository: dinerRepo,
+        userService: TestServiceLocator.get<UserService>(),
+      ),
     );
     final socialOps = _MockSocialRecipeOperations();
     final recipeService = _MockUnifiedRecipeService();
     when(() => recipeService.social).thenReturn(socialOps);
-    TestServiceLocator.registerSingleton<UnifiedRecipeService>(recipeService);
+    deps = (
+      ratings: ratingRepo,
+      recipeService: recipeService,
+      authRepository: TestServiceLocator.get<AuthRepository>(),
+      firestoreRepository: FirestoreRepository(firestore: fs),
+    );
     TestServiceLocator.registerSingleton<FamilyRatingService>(
-      FamilyRatingService(),
+      FamilyRatingService(
+        ratings: deps.ratings,
+        recipeService: deps.recipeService,
+        authRepository: deps.authRepository,
+        firestoreRepository: deps.firestoreRepository,
+      ),
     );
 
     final household = await householdRepo.ensureForUser(_malin);
@@ -198,7 +226,12 @@ void main() {
   testWidgets('a failed save says so with a retry, and keeps the screen', (
     tester,
   ) async {
-    final failing = _FailingRatings();
+    final failing = _FailingRatings(
+      ratings: deps.ratings,
+      recipeService: deps.recipeService,
+      authRepository: deps.authRepository,
+      firestoreRepository: deps.firestoreRepository,
+    );
     TestServiceLocator.registerSingleton<FamilyRatingService>(failing);
     await pumpView(tester);
 

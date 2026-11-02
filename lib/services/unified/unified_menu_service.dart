@@ -8,7 +8,6 @@ import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -71,12 +70,11 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   // Core services
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
 
-  // Optional test seams — when provided, override the ServiceLocator lookup
-  // inside methods that would otherwise resolve these lazily. Production
-  // wiring leaves these null so behaviour is unchanged.
-  final UserService? _userServiceOverride;
-  final RealtimeMenuService? _realtimeMenuServiceOverride;
-  final PermissionService? _permissionServiceOverride;
+  // Links rather than instances: these are resolved only when a method needs
+  // them, as the module builds this service before any of them is used.
+  final UserService Function() _userServiceLink;
+  final RealtimeMenuService Function() _realtimeMenuServiceLink;
+  final PermissionService Function() _permissionServiceLink;
 
   // State
   final List<SharedMenu> _menus = [];
@@ -112,19 +110,16 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   List<SharedMenu> get menus => List.unmodifiable(_menus);
 
   UnifiedMenuService({
-    FirestoreRepository? firestoreRepository,
+    required FirestoreRepository firestoreRepository,
+    required UserService Function() userService,
+    required RealtimeMenuService Function() realtimeMenuService,
+    required PermissionService Function() permissionService,
     FirebaseSharedMenuRepository? sharedMenuRepository,
-    UserService? userService,
-    RealtimeMenuService? realtimeMenuService,
-    PermissionService? permissionService,
-  }) : _firestoreRepository =
-           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-       _firestore =
-           (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
-               .firestore,
-       _userServiceOverride = userService,
-       _realtimeMenuServiceOverride = realtimeMenuService,
-       _permissionServiceOverride = permissionService {
+  }) : _firestoreRepository = firestoreRepository,
+       _firestore = firestoreRepository.firestore,
+       _userServiceLink = userService,
+       _realtimeMenuServiceLink = realtimeMenuService,
+       _permissionServiceLink = permissionService {
     // Initialize SharedMenu repository (override-aware for testability)
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
@@ -390,8 +385,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         );
 
         // Get current user's display name
-        final userService =
-            _userServiceOverride ?? ServiceLocator.get<UserService>();
+        final userService = _userServiceLink();
         final currentUserProfile = userService.currentUserProfile;
         if (currentUserProfile == null) {
           AppLogger.error(
@@ -404,9 +398,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         String? realtimeMenuId;
         if (allowCollaboration) {
           AppLogger.info('🔄 Creating RealtimeMenu for collaborative editing');
-          final realtimeMenuService =
-              _realtimeMenuServiceOverride ??
-              ServiceLocator.get<RealtimeMenuService>();
+          final realtimeMenuService = _realtimeMenuServiceLink();
           final realtimeMenu = await realtimeMenuService.createRealtimeMenu(
             menuTitle: menuTitle,
             menuSnapshot: menuSnapshot,
@@ -628,10 +620,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   String? get error => _error;
   bool get hasError => _error != null;
 
-  // BUT-1153: PermissionService getters now override-aware for tests.
-  String? get currentUserId =>
-      (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
-          .currentUserId;
+  String? get currentUserId => _permissionServiceLink().currentUserId;
   // BUT-2009: stamped as `sharedByDisplayName`, so the profile name.
   String? get currentUserDisplayName => AttributionSource().displayName;
   void resetForLogout() {

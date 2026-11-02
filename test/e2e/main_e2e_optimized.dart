@@ -357,6 +357,8 @@ class _MockAuthService extends AuthService {
         authRepository: _MockAuthRepository(),
         analyticsService: AnalyticsService(
           repository: _MockAnalyticsRepository(),
+          winbackAttribution: () =>
+              throw StateError('no win-back in this test'),
         ),
       );
 

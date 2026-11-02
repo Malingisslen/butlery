@@ -49,7 +49,9 @@ import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
@@ -151,6 +153,20 @@ Future<String> _seedOwnedMenu(
   return doc.id;
 }
 
+UnifiedMenuService _menuService(
+  FirestoreRepository firestoreRepo, {
+  FirebaseSharedMenuRepository? sharedMenuRepository,
+  UserService? userService,
+  PermissionService? permissionService,
+}) => UnifiedMenuService(
+  firestoreRepository: firestoreRepo,
+  sharedMenuRepository: sharedMenuRepository,
+  userService: () => userService ?? TestServiceLocator.get<UserService>(),
+  realtimeMenuService: () => TestServiceLocator.get<RealtimeMenuService>(),
+  permissionService: () =>
+      permissionService ?? TestServiceLocator.get<PermissionService>(),
+);
+
 void main() {
   // Mocktail any() fallbacks + Firebase platform setup.
   setUpAll(() async {
@@ -208,9 +224,8 @@ void main() {
       final profile = TestServiceLocator.get<UserService>() as MockUserService;
       when(() => profile.attributionDisplayName).thenReturn('Anna i appen');
 
-      // Production ServiceLocator delegates to TestServiceLocator via
-      // MockDIContainer; required because UnifiedMenuService reads
-      // PermissionService via the prod ServiceLocator.
+      // AttributionSource reads the profile name through the prod
+      // ServiceLocator, which delegates to TestServiceLocator.
       app_prov.ServiceLocator.reset();
       app_prov.ServiceLocator.initialize(MockDIContainer());
 
@@ -218,7 +233,7 @@ void main() {
       // FirebaseSharedMenuRepository() which touches FirebaseAuth.instance.
       // Firebase is initialized in setUpAll with a mock platform host so
       // FirebaseAuth.instance returns a (non-functional) default app.
-      service = UnifiedMenuService(firestoreRepository: firestoreRepo);
+      service = _menuService(firestoreRepo);
     });
 
     tearDown(() async {
@@ -796,8 +811,8 @@ void main() {
             userId: 'override-user-123',
             displayName: 'Override User',
           );
-          final overrideService = UnifiedMenuService(
-            firestoreRepository: firestoreRepo,
+          final overrideService = _menuService(
+            firestoreRepo,
             permissionService: fakePerms,
           );
 
@@ -834,8 +849,8 @@ void main() {
         when(
           () => users.currentUserProfile,
         ).thenReturn(testUserProfile(uid: 'user-1', displayName: 'Anna'));
-        sharingService = UnifiedMenuService(
-          firestoreRepository: firestoreRepo,
+        sharingService = _menuService(
+          firestoreRepo,
           sharedMenuRepository: FirebaseSharedMenuRepository(
             firestore: fakeFirestore,
             authRepository: auth,
@@ -893,7 +908,7 @@ void main() {
 
         // Reassign so tearDown's dispose() is on a fresh instance and
         // doesn't double-close the subject.
-        service = UnifiedMenuService(firestoreRepository: firestoreRepo);
+        service = _menuService(firestoreRepo);
       });
     });
   });

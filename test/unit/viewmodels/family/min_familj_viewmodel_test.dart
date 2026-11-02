@@ -80,7 +80,11 @@ void main() {
     TestServiceLocator.registerSingleton<HouseholdRepository>(householdRepo);
     TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
     TestServiceLocator.registerSingleton<HouseholdRosterService>(
-      HouseholdRosterService(),
+      HouseholdRosterService(
+        householdRepository: householdRepo,
+        dinerProfileRepository: dinerRepo,
+        userService: TestServiceLocator.get<UserService>(),
+      ),
     );
   });
 

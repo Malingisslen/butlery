@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/analytics_service.dart';
@@ -7,8 +6,6 @@ import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as prod;
 
 import '../../test_support/base_unit_test.dart';
 
@@ -121,7 +118,10 @@ void main() {
         ),
       ).thenAnswer((_) async {});
 
-      service = AnalyticsService(repository: mockRepo);
+      service = AnalyticsService(
+        repository: mockRepo,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
 
       // Enable analytics consent so consent-gated methods work
       final mockConsent = _MockConsentService();
@@ -357,9 +357,6 @@ void main() {
       registerFallbackValue(<String, Object>{});
       registerFallbackValue(DateTime.now());
       registerFallbackValue(ConsentPurpose.analytics);
-      // Production ServiceLocator must be initialized so the probe's
-      // ServiceLocator.get<WinbackAttributionService>() resolves.
-      prod.ServiceLocator.initialize(DIContainer());
     });
 
     setUp(() {
@@ -401,15 +398,10 @@ void main() {
       // we stub hasContext to true.
       when(() => mockWinback.hasContext).thenReturn(true);
 
-      // Register the Winback mock via GetIt so the production
-      // ServiceLocator.get<WinbackAttributionService>() resolves to it.
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<WinbackAttributionService>()) {
-        getIt.unregister<WinbackAttributionService>();
-      }
-      getIt.registerSingleton<WinbackAttributionService>(mockWinback);
-
-      service = AnalyticsService(repository: mockRepo);
+      service = AnalyticsService(
+        repository: mockRepo,
+        winbackAttribution: () => mockWinback,
+      );
 
       final mockConsent = _MockConsentService();
       when(() => mockConsent.hasConsent(any())).thenAnswer((_) async => true);
@@ -417,15 +409,10 @@ void main() {
     });
 
     tearDown(() {
-      final getIt = GetIt.instance;
-      if (getIt.isRegistered<WinbackAttributionService>()) {
-        getIt.unregister<WinbackAttributionService>();
-      }
       BaseUnitTest.resetMocks();
     });
 
     tearDownAll(() async {
-      prod.ServiceLocator.reset();
       await BaseUnitTest.teardownUnit();
     });
 

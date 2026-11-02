@@ -1,7 +1,6 @@
 /// Household service for aggregating allergen preferences across household members.
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/household.dart';
@@ -10,9 +9,8 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
 import 'package:butlery/services/family/active_household.dart';
-import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -20,6 +18,14 @@ export 'package:butlery/models/household_allergen_aggregate.dart';
 
 /// Aggregates allergen preferences across household members for menu planning.
 class HouseholdService extends BaseService {
+  HouseholdService({
+    required UnifiedFriendsService friendsService,
+    required UserService userService,
+    required HouseholdLinks links,
+  }) : _friendsService = friendsService,
+       _userService = userService,
+       _links = links;
+
   @override
   String get serviceName => 'HouseholdService';
 
@@ -35,9 +41,9 @@ class HouseholdService extends BaseService {
   static final Set<String> _allergenSafetyFloor =
       UserAllergenPreferences.defaults.trackedAllergens;
 
-  UnifiedFriendsService get _friendsService =>
-      ServiceLocator.get<UnifiedFriendsService>();
-  UserService get _userService => ServiceLocator.get<UserService>();
+  final UnifiedFriendsService _friendsService;
+  final UserService _userService;
+  final HouseholdLinks _links;
 
   /// Find the household group (first category marked as household).
   FriendCategory? getHousehold() {
@@ -58,7 +64,7 @@ class HouseholdService extends BaseService {
 
   List<String> _memberIdsOf(FriendCategory? group) {
     if (group == null) {
-      final userId = ServiceLocator.get<UserService>().currentUserProfile?.uid;
+      final userId = _userService.currentUserProfile?.uid;
       return userId != null ? [userId] : [];
     }
     return group.allMemberIds;
@@ -119,7 +125,7 @@ class HouseholdService extends BaseService {
     final result = await executeServiceOperation(
       () => _resolveMembers(
         memberIds.toList(),
-        ActiveHousehold.resolve(serviceName),
+        ActiveHousehold.resolve(serviceName, _links),
       ),
       operationName: 'aggregateAllergenPreferencesFor',
     );
@@ -192,8 +198,7 @@ class HouseholdService extends BaseService {
     // match nothing and silently return no shares (ADR-0005 D1).
     final household = active.household;
     if (household == null) return const {};
-    final shareRepository =
-        ServiceLocator.tryGet<HouseholdAllergenShareRepository>();
+    final shareRepository = _links.allergenShares();
     if (shareRepository == null) return null;
 
     try {
@@ -217,14 +222,14 @@ class HouseholdService extends BaseService {
   }
 
   Future<HouseholdAllergenAggregate> _aggregatePreferences() async {
-    final active = ActiveHousehold.resolve(serviceName);
+    final active = ActiveHousehold.resolve(serviceName, _links);
     final resolved = await active;
     final household = resolved.household;
     // The group linked to the household whose shares are read. When that
     // group is not in this device's category list, the household's own roster
     // stands in; with no link, the first household-marked group.
     final linked = _linkedGroup(household);
-    final selfId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    final selfId = _links.currentUserId();
     // A union, never a replacement: the user's own household and their own
     // household-marked groups stay in when the active household is one they
     // joined. Shares are still read from the active household only; a union
@@ -306,7 +311,7 @@ class HouseholdService extends BaseService {
     // never make. A sign-out BETWEEN the two reads still nulls it; the window
     // is a single aggregation and the outcome is their own data, so it is
     // accepted rather than plumbed.
-    final selfId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    final selfId = _links.currentUserId();
 
     for (var i = 0; i < memberIds.length; i++) {
       final memberId = memberIds[i];

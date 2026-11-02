@@ -84,6 +84,8 @@ import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 // PWA
 import 'package:butlery/services/pwa_install_service.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/services/account/terms_acceptance.dart';
 
 // Firebase dependencies
 
@@ -230,7 +232,10 @@ class CoreModule implements DIModule {
 
       // Analytics service for monitoring and tracking (available on all platforms)
       container.registerSingleton<AnalyticsService>(
-        AnalyticsService(repository: container<AnalyticsRepository>()),
+        AnalyticsService(
+          repository: container<AnalyticsRepository>(),
+          winbackAttribution: () => container<WinbackAttributionService>(),
+        ),
       );
 
       // BUT-639/830: lifecycle-stage emitter. Single instance shared by
@@ -367,6 +372,8 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           authService: container<AuthService>(),
           analyticsService: container<AnalyticsService>(),
+          recordTerms: (uid) =>
+              recordTermsAcceptance(container<UserRepository>(), uid),
         ),
       );
       container.registerLazySingleton<GuestStartCoordinator>(

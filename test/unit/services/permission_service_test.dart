@@ -1,7 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -13,6 +17,16 @@ void main() {
     late PermissionService permissionService;
     late FakeAuthRepository mockAuthRepository;
     late User mockUser;
+    late MockUserService userService;
+    late MockUnifiedFriendsService friendsService;
+
+    PermissionService build() => PermissionService(
+      authRepository: mockAuthRepository,
+      recipeService: () => throw StateError('recipe service not wired'),
+      shoppingService: () => throw StateError('shopping service not wired'),
+      friendsService: () => friendsService,
+      userService: () => userService,
+    );
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -33,7 +47,15 @@ void main() {
         user: null,
       );
 
-      permissionService = PermissionService(authRepository: mockAuthRepository);
+      userService = MockUserService();
+      friendsService = MockUnifiedFriendsService();
+      // Decoys: the service must use its links, never the locator.
+      TestServiceLocator.registerMock<UserService>(MockUserService());
+      TestServiceLocator.registerMock<UnifiedFriendsService>(
+        MockUnifiedFriendsService(),
+      );
+
+      permissionService = build();
 
       BaseUnitTest.registerMocks([mockAuthRepository]);
     });
@@ -147,9 +169,29 @@ void main() {
         expect(profile, isNull);
       });
 
-      // Note: getUserProfile for other users delegates to
-      // UserService via production ServiceLocator, which requires
-      // full DI. Tested at integration level instead.
+      test(
+        'another user\'s profile comes from the injected UserService',
+        () async {
+          mockAuthRepository.setAuthState(
+            isAuthenticated: true,
+            user: mockUser,
+            userId: 'test_user_123',
+          );
+          final other = MockFactory.createUserProfile(
+            userId: 'other_user_456',
+            displayName: 'Other',
+          );
+          when(
+            () => userService.getUserProfile('other_user_456'),
+          ).thenAnswer((_) async => other);
+
+          final profile = await permissionService.getUserProfile(
+            'other_user_456',
+          );
+
+          expect(profile, same(other));
+        },
+      );
     });
 
     group('Ownership (isOwner)', () {
@@ -184,8 +226,6 @@ void main() {
     });
 
     group('Group Permissions', () {
-      // GroupPermissionModule does NOT use ServiceLocator, so these
-      // tests work without full DI.
       setUp(() {
         mockAuthRepository.setAuthState(
           isAuthenticated: true,
@@ -224,12 +264,25 @@ void main() {
         // Without group data, defaults to false
         expect(permissionService.isGroupAdmin('group123'), isFalse);
       });
+
+      test('the owner of a group from the injected friends service is its '
+          'admin', () {
+        when(() => friendsService.getCategoryById('group123')).thenReturn(
+          FriendCategory(
+            id: 'group123',
+            ownerId: 'test_user_123',
+            name: 'Grupp',
+          ),
+        );
+
+        expect(permissionService.isGroupAdmin('group123'), isTrue);
+      });
     });
 
     group('Singleton Pattern', () {
       test('should return same instance on multiple factory calls', () {
-        final i1 = PermissionService(authRepository: mockAuthRepository);
-        final i2 = PermissionService(authRepository: mockAuthRepository);
+        final i1 = build();
+        final i2 = build();
         expect(identical(i1, i2), isTrue);
       });
 
@@ -240,18 +293,12 @@ void main() {
           userId: 'test_user_123',
         );
 
-        final i1 = PermissionService(authRepository: mockAuthRepository);
-        final i2 = PermissionService(authRepository: mockAuthRepository);
+        final i1 = build();
+        final i2 = build();
 
         expect(i1.currentUserId, equals('test_user_123'));
         expect(i2.currentUserId, equals('test_user_123'));
       });
     });
-
-    // Note: Recipe Permissions, Shopping List Permissions, and Resource
-    // Permissions are NOT tested here because their lazy modules call
-    // production ServiceLocator.get<UnifiedRecipeService>() /
-    // ServiceLocator.get<UnifiedShoppingService>(), which requires full
-    // DI initialisation. Those are covered by integration tests.
   });
 }

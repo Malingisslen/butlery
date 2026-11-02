@@ -91,7 +91,11 @@ void main() {
     TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
     TestServiceLocator.registerSingleton<CookEventRepository>(cookEventRepo);
     TestServiceLocator.registerSingleton<HouseholdRosterService>(
-      HouseholdRosterService(),
+      HouseholdRosterService(
+        householdRepository: householdRepo,
+        dinerProfileRepository: dinerRepo,
+        userService: TestServiceLocator.get<UserService>(),
+      ),
     );
 
     final household = await householdRepo.ensureForUser(_malin);

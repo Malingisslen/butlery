@@ -5,8 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
@@ -130,6 +128,7 @@ class FakeMessage extends Fake implements Message {
 void main() {
   group('MessagingService', () {
     late MessagingService messagingService;
+    BlockedUserFilter? injectedBlockFilter;
     late MockMessagingRepository mockMessagingRepo;
     late MockChatGroupRepository mockChatGroupRepo;
     late FakeAuthRepository mockAuthRepo;
@@ -189,12 +188,17 @@ void main() {
       ).thenReturn(profileName);
       when(() => mockUserService.profileAvatarUrl).thenReturn(profileAvatar);
 
+      injectedBlockFilter = null;
       messagingService = MessagingService(
         messagingRepository: mockMessagingRepo,
         chatGroupRepository: mockChatGroupRepo,
         authRepository: mockAuthRepo,
         reactionsService: MockMessageReactionsService(),
         getNotificationService: MockNotificationService.new,
+        blockFilter: () => injectedBlockFilter,
+        weeklyPlanService: () => null,
+        groupPlanService: () => null,
+        recipeService: () => null,
         attribution: AttributionSource(userService: () => mockUserService),
       );
     });
@@ -1789,14 +1793,6 @@ void main() {
     group('blocked ballots on the read path (BUT-1909)', () {
       const conversationId = 'conv-poll-block';
 
-      // `TestServiceLocator.initialize()` deliberately skips the PRODUCTION
-      // ServiceLocator, so `ServiceLocator.tryGet` reads a null container and
-      // returns null for everything. `_filterBlocked` resolves its filter
-      // through exactly that call, so without this the whole group would
-      // measure a service that never found a block list at all.
-      setUp(() => production.ServiceLocator.initialize(DIContainer()));
-      tearDown(production.ServiceLocator.reset);
-
       // A REAL `Message`, not this file's `FakeMessage`. The strip rebuilds the
       // message with `copyWith`, and a `Fake` throws on any member it does not
       // implement.
@@ -1848,9 +1844,7 @@ void main() {
       }
 
       test('the CONTROL: with nobody blocked both voters survive', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final page = await readPage();
 
@@ -1858,9 +1852,7 @@ void main() {
       });
 
       test('a blocked voter is stripped from the tally', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const {'blocked-1'}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const {'blocked-1'});
 
         final page = await readPage();
 
@@ -1875,11 +1867,9 @@ void main() {
       // test above: same fixture, same expected tally, and the only thing that
       // moves is which set 'blocked-1' is in.
       test('a voter who BLOCKED the viewer is stripped too', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(
-            const <String>{},
-            blockedBy: const {'blocked-1'},
-          ),
+        injectedBlockFilter = _StubBlockedUserFilter(
+          const <String>{},
+          blockedBy: const {'blocked-1'},
         );
 
         final page = await readPage();
@@ -1898,11 +1888,9 @@ void main() {
       // message disappears too, that is a product decision about telling
       // people they have been blocked — not a tidy-up.
       test('the ASYMMETRY: their ballot goes, their MESSAGE stays', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(
-            const <String>{},
-            blockedBy: const {'blocker-1'},
-          ),
+        injectedBlockFilter = _StubBlockedUserFilter(
+          const <String>{},
+          blockedBy: const {'blocker-1'},
         );
         final fromBlocker = Message(
           id: 'msg-from-blocker',
@@ -1946,7 +1934,7 @@ void main() {
           const <String>{},
           blockedBy: const {'blocked-1'},
         );
-        TestServiceLocator.registerMock<BlockedUserFilter>(filter);
+        injectedBlockFilter = filter;
         final plain = Message(
           id: 'msg-plain',
           conversationId: conversationId,
@@ -1980,7 +1968,7 @@ void main() {
           const <String>{},
           blockedBy: const {'blocked-1'},
         );
-        TestServiceLocator.registerMock<BlockedUserFilter>(filter);
+        injectedBlockFilter = filter;
 
         await readPage();
 
@@ -1996,8 +1984,8 @@ void main() {
         // catches internally and returns an empty set, so a stub measures
         // itself. The sibling suite records the same correction; repeating the
         // fix in one file and not the other is how the pair drifts.
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          BlockedUserFilter(blockRepository: _ThrowingBlockRepo()),
+        injectedBlockFilter = BlockedUserFilter(
+          blockRepository: _ThrowingBlockRepo(),
         );
 
         final page = await readPage();
@@ -2015,9 +2003,7 @@ void main() {
         // A `FakeMessage` is the throw: the strip rebuilds a message with
         // `copyWith`, which a `Fake` does not implement. The blocked AUTHOR's
         // message is a real one, so nothing but the strip can fail.
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const {'blocked-1'}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const {'blocked-1'});
         final unstrippablePoll = FakeMessage(
           id: 'msg-poll-fake',
           conversationId: conversationId,
@@ -2084,9 +2070,6 @@ void main() {
     group('duplicate-blocked rows are sender-only (BUT-1904)', () {
       const conversationId = 'conv-blocked-rows';
 
-      setUp(() => production.ServiceLocator.initialize(DIContainer()));
-      tearDown(production.ServiceLocator.reset);
-
       // `content` is a PARAMETER, and that is load-bearing. No
       // `firestore.rules` limb bounds what `type` is written TO on a create or
       // a sender update (B16/B17 in
@@ -2148,9 +2131,7 @@ void main() {
       }
 
       test('the sender keeps their own blocked row (page)', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final page = await readPage([
           ordinaryRow(senderId: 'test-user-id'),
@@ -2161,9 +2142,7 @@ void main() {
       });
 
       test("another participant's blocked row is dropped (page)", () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final page = await readPage([
           ordinaryRow(senderId: 'other-user'),
@@ -2181,9 +2160,7 @@ void main() {
         // The two read paths are separate methods and were separate bugs
         // before they shared `_filterBlocked`; a fix applied to one and not the
         // other is the failure this case exists for.
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final live = await readStream([
           ordinaryRow(senderId: 'other-user'),
@@ -2265,9 +2242,7 @@ void main() {
           // transfer: that group is measuring what the real filter does with an
           // unreadable list, while this one only needs the service to take its
           // catch.
-          TestServiceLocator.registerMock<BlockedUserFilter>(
-            _ThrowingBlockedUserFilter(),
-          );
+          injectedBlockFilter = _ThrowingBlockedUserFilter();
 
           final page = await readPage([
             ordinaryRow(senderId: 'other-user'),
@@ -2296,9 +2271,7 @@ void main() {
         // conversation — it filters on `senderId` alone. A real group case
         // would have to reach past this service, and the reason it is not
         // needed is that same independence.
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final page = await readPage([
           ordinaryRow(senderId: 'other-user'),
@@ -2324,9 +2297,7 @@ void main() {
           // the requester RECEIVED stays in their bundle. This one must NOT:
           // rendering it draws "Du har redan skickat det här" over somebody
           // else's message, a sentence that is false for the viewer.
-          TestServiceLocator.registerMock<BlockedUserFilter>(
-            _StubBlockedUserFilter(const <String>{}),
-          );
+          injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
           final page = await readPage([
             ordinaryRow(senderId: 'other-user'),
@@ -2342,11 +2313,8 @@ void main() {
       );
 
       test('an unregistered block filter still hides the row', () async {
-        // The other exit: `tryGet` answers null and `_filterBlocked` gives up
-        // before doing any work. Resetting the production locator is what
-        // stages it — with the group's container in place the filter resolves
-        // and this exit is never taken.
-        production.ServiceLocator.reset();
+        // The other exit: `_filterBlocked` gives up before doing any work.
+        injectedBlockFilter = null;
 
         final page = await readPage([
           ordinaryRow(senderId: 'other-user'),
@@ -2366,12 +2334,6 @@ void main() {
     // stacking a second predicate.
     group('blocked authors on the search path (BUT-2103)', () {
       const searchConversationId = 'conv-search-block';
-
-      // Same reason as the BUT-1909 group: TestServiceLocator skips the
-      // production ServiceLocator, and `_filterBlocked` resolves its filter
-      // through `ServiceLocator.tryGet`.
-      setUp(() => production.ServiceLocator.initialize(DIContainer()));
-      tearDown(production.ServiceLocator.reset);
 
       // REAL `Message`s, not this file's `FakeMessage`.
       Message hitFrom(String senderId) => Message(
@@ -2401,9 +2363,7 @@ void main() {
       }
 
       test('the CONTROL: with nobody blocked both hits survive', () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const <String>{}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const <String>{});
 
         final hits = await search();
 
@@ -2411,9 +2371,7 @@ void main() {
       });
 
       test("a blocked sender's message is dropped from a search", () async {
-        TestServiceLocator.registerMock<BlockedUserFilter>(
-          _StubBlockedUserFilter(const {'blocked-1'}),
-        );
+        injectedBlockFilter = _StubBlockedUserFilter(const {'blocked-1'});
 
         final hits = await search();
 

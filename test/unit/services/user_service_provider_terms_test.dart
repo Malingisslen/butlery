@@ -14,7 +14,10 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/core/di/household_links_from_locator.dart';
+import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../test_support/base_unit_test.dart';
@@ -91,6 +94,9 @@ void main() {
       repository: repo,
       authRepository: auth,
       firestoreRepository: _MockFirestoreRepository(),
+      permissionService: () => TestServiceLocator.get<PermissionService>(),
+      profileSearchability: () => null,
+      allergenShareMirror: OwnAllergenShareMirror(householdLinksFromLocator()),
     );
     await service.initialize();
     return service;

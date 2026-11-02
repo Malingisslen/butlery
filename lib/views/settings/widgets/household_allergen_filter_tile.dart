@@ -5,6 +5,7 @@
 // which opting out actually stops filtering; turning it back ON is frictionless.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -84,9 +85,9 @@ class _HouseholdAllergenFilterTileState
     HouseholdAllergenAggregate? aggregate,
   ) async {
     if (aggregate == null) return null;
-    final widened = await const PresentDinerPrefsResolver().addHouseholdDiners(
-      aggregate.preferences,
-    );
+    final widened = await PresentDinerPrefsResolver(
+      householdLinksFromLocator(),
+    ).addHouseholdDiners(aggregate.preferences);
     if (widened == null || !widened.changed) return aggregate;
     if (widened.prefs.isComplete && aggregate.isRosterComplete) {
       return HouseholdAllergenAggregate.completeWithMissing(

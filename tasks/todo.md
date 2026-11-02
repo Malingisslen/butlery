@@ -1,3 +1,35 @@
+# BUT-1508 svepet, grupp 3: familj, hushåll och allergidata (2026-11-02)
+
+Del av Malins godkända svep ("Gör hela svepet", 2026-10-21) och gruppindelningen i
+`/mnt/project-files/svepet/grupper-efter-omgang-30.md`. Router: tier single (kört 2026-11-02).
+Granskare: code-reviewer, testing-specialist, integration-reviewer, plus
+firebase-backend-security eftersom stigen bär barns allergidata.
+
+Regel för allt nedan: beteendet ska vara EXAKT som i dag. Varje `tryGet` (får saknas) blir
+en closure som läses vid anropet, inte vid konstruktion, så "inte kopplad" ger samma utfall
+som nu. Varje `get` blir ett konstruktorargument som DI-modulen fyller.
+
+- [x] 1. Ny `HouseholdLinks` (lib/services/family/household_links.dart): closures för
+      flaggtjänsten, hushållsrepot, matgästrepot, rostern, HouseholdService,
+      allergendelningsrepot och inloggad användares id (PermissionService-handtaget).
+      `householdLinksFromLocator()` i lib/core/di bygger den av `ServiceLocator.tryGet`
+      (samma mönster som `ServiceLocator.tryGet<UserService>` i collaboration_module).
+- [x] 2. `ActiveHousehold.resolve`, `PresentDinerPrefsResolver`, `MealDislikesResolver` tar
+      länkarna. Anropare (menygeneratorn, måltidens allergenomfång, veckomenyn,
+      placering, manuell tillägg, hushållsfiltrets ruta) skickar `householdLinksFromLocator()`.
+- [x] 3. `HouseholdService`, `HouseholdRosterService`, `FamilyRatingService` får sina
+      beroenden i konstruktorn (social_module bygger dem); `NutritionService` får en
+      obligatorisk `currentUserId`-closure.
+- [x] 4. Ratchet-raderna sänks/tas bort; tester byggs om med lockbete i lokatorn och ett
+      vittnestest per konstruktionsställe (förstörningskoll: ta bort överlämningen, testet blir rött).
+- [ ] 5. `own_allergen_share_mirror` kräver ändring i `user_service.dart` (grupp 2:s fil):
+      görs bara om grupp 2 är mergad när resten är klart, annars lämnas raden till sista omgången.
+- [x] 6. format, analyze, bred testkörning, granskare en i taget, PR med auto-merge.
+
+Sammanfattning för Malin: ingenting syns i appen. Koden för familj, hushåll och barnens
+allergier får sina delar skickade till sig i stället för att leta upp dem själv, så den kan
+testas säkert. Allergifiltret ska bete sig exakt som i dag, och testerna bevisar det.
+
 # Malins svar 2026-10-31: rad utan mängd mot skafferiet, och portioner som källan inte anger
 
 Malin svarade på beslutskort i tråden 2026-10-31 07:54 (frågorna 2 och 4 i

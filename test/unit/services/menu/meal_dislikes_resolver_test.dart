@@ -8,6 +8,7 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -46,6 +47,7 @@ void main() {
   late _MockHouseholdRosterService roster;
   late _MockHouseholdRepository hhRepo;
   late _MockPermissionService perm;
+  late MealDislikesResolver resolver;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
@@ -73,12 +75,31 @@ void main() {
       ],
     );
 
-    TestServiceLocator.registerSingleton<PermissionService>(perm);
-    TestServiceLocator.registerSingleton<HouseholdRepository>(hhRepo);
-    TestServiceLocator.registerSingleton<HouseholdRosterService>(roster);
-  });
+    // BUT-1508: the locator holds unstubbed decoys of the same types (signed
+    // out, no household, no roster), so a resolver that reached for the
+    // locator instead of its links would read nothing and fail the tests.
+    TestServiceLocator.registerSingleton<PermissionService>(
+      _MockPermissionService(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdRepository>(
+      _MockHouseholdRepository(),
+    );
+    TestServiceLocator.registerSingleton<HouseholdRosterService>(
+      _MockHouseholdRosterService(),
+    );
 
-  const resolver = MealDislikesResolver();
+    resolver = MealDislikesResolver(
+      HouseholdLinks(
+        featureFlags: () => null,
+        households: () => hhRepo,
+        dinerProfiles: () => null,
+        roster: () => roster,
+        householdService: () => null,
+        allergenShares: () => null,
+        currentUserId: () => perm.currentUserId,
+      ),
+    );
+  });
 
   test('keys each member\'s dislikes by the roster memberId and leaves out '
       'members who dislike nothing', () async {

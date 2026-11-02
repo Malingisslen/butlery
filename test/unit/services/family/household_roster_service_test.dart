@@ -86,8 +86,14 @@ void main() {
 
     householdRepo = _MockHouseholdRepository();
     dinerRepo = _MockDinerProfileRepository();
-    TestServiceLocator.registerSingleton<HouseholdRepository>(householdRepo);
-    TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
+    // BUT-1508: decoys in the locator prove the service uses the repositories
+    // it was handed; a call on a decoy fails the test.
+    TestServiceLocator.registerSingleton<HouseholdRepository>(
+      _MockHouseholdRepository(),
+    );
+    TestServiceLocator.registerSingleton<DinerProfileRepository>(
+      _MockDinerProfileRepository(),
+    );
 
     userService = TestServiceLocator.get<UserService>() as MockUserService;
     userService.setUserState(
@@ -103,7 +109,11 @@ void main() {
       },
     );
 
-    service = HouseholdRosterService();
+    service = HouseholdRosterService(
+      householdRepository: householdRepo,
+      dinerProfileRepository: dinerRepo,
+      userService: userService,
+    );
   });
 
   group('getRoster', () {
