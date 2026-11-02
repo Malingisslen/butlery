@@ -1,7 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -57,12 +56,12 @@ class ImportCorrectionSnapshot {
     Recipe recipe, {
     required ImportSource source,
     String? domain,
-    ParsedRecipeCache? cache,
+    required ParsedRecipeCache? cache,
     List<ParseConfidence>? confidences,
   }) {
     if (recipe.id.isEmpty) return;
     try {
-      final target = cache ?? ServiceLocator.tryGet<ParsedRecipeCache>();
+      final target = cache;
       if (target == null) return;
       final previous = confidences == null ? target.retrieve(recipe.id) : null;
       target.store(

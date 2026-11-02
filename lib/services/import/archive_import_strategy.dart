@@ -15,6 +15,7 @@
 /// Connected to: ArchiveImportViewModel, PersonalRecipeOperations
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -32,6 +33,14 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 /// - Source URL attribution
 class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   static const _uuid = Uuid();
+
+  ArchiveImportStrategy({
+    ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
+  }) : _lookUpParsedRecipeCache = parsedRecipeCache;
+
+  static ParsedRecipeCache? _noCache() => null;
+
+  final ParsedRecipeCache? Function() _lookUpParsedRecipeCache;
 
   @override
   String get strategyName => 'Archive Import';
@@ -131,6 +140,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       ImportCorrectionSnapshot.capture(
         importedRecipe,
         source: ImportSource.archive,
+        cache: _lookUpParsedRecipeCache(),
       );
 
       return ImportResult.success(

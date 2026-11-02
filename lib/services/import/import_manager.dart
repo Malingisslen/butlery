@@ -142,10 +142,13 @@ class ImportManager {
     // CRF/BERT ingredient read for that route.
     final textStrategy = TextImportStrategy(
       ingredientStrategy: _links.ingredientStrategy,
+      parsedRecipeCache: _links.parsedRecipeCache,
     );
     // Register available import strategies in priority order.
     _strategies.addAll([
-      ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
+      ArchiveImportStrategy(
+        parsedRecipeCache: _links.parsedRecipeCache,
+      ), // 1. Try archive first (fast, pre-validated)
       UrlImportStrategy(
         httpClient: _links.httpClient(),
         recipeParser: _links.recipeParser,
@@ -157,10 +160,14 @@ class ImportManager {
       PhotoImportStrategy(
         textStrategy: textStrategy,
         llmEnhancement: _links.llmEnhancement,
+        parsedRecipeCache: _links.parsedRecipeCache,
       ), // 4. Photo import (OCR extraction)
       // 5. Voice dictation — canHandle() always false (explicitly launched
       // from the voice wizard, never auto-selected).
-      VoiceImportStrategy(textStrategy: textStrategy),
+      VoiceImportStrategy(
+        textStrategy: textStrategy,
+        parsedRecipeCache: _links.parsedRecipeCache,
+      ),
       // 6. File — canHandle() always false (picker-driven, see importFile).
       FileImportStrategy(),
     ]);

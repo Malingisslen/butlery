@@ -24,6 +24,7 @@
 /// }
 /// ```
 
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'dart:convert';
 import 'dart:typed_data';
@@ -69,10 +70,16 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     TextImportStrategy? textStrategy,
     HeicConverter? heicConverter,
     LlmEnhancementService? Function() llmEnhancement = _noLlm,
-  }) : _ocrService = ocrService ?? OCRExtractionService.instance,
+    ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
+  }) : _lookUpParsedRecipeCache = parsedRecipeCache,
+       _ocrService = ocrService ?? OCRExtractionService.instance,
        _textStrategy = textStrategy ?? TextImportStrategy(),
        _heicConverter = heicConverter ?? HeicConverter(),
        _lookUpLlm = llmEnhancement;
+
+  static ParsedRecipeCache? _noCache() => null;
+
+  final ParsedRecipeCache? Function() _lookUpParsedRecipeCache;
 
   static LlmEnhancementService? _noLlm() => null;
 
@@ -288,6 +295,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       ImportCorrectionSnapshot.capture(
         result.recipe!,
         source: ImportSource.photo,
+        cache: _lookUpParsedRecipeCache(),
       );
     }
     return result;

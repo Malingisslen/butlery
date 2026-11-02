@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:clock/clock.dart';
 
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -17,8 +18,15 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 /// provenance is stamped [SourceArtefactType.voiceDictation] — dictated
 /// recipes must never pollute the pasted-text telemetry bucket.
 class VoiceImportStrategy implements ImportStrategy {
-  VoiceImportStrategy({TextImportStrategy? textStrategy})
-    : _textStrategy = textStrategy ?? TextImportStrategy();
+  VoiceImportStrategy({
+    TextImportStrategy? textStrategy,
+    ParsedRecipeCache? Function() parsedRecipeCache = _noCache,
+  }) : _textStrategy = textStrategy ?? TextImportStrategy(),
+       _lookUpParsedRecipeCache = parsedRecipeCache;
+
+  static ParsedRecipeCache? _noCache() => null;
+
+  final ParsedRecipeCache? Function() _lookUpParsedRecipeCache;
 
   final TextImportStrategy _textStrategy;
 
@@ -67,7 +75,11 @@ class VoiceImportStrategy implements ImportStrategy {
     // BUT-1469: re-tag the correction snapshot the inner text strategy stored
     // as `voice` (same recipe id — copyWith preserves it — so this overwrites),
     // keeping dictation corrections out of the pasted-text training bucket.
-    ImportCorrectionSnapshot.capture(recipe, source: ImportSource.voice);
+    ImportCorrectionSnapshot.capture(
+      recipe,
+      source: ImportSource.voice,
+      cache: _lookUpParsedRecipeCache(),
+    );
 
     return ImportResult.success(
       recipe,
