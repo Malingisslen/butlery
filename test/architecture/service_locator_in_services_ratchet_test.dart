@@ -22,7 +22,6 @@ const _residue = <String, int>{
   'lib/services/attribution_source.dart': 1,
   'lib/services/cook_snap_service.dart': 11,
   'lib/services/deep_link_service.dart': 3,
-  'lib/services/family/own_allergen_share_mirror.dart': 2,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/parsing/feedback/import_correction_snapshot.dart': 1,
   'lib/services/parsing/tiers/parsing_tier.dart': 1,

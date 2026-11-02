@@ -47,6 +47,7 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
@@ -390,6 +391,9 @@ class SocialModule implements DIModule {
           permissionService: () => container<PermissionService>(),
           profileSearchability:
               ServiceLocator.tryGet<ProfileSearchabilityService>,
+          allergenShareMirror: OwnAllergenShareMirror(
+            householdLinksFromLocator(),
+          ),
         ),
       );
 
