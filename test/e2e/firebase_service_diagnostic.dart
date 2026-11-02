@@ -208,6 +208,8 @@ void main() {
         final stopwatch4 = Stopwatch()..start();
         final analyticsService = AnalyticsService(
           repository: container<AnalyticsRepository>(),
+          winbackAttribution: () =>
+              throw StateError('no win-back in this test'),
         );
         print(
           '   ✅ AnalyticsService created in ${stopwatch4.elapsedMilliseconds}ms',
@@ -280,7 +282,11 @@ void main() {
         print('   📦 Step 5: AnalyticsService registration...');
         final step5Stopwatch = Stopwatch()..start();
         container.registerSingleton<AnalyticsService>(
-          AnalyticsService(repository: container<AnalyticsRepository>()),
+          AnalyticsService(
+            repository: container<AnalyticsRepository>(),
+            winbackAttribution: () =>
+                throw StateError('no win-back in this test'),
+          ),
         );
         print(
           '   ✅ Step 5 completed in ${step5Stopwatch.elapsedMilliseconds}ms',

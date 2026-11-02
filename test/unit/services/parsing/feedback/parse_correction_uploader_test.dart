@@ -420,7 +420,10 @@ void main() {
       final consent = _MockConsent();
       when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
 
-      final service = AnalyticsService(repository: repo);
+      final service = AnalyticsService(
+        repository: repo,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(consent);
 
       prod.ServiceLocator.initialize(DIContainer());

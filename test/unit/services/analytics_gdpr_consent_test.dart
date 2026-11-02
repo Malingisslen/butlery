@@ -75,7 +75,10 @@ void main() {
     });
 
     test('should default to false when ConsentService is null', () async {
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       // No setConsentService call — consent is null
 
       await service.setUserProperties(recipeCount: 5);
@@ -95,7 +98,10 @@ void main() {
         () => mockConsentService.hasConsent(any()),
       ).thenAnswer((_) async => false);
 
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.logRecipeCooked(recipeId: 'r1', mealType: 'dinner');
@@ -116,7 +122,10 @@ void main() {
       ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.logRecipeDeleted(
@@ -142,7 +151,10 @@ void main() {
         () => mockConsentService.hasConsent(any()),
       ).thenAnswer((_) async => false);
 
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.logMenuGenerated(recipeCount: 5, method: 'auto');
@@ -161,7 +173,10 @@ void main() {
       ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.setUserProperties(recipeCount: 10);
@@ -182,7 +197,10 @@ void main() {
       ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.logLogin(method: 'email');
@@ -198,7 +216,10 @@ void main() {
       ).thenAnswer((_) async => true);
 
       SingletonServiceMixin.resetForTesting();
-      final service = AnalyticsService(repository: mockRepository);
+      final service = AnalyticsService(
+        repository: mockRepository,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       service.setConsentService(mockConsentService);
 
       await service.setUserProperties(recipeCount: 5);

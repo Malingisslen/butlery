@@ -17,6 +17,9 @@ import 'package:butlery/services/performance/performance_monitoring_service.dart
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/monitoring/app_monitoring_service.dart';
 import 'package:butlery/services/monitoring/web_error_reporter.dart';
 import 'package:butlery/services/account/consent_service.dart';
@@ -68,7 +71,15 @@ class PerformanceModule implements DIModule {
     });
 
     container.registerLazySingleton<IntelligentCacheManager>(
-      () => IntelligentCacheManager(),
+      () => IntelligentCacheManager(
+        recipeService: () => app<UnifiedRecipeService>(),
+        friendsService: () => app<UnifiedFriendsService>(),
+        permissionService: () => app<PermissionService>(),
+        behaviorCache: () => JsonCacheHelper(
+          'intelligent_cache_behavior',
+          app<OfflineService>().database.cacheDao,
+        ),
+      ),
       dispose: (s) => s.clearCache(),
     );
   }
