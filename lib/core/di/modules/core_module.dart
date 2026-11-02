@@ -82,6 +82,8 @@ import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 // PWA
 import 'package:butlery/services/pwa_install_service.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/services/account/terms_acceptance.dart';
 
 // Firebase dependencies
 
@@ -367,6 +369,8 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           authService: container<AuthService>(),
           analyticsService: container<AnalyticsService>(),
+          recordTerms: (uid) =>
+              recordTermsAcceptance(container<UserRepository>(), uid),
         ),
       );
       container.registerLazySingleton<GuestStartCoordinator>(

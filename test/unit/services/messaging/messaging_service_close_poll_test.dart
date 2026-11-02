@@ -141,6 +141,7 @@ void main() {
   late _MockSocialMenuOps socialMenuOps;
   late _MockRecipeService recipeService;
   late _MockBlockedUserFilter defaultBlockFilter;
+  BlockedUserFilter? injectedBlockFilter;
   late MessagingService service;
 
   const creatorId = 'user-creator';
@@ -180,10 +181,13 @@ void main() {
     final getIt = GetIt.instance;
     await getIt.reset();
     ServiceLocator.initialize(DIContainer());
-    getIt.registerSingleton<WeeklyMenuPlanService>(planService);
-    getIt.registerSingleton<GroupWeeklyMenuPlanService>(groupPlanService);
+    // Decoys: the service must use its links, never the locator.
+    getIt.registerSingleton<WeeklyMenuPlanService>(_MockPlanService());
+    getIt.registerSingleton<GroupWeeklyMenuPlanService>(
+      _MockGroupPlanService(),
+    );
     getIt.registerSingleton<SocialMenuOperations>(socialMenuOps);
-    getIt.registerSingleton<UnifiedRecipeService>(recipeService);
+    getIt.registerSingleton<UnifiedRecipeService>(_MockRecipeService());
     // BUT-1926: closePoll now REFUSES when no block filter is registered —
     // "not registered" is a build that cannot answer the question, not an
     // empty block list. The BUT-1909 group swaps in its own.
@@ -198,7 +202,8 @@ void main() {
     when(
       () => defaultBlockFilter.requireBlockedByIds(),
     ).thenAnswer((_) async => <String>{});
-    getIt.registerSingleton<BlockedUserFilter>(defaultBlockFilter);
+    injectedBlockFilter = defaultBlockFilter;
+    getIt.registerSingleton<BlockedUserFilter>(_MockBlockedUserFilter());
 
     when(() => authRepo.currentUserId).thenReturn(creatorId);
     when(
@@ -292,6 +297,10 @@ void main() {
       authRepository: authRepo,
       reactionsService: reactionsService,
       getNotificationService: _MockNotificationService.new,
+      blockFilter: () => injectedBlockFilter,
+      weeklyPlanService: () => planService,
+      groupPlanService: () => groupPlanService,
+      recipeService: () => recipeService,
     );
   });
 
@@ -1128,8 +1137,7 @@ void main() {
 
     setUp(() {
       blockFilter = _MockBlockedUserFilter();
-      GetIt.instance.unregister<BlockedUserFilter>();
-      GetIt.instance.registerSingleton<BlockedUserFilter>(blockFilter);
+      injectedBlockFilter = blockFilter;
       when(() => recipeService.recipes).thenReturn([
         _recipe('recipe-blocked', 'Tacos'),
         _recipe('recipe-clean', 'Pasta'),
@@ -1252,10 +1260,7 @@ void main() {
       when(() => halfRepo.getBlockedByUserIdsFromServer()).thenThrow(
         Exception('unreadable'),
       );
-      GetIt.instance.unregister<BlockedUserFilter>();
-      GetIt.instance.registerSingleton<BlockedUserFilter>(
-        BlockedUserFilter(blockRepository: halfRepo),
-      );
+      injectedBlockFilter = BlockedUserFilter(blockRepository: halfRepo);
 
       await expectLater(
         service.closePoll(messageId: messageId),
@@ -1303,10 +1308,7 @@ void main() {
       when(() => throwingRepo.getBlockedUserIdsFromServer()).thenThrow(
         Exception('unreadable'),
       );
-      GetIt.instance.unregister<BlockedUserFilter>();
-      GetIt.instance.registerSingleton<BlockedUserFilter>(
-        BlockedUserFilter(blockRepository: throwingRepo),
-      );
+      injectedBlockFilter = BlockedUserFilter(blockRepository: throwingRepo);
 
       await expectLater(
         service.closePoll(messageId: messageId),
@@ -1346,10 +1348,7 @@ void main() {
         when(() => offlineRepo.getBlockedUserIdsFromServer()).thenThrow(
           FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
         );
-        GetIt.instance.unregister<BlockedUserFilter>();
-        GetIt.instance.registerSingleton<BlockedUserFilter>(
-          BlockedUserFilter(blockRepository: offlineRepo),
-        );
+        injectedBlockFilter = BlockedUserFilter(blockRepository: offlineRepo);
 
         await expectLater(
           service.closePoll(messageId: messageId),
@@ -1380,10 +1379,7 @@ void main() {
       when(() => slowRepo.getBlockedUserIdsFromServer()).thenThrow(
         FirebaseException(plugin: 'cloud_firestore', code: 'deadline-exceeded'),
       );
-      GetIt.instance.unregister<BlockedUserFilter>();
-      GetIt.instance.registerSingleton<BlockedUserFilter>(
-        BlockedUserFilter(blockRepository: slowRepo),
-      );
+      injectedBlockFilter = BlockedUserFilter(blockRepository: slowRepo);
 
       await expectLater(
         service.closePoll(messageId: messageId),
@@ -1416,10 +1412,7 @@ void main() {
           code: 'network-request-failed',
         ),
       );
-      GetIt.instance.unregister<BlockedUserFilter>();
-      GetIt.instance.registerSingleton<BlockedUserFilter>(
-        BlockedUserFilter(blockRepository: droppedRepo),
-      );
+      injectedBlockFilter = BlockedUserFilter(blockRepository: droppedRepo);
 
       await expectLater(
         service.closePoll(messageId: messageId),
@@ -1439,7 +1432,7 @@ void main() {
       // registered skipped the whole guard and resolved on the raw tally —
       // the same fail-open the case above refuses, reached by a different
       // door. Absence is not an empty block list; it is not knowing.
-      GetIt.instance.unregister<BlockedUserFilter>();
+      injectedBlockFilter = null;
 
       await expectLater(
         service.closePoll(messageId: messageId),

@@ -22,7 +22,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart'
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/firebase_error_messages.dart';
@@ -68,6 +67,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
   late final ConversationActionOperations _actionOps;
   late final MessageManagementOperations _managementOps;
   final MessageReactionsService _reactionsService;
+  final BlockedUserFilter? Function() _blockFilter;
+  final WeeklyMenuPlanService? Function() _weeklyPlanService;
+  final GroupWeeklyMenuPlanService? Function() _groupPlanService;
+  final UnifiedRecipeService? Function() _recipeService;
 
   @override
   String get serviceName => 'MessagingService';
@@ -82,8 +85,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required auth_repo.AuthRepository authRepository,
     required MessageReactionsService reactionsService,
     required NotificationService Function() getNotificationService,
+    required BlockedUserFilter? Function() blockFilter,
+    required WeeklyMenuPlanService? Function() weeklyPlanService,
+    required GroupWeeklyMenuPlanService? Function() groupPlanService,
+    required UnifiedRecipeService? Function() recipeService,
     AttributionSource? attribution,
   }) : _messagingRepository = messagingRepository,
+       _blockFilter = blockFilter,
+       _weeklyPlanService = weeklyPlanService,
+       _groupPlanService = groupPlanService,
+       _recipeService = recipeService,
        _attribution = attribution ?? AttributionSource(),
        _chatGroupRepository = chatGroupRepository,
        _authRepository = authRepository,
@@ -300,7 +311,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// move it below the early returns.
   ///
   /// BUT-544 second: messages authored by users the viewer has blocked.
-  /// `tryGet` keeps test contexts that don't register the filter unaffected.
   /// Fail-open: a transient blocked-list fetch error must not blank out
   /// the conversation; the next snapshot will retry the lookup.
   Future<List<Message>> _filterBlocked(List<Message> incoming) async {
@@ -309,7 +319,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     // the failure exits too — which is the whole point of doing this first.
     final messages = _withoutOthersBlockedRows(incoming);
     if (messages.isEmpty) return messages;
-    final filter = ServiceLocator.tryGet<BlockedUserFilter>();
+    final filter = _blockFilter();
     if (filter == null) return messages;
 
     final Set<String> blocked;
@@ -949,7 +959,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       // "nobody is blocked", it is "this build cannot tell" — the same state
       // the catch below refuses on — and skipping the branch on it made the
       // whole guard conditional on a service registration.
-      final blockFilter = ServiceLocator.tryGet<BlockedUserFilter>();
+      final blockFilter = _blockFilter();
       if (blockFilter == null) {
         AppLogger.warning(
           'Refusing to close poll $messageId: no block filter registered',
@@ -1129,8 +1139,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<PlanCommit?> _prepareWinnerForWeeklyPlan({
     required String winnerRecipeId,
   }) async {
-    final planService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
-    final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+    final planService = _weeklyPlanService();
+    final recipeService = _recipeService();
     if (planService == null || recipeService == null) {
       AppLogger.warning(
         'Auto-resolution skipped — required services not registered',
@@ -1186,8 +1196,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required String proposedBy,
     required List<String> votedInBy,
   }) async {
-    final groupService = ServiceLocator.tryGet<GroupWeeklyMenuPlanService>();
-    final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+    final groupService = _groupPlanService();
+    final recipeService = _recipeService();
     if (groupService == null || recipeService == null) {
       AppLogger.warning(
         'Auto-resolution (group) skipped — required services not registered',

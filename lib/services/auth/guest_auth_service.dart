@@ -2,13 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/services/account/terms_acceptance.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 
@@ -61,23 +58,18 @@ class GuestAuthService {
     required AuthService authService,
     required AnalyticsService analyticsService,
     Future<void> Function()? pushUserScope,
-    Future<void> Function(String uid)? recordTerms,
+    required Future<void> Function(String uid) recordTerms,
   }) : _authRepository = authRepository,
        _authService = authService,
        _analyticsService = analyticsService,
        _pushUserScope = pushUserScope ?? (() => DIContainer().pushUserScope()),
-       _recordTerms = recordTerms ?? _recordTermsWithRepository;
+       _recordTerms = recordTerms;
 
   final AuthRepository _authRepository;
   final AuthService _authService;
   final AnalyticsService _analyticsService;
   final Future<void> Function() _pushUserScope;
   final Future<void> Function(String uid) _recordTerms;
-
-  static Future<void> _recordTermsWithRepository(String uid) async {
-    final users = ServiceLocator.tryGet<UserRepository>();
-    if (users != null) await recordTermsAcceptance(users, uid);
-  }
 
   /// Signs in as a new guest. Returns whether a guest is signed in.
   Future<bool> signInAsGuest() async {

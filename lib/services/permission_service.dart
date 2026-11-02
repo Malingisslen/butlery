@@ -3,7 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart' as models;
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -34,6 +34,11 @@ class PermissionService extends BaseService {
   /// Repository handling recipe data operations.
   final RecipeRepository? _recipeRepository;
 
+  final UnifiedRecipeService Function() _recipeService;
+  final UnifiedShoppingService Function() _shoppingService;
+  final UnifiedFriendsService Function() _friendsService;
+  final user_svc.UserService Function() _userService;
+
   /// Permission modules (lazy initialized)
   RecipePermissionModule? _recipeModuleInstance;
   ShoppingPermissionModule? _shoppingModuleInstance;
@@ -46,23 +51,36 @@ class PermissionService extends BaseService {
   factory PermissionService({
     auth_repo.AuthRepository? authRepository,
     RecipeRepository? recipeRepository,
+    required UnifiedRecipeService Function() recipeService,
+    required UnifiedShoppingService Function() shoppingService,
+    required UnifiedFriendsService Function() friendsService,
+    required user_svc.UserService Function() userService,
   }) {
     _instance ??= PermissionService._internal(
       authRepository ?? FirebaseAuthRepository(),
       recipeRepository,
+      recipeService,
+      shoppingService,
+      friendsService,
+      userService,
     );
     return _instance!;
   }
 
   /// Private constructor for singleton pattern implementation.
-  PermissionService._internal(this._authRepository, this._recipeRepository) {
-    // Modules are now lazy initialized on first access
-  }
+  PermissionService._internal(
+    this._authRepository,
+    this._recipeRepository,
+    this._recipeService,
+    this._shoppingService,
+    this._friendsService,
+    this._userService,
+  );
 
   /// Lazy getter for recipe permission module
   RecipePermissionModule get _recipeModule {
     if (_recipeModuleInstance == null) {
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final recipeService = _recipeService();
       final permissionHelper = RecipePermissionHelper(
         getCurrentUserId: () => recipeService.currentUserId,
       );
@@ -80,7 +98,7 @@ class PermissionService extends BaseService {
   /// Lazy getter for shopping permission module
   ShoppingPermissionModule get _shoppingModule {
     if (_shoppingModuleInstance == null) {
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final shoppingService = _shoppingService();
       _shoppingModuleInstance = ShoppingPermissionModule(
         shoppingService: shoppingService,
         getCurrentUserId: () => currentUserId,
@@ -93,6 +111,7 @@ class PermissionService extends BaseService {
   GroupPermissionModule get _groupModule {
     _groupModuleInstance ??= GroupPermissionModule(
       getCurrentUserId: () => currentUserId,
+      friendsService: _friendsService,
     );
     return _groupModuleInstance!;
   }
@@ -161,9 +180,7 @@ class PermissionService extends BaseService {
 
     // S7 fix: Delegate to UserService for real profile lookup (cached)
     try {
-      return await ServiceLocator.get<user_svc.UserService>().getUserProfile(
-        userId,
-      );
+      return await _userService().getUserProfile(userId);
     } catch (e) {
       AppLogger.warning(
         'Failed to fetch user profile for ${userId.maskedUserId}: $e',

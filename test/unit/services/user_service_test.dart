@@ -57,14 +57,13 @@ extension _AuthStateHelper on _MockAuthRepository {
 void main() {
   group('UserService', () {
     late UserService userService;
+    ProfileSearchabilityService? searchability;
     late MockUserRepository mockUserRepository;
     late _MockAuthRepository mockAuthRepository;
     late User mockUser;
     late UserProfile testProfile;
 
     setUpAll(() async {
-      // Initialize production ServiceLocator bridge so UserService constructor
-      // can resolve FirestoreRepository and PermissionService via ServiceLocator.get()
       production.ServiceLocator.initialize(DIContainer());
 
       await BaseUnitTest.setupUnit();
@@ -108,6 +107,10 @@ void main() {
       PermissionService.resetForTesting();
       final permissionService = PermissionService(
         authRepository: mockAuthRepository,
+        recipeService: () => throw StateError('not wired in this suite'),
+        shoppingService: () => throw StateError('not wired in this suite'),
+        friendsService: () => throw StateError('not wired in this suite'),
+        userService: () => userService,
       );
 
       // Register PermissionService with TestServiceLocator
@@ -116,9 +119,13 @@ void main() {
       // TestServiceLocator already handles production ServiceLocator initialization
 
       // Create service with mock dependencies
+      searchability = null;
       userService = UserService(
         repository: mockUserRepository,
         authRepository: mockAuthRepository,
+        firestoreRepository: MockFactory.createFirestoreRepository(),
+        permissionService: () => permissionService,
+        profileSearchability: () => searchability,
       );
 
       // Register mocks for automatic reset
@@ -2133,8 +2140,10 @@ void main() {
         when(
           () => mockSearchability.setSearchable(any()),
         ).thenAnswer((_) async => true);
+        searchability = mockSearchability;
+        // Decoy: the service must use its link, never the locator.
         TestServiceLocator.registerMock<ProfileSearchabilityService>(
-          mockSearchability,
+          _MockProfileSearchabilityService(),
         );
       });
 
@@ -2315,8 +2324,10 @@ void main() {
         await userService.initialize();
 
         mockSearchability = _MockProfileSearchabilityService();
+        searchability = mockSearchability;
+        // Decoy: the service must use its link, never the locator.
         TestServiceLocator.registerMock<ProfileSearchabilityService>(
-          mockSearchability,
+          _MockProfileSearchabilityService(),
         );
       });
 

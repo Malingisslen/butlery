@@ -27,9 +27,11 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
@@ -187,6 +189,9 @@ void main() {
     userService = UserService(
       repository: userRepository,
       authRepository: authRepository,
+      firestoreRepository: TestServiceLocator.get<FirestoreRepository>(),
+      permissionService: () => TestServiceLocator.get<PermissionService>(),
+      profileSearchability: () => null,
     );
     household = _MockHouseholdService();
     stubHousehold(exists: false);

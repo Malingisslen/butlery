@@ -47,6 +47,10 @@ import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 
@@ -111,6 +115,10 @@ class MessagingModule implements DIModule {
         authRepository: appScope<AuthRepository>(),
         reactionsService: appScope<MessageReactionsService>(),
         getNotificationService: () => container<NotificationService>(),
+        blockFilter: ServiceLocator.tryGet<BlockedUserFilter>,
+        weeklyPlanService: ServiceLocator.tryGet<WeeklyMenuPlanService>,
+        groupPlanService: ServiceLocator.tryGet<GroupWeeklyMenuPlanService>,
+        recipeService: ServiceLocator.tryGet<UnifiedRecipeService>,
       ),
     );
 
