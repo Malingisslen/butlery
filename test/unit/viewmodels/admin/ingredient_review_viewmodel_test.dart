@@ -162,4 +162,19 @@ void main() {
       expect(text, contains('Bryter koster: vegetarisk'));
     },
   );
+
+  test('a reload drops selected ids that are no longer listed', () async {
+    final items = ingredientReviewSample();
+    final vm = build(items: items);
+    await vm.load();
+    final first = items.first.id;
+    final second = items[1].id;
+    vm.toggleSelected(first);
+    vm.toggleSelected(second);
+    expect(vm.selectedIds, {first, second});
+    items.removeAt(0);
+    await vm.load();
+    expect(vm.selectedIds, {second});
+    expect(vm.selectedIngredients.map((i) => i.id), [second]);
+  });
 }

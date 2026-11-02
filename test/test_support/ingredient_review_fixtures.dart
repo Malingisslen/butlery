@@ -162,8 +162,13 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
     batches.add(entities);
   }
 
+  int watchCalls = 0;
+
   @override
-  Stream<List<IngredientChangeRequest>> watchPending() => pending.stream;
+  Stream<List<IngredientChangeRequest>> watchPending() {
+    watchCalls++;
+    return pending.stream;
+  }
 
   @override
   Future<void> withdraw(String id) async {

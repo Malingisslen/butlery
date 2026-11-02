@@ -46,6 +46,7 @@ class IngredientReviewViewModel extends BaseViewModel {
   String? _groupFilter;
   String? _allergenFilter;
   bool _missingPriceOnly = false;
+  final Set<String> _selectedIds = {};
 
   IngredientReviewViewModel({
     IngredientRepository? repository,
@@ -86,6 +87,24 @@ class IngredientReviewViewModel extends BaseViewModel {
   String dietLabel(String key) =>
       _config?.dietary.getByKey(key)?.getTag('sv') ?? key;
 
+  Set<String> get selectedIds => Set.unmodifiable(_selectedIds);
+
+  List<IngredientData> get selectedIngredients => [
+    for (final i in _all)
+      if (_selectedIds.contains(i.id)) i,
+  ];
+
+  void toggleSelected(String id) {
+    if (!_selectedIds.remove(id)) _selectedIds.add(id);
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    if (_selectedIds.isEmpty) return;
+    _selectedIds.clear();
+    notifyListeners();
+  }
+
   Future<void> load() async {
     final ok = await executeAsyncVoid(() async {
       final loaded = await _repository.getAll();
@@ -94,6 +113,7 @@ class IngredientReviewViewModel extends BaseViewModel {
       if (loaded.isEmpty) throw StateError('Ingredient list is empty');
       _config = _tagConfigService.configOrNull;
       _all = loaded;
+      _selectedIds.removeWhere((id) => !loaded.any((i) => i.id == id));
       _previews = _config == null
           ? const {}
           : {

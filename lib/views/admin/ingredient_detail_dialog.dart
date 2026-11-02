@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ingredient_review_viewmodel.dart';
 import 'package:butlery/views/admin/ingredient_copy.dart';
 import 'package:butlery/views/admin/ingredient_labels.dart';
+import 'package:butlery/views/admin/ingredient_proposal_form.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -42,13 +43,24 @@ class _Detail extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(i.swedish, style: AppTextStyles.headlineSmall),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ButleryTextButton(
-              label: l10n.adminCopyForClaude,
-              icon: ButleryIcons.copy,
-              onPressed: () => copyIngredientForClaude(context, vm, i),
-            ),
+          Wrap(
+            alignment: WrapAlignment.end,
+            children: [
+              ButleryTextButton(
+                key: const ValueKey('suggest-change'),
+                label: l10n.adminProposalSuggest,
+                icon: ButleryIcons.pencil,
+                onPressed: () => showIngredientProposalForm(
+                  context,
+                  ingredientId: i.id,
+                ),
+              ),
+              ButleryTextButton(
+                label: l10n.adminCopyForClaude,
+                icon: ButleryIcons.copy,
+                onPressed: () => copyIngredientForClaude(context, vm, i),
+              ),
+            ],
           ),
           Flexible(
             child: ListView(

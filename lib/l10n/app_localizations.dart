@@ -32523,6 +32523,308 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ändra mängd för {name}, nu {amount}'**
   String cookedPantryAmountSemantics(String name, String amount);
+
+  /// No description provided for @adminNavProposals.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag'**
+  String get adminNavProposals;
+
+  /// No description provided for @adminProposalsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntande förslag'**
+  String get adminProposalsTitle;
+
+  /// No description provided for @adminProposalsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda förslagen. Listan kan inte visas förrän laddningen lyckas.'**
+  String get adminProposalsLoadFailed;
+
+  /// No description provided for @adminProposalsEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga väntande förslag'**
+  String get adminProposalsEmpty;
+
+  /// No description provided for @adminProposalsMoreWaiting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar {count} förslag. Fler väntar och visas när några av dessa har tagits tillbaka eller hanterats.'**
+  String adminProposalsMoreWaiting(int count);
+
+  /// No description provided for @adminProposalWithdrawFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta tillbaka förslaget'**
+  String get adminProposalWithdrawFailed;
+
+  /// No description provided for @adminProposalSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara förslaget'**
+  String get adminProposalSaveFailed;
+
+  /// No description provided for @adminProposalFormLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta ingrediensen från servern'**
+  String get adminProposalFormLoadFailed;
+
+  /// No description provided for @adminProposalSuggest.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ändring'**
+  String get adminProposalSuggest;
+
+  /// No description provided for @adminProposalFormTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ändring: {name}'**
+  String adminProposalFormTitle(String name);
+
+  /// No description provided for @adminProposalChangedMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändrad'**
+  String get adminProposalChangedMark;
+
+  /// No description provided for @adminProposalNoteLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar (valfri)'**
+  String get adminProposalNoteLabel;
+
+  /// No description provided for @adminProposalNoteHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv inga personuppgifter här.'**
+  String get adminProposalNoteHelp;
+
+  /// No description provided for @adminProposalNoteTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren får vara högst {max} tecken.'**
+  String adminProposalNoteTooLong(int max);
+
+  /// No description provided for @adminProposalListHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'En post per rad'**
+  String get adminProposalListHelp;
+
+  /// No description provided for @adminProposalSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara förslag'**
+  String get adminProposalSave;
+
+  /// No description provided for @adminProposalNothingChanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget är ändrat än.'**
+  String get adminProposalNothingChanged;
+
+  /// No description provided for @adminProposalSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är sparat. Det gäller först när det har förts in i ingrediensfilen.'**
+  String get adminProposalSaved;
+
+  /// No description provided for @adminProposalAffectsAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Påverkar allergener'**
+  String get adminProposalAffectsAllergens;
+
+  /// No description provided for @adminProposalAllergenConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen påverkar allergener'**
+  String get adminProposalAllergenConfirmTitle;
+
+  /// No description provided for @adminProposalAllergenConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du tar bort en allergenrelevant egenskap eller markerar en ingrediens med animalisk eller allergen egenskap som vegansk. Spara förslaget ändå?'**
+  String get adminProposalAllergenConfirmMessage;
+
+  /// No description provided for @adminProposalAllergenConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara ändå'**
+  String get adminProposalAllergenConfirm;
+
+  /// No description provided for @adminProposalChangeLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'{field}: {oldValue} → {newValue}'**
+  String adminProposalChangeLine(
+    String field,
+    String oldValue,
+    String newValue,
+  );
+
+  /// No description provided for @adminProposalEmptyValue.
+  ///
+  /// In sv, this message translates to:
+  /// **'(tomt)'**
+  String get adminProposalEmptyValue;
+
+  /// No description provided for @adminProposalWithdraw.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta tillbaka'**
+  String get adminProposalWithdraw;
+
+  /// No description provided for @adminProposalWithdrawn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är tillbakataget.'**
+  String get adminProposalWithdrawn;
+
+  /// No description provided for @adminProposalWhen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslaget {date}'**
+  String adminProposalWhen(String date);
+
+  /// No description provided for @adminProposalBatchMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'Del av massändring'**
+  String get adminProposalBatchMark;
+
+  /// No description provided for @adminProposalPendingMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntande förslag'**
+  String get adminProposalPendingMark;
+
+  /// No description provided for @adminBulkSetStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt status på valda'**
+  String get adminBulkSetStatus;
+
+  /// No description provided for @adminBulkSelectedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} valda'**
+  String adminBulkSelectedCount(String count);
+
+  /// No description provided for @adminBulkClear.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa val'**
+  String get adminBulkClear;
+
+  /// No description provided for @adminBulkSelect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {name}'**
+  String adminBulkSelect(String name);
+
+  /// No description provided for @adminBulkTooMany.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj högst {max} ingredienser åt gången.'**
+  String adminBulkTooMany(String max);
+
+  /// No description provided for @adminBulkNothingToChange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla valda har redan den statusen.'**
+  String get adminBulkNothingToChange;
+
+  /// No description provided for @adminBulkConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt status till {status}?'**
+  String adminBulkConfirmTitle(String status);
+
+  /// No description provided for @adminBulkConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{changed} av {count} valda ingredienser får ett förslag om ny status. Nuvarande status: {distribution}.'**
+  String adminBulkConfirmMessage(
+    String changed,
+    String count,
+    String distribution,
+  );
+
+  /// No description provided for @adminBulkConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara förslag'**
+  String get adminBulkConfirm;
+
+  /// No description provided for @adminIssueTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högst {max} tecken.'**
+  String adminIssueTooLong(String max);
+
+  /// No description provided for @adminIssueControl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radbrytningar och styrtecken är inte tillåtna.'**
+  String get adminIssueControl;
+
+  /// No description provided for @adminIssueEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Får inte vara tomt.'**
+  String get adminIssueEmpty;
+
+  /// No description provided for @adminIssueUnknownProperty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd egenskap: {value}'**
+  String adminIssueUnknownProperty(String value);
+
+  /// No description provided for @adminIssueGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen måste börja med protein, vegetable, fruit, grain, fat, other eller spice.'**
+  String get adminIssueGroup;
+
+  /// No description provided for @adminIssueStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Status måste vara draft, validated, verified eller needs-review.'**
+  String get adminIssueStatus;
+
+  /// No description provided for @adminIssuePriceCategory.
+  ///
+  /// In sv, this message translates to:
+  /// **'Prisklass måste vara budget, standard, medium eller premium.'**
+  String get adminIssuePriceCategory;
+
+  /// No description provided for @adminIssueCarbon.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klimatavtryck måste vara low, medium eller high.'**
+  String get adminIssueCarbon;
+
+  /// No description provided for @adminIssueSeparator.
+  ///
+  /// In sv, this message translates to:
+  /// **'Får inte innehålla ; | eller , (en post per rad): {value}'**
+  String adminIssueSeparator(String value);
+
+  /// No description provided for @adminIssueTooMany.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högst {max} poster.'**
+  String adminIssueTooMany(String max);
+
+  /// No description provided for @adminIssuePrice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Priset måste vara ett tal som är noll eller större.'**
+  String get adminIssuePrice;
 }
 
 class _AppLocalizationsDelegate
