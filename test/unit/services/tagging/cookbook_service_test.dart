@@ -59,10 +59,10 @@ void main() {
     when(() => storage.deleteImage(any())).thenAnswer((_) async => true);
     service = CookbookService(
       tagService: tags,
-      recipeService: recipes,
-      storageService: storage,
-      uploadService: uploads,
-      permissionService: permissions,
+      getRecipeService: () => recipes,
+      getStorageService: () => storage,
+      getUploadService: () => uploads,
+      getPermissionService: () => permissions,
     );
   });
 

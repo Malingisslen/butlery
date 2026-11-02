@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/cookbook_details.dart';
@@ -23,30 +22,26 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 class CookbookService extends BaseService {
   CookbookService({
     required PersonalTagService tagService,
-    UnifiedRecipeService? recipeService,
-    ImageUploadService? uploadService,
-    StorageService? storageService,
-    PermissionService? permissionService,
+    required UnifiedRecipeService Function() getRecipeService,
+    required ImageUploadService Function() getUploadService,
+    required StorageService Function() getStorageService,
+    required PermissionService Function() getPermissionService,
   }) : _tags = tagService,
-       _recipeServiceOverride = recipeService,
-       _uploadServiceOverride = uploadService,
-       _storageServiceOverride = storageService,
-       _permissionServiceOverride = permissionService;
+       _getRecipeService = getRecipeService,
+       _getUploadService = getUploadService,
+       _getStorageService = getStorageService,
+       _getPermissionService = getPermissionService;
 
   final PersonalTagService _tags;
-  final UnifiedRecipeService? _recipeServiceOverride;
-  final ImageUploadService? _uploadServiceOverride;
-  final StorageService? _storageServiceOverride;
-  final PermissionService? _permissionServiceOverride;
+  final UnifiedRecipeService Function() _getRecipeService;
+  final ImageUploadService Function() _getUploadService;
+  final StorageService Function() _getStorageService;
+  final PermissionService Function() _getPermissionService;
 
-  UnifiedRecipeService get _recipes =>
-      _recipeServiceOverride ?? ServiceLocator.get<UnifiedRecipeService>();
-  ImageUploadService get _uploads =>
-      _uploadServiceOverride ?? ServiceLocator.get<ImageUploadService>();
-  StorageService get _storage =>
-      _storageServiceOverride ?? ServiceLocator.get<StorageService>();
-  PermissionService get _permissions =>
-      _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
+  UnifiedRecipeService get _recipes => _getRecipeService();
+  ImageUploadService get _uploads => _getUploadService();
+  StorageService get _storage => _getStorageService();
+  PermissionService get _permissions => _getPermissionService();
 
   @override
   String get serviceName => 'CookbookService';

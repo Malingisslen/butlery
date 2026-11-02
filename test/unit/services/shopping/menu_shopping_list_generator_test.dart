@@ -48,6 +48,8 @@ import 'package:butlery/services/shopping/week_list_reconciler.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
+import 'package:butlery/services/shopping/menu_shopping_links.dart';
+
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -196,6 +198,7 @@ void main() {
   late MockUnifiedShoppingService shoppingService;
   late _MockPantryService pantryService;
   late MenuShoppingListGenerator generator;
+  late MenuShoppingLinks links;
 
   /// BUT-2140: every list the merge wrote, through the in-memory stub of
   /// [UnifiedShoppingService.applyPersonalMerge].
@@ -226,12 +229,11 @@ void main() {
     // executeServiceOperation's auth pre-flight — default registry is
     // unauthenticated and would silently return null (the false-"never ran"
     // trap).
-    TestServiceLocator.registerMock<AuthRepository>(
-      MockFactory.createAuthRepository(
-        isAuthenticated: true,
-        userId: _testUserId,
-      ),
+    final authRepo = MockFactory.createAuthRepository(
+      isAuthenticated: true,
+      userId: _testUserId,
     );
+    TestServiceLocator.registerMock<AuthRepository>(authRepo);
 
     menuService = _MockWeeklyMenuPlanService();
     recipeService = MockUnifiedRecipeService();
@@ -242,10 +244,19 @@ void main() {
     when(
       () => pantryService.watchAll(any()),
     ).thenAnswer((_) => Stream.value(const <PantryItem>[]));
-    TestServiceLocator.registerMock<WeeklyMenuPlanService>(menuService);
-    TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
-    TestServiceLocator.registerMock<UnifiedShoppingService>(shoppingService);
-    TestServiceLocator.registerMock<PantryService>(pantryService);
+    // Different instances than the ones handed to the generator: a generator
+    // that went back to the locator would read these and the stubs on the
+    // injected mocks would never answer.
+    TestServiceLocator.registerMock<WeeklyMenuPlanService>(
+      _MockWeeklyMenuPlanService(),
+    );
+    TestServiceLocator.registerMock<UnifiedRecipeService>(
+      MockUnifiedRecipeService(),
+    );
+    TestServiceLocator.registerMock<UnifiedShoppingService>(
+      MockUnifiedShoppingService(),
+    );
+    TestServiceLocator.registerMock<PantryService>(_MockPantryService());
 
     // BUT-1681: a real ShoppingEventsTracker over a mock repository, so the
     // assertions read the parameters production would actually send. Consent
@@ -280,7 +291,15 @@ void main() {
     writes = [];
     stubPersonalMerge(shoppingService, writes);
 
-    generator = MenuShoppingListGenerator();
+    links = MenuShoppingLinks(
+      menuPlans: () => menuService,
+      recipes: () => recipeService,
+      auth: () => authRepo,
+      pantry: () => pantryService,
+      shopping: () => shoppingService,
+      analytics: () => analytics,
+    );
+    generator = MenuShoppingListGenerator(links: links);
   });
 
   tearDown(() async {
@@ -1679,7 +1698,10 @@ void main() {
       setUp(() async {
         SharedPreferences.setMockInitialValues({});
         prefs = await SharedPreferences.getInstance();
-        withDevice = MenuShoppingListGenerator(preferences: prefs);
+        withDevice = MenuShoppingListGenerator(
+          links: links,
+          preferences: prefs,
+        );
       });
 
       test('a follow that wrote rows leaves one notice for that list, taken '

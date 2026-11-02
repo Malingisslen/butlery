@@ -65,6 +65,9 @@ import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/shopping/menu_shopping_links.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/composite_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/firestore_lexicon_provider.dart';
@@ -706,11 +709,21 @@ class ContentModule implements DIModule {
         return service;
       });
 
-      // BUT-956: menu→shopping generation. ServiceLocator-resolves its three
-      // collaborators at call time, so registration order is a non-issue.
+      // BUT-956: menu→shopping generation. Its collaborators are looked up at
+      // call time, so registration order is a non-issue.
       container.registerLazySingleton<MenuShoppingListGenerator>(
         () => MenuShoppingListGenerator(
           preferences: container<SharedPreferences>(),
+          links: MenuShoppingLinks(
+            menuPlans: () => container<WeeklyMenuPlanService>(),
+            recipes: () => container<UnifiedRecipeService>(),
+            auth: () => container<auth.AuthRepository>(),
+            pantry: () => container<PantryService>(),
+            shopping: () => container<UnifiedShoppingService>(),
+            analytics: () => container.isRegistered<AnalyticsService>()
+                ? container<AnalyticsService>()
+                : null,
+          ),
         ),
       );
 
