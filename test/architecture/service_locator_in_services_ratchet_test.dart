@@ -14,14 +14,17 @@ final _lookup = RegExp(r'ServiceLocator\.(?:get|tryGet|isRegistered)\b');
 void main() {
   test('no service looks up ServiceLocator', () {
     final offenders = <String>[];
+    var scanned = 0;
     for (final entity in Directory('lib/services').listSync(recursive: true)) {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      scanned++;
       final path = entity.path.replaceAll(r'\', '/');
       final n = _lookup
           .allMatches(stripComments(entity.readAsStringSync()))
           .length;
       if (n > 0) offenders.add('$path looks up ServiceLocator $n time(s)');
     }
+    expect(scanned, greaterThan(100), reason: 'the scan found no services');
     expect(
       offenders,
       isEmpty,
