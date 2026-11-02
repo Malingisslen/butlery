@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-11-01T10:15:15.946142Z (UTC).
+**Measured:** 2026-11-02T10:44:37.313950Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
@@ -14,13 +14,13 @@
 | ---- | -------- | ---- |
 | `extends BaseService` (services) | 67.0% (69/103) | `lib/services/` classes |
 | `with ErrorHandlingMixin` (services) | 11.7% (12/103) | `lib/services/` classes |
-| `extends BaseFirebaseRepository` (repos) | 54.2% (39/72) | `lib/repositories/firebase/` classes |
-| `PermissionValidationMixin` effective coverage (repos) | 58.3% (42/72) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
-| `PermissionValidationMixin` direct adoption (repos) | 4.2% (3/72) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
-| `extends BaseViewModel` (viewmodels) | 56.7% (51/90) | `lib/viewmodels/` classes |
+| `extends BaseFirebaseRepository` (repos) | 54.8% (40/73) | `lib/repositories/firebase/` classes |
+| `PermissionValidationMixin` effective coverage (repos) | 58.9% (43/73) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
+| `PermissionValidationMixin` direct adoption (repos) | 4.1% (3/73) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
+| `extends BaseViewModel` (viewmodels) | 58.9% (56/95) | `lib/viewmodels/` classes |
 | `SerializationUtils.safe*(` (call sites) | 1031 | 90 files use it |
 
-**Total Dart files under `lib/` (excl. `site-packages/`):** 1907.
+**Total Dart files under `lib/` (excl. `site-packages/`):** 1936.
 
 ### Why `PermissionValidationMixin` has two rows
 
