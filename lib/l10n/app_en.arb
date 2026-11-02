@@ -17694,7 +17694,7 @@
   "adminProposalChangedMark": "Changed",
   "adminProposalNoteLabel": "Comment (optional)",
   "adminProposalNoteHelp": "Do not write personal data here.",
-  "adminProposalNoteTooLong": "The comment can be at most {max} characters.",
+  "adminProposalNoteTooLong": "The comment can be at most {max, plural, =1{1 character} other{{max} characters}}.",
   "@adminProposalNoteTooLong": {
     "placeholders": {
       "max": {

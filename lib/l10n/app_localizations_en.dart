@@ -21376,7 +21376,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String adminProposalNoteTooLong(int max) {
-    return 'The comment can be at most $max characters.';
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max characters',
+      one: '1 character',
+    );
+    return 'The comment can be at most $_temp0.';
   }
 
   @override
