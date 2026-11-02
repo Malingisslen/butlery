@@ -32,11 +32,14 @@ import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
+
+class _MockNotificationService extends Mock implements NotificationService {}
 
 class _MockMessagingRepo extends Mock implements MessagingRepository {}
 
@@ -288,6 +291,7 @@ void main() {
       chatGroupRepository: chatGroupRepo,
       authRepository: authRepo,
       reactionsService: reactionsService,
+      getNotificationService: _MockNotificationService.new,
     );
   });
 

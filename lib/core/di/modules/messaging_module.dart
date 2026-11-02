@@ -110,6 +110,7 @@ class MessagingModule implements DIModule {
         chatGroupRepository: appScope<ChatGroupRepository>(),
         authRepository: appScope<AuthRepository>(),
         reactionsService: appScope<MessageReactionsService>(),
+        getNotificationService: () => container<NotificationService>(),
       ),
     );
 

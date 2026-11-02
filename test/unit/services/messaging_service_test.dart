@@ -194,6 +194,7 @@ void main() {
         chatGroupRepository: mockChatGroupRepo,
         authRepository: mockAuthRepo,
         reactionsService: MockMessageReactionsService(),
+        getNotificationService: MockNotificationService.new,
         attribution: AttributionSource(userService: () => mockUserService),
       );
     });

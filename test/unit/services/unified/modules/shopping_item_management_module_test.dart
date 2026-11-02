@@ -282,9 +282,12 @@ void main() {
       ),
     );
 
-    // Bridge ServiceLocator for `_autoCategorize` which resolves
-    // IngredientLookupService at runtime via the global locator.
-    TestServiceLocator.registerMock<IngredientLookupService>(mockLookup);
+    // A different instance than the one handed to the module: a module that
+    // went back to the locator would answer from this one and the assertions
+    // on [mockLookup] would go red.
+    TestServiceLocator.registerMock<IngredientLookupService>(
+      _MockIngredientLookupService(),
+    );
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(mocks.MockDIContainer());
 
@@ -306,6 +309,7 @@ void main() {
   ShoppingItemManagementModule buildModule() {
     return ShoppingItemManagementModule(
       repository: fakeRepo,
+      getLookupService: () => mockLookup,
       lists: lists,
       getActiveListId: () => activeListId,
       notifyListeners: () => notifyCalls++,
@@ -1176,6 +1180,7 @@ void main() {
 
       final module = ShoppingItemManagementModule(
         repository: fakeRepo,
+        getLookupService: () => mockLookup,
         lists: lists,
         getActiveListId: () => activeListId,
         // The snapshot moves the collaborative list to the front, so the index
@@ -1220,6 +1225,7 @@ void main() {
 
       final module = ShoppingItemManagementModule(
         repository: fakeRepo,
+        getLookupService: () => mockLookup,
         lists: lists,
         getActiveListId: () => activeListId,
         // The snapshot drops the collaborative list entirely: the captured

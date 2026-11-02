@@ -15,7 +15,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notifications;
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/attribution_source.dart';
 
@@ -30,12 +29,16 @@ class MessageSendingOperations {
   final MessagingRepository messagingRepository;
   final auth_repo.AuthRepository authRepository;
   final AttributionSource _attribution;
+  final notifications.NotificationService Function() _getNotificationService;
 
   MessageSendingOperations({
     required this.messagingRepository,
     required this.authRepository,
+    required notifications.NotificationService Function()
+    getNotificationService,
     AttributionSource? attribution,
-  }) : _attribution = attribution ?? AttributionSource();
+  }) : _getNotificationService = getNotificationService,
+       _attribution = attribution ?? AttributionSource();
 
   /// Send a text message
   Future<void> sendTextMessage({
@@ -305,8 +308,7 @@ class MessageSendingOperations {
       }
 
       // Get notification service
-      final notificationService =
-          ServiceLocator.get<notifications.NotificationService>();
+      final notificationService = _getNotificationService();
 
       // Determine notification title and body based on conversation type
       String title;
