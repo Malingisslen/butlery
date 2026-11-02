@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -19,6 +18,12 @@ import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 /// - Overrides persist across automatic retagging
 /// - "Manually edited" status is tracked and displayed
 class TagEditingService extends BaseService {
+  TagEditingService({
+    required TagOverridesLogRepository? Function() overridesLog,
+  }) : _overridesLog = overridesLog;
+
+  final TagOverridesLogRepository? Function() _overridesLog;
+
   @override
   String get serviceName => 'TagEditingService';
 
@@ -85,7 +90,7 @@ class TagEditingService extends BaseService {
   /// Writes a small `tag_overrides_log` doc recording an allergen override:
   /// the allergen, the `auto->user` direction, and the ingredients the
   /// auto-tagger cited (pulled from the [TagResult] decision log). No-op when
-  /// the log repository isn't registered (e.g. in tests), and never throws.
+  /// the log repository isn't registered, and never throws.
   void _logAllergenOverride({
     required Recipe recipe,
     required String allergenKey,
@@ -93,7 +98,7 @@ class TagEditingService extends BaseService {
     required TriState newStatus,
     required String editedBy,
   }) {
-    final repository = ServiceLocator.tryGet<TagOverridesLogRepository>();
+    final repository = _overridesLog();
     if (repository == null) return;
 
     final triggering =

@@ -20,6 +20,9 @@ import 'package:firebase_auth/firebase_auth.dart'
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
@@ -66,6 +69,10 @@ class _ScriptedHttpsCallable extends Fake implements HttpsCallable {
     return _FakeHttpsCallableResult<T>(response as T);
   }
 }
+
+class _UnusedExports extends Fake implements FirebaseDataExportRepository {}
+
+class _UnusedAuth extends Fake implements auth_repo.AuthRepository {}
 
 class _FakeFunctions extends Fake implements FirebaseFunctions {
   _FakeFunctions(this.callable);
@@ -154,6 +161,8 @@ void main() {
       ]);
       final manager = ComplianceExportManager(
         functions: _FakeFunctions(callable),
+        dataExportRepository: _UnusedExports(),
+        authRepository: _UnusedAuth(),
       );
 
       final result = await manager.exportAuditLogs('user-uid');
@@ -198,6 +207,8 @@ void main() {
       ]);
       final manager = ComplianceExportManager(
         functions: _FakeFunctions(callable),
+        dataExportRepository: _UnusedExports(),
+        authRepository: _UnusedAuth(),
       );
 
       final result = await manager.exportAuditLogs('user-uid');
@@ -239,6 +250,8 @@ void main() {
         );
         final manager = ComplianceExportManager(
           functions: _FakeFunctions(callable),
+          dataExportRepository: _UnusedExports(),
+          authRepository: _UnusedAuth(),
         );
 
         final result = await manager.exportAuditLogs('user-uid');
@@ -262,6 +275,8 @@ void main() {
       );
       final manager = ComplianceExportManager(
         functions: _FakeFunctions(callable),
+        dataExportRepository: _UnusedExports(),
+        authRepository: _UnusedAuth(),
       );
 
       final result = await manager.exportAuditLogs('user-uid');
@@ -283,6 +298,8 @@ void main() {
       );
       final manager = ComplianceExportManager(
         functions: _FakeFunctions(callable),
+        dataExportRepository: _UnusedExports(),
+        authRepository: _UnusedAuth(),
       );
 
       expect(
@@ -311,6 +328,8 @@ void main() {
         );
         final manager = ComplianceExportManager(
           functions: _FakeFunctions(callable),
+          dataExportRepository: _UnusedExports(),
+          authRepository: _UnusedAuth(),
         );
 
         await expectLater(
@@ -329,6 +348,8 @@ void main() {
         );
         final manager = ComplianceExportManager(
           functions: _FakeFunctions(callable),
+          dataExportRepository: _UnusedExports(),
+          authRepository: _UnusedAuth(),
         );
 
         await expectLater(
@@ -354,6 +375,7 @@ void main() {
         final manager = ComplianceExportManager(
           functions: functions,
           authRepository: _signedIn('me', [_app]),
+          dataExportRepository: _UnusedExports(),
         );
 
         final result = await manager.exportTwoStepVerification('me');
@@ -391,6 +413,7 @@ void main() {
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
           authRepository: _signedIn('me', [_app]),
+          dataExportRepository: _UnusedExports(),
         );
 
         final result = await manager.exportTwoStepVerification('me');
@@ -415,6 +438,7 @@ void main() {
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
         authRepository: _signedIn('me', const []),
+        dataExportRepository: _UnusedExports(),
       );
 
       final result = await manager.exportTwoStepVerification('me');
@@ -434,6 +458,7 @@ void main() {
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
         authRepository: _signedIn('me', [_app]),
+        dataExportRepository: _UnusedExports(),
       );
 
       final result = await manager.exportTwoStepVerification('me');
@@ -457,6 +482,7 @@ void main() {
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
         authRepository: _signedIn('me', [_app]),
+        dataExportRepository: _UnusedExports(),
       );
 
       await expectLater(
@@ -480,6 +506,7 @@ void main() {
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
           authRepository: _signedIn('me', [_app]),
+          dataExportRepository: _UnusedExports(),
         );
 
         await expectLater(
@@ -498,6 +525,7 @@ void main() {
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
           authRepository: _signedIn('me', [_app]),
+          dataExportRepository: _UnusedExports(),
         );
 
         await expectLater(
@@ -512,6 +540,7 @@ void main() {
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
         authRepository: _signedIn('me', [_app]),
+        dataExportRepository: _UnusedExports(),
       );
 
       await expectLater(

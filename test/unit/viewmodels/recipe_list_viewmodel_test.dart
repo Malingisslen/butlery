@@ -155,7 +155,7 @@ void main() {
       viewModel = RecipeListViewModel(
         recipeService: mockRecipeService,
         searchService: mockSearchService,
-        tagEditingService: TagEditingService(),
+        tagEditingService: TagEditingService(overridesLog: () => null),
       );
     });
 
@@ -859,7 +859,7 @@ void main() {
           final disposable = RecipeListViewModel(
             recipeService: mockRecipeService,
             searchService: mockSearchService,
-            tagEditingService: TagEditingService(),
+            tagEditingService: TagEditingService(overridesLog: () => null),
           );
           disposable.dispose();
           mockRecipeService.setRecipeState(error: 'Test error');
@@ -1932,7 +1932,7 @@ void main() {
         final testViewModel = RecipeListViewModel(
           recipeService: mockRecipeService,
           searchService: mockSearchService,
-          tagEditingService: TagEditingService(),
+          tagEditingService: TagEditingService(overridesLog: () => null),
         );
 
         // Act & Assert - verify dispose doesn't throw
@@ -1950,7 +1950,7 @@ void main() {
           final testViewModel = RecipeListViewModel(
             recipeService: mockRecipeService,
             searchService: mockSearchService,
-            tagEditingService: TagEditingService(),
+            tagEditingService: TagEditingService(overridesLog: () => null),
           );
           var notified = false;
           testViewModel.addListener(() => notified = true);

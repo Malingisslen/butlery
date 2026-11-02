@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-02): BUT-1508 dataexport, kontoradering, taggredigering
+
+Se `tasks/but-1508-gdpr-plan.md`. Grupp 3-planen nedan är mergad (#1155).
+
 # BUT-1508 svepet, grupp 3: familj, hushåll och allergidata (2026-11-02)
 
 Del av Malins godkända svep ("Gör hela svepet", 2026-10-21) och gruppindelningen i

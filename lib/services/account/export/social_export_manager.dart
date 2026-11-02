@@ -1,7 +1,6 @@
 // lib/services/account/export/social_export_manager.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/social_export_redaction.dart';
 import 'package:butlery/services/account/export/chat_group_export.dart';
@@ -21,14 +20,12 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// [FirebaseDataExportRepository] which enforces `validateOwnership`
 /// defence-in-depth on top of Firestore rules.
 class SocialExportManager with SocialExportRedaction {
-  final FirebaseDataExportRepository? _exportRepo;
+  final FirebaseDataExportRepository _exports;
   static const String _logTag = 'SocialExportManager';
 
-  SocialExportManager({FirebaseDataExportRepository? dataExportRepository})
-    : _exportRepo = dataExportRepository;
-
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+  SocialExportManager({
+    required FirebaseDataExportRepository dataExportRepository,
+  }) : _exports = dataExportRepository;
 
   // BUT-1721: every section here used to fail with `{'error': ...}` alone.
   // `DataExportService` lifts a failed section into `export_metadata.warnings`,

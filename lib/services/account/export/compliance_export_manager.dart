@@ -2,7 +2,6 @@
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -62,8 +61,8 @@ const _transientFunctionsErrorCodes = <String>{
 /// null` so the bundle includes the full actor history rather than a
 /// recent-1000 snapshot.
 class ComplianceExportManager {
-  final FirebaseDataExportRepository? _exportRepo;
-  final auth_repo.AuthRepository? _authRepo;
+  final FirebaseDataExportRepository _exports;
+  final auth_repo.AuthRepository _auth;
   final FirebaseFunctions _functions;
   static const String _logTag = 'ComplianceExportManager';
   // BUT-770: cap total entries we'll page through to avoid runaway exports
@@ -73,19 +72,13 @@ class ComplianceExportManager {
   static const int _maxAuditLogPages = 10;
 
   ComplianceExportManager({
-    FirebaseDataExportRepository? dataExportRepository,
+    required FirebaseDataExportRepository dataExportRepository,
     FirebaseFunctions? functions,
-    auth_repo.AuthRepository? authRepository,
-  }) : _exportRepo = dataExportRepository,
-       _authRepo = authRepository,
+    required auth_repo.AuthRepository authRepository,
+  }) : _exports = dataExportRepository,
+       _auth = authRepository,
        _functions =
            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
-
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
-
-  auth_repo.AuthRepository get _auth =>
-      _authRepo ?? ServiceLocator.get<auth_repo.AuthRepository>();
 
   /// Export audit logs for GDPR Article 15 (Right of Access).
   ///

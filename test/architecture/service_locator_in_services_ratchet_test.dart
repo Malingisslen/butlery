@@ -11,20 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tools/design_migration_census.dart' show stripComments;
 
 const _residue = <String, int>{
-  'lib/services/account/account_deletion_service.dart': 2,
-  'lib/services/account/export/activity_export_manager.dart': 4,
-  'lib/services/account/export/compliance_export_manager.dart': 2,
-  'lib/services/account/export/content_export_manager.dart': 10,
-  'lib/services/account/export/family_export_manager.dart': 4,
-  'lib/services/account/export/preferences_export_manager.dart': 1,
-  'lib/services/account/export/social_export_manager.dart': 1,
   'lib/services/analytics_service.dart': 1,
   'lib/services/attribution_source.dart': 1,
   'lib/services/deep_link_service.dart': 3,
   'lib/services/ocr_extraction_service.dart': 2,
   'lib/services/pwa_install_service_web.dart': 2,
   'lib/services/social/blocking/blocked_user_filter.dart': 1,
-  'lib/services/tagging/tag_editing_service.dart': 1,
 };
 
 final _lookup = RegExp(r'ServiceLocator\.(?:get|tryGet|isRegistered)\b');

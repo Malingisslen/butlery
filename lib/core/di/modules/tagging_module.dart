@@ -222,15 +222,16 @@ class TaggingModule implements DIModule {
         ),
       );
 
-      // BUT-1473: fire-and-forget log of allergen tag-override corrections,
-      // consumed by TagEditingService via ServiceLocator.tryGet.
+      // BUT-1473: fire-and-forget log of allergen tag-override corrections.
       container.registerLazySingleton<TagOverridesLogRepository>(
         () => TagOverridesLogRepository(),
       );
 
       // Tag editing service for user-driven tag overrides
       container.registerLazySingleton<TagEditingService>(
-        () => TagEditingService(),
+        () => TagEditingService(
+          overridesLog: ServiceLocator.tryGet<TagOverridesLogRepository>,
+        ),
       );
 
       // Tag resolution service - unified tag data for recipes

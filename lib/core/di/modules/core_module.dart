@@ -63,10 +63,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
-import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
-import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
-import 'package:butlery/services/account/export/erasure_residue_export_manager.dart';
-import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
+import 'package:butlery/core/di/account_services_from_locator.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
 // Feature flags
@@ -340,17 +337,14 @@ class CoreModule implements DIModule {
       // BUT-788: now a thin wrapper around the `requestAccountDeletion`
       // Cloud Function. Pre-CF deps:
       // OfflineService (local cache cleanup). Post-CF: AuthService signs out.
-      container.registerLazySingleton<AccountDeletionService>(() {
-        return AccountDeletionService(
-          authService: container<AuthService>(),
-          // BUT-1025: singleton access lives in the DI module (allow-listed),
-          // not in the service. Region pin matches the CF deployment.
-          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          offlineService: container.isRegistered<OfflineService>()
-              ? container<OfflineService>()
-              : null,
-        );
-      });
+      container.registerLazySingleton<AccountDeletionService>(
+        // BUT-1025: singleton access lives in the DI module (allow-listed),
+        // not in the service. Region pin matches the CF deployment.
+        () => buildAccountDeletionService(
+          container,
+          FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
 
       // BUT-1386 (ADR-0002): age-verification service wrapping the
       // `verifySignupAge` callable. The CF is now the authority for the age
@@ -415,22 +409,9 @@ class CoreModule implements DIModule {
 
       // Data export service for GDPR Article 20 (Right to Data Portability)
       container.registerLazySingleton<DataExportService>(
-        () => DataExportService(
-          authRepository: container<AuthRepository>(),
-          firestoreRepository: container<FirestoreRepository>(),
-          dataExportRepository: container<FirebaseDataExportRepository>(),
-          sharedResidueExportManager: SharedResidueExportManager(
-            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          ),
-          erasureResidueExportManager: ErasureResidueExportManager(
-            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          ),
-          commentReactionsExportManager: CommentReactionsExportManager(
-            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          ),
-          moderationAppealsExportManager: ModerationAppealsExportManager(
-            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
-          ),
+        () => buildDataExportService(
+          container,
+          FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
 

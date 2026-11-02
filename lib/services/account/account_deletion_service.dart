@@ -1,11 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart'
-    as notif;
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/models/account/retained_record.dart';
 
@@ -33,7 +30,12 @@ class AccountDeletionService extends BaseService {
 
   final AuthService _authService;
   final FirebaseFunctions _functions;
-  final OfflineService? _offlineService;
+  // Looked up when a deletion runs, like the reset below: OfflineService is
+  // user-scoped too, and may not exist yet when this service is built.
+  final OfflineService? Function() _offlineService;
+  // Not the NotificationService itself: it is user-scoped and replaced at
+  // sign-in, while this service is app-scoped.
+  final Future<void> Function() _resetNotificationsForLogout;
   static const String _logTag = 'AccountDeletionService';
   static const String _callableName = 'requestAccountDeletion';
   static const String _scheduleCallableName = 'scheduleAccountDeletion';
@@ -43,10 +45,12 @@ class AccountDeletionService extends BaseService {
   AccountDeletionService({
     required AuthService authService,
     required FirebaseFunctions functions,
-    OfflineService? offlineService,
+    required OfflineService? Function() offlineService,
+    required Future<void> Function() resetNotificationsForLogout,
   }) : _authService = authService,
        _functions = functions,
-       _offlineService = offlineService;
+       _offlineService = offlineService,
+       _resetNotificationsForLogout = resetNotificationsForLogout;
 
   /// Delete this user's account.
   ///
@@ -101,9 +105,10 @@ class AccountDeletionService extends BaseService {
     app_logger.AppLogger.info('[$_logTag] Starting account deletion');
 
     // Pre-CF: clear local offline cache. Client-only — no CF equivalent.
-    if (_offlineService != null) {
+    final offlineService = _offlineService();
+    if (offlineService != null) {
       try {
-        await _offlineService.clearUserData(uid);
+        await offlineService.clearUserData(uid);
       } catch (e) {
         app_logger.AppLogger.warning(
           '[$_logTag] Offline cache cleanup failed: $e',
@@ -136,7 +141,7 @@ class AccountDeletionService extends BaseService {
 
     // Post-CF: reset local notification state, then sign out.
     try {
-      await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+      await _resetNotificationsForLogout();
     } catch (e) {
       app_logger.AppLogger.warning(
         '[$_logTag] Failed to reset notification service: $e',
@@ -194,7 +199,7 @@ class AccountDeletionService extends BaseService {
   /// first: signing out replaces the screen that would show it.
   Future<void> signOutAfterScheduling() async {
     try {
-      await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+      await _resetNotificationsForLogout();
     } catch (e) {
       app_logger.AppLogger.warning(
         '[$_logTag] Failed to reset notification service: $e',

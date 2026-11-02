@@ -8,6 +8,7 @@ library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/diner_profile.dart';
@@ -93,9 +94,13 @@ void main() {
     );
 
     manager = FamilyExportManager(
-      householdRepository: householdRepo,
-      dinerProfileRepository: dinerRepo,
-      familyRatingRepository: ratingRepo,
+      households: () => householdRepo,
+      dinerProfiles: () => dinerRepo,
+      familyRatings: () => ratingRepo,
+      dataExportRepository: FirebaseDataExportRepository(
+        firestore: fs,
+        authRepository: TestServiceLocator.get<AuthRepository>(),
+      ),
     );
 
     // A managed guest (no consent needed).

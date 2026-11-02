@@ -2,7 +2,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson, sanitizeTimestamp;
@@ -14,15 +13,12 @@ import 'package:butlery/services/account/export/isolated_section_reads.dart';
 /// BUT-501 (closed): All direct Firestore reads route through
 /// [FirebaseDataExportRepository] which enforces `validateOwnership`.
 class PreferencesExportManager {
-  final FirebaseDataExportRepository? _exportRepo;
+  final FirebaseDataExportRepository _exports;
   static const String _logTag = 'PreferencesExportManager';
 
   PreferencesExportManager({
-    FirebaseDataExportRepository? dataExportRepository,
-  }) : _exportRepo = dataExportRepository;
-
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+    required FirebaseDataExportRepository dataExportRepository,
+  }) : _exports = dataExportRepository;
 
   // BUT-1760: logs the real exception and returns the section's failure
   // envelope. Every section here used to return `{'error': e.toString()}`.

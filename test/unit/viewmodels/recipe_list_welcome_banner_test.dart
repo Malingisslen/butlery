@@ -77,7 +77,7 @@ void main() {
       viewModel = RecipeListViewModel(
         recipeService: recipeService,
         searchService: MockFactory.createSearchService() as SearchService,
-        tagEditingService: TagEditingService(),
+        tagEditingService: TagEditingService(overridesLog: () => null),
       );
       await pumpEventQueue();
     }

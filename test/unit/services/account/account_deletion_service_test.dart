@@ -77,12 +77,13 @@ void main() {
       when(() => auth.signOut()).thenAnswer((_) async {});
       when(() => notifService.resetForLogout()).thenAnswer((_) async {});
 
-      // ServiceLocator.get<NotificationService> needs a registered instance
-      // for the post-CF reset step.
+      // A decoy in the locator: the service must reset the one it was handed.
       if (GetIt.instance.isRegistered<notif.NotificationService>()) {
         GetIt.instance.unregister<notif.NotificationService>();
       }
-      GetIt.instance.registerSingleton<notif.NotificationService>(notifService);
+      GetIt.instance.registerSingleton<notif.NotificationService>(
+        _MockNotificationService(),
+      );
 
       when(
         () => functions.httpsCallable(any(), options: any(named: 'options')),
@@ -128,6 +129,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'user_request');
@@ -161,6 +164,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'user_request');
@@ -186,6 +191,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'user_request');
@@ -194,9 +201,6 @@ void main() {
       expect(result['deletedCollections'], containsAll(['recipes', 'menus']));
       expect(result['auditLogId'], 'audit-123');
       verify(() => auth.signOut()).called(1);
-      // notifService.resetForLogout is resolved via production ServiceLocator
-      // which isn't bridged from GetIt in this unit test — the call is
-      // best-effort and wrapped in a try-catch, so its absence is non-fatal.
     });
 
     /// Test 2: stale `auth_time` rejection. The CF throws failed-precondition
@@ -218,6 +222,8 @@ void main() {
         final service = AccountDeletionService(
           authService: auth,
           functions: functions,
+          offlineService: () => null,
+          resetNotificationsForLogout: notifService.resetForLogout,
         );
 
         final result = await service.deleteUserAccount(reason: 'user_request');
@@ -252,7 +258,8 @@ void main() {
         final service = AccountDeletionService(
           authService: auth,
           functions: functions,
-          offlineService: offline,
+          resetNotificationsForLogout: notifService.resetForLogout,
+          offlineService: () => offline,
         );
 
         await service.deleteUserAccount(reason: 'r');
@@ -284,7 +291,8 @@ void main() {
         final service = AccountDeletionService(
           authService: auth,
           functions: functions,
-          offlineService: offline,
+          resetNotificationsForLogout: notifService.resetForLogout,
+          offlineService: () => offline,
         );
 
         final result = await service.deleteUserAccount(reason: 'r');
@@ -303,6 +311,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'r');
@@ -333,6 +343,8 @@ void main() {
         final service = AccountDeletionService(
           authService: auth,
           functions: functions,
+          offlineService: () => null,
+          resetNotificationsForLogout: notifService.resetForLogout,
         );
 
         final result = await service.deleteUserAccount(reason: 'r');
@@ -356,6 +368,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'test');
@@ -388,6 +402,8 @@ void main() {
         final service = AccountDeletionService(
           authService: auth,
           functions: functions,
+          offlineService: () => null,
+          resetNotificationsForLogout: notifService.resetForLogout,
         );
 
         final result = await service.deleteUserAccount(reason: 'test');
@@ -409,12 +425,6 @@ void main() {
   //
   // Criterion 4 requires verifying that both NotificationService.resetForLogout
   // AND AuthService.signOut are called after a successful CF response.
-  //
-  // The production code resolves NotificationService via
-  // `ServiceLocator.get<NotificationService>()` (production ServiceLocator,
-  // backed by DIContainer → GetIt.instance).  The test must therefore
-  // initialise the production ServiceLocator so the lookup succeeds;
-  // `setupUnitWithProductionLocator()` does exactly this.
   group('BUT-1334/crit-4 — post-CF success: notif reset + sign-out', () {
     late _MockAuthService auth;
     late _MockFunctions functions;
@@ -444,12 +454,13 @@ void main() {
       when(() => auth.signOut()).thenAnswer((_) async {});
       when(() => notifService.resetForLogout()).thenAnswer((_) async {});
 
-      // Register our mock into GetIt.instance — which DIContainer._container
-      // points at — so the production ServiceLocator.get resolves it.
+      // A decoy in the locator: the service must reset the one it was handed.
       if (GetIt.instance.isRegistered<notif.NotificationService>()) {
         GetIt.instance.unregister<notif.NotificationService>();
       }
-      GetIt.instance.registerSingleton<notif.NotificationService>(notifService);
+      GetIt.instance.registerSingleton<notif.NotificationService>(
+        _MockNotificationService(),
+      );
 
       when(
         () => functions.httpsCallable(any(), options: any(named: 'options')),
@@ -481,6 +492,8 @@ void main() {
       final service = AccountDeletionService(
         authService: auth,
         functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: notifService.resetForLogout,
       );
 
       final result = await service.deleteUserAccount(reason: 'user_request');
@@ -491,6 +504,32 @@ void main() {
         reason: 'CF result must propagate to caller',
       );
       verify(() => notifService.resetForLogout()).called(1);
+      verify(() => auth.signOut()).called(1);
+    });
+
+    test('a failing notification reset still signs the user out', () async {
+      when(() => callable.call<Map<dynamic, dynamic>>(any())).thenAnswer(
+        (_) async => _FakeCallableResult({
+          'success': true,
+          'deletedCollections': ['recipes'],
+          'failedCollections': <String>[],
+          'errors': <String>[],
+          'auditLogId': 'audit-ok',
+        }),
+      );
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+        offlineService: () => null,
+        resetNotificationsForLogout: () async =>
+            throw StateError('no user scope'),
+      );
+
+      final result = await service.deleteUserAccount(reason: 'user_request');
+
+      expect(result['success'], isTrue);
+      expect(result['cfCompleted'], isTrue);
       verify(() => auth.signOut()).called(1);
     });
   });

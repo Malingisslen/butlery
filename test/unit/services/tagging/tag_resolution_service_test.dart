@@ -12,7 +12,7 @@ void main() {
 
   setUp(() {
     service = TagResolutionService(
-      tagEditingService: TagEditingService(),
+      tagEditingService: TagEditingService(overridesLog: () => null),
     );
   });
 

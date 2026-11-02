@@ -1,7 +1,6 @@
 // lib/services/account/export/content_export_manager.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
@@ -26,63 +25,40 @@ import 'package:butlery/services/account/export/live_menu_export.dart';
 /// for collections without typed interfaces). Each repo method enforces
 /// `validateOwnership` defence-in-depth on top of Firestore rules.
 class ContentExportManager {
-  // Test seams: production resolves via ServiceLocator on first use.
-  final CookSnapRepository? _cookSnapRepo;
-  final CookEventRepository? _cookEventRepo;
-  final ActivityEventRepository? _activityEventRepo;
-  final WeeklyMenuPlanRepository? _weeklyMenuRepo;
-  final GroupWeeklyMenuPlanRepository? _groupMenuRepo;
-  final PantryRepository? _pantryRepo;
-  final RecipeRepository? _recipeRepo;
-  final FirebasePersonalTagRepository? _personalTagRepo;
-  final FirebasePersonalTagGroupRepository? _personalTagGroupRepo;
-  final FirebaseDataExportRepository? _exportRepo;
+  final CookSnapRepository _cookSnaps;
+  final CookEventRepository _cookEvents;
+  final ActivityEventRepository _activityEvents;
+  final WeeklyMenuPlanRepository _weeklyMenus;
+  final GroupWeeklyMenuPlanRepository _groupMenus;
+  final PantryRepository _pantry;
+  final RecipeRepository _recipes;
+  final FirebasePersonalTagRepository _personalTags;
+  final FirebasePersonalTagGroupRepository _personalTagGroups;
+  final FirebaseDataExportRepository _exports;
 
   static const String _logTag = 'ContentExportManager';
 
   ContentExportManager({
-    CookSnapRepository? cookSnapRepository,
-    CookEventRepository? cookEventRepository,
-    ActivityEventRepository? activityEventRepository,
-    WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
-    GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
-    PantryRepository? pantryRepository,
-    RecipeRepository? recipeRepository,
-    FirebasePersonalTagRepository? personalTagRepository,
-    FirebasePersonalTagGroupRepository? personalTagGroupRepository,
-    FirebaseDataExportRepository? dataExportRepository,
-  }) : _cookSnapRepo = cookSnapRepository,
-       _cookEventRepo = cookEventRepository,
-       _activityEventRepo = activityEventRepository,
-       _weeklyMenuRepo = weeklyMenuPlanRepository,
-       _groupMenuRepo = groupWeeklyMenuPlanRepository,
-       _pantryRepo = pantryRepository,
-       _recipeRepo = recipeRepository,
-       _personalTagRepo = personalTagRepository,
-       _personalTagGroupRepo = personalTagGroupRepository,
-       _exportRepo = dataExportRepository;
-
-  CookSnapRepository get _cookSnaps =>
-      _cookSnapRepo ?? ServiceLocator.get<CookSnapRepository>();
-  CookEventRepository get _cookEvents =>
-      _cookEventRepo ?? ServiceLocator.get<CookEventRepository>();
-  ActivityEventRepository get _activityEvents =>
-      _activityEventRepo ?? ServiceLocator.get<ActivityEventRepository>();
-  WeeklyMenuPlanRepository get _weeklyMenus =>
-      _weeklyMenuRepo ?? ServiceLocator.get<WeeklyMenuPlanRepository>();
-  GroupWeeklyMenuPlanRepository get _groupMenus =>
-      _groupMenuRepo ?? ServiceLocator.get<GroupWeeklyMenuPlanRepository>();
-  PantryRepository get _pantry =>
-      _pantryRepo ?? ServiceLocator.get<PantryRepository>();
-  RecipeRepository get _recipes =>
-      _recipeRepo ?? ServiceLocator.get<RecipeRepository>();
-  FirebasePersonalTagRepository get _personalTags =>
-      _personalTagRepo ?? ServiceLocator.get<FirebasePersonalTagRepository>();
-  FirebasePersonalTagGroupRepository get _personalTagGroups =>
-      _personalTagGroupRepo ??
-      ServiceLocator.get<FirebasePersonalTagGroupRepository>();
-  FirebaseDataExportRepository get _exports =>
-      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+    required CookSnapRepository cookSnapRepository,
+    required CookEventRepository cookEventRepository,
+    required ActivityEventRepository activityEventRepository,
+    required WeeklyMenuPlanRepository weeklyMenuPlanRepository,
+    required GroupWeeklyMenuPlanRepository groupWeeklyMenuPlanRepository,
+    required PantryRepository pantryRepository,
+    required RecipeRepository recipeRepository,
+    required FirebasePersonalTagRepository personalTagRepository,
+    required FirebasePersonalTagGroupRepository personalTagGroupRepository,
+    required FirebaseDataExportRepository dataExportRepository,
+  }) : _cookSnaps = cookSnapRepository,
+       _cookEvents = cookEventRepository,
+       _activityEvents = activityEventRepository,
+       _weeklyMenus = weeklyMenuPlanRepository,
+       _groupMenus = groupWeeklyMenuPlanRepository,
+       _pantry = pantryRepository,
+       _recipes = recipeRepository,
+       _personalTags = personalTagRepository,
+       _personalTagGroups = personalTagGroupRepository,
+       _exports = dataExportRepository;
 
   // BUT-1760: logs the real exception and returns the section's failure
   // envelope. Every section here used to return `{'error': e.toString()}`.
