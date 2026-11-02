@@ -23,10 +23,10 @@ import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
-import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -39,6 +39,7 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
@@ -66,6 +67,8 @@ class _MockGroupPlans extends Mock implements GroupWeeklyMenuPlanService {}
 class _MockGroupRealtime extends Mock implements RealtimeGroupMenuModule {}
 
 class _MockUsers extends Mock implements UserService {}
+
+class _MockRecipes extends Mock implements UnifiedRecipeService {}
 
 class _MockPlans extends Mock implements WeeklyMenuPlanService {
   @override
@@ -333,18 +336,25 @@ final reviewMiscHosts = <String, StateHost>{
       );
       TestServiceLocator.registerSingleton<HouseholdRepository>(households);
       TestServiceLocator.registerSingleton<DinerProfileRepository>(diners);
-      TestServiceLocator.registerSingleton<FamilyRatingRepository>(
-        FirebaseFamilyRatingRepository(
-          firestore: fs,
-          authRepository: auth,
-          householdRepository: households,
-        ),
+      final ratings = FirebaseFamilyRatingRepository(
+        firestore: fs,
+        authRepository: auth,
+        householdRepository: households,
       );
       TestServiceLocator.registerSingleton<HouseholdRosterService>(
-        HouseholdRosterService(),
+        HouseholdRosterService(
+          householdRepository: households,
+          dinerProfileRepository: diners,
+          userService: TestServiceLocator.get<UserService>(),
+        ),
       );
       TestServiceLocator.registerSingleton<FamilyRatingService>(
-        FamilyRatingService(),
+        FamilyRatingService(
+          ratings: ratings,
+          recipeService: _MockRecipes(),
+          authRepository: auth,
+          firestoreRepository: FirestoreRepository(firestore: fs),
+        ),
       );
       final household = await households.ensureForUser(_me);
       for (final (name, band) in [

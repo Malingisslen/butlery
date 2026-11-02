@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/household.dart';
@@ -216,7 +217,13 @@ void main() {
     TestServiceLocator.registerSingleton<HouseholdRosterService>(roster);
     TestServiceLocator.registerSingleton<FeatureFlagService>(flags);
     TestServiceLocator.registerSingleton<UnifiedFriendsService>(friends);
-    TestServiceLocator.registerSingleton<HouseholdService>(HouseholdService());
+    TestServiceLocator.registerSingleton<HouseholdService>(
+      HouseholdService(
+        friendsService: friends,
+        userService: userService,
+        links: householdLinksFromLocator(),
+      ),
+    );
     (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
         .setAuthState(userId: _self);
   });

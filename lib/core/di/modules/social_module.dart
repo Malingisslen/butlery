@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
@@ -171,8 +172,14 @@ class SocialModule implements DIModule {
       dispose: (s) => s.dispose(),
     );
 
+    final householdLinks = householdLinksFromLocator();
+
     container.registerLazySingleton<HouseholdService>(
-      () => HouseholdService(),
+      () => HouseholdService(
+        friendsService: container<UnifiedFriendsService>(),
+        userService: app<UserService>(),
+        links: householdLinks,
+      ),
     );
 
     container.registerLazySingleton<HouseholdRepository>(
@@ -184,6 +191,7 @@ class SocialModule implements DIModule {
     container.registerLazySingleton<NutritionService>(
       () => NutritionService(
         householdRepository: container<HouseholdRepository>(),
+        currentUserId: householdLinks.currentUserId,
       ),
       dispose: (s) => s.dispose(),
     );
@@ -214,11 +222,20 @@ class SocialModule implements DIModule {
     );
 
     container.registerLazySingleton<HouseholdRosterService>(
-      () => HouseholdRosterService(),
+      () => HouseholdRosterService(
+        householdRepository: container<HouseholdRepository>(),
+        dinerProfileRepository: container<DinerProfileRepository>(),
+        userService: app<UserService>(),
+      ),
     );
 
     container.registerLazySingleton<FamilyRatingService>(
-      () => FamilyRatingService(),
+      () => FamilyRatingService(
+        ratings: container<FamilyRatingRepository>(),
+        recipeService: container<UnifiedRecipeService>(),
+        authRepository: app<AuthRepository>(),
+        firestoreRepository: app<FirestoreRepository>(),
+      ),
     );
 
     container.registerLazySingleton<SocialRecipeService>(

@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/meal_allergen_scope.dart
 
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -162,7 +163,9 @@ class MealAllergenScope {
     List<String> accounts,
   ) async {
     try {
-      return await const PresentDinerPrefsResolver().resolveAllExcept(
+      return await PresentDinerPrefsResolver(
+        householdLinksFromLocator(),
+      ).resolveAllExcept(
         away,
         householdAccountIds: accounts,
       );

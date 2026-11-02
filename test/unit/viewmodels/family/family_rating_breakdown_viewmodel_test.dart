@@ -17,9 +17,9 @@ import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
-import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -120,9 +120,12 @@ void main() {
     );
     TestServiceLocator.registerSingleton<HouseholdRepository>(householdRepo);
     TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
-    TestServiceLocator.registerSingleton<FamilyRatingRepository>(ratingRepo);
     TestServiceLocator.registerSingleton<HouseholdRosterService>(
-      HouseholdRosterService(),
+      HouseholdRosterService(
+        householdRepository: householdRepo,
+        dinerProfileRepository: dinerRepo,
+        userService: TestServiceLocator.get<UserService>(),
+      ),
     );
 
     final socialOps = _MockSocialRecipeOperations();
@@ -135,11 +138,13 @@ void main() {
     ).thenAnswer((_) async => true);
     final recipeService = _MockUnifiedRecipeService();
     when(() => recipeService.social).thenReturn(socialOps);
-    TestServiceLocator.registerSingleton<UnifiedRecipeService>(recipeService);
-    TestServiceLocator.registerSingleton<FamilyRatingService>(
-      FamilyRatingService(),
+    ratingService = FamilyRatingService(
+      ratings: ratingRepo,
+      recipeService: recipeService,
+      authRepository: TestServiceLocator.get<AuthRepository>(),
+      firestoreRepository: FirestoreRepository(firestore: fs),
     );
-    ratingService = FamilyRatingService();
+    TestServiceLocator.registerSingleton<FamilyRatingService>(ratingService);
   });
 
   Future<String> addChild(String name) async {

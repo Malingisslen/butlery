@@ -34,6 +34,13 @@ import '../../../test_support/base_unit_test.dart';
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
+class _DecoyUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
+
+class _DecoyFamilyRatingRepository extends Mock
+    implements FamilyRatingRepository {}
+
+class _DecoyFirestoreRepository extends Mock implements FirestoreRepository {}
+
 class _MockSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {}
 
@@ -102,6 +109,17 @@ void main() {
   late _MockSocialRecipeOperations socialOps;
   late _MockUnifiedRecipeService recipeService;
   late FakeFirebaseFirestore fs;
+  late FirestoreRepository firestoreRepo;
+
+  FamilyRatingService buildService({
+    FamilyRatingRepository? ratings,
+    FirestoreRepository? firestoreRepository,
+  }) => FamilyRatingService(
+    ratings: ratings ?? ratingRepo,
+    recipeService: recipeService,
+    authRepository: TestServiceLocator.get<AuthRepository>(),
+    firestoreRepository: firestoreRepository ?? firestoreRepo,
+  );
 
   Recipe personalRecipe() => Recipe(
     core: RecipeCore(
@@ -144,15 +162,22 @@ void main() {
       authRepository: auth,
       householdRepository: householdRepo,
     );
-    TestServiceLocator.registerSingleton<FamilyRatingRepository>(ratingRepo);
+
+    // BUT-1508: the service is handed its collaborators. The locator holds
+    // decoys that fail on any call, so a service that reached for the locator
+    // instead of its constructor arguments would fail every test below.
+    TestServiceLocator.registerSingleton<FamilyRatingRepository>(
+      _DecoyFamilyRatingRepository(),
+    );
+    TestServiceLocator.registerSingleton<FirestoreRepository>(
+      _DecoyFirestoreRepository(),
+    );
 
     // BUT-1505: the denormalization writes the family aggregate onto the
     // owned recipe doc inside a Firestore transaction. Back the service's
     // FirestoreRepository with the SAME fake store as the rating repo so the
     // ratings query and the recipe patch see one consistent world.
-    TestServiceLocator.registerSingleton<FirestoreRepository>(
-      FirestoreRepository(firestore: fs),
-    );
+    firestoreRepo = FirestoreRepository(firestore: fs);
 
     socialOps = _MockSocialRecipeOperations();
     when(
@@ -172,9 +197,11 @@ void main() {
     when(
       () => recipeService.updateRecipe(any()),
     ).thenAnswer((_) async => true);
-    TestServiceLocator.registerSingleton<UnifiedRecipeService>(recipeService);
+    TestServiceLocator.registerSingleton<UnifiedRecipeService>(
+      _DecoyUnifiedRecipeService(),
+    );
 
-    service = FamilyRatingService();
+    service = buildService();
   });
 
   Future<FamilyRating?> rate({
@@ -219,7 +246,7 @@ void main() {
           authRepository: auth,
         ),
       );
-      TestServiceLocator.registerSingleton<FamilyRatingRepository>(rulesLike);
+      service = buildService(ratings: rulesLike);
 
       final saved = await rate(
         memberId: 'liam',
@@ -623,7 +650,7 @@ void main() {
         ).thenReturn(personalRecipe());
         final throwingRepo = _ThrowingFirestoreRepository();
         when(() => throwingRepo.firestore).thenThrow(Exception('boom'));
-        TestServiceLocator.registerSingleton<FirestoreRepository>(throwingRepo);
+        service = buildService(firestoreRepository: throwingRepo);
 
         final saved = await rate(
           memberId: _malin,

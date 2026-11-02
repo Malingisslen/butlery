@@ -1,16 +1,13 @@
 // lib/services/menu/present_diner_prefs_resolver.dart
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
-import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/active_household.dart';
+import 'package:butlery/services/family/household_links.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/household_service.dart';
-import 'package:butlery/services/permission_service.dart';
 
 /// The allergen preferences of the diners eating a given meal, plus whether
 /// every one of them was actually known.
@@ -33,19 +30,18 @@ class PresentDinerPrefs {
 /// has read every diner document, so a diner without preferences is one that
 /// recorded none, not one we failed to read.
 class PresentDinerPrefsResolver {
-  const PresentDinerPrefsResolver();
+  const PresentDinerPrefsResolver(this._links);
+
+  final HouseholdLinks _links;
 
   /// Null only when the present path cannot run at all (services not wired,
   /// signed out, or this user has no household) — the caller then falls back
   /// to its whole-household filtering. A failure to READ never returns null.
   Future<PresentDinerPrefs?> resolve(List<String> presentIds) async {
-    final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
-    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
-    final permission = ServiceLocator.tryGet<PermissionService>();
-    if (rosterService == null || householdRepo == null || permission == null) {
-      return null;
-    }
-    final uid = permission.currentUserId;
+    final rosterService = _links.roster();
+    final householdRepo = _links.households();
+    if (rosterService == null || householdRepo == null) return null;
+    final uid = _links.currentUserId();
     if (uid == null) return null;
 
     final List<HouseholdRosterMember>? roster;
@@ -79,7 +75,7 @@ class PresentDinerPrefsResolver {
 
     HouseholdAllergenAggregate? accounts;
     if (presentAccounts.isNotEmpty) {
-      final householdService = ServiceLocator.tryGet<HouseholdService>();
+      final householdService = _links.householdService();
       accounts = householdService == null
           ? HouseholdAllergenAggregate.degraded(
               preferences: HouseholdService.widenWithSafetyFloor(
@@ -114,10 +110,10 @@ class PresentDinerPrefsResolver {
     Set<String> awayIds, {
     Iterable<String> householdAccountIds = const [],
   }) async {
-    final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
-    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
-    final householdService = ServiceLocator.tryGet<HouseholdService>();
-    final uid = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    final rosterService = _links.roster();
+    final householdRepo = _links.households();
+    final householdService = _links.householdService();
+    final uid = _links.currentUserId();
     if (rosterService == null ||
         householdRepo == null ||
         householdService == null ||
@@ -202,13 +198,10 @@ class PresentDinerPrefsResolver {
   Future<({PresentDinerPrefs prefs, bool changed})?> addHouseholdDiners(
     UserAllergenPreferences base,
   ) async {
-    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
-    final dinerRepo = ServiceLocator.tryGet<DinerProfileRepository>();
-    final permission = ServiceLocator.tryGet<PermissionService>();
-    if (householdRepo == null || dinerRepo == null || permission == null) {
-      return null;
-    }
-    final uid = permission.currentUserId;
+    final householdRepo = _links.households();
+    final dinerRepo = _links.dinerProfiles();
+    if (householdRepo == null || dinerRepo == null) return null;
+    final uid = _links.currentUserId();
     if (uid == null) return null;
 
     final diners = <DinerProfile>[];
@@ -246,7 +239,7 @@ class PresentDinerPrefsResolver {
   /// `UserAllergenPreferences.defaults`, whose diets would make an unset
   /// profile a vegan-only menu — the thing BUT-1663 keeps out of the floor.
   Future<PresentDinerPrefs> _unreadable(String uid) async {
-    final householdService = ServiceLocator.tryGet<HouseholdService>();
+    final householdService = _links.householdService();
     final UserAllergenPreferences base;
     if (householdService == null) {
       base = UserAllergenPreferences.none;

@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -58,7 +59,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
        _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
        _safePool = safePool,
        _readDislikes =
-           readDislikes ?? const MealDislikesResolver().readDislikes,
+           readDislikes ??
+           MealDislikesResolver(householdLinksFromLocator()).readDislikes,
        _allergenScope = allergenScope,
        _allergenScopeOn = allergenScopeOn ?? _never {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
