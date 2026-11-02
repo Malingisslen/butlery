@@ -458,6 +458,8 @@ class ContentModule implements DIModule {
         llmService: container<LlmService>(),
         ingredientStrategy: app<IngredientParsingStrategy>(),
         neuralLineClassifier: app<NeuralLineClassifier>(),
+        cacheDao: () => app<OfflineService>().database.cacheDao,
+        parseTracker: () => app<AnalyticsService>().parse,
       );
     }, dispose: (s) => s.close());
 
@@ -635,6 +637,9 @@ class ContentModule implements DIModule {
         () => IngredientParsingStrategy(
           remoteLoader: container<RemoteWeightLoader>(),
           neuralParser: container<NeuralIngredientParser>(),
+          registry: () => container.isRegistered<IngredientRegistryService>()
+              ? container<IngredientRegistryService>()
+              : null,
         ),
       );
 

@@ -1,7 +1,6 @@
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/analytics/platform_bucket.dart';
 import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
-import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/circuit_breaker.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/field_result.dart';
@@ -23,8 +22,7 @@ import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/services/parsing/tiers/rule_based_tier.dart';
 import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
 import 'package:butlery/services/parsing/tiers/site_config_tier.dart';
-import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/cache/cache_dao_interface.dart';
 
 /// Parser version for cache invalidation.
 const String parserVersion = '2.0.0';
@@ -180,6 +178,9 @@ class RecipeParserService extends BaseService {
   /// Parsing tiers in execution order.
   late final List<ParsingTier> _tiers;
 
+  final CacheDao Function()? _cacheDaoSource;
+  final ParseEventsTracker Function()? _parseTrackerSource;
+
   /// Shared ingredient parsing strategy (OCR mode toggled per-request).
   late final IngredientParsingStrategy _ingredientStrategy;
 
@@ -194,7 +195,11 @@ class RecipeParserService extends BaseService {
     // without relying on production tier implementations. When null, the
     // production factory builds the standard 4-tier stack.
     List<ParsingTier>? tiers,
-  }) : _getCurrentUserId = getCurrentUserId,
+    CacheDao Function()? cacheDao,
+    ParseEventsTracker Function()? parseTracker,
+  }) : _cacheDaoSource = cacheDao,
+       _parseTrackerSource = parseTracker,
+       _getCurrentUserId = getCurrentUserId,
        _siteConfigRepository = siteConfigRepository,
        _llmService = llmService,
        _neuralLineClassifier = neuralLineClassifier,
@@ -224,11 +229,14 @@ class RecipeParserService extends BaseService {
     // Create cache with CacheDao from OfflineService, unless a cache was
     // injected via the constructor (test seam — see BUT-1063).
     if (_cacheField == null) {
-      final offlineService = ServiceLocator.get<OfflineService>();
+      final cacheDao = _cacheDaoSource;
+      if (cacheDao == null) {
+        throw StateError('$serviceName: init() needs a cache or a cacheDao');
+      }
       _cacheField = LocalRecipeCache(
         getCurrentUserId: _getCurrentUserId,
         parserVersion: parserVersion,
-        cacheDao: offlineService.database.cacheDao,
+        cacheDao: cacheDao(),
       );
     }
     await _cache.init();
@@ -773,8 +781,11 @@ class RecipeParserService extends BaseService {
     if (analyticsTier == null) return;
     if (result.failureReason == TierFailureReason.skipped) return;
 
+    final trackerSource = _parseTrackerSource;
+    if (trackerSource == null) return;
+
     try {
-      final tracker = ServiceLocator.get<AnalyticsService>().parse;
+      final tracker = trackerSource();
       final params = (
         tier: analyticsTier,
         durationMs: result.duration.inMilliseconds,

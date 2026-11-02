@@ -34,6 +34,9 @@ import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 
+import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
+import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
+
 import '_fake_local_recipe_cache.dart';
 
 import '_stub_parsing_tier.dart';
@@ -795,29 +798,42 @@ void main() {
   });
 
   group('BUT-1064: tiers: seam — _emitTierAnalytics fire-and-forget', () {
-    /// Proves: _emitTierAnalytics never throws to its callers even when
-    /// ServiceLocator is not initialized (the common unit-test scenario).
-    /// If the catch block were removed or the ServiceLocator lookup were
-    /// not wrapped, all parseFromText/parseFromUrl calls would throw in tests.
-    test('_emitTierAnalytics failure does not propagate (parse succeeds '
-        'with no AnalyticsService registered)', () async {
-      // The SchemaOrgTier.tierIdentifier is mapped in _analyticsTierFor,
-      // so a tier with that name would trigger a real analytics emit.
-      // ServiceLocator.get<AnalyticsService>() will throw here — but the
-      // try/catch in _emitTierAnalytics must swallow it.
-      final tier = successTierAt('SchemaOrg', 0.90);
+    RecipeParserService parserWith(
+      List<ParsingTier> tiers,
+      _RecordingTracker tracker,
+    ) => RecipeParserService(
+      getCurrentUserId: () => 'u',
+      tiers: tiers,
+      parseTracker: () => tracker,
+    );
 
+    test('a mapped tier outcome is reported to the tracker link', () async {
+      final tracker = _RecordingTracker();
+
+      await parserWith([
+        successTierAt('SchemaOrg', 0.90),
+      ], tracker).parseFromText(text: 'anything', useLlm: false);
+
+      expect(tracker.reported, 1);
+    });
+
+    test('a tracker link that throws does not fail the parse', () async {
+      var asked = 0;
       final service = RecipeParserService(
         getCurrentUserId: () => 'u',
-        tiers: [tier],
+        tiers: [successTierAt('SchemaOrg', 0.90)],
+        parseTracker: () {
+          asked++;
+          throw StateError('analytics not registered');
+        },
       );
 
-      // No ServiceLocator setup — if analytics propagated, this would throw.
       final result = await service.parseFromText(
         text: 'anything',
         useLlm: false,
       );
 
+      expect(asked, 1, reason: 'the throwing link was reached');
       expect(
         result.success,
         isTrue,
@@ -825,56 +841,31 @@ void main() {
       );
     });
 
-    /// Proves: tiers whose name maps to null in _analyticsTierFor (i.e.
-    /// SelectiveEnhance or unknown stub names) are silently ignored by
-    /// _emitTierAnalytics — the early return at analyticsTier==null must
-    /// fire before the ServiceLocator call.
     test('unknown tier name skips analytics emission entirely', () async {
-      final tier = successTierAt('UnknownCustomTier', 0.90);
+      final tracker = _RecordingTracker();
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [tier],
-      );
-
-      // No ServiceLocator. If analytics ran and hit ServiceLocator, it would
-      // throw UNLESS the null-check guard fires first.
-      final result = await service.parseFromText(
-        text: 'anything',
-        useLlm: false,
-      );
+      final result = await parserWith([
+        successTierAt('UnknownCustomTier', 0.90),
+      ], tracker).parseFromText(text: 'anything', useLlm: false);
 
       expect(result.success, isTrue);
+      expect(tracker.reported, 0);
     });
 
-    /// Proves: skipped tiers (failureReason==skipped) do NOT emit analytics
-    /// events. The guard `failureReason == TierFailureReason.skipped` must
-    /// fire before ServiceLocator, so no AnalyticsService lookup happens.
     test('skipped tier result does not attempt analytics emission', () async {
-      // A tier that returns a skipped result should not trigger any
-      // ServiceLocator call. We verify by ensuring no throw with no
-      // AnalyticsService registered.
+      final tracker = _RecordingTracker();
       final t1 = StubParsingTier(
         name: 'SchemaOrg', // mapped tier name — would emit if not guarded
         resultFactory: (_) => TierResult.skipped(tierName: 'SchemaOrg'),
       );
-      final t2 = successTierAt('RuleBased', 0.90);
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [t1, t2],
-      );
+      final result = await parserWith([
+        t1,
+        successTierAt('UnknownCustomTier', 0.90),
+      ], tracker).parseFromText(text: 'anything', useLlm: false);
 
-      final result = await service.parseFromText(
-        text: 'anything',
-        useLlm: false,
-      );
-
-      expect(
-        result.success,
-        isTrue,
-        reason: 'Skipped tier analytics guard must not surface errors',
-      );
+      expect(result.success, isTrue);
+      expect(tracker.reported, 0);
     });
   });
 
@@ -1195,4 +1186,26 @@ void main() {
       },
     );
   });
+}
+
+class _RecordingTracker extends Fake implements ParseEventsTracker {
+  int reported = 0;
+
+  Future<void> _report() async => reported++;
+
+  @override
+  Future<void> logTierSucceeded({
+    required String tier,
+    required int durationMs,
+    required String platformBucket,
+    String? sessionId,
+  }) => _report();
+
+  @override
+  Future<void> logTierFailed({
+    required String tier,
+    required int durationMs,
+    required String platformBucket,
+    String? sessionId,
+  }) => _report();
 }

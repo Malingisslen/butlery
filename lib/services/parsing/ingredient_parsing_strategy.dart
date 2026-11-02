@@ -1,7 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/services.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
@@ -54,13 +53,21 @@ class IngredientParsingStrategy {
   /// On-device BERT NER parser (optional, downloaded on demand).
   final NeuralIngredientParser? _neuralParser;
 
+  /// Resolved at weight-load time, not at construction: the registry is
+  /// enriched from Firestore after sign-in, long after this strategy exists.
+  final IngredientRegistryService? Function() _registry;
+
   IngredientParsingStrategy({
     CrfIngredientParser? crfParser,
     RemoteWeightLoader? remoteLoader,
     NeuralIngredientParser? neuralParser,
+    IngredientRegistryService? Function() registry = _noRegistry,
   }) : _injectedParser = crfParser,
+       _registry = registry,
        _remoteLoader = remoteLoader,
        _neuralParser = neuralParser;
+
+  static IngredientRegistryService? _noRegistry() => null;
 
   /// Whether CRF parsing is available.
   bool get hasCrf => _injectedParser != null || _crfParser != null;
@@ -85,7 +92,7 @@ class IngredientParsingStrategy {
       final jsonString = await rootBundle.loadString(_weightsPath);
       final weights = CrfWeights.fromJson(jsonString);
 
-      final registry = ServiceLocator.tryGet<IngredientRegistryService>();
+      final registry = _registry();
       final enriched = registry?.allIngredients;
 
       final extractor = CrfFeatureExtractor(enrichedIngredients: enriched);
