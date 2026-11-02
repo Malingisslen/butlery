@@ -92,6 +92,7 @@ import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 
 // Recipe presence repository (for realtime operations)
@@ -354,7 +355,12 @@ class ContentModule implements DIModule {
     );
 
     container.registerLazySingleton<UnifiedMenuService>(
-      () => UnifiedMenuService(firestoreRepository: app<FirestoreRepository>()),
+      () => UnifiedMenuService(
+        firestoreRepository: app<FirestoreRepository>(),
+        userService: () => app<UserService>(),
+        realtimeMenuService: () => app<RealtimeMenuService>(),
+        permissionService: () => app<PermissionService>(),
+      ),
       dispose: (s) => s.dispose(),
     );
 

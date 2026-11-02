@@ -227,7 +227,10 @@ class CoreModule implements DIModule {
 
       // Analytics service for monitoring and tracking (available on all platforms)
       container.registerSingleton<AnalyticsService>(
-        AnalyticsService(repository: container<AnalyticsRepository>()),
+        AnalyticsService(
+          repository: container<AnalyticsRepository>(),
+          winbackAttribution: () => container<WinbackAttributionService>(),
+        ),
       );
 
       // BUT-639/830: lifecycle-stage emitter. Single instance shared by

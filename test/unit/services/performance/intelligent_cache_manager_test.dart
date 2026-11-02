@@ -14,9 +14,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -182,8 +181,6 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      // Bridge production ServiceLocator to test GetIt instance
-      production.ServiceLocator.initialize(DIContainer());
     });
 
     setUp(() async {
@@ -207,7 +204,12 @@ void main() {
         defaultHasPermission: true,
       );
 
-      manager = IntelligentCacheManager();
+      manager = IntelligentCacheManager(
+        recipeService: () => TestServiceLocator.get<UnifiedRecipeService>(),
+        friendsService: () => TestServiceLocator.get<UnifiedFriendsService>(),
+        permissionService: () => TestServiceLocator.get<PermissionService>(),
+        behaviorCache: () => throw StateError('behavior cache not wired'),
+      );
     });
 
     // Don't call manager.dispose() - it triggers _behaviorCache lazy getter

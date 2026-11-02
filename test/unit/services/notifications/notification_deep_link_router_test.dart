@@ -146,7 +146,10 @@ void main() {
     setUp(() {
       nav = _RecordingNavigator();
       analyticsRepo = _FakeAnalyticsRepository();
-      analytics = AnalyticsService(repository: analyticsRepo);
+      analytics = AnalyticsService(
+        repository: analyticsRepo,
+        winbackAttribution: () => throw StateError('no win-back in this test'),
+      );
       fetchedIds = <String>[];
       fetchRecipe = (id) async {
         fetchedIds.add(id);
