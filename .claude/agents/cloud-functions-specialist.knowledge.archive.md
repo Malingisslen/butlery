@@ -21384,3 +21384,20 @@ killed every mutant (86/86 on base rules, 1–10 reds per mutant). Folded into t
   `test:rules:all`). Staged `package.json` registers `test:ingredient-change-requests-erasure`; the
   suite file is staged beside it. `check-test-registration.js` OK (4 pre-existing BUT-1702 warnings).
   Whole 12-file diff: pass, no blocking. No new principle.
+
+
+### 2026-11-03 — admin-vy C2: createIngredientChangePr, GitHub App client [implementation]
+- Built (not reviewed) the callable + GitHub App client + PR body + change plan. App id 5602114 /
+  installation 178342690 / bot `butlery-admin-bot[bot]` as code constants (non-secret; functions
+  `.env*` is gitignored, so `defineString` would block a CI deploy); key via
+  `defineSecret("GITHUB_APP_PRIVATE_KEY")` on this one function.
+- Wrong turn: the lock first stored `ownerHash`; `erasure-collection-coverage` reddened
+  (`ingredient_change_locks` reached by nothing). Fixed by dropping the hash, lock names the run id.
+- Run records (`ingredient_change_runs`, `adminUidHash`) got: anonymize leg inside
+  `scrubIngredientChangeRequestAuthors`, a separate hash `count()` probe leg, an Art. 15 residue
+  section, a 365 d TTL policy, and a fixture in `_erasure-residue-cases-2.ts`.
+- GitHub ref PATCH has no CAS: re-read main + bot ref right before; mutation-probed the main-moved
+  check and the per-doc status precondition (each removal reddens exactly its test).
+- Full CI unit lane: 161/163, the two reds were `test:script-seed-staging` (needs `npm run build`,
+  green after build) and `test:erasure-collection-coverage` (the lock, fixed). Rules suite 93/93 via
+  `npx firebase-tools@14 emulators:exec --only firestore`.
