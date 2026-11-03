@@ -401,7 +401,9 @@ class _ReviewBar extends StatelessWidget {
             Text(
               key: const ValueKey('review-error'),
               vm.reviewError!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ],
         ],
