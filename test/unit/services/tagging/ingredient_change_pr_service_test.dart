@@ -16,11 +16,12 @@ class _MockResult extends Mock
 void main() {
   late _MockCallable callable;
   late IngredientChangePrService service;
+  late _MockFunctions functions;
 
   setUpAll(() => registerFallbackValue(HttpsCallableOptions()));
 
   setUp(() {
-    final functions = _MockFunctions();
+    functions = _MockFunctions();
     callable = _MockCallable();
     when(
       () => functions.httpsCallable(
@@ -47,6 +48,15 @@ void main() {
     ).thenAnswer((_) async => result);
 
     final r = await service.createPr();
+    final options =
+        verify(
+              () => functions.httpsCallable(
+                'createIngredientChangePr',
+                options: captureAny(named: 'options'),
+              ),
+            ).captured.single
+            as HttpsCallableOptions;
+    expect(options.timeout, const Duration(seconds: 310));
     expect(r.prNumber, 12);
     expect(r.prUrl, endsWith('/pull/12'));
     expect(r.applied, 4);

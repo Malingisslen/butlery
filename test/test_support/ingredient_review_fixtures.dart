@@ -172,13 +172,38 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
     return pending.stream;
   }
 
+  /// Feeds only the applied stream, for tests that need one decided stream
+  /// to change while the other stays as it was.
+  final StreamController<List<IngredientChangeRequest>> appliedOnly =
+      StreamController<List<IngredientChangeRequest>>.broadcast();
+
   @override
-  Stream<List<IngredientChangeRequest>> watchApplied() => decided.stream.map(
-    (l) => [
-      for (final p in l)
-        if (p.status == IngredientChangeStatus.applied) p,
-    ],
-  );
+  Stream<List<IngredientChangeRequest>> watchApplied() {
+    late final StreamController<List<IngredientChangeRequest>> out;
+    final subs = <StreamSubscription<List<IngredientChangeRequest>>>[];
+    out = StreamController<List<IngredientChangeRequest>>(
+      onListen: () {
+        subs.add(
+          decided.stream
+              .map(
+                (l) => [
+                  for (final p in l)
+                    if (p.status == IngredientChangeStatus.applied) p,
+                ],
+              )
+              .listen(out.add, onError: out.addError),
+        );
+        subs.add(appliedOnly.stream.listen(out.add, onError: out.addError));
+      },
+      onCancel: () async {
+        for (final sub in subs) {
+          await sub.cancel();
+        }
+        await out.close();
+      },
+    );
+    return out.stream;
+  }
 
   @override
   Stream<List<IngredientChangeRequest>> watchRejected() => decided.stream.map(

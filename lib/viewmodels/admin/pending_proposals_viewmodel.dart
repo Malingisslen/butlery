@@ -35,7 +35,8 @@ class PendingProposalsViewModel extends BaseViewModel {
   List<IngredientChangeRequest> _applied = const [];
   List<IngredientChangeRequest> _rejected = const [];
   bool _loaded = false;
-  bool _decidedFailed = false;
+  bool _appliedFailed = false;
+  bool _rejectedFailed = false;
   bool _creating = false;
   IngredientChangePrResult? _lastReview;
   String? _reviewError;
@@ -68,7 +69,7 @@ class PendingProposalsViewModel extends BaseViewModel {
   String? get reviewError => _reviewError;
 
   /// True when the recently decided list could not be read.
-  bool get decidedFailed => _decidedFailed;
+  bool get decidedFailed => _appliedFailed || _rejectedFailed;
 
   /// False until the first snapshot (or error) has arrived.
   bool get hasLoaded => _loaded;
@@ -104,7 +105,8 @@ class PendingProposalsViewModel extends BaseViewModel {
     _rejectedSub?.cancel();
     _sub = null;
     _loaded = false;
-    _decidedFailed = false;
+    _appliedFailed = false;
+    _rejectedFailed = false;
     clearError();
     notifyListeners();
     _subscribe();
@@ -139,7 +141,7 @@ class PendingProposalsViewModel extends BaseViewModel {
     _appliedSub = _repository.watchApplied().listen(
       (items) {
         _applied = _byAppliedAtDesc(items);
-        _decidedFailed = false;
+        _appliedFailed = false;
         notifyListeners();
       },
       onError: (Object e) => _decidedError(applied: true),
@@ -147,6 +149,7 @@ class PendingProposalsViewModel extends BaseViewModel {
     _rejectedSub = _repository.watchRejected().listen(
       (items) {
         _rejected = _newestFirst(items);
+        _rejectedFailed = false;
         notifyListeners();
       },
       onError: (Object e) => _decidedError(applied: false),
@@ -156,10 +159,11 @@ class PendingProposalsViewModel extends BaseViewModel {
   void _decidedError({required bool applied}) {
     if (applied) {
       _applied = const [];
+      _appliedFailed = true;
     } else {
       _rejected = const [];
+      _rejectedFailed = true;
     }
-    _decidedFailed = true;
     notifyListeners();
   }
 

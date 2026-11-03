@@ -21473,7 +21473,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String adminProposalReviewCreated(int changes, int conflicts) {
-    return 'Review created: $changes changes, $conflicts conflicts';
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes changes',
+      one: '1 change',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts conflicts',
+      one: '1 conflict',
+    );
+    return 'Review created: $_temp0, $_temp1';
   }
 
   @override

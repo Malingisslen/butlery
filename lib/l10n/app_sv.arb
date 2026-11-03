@@ -17742,7 +17742,7 @@
   "adminProposalCreateReviewTitle": "Skapa granskning?",
   "adminProposalCreateReviewMessage": "{count} förslag läggs i en granskning på GitHub. Inget ändras i ingrediensfilen förrän granskningen är godkänd där.",
   "@adminProposalCreateReviewMessage": {"placeholders": {"count": {"type": "int"}}},
-  "adminProposalReviewCreated": "Granskning skapad: {changes} ändringar, {conflicts} konflikter",
+  "adminProposalReviewCreated": "Granskning skapad: {changes, plural, =1{1 ändring} other{{changes} ändringar}}, {conflicts, plural, =1{1 konflikt} other{{conflicts} konflikter}}",
   "@adminProposalReviewCreated": {"placeholders": {"changes": {"type": "int"}, "conflicts": {"type": "int"}}},
   "adminProposalOpenOnGithub": "Öppna på GitHub",
   "adminProposalPullRequest": "Granskning #{number}",

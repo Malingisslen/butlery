@@ -21294,7 +21294,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String adminProposalReviewCreated(int changes, int conflicts) {
-    return 'Granskning skapad: $changes ändringar, $conflicts konflikter';
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes ändringar',
+      one: '1 ändring',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts konflikter',
+      one: '1 konflikt',
+    );
+    return 'Granskning skapad: $_temp0, $_temp1';
   }
 
   @override

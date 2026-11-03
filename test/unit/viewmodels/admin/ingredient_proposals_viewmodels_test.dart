@@ -391,6 +391,30 @@ void main() {
         },
       );
 
+      test(
+        'a later applied snapshot does not hide a rejected failure',
+        () async {
+          final repo = FakeChangeRequestRepository();
+          final vm = PendingProposalsViewModel(
+            repository: repo,
+            prService: _FakePrService(),
+          )..start();
+          repo.pending.add([inState('p1', IngredientChangeStatus.pending)]);
+          repo.decided.addError(StateError('denied'));
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.decidedFailed, isTrue);
+          repo.appliedOnly.add([inState('a1', IngredientChangeStatus.applied)]);
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.applied, hasLength(1));
+          // Both streams failed above; applied recovered, rejected has not.
+          expect(vm.decidedFailed, isTrue);
+          repo.decided.add([inState('r1', IngredientChangeStatus.rejected)]);
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.decidedFailed, isFalse);
+          vm.dispose();
+        },
+      );
+
       test('a new createReview clears an earlier error', () async {
         final pr = _FakePrService(
           error: const IngredientChangePrException(

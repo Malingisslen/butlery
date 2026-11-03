@@ -72,13 +72,13 @@ class IngredientChangePrService extends BaseService {
   /// Throws [IngredientChangePrException] on a refusal.
   Future<IngredientChangePrResult> createPr() async {
     try {
-      // The run reads the CSV and writes a branch through GitHub, so it gets
-      // longer than the 15 s the small callables use.
+      // Must outlast the function's own 300 s timeout, or the client gives up
+      // on a run the server is still finishing.
       final result = await _functions
           .httpsCallable(
             'createIngredientChangePr',
             options: HttpsCallableOptions(
-              timeout: const Duration(seconds: 120),
+              timeout: const Duration(seconds: 310),
             ),
           )
           .call<Map<dynamic, dynamic>>();

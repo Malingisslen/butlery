@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/models/tagging/ingredient_column.dart';
@@ -233,10 +236,68 @@ void main() {
       await tester.pumpAndSettle();
       verify(pr.createPr).called(1);
       expect(
-        find.text('Granskning skapad: 2 ändringar, 1 konflikter'),
+        find.text('Granskning skapad: 2 ändringar, 1 konflikt'),
         findsOneWidget,
       );
       expect(find.text('Granskning #9'), findsOneWidget);
+    });
+
+    test('only https github.com links may be opened', () {
+      expect(isTrustedGithubUrl('https://github.com/a/b/pull/1'), isTrue);
+      expect(isTrustedGithubUrl('http://github.com/a/b/pull/1'), isFalse);
+      expect(isTrustedGithubUrl('https://evil.example/pull/1'), isFalse);
+      expect(isTrustedGithubUrl('https://github.com.evil.example/x'), isFalse);
+      expect(isTrustedGithubUrl('javascript:alert(1)'), isFalse);
+      expect(isTrustedGithubUrl(''), isFalse);
+    });
+
+    Future<List<String>> launchFrom(
+      WidgetTester tester,
+      String prUrl,
+    ) async {
+      final launcher = _RecordingUrlLauncher();
+      final original = UrlLauncherPlatform.instance;
+      UrlLauncherPlatform.instance = launcher;
+      addTearDown(() => UrlLauncherPlatform.instance = original);
+      final pr = _MockPrService();
+      when(pr.createPr).thenAnswer(
+        (_) async => IngredientChangePrResult(
+          prNumber: 9,
+          prUrl: prUrl,
+          applied: 1,
+          conflicts: 0,
+          rejected: 0,
+          reopened: 0,
+          skipped: 0,
+        ),
+      );
+      final repo = await pump(tester, prService: pr);
+      repo.pending.add([proposal()]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('create-review')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Skapa granskning').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Granskning skapad: 1 ändring, 0 konflikter'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('open-github')));
+      await tester.pumpAndSettle();
+      return launcher.launched;
+    }
+
+    testWidgets('an untrusted result url opens the numbered link instead', (
+      tester,
+    ) async {
+      final launched = await launchFrom(tester, 'javascript:alert(1)');
+      expect(launched, ['${kButleryPullRequestBase}9']);
+      expect(launched.any((u) => u.startsWith('javascript:')), isFalse);
+    });
+
+    testWidgets('a trusted result url is opened as given', (tester) async {
+      const url = 'https://github.com/Malingisslen/butlery/pull/9';
+      expect(await launchFrom(tester, url), [url]);
     });
 
     testWidgets('cancelling the confirmation creates nothing', (tester) async {
@@ -292,3 +353,17 @@ void main() {
 }
 
 class _MockPrService extends Mock implements IngredientChangePrService {}
+
+class _RecordingUrlLauncher extends UrlLauncherPlatform
+    with MockPlatformInterfaceMixin {
+  final launched = <String>[];
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    launched.add(url);
+    return true;
+  }
+}

@@ -32759,7 +32759,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminProposalReviewCreated.
   ///
   /// In sv, this message translates to:
-  /// **'Granskning skapad: {changes} ändringar, {conflicts} konflikter'**
+  /// **'Granskning skapad: {changes, plural, =1{1 ändring} other{{changes} ändringar}}, {conflicts, plural, =1{1 konflikt} other{{conflicts} konflikter}}'**
   String adminProposalReviewCreated(int changes, int conflicts);
 
   /// No description provided for @adminProposalOpenOnGithub.

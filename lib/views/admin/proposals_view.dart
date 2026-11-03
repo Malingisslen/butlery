@@ -316,7 +316,16 @@ class ProposalCard extends StatelessWidget {
 const String kButleryPullRequestBase =
     'https://github.com/Malingisslen/butlery/pull/';
 
+/// Only an https link on github.com is opened; the URL comes from a callable
+/// response, so it is checked before it reaches the browser.
+@visibleForTesting
+bool isTrustedGithubUrl(String url) {
+  final uri = Uri.tryParse(url);
+  return uri != null && uri.scheme == 'https' && uri.host == 'github.com';
+}
+
 Future<void> _openUrl(String url) async {
+  if (!isTrustedGithubUrl(url)) return;
   try {
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   } catch (e) {
@@ -333,7 +342,7 @@ class _PullRequestLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final target = (url != null && url!.isNotEmpty)
+    final target = (url != null && isTrustedGithubUrl(url!))
         ? url
         : (number == null ? null : '$kButleryPullRequestBase$number');
     if (target == null) return const SizedBox.shrink();
