@@ -55,7 +55,7 @@ class _CountingTransaction implements Transaction {
     DocumentReference documentReference,
     Map<Object, Object?> data,
   ) {
-    _writes.add('update ${data.keys.join(',')}');
+    _writes.add('update ${(data as Map).keys.join(',')}');
     _inner.update(documentReference, data);
     return this;
   }
@@ -93,8 +93,8 @@ class _CountingBatch implements WriteBatch {
   }
 
   @override
-  void update(DocumentReference document, Map<Object, Object?> data) {
-    _writes.add('update ${document.path} ${data.keys.join(',')}');
+  void update<T>(DocumentReference<T> document, T data) {
+    _writes.add('update ${document.path} ${(data as Map).keys.join(',')}');
     _inner.update(document, data);
   }
 }
