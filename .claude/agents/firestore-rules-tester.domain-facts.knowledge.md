@@ -37,7 +37,10 @@ and malformed shapes when the validator changes.
 - **Age gate**: `isAgeCompliant()` fails CLOSED (no claim → CEL undefined → deny).
   `birthYear`/`isMinor` are CF-only-written on BOTH `users/{uid}` and
   `users/{uid}/settings/{settingId}` — create requires absent, update requires unchanged;
-  test both docs. Adding the gate to an EXISTING create rule fails closed every prior
+  test both docs. The unchanged-compare's `null` default is what refuses ABSENT -> `false`
+  (a terms-only doc then a profile save carrying `isMinor:false`, BUT-2502); a `false`
+  default on both sides opens that transition, and only an absent-pre-state deny kills it
+  (measured 63/64 — the seeded `true -> false` deny survives). Adding the gate to an EXISTING create rule fails closed every prior
   create-allow test lacking the claim — grep `authenticatedContext(<actor>)` for that
   collection whenever a gate is added.
 - **`conversations/{id}/participants` roster**: a GROUP's parent conversation doc is
