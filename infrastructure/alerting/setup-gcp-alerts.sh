@@ -39,6 +39,7 @@ trap 'rm -rf "$WORKDIR"' EXIT
 # ----------------------------------------------------------------------------
 existing_policies() {
   gcloud alpha monitoring policies list \
+    --project="$PROJECT_ID" \
     --format='value(displayName)' 2>/dev/null
 }
 
