@@ -4,8 +4,14 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Maps Firebase auth error codes to localized user-facing messages.
 /// Shared by AuthService and AuthMfaService to avoid duplication.
-String mapAuthErrorToMessage(FirebaseAuthException e) {
-  final blocked = blockingRefusalMessage(e);
+///
+/// [passwordSignIn] is true for a sign-in with an existing password account,
+/// where the guest list can only be refusing an unverified address.
+String mapAuthErrorToMessage(
+  FirebaseAuthException e, {
+  bool passwordSignIn = false,
+}) {
+  final blocked = blockingRefusalMessage(e, passwordSignIn: passwordSignIn);
   if (blocked != null) return blocked;
   final l = AppLocale.current;
   return switch (e.code) {
@@ -26,6 +32,15 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
     'quota-exceeded' => l.errorTooManySmsAttempts,
     'invalid-phone-number' => l.errorInvalidPhoneNumber,
     'missing-phone-number' => l.errorPhoneNumberMissing,
+    // The reset mail's link settings were refused (BUT-2502); "log in again"
+    // would send the person who forgot the password in a circle.
+    'invalid-hosting-link-domain' ||
+    'invalid-dynamic-link-domain' ||
+    'unauthorized-continue-uri' ||
+    'invalid-continue-uri' ||
+    'missing-continue-uri' ||
+    'missing-android-pkg-name' ||
+    'missing-ios-bundle-id' => l.errorPasswordResetLinkFailed,
     _ => l.errorAuthentication,
   };
 }
@@ -33,7 +48,10 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
 /// The guest-list blocking functions (BUT-2452) refuse with a marker in the
 /// message. The platforms wrap that text differently and none of it has a
 /// code of its own, so the marker is looked for anywhere in the error.
-String? blockingRefusalMessage(FirebaseAuthException e) {
+String? blockingRefusalMessage(
+  FirebaseAuthException e, {
+  bool passwordSignIn = false,
+}) {
   final l = AppLocale.current;
   final text = '${e.message.orEmpty()} $e';
   if (text.contains('SIGNUP_GATE_UNAVAILABLE')) {
@@ -43,10 +61,14 @@ String? blockingRefusalMessage(FirebaseAuthException e) {
     return l.errorSignInEmailUnverified;
   }
   if (text.contains('SIGNUP_NOT_INVITED')) return l.errorSignupNotInvited;
-  // Without a marker nothing says the guest list refused: a blocking function
-  // that crashed or timed out arrives the same way (BUT-2471).
+  // Android hands over the code without the server's text, so the marker is
+  // gone (BUT-2502). A password sign-in is refused only for an unverified
+  // address. Anything else may be "not invited" or a gate that failed, and
+  // the text has to be true for both (BUT-2471).
   if (e.code == 'blocking-function-error-response') {
-    return l.errorSignupGateUnavailable;
+    return passwordSignIn
+        ? l.errorSignInEmailUnverified
+        : l.errorSignupRefusedUnmarked;
   }
   return null;
 }
