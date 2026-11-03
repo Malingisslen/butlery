@@ -1,6 +1,6 @@
 # GCP Alerting Setup Runbook
 
-**Status: the 2 alert policies lived in `butlery-app-1`, which was deleted 2026-11-03 (BUT-2433). Apply them to `butlery-prod` with the script below.**
+**Status: ACTIVE — 5 alert policies live in `butlery-prod`, created 2026-11-03 (the old copies died with `butlery-app-1`, BUT-2433).**
 
 Operational runbook for Google Cloud Monitoring alerts in `butlery-prod`.
 Companion to `infrastructure/alerting/setup-gcp-alerts.sh`, which is
@@ -21,14 +21,15 @@ activation:
 
 ---
 
-## Current status (as of 2026-04-26)
+## Current status (as of 2026-11-03)
 
 | Control | Status | Evidence |
 |---|---|---|
 | Alert policy script | ACTIVE + IDEMPOTENT | `infrastructure/alerting/setup-gcp-alerts.sh` |
-| Notification channel | GONE with the old project (2026-11-03); create a new one in `butlery-prod` | step 3 below |
-| `Cloud Functions - High Error Rate` | NOT VERIFIED in `butlery-prod`; the old copy is deleted | run the script, then `gcloud alpha monitoring policies list` |
-| `Cloud Functions - High Latency` | NOT VERIFIED in `butlery-prod`; the old copy is deleted | run the script, then `gcloud alpha monitoring policies list` |
+| Notification channel | LIVE | `projects/butlery-prod/notificationChannels/12013824077202165813` (email: info@butlery.se), created 2026-11-03; verification-email click not confirmed |
+| `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
+| `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
+| Moderation x2, Import tier shift | LIVE, enabled, routed to channel | same listing, 3 more policies from the script |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
 | Firebase Auth failure-rate alert | NOT SHIPPED | legacy metric retired — see "Deferred policies" below |
 | Budget alerts (separate flow) | TODO | GCP Console > Billing > Budgets |
