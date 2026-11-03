@@ -395,6 +395,43 @@ test(
 );
 
 // ============================================================================
+// PROFILE DOC — the save after a new Google/Apple account's terms step
+// (BUT-2502). The terms record lands first, so the profile save is an UPDATE
+// of a doc with no isMinor yet; the client must leave isMinor out.
+// ============================================================================
+
+test(
+  "profile: after the terms record, a save carrying isMinor:false is DENIED",
+  async () => {
+    const uid = `prof-terms-minor-${RUN}`;
+    await seedDoc(`users/${uid}`, { termsVersion: "1" });
+    const ctx = env.authenticatedContext(uid);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ displayName: "Anna", isMinor: false }, { merge: true })
+    );
+  }
+);
+
+test(
+  "profile: after the terms record, a save without isMinor is allowed",
+  async () => {
+    const uid = `prof-terms-ok-${RUN}`;
+    await seedDoc(`users/${uid}`, { termsVersion: "1" });
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ displayName: "Anna" }, { merge: true })
+    );
+  }
+);
+
+// ============================================================================
+// ============================================================================
 // PROFILE DOC — users/{uid} birthYear immutability
 // (6 assertions across 6 tests)
 //
