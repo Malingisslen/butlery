@@ -39,7 +39,10 @@ typedef ConfigBackedPhases = ({
 /// 2.4.0: kärnflöde steg 5 (seasons in English, title words, scored
 /// cuisines, holiday pairs, main ingredients by weight, coverage bars) —
 /// retag gives every recipe the new rules at once.
-const String kTagGeneratorVersion = '2.4.0';
+/// 2.4.1: draft ingredients reviewed and synced (2026-11-03), with
+/// allergen markers added and corrected — retag replaces verdicts computed
+/// from the old values.
+const String kTagGeneratorVersion = '2.4.1';
 
 /// Orchestrates the 5-phase tag generation process.
 ///
