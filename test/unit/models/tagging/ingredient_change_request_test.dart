@@ -199,6 +199,63 @@ void main() {
       expect(r.changeFor(IngredientColumn.aliasesSv)!.oldValue, ['a;b']);
     });
 
+    test(
+      'reads prNumber, reason, csvValue and kind; absent kind is an ingredient',
+      () async {
+        final plain = await read({
+          'ingredientId': 'milk',
+          'changes': {
+            'status': {'old': 'draft', 'new': 'verified'},
+          },
+          'status': 'pending',
+        });
+        expect(plain.kind, IngredientChangeRequest.kIngredientKind);
+        expect(plain.prNumber, isNull);
+        expect(plain.reason, isNull);
+        expect(plain.csvValue, isNull);
+
+        final conflict = await read({
+          'ingredientId': 'milk',
+          'changes': {
+            'status': {'old': 'draft', 'new': 'verified'},
+          },
+          'status': 'conflict',
+          'reason': 'csv-mismatch',
+          'csvValue': {'status': 'review'},
+          'prNumber': 12,
+          'kind': 'occasionList',
+        });
+        expect(conflict.status, IngredientChangeStatus.conflict);
+        expect(conflict.reason, 'csv-mismatch');
+        expect(conflict.csvValue, {'status': 'review'});
+        expect(conflict.prNumber, 12);
+        expect(conflict.kind, 'occasionList');
+
+        final inReview = await read({
+          'ingredientId': 'milk',
+          'changes': <String, dynamic>{},
+          'status': 'inReview',
+          'prNumber': 7,
+        });
+        expect(inReview.status, IngredientChangeStatus.inReview);
+        expect(IngredientChangeStatus.inReview.wireName, 'inReview');
+      },
+    );
+
+    test('withIdentity keeps the server-written fields', () async {
+      final r = (await read({
+        'ingredientId': 'milk',
+        'changes': <String, dynamic>{},
+        'status': 'inReview',
+        'prNumber': 7,
+        'reason': 'x',
+        'csvValue': {'a': 1},
+      })).withIdentity(id: 'n', createdBy: 'u');
+      expect(r.prNumber, 7);
+      expect(r.reason, 'x');
+      expect(r.csvValue, {'a': 1});
+    });
+
     test('affectsAllergens follows the property change', () async {
       final r = await read({
         'ingredientId': 'milk',

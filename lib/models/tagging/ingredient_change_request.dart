@@ -11,6 +11,7 @@ enum IngredientChangeStatus {
   pending('pending'),
   withdrawn('withdrawn'),
   applied('applied'),
+  inReview('inReview'),
   conflict('conflict'),
   rejected('rejected')
   ;
@@ -91,7 +92,15 @@ class IngredientChangeRequest {
     this.withdrawnAt,
     this.withdrawnBy,
     this.expireAt,
+    this.prNumber,
+    this.appliedAt,
+    this.reason,
+    this.csvValue,
+    this.kind = kIngredientKind,
   });
+
+  /// A document without `kind` is an ingredient proposal.
+  static const String kIngredientKind = 'ingredient';
 
   final String id;
   final String ingredientId;
@@ -107,6 +116,20 @@ class IngredientChangeRequest {
   final DateTime? withdrawnAt;
   final String? withdrawnBy;
   final DateTime? expireAt;
+
+  /// Server-written once the proposal is in a pull request.
+  final int? prNumber;
+
+  /// Server timestamp the sync job writes when the proposal becomes `applied`.
+  final DateTime? appliedAt;
+
+  /// Server-written on `conflict` and `rejected`.
+  final String? reason;
+
+  /// The CSV's own value per column on a conflict; null for a column whose
+  /// row is gone.
+  final Map<String, Object?>? csvValue;
+  final String kind;
 
   IngredientChangeRequest withIdentity({
     required String id,
@@ -124,6 +147,11 @@ class IngredientChangeRequest {
     withdrawnAt: withdrawnAt,
     withdrawnBy: withdrawnBy,
     expireAt: expireAt,
+    prNumber: prNumber,
+    appliedAt: appliedAt,
+    reason: reason,
+    csvValue: csvValue,
+    kind: kind,
   );
 
   IngredientFieldChange? changeFor(IngredientColumn column) {
@@ -179,8 +207,21 @@ class IngredientChangeRequest {
       withdrawnAt: _date(data['withdrawnAt']),
       withdrawnBy: data['withdrawnBy']?.toString(),
       expireAt: _date(data['expireAt']),
+      prNumber: data['prNumber'] is num
+          ? (data['prNumber'] as num).toInt()
+          : null,
+      appliedAt: _date(data['appliedAt']),
+      reason: data['reason']?.toString(),
+      csvValue: _csvValue(data['csvValue']),
+      kind: data['kind'] is String && (data['kind'] as String).isNotEmpty
+          ? data['kind'] as String
+          : kIngredientKind,
     );
   }
+
+  static Map<String, Object?>? _csvValue(Object? raw) => raw is Map
+      ? {for (final e in raw.entries) e.key.toString(): e.value}
+      : null;
 
   static DateTime? _date(Object? v) => v is Timestamp ? v.toDate() : null;
 }

@@ -21263,6 +21263,120 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminProposalPendingMark => 'Väntande förslag';
 
   @override
+  String get adminProposalSectionPending => 'Väntar';
+
+  @override
+  String get adminProposalSectionInReview => 'I granskning';
+
+  @override
+  String get adminProposalSectionConflict => 'Konflikt';
+
+  @override
+  String get adminProposalSectionRejected => 'Avvisade';
+
+  @override
+  String get adminProposalSectionApplied => 'Nyligen genomförda';
+
+  @override
+  String get adminProposalDecidedLoadFailed =>
+      'Kunde inte ladda avvisade och genomförda förslag.';
+
+  @override
+  String get adminProposalCreateReview => 'Skapa granskning';
+
+  @override
+  String get adminProposalCreateReviewTitle => 'Skapa granskning?';
+
+  @override
+  String adminProposalCreateReviewMessage(int count) {
+    return '$count förslag läggs i en granskning på GitHub. Inget ändras i ingrediensfilen förrän granskningen är godkänd där.';
+  }
+
+  @override
+  String adminProposalReviewCreated(int changes, int conflicts) {
+    return 'Granskning skapad: $changes ändringar, $conflicts konflikter';
+  }
+
+  @override
+  String get adminProposalOpenOnGithub => 'Öppna på GitHub';
+
+  @override
+  String adminProposalPullRequest(int number) {
+    return 'Granskning #$number';
+  }
+
+  @override
+  String adminProposalConflictCsv(String value) {
+    return 'Värde i filen: $value';
+  }
+
+  @override
+  String adminProposalConflictOld(String value) {
+    return 'Ditt gamla: $value';
+  }
+
+  @override
+  String adminProposalConflictNew(String value) {
+    return 'Ditt nya: $value';
+  }
+
+  @override
+  String get adminProposalReasonCsvMismatch =>
+      'Filen har ett annat värde än det du utgick från. Raden har ändrats sedan du föreslog.';
+
+  @override
+  String get adminProposalReasonMissingRow =>
+      'Ingrediensen finns inte längre i filen.';
+
+  @override
+  String get adminProposalReasonNoChange =>
+      'Filen har redan det värdet, så ingenting behövde ändras.';
+
+  @override
+  String get adminProposalReasonWriteFailed =>
+      'Ändringen kunde inte skrivas in i filen.';
+
+  @override
+  String get adminProposalReasonInvalid =>
+      'Servern godtog inte värdet. Föreslå ändringen på nytt med ett giltigt värde.';
+
+  @override
+  String get adminReviewErrorNotAdmin =>
+      'Du har inte behörighet att skapa en granskning.';
+
+  @override
+  String get adminReviewErrorLocked =>
+      'En granskning skapas just nu. Försök igen om en stund.';
+
+  @override
+  String get adminReviewErrorTooMany =>
+      'Det väntar för många förslag för att samla i en granskning. Ta tillbaka några och försök igen.';
+
+  @override
+  String get adminReviewErrorNotConfigured =>
+      'Kopplingen till GitHub är inte inställd än.';
+
+  @override
+  String get adminReviewErrorUnavailable =>
+      'GitHub svarar inte just nu. Försök igen om en stund.';
+
+  @override
+  String get adminReviewErrorForeignCommits =>
+      'Någon annan har ändrat granskningsgrenen på GitHub. Be Claude titta på det.';
+
+  @override
+  String get adminReviewErrorMainMoved =>
+      'Ingrediensfilen ändrades under tiden. Försök igen.';
+
+  @override
+  String get adminReviewErrorRateLimited =>
+      'Du har skapat för många granskningar på kort tid. Vänta en stund.';
+
+  @override
+  String get adminReviewErrorOther =>
+      'Kunde inte skapa granskningen. Försök igen.';
+
+  @override
   String get adminBulkSetStatus => 'Sätt status på valda';
 
   @override

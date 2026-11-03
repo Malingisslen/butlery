@@ -111,10 +111,35 @@ class FirebaseIngredientChangeRequestRepository
     }
   }
 
+  // One whereIn on one field and no orderBy: no composite index is needed.
   @override
-  Stream<List<IngredientChangeRequest>> watchPending() => collection
-      .where('status', isEqualTo: IngredientChangeStatus.pending.wireName)
-      .limit(IngredientChangeRequestRepository.maxPending)
+  Stream<List<IngredientChangeRequest>> watchOpen() => _watch(const [
+    IngredientChangeStatus.pending,
+    IngredientChangeStatus.inReview,
+    IngredientChangeStatus.conflict,
+  ], IngredientChangeRequestRepository.maxPending);
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchApplied() => collection
+      .where('status', isEqualTo: IngredientChangeStatus.applied.wireName)
+      .orderBy('appliedAt', descending: true)
+      .limit(IngredientChangeRequestRepository.maxApplied)
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchRejected() => collection
+      .where('status', isEqualTo: IngredientChangeStatus.rejected.wireName)
+      .limit(IngredientChangeRequestRepository.maxRejected)
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
+
+  Stream<List<IngredientChangeRequest>> _watch(
+    List<IngredientChangeStatus> statuses,
+    int limit,
+  ) => collection
+      .where('status', whereIn: [for (final s in statuses) s.wireName])
+      .limit(limit)
       .snapshots()
       .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
 

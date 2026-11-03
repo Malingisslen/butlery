@@ -20,6 +20,7 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Repositories and interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/tagging/ingredient_change_pr_service.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
@@ -135,6 +136,7 @@ class CoreModule implements DIModule {
       // Beta feedback
       FeedbackRepository,
       IngredientChangeRequestRepository,
+      IngredientChangePrService,
       InteractionLogger,
       FeedbackService,
       // Auth MFA
@@ -447,6 +449,11 @@ class CoreModule implements DIModule {
         () => FirebaseIngredientChangeRequestRepository(
           authRepository: container<AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
+      container.registerLazySingleton<IngredientChangePrService>(
+        () => IngredientChangePrService(
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
       container.registerLazySingleton<InteractionLogger>(

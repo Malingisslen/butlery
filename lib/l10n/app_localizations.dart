@@ -32702,6 +32702,180 @@ abstract class AppLocalizations {
   /// **'Väntande förslag'**
   String get adminProposalPendingMark;
 
+  /// No description provided for @adminProposalSectionPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar'**
+  String get adminProposalSectionPending;
+
+  /// No description provided for @adminProposalSectionInReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'I granskning'**
+  String get adminProposalSectionInReview;
+
+  /// No description provided for @adminProposalSectionConflict.
+  ///
+  /// In sv, this message translates to:
+  /// **'Konflikt'**
+  String get adminProposalSectionConflict;
+
+  /// No description provided for @adminProposalSectionRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvisade'**
+  String get adminProposalSectionRejected;
+
+  /// No description provided for @adminProposalSectionApplied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyligen genomförda'**
+  String get adminProposalSectionApplied;
+
+  /// No description provided for @adminProposalDecidedLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda avvisade och genomförda förslag.'**
+  String get adminProposalDecidedLoadFailed;
+
+  /// No description provided for @adminProposalCreateReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa granskning'**
+  String get adminProposalCreateReview;
+
+  /// No description provided for @adminProposalCreateReviewTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa granskning?'**
+  String get adminProposalCreateReviewTitle;
+
+  /// No description provided for @adminProposalCreateReviewMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag läggs i en granskning på GitHub. Inget ändras i ingrediensfilen förrän granskningen är godkänd där.'**
+  String adminProposalCreateReviewMessage(int count);
+
+  /// No description provided for @adminProposalReviewCreated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskning skapad: {changes} ändringar, {conflicts} konflikter'**
+  String adminProposalReviewCreated(int changes, int conflicts);
+
+  /// No description provided for @adminProposalOpenOnGithub.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna på GitHub'**
+  String get adminProposalOpenOnGithub;
+
+  /// No description provided for @adminProposalPullRequest.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskning #{number}'**
+  String adminProposalPullRequest(int number);
+
+  /// No description provided for @adminProposalConflictCsv.
+  ///
+  /// In sv, this message translates to:
+  /// **'Värde i filen: {value}'**
+  String adminProposalConflictCsv(String value);
+
+  /// No description provided for @adminProposalConflictOld.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt gamla: {value}'**
+  String adminProposalConflictOld(String value);
+
+  /// No description provided for @adminProposalConflictNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt nya: {value}'**
+  String adminProposalConflictNew(String value);
+
+  /// No description provided for @adminProposalReasonCsvMismatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filen har ett annat värde än det du utgick från. Raden har ändrats sedan du föreslog.'**
+  String get adminProposalReasonCsvMismatch;
+
+  /// No description provided for @adminProposalReasonMissingRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediensen finns inte längre i filen.'**
+  String get adminProposalReasonMissingRow;
+
+  /// No description provided for @adminProposalReasonNoChange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filen har redan det värdet, så ingenting behövde ändras.'**
+  String get adminProposalReasonNoChange;
+
+  /// No description provided for @adminProposalReasonWriteFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen kunde inte skrivas in i filen.'**
+  String get adminProposalReasonWriteFailed;
+
+  /// No description provided for @adminProposalReasonInvalid.
+  ///
+  /// In sv, this message translates to:
+  /// **'Servern godtog inte värdet. Föreslå ändringen på nytt med ett giltigt värde.'**
+  String get adminProposalReasonInvalid;
+
+  /// No description provided for @adminReviewErrorNotAdmin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att skapa en granskning.'**
+  String get adminReviewErrorNotAdmin;
+
+  /// No description provided for @adminReviewErrorLocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'En granskning skapas just nu. Försök igen om en stund.'**
+  String get adminReviewErrorLocked;
+
+  /// No description provided for @adminReviewErrorTooMany.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det väntar för många förslag för att samla i en granskning. Ta tillbaka några och försök igen.'**
+  String get adminReviewErrorTooMany;
+
+  /// No description provided for @adminReviewErrorNotConfigured.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopplingen till GitHub är inte inställd än.'**
+  String get adminReviewErrorNotConfigured;
+
+  /// No description provided for @adminReviewErrorUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'GitHub svarar inte just nu. Försök igen om en stund.'**
+  String get adminReviewErrorUnavailable;
+
+  /// No description provided for @adminReviewErrorForeignCommits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon annan har ändrat granskningsgrenen på GitHub. Be Claude titta på det.'**
+  String get adminReviewErrorForeignCommits;
+
+  /// No description provided for @adminReviewErrorMainMoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediensfilen ändrades under tiden. Försök igen.'**
+  String get adminReviewErrorMainMoved;
+
+  /// No description provided for @adminReviewErrorRateLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har skapat för många granskningar på kort tid. Vänta en stund.'**
+  String get adminReviewErrorRateLimited;
+
+  /// No description provided for @adminReviewErrorOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa granskningen. Försök igen.'**
+  String get adminReviewErrorOther;
+
   /// No description provided for @adminBulkSetStatus.
   ///
   /// In sv, this message translates to:

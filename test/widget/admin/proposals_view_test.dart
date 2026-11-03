@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart';
+import 'package:butlery/services/tagging/ingredient_change_pr_service.dart';
 import 'package:butlery/viewmodels/admin/pending_proposals_viewmodel.dart';
 import 'package:butlery/views/admin/proposals_view.dart';
 
@@ -16,7 +18,10 @@ void main() {
     await BaseUnitTest.setupUnit();
   });
 
-  Future<FakeChangeRequestRepository> pump(WidgetTester tester) async {
+  Future<FakeChangeRequestRepository> pump(
+    WidgetTester tester, {
+    IngredientChangePrService? prService,
+  }) async {
     tester.view.physicalSize = const Size(1200, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -25,7 +30,10 @@ void main() {
       createLocalizedTestApp(
         wrapInScaffold: false,
         child: ProposalsView(
-          viewModel: PendingProposalsViewModel(repository: repo),
+          viewModel: PendingProposalsViewModel(
+            repository: repo,
+            prService: prService,
+          ),
         ),
       ),
     );
@@ -35,10 +43,18 @@ void main() {
 
   IngredientChangeRequest proposal({
     String id = 'r1',
+    IngredientChangeStatus status = IngredientChangeStatus.pending,
+    int? prNumber,
+    String? reason,
+    Map<String, Object?>? csvValue,
     List<String> oldProps = const ['dairy'],
     List<String> newProps = const ['dairy'],
   }) => IngredientChangeRequest(
     id: id,
+    status: status,
+    prNumber: prNumber,
+    reason: reason,
+    csvValue: csvValue,
     ingredientId: 'milk',
     note: 'rätta',
     createdAt: DateTime.utc(2026, 11, 1),
@@ -121,4 +137,158 @@ void main() {
       findsOneWidget,
     );
   });
+
+  group('sections and review', () {
+    testWidgets('each status lands in its own section', (tester) async {
+      final repo = await pump(tester);
+      repo.pending.add([
+        proposal(id: 'p'),
+        proposal(
+          id: 'i',
+          status: IngredientChangeStatus.inReview,
+          prNumber: 42,
+        ),
+        proposal(
+          id: 'c',
+          status: IngredientChangeStatus.conflict,
+          reason: 'csv-mismatch',
+          csvValue: {'status': 'review'},
+        ),
+      ]);
+      repo.decided.add([
+        proposal(
+          id: 'r',
+          status: IngredientChangeStatus.rejected,
+          reason: 'no-change',
+        ),
+        proposal(id: 'a', status: IngredientChangeStatus.applied),
+      ]);
+      await tester.pumpAndSettle();
+
+      for (final title in [
+        'Väntar',
+        'I granskning',
+        'Konflikt',
+        'Avvisade',
+        'Nyligen genomförda',
+      ]) {
+        expect(find.byKey(ValueKey('section-$title')), findsOneWidget);
+      }
+      expect(find.text('Granskning #42'), findsOneWidget);
+      expect(find.byKey(const ValueKey('open-github')), findsOneWidget);
+      expect(find.text('Värde i filen: review'), findsOneWidget);
+      expect(find.text('Ditt gamla: draft'), findsOneWidget);
+      expect(find.text('Ditt nya: verified'), findsOneWidget);
+      expect(
+        find.textContaining('Filen har redan det värdet'),
+        findsOneWidget,
+      );
+      // Pending, in review and conflict can be withdrawn; decided cannot.
+      expect(find.byKey(const ValueKey('withdraw')), findsNWidgets(3));
+    });
+
+    testWidgets('the button is disabled with nothing waiting', (tester) async {
+      final repo = await pump(tester);
+      repo.pending.add([
+        proposal(id: 'c', status: IngredientChangeStatus.conflict),
+      ]);
+      await tester.pumpAndSettle();
+      final button = find.byKey(const ValueKey('create-review'));
+      expect(button, findsOneWidget);
+      await tester.tap(button, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('Skapa granskning?'), findsNothing);
+    });
+
+    testWidgets('confirm states the count, then shows the summary', (
+      tester,
+    ) async {
+      final pr = _MockPrService();
+      when(pr.createPr).thenAnswer(
+        (_) async => const IngredientChangePrResult(
+          prNumber: 9,
+          prUrl: 'https://github.com/Malingisslen/butlery/pull/9',
+          applied: 2,
+          conflicts: 1,
+          rejected: 0,
+          reopened: 0,
+          skipped: 0,
+        ),
+      );
+      final repo = await pump(tester, prService: pr);
+      repo.pending.add([
+        proposal(id: 'p1'),
+        proposal(id: 'p2'),
+        proposal(id: 'i', status: IngredientChangeStatus.inReview),
+      ]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('create-review')));
+      await tester.pumpAndSettle();
+      expect(find.text('Skapa granskning?'), findsOneWidget);
+      expect(find.textContaining('3 förslag'), findsOneWidget);
+      verifyNever(pr.createPr);
+
+      await tester.tap(find.text('Skapa granskning').last);
+      await tester.pumpAndSettle();
+      verify(pr.createPr).called(1);
+      expect(
+        find.text('Granskning skapad: 2 ändringar, 1 konflikter'),
+        findsOneWidget,
+      );
+      expect(find.text('Granskning #9'), findsOneWidget);
+    });
+
+    testWidgets('cancelling the confirmation creates nothing', (tester) async {
+      final pr = _MockPrService();
+      final repo = await pump(tester, prService: pr);
+      repo.pending.add([proposal()]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('create-review')));
+      await tester.pumpAndSettle();
+      expect(find.text('Skapa granskning?'), findsOneWidget);
+
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+      expect(find.text('Skapa granskning?'), findsNothing);
+      verifyNever(pr.createPr);
+      expect(find.byKey(const ValueKey('review-created')), findsNothing);
+      expect(find.byKey(const ValueKey('review-error')), findsNothing);
+    });
+
+    testWidgets('cards sit inside their own section', (tester) async {
+      final repo = await pump(tester);
+      repo.pending.add([
+        proposal(id: 'p'),
+        proposal(id: 'c', status: IngredientChangeStatus.conflict),
+      ]);
+      await tester.pumpAndSettle();
+      Finder card(String section, String id) => find.descendant(
+        of: find.byKey(ValueKey('section-$section')),
+        matching: find.byKey(ValueKey(id)),
+      );
+      expect(card('Väntar', 'p'), findsOneWidget);
+      expect(card('Väntar', 'c'), findsNothing);
+      expect(card('Konflikt', 'c'), findsOneWidget);
+      expect(card('Konflikt', 'p'), findsNothing);
+    });
+
+    testWidgets('a refusal shows its Swedish message', (tester) async {
+      final pr = _MockPrService();
+      when(pr.createPr).thenThrow(
+        const IngredientChangePrException(IngredientChangePrFailure.locked),
+      );
+      final repo = await pump(tester, prService: pr);
+      repo.pending.add([proposal()]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('create-review')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Skapa granskning').last);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('review-error')), findsOneWidget);
+      expect(find.textContaining('skapas just nu'), findsOneWidget);
+    });
+  });
 }
+
+class _MockPrService extends Mock implements IngredientChangePrService {}

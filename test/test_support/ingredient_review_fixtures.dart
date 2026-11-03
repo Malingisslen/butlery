@@ -148,6 +148,8 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
   final List<String> withdrawn = [];
   final StreamController<List<IngredientChangeRequest>> pending =
       StreamController<List<IngredientChangeRequest>>.broadcast();
+  final StreamController<List<IngredientChangeRequest>> decided =
+      StreamController<List<IngredientChangeRequest>>.broadcast();
 
   @override
   Future<IngredientChangeRequest> create(IngredientChangeRequest entity) async {
@@ -165,10 +167,26 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
   int watchCalls = 0;
 
   @override
-  Stream<List<IngredientChangeRequest>> watchPending() {
+  Stream<List<IngredientChangeRequest>> watchOpen() {
     watchCalls++;
     return pending.stream;
   }
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchApplied() => decided.stream.map(
+    (l) => [
+      for (final p in l)
+        if (p.status == IngredientChangeStatus.applied) p,
+    ],
+  );
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchRejected() => decided.stream.map(
+    (l) => [
+      for (final p in l)
+        if (p.status == IngredientChangeStatus.rejected) p,
+    ],
+  );
 
   @override
   Future<void> withdraw(String id) async {
