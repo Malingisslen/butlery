@@ -22,7 +22,6 @@ import {
   projectFlagValues,
   requireProject,
   RequireProjectOptions,
-  RETIRING_PRODUCTION_PROJECT,
   STAGING_PROJECT,
 } from "../admin/require-project";
 
@@ -138,15 +137,12 @@ function testAllowlist(): void {
     "staging passes the default allowlist",
   );
   assert(
-    requireProject({
-      argv: ["--project", RETIRING_PRODUCTION_PROJECT],
-      env: {},
-    }) === RETIRING_PRODUCTION_PROJECT,
-    "the retiring production project passes the default allowlist",
+    ADMIN_PROJECTS.length === 2,
+    "the default allowlist holds exactly production and staging",
   );
   assert(
-    ADMIN_PROJECTS.length === 3,
-    "the default allowlist holds exactly the three projects",
+    !ADMIN_PROJECTS.includes("butlery-app-1"),
+    "the deleted production project is not administrable",
   );
   refuses(
     { argv: ["--project", "demo-x"] },

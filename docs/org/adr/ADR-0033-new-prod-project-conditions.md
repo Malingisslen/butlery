@@ -59,3 +59,9 @@ What the code and hosting do now: the app's links and hosting use `butlery.se` (
 Hosting site `butlery-prod`; `www.butlery.se` redirects to it). The legal site is
 `legal.butlery.se`, on the Hosting site `butlery-prod-legal`. `butlery.app` is not ours and
 is not used. The decision is Malin's of 2026-10-27.
+
+## Supersession, 2026-11-03
+
+Retires this sentence above: "The old project's data (four test accounts) is erased through the deletion cascade before the project is deleted."
+
+What happened: `butlery-app-1` was deleted on 2026-11-03 (lifecycle state DELETE_REQUESTED; Google restores it for 30 days, to 2026-12-03). The four test accounts were deleted in Auth first; the user-data cascade could not run afterwards, so `users/{uid}` was deleted by hand. The deploy key was disabled, the GitHub secret `FIREBASE_SERVICE_ACCOUNT` deleted, and a production dispatch ran green after that. The id is gone from the admin allowlist.
