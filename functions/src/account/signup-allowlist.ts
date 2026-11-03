@@ -7,7 +7,11 @@
  * Password sign-ups (ADR-0034, Malin 2026-10-24): a password does not prove
  * the address, so the invite survives creation and is consumed only once the
  * address is verified. `beforeSignInAllowlist` refuses an unverified sign-in
- * after the sign-up session, which caps a squatter at that one session.
+ * once the sign-up session's window has passed.
+ *
+ * The sign-up session is recognised on the account's own timestamps, never on
+ * `additionalUserInfo.isNewUser`: firebase-functions sets that only for a
+ * `beforeCreate` event, so in `beforeSignIn` it is always false (BUT-2502).
  *
  * Fails closed: a read error refuses creation with its own retryable message,
  * so an invited person is never told they are not invited. Only an exact
@@ -138,10 +142,31 @@ export async function runSignupAllowlistWithDeps(
   );
 }
 
+/**
+ * How long after creation an unverified sign-in still counts as the sign-up
+ * session. The sign-up's own sign-in arrives within seconds; the window is the
+ * whole of what an unverified squatter gets beyond it.
+ */
+export const SIGN_UP_SESSION_WINDOW_MS = 2 * 60 * 1000;
+
+/**
+ * Whether an unverified sign-in still falls in the sign-up session: the
+ * account was created within the window. A missing or malformed creation
+ * time reads as not new.
+ */
+export function signUpSessionOf(
+  event: Pick<AuthBlockingEvent, "data">,
+  nowMs: number,
+): boolean {
+  const created = Date.parse(event.data?.metadata?.creationTime ?? "");
+  if (Number.isNaN(created)) return false;
+  return nowMs - created <= SIGN_UP_SESSION_WINDOW_MS;
+}
+
 export async function runSignInAllowlistWithDeps(
   deps: AllowlistDeps,
   user: GateUser,
-  isNewUser: boolean,
+  signUpSession: boolean,
 ): Promise<void> {
   const fn = "beforeSignInAllowlist";
   const email = normalizeEmail(user.email);
@@ -150,7 +175,7 @@ export async function runSignInAllowlistWithDeps(
   if (!user.emailVerified) {
     // The sign-up session itself must get through, or the app could never
     // send the verification mail.
-    if (isNewUser) return;
+    if (signUpSession) return;
     let enabled = true;
     try {
       enabled = await deps.gateEnabled();
@@ -216,7 +241,7 @@ export const beforeSignInAllowlist = beforeUserSignedIn(
     await runSignInAllowlistWithDeps(
       firestoreAllowlistDeps(admin.firestore()),
       gateUser(event),
-      event.additionalUserInfo?.isNewUser === true,
+      signUpSessionOf(event, Date.now()),
     );
   },
 );
