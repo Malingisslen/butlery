@@ -43,6 +43,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
   - Three parts survive deliberately: a member who has not shared is unchanged; the signed-in user is never read from a share; and a READ FAILURE still degrades the roster even when they shared
 - `socialFeatures` consent gates nothing, by design (BUT-1523, 2026-07-12)
 - Account deletion does not cascade to `parse_events` (BUT-1570, 2026-07-16)
+- SUPERSEDES the BUT-1570 line: account deletion DOES erase `parse_events`; TTL stays as backstop for non-cascade deletions and late writes (u10, 2026-11-03)
 - `cook_snaps` and `activity_events` creates ARE age-gated, and stay that way. … Never remove either gate citing the old entry. (ADR-0002, BUT-1418, 2026-07-24)
 - Feature-retention DAILY AGGREGATES keep a deleted user's contribution … A TTL is NOT an option on those rows (BUT-1789, 2026-08-01)
 - A colon-terminated bare GLUTEN word stays an INGREDIENT; every other allergen keeps colon-wins (BUT-1714, 2026-07-27)

@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 31 oktober 2026
-**Version:** 1.29
+**Senast uppdaterad:** 3 november 2026
+**Version:** 1.30
 
 ---
 
@@ -46,7 +46,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 - **Teknisk data:** IP-adress, anslutningstyp
 - **Analyticsdata:** Användningsstatistik (endast om du har gett samtycke)
 - **Aviseringsuppgifter:** Leverans- och engagemangsuppgifter för aviseringar – vilken avisering som skickades till dig (eller som du utlöste till andra), när, dess leveransstatus och om du öppnade den
-- **Importloggen:** När du importerar ett recept sparar vi ditt användar-id, sidans adress (utan vissa parametrar som kan innehålla inloggningsuppgifter), webbplatsens namn och hur importen gick, till exempel vilket sätt du importerade på, om den lyckades, hur lång tid den tog och om AI användes. Vi använder loggen för att se vilka webbplatser importen fungerar på och rätta fel. Loggen raderas automatiskt cirka 30 dagar efter importen, även om kontot redan är raderat.
+- **Importloggen:** När du importerar ett recept sparar vi ditt användar-id, sidans adress (utan vissa parametrar som kan innehålla inloggningsuppgifter), webbplatsens namn och hur importen gick, till exempel vilket sätt du importerade på, om den lyckades, hur lång tid den tog och om AI användes. Vi använder loggen för att se vilka webbplatser importen fungerar på och rätta fel. Loggen raderas automatiskt cirka 30 dagar efter importen, eller när du raderar kontot.
 - **Rättelseloggen:** När du rättar ett recept som appen har läst in, till exempel titeln, en ingrediens eller ett steg, eller ändrar en allergimärkning som appen har satt på ett recept, sparar vi vad appen läste, vad du ändrade det till, receptets id och ibland webbplatsens namn. En del sparas med ditt användar-id och en del med en kod som räknas fram ur ditt användar-id. Vi använder loggen för att förbättra hur appen läser recept. Loggen raderas automatiskt efter cirka 12 månader. Det som är sparat med ditt användar-id raderas också när du raderar kontot.
 - **Förslag på stavning av ingredienser:** När du rättar hur en ingrediens heter i ett inläst recept kan det bli ett förslag om att appen ska förstå den stavningen som den ingrediensen. Förslaget sparar stavningen, rättelsen och ditt användar-id. När flera personer har gjort samma rättelse kan appen börja förstå stavningen. När du raderar kontot tas ditt användar-id bort från alla förslag. Ett förslag som ingen har tagit ställning till och som ingen annan står bakom raderas. Ett förslag som redan är godkänt, avvisat eller återkallat sparas utan koppling till någon person.
 
@@ -297,7 +297,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 | Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter det senaste beslutet. Omprövas ett beslut sparas även det tidigare beslutet i samma post | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 | En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
-| Importloggen (användar-id, sidans adress och hur importen gick) | Raderas automatiskt cirka 30 dagar efter importen, även om kontot redan är raderat | Berättigat intresse |
+| Importloggen (användar-id, sidans adress och hur importen gick) | Raderas automatiskt cirka 30 dagar efter importen, eller när du raderar kontot | Berättigat intresse |
 | Prov från AI:ns receptläsning (text till och från AI:n, utan bilder och utan namn, e-post eller annat som pekar ut dig) | Raderas automatiskt efter 30 dagar, även om kontot redan är raderat | Samtycke |
 | Feedback du skickar i appen, med skärmbild | Cirka 12 månader. Raderas tidigare, med skärmbilderna, om du raderar kontot | Berättigat intresse |
 | Rättelseloggen (det du har rättat i inlästa recept och allergimärkningar) | Cirka 12 månader. Det som är sparat med ditt användar-id raderas med kontot | Berättigat intresse |
@@ -421,7 +421,7 @@ Vi kan uppdatera denna policy när:
 Vid väsentliga ändringar:
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 31 oktober 2026
+**Senaste ändring:** 3 november 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

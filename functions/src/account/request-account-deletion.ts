@@ -46,6 +46,7 @@ import {
   deletePersonalTagGroups,
   deleteTagOverridesLog,
   deleteParsingCorrections,
+  deleteParseEvents,
   deleteCookSnaps,
   deleteActivityEvents,
   deleteShoppingListTemplates,
@@ -360,6 +361,8 @@ export async function runAccountDeletionWithDeps(
     ["personal_tag_groups", () => deletePersonalTagGroups(database, uid)],
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
     ["parsing_corrections", () => deleteParsingCorrections(database, uid)],
+    // The import log. Ships with its probe leg; the TTL stays as the backstop.
+    ["parse_events", () => deleteParseEvents(database, uid)],
     // Was only in `onUserDeleted`, which runs after the residual probe, so the
     // probe could not check it.
     ["learned_aliases", () => cleanUserFromLearnedAliases(database, uid)],

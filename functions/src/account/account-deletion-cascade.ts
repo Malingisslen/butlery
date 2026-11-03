@@ -42,6 +42,7 @@ export {
   deletePersonalTagGroups,
   deleteTagOverridesLog,
   deleteParsingCorrections,
+  deleteParseEvents,
   PARSING_CORRECTIONS_PAGE,
   deleteCookSnaps,
   deleteActivityEvents,

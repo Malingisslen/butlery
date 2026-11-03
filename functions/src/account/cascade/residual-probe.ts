@@ -78,6 +78,8 @@ export async function probeResidualData(
     "tag_overrides_log",
     // The user-typed parser corrections `deleteParsingCorrections` erases.
     "parsing_corrections",
+    // The import log `deleteParseEvents` erases.
+    "parse_events",
     // BUT-2028: the collection `deleteIngredientSuggestions` erases. Same
     // shape as the rest of this list — top-level, filtered on a `userId`
     // field — so it belongs here rather than needing a leg of its own.

@@ -51,6 +51,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   personal_tag_groups: [{ client: "personal_tag_groups" }],
   tag_overrides_log: [{ residue: ["tag_overrides_log"] }],
   parsing_corrections: [{ residue: ["parsing_corrections"] }],
+  parse_events: [{ decided: "The import log is erased by the cascade and is not in the Art. 15 export" }],
   learned_aliases: [{ residue: ["learned_aliases"] }],
   ingredient_change_requests: [{ residue: ["ingredient_change_requests"] }],
   cook_snaps: [{ client: "cook_snaps" }],

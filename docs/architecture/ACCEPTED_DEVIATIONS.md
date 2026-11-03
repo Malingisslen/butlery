@@ -394,6 +394,20 @@ noncurrent-version posture, and the cascade addition would be code + test surfac
 compliance need. Do NOT file "account deletion misses parse_events / add to cascade" findings
 against the deletion path — decided. — 2026-07-16
 
+### [Privacy/GDPR] SUPERSEDES BUT-1570: account deletion DOES erase parse_events (u10, 2026-11-03)
+Malin decided 2026-11-03 (decision card, option "Radera också vid kontoradering"): a user's
+`parse_events` rows are deleted by the account-deletion cascade (`deleteParseEvents`, tier 1),
+and the residual probe counts them. This retires "do NOT wire parse_events into the deletion
+cascade" in the BUT-1570 entry above. The 30-day TTL on `expireAt` stays.
+The import log is erased by the cascade and is not in the Art. 15 export; the privacy policy
+sends the user to integritet@butlery.se to see it.
+**Why the query is complete:** the only writer is `logParseEvent`, which sets `userId` from
+`request.auth.uid`, so `where userId == uid` reaches every row.
+**Accepted residuals, both bounded by the TTL:** a deletion that bypasses the cascade (Auth
+or console only; `onUserDeleted` has no parse_events leg) leaves the rows to the TTL, and an
+import still running on another device can write a row after the delete, which the residual
+probe then reports. Do NOT file either as a cascade bug. — 2026-11-03
+
 ### [Tagging/Safety] Weekly-menu presence does NOT scope menu generation (BUT-1611 → BUT-1625)
 BUT-1611 added per-meal "who's home" presence to the weekly menu. It deliberately drives
 **display, portions, and the who's-eating record only** — it does NOT feed the menu generator
