@@ -26,9 +26,9 @@ activation:
 | Control | Status | Evidence |
 |---|---|---|
 | Alert policy script | ACTIVE + IDEMPOTENT | `infrastructure/alerting/setup-gcp-alerts.sh` |
-| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/11860390942781239556` (email: info@butlery.se) |
-| `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
-| `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
+| Notification channel | GONE with the old project (2026-11-03); create a new one in `butlery-prod` | step 3 below |
+| `Cloud Functions - High Error Rate` | NOT VERIFIED in `butlery-prod`; the old copy is deleted | run the script, then `gcloud alpha monitoring policies list` |
+| `Cloud Functions - High Latency` | NOT VERIFIED in `butlery-prod`; the old copy is deleted | run the script, then `gcloud alpha monitoring policies list` |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
 | Firebase Auth failure-rate alert | NOT SHIPPED | legacy metric retired — see "Deferred policies" below |
 | Budget alerts (separate flow) | TODO | GCP Console > Billing > Budgets |
@@ -129,7 +129,7 @@ The script aborts with a clear error if `GCP_NOTIFICATION_CHANNEL_ID` is
 unset — fail-loud, never silently apply alerts that can't page anyone.
 
 ```bash
-export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-app-1/notificationChannels/11860390942781239556"
+export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-prod/notificationChannels/<id from step 3>"
 
 bash infrastructure/alerting/setup-gcp-alerts.sh
 ```
