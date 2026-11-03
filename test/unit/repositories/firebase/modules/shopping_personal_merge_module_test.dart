@@ -58,7 +58,7 @@ class _CountingBatch implements WriteBatch {
   }
 
   @override
-  void update(DocumentReference document, Map<Object, Object?> data) {
+  void update<T>(DocumentReference<T> document, T data) {
     _counts.batchWrites++;
     _inner.update(document, data);
   }

@@ -57,7 +57,7 @@ class _ThrowOnNthBatchFirestore extends FakeFirebaseFirestore {
 // ignore: subtype_of_sealed_class
 class _ThrowingWriteBatch implements WriteBatch {
   @override
-  void update(DocumentReference doc, Map<Object, Object?> data) {}
+  void update<T>(DocumentReference<T> doc, T data) {}
 
   @override
   void set<T>(DocumentReference<T> doc, T data, [SetOptions? options]) {}
