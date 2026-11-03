@@ -16,6 +16,10 @@
  *   --dry-run    Preview changes without applying
  *   --force      Skip confirmation prompts
  *   --verbose    Show detailed logging
+ *   --ci         Unattended: never prompts, refuses --force, and exits 3 when
+ *                a guard in sync-ingredients-guards.ts trips
+ *   --allow-large "<reason>"             (--ci) lift only the row caps
+ *   --allow-allergen-removal "<reason>"  (--ci) lift only the allergen stop
  */
 
 import * as admin from "firebase-admin";
@@ -28,10 +32,19 @@ import {
   buildUpdatePayload,
   calculateDiff,
   deriveLearnedAliasesAtRisk,
+  parseCsvLine,
   SyncReport,
   VALID_GROUP_PREFIXES,
   VALID_PROPERTIES,
 } from "./sync-ingredients-core";
+import {
+  evaluateCiGuards,
+  formatStepSummary,
+  GUARD_EXIT_CODE,
+  parseSyncArgs,
+  SyncOptions,
+  USAGE_EXIT_CODE,
+} from "./sync-ingredients-guards";
 import { initializeAdminApp } from "./admin-init";
 import { PRODUCTION_PROJECT } from "./require-project";
 
@@ -39,51 +52,12 @@ const projectId = initializeAdminApp().options.projectId;
 
 const db = admin.firestore();
 
-interface Options {
-  dryRun: boolean;
-  force: boolean;
-  verbose: boolean;
-}
+type Options = SyncOptions;
 
 interface ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
-}
-
-function parseArgs(args: string[]): Options {
-  return {
-    dryRun: args.includes("--dry-run"),
-    force: args.includes("--force"),
-    verbose: args.includes("--verbose") || args.includes("-v"),
-  };
-}
-
-function parseCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-
-    if (char === '"') {
-      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  result.push(current.trim());
-  return result;
 }
 
 function loadCsv(filePath: string): IngredientRow[] {
@@ -385,7 +359,12 @@ async function askConfirmation(question: string): Promise<boolean> {
 }
 
 async function main(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2));
+  const parsed = parseSyncArgs(process.argv.slice(2));
+  if (!parsed.ok) {
+    console.log(`❌ ${parsed.error}`);
+    process.exit(USAGE_EXIT_CODE);
+  }
+  const options = parsed.options;
 
   console.log("🔄 Ingredient Sync Tool (Node.js)");
   console.log("=".repeat(50));
@@ -458,6 +437,26 @@ async function main(): Promise<void> {
   const reportPath = writeReportFile(report, options);
   printReportHighlights(report, reportPath, aliasesAtRisk);
 
+  // Evaluated on the real run too, not only the dry run, so the write is
+  // refused on the same data the decision was made on.
+  const guard = evaluateCiGuards(report, csvIngredients, currentData, options);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, formatStepSummary(guard, options));
+  }
+  if (options.ci) {
+    if (options.allowLargeReason) console.log(`\n   --allow-large: ${options.allowLargeReason}`);
+    if (options.allowAllergenRemovalReason) {
+      console.log(`   --allow-allergen-removal: ${options.allowAllergenRemovalReason}`);
+    }
+    for (const v of guard.violations) {
+      console.log(`   ${v.lifted ? "⚠️  lifted" : "🛑 STOP"}: ${v.message}`);
+    }
+    if (!guard.ok) {
+      console.log("\n🛑 CI guards refused this sync. Nothing was written.");
+      process.exit(GUARD_EXIT_CODE);
+    }
+  }
+
   // Exit if no changes
   if (
     diff.toAdd.length === 0 &&
@@ -475,7 +474,7 @@ async function main(): Promise<void> {
   }
 
   // Confirmation
-  if (!options.force) {
+  if (!options.force && !options.ci) {
     const confirmed = await askConfirmation(
       "\n⚠️  Apply these changes to Firestore? (y/N) "
     );
