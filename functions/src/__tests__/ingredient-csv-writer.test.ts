@@ -244,6 +244,30 @@ const cases: UnitCase[] = [
       assertEqual(written, "id,swedish,notes_sv,updated_date,verified_by\r\na,ett,n,2026-11-03,admin-vy\r\nb,två,,2026-01-01,\r\n", "CRLF + date-only format kept");
     },
   },
+  {
+    name: "a later change that puts a cell back leaves the row untouched and unstamped",
+    fn: () => {
+      const original = cellOf(REAL, "abalone", "notes_sv");
+      const result = applyCellChangesDetailed(REAL, [
+        { id: "abalone", column: "notes_sv", newValue: "Tillfälligt." },
+        { id: "abalone", column: "notes_sv", newValue: original },
+      ], { now: NOW });
+      assertEqual(result.text, REAL, "byte-identical");
+      assertEqual(result.applied.length, 0, "nothing applied");
+      assertEqual(result.unchanged.length, 2, "both reported unchanged");
+    },
+  },
+  {
+    name: "a row that differs at the end is stamped and every change on it reported applied, in order",
+    fn: () => {
+      const result = applyCellChangesDetailed(REAL, [
+        { id: "abalone", column: "notes_sv", newValue: "Ett." },
+        { id: "abalone", column: "notes_en", newValue: "Two." },
+      ], { now: NOW });
+      assertEqual(result.applied.map((c) => c.newValue).join("|"), "Ett.|Two.", "applied order");
+      assertEqual(cellOf(result.text, "abalone", "verified_by"), VERIFIED_BY_ADMIN_VY, "stamped");
+    },
+  },
 ];
 
 runTests("ingredient-csv-writer (admin-vy C1)", cases);

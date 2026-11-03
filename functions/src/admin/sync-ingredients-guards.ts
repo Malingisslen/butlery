@@ -194,7 +194,7 @@ export function formatStepSummary(
     lines.push(`- ${v.lifted ? "lifted" : "STOP"}: ${v.message}`);
   }
   // Inline code so a reason can form no link, mention or markup in the summary.
-  const quote = (s: string): string => "`" + s.split("`").join("'") + "`";
+  const quote = (s: string): string => "`" + s.split("`").join("'").replace(/[\r\n]/g, " ") + "`";
   if (options.allowLargeReason) lines.push(`- --allow-large reason: ${quote(options.allowLargeReason)}`);
   if (options.allowAllergenRemovalReason) {
     lines.push(`- --allow-allergen-removal reason: ${quote(options.allowAllergenRemovalReason)}`);

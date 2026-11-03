@@ -53,7 +53,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   parsing_corrections: [{ residue: ["parsing_corrections"] }],
   parse_events: [{ decided: "The import log is erased by the cascade and is not in the Art. 15 export" }],
   learned_aliases: [{ residue: ["learned_aliases"] }],
-  ingredient_change_requests: [{ residue: ["ingredient_change_requests"] }],
+  ingredient_change_requests: [{ residue: ["ingredient_change_requests", "ingredient_change_runs"] }],
   cook_snaps: [{ client: "cook_snaps" }],
   activity_events: [{ client: "activity_events" }],
   shopping_list_templates: [{ client: "shopping_list_templates" }],

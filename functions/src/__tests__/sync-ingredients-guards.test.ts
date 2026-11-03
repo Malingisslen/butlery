@@ -207,6 +207,17 @@ const cases: UnitCase[] = [
       }
     },
   },
+  {
+    name: "a reason with a line break stays on one summary line",
+    fn: () => {
+      const d = evaluateCiGuards(report({ updated: textEdits(51) }), csvRows(), firestore(), {
+        allowLargeReason: "first\n## injected\rheading", allowAllergenRemovalReason: null,
+      });
+      const s = formatStepSummary(d, { dryRun: true, allowLargeReason: "first\n## injected\rheading", allowAllergenRemovalReason: null });
+      assertEqual(s.includes("`first ## injected heading`"), true, "joined into one inline code span");
+      assertEqual(s.split("\n").some((l) => l.startsWith("## injected")), false, "no injected heading line");
+    },
+  },
 ];
 
 runTests("sync-ingredients-guards (admin-vy C1)", cases);

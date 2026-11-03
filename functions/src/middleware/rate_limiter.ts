@@ -287,6 +287,20 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
   },
+  // Admin-vy "Skapa granskning": each run rebuilds the bot branch and PR on
+  // GitHub, per admin and across all admins (subject `all-admins`).
+  createIngredientChangePr: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 30,
+  },
+  createIngredientChangePrGlobal: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 60,
+  },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
   reportContent: {

@@ -319,6 +319,14 @@ const TARGETS: {
     writer: "functions/src/admin/create-ingredient-change-pr.ts",
     stamp: /status: "rejected",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(now\.getTime\(\) \+ REJECTED_RETENTION_MS\)/,
   },
+  // The sync job's `applied` stamp, 365 days.
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/admin/mark-applied-core.ts",
+    stamp: /status: "applied",(?:(?!\}\);)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
   // One record per createIngredientChangePr run, 365 days.
   {
     group: "ingredient_change_runs",

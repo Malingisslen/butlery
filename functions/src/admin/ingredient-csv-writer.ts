@@ -11,6 +11,7 @@
  */
 
 import {
+  EDITABLE_COLUMNS,
   EditableColumn,
   columnSpec,
   columnValuesEqual,
@@ -154,6 +155,11 @@ function rowObject(header: string[], values: string[]): IngredientRow {
   return row as IngredientRow;
 }
 
+/** One parsed row as the sync would store it. */
+export function csvRowToDoc(header: string[], values: string[]): IngredientDoc {
+  return csvToFirestore(rowObject(header, values));
+}
+
 function sameOrderedList(a: unknown, b: string[]): boolean {
   const list = (a as string[] | undefined) ?? [];
   return list.length === b.length && list.every((x, i) => x === b[i]);
@@ -201,7 +207,8 @@ export interface ApplyResult {
 /**
  * Applies the changes in order (a later change to the same cell wins). A
  * change whose value already equals the cell is reported as unchanged and
- * leaves the line untouched. Throws on an unknown id or column, an invalid
+ * leaves the line untouched, and so is every change on a row that ends with
+ * the values it started with. Throws on an unknown id or column, an invalid
  * value, or a value that would not read back as written.
  */
 export function applyCellChangesDetailed(
@@ -218,8 +225,10 @@ export function applyCellChangesDetailed(
     throw new CsvWriteError("missing-column", "CSV lacks updated_date or verified_by");
   }
   const byId = new Map(file.rows.map((r) => [r.values[idCol], r]));
-  const touched = new Set<CsvRow>();
-  const applied: CellChange[] = [];
+  // Each touched row as it was before the loop, so a later change that puts
+  // a cell back is not mistaken for an edit.
+  const initial = new Map<CsvRow, { rawCells: string[]; values: string[] }>();
+  const changesOf = new Map<CsvRow, CellChange[]>();
   const unchanged: CellChange[] = [];
 
   for (const change of changes) {
@@ -250,10 +259,39 @@ export function applyCellChangesDetailed(
       row.values[col] = oldPlain;
       unchanged.push(change);
     } else {
-      touched.add(row);
-      applied.push(change);
+      if (!initial.has(row)) {
+        const rawCells = [...row.rawCells];
+        rawCells[col] = oldRaw;
+        const values = [...row.values];
+        values[col] = oldPlain;
+        initial.set(row, { rawCells, values });
+      }
+      changesOf.set(row, [...(changesOf.get(row) ?? []), change]);
     }
   }
+
+  const applied: CellChange[] = [];
+  const touched: CsvRow[] = [];
+  for (const [row, start] of initial) {
+    const before = csvRowToDoc(header, start.values);
+    const after = csvRowToDoc(header, row.values);
+    const differs = Object.keys(EDITABLE_COLUMNS).some((column) => {
+      const c = column as EditableColumn;
+      return header.includes(c) && !columnValuesEqual(c, docValueForColumn(before, c), docValueForColumn(after, c));
+    });
+    if (differs) {
+      touched.push(row);
+      applied.push(...(changesOf.get(row) ?? []));
+    } else {
+      row.rawCells = start.rawCells;
+      row.values = start.values;
+      unchanged.push(...(changesOf.get(row) ?? []));
+    }
+  }
+  // Keep the caller's order in both lists.
+  const order = new Map(changes.map((c, i) => [c, i]));
+  applied.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+  unchanged.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
 
   const now = options.now ?? new Date();
   for (const row of touched) {

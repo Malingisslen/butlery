@@ -335,6 +335,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // Admin proposals to change ingredient rows. `createdBy` and `withdrawnBy`
   // are admin uids, whose Auth accounts Phase 1 deletes.
   { name: "ingredient_change_requests" },
+  // `createIngredientChangePr`'s lock and its run records. A run record
+  // carries a hashed admin uid, and a reset deletes every admin account.
+  { name: "ingredient_change_locks" },
+  { name: "ingredient_change_runs" },
 
   // BUT-2010: `tag_configs` does NOT belong here and must not come back. It is
   // SEED data: `firestore.rules` gives it `allow write: if false`, so no user

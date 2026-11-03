@@ -123,4 +123,10 @@ export const Collections = {
   // Admin proposals to change an ingredient row. The Dart writer is
   // `FirestoreCollections.ingredientChangeRequests`.
   ingredientChangeRequests: "ingredient_change_requests",
+  // The one-run-at-a-time lock of `createIngredientChangePr`, one document
+  // (`singleton`) holding a run id and an expiry. Admin SDK only.
+  ingredientChangeLocks: "ingredient_change_locks",
+  // One record per `createIngredientChangePr` run: hashed admin uid, PR
+  // number and counts. Admin SDK only.
+  ingredientChangeRuns: "ingredient_change_runs",
 } as const;

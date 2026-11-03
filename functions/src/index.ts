@@ -264,6 +264,8 @@ export { logWebError } from "./events/log-web-error";
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
+// Admin-vy step C: the queued ingredient proposals become one rolling PR.
+export { createIngredientChangePr } from "./admin/create-ingredient-change-pr";
 
 // BUT-458: One-time backfill of recipe_comments denorm fields.
 // REMOVE this export (and the source file) once a `hasMore: false` invocation

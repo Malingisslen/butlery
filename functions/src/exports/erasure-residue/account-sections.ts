@@ -7,6 +7,7 @@
 
 import * as admin from "firebase-admin";
 import { Collections } from "../../shared/collections";
+import { hashUid } from "../../shared/hash-uid";
 import { RETENTION_ANALYTICS_PARENTS } from "../../account/account-deletion-cascade";
 import { learnedAliasesCollection } from "../../account/cascade/learned-aliases";
 import {
@@ -205,16 +206,33 @@ export const INGREDIENT_CHANGE_COLUMNS: Allowlist = {
   status: TEXT_CHANGE,
 };
 
+/** `csvValue` on a conflict: per column, the CSV's value in the change's shape. */
+export const INGREDIENT_CSV_VALUE_COLUMNS: Allowlist = Object.fromEntries(
+  Object.entries(INGREDIENT_CHANGE_COLUMNS).map(([column, spec]) => [
+    column,
+    spec === LIST_CHANGE ? "strings" : "scalar",
+  ]),
+);
+
 /**
  * A proposal the requester made. `createdBy` and `withdrawnBy` are left out:
- * the first is the requester, the second can be another admin.
+ * the first is the requester, the second can be another admin. `prNumber`,
+ * `csvValue` and `reason` are written by `createIngredientChangePr`, and
+ * `appliedAt` by the sync job (`mark-applied-core.ts`).
  */
 export const INGREDIENT_CHANGE_REQUEST_KEYS: Allowlist = {
   ...scalars(
     "ingredientId", "ingredientUpdatedAt", "note", "batchId", "status",
-    "createdAt", "withdrawnAt", "expireAt",
+    "createdAt", "withdrawnAt", "expireAt", "prNumber", "reason", "appliedAt",
   ),
   changes: { map: INGREDIENT_CHANGE_COLUMNS },
+  csvValue: { map: INGREDIENT_CSV_VALUE_COLUMNS },
+};
+
+/** A `createIngredientChangePr` run the requester started, found by hashed uid. */
+export const INGREDIENT_CHANGE_RUN_KEYS: Allowlist = {
+  ...scalars("ranAt", "outcome", "errorCode", "prNumber", "expireAt"),
+  counts: { map: scalars("applied", "conflicts", "rejected", "reopened", "skipped") },
 };
 
 /** Another admin's proposal the requester withdrew: what they did, not its content. */
@@ -424,6 +442,19 @@ export const ACCOUNT_SECTIONS: readonly SectionDef[] = [
   },
   // scrubIngredientChangeRequestAuthors
   { name: "ingredient_change_requests", read: ingredientChangeRequestRows },
+  {
+    // scrubIngredientChangeRequestAuthors, the run-record leg
+    name: "ingredient_change_runs",
+    read: async (database, uid) =>
+      rowsWithId(
+        await cappedDocs(
+          database.collection(Collections.ingredientChangeRuns).where("adminUidHash", "==", hashUid(uid)),
+          MAX_SECTION_ROWS,
+          Collections.ingredientChangeRuns,
+        ),
+        INGREDIENT_CHANGE_RUN_KEYS,
+      ),
+  },
   // onUserDeleted's per-user subcollection purge
   {
     name: "notification_counters",

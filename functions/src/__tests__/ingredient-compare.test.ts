@@ -6,6 +6,8 @@
  * Run with: npx ts-node src/__tests__/ingredient-compare.test.ts
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import {
   columnValuesEqual,
   comparableIngredient,
@@ -126,6 +128,21 @@ const cases: UnitCase[] = [
     fn: () => {
       const r = row({ properties: "" });
       assert(hasChanges({ ...storedFrom(r), properties: "x" }, csvToFirestore(r)), "string vs []");
+    },
+  },
+  {
+    name: "drift pin: EDITABLE_COLUMNS equals the column/kind pairs of IngredientColumn in Dart",
+    fn: () => {
+      const dart = fs.readFileSync(
+        path.resolve(__dirname, "../../../lib/models/tagging/ingredient_column.dart"),
+        "utf-8"
+      );
+      const body = dart.slice(dart.indexOf("enum IngredientColumn {"), dart.indexOf("const IngredientColumn("));
+      const pairs = [...body.matchAll(new RegExp("\\(\\s*'([a-z_]+)',\\s*IngredientColumnKind\\.(text|list|number),?\\s*\\)", "g"))]
+        .map((m) => `${m[1]}:${m[2]}`);
+      if (pairs.length === 0) throw new Error("no IngredientColumn entries found in the Dart file");
+      const ours = Object.entries(EDITABLE_COLUMNS).map(([column, spec]) => `${column}:${spec.kind}`);
+      assertEqual(pairs.join(","), ours.join(","), "columns and kinds, in order");
     },
   },
 ];
