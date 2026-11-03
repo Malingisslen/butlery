@@ -123,5 +123,4 @@ container.registerSingleton<{Entity}Repository>(
 ## Nyckelfilar
 
 - `lib/repositories/firebase/base_firebase_repository.dart`
-- `lib/repositories/mixins/user_scoped_firebase_repository.dart`
 - `lib/repositories/mixins/permission_validation_mixin.dart`

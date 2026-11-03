@@ -1039,7 +1039,6 @@ class TagOverrides {
 | Rule editor | `lib/widgets/tagging/personal_tag_rule_dialog.dart` |
 | Tag selector | `lib/widgets/tagging/personal_tag_selector.dart` |
 | Tag editor | `lib/widgets/tagging/tag_editor_dialog.dart` |
-| Manager dialog (deprecated) | `lib/widgets/tagging/personal_tag_manager_dialog.dart` |
 
 ### Features
 

@@ -141,4 +141,4 @@ class FirebaseGlobalRepository extends BaseFirebaseRepository<X>
 - `lib/core/mixins/error_handling_mixin.dart`
 - `lib/core/mixins/stream_management_mixin.dart`
 - `lib/core/mixins/firebase_service_mixin.dart`
-- `lib/repositories/mixins/user_scoped_firebase_repository.dart`
+- `lib/repositories/firebase/base_firebase_repository.dart`
