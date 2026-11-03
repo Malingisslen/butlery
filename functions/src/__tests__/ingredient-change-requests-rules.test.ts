@@ -4,7 +4,9 @@
  *
  * Proves: only admins read or create; a create must be a pending proposal
  * by the caller, stamped with the server's time, with known columns and
- * bounded values; no client sets a server status or deletes.
+ * bounded values; a withdrawal is allowed from pending, conflict and
+ * inReview; no client sets a server status or field, or deletes; the run
+ * lock and run records are closed to every client.
  *
  * Prerequisite: Firestore emulator running (`firebase emulators:start
  * --only firestore`). Run with:
@@ -172,13 +174,22 @@ test("createdAt must be the server's time", async () => {
 });
 
 test("a create must start as pending", async () => {
-  for (const status of ["applied", "conflict", "rejected", "withdrawn"]) {
+  for (const status of ["applied", "conflict", "rejected", "withdrawn", "inReview"]) {
     await assertFails(admin().doc(`${COLLECTION}/c9-${status}`).set(proposal({ status })));
   }
 });
 
 test("an unknown top-level field is refused", async () => {
   await assertFails(admin().doc(`${COLLECTION}/c10`).set(proposal({ expireAt: daysFromNow(10) })));
+});
+
+test("a create cannot carry a server field or a kind", async () => {
+  for (const [key, value] of [
+    ["prNumber", 7], ["csvValue", { swedish: "x" }], ["reason", "csv-mismatch"],
+    ["kind", "ingredient"], ["kind", "occasionList"],
+  ] as const) {
+    await assertFails(admin().doc(`${COLLECTION}/sf-${key}-${String(value).slice(0, 8)}`).set(proposal({ [key]: value })));
+  }
 });
 
 test("an unknown column is refused", async () => {
@@ -388,16 +399,46 @@ test("a withdrawal cannot smuggle in a change to the proposal", async () => {
 
 test("a client cannot set a server status", async () => {
   await seed("w7");
-  for (const status of ["applied", "conflict", "rejected"]) {
+  for (const status of ["applied", "conflict", "rejected", "inReview", "pending"]) {
     await assertFails(admin().doc(`${COLLECTION}/w7`).update(withdrawal(ADMIN_UID, { status })));
   }
 });
 
-test("only a pending proposal can be withdrawn", async () => {
+test("an applied or withdrawn proposal cannot be withdrawn", async () => {
   await seed("w8", { status: "applied" });
   await assertFails(admin().doc(`${COLLECTION}/w8`).update(withdrawal(ADMIN_UID)));
   await seed("w9", { status: "withdrawn" });
   await assertFails(admin().doc(`${COLLECTION}/w9`).update(withdrawal(ADMIN_UID)));
+});
+
+test("a proposal in conflict or in review can be withdrawn", async () => {
+  await seed("w11", {
+    status: "conflict", reason: "csv-mismatch", csvValue: { status: "verified" }, expireAt: daysFromNow(90),
+  });
+  await assertSucceeds(admin().doc(`${COLLECTION}/w11`).update(withdrawal(ADMIN_UID)));
+  await seed("w12", { status: "inReview", prNumber: 12, expireAt: daysFromNow(90) });
+  await assertSucceeds(admin().doc(`${COLLECTION}/w12`).update(withdrawal(ADMIN_UID)));
+});
+
+test("a rejected proposal cannot be withdrawn", async () => {
+  await seed("w13", { status: "rejected", reason: "unknown-property", expireAt: daysFromNow(365) });
+  await assertFails(admin().doc(`${COLLECTION}/w13`).update(withdrawal(ADMIN_UID)));
+});
+
+// One deny per server field, each moving only that field beside a valid
+// withdrawal.
+test("a withdrawal cannot change prNumber, csvValue, reason or kind", async () => {
+  await seed("w14", { status: "inReview", prNumber: 12, expireAt: daysFromNow(90) });
+  await assertFails(admin().doc(`${COLLECTION}/w14`).update(withdrawal(ADMIN_UID, { prNumber: 13 })));
+  await seed("w15", { status: "conflict", reason: "csv-mismatch", csvValue: { status: "verified" }, expireAt: daysFromNow(90) });
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { csvValue: { status: "draft" } })));
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { reason: "missing-row" })));
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { kind: "occasionList" })));
+});
+
+test("a client cannot move a proposal into review", async () => {
+  await seed("w16");
+  await assertFails(admin().doc(`${COLLECTION}/w16`).update({ status: "inReview", prNumber: 1 }));
 });
 
 test("a non-admin cannot withdraw", async () => {
@@ -412,6 +453,22 @@ test("nobody can delete a proposal (not even admin)", async () => {
   await seed("d1");
   await assertFails(admin().doc(`${COLLECTION}/d1`).delete());
 });
+
+// The run lock and run records of createIngredientChangePr
+
+for (const col of ["ingredient_change_locks", "ingredient_change_runs"]) {
+  test(`${col}: no client reads or writes it, admin included`, async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`${col}/seeded`).set({ owner: "run-1", expiresAt: new Date() });
+    });
+    await assertFails(admin().doc(`${col}/seeded`).get());
+    await assertFails(admin().collection(col).get());
+    await assertFails(env.authenticatedContext(USER_UID).firestore().doc(`${col}/seeded`).get());
+    await assertFails(admin().doc(`${col}/new-${col}`).set({ owner: "x" }));
+    await assertFails(admin().doc(`${col}/seeded`).update({ owner: "x" }));
+    await assertFails(admin().doc(`${col}/seeded`).delete());
+  });
+}
 
 async function run(): Promise<void> {
   console.log("Ingredient change request rules tests\n");
