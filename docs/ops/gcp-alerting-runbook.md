@@ -1,6 +1,6 @@
 # GCP Alerting Setup Runbook
 
-**Status: ACTIVE — 2 alert policies live in `butlery-app-1` as of 2026-04-26.**
+**Status: the 2 alert policies lived in `butlery-app-1`, which was deleted 2026-11-03 (BUT-2433). Apply them to `butlery-prod` with the script below.**
 
 Operational runbook for Google Cloud Monitoring alerts in `butlery-prod`.
 Companion to `infrastructure/alerting/setup-gcp-alerts.sh`, which is

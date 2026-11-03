@@ -184,7 +184,7 @@ versions that linger up to 30 days.** Two options:
 
 ## Activation status
 
-**Activated 2026-04-26 on `gs://butlery-app-1.firebasestorage.app`.**
+**Activated 2026-04-26 on `gs://butlery-app-1.firebasestorage.app`, which was deleted with its project 2026-11-03 (BUT-2433).**
 Versioning enabled + 30-day noncurrent-version delete lifecycle in effect.
 Verified via `gcloud storage buckets describe` — `versioning_enabled=True`,
 `lifecycle_config.rule[0]={action:Delete, age:30, isLive:false}`.
