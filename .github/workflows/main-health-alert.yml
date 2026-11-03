@@ -47,6 +47,8 @@ on:
       # BUT-2422: the staging rules deploy follows every green rules run on
       # main, so a broken staging project would otherwise go unseen.
       - Deploy Staging Rules
+      # Admin-vy C3: the ingredient sync after a CSV merge is a production write.
+      - Sync Ingredients
     types: [completed]
 
 permissions:
@@ -86,6 +88,7 @@ jobs:
               'Cloud Functions Unit Tests',
               'Text integrity',
               'Deploy Staging Rules',
+              'Sync Ingredients',
             ];
             // Gates whose runs can be started by a `v*` tag push. Their history
             // is read without the `main` branch filter, because a tag run's

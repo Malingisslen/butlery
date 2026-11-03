@@ -65,7 +65,7 @@ export async function markAppliedProposals(
       const fresh = await tx.get(col.doc(doc.id));
       if (!fresh.exists || fresh.get("status") !== "inReview") return "skipped" as const;
       const ingredientId = fresh.get("ingredientId");
-      if (typeof ingredientId !== "string" || ingredientId === "") return "notYet" as const;
+      if (typeof ingredientId !== "string" || ingredientId === "" || ingredientId.includes("/")) return "notYet" as const;
       const ingredient = await tx.get(db.collection(Collections.ingredients).doc(ingredientId));
       if (!proposalIsApplied(fresh.get("changes"), ingredient.data())) return "notYet" as const;
       tx.update(col.doc(doc.id), {
