@@ -42,6 +42,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "shadowCompareImport", // llm/shadow-compare-import.ts — parser shadow comparison
   "ocrRecipeImage", // llm/ocr-recipe-image.ts — image OCR
   "logWebError", // events/log-web-error.ts — web error reporter
+  "logSignInFailure", // events/log-sign-in-failure.ts — failed Google/Apple sign-in (BUT-2502)
   "logParseEvent", // events/log-parse-event.ts — import telemetry
   "logParseCorrection", // events/log-parse-correction.ts — import telemetry
   "requestAccountDeletion", // account/request-account-deletion.ts

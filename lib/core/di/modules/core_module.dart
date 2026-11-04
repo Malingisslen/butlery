@@ -46,6 +46,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/auth/provider_sign_in_platform.dart';
 import 'package:butlery/services/auth/provider_sign_in_service.dart';
+import 'package:butlery/services/auth/sign_in_failure_reporter.dart';
 import 'package:butlery/services/auth/guest_auth_service.dart';
 import 'package:butlery/services/guest/guest_start_coordinator.dart';
 import 'package:butlery/services/onboarding/starter_recipe_seeder.dart';
@@ -291,6 +292,9 @@ class CoreModule implements DIModule {
         ProviderSignInService(
           authRepository: container<AuthRepository>(),
           platform: DeviceProviderSignInPlatform(),
+          failureReporter: SignInFailureReporter.viaFunctions(
+            FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
         ),
       );
 

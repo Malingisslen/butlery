@@ -15252,6 +15252,13 @@
   "@authContinueWithApple": {
     "description": "BUT-549: Sign in with Apple button on the sign-in screen"
   },
+  "authProviderFailedWithCode": "Signing in with {provider} did not work. Try again. (Error code: {code})",
+  "@authProviderFailedWithCode": {
+    "placeholders": {
+      "provider": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "authProviderFailed": "Signing in with {provider} did not work. Try again.",
   "@authProviderFailed": {
     "description": "BUT-916: a Google/Apple sign-in failed for a reason without its own text",

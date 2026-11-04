@@ -30232,6 +30232,12 @@ abstract class AppLocalizations {
   /// **'Fortsätt med Apple'**
   String get authContinueWithApple;
 
+  /// BUT-2502: Google/Apple sign-in failed with a Firebase code the app has no text for; the code is shown so it can be reported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen med {provider} gick inte. Försök igen. (Felkod: {code})'**
+  String authProviderFailedWithCode(String provider, String code);
+
   /// BUT-916: a Google/Apple sign-in failed for a reason without its own text
   ///
   /// In sv, this message translates to:

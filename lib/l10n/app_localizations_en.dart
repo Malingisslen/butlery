@@ -19816,6 +19816,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authContinueWithApple => 'Continue with Apple';
 
   @override
+  String authProviderFailedWithCode(String provider, String code) {
+    return 'Signing in with $provider did not work. Try again. (Error code: $code)';
+  }
+
+  @override
   String authProviderFailed(String provider) {
     return 'Signing in with $provider did not work. Try again.';
   }

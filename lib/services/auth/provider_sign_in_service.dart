@@ -8,6 +8,8 @@ import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/auth/provider_sign_in_platform.dart';
+import 'package:butlery/services/auth/provider_sign_in_recovery.dart';
+import 'package:butlery/services/auth/sign_in_failure_reporter.dart';
 
 /// How one attempt with a provider ended, before AuthService runs the
 /// signed-in sequence.
@@ -58,11 +60,14 @@ class ProviderSignInService {
   ProviderSignInService({
     required AuthRepository authRepository,
     required ProviderSignInPlatform platform,
+    SignInFailureReporter? failureReporter,
   }) : _repo = authRepository,
-       _platform = platform;
+       _platform = platform,
+       _failures = failureReporter;
 
   final AuthRepository _repo;
   final ProviderSignInPlatform _platform;
+  final SignInFailureReporter? _failures;
 
   _PendingLink? _pendingLink;
   ProviderTokens? _googleTokens;
@@ -126,6 +131,7 @@ class ProviderSignInService {
   }
 
   Future<ProviderAttempt> signIn(SignInProvider provider) async {
+    final before = _repo.currentUser != null;
     _pendingLink = null;
     if (provider == SignInProvider.google) _googleTokens = null;
     ProviderTokens? tokens;
@@ -157,14 +163,40 @@ class ProviderSignInService {
         return const ProviderAttempt.linkNeedsPassword();
       }
       AppLogger.warning('Provider sign-in refused: ${e.code}');
-      return ProviderAttempt.failed(e);
+      return _recoverOrFail(provider, e, before, ProviderAttempt.failed(e));
     } on ProviderSheetException catch (e) {
       AppLogger.warning('Provider sheet failed: ${e.reason}');
+      _failures?.report(provider, e);
       return const ProviderAttempt.failed();
     } catch (e) {
       AppLogger.warning('Provider sign-in failed: ${e.runtimeType}');
-      return const ProviderAttempt.failed();
+      return _recoverOrFail(
+        provider,
+        e,
+        before,
+        const ProviderAttempt.failed(),
+      );
     }
+  }
+
+  ProviderAttempt _recoverOrFail(
+    SignInProvider provider,
+    Object error,
+    bool before,
+    ProviderAttempt failed,
+  ) {
+    final user = _repo.currentUser;
+    final recovered = signedInDespiteFailure(
+      user,
+      provider,
+      signedInBefore: before,
+    );
+    _failures?.report(provider, error, recovered: recovered);
+    if (!recovered) return failed;
+    AppLogger.warning('Provider sign-in reported failure but is signed in');
+    _createdHere = accountJustCreated(user!);
+    dropSignInTokens();
+    return ProviderAttempt.signedIn(isNewUser: _createdHere);
   }
 
   void _keep(ProviderTokens tokens) {

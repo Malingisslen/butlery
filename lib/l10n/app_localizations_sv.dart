@@ -19651,6 +19651,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authContinueWithApple => 'Fortsätt med Apple';
 
   @override
+  String authProviderFailedWithCode(String provider, String code) {
+    return 'Inloggningen med $provider gick inte. Försök igen. (Felkod: $code)';
+  }
+
+  @override
   String authProviderFailed(String provider) {
     return 'Inloggningen med $provider gick inte. Försök igen.';
   }

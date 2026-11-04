@@ -261,6 +261,9 @@ export { logParseCorrection } from "./events/log-parse-correction";
 // Web Error Logging - Crashlytics-equivalent for Flutter Web (BUT-449)
 export { logWebError } from "./events/log-web-error";
 
+// BUT-2502: a failed Google/Apple sign-in, without personal data
+export { logSignInFailure } from "./events/log-sign-in-failure";
+
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";

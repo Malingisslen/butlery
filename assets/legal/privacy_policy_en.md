@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 3, 2026
-**Version:** 1.30
+**Last updated:** November 4, 2026
+**Version:** 1.31
 
 ---
 
@@ -47,6 +47,7 @@ We collect the following types of personal data when you use Butlery:
 - **Analytics data:** Usage statistics (only with your consent)
 - **Notification records:** Delivery and engagement records for notifications — which notification was sent to you (or that you triggered to others), when, its delivery status, and whether you opened it
 - **Import log:** When you import a recipe, we store your user id, the page address (without certain parameters that can contain sign-in details), the website's name and how the import went, for example which import method you used, whether it succeeded, how long it took and whether AI was used. We use the log to see which websites import works on and to fix errors. The log is deleted automatically about 30 days after the import, or when you delete your account.
+- **Error report when a sign-in fails:** If a sign-in with Google or Apple fails, the app sends us an error report, even if you have not consented to analytics. The report only contains which sign-in method it was (Google or Apple), whether the app could still sign you in, the phone's platform (Android, iPhone or web) and the error code. It never contains your email address, your name or your user id. As with every call to our servers, Google Cloud also logs the IP address. We use the report to find and fix errors in sign-in. It is deleted automatically after 30 days.
 - **Correction log:** When you correct a recipe the app has read, for example the title, an ingredient or a step, or change an allergen label the app has set on a recipe, we store what the app read, what you changed it to, the recipe's id and sometimes the website's name. Part of it is stored with your user id and part with a code derived from your user id. We use the log to improve how the app reads recipes. The log is deleted automatically after about 12 months. What is stored with your user id is also deleted when you delete your account.
 - **Suggested ingredient spellings:** When you correct the name of an ingredient in an imported recipe, it can become a suggestion that the app should understand that spelling as that ingredient. The suggestion stores the spelling, the correction and your user id. When several people have made the same correction, the app can start to understand the spelling. When you delete your account, your user id is removed from every suggestion. A suggestion nobody has decided on yet and that nobody else supports is deleted. A suggestion that has already been approved, rejected or revoked is kept without being linked to any person.
 
@@ -83,6 +84,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f) | You asked to try Butlery; you can object (Art. 21) |
 | Import log (see section 3.2) | Legitimate interest (Art. 6.1.f) | Make import work and fix errors; you can object (Art. 21) |
 | Samples from AI recipe reading (see section 5.2) | Consent (Art. 6.1.a) | Improve recipe reading; you can withdraw at any time |
+| Error report when a sign-in fails (see section 3.2) | Legitimate interest (Art. 6.1.f) | Find and fix errors in sign-in; you can object (Art. 21) |
 | Feedback you send in the app | Legitimate interest (Art. 6.1.f) | Answer and act on what you report; you can object (Art. 21) |
 | Correction log and suggested ingredient spellings (see section 3.2) | Legitimate interest (Art. 6.1.f) | Improve how the app reads recipes; you can object (Art. 21) |
 
@@ -298,6 +300,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 | Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, or when you delete your account | Legitimate interest |
 | Samples from AI recipe reading (text to and from the AI, without images and without names, email or anything else that identifies you) | Deleted automatically after 30 days, even if the account has already been deleted | Consent |
+| Error report when a sign-in fails (sign-in method, platform and error code, without email address, name or user id) | 30 days | Legitimate interest |
 | Feedback you send in the app, with screenshot | About 12 months. Deleted earlier, with its screenshots, if you delete your account | Legitimate interest |
 | Correction log (what you corrected in imported recipes and allergen labels) | About 12 months. What is stored with your user id is deleted with the account | Legitimate interest |
 | Suggested ingredient spellings | Your user id is removed when you delete your account. A suggestion nobody has decided on yet and that nobody else supports is then deleted. An approved, rejected or revoked suggestion is kept without being linked to any person | Legitimate interest |
