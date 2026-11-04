@@ -178,6 +178,18 @@ final _requiredLists = <_Required>[
       ],
     ).toFirestore().keys.toSet(),
   ),
+  // The narrowest word-list create: no note, no batchId.
+  _Required(
+    label: 'ingredient_change_requests word-list create',
+    anchor: 'function occasionCreateOk',
+    mustContain: 'listKey',
+    writer: 'IngredientChangeRequest.toFirestore',
+    sent: () => const IngredientChangeRequest.wordList(
+      listKey: 'christmas.titleWords',
+      oldWords: ['jul'],
+      newWords: ['jul', 'skinka'],
+    ).toFirestore().keys.toSet(),
+  ),
   _Required(
     label: 'ingredient_change_requests textOk',
     anchor: 'function textOk',

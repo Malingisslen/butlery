@@ -227,6 +227,16 @@ const allowlists = <Allowlist>[
         'lib/models/tagging/ingredient_change_request.dart '
         'IngredientChangeRequest.toFirestore',
   ),
+  // Admin word-list proposals (`kind: occasionList`), the create's other
+  // limb.
+  Allowlist(
+    label: 'ingredient_change_requests word-list create',
+    mustContain: 'listKey',
+    anchor: 'function occasionCreateOk',
+    writer:
+        'lib/models/tagging/ingredient_change_request.dart '
+        'IngredientChangeRequest.toFirestore',
+  ),
   Allowlist(
     label: 'ingredient_change_requests changes columns',
     mustContain: 'avg_price_sek',
@@ -490,6 +500,15 @@ Map<String, Set<String>> writtenKeys() => {
     batchId: 'b',
     createdBy: 'u',
   ).toFirestore().keys.toSet(),
+  // WIDEST set: every optional key present.
+  'ingredient_change_requests word-list create':
+      const IngredientChangeRequest.wordList(
+        listKey: 'christmas.titleWords',
+        oldWords: ['jul'],
+        newWords: ['jul', 'skinka'],
+        note: 'n',
+        batchId: 'b',
+      ).toFirestore().keys.toSet(),
   'ingredient_change_requests changes columns': {
     for (final c in IngredientColumn.values) c.csvName,
   },

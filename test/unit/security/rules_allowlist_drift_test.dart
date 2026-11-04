@@ -597,9 +597,11 @@ void main() {
     // ingredient_change_requests added three: the create's keys().hasOnly and
     // changesOk's column list (both guarded in allowlists), and the
     // withdrawal's affectedKeys().hasOnly, a diff restriction.
+    // Admin-vy D added the word-list create's keys().hasOnly
+    // (occasionCreateOk), guarded in allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      63,
+      64,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
