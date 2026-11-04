@@ -205,13 +205,9 @@ gamla prod (SMS-MFA-budgeten på 200 kr återskapas inte — SMS-MFA finns inte 
 **plus en budget på billingkonto-nivå, 150 kr/mån**, under överlappet — larmet
 som ser summan av tre projekt (FinOps). Säg andra summor för att byta.
 
-⑪ **Play Console och freeRASP.** Appen finns inte i Play (③). Ett Google Play-
+⑪ **Play Console.** Appen finns inte i Play (③). Ett Google Play-
 utvecklarkonto krävs (engångsavgift + identitetsverifiering som kan ta dagar) — **inte
-verifierat** om Malin har ett; kontot och identitetsverifieringen startas i fas 0, parallellt med bygget, så att väntan inte hamnar på den kritiska vägen; länkningen görs i fas 4. Med Play App Signing signeras
-testspårsbygget med Googles nyckel, men `lib/services/device_integrity_service.dart`
-pinnar freeRASP till **upload-nyckelns** SHA-256 → Googles signeringscert-hash läggs till
-(`FREE_RASP_ANDROID_CERT_HASH`/hashlistan) i bytescommiten, annars flaggar
-integritetskontrollen det Play-installerade bygget (bevis i F8 och F12).
+verifierat** om Malin har ett; kontot och identitetsverifieringen startas i fas 0, parallellt med bygget, så att väntan inte hamnar på den kritiska vägen; länkningen görs i fas 4.
 
 **Svagaste punkten:** ③ (Play Console-länkningen är ett konsolsteg hos Google som bara
 Malin kan göra och som inte går att prova i förväg) och ⑦:s samtidighet (commit + två
@@ -595,7 +591,7 @@ Nya från panelen (alla invävda ovan, här som checklista):
   **BUT-2430** fas 2 (repot, stänger BUT-2421 och BUT-2420), **BUT-2431** fas 3 (första
   driftsättning), **BUT-2432** fas 4 (telefon + webb, App Check på, stänger BUT-1445),
   **BUT-2433** fas 5 (avveckling).
-- Sidoärenden: **BUT-2434** Play Console + Play App Signing + freeRASP-hash; **BUT-2435**
+- Sidoärenden: **BUT-2434** Play Console + Play App Signing; **BUT-2435**
   integritetspolicy + Art. 30 + policyadress; **BUT-2436** billingkonto-budget; **BUT-2437**
   `ocr-url-validator` fail-closed; **BUT-2438** cors-listorna till en delad konstant;
   **BUT-2439** egen auth-domän; **BUT-2440** dött `database`-block.
@@ -653,7 +649,7 @@ i I mäts i sin fas och skrivs in i Linear-ärendet.
    BUT-1445, BUT-2425, och sätt varje nytt ärende som blocker av BUT-2425): epic "Ny
    produktionsmiljö i EU" + ett ärende per fas 0.5/1/2/3/4/5, plus: dött `database`-block
    i `firebase.json`; cors-listorna till en delad konstant; egen auth-domän;
-   `ocr-url-validator` fail-closed; Play Console-app + Play App Signing + freeRASP-hash;
+   `ocr-url-validator` fail-closed; Play Console-app + Play App Signing;
    privacy-policy + Art. 30 + ny policyadress; billingkonto-budget. Kostnadsbelopp märks
    "uppskattning". Play- och domänärendena får **inte** `launch-gated` (memory
    `feedback_no_store_submission_yet.md` ger den etiketten åt butiks-/domänärenden och
