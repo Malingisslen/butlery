@@ -27,18 +27,20 @@ import { requireAdmin } from "../shared/require-admin";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
+import { connectRepo, FetchLike, GitHubError, INGREDIENT_BOT_BRANCH, RepoClient } from "./github-app";
 import {
-  BASE_BRANCH,
-  BranchCommit,
-  connectRepo,
-  FetchLike,
-  GitHubError,
-  INGREDIENT_BOT_BRANCH,
-  RepoClient,
-} from "./github-app";
+  publishBotPull,
+  pullStates,
+  readBotBranch,
+  REJECTED_RETENTION_MS,
+  REVIEW_RETENTION_MS,
+  writeIfStatus,
+} from "./bot-pull-request";
 import { ChangePlan, planIngredientChanges, QueuedProposal, SelfCheckError } from "./ingredient-change-plan";
 import { CsvWriteError } from "./ingredient-csv-writer";
 import { buildPrBody, BodyConflict, BodyProposal, PR_TITLE } from "./ingredient-pr-body";
+import { OccasionFileError } from "./occasion-vocabulary";
+import { MAX_OCCASION_QUEUE, OccasionChangePrResult, runOccasionChangePr } from "./occasion-change-pr";
 
 export const RATE_LIMIT_KEY = "createIngredientChangePr";
 export const GLOBAL_RATE_LIMIT_KEY = "createIngredientChangePrGlobal";
@@ -51,13 +53,11 @@ export const MAX_QUEUE = 500;
 export const LOCK_DOC = "singleton";
 export const LOCK_MS = 10 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-export const REVIEW_RETENTION_MS = 90 * DAY_MS;
-export const REJECTED_RETENTION_MS = 365 * DAY_MS;
+export { REVIEW_RETENTION_MS, REJECTED_RETENTION_MS };
 export const RUN_RETENTION_MS = 365 * DAY_MS;
-const STATUS_CHUNK = 100;
 
 /** Fields only this function writes on a proposal (never the client). */
-export const SERVER_WRITTEN_PROPOSAL_KEYS = ["prNumber", "csvValue", "reason"] as const;
+export const SERVER_WRITTEN_PROPOSAL_KEYS = ["prNumber", "prHeadSha", "csvValue", "reason"] as const;
 
 const githubAppPrivateKey = defineSecret("GITHUB_APP_PRIVATE_KEY");
 
@@ -69,6 +69,10 @@ export interface IngredientChangePrResult {
   rejected: number;
   reopened: number;
   skipped: number;
+  // Step D's word-list PR, built in the same run on its own branch. Null
+  // when that part failed; `occasionError` then holds its error code.
+  occasion: OccasionChangePrResult | null;
+  occasionError: string | null;
 }
 
 export interface CreateIngredientChangePrDeps {
@@ -94,15 +98,31 @@ export async function handleCreateIngredientChangePr(
 
   const runId = deps.runId();
   await acquireLock(deps.db, runId, deps.now());
+  let occasion: OccasionChangePrResult | null = null;
+  let occasionError: string | null = null;
   try {
     const github = await deps.connect();
-    const result = await runIngredientChangePr(deps.db, github, deps.now());
+    // The two PRs are independent: a failure in one never stops the other.
+    let ingredientFailure: unknown = null;
+    let ingredient: Omit<IngredientChangePrResult, "occasion" | "occasionError"> | null = null;
+    try {
+      ingredient = await runIngredientChangePr(deps.db, github, deps.now());
+    } catch (err) {
+      ingredientFailure = err;
+    }
+    try {
+      occasion = await runOccasionChangePr(deps.db, github, deps.now());
+    } catch (err) {
+      occasionError = toHttpsError(err, uid, "occasion").message;
+    }
+    if (ingredient === null) throw ingredientFailure;
+    const result: IngredientChangePrResult = { ...ingredient, occasion, occasionError };
     await writeRunRecord(deps.db, uid, { outcome: "ok", result }, deps.now());
     logger.info("ingredient_change_pr", { admin_hash: hashUid(uid), ...result });
     return result;
   } catch (err) {
-    const failure = toHttpsError(err, uid);
-    await writeRunRecord(deps.db, uid, { outcome: "failed", errorCode: failure.message }, deps.now());
+    const failure = toHttpsError(err, uid, "ingredient");
+    await writeRunRecord(deps.db, uid, { outcome: "failed", errorCode: failure.message, occasion, occasionError }, deps.now());
     throw failure;
   } finally {
     await releaseLock(deps.db, runId).catch((err) =>
@@ -115,7 +135,7 @@ export async function handleCreateIngredientChangePr(
 }
 
 /** Every error leaves as a code; a message from GitHub or Firestore never does. */
-function toHttpsError(err: unknown, uid: string): HttpsError {
+function toHttpsError(err: unknown, uid: string, part: "ingredient" | "occasion"): HttpsError {
   if (err instanceof HttpsError) return err;
   let code = "internal-error";
   let kind: "unavailable" | "internal" | "failed-precondition" = "internal";
@@ -126,9 +146,12 @@ function toHttpsError(err: unknown, uid: string): HttpsError {
     code = `self-check-${err.code}`;
   } else if (err instanceof CsvWriteError) {
     code = `csv-${err.code}`;
+  } else if (err instanceof OccasionFileError) {
+    code = `occasion-${err.code}`;
   }
   logger.error("ingredient_change_pr failed", {
     admin_hash: hashUid(uid),
+    part,
     code,
     status: err instanceof GitHubError ? err.status : null,
     errName: err instanceof Error ? err.name : typeof err,
@@ -183,34 +206,19 @@ export async function releaseLock(db: admin.firestore.Firestore, runId: string):
   });
 }
 
+// Ingredient proposals carry no `kind`; a word-list proposal (step D) is
+// left to occasion-change-pr.ts.
+const isIngredientProposal = (d: admin.firestore.QueryDocumentSnapshot) => d.get("kind") == null;
+
 async function byStatus(db: admin.firestore.Firestore, status: string) {
+  // Word-list proposals share the collection, so the read leaves room for
+  // them before the cap is judged on ingredient proposals alone.
   const snap = await db.collection(Collections.ingredientChangeRequests)
     .where("status", "==", status)
-    .limit(MAX_QUEUE + 1)
+    .limit(MAX_QUEUE + MAX_OCCASION_QUEUE + 1)
     .get();
-  return snap.docs;
-}
-
-/** Writes [data] on each doc whose status is still [expected]; returns how many were left alone. */
-async function writeIfStatus(
-  db: admin.firestore.Firestore,
-  writes: Array<{ id: string; expected: string; data: Record<string, unknown> }>,
-): Promise<number> {
-  let skipped = 0;
-  const col = db.collection(Collections.ingredientChangeRequests);
-  for (let i = 0; i < writes.length; i += STATUS_CHUNK) {
-    const chunk = writes.slice(i, i + STATUS_CHUNK);
-    skipped += await db.runTransaction(async (tx) => {
-      const snaps = await Promise.all(chunk.map((w) => tx.get(col.doc(w.id))));
-      let left = 0;
-      chunk.forEach((w, j) => {
-        if (snaps[j].exists && snaps[j].get("status") === w.expected) tx.update(col.doc(w.id), w.data);
-        else left++;
-      });
-      return left;
-    });
-  }
-  return skipped;
+  if (snap.size > MAX_QUEUE + MAX_OCCASION_QUEUE) throw new HttpsError("failed-precondition", "too-many-proposals");
+  return snap.docs.filter(isIngredientProposal);
 }
 
 function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedProposal {
@@ -224,42 +232,18 @@ function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedProposal {
   };
 }
 
-// A commit the App makes through the API is authored by the App and
-// committed by GitHub's `web-flow`, which signs it; only that signature tells
-// it apart from a commit someone else pushed with the App named as author.
-export const GITHUB_WEB_FLOW_LOGIN = "web-flow";
-
-export function isAppCommit(c: BranchCommit, botLogin: string): boolean {
-  if (c.authorLogin !== botLogin) return false;
-  return (c.committerLogin === botLogin || c.committerLogin === GITHUB_WEB_FLOW_LOGIN) && c.verified;
-}
-
-function refused(code: string): HttpsError {
-  return new HttpsError("aborted", code);
-}
-
 export async function runIngredientChangePr(
   db: admin.firestore.Firestore,
   github: RepoClient,
   now: Date,
-): Promise<IngredientChangePrResult> {
-  const mainSha = await github.getRefSha(BASE_BRANCH);
-  if (!mainSha) throw new GitHubError("no-main", null, "main has no ref");
-  const botSha = await github.getRefSha(INGREDIENT_BOT_BRANCH);
-  if (botSha) {
-    const foreign = (await github.branchCommits(INGREDIENT_BOT_BRANCH)).some((c) => !isAppCommit(c, github.botLogin));
-    if (foreign) throw refused("foreign-commits");
-  }
-  const openPull = await github.findOpenPull(INGREDIENT_BOT_BRANCH);
+): Promise<Omit<IngredientChangePrResult, "occasion" | "occasionError">> {
+  const branch = await readBotBranch(github, INGREDIENT_BOT_BRANCH);
+  const { mainSha, openPull } = branch;
 
   // Sweep: a PR closed unmerged hands its proposals back to the queue, a
   // merged one keeps them `inReview` for the sync to mark `applied`.
   const inReview = await byStatus(db, "inReview");
-  const pullState = new Map<number, "open" | "merged" | "closed">();
-  for (const n of new Set(inReview.map((d) => d.get("prNumber")).filter((n): n is number => typeof n === "number"))) {
-    const pull = await github.getPull(n);
-    pullState.set(n, pull.state === "open" ? "open" : pull.merged ? "merged" : "closed");
-  }
+  const pullState = await pullStates(github, inReview);
   const reopen = inReview.filter((d) => pullState.get(d.get("prNumber")) === "closed");
   const reopenSkipped = await writeIfStatus(db, reopen.map((d) => ({
     id: d.id,
@@ -294,24 +278,15 @@ export async function runIngredientChangePr(
   if (plan.appliedIds.length === 0) {
     if (openPull) await github.closePull(openPull.number);
   } else {
-    const body = buildPrBody(bodyInput(plan, queued));
-    const upToDate = botSha !== null && await branchHolds(github, botSha, mainSha, plan.text);
-    if (!upToDate) {
-      const commit = await github.commitFile({
-        parent: mainSha, baseTree: main.treeSha, path: CSV_PATH, text: plan.text,
-        message: `${PR_TITLE}\n\n${plan.appliedIds.length} förslag.`,
-      });
-      // GitHub's ref update has no compare-and-swap, so check right before it.
-      if (await github.getRefSha(BASE_BRANCH) !== mainSha) throw refused("main-moved");
-      if (await github.getRefSha(INGREDIENT_BOT_BRANCH) !== botSha) throw refused("branch-moved");
-      if (openPull && (await github.getPull(openPull.number)).merged) throw refused("pr-merged");
-      if (botSha) await github.forceUpdateBotBranch(INGREDIENT_BOT_BRANCH, commit.commitSha);
-      else await github.createBotBranch(INGREDIENT_BOT_BRANCH, commit.commitSha);
-    }
-    const pull = openPull
-      ? await github.updatePull(openPull.number, { title: PR_TITLE, body })
-      : await github.createPull({ branch: INGREDIENT_BOT_BRANCH, title: PR_TITLE, body });
-    if (openPull && pull.merged) throw refused("pr-merged-during-rebuild");
+    const pull = await publishBotPull(github, {
+      branch: INGREDIENT_BOT_BRANCH,
+      state: branch,
+      mainTreeSha: main.treeSha,
+      files: [{ path: CSV_PATH, text: plan.text }],
+      title: PR_TITLE,
+      body: buildPrBody(bodyInput(plan, queued)),
+      message: `${PR_TITLE}\n\n${plan.appliedIds.length} förslag.`,
+    });
     prNumber = pull.number;
     prUrl = pull.url;
   }
@@ -334,13 +309,6 @@ export async function runIngredientChangePr(
     prNumber, prUrl, applied: plan.appliedIds.length, conflicts, rejected,
     reopened: reopen.length - reopenSkipped, skipped,
   };
-}
-
-/** True when the bot branch already is main plus exactly this CSV. */
-async function branchHolds(github: RepoClient, botSha: string, mainSha: string, text: string): Promise<boolean> {
-  const bot = await github.getCommitTree(botSha);
-  if (bot.parents.length !== 1 || bot.parents[0] !== mainSha) return false;
-  return (await github.getFile(CSV_PATH, botSha)).text === text;
 }
 
 function outcomeWrite(plan: ChangePlan, id: string, prNumber: number | null, now: Date): Record<string, unknown> {
@@ -403,7 +371,7 @@ function bodyInput(plan: ChangePlan, queued: QueuedProposal[]) {
 
 type RunRecord =
   | { outcome: "ok"; result: IngredientChangePrResult }
-  | { outcome: "failed"; errorCode: string };
+  | { outcome: "failed"; errorCode: string; occasion: OccasionChangePrResult | null; occasionError: string | null };
 
 /** Best-effort: never throws, so it cannot mask the run's own result or error. */
 async function writeRunRecord(
@@ -413,6 +381,8 @@ async function writeRunRecord(
   now: Date,
 ): Promise<void> {
   const r = record.outcome === "ok" ? record.result : null;
+  const occasion = r ? r.occasion : record.outcome === "failed" ? record.occasion : null;
+  const occasionError = r ? r.occasionError : record.outcome === "failed" ? record.occasionError : null;
   try {
     await db.collection(Collections.ingredientChangeRuns).doc().set({
       adminUidHash: hashUid(uid),
@@ -423,6 +393,14 @@ async function writeRunRecord(
       counts: r
         ? { applied: r.applied, conflicts: r.conflicts, rejected: r.rejected, reopened: r.reopened, skipped: r.skipped }
         : null,
+      occasionPrNumber: occasion ? occasion.prNumber : null,
+      occasionCounts: occasion
+        ? {
+          applied: occasion.applied, conflicts: occasion.conflicts, rejected: occasion.rejected,
+          reopened: occasion.reopened, merged: occasion.merged, skipped: occasion.skipped,
+        }
+        : null,
+      occasionErrorCode: occasionError,
       expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + RUN_RETENTION_MS),
     });
   } catch (err) {

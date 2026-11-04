@@ -22,6 +22,11 @@ on:
       - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
       - "lib/models/tagging/ingredient_column.dart"
       - "lib/models/tagging/ingredient_allergen_impact.dart"
+      # Admin-vy D: suites read the word lists, the file generated from them
+      # and the generator they port.
+      - "lib/services/tagging/config/data/occasions.json"
+      - "lib/services/tagging/config/generated/occasion_vocabulary.g.dart"
+      - "tools/gen_tag_vocabulary.dart"
       # BUT-1675: the test-registration guard reads the rules workflow's
       # `paths:` triggers, so an edit there must re-run this job.
       - ".github/workflows/firestore-rules.yml"
@@ -77,6 +82,9 @@ on:
       - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
       - "lib/models/tagging/ingredient_column.dart"
       - "lib/models/tagging/ingredient_allergen_impact.dart"
+      - "lib/services/tagging/config/data/occasions.json"
+      - "lib/services/tagging/config/generated/occasion_vocabulary.g.dart"
+      - "tools/gen_tag_vocabulary.dart"
       - ".github/workflows/firestore-rules.yml"
       # BUT-2002 — must mirror the `push` list above; the guard checks both.
       - "lib/repositories/firebase/**"

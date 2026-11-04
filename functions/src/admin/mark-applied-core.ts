@@ -16,8 +16,6 @@ import { columnSpec, columnValuesEqual, docValueForColumn, isEditableColumn } fr
 import type { IngredientDoc } from "./sync-ingredients-core";
 
 export const APPLIED_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
-// The callable keeps at most 500 proposals in review; this only bounds a read
-// that something else has made larger.
 export const MAX_IN_REVIEW = 1000;
 
 /** Fields only this job writes on a proposal. */
@@ -59,8 +57,10 @@ export async function markAppliedProposals(
 ): Promise<MarkAppliedCounts> {
   const col = db.collection(Collections.ingredientChangeRequests);
   const snap = await col.where("status", "==", "inReview").limit(MAX_IN_REVIEW).get();
-  const counts: MarkAppliedCounts = { inReview: snap.size, applied: 0, notYet: 0, skipped: 0 };
-  for (const doc of snap.docs) {
+  // A word-list proposal (step D) is applied by its merge, not by this sync.
+  const docs = snap.docs.filter((d) => d.get("kind") == null);
+  const counts: MarkAppliedCounts = { inReview: docs.length, applied: 0, notYet: 0, skipped: 0 };
+  for (const doc of docs) {
     const outcome = await db.runTransaction(async (tx) => {
       const fresh = await tx.get(col.doc(doc.id));
       if (!fresh.exists || fresh.get("status") !== "inReview") return "skipped" as const;

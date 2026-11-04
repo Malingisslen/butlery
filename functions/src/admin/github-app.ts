@@ -1,6 +1,6 @@
 /**
  * The admin-vy's GitHub client: an installation token from the "Butlery
- * admin-bot" GitHub App, and the handful of REST calls that rebuild one bot
+ * admin-bot" GitHub App, and the handful of REST calls that rebuild a bot
  * branch and its pull request.
  *
  * The token is minted per run, scoped to this one repository and to
@@ -16,6 +16,8 @@ export const GITHUB_OWNER = "Malingisslen";
 export const GITHUB_REPO = "butlery";
 export const BASE_BRANCH = "main";
 export const INGREDIENT_BOT_BRANCH = "bot/ingredient-changes";
+export const OCCASION_BOT_BRANCH = "bot/occasion-changes";
+const BOT_BRANCHES: readonly string[] = [INGREDIENT_BOT_BRANCH, OCCASION_BOT_BRANCH];
 
 // The "Butlery admin-bot" App, installed on this repository only. None of
 // these is a secret; the private key is (GITHUB_APP_PRIVATE_KEY).
@@ -67,8 +69,8 @@ export function createAppJwt(appId: string, privateKeyPem: string, nowMs: number
 }
 
 export function assertBotBranch(branch: string): void {
-  if (branch !== INGREDIENT_BOT_BRANCH) {
-    throw new GitHubError("not-bot-branch", null, "Refusing to force-update a branch other than the bot branch");
+  if (!BOT_BRANCHES.includes(branch)) {
+    throw new GitHubError("not-bot-branch", null, "Refusing to force-update a branch other than a bot branch");
   }
 }
 
@@ -140,6 +142,8 @@ export interface PullRequest {
   url: string;
   state: "open" | "closed";
   merged: boolean;
+  // The PR's head commit; for a merged PR, the commit that was merged.
+  headSha: string | null;
 }
 
 function toPull(d: Record<string, unknown>): PullRequest {
@@ -149,7 +153,13 @@ function toPull(d: Record<string, unknown>): PullRequest {
     url: str(d.html_url, "pull url"),
     state: d.state === "open" ? "open" : "closed",
     merged: typeof d.merged_at === "string" && d.merged_at !== "",
+    headSha: typeof (d.head as { sha?: unknown } | undefined)?.sha === "string" ? (d.head as { sha: string }).sha : null,
   };
+}
+
+export interface CommitFileSpec {
+  path: string;
+  text: string;
 }
 
 export interface RepoClient {
@@ -159,6 +169,9 @@ export interface RepoClient {
   getCommitTree(sha: string): Promise<{ treeSha: string; parents: string[] }>;
   getFile(path: string, ref: string): Promise<{ text: string; blobSha: string }>;
   commitFile(args: { parent: string; baseTree: string; path: string; text: string; message: string }):
+    Promise<{ commitSha: string; treeSha: string }>;
+  /** One commit that writes every file in [files]. */
+  commitFiles(args: { parent: string; baseTree: string; files: CommitFileSpec[]; message: string }):
     Promise<{ commitSha: string; treeSha: string }>;
   createBotBranch(branch: string, sha: string): Promise<void>;
   forceUpdateBotBranch(branch: string, sha: string): Promise<void>;
@@ -198,6 +211,29 @@ export async function connectRepo(deps: {
 
   const api = (c: Call) => call(f, token, c);
 
+  async function commitFiles(args: { parent: string; baseTree: string; files: CommitFileSpec[]; message: string }) {
+    if (args.files.length === 0) throw new GitHubError("empty-commit", null, "A commit needs at least one file");
+    const entries = [];
+    for (const file of args.files) {
+      const blob = await api({
+        method: "POST", label: "/git/blobs", path: `${repoPath}/git/blobs`,
+        body: { content: Buffer.from(file.text, "utf8").toString("base64"), encoding: "base64" },
+      });
+      entries.push({ path: file.path, mode: "100644", type: "blob", sha: str(blob?.data.sha, "blob sha") });
+    }
+    const tree = await api({
+      method: "POST", label: "/git/trees", path: `${repoPath}/git/trees`,
+      body: { base_tree: args.baseTree, tree: entries },
+    });
+    const treeSha = str(tree?.data.sha, "tree sha");
+    // No author or committer: GitHub stamps the App's own bot identity.
+    const commit = await api({
+      method: "POST", label: "/git/commits", path: `${repoPath}/git/commits`,
+      body: { message: args.message, tree: treeSha, parents: [args.parent] },
+    });
+    return { commitSha: str(commit?.data.sha, "commit sha"), treeSha };
+  }
+
   return {
     botLogin: GITHUB_APP_BOT_LOGIN,
 
@@ -233,22 +269,10 @@ export async function connectRepo(deps: {
     },
 
     async commitFile({ parent, baseTree, path, text, message }) {
-      const blob = await api({
-        method: "POST", label: "/git/blobs", path: `${repoPath}/git/blobs`,
-        body: { content: Buffer.from(text, "utf8").toString("base64"), encoding: "base64" },
-      });
-      const tree = await api({
-        method: "POST", label: "/git/trees", path: `${repoPath}/git/trees`,
-        body: { base_tree: baseTree, tree: [{ path, mode: "100644", type: "blob", sha: str(blob?.data.sha, "blob sha") }] },
-      });
-      const treeSha = str(tree?.data.sha, "tree sha");
-      // No author or committer: GitHub stamps the App's own bot identity.
-      const commit = await api({
-        method: "POST", label: "/git/commits", path: `${repoPath}/git/commits`,
-        body: { message, tree: treeSha, parents: [parent] },
-      });
-      return { commitSha: str(commit?.data.sha, "commit sha"), treeSha };
+      return commitFiles({ parent, baseTree, files: [{ path, text }], message });
     },
+
+    commitFiles,
 
     async createBotBranch(branch, sha) {
       assertBotBranch(branch);
