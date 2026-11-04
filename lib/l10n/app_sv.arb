@@ -15826,6 +15826,14 @@
   "@authContinueWithApple": {
     "description": "BUT-549: Sign in with Apple button on the sign-in screen"
   },
+  "authProviderFailedWithCode": "Inloggningen med {provider} gick inte. Försök igen. (Felkod: {code})",
+  "@authProviderFailedWithCode": {
+    "description": "BUT-2502: Google/Apple sign-in failed with a Firebase code the app has no text for; the code is shown so it can be reported.",
+    "placeholders": {
+      "provider": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "authProviderFailed": "Inloggningen med {provider} gick inte. Försök igen.",
   "@authProviderFailed": {
     "description": "BUT-916: a Google/Apple sign-in failed for a reason without its own text",
