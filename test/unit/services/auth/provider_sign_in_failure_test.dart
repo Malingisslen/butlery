@@ -239,28 +239,33 @@ void main() {
     expect(sent, isEmpty);
   });
 
-  test('a sheet that fails is reported by kind and fails the sign-in', () async {
-    final sheetFails = AuthService(
-      authRepository: repo,
-      analyticsService: analytics,
-      providerSignIn: ProviderSignInService(
+  test(
+    'a sheet that fails is reported by kind and fails the sign-in',
+    () async {
+      final sheetFails = AuthService(
         authRepository: repo,
-        platform: _SheetFails(),
-        failureReporter: SignInFailureReporter(
-          send: (payload) async => sent.add(payload),
-          platform: 'android',
+        analyticsService: analytics,
+        providerSignIn: ProviderSignInService(
+          authRepository: repo,
+          platform: _SheetFails(),
+          failureReporter: SignInFailureReporter(
+            send: (payload) async => sent.add(payload),
+            platform: 'android',
+          ),
         ),
-      ),
-    );
-    addTearDown(sheetFails.dispose);
+      );
+      addTearDown(sheetFails.dispose);
 
-    final outcome = await sheetFails.signInWithProvider(SignInProvider.google);
-    await pumpEventQueue();
+      final outcome = await sheetFails.signInWithProvider(
+        SignInProvider.google,
+      );
+      await pumpEventQueue();
 
-    expect(outcome, ProviderSignInOutcome.failed);
-    expect(sent.single['code'], startsWith('sheet:'));
-    expect(sent.single['stage'], SignInFailureReporter.stageSignIn);
-  });
+      expect(outcome, ProviderSignInOutcome.failed);
+      expect(sent.single['code'], startsWith('sheet:'));
+      expect(sent.single['stage'], SignInFailureReporter.stageSignIn);
+    },
+  );
 
   test('a report that cannot be sent never fails the sign-in', () async {
     final failing = AuthService(
