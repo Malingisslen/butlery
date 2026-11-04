@@ -103,6 +103,17 @@
   read clean in two writers while a third wrote raw uids in a doc id and a field.
 - Normalization parity must hold across every matching surface (sync stamp,
   server hold-gate, Dart client); list-split regexes stay in lockstep.
+- **A new collection that holds even a HASHED uid owes a deletion leg, a probe leg and an Art. 15
+  section** (`erasure-collection-coverage.test.ts` refuses a collection reached by none of
+  deletion, a TTL or `UNREVIEWED`; `erasure-export-coverage.test.ts` maps every residue section to
+  a step). The cheaper shape is often to keep identity OUT: a lock naming the RUN, not the admin
+  (`ingredient_change_locks`), needs only an `UNREVIEWED` line. A probe leg on a hash cannot ride
+  the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg.
+- **GitHub's REST ref update has no compare-and-swap** (`PATCH /git/refs` takes only `force`).
+  A bot that force-rebuilds a branch re-reads `main` AND the branch ref immediately before the
+  PATCH and aborts on either moving; the residual window is named, not claimed closed. Errors from
+  a token-bearing client carry method + path TEMPLATE + status only — a fetch error message or a
+  401 body can echo the credential (`admin/github-app.ts`).
 - Export/mining: verify FIELD PARITY against the writer. Best test is a
   PRIVACY WHITELIST — seed adversarial PII-shaped fields, assert the exported
   key set is EXACTLY allow-listed.

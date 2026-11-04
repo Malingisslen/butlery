@@ -18,6 +18,10 @@ on:
       - "functions/tsconfig.json"
       - "functions/scripts/**"
       - ".github/workflows/cloud-functions-unit.yml"
+      # Admin-vy C1/C2: suites read the ingredient CSV and two Dart column/allergen files.
+      - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
+      - "lib/models/tagging/ingredient_column.dart"
+      - "lib/models/tagging/ingredient_allergen_impact.dart"
       # BUT-1675: the test-registration guard reads the rules workflow's
       # `paths:` triggers, so an edit there must re-run this job.
       - ".github/workflows/firestore-rules.yml"
@@ -69,6 +73,10 @@ on:
       - "functions/tsconfig.json"
       - "functions/scripts/**"
       - ".github/workflows/cloud-functions-unit.yml"
+      # Admin-vy C1/C2: suites read the ingredient CSV and two Dart column/allergen files.
+      - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
+      - "lib/models/tagging/ingredient_column.dart"
+      - "lib/models/tagging/ingredient_allergen_impact.dart"
       - ".github/workflows/firestore-rules.yml"
       # BUT-2002 — must mirror the `push` list above; the guard checks both.
       - "lib/repositories/firebase/**"

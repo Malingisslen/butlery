@@ -53,3 +53,14 @@ String ingredientValueText(AppLocalizations l10n, Object? value) {
   };
   return text.isEmpty ? l10n.adminProposalEmptyValue : text;
 }
+
+/// Plain-language reason a proposal ended as `conflict` or `rejected`; the
+/// server writes a code, an unknown one reads as an invalid value.
+String proposalReasonText(AppLocalizations l10n, String? reason) =>
+    switch (reason) {
+      'csv-mismatch' => l10n.adminProposalReasonCsvMismatch,
+      'missing-row' => l10n.adminProposalReasonMissingRow,
+      'no-change' => l10n.adminProposalReasonNoChange,
+      'write-failed' => l10n.adminProposalReasonWriteFailed,
+      _ => l10n.adminProposalReasonInvalid,
+    };

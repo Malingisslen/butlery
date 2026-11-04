@@ -305,6 +305,7 @@ const PRODUCTION_CLOUD_WORKFLOWS = [
   "measure-production.yml",
   "migrate-meal-type.yml",
   "repair-feature-retention.yml",
+  "sync-ingredients.yml",
 ];
 
 /** A job whose environment is, or can be, `production`. */

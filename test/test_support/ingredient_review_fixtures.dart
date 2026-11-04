@@ -148,6 +148,8 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
   final List<String> withdrawn = [];
   final StreamController<List<IngredientChangeRequest>> pending =
       StreamController<List<IngredientChangeRequest>>.broadcast();
+  final StreamController<List<IngredientChangeRequest>> decided =
+      StreamController<List<IngredientChangeRequest>>.broadcast();
 
   @override
   Future<IngredientChangeRequest> create(IngredientChangeRequest entity) async {
@@ -165,10 +167,51 @@ class FakeChangeRequestRepository implements IngredientChangeRequestRepository {
   int watchCalls = 0;
 
   @override
-  Stream<List<IngredientChangeRequest>> watchPending() {
+  Stream<List<IngredientChangeRequest>> watchOpen() {
     watchCalls++;
     return pending.stream;
   }
+
+  /// Feeds only the applied stream, for tests that need one decided stream
+  /// to change while the other stays as it was.
+  final StreamController<List<IngredientChangeRequest>> appliedOnly =
+      StreamController<List<IngredientChangeRequest>>.broadcast();
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchApplied() {
+    late final StreamController<List<IngredientChangeRequest>> out;
+    final subs = <StreamSubscription<List<IngredientChangeRequest>>>[];
+    out = StreamController<List<IngredientChangeRequest>>(
+      onListen: () {
+        subs.add(
+          decided.stream
+              .map(
+                (l) => [
+                  for (final p in l)
+                    if (p.status == IngredientChangeStatus.applied) p,
+                ],
+              )
+              .listen(out.add, onError: out.addError),
+        );
+        subs.add(appliedOnly.stream.listen(out.add, onError: out.addError));
+      },
+      onCancel: () async {
+        for (final sub in subs) {
+          await sub.cancel();
+        }
+        await out.close();
+      },
+    );
+    return out.stream;
+  }
+
+  @override
+  Stream<List<IngredientChangeRequest>> watchRejected() => decided.stream.map(
+    (l) => [
+      for (final p in l)
+        if (p.status == IngredientChangeStatus.rejected) p,
+    ],
+  );
 
   @override
   Future<void> withdraw(String id) async {

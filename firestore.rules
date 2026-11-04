@@ -4328,8 +4328,10 @@ service cloud.firestore {
                 && request.resource.data.batchId.size() <= 100));
 
       // The one-year expireAt is Malin's retention decision of 2026-11-02.
+      // `inReview` and `conflict` are set by createIngredientChangePr; a
+      // withdrawal from either drops the proposal from the next rebuild.
       allow update: if isAdmin()
-        && resource.data.status == 'pending'
+        && resource.data.status in ['pending', 'conflict', 'inReview']
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['status', 'withdrawnAt', 'withdrawnBy', 'expireAt'])
         && request.resource.data.status == 'withdrawn'
@@ -4388,6 +4390,15 @@ service cloud.firestore {
           && listOk(ch.get('season_availability', {'old': [], 'new': []}))
           && priceOk(ch.get('avg_price_sek', {'old': null, 'new': null}));
       }
+    }
+
+    // createIngredientChangePr's run lock and run records: Admin SDK only.
+    match /ingredient_change_locks/{lockId} {
+      allow read, write: if false;
+    }
+
+    match /ingredient_change_runs/{runId} {
+      allow read, write: if false;
     }
 
     // DEEP LINKS - Shareable recipe/content links

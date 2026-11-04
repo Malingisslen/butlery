@@ -427,6 +427,9 @@ const cases: UnitCase[] = [
         // BUT-1528.
         listClosedReports: [60, 400],
         reopenReport: [30, 200],
+        // Admin-vy step C.
+        createIngredientChangePr: [10, 30],
+        createIngredientChangePrGlobal: [20, 60],
       };
       for (const [name, [perHour, perDay]] of Object.entries(expected)) {
         const cfg = RATE_LIMIT_CONFIGS[name];
@@ -500,6 +503,8 @@ const cases: UnitCase[] = [
         "answerAppeal",
         "listClosedReports",
         "reopenReport",
+        "createIngredientChangePr",
+        "createIngredientChangePrGlobal",
         "exportModerationAppeals",
         "exportErasureResidue",
         "reportContent",

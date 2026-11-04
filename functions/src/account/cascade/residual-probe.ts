@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 import { hashUid } from "../../shared/hash-uid";
+import { RUN_UID_HASH_FIELD } from "./ingredient-change-requests";
 import { APPELLANT_ID, MODERATION_APPEALS } from "../../moderation/appeals";
 import { REPORTS } from "../../moderation/report-status";
 // P6-U09: the two-step-verification collections. Imported rather than
@@ -769,6 +770,35 @@ export async function probeResidualData(
         errName: err instanceof Error ? err.name : typeof err,
       });
     }
+  }
+
+  // `scrubIngredientChangeRequestAuthors`' run-record leg, which holds the
+  // uid's HASH, so it cannot ride the uid-valued loop above.
+  try {
+    const snap = await db
+      .collection(Collections.ingredientChangeRuns)
+      .where(RUN_UID_HASH_FIELD, "==", hashUid(uid))
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual owner-keyed docs", {
+        uid_prefix: uid.slice(0, 6),
+        collection: Collections.ingredientChangeRuns,
+        field: RUN_UID_HASH_FIELD,
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed", {
+      uid_prefix: uid.slice(0, 6),
+      collection: Collections.ingredientChangeRuns,
+      field: RUN_UID_HASH_FIELD,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
   }
 
   // Subcollections under users/{uid}. These are NOT top-level userId-scoped

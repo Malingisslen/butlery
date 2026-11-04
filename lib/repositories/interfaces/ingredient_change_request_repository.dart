@@ -15,11 +15,27 @@ abstract class IngredientChangeRequestRepository {
   /// [ArgumentError] above [maxBatchSize].
   Future<void> createBatch(List<IngredientChangeRequest> entities);
 
-  /// Upper bound on [watchPending]; a full page means more are waiting.
+  /// Upper bound on [watchOpen]; a full page means more are waiting.
   static const int maxPending = 500;
 
-  /// Pending proposals, at most [maxPending], unordered; the caller sorts.
-  Stream<List<IngredientChangeRequest>> watchPending();
+  /// Most `applied` proposals [watchApplied] returns.
+  static const int maxApplied = 30;
 
+  /// Most `rejected` proposals [watchRejected] returns.
+  static const int maxRejected = 20;
+
+  /// Proposals still in the queue (`pending`, `inReview`, `conflict`), at
+  /// most [maxPending], unordered; the caller sorts.
+  Stream<List<IngredientChangeRequest>> watchOpen();
+
+  /// The newest `applied` proposals by `appliedAt`, at most [maxApplied].
+  /// Needs the composite index on status and appliedAt.
+  Stream<List<IngredientChangeRequest>> watchApplied();
+
+  /// Some `rejected` proposals, at most [maxRejected], unordered: they are
+  /// rare, so an order would not pay for an index.
+  Stream<List<IngredientChangeRequest>> watchRejected();
+
+  /// Allowed from `pending`, `conflict` and `inReview`.
   Future<void> withdraw(String id);
 }

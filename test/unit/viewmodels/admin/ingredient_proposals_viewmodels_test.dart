@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/services/tagging/ingredient_change_pr_service.dart';
 import 'package:butlery/viewmodels/admin/bulk_status_proposal_viewmodel.dart';
 import 'package:butlery/viewmodels/admin/ingredient_proposal_form_viewmodel.dart';
 import 'package:butlery/viewmodels/admin/pending_proposals_viewmodel.dart';
@@ -278,5 +279,261 @@ void main() {
       expect(await bad.withdraw('r1'), isFalse);
       expect(bad.error, isNotNull);
     });
+
+    group('review', () {
+      IngredientChangeRequest inState(
+        String id,
+        IngredientChangeStatus status,
+      ) => IngredientChangeRequest(
+        id: id,
+        ingredientId: id,
+        status: status,
+        changes: const [],
+        createdAt: DateTime.utc(2026, 1, 1),
+      );
+
+      Future<PendingProposalsViewModel> loaded(
+        FakeChangeRequestRepository repo,
+        _FakePrService pr,
+      ) async {
+        final vm = PendingProposalsViewModel(repository: repo, prService: pr)
+          ..start();
+        repo.pending.add([
+          inState('p1', IngredientChangeStatus.pending),
+          inState('p2', IngredientChangeStatus.pending),
+          inState('i1', IngredientChangeStatus.inReview),
+          inState('c1', IngredientChangeStatus.conflict),
+        ]);
+        repo.decided.add([
+          inState('a1', IngredientChangeStatus.applied),
+          inState('r1', IngredientChangeStatus.rejected),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+        return vm;
+      }
+
+      test('groups by status; waiting counts pending and inReview', () async {
+        final vm = await loaded(
+          FakeChangeRequestRepository(),
+          _FakePrService(),
+        );
+        expect(vm.pending.map((p) => p.id), ['p1', 'p2']);
+        expect(vm.inReview.map((p) => p.id), ['i1']);
+        expect(vm.conflicts.map((p) => p.id), ['c1']);
+        expect(vm.applied.map((p) => p.id), ['a1']);
+        expect(vm.rejected.map((p) => p.id), ['r1']);
+        expect(vm.waitingCount, 3);
+        expect(vm.canCreateReview, isTrue);
+        vm.dispose();
+      });
+
+      test('nothing waiting disables the button and the call', () async {
+        final repo = FakeChangeRequestRepository();
+        final pr = _FakePrService();
+        final vm = PendingProposalsViewModel(repository: repo, prService: pr)
+          ..start();
+        repo.pending.add([inState('c1', IngredientChangeStatus.conflict)]);
+        await Future<void>.delayed(Duration.zero);
+        expect(vm.canCreateReview, isFalse);
+        expect(await vm.createReview(), isFalse);
+        expect(pr.calls, 0);
+        vm.dispose();
+      });
+
+      test(
+        'applied sorts by appliedAt with unsynced first; rejected newest first',
+        () async {
+          final repo = FakeChangeRequestRepository();
+          final vm = PendingProposalsViewModel(
+            repository: repo,
+            prService: _FakePrService(),
+          )..start();
+          IngredientChangeRequest row(
+            String id,
+            IngredientChangeStatus status, {
+            DateTime? appliedAt,
+            DateTime? createdAt,
+          }) => IngredientChangeRequest(
+            id: id,
+            ingredientId: id,
+            status: status,
+            changes: const [],
+            appliedAt: appliedAt,
+            createdAt: createdAt,
+          );
+          repo.decided.add([
+            row(
+              'a-old',
+              IngredientChangeStatus.applied,
+              appliedAt: DateTime.utc(2026, 1, 1),
+            ),
+            row(
+              'a-new',
+              IngredientChangeStatus.applied,
+              appliedAt: DateTime.utc(2026, 2, 1),
+            ),
+            row('a-local', IngredientChangeStatus.applied),
+            row(
+              'r-old',
+              IngredientChangeStatus.rejected,
+              createdAt: DateTime.utc(2026, 1, 1),
+            ),
+            row(
+              'r-new',
+              IngredientChangeStatus.rejected,
+              createdAt: DateTime.utc(2026, 3, 1),
+            ),
+          ]);
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.applied.map((p) => p.id), ['a-local', 'a-new', 'a-old']);
+          expect(vm.rejected.map((p) => p.id), ['r-new', 'r-old']);
+          vm.dispose();
+        },
+      );
+
+      test(
+        'a later applied snapshot does not hide a rejected failure',
+        () async {
+          final repo = FakeChangeRequestRepository();
+          final vm = PendingProposalsViewModel(
+            repository: repo,
+            prService: _FakePrService(),
+          )..start();
+          repo.pending.add([inState('p1', IngredientChangeStatus.pending)]);
+          repo.decided.addError(StateError('denied'));
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.decidedFailed, isTrue);
+          repo.appliedOnly.add([inState('a1', IngredientChangeStatus.applied)]);
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.applied, hasLength(1));
+          // Both streams failed above; applied recovered, rejected has not.
+          expect(vm.decidedFailed, isTrue);
+          repo.decided.add([inState('r1', IngredientChangeStatus.rejected)]);
+          await Future<void>.delayed(Duration.zero);
+          expect(vm.decidedFailed, isFalse);
+          vm.dispose();
+        },
+      );
+
+      test('a new createReview clears an earlier error', () async {
+        final pr = _FakePrService(
+          error: const IngredientChangePrException(
+            IngredientChangePrFailure.locked,
+          ),
+        );
+        final vm = await loaded(FakeChangeRequestRepository(), pr);
+        expect(await vm.createReview(), isFalse);
+        expect(vm.reviewError, isNotNull);
+        pr.error = null;
+        expect(await vm.createReview(), isTrue);
+        expect(vm.reviewError, isNull);
+        expect(vm.lastReview, isNotNull);
+        vm.dispose();
+      });
+
+      test('a decided-stream error keeps the open list', () async {
+        final repo = FakeChangeRequestRepository();
+        final vm = PendingProposalsViewModel(
+          repository: repo,
+          prService: _FakePrService(),
+        )..start();
+        repo.pending.add([inState('p1', IngredientChangeStatus.pending)]);
+        repo.decided.addError(StateError('denied'));
+        await Future<void>.delayed(Duration.zero);
+        expect(vm.decidedFailed, isTrue);
+        expect(vm.pending, hasLength(1));
+        expect(vm.error, isNull);
+        vm.dispose();
+      });
+
+      test(
+        'createReview success keeps the summary and is busy meanwhile',
+        () async {
+          final pr = _FakePrService(
+            result: const IngredientChangePrResult(
+              prNumber: 9,
+              prUrl: 'https://github.com/Malingisslen/butlery/pull/9',
+              applied: 3,
+              conflicts: 1,
+              rejected: 0,
+              reopened: 0,
+              skipped: 0,
+            ),
+          );
+          final vm = await loaded(FakeChangeRequestRepository(), pr);
+          final future = vm.createReview();
+          expect(vm.isCreatingReview, isTrue);
+          expect(vm.canCreateReview, isFalse);
+          expect(await future, isTrue);
+          expect(vm.isCreatingReview, isFalse);
+          expect(vm.lastReview!.prNumber, 9);
+          expect(vm.reviewError, isNull);
+          vm.dispose();
+        },
+      );
+
+      final expected = <IngredientChangePrFailure, String>{
+        IngredientChangePrFailure.notAdmin: 'behörighet',
+        IngredientChangePrFailure.locked: 'skapas just nu',
+        IngredientChangePrFailure.tooManyProposals: 'för många förslag',
+        IngredientChangePrFailure.notConfigured: 'inte inställd',
+        IngredientChangePrFailure.unavailable: 'GitHub svarar inte',
+        IngredientChangePrFailure.mainMoved: 'ändrades under tiden',
+        IngredientChangePrFailure.foreignCommits: 'Be Claude titta',
+        IngredientChangePrFailure.rateLimited: 'för många granskningar',
+        IngredientChangePrFailure.other: 'Kunde inte skapa granskningen',
+      };
+      for (final entry in expected.entries) {
+        test(
+          'createReview ${entry.key.name} gives a Swedish message',
+          () async {
+            final pr = _FakePrService(
+              error: IngredientChangePrException(entry.key),
+            );
+            final vm = await loaded(FakeChangeRequestRepository(), pr);
+            expect(await vm.createReview(), isFalse);
+            expect(vm.reviewError, contains(entry.value));
+            expect(vm.lastReview, isNull);
+            expect(vm.isCreatingReview, isFalse);
+            vm.dispose();
+          },
+        );
+      }
+
+      test('an unexpected exception reads as the generic message', () async {
+        final pr = _FakePrService(unexpected: StateError('boom'));
+        final vm = await loaded(FakeChangeRequestRepository(), pr);
+        expect(await vm.createReview(), isFalse);
+        expect(vm.reviewError, contains('Kunde inte skapa granskningen'));
+        vm.dispose();
+      });
+    });
   });
+}
+
+class _FakePrService extends Fake implements IngredientChangePrService {
+  _FakePrService({this.result, this.error, this.unexpected});
+
+  final IngredientChangePrResult? result;
+  IngredientChangePrException? error;
+  final Object? unexpected;
+  int calls = 0;
+
+  @override
+  Future<IngredientChangePrResult> createPr() async {
+    calls++;
+    await Future<void>.delayed(Duration.zero);
+    if (error != null) throw error!;
+    if (unexpected != null) throw unexpected!;
+    return result ??
+        const IngredientChangePrResult(
+          prNumber: 1,
+          prUrl: '',
+          applied: 0,
+          conflicts: 0,
+          rejected: 0,
+          reopened: 0,
+          skipped: 0,
+        );
+  }
 }

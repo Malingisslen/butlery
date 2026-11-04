@@ -1,0 +1,145 @@
+# Admin-vy step C3 (tasks/admin-vy-cd-plan.md): when the ingredient CSV changes
+# on main, sync it to production Firestore, then mark the admin proposals whose
+# new value now is in Firestore as applied.
+#
+# Runs in the `production` environment, so every run waits for Malin's
+# approval. The stops live in the sync script (`--ci`, exit 3), not here: too
+# many changed rows or properties rows, any soft delete, a row-count mismatch
+# or a removed allergen property. A deliberate large change or allergen
+# removal is a manual run with the matching reason filled in.
+name: Sync Ingredients
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
+  workflow_dispatch:
+    inputs:
+      allow_large:
+        description: "Reason to allow more than the normal number of changed rows (leave empty otherwise)"
+        type: string
+        default: ""
+      allow_allergen_removal:
+        description: "Reason to allow removing an allergen property (leave empty otherwise)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+# GitHub keeps one pending run per group and cancels older pending ones. Each
+# run syncs the CSV at its own commit and the sync is idempotent, so a dropped
+# middle run leaves nothing behind once the newest run finishes.
+concurrency:
+  group: sync-ingredients-production
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync ingredient CSV to production
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    timeout-minutes: 30
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Did the CSV change in this push?
+        id: changed
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          csv=docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv
+          if [ "$EVENT" != "push" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE" || true
+          fi
+          if git cat-file -e "$BEFORE^{commit}" 2>/dev/null && git diff --quiet "$BEFORE" "$GITHUB_SHA" -- "$csv"; then
+            echo "The CSV did not change in this push; nothing to sync." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.changed.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        if: steps.changed.outputs.run == 'true'
+        working-directory: functions
+        run: npm ci
+
+      # Short-lived token from Workload Identity Federation, no stored key.
+      - name: Authenticate to Google Cloud (WIF)
+        if: steps.changed.outputs.run == 'true'
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — project matches the environment
+        if: steps.changed.outputs.run == 'true'
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'." >&2; exit 1; }
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
+
+      - name: Dry run with the stops
+        if: steps.changed.outputs.run == 'true'
+        working-directory: functions
+        env:
+          ALLOW_LARGE: ${{ inputs.allow_large || '' }}
+          ALLOW_ALLERGEN_REMOVAL: ${{ inputs.allow_allergen_removal || '' }}
+        run: |
+          args=(--project "$FIREBASE_PROJECT_ID" --ci --dry-run)
+          [ -n "$ALLOW_LARGE" ] && args+=(--allow-large "$ALLOW_LARGE")
+          [ -n "$ALLOW_ALLERGEN_REMOVAL" ] && args+=(--allow-allergen-removal "$ALLOW_ALLERGEN_REMOVAL")
+          npx ts-node src/admin/sync-ingredients.ts "${args[@]}"
+
+      - name: Sync
+        if: steps.changed.outputs.run == 'true'
+        working-directory: functions
+        env:
+          ALLOW_LARGE: ${{ inputs.allow_large || '' }}
+          ALLOW_ALLERGEN_REMOVAL: ${{ inputs.allow_allergen_removal || '' }}
+        run: |
+          args=(--project "$FIREBASE_PROJECT_ID" --ci)
+          [ -n "$ALLOW_LARGE" ] && args+=(--allow-large "$ALLOW_LARGE")
+          [ -n "$ALLOW_ALLERGEN_REMOVAL" ] && args+=(--allow-allergen-removal "$ALLOW_ALLERGEN_REMOVAL")
+          npx ts-node src/admin/sync-ingredients.ts "${args[@]}"
+
+      - name: Mark applied proposals
+        if: steps.changed.outputs.run == 'true'
+        working-directory: functions
+        run: npx ts-node src/admin/mark-applied-proposals.ts --project "$FIREBASE_PROJECT_ID"
+
+      - name: Keep the sync report
+        if: always() && steps.changed.outputs.run == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: sync-report-${{ github.run_id }}
+          path: docs/tagging/data/sync-reports/
+          if-no-files-found: ignore
+          retention-days: 30

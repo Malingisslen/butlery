@@ -21450,6 +21450,131 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminProposalPendingMark => 'Pending proposal';
 
   @override
+  String get adminProposalSectionPending => 'Waiting';
+
+  @override
+  String get adminProposalSectionInReview => 'In review';
+
+  @override
+  String get adminProposalSectionConflict => 'Conflict';
+
+  @override
+  String get adminProposalSectionRejected => 'Rejected';
+
+  @override
+  String get adminProposalSectionApplied => 'Recently applied';
+
+  @override
+  String get adminProposalDecidedLoadFailed =>
+      'Could not load rejected and applied proposals.';
+
+  @override
+  String get adminProposalCreateReview => 'Create review';
+
+  @override
+  String get adminProposalCreateReviewTitle => 'Create review?';
+
+  @override
+  String adminProposalCreateReviewMessage(int count) {
+    return '$count proposals go into a review on GitHub. Nothing changes in the ingredient file until the review is approved there.';
+  }
+
+  @override
+  String adminProposalReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes changes',
+      one: '1 change',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts conflicts',
+      one: '1 conflict',
+    );
+    return 'Review created: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalOpenOnGithub => 'Open on GitHub';
+
+  @override
+  String adminProposalPullRequest(int number) {
+    return 'Review #$number';
+  }
+
+  @override
+  String adminProposalConflictCsv(String value) {
+    return 'Value in the file: $value';
+  }
+
+  @override
+  String adminProposalConflictOld(String value) {
+    return 'Your old: $value';
+  }
+
+  @override
+  String adminProposalConflictNew(String value) {
+    return 'Your new: $value';
+  }
+
+  @override
+  String get adminProposalReasonCsvMismatch =>
+      'The file has a different value than the one you started from. The row changed after you proposed.';
+
+  @override
+  String get adminProposalReasonMissingRow =>
+      'The ingredient is no longer in the file.';
+
+  @override
+  String get adminProposalReasonNoChange =>
+      'The file already has that value, so nothing needed changing.';
+
+  @override
+  String get adminProposalReasonWriteFailed =>
+      'The change could not be written to the file.';
+
+  @override
+  String get adminProposalReasonInvalid =>
+      'The server did not accept the value. Propose the change again with a valid value.';
+
+  @override
+  String get adminReviewErrorNotAdmin =>
+      'You are not allowed to create a review.';
+
+  @override
+  String get adminReviewErrorLocked =>
+      'A review is being created right now. Try again in a moment.';
+
+  @override
+  String get adminReviewErrorTooMany =>
+      'Too many proposals are waiting for a single review. Withdraw some and try again.';
+
+  @override
+  String get adminReviewErrorNotConfigured =>
+      'The GitHub connection is not set up yet.';
+
+  @override
+  String get adminReviewErrorUnavailable =>
+      'GitHub is not responding right now. Try again in a moment.';
+
+  @override
+  String get adminReviewErrorForeignCommits =>
+      'Someone else has changed the review branch on GitHub. Ask Claude to take a look.';
+
+  @override
+  String get adminReviewErrorMainMoved =>
+      'The ingredient file changed in the meantime. Try again.';
+
+  @override
+  String get adminReviewErrorRateLimited =>
+      'You created too many reviews in a short time. Wait a moment.';
+
+  @override
+  String get adminReviewErrorOther => 'Could not create the review. Try again.';
+
+  @override
   String get adminBulkSetStatus => 'Set status on selected';
 
   @override
