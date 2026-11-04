@@ -111,6 +111,7 @@
     "test:require-project": "ts-node src/__tests__/require-project.test.ts",
     "test:llm-sample-capture": "ts-node src/__tests__/llm-sample-capture.test.ts",
     "test:web-error": "ts-node src/__tests__/log-web-error.test.ts",
+    "test:sign-in-failure": "ts-node src/__tests__/log-sign-in-failure.test.ts",
     "test:presence-cascade": "ts-node src/__tests__/presence-cascade.test.ts",
     "test:ocr-validation": "ts-node src/__tests__/ocr-validation.test.ts",
     "test:notification-payload": "ts-node src/__tests__/notification-payload.test.ts",
