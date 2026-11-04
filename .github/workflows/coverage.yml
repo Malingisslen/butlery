@@ -26,20 +26,22 @@ env:
   FLUTTER_VERSION: '3.38.5'
 
 jobs:
-  coverage:
-    name: coverage (ubuntu)
+  # Sharded 4 ways (--total-shards) at --concurrency=4, like the unit lane in
+  # test.yml. One job running all of test/unit hit the 60-min cap (issue #1177).
+  # Each shard uploads its raw lcov; the merge job unions them with `lcov -a`
+  # (hit counts add) and only the merged file is held to the floors. Gating a
+  # single shard's partial lcov is the BUT-1182 trap, so no floor runs here.
+  unit-shards:
+    name: coverage shard ${{ matrix.shard }}/4
     runs-on: ubuntu-latest
-    # Coverage instrumentation roughly doubles the unaffected ~28 min unit
-    # runtime. BUT-2001: main run 37604083716 cancelled it at 39m32s inside
-    # its test step, so BUT-1182's 40-min cap no longer fits.
-    timeout-minutes: 60
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
 
     steps:
       - uses: actions/checkout@v6
-
-      - name: Record job start time
-        shell: bash
-        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
         with:
@@ -49,15 +51,49 @@ jobs:
 
       - run: flutter pub get
 
-      # lcov isn't preinstalled on ubuntu-latest; install before tests so the
-      # summary + floor steps can produce a number.
+      - name: Run unit tests (shard ${{ matrix.shard }}/4, with coverage)
+        run: |
+          flutter test test/unit --coverage \
+            --total-shards 4 --shard-index ${{ matrix.shard }} \
+            --concurrency=4 --reporter=expanded
+
+      - name: Upload shard lcov
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: coverage/lcov.info
+          retention-days: 1
+          if-no-files-found: error
+
+  coverage:
+    name: coverage (ubuntu)
+    needs: unit-shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Record job start time
+        shell: bash
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Install lcov
         run: sudo apt-get update && sudo apt-get install -y lcov
 
-      - name: Run unit tests (with coverage)
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: shard-lcov
+
+      - name: Merge shard coverage
         run: |
-          echo "Running test/unit with coverage..."
-          flutter test test/unit --coverage --reporter=expanded
+          mkdir -p coverage
+          args=()
+          for f in shard-lcov/*/lcov.info; do args+=(-a "$f"); done
+          echo "Merging ${#args[@]} lcov arguments"
+          lcov "${args[@]}" -o coverage/lcov.info
 
       # Produce a filtered lcov matching codecov.yml's ignore list, so the
       # local "project coverage" number and the Codecov dashboard agree.
@@ -189,7 +225,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 50
+          BUDGET_MIN: 10
           JOB_LABEL: "coverage (ubuntu)"
         run: |
           JOB_END=$(date +%s)
