@@ -238,6 +238,27 @@ void main() {
       vm.dispose();
     });
 
+    test(
+      'word-list proposals are not ingredient ids but are counted',
+      () async {
+        final repo = FakeChangeRequestRepository();
+        final vm = PendingProposalsViewModel(repository: repo)..start();
+        repo.pending.add([
+          req('i', 'a', DateTime.utc(2026, 1, 1)),
+          IngredientChangeRequest.wordList(
+            listKey: 'christmas.titleWords',
+            oldWords: const ['a'],
+            newWords: const ['b'],
+          ).withIdentity(id: 'w', createdBy: 'u'),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+        expect(vm.pendingIngredientIds, {'a'});
+        expect(vm.waitingCount, 2);
+        expect(vm.waitingWordListCount, 1);
+        vm.dispose();
+      },
+    );
+
     test('a stream error is an error state, never an empty list', () async {
       final repo = FakeChangeRequestRepository();
       final vm = PendingProposalsViewModel(repository: repo)..start();

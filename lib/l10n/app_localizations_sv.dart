@@ -21483,4 +21483,212 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get adminIssuePrice =>
       'Priset måste vara ett tal som är noll eller större.';
+
+  @override
+  String get adminOccasionGroupChristmas => 'Jul';
+
+  @override
+  String get adminOccasionGroupLucia => 'Lucia';
+
+  @override
+  String get adminOccasionGroupEaster => 'Påsk';
+
+  @override
+  String get adminOccasionGroupMidsummer => 'Midsommar';
+
+  @override
+  String get adminOccasionGroupCrayfish => 'Kräftskiva';
+
+  @override
+  String get adminOccasionGroupNewYear => 'Nyår';
+
+  @override
+  String get adminOccasionGroupSpring => 'Vår';
+
+  @override
+  String get adminOccasionGroupSummer => 'Sommar';
+
+  @override
+  String get adminOccasionGroupAutumn => 'Höst';
+
+  @override
+  String get adminOccasionGroupWinter => 'Vinter';
+
+  @override
+  String get adminOccasionGroupLuxury => 'Lyx';
+
+  @override
+  String get adminOccasionGroupTitleKeywords => 'Titelord';
+
+  @override
+  String get adminOccasionFieldTitleStemFalsePositives =>
+      'Ord som börjar på jul men inte är jul';
+
+  @override
+  String get adminOccasionFieldTitleWords => 'Ord i titeln';
+
+  @override
+  String get adminOccasionFieldMainIngredients => 'Huvudingredienser';
+
+  @override
+  String get adminOccasionFieldSideIngredients => 'Tillbehör';
+
+  @override
+  String get adminOccasionFieldSaffronIngredients => 'Saffran';
+
+  @override
+  String get adminOccasionFieldBakeTitleWords => 'Bakverk i titeln';
+
+  @override
+  String get adminOccasionFieldLambIngredients => 'Lamm';
+
+  @override
+  String get adminOccasionFieldEggIngredients => 'Ägg';
+
+  @override
+  String get adminOccasionFieldHerringIngredients => 'Sill';
+
+  @override
+  String get adminOccasionFieldNewPotatoIngredients => 'Färskpotatis';
+
+  @override
+  String get adminOccasionFieldStrawberryIngredients => 'Jordgubbar';
+
+  @override
+  String get adminOccasionFieldCreamIngredients => 'Grädde och glass';
+
+  @override
+  String get adminOccasionFieldIngredients => 'Ingredienser';
+
+  @override
+  String get adminOccasionFieldDillIngredients => 'Dill';
+
+  @override
+  String get adminOccasionFieldStarkSet => 'Stark: sätter taggen';
+
+  @override
+  String get adminOccasionFieldStarkBoost => 'Stark: förstärker';
+
+  @override
+  String get adminOccasionFieldLyxigSet => 'Lyxig: sätter taggen';
+
+  @override
+  String get adminOccasionFieldLyxigBoost => 'Lyxig: förstärker';
+
+  @override
+  String get adminOccasionFieldComfortFoodSet => 'Comfort food: sätter taggen';
+
+  @override
+  String get adminOccasionFieldComfortFoodBoost => 'Comfort food: förstärker';
+
+  @override
+  String get adminOccasionFieldBarnvanligConfirm => 'Barnvänlig: bekräftar';
+
+  @override
+  String get adminOccasionFieldBarnvanligBoost => 'Barnvänlig: förstärker';
+
+  @override
+  String get adminOccasionFieldSnabblagatSet => 'Snabblagat: sätter taggen';
+
+  @override
+  String get adminOccasionFieldSnabblagatBoost => 'Snabblagat: förstärker';
+
+  @override
+  String adminOccasionListName(String group, String field) {
+    return '$group: $field';
+  }
+
+  @override
+  String get adminOccasionListsTitle => 'Ordlistor för högtider och titelord';
+
+  @override
+  String get adminOccasionListsInfo =>
+      'En ändring blir ett förslag på fliken Förslag. Den når användarna först i nästa appversion.';
+
+  @override
+  String get adminOccasionListEdit => 'Ändra';
+
+  @override
+  String adminOccasionEditTitle(String name) {
+    return 'Ändra ordlistan: $name';
+  }
+
+  @override
+  String get adminOccasionWordsLabel => 'Ord, ett per rad';
+
+  @override
+  String get adminOccasionWordsHelp =>
+      'Ett ord eller en fras per rad. Stora bokstäver görs små.';
+
+  @override
+  String get adminOccasionErrorEmpty => 'Listan får inte vara tom.';
+
+  @override
+  String adminOccasionErrorTooMany(int max) {
+    return 'Listan får ha högst $max ord.';
+  }
+
+  @override
+  String adminOccasionErrorTooLong(int max) {
+    return 'Ett ord får vara högst $max tecken.';
+  }
+
+  @override
+  String get adminOccasionErrorInvalid =>
+      'Orden får bara ha bokstäver, siffror, apostrof och bindestreck, med enstaka mellanslag mellan orden.';
+
+  @override
+  String get adminOccasionErrorDuplicate => 'Ordet finns redan i listan.';
+
+  @override
+  String adminOccasionWordsAdded(String words) {
+    return 'Tillagda: $words';
+  }
+
+  @override
+  String adminOccasionWordsRemoved(String words) {
+    return 'Borttagna: $words';
+  }
+
+  @override
+  String get adminOccasionWordsReordered => 'Samma ord i ny ordning';
+
+  @override
+  String adminOccasionWordsMain(String words) {
+    return 'Just nu i appens ordlista: $words';
+  }
+
+  @override
+  String get adminOccasionSaved =>
+      'Förslaget är sparat. Det syns på fliken Förslag och når användarna först i nästa appversion.';
+
+  @override
+  String get adminProposalReasonFileMismatch =>
+      'Ordlistan i appen har ändrats sedan du föreslog. Föreslå ändringen på nytt utifrån den nuvarande listan.';
+
+  @override
+  String adminProposalCreateReviewMessageWithLists(int count, int lists) {
+    return '$count förslag läggs i granskningar på GitHub, varav $lists gäller ordlistor. Inget ändras i ingrediensfilen eller ordlistorna förrän granskningen är godkänd där.';
+  }
+
+  @override
+  String adminProposalWordListReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes ändringar',
+      one: '1 ändring',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts konflikter',
+      one: '1 konflikt',
+    );
+    return 'Ordlistor: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalWordListReviewFailed =>
+      'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.';
 }

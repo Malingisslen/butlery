@@ -4303,8 +4303,12 @@ service cloud.firestore {
     match /ingredient_change_requests/{requestId} {
       allow read: if isAdmin();
 
-      allow create: if isAdmin()
-        && request.resource.data.keys().hasOnly([
+      // A document without `kind` is an ingredient proposal (step B); one
+      // with `kind: 'occasionList'` changes a tagging word list (step D).
+      allow create: if isAdmin() && (ingredientCreateOk() || occasionCreateOk());
+
+      function ingredientCreateOk() {
+        return request.resource.data.keys().hasOnly([
           'ingredientId', 'changes', 'ingredientUpdatedAt', 'note',
           'batchId', 'status', 'createdBy', 'createdAt',
         ])
@@ -4326,6 +4330,70 @@ service cloud.firestore {
         && (request.resource.data.get('batchId', null) == null
             || (request.resource.data.batchId is string
                 && request.resource.data.batchId.size() <= 100));
+      }
+
+      function occasionCreateOk() {
+        return request.resource.data.keys().hasOnly([
+          'kind', 'listKey', 'oldWords', 'newWords', 'note', 'batchId',
+          'status', 'createdBy', 'createdAt',
+        ])
+        && request.resource.data.keys().hasAll([
+          'kind', 'listKey', 'oldWords', 'newWords', 'status', 'createdBy',
+          'createdAt',
+        ])
+        && request.resource.data.kind == 'occasionList'
+        && occasionListKeyOk(request.resource.data.listKey)
+        && occasionWordsOk(request.resource.data.oldWords, 0)
+        && occasionWordsOk(request.resource.data.newWords, 1)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && (request.resource.data.get('note', null) == null
+            || (request.resource.data.note is string
+                && request.resource.data.note.size() <= 500))
+        && (request.resource.data.get('batchId', null) == null
+            || (request.resource.data.batchId is string
+                && request.resource.data.batchId.size() <= 100));
+      }
+
+      // The editable lists in lib/services/tagging/config/data/occasions.json;
+      // occasion-vocabulary.test.ts pins this list to the file.
+      function occasionListKeyOk(k) {
+        return k in [
+          'christmas.titleStemFalsePositives', 'christmas.titleWords',
+          'christmas.mainIngredients', 'christmas.sideIngredients',
+          'lucia.titleWords', 'lucia.saffronIngredients', 'lucia.bakeTitleWords',
+          'easter.titleWords', 'easter.lambIngredients', 'easter.eggIngredients',
+          'easter.herringIngredients',
+          'midsummer.titleWords', 'midsummer.herringIngredients',
+          'midsummer.newPotatoIngredients', 'midsummer.strawberryIngredients',
+          'midsummer.creamIngredients',
+          'crayfish.titleWords', 'crayfish.ingredients', 'crayfish.dillIngredients',
+          'newYear.titleWords', 'newYear.ingredients',
+          'spring.ingredients', 'summer.ingredients', 'autumn.ingredients',
+          'winter.ingredients', 'luxury.ingredients',
+          'titleKeywords.starkSet', 'titleKeywords.starkBoost',
+          'titleKeywords.lyxigSet', 'titleKeywords.lyxigBoost',
+          'titleKeywords.comfortFoodSet', 'titleKeywords.comfortFoodBoost',
+          'titleKeywords.barnvanligConfirm', 'titleKeywords.barnvanligBoost',
+          'titleKeywords.snabblagatBoost', 'titleKeywords.snabblagatSet',
+        ];
+      }
+
+      // At most 200 lower-case words of at most 60 characters: letters,
+      // digits, apostrophe and hyphen, single spaces between parts. Rules
+      // cannot loop, so the words are joined with a comma; splitting the
+      // result back must give the same list, which holds only when every item
+      // is a string without a comma. The server checks every word again
+      // before it writes the file.
+      function occasionWordsOk(w, min) {
+        return w is list && w.size() >= min && w.size() <= 200
+          && (w.size() == 0
+              || (w.join(',').split(',') == w
+                  && w.join(',').matches('[^,]{1,60}(,[^,]{1,60})*')
+                  && w.join(',').matches("[\\p{L}\\p{N}'-]+( [\\p{L}\\p{N}'-]+)*(,[\\p{L}\\p{N}'-]+( [\\p{L}\\p{N}'-]+)*)*")
+                  && w.join(',') == w.join(',').lower()));
+      }
 
       // The one-year expireAt is Malin's retention decision of 2026-11-02.
       // `inReview` and `conflict` are set by createIngredientChangePr; a

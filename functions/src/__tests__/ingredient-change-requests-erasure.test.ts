@@ -90,11 +90,16 @@ async function serverStatusScenario(): Promise<void> {
     createdBy: OTHER, withdrawnBy: UID,
   });
   db.set(`${COL}/rejected`, { ingredientId: "c", status: "rejected", reason: "no-change", createdBy: UID });
+  db.set(`${COL}/words`, {
+    kind: "occasionList", listKey: "christmas.titleWords", oldWords: ["jul"], newWords: ["jul", "skinka"],
+    status: "inReview", prNumber: 6, createdBy: UID,
+  });
   const ok = await scrubIngredientChangeRequestAuthors(asDb(db), UID);
-  check("inReview, conflict and rejected proposals are scrubbed", ok === true &&
+  check("inReview, conflict, rejected and word-list proposals are scrubbed", ok === true &&
     db.get(`${COL}/review`)?.createdBy === null && db.get(`${COL}/review`)?.prNumber === 4 &&
     db.get(`${COL}/conflict`)?.withdrawnBy === null && db.get(`${COL}/conflict`)?.createdBy === OTHER &&
-    db.get(`${COL}/rejected`)?.createdBy === null);
+    db.get(`${COL}/rejected`)?.createdBy === null &&
+    db.get(`${COL}/words`)?.createdBy === null && db.get(`${COL}/words`)?.listKey === "christmas.titleWords");
 }
 
 async function runRecordScenarios(): Promise<void> {
@@ -197,10 +202,14 @@ function allowlistPins(): void {
   check("list columns export as string lists, the rest as scalars", wrong.length === 0,
     wrong.map((w) => w[2]).join(","));
 
-  const create = block.match(/allow create:[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
+  // One create branch per kind: an ingredient proposal and a word list (step D).
+  const create = block.match(/function ingredientCreateOk\(\)[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
+  const createWords = block.match(/function occasionCreateOk\(\)[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
   const update = block.match(/allow update:[\s\S]*?affectedKeys\(\)\s*\.hasOnly\(\[([^\]]*)\]/);
-  check("rules create and update key lists found", create !== null && update !== null);
-  const storable = new Set([...quoted(create?.[1] ?? ""), ...quoted(update?.[1] ?? "")]);
+  check("rules create and update key lists found", create !== null && createWords !== null && update !== null);
+  const storable = new Set([
+    ...quoted(create?.[1] ?? ""), ...quoted(createWords?.[1] ?? ""), ...quoted(update?.[1] ?? ""),
+  ]);
   storable.delete("createdBy");
   storable.delete("withdrawnBy");
   for (const k of [...SERVER_WRITTEN_PROPOSAL_KEYS, ...APPLIED_STAMP_KEYS]) storable.add(k);

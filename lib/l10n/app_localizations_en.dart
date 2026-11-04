@@ -21660,4 +21660,219 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminIssuePrice => 'The price must be a number, zero or greater.';
+
+  @override
+  String get adminOccasionGroupChristmas => 'Christmas';
+
+  @override
+  String get adminOccasionGroupLucia => 'Lucia';
+
+  @override
+  String get adminOccasionGroupEaster => 'Easter';
+
+  @override
+  String get adminOccasionGroupMidsummer => 'Midsummer';
+
+  @override
+  String get adminOccasionGroupCrayfish => 'Crayfish party';
+
+  @override
+  String get adminOccasionGroupNewYear => 'New Year';
+
+  @override
+  String get adminOccasionGroupSpring => 'Spring';
+
+  @override
+  String get adminOccasionGroupSummer => 'Summer';
+
+  @override
+  String get adminOccasionGroupAutumn => 'Autumn';
+
+  @override
+  String get adminOccasionGroupWinter => 'Winter';
+
+  @override
+  String get adminOccasionGroupLuxury => 'Luxury';
+
+  @override
+  String get adminOccasionGroupTitleKeywords => 'Title words';
+
+  @override
+  String get adminOccasionFieldTitleStemFalsePositives =>
+      'Words starting with jul that are not Christmas';
+
+  @override
+  String get adminOccasionFieldTitleWords => 'Words in the title';
+
+  @override
+  String get adminOccasionFieldMainIngredients => 'Main ingredients';
+
+  @override
+  String get adminOccasionFieldSideIngredients => 'Side dishes';
+
+  @override
+  String get adminOccasionFieldSaffronIngredients => 'Saffron';
+
+  @override
+  String get adminOccasionFieldBakeTitleWords => 'Baked goods in the title';
+
+  @override
+  String get adminOccasionFieldLambIngredients => 'Lamb';
+
+  @override
+  String get adminOccasionFieldEggIngredients => 'Eggs';
+
+  @override
+  String get adminOccasionFieldHerringIngredients => 'Herring';
+
+  @override
+  String get adminOccasionFieldNewPotatoIngredients => 'New potatoes';
+
+  @override
+  String get adminOccasionFieldStrawberryIngredients => 'Strawberries';
+
+  @override
+  String get adminOccasionFieldCreamIngredients => 'Cream and ice cream';
+
+  @override
+  String get adminOccasionFieldIngredients => 'Ingredients';
+
+  @override
+  String get adminOccasionFieldDillIngredients => 'Dill';
+
+  @override
+  String get adminOccasionFieldStarkSet => 'Hearty: sets the tag';
+
+  @override
+  String get adminOccasionFieldStarkBoost => 'Hearty: boosts';
+
+  @override
+  String get adminOccasionFieldLyxigSet => 'Luxurious: sets the tag';
+
+  @override
+  String get adminOccasionFieldLyxigBoost => 'Luxurious: boosts';
+
+  @override
+  String get adminOccasionFieldComfortFoodSet => 'Comfort food: sets the tag';
+
+  @override
+  String get adminOccasionFieldComfortFoodBoost => 'Comfort food: boosts';
+
+  @override
+  String get adminOccasionFieldBarnvanligConfirm => 'Child-friendly: confirms';
+
+  @override
+  String get adminOccasionFieldBarnvanligBoost => 'Child-friendly: boosts';
+
+  @override
+  String get adminOccasionFieldSnabblagatSet => 'Quick to make: sets the tag';
+
+  @override
+  String get adminOccasionFieldSnabblagatBoost => 'Quick to make: boosts';
+
+  @override
+  String adminOccasionListName(String group, String field) {
+    return '$group: $field';
+  }
+
+  @override
+  String get adminOccasionListsTitle =>
+      'Word lists for holidays and title words';
+
+  @override
+  String get adminOccasionListsInfo =>
+      'A change becomes a proposal in the Proposals tab. It reaches users only in the next app version.';
+
+  @override
+  String get adminOccasionListEdit => 'Edit';
+
+  @override
+  String adminOccasionEditTitle(String name) {
+    return 'Edit the word list: $name';
+  }
+
+  @override
+  String get adminOccasionWordsLabel => 'Words, one per line';
+
+  @override
+  String get adminOccasionWordsHelp =>
+      'One word or phrase per line. Capital letters are made lower case.';
+
+  @override
+  String get adminOccasionErrorEmpty => 'The list must not be empty.';
+
+  @override
+  String adminOccasionErrorTooMany(int max) {
+    return 'The list can have at most $max words.';
+  }
+
+  @override
+  String adminOccasionErrorTooLong(int max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max characters',
+      one: '1 character',
+    );
+    return 'A word can be at most $_temp0.';
+  }
+
+  @override
+  String get adminOccasionErrorInvalid =>
+      'Words can only have letters, digits, apostrophes and hyphens, with single spaces between words.';
+
+  @override
+  String get adminOccasionErrorDuplicate => 'That word is already in the list.';
+
+  @override
+  String adminOccasionWordsAdded(String words) {
+    return 'Added: $words';
+  }
+
+  @override
+  String adminOccasionWordsRemoved(String words) {
+    return 'Removed: $words';
+  }
+
+  @override
+  String get adminOccasionWordsReordered => 'Same words in a new order';
+
+  @override
+  String adminOccasionWordsMain(String words) {
+    return 'Currently in the app\'s word list: $words';
+  }
+
+  @override
+  String get adminOccasionSaved =>
+      'The proposal is saved. It shows in the Proposals tab and reaches users only in the next app version.';
+
+  @override
+  String get adminProposalReasonFileMismatch =>
+      'The word list in the app has changed since you proposed. Propose the change again from the current list.';
+
+  @override
+  String adminProposalCreateReviewMessageWithLists(int count, int lists) {
+    return '$count proposals are put into reviews on GitHub, $lists of them for word lists. Nothing changes in the ingredient file or the word lists until the review is approved there.';
+  }
+
+  @override
+  String adminProposalWordListReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes changes',
+      one: '1 change',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts conflicts',
+      one: '1 conflict',
+    );
+    return 'Word lists: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalWordListReviewFailed =>
+      'The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.';
 }

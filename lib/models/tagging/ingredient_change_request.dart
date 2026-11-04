@@ -97,10 +97,40 @@ class IngredientChangeRequest {
     this.reason,
     this.csvValue,
     this.kind = kIngredientKind,
+    this.listKey = '',
+    this.oldWords = const [],
+    this.newWords = const [],
   });
+
+  /// A word-list proposal (admin-vy step D): replaces one list in
+  /// `lib/services/tagging/config/data/occasions.json`.
+  const IngredientChangeRequest.wordList({
+    required this.listKey,
+    required this.oldWords,
+    required this.newWords,
+    this.note = '',
+    this.batchId,
+  }) : id = '',
+       ingredientId = '',
+       changes = const [],
+       ingredientUpdatedAt = null,
+       status = IngredientChangeStatus.pending,
+       createdBy = '',
+       createdAt = null,
+       withdrawnAt = null,
+       withdrawnBy = null,
+       expireAt = null,
+       prNumber = null,
+       appliedAt = null,
+       reason = null,
+       csvValue = null,
+       kind = kOccasionListKind;
 
   /// A document without `kind` is an ingredient proposal.
   static const String kIngredientKind = 'ingredient';
+
+  /// The `kind` of a word-list proposal, as the rules and the server match it.
+  static const String kOccasionListKind = 'occasionList';
 
   final String id;
   final String ingredientId;
@@ -131,6 +161,20 @@ class IngredientChangeRequest {
   final Map<String, Object?>? csvValue;
   final String kind;
 
+  /// Word-list proposals only: the list as `group.field`, its words when
+  /// the proposal was made, and the words it proposes.
+  final String listKey;
+  final List<String> oldWords;
+  final List<String> newWords;
+
+  bool get isWordList => kind == kOccasionListKind;
+
+  /// On a word-list conflict, the words main holds now.
+  List<String>? get mainWords {
+    final raw = csvValue?[listKey];
+    return raw is Iterable ? [for (final w in raw) w.toString()] : null;
+  }
+
   IngredientChangeRequest withIdentity({
     required String id,
     required String createdBy,
@@ -152,6 +196,9 @@ class IngredientChangeRequest {
     reason: reason,
     csvValue: csvValue,
     kind: kind,
+    listKey: listKey,
+    oldWords: oldWords,
+    newWords: newWords,
   );
 
   IngredientFieldChange? changeFor(IngredientColumn column) {
@@ -172,7 +219,21 @@ class IngredientChangeRequest {
 
   /// The creation document. The key set is exactly what the rules accept:
   /// optional keys are left out, never written as null or empty.
-  Map<String, dynamic> toFirestore() => {
+  Map<String, dynamic> toFirestore() => isWordList
+      ? {
+          'kind': kOccasionListKind,
+          'listKey': listKey,
+          'oldWords': oldWords,
+          'newWords': newWords,
+          if (note.isNotEmpty) 'note': note,
+          if (batchId != null) 'batchId': batchId,
+          'status': IngredientChangeStatus.pending.wireName,
+          'createdBy': createdBy,
+          'createdAt': FieldValue.serverTimestamp(),
+        }
+      : _ingredientDocument();
+
+  Map<String, dynamic> _ingredientDocument() => {
     'ingredientId': ingredientId,
     'changes': {for (final c in changes) c.column.csvName: c.toMap()},
     if (ingredientUpdatedAt != null)
@@ -216,8 +277,16 @@ class IngredientChangeRequest {
       kind: data['kind'] is String && (data['kind'] as String).isNotEmpty
           ? data['kind'] as String
           : kIngredientKind,
+      listKey: (data['listKey']?.toString()).orEmpty(),
+      oldWords: _words(data['oldWords']),
+      newWords: _words(data['newWords']),
     );
   }
+
+  static List<String> _words(Object? raw) => [
+    if (raw is Iterable)
+      for (final w in raw) w.toString(),
+  ];
 
   static Map<String, Object?>? _csvValue(Object? raw) => raw is Map
       ? {for (final e in raw.entries) e.key.toString(): e.value}

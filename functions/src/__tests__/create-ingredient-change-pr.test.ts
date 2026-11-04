@@ -56,7 +56,7 @@ class FakeRepo implements RepoClient {
   botLogin = GITHUB_APP_BOT_LOGIN;
   refs = new Map<string, string>([["main", "m0"]]);
   commits = new Map<string, FakeCommit>([["m0", { parents: [], tree: "t-m0", text: REAL, author: "Malin" }]]);
-  pulls: Array<PullRequest & { body: string; title: string }> = [];
+  pulls: Array<PullRequest & { body: string; title: string; branch?: string }> = [];
   log: string[] = [];
   messages: string[] = [];
   beforePull: (() => void) | null = null;
@@ -83,6 +83,9 @@ class FakeRepo implements RepoClient {
     this.log.push("commit");
     return { commitSha: sha, treeSha: `t-${sha}` };
   }
+  async commitFiles(): Promise<{ commitSha: string; treeSha: string }> {
+    throw new Error("the ingredient PR commits one file");
+  }
   async createBotBranch(branch: string, sha: string) {
     this.refs.set(branch, sha);
     this.log.push("create-branch");
@@ -98,15 +101,15 @@ class FakeRepo implements RepoClient {
       ? [{ sha: head!, authorLogin: c.author, committerLogin: c.committer ?? c.author, verified: c.verified === true }]
       : [];
   }
-  async findOpenPull() {
-    return this.pulls.find((p) => p.state === "open") ?? null;
+  async findOpenPull(branch: string) {
+    return this.pulls.find((p) => p.state === "open" && p.branch === branch) ?? null;
   }
   async getPull(n: number) {
     return this.pulls.find((p) => p.number === n)!;
   }
   async createPull(args: { branch: string; title: string; body: string }) {
     this.beforePull?.();
-    const pull = { number: 100 + this.pulls.length, url: `https://github.com/x/pull/${100 + this.pulls.length}`, state: "open" as const, merged: false, ...args };
+    const pull = { number: 100 + this.pulls.length, url: `https://github.com/x/pull/${100 + this.pulls.length}`, state: "open" as const, merged: false, headSha: null, ...args };
     this.pulls.push(pull);
     this.log.push("create-pull");
     return pull;
@@ -316,8 +319,8 @@ const cases: UnitCase[] = [
     name: "sweep: a PR closed unmerged hands its proposals back; a merged one keeps them for the sync",
     fn: async () => {
       const w = world();
-      w.repo.pulls.push({ number: 7, url: "u7", state: "closed", merged: false, title: "", body: "" });
-      w.repo.pulls.push({ number: 8, url: "u8", state: "closed", merged: true, title: "", body: "" });
+      w.repo.pulls.push({ number: 7, url: "u7", state: "closed", merged: false, headSha: null, title: "", body: "" });
+      w.repo.pulls.push({ number: 8, url: "u8", state: "closed", merged: true, headSha: null, title: "", body: "" });
       seedProposal(w.store, "closed", A, notes(A, "Igen."), { status: "inReview", prNumber: 7 });
       seedProposal(w.store, "merged", B, notes(B, "Redan mergad."), { status: "inReview", prNumber: 8 });
       const r = await handleCreateIngredientChangePr(request(ADMIN), w.deps);

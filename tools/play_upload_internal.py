@@ -66,7 +66,18 @@ def testflight(full):
     print("TestFlight build started on main (ios-testflight.yml)")
 
 
+def word_lists_need_no_version_bump(sha):
+    """Stops the upload when the tagging word lists changed after the last
+    kTagGeneratorVersion change (tools/release/check_tag_version_bump.mjs)."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    script = os.path.join(root, "tools", "release", "check_tag_version_bump.mjs")
+    r = subprocess.run(["node", script, sha], capture_output=True, text=True, cwd=root)
+    if r.returncode != 0:
+        sys.exit((r.stderr or r.stdout).strip() or "check_tag_version_bump.mjs failed")
+
+
 def main():
+    word_lists_need_no_version_bump(sys.argv[1])
     aab = ci_bundle(sys.argv[1])
     notes = sys.argv[2] if len(sys.argv) > 2 else None
     tok = token()

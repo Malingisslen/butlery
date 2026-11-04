@@ -7,6 +7,7 @@
 
 import * as admin from "firebase-admin";
 import { Collections } from "../../shared/collections";
+import { OCCASION_LIST_KEYS } from "../../admin/occasion-vocabulary";
 import { hashUid } from "../../shared/hash-uid";
 import { RETENTION_ANALYTICS_PARENTS } from "../../account/account-deletion-cascade";
 import { learnedAliasesCollection } from "../../account/cascade/learned-aliases";
@@ -206,38 +207,49 @@ export const INGREDIENT_CHANGE_COLUMNS: Allowlist = {
   status: TEXT_CHANGE,
 };
 
-/** `csvValue` on a conflict: per column, the CSV's value in the change's shape. */
-export const INGREDIENT_CSV_VALUE_COLUMNS: Allowlist = Object.fromEntries(
-  Object.entries(INGREDIENT_CHANGE_COLUMNS).map(([column, spec]) => [
-    column,
-    spec === LIST_CHANGE ? "strings" : "scalar",
-  ]),
-);
+/**
+ * `csvValue` on a conflict: per column, the CSV's value in the change's
+ * shape; on a word-list conflict, main's words keyed by the list.
+ */
+export const INGREDIENT_CSV_VALUE_COLUMNS: Allowlist = {
+  ...Object.fromEntries(
+    Object.entries(INGREDIENT_CHANGE_COLUMNS).map(([column, spec]) => [
+      column,
+      spec === LIST_CHANGE ? "strings" : "scalar",
+    ]),
+  ),
+  ...Object.fromEntries(OCCASION_LIST_KEYS.map((key) => [key, "strings"])),
+};
 
 /**
  * A proposal the requester made. `createdBy` and `withdrawnBy` are left out:
- * the first is the requester, the second can be another admin. `prNumber`,
+ * the first is the requester, the second can be another admin. `prNumber`, `prHeadSha`,
  * `csvValue` and `reason` are written by `createIngredientChangePr`, and
- * `appliedAt` by the sync job (`mark-applied-core.ts`).
+ * `appliedAt` by the sync job (`mark-applied-core.ts`) or, for a word list
+ * (`kind: occasionList`), by the run that sees its PR merged.
  */
 export const INGREDIENT_CHANGE_REQUEST_KEYS: Allowlist = {
   ...scalars(
     "ingredientId", "ingredientUpdatedAt", "note", "batchId", "status",
-    "createdAt", "withdrawnAt", "expireAt", "prNumber", "reason", "appliedAt",
+    "createdAt", "withdrawnAt", "expireAt", "prNumber", "prHeadSha", "reason", "appliedAt",
+    "kind", "listKey",
   ),
   changes: { map: INGREDIENT_CHANGE_COLUMNS },
+  oldWords: "strings",
+  newWords: "strings",
   csvValue: { map: INGREDIENT_CSV_VALUE_COLUMNS },
 };
 
 /** A `createIngredientChangePr` run the requester started, found by hashed uid. */
 export const INGREDIENT_CHANGE_RUN_KEYS: Allowlist = {
-  ...scalars("ranAt", "outcome", "errorCode", "prNumber", "expireAt"),
+  ...scalars("ranAt", "outcome", "errorCode", "prNumber", "expireAt", "occasionPrNumber", "occasionErrorCode"),
   counts: { map: scalars("applied", "conflicts", "rejected", "reopened", "skipped") },
+  occasionCounts: { map: scalars("applied", "conflicts", "rejected", "reopened", "merged", "skipped") },
 };
 
 /** Another admin's proposal the requester withdrew: what they did, not its content. */
 export const WITHDRAWN_PROPOSAL_KEYS: Allowlist = scalars(
-  "ingredientId", "status", "withdrawnAt",
+  "ingredientId", "kind", "listKey", "status", "withdrawnAt",
 );
 
 async function ingredientChangeRequestRows(

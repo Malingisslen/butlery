@@ -61,6 +61,7 @@ String proposalReasonText(AppLocalizations l10n, String? reason) =>
       'csv-mismatch' => l10n.adminProposalReasonCsvMismatch,
       'missing-row' => l10n.adminProposalReasonMissingRow,
       'no-change' => l10n.adminProposalReasonNoChange,
+      'file-mismatch' => l10n.adminProposalReasonFileMismatch,
       'write-failed' => l10n.adminProposalReasonWriteFailed,
       _ => l10n.adminProposalReasonInvalid,
     };

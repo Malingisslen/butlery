@@ -11,6 +11,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/pending_proposals_viewmodel.dart';
 import 'package:butlery/views/admin/ingredient_proposal_labels.dart';
+import 'package:butlery/views/admin/occasion_list_labels.dart';
+import 'package:butlery/views/admin/word_list_proposal_tile.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -161,7 +163,12 @@ class _ProposalsViewState extends State<ProposalsView> {
     final confirmed = await ConfirmationDialogs.showConfirmationDialog(
       context,
       title: l10n.adminProposalCreateReviewTitle,
-      message: l10n.adminProposalCreateReviewMessage(vm.waitingCount),
+      message: vm.waitingWordListCount == 0
+          ? l10n.adminProposalCreateReviewMessage(vm.waitingCount)
+          : l10n.adminProposalCreateReviewMessageWithLists(
+              vm.waitingCount,
+              vm.waitingWordListCount,
+            ),
       confirmText: l10n.adminProposalCreateReview,
     );
     if (!confirmed) return;
@@ -218,11 +225,13 @@ class ProposalCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  proposal.ingredientId,
+                  proposal.isWordList
+                      ? occasionListLabel(l10n, proposal.listKey)
+                      : proposal.ingredientId,
                   style: AppTextStyles.titleSmall,
                 ),
               ),
-              if (proposal.affectsAllergens)
+              if (!proposal.isWordList && proposal.affectsAllergens)
                 StatusPill(
                   key: const ValueKey('allergen-mark'),
                   label: l10n.adminProposalAffectsAllergens,
@@ -257,10 +266,13 @@ class ProposalCard extends StatelessWidget {
                 style: AppTextStyles.bodySmall,
               ),
             ),
-          for (final c in proposal.changes)
-            proposal.status == IngredientChangeStatus.conflict
-                ? _conflictLines(l10n, c)
-                : _line(l10n, c),
+          if (proposal.isWordList)
+            WordListProposalTile(proposal: proposal)
+          else
+            for (final c in proposal.changes)
+              proposal.status == IngredientChangeStatus.conflict
+                  ? _conflictLines(l10n, c)
+                  : _line(l10n, c),
           if (proposal.note.isNotEmpty)
             Text(proposal.note, style: AppTextStyles.bodySmall),
         ],
@@ -387,14 +399,42 @@ class _ReviewBar extends StatelessWidget {
           ),
           if (result != null) ...[
             const SizedBox(height: AppDimensions.space8),
-            Text(
-              key: const ValueKey('review-created'),
-              l10n.adminProposalReviewCreated(
-                result.applied,
-                result.conflicts,
+            // A run with only word lists leaves the ingredient part without a
+            // pull request; its zero counts and link would mislead.
+            if (result.prNumber > 0 || result.wordLists == null) ...[
+              Text(
+                key: const ValueKey('review-created'),
+                l10n.adminProposalReviewCreated(
+                  result.applied,
+                  result.conflicts,
+                ),
               ),
-            ),
-            _PullRequestLink(number: result.prNumber, url: result.prUrl),
+              _PullRequestLink(number: result.prNumber, url: result.prUrl),
+            ],
+            if (result.wordLists case final lists?) ...[
+              const SizedBox(height: AppDimensions.space8),
+              Text(
+                key: const ValueKey('word-list-review-created'),
+                l10n.adminProposalWordListReviewCreated(
+                  lists.applied,
+                  lists.conflicts,
+                ),
+              ),
+              // A run where every word-list proposal conflicted or was
+              // rejected opens no pull request.
+              if (lists.prNumber > 0)
+                _PullRequestLink(number: lists.prNumber, url: lists.prUrl),
+            ],
+            if (result.wordListError != null) ...[
+              const SizedBox(height: AppDimensions.space8),
+              Text(
+                key: const ValueKey('word-list-review-error'),
+                l10n.adminProposalWordListReviewFailed,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
           ],
           if (vm.reviewError != null) ...[
             const SizedBox(height: AppDimensions.space8),

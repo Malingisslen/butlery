@@ -40,3 +40,15 @@ jobs:
         run: node --test tools/check_prop_only_widget_tests.test.mjs
       - name: Forbid new prop-only widget tests
         run: node tools/check_prop_only_widget_tests.mjs --check
+
+  # Admin-vy D: the release check that stops a changed tagging word list from
+  # shipping without a kTagGeneratorVersion change (run by ios-testflight.yml
+  # and tools/play_upload_internal.py).
+  tag-version-release-check:
+    name: Word-list release check works
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Self-test
+        run: node --test tools/release/check_tag_version_bump.test.mjs

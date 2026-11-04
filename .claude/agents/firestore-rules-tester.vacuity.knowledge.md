@@ -56,7 +56,12 @@
   nothing) — report it as redundant, not as covered by the missing-field denies. And pick
   the wrong type per guard: `.size()` answers on list, map AND string, so an `is list` or
   `is string` beside a size bound is pinned only by a type that still has `.size()`
-  (a string for a list, a one-element list for a string).
+  (a string for a list, a one-element list for a string). **Beside an EMPTY-SHORTCUT
+  (`w is list && w.size() >= min && (w.size() == 0 || <per-item checks>)`) the type guard
+  is reachable only from an EMPTY wrong-type value** — `""` or `{}` has size 0 and skips
+  every per-item check, while a non-empty string already CEL-errors in the item checks.
+  Measured on `occasionWordsOk` (2026-11-04): with `is list` deleted, the suite stayed green
+  until `oldWords: ""` / `oldWords: {}` were added, and those are the only cases it kills.
 - **A ±1 STEP rule is THREE disjuncts (unchanged / +1 / −1) and needs one mutant PER
   DISJUNCT; the one with no production writer stays green when deleted.** Measured on
   `users/{uid}/counters` (BUT-2100): deleting the `−1` disjunct from the stranger arm left

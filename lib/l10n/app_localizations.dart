@@ -33011,6 +33011,348 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Priset måste vara ett tal som är noll eller större.'**
   String get adminIssuePrice;
+
+  /// No description provided for @adminOccasionGroupChristmas.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jul'**
+  String get adminOccasionGroupChristmas;
+
+  /// No description provided for @adminOccasionGroupLucia.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lucia'**
+  String get adminOccasionGroupLucia;
+
+  /// No description provided for @adminOccasionGroupEaster.
+  ///
+  /// In sv, this message translates to:
+  /// **'Påsk'**
+  String get adminOccasionGroupEaster;
+
+  /// No description provided for @adminOccasionGroupMidsummer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Midsommar'**
+  String get adminOccasionGroupMidsummer;
+
+  /// No description provided for @adminOccasionGroupCrayfish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräftskiva'**
+  String get adminOccasionGroupCrayfish;
+
+  /// No description provided for @adminOccasionGroupNewYear.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyår'**
+  String get adminOccasionGroupNewYear;
+
+  /// No description provided for @adminOccasionGroupSpring.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vår'**
+  String get adminOccasionGroupSpring;
+
+  /// No description provided for @adminOccasionGroupSummer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sommar'**
+  String get adminOccasionGroupSummer;
+
+  /// No description provided for @adminOccasionGroupAutumn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Höst'**
+  String get adminOccasionGroupAutumn;
+
+  /// No description provided for @adminOccasionGroupWinter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vinter'**
+  String get adminOccasionGroupWinter;
+
+  /// No description provided for @adminOccasionGroupLuxury.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyx'**
+  String get adminOccasionGroupLuxury;
+
+  /// No description provided for @adminOccasionGroupTitleKeywords.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titelord'**
+  String get adminOccasionGroupTitleKeywords;
+
+  /// No description provided for @adminOccasionFieldTitleStemFalsePositives.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ord som börjar på jul men inte är jul'**
+  String get adminOccasionFieldTitleStemFalsePositives;
+
+  /// No description provided for @adminOccasionFieldTitleWords.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ord i titeln'**
+  String get adminOccasionFieldTitleWords;
+
+  /// No description provided for @adminOccasionFieldMainIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Huvudingredienser'**
+  String get adminOccasionFieldMainIngredients;
+
+  /// No description provided for @adminOccasionFieldSideIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbehör'**
+  String get adminOccasionFieldSideIngredients;
+
+  /// No description provided for @adminOccasionFieldSaffronIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Saffran'**
+  String get adminOccasionFieldSaffronIngredients;
+
+  /// No description provided for @adminOccasionFieldBakeTitleWords.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bakverk i titeln'**
+  String get adminOccasionFieldBakeTitleWords;
+
+  /// No description provided for @adminOccasionFieldLambIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lamm'**
+  String get adminOccasionFieldLambIngredients;
+
+  /// No description provided for @adminOccasionFieldEggIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägg'**
+  String get adminOccasionFieldEggIngredients;
+
+  /// No description provided for @adminOccasionFieldHerringIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sill'**
+  String get adminOccasionFieldHerringIngredients;
+
+  /// No description provided for @adminOccasionFieldNewPotatoIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Färskpotatis'**
+  String get adminOccasionFieldNewPotatoIngredients;
+
+  /// No description provided for @adminOccasionFieldStrawberryIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jordgubbar'**
+  String get adminOccasionFieldStrawberryIngredients;
+
+  /// No description provided for @adminOccasionFieldCreamIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grädde och glass'**
+  String get adminOccasionFieldCreamIngredients;
+
+  /// No description provided for @adminOccasionFieldIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get adminOccasionFieldIngredients;
+
+  /// No description provided for @adminOccasionFieldDillIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dill'**
+  String get adminOccasionFieldDillIngredients;
+
+  /// No description provided for @adminOccasionFieldStarkSet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stark: sätter taggen'**
+  String get adminOccasionFieldStarkSet;
+
+  /// No description provided for @adminOccasionFieldStarkBoost.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stark: förstärker'**
+  String get adminOccasionFieldStarkBoost;
+
+  /// No description provided for @adminOccasionFieldLyxigSet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyxig: sätter taggen'**
+  String get adminOccasionFieldLyxigSet;
+
+  /// No description provided for @adminOccasionFieldLyxigBoost.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyxig: förstärker'**
+  String get adminOccasionFieldLyxigBoost;
+
+  /// No description provided for @adminOccasionFieldComfortFoodSet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Comfort food: sätter taggen'**
+  String get adminOccasionFieldComfortFoodSet;
+
+  /// No description provided for @adminOccasionFieldComfortFoodBoost.
+  ///
+  /// In sv, this message translates to:
+  /// **'Comfort food: förstärker'**
+  String get adminOccasionFieldComfortFoodBoost;
+
+  /// No description provided for @adminOccasionFieldBarnvanligConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Barnvänlig: bekräftar'**
+  String get adminOccasionFieldBarnvanligConfirm;
+
+  /// No description provided for @adminOccasionFieldBarnvanligBoost.
+  ///
+  /// In sv, this message translates to:
+  /// **'Barnvänlig: förstärker'**
+  String get adminOccasionFieldBarnvanligBoost;
+
+  /// No description provided for @adminOccasionFieldSnabblagatSet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabblagat: sätter taggen'**
+  String get adminOccasionFieldSnabblagatSet;
+
+  /// No description provided for @adminOccasionFieldSnabblagatBoost.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabblagat: förstärker'**
+  String get adminOccasionFieldSnabblagatBoost;
+
+  /// No description provided for @adminOccasionListName.
+  ///
+  /// In sv, this message translates to:
+  /// **'{group}: {field}'**
+  String adminOccasionListName(String group, String field);
+
+  /// No description provided for @adminOccasionListsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordlistor för högtider och titelord'**
+  String get adminOccasionListsTitle;
+
+  /// No description provided for @adminOccasionListsInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'En ändring blir ett förslag på fliken Förslag. Den når användarna först i nästa appversion.'**
+  String get adminOccasionListsInfo;
+
+  /// No description provided for @adminOccasionListEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get adminOccasionListEdit;
+
+  /// No description provided for @adminOccasionEditTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra ordlistan: {name}'**
+  String adminOccasionEditTitle(String name);
+
+  /// No description provided for @adminOccasionWordsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ord, ett per rad'**
+  String get adminOccasionWordsLabel;
+
+  /// No description provided for @adminOccasionWordsHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett ord eller en fras per rad. Stora bokstäver görs små.'**
+  String get adminOccasionWordsHelp;
+
+  /// No description provided for @adminOccasionErrorEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan får inte vara tom.'**
+  String get adminOccasionErrorEmpty;
+
+  /// No description provided for @adminOccasionErrorTooMany.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan får ha högst {max} ord.'**
+  String adminOccasionErrorTooMany(int max);
+
+  /// No description provided for @adminOccasionErrorTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett ord får vara högst {max} tecken.'**
+  String adminOccasionErrorTooLong(int max);
+
+  /// No description provided for @adminOccasionErrorInvalid.
+  ///
+  /// In sv, this message translates to:
+  /// **'Orden får bara ha bokstäver, siffror, apostrof och bindestreck, med enstaka mellanslag mellan orden.'**
+  String get adminOccasionErrorInvalid;
+
+  /// No description provided for @adminOccasionErrorDuplicate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordet finns redan i listan.'**
+  String get adminOccasionErrorDuplicate;
+
+  /// No description provided for @adminOccasionWordsAdded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagda: {words}'**
+  String adminOccasionWordsAdded(String words);
+
+  /// No description provided for @adminOccasionWordsRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttagna: {words}'**
+  String adminOccasionWordsRemoved(String words);
+
+  /// No description provided for @adminOccasionWordsReordered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samma ord i ny ordning'**
+  String get adminOccasionWordsReordered;
+
+  /// No description provided for @adminOccasionWordsMain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Just nu i appens ordlista: {words}'**
+  String adminOccasionWordsMain(String words);
+
+  /// No description provided for @adminOccasionSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget är sparat. Det syns på fliken Förslag och når användarna först i nästa appversion.'**
+  String get adminOccasionSaved;
+
+  /// No description provided for @adminProposalReasonFileMismatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordlistan i appen har ändrats sedan du föreslog. Föreslå ändringen på nytt utifrån den nuvarande listan.'**
+  String get adminProposalReasonFileMismatch;
+
+  /// No description provided for @adminProposalCreateReviewMessageWithLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} förslag läggs i granskningar på GitHub, varav {lists} gäller ordlistor. Inget ändras i ingrediensfilen eller ordlistorna förrän granskningen är godkänd där.'**
+  String adminProposalCreateReviewMessageWithLists(int count, int lists);
+
+  /// No description provided for @adminProposalWordListReviewCreated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordlistor: {changes, plural, =1{1 ändring} other{{changes} ändringar}}, {conflicts, plural, =1{1 konflikt} other{{conflicts} konflikter}}'**
+  String adminProposalWordListReviewCreated(int changes, int conflicts);
+
+  /// No description provided for @adminProposalWordListReviewFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.'**
+  String get adminProposalWordListReviewFailed;
 }
 
 class _AppLocalizationsDelegate
