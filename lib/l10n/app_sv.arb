@@ -465,6 +465,8 @@
   "errorAuthentication": "Autentiseringsfel. Logga in igen.",
   "errorSignupNotInvited": "Butlery är bara öppet för inbjudna just nu.",
   "errorSignupGateUnavailable": "Det gick inte att skapa kontot just nu. Försök igen om en stund.",
+  "errorSignupRefusedUnmarked": "Butlery är bara öppet för inbjudna just nu. Har du fått en inbjudan? Försök igen om en stund.",
+  "errorPasswordResetLinkFailed": "Det gick inte att skicka mejlet för nytt lösenord just nu. Försök igen senare.",
   "errorSignInEmailUnverified": "Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.",
   "errorPermissionDenied": "Du har inte behörighet för denna åtgärd.",
   "errorPageNotFound": "Sidan kunde inte hittas",

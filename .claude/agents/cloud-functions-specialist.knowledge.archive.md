@@ -21401,3 +21401,27 @@ killed every mutant (86/86 on base rules, 1–10 reds per mutant). Folded into t
 - Full CI unit lane: 161/163, the two reds were `test:script-seed-staging` (needs `npm run build`,
   green after build) and `test:erasure-collection-coverage` (the lock, fixed). Rules suite 93/93 via
   `npx firebase-tools@14 emulators:exec --only firestore`.
+
+### 2026-11-03 — BUT-2502 beforeSignIn isNewUser always false [review][account]
+Gate review of the staged `account/signup-allowlist.ts` + `__tests__/signup-allowlist.test.ts`.
+`firebase-functions` 7.4.0 `lib/common/providers/identity.js` sets
+`isNewUser: decodedJWT.event_type === "beforeCreate"`, so in `beforeSignIn` it is false and every
+unverified password sign-up was refused straight after creation. The fix recognises the sign-up from
+`event.data.metadata` (`parseMetadata` -> `new Date(ms).toUTCString()`, second resolution) with
+`isSignUpSession` and a 2-minute window. The caller measured this in the emulator; I did not re-run it.
+Finding: no test drives `beforeSignInAllowlist.run(event)`. A grep shows the export is referenced
+only from `index.ts`, so the wrapper line, where both the bug and the fix live, is not pinned by any test.
+Prod `createdAt`/`lastLoginAt` equality at signUp was not verified.
+Retired verbatim from the gdpr-erasure chapter (pooled-ratings section) to make room under the
+cap. The later paragraph in the same section supersedes it:
+  COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
+  field — check exemptions, not `indexes`.
+
+### 2026-11-03 — BUT-2502 re-review: wrapper pinned via .run [review][account]
+Re-read both re-staged files (`de1dadd…`, `186246d…`). The wrapper now calls the exported
+`signUpSessionOf(event, nowMs)` on `event.data?.metadata?.creationTime`, and the lastSignInTime
+comparison is gone, so the rule is "created within 2 min". A new `beforeSignInAllowlist.run(...)` test
+covers the positive path. The coordinator reports that reverting to `isNewUser` fails it (28/29); I did
+not re-run that mutant. 29/29 pass, tsc clean. Gaps left (non-blocking): a wrapper that passes a literal
+`true` stays green, because the refusing path through `.run` needs Firestore. A future-dated creationTime
+passes because a negative difference is <= the window. Passed.

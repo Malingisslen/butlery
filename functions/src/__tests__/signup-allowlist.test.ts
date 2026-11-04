@@ -8,6 +8,7 @@
 
 import * as assert from "assert";
 import * as admin from "firebase-admin";
+import type { AuthBlockingEvent } from "firebase-functions/v2/identity";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-signup-allowlist" });
 }
@@ -195,6 +196,49 @@ test("sign-in: verified + read errors → still allowed", async () => {
     fakeDeps(freshState({ enabled: new Error("x") })), google, false);
   await gate.runSignInAllowlistWithDeps(
     fakeDeps(freshState({ inviteError: new Error("y") })), google, false);
+});
+
+// BUT-2502: the event as the Auth emulator handed it to beforeSignIn on a
+// password sign-up (2026-11-03). `additionalUserInfo.isNewUser` was false, as
+// firebase-functions sets it for every beforeSignIn.
+const CREATED = "Tue, 03 Nov 2026 22:00:43 GMT";
+const CREATED_AT = Date.parse(CREATED);
+function signUpEvent(creationTime: string | undefined) {
+  return {
+    data: {
+      uid: "u2",
+      email: "anna@example.com",
+      emailVerified: false,
+      metadata: { creationTime, lastSignInTime: creationTime },
+    },
+    additionalUserInfo: { providerId: "password", isNewUser: false },
+  } as unknown as AuthBlockingEvent;
+}
+
+test("signUpSessionOf: the sign-up's own beforeSignIn is recognised", async () => {
+  assert.strictEqual(gate.signUpSessionOf(signUpEvent(CREATED), CREATED_AT + 2000), true);
+});
+
+test("signUpSessionOf: after the window it is not the sign-up session", async () => {
+  assert.strictEqual(
+    gate.signUpSessionOf(signUpEvent(CREATED), CREATED_AT + gate.SIGN_UP_SESSION_WINDOW_MS + 1),
+    false);
+});
+
+test("signUpSessionOf: missing or malformed creation time reads as not new", async () => {
+  assert.strictEqual(gate.signUpSessionOf(signUpEvent(undefined), CREATED_AT), false);
+  assert.strictEqual(gate.signUpSessionOf(signUpEvent("nonsense"), CREATED_AT), false);
+  assert.strictEqual(gate.signUpSessionOf({} as AuthBlockingEvent, CREATED_AT), false);
+});
+
+// Through the deployed handler itself: an unverified sign-up session returns
+// before any Firestore read, so a wrapper that read the wrong field would
+// fall through to the real database and fail here.
+test("beforeSignInAllowlist: a fresh unverified sign-up is let through", async () => {
+  const now = new Date().toUTCString();
+  await (gate.beforeSignInAllowlist as unknown as {
+    run(e: AuthBlockingEvent): Promise<unknown>;
+  }).run(signUpEvent(now));
 });
 
 test("isInvitableAddress: refuses what cannot be a document id", async () => {

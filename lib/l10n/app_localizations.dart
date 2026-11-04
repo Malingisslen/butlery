@@ -776,6 +776,18 @@ abstract class AppLocalizations {
   /// **'Det gick inte att skapa kontot just nu. Försök igen om en stund.'**
   String get errorSignupGateUnavailable;
 
+  /// No description provided for @errorSignupRefusedUnmarked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery är bara öppet för inbjudna just nu. Har du fått en inbjudan? Försök igen om en stund.'**
+  String get errorSignupRefusedUnmarked;
+
+  /// No description provided for @errorPasswordResetLinkFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att skicka mejlet för nytt lösenord just nu. Försök igen senare.'**
+  String get errorPasswordResetLinkFailed;
+
   /// No description provided for @errorSignInEmailUnverified.
   ///
   /// In sv, this message translates to:
