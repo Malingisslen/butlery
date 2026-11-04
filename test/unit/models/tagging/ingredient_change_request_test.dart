@@ -270,4 +270,86 @@ void main() {
       expect(r.affectsAllergens, isTrue);
     });
   });
+
+  group('word-list proposals (admin-vy D)', () {
+    test(
+      'the creation document is exactly what the occasionList rule accepts',
+      () {
+        const r = IngredientChangeRequest.wordList(
+          listKey: 'christmas.titleWords',
+          oldWords: ['jul'],
+          newWords: ['jul', 'skinka'],
+          note: 'Fler julord.',
+        );
+        final doc = r.withIdentity(id: 'x', createdBy: 'admin').toFirestore();
+        expect(doc.keys.toSet(), {
+          'kind',
+          'listKey',
+          'oldWords',
+          'newWords',
+          'note',
+          'status',
+          'createdBy',
+          'createdAt',
+        });
+        expect(doc['kind'], 'occasionList');
+        expect(doc['listKey'], 'christmas.titleWords');
+        expect(doc['oldWords'], ['jul']);
+        expect(doc['newWords'], ['jul', 'skinka']);
+        expect(doc['status'], 'pending');
+        expect(doc['createdBy'], 'admin');
+        expect(doc['createdAt'], isA<FieldValue>());
+      },
+    );
+
+    test('an empty note is left out', () {
+      const r = IngredientChangeRequest.wordList(
+        listKey: 'lucia.titleWords',
+        oldWords: [],
+        newWords: ['lucia'],
+      );
+      expect(r.toFirestore().containsKey('note'), isFalse);
+    });
+
+    test('reads back its words, and main\'s words on a conflict', () async {
+      final fs = FakeFirebaseFirestore();
+      await fs.collection('ingredient_change_requests').doc('w1').set({
+        'kind': 'occasionList',
+        'listKey': 'christmas.titleWords',
+        'oldWords': ['jul'],
+        'newWords': ['jul', 'skinka'],
+        'status': 'conflict',
+        'reason': 'file-mismatch',
+        'csvValue': {
+          'christmas.titleWords': ['jul', 'lutfisk'],
+        },
+      });
+      final r = IngredientChangeRequest.fromFirestore(
+        await fs.collection('ingredient_change_requests').doc('w1').get(),
+      );
+      expect(r.isWordList, isTrue);
+      expect(r.listKey, 'christmas.titleWords');
+      expect(r.oldWords, ['jul']);
+      expect(r.newWords, ['jul', 'skinka']);
+      expect(r.mainWords, ['jul', 'lutfisk']);
+      expect(r.ingredientId, isEmpty);
+      expect(r.changes, isEmpty);
+      expect(r.affectsAllergens, isFalse);
+    });
+
+    test(
+      'an ingredient proposal is not a word list and has no list fields',
+      () {
+        final doc = IngredientChangeRequest(
+          ingredientId: 'milk',
+          changes: [
+            IngredientFieldChange.from(_row(), IngredientColumn.notesSv, 'x'),
+          ],
+        ).toFirestore();
+        expect(doc.containsKey('kind'), isFalse);
+        expect(doc.containsKey('listKey'), isFalse);
+        expect(doc.containsKey('newWords'), isFalse);
+      },
+    );
+  });
 }

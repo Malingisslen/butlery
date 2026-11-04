@@ -4,13 +4,14 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/tag_rules_viewmodel.dart';
+import 'package:butlery/views/admin/occasion_lists_section.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/admin/admin_table.dart';
 import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
-/// Admin-only "Taggregler" tab: the allergen and diet rules, read-only.
+/// Admin-only "Taggregler" tab: the allergen and diet rules, with a way to propose changes to the tagging word lists.
 class TagRulesView extends StatefulWidget {
   const TagRulesView({super.key, this.viewModel});
 
@@ -125,6 +126,8 @@ class _TagRulesViewState extends State<TagRulesView> {
                           ),
                       ],
                     ),
+                    const SizedBox(height: AppDimensions.space24),
+                    OccasionListsSection(viewModel: _vm),
                   ],
                 ),
         );

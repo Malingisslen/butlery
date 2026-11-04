@@ -12,6 +12,9 @@ class IngredientChangePrResult {
     required this.rejected,
     required this.reopened,
     required this.skipped,
+    this.merged = 0,
+    this.wordLists,
+    this.wordListError,
   });
 
   /// Reads a callable response; a missing number reads as 0 so a changed
@@ -19,6 +22,8 @@ class IngredientChangePrResult {
   factory IngredientChangePrResult.fromMap(Map<dynamic, dynamic> data) {
     int count(String key) => data[key] is num ? (data[key] as num).toInt() : 0;
     final url = data['prUrl'];
+    final occasion = data['occasion'];
+    final occasionError = data['occasionError'];
     return IngredientChangePrResult(
       prNumber: count('prNumber'),
       prUrl: url is String ? url : '',
@@ -27,6 +32,11 @@ class IngredientChangePrResult {
       rejected: count('rejected'),
       reopened: count('reopened'),
       skipped: count('skipped'),
+      merged: count('merged'),
+      wordLists: occasion is Map
+          ? IngredientChangePrResult.fromMap(occasion)
+          : null,
+      wordListError: occasionError is String ? occasionError : null,
     );
   }
 
@@ -37,6 +47,14 @@ class IngredientChangePrResult {
   final int rejected;
   final int reopened;
   final int skipped;
+
+  /// Word-list proposals whose PR was merged, marked applied in this run.
+  final int merged;
+
+  /// The word-list PR (admin-vy step D), built in the same run on its own
+  /// branch. Null when that part failed; [wordListError] then holds the code.
+  final IngredientChangePrResult? wordLists;
+  final String? wordListError;
 }
 
 enum IngredientChangePrFailure {

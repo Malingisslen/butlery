@@ -63,6 +63,13 @@ class PendingProposalsViewModel extends BaseViewModel {
   /// `pending` and `inReview`.
   int get waitingCount => pending.length + inReview.length;
 
+  /// How many of the waiting proposals change a word list; the rest change
+  /// ingredients.
+  int get waitingWordListCount => [
+    ...pending,
+    ...inReview,
+  ].where((p) => p.isWordList).length;
+
   bool get canCreateReview => waitingCount > 0 && !_creating;
   bool get isCreatingReview => _creating;
   IngredientChangePrResult? get lastReview => _lastReview;
@@ -83,7 +90,8 @@ class PendingProposalsViewModel extends BaseViewModel {
       _proposals.isEmpty && _applied.isEmpty && _rejected.isEmpty;
 
   Set<String> get pendingIngredientIds => {
-    for (final p in _proposals) p.ingredientId,
+    for (final p in _proposals)
+      if (!p.isWordList) p.ingredientId,
   };
 
   static List<IngredientChangeRequest> _with(

@@ -66,6 +66,31 @@ void main() {
     expect(r.reopened, 5);
   });
 
+  test('reads the word-list PR and its error code', () {
+    final r = IngredientChangePrResult.fromMap({
+      'prNumber': 12,
+      'occasion': {
+        'prNumber': 13,
+        'prUrl': 'https://github.com/Malingisslen/butlery/pull/13',
+        'applied': 2,
+        'merged': 1,
+      },
+      'occasionError': null,
+    });
+    expect(r.wordLists?.prNumber, 13);
+    expect(r.wordLists?.applied, 2);
+    expect(r.wordLists?.merged, 1);
+    expect(r.wordListError, isNull);
+
+    final failed = IngredientChangePrResult.fromMap({
+      'prNumber': 12,
+      'occasion': null,
+      'occasionError': 'occasion-dart-drift',
+    });
+    expect(failed.wordLists, isNull);
+    expect(failed.wordListError, 'occasion-dart-drift');
+  });
+
   test('a function error becomes a typed failure', () async {
     when(() => callable.call<Map<dynamic, dynamic>>()).thenThrow(
       FirebaseFunctionsException(
