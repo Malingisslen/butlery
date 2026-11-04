@@ -6730,6 +6730,10 @@ Decided with the gate (ADR-0034; Malin 2026-10-24, "Lösenord med verifiering").
   (password, unverified) keeps the sign-up session on that one device; every later sign-in is
   refused until the address is verified. The real owner takes the address back with "Glömt
   lösenord" (or with Google for a Gmail address), which ends that session.
+- **Superseded 2026-11-03 (BUT-2502), the bullet above:** it retires "keeps the sign-up session
+  on that one device; every later sign-in is refused". `signUpSessionOf` lets an unverified
+  sign-in through while the account was created less than `SIGN_UP_SESSION_WINDOW_MS` (two
+  minutes) ago; after that every unverified sign-in is refused.
 - **An erased admin's uid stays on their invites until the invites expire** (BUT-2474, Malin
   2026-10-28). Each `signup_allowlist` document carries the inviting admin's uid in `invitedBy`,
   and the deletion cascade does not reach the collection. The document goes when it is used, when

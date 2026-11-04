@@ -528,6 +528,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The account could not be created right now. Please try again in a moment.';
 
   @override
+  String get errorSignupRefusedUnmarked =>
+      'Butlery is open to invited people only right now. Have you been invited? Please try again in a moment.';
+
+  @override
+  String get errorPasswordResetLinkFailed =>
+      'The email for a new password could not be sent right now. Please try again later.';
+
+  @override
   String get errorSignInEmailUnverified =>
       'Confirm your email through the link we sent. Can\'t find it? Choose Forgot password.';
 

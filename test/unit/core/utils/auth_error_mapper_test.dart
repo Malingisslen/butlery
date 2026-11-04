@@ -126,6 +126,24 @@ void main() {
     );
   });
 
+  test('a refused reset-link setting → errorPasswordResetLinkFailed', () {
+    for (final code in [
+      'invalid-hosting-link-domain',
+      'unauthorized-continue-uri',
+      'invalid-continue-uri',
+      'invalid-dynamic-link-domain',
+      'missing-continue-uri',
+      'missing-android-pkg-name',
+      'missing-ios-bundle-id',
+    ]) {
+      expect(
+        mapAuthErrorToMessage(_err(code)),
+        l.errorPasswordResetLinkFailed,
+        reason: code,
+      );
+    }
+  });
+
   test('unknown code → errorAuthentication (catch-all)', () {
     expect(
       mapAuthErrorToMessage(_err('something-completely-new')),
@@ -164,16 +182,43 @@ void main() {
       );
     }
 
+    // BUT-2502: Android delivers the code with no server text, so the marker
+    // never arrives there. The text must be true whatever refused.
     test(
-      'blocking-function-error-response with a null message → try again, '
-      'not "not invited" (BUT-2471)',
+      'blocking-function-error-response with a null message → the text that '
+      'is true for "not invited" and for a failed gate',
       () {
         expect(
           mapAuthErrorToMessage(_err('blocking-function-error-response')),
-          l.errorSignupGateUnavailable,
+          l.errorSignupRefusedUnmarked,
+        );
+        expect(
+          l.errorSignupRefusedUnmarked,
+          isNot(anyOf(l.errorSignupNotInvited, l.errorSignupGateUnavailable)),
         );
       },
     );
+
+    test('the same on a password sign-in → confirm your email', () {
+      expect(
+        mapAuthErrorToMessage(
+          _err('blocking-function-error-response'),
+          passwordSignIn: true,
+        ),
+        l.errorSignInEmailUnverified,
+      );
+    });
+
+    test('a marker still wins on a password sign-in', () {
+      final e = FirebaseAuthException(
+        code: 'blocking-function-error-response',
+        message: 'SIGNUP_GATE_UNAVAILABLE: x',
+      );
+      expect(
+        mapAuthErrorToMessage(e, passwordSignIn: true),
+        l.errorSignupGateUnavailable,
+      );
+    });
 
     test('internal-error with a null message stays the generic error', () {
       expect(

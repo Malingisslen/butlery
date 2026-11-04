@@ -497,6 +497,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'Det gick inte att skapa kontot just nu. Försök igen om en stund.';
 
   @override
+  String get errorSignupRefusedUnmarked =>
+      'Butlery är bara öppet för inbjudna just nu. Har du fått en inbjudan? Försök igen om en stund.';
+
+  @override
+  String get errorPasswordResetLinkFailed =>
+      'Det gick inte att skicka mejlet för nytt lösenord just nu. Försök igen senare.';
+
+  @override
   String get errorSignInEmailUnverified =>
       'Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.';
 

@@ -459,6 +459,8 @@
   "errorAuthentication": "Authentication error. Please sign in again.",
   "errorSignupNotInvited": "Butlery is open to invited people only right now.",
   "errorSignupGateUnavailable": "The account could not be created right now. Please try again in a moment.",
+  "errorSignupRefusedUnmarked": "Butlery is open to invited people only right now. Have you been invited? Please try again in a moment.",
+  "errorPasswordResetLinkFailed": "The email for a new password could not be sent right now. Please try again later.",
   "errorSignInEmailUnverified": "Confirm your email through the link we sent. Can't find it? Choose Forgot password.",
   "errorPermissionDenied": "You don't have permission to perform this action.",
   "errorPageNotFound": "The page could not be found",

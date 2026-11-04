@@ -41,6 +41,14 @@
   the app's own client removal path touches (membership doc, per-user maps, participants
   subcollection).
 
+- Grade a per-flow difference in AUTH ERROR COPY as an enumeration oracle by WHEN the server
+  answer is produced, not by how specific the text is. A `beforeUserSignedIn` blocking
+  function runs only after Firebase has verified the password (wrong password or unknown
+  address answers `invalid-credential` first), so a refusal text reached on that path tells
+  the caller nothing they did not already prove by holding the credential. The oracle
+  surface is a text that differs BEFORE the credential check: sign-up's
+  `email-already-in-use`, the reset form (masked for `user-not-found`), `beforeUserCreated`.
+
 ### PII handling & logging
 - Bounded enum/numeric telemetry (error codes, token counts, `schemaVersion`) is safe to
   log — the leak surface is the adjacent free-text field; bound length even for "should be

@@ -36,3 +36,4 @@ same drift tripwire as the core digest (`knowledge.digestFiles`).
 - En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet … kör kontrollen på det RETURNERADE värdet efter varje omskrivning (BUT-1819, 2026-09-15)
 - En skärpt regel är bara så sann som skrivar-inventeringen: räkna upp skrivare via SKRIVVERBEN i varje fil som nämner samlingen (ADR-0020, 2026-09-14)
 - En hårdkodad REGION (eller bucket, plats, prefix) är en handlista ett steg upp … Uppräkna dimensionen som avgör VAR man letar (BUT-2036, 2026-09-10)
+- En plattformsflagga som testerna själva sätter testar ingenting: pröva fältet genom omslaget (`.run`) med emulatorns riktiga händelse, och skicka skrivvägens exakta map mot reglerna innan du säger vad den innehåller (BUT-2502, 2026-11-03)

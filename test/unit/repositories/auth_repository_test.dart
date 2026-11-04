@@ -293,7 +293,8 @@ void main() {
                 ).captured.single
                 as ActionCodeSettings;
         expect(settings.handleCodeInApp, isTrue);
-        expect(settings.linkDomain, 'butlery-prod.firebaseapp.com');
+        // BUT-2502: naming the default Hosting domain is refused on Android.
+        expect(settings.linkDomain, isNull);
         expect(settings.androidPackageName, 'se.butlery.app');
         expect(settings.iOSBundleId, 'se.butlery.app');
         expect(Uri.parse(settings.url).host, 'butlery-prod.firebaseapp.com');

@@ -6340,3 +6340,14 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
   >   the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
   >   string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
   >   identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
+
+## 2026-11-03 — BUT-2502 users/{uid} isMinor absent -> false (age-gate-rules.test.ts)
+
+Staged diff added two tests: terms-only `users/{uid}` (seeded `{termsVersion}`), then a
+merge save `{displayName, isMinor:false}` DENIED, and `{displayName}` ALLOWED. Rules
+unchanged (update limb: `request.resource.data.get('isMinor', null) == resource.data.get('isMinor', null)`).
+Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
+- both defaults `null` -> `false` on the update limb: 63/64, kills ONLY the new deny
+  (IM3, seeded true -> false, survives). This is the plausible "fix the rule, not the app" edit.
+- isMinor conjunct dropped from update: 62/64 (new deny + IM3).
+- update limb `false &&`: 61/64 (new allow, P4, IM4).
