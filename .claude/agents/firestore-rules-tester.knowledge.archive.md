@@ -6351,3 +6351,19 @@ Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
   (IM3, seeded true -> false, survives). This is the plausible "fix the rule, not the app" edit.
 - isMinor conjunct dropped from update: 62/64 (new deny + IM3).
 - update limb `false &&`: 61/64 (new allow, P4, IM4).
+
+## 2026-11-04 — ingredient_change_requests step D (`occasionCreateOk`), commit-gate review
+
+- Staged diff split `allow create` into `ingredientCreateOk() || occasionCreateOk()`. Suite was 102/102.
+- Conjunct-deletion mutants on the occasion branch only (sliced from `function occasionCreateOk()` to
+  the update comment, count asserted 1): createdAt, batchId, `w is list`, the oldWords call site
+  (replaced by `is list && size <= 200`) and hasAll all SURVIVED 102/102. note/status/createdBy/kind/
+  split/lower/both regexes each killed one test.
+- `w is list` survived because the `w.size() == 0 ||` shortcut means only an EMPTY wrong-type value
+  (`""`, `{}`) skips the item checks; a non-empty string CEL-errors in `join` anyway.
+- Added 9 tests (o26–o34): createdAt server time, batchId >100 and list, note list, oldWords "" and {},
+  old-word shape ("Jul"), old-word comma, full 200x60 allow on both lists. 111/111; re-run mutants each
+  killed only the new tests named for them; hasAll still survives (redundant: every key carries an
+  `==`/`in`/`is list` conjunct).
+- All 36 lists in occasions.json measured against the rule shape (<=200, <=60, regex, lower, no comma,
+  NFC): zero violations, so oldWords from the live file cannot be refused.

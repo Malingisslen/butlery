@@ -71,6 +71,13 @@ jobs:
           fi
 
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # the word-list check reads history back to the last version change
+
+      # Admin-vy D: the word lists are compiled into the app and recipes are
+      # re-tagged only when kTagGeneratorVersion changes.
+      - name: Refuse changed word lists without a tag version change
+        run: node tools/release/check_tag_version_bump.mjs HEAD
 
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
