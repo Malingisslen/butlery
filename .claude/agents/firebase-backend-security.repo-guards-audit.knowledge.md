@@ -126,6 +126,10 @@
   invariant in the shared `toFirestore(entity)` serializer instead, but grep for hand-built
   `.set(`/`.update(` calls bypassing the repository, and watch a `copyWith` transform
   inheriting a stray default (`updatedAt ?? now()`) that restamps every "clean" write.
+  The same default bites READS: a reader hydrating a parent via `copyWith(items: ...)`
+  (`UnifiedShoppingList.copyWith` is one) hands out load time as `updatedAt`, so any
+  sort or display on it is noise — a reader must pass the stored value through. Grep
+  read paths for `copyWith(items:` without `updatedAt:`.
   `validateRequiredFields` checks `containsKey` only — never credit it with rejecting an
   empty/blank value.
 - An embedded PREVIOUS-VERSION snapshot (`previous: {fields, at}` written in the same update)
