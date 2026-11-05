@@ -161,6 +161,11 @@ void main() {
       final result = await _module(firestore).readAll();
 
       expect(result.map((l) => l.id), ['small', 'empty', 'big']);
+      expect(result.map((l) => l.updatedAt.toUtc()), [
+        DateTime.utc(2026, 1, 3),
+        DateTime.utc(2026, 1, 2),
+        DateTime.utc(2026, 1, 1),
+      ]);
       final byId = {for (final l in result) l.id: l};
       expect(
         byId['big']!.items.map((i) => i.name),

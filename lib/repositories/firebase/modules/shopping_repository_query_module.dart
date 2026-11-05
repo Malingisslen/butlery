@@ -55,7 +55,10 @@ class ShoppingRepositoryQueryModule {
             'Loaded list "${list.name}" with ${items.length} items',
             'ShoppingRepository',
           );
-          return list.copyWith(items: items);
+          // copyWith stamps updatedAt with the current time unless told
+          // otherwise; a read must keep the stored value or the sort below
+          // orders lists by when they were loaded.
+          return list.copyWith(items: items, updatedAt: list.updatedAt);
         }),
       );
 
