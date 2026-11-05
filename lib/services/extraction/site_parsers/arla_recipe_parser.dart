@@ -12,7 +12,6 @@
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
-import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Parser for Arla.se recipes
 /// **Example URL:** https://www.arla.se/recept/chokladbollar/
@@ -44,7 +43,7 @@ class ArlaRecipeParser extends RecipeSiteParser {
         recipe['nutrition'] = nutrition;
       }
 
-      recipe = _cleanArlaFormatting(recipe);
+      recipe = cleanRecipeFormatting(recipe);
       return recipe;
     } catch (e) {
       return recipe;
@@ -179,35 +178,6 @@ class ArlaRecipeParser extends RecipeSiteParser {
     } catch (e) {
       return null;
     }
-  }
-
-  /// Clean Arla-specific formatting quirks
-  Map<String, dynamic> _cleanArlaFormatting(Map<String, dynamic> recipe) {
-    // Arla sometimes includes "ca" (cirka/approximately) in portions
-    final yield_ = recipe['recipeYield'];
-    if (yield_ is String) {
-      recipe['recipeYield'] = yield_
-          .replaceAll('ca ', '')
-          .replaceAll('cirka ', '')
-          .trim();
-    }
-
-    // Clean ingredient formatting
-    if (recipe['recipeIngredient'] is List) {
-      final ingredients = recipe['recipeIngredient'] as List;
-      recipe['recipeIngredient'] = ingredients
-          .map((ing) => cleanSwedishText(ing.toString()))
-          .where((ing) => ing.isNotEmpty)
-          .toList();
-    }
-
-    if (recipe['recipeInstructions'] is List) {
-      recipe['recipeInstructions'] = recipeInstructionTexts(
-        recipe['recipeInstructions'] as List,
-      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
-    }
-
-    return recipe;
   }
 
   // CSS SELECTOR EXTRACTION (Fallback Methods)

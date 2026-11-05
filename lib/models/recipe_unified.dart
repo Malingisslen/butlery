@@ -800,6 +800,28 @@ class RecipeCore with JsonSerializableMixin {
       ? title.substring(0, title.length - _legacyOwnerCopySuffix.length)
       : title;
 
+  static DataIntegrityStatus _integrityStatusFor({
+    required String id,
+    required String storedTitle,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required String? storedChecksum,
+  }) {
+    if (storedChecksum == null) return DataIntegrityStatus.unverified;
+    final computedChecksum = computeChecksum(
+      id: id,
+      title: storedTitle,
+      ingredients: ingredients,
+      instructions: instructions,
+    );
+    if (computedChecksum == storedChecksum) return DataIntegrityStatus.valid;
+    AppLogger.warning(
+      '⚠️ Data integrity check failed for recipe $id: '
+      'stored checksum does not match computed checksum',
+    );
+    return DataIntegrityStatus.invalid;
+  }
+
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
     final id = utils.SerializationUtils.safeString(json, 'id');
     final storedTitle = utils.SerializationUtils.safeString(json, 'title');
@@ -815,27 +837,13 @@ class RecipeCore with JsonSerializableMixin {
       'dataChecksum',
     );
 
-    // Compute data integrity status
-    DataIntegrityStatus integrityStatus;
-    if (storedChecksum == null) {
-      integrityStatus = DataIntegrityStatus.unverified;
-    } else {
-      final computedChecksum = computeChecksum(
-        id: id,
-        title: storedTitle,
-        ingredients: ingredients,
-        instructions: instructions,
-      );
-      if (computedChecksum == storedChecksum) {
-        integrityStatus = DataIntegrityStatus.valid;
-      } else {
-        integrityStatus = DataIntegrityStatus.invalid;
-        AppLogger.warning(
-          '⚠️ Data integrity check failed for recipe $id: '
-          'stored checksum does not match computed checksum',
-        );
-      }
-    }
+    final integrityStatus = _integrityStatusFor(
+      id: id,
+      storedTitle: storedTitle,
+      ingredients: ingredients,
+      instructions: instructions,
+      storedChecksum: storedChecksum,
+    );
 
     return RecipeCore(
       id: id,
@@ -1075,27 +1083,13 @@ class RecipeCore with JsonSerializableMixin {
       'dataChecksum',
     );
 
-    // Compute data integrity status
-    DataIntegrityStatus integrityStatus;
-    if (storedChecksum == null) {
-      integrityStatus = DataIntegrityStatus.unverified;
-    } else {
-      final computedChecksum = computeChecksum(
-        id: id,
-        title: storedTitle,
-        ingredients: ingredients,
-        instructions: instructions,
-      );
-      if (computedChecksum == storedChecksum) {
-        integrityStatus = DataIntegrityStatus.valid;
-      } else {
-        integrityStatus = DataIntegrityStatus.invalid;
-        AppLogger.warning(
-          '⚠️ Data integrity check failed for recipe $id: '
-          'stored checksum does not match computed checksum',
-        );
-      }
-    }
+    final integrityStatus = _integrityStatusFor(
+      id: id,
+      storedTitle: storedTitle,
+      ingredients: ingredients,
+      instructions: instructions,
+      storedChecksum: storedChecksum,
+    );
 
     return RecipeCore(
       id: id,
