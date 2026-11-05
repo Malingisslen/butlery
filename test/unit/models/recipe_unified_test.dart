@@ -410,6 +410,31 @@ void main() {
         expect(testRecipe.core.toJson().containsKey('isOwnerCopy'), isFalse);
       });
 
+      test('integrity status: missing, matching and mismatching checksum', () {
+        final stamped = testRecipe.core.copyWith()..updateChecksum();
+        for (final build in <RecipeCore Function(Map<String, dynamic>)>[
+          (data) => RecipeCore.fromMap(stamped.id, data),
+          RecipeCore.fromJson,
+        ]) {
+          final wire = build == RecipeCore.fromJson
+              ? stamped.toJson()
+              : stamped.toFirestore();
+          expect(build(wire).dataIntegrityStatus, DataIntegrityStatus.valid);
+
+          final tampered = {...wire, 'title': 'Ändrad titel'};
+          expect(
+            build(tampered).dataIntegrityStatus,
+            DataIntegrityStatus.invalid,
+          );
+
+          final unstamped = {...wire}..remove('dataChecksum');
+          expect(
+            build(unstamped).dataIntegrityStatus,
+            DataIntegrityStatus.unverified,
+          );
+        }
+      });
+
       test('a stored " (Min kopia)" title is stripped and flagged', () {
         final stored = testRecipe.core.copyWith(
           title: 'Köttbullar (Min kopia)',

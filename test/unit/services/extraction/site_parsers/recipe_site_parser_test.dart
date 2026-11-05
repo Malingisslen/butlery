@@ -287,4 +287,38 @@ void main() {
       });
     });
   });
+
+  group('cleanRecipeFormatting', () {
+    final parser = _NoopParser();
+
+    test('keeps a leading ca in ingredients unless asked to strip it', () {
+      final lines = ['ca 2 dl mjölk', 'smör'];
+      expect(
+        parser.cleanRecipeFormatting({
+          'recipeIngredient': [...lines],
+        })['recipeIngredient'],
+        lines,
+      );
+      expect(
+        parser.cleanRecipeFormatting(
+          {
+            'recipeIngredient': [...lines],
+          },
+          stripCirkaFromIngredients: true,
+        )['recipeIngredient'],
+        ['2 dl mjölk', 'smör'],
+      );
+    });
+
+    test('cleans portions, ingredients and instructions', () {
+      final recipe = parser.cleanRecipeFormatting({
+        'recipeYield': 'cirka 4',
+        'recipeIngredient': ['  1  ägg ', ' '],
+        'recipeInstructions': ['Vispa  ägget', ''],
+      });
+      expect(recipe['recipeYield'], '4');
+      expect(recipe['recipeIngredient'], ['1 ägg']);
+      expect(recipe['recipeInstructions'], ['Vispa ägget']);
+    });
+  });
 }
