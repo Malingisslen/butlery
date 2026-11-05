@@ -265,6 +265,10 @@ jobs:
       shell: bash
       run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
+    - name: Free disk space
+      if: matrix.platform == 'android'
+      run: scripts/ci_free_disk.sh
+
     - name: Setup Flutter
       uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
