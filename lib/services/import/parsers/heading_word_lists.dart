@@ -33,6 +33,7 @@ class HeadingWordLists {
   static const instructionBlockMarkers = {
     'gör så här',
     'så gör du',
+    'så här gör du',
     'instruktion',
     'instruktioner',
     'tillagning',
