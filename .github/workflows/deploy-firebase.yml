@@ -9,6 +9,9 @@
 #
 # Staging first, then production: docs/ops/staging.md.
 #
+# Manual only: a release tag does NOT start a deploy (release.yml tags with
+# GITHUB_TOKEN, which starts no workflows). Dispatch this after a release.
+#
 # ─── ONE-TIME USER SETUP ─────────────────────────────────────────────────────
 #
 # `production` GitHub Environment (the manual-approval gate):
