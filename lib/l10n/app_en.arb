@@ -457,6 +457,14 @@
   "errorNetwork": "Network error. Check your internet connection.",
   "errorServer": "Server error. Please try again later.",
   "errorAuthentication": "Authentication error. Please sign in again.",
+  "errorAuthenticationWithCode": "Authentication error ({code}). Please sign in again.",
+  "@errorAuthenticationWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "errorSignupNotInvited": "Butlery is open to invited people only right now.",
   "errorSignupGateUnavailable": "The account could not be created right now. Please try again in a moment.",
   "errorSignupRefusedUnmarked": "Butlery is open to invited people only right now. Have you been invited? Please try again in a moment.",

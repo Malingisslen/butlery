@@ -463,6 +463,14 @@
   "errorNetwork": "Nätverksfel. Kontrollera din internetanslutning.",
   "errorServer": "Serverfel. Försök igen senare.",
   "errorAuthentication": "Autentiseringsfel. Logga in igen.",
+  "errorAuthenticationWithCode": "Autentiseringsfel ({code}). Logga in igen.",
+  "@errorAuthenticationWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "errorSignupNotInvited": "Butlery är bara öppet för inbjudna just nu.",
   "errorSignupGateUnavailable": "Det gick inte att skapa kontot just nu. Försök igen om en stund.",
   "errorSignupRefusedUnmarked": "Butlery är bara öppet för inbjudna just nu. Har du fått en inbjudan? Försök igen om en stund.",

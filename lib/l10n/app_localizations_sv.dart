@@ -489,6 +489,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorAuthentication => 'Autentiseringsfel. Logga in igen.';
 
   @override
+  String errorAuthenticationWithCode(String code) {
+    return 'Autentiseringsfel ($code). Logga in igen.';
+  }
+
+  @override
   String get errorSignupNotInvited =>
       'Butlery är bara öppet för inbjudna just nu.';
 

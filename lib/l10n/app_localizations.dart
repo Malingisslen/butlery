@@ -764,6 +764,12 @@ abstract class AppLocalizations {
   /// **'Autentiseringsfel. Logga in igen.'**
   String get errorAuthentication;
 
+  /// No description provided for @errorAuthenticationWithCode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Autentiseringsfel ({code}). Logga in igen.'**
+  String errorAuthenticationWithCode(String code);
+
   /// No description provided for @errorSignupNotInvited.
   ///
   /// In sv, this message translates to:

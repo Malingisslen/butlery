@@ -23,7 +23,13 @@ mixin AuthAccountChanges on ChangeNotifier, StateNotifierMixin {
     bool passwordSignIn = false,
   }) {
     AppLogger.error('Firebase Auth Error Code: ${e.code}');
-    setError(mapAuthErrorToMessage(e, passwordSignIn: passwordSignIn));
+    final mapped = mapAuthErrorToMessage(e, passwordSignIn: passwordSignIn);
+    final l = AppLocale.current;
+    setError(
+      mapped == l.errorAuthentication
+          ? l.errorAuthenticationWithCode(e.code)
+          : mapped,
+    );
   }
 
   /// Re-authenticate user with password (required before sensitive operations).
