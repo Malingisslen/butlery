@@ -11,12 +11,6 @@
 /// - Foreground notification handling (no Firebase calls)
 /// - Navigation handling (no Firebase calls)
 /// - Edge cases (null data, empty topics, special characters)
-///
-/// `initialize()` is not directly tested here because it touches the
-/// static streams `FirebaseMessaging.onMessage` / `.onMessageOpenedApp` /
-/// `.onBackgroundMessage`, which the FCM SDK doesn't expose for mocking.
-/// Initialization is exercised indirectly via integration tests of
-/// NotificationService.
 library;
 
 import 'dart:async';
@@ -24,6 +18,7 @@ import 'dart:ui' show Locale;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show VoidCallback;
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter/material.dart'
     show MaterialApp, MaterialPageRoute, RouteSettings, SizedBox;
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +30,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 
 import '../../../test_support/base_unit_test.dart';
@@ -165,6 +161,8 @@ class _RecordingConsent extends Mock implements ConsentService {
     return Future.value(_hasConsent);
   }
 }
+
+class _MockUserService extends Mock implements UserService {}
 
 /// The lookups are inert here: this file tests FCMService's own behaviour.
 /// Which service each lookup reaches is pinned by
@@ -505,6 +503,38 @@ void main() {
       });
     });
 
+    group('initialize', () {
+      // The background handler registration talks to the native plugin.
+      const channel = MethodChannel('plugins.flutter.io/firebase_messaging');
+      setUp(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async => null);
+      });
+      tearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null);
+      });
+
+      // A successful run used to throw "Failed to initialize FCM service",
+      // which made NotificationService skip the rest of its start-up.
+      test('a successful run completes without throwing', () async {
+        final consent = _RecordingConsent()..setConsent(false);
+
+        await service.initialize(consentService: consent);
+      });
+
+      test('without push consent it asks for no permission', () async {
+        final recording = _RecordingMessaging();
+        service = _newFcm(recording);
+        final consent = _RecordingConsent()..setConsent(false);
+
+        await service.initialize(consentService: consent);
+
+        expect(recording.requestPermissionCalls, 0);
+        expect(recording.getTokenCalls, 0);
+      });
+    });
+
     group('Lifecycle', () {
       test('dispose is idempotent — second call no-ops cleanly', () async {
         await service.dispose();
@@ -692,6 +722,43 @@ void main() {
           initialCalls,
           reason: 'token-refresh path must not re-query the SDK',
         );
+      });
+    });
+
+    group('Token refresh and consent', () {
+      late _MockUserService userService;
+
+      setUp(() {
+        userService = _MockUserService();
+        when(() => userService.updateFCMToken(any())).thenAnswer((_) async {});
+        service = FCMService(
+          messaging: mockMessaging,
+          getUserService: () => userService,
+          getRecipeRepository: () => throw StateError('not wired'),
+          getSharedMenuRepository: () => throw StateError('not wired'),
+          getRecipeService: () => throw StateError('not wired'),
+          getPermissionService: () => throw StateError('not wired'),
+        );
+      });
+
+      test('without push consent a refreshed token is not saved', () async {
+        await service.bindUserContext(
+          consentService: _RecordingConsent()..setConsent(false),
+        );
+
+        await service.handleTokenRefreshForTest('rotated-token');
+
+        verifyNever(() => userService.updateFCMToken(any()));
+      });
+
+      test('with push consent a refreshed token is saved', () async {
+        await service.bindUserContext(
+          consentService: _RecordingConsent()..setConsent(true),
+        );
+
+        await service.handleTokenRefreshForTest('rotated-token');
+
+        verify(() => userService.updateFCMToken('rotated-token')).called(1);
       });
     });
 
