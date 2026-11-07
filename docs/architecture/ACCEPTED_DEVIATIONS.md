@@ -6824,3 +6824,25 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
   `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
   documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
   not touched by that call.
+
+## [Legal] Kokboksprovet: photos of bought cookbooks stored in the cloud as a parser test (2026-11-07)
+
+Decided by Malin 2026-11-07 on two decision cards: route B "Låst i molnet" (22:53) and, on
+copyright, every book included with the risk accepted (23:00), plus "b men vi sparar dem lokalt
+när vi är klara".
+
+- **What is accepted.** Photographing books Malin owns and letting the parser read them for
+  internal measurement rests on the text-and-data-mining exception (15 b § upphovsrättslagen),
+  which does not apply where the rightholder has reserved it. Whether a printed "kopiering
+  förbjuden" line is such a reservation is untested. Malin takes that residual risk for all books.
+- **Where the material lives.** Photos under `corpus/` in Storage; books, page text, answer keys
+  and run summaries in `corpus_books`, `corpus_pages` and `corpus_runs`. Only an admin reads
+  them (`storage.rules`, `firestore.rules`; `functions/src/__tests__/corpus-rules.test.ts`),
+  and only the Admin SDK writes the Firestore documents.
+- **Retention.** When a book has been read and its answer keys reviewed, its photos are moved
+  from the cloud to Malin's computer; the cloud keeps text and answer keys. A withdrawn book has
+  its text and answer keys deleted.
+- **Use.** Internal measurement and improvement only: never shown to users, never used to train
+  a model, never shared or exported. The public repo, CI logs and artefacts carry ingredient and
+  unit words one at a time and aggregate figures, never photos, text, recipe or book titles, or
+  figures per book or per page. A move towards users needs a new legal review.

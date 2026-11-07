@@ -78,6 +78,30 @@ service firebase.storage {
         && isWithinSizeLimit(10);
     }
 
+    // Kokboksprovet: photos of the admin's own cookbooks, which the parser is
+    // measured against. They are copyright material (decision 2026-11-07 in
+    // docs/architecture/ACCEPTED_DEVIATIONS.md), so the folder sits at the top
+    // level, outside every user's folder, and only an admin (the `admin` claim,
+    // as for feedback/ above) can list, read, upload or delete. Clients read
+    // the bytes through these rules; a download URL would bypass them.
+    function isCorpusAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /corpus/{allPaths=**} {
+      allow read, delete: if isCorpusAdmin();
+    }
+
+    // A camera photo (JPEG, or HEIC from an iPhone) of one page. Book ids are
+    // opaque so that no object path names a book.
+    match /corpus/{bookId}/{fileName} {
+      allow create, update: if isCorpusAdmin()
+        && bookId.matches('[a-z0-9-]{1,64}')
+        && fileName.matches('[A-Za-z0-9_-]{1,100}[.](jpg|jpeg|heic|heif)')
+        && request.resource.contentType in ['image/jpeg', 'image/heic', 'image/heif']
+        && isWithinSizeLimit(15);
+    }
+
     // Default deny for all other paths
     match /{allPaths=**} {
       allow read, write: if false;
