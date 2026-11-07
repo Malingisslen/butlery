@@ -6,50 +6,12 @@
 // lib/utils/social_content_features.dart
 
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/models/shared_shopping_list.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/core/utils/logger.dart';
-
-/// PHASE 3 FIX: Result class for share target validation
-/// Used to communicate validation results and provide user feedback
-/// Renamed to avoid conflict with UniversalShareDialogViewModel's ShareValidationResult
-class ShareTargetValidationResult {
-  final bool isValid;
-  final List<String> validTargets;
-  final String message;
-
-  const ShareTargetValidationResult._({
-    required this.isValid,
-    required this.validTargets,
-    required this.message,
-  });
-
-  /// Create result for valid share targets
-  factory ShareTargetValidationResult.valid(List<String> validTargets) {
-    return ShareTargetValidationResult._(
-      isValid: true,
-      validTargets: validTargets,
-      message: 'All targets validated successfully',
-    );
-  }
-
-  /// Create result for invalid share attempt
-  factory ShareTargetValidationResult.invalid(String message) {
-    return ShareTargetValidationResult._(
-      isValid: false,
-      validTargets: [],
-      message: message,
-    );
-  }
-}
 
 /// Comprehensive social content features utility providing advanced social functionality coordination.
 /// Centralizes social content operations including friend management, sharing coordination,
@@ -130,28 +92,6 @@ class SocialContentFeatures {
     List<String>? groupIds,
   }) async {
     try {
-      if (contentType == 'shopping_list' && service is UnifiedShoppingService) {
-        // Get the shopping list
-        final shoppingList = service.lists.firstWhere(
-          (list) => list.id == contentId,
-        );
-
-        // PHASE 1 FIX: Create proper invitation instead of direct conversion
-        final success = await _createSharedShoppingListInvitation(
-          shoppingList,
-          friendIds,
-          message,
-          service,
-          groupIds,
-        );
-
-        if (!success) {
-          return false;
-        }
-
-        return true;
-      }
-
       // RECIPE INVITATION ROUTING
       if (contentType == 'recipe' && service is SocialRecipeService) {
         // Use SocialRecipeCoordinator to create recipe invitation
@@ -226,112 +166,5 @@ class SocialContentFeatures {
     setter(false);
     selectedIds.clear();
     notifyListeners();
-  }
-
-  /// Create SharedShoppingList invitation for proper "Delat med mig" workflow
-  /// This method converts UnifiedShoppingList to SharedShoppingList invitation
-  /// and persists it via FirebaseSharedShoppingRepository
-  static Future<bool> _createSharedShoppingListInvitation(
-    UnifiedShoppingList shoppingList,
-    List<String> friendIds,
-    String message,
-    UnifiedShoppingService service,
-    List<String>? groupIds,
-  ) async {
-    try {
-      // Get current user information
-      final currentUserId = service.currentUserId;
-      final userService = ServiceLocator.get<UserService>();
-      final currentUserProfile = userService.currentUserProfile;
-
-      if (currentUserId == null || currentUserProfile == null) {
-        return false;
-      }
-
-      // PHASE 3 FIX: Validate share targets to prevent duplicate invitations
-      final validationResult = await _validateShareTargets(
-        shoppingList,
-        friendIds,
-        service,
-      );
-      if (!validationResult.isValid) {
-        return false;
-      }
-
-      final validFriendIds = validationResult.validTargets;
-
-      // Create SharedShoppingList invitation with validated targets
-      final validatedSharedShoppingList = SharedShoppingList.create(
-        sharedByUserId: currentUserId,
-        sharedByDisplayName: currentUserProfile.displayName,
-        sharedToUserIds: validFriendIds,
-        shareMessage: message,
-        listName: shoppingList.name,
-        listDescription: shoppingList.description,
-        itemCount: shoppingList.items.length,
-      );
-
-      // Persist invitation via repository
-      final sharedShoppingRepository =
-          ServiceLocator.get<FirebaseSharedShoppingRepository>();
-      // Note (Issue #014): Pass recipientIds separately since arrays removed from model
-      await sharedShoppingRepository.createSharedShoppingList(
-        validatedSharedShoppingList,
-        recipientIds: validFriendIds,
-        groupIds: groupIds,
-      );
-
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to create shopping list invitation: $e');
-      return false;
-    }
-  }
-
-  /// PHASE 3 FIX: Validate share targets to prevent duplicate invitations
-  /// This method checks if target users are already members of existing collaborative versions
-  static Future<ShareTargetValidationResult> _validateShareTargets(
-    UnifiedShoppingList shoppingList,
-    List<String> friendIds,
-    UnifiedShoppingService service,
-  ) async {
-    try {
-      // Check if there's already a collaborative version of this list
-      final collaborativeVersions = service.lists
-          .where(
-            (list) =>
-                list.type == ListType.collaborative &&
-                list.name == shoppingList.name &&
-                list.ownerId == shoppingList.ownerId,
-          )
-          .toList();
-
-      if (collaborativeVersions.isEmpty) {
-        return ShareTargetValidationResult.valid(friendIds);
-      }
-
-      // Get existing members from all collaborative versions
-      final existingMembers = <String>{};
-      for (final collaborativeList in collaborativeVersions) {
-        existingMembers.addAll(collaborativeList.collaborators);
-      }
-
-      // Filter out targets who are already members
-      final validTargets = friendIds
-          .where((friendId) => !existingMembers.contains(friendId))
-          .toList();
-
-      if (validTargets.isEmpty) {
-        return ShareTargetValidationResult.invalid(
-          'All selected users already have access to this list',
-        );
-      }
-
-      return ShareTargetValidationResult.valid(validTargets);
-    } catch (e) {
-      AppLogger.error('Share validation failed: $e');
-      // On error, allow all targets to avoid blocking sharing
-      return ShareTargetValidationResult.valid(friendIds);
-    }
   }
 }

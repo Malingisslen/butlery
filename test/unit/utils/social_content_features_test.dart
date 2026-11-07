@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
-import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
@@ -72,48 +71,36 @@ void main() {
 
   tearDown(ServiceLocator.reset);
 
-  Future<SharedShoppingList> shareAndCapture(UnifiedShoppingList list) async {
-    shopping.setShoppingState(lists: [list], currentUserId: 'me');
+  // BUT-2399: a shopping list is shared by live-list invitation only, so this
+  // utility must never write a shared_content copy for one.
+  test('a shopping_list share writes no shared_content row', () async {
+    shopping.setShoppingState(
+      lists: [
+        UnifiedShoppingList(
+          id: 'l1',
+          name: 'Helgshandling',
+          ownerId: 'me',
+          ownerDisplayName: 'Anna',
+        ),
+      ],
+      currentUserId: 'me',
+    );
+
     final ok = await SocialContentFeatures.shareContentWithFriends(
-      list.id,
+      'l1',
       'shopping_list',
       const ['friend-1'],
       'hej',
       shopping,
     );
-    expect(ok, isTrue);
-    return verify(
-          () => repository.createSharedShoppingList(
-            captureAny(),
-            recipientIds: ['friend-1'],
-            groupIds: null,
-          ),
-        ).captured.single
-        as SharedShoppingList;
-  }
 
-  UnifiedShoppingList listWith(int itemCount) => UnifiedShoppingList(
-    id: 'l1',
-    name: 'Helgshandling',
-    ownerId: 'me',
-    ownerDisplayName: 'Anna',
-    items: [
-      for (var i = 0; i < itemCount; i++)
-        UnifiedShoppingItem(name: 'vara $i', amount: 1),
-    ],
-  );
-
-  group('shareContentWithFriends shopping_list invitation', () {
-    test('stamps itemCount from the list items (BUT-2095)', () async {
-      final shared = await shareAndCapture(listWith(3));
-
-      expect(shared.itemCount, 3);
-    });
-
-    test('stamps itemCount 0 for an empty list', () async {
-      final shared = await shareAndCapture(listWith(0));
-
-      expect(shared.itemCount, 0);
-    });
+    expect(ok, isFalse);
+    verifyNever(
+      () => repository.createSharedShoppingList(
+        any(),
+        recipientIds: any(named: 'recipientIds'),
+        groupIds: any(named: 'groupIds'),
+      ),
+    );
   });
 }

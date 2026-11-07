@@ -208,32 +208,6 @@ class SocialShoppingCoordinator
     }
   }
 
-  /// Create shopping list invitation using SharedShoppingList model
-  Future<String?> createShoppingListInvitation({
-    required String shoppingListId,
-    required List<String> inviteeUserIds,
-    String? message,
-  }) async {
-    return await createInvitation(
-      contentId: shoppingListId,
-      inviteeUserIds: inviteeUserIds,
-      message: message,
-    );
-  }
-
-  /// Share shopping list with friends
-  Future<bool> shareShoppingListWithFriends({
-    required String shoppingListId,
-    required List<String> friendIds,
-    String? message,
-  }) async {
-    return await shareWithFriends(
-      contentId: shoppingListId,
-      friendIds: friendIds,
-      message: message,
-    );
-  }
-
   /// Get shopping list invitations received by current user
   Future<List<SharedShoppingList>> getReceivedShoppingListInvitations() async {
     return await getReceivedInvitations();

@@ -343,7 +343,6 @@ void main() {
           friendUserIds: any(named: 'friendUserIds'),
           groupIds: any(named: 'groupIds'),
           message: any(named: 'message'),
-          shareMode: any(named: 'shareMode'),
         ),
       ).thenAnswer((_) async => true);
       tester.view.physicalSize = const Size(900, 1400);
@@ -405,7 +404,6 @@ void main() {
           friendUserIds: any(named: 'friendUserIds'),
           groupIds: any(named: 'groupIds'),
           message: any(named: 'message'),
-          shareMode: any(named: 'shareMode'),
         ),
       ).thenAnswer((_) async => true);
       tester.view.physicalSize = const Size(900, 1400);
@@ -702,6 +700,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
+        // BUT-2399: a list is only ever shared as an invitation.
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(UniversalShareDialog)),
+        );
+        expect(find.text(l10n.shareStaticCopy), findsNothing);
       });
 
       testWidgets('should handle custom messages correctly', (tester) async {

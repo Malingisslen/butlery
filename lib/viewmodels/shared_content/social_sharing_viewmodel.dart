@@ -11,10 +11,8 @@ import 'package:butlery/models/user_profile.dart';
 // Removed unused imports
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
-import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -54,9 +52,7 @@ class SocialSharingViewModel extends ChangeNotifier
   final UnifiedFriendsService _friendsService;
   final SocialRecipeCoordinator _recipeCoordinator;
   final SocialMenuCoordinator _menuCoordinator;
-  final SocialShoppingCoordinator _shoppingCoordinator;
   final UnifiedMenuService _menuService;
-  final UnifiedShoppingService _shoppingService;
 
   /// Available friends for sharing
   List<UserProfile> _availableFriends = [];
@@ -79,15 +75,11 @@ class SocialSharingViewModel extends ChangeNotifier
     required UnifiedFriendsService friendsService,
     required SocialRecipeCoordinator recipeCoordinator,
     required SocialMenuCoordinator menuCoordinator,
-    required SocialShoppingCoordinator shoppingCoordinator,
     required UnifiedMenuService menuService,
-    required UnifiedShoppingService shoppingService,
   }) : _friendsService = friendsService,
        _recipeCoordinator = recipeCoordinator,
        _menuCoordinator = menuCoordinator,
-       _shoppingCoordinator = shoppingCoordinator,
-       _menuService = menuService,
-       _shoppingService = shoppingService {
+       _menuService = menuService {
     AppLogger.info(
       'SocialSharingViewModel initialized for unified social sharing',
     );
@@ -344,28 +336,15 @@ class SocialSharingViewModel extends ChangeNotifier
     );
   }
 
-  /// Share shopping list with friends
+  /// BUT-2399: a shopping list is shared by inviting to the live list, never by
+  /// writing a shared_content copy, so this path never creates one.
   Future<SharingResult> _shareShoppingList(
     String id,
     List<String> friendIds,
     String message,
-  ) async {
-    AppLogger.info(
-      '🛒 Sharing shopping list $id with ${friendIds.length} friends',
-    );
-    if (_shoppingService.lists.where((list) => list.id == id).firstOrNull ==
-        null) {
-      return SharingResult.failure('Shopping list not found: $id');
-    }
-    return await _shareWithCoordinator(
-      () async => await _shoppingCoordinator.createShoppingListInvitation(
-        shoppingListId: id,
-        inviteeUserIds: friendIds,
-        message: message.isNotEmpty ? message : null,
-      ),
-      'shopping list',
-    );
-  }
+  ) async => SharingResult.failure(
+    'Shopping lists are shared through live-list invitations',
+  );
 
   /// Generic sharing helper with coordinator
   Future<SharingResult> _shareWithCoordinator(

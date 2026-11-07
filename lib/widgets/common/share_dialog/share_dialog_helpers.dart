@@ -81,10 +81,8 @@ class ShareDialogHelpers {
     Object? sharedList,
   }) {
     final l10n = context.l10n;
-    // A live share of a shopping list sends invitations; nobody has joined yet.
-    if (shareMode == ShareMode.realtime &&
-        sharedList is UnifiedShoppingList &&
-        sharedList.type == ListType.collaborative) {
+    // Sharing a shopping list sends invitations; nobody has joined yet.
+    if (sharedList is UnifiedShoppingList) {
       return l10n.listInviteShareSent;
     }
     // A group is one pick but several people, so with a group in the mix the
