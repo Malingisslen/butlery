@@ -562,14 +562,21 @@ service cloud.firestore {
       // create-absent + update-immutable clauses. NOTE: `isSearchable` stays
       // freely client-writable — a minor's private default is set once by the CF,
       // but the user may later opt into discovery by toggling it (Q1).
+      //
+      // BUT-2481: `sessionsRevokedAt` is the same shape — written ONLY by the
+      // `revokeOtherSessions` Cloud Function; the app reads it to tell the
+      // owner that other devices were signed out.
       allow create: if isOwner(userId)
         && request.resource.data.get('birthYear', null) == null
-        && request.resource.data.get('isMinor', null) == null;
+        && request.resource.data.get('isMinor', null) == null
+        && request.resource.data.get('sessionsRevokedAt', null) == null;
       allow update: if isOwner(userId)
         && request.resource.data.get('birthYear', null)
            == resource.data.get('birthYear', null)
         && request.resource.data.get('isMinor', null)
-           == resource.data.get('isMinor', null);
+           == resource.data.get('isMinor', null)
+        && request.resource.data.get('sessionsRevokedAt', null)
+           == resource.data.get('sessionsRevokedAt', null);
       allow delete: if isOwner(userId);
 
       // User's recipes

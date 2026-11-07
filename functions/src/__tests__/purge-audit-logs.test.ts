@@ -27,7 +27,13 @@ const {
   GENERAL_RETENTION_DAYS,
   CONSENT_OPERATION_PREFIX,
   CONSENT_OPERATIONS,
+  SHORT_RETENTION_DAYS,
+  SHORT_RETENTION_OPERATIONS,
 } = require("../audit_logs/purge-expired");
+// The writer's own constant, so a rename there cannot silently move its rows
+// to the 180-day bucket.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { REVOKE_OPERATION, auditRow } = require("../account/revoke-other-sessions");
 
 interface SeedDoc {
   id: string;
@@ -495,6 +501,37 @@ async function consentOperationsArrayIsExhaustive(): Promise<void> {
   );
 }
 
+async function sessionRevokeRowsKeepNinetyDays(): Promise<void> {
+  const store: FakeStore = {
+    docs: [
+      { id: "s-old", operation: REVOKE_OPERATION, timestampMs: daysAgo(100) },
+      { id: "s-fresh", operation: REVOKE_OPERATION, timestampMs: daysAgo(60) },
+      { id: "g-100", operation: "read", timestampMs: daysAgo(100) },
+      { id: "c-100", operation: "consent_updated", timestampMs: daysAgo(100) },
+    ],
+    deleted: new Set(),
+  };
+  const db = makeFakeDb(store) as never;
+  // The general leg must leave the 90-day class to the short leg.
+  await purgeAuditCategoryWithDb(db, "general", cutoffDays(GENERAL_RETENTION_DAYS) as never);
+  const afterGeneral = [...store.deleted];
+  await purgeAuditCategoryWithDb(db, "short", cutoffDays(SHORT_RETENTION_DAYS) as never);
+  const ok =
+    SHORT_RETENTION_DAYS === 90 &&
+    SHORT_RETENTION_OPERATIONS.includes(REVOKE_OPERATION) &&
+    auditRow({ action: REVOKE_OPERATION }).operation === REVOKE_OPERATION &&
+    // Firestore allows 10 values in a not-in; the general leg sends both lists.
+    CONSENT_OPERATIONS.length + SHORT_RETENTION_OPERATIONS.length <= 10 &&
+    afterGeneral.length === 0 &&
+    store.deleted.size === 1 &&
+    store.deleted.has("s-old");
+  record(
+    "session_revoke_other rows are purged at 90 days by the short leg only",
+    ok,
+    `afterGeneral=${afterGeneral.join(",")} deleted=${[...store.deleted].join(",")}`
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("BUT-665: audit-log retention purge tests\n");
   console.log("==========================================\n");
@@ -507,6 +544,7 @@ async function runAll(): Promise<void> {
   await generalBucketIgnoresFreshConsent();
   await generalPurgeNotStarvedByConsentRows();
   await consentOperationsArrayIsExhaustive();
+  await sessionRevokeRowsKeepNinetyDays();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

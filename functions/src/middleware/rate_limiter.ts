@@ -240,6 +240,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 10,
   },
 
+  // BUT-2481: "Logga ut från alla enheter", three per hour, ten per day. Its
+  // own entry on purpose: `withRateLimit` would also draw on the shared AI budget.
+  revokeOtherSessions: {
+    maxTokens: 3,
+    refillRate: 3,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+
   // BUT-2222: called once each time "Mina anmälningar" loads.
   getMyReportOutcomes: {
     maxTokens: 20,

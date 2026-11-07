@@ -205,6 +205,9 @@ export {
   clearMfaBackupCodes,
 } from "./account/mfa-backup-codes";
 
+// BUT-2481: sign out every other device of a Google/Apple account.
+export { revokeOtherSessions } from "./account/revoke-other-sessions";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 // Steg 10E: the profile copy of a recipe its owner chose to show.

@@ -6824,3 +6824,24 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
   `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
   documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
   not touched by that call.
+
+## "Logga ut från alla enheter": three accepted gaps (BUT-2481, 2026-11-07)
+
+Decided by Malin 2026-11-07 (card "Acceptera, notera som känd avvikelse").
+
+- **A thief with an unlocked phone can press the button.** The server demands a Google or Apple
+  sign-in from the last five minutes (and the second factor if the account has one), so the thief
+  must pass a fresh provider sign-in; a phone that is already signed in to the provider may allow
+  it. The owner is then locked out of her other devices until she signs in again.
+- **The notice can be cleared.** `users/{uid}.sessionsRevokedAt` is written only by
+  `revokeOtherSessions` and the rules refuse any client change, but the owner may delete
+  `users/{uid}` and create it again, which drops the stamp. Pinned by the "KNOWN GAP" case in
+  `functions/src/__tests__/session-revoked-at-rules.test.ts`. The notice is a courtesy, not the
+  protection.
+- **A five-minute window.** The device that pressed the button holds a custom-token session with a
+  fresh `auth_time` and no `sign_in_second_factor`; for five minutes it passes the recent-login
+  checks of account deletion and backup-code generation. A real sign-in, with the second factor,
+  happened seconds earlier, and the session cannot chain another revoke (the callable refuses a
+  `custom` token).
+- Other devices keep working until their ID token expires, up to an hour; the dialog and the
+  snackbar say so.
