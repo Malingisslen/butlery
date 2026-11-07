@@ -6806,3 +6806,21 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
 - **Art. 15.** Section `learned_aliases` (`functions/src/exports/erasure-residue/account-sections.ts`)
   reads the same predicate and leaves out `userIds`.
 - Art. 30 record: `docs/security/correction-log-retention.md`.
+
+## SUPERSEDES four lines of the BUT-1797 "Deliberately left" list (BUT-1815, BUT-2444, 2026-11-07)
+
+- **The second deserializer.** Retires "The second deserializer in `recipe_serialization.dart`
+  is unchanged." `_deserializeSocialData` in `lib/models/realtime/recipe_serialization.dart`
+  now returns `RecipeSocialData.fromJson` of the `socialData` map, so `grants` and
+  `descriptionCollaborative` are read by the same code as every other path (BUT-1815 S2).
+- **The token loop.** Retires "The tokens-loop collapse is still owed." The sharing paths
+  build their `grants` through `RecipeShareGrants` (`applyShare`, `fromFlatShare`,
+  `mergeCategoryIds`) instead of three hand-written loops (BUT-1815 S3).
+- **The dead writers.** Retires "Ticket the deletion." `FirebaseRecipeRepository.addCollaborator`,
+  `removeCollaborator` and `RecipeFactory.convertToCollaborative` no longer exist in `lib/`
+  (BUT-1815 S1).
+- **The discovery row.** Retires "A revoke does not trim `shared_content.sharedToUserIds`."
+  `removeMember`, `removeGroup` and `unshareRecipe` now remove the revoked uids from the
+  `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
+  documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
+  not touched by that call.
