@@ -33,7 +33,7 @@ enum ShareContentType {
 
 /// Sharing method
 enum ShareMode {
-  staticCopy, // Statisk kopia - som tidigare
+  staticCopy,
   realtime, // Realtime sharing (for recipes/menus)
 }
 
@@ -286,7 +286,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Share mode selection
-          if (_supportsRealtimeSharing) _buildShareModeSelection(),
+          // BUT-2399: a list is only ever shared as an invitation, so there is
+          // no choice of mode to show.
+          if (_supportsRealtimeSharing &&
+              widget.contentType != ShareContentType.shoppingList)
+            _buildShareModeSelection(),
 
           // Message input
           _buildMessageInput(),
@@ -457,7 +461,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             friendUserIds: friendIds,
             groupIds: groupIds,
             message: message.isNotEmpty ? message : null,
-            shareMode: _selectedMode,
           );
         case ShareContentType.personalTag:
           final tagData = widget.content as Map<String, String>;

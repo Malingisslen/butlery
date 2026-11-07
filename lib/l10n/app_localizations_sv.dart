@@ -11818,10 +11818,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotSendInvitations => 'Kunde inte skicka inbjudningar';
 
   @override
-  String get shareDefaultShoppingListMessage =>
-      'Delar gärna den här inköpslistan med dig.';
-
-  @override
   String shoppingListAllDone(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

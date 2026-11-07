@@ -15,8 +15,6 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/utils/social_content_features.dart';
 import 'package:butlery/utils/shopping_list_live_share.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -314,7 +312,6 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     required List<String> friendUserIds,
     List<String>? groupIds,
     String? message,
-    ShareMode shareMode = ShareMode.staticCopy,
   }) async {
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
       _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
@@ -349,12 +346,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     try {
       final totalTargets =
           filteredFriendUserIds.length + (groupIds?.length ?? 0);
-      final modeText = shareMode == ShareMode.realtime
-          ? 'kollaborativ lista'
-          : 'kopia';
-
       AppLogger.info(
-        '📋 Delar inköpslista: ${shoppingList.name} som $modeText med $totalTargets mottagare (${filteredFriendUserIds.length} vänner, ${groupIds?.length ?? 0} grupper)',
+        '📋 Delar inköpslista: ${shoppingList.name} som inbjudan med $totalTargets mottagare (${filteredFriendUserIds.length} vänner, ${groupIds?.length ?? 0} grupper)',
       );
 
       // Show info about validation results
@@ -368,11 +361,9 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         AppLogger.info('💬 Meddelande: $message');
       }
 
-      // BUT-2089: nobody is seated by someone else, so a live share invites
-      // the friends and they join by accepting. A personal list has no live
-      // list to join and takes the copy path below.
-      if (shareMode == ShareMode.realtime &&
-          shoppingList.type == ListType.collaborative) {
+      // BUT-2399: sharing a list is always an invitation; nobody is seated by
+      // someone else (BUT-2089). A personal list becomes a shared one first.
+      if (shoppingList.type == ListType.collaborative) {
         final notice = await inviteToLiveShoppingList(
           listId: shoppingList.id,
           userIds: filteredFriendUserIds,
@@ -384,28 +375,25 @@ class UniversalShareDialogViewModel extends ChangeNotifier
           _setError(notice);
         }
         return true;
-      } else {
-        // Handle traditional copy-based sharing with filtered friends
-        // Use invitation system for copy mode (replaces broken shareListWithFriend)
-        final success = await SocialContentFeatures.shareContentWithFriends(
-          shoppingList.id,
-          'shopping_list',
-          filteredFriendUserIds,
-          message ?? AppLocale.current.shareDefaultShoppingListMessage,
-          _shoppingService,
-          groupIds: groupIds,
-        );
-
-        if (success) {
-          AppLogger.success(
-            '✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system',
-          );
-          _surfaceSkippedSummary(validationResult, filteredFriendUserIds);
-          return true;
-        } else {
-          throw Exception(AppLocale.current.errorCouldNotSendInvitations);
-        }
       }
+
+      final converted = await _shoppingService.collaborative
+          .convertPersonalToCollaborative(
+            personalListId: shoppingList.id,
+            memberIds: filteredFriendUserIds,
+          );
+      if (converted.newListId == null) {
+        throw Exception(AppLocale.current.shoppingConvertError);
+      }
+      final notice = converted.originalKept
+          ? AppLocale.current.shoppingConvertedOriginalKept
+          : notInvitedNotice(converted.notInvited);
+      if (notice == null) {
+        _surfaceSkippedSummary(validationResult, filteredFriendUserIds);
+      } else {
+        _setError(notice);
+      }
+      return true;
     } catch (e) {
       _setError(
         AppLocale.current.errorCouldNotUpdate(

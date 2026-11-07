@@ -24,12 +24,19 @@ Future<String?> inviteToLiveShoppingList({
   if (summary.callFailed) {
     throw Exception(AppLocale.current.errorCouldNotSendInvitations);
   }
-  if (summary.notInvited.isEmpty) return null;
+  return notInvitedNotice(summary.notInvited);
+}
+
+/// The one line for friends an invitation did not reach, or null when there
+/// are none.
+String? notInvitedNotice(List<String> notInvited) {
+  if (notInvited.isEmpty) return null;
+  final friends = ServiceLocator.get<UnifiedFriendsService>();
   // A group's members are invited too, and someone who is not a friend has
   // no name here; they are still counted in the line.
   final names = {for (final f in friends.friends) f.uid: f.displayName};
   return AppLocale.current.listInviteNotInvited(
-    summary.notInvited
+    notInvited
         .map(
           (id) =>
               storedNameOr(names[id], AppLocale.current.shoppingUnknownUser),
