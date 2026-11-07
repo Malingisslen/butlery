@@ -189,10 +189,12 @@ class TextImportNormalizer {
     return processed;
   }
 
+  static final _colonOpeningLine = RegExp(r'^[ \t]*:[ \t]*', multiLine: true);
+
   /// Main preprocessing entry point.
   /// Combines all normalization steps for recipe text.
   static String preprocessText(String input) {
-    String processed = input.replaceAll(
+    String processed = joinHyphenatedWords(input).replaceAll(
       RegExp(r'\n[ \t]*\n(?:[ \t]*\n)*'),
       '\n$_paragraphMarker\n',
     );
@@ -299,6 +301,10 @@ class TextImportNormalizer {
           ? match.group(0)!
           : '${match.group(0)}\n',
     );
+
+    // A heading written with its colon ("Ingredienser: 1 gul lök, …") is cut
+    // after the word, which leaves the colon opening the next line.
+    processed = processed.replaceAll(_colonOpeningLine, '');
 
     // Add line breaks before common instruction words. Word-bounded: unbounded,
     // "skär" fired inside "solroskärnor" and "add" inside "graddsas", and the

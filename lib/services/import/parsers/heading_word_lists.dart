@@ -158,6 +158,7 @@ class HeadingWordLists {
         _published.hasMatch(lower) ||
         _issueNumber.hasMatch(lower) ||
         _cookieBanner.hasMatch(lower) ||
+        _storeOffer.hasMatch(lower) ||
         isSocialChrome(lower);
   }
 
@@ -281,6 +282,10 @@ class HeadingWordLists {
 
   // "Nummer 4 2024".
   static final _issueNumber = RegExp(r'^nummer\s+\d+(?:\s*[/,]?\s*\d{4})?$');
+
+  // A shop's offer printed beside a magazine recipe ("Köp 3 betala för 2 på
+  // all pasta"). It names a food, so it would pass as a row.
+  static final _storeOffer = RegExp(r'^köp \d+,? betala för \d+');
 
   static final _cookieBanner = RegExp(
     r'^(?:vi använder (?:cookies|kakor) för att .*|(?:godkänn|acceptera) (?:alla )?(?:cookies|kakor))$',
