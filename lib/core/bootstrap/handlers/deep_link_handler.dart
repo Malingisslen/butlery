@@ -48,13 +48,13 @@ class DeepLinkHandler {
   String? _pendingDeepLink;
   StreamSubscription<String>? _runningLinks;
 
-  // The stream also replays the link that started the app, which the pending
-  // link has already handled. Only a repeat inside [_replayWindow] is
-  // swallowed, so tapping the same mail link again later still opens the
-  // view whether or not the platform replayed it.
+  // Only a repeat inside [_replayWindow] is swallowed, so tapping the same
+  // link again later still opens it whether or not the platform replayed it.
   String? _lastResetCode;
   DateTime? _lastResetAt;
   static const _replayWindow = Duration(seconds: 5);
+  String? _startLink;
+  DateTime? _startedAt;
 
   /// Whether the deep link handler has been initialized.
   bool get isInitialized => _isInitialized;
@@ -96,6 +96,8 @@ class DeepLinkHandler {
       // contract verbatim.
       if (!kIsWeb) {
         _pendingDeepLink = await AppLinks().getInitialLinkString();
+        _startLink = _pendingDeepLink;
+        _startedAt = clock.now();
         _runningLinks ??= AppLinks().stringLinkStream.listen(
           onLinkWhileRunning,
         );
@@ -187,19 +189,45 @@ class DeepLinkHandler {
   void _showDeepLinkNotice(BuildContext context, String message) =>
       showDeepLinkNotice(context, message);
 
-  /// A link that arrives while the app is already open. Only the mail
-  /// action links are handled here (BUT-2170); other links keep their
-  /// cold-start-only handling.
+  /// A link that arrives while the app is already open or in the background,
+  /// which is how an iPhone delivers a tapped universal link to an app that
+  /// was already started. Every link takes the same route as a cold start.
   @visibleForTesting
   void onLinkWhileRunning(String link) {
-    if (PasswordResetLink.firebaseActionUrl(link) == null) return;
+    if (_isReplayOfStartLink(link)) return;
     final context = appNavigatorKey.currentContext;
     if (context == null) {
       _pendingDeepLink = link;
       return;
     }
-    handleAuthActionLink(link, context);
+    unawaited(processDeepLink(link, context));
   }
+
+  @visibleForTesting
+  void debugSeedStartLink(String link, DateTime startedAt) {
+    _startLink = link;
+    _startedAt = startedAt;
+  }
+
+  bool _isReplayOfStartLink(String link) => isReplayOfStartLink(
+    link: link,
+    startLink: _startLink,
+    startedAt: _startedAt,
+    now: clock.now(),
+  );
+
+  // Mail action links have their own guard in [handleAuthActionLink].
+  @visibleForTesting
+  static bool isReplayOfStartLink({
+    required String link,
+    required String? startLink,
+    required DateTime? startedAt,
+    required DateTime now,
+  }) =>
+      startedAt != null &&
+      link == startLink &&
+      PasswordResetLink.firebaseActionUrl(link) == null &&
+      now.difference(startedAt) < _replayWindow;
 
   /// Handles a Firebase mail action link, signed in or not: a reset link
   /// opens "Välj nytt lösenord"; any other action (verify or change e-mail)
@@ -514,6 +542,8 @@ class DeepLinkHandler {
     _pendingDeepLink = null;
     _lastResetCode = null;
     _lastResetAt = null;
+    _startLink = null;
+    _startedAt = null;
     unawaited(_runningLinks?.cancel());
     _runningLinks = null;
   }
