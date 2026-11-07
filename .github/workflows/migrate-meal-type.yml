@@ -45,6 +45,10 @@ jobs:
         working-directory: functions
         run: npm ci
 
+      - name: Build
+        working-directory: functions
+        run: npm run build
+
       # Short-lived token from Workload Identity Federation, no stored key. The
       # action exports GOOGLE_APPLICATION_CREDENTIALS for firebase and
       # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE for gcloud.
@@ -73,7 +77,7 @@ jobs:
         run: |
           set -o pipefail
           if [ "$APPLY" = "true" ]; then
-            node scripts/migrate-meal-type.js --apply | tee -a "$GITHUB_STEP_SUMMARY"
+            node scripts/migrate-meal-type.js --project "$FIREBASE_PROJECT_ID" --apply | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            node scripts/migrate-meal-type.js | tee -a "$GITHUB_STEP_SUMMARY"
+            node scripts/migrate-meal-type.js --project "$FIREBASE_PROJECT_ID" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
