@@ -46,26 +46,36 @@
 /// sitting before the first DETECTED heading would today be silently eaten
 /// with no other rule to catch it.
 ///
-/// Two things hold the line instead: a smaller budget than the tail trim's
+/// What holds the line instead is a smaller budget than the tail trim's
 /// (`_leadingBudget`, half of `_tailBudget`, because the margin argument
-/// above does not reach this end of the page at all), and a hard refusal to
-/// cut anything that reads like real recipe content — see
-/// [_looksLikeRecipeContent], and read its body rather than its name, since
-/// what it actually tests is much broader than "a measurement or a cooking
-/// verb" and errs heavily toward refusing the cut.
+/// above does not reach this end of the page at all).
 ///
-/// ## Unmeasured — the budget below is a starting point, not a result
+/// ## Measured 2026-11-07 (BUT-1836)
 ///
-/// [_tailBudget] was set by running `dart run tools/corpus_split_eval.dart
-/// --trim` against 181 hand-graded corpus pages. This rule's `--leading-trim`
-/// counterpart exists in the same tool, but nobody has run it — the corpus
-/// lives outside every sandbox this rule has been developed in. Do not read
-/// [_leadingBudget] as measured; it is the tail trim's OTHER real number (the
-/// 60-budget row of its own measurement table, not an invented figure), used
-/// here because leading noise is a different population and deserves a
-/// smaller default until someone with corpus access runs `--leading-trim`
-/// and reports a real number. **Run that before trusting this rule at scale
-/// — i.e. before `enable_layout_recipe_split` is turned on for real users.**
+/// `dart run tools/corpus_split_eval.dart --leading-trim` over the 181
+/// graded corpus pages, every cut read against its photograph, on Windows
+/// offline OCR rather than ML Kit:
+///
+/// | budget | correct cuts | wrong cuts |
+/// |---|---|---|
+/// | 30 | 13 | 2 |
+/// | 45 | 14 | 2 |
+/// | 60 | 15 | 2 |
+/// | 90 | 20 | 3 |
+/// | 120 | 21 | 4 |
+/// | 160 | 24 | 6 |
+/// | 200 | 27 | 6 |
+///
+/// Every wrong cut is the same shape: a subheading or a column top taken
+/// for the recipe's own title. The first wrong cut above 60 starts at 63
+/// characters, so re-run the tool before raising the budget.
+///
+/// The run also measured a content guard this rule used to carry, which
+/// refused any cut that read like an ingredient or an instruction. At 60 it
+/// blocked none of the wrong cuts and six correct ones (a folio "56 Fisk", a
+/// running header "Potatis på flera sätt", columns from the facing page), so
+/// it was removed. A previous recipe's tail looks like recipe content too, and
+/// cutting it is the point of this rule.
 ///
 /// ## Only page ZERO is ever eligible
 ///
@@ -110,47 +120,11 @@
 library;
 
 import 'package:butlery/services/import/layout/heading_detector.dart';
-import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 
 /// Below this many characters before the first heading, the head is
-/// furniture. See the library doc — this is a provisional default, not a
-/// corpus-measured one.
+/// furniture. Measured against the corpus; see the library doc.
 const int _leadingBudget = 60;
-
-/// True when [lines] reads like it belongs to a recipe rather than page
-/// furniture. Checked in ADDITION to the character budget, never instead of
-/// it: content worth protecting can be short-but-structured (a stray
-/// ingredient line) or long (caught by the budget alone).
-///
-/// **Read the two predicates, not their names — they are much broader and
-/// much narrower than "an ingredient line or a cooking verb", in different
-/// directions, and the library doc above leans on this guard to justify a
-/// second rule shipping without the tail trim's margin argument.**
-///
-/// Broader: `looksLikeIngredient` also returns true for ANY line holding a
-/// comma at 4-79 characters, any `½¼¾`, a leading bullet, and ~25 bare food
-/// words. Measured against real Swedish page furniture on 2026-08-12, that
-/// blocks the trim on `FISK OCH SKALDJUR`, `KÖTT OCH FÅGEL`, `Potatis och
-/// rotfrukter`, `Ris och pasta` and `Vardagsmat, snabbt` — i.e. on exactly
-/// the chapter-name running headers a cookbook prints on every page. The
-/// rule is not dead, but where it declines is correlated with the content of
-/// the book rather than random.
-///
-/// Narrower: the same measurement found 15 of 17 realistic recipe rows read
-/// as furniture. `looksLikeIngredient` misses the `numeral + plural noun`
-/// shape whole (`3 potatisar`, `4 morötter`, `2 äpplen`), and
-/// `hasInstructionKeywords` carries four bare verbs — `koka`, `stek`,
-/// `blanda`, `rör` — so `Skala och tärna`, `Vispa`, `Grädda 12 minuter`,
-/// `Sätt in i ugnen`, `Häll upp i skålar` all pass straight through. So the
-/// library doc's "a missed recipe title almost always has ingredients or
-/// instructions right behind it" is true of PAGES and false of this
-/// predicate. Both facts are unmeasured against the corpus, like everything
-/// else on this rule.
-bool _looksLikeRecipeContent(List<String> lines) {
-  if (lines.any(RecipeSectionDetector.looksLikeIngredient)) return true;
-  return RecipeSectionDetector.hasInstructionKeywords(lines.join('\n'));
-}
 
 /// The row on page ZERO up to which leading furniture should be cut, or null
 /// when there is nothing to cut.
@@ -191,11 +165,6 @@ int? leadingNoiseCutRow(String input, DocumentLayout? layout) {
     (sum, text) => sum + text.trim().length,
   );
   if (headChars >= _leadingBudget) return null;
-
-  // Refuse even an under-budget cut if what precedes the heading reads like
-  // real recipe content rather than furniture — see the library doc and
-  // [_looksLikeRecipeContent].
-  if (_looksLikeRecipeContent(leadingLines)) return null;
 
   return pageRow;
 }
