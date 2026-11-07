@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth/auth_provider_flows.dart';
@@ -32,8 +33,8 @@ class SessionRevocationHandler {
     final provider = providerFor(auth);
     if (provider == null) return;
     // The page may be gone when the answer comes (a failed swap signs this
-    // device out), so the messenger is taken first.
-    final messenger = ScaffoldMessenger.of(context);
+    // device out), so the snackbars are captured first.
+    final snacks = CapturedSnackBars.capture(context);
     final l10n = context.l10n;
     final providerName = AuthProviderFlows.providerName(provider);
 
@@ -74,18 +75,20 @@ class SessionRevocationHandler {
         await SessionsRevokedNotice(prefs: prefs).markPressedHere();
       }
     }
-    final message = switch (outcome) {
-      SessionRevocationOutcome.revoked => l10n.signOutEverywhereDone,
-      SessionRevocationOutcome.reauthRequired =>
-        l10n.signOutEverywhereReauthNeeded,
-      SessionRevocationOutcome.rateLimited => l10n.signOutEverywhereRateLimited,
-      SessionRevocationOutcome.signedOutAfterFailure =>
-        l10n.signOutEverywhereSignedOut,
-      SessionRevocationOutcome.failed => l10n.signOutEverywhereFailed,
-      SessionRevocationOutcome.busy => null,
-    };
-    if (message == null) return;
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    switch (outcome) {
+      case SessionRevocationOutcome.revoked:
+        snacks.showConfirmation(l10n.signOutEverywhereDone);
+      case SessionRevocationOutcome.reauthRequired:
+        snacks.showFailure(what: l10n.signOutEverywhereReauthNeeded);
+      case SessionRevocationOutcome.rateLimited:
+        snacks.showFailure(what: l10n.signOutEverywhereRateLimited);
+      case SessionRevocationOutcome.signedOutAfterFailure:
+        snacks.showFailure(what: l10n.signOutEverywhereSignedOut);
+      case SessionRevocationOutcome.failed:
+        snacks.showFailure(what: l10n.signOutEverywhereFailed);
+      case SessionRevocationOutcome.busy:
+        break;
+    }
   }
 
   static Future<bool> _ask(
