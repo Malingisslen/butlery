@@ -317,6 +317,60 @@ Stek laxen i en het panna ca 3 minuter.''');
       expect(recipe.instructions, hasLength(2));
     });
 
+    for (final (name, text) in [
+      (
+        'under the steps',
+        'Laxpasta\nIngredienser\n400 g pasta\n300 g laxfilé\nGör så här\n'
+            'Koka pastan enligt anvisningen.\nStek laxen i en het panna.\n'
+            'Tillagning: ca 15 min',
+      ),
+      (
+        'between the list and the steps',
+        'Laxpasta\nIngredienser\n400 g pasta\n300 g laxfilé\n'
+            'Tillagning: ca 15 min\nGör så här\n'
+            'Koka pastan enligt anvisningen.\nStek laxen i en het panna.',
+      ),
+    ]) {
+      test('"Tillagning: ca 15 min" $name is the time, not a step', () async {
+        final recipe = await parse(text);
+
+        expect(
+          [...recipe.instructions, ...recipe.ingredients].where(
+            (s) => s.contains('15 min'),
+          ),
+          isEmpty,
+        );
+        expect(recipe.instructions, hasLength(2));
+        expect(recipe.timeMinutes, 15);
+      });
+    }
+
+    for (final line in ['Gör så här: 1. Koka pastan']) {
+      test('"$line" keeps its numbered step', () async {
+        final recipe = await parse(
+          'Laxpasta\nIngredienser\n400 g pasta\n300 g laxfilé\n$line enligt '
+          'anvisningen.\n2. Stek laxen i en het panna.',
+        );
+        expect(
+          recipe.instructions.where((s) => s.contains('Koka pastan')),
+          hasLength(1),
+        );
+        expect(recipe.timeMinutes, isNull);
+      });
+    }
+
+    test('text after a "Tillagning" time stays in the recipe', () async {
+      final recipe = await parse(
+        'Laxpasta\nIngredienser\n400 g pasta\n300 g laxfilé\nGör så här\n'
+        'Koka pastan enligt anvisningen.\nStek laxen i en het panna.\n'
+        'Tillagning: 20 min i ugnen',
+      );
+      expect(
+        recipe.instructions.where((s) => s.contains('i ugnen')),
+        hasLength(1),
+      );
+    });
+
     test('a short yield label gives the portions', () async {
       final recipe = await parse('Laxpasta\n4 port\n$body');
       expect(recipe.portions, 4);
