@@ -520,6 +520,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Authentication error. Please sign in again.';
 
   @override
+  String errorAuthenticationWithCode(String code) {
+    return 'Authentication error ($code). Please sign in again.';
+  }
+
+  @override
   String get errorSignupNotInvited =>
       'Butlery is open to invited people only right now.';
 

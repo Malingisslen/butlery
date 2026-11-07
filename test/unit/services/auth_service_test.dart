@@ -801,6 +801,39 @@ void main() {
           AppLocale.current.errorSignupRefusedUnmarked,
         );
       });
+
+      test('a sign-up failing with an unmapped code shows the code', () async {
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'app-not-authorized'),
+        );
+
+        final result = await authService.registerWithEmail(
+          email: 'anna@example.com',
+          password: 'password1A!',
+          displayName: 'Anna',
+        );
+
+        expect(result, false);
+        expect(
+          authService.errorMessage,
+          AppLocale.current.errorAuthenticationWithCode('app-not-authorized'),
+        );
+        expect(authService.errorMessage, contains('app-not-authorized'));
+      });
+
+      test('a sign-up failing with a mapped code keeps its own text', () async {
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'weak-password'),
+        );
+
+        await authService.registerWithEmail(
+          email: 'anna@example.com',
+          password: 'password1A!',
+          displayName: 'Anna',
+        );
+
+        expect(authService.errorMessage, AppLocale.current.errorWeakPassword);
+      });
     });
 
     group('Clear Error', () {
