@@ -286,4 +286,4 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - `llm_response_samples` (pseudonymous `authUidHash`) is not erased at account deletion and not in the Art. 15 export; the 30-day TTL on `expireAt` is the erasure, and policy 1.25 says so (ADR-0038, Malin 2026-10-29)
 - Firestore's on-device cache is emptied only at a cold start with nobody signed in, after an explicit sign-out whose pending writes were sent: a second account in the same session can still read the first account's cache, and a sign-out with no connection leaves it (ADR-0039, Malin 2026-10-30)
 - `learned_aliases`: account deletion removes the uid from every candidate and deletes an undecided one left without voters; an `approved`, `rejected` or `revoked` candidate is kept without voters (Malin 2026-10-31)
-- `ingredient_suggestions` carries no `isAgeCompliant()`: a suggestion is read only by its author and the admin, and ADR-0002 limits the age gate to content other users see (BUT-2033, Malin 2026-11-07)
+- `ingredient_suggestions` carries no `isAgeCompliant()`: a suggestion is read only by its author and the admin (BUT-2033, Malin 2026-11-07)
