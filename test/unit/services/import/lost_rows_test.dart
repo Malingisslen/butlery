@@ -119,4 +119,23 @@ void main() {
       expect(r.title, isNot(handle), reason: handle);
     }
   });
+
+  test('a step with a list of amounts stays one step', () async {
+    final r = await parse(
+      'Pannkakor\nIngredienser\n3 dl vetemjöl\n5 dl mjölk\nGör så här\n'
+      '1. Vispa mjölet\n2. Tillsätt 2 dl mjölk, 1 dl vatten, 1 tsk salt\n'
+      '3. Stek i smör',
+    );
+    expect(
+      r.instructions,
+      contains('Tillsätt 2 dl mjölk, 1 dl vatten, 1 tsk salt.'),
+    );
+    expect(r.ingredients, hasLength(2));
+
+    final unnumbered = await parse(
+      'Pannkakor\n3 dl vetemjöl\n5 dl mjölk\n'
+      'Blanda 2 dl mjöl, 1 dl socker, 1 tsk salt och vispa',
+    );
+    expect(unnumbered.ingredients, hasLength(2));
+  });
 }

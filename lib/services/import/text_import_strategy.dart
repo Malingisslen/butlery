@@ -370,8 +370,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// A list written on one line ("1 gul lök, 2 burkar krossade tomater, …,
   /// salt") is one row per item: read as a single line, only the items with
   /// a unit were found and "lök" and "salt" were lost. A line is such a list
-  /// when at least two of its comma-separated items open with an amount; a
-  /// seasoning list ("Salt, svartpeppar, oregano") stays one row.
+  /// when its first comma-separated item and at least one more open with an
+  /// amount. A seasoning list ("Salt, svartpeppar, oregano") stays one row,
+  /// and so does a step ("Tillsätt 2 dl mjölk, 1 dl vatten, 1 tsk salt").
   List<String> _inlineRows(String line) {
     final text = line.trim();
     if (text.endsWith('.')) return [line];
@@ -381,7 +382,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final short = items.every(
       (item) => item.isNotEmpty && item.split(_whitespace).length <= 6,
     );
-    return measured >= 2 && short ? items : [line];
+    return measured >= 2 && short && _leadingQuantity.hasMatch(items.first)
+        ? items
+        : [line];
   }
 
   static final _itemSeparator = RegExp(r',\s+');
