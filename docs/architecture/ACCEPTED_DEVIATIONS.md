@@ -6806,3 +6806,12 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
 - **Art. 15.** Section `learned_aliases` (`functions/src/exports/erasure-residue/account-sections.ts`)
   reads the same predicate and leaves out `userIds`.
 - Art. 30 record: `docs/security/correction-log-retention.md`.
+
+## BUT-2033 — ingredient suggestions carry no age gate (2026-11-07)
+
+Decided by Malin 2026-11-07 (decision card, "Nej, förslaget är privat").
+
+`match /ingredient_suggestions/{suggestionId}` in `firestore.rules` has no `isAgeCompliant()`,
+unlike `recipe_comments`, `cook_snaps` and the other social collections. ADR-0002 limits that
+gate to content published to other users, and a suggestion is read only by its author and the
+admin. Revisit if a suggestion is ever shown to other users.
