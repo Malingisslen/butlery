@@ -11865,10 +11865,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotSendInvitations => 'Could not send invitations';
 
   @override
-  String get shareDefaultShoppingListMessage =>
-      'Sharing this shopping list with you.';
-
-  @override
   String shoppingListAllDone(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

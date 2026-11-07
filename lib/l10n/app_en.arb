@@ -7708,7 +7708,6 @@
     }
   },
   "errorCouldNotSendInvitations": "Could not send invitations",
-  "shareDefaultShoppingListMessage": "Sharing this shopping list with you.",
   "shoppingListAllDone": "{count, plural, =1{1 item done} other{All {count} items done}}",
   "@shoppingListAllDone": {
     "placeholders": {
