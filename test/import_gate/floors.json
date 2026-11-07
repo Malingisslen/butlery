@@ -13,9 +13,9 @@
       "chromeLeaks": 0
     },
     "text": {
-      "recall": 0.9861,
+      "recall": 1.0,
       "headingLeaks": 2,
-      "titleExact": 29,
+      "titleExact": 30,
       "stepsExact": 30,
       "portionsExact": 0,
       "timeExact": 0,
@@ -33,7 +33,7 @@
       "timeExact": 2,
       "failures": 0,
       "extraIngredients": 3,
-      "extraSteps": 7,
+      "extraSteps": 6,
       "chromeLeaks": 0
     },
     "foto": {

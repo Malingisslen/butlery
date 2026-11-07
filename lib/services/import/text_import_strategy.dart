@@ -259,6 +259,15 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   static final _letter = RegExp(r'[A-Za-zÅÄÖåäöÉé]');
 
+  /// A lower-case dish name typed without capitals ("korvstroganoff") has
+  /// the shape of an account name.
+  bool _isTitleAboveRows(List<String> lines, int index) =>
+      HeadingWordLists.looksLikeHandle(lines[index]) &&
+      !lines[index].contains(_handleOnlyChar) &&
+      _isQuantityRow(lines[index + 1]);
+
+  static final _handleOnlyChar = RegExp(r'[_.\d@]');
+
   /// Comparison key for the leading-title-fragment skip: letters/digits only,
   /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
   /// "Köttbullar med gräddsås" regardless of the spaces/colons preprocessing
@@ -277,7 +286,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     var index = 0;
     while (index < lines.length - 1 &&
         index < _titleSearchLines &&
-        _isLeadingPageLine(lines[index].trim())) {
+        _isLeadingPageLine(lines[index].trim()) &&
+        !_isTitleAboveRows(lines, index)) {
       index++;
     }
     String firstLine = lines[index].trim();
@@ -356,6 +366,26 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   static final _stepNumber = RegExp(r'^\d{1,2}[.)]$');
+
+  /// A list written on one line ("1 gul lök, 2 burkar krossade tomater, …,
+  /// salt") is one row per item: read as a single line, only the items with
+  /// a unit were found and "lök" and "salt" were lost. A line is such a list
+  /// when at least two of its comma-separated items open with an amount; a
+  /// seasoning list ("Salt, svartpeppar, oregano") stays one row.
+  List<String> _inlineRows(String line) {
+    final text = line.trim();
+    if (text.endsWith('.')) return [line];
+    final items = text.split(_itemSeparator);
+    if (items.length < 3) return [line];
+    final measured = items.where(_leadingQuantity.hasMatch).length;
+    final short = items.every(
+      (item) => item.isNotEmpty && item.split(_whitespace).length <= 6,
+    );
+    return measured >= 2 && short ? items : [line];
+  }
+
+  static final _itemSeparator = RegExp(r',\s+');
+  static final _whitespace = RegExp(r'\s+');
 
   // A sentence opening on an imperative ("Koka pastan.") after the rows is
   // where the method starts when the writer put no heading over it. The whole
@@ -623,9 +653,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         afterBlank = true;
         continue;
       }
-      pageLines.add(raw);
-      pageStartsBlock.add(afterBlank);
-      afterBlank = false;
+      for (final row in _inlineRows(raw)) {
+        pageLines.add(row);
+        pageStartsBlock.add(afterBlank);
+        afterBlank = false;
+      }
     }
 
     // Only ingredients and steps are read from the recipe's own lines.
