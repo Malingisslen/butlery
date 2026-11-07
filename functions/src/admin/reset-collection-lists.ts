@@ -381,6 +381,13 @@ export const COLLECTIONS_TO_KEEP = [
   // closing summary in `reset-user-data.ts` prints the exception beside the
   // list for the same reason.
   "analytics",
+  // Kokboksprovet: the admin's own cookbooks and the answer keys written for
+  // them, which hold no user data. The
+  // photos survive a reset already, because `corpus/` is not among the
+  // storage prefixes the script deletes.
+  "corpus_books",
+  "corpus_pages",
+  "corpus_runs",
 ];
 
 /**
