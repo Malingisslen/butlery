@@ -109,6 +109,7 @@
     "test:kill-switch": "ts-node src/__tests__/llm-kill-switch.test.ts",
     "test:reset-scheduler-pause": "ts-node src/__tests__/reset-scheduler-pause.test.ts",
     "test:require-project": "ts-node src/__tests__/require-project.test.ts",
+    "test:admin-script-project-gate": "ts-node src/__tests__/admin-script-project-gate.test.ts",
     "test:llm-sample-capture": "ts-node src/__tests__/llm-sample-capture.test.ts",
     "test:web-error": "ts-node src/__tests__/log-web-error.test.ts",
     "test:sign-in-failure": "ts-node src/__tests__/log-sign-in-failure.test.ts",

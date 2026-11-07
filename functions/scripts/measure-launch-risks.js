@@ -18,12 +18,13 @@
  *
  * Usage (from functions/):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     node scripts/measure-launch-risks.js
+ *     node scripts/measure-launch-risks.js --project <id>
  */
 
 const admin = require("firebase-admin");
+const { requireProject } = require("../lib/admin/require-project");
 
-admin.initializeApp();
+admin.initializeApp({ projectId: requireProject() });
 const db = admin.firestore();
 
 const GET_ALL_CHUNK = 100;

@@ -17,7 +17,7 @@
  *
  * Usage (from functions/):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     node scripts/migrate-meal-type.js [--apply]
+ *     node scripts/migrate-meal-type.js --project <id> [--apply]
  */
 
 const CANONICAL = ["Frukost", "Lunch", "Middag", "Dessert", "Mellanmål", "Fika"];
@@ -196,7 +196,8 @@ function report(counts, apply) {
 
 async function main() {
   const admin = require("firebase-admin");
-  admin.initializeApp();
+  const { requireProject } = require("../lib/admin/require-project");
+  admin.initializeApp({ projectId: requireProject() });
   const apply = process.argv.includes("--apply");
   const counts = await runMigration(firestoreDeps(admin), { apply });
   console.log(report(counts, apply));
@@ -205,7 +206,11 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(`migration failed: ${err.code || err.name}`);
+    console.error(
+      String(err && err.message).startsWith("REFUSED:")
+        ? err.message
+        : `migration failed: ${err.code || err.name}`,
+    );
     process.exit(1);
   });
 }

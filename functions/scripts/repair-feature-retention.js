@@ -7,7 +7,7 @@
  *
  * Usage (from functions/):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     node scripts/repair-feature-retention.js --from 2026-10-04 --to 2026-10-18 [--apply]
+ *     node scripts/repair-feature-retention.js --project <id> --from 2026-10-04 --to 2026-10-18 [--apply]
  */
 
 const admin = require("firebase-admin");
@@ -22,7 +22,8 @@ async function main() {
     repairFeatureRetentionFlags,
     RepairProbeError,
   } = require("../lib/analytics/repair-feature-retention");
-  admin.initializeApp();
+  const { requireProject } = require("../lib/admin/require-project");
+  admin.initializeApp({ projectId: requireProject() });
   const from = arg("--from");
   const to = arg("--to");
   if (!from || !to) throw new Error("--from and --to are required");

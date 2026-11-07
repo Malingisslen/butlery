@@ -28,7 +28,7 @@
  *
  * Usage (from functions/):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     DECLARED_BIRTH_YEARS="prefix:1980" node scripts/backfill-age-claim.js [--apply]
+ *     DECLARED_BIRTH_YEARS="prefix:1980" node scripts/backfill-age-claim.js --project <id> [--apply]
  */
 
 const crypto = require("crypto");
@@ -219,7 +219,8 @@ function parseDeclared(text) {
 
 async function main() {
   const admin = require("firebase-admin");
-  admin.initializeApp();
+  const { requireProject } = require("../lib/admin/require-project");
+  admin.initializeApp({ projectId: requireProject() });
   const apply = process.argv.includes("--apply");
   const declared = parseDeclared(process.env.DECLARED_BIRTH_YEARS || "");
   const counts = await runBackfill(
@@ -239,7 +240,9 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(err.code || err.name || "unknown");
+    console.error(
+      String(err && err.message).startsWith("REFUSED:") ? err.message : err.code || err.name || "unknown",
+    );
     process.exit(1);
   });
 }

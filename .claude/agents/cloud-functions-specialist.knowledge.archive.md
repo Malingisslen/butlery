@@ -21425,3 +21425,37 @@ covers the positive path. The coordinator reports that reverting to `isNewUser` 
 not re-run that mutant. 29/29 pass, tsc clean. Gaps left (non-blocking): a wrapper that passes a literal
 `true` stays green, because the refusing path through `.run` needs Firestore. A future-dated creationTime
 passes because a negative difference is <= the window. Passed.
+
+### 2026-11-07 — BUT-2419 admin-script project gate review [ci-wiring][review]
+Reviewed the uncommitted gate on backfill-age-claim.js, measure-launch-risks.js, migrate-meal-type.js,
+repair-feature-retention.js plus admin-script-project-gate.test.ts. Gate placement is correct (requireProject
+evaluates before initializeApp in all four; --apply/--from/--to unaffected). Blocking: all four are run by
+production workflow_dispatch jobs (measure-production.yml, backfill-age-claim.yml, migrate-meal-type.yml,
+repair-feature-retention.yml) that pass no --project, and three of them have no `npm run build` step while
+lib/ is gitignored, so every run would fail (MODULE_NOT_FOUND or REFUSED). Test: verified with an
+fs.readFileSync-patching preload that (a) reverting backfill to `admin.initializeApp()` while keeping the
+require line, and (b) dropping the require and leaving only a comment naming requireProject, both stay green
+— the test matches the identifier anywhere in raw text. backfill/migrate catch handlers print `err.code ||
+err.name`, i.e. "Error", losing the REFUSED reason (checked by calling the compiled requireProject directly;
+running the scripts themselves was refused by the auto-mode classifier as a production read). `npm run build`
+emits lib/admin/require-project.js (tsconfig include src, outDir lib). Verdict fail (2 blocking).
+
+### 2026-11-07 — BUT-2419 re-review after fixes [ci-wiring][review]
+Re-read the test, both scripts and all four workflows whole. All four workflows now pass --project
+"$FIREBASE_PROJECT_ID"; measure/backfill/migrate gained `npm run build`. Test now strips comments, walks
+scripts/ and src/admin/ recursively (js/cjs/mjs/ts), flags `new Firestore(`/`new GoogleAuth(`, requires a
+requireProject( call inline or before each initializeApp( plus `projectId` in its args, has five self-checks,
+and requires every EXEMPT entry to be among the detected files. Ran green (10 detected). My mutants via
+fs.readFileSync preload: gate called first but init given a hardcoded `projectId: "butlery-prod"` stays GREEN;
+a string literal "requireProject()" assigned and passed stays GREEN — both contrived, noted non-blocking.
+reset-scheduler-pause.ts exemption verified: createSchedulerApi() is called in reset-user-data main() after
+initializeAdminApp(). Residual pre-existing: measure-production.yml's one-line `node … | tee` has no pipefail
+(default `bash -e`), so a refusal leaves the step green. Verdict pass.
+
+### 2026-11-07 — BUT-2419 final round [ci-wiring][review]
+Staged blob == working blob for the test and measure-production.yml (git hash-object vs ls-files -s).
+measure-production's script step is now `run: |` + `set -o pipefail`. gatedBeforeInit now requires the
+`projectId:` value to be `requireProject(` or an identifier assigned `= requireProject(` in the code. Mutants via
+fs.readFileSync preload on backfill-age-claim.js (each asserted to apply): hardcoded `projectId: "butlery-prod"`
+after a bare gate call, `const x = "requireProject()"` passed as projectId, the string inline as projectId, and a
+bare `initializeApp()` — all four RED (exit 1); unmutated GREEN. Verdict pass.

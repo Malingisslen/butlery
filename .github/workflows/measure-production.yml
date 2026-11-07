@@ -41,6 +41,10 @@ jobs:
         working-directory: functions
         run: npm ci
 
+      - name: Build
+        working-directory: functions
+        run: npm run build
+
       # Short-lived token from Workload Identity Federation, no stored key. The
       # action exports GOOGLE_APPLICATION_CREDENTIALS for firebase and
       # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE for gcloud.
@@ -64,7 +68,9 @@ jobs:
 
       - name: "BUT-2278, BUT-2260 and BUT-2332: minor profiles, recipe cache, group owners"
         working-directory: functions
-        run: node scripts/measure-launch-risks.js | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail
+          node scripts/measure-launch-risks.js --project "$FIREBASE_PROJECT_ID" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: "BUT-2031: onUserDeleted social cleanup failures"
         run: |
