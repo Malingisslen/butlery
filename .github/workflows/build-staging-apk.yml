@@ -42,6 +42,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
+    # ubuntu-latest's default JDK moved to 25, which Gradle 8.13 cannot run on
+    # ("Unsupported class file major version 69"); pin the JDK the other
+    # Gradle-running workflows use.
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
     - name: Setup Flutter
       uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
