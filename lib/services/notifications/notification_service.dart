@@ -74,6 +74,7 @@ class NotificationService extends BaseService {
 
   bool _isInitialized = false;
   bool _modulesCreated = false;
+  bool _tokenManagerStarted = false;
 
   /// Tracks which ConsentService we subscribed to so we can unsubscribe
   /// on dispose. BUT-754: we listen to consent changes here (in addition
@@ -95,6 +96,7 @@ class NotificationService extends BaseService {
     required NotificationAnalyticsRepository analyticsRepository,
     required FCMService fcmService,
     required ConsentService? Function() getConsentService,
+    FCMTokenManager Function(String userId)? createTokenManager,
   }) : _notificationsRepository = notificationsRepository,
        _authRepository = authRepository,
        _historyRepository = historyRepository,
@@ -102,7 +104,10 @@ class NotificationService extends BaseService {
        _deviceRepository = deviceRepository,
        _analyticsRepository = analyticsRepository,
        _fcmService = fcmService,
-       _getConsentService = getConsentService;
+       _getConsentService = getConsentService,
+       _createTokenManager = createTokenManager;
+
+  final FCMTokenManager Function(String userId)? _createTokenManager;
 
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
@@ -130,20 +135,7 @@ class NotificationService extends BaseService {
       sendBatchCallback: _sendBatchedNotification,
     );
 
-    // BUT-515: FCMTokenManager now requires explicit FirebaseMessaging
-    // injection (was a constructor default). Resolve `FirebaseMessaging.instance`
-    // here so a missing Firebase app (e.g. on web before init) is caught at
-    // the same boundary as before — same try/catch, same null fallback.
-    try {
-      _tokenManager = FCMTokenManager(
-        userId: userId,
-        repository: _deviceRepository,
-        messaging: FirebaseMessaging.instance,
-      );
-    } catch (e) {
-      _tokenManager = null;
-      AppLogger.warning('FCMTokenManager unavailable: $e');
-    }
+    _tokenManager = _buildTokenManager(userId);
 
     _analyticsManager = NotificationAnalyticsManager(
       userId: userId,
@@ -151,6 +143,24 @@ class NotificationService extends BaseService {
     );
 
     _modulesCreated = true;
+  }
+
+  FCMTokenManager? _buildTokenManager(String userId) {
+    // BUT-515: FCMTokenManager now requires explicit FirebaseMessaging
+    // injection (was a constructor default). Resolve `FirebaseMessaging.instance`
+    // here so a missing Firebase app (e.g. on web before init) is caught at
+    // the same boundary as before — same try/catch, same null fallback.
+    try {
+      return _createTokenManager?.call(userId) ??
+          FCMTokenManager(
+            userId: userId,
+            repository: _deviceRepository,
+            messaging: FirebaseMessaging.instance,
+          );
+    } catch (e) {
+      AppLogger.warning('FCMTokenManager unavailable: $e');
+      return null;
+    }
   }
 
   /// Ensure modules are created even if full [onInitialize] hasn't run.
@@ -209,12 +219,12 @@ class NotificationService extends BaseService {
           _subscribedConsentService = consentService;
         }
 
-        // Initialize FCM token manager (may be null if Firebase unavailable)
-        await _tokenManager?.initialize();
-
-        // Subscribe to user-specific topics based on preferences
-        final preferences = await _preferenceManager.getPreferences();
-        await _tokenManager?.updateTopicSubscriptions(preferences);
+        // A token-manager failure must not keep the queues below from running.
+        try {
+          await _startTokenManagerIfConsented(consentService);
+        } catch (e) {
+          AppLogger.error('❌ NotificationService: token manager failed', e);
+        }
 
         // Process any pending batches
         await _batchManager.processAllPendingBatches();
@@ -542,6 +552,7 @@ class NotificationService extends BaseService {
   Future<void> updateTopicSubscriptions() async {
     _ensureModulesCreated();
     try {
+      if (!_tokenManagerStarted) return;
       final preferences = await _preferenceManager.getPreferences();
       await _tokenManager?.updateTopicSubscriptions(preferences);
       AppLogger.success('✅ Updated topic subscriptions');
@@ -725,7 +736,8 @@ class NotificationService extends BaseService {
 
   /// Handles consent changes for FCMTokenManager-scoped cleanup (BUT-754).
   /// Sibling to FCMService._onConsentChanged which handles SDK + Firestore
-  /// + memory; this one handles SecureStorage on revoke.
+  /// + memory; this one handles SecureStorage on revoke and starts the token
+  /// manager on grant.
   bool _consentHandlerInProgress = false;
 
   Future<void> _handleConsentChange() async {
@@ -742,6 +754,9 @@ class NotificationService extends BaseService {
           '🔔 NotificationService: push consent revoked — clearing FCMTokenManager local token (BUT-754)',
         );
         await _tokenManager?.clearLocalToken();
+        _replaceTokenManager();
+      } else {
+        await _startTokenManagerIfConsented(_subscribedConsentService);
       }
     } catch (e) {
       AppLogger.error(
@@ -751,6 +766,45 @@ class NotificationService extends BaseService {
     } finally {
       _consentHandlerInProgress = false;
     }
+  }
+
+  /// FCMTokenManager asks the OS for notification permission and registers
+  /// this device, so it starts only once the user has consented to push.
+  Future<void> _startTokenManagerIfConsented(
+    ConsentService? consentService,
+  ) async {
+    final tokenManager = _tokenManager;
+    if (tokenManager == null || _tokenManagerStarted) return;
+    final hasConsent = await ConsentService.checkSafely(
+      consentService,
+      ConsentPurpose.pushNotifications,
+      logTag: 'NotificationService',
+    );
+    // Re-checked after the await: init, a consent change and a logout can
+    // all land in between.
+    if (!hasConsent ||
+        _tokenManagerStarted ||
+        !identical(_tokenManager, tokenManager)) {
+      return;
+    }
+
+    _tokenManagerStarted = true;
+    try {
+      await tokenManager.initialize();
+    } catch (_) {
+      _tokenManagerStarted = false;
+      rethrow;
+    }
+    final preferences = await _preferenceManager.getPreferences();
+    await tokenManager.updateTopicSubscriptions(preferences);
+  }
+
+  /// A started token manager keeps writing refreshed tokens to the device
+  /// record, so after a revoke it is swapped for a fresh, unstarted one.
+  void _replaceTokenManager() {
+    _tokenManager?.dispose();
+    _tokenManager = _buildTokenManager(_userId);
+    _tokenManagerStarted = false;
   }
 
   /// Reset state for logout. Allows re-initialization for a new user session.
@@ -791,5 +845,6 @@ class NotificationService extends BaseService {
     _preferenceManager.dispose();
     _isInitialized = false;
     _modulesCreated = false;
+    _tokenManagerStarted = false;
   }
 }

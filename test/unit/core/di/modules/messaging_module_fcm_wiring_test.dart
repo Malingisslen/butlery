@@ -216,6 +216,8 @@ void main() {
 
       test('a token refresh is stored on the user service it was '
           'given', () async {
+        // A refreshed token is only saved with push consent.
+        await fcm.bindUserContext(consentService: _Consent());
         await fcm.handleTokenRefreshForTest('tok-1');
 
         verify(() => wired.userService.updateFCMToken('tok-1')).called(1);
@@ -452,6 +454,7 @@ void main() {
       await MessagingModule().configure(_getIt);
       final fcm = _getIt<FCMService>();
 
+      await fcm.bindUserContext(consentService: _Consent());
       await fcm.handleTokenRefreshForTest('tok-m');
       verify(() => wired.userService.updateFCMToken('tok-m')).called(1);
     });

@@ -114,7 +114,7 @@ class FCMService extends BaseService {
       return;
     }
 
-    final result = await safeExecute(
+    await safeExecute(
       () async {
         AppLogger.info('Initializing FCM service...');
 
@@ -151,7 +151,9 @@ class FCMService extends BaseService {
       operationName: 'FCMService: Initialize',
     );
 
-    if (result == null) {
+    // safeExecute returns null for a void operation even when it succeeds,
+    // so success is read from the flag the operation sets last.
+    if (!_isInitialized) {
       throw Exception('Failed to initialize FCM service');
     }
   }
@@ -466,6 +468,8 @@ class FCMService extends BaseService {
         '🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...',
       );
       _currentToken = token;
+      // Revoking consent deletes the token, and FCM then mints a new one.
+      if (!await _hasPushConsent()) return;
       await _updateUserToken(token);
     } catch (e) {
       AppLogger.error('❌ Failed to handle token refresh', e);
