@@ -1,10 +1,12 @@
 /**
  * BUT-2409: counts the Storage objects under `users/` that no document points
- * at (see sweep-orphan-storage-core.ts). Read-only. There is deliberately no
- * delete path: that change ships only after Malin approves the counts.
+ * at (see sweep-orphan-storage-core.ts). Counts only, unless `--apply` is
+ * passed together with `--max-delete <n>`. A delete cannot be undone, so n is
+ * the count Malin approved: more orphans than n deletes nothing.
  *
  * Usage (from functions/):
  *   npm run sweep-orphan-storage -- --project <id>
+ *   npm run sweep-orphan-storage -- --project <id> --apply --max-delete <n>
  *
  * Prints counts and bytes per folder, never user ids or file names.
  */
@@ -13,8 +15,12 @@ import * as admin from "firebase-admin";
 import { initializeAdminApp } from "./admin-init";
 import {
   assertScanPlausible,
+  assertWithinCap,
+  deleteOrphans,
   harvestStoragePaths,
   ObjectInfo,
+  orphansOf,
+  parseMaxDelete,
   SWEPT_FOLDERS,
   tallyObjects,
   userFolder,
@@ -52,9 +58,11 @@ async function harvestTree(
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
-  if (argv.includes("--apply")) {
+  const apply = argv.includes("--apply");
+  const maxDelete = parseMaxDelete(argv);
+  if (apply && maxDelete === null) {
     throw new Error(
-      "REFUSED: this script only counts. Deleting orphans needs Malin's approval of the counts first.",
+      "REFUSED: --apply needs --max-delete <n>, the orphan count Malin approved.",
     );
   }
   const projectId = initializeAdminApp().options.projectId;
@@ -73,11 +81,12 @@ async function main(): Promise<void> {
       name: file.name,
       sizeBytes: Number(file.metadata.size ?? 0),
       createdMs: Date.parse(String(file.metadata.timeCreated ?? "")) || Date.now(),
+      generation: file.metadata.generation === undefined ? undefined : String(file.metadata.generation),
     });
   }
   assertScanPlausible(keep.size, objects.length);
 
-  console.log(`Mode: DRY-RUN (read-only). Firestore reads: ${reads}, references found: ${keep.size}`);
+  console.log(`Mode: ${apply ? "APPLY (deletes orphans)" : "DRY-RUN (read-only)"}. Firestore reads: ${reads}, references found: ${keep.size}`);
   const tally = tallyObjects(objects, keep, Date.now());
   for (const folder of SWEPT_FOLDERS) {
     const t = tally.get(folder);
@@ -90,6 +99,13 @@ async function main(): Promise<void> {
         `orphans ${t.orphans} (${(t.orphanBytes / 1048576).toFixed(1)} MB)`,
     );
   }
+
+  if (!apply) return;
+  const orphans = orphansOf(objects, keep, Date.now());
+  assertWithinCap(orphans.length, maxDelete as number);
+  await deleteOrphans(bucket, orphans, (r) =>
+    console.log(`Deleted ${r.deleted} orphans, skipped ${r.skipped} already gone, changed or unpinnable.`),
+  );
 }
 
 main().catch((err) => {

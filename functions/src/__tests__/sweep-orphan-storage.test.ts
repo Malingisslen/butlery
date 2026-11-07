@@ -8,9 +8,13 @@
 import * as assert from "assert";
 import {
   assertScanPlausible,
+  assertWithinCap,
+  deleteOrphans,
   classifyObject,
   GRACE_MS,
   harvestStoragePaths,
+  orphansOf,
+  parseMaxDelete,
   tallyObjects,
 } from "../admin/sweep-orphan-storage-core";
 
@@ -20,14 +24,19 @@ const url = (path: string) =>
   `https://firebasestorage.googleapis.com/v0/b/b.firebasestorage.app/o/${encodeURIComponent(path)}?alt=media&token=t`;
 
 let failed = 0;
-function test(name: string, fn: () => void): void {
-  try {
-    fn();
-    console.log(`  PASS  ${name}`);
-  } catch (err) {
-    failed++;
-    console.log(`  FAIL  ${name}\n        ${String(err)}`);
-  }
+const pending: Array<Promise<void>> = [];
+function test(name: string, fn: () => void | Promise<void>): void {
+  pending.push(
+    (async () => {
+      try {
+        await fn();
+        console.log(`  PASS  ${name}`);
+      } catch (err) {
+        failed++;
+        console.log(`  FAIL  ${name}\n        ${String(err)}`);
+      }
+    })(),
+  );
 }
 
 test("a URL in any field of any nesting counts as a reference", () => {
@@ -102,8 +111,87 @@ test("an empty reference scan over existing files is refused", () => {
   assertScanPlausible(3, 5);
 });
 
-if (failed > 0) {
-  console.log(`\n${failed} failed`);
-  process.exit(1);
+test("orphansOf returns only old unreferenced swept files", () => {
+  const keepName = "users/u1/recipes/a.jpg";
+  const list = orphansOf(
+    [
+      { name: keepName, sizeBytes: 1, createdMs: OLD },
+      { name: "users/u1/recipes/b.jpg", sizeBytes: 1, createdMs: OLD },
+      { name: "users/u1/recipes/new.jpg", sizeBytes: 1, createdMs: NOW },
+      { name: "users/u1/trash/c.jpg", sizeBytes: 1, createdMs: OLD },
+    ],
+    new Set([keepName]),
+    NOW,
+  );
+  assert.deepStrictEqual(list.map((o) => o.name), ["users/u1/recipes/b.jpg"]);
+});
+
+test("--max-delete must be a positive integer", () => {
+  assert.strictEqual(parseMaxDelete(["--apply"]), null);
+  assert.strictEqual(parseMaxDelete(["--max-delete"]), null);
+  assert.strictEqual(parseMaxDelete(["--max-delete", "0"]), null);
+  assert.strictEqual(parseMaxDelete(["--max-delete", "4x"]), null);
+  assert.strictEqual(parseMaxDelete(["--max-delete", "4"]), 4);
+});
+
+test("more orphans than the approved cap deletes nothing", () => {
+  assert.throws(() => assertWithinCap(5, 4), /REFUSED/);
+  assertWithinCap(4, 4);
+  assertWithinCap(0, 4);
+});
+
+function fakeBucket(failWith: Record<string, number>) {
+  const calls: Array<[string, string]> = [];
+  return {
+    calls,
+    bucket: {
+      file: (name: string) => ({
+        delete: async (o: { ifGenerationMatch: string }) => {
+          calls.push([name, o.ifGenerationMatch]);
+          if (failWith[name]) throw Object.assign(new Error("x"), { code: failWith[name] });
+        },
+      }),
+    },
+  };
 }
-console.log("\nall passed");
+const orph = (name: string, generation?: string) => ({ name, sizeBytes: 1, createdMs: OLD, generation });
+
+test("deletes are pinned to the judged generation; 404 and 412 count as skipped", async () => {
+  const f = fakeBucket({ "users/u/recipes/b": 404, "users/u/recipes/c": 412 });
+  const seen: Array<[number, number]> = [];
+  const r = await deleteOrphans(
+    f.bucket,
+    [orph("users/u/recipes/a", "7"), orph("users/u/recipes/b", "8"), orph("users/u/recipes/c", "9")],
+    (x) => seen.push([x.deleted, x.skipped]),
+  );
+  assert.deepStrictEqual(f.calls[0], ["users/u/recipes/a", "7"]);
+  assert.deepStrictEqual(r, { deleted: 1, skipped: 2 });
+  assert.deepStrictEqual(seen, [[1, 2]]);
+});
+
+test("an object without a generation is skipped, never deleted", async () => {
+  const f = fakeBucket({});
+  const r = await deleteOrphans(f.bucket, [orph("users/u/recipes/a")], () => undefined);
+  assert.strictEqual(f.calls.length, 0);
+  assert.deepStrictEqual(r, { deleted: 0, skipped: 1 });
+});
+
+test("another error stops the run and still reports progress", async () => {
+  const f = fakeBucket({ "users/u/recipes/b": 500 });
+  const seen: Array<[number, number]> = [];
+  await assert.rejects(
+    deleteOrphans(f.bucket, [orph("users/u/recipes/a", "1"), orph("users/u/recipes/b", "2"), orph("users/u/recipes/c", "3")], (x) =>
+      seen.push([x.deleted, x.skipped]),
+    ),
+  );
+  assert.strictEqual(f.calls.length, 2);
+  assert.deepStrictEqual(seen, [[1, 0]]);
+});
+
+void Promise.all(pending).then(() => {
+  if (failed > 0) {
+    console.log(`\n${failed} failed`);
+    process.exit(1);
+  }
+  console.log("\nall passed");
+});

@@ -21480,3 +21480,22 @@ data-pipelines chapter (orphan keep-set bullet).
 (`exists` false, still recursed). The catch prints only a REFUSED message or an error code. tsc
 clean, test 10/10. Residual (Info): the printed "Firestore reads" counts `getAll` snapshots only,
 not the per-document `listCollections` calls, so it undercounts the billed operations. Verdict pass.
+
+### 2026-11-07 — BUT-2409 orphan-storage sweep gains capped --apply [review]
+Staged diff added `--apply --max-delete <n>` to `admin/sweep-orphan-storage.ts`, with
+`parseMaxDelete`/`orphansOf`/`assertWithinCap` in the core. Verified: refusal fires before
+`initializeAdminApp` (project gate `requireProject` unchanged); the cap check precedes the first
+delete; deletes pass `ifGenerationMatch: obj.generation`, tolerating 404/412 only; output prints
+counts and error codes only. In @google-cloud/storage 7.22.0, `File.delete(options)` forwards the
+options as query params, so `String(file.metadata.generation ?? "")` would send an empty
+`ifGenerationMatch=` if a listing ever lacked a generation (objects.list always returns one, so
+unreachable in practice). Recorded as Low; the delete loop has no seam and no test. Suite 13/13,
+tsc clean. Verdict pass.
+
+### 2026-11-07 — BUT-2409 re-review after fixes [review]
+Delete loop moved to core `deleteOrphans(bucket, orphans, onProgress)`: skips an object with no
+generation, tolerates 404/412, reports counts in `finally`; the script maps a missing
+`metadata.generation` to `undefined`. Three async fake-bucket tests each fail on the matching
+mutant (pin dropped, missing-generation skip removed, `finally` removed). Suite 16/16, tsc clean.
+Residual Info: a `null` generation would stringify to "null" and fail the delete (fail closed).
+Verdict pass.
