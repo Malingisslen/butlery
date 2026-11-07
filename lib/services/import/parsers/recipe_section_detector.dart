@@ -342,7 +342,7 @@ class RecipeSectionDetector {
 
     // Reject if it contains instruction phrases
     if (RegExp(
-      r'(gör\s+så|att\s+pensla|att\s+strö|att\s+servera|'
+      r'(gör\s+så|'
       r'lös\s+upp|degen|smeten|blandningen|efter\s+gräddning)',
       caseSensitive: false,
     ).hasMatch(text)) {
@@ -365,8 +365,16 @@ class RecipeSectionDetector {
     ).hasMatch(text);
 
     // Simple ingredients: short, no periods suggesting sentences
+    // From 30 characters up a row that reads as a step is a step; the shorter
+    // rows were never held to that.
     final isSimpleIngredient =
-        text.length < 30 && !text.contains('. ') && !isSectionHeader(text);
+        text.length < 50 &&
+        !text.contains('. ') &&
+        !isSectionHeader(text) &&
+        (text.length < 30 ||
+            _participleFirst.hasMatch(text) ||
+            instructionScore(text) < 2) &&
+        !HeadingWordLists.isStoreOffer(text);
 
     // A bulleted row with no quantity ("- Smör och olivolja till stekning")
     // is a list item whatever its length; dropping it drops its allergen.
@@ -389,6 +397,13 @@ class RecipeSectionDetector {
 
     return hasMeasurement || isSimpleIngredient || isBulletedRow || isItemList;
   }
+
+  // "Riven", "Hackad", "Rostade": the verb list in [instructionScore] matches
+  // on prefix, so a prepared ingredient reads as the imperative "riv".
+  static final _participleFirst = RegExp(
+    r'^[a-zåäö]+(?:ad|at|ade|en|na)(?:\s|$)',
+    caseSensitive: false,
+  );
 
   static final _bulletedRow = RegExp(r'^\s*[-•–*]\s+\S');
 

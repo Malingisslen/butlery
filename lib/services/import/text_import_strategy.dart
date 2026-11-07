@@ -647,7 +647,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final lowerLine = line.toLowerCase();
 
         if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
-        if (HeadingWordLists.looksLikeHandle(line)) continue;
+        // A lowercase one-word name straight above a quantity row is the
+        // dish ("korvstroganoff"), not an account name.
+        final titleAboveRows =
+            RegExp(r'^[a-zåäö]+$').hasMatch(line) &&
+            i + 1 < titleLines.length &&
+            _isQuantityRow(titleLines[i + 1]);
+        if (HeadingWordLists.looksLikeHandle(line) && !titleAboveRows) continue;
         if (RecipeSectionDetector.isIngredientHeader(lowerLine) ||
             RecipeSectionDetector.isInstructionHeader(lowerLine)) {
           break;

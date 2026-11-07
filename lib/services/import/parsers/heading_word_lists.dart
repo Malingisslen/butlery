@@ -221,6 +221,14 @@ class HeadingWordLists {
 
   static final _handle = RegExp(r'^[a-z_][a-z0-9_.]*$');
 
+  /// "Köp 3 betala för 2": a shop's offer printed beside the recipe.
+  static bool isStoreOffer(String line) => _storeOffer.hasMatch(line.trim());
+
+  static final _storeOffer = RegExp(
+    r'^köp\s+\d+\s+betala\s+för\s+\d+',
+    caseSensitive: false,
+  );
+
   /// "För 6 dagar sedan", "26 juli" — the line a social app prints under a
   /// caption.
   static bool isPostAge(String line) {

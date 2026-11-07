@@ -2,6 +2,7 @@
 /// Extracted from text_import_strategy.dart for better organization.
 
 import 'package:butlery/services/import/layout/line_reflow.dart';
+import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Provides text normalization, decimal protection, sentence splitting,
@@ -184,7 +185,7 @@ class TextImportNormalizer {
   /// Main preprocessing entry point.
   /// Combines all normalization steps for recipe text.
   static String preprocessText(String input) {
-    String processed = input.replaceAll(
+    String processed = joinHyphenatedWords(input).replaceAll(
       RegExp(r'\n[ \t]*\n(?:[ \t]*\n)*'),
       '\n$_paragraphMarker\n',
     );
@@ -306,6 +307,10 @@ class TextImportNormalizer {
       ).replaceAllMapped(_gluedSentence, (g) => '${g[1]}. ${g[2]}'),
     );
 
+    processed = _splitInlineIngredientList(
+      processed.split('\n').map(_stripLeadingColon).toList(),
+    );
+
     // Fix measurement formatting (e.g., "2dl" -> "2 dl")
     processed = processed.replaceAllMapped(
       RegExp(r'(\d+(?:[,\.]\d+)?)(dl|cl|ml|kg|g|msk|tsk|st|krm)'),
@@ -318,5 +323,51 @@ class TextImportNormalizer {
     processed = processed.replaceAll('$_paragraphMarker\n', '\n');
 
     return processed.trim();
+  }
+
+  // The header split above leaves the header's own colon at the start of the
+  // text it cut off ("Ingredienser" / ": 1 gul lök, ...").
+  static String _stripLeadingColon(String line) =>
+      line.replaceFirst(RegExp(r'^\s*:\s*(?=\S)'), '');
+
+  static final _startsWithQuantity = RegExp(r'^\d');
+  static final _noteOpening = RegExp(
+    r'^(?:[a-zåäö]+(?:ad|at|ade)|skuren|riven|kokt|kokta|stekt|stekta|helst|gärna|ev|eventuellt|valfri\w*)(?:\s|$)',
+  );
+  static final _itemComma = RegExp(r'(?<!\d),|,(?!\d)');
+
+  /// "Ingredienser: 1 gul lök, 2 burkar tomater, salt" written on one line
+  /// becomes one row per item. Only the line straight under an ingredient
+  /// header is split, and only when at least two items open with a quantity,
+  /// so a method sentence or "2 dl grädde, helst vispad" is left whole.
+  static String _splitInlineIngredientList(List<String> lines) {
+    final out = <String>[];
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final underHeader =
+          i > 0 &&
+          RecipeSectionDetector.isIngredientHeader(
+            lines[i - 1].trim().toLowerCase(),
+          );
+      final parts = line.split(_itemComma).map((p) => p.trim()).toList();
+      if (!underHeader ||
+          parts.where(_startsWithQuantity.hasMatch).length < 2) {
+        out.add(line);
+        continue;
+      }
+      final rows = <String>[];
+      for (final part in parts) {
+        if (part.isEmpty) continue;
+        if (rows.isNotEmpty &&
+            !_startsWithQuantity.hasMatch(part) &&
+            _noteOpening.hasMatch(part)) {
+          rows[rows.length - 1] = '${rows.last}, $part';
+        } else {
+          rows.add(part);
+        }
+      }
+      out.addAll(rows);
+    }
+    return out.join('\n');
   }
 }

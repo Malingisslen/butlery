@@ -36,6 +36,28 @@ String reflowWrappedLines(String text) {
   return out.join('\n');
 }
 
+/// Joins only the words a line break cut in two ("2 tsk stött kar-" /
+/// "damumma"), leaving every other line alone. For text that is pasted or
+/// typed, where the full reflow would be too eager but a hyphen at the end of
+/// a line is never a row of its own.
+String joinHyphenatedWords(String text) {
+  final lines = text
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
+  final out = <String>[];
+  for (final line in lines) {
+    if (out.isNotEmpty &&
+        _hyphenated.hasMatch(out.last.trimRight()) &&
+        _startsLowercase(line.trim())) {
+      out[out.length - 1] = _join(out.last, line);
+    } else {
+      out.add(line);
+    }
+  }
+  return out.join('\n');
+}
+
 /// Whether [next] is the rest of [line] rather than a line of its own.
 bool _continues(String line, String next, {required bool inStep}) {
   final a = line.trimRight();
