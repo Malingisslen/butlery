@@ -4,6 +4,7 @@
 
 // lib/viewmodels/menu_viewmodel.dart
 
+import 'package:butlery/models/user_profile.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -900,6 +901,7 @@ class MenuViewModel extends BaseViewModel {
             friendUserIds: selectedFriendIds,
             menuName: menuName,
             shareMessage: shareMessage,
+            originalMenuId: menuId,
           );
 
           if (shareSuccess) {
@@ -991,6 +993,13 @@ class MenuViewModel extends BaseViewModel {
       return false;
     }
   }
+
+  /// Saved menu id -> who the menu was shared with, for the saved-menus sheet.
+  Future<Map<String, Set<String>>> getOwnMenuShares() =>
+      _socialManager.getOwnMenuShares();
+
+  Future<List<UserProfile>> getShareRecipientProfiles(List<String> ids) =>
+      _socialManager.getShareRecipientProfiles(ids);
 
   /// Deletes saved menu with automatic list refresh and comprehensive error handling.
   /// [menuKey] Unique identifier for menu deletion

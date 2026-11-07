@@ -7826,6 +7826,24 @@ abstract class AppLocalizations {
   /// **'{recipeCount} recept i {categoryCount, plural, =1{1 kategori} other{{categoryCount} kategorier}}'**
   String menuRecipesInCategories(int recipeCount, int categoryCount);
 
+  /// No description provided for @menuSharedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad'**
+  String get menuSharedLabel;
+
+  /// No description provided for @menuSharedWithTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} är delad med'**
+  String menuSharedWithTitle(String name);
+
+  /// No description provided for @menuSharedWithMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Några personer går inte att visa just nu.'**
+  String get menuSharedWithMissing;
+
   /// No description provided for @menuSavedEarlier.
   ///
   /// In sv, this message translates to:

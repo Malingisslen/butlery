@@ -5114,6 +5114,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get menuSharedLabel => 'Shared';
+
+  @override
+  String menuSharedWithTitle(String name) {
+    return '$name is shared with';
+  }
+
+  @override
+  String get menuSharedWithMissing => 'Some people cannot be shown right now.';
+
+  @override
   String get menuSavedEarlier => 'Saved earlier';
 
   @override

@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -99,6 +100,54 @@ void main() {
           customTitle: menuName,
         ),
       ).called(1);
+    });
+
+    test('hands the saved menu id on to the writer', () async {
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+          originalMenuId: any(named: 'originalMenuId'),
+        ),
+      ).thenAnswer((_) async => true);
+
+      await socialManager.shareMenuWithFriends(
+        menu: createTestMenu(),
+        friendUserIds: createTestFriendIds(),
+        menuName: 'Test Menu',
+        originalMenuId: 'saved-1',
+      );
+
+      verify(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+          originalMenuId: 'saved-1',
+        ),
+      ).called(1);
+    });
+
+    test('passes the own-share marks and recipient profiles through', () async {
+      final anna = UserProfile.fromMap('a', {'displayName': 'Anna'});
+      when(() => mockSocialMenuOps.getOwnMenuShares()).thenAnswer(
+        (_) async => {
+          'm1': {'a', 'b'},
+        },
+      );
+      when(
+        () => mockSocialMenuOps.getShareRecipientProfiles(['a', 'b']),
+      ).thenAnswer((_) async => [anna]);
+
+      expect(await socialManager.getOwnMenuShares(), {
+        'm1': {'a', 'b'},
+      });
+      expect(await socialManager.getShareRecipientProfiles(['a', 'b']), [
+        anna,
+      ]);
     });
 
     test('should handle sharing failure gracefully', () async {

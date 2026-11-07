@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
@@ -359,6 +360,54 @@ void main() {
         expect(result, isTrue);
       });
 
+      test(
+        'a menu saved and shared carries its saved id to the share',
+        () async {
+          final ops =
+              production.ServiceLocator.get<SocialMenuOperations>()
+                  as MockSocialMenuOperations;
+          when(
+            () => ops.shareMenuWithFriends(
+              menu: any(named: 'menu'),
+              friendUserIds: any(named: 'friendUserIds'),
+              message: any(named: 'message'),
+              customTitle: any(named: 'customTitle'),
+              originalMenuId: any(named: 'originalMenuId'),
+            ),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockMenuService.generateMenuFromPrompt(
+              any(),
+              any(),
+              recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+              scoringContext: any(named: 'scoringContext'),
+            ),
+          ).thenAnswer((_) async => testMenuSnapshot);
+          await viewModel.generateMenu('Valid prompt');
+
+          await viewModel.saveMenuWithNameAndComment(
+            'Test Menu',
+            'Test comment',
+            shareWithFriends: true,
+            selectedFriendIds: ['friend-1'],
+          );
+
+          final id =
+              verify(
+                    () => ops.shareMenuWithFriends(
+                      menu: any(named: 'menu'),
+                      friendUserIds: ['friend-1'],
+                      message: any(named: 'message'),
+                      customTitle: 'Test Menu',
+                      originalMenuId: captureAny(named: 'originalMenuId'),
+                    ),
+                  ).captured.single
+                  as String?;
+          expect(id, isNotNull);
+          expect(id, isNotEmpty);
+        },
+      );
+
       test('should reject saving without menu', () async {
         final result = await viewModel.saveMenuWithNameAndComment(
           'Test Menu',
@@ -433,6 +482,27 @@ void main() {
         final result = await viewModel.deleteSavedMenu('menu123');
         // With FakeFirestore and no pre-existing menu, delete returns false
         expect(result, isA<bool>());
+      });
+
+      test('own-share marks and recipient profiles come from the social '
+          'operations', () async {
+        final socialOps =
+            production.ServiceLocator.get<SocialMenuOperations>()
+                as MockSocialMenuOperations;
+        final erik = UserProfile.fromMap('e', {'displayName': 'Erik'});
+        when(() => socialOps.getOwnMenuShares()).thenAnswer(
+          (_) async => {
+            'm9': {'e'},
+          },
+        );
+        when(
+          () => socialOps.getShareRecipientProfiles(['e']),
+        ).thenAnswer((_) async => [erik]);
+
+        expect(await viewModel.getOwnMenuShares(), {
+          'm9': {'e'},
+        });
+        expect(await viewModel.getShareRecipientProfiles(['e']), [erik]);
       });
 
       test('should refresh saved menus', () async {
