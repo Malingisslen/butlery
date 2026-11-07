@@ -4267,8 +4267,10 @@ class MockSocialRecipeService extends Mock implements SocialRecipeService {
   List<SharedMenu> getVisibleSharedMenus(String currentUserId) => sharedMenus;
 
   @override
-  Future<bool> isRecipeSharedByUser(String recipeId, String userId) async =>
-      false;
+  Future<List<UserProfile>?> getOwnRecipeParticipants(
+    String recipeId,
+    String userId,
+  ) async => null;
 
   @override
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async => [];

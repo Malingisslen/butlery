@@ -14,8 +14,10 @@
 ///   one recipe lands.
 /// - markAsViewed (recipe/menu): error path returns false, happy path forwards
 ///   the exact (id, userId) pair to the repo.
-/// - isRecipeSharedByUser / isMenuSharedByUser: ownership check on cached
-///   list; not-found → false; wrong-owner → false.
+/// - isMenuSharedByUser: ownership check on the cached list; not-found →
+///   false; wrong-owner → false.
+/// - getOwnRecipeParticipants / getRecipeParticipants: the owner's own share row,
+///   found by the recipe id.
 /// - isShoppingListSharedByUser: missing shopping service → false (no throw).
 /// - getVisibleSharedRecipes / getVisibleSharedMenus: pass-through after
 ///   `initialize()` loads from repo.
@@ -42,6 +44,9 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_owner_lookup.dart';
+import 'package:butlery/models/profile_lookup.dart';
+import 'package:butlery/models/user_profile.dart';
 
 // -------------------- Fakes (no FakeAuthRepository antipattern, BUT-1074) --
 
@@ -56,16 +61,47 @@ class _FakePermissionService extends Fake implements PermissionService {
   bool get isAuthenticated => _uid != null;
 }
 
-class _FakeUserService extends Fake implements UserService {}
+class _FakeUserService extends Fake implements UserService {
+  @override
+  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) async =>
+      ProfileBatchLookup(
+        profiles: [
+          for (final id in userIds)
+            UserProfile(
+              uid: id,
+              displayName: id,
+              email: '',
+              joinedAt: DateTime(2026),
+              lastActiveAt: DateTime(2026),
+            ),
+        ],
+        missingIds: const {},
+        unavailableIds: const {},
+      );
+}
+
+class _FakeOwnerLookup extends Fake implements SharedRecipeOwnerLookup {
+  final Map<String, OwnRecipeShare> byRecipeId = {};
+  Object? throwOnFind;
+  int finds = 0;
+
+  @override
+  Future<OwnRecipeShare?> find(String recipeId) async {
+    finds++;
+    if (throwOnFind != null) throw throwOnFind!;
+    return byRecipeId[recipeId];
+  }
+}
 
 /// Records calls + lets each method be configured to throw a specific error.
 class _FakeSharedRecipeRepository extends Fake
     implements FirebaseSharedRecipeRepository {
   // Repo-state seed for getSharedRecipesForUser.
   List<SharedRecipe> seedRecipes = const [];
-  // Members seed for getMembersWithInfo (used by participant resolver if
-  // ever invoked — not exercised here, but kept defensible).
+  // Members seed for getMembersWithInfo.
   List<SharedContentMember> seedMembers = const [];
+  @override
+  final _FakeOwnerLookup ownShares = _FakeOwnerLookup();
 
   // Recorded calls.
   final List<(String, String)> markedAsViewed = [];
@@ -982,27 +1018,102 @@ void main() {
   });
 
   group('ownership checks', () {
-    test('isRecipeSharedByUser: matching owner → true', () async {
-      recipeRepo.seedRecipes = [
-        _makeSharedRecipe(id: 'sr-1', sharedByUserId: 'owner-A'),
-      ];
-      await service.initialize();
+    test(
+      'getOwnRecipeParticipants: I shared it → owner and recipients',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid', 'friend'],
+        );
 
-      expect(await service.isRecipeSharedByUser('sr-1', 'owner-A'), isTrue);
+        final people = await service.getOwnRecipeParticipants(
+          'recipe-1',
+          'me-uid',
+        );
+
+        expect(people?.map((p) => p.uid), ['me-uid', 'friend']);
+      },
+    );
+
+    test(
+      'getOwnRecipeParticipants: one lookup answers both questions',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid'],
+        );
+
+        await service.getOwnRecipeParticipants('recipe-1', 'me-uid');
+
+        expect(recipeRepo.ownShares.finds, 1);
+      },
+    );
+
+    test('getOwnRecipeParticipants: asks by recipe id, not share id', () async {
+      recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+        id: 'auto-id-9',
+        ownerId: 'me-uid',
+        sharedToUserIds: ['me-uid'],
+      );
+
+      expect(
+        await service.getOwnRecipeParticipants('auto-id-9', 'me-uid'),
+        isNull,
+      );
     });
 
-    test('isRecipeSharedByUser: wrong owner → false', () async {
-      recipeRepo.seedRecipes = [
-        _makeSharedRecipe(id: 'sr-1', sharedByUserId: 'owner-A'),
-      ];
-      await service.initialize();
+    test(
+      'getOwnRecipeParticipants: another user id is never answered',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid'],
+        );
 
-      expect(await service.isRecipeSharedByUser('sr-1', 'owner-B'), isFalse);
+        expect(
+          await service.getOwnRecipeParticipants('recipe-1', 'other'),
+          isNull,
+        );
+      },
+    );
+
+    test('getOwnRecipeParticipants: never shared → null (no throw)', () async {
+      expect(await service.getOwnRecipeParticipants('nope', 'me-uid'), isNull);
     });
 
-    test('isRecipeSharedByUser: unknown id → false (no throw)', () async {
-      expect(await service.isRecipeSharedByUser('nope', 'whoever'), isFalse);
-    });
+    test(
+      'getOwnRecipeParticipants: a failing read → null (no throw)',
+      () async {
+        recipeRepo.ownShares.throwOnFind = StateError('offline');
+
+        expect(
+          await service.getOwnRecipeParticipants('recipe-1', 'me-uid'),
+          isNull,
+        );
+      },
+    );
+
+    test(
+      'getRecipeParticipants: owner gets themselves and the recipients',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid', 'friend-1', 'friend-2'],
+        );
+
+        final participants = await service.getRecipeParticipants('recipe-1');
+
+        expect(participants.map((p) => p.uid), [
+          'me-uid',
+          'friend-1',
+          'friend-2',
+        ]);
+      },
+    );
 
     test('isMenuSharedByUser: matching owner → true', () async {
       menuRepo.seedMenus = [
