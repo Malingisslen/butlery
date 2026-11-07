@@ -5042,9 +5042,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String menuSharedWithCount(int count) {
-    return 'Delad med $count';
-  }
+  String get menuSharedLabel => 'Delad';
 
   @override
   String menuSharedWithTitle(String name) {

@@ -11,11 +11,9 @@ import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 
-/// The quiet line under a saved menu's name: who it was shared with.
+/// The quiet line under a saved menu's name; a tap shows who it is shared with.
 class MenuSharedWithLine extends StatelessWidget {
-  const MenuSharedWithLine({super.key, required this.count});
-
-  final int count;
+  const MenuSharedWithLine({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +27,7 @@ class MenuSharedWithLine extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.space4),
         Text(
-          context.l10n.menuSharedWithCount(count),
+          context.l10n.menuSharedLabel,
           style: AppTextStyles.bodySmall.copyWith(color: color),
         ),
       ],

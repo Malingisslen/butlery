@@ -3400,14 +3400,7 @@
       }
     }
   },
-  "menuSharedWithCount": "Shared with {count}",
-  "@menuSharedWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "menuSharedLabel": "Shared",
   "menuSharedWithTitle": "{name} is shared with",
   "@menuSharedWithTitle": {
     "placeholders": {

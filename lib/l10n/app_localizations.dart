@@ -7826,11 +7826,11 @@ abstract class AppLocalizations {
   /// **'{recipeCount} recept i {categoryCount, plural, =1{1 kategori} other{{categoryCount} kategorier}}'**
   String menuRecipesInCategories(int recipeCount, int categoryCount);
 
-  /// No description provided for @menuSharedWithCount.
+  /// No description provided for @menuSharedLabel.
   ///
   /// In sv, this message translates to:
-  /// **'Delad med {count}'**
-  String menuSharedWithCount(int count);
+  /// **'Delad'**
+  String get menuSharedLabel;
 
   /// No description provided for @menuSharedWithTitle.
   ///

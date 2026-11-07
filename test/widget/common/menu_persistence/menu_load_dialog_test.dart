@@ -96,12 +96,12 @@ void main() {
       await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
       await tester.pumpAndSettle();
 
-      expect(find.text('Delad med 2'), findsOneWidget);
+      expect(find.text('Delad'), findsOneWidget);
       expect(find.text('Sparad tidigare'), findsNWidgets(2));
 
       verifyNever(() => vm.getShareRecipientProfiles(any()));
 
-      await tester.tap(find.text('Delad med 2'));
+      await tester.tap(find.text('Delad'));
       await tester.pumpAndSettle();
 
       expect(find.text('Veckomeny är delad med'), findsOneWidget);
@@ -123,7 +123,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Veckomeny'), findsOneWidget);
-      expect(find.textContaining('Delad med'), findsNothing);
+      expect(find.text('Delad'), findsNothing);
     });
 
     testWidgets('names the gap when a profile cannot be shown', (tester) async {
@@ -138,7 +138,7 @@ void main() {
 
       await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Delad med 2'));
+      await tester.tap(find.text('Delad'));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Person u'), findsOneWidget);

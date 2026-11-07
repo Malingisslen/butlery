@@ -3406,14 +3406,7 @@
       }
     }
   },
-  "menuSharedWithCount": "Delad med {count}",
-  "@menuSharedWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "menuSharedLabel": "Delad",
   "menuSharedWithTitle": "{name} är delad med",
   "@menuSharedWithTitle": {
     "placeholders": {

@@ -5114,9 +5114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String menuSharedWithCount(int count) {
-    return 'Shared with $count';
-  }
+  String get menuSharedLabel => 'Shared';
 
   @override
   String menuSharedWithTitle(String name) {

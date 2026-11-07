@@ -248,9 +248,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           menuName: (menu.name as String?) ?? context.l10n.menuUnnamed,
           recipientIds: recipients,
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.space4),
-          child: MenuSharedWithLine(count: recipients.length),
+        child: const Padding(
+          padding: EdgeInsets.only(top: AppDimensions.space4),
+          child: MenuSharedWithLine(),
         ),
       ),
     );
