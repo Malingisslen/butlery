@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_shared_with_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -238,16 +239,19 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   Widget? _sharedSubtitle(dynamic menu) {
     final recipients = _shares[menu.key as String];
     if (recipients == null) return null;
-    final line = InkWell(
-      onTap: () => showMenuSharedWithSheet(
-        context,
-        viewModel: widget.viewModel,
-        menuName: (menu.name as String?) ?? context.l10n.menuUnnamed,
-        recipientIds: recipients,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(top: AppDimensions.space4),
-        child: MenuSharedWithLine(count: recipients.length),
+    final line = PressFill(
+      surface: PressSurface.raised,
+      child: InkWell(
+        onTap: () => showMenuSharedWithSheet(
+          context,
+          viewModel: widget.viewModel,
+          menuName: (menu.name as String?) ?? context.l10n.menuUnnamed,
+          recipientIds: recipients,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space4),
+          child: MenuSharedWithLine(count: recipients.length),
+        ),
       ),
     );
     return Column(
