@@ -21459,3 +21459,24 @@ measure-production's script step is now `run: |` + `set -o pipefail`. gatedBefor
 fs.readFileSync preload on backfill-age-claim.js (each asserted to apply): hardcoded `projectId: "butlery-prod"`
 after a bare gate call, `const x = "requireProject()"` passed as projectId, the string inline as projectId, and a
 bare `initializeApp()` — all four RED (exit 1); unmutated GREEN. Verdict pass.
+
+### 2026-11-07 — BUT-2409 orphan-Storage count: keep-set misses denormalised copies [review]
+Reviewed staged `admin/sweep-orphan-storage{,-core}.ts` + test + package.json. Core is pure and
+fail-safe (grace window, missing timeCreated -> too-new, empty-scan refusal), no delete path,
+project gate via `initializeAdminApp` -> `requireProject`, output is per-folder counts only.
+Blocking: `TOP_LEVEL_SOURCES` names four collections; verified by reading the Dart models that
+`shared_content` stores `recipeImageUrl` (lib/models/shared_recipe.dart toFirestore) and menu
+dish `imageUrls` (lib/models/shared_menu.dart), and `recipe_suggestions.suggestion` is a full
+recipe map (lib/models/recipe_suggestion.dart). A replaced recipe photo still shown through a
+share is therefore counted as an orphan. Also `harvestUsers` pages `users` with a query, so a
+phantom parent's subcollections are skipped, and `harvestCollection` does not descend below one
+subcollection level. Not measured against production. Verified: test 10/10 pass, tsc clean,
+check-test-registration OK, admin-script-project-gate passes. Principle folded into the
+data-pipelines chapter (orphan keep-set bullet).
+
+### 2026-11-07 — BUT-2409 re-review: whole-database walk lands [review]
+`sweep-orphan-storage.ts` now walks `db.listCollections()` recursively with `listDocuments` +
+`db.getAll` in chunks of 300, so documents that exist only as subcollection parents are seen
+(`exists` false, still recursed). The catch prints only a REFUSED message or an error code. tsc
+clean, test 10/10. Residual (Info): the printed "Firestore reads" counts `getAll` snapshots only,
+not the per-document `listCollections` calls, so it undercounts the billed operations. Verdict pass.
