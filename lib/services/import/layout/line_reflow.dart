@@ -36,6 +36,24 @@ String reflowWrappedLines(String text) {
   return out.join('\n');
 }
 
+/// Joins only the words an OCR reader split across two lines ("kar-" /
+/// "damumma"), leaving every other line break as it was. For text that keeps
+/// its lines, such as pasted text, where [reflowWrappedLines] is not run.
+String joinHyphenatedWords(String text) {
+  final lines = text.split('\n');
+  final out = <String>[];
+  for (final line in lines) {
+    if (out.isNotEmpty &&
+        _hyphenated.hasMatch(out.last.trimRight()) &&
+        _startsLowercase(line.trim())) {
+      out[out.length - 1] = _join(out.last, line);
+    } else {
+      out.add(line);
+    }
+  }
+  return out.join('\n');
+}
+
 /// Whether [next] is the rest of [line] rather than a line of its own.
 bool _continues(String line, String next, {required bool inStep}) {
   final a = line.trimRight();

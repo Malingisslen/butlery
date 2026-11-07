@@ -342,8 +342,7 @@ class RecipeSectionDetector {
 
     // Reject if it contains instruction phrases
     if (RegExp(
-      r'(gör\s+så|att\s+pensla|att\s+strö|att\s+servera|'
-      r'lös\s+upp|degen|smeten|blandningen|efter\s+gräddning)',
+      r'(gör\s+så|lös\s+upp|degen|smeten|blandningen|efter\s+gräddning)',
       caseSensitive: false,
     ).hasMatch(text)) {
       return false;
@@ -364,9 +363,10 @@ class RecipeSectionDetector {
       caseSensitive: false,
     ).hasMatch(text);
 
-    // Simple ingredients: short, no periods suggesting sentences
+    // Simple ingredients: short, no periods suggesting sentences. Long
+    // enough for a row such as "Riven parmesan till servering.".
     final isSimpleIngredient =
-        text.length < 30 && !text.contains('. ') && !isSectionHeader(text);
+        text.length < 50 && !text.contains('. ') && !isSectionHeader(text);
 
     // A bulleted row with no quantity ("- Smör och olivolja till stekning")
     // is a list item whatever its length; dropping it drops its allergen.
