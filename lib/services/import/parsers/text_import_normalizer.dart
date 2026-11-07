@@ -22,6 +22,14 @@ class TextImportNormalizer {
   static const _stepTextBase = 0xE100;
   static const _stepTextLimit = 0x800;
   static final _stepTextSlot = RegExp('[\uE100-\uE8FF]');
+  // Only a whole line is skipped: `TextImportStrategy` drops a time line
+  // entirely, so text after the time would be lost with it. The `ca`
+  // spelling matches what that strategy reads as a time.
+  static final _timeAfterLabel = RegExp(
+    r'[ \t]*:[ \t]*(?:ca\.?[ \t]*)?\d+(?:[ \t]*[-–][ \t]*\d+)?[ \t]*'
+    r'(?:min[a-zåäö]*|tim[a-zåäö]*|h)\.?[ \t]*(?:\n|$)',
+    caseSensitive: false,
+  );
   // A step kept whole still gets the space OCR dropped after a period.
   static final _gluedSentence = RegExp(
     r'([a-z\u00E5\u00E4\u00F6])\.([A-Z\u00C5\u00C4\u00D6])',
@@ -282,7 +290,14 @@ class TextImportNormalizer {
         r'instructions|method|directions|preparation',
         caseSensitive: false,
       ),
-      (match) => '${match.group(0)}\n',
+      // "Tillagning: ca 15 min" is the recipe's time, not a heading: cut
+      // after the word, the label went missing and ": ca 15 min" was left
+      // to be read as a step or an ingredient (BUT-2467).
+      (match) =>
+          match.group(0)!.toLowerCase().startsWith('tillagning') &&
+              _timeAfterLabel.matchAsPrefix(match.input, match.end) != null
+          ? match.group(0)!
+          : '${match.group(0)}\n',
     );
 
     // Add line breaks before common instruction words. Word-bounded: unbounded,
