@@ -25,7 +25,7 @@ import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_sharing_service.dart'
     show RecipeShareResult;
@@ -179,9 +179,8 @@ void main() {
   });
 
   /// A recipe-share request is accepted through the user's recipe
-  /// coordinator and announced through their notification service. Both
-  /// reach `SocialRecipeService` as resolvers from this module.
-  test('the registered recipe service shares and notifies through the '
+  /// coordinator and announced through their notification service.
+  test('the registered share-request module shares and notifies through the '
       'user-scope coordinator and notification service', () async {
     final permission = _MockPermissionService();
     when(() => permission.currentUserId).thenReturn('me-uid');
@@ -215,14 +214,14 @@ void main() {
       ..unregister<SocialRecipeCoordinator>()
       ..registerSingleton<SocialRecipeCoordinator>(coordinator)
       ..registerSingleton<NotificationService>(notifier);
-    final service = getIt<SocialRecipeService>();
+    final module = getIt<RecipeShareRequestModule>();
 
-    final requested = await service.requestRecipeShare(
+    final requested = await module.requestRecipeShare(
       ownerId: 'owner-uid',
       recipeId: 'r1',
       recipeTitle: 'Pannkakor',
     );
-    final accepted = await service.acceptRecipeShareRequest(
+    final accepted = await module.acceptRecipeShareRequest(
       SocialRequest.recipeShareRequest(
         fromUserId: 'friend-uid',
         toUserId: 'me-uid',

@@ -16,9 +16,6 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 
 /// Module handling the recipe-share *request* flow: a user asking a friend
 /// (the owner) to share a recipe, and the owner accepting that request.
-///
-/// Extracted from [SocialRecipeService] to keep that service under the
-/// 500-line limit.
 class RecipeShareRequestModule {
   final FirebaseSocialRequestRepository socialRequestRepository;
   final PermissionService permissionService;

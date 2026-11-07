@@ -67,7 +67,7 @@ import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -1378,7 +1378,7 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
 
   Future<void> _onShare(String name) async {
     if (offerAccountIfGuest(context, GuestAccountReason.share)) return;
-    final ok = await ServiceLocator.get<SocialRecipeService>()
+    final ok = await ServiceLocator.get<RecipeShareRequestModule>()
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;
     if (ok) {

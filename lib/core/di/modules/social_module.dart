@@ -41,6 +41,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -117,6 +118,7 @@ class SocialModule implements DIModule {
     CommentsRepository,
     RatingsRepository,
     SocialRecipeService,
+    RecipeShareRequestModule,
     DeepLinkRepository,
     DeepLinkService,
     ConnectivityRepository,
@@ -252,14 +254,21 @@ class SocialModule implements DIModule {
         permissionService: app<PermissionService>(),
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         sharedMenuRepository: app<FirebaseSharedMenuRepository>(),
+        getShoppingService: () => app.isRegistered<UnifiedShoppingService>()
+            ? app<UnifiedShoppingService>()
+            : null,
+      ),
+    );
+
+    container.registerLazySingleton<RecipeShareRequestModule>(
+      () => RecipeShareRequestModule(
         socialRequestRepository: app<FirebaseSocialRequestRepository>(),
+        permissionService: app<PermissionService>(),
+        userService: container<UserService>(),
         getRecipeCoordinator: () => container<SocialRecipeCoordinator>(),
         getNotificationService: () =>
             container.isRegistered<NotificationService>()
             ? container<NotificationService>()
-            : null,
-        getShoppingService: () => app.isRegistered<UnifiedShoppingService>()
-            ? app<UnifiedShoppingService>()
             : null,
       ),
     );
@@ -490,7 +499,7 @@ class SocialModule implements DIModule {
       );
 
       // Recipe-share requests reuse the unified social_requests collection.
-      // SocialRecipeService injects this for the "ask a friend for a recipe"
+      // RecipeShareRequestModule injects this for the "ask a friend for a recipe"
       // + accept flow (idempotent recipeShareRequest writes).
       container.registerLazySingleton<FirebaseSocialRequestRepository>(
         () => FirebaseSocialRequestRepository(
