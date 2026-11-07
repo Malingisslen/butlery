@@ -121,6 +121,11 @@
   too) and enumerate parents with `listDocuments()` (a phantom `users/{uid}` has no doc but
   has subcollections), or pin a fail-closed allowlist against `firestore.rules` top-level
   `match` blocks with a reason per skipped collection.
+- **A hand-run destructive sweep takes an operator-approved CAP and refuses the WHOLE run
+  above it, before the first delete** (`assertWithinCap`, `--apply` needs `--max-delete`). Pin
+  each delete with `ifGenerationMatch` and treat 404/412 as skipped; a MISSING generation must
+  skip the object, never coerce to `""` — the SDK forwards any value `!== undefined` to the
+  query string, so the pin's meaning then rests on the server, not on the code.
 - Export/mining: verify FIELD PARITY against the writer. Best test is a
   PRIVACY WHITELIST — seed adversarial PII-shaped fields, assert the exported
   key set is EXACTLY allow-listed.
