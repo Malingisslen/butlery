@@ -5042,6 +5042,20 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String menuSharedWithCount(int count) {
+    return 'Delad med $count';
+  }
+
+  @override
+  String menuSharedWithTitle(String name) {
+    return '$name är delad med';
+  }
+
+  @override
+  String get menuSharedWithMissing =>
+      'Några personer går inte att visa just nu.';
+
+  @override
   String get menuSavedEarlier => 'Sparad tidigare';
 
   @override

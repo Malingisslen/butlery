@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/menu_social_manager.dart
 
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -29,6 +30,7 @@ class MenuSocialManager {
     required List<String> friendUserIds,
     required String menuName,
     String? shareMessage,
+    String? originalMenuId,
   }) async {
     try {
       final shareSuccess = await _socialMenuOps.shareMenuWithFriends(
@@ -36,6 +38,7 @@ class MenuSocialManager {
         friendUserIds: friendUserIds,
         message: shareMessage?.trim(),
         customTitle: menuName,
+        originalMenuId: originalMenuId,
       );
 
       if (shareSuccess) {
@@ -52,6 +55,12 @@ class MenuSocialManager {
       rethrow;
     }
   }
+
+  Future<Map<String, Set<String>>> getOwnMenuShares() =>
+      _socialMenuOps.getOwnMenuShares();
+
+  Future<List<UserProfile>> getShareRecipientProfiles(List<String> ids) =>
+      _socialMenuOps.getShareRecipientProfiles(ids);
 
   /// Get available shared menus from friends
   Future<List<Map<String, dynamic>>> getAvailableSharedMenus() async {

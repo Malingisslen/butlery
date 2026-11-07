@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/menu_persistence/menu_shared_with_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Bottom sheet for loading a saved menu.
@@ -38,6 +39,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   List<dynamic> _savedMenus = [];
   bool _isLoading = false;
   bool _loadFailed = false;
+  Map<String, Set<String>> _shares = const {};
 
   @override
   void initState() {
@@ -54,10 +56,16 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     }
 
     try {
+      // One query for every menu's marks; a failed one only hides the marks.
+      final sharesFuture = widget.viewModel.getOwnMenuShares().catchError(
+        (Object _) => <String, Set<String>>{},
+      );
       await widget.viewModel.refreshSavedMenus();
+      final shares = await sharesFuture;
 
       if (mounted) {
         setState(() {
+          _shares = shares;
           _savedMenus = widget.viewModel.savedMenus;
           _isLoading = false;
         });
@@ -201,7 +209,10 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
         ),
         title: menu.name ?? context.l10n.menuUnnamed,
-        subtitle: context.l10n.menuSavedEarlier,
+        subtitle: _shares.containsKey(menu.key)
+            ? null
+            : context.l10n.menuSavedEarlier,
+        subtitleWidget: _sharedSubtitle(menu),
         trailing: ButleryMenu<String>(
           semanticLabel: context.l10n.rootBarMoreActions,
           onSelected: (value) => _handleMenuAction(menu, value),
@@ -221,6 +232,35 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         ),
         onTap: () => _loadMenu(menu),
       ),
+    );
+  }
+
+  Widget? _sharedSubtitle(dynamic menu) {
+    final recipients = _shares[menu.key as String];
+    if (recipients == null) return null;
+    final line = InkWell(
+      onTap: () => showMenuSharedWithSheet(
+        context,
+        viewModel: widget.viewModel,
+        menuName: (menu.name as String?) ?? context.l10n.menuUnnamed,
+        recipientIds: recipients,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppDimensions.space4),
+        child: MenuSharedWithLine(count: recipients.length),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.menuSavedEarlier,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        line,
+      ],
     );
   }
 

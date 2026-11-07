@@ -3406,6 +3406,23 @@
       }
     }
   },
+  "menuSharedWithCount": "Delad med {count}",
+  "@menuSharedWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuSharedWithTitle": "{name} är delad med",
+  "@menuSharedWithTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "menuSharedWithMissing": "Några personer går inte att visa just nu.",
   "menuSavedEarlier": "Sparad tidigare",
   "menuSaveTitle": "Spara meny",
   "menuShareWithFriendsDescription": "Dela denna meny med valda vänner",

@@ -155,6 +155,81 @@ void main() {
         },
       );
 
+      test('stamps originalMenuId only when the menu has a saved id', () async {
+        await operations.shareMenuWithFriends(
+          menu: testMenu,
+          friendUserIds: ['friend-1'],
+          customTitle: 'Med id',
+          originalMenuId: 'saved-1',
+        );
+        await operations.shareMenuWithFriends(
+          menu: testMenu,
+          friendUserIds: ['friend-1'],
+          customTitle: 'Utan id',
+        );
+
+        final docs =
+            (await mockFirestoreRepository.firestore
+                    .collection('shared_content')
+                    .get())
+                .docs;
+        final byTitle = {for (final d in docs) d.data()['title']: d.data()};
+        expect(byTitle['Med id']!['originalMenuId'], 'saved-1');
+        expect(byTitle['Utan id']!.containsKey('originalMenuId'), isFalse);
+      });
+
+      group('own menu shares', () {
+        Future<void> seed(String by, String menuId, List<String> to) =>
+            mockFirestoreRepository.firestore.collection('shared_content').add({
+              'contentType': 'menu',
+              'sharedByUserId': by,
+              'originalMenuId': menuId,
+              'sharedToUserIds': to,
+            });
+
+        test('returns only the signed-in user\'s own rows', () async {
+          await seed('test-user-123', 'm1', ['friend-1']);
+          await seed('someone-else', 'm2', ['friend-2']);
+
+          expect(await operations.getOwnMenuShares(), {
+            'm1': {'friend-1'},
+          });
+        });
+
+        test('is empty when signed out, even with rows seeded', () async {
+          await seed('test-user-123', 'm1', ['friend-1']);
+          final signedOut = FakePermissionService()
+            ..setPermissionState(currentUserId: null, userDisplayName: null);
+          final ops = SocialMenuOperations(
+            filterShareRecipients: (ids) async => ids,
+            firestore: mockFirestoreRepository.firestore,
+            friendsService: mockFriendsService,
+            permissionService: signedOut,
+            userService: TestServiceLocator.get<UserService>(),
+          );
+
+          expect(await ops.getOwnMenuShares(), isEmpty);
+        });
+
+        test('resolves recipient profiles through the user service', () async {
+          final users = MockUserService();
+          final anna = UserBuilder()
+              .withId('friend-1')
+              .withName('Anna')
+              .build();
+          users.setUserState(users: {'friend-1': anna});
+          final ops = SocialMenuOperations(
+            filterShareRecipients: (ids) async => ids,
+            firestore: mockFirestoreRepository.firestore,
+            friendsService: mockFriendsService,
+            permissionService: TestServiceLocator.get<PermissionService>(),
+            userService: users,
+          );
+
+          expect(await ops.getShareRecipientProfiles(['friend-1']), [anna]);
+        });
+      });
+
       test('the sign-in check and the stamped name come from the injected '
           'services, not from the ones in the locator (BUT-1508)', () async {
         when(
