@@ -311,6 +311,16 @@ jobs:
         storeFile=upload-keystore.jks
         EOF
 
+    # ubuntu-latest's default JDK moved to 25, which Gradle 8.13 cannot run on
+    # ("Unsupported class file major version 69"); pin the JDK the other
+    # Gradle-running workflows use.
+    - name: Setup Java
+      if: matrix.platform == 'android'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
     - name: Setup Gradle
       if: matrix.platform == 'android'
       uses: gradle/actions/setup-gradle@v3

@@ -20,8 +20,6 @@
 /// state changes without an explicit `await`), add `with ChangeNotifier` and
 /// call `notifyListeners()` after every state mutation, then remove this comment.
 
-import 'package:butlery/services/notifications/notification_service.dart';
-import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -31,15 +29,12 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
-import 'package:butlery/models/social_request.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
-import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 
 class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final UserService _userService;
@@ -55,7 +50,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   // Modules
   late final SocialParticipantResolverModule _participantResolver;
-  late final RecipeShareRequestModule _recipeShareRequestModule;
 
   // State
   List<SharedRecipe> _sharedRecipes = [];
@@ -69,9 +63,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required PermissionService permissionService,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
-    required FirebaseSocialRequestRepository socialRequestRepository,
-    required SocialRecipeCoordinator Function() getRecipeCoordinator,
-    required NotificationService? Function() getNotificationService,
     UnifiedShoppingService? Function()? getShoppingService,
   }) : _getShoppingService = getShoppingService ?? (() => null),
        _userService = userService,
@@ -86,13 +77,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       sharedRecipeRepository: _sharedRecipeRepository,
       sharedMenuRepository: _sharedMenuRepository,
       getShoppingService: () => _shoppingService,
-    );
-    _recipeShareRequestModule = RecipeShareRequestModule(
-      socialRequestRepository: socialRequestRepository,
-      permissionService: _permissionService,
-      userService: _userService,
-      getRecipeCoordinator: getRecipeCoordinator,
-      getNotificationService: getNotificationService,
     );
   }
 
@@ -480,19 +464,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   Future<List<UserProfile>> getShoppingListParticipants(String listId) =>
       _participantResolver.getShoppingListParticipants(listId);
-
-  Future<bool> requestRecipeShare({
-    required String ownerId,
-    required String recipeId,
-    required String recipeTitle,
-  }) => _recipeShareRequestModule.requestRecipeShare(
-    ownerId: ownerId,
-    recipeId: recipeId,
-    recipeTitle: recipeTitle,
-  );
-
-  Future<bool> acceptRecipeShareRequest(SocialRequest request) =>
-      _recipeShareRequestModule.acceptRecipeShareRequest(request);
 
   void dispose() {
     disposeStreamResources();

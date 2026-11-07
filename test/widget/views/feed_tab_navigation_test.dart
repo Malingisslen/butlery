@@ -27,7 +27,7 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/views/social/friends_list/feed_tab.dart';
@@ -56,9 +56,12 @@ const _currentUserId = 'test-user-123';
 const _recipeId = 'recipe-xyz-123';
 const _recipeTitle = 'Vännens Pasta';
 
+class MockRecipeShareRequestModule extends Mock
+    implements RecipeShareRequestModule {}
+
 void main() {
   late MockUnifiedRecipeService recipeService;
-  late MockSocialRecipeService socialRecipeService;
+  late MockRecipeShareRequestModule shareRequestModule;
   late _MockNavigatorObserver navObserver;
   late Recipe friendRecipe;
   late ActivityEvent sharedEvent;
@@ -98,8 +101,10 @@ void main() {
     recipeService.setRecipeState(recipes: [], isInitialized: true);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
 
-    socialRecipeService = MockSocialRecipeService();
-    TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+    shareRequestModule = MockRecipeShareRequestModule();
+    TestServiceLocator.registerMock<RecipeShareRequestModule>(
+      shareRequestModule,
+    );
 
     feedVm = _MockActivityFeedViewModel();
     when(() => feedVm.isLoading).thenReturn(false);
@@ -391,7 +396,7 @@ void main() {
         ).thenAnswer((_) async => null);
 
         when(
-          () => socialRecipeService.requestRecipeShare(
+          () => shareRequestModule.requestRecipeShare(
             ownerId: _ownerUserId,
             recipeId: _recipeId,
             recipeTitle: _recipeTitle,
@@ -428,7 +433,7 @@ void main() {
 
         // requestRecipeShare must have been called exactly once.
         verify(
-          () => socialRecipeService.requestRecipeShare(
+          () => shareRequestModule.requestRecipeShare(
             ownerId: _ownerUserId,
             recipeId: _recipeId,
             recipeTitle: _recipeTitle,
