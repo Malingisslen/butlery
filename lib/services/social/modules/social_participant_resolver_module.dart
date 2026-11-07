@@ -37,8 +37,8 @@ class SocialParticipantResolverModule {
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
     try {
       // The owner asks by the recipe's own id, a recipient by the share row's.
-      final own = await sharedRecipeRepository.ownShares.find(recipeId);
-      if (own != null) return _ownerParticipants(recipeId, own);
+      final own = await getOwnRecipeParticipants(recipeId);
+      if (own != null) return own;
 
       final recipe = getSharedRecipes()
           .where((r) => r.id == recipeId)
@@ -56,6 +56,14 @@ class SocialParticipantResolverModule {
       AppLogger.error('Failed to get recipe participants', e);
       return [];
     }
+  }
+
+  /// Null when the signed-in user has not shared this recipe. Answers "is it
+  /// shared" and "with whom" from one lookup, so a status check pays for it once.
+  Future<List<UserProfile>?> getOwnRecipeParticipants(String recipeId) async {
+    final own = await sharedRecipeRepository.ownShares.find(recipeId);
+    if (own == null) return null;
+    return _ownerParticipants(recipeId, own);
   }
 
   /// The share row's own recipient list is the one both writers keep; only

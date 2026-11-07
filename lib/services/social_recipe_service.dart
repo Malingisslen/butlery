@@ -402,14 +402,18 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   List<SharedRecipe> get recipesSharedWithMe => sharedRecipes;
   List<SharedMenu> get menusSharedWithMe => sharedMenus;
 
-  /// Check if recipe is shared by user
-  Future<bool> isRecipeSharedByUser(String recipeId, String userId) async {
+  /// The people a recipe is shared with, or null when [userId] has not shared
+  /// it. One lookup answers both questions the status view asks.
+  Future<List<UserProfile>?> getOwnRecipeParticipants(
+    String recipeId,
+    String userId,
+  ) async {
     try {
-      if (userId != _permissionService.currentUserId) return false;
-      return await _sharedRecipeRepository.ownShares.find(recipeId) != null;
+      if (userId != _permissionService.currentUserId) return null;
+      return await _participantResolver.getOwnRecipeParticipants(recipeId);
     } catch (e) {
       AppLogger.error('Failed to check if recipe is shared', e);
-      return false;
+      return null;
     }
   }
 

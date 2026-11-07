@@ -191,17 +191,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
       switch (type) {
         case CollaborativeContentType.recipe:
-          isShared = await _socialRecipeService.isRecipeSharedByUser(
+          final own = await _socialRecipeService.getOwnRecipeParticipants(
             contentId,
             userId,
           );
-          if (isShared) {
-            participants = await _socialRecipeService.getRecipeParticipants(
-              contentId,
-            );
-          } else {
-            participants = [];
-          }
+          isShared = own != null;
+          participants = own ?? [];
           break;
 
         case CollaborativeContentType.menu:

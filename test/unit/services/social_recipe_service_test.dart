@@ -16,7 +16,7 @@
 ///   the exact (id, userId) pair to the repo.
 /// - isMenuSharedByUser: ownership check on the cached list; not-found →
 ///   false; wrong-owner → false.
-/// - isRecipeSharedByUser / getRecipeParticipants: the owner's own share row,
+/// - getOwnRecipeParticipants / getRecipeParticipants: the owner's own share row,
 ///   found by the recipe id.
 /// - isShoppingListSharedByUser: missing shopping service → false (no throw).
 /// - getVisibleSharedRecipes / getVisibleSharedMenus: pass-through after
@@ -83,9 +83,11 @@ class _FakeUserService extends Fake implements UserService {
 class _FakeOwnerLookup extends Fake implements SharedRecipeOwnerLookup {
   final Map<String, OwnRecipeShare> byRecipeId = {};
   Object? throwOnFind;
+  int finds = 0;
 
   @override
   Future<OwnRecipeShare?> find(String recipeId) async {
+    finds++;
     if (throwOnFind != null) throw throwOnFind!;
     return byRecipeId[recipeId];
   }
@@ -1016,17 +1018,40 @@ void main() {
   });
 
   group('ownership checks', () {
-    test('isRecipeSharedByUser: I shared this recipe → true', () async {
-      recipeRepo.ownShares.byRecipeId['recipe-1'] = (
-        id: 'auto-id-9',
-        ownerId: 'me-uid',
-        sharedToUserIds: ['me-uid', 'friend'],
-      );
+    test(
+      'getOwnRecipeParticipants: I shared it → owner and recipients',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid', 'friend'],
+        );
 
-      expect(await service.isRecipeSharedByUser('recipe-1', 'me-uid'), isTrue);
-    });
+        final people = await service.getOwnRecipeParticipants(
+          'recipe-1',
+          'me-uid',
+        );
 
-    test('isRecipeSharedByUser: asks by recipe id, not by share id', () async {
+        expect(people?.map((p) => p.uid), ['me-uid', 'friend']);
+      },
+    );
+
+    test(
+      'getOwnRecipeParticipants: one lookup answers both questions',
+      () async {
+        recipeRepo.ownShares.byRecipeId['recipe-1'] = (
+          id: 'auto-id-9',
+          ownerId: 'me-uid',
+          sharedToUserIds: ['me-uid'],
+        );
+
+        await service.getOwnRecipeParticipants('recipe-1', 'me-uid');
+
+        expect(recipeRepo.ownShares.finds, 1);
+      },
+    );
+
+    test('getOwnRecipeParticipants: asks by recipe id, not share id', () async {
       recipeRepo.ownShares.byRecipeId['recipe-1'] = (
         id: 'auto-id-9',
         ownerId: 'me-uid',
@@ -1034,13 +1059,13 @@ void main() {
       );
 
       expect(
-        await service.isRecipeSharedByUser('auto-id-9', 'me-uid'),
-        isFalse,
+        await service.getOwnRecipeParticipants('auto-id-9', 'me-uid'),
+        isNull,
       );
     });
 
     test(
-      'isRecipeSharedByUser: another user id is never answered true',
+      'getOwnRecipeParticipants: another user id is never answered',
       () async {
         recipeRepo.ownShares.byRecipeId['recipe-1'] = (
           id: 'auto-id-9',
@@ -1049,21 +1074,27 @@ void main() {
         );
 
         expect(
-          await service.isRecipeSharedByUser('recipe-1', 'other'),
-          isFalse,
+          await service.getOwnRecipeParticipants('recipe-1', 'other'),
+          isNull,
         );
       },
     );
 
-    test('isRecipeSharedByUser: never shared → false (no throw)', () async {
-      expect(await service.isRecipeSharedByUser('nope', 'me-uid'), isFalse);
+    test('getOwnRecipeParticipants: never shared → null (no throw)', () async {
+      expect(await service.getOwnRecipeParticipants('nope', 'me-uid'), isNull);
     });
 
-    test('isRecipeSharedByUser: a failing read → false (no throw)', () async {
-      recipeRepo.ownShares.throwOnFind = StateError('offline');
+    test(
+      'getOwnRecipeParticipants: a failing read → null (no throw)',
+      () async {
+        recipeRepo.ownShares.throwOnFind = StateError('offline');
 
-      expect(await service.isRecipeSharedByUser('recipe-1', 'me-uid'), isFalse);
-    });
+        expect(
+          await service.getOwnRecipeParticipants('recipe-1', 'me-uid'),
+          isNull,
+        );
+      },
+    );
 
     test(
       'getRecipeParticipants: owner gets themselves and the recipients',
