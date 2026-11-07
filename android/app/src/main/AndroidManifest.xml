@@ -62,6 +62,44 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
+
+            <!-- Deep Link Intent Filters -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="butlery.se" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="butlery" />
+            </intent-filter>
+
+            <!-- BUT-2170: the "glömt lösenord" mail link. Firebase wraps its
+                 action page in this path on the Hosting domain; only the
+                 wrapper opens the app, the action page itself stays in the
+                 browser. Verified by web/.well-known/assetlinks.json. The host
+                 is the flavor's Firebase Hosting domain (build.gradle.kts). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="${authLinkHost}" android:pathPrefix="/__/auth/links" />
+            </intent-filter>
+        </activity>
+        <!-- BUT-2469: every share lands here and is handed on to MainActivity,
+             so a share reaches the app already running instead of starting a
+             second copy of it. See ShareReceiverActivity.kt. -->
+        <activity
+            android:name=".ShareReceiverActivity"
+            android:exported="true"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <!-- NY: Intent filter för att ta emot text-delningar -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -96,33 +134,6 @@
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
-            </intent-filter>
-
-            <!-- Deep Link Intent Filters -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="butlery.se" />
-            </intent-filter>
-            
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="butlery" />
-            </intent-filter>
-
-            <!-- BUT-2170: the "glömt lösenord" mail link. Firebase wraps its
-                 action page in this path on the Hosting domain; only the
-                 wrapper opens the app, the action page itself stays in the
-                 browser. Verified by web/.well-known/assetlinks.json. The host
-                 is the flavor's Firebase Hosting domain (build.gradle.kts). -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="${authLinkHost}" android:pathPrefix="/__/auth/links" />
             </intent-filter>
         </activity>
         <!-- BUT-1242: flutter_local_notifications receivers. Without these the
