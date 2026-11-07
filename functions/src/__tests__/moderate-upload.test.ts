@@ -345,6 +345,7 @@ test("BUT-2294: objects outside users/ trigger no owner lookup", async () => {
     `feedback/${ERASED}/shot.png`,
     "shared/recipes/r1/cover.jpg",
     `models/${ERASED}/m.bin`,
+    `corpus/${ERASED}/p0001.jpg`,
   ]) {
     const h = harness({ gone: [ERASED] });
     await handleFinalizedObject(
@@ -355,6 +356,34 @@ test("BUT-2294: objects outside users/ trigger no owner lookup", async () => {
     assertEqual(h.markerReads.length, 0, `marker reads for ${name}`);
     assertEqual(h.deletes.length, 0, `deletes for ${name}`);
   }
+});
+
+// Kokboksprovet (decision 2026-11-07): cookbook photos under corpus/ get the
+// same byte check as every other upload, and no owner lookup.
+test("corpus/: a page photo whose bytes match its type is kept", async () => {
+  const h = harness({});
+  const name = "corpus/book-0001/p0001.jpg";
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.downloads), JSON.stringify([name]), "downloads");
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(h.ownerLookups.length, 0, "owner lookups");
+});
+
+test("corpus/: a page photo declared HEIC with JPEG bytes is deleted and audited", async () => {
+  const h = harness({});
+  const name = "corpus/book-0001/p0002.heic";
+  await handleFinalizedObject(
+    { bucket: "b", name, contentType: "image/heic" },
+    h.deps
+  );
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "deletes");
+  assertEqual(h.audits.length, 1, "audit rows");
+  assertEqual(
+    (h.audits[0].metadata as Record<string, unknown>).reason,
+    "magic_byte_mismatch_declared_heic_actual_jpeg",
+    "reason"
+  );
 });
 
 test("BUT-2294: through accountExists, auth/user-not-found deletes and auth/internal-error keeps", async () => {
