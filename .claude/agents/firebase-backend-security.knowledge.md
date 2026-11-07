@@ -106,7 +106,9 @@ name which doc each end touches before approving it.
   strip foreign attribution (`addedBy*`/`purchasedBy*`) unless the uid is the copying
   owner's — rebuild via the model's full CONSTRUCTOR (a partial rebuild resets omitted
   fields to default) and check a nulled id doesn't flip a derived getter a live consumer
-  reads.
+  reads. Two KEY SPELLINGS for one fact is the same hazard for a new READ: grep every writer
+  of the collection for the key before approving a query on it, and for ROWS PER KEY: an
+  auto-id-per-share writer makes `.limit(1)` return an arbitrary row of several.
 - A "which shape is this" type-detection helper reading the OTHER collection first can bill
   a guaranteed-denied read on the happy path (probing shared for a personal-list id, which
   rules deny by construction) — pass the known type through explicitly instead.

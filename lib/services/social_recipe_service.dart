@@ -405,8 +405,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   /// Check if recipe is shared by user
   Future<bool> isRecipeSharedByUser(String recipeId, String userId) async {
     try {
-      final recipe = _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
-      return recipe != null && recipe.sharedByUserId == userId;
+      if (userId != _permissionService.currentUserId) return false;
+      return await _sharedRecipeRepository.ownShares.find(recipeId) != null;
     } catch (e) {
       AppLogger.error('Failed to check if recipe is shared', e);
       return false;
