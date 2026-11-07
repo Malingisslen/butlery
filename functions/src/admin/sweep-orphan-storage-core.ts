@@ -28,6 +28,8 @@ export interface ObjectInfo {
   name: string;
   sizeBytes: number;
   createdMs: number;
+  /** Pins a delete to the exact version that was judged an orphan. */
+  generation?: string;
 }
 
 export type Verdict = "not-swept" | "in-use" | "too-new" | "orphan";
@@ -129,4 +131,81 @@ export function assertScanPlausible(
         "document scan is broken, so every file would read as an orphan.",
     );
   }
+}
+
+export function orphansOf(
+  objects: Iterable<ObjectInfo>,
+  keep: ReadonlySet<string>,
+  nowMs: number,
+): ObjectInfo[] {
+  const orphans: ObjectInfo[] = [];
+  for (const obj of objects) {
+    if (classifyObject(obj, keep, nowMs) === "orphan") orphans.push(obj);
+  }
+  return orphans;
+}
+
+/** The value of `--max-delete <n>`, or null when absent or not a positive integer. */
+export function parseMaxDelete(argv: readonly string[]): number | null {
+  const i = argv.indexOf("--max-delete");
+  if (i === -1) return null;
+  const raw = argv[i + 1];
+  if (raw === undefined || !/^[1-9][0-9]*$/.test(raw)) return null;
+  return Number(raw);
+}
+
+/**
+ * The count Malin approved is the ceiling: if more orphans exist now, nothing
+ * is deleted, so a changed database cannot widen an approved delete.
+ */
+export function assertWithinCap(orphanCount: number, cap: number): void {
+  if (orphanCount > cap) {
+    throw new Error(
+      `REFUSED: ${orphanCount} orphans found but --max-delete allows ${cap}. Nothing was deleted.`,
+    );
+  }
+}
+
+export interface DeletableBucket {
+  file(name: string): {
+    delete(options: { ifGenerationMatch: string }): Promise<unknown>;
+  };
+}
+
+export interface DeleteResult {
+  deleted: number;
+  skipped: number;
+}
+
+/**
+ * Each delete is pinned to the version that was judged an orphan, so a file
+ * replaced since is left alone (412), as is one already gone (404). An object
+ * with no generation cannot be pinned and is skipped. Any other error stops
+ * the run; `onProgress` has already seen the counts so far.
+ */
+export async function deleteOrphans(
+  bucket: DeletableBucket,
+  orphans: readonly ObjectInfo[],
+  onProgress: (result: DeleteResult) => void,
+): Promise<DeleteResult> {
+  const result: DeleteResult = { deleted: 0, skipped: 0 };
+  try {
+    for (const obj of orphans) {
+      if (!obj.generation) {
+        result.skipped++;
+        continue;
+      }
+      try {
+        await bucket.file(obj.name).delete({ ifGenerationMatch: obj.generation });
+        result.deleted++;
+      } catch (err) {
+        const code = (err as { code?: unknown }).code;
+        if (code !== 404 && code !== 412) throw err;
+        result.skipped++;
+      }
+    }
+  } finally {
+    onProgress(result);
+  }
+  return result;
 }
