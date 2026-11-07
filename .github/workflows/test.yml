@@ -146,6 +146,10 @@ jobs:
         if: matrix.shard == 0 && needs.scope.outputs.docs_only != 'true'
         run: bash scripts/__tests__/check_test_real_time_test.sh
 
+      - name: Release tag push fixture
+        if: matrix.shard == 0 && needs.scope.outputs.docs_only != 'true'
+        run: bash scripts/__tests__/release_tag_pushed_test.sh
+
       - name: Run unit tests (shard ${{ matrix.shard }}/3, no coverage)
         if: needs.scope.outputs.docs_only != 'true'
         run: |

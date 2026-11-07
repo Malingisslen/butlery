@@ -68,7 +68,8 @@ jobs:
           git commit -m "chore(release): v${NEW_VERSION}
 
           Automated version bump (BUT-488). Bump type: ${{ steps.bump.outputs.bump }}."
-          git tag "v${NEW_CORE}"
+          # Annotated on purpose: --follow-tags below skips lightweight tags.
+          git tag -a "v${NEW_CORE}" -m "v${NEW_CORE}"
           git push origin HEAD --follow-tags
 
       - name: Summary
