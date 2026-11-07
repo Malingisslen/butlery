@@ -18261,6 +18261,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountTwoStep => 'Two-step verification';
 
   @override
+  String get settingsSessionsSection => 'Sessions';
+
+  @override
+  String get settingsSignOutEverywhereTitle => 'Sign out of all devices';
+
+  @override
+  String get settingsSignOutEverywhereHint =>
+      'Signs out all your other devices. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereDialogTitle => 'Sign out other devices?';
+
+  @override
+  String get signOutEverywhereDialogBody =>
+      'Other devices may keep working for up to an hour before they are signed out. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereConfirm => 'Sign them out';
+
+  @override
+  String get signOutEverywhereReauthTitle => 'Confirm it\'s you';
+
+  @override
+  String signOutEverywhereReauthBody(String provider) {
+    return 'For security you need to sign in with $provider again before other devices are signed out.';
+  }
+
+  @override
+  String signOutEverywhereReauthAction(String provider) {
+    return 'Sign in with $provider';
+  }
+
+  @override
+  String get signOutEverywhereDone =>
+      'Done. Other devices may keep working for up to an hour, then they are signed out.';
+
+  @override
+  String get signOutEverywhereReauthNeeded =>
+      'Sign in again with Google or Apple and try again.';
+
+  @override
+  String get signOutEverywhereRateLimited =>
+      'You have tried too many times. Try again later.';
+
+  @override
+  String get signOutEverywhereFailed =>
+      'Could not sign out other devices. Try again.';
+
+  @override
+  String get signOutEverywhereSignedOut =>
+      'Other devices are signed out, but this one could not continue. Sign in again.';
+
+  @override
+  String signOutEverywhereNotice(String when) {
+    return 'Your other devices were signed out $when. Not you? Change your Google or Apple password.';
+  }
+
+  @override
   String get settingsYourChoicesSection => 'Your choices';
 
   @override

@@ -43,6 +43,7 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
+import 'package:butlery/services/auth/session_revocation_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/auth/provider_sign_in_platform.dart';
 import 'package:butlery/services/auth/provider_sign_in_service.dart';
@@ -327,6 +328,15 @@ class CoreModule implements DIModule {
           analyticsService: container<AnalyticsService>(),
           authRepository: container<AuthRepository>(),
           // P6-U09: the backup-code callables (mfa-backup-codes.ts).
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
+
+      // BUT-2481: "Logga ut från alla enheter".
+      container.registerLazySingleton<SessionRevocationService>(
+        () => SessionRevocationService(
+          authRepository: container<AuthRepository>(),
+          signOutAfterFailure: container<AuthService>().forceSignOut,
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );

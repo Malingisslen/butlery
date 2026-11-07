@@ -102,6 +102,11 @@ abstract class AuthRepository {
   /// `signInWithProvider` elsewhere.
   Future<UserCredential> signInWithProviderFlow(SignInProvider provider);
 
+  /// Signs in with a server-minted custom [token] (BUT-2481). Used once, right
+  /// after the server revoked every other session, so this device gets a
+  /// session of its own. The caller must not log [token].
+  Future<void> signInWithCustomToken(String token);
+
   /// Links [credential] to the signed-in user.
   Future<void> linkCredential(AuthCredential credential);
 
