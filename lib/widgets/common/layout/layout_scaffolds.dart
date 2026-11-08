@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/layout/main_tab_shown.dart';
 import 'package:butlery/core/router/app_router.dart';
+import 'package:butlery/widgets/common/sessions_revoked_notice_dialog.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
@@ -125,6 +126,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout>
     mainTabSwitchRequest.addListener(_onTabSwitchRequest);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(showWhatsNewIfDue(context));
+      if (mounted) unawaited(showSessionsRevokedNoticeIfDue(context));
     });
   }
 

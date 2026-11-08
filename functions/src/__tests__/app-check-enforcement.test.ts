@@ -87,6 +87,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "generateMfaBackupCodes", // account/mfa-backup-codes.ts — P6-U09 ten one-time backup codes (enforceAppCheck: true)
   "recoverWithMfaBackupCode", // account/mfa-backup-codes.ts — P6-U09 sign-in with a backup code (enforceAppCheck: true, consumeAppCheckToken: true)
   "clearMfaBackupCodes", // account/mfa-backup-codes.ts — P6-U09 delete the codes after MFA is switched off (enforceAppCheck: true)
+  "revokeOtherSessions", // account/revoke-other-sessions.ts — BUT-2481 sign out every other device (enforceAppCheck: true, consumeAppCheckToken: true)
 ]);
 
 /**
@@ -199,6 +200,31 @@ for (const decl of allDecls) {
         declares(decl.optionsSlice),
         true,
         `${decl.name} (${path.relative(SRC_ROOT, decl.file)}) is user-facing but missing enforceAppCheck: true`
+      );
+    },
+  });
+}
+
+// Callables that spend the App Check token (replay protection): the option
+// and the `alreadyConsumed` refusal in the handler are two lines that each need
+// a pin, and a missing one fails open.
+const CONSUMING = ["recoverWithMfaBackupCode", "revokeOtherSessions"];
+for (const name of CONSUMING) {
+  const decl = allDecls.find((d) => d.name === name);
+  cases.push({
+    name: `${name} declares consumeAppCheckToken: true and refuses alreadyConsumed`,
+    fn: () => {
+      if (!decl) throw new Error(`${name} not found`);
+      assertEqual(
+        /consumeAppCheckToken\s*:\s*true/.test(decl.optionsSlice),
+        true,
+        `${name} must declare consumeAppCheckToken: true`
+      );
+      const source = fs.readFileSync(decl.file, "utf8");
+      assertEqual(
+        /alreadyConsumed\s*===\s*true/.test(stripComments(source)),
+        true,
+        `${name} must refuse a token whose alreadyConsumed is true`
       );
     },
   });

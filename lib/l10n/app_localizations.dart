@@ -27874,6 +27874,96 @@ abstract class AppLocalizations {
   /// **'Tvåstegsverifiering'**
   String get settingsAccountTwoStep;
 
+  /// BUT-2481: section heading on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Sessioner'**
+  String get settingsSessionsSection;
+
+  /// BUT-2481: row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut från alla enheter'**
+  String get settingsSignOutEverywhereTitle;
+
+  /// BUT-2481: supporting text under the row
+  ///
+  /// In sv, this message translates to:
+  /// **'Loggar ut alla dina andra enheter. Du stannar inloggad här.'**
+  String get settingsSignOutEverywhereHint;
+
+  /// BUT-2481: confirmation dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut andra enheter?'**
+  String get signOutEverywhereDialogTitle;
+
+  /// BUT-2481: confirmation dialog body, honest about the delay
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra enheter kan fungera i upp till en timme innan de loggas ut. Du stannar inloggad här.'**
+  String get signOutEverywhereDialogBody;
+
+  /// BUT-2481: confirm button
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut dem'**
+  String get signOutEverywhereConfirm;
+
+  /// BUT-2481: re-login dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta att det är du'**
+  String get signOutEverywhereReauthTitle;
+
+  /// BUT-2481: re-login dialog body
+  ///
+  /// In sv, this message translates to:
+  /// **'Av säkerhetsskäl behöver du logga in med {provider} igen innan andra enheter loggas ut.'**
+  String signOutEverywhereReauthBody(String provider);
+
+  /// BUT-2481: re-login dialog button
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med {provider}'**
+  String signOutEverywhereReauthAction(String provider);
+
+  /// BUT-2481: snackbar after success
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart. Andra enheter kan fungera i upp till en timme, sedan loggas de ut.'**
+  String get signOutEverywhereDone;
+
+  /// BUT-2481: failure, server wants a fresh sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen med Google eller Apple och försök på nytt.'**
+  String get signOutEverywhereReauthNeeded;
+
+  /// BUT-2481: failure, rate limited
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har försökt för många gånger. Försök igen senare.'**
+  String get signOutEverywhereRateLimited;
+
+  /// BUT-2481: failure, nothing changed
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att logga ut andra enheter. Försök igen.'**
+  String get signOutEverywhereFailed;
+
+  /// BUT-2481: this device was signed out after the swap failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra enheter är utloggade, men den här kunde inte fortsätta. Logga in igen.'**
+  String get signOutEverywhereSignedOut;
+
+  /// BUT-2481: notice at next sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina andra enheter loggades ut {when}. Var det inte du? Byt lösenord hos Google eller Apple.'**
+  String signOutEverywhereNotice(String when);
+
   /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
   ///
   /// In sv, this message translates to:

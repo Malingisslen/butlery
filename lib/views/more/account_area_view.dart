@@ -18,6 +18,7 @@ import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
+import 'package:butlery/widgets/common/profile/handlers/session_revocation_handler.dart';
 
 class AccountAreaView extends StatefulWidget {
   const AccountAreaView({super.key});
@@ -96,6 +97,18 @@ class _AccountAreaViewState extends State<AccountAreaView> {
             ),
           ],
         ),
+        // BUT-2481: only for accounts that sign in with Google or Apple.
+        if (SessionRevocationHandler.providerFor(_authService) != null)
+          ButleryListSection(
+            title: l10n.settingsSessionsSection,
+            rows: [
+              ButleryListRow(
+                label: l10n.settingsSignOutEverywhereTitle,
+                value: l10n.settingsSignOutEverywhereHint,
+                onTap: () => SessionRevocationHandler.handle(context),
+              ),
+            ],
+          ),
         ButleryListSection(
           rows: [
             ButleryListRow(

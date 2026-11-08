@@ -18108,6 +18108,64 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsAccountTwoStep => 'Tvåstegsverifiering';
 
   @override
+  String get settingsSessionsSection => 'Sessioner';
+
+  @override
+  String get settingsSignOutEverywhereTitle => 'Logga ut från alla enheter';
+
+  @override
+  String get settingsSignOutEverywhereHint =>
+      'Loggar ut alla dina andra enheter. Du stannar inloggad här.';
+
+  @override
+  String get signOutEverywhereDialogTitle => 'Logga ut andra enheter?';
+
+  @override
+  String get signOutEverywhereDialogBody =>
+      'Andra enheter kan fungera i upp till en timme innan de loggas ut. Du stannar inloggad här.';
+
+  @override
+  String get signOutEverywhereConfirm => 'Logga ut dem';
+
+  @override
+  String get signOutEverywhereReauthTitle => 'Bekräfta att det är du';
+
+  @override
+  String signOutEverywhereReauthBody(String provider) {
+    return 'Av säkerhetsskäl behöver du logga in med $provider igen innan andra enheter loggas ut.';
+  }
+
+  @override
+  String signOutEverywhereReauthAction(String provider) {
+    return 'Logga in med $provider';
+  }
+
+  @override
+  String get signOutEverywhereDone =>
+      'Klart. Andra enheter kan fungera i upp till en timme, sedan loggas de ut.';
+
+  @override
+  String get signOutEverywhereReauthNeeded =>
+      'Logga in igen med Google eller Apple och försök på nytt.';
+
+  @override
+  String get signOutEverywhereRateLimited =>
+      'Du har försökt för många gånger. Försök igen senare.';
+
+  @override
+  String get signOutEverywhereFailed =>
+      'Det gick inte att logga ut andra enheter. Försök igen.';
+
+  @override
+  String get signOutEverywhereSignedOut =>
+      'Andra enheter är utloggade, men den här kunde inte fortsätta. Logga in igen.';
+
+  @override
+  String signOutEverywhereNotice(String when) {
+    return 'Dina andra enheter loggades ut $when. Var det inte du? Byt lösenord hos Google eller Apple.';
+  }
+
+  @override
   String get settingsYourChoicesSection => 'Dina val';
 
   @override

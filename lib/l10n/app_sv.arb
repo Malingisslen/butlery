@@ -13838,6 +13838,75 @@
   "@settingsAccountTwoStep": {
     "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
   },
+  "settingsSessionsSection": "Sessioner",
+  "@settingsSessionsSection": {
+    "description": "BUT-2481: section heading on Konto & s\u00e4kerhet"
+  },
+  "settingsSignOutEverywhereTitle": "Logga ut från alla enheter",
+  "@settingsSignOutEverywhereTitle": {
+    "description": "BUT-2481: row on Konto & s\u00e4kerhet"
+  },
+  "settingsSignOutEverywhereHint": "Loggar ut alla dina andra enheter. Du stannar inloggad här.",
+  "@settingsSignOutEverywhereHint": {
+    "description": "BUT-2481: supporting text under the row"
+  },
+  "signOutEverywhereDialogTitle": "Logga ut andra enheter?",
+  "@signOutEverywhereDialogTitle": {
+    "description": "BUT-2481: confirmation dialog title"
+  },
+  "signOutEverywhereDialogBody": "Andra enheter kan fungera i upp till en timme innan de loggas ut. Du stannar inloggad här.",
+  "@signOutEverywhereDialogBody": {
+    "description": "BUT-2481: confirmation dialog body, honest about the delay"
+  },
+  "signOutEverywhereConfirm": "Logga ut dem",
+  "@signOutEverywhereConfirm": {
+    "description": "BUT-2481: confirm button"
+  },
+  "signOutEverywhereReauthTitle": "Bekräfta att det är du",
+  "@signOutEverywhereReauthTitle": {
+    "description": "BUT-2481: re-login dialog title"
+  },
+  "signOutEverywhereReauthBody": "Av säkerhetsskäl behöver du logga in med {provider} igen innan andra enheter loggas ut.",
+  "@signOutEverywhereReauthBody": {
+    "description": "BUT-2481: re-login dialog body",
+    "placeholders": {
+      "provider": {"type": "String", "example": "Google eller Apple"}
+    }
+  },
+  "signOutEverywhereReauthAction": "Logga in med {provider}",
+  "@signOutEverywhereReauthAction": {
+    "description": "BUT-2481: re-login dialog button",
+    "placeholders": {
+      "provider": {"type": "String", "example": "Google eller Apple"}
+    }
+  },
+  "signOutEverywhereDone": "Klart. Andra enheter kan fungera i upp till en timme, sedan loggas de ut.",
+  "@signOutEverywhereDone": {
+    "description": "BUT-2481: snackbar after success"
+  },
+  "signOutEverywhereReauthNeeded": "Logga in igen med Google eller Apple och försök på nytt.",
+  "@signOutEverywhereReauthNeeded": {
+    "description": "BUT-2481: failure, server wants a fresh sign-in"
+  },
+  "signOutEverywhereRateLimited": "Du har försökt för många gånger. Försök igen senare.",
+  "@signOutEverywhereRateLimited": {
+    "description": "BUT-2481: failure, rate limited"
+  },
+  "signOutEverywhereFailed": "Det gick inte att logga ut andra enheter. Försök igen.",
+  "@signOutEverywhereFailed": {
+    "description": "BUT-2481: failure, nothing changed"
+  },
+  "signOutEverywhereSignedOut": "Andra enheter är utloggade, men den här kunde inte fortsätta. Logga in igen.",
+  "@signOutEverywhereSignedOut": {
+    "description": "BUT-2481: this device was signed out after the swap failed"
+  },
+  "signOutEverywhereNotice": "Dina andra enheter loggades ut {when}. Var det inte du? Byt lösenord hos Google eller Apple.",
+  "@signOutEverywhereNotice": {
+    "description": "BUT-2481: notice at next sign-in",
+    "placeholders": {
+      "when": {"type": "String", "example": "7 november"}
+    }
+  },
   "settingsYourChoicesSection": "Dina val",
   "@settingsYourChoicesSection": {
     "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"

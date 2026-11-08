@@ -36,6 +36,7 @@ import {
   RateLimitConfig,
 } from "../middleware/rate_limiter";
 import { MAX_BATCH_NOTIFICATIONS } from "../notifications/send-notification";
+import { REVOKE_RATE_LIMIT_KEY } from "../account/revoke-other-sessions";
 import { RATE_LIMIT_KEY as ANSWER_APPEAL_KEY } from "../moderation/answer-appeal";
 import { RATE_LIMIT_KEY as LIST_CLOSED_REPORTS_KEY } from "../moderation/list-closed-reports";
 import { RATE_LIMIT_KEY as LIST_OPEN_APPEALS_KEY } from "../moderation/list-open-appeals";
@@ -71,7 +72,7 @@ const cases: UnitCase[] = [
     fn: async () => {
       for (const key of [
         ANSWER_APPEAL_KEY, LIST_CLOSED_REPORTS_KEY, LIST_OPEN_APPEALS_KEY, MY_CONTENT_DECISIONS_KEY,
-        MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY,
+        MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY, REVOKE_RATE_LIMIT_KEY,
       ]) {
         assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
       }
@@ -430,6 +431,8 @@ const cases: UnitCase[] = [
         // Admin-vy step C.
         createIngredientChangePr: [10, 30],
         createIngredientChangePrGlobal: [20, 60],
+        // BUT-2481.
+        revokeOtherSessions: [3, 10],
       };
       for (const [name, [perHour, perDay]] of Object.entries(expected)) {
         const cfg = RATE_LIMIT_CONFIGS[name];
@@ -510,6 +513,7 @@ const cases: UnitCase[] = [
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",
+        "revokeOtherSessions",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

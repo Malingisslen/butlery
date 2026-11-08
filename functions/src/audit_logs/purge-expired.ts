@@ -5,6 +5,8 @@
  *   - Consent events (the CONSENT_OPERATIONS enumeration below — the
  *     `consent_` spelling is a naming convention, not the filter) → 24 months
  *     (GDPR Art 7(1) — must be able to demonstrate consent).
+ *   - The SHORT_RETENTION_OPERATIONS below → 90 days, the figure the in-app
+ *     privacy policy gives for security logs.
  *   - All other events → 6 months retention (Art 5(1)(c) data
  *     minimisation + SOC2-style incident-response window).
  *
@@ -30,6 +32,19 @@ export const CONSENT_RETENTION_DAYS = 730;
 
 /** Days. 6 months. Aligns with industry MTTD for cloud incidents. */
 export const GENERAL_RETENTION_DAYS = 180;
+
+/** Days. Matches the 90 days the privacy policy states for security logs. */
+export const SHORT_RETENTION_DAYS = 90;
+
+/**
+ * Operations kept for SHORT_RETENTION_DAYS instead of the general 180.
+ *   - account/revoke-other-sessions.ts → "session_revoke_other" (BUT-2481)
+ * The general query's `not-in` list is CONSENT_OPERATIONS plus this list, and
+ * Firestore allows at most 10 values there.
+ */
+export const SHORT_RETENTION_OPERATIONS: readonly string[] = [
+  "session_revoke_other",
+] as const;
 
 /** The naming convention consent operations follow.
  *
@@ -83,7 +98,7 @@ const BATCH_SIZE = 200;
 const MAX_DOCS_PER_RUN_PER_CATEGORY = 10000;
 
 interface PurgeCategoryResult {
-  category: "consent" | "general";
+  category: "consent" | "general" | "short";
   deleted: number;
   cutoffIso: string;
   truncated: boolean;
@@ -94,12 +109,12 @@ interface PurgeCategoryResult {
  * injected `db`. Tests pass a fake-admin shape that mirrors the calls used
  * here (`collection().where()...get()`, `batch().delete()/commit()`).
  *
- * Deletes audit_logs in `category` ("consent" | "general") older than
+ * Deletes audit_logs in `category` older than
  * `cutoff`. Returns the count deleted.
  */
 export async function purgeAuditCategoryWithDb(
   db: admin.firestore.Firestore,
-  category: "consent" | "general",
+  category: "consent" | "general" | "short",
   cutoff: admin.firestore.Timestamp,
   options: { batchSize?: number; maxDocs?: number } = {}
 ): Promise<number> {
@@ -127,11 +142,16 @@ export async function purgeAuditCategoryWithDb(
           "in",
           CONSENT_OPERATIONS as string[]
         )
-      : auditLogs.where(
-          "operation",
-          "not-in",
-          CONSENT_OPERATIONS as string[]
-        );
+      : category === "short"
+        ? auditLogs.where(
+            "operation",
+            "in",
+            SHORT_RETENTION_OPERATIONS as string[]
+          )
+        : auditLogs.where("operation", "not-in", [
+            ...CONSENT_OPERATIONS,
+            ...SHORT_RETENTION_OPERATIONS,
+          ]);
 
   const snapshot = await operationFilter
     .where("timestamp", "<", cutoff)
@@ -179,23 +199,22 @@ export const purgeExpiredAuditLogs = onSchedule(
 
     const consentCutoff = cutoffFor(CONSENT_RETENTION_DAYS);
     const generalCutoff = cutoffFor(GENERAL_RETENTION_DAYS);
+    const shortCutoff = cutoffFor(SHORT_RETENTION_DAYS);
 
     logger.info(
       `[purgeExpiredAuditLogs] starting — consentCutoff=${consentCutoff
         .toDate()
-        .toISOString()} generalCutoff=${generalCutoff.toDate().toISOString()}`
+        .toISOString()} generalCutoff=${generalCutoff.toDate().toISOString()} shortCutoff=${shortCutoff
+        .toDate()
+        .toISOString()}`
     );
 
     const results: PurgeCategoryResult[] = [];
 
     try {
-      // Order is irrelevant: the two categories are disjoint, `in` against
-      // `not-in` over the same list, so neither can reach the other's rows.
       // Sequential rather than `Promise.all` so a failing first leg cannot
       // leave the second one deleting regulated rows that no run record will
-      // ever account for. It does NOT preserve counts: the catch below
-      // rethrows before the `system_events` write, so a failure in EITHER leg
-      // reports nothing at all, including for the leg that succeeded.
+      // ever account for.
       const generalDeleted = await purgeAuditCategoryWithDb(
         db,
         "general",
@@ -206,6 +225,18 @@ export const purgeExpiredAuditLogs = onSchedule(
         deleted: generalDeleted,
         cutoffIso: generalCutoff.toDate().toISOString(),
         truncated: generalDeleted >= MAX_DOCS_PER_RUN_PER_CATEGORY,
+      });
+
+      const shortDeleted = await purgeAuditCategoryWithDb(
+        db,
+        "short",
+        shortCutoff
+      );
+      results.push({
+        category: "short",
+        deleted: shortDeleted,
+        cutoffIso: shortCutoff.toDate().toISOString(),
+        truncated: shortDeleted >= MAX_DOCS_PER_RUN_PER_CATEGORY,
       });
 
       const consentDeleted = await purgeAuditCategoryWithDb(

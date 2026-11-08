@@ -127,6 +127,10 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Ensure base user document exists in 'users' collection for friends system
   Future<void> ensureBaseUserDocument(String userId);
 
+  /// BUT-2481: when the owner last signed out their other devices, or null.
+  /// One read of `users/{userId}`; the field is written by the server only.
+  Future<DateTime?> fetchSessionsRevokedAt(String userId);
+
   /// Update allergen preferences for a user, and in the SAME batch every
   /// allergen share of theirs in [sharedCopies] (DPIA R4, BUT-2267): either
   /// both land or neither does, so a household never filters on a list its
