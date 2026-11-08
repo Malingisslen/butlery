@@ -15,10 +15,8 @@ import 'package:butlery/viewmodels/shared_content/social_sharing_viewmodel.dart'
 // Removed unused model imports - content accessed through ViewModels
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
-import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -193,9 +191,7 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
           friendsService: ServiceLocator.get<UnifiedFriendsService>(),
           recipeCoordinator: ServiceLocator.get<SocialRecipeCoordinator>(),
           menuCoordinator: ServiceLocator.get<SocialMenuCoordinator>(),
-          shoppingCoordinator: ServiceLocator.get<SocialShoppingCoordinator>(),
           menuService: ServiceLocator.get<UnifiedMenuService>(),
-          shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
         );
 
     // Add listeners to specialized ViewModels

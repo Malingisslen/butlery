@@ -5,10 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/shared_content/social_sharing_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
-import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -20,18 +18,13 @@ class MockSocialRecipeCoordinator extends Mock
 
 class MockSocialMenuCoordinator extends Mock implements SocialMenuCoordinator {}
 
-class MockSocialShoppingCoordinator extends Mock
-    implements SocialShoppingCoordinator {}
-
 void main() {
   group('SocialSharingViewModel', () {
     late SocialSharingViewModel viewModel;
     late MockUnifiedFriendsService mockFriendsService;
     late MockSocialRecipeCoordinator mockRecipeCoordinator;
     late MockSocialMenuCoordinator mockMenuCoordinator;
-    late MockSocialShoppingCoordinator mockShoppingCoordinator;
     late MockUnifiedMenuService mockMenuService;
-    late MockUnifiedShoppingService mockShoppingService;
 
     // Test data
     final testFriend1 = UserProfile(
@@ -81,9 +74,7 @@ void main() {
       mockFriendsService = MockUnifiedFriendsService();
       mockRecipeCoordinator = MockSocialRecipeCoordinator();
       mockMenuCoordinator = MockSocialMenuCoordinator();
-      mockShoppingCoordinator = MockSocialShoppingCoordinator();
       mockMenuService = MockUnifiedMenuService();
-      mockShoppingService = MockUnifiedShoppingService();
 
       // Configure mock friends service
       mockFriendsService.setFriendsState(
@@ -99,9 +90,7 @@ void main() {
         friendsService: mockFriendsService,
         recipeCoordinator: mockRecipeCoordinator,
         menuCoordinator: mockMenuCoordinator,
-        shoppingCoordinator: mockShoppingCoordinator,
         menuService: mockMenuService,
-        shoppingService: mockShoppingService,
       );
 
       // Wait for initialization
@@ -343,14 +332,6 @@ void main() {
           ),
         ).thenAnswer((_) async => 'invitation-456');
 
-        when(
-          () => mockShoppingCoordinator.createShoppingListInvitation(
-            shoppingListId: any(named: 'shoppingListId'),
-            inviteeUserIds: any(named: 'inviteeUserIds'),
-            message: any(named: 'message'),
-          ),
-        ).thenAnswer((_) async => 'invitation-789');
-
         // Configure menu service to return a basic menu
         final testMenu = SharedMenu(
           id: 'menu-123',
@@ -440,25 +421,18 @@ void main() {
         expect(result.invitationId, equals('invitation-456'));
       });
 
-      test('should share shopping list successfully', () async {
+      test('does not share a shopping list through this path', () async {
         viewModel.toggleFriendSelection('friend-3');
-
-        // Mock shopping service to return a proper UnifiedShoppingList
-        final testList = UnifiedShoppingList(
-          id: 'list-123',
-          name: 'Test Shopping List',
-          ownerId: 'user-1',
-          ownerDisplayName: 'Test User',
-        );
-        mockShoppingService.setShoppingState(lists: [testList]);
 
         final result = await viewModel.shareContent(
           contentId: 'list-123',
           contentType: ShareableContentType.shoppingList,
         );
 
-        expect(result.success, isTrue);
-        expect(result.invitationId, equals('invitation-789'));
+        // BUT-2399: a list is shared by live-list invitation only, so this
+        // path must never produce an invitation row of its own.
+        expect(result.success, isFalse);
+        expect(result.invitationId, isNull);
       });
 
       test('should use custom message when provided', () async {

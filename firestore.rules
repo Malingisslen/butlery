@@ -34,7 +34,8 @@ service cloud.firestore {
     //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
     //   ingredient_suggestions, ingredient_change_requests, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
-    //   user_shared_shopping_lists, user_shared_menus
+    //   user_shared_shopping_lists, user_shared_menus,
+    //   corpus_books, corpus_pages, corpus_runs (kokboksprovet, admin only)
     //
     // Collection groups: members, engagements, comments, ratings
     //
@@ -4474,6 +4475,26 @@ service cloud.firestore {
 
     match /ingredient_change_runs/{runId} {
       allow read, write: if false;
+    }
+
+    // KOKBOKSPROVET - the admin's own cookbooks as a parser test (photos in
+    // storage.rules corpus/). The books, each page's text and answer key, and
+    // the nightly run summaries are copyright material (decision 2026-11-07 in
+    // docs/architecture/ACCEPTED_DEVIATIONS.md): an admin reads them, and only
+    // the Admin SDK writes them.
+    match /corpus_books/{bookId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /corpus_pages/{pageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /corpus_runs/{runId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // DEEP LINKS - Shareable recipe/content links

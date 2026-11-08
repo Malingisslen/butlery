@@ -160,8 +160,6 @@ async function rejectAndAudit(
     // the cleanup; ops can re-run a sweep if delete fails.
   }
 
-  // Storage rules only permit writes under uid-keyed paths, so an unresolvable
-  // uid signals either rule drift or an Admin SDK upload bypassing the gate.
   // Log at error level so the alert pipeline catches a sustained spike.
   if (!args.uploaderUid) {
     logger.error("[moderateUpload] rejected upload with unresolvable uploader", {

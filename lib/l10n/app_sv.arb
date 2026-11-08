@@ -7763,7 +7763,6 @@
     }
   },
   "errorCouldNotSendInvitations": "Kunde inte skicka inbjudningar",
-  "shareDefaultShoppingListMessage": "Delar gärna den här inköpslistan med dig.",
   "shoppingListAllDone": "{count, plural, =1{1 vara klar} other{Alla {count} varor klara}}",
   "@shoppingListAllDone": {
     "placeholders": {

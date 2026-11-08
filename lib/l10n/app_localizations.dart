@@ -18361,12 +18361,6 @@ abstract class AppLocalizations {
   /// **'Kunde inte skicka inbjudningar'**
   String get errorCouldNotSendInvitations;
 
-  /// No description provided for @shareDefaultShoppingListMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Delar gärna den här inköpslistan med dig.'**
-  String get shareDefaultShoppingListMessage;
-
   /// No description provided for @shoppingListAllDone.
   ///
   /// In sv, this message translates to:
