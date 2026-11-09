@@ -556,6 +556,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "activeUsers", // recipePresence/{id}, shoppingPresence/{id}, realtime_*/{id}
   "block_mirror", // users/{uid}
   "clicks", // deep_links/{code} (BUT-2463)
+  "consent", // users/{uid}; read as a collection group by the acquisition eligible count (BUT-2406)
   "friendCategories", // users/{uid}, pre-rename spelling (BUT-2044)
   "comments", // menu_comments/{menuId}, and the {path=**} comment group
   "engagements", // shared_recipes/{id}, shared_menus/{id}

@@ -260,7 +260,15 @@ async function missingFirstSeenAt(): Promise<void> {
     .set({ purposes: { analytics: true } });
   await db.collection("users").doc(uid).collection("acquisition").doc("current")
     .set({ source: "google", medium: "cpc", campaign: "" });
-  const outcome = await countAcquisition({ uid, eventTime: `${date}T10:00:00Z` }, deps);
+  const eventMs = Date.parse(`${date}T10:00:00Z`);
+  const accountAtEvent = async (): Promise<AuthAccount> => ({
+    providerData: [{ providerId: "password" }],
+    metadata: { creationTime: new Date(eventMs - 3600_000).toUTCString() },
+  });
+  const outcome = await countAcquisition(
+    { uid, eventTime: `${date}T10:00:00Z` },
+    { db, getAccount: accountAtEvent },
+  );
   check(
     "a row without firstSeenAt is bucketed on the event's UTC date",
     outcome === "counted" && (await day(date))?.total === 1,
