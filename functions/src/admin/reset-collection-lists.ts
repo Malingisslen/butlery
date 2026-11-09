@@ -440,6 +440,11 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
   // deleting the operator's own record of what the system did is a separate
   // decision, and this file is where it would be made.
 
+  safe_search_scans:
+    "BUT-818: the Vision SafeSearch verdict per image, keyed by the image's " +
+    "checksums (storage/safe-search.ts), with no uid or path. Deleting it would " +
+    "only pay Vision again for the same bytes.",
+
   metrics:
     "North-star weekly snapshots (scheduled/north-star-weekly.ts), keyed by " +
     "ISO week under metrics/weekly_north_star/snapshots. Aggregates " +

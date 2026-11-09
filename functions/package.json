@@ -153,6 +153,7 @@
     "test:export-llm-samples": "ts-node src/__tests__/export-llm-samples.test.ts",
     "test:shadow-compare-import": "ts-node src/__tests__/shadow-compare-import.test.ts",
     "test:moderate-upload": "ts-node src/__tests__/moderate-upload.test.ts",
+    "test:safe-search": "ts-node src/__tests__/safe-search.test.ts",
     "test:sync-conversation-last-message": "ts-node src/__tests__/sync-conversation-last-message.test.ts",
     "test:enforce-group-minor-membership": "ts-node src/__tests__/enforce-group-minor-membership.test.ts",
     "test:minor-membership-gate": "ts-node src/__tests__/minor-membership-gate.test.ts",
@@ -290,6 +291,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "@google-cloud/vertexai": "1.12.0",
+    "@google-cloud/vision": "6.2.0",
     "firebase-admin": "13.10.0",
     "firebase-functions": "7.4.0",
     "p-limit": "^3.1.0"

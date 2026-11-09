@@ -160,6 +160,9 @@ interface Harness {
   audits: Record<string, unknown>[];
   ownerLookups: string[];
   markerReads: string[];
+  annotateCalls: string[];
+  copies: string[];
+  metadataSets: Record<string, unknown>[];
   deps: Record<string, unknown>;
 }
 
@@ -172,6 +175,7 @@ function harness(opts: {
   authError?: string;
   markers?: Record<string, Record<string, unknown>>;
   markerError?: string;
+  explicit?: boolean;
 }): Harness {
   const h: Harness = {
     deletes: [],
@@ -179,6 +183,9 @@ function harness(opts: {
     audits: [],
     ownerLookups: [],
     markerReads: [],
+    annotateCalls: [],
+    copies: [],
+    metadataSets: [],
     deps: {},
   };
   const db = {
@@ -211,12 +218,23 @@ function harness(opts: {
           },
         };
       }
+      // BUT-818: the cache has its own suite; here every scan misses it.
+      if (name === "safe_search_scans") {
+        return {
+          doc: () => ({
+            get: async () => ({ exists: false, get: () => undefined }),
+            create: async () => undefined,
+            set: async () => undefined,
+          }),
+        };
+      }
       throw new Error(`unexpected collection ${name}`);
     },
   };
   const bucket = {
     file(name: string) {
       return {
+        name,
         async delete() {
           h.deletes.push(name);
         },
@@ -224,12 +242,26 @@ function harness(opts: {
           h.downloads.push(name);
           return [JPEG_HEAD];
         },
+        async copy(dest: { name: string }) {
+          h.copies.push(`${name}->${dest.name}`);
+        },
+        async setMetadata(meta: Record<string, unknown>) {
+          h.metadataSets.push({ name, ...meta });
+        },
       };
     },
   };
   h.deps = {
     db,
     bucket: () => bucket,
+    annotate: async (uri: string) => {
+      h.annotateCalls.push(uri);
+      return {
+        adult: opts.explicit ? "VERY_LIKELY" : "VERY_UNLIKELY",
+        violence: "VERY_UNLIKELY",
+        racy: "VERY_UNLIKELY",
+      };
+    },
     ownerExists: async (uid: string) => {
       h.ownerLookups.push(uid);
       if (opts.authError) {
@@ -404,6 +436,35 @@ test("BUT-2294: through accountExists, auth/user-not-found deletes and auth/inte
   await handleFinalizedObject(jpegAt(name), transient.deps);
   assertEqual(transient.deletes.length, 0, "internal-error keeps");
   assertEqual(transient.downloads.length, 1, "internal-error still moderates");
+});
+
+test("BUT-818: only users/ images are sent to Vision", async () => {
+  const h = harness({});
+  for (const name of [`users/${LIVE}/recipes/r.jpg`, `feedback/${LIVE}/s.jpg`, "corpus/book-1/p.jpg"]) {
+    await handleFinalizedObject(jpegAt(name), h.deps);
+  }
+  assertEqual(JSON.stringify(h.annotateCalls), JSON.stringify([`gs://b/users/${LIVE}/recipes/r.jpg`]), "annotate");
+});
+
+test("BUT-818: explicit image is copied to quarantine without its token, then deleted; the PATH owner is audited", async () => {
+  const h = harness({ explicit: true });
+  const name = `users/${LIVE}/recipes/r.jpg`;
+  await handleFinalizedObject(jpegAt(name, { uploadedBy: ERASED }), h.deps);
+  assertEqual(JSON.stringify(h.copies), JSON.stringify([`${name}->quarantine/${name}`]), "copy");
+  assertEqual(
+    JSON.stringify(h.metadataSets),
+    JSON.stringify([{ name: `quarantine/${name}`, metadata: { firebaseStorageDownloadTokens: null } }]),
+    "token stripped from the copy"
+  );
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "original deleted");
+  assertEqual(h.audits[0]?.operation, "storage_upload_quarantined", "audit operation");
+  assertEqual(h.audits[0]?.userId, LIVE, "path owner, never metadata.uploadedBy");
+});
+
+test("BUT-818: an ops/ file the server wrote is left alone", async () => {
+  const h = harness({});
+  await handleFinalizedObject({ bucket: "b", name: "ops/resets/r1.json", contentType: "application/json" }, h.deps);
+  assertEqual(h.deletes.length + h.downloads.length + h.audits.length, 0, "untouched");
 });
 
 async function run(): Promise<void> {

@@ -522,6 +522,13 @@ async function scenario_resetKillSwitchIsWiredIn(): Promise<void> {
       "the rest without naming which",
   );
   check(
+    "the quarantine folder is wiped with the users' own (BUT-818)",
+    // moderateUpload copies a user's explicit image to quarantine/users/{uid}/,
+    // which no per-user trigger reaches once Auth is wiped.
+    /const STORAGE_PREFIXES_TO_DELETE = \[[^\]]*QUARANTINE_PREFIX[^\]]*\]/.test(script),
+    "STORAGE_PREFIXES_TO_DELETE leaves quarantine/ standing after a reset",
+  );
+  check(
     "the verification pass asks whether the kill switch is gone",
     // `state.exists`, not a derived question. `active || expired || runId`
     // answers false for a document with a future expiry, `active: false` and

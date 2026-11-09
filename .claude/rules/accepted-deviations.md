@@ -56,6 +56,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - The Art. 15 export does not show where the requester's uid sits on other people's documents (`recipeOwnerId`, `sharedWithUserIds`, a recipe's `memberPermissions` key), not even as a count; erasure removes it, and the `others_documents` known gap says so; Art. 15(4) (BUT-2414, Malin 2026-10-20)
 - Household export: a creator gets every diner profile, a joiner the ones they entered, verdicts are own or self-entered; a sole remaining member's household section carries every diner profile and family rating (`isSoleMember`), departed members' uids as stored; a group-link owner with joiners left keeps the narrow verdicts (ADR-0030) (BUT-2414, Malin 2026-10-20)
 - `storage_files` lists `users/{uid}/` (path, size, type, two dates), never contents, URLs or custom metadata, declining above 2000; the `stored_file_contents` known gap says so (BUT-2414, Malin 2026-10-20)
+- SUPERSEDES "lists `users/{uid}/`" in the `storage_files` line: it lists `users/{uid}/` and `quarantine/users/{uid}/`, the two folders account deletion empties, quarantine rows prefixed `quarantine/` (BUT-818, 2026-11-09)
 
 ## Engineering
 

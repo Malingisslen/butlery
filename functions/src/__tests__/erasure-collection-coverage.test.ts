@@ -39,6 +39,8 @@ const UNREVIEWED: Record<string, string> = {
   metrics: "aggregate; not looked at for user ids",
   notification_metrics: "aggregate; not looked at for user ids",
   recipe_social_stats: "aggregate; not looked at for user ids",
+  safe_search_scans:
+    "content checksums (md5_crc32c_size) and Vision scores or a lease time; no user id or path (storage/safe-search.ts)",
   site_configs: "not looked at",
   admin_audit_logs: "adminUid field (bulk-retag.ts); an admin's own uid, like admins",
   admin_rate_limits: "admin uid in the document id and the adminUid field (bulk-retag.ts)",
