@@ -19261,6 +19261,48 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ditt namn har tagits bort från rätten.';
 
   @override
+  String decisionSubjectImage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din bild',
+        'other': 'En bild',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorContentTypeImage => 'Bild';
+
+  @override
+  String get reportReasonExplicitImage => 'Olämplig bild (automatisk kontroll)';
+
+  @override
+  String get motivationRemovedAutomatedImage =>
+      'Bilden stoppades av den automatiska bildkontrollen, eftersom den med stor sannolikhet är sexuell eller våldsam. Beslutet togs automatiskt. Om du överklagar granskar en moderator bilden.';
+
+  @override
+  String get moderatorAppealShowImage => 'Visa bilden';
+
+  @override
+  String moderatorAppealImagesOmitted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bilder kunde inte visas',
+      one: '1 bild kunde inte visas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stoppade bilder';
+
+  @override
+  String get moderatorAppealImagesFailed => 'Bilden kunde inte hämtas.';
+
+  @override
   String get myContentDecisionsTitle => 'Beslut om mitt innehåll';
 
   @override

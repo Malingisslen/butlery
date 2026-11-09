@@ -123,6 +123,12 @@ function codeOf(err: unknown): unknown {
   return (err as { code?: unknown } | null)?.code ?? null;
 }
 
+/**
+ * Set on a verdict when the moderator granted the owner's appeal, so the
+ * restored bytes are let through instead of being quarantined again.
+ */
+export const APPEAL_OVERRIDE = "appeal";
+
 function verdictOf(snap: { exists: boolean; get(field: string): unknown }): ScanResult | null {
   if (!snap.exists || snap.get("explicit") === undefined) return null;
   const scores: SafeSearchScores = {
@@ -130,7 +136,27 @@ function verdictOf(snap: { exists: boolean; get(field: string): unknown }): Scan
     violence: toLikelihood(snap.get("violence")),
     racy: toLikelihood(snap.get("racy")),
   };
-  return { scores, explicit: isExplicit(scores), cached: true };
+  const overridden = snap.get("overriddenBy") === APPEAL_OVERRIDE;
+  return { scores, explicit: !overridden && isExplicit(scores), cached: true };
+}
+
+/**
+ * Marks these bytes as allowed. Scores are kept so the false positive stays
+ * measurable. Written before the image is copied back, so the upload trigger
+ * the copy fires reads it.
+ */
+export async function overrideVerdict(
+  db: admin.firestore.Firestore,
+  key: string,
+): Promise<void> {
+  await db.collection(SAFE_SEARCH_SCANS).doc(key).set(
+    {
+      explicit: false,
+      overriddenBy: APPEAL_OVERRIDE,
+      overriddenAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
 }
 
 function leaseIsLive(snap: { exists: boolean; get(field: string): unknown }): boolean {

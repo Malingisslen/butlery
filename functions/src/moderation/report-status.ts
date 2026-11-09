@@ -60,3 +60,22 @@ export const REPORTS = "reports";
 export function reportCountsAgainstOwner(reason: unknown): boolean {
   return reason !== "misattribution";
 }
+
+/** BUT-818: the `source` of a case the server's SafeSearch check filed. */
+export const SAFE_SEARCH_SOURCE = "safe_search";
+
+/**
+ * A case the image check filed on its own decision. Only the server can write
+ * these: the `reports` create rule requires `reporterId` to equal the caller
+ * and admits neither the reason `explicit_image` nor the type `image`. `source`
+ * alone is client-writable and never trusted by itself.
+ */
+export function isAutomatedImageReport(data: { [key: string]: unknown } | undefined): boolean {
+  return (
+    !!data &&
+    (data.reporterId === null || data.reporterId === undefined) &&
+    data.source === SAFE_SEARCH_SOURCE &&
+    data.reason === "explicit_image" &&
+    data.contentType === "image"
+  );
+}

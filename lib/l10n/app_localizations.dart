@@ -29698,6 +29698,54 @@ abstract class AppLocalizations {
   /// **'Ditt namn har tagits bort från rätten.'**
   String get motivationMisattributionNameRemoved;
 
+  /// BUT-818: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din bild} other{En bild}}'**
+  String decisionSubjectImage(String who);
+
+  /// BUT-818: content type label for an image removed by the automatic check
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get moderatorContentTypeImage;
+
+  /// BUT-818: reason of the report the server files when the automatic image check stops an image; never offered in the report dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Olämplig bild (automatisk kontroll)'**
+  String get reportReasonExplicitImage;
+
+  /// BUT-818: motivation text, key removed_automated_image
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden stoppades av den automatiska bildkontrollen, eftersom den med stor sannolikhet är sexuell eller våldsam. Beslutet togs automatiskt. Om du överklagar granskar en moderator bilden.'**
+  String get motivationRemovedAutomatedImage;
+
+  /// BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa bilden'**
+  String get moderatorAppealShowImage;
+
+  /// BUT-818: note when some quarantined images were too large or missing to show
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 bild kunde inte visas} other{{count} bilder kunde inte visas}}'**
+  String moderatorAppealImagesOmitted(int count);
+
+  /// BUT-818: title of the moderator dialog showing quarantined images
+  ///
+  /// In sv, this message translates to:
+  /// **'Stoppade bilder'**
+  String get moderatorAppealImagesTitle;
+
+  /// BUT-818: shown when the quarantined image could not be fetched
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte hämtas.'**
+  String get moderatorAppealImagesFailed;
+
   /// BUT-2353: title of the owner decision list and the row that opens it
   ///
   /// In sv, this message translates to:

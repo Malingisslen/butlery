@@ -54,6 +54,7 @@ void main() {
     ContentType.cookSnap => sv.moderatorContentTypeCookSnap,
     ContentType.group => sv.moderatorContentTypeGroup,
     ContentType.menuDish => sv.moderatorContentTypeMenuDish,
+    ContentType.image => sv.moderatorContentTypeImage,
   };
 
   String statusLabel(ReportStatus status) => switch (status) {

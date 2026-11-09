@@ -19417,6 +19417,49 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your name has been removed from the dish.';
 
   @override
+  String decisionSubjectImage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your image',
+        'other': 'An image',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorContentTypeImage => 'Image';
+
+  @override
+  String get reportReasonExplicitImage =>
+      'Inappropriate image (automatic check)';
+
+  @override
+  String get motivationRemovedAutomatedImage =>
+      'The image was stopped by the automatic image check because it is very likely sexual or violent. The decision was made automatically. If you appeal, a moderator reviews the image.';
+
+  @override
+  String get moderatorAppealShowImage => 'Show the image';
+
+  @override
+  String moderatorAppealImagesOmitted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images could not be shown',
+      one: '1 image could not be shown',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stopped images';
+
+  @override
+  String get moderatorAppealImagesFailed => 'The image could not be loaded.';
+
+  @override
   String get myContentDecisionsTitle => 'Decisions about my content';
 
   @override

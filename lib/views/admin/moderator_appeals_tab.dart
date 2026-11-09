@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
+import 'package:butlery/views/admin/moderator_quarantined_image_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/views/admin/moderator_labels.dart';
@@ -105,6 +107,14 @@ class _AppealCard extends StatelessWidget {
               style: muted,
             ),
           const SizedBox(height: AppDimensions.space8),
+          if (type == ContentType.image && appeal.role == AppealRole.owner) ...[
+            ActionButtons.outlinedButton(
+              context,
+              label: l10n.moderatorAppealShowImage,
+              onPressed: () => showQuarantinedImageDialog(context, appeal),
+            ),
+            const SizedBox(height: AppDimensions.space8),
+          ],
           ActionButtons.outlinedButton(
             context,
             label: l10n.moderatorAppealAnswerButton,

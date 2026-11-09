@@ -22,6 +22,21 @@ class ModeratorAppealsViewModel extends BaseViewModel {
     _appeals = await _service.listOpenAppeals();
   }, errorPrefix: AppLocale.current.moderatorAppealsLoadFailed);
 
+  /// Null when the images could not be fetched, so the view can say so
+  /// without turning the whole queue into an error state.
+  Future<QuarantinedImages?> loadQuarantinedImages(OpenAppeal appeal) async {
+    if (isDisposed) return null;
+    try {
+      return await _service.getQuarantinedImages(appeal.appealId);
+    } catch (e) {
+      AppLogger.error(
+        '[ModeratorAppealsViewModel] getQuarantinedImages failed',
+        e,
+      );
+      return null;
+    }
+  }
+
   /// Answers [appeal]; [AppealAnswerOutcome.failed] leaves it in the list.
   Future<AppealAnswerOutcome> answer(
     OpenAppeal appeal,

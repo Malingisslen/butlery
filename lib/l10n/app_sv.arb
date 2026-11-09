@@ -15312,6 +15312,48 @@
   "@motivationMisattributionNameRemoved": {
     "description": "BUT-2353: motivation text, key misattribution_name_removed"
   },
+  "decisionSubjectImage": "{who, select, owner{Din bild} other{En bild}}",
+  "@decisionSubjectImage": {
+    "description": "BUT-818: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorContentTypeImage": "Bild",
+  "@moderatorContentTypeImage": {
+    "description": "BUT-818: content type label for an image removed by the automatic check"
+  },
+  "reportReasonExplicitImage": "Olämplig bild (automatisk kontroll)",
+  "@reportReasonExplicitImage": {
+    "description": "BUT-818: reason of the report the server files when the automatic image check stops an image; never offered in the report dialog."
+  },
+  "motivationRemovedAutomatedImage": "Bilden stoppades av den automatiska bildkontrollen, eftersom den med stor sannolikhet är sexuell eller våldsam. Beslutet togs automatiskt. Om du överklagar granskar en moderator bilden.",
+  "@motivationRemovedAutomatedImage": {
+    "description": "BUT-818: motivation text, key removed_automated_image"
+  },
+  "moderatorAppealShowImage": "Visa bilden",
+  "@moderatorAppealShowImage": {
+    "description": "BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator"
+  },
+  "moderatorAppealImagesOmitted": "{count, plural, =1{1 bild kunde inte visas} other{{count} bilder kunde inte visas}}",
+  "@moderatorAppealImagesOmitted": {
+    "description": "BUT-818: note when some quarantined images were too large or missing to show",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorAppealImagesTitle": "Stoppade bilder",
+  "@moderatorAppealImagesTitle": {
+    "description": "BUT-818: title of the moderator dialog showing quarantined images"
+  },
+  "moderatorAppealImagesFailed": "Bilden kunde inte hämtas.",
+  "@moderatorAppealImagesFailed": {
+    "description": "BUT-818: shown when the quarantined image could not be fetched"
+  },
   "myContentDecisionsTitle": "Beslut om mitt innehåll",
   "@myContentDecisionsTitle": {
     "description": "BUT-2353: title of the owner decision list and the row that opens it"

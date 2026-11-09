@@ -44,6 +44,7 @@ import { RATE_LIMIT_KEY as MY_CONTENT_DECISIONS_KEY } from "../moderation/my-con
 import { RATE_LIMIT_KEY as MY_REPORT_OUTCOMES_KEY } from "../moderation/my-report-outcomes";
 import { RATE_LIMIT_KEY as REOPEN_REPORT_KEY } from "../moderation/reopen-report";
 import { RATE_LIMIT_KEY as SUBMIT_APPEAL_KEY } from "../moderation/submit-appeal";
+import { RATE_LIMIT_KEY as QUARANTINED_IMAGES_KEY } from "../storage/quarantine-review";
 import { SHADOW_OPERATION } from "../llm/shadow-compare-import";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
@@ -73,6 +74,7 @@ const cases: UnitCase[] = [
       for (const key of [
         ANSWER_APPEAL_KEY, LIST_CLOSED_REPORTS_KEY, LIST_OPEN_APPEALS_KEY, MY_CONTENT_DECISIONS_KEY,
         MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY, REVOKE_RATE_LIMIT_KEY,
+        QUARANTINED_IMAGES_KEY,
       ]) {
         assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
       }
@@ -425,6 +427,8 @@ const cases: UnitCase[] = [
         submitAppeal: [5, 10],
         listOpenAppeals: [30, 200],
         answerAppeal: [30, 200],
+        // BUT-818: the moderator's view of a stopped image.
+        getQuarantinedImages: [60, 400],
         // BUT-1528.
         listClosedReports: [60, 400],
         reopenReport: [30, 200],
@@ -504,6 +508,7 @@ const cases: UnitCase[] = [
         "submitAppeal",
         "listOpenAppeals",
         "answerAppeal",
+        "getQuarantinedImages",
         "listClosedReports",
         "reopenReport",
         "createIngredientChangePr",
