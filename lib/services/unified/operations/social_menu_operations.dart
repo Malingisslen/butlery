@@ -11,6 +11,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_menu_owner_lookup.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// Social menu operations for friend-based and group sharing with import/export and activity tracking.
 /// Follows SRP - handles only social menu interactions (not basic CRUD or recipe operations).
@@ -44,6 +46,7 @@ class SocialMenuOperations {
     required List<String> friendUserIds,
     String? message,
     String? customTitle,
+    String? originalMenuId,
   }) async {
     try {
       if (menu.isEmpty) {
@@ -131,6 +134,7 @@ class SocialMenuOperations {
         'sharedToUserIds': friendUserIds,
         'isActive': true,
         'menuType': 'personal_shared',
+        'originalMenuId': ?originalMenuId,
       };
 
       // The shared document, every recipient's record and both rate-limit
@@ -187,6 +191,19 @@ class SocialMenuOperations {
       return false;
     }
   }
+
+  /// Saved menu id -> who it was shared with; one query for all menus.
+  Future<Map<String, Set<String>>> getOwnMenuShares() async {
+    final uid = _permissionService.currentUserId;
+    if (uid == null) return {};
+    return SharedMenuOwnerLookup(
+      _firestore.collection(FirestoreCollections.sharedContent),
+      () => uid,
+    ).recipientsByMenu();
+  }
+
+  Future<List<UserProfile>> getShareRecipientProfiles(List<String> ids) async =>
+      (await _userService.getUserProfiles(ids)).profiles;
 
   /// Share menu with friend category/group
   Future<bool> shareMenuWithGroup({

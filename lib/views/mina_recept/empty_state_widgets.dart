@@ -28,47 +28,15 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Dismissible(
-      key: const Key('onboarding-banner'),
-      direction: DismissDirection.horizontal,
-      onDismissed: (_) => viewModel.dismissOnboardingBanner(),
-      child: Container(
-        margin: AppDimensions.responsiveContentPadding(context),
-        padding: const EdgeInsets.all(AppDimensions.space12),
-        decoration: BoxDecoration(
-          color: cs.primaryContainer,
-          // border.subtle, never a faded ink (tokens.json:40-53, :124-127).
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            ButleryIcon(ButleryIcons.info, color: cs.onSurface),
-            const SizedBox(width: AppDimensions.space8),
-            Expanded(
-              child: Text(
-                context.l10n.onboardingSkippedBanner,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onPrimaryContainer,
-                ),
-              ),
-            ),
-            ButleryTextButton(
-              label: context.l10n.onboardingSkippedBannerAction,
-              onPressed: () {
-                viewModel.dismissOnboardingBanner();
-                Navigator.pushNamed(context, Routes.settingsAllergens);
-              },
-            ),
-            // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
-            ButleryCloseButton(
-              semanticLabel: context.l10n.commonClose,
-              onPressed: viewModel.dismissOnboardingBanner,
-              color: cs.onSurface,
-            ),
-          ],
-        ),
-      ),
+    return _HomeInfoBanner(
+      dismissibleKey: const Key('onboarding-banner'),
+      message: context.l10n.onboardingSkippedBanner,
+      actionLabel: context.l10n.onboardingSkippedBannerAction,
+      onAction: () {
+        viewModel.dismissOnboardingBanner();
+        Navigator.pushNamed(context, Routes.settingsAllergens);
+      },
+      onDismiss: viewModel.dismissOnboardingBanner,
     );
   }
 }
@@ -85,11 +53,41 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _HomeInfoBanner(
+      dismissibleKey: const Key('welcome-banner'),
+      message: context.l10n.onboardingWelcomeBanner,
+      actionLabel: context.l10n.onboardingWelcomeBannerAction,
+      onAction: () {
+        viewModel.dismissWelcomeBanner();
+        showButleryAddSheet(context);
+      },
+      onDismiss: viewModel.dismissWelcomeBanner,
+    );
+  }
+}
+
+class _HomeInfoBanner extends StatelessWidget {
+  const _HomeInfoBanner({
+    required this.dismissibleKey,
+    required this.message,
+    required this.actionLabel,
+    required this.onAction,
+    required this.onDismiss,
+  });
+
+  final Key dismissibleKey;
+  final String message;
+  final String actionLabel;
+  final VoidCallback onAction;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Dismissible(
-      key: const Key('welcome-banner'),
+      key: dismissibleKey,
       direction: DismissDirection.horizontal,
-      onDismissed: (_) => viewModel.dismissWelcomeBanner(),
+      onDismissed: (_) => onDismiss(),
       child: Container(
         margin: AppDimensions.responsiveContentPadding(context),
         padding: const EdgeInsets.all(AppDimensions.space12),
@@ -99,28 +97,31 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
           border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ButleryIcon(ButleryIcons.info, color: cs.onSurface),
             const SizedBox(width: AppDimensions.space8),
+            // The action sits under the message: beside it, a long label such
+            // as "Öppna inställningar" left the message too narrow on a phone
+            // and words broke mid-word (BUT-2503).
             Expanded(
-              child: Text(
-                context.l10n.onboardingWelcomeBanner,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onPrimaryContainer,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.onPrimaryContainer,
+                    ),
+                  ),
+                  ButleryTextButton(label: actionLabel, onPressed: onAction),
+                ],
               ),
-            ),
-            ButleryTextButton(
-              label: context.l10n.onboardingWelcomeBannerAction,
-              onPressed: () {
-                viewModel.dismissWelcomeBanner();
-                showButleryAddSheet(context);
-              },
             ),
             // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
             ButleryCloseButton(
               semanticLabel: context.l10n.commonClose,
-              onPressed: viewModel.dismissWelcomeBanner,
+              onPressed: onDismiss,
               color: cs.onSurface,
             ),
           ],

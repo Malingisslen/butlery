@@ -47,6 +47,33 @@ enum TagStatusTone {
   }
 }
 
+/// The one place that picks compact vs standard rendering for a status badge.
+/// Callers own the status mapping (tone, icon, labels); this only renders it.
+Widget buildTagStatusBadge({
+  required bool compact,
+  required TagStatusTone tone,
+  required IconData icon,
+  required String semanticLabel,
+  required String? label,
+  VoidCallback? onInfoTap,
+}) {
+  if (compact) {
+    return TagStatusBadgeCompact(
+      tone: tone,
+      icon: icon,
+      semanticLabel: semanticLabel,
+      label: label,
+    );
+  }
+  return TagStatusBadge(
+    tone: tone,
+    icon: icon,
+    semanticLabel: semanticLabel,
+    label: label,
+    onInfoTap: onInfoTap,
+  );
+}
+
 /// Shared badge widget used by both AllergenStatusBadge and DietaryStatusBadge.
 /// A notice-style chip (B83-2): the tint with no border, icon + label +
 /// optional info tap in the matching on-colour.

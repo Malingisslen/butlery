@@ -66,4 +66,13 @@
   Prove such a pin bites WITHOUT touching the tree: `ts-node -r <preload>` that patches
   `fs.readFileSync` to serve a mutated scratch copy, run once on an UNMUTATED copy (must stay green)
   and once per mutant.
+- **A "hand-run" `functions/scripts/*.js` is often WORKFLOW-run — gating it is a change to its
+  callers too.** Grep `.github/workflows` for the script name before accepting a new required
+  flag (`--project`) or a new `require("../lib/…")`: `lib/` is gitignored, so a workflow without
+  `npm run build` fails MODULE_NOT_FOUND, and one without the flag fails REFUSED. A script whose
+  `main().catch` prints only `err.code || err.name` swallows `requireProject`'s REFUSED reason.
+  A "gate before init" source pin owes comment-stripped code, ORDER and the init ARGUMENT —
+  `\brequireProject\b` anywhere in the text survives `initializeApp()` with no argument.
+  A one-line `run: node … | tee` with no `shell:` runs under `bash -e`, no pipefail, so the
+  script's refusal exits the step green.
 - **A guard on how CI names a project must parse every spelling the CLI and actions accept** — `--project`, `-P`, `firebase use`, and action `projectId:`/`project_id:` inputs; a guard reading one spelling passes the others.

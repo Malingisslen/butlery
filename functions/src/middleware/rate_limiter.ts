@@ -240,6 +240,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 10,
   },
 
+  // BUT-2481: "Logga ut från alla enheter", three per hour, ten per day. Its
+  // own entry on purpose: `withRateLimit` would also draw on the shared AI budget.
+  revokeOtherSessions: {
+    maxTokens: 3,
+    refillRate: 3,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+
   // BUT-2222: called once each time "Mina anmälningar" loads.
   getMyReportOutcomes: {
     maxTokens: 20,
@@ -274,6 +283,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
   },
+  // BUT-818: the moderator views a stopped image before answering (admin only).
+  // One view can take several pages.
+  getQuarantinedImages: {
+    maxTokens: 60,
+    refillRate: 60,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 400,
+  },
   // BUT-1528: the moderator's closed-report list and reopening (admin only).
   listClosedReports: {
     maxTokens: 60,
@@ -286,6 +303,20 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 30,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
+  },
+  // Admin-vy "Skapa granskning": each run rebuilds the bot branch and PR on
+  // GitHub, per admin and across all admins (subject `all-admins`).
+  createIngredientChangePr: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 30,
+  },
+  createIngredientChangePrGlobal: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 60,
   },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.

@@ -4,8 +4,13 @@
 /// content, preferences, offline, batch, FCM token, analytics.
 library;
 
+import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -39,6 +44,34 @@ class _MockDeviceRepo extends Mock implements DeviceRepository {}
 
 class _MockAnalyticsRepo extends Mock
     implements NotificationAnalyticsRepository {}
+
+class _MockTokenManager extends Mock implements FCMTokenManager {}
+
+/// Captures the listener NotificationService registers so a test can
+/// replay a consent change.
+class _FakeConsent extends Mock implements ConsentService {
+  _FakeConsent(this.pushGranted);
+
+  bool pushGranted;
+  final List<VoidCallback> listeners = <VoidCallback>[];
+
+  @override
+  Future<bool> hasConsent(ConsentPurpose purpose) async =>
+      purpose == ConsentPurpose.pushNotifications && pushGranted;
+
+  @override
+  void addListener(VoidCallback listener) => listeners.add(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => listeners.remove(listener);
+
+  Future<void> fire() async {
+    for (final listener in List.of(listeners)) {
+      listener();
+    }
+    await pumpEventQueue();
+  }
+}
 
 void main() {
   group('NotificationService', () {
@@ -294,6 +327,158 @@ void main() {
     group('Topic Subscriptions', () {
       test('should update topic subscriptions without error', () async {
         await expectLater(service.updateTopicSubscriptions(), completes);
+      });
+    });
+
+    // The token manager asks the OS for notification permission and
+    // registers the device, so it must wait for push consent.
+    group('Push consent gate', () {
+      late _MockTokenManager tokenManager;
+      late _MockFcm fcm;
+
+      NotificationService buildWith(ConsentService consent) =>
+          NotificationService(
+            notificationsRepository: mockNotificationsRepo,
+            authRepository: mockAuthRepo,
+            historyRepository: mockHistoryRepo,
+            batchRepository: mockBatchRepo,
+            deviceRepository: mockDeviceRepo,
+            analyticsRepository: _MockAnalyticsRepo(),
+            fcmService: fcm,
+            getConsentService: () => consent,
+            createTokenManager: (_) => tokenManager,
+          );
+
+      setUp(() {
+        tokenManager = _MockTokenManager();
+        when(() => tokenManager.initialize()).thenAnswer((_) async {});
+        when(
+          () => tokenManager.updateTopicSubscriptions(any()),
+        ).thenAnswer((_) async {});
+        when(() => tokenManager.clearLocalToken()).thenAnswer((_) async {});
+
+        fcm = _MockFcm();
+        when(
+          () => fcm.initialize(
+            onMessageReceived: any(named: 'onMessageReceived'),
+            onMessageOpenedApp: any(named: 'onMessageOpenedApp'),
+            consentService: any(named: 'consentService'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => fcm.bindUserContext(
+            onMessageReceived: any(named: 'onMessageReceived'),
+            onMessageOpenedApp: any(named: 'onMessageOpenedApp'),
+            consentService: any(named: 'consentService'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      test('without push consent the token manager never starts', () async {
+        final service = buildWith(_FakeConsent(false));
+
+        await service.initialize();
+        await service.updateTopicSubscriptions();
+
+        verifyNever(() => tokenManager.initialize());
+        verifyNever(() => tokenManager.updateTopicSubscriptions(any()));
+      });
+
+      test('with push consent the token manager starts once', () async {
+        final service = buildWith(_FakeConsent(true));
+
+        await service.initialize();
+
+        verify(() => tokenManager.initialize()).called(1);
+        verify(() => tokenManager.updateTopicSubscriptions(any())).called(1);
+      });
+
+      test('a mid-session grant starts the token manager', () async {
+        final consent = _FakeConsent(false);
+        final service = buildWith(consent);
+        await service.initialize();
+        verifyNever(() => tokenManager.initialize());
+
+        consent.pushGranted = true;
+        await consent.fire();
+
+        verify(() => tokenManager.initialize()).called(1);
+      });
+
+      test('a revoke stops the started token manager', () async {
+        final consent = _FakeConsent(true);
+        final service = buildWith(consent);
+        await service.initialize();
+        verify(() => tokenManager.updateTopicSubscriptions(any())).called(1);
+
+        consent.pushGranted = false;
+        await consent.fire();
+        await service.updateTopicSubscriptions();
+
+        verify(() => tokenManager.clearLocalToken()).called(1);
+        verify(() => tokenManager.dispose()).called(1);
+        verifyNever(() => tokenManager.updateTopicSubscriptions(any()));
+      });
+
+      test('a grant after a revoke starts a fresh token manager', () async {
+        final built = <_MockTokenManager>[];
+        final consent = _FakeConsent(true);
+        final service = NotificationService(
+          notificationsRepository: mockNotificationsRepo,
+          authRepository: mockAuthRepo,
+          historyRepository: mockHistoryRepo,
+          batchRepository: mockBatchRepo,
+          deviceRepository: mockDeviceRepo,
+          analyticsRepository: _MockAnalyticsRepo(),
+          fcmService: fcm,
+          getConsentService: () => consent,
+          createTokenManager: (_) {
+            final manager = _MockTokenManager();
+            when(() => manager.initialize()).thenAnswer((_) async {});
+            when(
+              () => manager.updateTopicSubscriptions(any()),
+            ).thenAnswer((_) async {});
+            when(() => manager.clearLocalToken()).thenAnswer((_) async {});
+            built.add(manager);
+            return manager;
+          },
+        );
+        await service.initialize();
+
+        consent.pushGranted = false;
+        await consent.fire();
+        consent.pushGranted = true;
+        await consent.fire();
+
+        expect(built, hasLength(2));
+        verify(() => built.first.dispose()).called(1);
+        verify(() => built.first.initialize()).called(1);
+        verify(() => built.last.initialize()).called(1);
+      });
+
+      test('a failed start is retried on the next grant', () async {
+        var attempts = 0;
+        when(() => tokenManager.initialize()).thenAnswer((_) async {
+          attempts++;
+          if (attempts == 1) throw StateError('keystore unavailable');
+        });
+        final consent = _FakeConsent(true);
+        final service = buildWith(consent);
+        await service.initialize();
+        // The failure must not stop the rest of start-up: a finished start
+        // makes a second initialize a no-op that never reaches FCM again.
+        await service.initialize();
+        verify(
+          () => fcm.initialize(
+            onMessageReceived: any(named: 'onMessageReceived'),
+            onMessageOpenedApp: any(named: 'onMessageOpenedApp'),
+            consentService: any(named: 'consentService'),
+          ),
+        ).called(1);
+
+        await consent.fire();
+
+        expect(attempts, 2);
       });
     });
 

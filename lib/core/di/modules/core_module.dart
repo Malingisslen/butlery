@@ -20,6 +20,7 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Repositories and interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/tagging/ingredient_change_pr_service.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
@@ -42,9 +43,11 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
+import 'package:butlery/services/auth/session_revocation_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/auth/provider_sign_in_platform.dart';
 import 'package:butlery/services/auth/provider_sign_in_service.dart';
+import 'package:butlery/services/auth/sign_in_failure_reporter.dart';
 import 'package:butlery/services/auth/guest_auth_service.dart';
 import 'package:butlery/services/guest/guest_start_coordinator.dart';
 import 'package:butlery/services/onboarding/starter_recipe_seeder.dart';
@@ -135,6 +138,7 @@ class CoreModule implements DIModule {
       // Beta feedback
       FeedbackRepository,
       IngredientChangeRequestRepository,
+      IngredientChangePrService,
       InteractionLogger,
       FeedbackService,
       // Auth MFA
@@ -289,6 +293,9 @@ class CoreModule implements DIModule {
         ProviderSignInService(
           authRepository: container<AuthRepository>(),
           platform: DeviceProviderSignInPlatform(),
+          failureReporter: SignInFailureReporter.viaFunctions(
+            FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
         ),
       );
 
@@ -321,6 +328,15 @@ class CoreModule implements DIModule {
           analyticsService: container<AnalyticsService>(),
           authRepository: container<AuthRepository>(),
           // P6-U09: the backup-code callables (mfa-backup-codes.ts).
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
+
+      // BUT-2481: "Logga ut från alla enheter".
+      container.registerLazySingleton<SessionRevocationService>(
+        () => SessionRevocationService(
+          authRepository: container<AuthRepository>(),
+          signOutAfterFailure: container<AuthService>().forceSignOut,
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
@@ -447,6 +463,11 @@ class CoreModule implements DIModule {
         () => FirebaseIngredientChangeRequestRepository(
           authRepository: container<AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
+      container.registerLazySingleton<IngredientChangePrService>(
+        () => IngredientChangePrService(
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
       container.registerLazySingleton<InteractionLogger>(

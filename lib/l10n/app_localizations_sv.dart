@@ -489,12 +489,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorAuthentication => 'Autentiseringsfel. Logga in igen.';
 
   @override
+  String errorAuthenticationWithCode(String code) {
+    return 'Autentiseringsfel ($code). Logga in igen.';
+  }
+
+  @override
   String get errorSignupNotInvited =>
       'Butlery är bara öppet för inbjudna just nu.';
 
   @override
   String get errorSignupGateUnavailable =>
       'Det gick inte att skapa kontot just nu. Försök igen om en stund.';
+
+  @override
+  String get errorSignupRefusedUnmarked =>
+      'Butlery är bara öppet för inbjudna just nu. Har du fått en inbjudan? Försök igen om en stund.';
+
+  @override
+  String get errorPasswordResetLinkFailed =>
+      'Det gick inte att skicka mejlet för nytt lösenord just nu. Försök igen senare.';
 
   @override
   String get errorSignInEmailUnverified =>
@@ -5029,6 +5042,18 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get menuSharedLabel => 'Delad';
+
+  @override
+  String menuSharedWithTitle(String name) {
+    return '$name är delad med';
+  }
+
+  @override
+  String get menuSharedWithMissing =>
+      'Några personer går inte att visa just nu.';
+
+  @override
   String get menuSavedEarlier => 'Sparad tidigare';
 
   @override
@@ -8648,10 +8673,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Importhälsa';
+  String get adminNavImport => 'Receptimport';
 
   @override
-  String get adminImportTitle => 'Importhälsa';
+  String get adminImportTitle => 'Receptimport';
 
   @override
   String get adminImportColDomain => 'Domän';
@@ -8678,10 +8703,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminImportSummaryRate => 'Andel lyckade';
 
   @override
-  String get adminNavEngagement => 'Engagemang';
+  String get adminNavEngagement => 'Användning';
 
   @override
-  String get adminEngagementTitle => 'Engagemang';
+  String get adminEngagementTitle => 'Användning';
 
   @override
   String get adminEngagementUsers => 'Användare totalt';
@@ -8714,10 +8739,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminEngagementColShopped => 'Handlat';
 
   @override
-  String get adminNavParsing => 'Parsing-detaljer';
+  String get adminNavParsing => 'Rättelser av import';
 
   @override
-  String get adminParsingTitle => 'Parsing-detaljer';
+  String get adminParsingTitle => 'Rättelser av import';
 
   @override
   String get adminParsingEmpty => 'Inga korrigeringar än';
@@ -8768,13 +8793,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manuellt / okänt';
 
   @override
-  String get adminNavOps => 'Drift';
+  String get adminNavOps => 'Systemhändelser';
 
   @override
-  String get adminNavGuestList => 'Gästlista';
+  String get adminNavGuestList => 'Inbjudna';
 
   @override
-  String get adminGuestListTitle => 'Gästlista';
+  String get adminGuestListTitle => 'Inbjudna';
 
   @override
   String get adminGuestListLoading => 'Laddar gästlistan …';
@@ -8830,7 +8855,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavIngredients => 'Ingredienser';
 
   @override
-  String get adminNavTagRules => 'Taggregler';
+  String get adminNavTagRules => 'Allergen- och kostregler';
 
   @override
   String get adminIngredientsTitle => 'Ingredienser';
@@ -8974,7 +8999,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminIngredientNo => 'Nej';
 
   @override
-  String get adminTagRulesTitle => 'Taggregler';
+  String get adminTagRulesTitle => 'Allergen- och kostregler';
 
   @override
   String get adminTagRulesLoadFailed => 'Taggkonfigurationen är inte laddad.';
@@ -8998,7 +9023,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminTagRulesRequired => 'Kräver';
 
   @override
-  String get adminOpsTitle => 'Drift';
+  String get adminOpsTitle => 'Systemhändelser';
 
   @override
   String get adminOpsEmpty => 'Inga driftshändelser än';
@@ -11791,10 +11816,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorCouldNotSendInvitations => 'Kunde inte skicka inbjudningar';
-
-  @override
-  String get shareDefaultShoppingListMessage =>
-      'Delar gärna den här inköpslistan med dig.';
 
   @override
   String shoppingListAllDone(int count) {
@@ -18087,6 +18108,64 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsAccountTwoStep => 'Tvåstegsverifiering';
 
   @override
+  String get settingsSessionsSection => 'Sessioner';
+
+  @override
+  String get settingsSignOutEverywhereTitle => 'Logga ut från alla enheter';
+
+  @override
+  String get settingsSignOutEverywhereHint =>
+      'Loggar ut alla dina andra enheter. Du stannar inloggad här.';
+
+  @override
+  String get signOutEverywhereDialogTitle => 'Logga ut andra enheter?';
+
+  @override
+  String get signOutEverywhereDialogBody =>
+      'Andra enheter kan fungera i upp till en timme innan de loggas ut. Du stannar inloggad här.';
+
+  @override
+  String get signOutEverywhereConfirm => 'Logga ut dem';
+
+  @override
+  String get signOutEverywhereReauthTitle => 'Bekräfta att det är du';
+
+  @override
+  String signOutEverywhereReauthBody(String provider) {
+    return 'Av säkerhetsskäl behöver du logga in med $provider igen innan andra enheter loggas ut.';
+  }
+
+  @override
+  String signOutEverywhereReauthAction(String provider) {
+    return 'Logga in med $provider';
+  }
+
+  @override
+  String get signOutEverywhereDone =>
+      'Klart. Andra enheter kan fungera i upp till en timme, sedan loggas de ut.';
+
+  @override
+  String get signOutEverywhereReauthNeeded =>
+      'Logga in igen med Google eller Apple och försök på nytt.';
+
+  @override
+  String get signOutEverywhereRateLimited =>
+      'Du har försökt för många gånger. Försök igen senare.';
+
+  @override
+  String get signOutEverywhereFailed =>
+      'Det gick inte att logga ut andra enheter. Försök igen.';
+
+  @override
+  String get signOutEverywhereSignedOut =>
+      'Andra enheter är utloggade, men den här kunde inte fortsätta. Logga in igen.';
+
+  @override
+  String signOutEverywhereNotice(String when) {
+    return 'Dina andra enheter loggades ut $when. Var det inte du? Byt lösenord hos Google eller Apple.';
+  }
+
+  @override
   String get settingsYourChoicesSection => 'Dina val';
 
   @override
@@ -19182,6 +19261,48 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ditt namn har tagits bort från rätten.';
 
   @override
+  String decisionSubjectImage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din bild',
+        'other': 'En bild',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorContentTypeImage => 'Bild';
+
+  @override
+  String get reportReasonExplicitImage => 'Olämplig bild (automatisk kontroll)';
+
+  @override
+  String get motivationRemovedAutomatedImage =>
+      'Bilden stoppades av den automatiska bildkontrollen, eftersom den med stor sannolikhet är sexuell eller våldsam. Beslutet togs automatiskt. Om du överklagar granskar en moderator bilden.';
+
+  @override
+  String get moderatorAppealShowImage => 'Visa bilden';
+
+  @override
+  String moderatorAppealImagesOmitted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bilder kunde inte visas',
+      one: '1 bild kunde inte visas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stoppade bilder';
+
+  @override
+  String get moderatorAppealImagesFailed => 'Bilden kunde inte hämtas.';
+
+  @override
   String get myContentDecisionsTitle => 'Beslut om mitt innehåll';
 
   @override
@@ -19641,6 +19762,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get authContinueWithApple => 'Fortsätt med Apple';
+
+  @override
+  String authProviderFailedWithCode(String provider, String code) {
+    return 'Inloggningen med $provider gick inte. Försök igen. (Felkod: $code)';
+  }
 
   @override
   String authProviderFailed(String provider) {
@@ -21157,7 +21283,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Förslag';
+  String get adminNavProposals => 'Väntande förslag';
 
   @override
   String get adminProposalsTitle => 'Väntande förslag';
@@ -21263,6 +21389,132 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminProposalPendingMark => 'Väntande förslag';
 
   @override
+  String get adminProposalSectionPending => 'Väntar';
+
+  @override
+  String get adminProposalSectionInReview => 'I granskning';
+
+  @override
+  String get adminProposalSectionConflict => 'Konflikt';
+
+  @override
+  String get adminProposalSectionRejected => 'Avvisade';
+
+  @override
+  String get adminProposalSectionApplied => 'Nyligen genomförda';
+
+  @override
+  String get adminProposalDecidedLoadFailed =>
+      'Kunde inte ladda avvisade och genomförda förslag.';
+
+  @override
+  String get adminProposalCreateReview => 'Skapa granskning';
+
+  @override
+  String get adminProposalCreateReviewTitle => 'Skapa granskning?';
+
+  @override
+  String adminProposalCreateReviewMessage(int count) {
+    return '$count förslag läggs i en granskning på GitHub. Inget ändras i ingrediensfilen förrän granskningen är godkänd där.';
+  }
+
+  @override
+  String adminProposalReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes ändringar',
+      one: '1 ändring',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts konflikter',
+      one: '1 konflikt',
+    );
+    return 'Granskning skapad: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalOpenOnGithub => 'Öppna på GitHub';
+
+  @override
+  String adminProposalPullRequest(int number) {
+    return 'Granskning #$number';
+  }
+
+  @override
+  String adminProposalConflictCsv(String value) {
+    return 'Värde i filen: $value';
+  }
+
+  @override
+  String adminProposalConflictOld(String value) {
+    return 'Ditt gamla: $value';
+  }
+
+  @override
+  String adminProposalConflictNew(String value) {
+    return 'Ditt nya: $value';
+  }
+
+  @override
+  String get adminProposalReasonCsvMismatch =>
+      'Filen har ett annat värde än det du utgick från. Raden har ändrats sedan du föreslog.';
+
+  @override
+  String get adminProposalReasonMissingRow =>
+      'Ingrediensen finns inte längre i filen.';
+
+  @override
+  String get adminProposalReasonNoChange =>
+      'Filen har redan det värdet, så ingenting behövde ändras.';
+
+  @override
+  String get adminProposalReasonWriteFailed =>
+      'Ändringen kunde inte skrivas in i filen.';
+
+  @override
+  String get adminProposalReasonInvalid =>
+      'Servern godtog inte värdet. Föreslå ändringen på nytt med ett giltigt värde.';
+
+  @override
+  String get adminReviewErrorNotAdmin =>
+      'Du har inte behörighet att skapa en granskning.';
+
+  @override
+  String get adminReviewErrorLocked =>
+      'En granskning skapas just nu. Försök igen om en stund.';
+
+  @override
+  String get adminReviewErrorTooMany =>
+      'Det väntar för många förslag för att samla i en granskning. Ta tillbaka några och försök igen.';
+
+  @override
+  String get adminReviewErrorNotConfigured =>
+      'Kopplingen till GitHub är inte inställd än.';
+
+  @override
+  String get adminReviewErrorUnavailable =>
+      'GitHub svarar inte just nu. Försök igen om en stund.';
+
+  @override
+  String get adminReviewErrorForeignCommits =>
+      'Någon annan har ändrat granskningsgrenen på GitHub. Be Claude titta på det.';
+
+  @override
+  String get adminReviewErrorMainMoved =>
+      'Ingrediensfilen ändrades under tiden. Försök igen.';
+
+  @override
+  String get adminReviewErrorRateLimited =>
+      'Du har skapat för många granskningar på kort tid. Vänta en stund.';
+
+  @override
+  String get adminReviewErrorOther =>
+      'Kunde inte skapa granskningen. Försök igen.';
+
+  @override
   String get adminBulkSetStatus => 'Sätt status på valda';
 
   @override
@@ -21349,6 +21601,319 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get adminIssuePrice =>
       'Priset måste vara ett tal som är noll eller större.';
+
+  @override
+  String get adminOccasionGroupChristmas => 'Jul';
+
+  @override
+  String get adminOccasionGroupLucia => 'Lucia';
+
+  @override
+  String get adminOccasionGroupEaster => 'Påsk';
+
+  @override
+  String get adminOccasionGroupMidsummer => 'Midsommar';
+
+  @override
+  String get adminOccasionGroupCrayfish => 'Kräftskiva';
+
+  @override
+  String get adminOccasionGroupNewYear => 'Nyår';
+
+  @override
+  String get adminOccasionGroupSpring => 'Vår';
+
+  @override
+  String get adminOccasionGroupSummer => 'Sommar';
+
+  @override
+  String get adminOccasionGroupAutumn => 'Höst';
+
+  @override
+  String get adminOccasionGroupWinter => 'Vinter';
+
+  @override
+  String get adminOccasionGroupLuxury => 'Lyx';
+
+  @override
+  String get adminOccasionGroupTitleKeywords => 'Titelord';
+
+  @override
+  String get adminOccasionFieldTitleStemFalsePositives =>
+      'Ord som börjar på jul men inte är jul';
+
+  @override
+  String get adminOccasionFieldTitleWords => 'Ord i titeln';
+
+  @override
+  String get adminOccasionFieldMainIngredients => 'Huvudingredienser';
+
+  @override
+  String get adminOccasionFieldSideIngredients => 'Tillbehör';
+
+  @override
+  String get adminOccasionFieldSaffronIngredients => 'Saffran';
+
+  @override
+  String get adminOccasionFieldBakeTitleWords => 'Bakverk i titeln';
+
+  @override
+  String get adminOccasionFieldLambIngredients => 'Lamm';
+
+  @override
+  String get adminOccasionFieldEggIngredients => 'Ägg';
+
+  @override
+  String get adminOccasionFieldHerringIngredients => 'Sill';
+
+  @override
+  String get adminOccasionFieldNewPotatoIngredients => 'Färskpotatis';
+
+  @override
+  String get adminOccasionFieldStrawberryIngredients => 'Jordgubbar';
+
+  @override
+  String get adminOccasionFieldCreamIngredients => 'Grädde och glass';
+
+  @override
+  String get adminOccasionFieldIngredients => 'Ingredienser';
+
+  @override
+  String get adminOccasionFieldDillIngredients => 'Dill';
+
+  @override
+  String get adminOccasionFieldStarkSet => 'Stark: sätter taggen';
+
+  @override
+  String get adminOccasionFieldStarkBoost => 'Stark: förstärker';
+
+  @override
+  String get adminOccasionFieldLyxigSet => 'Lyxig: sätter taggen';
+
+  @override
+  String get adminOccasionFieldLyxigBoost => 'Lyxig: förstärker';
+
+  @override
+  String get adminOccasionFieldComfortFoodSet => 'Comfort food: sätter taggen';
+
+  @override
+  String get adminOccasionFieldComfortFoodBoost => 'Comfort food: förstärker';
+
+  @override
+  String get adminOccasionFieldBarnvanligConfirm => 'Barnvänlig: bekräftar';
+
+  @override
+  String get adminOccasionFieldBarnvanligBoost => 'Barnvänlig: förstärker';
+
+  @override
+  String get adminOccasionFieldSnabblagatSet => 'Snabblagat: sätter taggen';
+
+  @override
+  String get adminOccasionFieldSnabblagatBoost => 'Snabblagat: förstärker';
+
+  @override
+  String adminOccasionListName(String group, String field) {
+    return '$group: $field';
+  }
+
+  @override
+  String get adminOccasionListsTitle => 'Ordlistor för högtider och titelord';
+
+  @override
+  String get adminOccasionListsInfo =>
+      'En ändring blir ett förslag på fliken Förslag. Den når användarna först i nästa appversion.';
+
+  @override
+  String get adminOccasionListEdit => 'Ändra';
+
+  @override
+  String adminOccasionEditTitle(String name) {
+    return 'Ändra ordlistan: $name';
+  }
+
+  @override
+  String get adminOccasionWordsLabel => 'Ord, ett per rad';
+
+  @override
+  String get adminOccasionWordsHelp =>
+      'Ett ord eller en fras per rad. Stora bokstäver görs små.';
+
+  @override
+  String get adminOccasionErrorEmpty => 'Listan får inte vara tom.';
+
+  @override
+  String adminOccasionErrorTooMany(int max) {
+    return 'Listan får ha högst $max ord.';
+  }
+
+  @override
+  String adminOccasionErrorTooLong(int max) {
+    return 'Ett ord får vara högst $max tecken.';
+  }
+
+  @override
+  String get adminOccasionErrorInvalid =>
+      'Orden får bara ha bokstäver, siffror, apostrof och bindestreck, med enstaka mellanslag mellan orden.';
+
+  @override
+  String get adminOccasionErrorDuplicate => 'Ordet finns redan i listan.';
+
+  @override
+  String adminOccasionWordsAdded(String words) {
+    return 'Tillagda: $words';
+  }
+
+  @override
+  String adminOccasionWordsRemoved(String words) {
+    return 'Borttagna: $words';
+  }
+
+  @override
+  String get adminOccasionWordsReordered => 'Samma ord i ny ordning';
+
+  @override
+  String adminOccasionWordsMain(String words) {
+    return 'Just nu i appens ordlista: $words';
+  }
+
+  @override
+  String get adminOccasionSaved =>
+      'Förslaget är sparat. Det syns på fliken Förslag och når användarna först i nästa appversion.';
+
+  @override
+  String get adminProposalReasonFileMismatch =>
+      'Ordlistan i appen har ändrats sedan du föreslog. Föreslå ändringen på nytt utifrån den nuvarande listan.';
+
+  @override
+  String adminProposalCreateReviewMessageWithLists(int count, int lists) {
+    return '$count förslag läggs i granskningar på GitHub, varav $lists gäller ordlistor. Inget ändras i ingrediensfilen eller ordlistorna förrän granskningen är godkänd där.';
+  }
+
+  @override
+  String adminProposalWordListReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes ändringar',
+      one: '1 ändring',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts konflikter',
+      one: '1 konflikt',
+    );
+    return 'Ordlistor: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalWordListReviewFailed =>
+      'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.';
+
+  @override
+  String get adminNavOverview => 'Överblick';
+
+  @override
+  String get adminOverviewTitle => 'Överblick';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Allt ser normalt ut';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'Inga nya rapporter eller förslag väntar och importerna går bra. Inget behöver göras just nu.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saker behöver din uppmärksamhet',
+      one: '1 sak behöver din uppmärksamhet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'Siffrorna avviker från det vanliga. Öppna Receptimport och se om någon sajt har slutat fungera. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.';
+
+  @override
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % av importerna misslyckas. Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.';
+  }
+
+  @override
+  String get adminOverviewSomeUnavailable => 'Några siffror kunde inte hämtas';
+
+  @override
+  String get adminOverviewStatusOk => 'Ser bra ut';
+
+  @override
+  String get adminOverviewStatusNeedsLook => 'Behöver en titt';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Kunde inte hämtas';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'Ingen automatisk koll';
+
+  @override
+  String get adminOverviewOpen => 'Öppna';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count nya rapporter väntar. Läs dem och markera dem som hanterade när du är klar.',
+      one:
+          '1 ny rapport väntar. Läs den och markera den som hanterad när du är klar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'Minst $count nya rapporter väntar. Läs de nyaste först och markera dem som hanterade när du är klar.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'Inga nya rapporter väntar.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count förslag väntar på ditt beslut. Öppna dem och godkänn eller avslå.',
+      one:
+          '1 förslag väntar på ditt beslut. Öppna det och godkänn eller avslå.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'Minst $count förslag väntar på ditt beslut. Öppna listan och godkänn eller avslå, så kommer resten fram.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'Inga förslag väntar.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Importerna går bra och inga ovanliga svängningar har upptäckts.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.';
 
   @override
   String get adminNavAcquisition => 'Kanaler';

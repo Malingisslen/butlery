@@ -60,6 +60,7 @@ import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
 import { recordRatingReads } from "../ratings/rating-read-counter";
 import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
+import { runQuarantineSweep } from "../storage/quarantine-restore";
 
 /**
  * BUT-1814: budget for a daily task.
@@ -170,6 +171,8 @@ export const WEEKLY_REPORT_TASKS: MaintenanceTask[] = [
     run: () => runReconcileBlockMirrors(),
     timeoutMs: TASK_TIMEOUT_MS,
   },
+  // BUT-818: stopped images go once the appeal window is over.
+  { name: "quarantineSweep", run: () => runQuarantineSweep(), timeoutMs: TASK_TIMEOUT_MS },
 ];
 
 export const dailyAnalytics = onSchedule(

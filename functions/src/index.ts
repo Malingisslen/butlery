@@ -121,6 +121,9 @@ export { exportErasureResidue } from "./exports/erasure-residue";
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
 // or executable past the Storage rule's contentType allow-list.
 export { moderateUpload } from "./storage/moderate-upload";
+// BUT-818: a granted appeal restores a stopped image; the moderator sees it first.
+export { onImageAppealAnswered } from "./storage/quarantine-restore";
+export { getQuarantinedImages } from "./storage/quarantine-review";
 
 // BUT-778: server-side conversation.lastMessage sync. Replaces the deprecated
 // client-side ConversationAutoHealerModule, which spawned ~50 per-conversation
@@ -205,6 +208,9 @@ export {
   clearMfaBackupCodes,
 } from "./account/mfa-backup-codes";
 
+// BUT-2481: sign out every other device of a Google/Apple account.
+export { revokeOtherSessions } from "./account/revoke-other-sessions";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 // Steg 10E: the profile copy of a recipe its owner chose to show.
@@ -261,9 +267,14 @@ export { logParseCorrection } from "./events/log-parse-correction";
 // Web Error Logging - Crashlytics-equivalent for Flutter Web (BUT-449)
 export { logWebError } from "./events/log-web-error";
 
+// BUT-2502: a failed Google/Apple sign-in, without personal data
+export { logSignInFailure } from "./events/log-sign-in-failure";
+
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
+// Admin-vy step C: the queued ingredient proposals become one rolling PR.
+export { createIngredientChangePr } from "./admin/create-ingredient-change-pr";
 
 // BUT-458: One-time backfill of recipe_comments denorm fields.
 // REMOVE this export (and the source file) once a `hasMore: false` invocation

@@ -16,6 +16,7 @@
 /// - deletePublicProfile / deleteUserRootDoc
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -682,6 +683,34 @@ void main() {
       final data = await publicDoc(firestore, _bob);
       expect(data!.containsKey('showNameOnSharedDishes'), isFalse);
       expect(data.containsKey('showNameOnSharedDishesChangedAt'), isFalse);
+    });
+  });
+  group('fetchSessionsRevokedAt (BUT-2481)', () {
+    test('reads the server stamp from users/{uid}', () async {
+      final firestore = FakeFirebaseFirestore();
+      final at = DateTime.utc(2026, 11, 7, 12);
+      await firestore.collection('users').doc(_alice).set({
+        'sessionsRevokedAt': Timestamp.fromDate(at),
+      });
+
+      final read = await _repo(firestore).fetchSessionsRevokedAt(_alice);
+      expect(read!.isAtSameMomentAs(at), isTrue);
+    });
+
+    test('is null when the account never pressed the button', () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc(_alice).set({'uid': _alice});
+
+      expect(await _repo(firestore).fetchSessionsRevokedAt(_alice), isNull);
+    });
+
+    test("another user's uid is refused", () async {
+      final firestore = FakeFirebaseFirestore();
+
+      await expectLater(
+        _repo(firestore).fetchSessionsRevokedAt(_bob),
+        throwsA(isA<PermissionDeniedException>()),
+      );
     });
   });
 }

@@ -130,10 +130,28 @@ export async function deleteParsingCorrections(
   // Linked PII: userId plus the raw ingredient and instruction lines the user
   // typed, written straight from the client. Nothing else erased this
   // collection on account deletion.
+  return deleteUserRowsPaged(db, "parsing_corrections", uid);
+}
+
+export async function deleteParseEvents(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  // The import log: userId plus the sanitized page address of each import.
+  // Its 30-day TTL on `expireAt` still covers deletions that bypass this
+  // cascade, and a row written by an import still running elsewhere.
+  return deleteUserRowsPaged(db, "parse_events", uid);
+}
+
+async function deleteUserRowsPaged(
+  db: admin.firestore.Firestore,
+  collection: string,
+  uid: string,
+): Promise<boolean> {
   let previous: Set<string> | null = null;
   for (;;) {
     const snap = await db
-      .collection("parsing_corrections")
+      .collection(collection)
       .where("userId", "==", uid)
       .limit(PARSING_CORRECTIONS_PAGE)
       .get();
@@ -144,7 +162,8 @@ export async function deleteParsingCorrections(
     // deleted comes back unchanged; without this the loop re-reads it until
     // the callable times out and the later cascade steps never run.
     if (prior !== null && [...paths].every((p) => prior.has(p))) {
-      logger.error("[deletion-cascade] parsing-correction page did not shrink; stopping", {
+      logger.error("[deletion-cascade] paged delete did not shrink; stopping", {
+        collection,
         uid_prefix: uid.slice(0, 6),
         rows: snap.size,
       });

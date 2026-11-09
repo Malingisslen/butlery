@@ -520,12 +520,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Authentication error. Please sign in again.';
 
   @override
+  String errorAuthenticationWithCode(String code) {
+    return 'Authentication error ($code). Please sign in again.';
+  }
+
+  @override
   String get errorSignupNotInvited =>
       'Butlery is open to invited people only right now.';
 
   @override
   String get errorSignupGateUnavailable =>
       'The account could not be created right now. Please try again in a moment.';
+
+  @override
+  String get errorSignupRefusedUnmarked =>
+      'Butlery is open to invited people only right now. Have you been invited? Please try again in a moment.';
+
+  @override
+  String get errorPasswordResetLinkFailed =>
+      'The email for a new password could not be sent right now. Please try again later.';
 
   @override
   String get errorSignInEmailUnverified =>
@@ -5101,6 +5114,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get menuSharedLabel => 'Shared';
+
+  @override
+  String menuSharedWithTitle(String name) {
+    return '$name is shared with';
+  }
+
+  @override
+  String get menuSharedWithMissing => 'Some people cannot be shown right now.';
+
+  @override
   String get menuSavedEarlier => 'Saved earlier';
 
   @override
@@ -8688,10 +8712,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Import health';
+  String get adminNavImport => 'Recipe import';
 
   @override
-  String get adminImportTitle => 'Import health';
+  String get adminImportTitle => 'Recipe import';
 
   @override
   String get adminImportColDomain => 'Domain';
@@ -8718,10 +8742,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminImportSummaryRate => 'Success rate';
 
   @override
-  String get adminNavEngagement => 'Engagement';
+  String get adminNavEngagement => 'Usage';
 
   @override
-  String get adminEngagementTitle => 'Engagement';
+  String get adminEngagementTitle => 'Usage';
 
   @override
   String get adminEngagementUsers => 'Total users';
@@ -8754,10 +8778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEngagementColShopped => 'Shopped';
 
   @override
-  String get adminNavParsing => 'Parsing details';
+  String get adminNavParsing => 'Import corrections';
 
   @override
-  String get adminParsingTitle => 'Parsing details';
+  String get adminParsingTitle => 'Import corrections';
 
   @override
   String get adminParsingEmpty => 'No corrections yet';
@@ -8808,13 +8832,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manual / unknown';
 
   @override
-  String get adminNavOps => 'Ops';
+  String get adminNavOps => 'System events';
 
   @override
-  String get adminNavGuestList => 'Guest list';
+  String get adminNavGuestList => 'Invited';
 
   @override
-  String get adminGuestListTitle => 'Guest list';
+  String get adminGuestListTitle => 'Invited';
 
   @override
   String get adminGuestListLoading => 'Loading the guest list …';
@@ -8869,7 +8893,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavIngredients => 'Ingredients';
 
   @override
-  String get adminNavTagRules => 'Tag rules';
+  String get adminNavTagRules => 'Allergen and diet rules';
 
   @override
   String get adminIngredientsTitle => 'Ingredients';
@@ -9013,7 +9037,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminIngredientNo => 'No';
 
   @override
-  String get adminTagRulesTitle => 'Tag rules';
+  String get adminTagRulesTitle => 'Allergen and diet rules';
 
   @override
   String get adminTagRulesLoadFailed => 'The tag configuration isn\'t loaded.';
@@ -9037,7 +9061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminTagRulesRequired => 'Requires';
 
   @override
-  String get adminOpsTitle => 'Operations';
+  String get adminOpsTitle => 'System events';
 
   @override
   String get adminOpsEmpty => 'No operations events yet';
@@ -11839,10 +11863,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCouldNotSendInvitations => 'Could not send invitations';
-
-  @override
-  String get shareDefaultShoppingListMessage =>
-      'Sharing this shopping list with you.';
 
   @override
   String shoppingListAllDone(int count) {
@@ -18237,6 +18257,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountTwoStep => 'Two-step verification';
 
   @override
+  String get settingsSessionsSection => 'Sessions';
+
+  @override
+  String get settingsSignOutEverywhereTitle => 'Sign out of all devices';
+
+  @override
+  String get settingsSignOutEverywhereHint =>
+      'Signs out all your other devices. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereDialogTitle => 'Sign out other devices?';
+
+  @override
+  String get signOutEverywhereDialogBody =>
+      'Other devices may keep working for up to an hour before they are signed out. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereConfirm => 'Sign them out';
+
+  @override
+  String get signOutEverywhereReauthTitle => 'Confirm it\'s you';
+
+  @override
+  String signOutEverywhereReauthBody(String provider) {
+    return 'For security you need to sign in with $provider again before other devices are signed out.';
+  }
+
+  @override
+  String signOutEverywhereReauthAction(String provider) {
+    return 'Sign in with $provider';
+  }
+
+  @override
+  String get signOutEverywhereDone =>
+      'Done. Other devices may keep working for up to an hour, then they are signed out.';
+
+  @override
+  String get signOutEverywhereReauthNeeded =>
+      'Sign in again with Google or Apple and try again.';
+
+  @override
+  String get signOutEverywhereRateLimited =>
+      'You have tried too many times. Try again later.';
+
+  @override
+  String get signOutEverywhereFailed =>
+      'Could not sign out other devices. Try again.';
+
+  @override
+  String get signOutEverywhereSignedOut =>
+      'Other devices are signed out, but this one could not continue. Sign in again.';
+
+  @override
+  String signOutEverywhereNotice(String when) {
+    return 'Your other devices were signed out $when. Not you? Change your Google or Apple password.';
+  }
+
+  @override
   String get settingsYourChoicesSection => 'Your choices';
 
   @override
@@ -19339,6 +19417,49 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your name has been removed from the dish.';
 
   @override
+  String decisionSubjectImage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your image',
+        'other': 'An image',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorContentTypeImage => 'Image';
+
+  @override
+  String get reportReasonExplicitImage =>
+      'Inappropriate image (automatic check)';
+
+  @override
+  String get motivationRemovedAutomatedImage =>
+      'The image was stopped by the automatic image check because it is very likely sexual or violent. The decision was made automatically. If you appeal, a moderator reviews the image.';
+
+  @override
+  String get moderatorAppealShowImage => 'Show the image';
+
+  @override
+  String moderatorAppealImagesOmitted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images could not be shown',
+      one: '1 image could not be shown',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stopped images';
+
+  @override
+  String get moderatorAppealImagesFailed => 'The image could not be loaded.';
+
+  @override
   String get myContentDecisionsTitle => 'Decisions about my content';
 
   @override
@@ -19806,6 +19927,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authContinueWithApple => 'Continue with Apple';
+
+  @override
+  String authProviderFailedWithCode(String provider, String code) {
+    return 'Signing in with $provider did not work. Try again. (Error code: $code)';
+  }
 
   @override
   String authProviderFailed(String provider) {
@@ -21330,7 +21456,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Proposals';
+  String get adminNavProposals => 'Pending proposals';
 
   @override
   String get adminProposalsTitle => 'Pending proposals';
@@ -21442,6 +21568,131 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminProposalPendingMark => 'Pending proposal';
 
   @override
+  String get adminProposalSectionPending => 'Waiting';
+
+  @override
+  String get adminProposalSectionInReview => 'In review';
+
+  @override
+  String get adminProposalSectionConflict => 'Conflict';
+
+  @override
+  String get adminProposalSectionRejected => 'Rejected';
+
+  @override
+  String get adminProposalSectionApplied => 'Recently applied';
+
+  @override
+  String get adminProposalDecidedLoadFailed =>
+      'Could not load rejected and applied proposals.';
+
+  @override
+  String get adminProposalCreateReview => 'Create review';
+
+  @override
+  String get adminProposalCreateReviewTitle => 'Create review?';
+
+  @override
+  String adminProposalCreateReviewMessage(int count) {
+    return '$count proposals go into a review on GitHub. Nothing changes in the ingredient file until the review is approved there.';
+  }
+
+  @override
+  String adminProposalReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes changes',
+      one: '1 change',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts conflicts',
+      one: '1 conflict',
+    );
+    return 'Review created: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalOpenOnGithub => 'Open on GitHub';
+
+  @override
+  String adminProposalPullRequest(int number) {
+    return 'Review #$number';
+  }
+
+  @override
+  String adminProposalConflictCsv(String value) {
+    return 'Value in the file: $value';
+  }
+
+  @override
+  String adminProposalConflictOld(String value) {
+    return 'Your old: $value';
+  }
+
+  @override
+  String adminProposalConflictNew(String value) {
+    return 'Your new: $value';
+  }
+
+  @override
+  String get adminProposalReasonCsvMismatch =>
+      'The file has a different value than the one you started from. The row changed after you proposed.';
+
+  @override
+  String get adminProposalReasonMissingRow =>
+      'The ingredient is no longer in the file.';
+
+  @override
+  String get adminProposalReasonNoChange =>
+      'The file already has that value, so nothing needed changing.';
+
+  @override
+  String get adminProposalReasonWriteFailed =>
+      'The change could not be written to the file.';
+
+  @override
+  String get adminProposalReasonInvalid =>
+      'The server did not accept the value. Propose the change again with a valid value.';
+
+  @override
+  String get adminReviewErrorNotAdmin =>
+      'You are not allowed to create a review.';
+
+  @override
+  String get adminReviewErrorLocked =>
+      'A review is being created right now. Try again in a moment.';
+
+  @override
+  String get adminReviewErrorTooMany =>
+      'Too many proposals are waiting for a single review. Withdraw some and try again.';
+
+  @override
+  String get adminReviewErrorNotConfigured =>
+      'The GitHub connection is not set up yet.';
+
+  @override
+  String get adminReviewErrorUnavailable =>
+      'GitHub is not responding right now. Try again in a moment.';
+
+  @override
+  String get adminReviewErrorForeignCommits =>
+      'Someone else has changed the review branch on GitHub. Ask Claude to take a look.';
+
+  @override
+  String get adminReviewErrorMainMoved =>
+      'The ingredient file changed in the meantime. Try again.';
+
+  @override
+  String get adminReviewErrorRateLimited =>
+      'You created too many reviews in a short time. Wait a moment.';
+
+  @override
+  String get adminReviewErrorOther => 'Could not create the review. Try again.';
+
+  @override
   String get adminBulkSetStatus => 'Set status on selected';
 
   @override
@@ -21527,6 +21778,326 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminIssuePrice => 'The price must be a number, zero or greater.';
+
+  @override
+  String get adminOccasionGroupChristmas => 'Christmas';
+
+  @override
+  String get adminOccasionGroupLucia => 'Lucia';
+
+  @override
+  String get adminOccasionGroupEaster => 'Easter';
+
+  @override
+  String get adminOccasionGroupMidsummer => 'Midsummer';
+
+  @override
+  String get adminOccasionGroupCrayfish => 'Crayfish party';
+
+  @override
+  String get adminOccasionGroupNewYear => 'New Year';
+
+  @override
+  String get adminOccasionGroupSpring => 'Spring';
+
+  @override
+  String get adminOccasionGroupSummer => 'Summer';
+
+  @override
+  String get adminOccasionGroupAutumn => 'Autumn';
+
+  @override
+  String get adminOccasionGroupWinter => 'Winter';
+
+  @override
+  String get adminOccasionGroupLuxury => 'Luxury';
+
+  @override
+  String get adminOccasionGroupTitleKeywords => 'Title words';
+
+  @override
+  String get adminOccasionFieldTitleStemFalsePositives =>
+      'Words starting with jul that are not Christmas';
+
+  @override
+  String get adminOccasionFieldTitleWords => 'Words in the title';
+
+  @override
+  String get adminOccasionFieldMainIngredients => 'Main ingredients';
+
+  @override
+  String get adminOccasionFieldSideIngredients => 'Side dishes';
+
+  @override
+  String get adminOccasionFieldSaffronIngredients => 'Saffron';
+
+  @override
+  String get adminOccasionFieldBakeTitleWords => 'Baked goods in the title';
+
+  @override
+  String get adminOccasionFieldLambIngredients => 'Lamb';
+
+  @override
+  String get adminOccasionFieldEggIngredients => 'Eggs';
+
+  @override
+  String get adminOccasionFieldHerringIngredients => 'Herring';
+
+  @override
+  String get adminOccasionFieldNewPotatoIngredients => 'New potatoes';
+
+  @override
+  String get adminOccasionFieldStrawberryIngredients => 'Strawberries';
+
+  @override
+  String get adminOccasionFieldCreamIngredients => 'Cream and ice cream';
+
+  @override
+  String get adminOccasionFieldIngredients => 'Ingredients';
+
+  @override
+  String get adminOccasionFieldDillIngredients => 'Dill';
+
+  @override
+  String get adminOccasionFieldStarkSet => 'Hearty: sets the tag';
+
+  @override
+  String get adminOccasionFieldStarkBoost => 'Hearty: boosts';
+
+  @override
+  String get adminOccasionFieldLyxigSet => 'Luxurious: sets the tag';
+
+  @override
+  String get adminOccasionFieldLyxigBoost => 'Luxurious: boosts';
+
+  @override
+  String get adminOccasionFieldComfortFoodSet => 'Comfort food: sets the tag';
+
+  @override
+  String get adminOccasionFieldComfortFoodBoost => 'Comfort food: boosts';
+
+  @override
+  String get adminOccasionFieldBarnvanligConfirm => 'Child-friendly: confirms';
+
+  @override
+  String get adminOccasionFieldBarnvanligBoost => 'Child-friendly: boosts';
+
+  @override
+  String get adminOccasionFieldSnabblagatSet => 'Quick to make: sets the tag';
+
+  @override
+  String get adminOccasionFieldSnabblagatBoost => 'Quick to make: boosts';
+
+  @override
+  String adminOccasionListName(String group, String field) {
+    return '$group: $field';
+  }
+
+  @override
+  String get adminOccasionListsTitle =>
+      'Word lists for holidays and title words';
+
+  @override
+  String get adminOccasionListsInfo =>
+      'A change becomes a proposal in the Proposals tab. It reaches users only in the next app version.';
+
+  @override
+  String get adminOccasionListEdit => 'Edit';
+
+  @override
+  String adminOccasionEditTitle(String name) {
+    return 'Edit the word list: $name';
+  }
+
+  @override
+  String get adminOccasionWordsLabel => 'Words, one per line';
+
+  @override
+  String get adminOccasionWordsHelp =>
+      'One word or phrase per line. Capital letters are made lower case.';
+
+  @override
+  String get adminOccasionErrorEmpty => 'The list must not be empty.';
+
+  @override
+  String adminOccasionErrorTooMany(int max) {
+    return 'The list can have at most $max words.';
+  }
+
+  @override
+  String adminOccasionErrorTooLong(int max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max characters',
+      one: '1 character',
+    );
+    return 'A word can be at most $_temp0.';
+  }
+
+  @override
+  String get adminOccasionErrorInvalid =>
+      'Words can only have letters, digits, apostrophes and hyphens, with single spaces between words.';
+
+  @override
+  String get adminOccasionErrorDuplicate => 'That word is already in the list.';
+
+  @override
+  String adminOccasionWordsAdded(String words) {
+    return 'Added: $words';
+  }
+
+  @override
+  String adminOccasionWordsRemoved(String words) {
+    return 'Removed: $words';
+  }
+
+  @override
+  String get adminOccasionWordsReordered => 'Same words in a new order';
+
+  @override
+  String adminOccasionWordsMain(String words) {
+    return 'Currently in the app\'s word list: $words';
+  }
+
+  @override
+  String get adminOccasionSaved =>
+      'The proposal is saved. It shows in the Proposals tab and reaches users only in the next app version.';
+
+  @override
+  String get adminProposalReasonFileMismatch =>
+      'The word list in the app has changed since you proposed. Propose the change again from the current list.';
+
+  @override
+  String adminProposalCreateReviewMessageWithLists(int count, int lists) {
+    return '$count proposals are put into reviews on GitHub, $lists of them for word lists. Nothing changes in the ingredient file or the word lists until the review is approved there.';
+  }
+
+  @override
+  String adminProposalWordListReviewCreated(int changes, int conflicts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      changes,
+      locale: localeName,
+      other: '$changes changes',
+      one: '1 change',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      conflicts,
+      locale: localeName,
+      other: '$conflicts conflicts',
+      one: '1 conflict',
+    );
+    return 'Word lists: $_temp0, $_temp1';
+  }
+
+  @override
+  String get adminProposalWordListReviewFailed =>
+      'The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.';
+
+  @override
+  String get adminNavOverview => 'Overview';
+
+  @override
+  String get adminOverviewTitle => 'Overview';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Everything looks normal';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'No new reports or proposals are waiting and imports are going well. Nothing needs doing right now.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things need your attention',
+      one: '1 thing needs your attention',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'The numbers differ from the usual. Open Recipe import and see whether a site has stopped working. A single deviation can also just be an unusually quiet or busy day.';
+
+  @override
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % of imports fail. Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
+  }
+
+  @override
+  String get adminOverviewSomeUnavailable => 'Some numbers could not be loaded';
+
+  @override
+  String get adminOverviewStatusOk => 'Looks good';
+
+  @override
+  String get adminOverviewStatusNeedsLook => 'Needs a look';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Could not be loaded';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'No automatic check';
+
+  @override
+  String get adminOverviewOpen => 'Open';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count new reports are waiting. Read them and mark them as handled when you are done.',
+      one:
+          '1 new report is waiting. Read it and mark it as handled when you are done.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'At least $count new reports are waiting. Read the newest first and mark them as handled when you are done.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'No new reports are waiting.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count proposals are waiting for your decision. Open them and approve or reject.',
+      one:
+          '1 proposal is waiting for your decision. Open it and approve or reject.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'At least $count proposals are waiting for your decision. Open the list and approve or reject, and the rest will show.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'No proposals are waiting.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Imports are going well and no unusual swings have been detected.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'The overview does not measure this tab. Open it when you want a closer look.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'The number could not be loaded, so it is not possible to say whether anything needs doing. Try again with Refresh.';
 
   @override
   String get adminNavAcquisition => 'Channels';

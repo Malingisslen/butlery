@@ -17,13 +17,12 @@
       "lib/theme/app_colors.dart",
       "lib/theme/app_dimensions.dart",
       "lib/theme/app_text_styles.dart",
-      "lib/theme/butlery_colors_extension.dart",
+      "lib/widgets/common/cards/**",
+      "lib/widgets/common/cards/styled_card.dart",
       "lib/widgets/common/state/**",
       "lib/widgets/common/state/empty_states.dart",
       "lib/widgets/common/state/loading_states.dart",
-      "lib/widgets/common/state_widget.dart",
-      "lib/widgets/common/input/**",
-      "lib/widgets/common/cards/styled_card.dart"
+      "lib/widgets/common/state_widget.dart"
     ],
     "Accessibility Specialist": [
       ".claude/rules/ui-conventions.md",
@@ -35,7 +34,6 @@
       "lib/theme/**",
       "lib/theme/app_colors.dart",
       "lib/theme/app_dimensions.dart",
-      "lib/theme/butlery_colors_extension.dart",
       "lib/views/auth_view.dart",
       "lib/views/recipe_detail/**",
       "lib/views/recipe_detail/recipe_detail_shared_widgets.dart",
@@ -81,7 +79,6 @@
       "lib/repositories/mixins/permission_validation_mixin.dart",
       "lib/services/auth/**",
       "lib/services/auth/account_maturity_helper.dart",
-      "lib/services/device_integrity_service.dart",
       "lib/services/menu/**",
       "lib/services/menu/menu_scoring.dart",
       "lib/services/security/**",
@@ -513,7 +510,6 @@
       "functions/src/llm/llm-sample-capture.ts",
       "functions/src/middleware/**",
       "functions/src/middleware/rate_limiter.ts",
-      "lib/core/di/modules/**",
       "lib/firebase_options.dart",
       "pubspec.yaml"
     ],
@@ -588,7 +584,6 @@
       "lib/theme/app_dimensions.dart",
       "lib/theme/app_text_styles.dart",
       "lib/theme/brand_colors.dart",
-      "lib/theme/butlery_colors_extension.dart",
       "lib/theme/components/**",
       "lib/theme/components/button_themes.dart",
       "lib/views/recipe_detail/**",

@@ -1,3 +1,11 @@
+# Aktiv plan (2026-11-07): BUT-2399, dela inköpslista = alltid inbjudan
+
+Se `tasks/but-2399-plan.md`.
+
+# Aktiv plan (2026-11-04): BUT-2502 fel 4, falskt fel efter Google-inloggning
+
+Se `tasks/but-2502-google-plan.md`.
+
 # Aktiv plan (2026-11-02): BUT-1508 dataexport, kontoradering, taggredigering
 
 Se `tasks/but-1508-gdpr-plan.md`. Grupp 3-planen nedan är mergad (#1155).

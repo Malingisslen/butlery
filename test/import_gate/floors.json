@@ -13,14 +13,14 @@
       "chromeLeaks": 0
     },
     "text": {
-      "recall": 0.9861,
-      "headingLeaks": 3,
-      "titleExact": 29,
-      "stepsExact": 28,
+      "recall": 1.0,
+      "headingLeaks": 2,
+      "titleExact": 30,
+      "stepsExact": 30,
       "portionsExact": 0,
       "timeExact": 0,
       "failures": 0,
-      "extraIngredients": 7,
+      "extraIngredients": 4,
       "extraSteps": 0,
       "chromeLeaks": 0
     },
@@ -28,12 +28,12 @@
       "recall": 0.9843,
       "headingLeaks": 0,
       "titleExact": 9,
-      "stepsExact": 6,
+      "stepsExact": 7,
       "portionsExact": 7,
       "timeExact": 2,
       "failures": 0,
       "extraIngredients": 3,
-      "extraSteps": 7,
+      "extraSteps": 6,
       "chromeLeaks": 0
     },
     "foto": {
@@ -41,12 +41,12 @@
       "headingLeaks": 0,
       "chromeLeaks": 0,
       "titleExact": 4,
-      "stepsExact": 1,
+      "stepsExact": 2,
       "portionsExact": 2,
       "timeExact": 0,
       "failures": 0,
       "extraIngredients": 2,
-      "extraSteps": 5
+      "extraSteps": 2
     }
   },
   "knownRed": []

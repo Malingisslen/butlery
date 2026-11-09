@@ -42,6 +42,7 @@ export {
   deletePersonalTagGroups,
   deleteTagOverridesLog,
   deleteParsingCorrections,
+  deleteParseEvents,
   PARSING_CORRECTIONS_PAGE,
   deleteCookSnaps,
   deleteActivityEvents,
@@ -142,4 +143,4 @@ export {
   deleteChatGroupMemberships,
 } from "./cascade/chat-groups";
 export { probeResidualData } from "./cascade/residual-probe";
-export { userStoragePrefix } from "./cascade/storage";
+export { userStoragePrefix, userStoragePrefixes } from "./cascade/storage";

@@ -123,7 +123,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_persistence_manager.dart` | 629 | Focused manager for atomic save/fork/delete delegated from form VM |
 | `shared_shopping_viewmodel.dart` | 503 | Specialized sub-VM inheriting base; single domain (shopping collaboration) |
 | `notification_batch_manager.dart` | 512 | Single-concern module: batching + spam-prevention only |
-| `social_menu_operations.dart` | 551 | SRP module: social menu sharing only (explicit "does not contain" comment) |
+| `social_menu_operations.dart` | 570 | SRP module: social menu sharing only (explicit "does not contain" comment) |
 | `text_import_viewmodel.dart` | 501 | Thin VM extending base + mixin; actual logic is in ImportManager |
 | `social_engagement_metrics.dart` | 509 | SRP module: engagement calculation only (explicit "does not contain" comment) |
 | `url_import_strategy.dart` | 619 | Single multi-tier URL extraction strategy; coherent pipeline |

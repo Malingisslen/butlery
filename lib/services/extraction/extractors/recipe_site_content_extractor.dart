@@ -194,8 +194,7 @@ class RecipeSiteContentExtractor {
   Future<String?> _extractRecipeContent(
     InAppWebViewController controller,
   ) async {
-    // Skip structured data selectors (first 3 in the list)
-    for (final selector in selectors.skip(3)) {
+    for (final selector in selectors) {
       if (isDisposed()) break;
 
       try {

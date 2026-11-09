@@ -305,6 +305,7 @@ const PRODUCTION_CLOUD_WORKFLOWS = [
   "measure-production.yml",
   "migrate-meal-type.yml",
   "repair-feature-retention.yml",
+  "sync-ingredients.yml",
 ];
 
 /** A job whose environment is, or can be, `production`. */
@@ -385,6 +386,25 @@ function testCiRunsThisGuardWhenItsInputsChange(): void {
   }
 }
 
+function testNoWorkflowTriggersOnATag(): void {
+  const tagTriggers: string[] = [];
+  for (const { name, text } of workflowFiles()) {
+    if (/^\s+tags(-ignore)?:|[{,]\s*tags(-ignore)?\s*:/m.test(text)) tagTriggers.push(name);
+  }
+  // release.yml tags with GITHUB_TOKEN, and GitHub starts no workflow from an
+  // event that token created.
+  const release = workflowFiles().find((f) => f.name === "release.yml");
+  record(
+    "no workflow triggers on a tag (release.yml tags with GITHUB_TOKEN)",
+    release !== undefined &&
+      release.text.includes("secrets.GITHUB_TOKEN") &&
+      tagTriggers.length === 0,
+    release === undefined
+      ? "release.yml not found"
+      : tagTriggers.join(", ") || "release.yml no longer uses GITHUB_TOKEN; revisit this check",
+  );
+}
+
 function main(): void {
   console.log("deploy-project-guard tests\n");
   testWorkflowsAreFound();
@@ -395,6 +415,7 @@ function main(): void {
   testNoCrossProjectCopy();
   testProductionWorkflowsSignInWithWif();
   testCiRunsThisGuardWhenItsInputsChange();
+  testNoWorkflowTriggersOnATag();
 
   console.log(`\n${totalRun - totalFailed}/${totalRun} checks passed`);
   if (totalFailed > 0) process.exit(1);

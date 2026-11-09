@@ -335,6 +335,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // Admin proposals to change ingredient rows. `createdBy` and `withdrawnBy`
   // are admin uids, whose Auth accounts Phase 1 deletes.
   { name: "ingredient_change_requests" },
+  // `createIngredientChangePr`'s lock and its run records. A run record
+  // carries a hashed admin uid, and a reset deletes every admin account.
+  { name: "ingredient_change_locks" },
+  { name: "ingredient_change_runs" },
 
   // BUT-2010: `tag_configs` does NOT belong here and must not come back. It is
   // SEED data: `firestore.rules` gives it `allow write: if false`, so no user
@@ -377,6 +381,13 @@ export const COLLECTIONS_TO_KEEP = [
   // closing summary in `reset-user-data.ts` prints the exception beside the
   // list for the same reason.
   "analytics",
+  // Kokboksprovet: the admin's own cookbooks and the answer keys written for
+  // them, which hold no user data. The
+  // photos survive a reset already, because `corpus/` is not among the
+  // storage prefixes the script deletes.
+  "corpus_books",
+  "corpus_pages",
+  "corpus_runs",
 ];
 
 /**
@@ -428,6 +439,11 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
   // Each of these is server-written and admin-read. A reset wipes USER data;
   // deleting the operator's own record of what the system did is a separate
   // decision, and this file is where it would be made.
+
+  safe_search_scans:
+    "BUT-818: the Vision SafeSearch verdict per image, keyed by the image's " +
+    "checksums (storage/safe-search.ts), with no uid or path. Deleting it would " +
+    "only pay Vision again for the same bytes.",
 
   metrics:
     "North-star weekly snapshots (scheduled/north-star-weekly.ts), keyed by " +

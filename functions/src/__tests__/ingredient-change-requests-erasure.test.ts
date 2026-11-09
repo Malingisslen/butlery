@@ -31,6 +31,11 @@ import {
   INGREDIENT_CHANGE_COLUMNS,
   INGREDIENT_CHANGE_REQUEST_KEYS,
 } from "../exports/erasure-residue/account-sections";
+import { SERVER_WRITTEN_PROPOSAL_KEYS } from "../admin/create-ingredient-change-pr";
+import { APPLIED_STAMP_KEYS } from "../admin/mark-applied-core";
+import { hashUid } from "../shared/hash-uid";
+
+const RUNS = "ingredient_change_runs";
 
 const COL = "ingredient_change_requests";
 const SRC = path.join(__dirname, "..");
@@ -74,6 +79,52 @@ async function scrubScenarios(): Promise<void> {
   const writesBefore = db.updatedPaths.length;
   const again = await scrubIngredientChangeRequestAuthors(asDb(db), UID);
   check("a re-run succeeds and writes nothing", again === true && db.updatedPaths.length === writesBefore);
+}
+
+// The statuses createIngredientChangePr writes are scrubbed like any other.
+async function serverStatusScenario(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`${COL}/review`, { ingredientId: "a", status: "inReview", prNumber: 4, createdBy: UID });
+  db.set(`${COL}/conflict`, {
+    ingredientId: "b", status: "conflict", reason: "csv-mismatch", csvValue: { swedish: "B" },
+    createdBy: OTHER, withdrawnBy: UID,
+  });
+  db.set(`${COL}/rejected`, { ingredientId: "c", status: "rejected", reason: "no-change", createdBy: UID });
+  db.set(`${COL}/words`, {
+    kind: "occasionList", listKey: "christmas.titleWords", oldWords: ["jul"], newWords: ["jul", "skinka"],
+    status: "inReview", prNumber: 6, createdBy: UID,
+  });
+  const ok = await scrubIngredientChangeRequestAuthors(asDb(db), UID);
+  check("inReview, conflict, rejected and word-list proposals are scrubbed", ok === true &&
+    db.get(`${COL}/review`)?.createdBy === null && db.get(`${COL}/review`)?.prNumber === 4 &&
+    db.get(`${COL}/conflict`)?.withdrawnBy === null && db.get(`${COL}/conflict`)?.createdBy === OTHER &&
+    db.get(`${COL}/rejected`)?.createdBy === null &&
+    db.get(`${COL}/words`)?.createdBy === null && db.get(`${COL}/words`)?.listKey === "christmas.titleWords");
+}
+
+async function runRecordScenarios(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`${RUNS}/r1`, { adminUidHash: hashUid(UID), prNumber: 4, counts: { applied: 2 } });
+  db.set(`${RUNS}/r2`, { adminUidHash: hashUid(OTHER), prNumber: 5 });
+  const ok = await scrubIngredientChangeRequestAuthors(asDb(db), UID);
+  check("the erased admin's run record loses its hash and keeps its content",
+    ok === true && db.get(`${RUNS}/r1`)?.adminUidHash === null && db.get(`${RUNS}/r1`)?.prNumber === 4);
+  check("another admin's run record is untouched", db.get(`${RUNS}/r2`)?.adminUidHash === hashUid(OTHER));
+  check("the run record scrub writes an anonymize audit row",
+    db.pathsUnder("audit_logs").map((p) => db.get(p)).some((r) => r?.resourceType === RUNS && r?.resourceId === "r1"));
+
+  const leftover = new FakeFirestore();
+  leftover.set(`${RUNS}/r`, { adminUidHash: hashUid(UID) });
+  const result = emptyResult();
+  await probeAfter(leftover, result);
+  check("the probe reports a leftover run-record hash", sawResidual(result), JSON.stringify(result.failedCollections));
+
+  const clean = new FakeFirestore();
+  clean.set(`${RUNS}/r`, { adminUidHash: hashUid(OTHER) });
+  const cleanResult = emptyResult();
+  await probeAfter(clean, cleanResult);
+  check("another admin's run record leaves the probe clean", !sawResidual(cleanResult),
+    JSON.stringify(cleanResult.failedCollections));
 }
 
 async function pagingScenario(): Promise<void> {
@@ -151,14 +202,19 @@ function allowlistPins(): void {
   check("list columns export as string lists, the rest as scalars", wrong.length === 0,
     wrong.map((w) => w[2]).join(","));
 
-  const create = block.match(/allow create:[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
+  // One create branch per kind: an ingredient proposal and a word list (step D).
+  const create = block.match(/function ingredientCreateOk\(\)[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
+  const createWords = block.match(/function occasionCreateOk\(\)[\s\S]*?keys\(\)\.hasOnly\(\[([^\]]*)\]/);
   const update = block.match(/allow update:[\s\S]*?affectedKeys\(\)\s*\.hasOnly\(\[([^\]]*)\]/);
-  check("rules create and update key lists found", create !== null && update !== null);
-  const storable = new Set([...quoted(create?.[1] ?? ""), ...quoted(update?.[1] ?? "")]);
+  check("rules create and update key lists found", create !== null && createWords !== null && update !== null);
+  const storable = new Set([
+    ...quoted(create?.[1] ?? ""), ...quoted(createWords?.[1] ?? ""), ...quoted(update?.[1] ?? ""),
+  ]);
   storable.delete("createdBy");
   storable.delete("withdrawnBy");
+  for (const k of [...SERVER_WRITTEN_PROPOSAL_KEYS, ...APPLIED_STAMP_KEYS]) storable.add(k);
   check(
-    "the export's proposal keys are every storable key except the two uid fields",
+    "the export's proposal keys are every storable key except the two uid fields, plus the server's",
     JSON.stringify(Object.keys(INGREDIENT_CHANGE_REQUEST_KEYS).sort()) === JSON.stringify([...storable].sort()),
     `${Object.keys(INGREDIENT_CHANGE_REQUEST_KEYS).sort()} vs ${[...storable].sort()}`,
   );
@@ -181,6 +237,8 @@ function callSitePins(): void {
 
 async function main(): Promise<void> {
   await scrubScenarios();
+  await serverStatusScenario();
+  await runRecordScenarios();
   await pagingScenario();
   await failedChunkScenario();
   await probeScenarios();

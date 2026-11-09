@@ -296,6 +296,67 @@ async function scenario_probeSeesLeftoverRetentionAnalytics(): Promise<void> {
 }
 
 /**
+ * u10 (Malin 2026-11-03): the import log goes with the account instead of
+ * waiting out its 30-day TTL. Same paging as the parsing corrections, another
+ * user's rows stay, and a leftover row is what the probe reports.
+ */
+async function scenario_parseEventsErasedPagedAndProbed(): Promise<void> {
+  const { deleteParseEvents, PARSING_CORRECTIONS_PAGE, probeResidualData } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  for (let i = 0; i < 1203; i++) {
+    store.set(`parse_events/mine-${i}`, { userId: UID, domain: "ica.se" });
+  }
+  store.set("parse_events/theirs", { userId: OTHER, domain: "ica.se" });
+
+  const ok = await deleteParseEvents(asDb(store), UID);
+  check(
+    "every page of the user's import log is deleted",
+    ok === true &&
+      store.idsIn("parse_events").length === 1 &&
+      store.has("parse_events/theirs"),
+    `returned ${ok}; rows left: ${store.idsIn("parse_events").length}`,
+  );
+
+  const stuck = new FakeFirestore();
+  for (let i = 0; i < PARSING_CORRECTIONS_PAGE; i++) {
+    stuck.set(`parse_events/mine-${i}`, { userId: UID });
+  }
+  stuck.batchFailures.set("parse_events/mine-7", 13);
+  const stuckOk = await deleteParseEvents(asDb(stuck), UID);
+  check(
+    "a full import-log page that cannot be deleted stops and reports failure",
+    stuckOk === false &&
+      stuck.idsIn("parse_events").length === PARSING_CORRECTIONS_PAGE,
+    `returned ${stuckOk}`,
+  );
+
+  // Also the shape of a row written by an import still running on another
+  // device after the delete: the probe flags it, and the TTL removes it.
+  const dirty = new FakeFirestore();
+  dirty.set("parse_events/mine", { userId: UID });
+  const result = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  };
+  await probeResidualData(asDb(dirty), UID, result);
+  check(
+    "a leftover import-log row is reported as residual data",
+    result.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(result.failedCollections)}`,
+  );
+
+  check(
+    "no import log to delete still succeeds",
+    (await deleteParseEvents(asDb(new FakeFirestore()), UID)) === true,
+  );
+}
+
+/**
  * The user-typed parser corrections: every page of the erasing user's rows
  * goes, another user's rows stay, and a leftover row is what the probe reports.
  */
@@ -1164,6 +1225,7 @@ async function main(): Promise<void> {
   await scenario_deepLinksErasedWithClicksAndProbed();
   await scenario_deepLinksArePaged();
   await scenario_parsingCorrectionsErasedPagedAndProbed();
+  await scenario_parseEventsErasedPagedAndProbed();
 
   finishSuite("BUT-1766/BUT-1768 deletion cascade own account data");
 }

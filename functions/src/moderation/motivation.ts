@@ -33,12 +33,19 @@ export const DEFAULT_MOTIVATION: Readonly<Record<Decision, string>> = {
 export const MISATTRIBUTION_MOTIVATION = "misattribution_name_removed";
 
 /**
+ * BUT-818: an image the server's SafeSearch check stopped. Not one of the
+ * moderator's choices, because no moderator made the decision.
+ */
+export const AUTOMATED_IMAGE_MOTIVATION = "removed_automated_image";
+
+/**
  * The key to store for [decision]. A missing key, or one that belongs to
  * another decision, falls back to the decision's default rather than being
  * refused: the close has already happened by the time the server sees it.
  */
 export function resolveMotivation(decision: Decision, reason: unknown, raw: unknown): string {
   if (reason === "misattribution") return MISATTRIBUTION_MOTIVATION;
+  if (reason === "explicit_image") return AUTOMATED_IMAGE_MOTIVATION;
   if (typeof raw === "string" && MOTIVATIONS_BY_DECISION[decision].includes(raw)) return raw;
   return DEFAULT_MOTIVATION[decision];
 }

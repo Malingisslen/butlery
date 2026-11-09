@@ -165,6 +165,37 @@ void main() {
     expect(find.text(sv.settingsAccountPassword), findsOneWidget);
   });
 
+  testWidgets('offers "logga ut från alla enheter" to Google and Apple '
+      'accounts only (BUT-2481)', (tester) async {
+    container.container.registerSingleton<AuthService>(_MixedAuth());
+    await pump(tester);
+    expect(find.text(sv.settingsSignOutEverywhereTitle), findsOneWidget);
+    expect(find.text(sv.settingsSessionsSection.toUpperCase()), findsOneWidget);
+  });
+
+  testWidgets('hides the sessions row for a password-only account', (
+    tester,
+  ) async {
+    container.container.registerSingleton<AuthService>(_ChangingAuth());
+    await pump(tester);
+    expect(find.text(sv.settingsSignOutEverywhereTitle), findsNothing);
+    expect(find.text(sv.settingsSessionsSection.toUpperCase()), findsNothing);
+  });
+
+  testWidgets('asks before doing anything, and says the delay honestly', (
+    tester,
+  ) async {
+    container.container.registerSingleton<AuthService>(_ProviderAuth());
+    await pump(tester);
+
+    await tester.tap(find.text(sv.settingsSignOutEverywhereTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.signOutEverywhereDialogTitle), findsOneWidget);
+    expect(find.text(sv.signOutEverywhereDialogBody), findsOneWidget);
+    expect(sv.signOutEverywhereDialogBody, contains('upp till en timme'));
+  });
+
   testWidgets('follows a change made on the page under it', (tester) async {
     final auth = _ChangingAuth();
     container.container.registerSingleton<AuthService>(auth);

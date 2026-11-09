@@ -63,23 +63,12 @@ class AllergenStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (tone, icon) = _getStatusStyle(context);
-    final displayLabel = label ?? _getDisplayLabel(context);
-    final semanticLabel = _getSemanticLabel(context);
-
-    if (compact) {
-      return TagStatusBadgeCompact(
-        tone: tone,
-        icon: icon,
-        semanticLabel: semanticLabel,
-        label: showLabel ? displayLabel : null,
-      );
-    }
-
-    return TagStatusBadge(
+    return buildTagStatusBadge(
+      compact: compact,
       tone: tone,
       icon: icon,
-      semanticLabel: semanticLabel,
-      label: showLabel ? displayLabel : null,
+      semanticLabel: _getSemanticLabel(context),
+      label: showLabel ? (label ?? _getDisplayLabel(context)) : null,
       onInfoTap: onInfoTap,
     );
   }

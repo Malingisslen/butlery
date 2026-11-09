@@ -103,6 +103,29 @@
   read clean in two writers while a third wrote raw uids in a doc id and a field.
 - Normalization parity must hold across every matching surface (sync stamp,
   server hold-gate, Dart client); list-split regexes stay in lockstep.
+- **A new collection that holds even a HASHED uid owes a deletion leg, a probe leg and an Art. 15
+  section** (`erasure-collection-coverage.test.ts` refuses a collection reached by none of
+  deletion, a TTL or `UNREVIEWED`; `erasure-export-coverage.test.ts` maps every residue section to
+  a step). The cheaper shape is often to keep identity OUT: a lock naming the RUN, not the admin
+  (`ingredient_change_locks`), needs only an `UNREVIEWED` line. A probe leg on a hash cannot ride
+  the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg.
+- **GitHub's REST ref update has no compare-and-swap** (`PATCH /git/refs` takes only `force`).
+  A bot that force-rebuilds a branch re-reads `main` AND the branch ref immediately before the
+  PATCH and aborts on either moving; the residual window is named, not claimed closed. Errors from
+  a token-bearing client carry method + path TEMPLATE + status only — a fetch error message or a
+  401 body can echo the credential (`admin/github-app.ts`).
+- **An orphan-Storage KEEP-SET fails toward "orphan", so a hand-named source list is the
+  defect.** Denormalised copies keep a replaced photo's URL alive: `shared_content`
+  (`recipeImageUrl`, menu dish `imageUrls`), `recipe_suggestions.suggestion`, menu snapshots,
+  `chat_groups.memberAvatarUrls`. Walk `db.listCollections()` recursively (sub-subcollections
+  too) and enumerate parents with `listDocuments()` (a phantom `users/{uid}` has no doc but
+  has subcollections), or pin a fail-closed allowlist against `firestore.rules` top-level
+  `match` blocks with a reason per skipped collection.
+- **A hand-run destructive sweep takes an operator-approved CAP and refuses the WHOLE run
+  above it, before the first delete** (`assertWithinCap`, `--apply` needs `--max-delete`). Pin
+  each delete with `ifGenerationMatch` and treat 404/412 as skipped; a MISSING generation must
+  skip the object, never coerce to `""` — the SDK forwards any value `!== undefined` to the
+  query string, so the pin's meaning then rests on the server, not on the code.
 - Export/mining: verify FIELD PARITY against the writer. Best test is a
   PRIVACY WHITELIST — seed adversarial PII-shaped fields, assert the exported
   key set is EXACTLY allow-listed.
@@ -122,3 +145,26 @@
 - **A `retry: true` trigger that deletes on a status TRANSITION must re-read the stored
   state before deleting once any path can reverse that transition** (`reopenReport` vs
   the evidence lifecycle), or a late delivery destroys what the reversal re-created.
+- **A create-only copy (`ifGenerationMatch: 0`) followed by a second write is not
+  idempotent if 412 means "skip the rest"**: on redelivery the 412 comes from YOUR OWN
+  earlier copy, so the follow-up (`setMetadata` with the download token) never runs. On 412,
+  read the destination and finish the job when it carries your marker (e.g. the same
+  `reportId`); treat only a marker-less object as someone else's.
+- **An action that a reviewer view gates must be bounded by what that view SHOWED.** A
+  view that caps (count, bytes) or omits items while the action covers the whole set lets
+  the action reach unseen items; record the shown set server-side (generations, not
+  names) and act on that set only. Budget a base64 callable answer on ENCODED size (×4/3).
+  A "saw everything" flag built with `Array.every` is TRUE on an empty set — require the
+  set to be non-empty, or a case of only unviewable items unlocks the action.
+- **I/O added AHEAD of a fail-open protective step inherits that step's fail-open duty.**
+  `moderateUpload` declares no `retry` and the sweep walks only `quarantine/`, so a throw from
+  a case-grouping read (`chooseReportId`) before `quarantine()` leaves an explicit image public
+  for good: wrap it, fall back to a fresh id. A notice gated on a helper's boolean ("moved") is
+  only as true as the branches that helper SWALLOWS: a caught `source.delete` failure that still
+  returns true tells the owner "removed" about a visible image. Any copy that carries `reportId`
+  is also re-filed by the sweep.
+- **A NAME cannot tell a server object from a client one under a mirrored prefix.**
+  `quarantine/users/{uid}/…` mirrors `users/{uid}/{allPaths=**}`, which a client may name
+  anything, so no regex (anchored or not) separates a pointer from a quarantined image.
+  Classify on server-only metadata (a quarantine copy always carries `reportId`), and test the
+  classifier against the client-shaped name itself.

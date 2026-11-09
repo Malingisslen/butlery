@@ -21384,3 +21384,177 @@ killed every mutant (86/86 on base rules, 1–10 reds per mutant). Folded into t
   `test:rules:all`). Staged `package.json` registers `test:ingredient-change-requests-erasure`; the
   suite file is staged beside it. `check-test-registration.js` OK (4 pre-existing BUT-1702 warnings).
   Whole 12-file diff: pass, no blocking. No new principle.
+
+
+### 2026-11-03 — admin-vy C2: createIngredientChangePr, GitHub App client [implementation]
+- Built (not reviewed) the callable + GitHub App client + PR body + change plan. App id 5602114 /
+  installation 178342690 / bot `butlery-admin-bot[bot]` as code constants (non-secret; functions
+  `.env*` is gitignored, so `defineString` would block a CI deploy); key via
+  `defineSecret("GITHUB_APP_PRIVATE_KEY")` on this one function.
+- Wrong turn: the lock first stored `ownerHash`; `erasure-collection-coverage` reddened
+  (`ingredient_change_locks` reached by nothing). Fixed by dropping the hash, lock names the run id.
+- Run records (`ingredient_change_runs`, `adminUidHash`) got: anonymize leg inside
+  `scrubIngredientChangeRequestAuthors`, a separate hash `count()` probe leg, an Art. 15 residue
+  section, a 365 d TTL policy, and a fixture in `_erasure-residue-cases-2.ts`.
+- GitHub ref PATCH has no CAS: re-read main + bot ref right before; mutation-probed the main-moved
+  check and the per-doc status precondition (each removal reddens exactly its test).
+- Full CI unit lane: 161/163, the two reds were `test:script-seed-staging` (needs `npm run build`,
+  green after build) and `test:erasure-collection-coverage` (the lock, fixed). Rules suite 93/93 via
+  `npx firebase-tools@14 emulators:exec --only firestore`.
+
+### 2026-11-03 — BUT-2502 beforeSignIn isNewUser always false [review][account]
+Gate review of the staged `account/signup-allowlist.ts` + `__tests__/signup-allowlist.test.ts`.
+`firebase-functions` 7.4.0 `lib/common/providers/identity.js` sets
+`isNewUser: decodedJWT.event_type === "beforeCreate"`, so in `beforeSignIn` it is false and every
+unverified password sign-up was refused straight after creation. The fix recognises the sign-up from
+`event.data.metadata` (`parseMetadata` -> `new Date(ms).toUTCString()`, second resolution) with
+`isSignUpSession` and a 2-minute window. The caller measured this in the emulator; I did not re-run it.
+Finding: no test drives `beforeSignInAllowlist.run(event)`. A grep shows the export is referenced
+only from `index.ts`, so the wrapper line, where both the bug and the fix live, is not pinned by any test.
+Prod `createdAt`/`lastLoginAt` equality at signUp was not verified.
+Retired verbatim from the gdpr-erasure chapter (pooled-ratings section) to make room under the
+cap. The later paragraph in the same section supersedes it:
+  COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
+  field — check exemptions, not `indexes`.
+
+### 2026-11-03 — BUT-2502 re-review: wrapper pinned via .run [review][account]
+Re-read both re-staged files (`de1dadd…`, `186246d…`). The wrapper now calls the exported
+`signUpSessionOf(event, nowMs)` on `event.data?.metadata?.creationTime`, and the lastSignInTime
+comparison is gone, so the rule is "created within 2 min". A new `beforeSignInAllowlist.run(...)` test
+covers the positive path. The coordinator reports that reverting to `isNewUser` fails it (28/29); I did
+not re-run that mutant. 29/29 pass, tsc clean. Gaps left (non-blocking): a wrapper that passes a literal
+`true` stays green, because the refusing path through `.run` needs Firestore. A future-dated creationTime
+passes because a negative difference is <= the window. Passed.
+
+### 2026-11-07 — BUT-2419 admin-script project gate review [ci-wiring][review]
+Reviewed the uncommitted gate on backfill-age-claim.js, measure-launch-risks.js, migrate-meal-type.js,
+repair-feature-retention.js plus admin-script-project-gate.test.ts. Gate placement is correct (requireProject
+evaluates before initializeApp in all four; --apply/--from/--to unaffected). Blocking: all four are run by
+production workflow_dispatch jobs (measure-production.yml, backfill-age-claim.yml, migrate-meal-type.yml,
+repair-feature-retention.yml) that pass no --project, and three of them have no `npm run build` step while
+lib/ is gitignored, so every run would fail (MODULE_NOT_FOUND or REFUSED). Test: verified with an
+fs.readFileSync-patching preload that (a) reverting backfill to `admin.initializeApp()` while keeping the
+require line, and (b) dropping the require and leaving only a comment naming requireProject, both stay green
+— the test matches the identifier anywhere in raw text. backfill/migrate catch handlers print `err.code ||
+err.name`, i.e. "Error", losing the REFUSED reason (checked by calling the compiled requireProject directly;
+running the scripts themselves was refused by the auto-mode classifier as a production read). `npm run build`
+emits lib/admin/require-project.js (tsconfig include src, outDir lib). Verdict fail (2 blocking).
+
+### 2026-11-07 — BUT-2419 re-review after fixes [ci-wiring][review]
+Re-read the test, both scripts and all four workflows whole. All four workflows now pass --project
+"$FIREBASE_PROJECT_ID"; measure/backfill/migrate gained `npm run build`. Test now strips comments, walks
+scripts/ and src/admin/ recursively (js/cjs/mjs/ts), flags `new Firestore(`/`new GoogleAuth(`, requires a
+requireProject( call inline or before each initializeApp( plus `projectId` in its args, has five self-checks,
+and requires every EXEMPT entry to be among the detected files. Ran green (10 detected). My mutants via
+fs.readFileSync preload: gate called first but init given a hardcoded `projectId: "butlery-prod"` stays GREEN;
+a string literal "requireProject()" assigned and passed stays GREEN — both contrived, noted non-blocking.
+reset-scheduler-pause.ts exemption verified: createSchedulerApi() is called in reset-user-data main() after
+initializeAdminApp(). Residual pre-existing: measure-production.yml's one-line `node … | tee` has no pipefail
+(default `bash -e`), so a refusal leaves the step green. Verdict pass.
+
+### 2026-11-07 — BUT-2419 final round [ci-wiring][review]
+Staged blob == working blob for the test and measure-production.yml (git hash-object vs ls-files -s).
+measure-production's script step is now `run: |` + `set -o pipefail`. gatedBeforeInit now requires the
+`projectId:` value to be `requireProject(` or an identifier assigned `= requireProject(` in the code. Mutants via
+fs.readFileSync preload on backfill-age-claim.js (each asserted to apply): hardcoded `projectId: "butlery-prod"`
+after a bare gate call, `const x = "requireProject()"` passed as projectId, the string inline as projectId, and a
+bare `initializeApp()` — all four RED (exit 1); unmutated GREEN. Verdict pass.
+
+### 2026-11-07 — BUT-2409 orphan-Storage count: keep-set misses denormalised copies [review]
+Reviewed staged `admin/sweep-orphan-storage{,-core}.ts` + test + package.json. Core is pure and
+fail-safe (grace window, missing timeCreated -> too-new, empty-scan refusal), no delete path,
+project gate via `initializeAdminApp` -> `requireProject`, output is per-folder counts only.
+Blocking: `TOP_LEVEL_SOURCES` names four collections; verified by reading the Dart models that
+`shared_content` stores `recipeImageUrl` (lib/models/shared_recipe.dart toFirestore) and menu
+dish `imageUrls` (lib/models/shared_menu.dart), and `recipe_suggestions.suggestion` is a full
+recipe map (lib/models/recipe_suggestion.dart). A replaced recipe photo still shown through a
+share is therefore counted as an orphan. Also `harvestUsers` pages `users` with a query, so a
+phantom parent's subcollections are skipped, and `harvestCollection` does not descend below one
+subcollection level. Not measured against production. Verified: test 10/10 pass, tsc clean,
+check-test-registration OK, admin-script-project-gate passes. Principle folded into the
+data-pipelines chapter (orphan keep-set bullet).
+
+### 2026-11-07 — BUT-2409 re-review: whole-database walk lands [review]
+`sweep-orphan-storage.ts` now walks `db.listCollections()` recursively with `listDocuments` +
+`db.getAll` in chunks of 300, so documents that exist only as subcollection parents are seen
+(`exists` false, still recursed). The catch prints only a REFUSED message or an error code. tsc
+clean, test 10/10. Residual (Info): the printed "Firestore reads" counts `getAll` snapshots only,
+not the per-document `listCollections` calls, so it undercounts the billed operations. Verdict pass.
+
+### 2026-11-07 — BUT-2409 orphan-storage sweep gains capped --apply [review]
+Staged diff added `--apply --max-delete <n>` to `admin/sweep-orphan-storage.ts`, with
+`parseMaxDelete`/`orphansOf`/`assertWithinCap` in the core. Verified: refusal fires before
+`initializeAdminApp` (project gate `requireProject` unchanged); the cap check precedes the first
+delete; deletes pass `ifGenerationMatch: obj.generation`, tolerating 404/412 only; output prints
+counts and error codes only. In @google-cloud/storage 7.22.0, `File.delete(options)` forwards the
+options as query params, so `String(file.metadata.generation ?? "")` would send an empty
+`ifGenerationMatch=` if a listing ever lacked a generation (objects.list always returns one, so
+unreachable in practice). Recorded as Low; the delete loop has no seam and no test. Suite 13/13,
+tsc clean. Verdict pass.
+
+### 2026-11-07 — BUT-2409 re-review after fixes [review]
+Delete loop moved to core `deleteOrphans(bucket, orphans, onProgress)`: skips an object with no
+generation, tolerates 404/412, reports counts in `finally`; the script maps a missing
+`metadata.generation` to `undefined`. Three async fake-bucket tests each fail on the matching
+mutant (pin dropped, missing-generation skip removed, `finally` removed). Suite 16/16, tsc clean.
+Residual Info: a `null` generation would stringify to "null" and fail the delete (fail closed).
+Verdict pass.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 review: quarantine restore/review [storage]
+Reviewed staged image-decision.ts, quarantine-restore.ts, quarantine-review.ts, safe-search.ts.
+FAIL, 2 blocking. (1) `restoreCase`: copy with `ifGenerationMatch: 0`, then `setMetadata`
+(token + clearing quarantine keys); a failure/timeout between them makes the redelivery hit
+412 on our own copy, set `copied=false`, skip `setMetadata`, then delete the quarantine copy —
+restored image left tokenless (app URL dead) and carrying `ownerUid`/`reportId`/scores.
+(2) `getQuarantinedImages` shows at most 4 images and skips >2 MB (storage.rules allow 10 MB),
+but `restoreCase` restores every object with the reportId: a cook-snap album of 6 in one
+window, or ordering by name, restores images the moderator never saw. Non-blocking: uncaught
+Storage errors in the retry:true trigger log the object name (uid) per retry; 4 x 2 MiB is
+~11.18 MB base64, over the 10 MB the comment names (gen2 limit not verified); one throw in
+`sweepQuarantine` aborts that week's remaining 200-day deletions; `isCasePointer` substring
+match is reachable from a client path `users/{uid}/.cases/x.jpg` (sweep deletes that
+quarantined copy after a day); duplicate `audit_logs.add` rows per redelivery.
+Measured: test:image-decision 6/6 (brief said 7/7), test:safe-search 13/13; both test files
+untracked at review time.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 re-review [storage]
+Re-read image-decision.ts, quarantine-restore.ts, quarantine-review.ts, safe-search.ts,
+moderation/answer-appeal.ts. Blocking 1 (412 on own copy) and 2 (restore beyond what was
+shown, now `reviewedGenerations` + `image_not_reviewed` guard) fixed. PASS, 0 blocking.
+Finding 6 NOT fixed, and the regex I proposed in round 1 was itself wrong:
+`node -e` shows /^quarantine\/users\/[^/]+\/\.cases\/[^/]+$/ matches
+`quarantine/users/u1/.cases/x.jpg` (true) — the exact client-shaped name. Superseded chapter
+bullet, retired verbatim:
+"- **A path classifier on a client-writable wildcard (`users/{uid}/{allPaths=**}`) must be
+  anchored** (`^quarantine/users/[^/]+/\.cases/[^/]+$`), never `includes("/.cases/")`: a
+  client can name a folder anything, and its quarantined copy then reads as server state."
+New non-blocking: a grant restores only shown images while the owner is told "granted" (a >9 MB
+encoded image can never be shown); audit row is written after the quarantine delete, so a
+failed create is lost on retry. Unit suites re-run: image-decision 6/6, safe-search 13/13.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 third round [storage]
+Re-read image-decision.ts, quarantine-restore.ts, quarantine-review.ts, answer-appeal.ts,
+image-decision.test.ts, image-appeal.integration.test.ts. Findings 6 (pointer decided on
+missing `reportId`, unit case for the client-shaped name), 8 (`offset` paging, `reviewedAll`
+required by answerAppeal) and 9 (audit create before delete) fixed. PASS, 0 blocking.
+New Medium: `viewable.every(...)` in handleGetQuarantinedImages is true when every case image
+is over MAX_ENCODED_BYTES (`node -e` `[].every(()=>false)` → true), so such a case gets
+`reviewedAll: true` with nothing shown and can be granted while nothing is restored.
+Info: oversize images are never restored on a grant (design choice, Malin should see it);
+rate limit 30/h vs up to 20 pages per view fails safe.
+
+### 2026-11-09 — BUT-818 step 2 batch 2: case grouping ahead of quarantine, "moved" with a failed delete [storage]
+Reviewed moderate-upload, quarantine-review, on-report-created, report-status, motivation,
+report-decision (staged index; hash-object == ls-files for all six). Units green:
+test:moderate-upload 32/32, test:image-decision 6/6, test:report-rate-cap 14/14; emulator
+suite not re-run (caller reported image-appeal 11/11).
+High: `handleFinalizedObject` awaits `chooseReportId` (pointer download/save, appeal get)
+outside any try, before `quarantine()`. The trigger has no retry and `sweepQuarantine` lists
+only `quarantine/`, so a transient GCS/Firestore error leaves the explicit image in place,
+never revisited; the uncaught error can carry the pointer name `quarantine/users/{uid}/...`.
+Step 1 reached quarantine with no I/O in between. Fix: try/catch, fall back to `newImageReportId()`.
+Medium: `quarantine()` returns true after a caught `source.delete` failure, so
+`fileImageDecision` notifies "content_removed" while the image is public; and on a
+setMetadata failure after copy it returns false but leaves a copy with `reportId`, which the
+weekly sweep files. Early return in onReportCreated verified unbypassable: the create rule pins
+reporterId == auth.uid and enumerates reason/contentType without the new values.

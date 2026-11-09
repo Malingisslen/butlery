@@ -154,9 +154,12 @@ abstract class RecipeSiteParser {
         .replaceAll(RegExp(r'[\u2013\u2014]'), '-'); // Em/en dashes
   }
 
-  /// Helper: Strip "ca"/"cirka" from the portions and from the start of each
-  /// ingredient, and clean the ingredient and instruction text.
-  Map<String, dynamic> cleanCirkaFormatting(Map<String, dynamic> recipe) {
+  /// Helper: Clean portions, ingredient and instruction text. Sites whose
+  /// ingredient lines start with "ca"/"cirka" pass [stripCirkaFromIngredients].
+  Map<String, dynamic> cleanRecipeFormatting(
+    Map<String, dynamic> recipe, {
+    bool stripCirkaFromIngredients = false,
+  }) {
     final yield_ = recipe['recipeYield'];
     if (yield_ is String) {
       recipe['recipeYield'] = yield_
@@ -169,16 +172,14 @@ abstract class RecipeSiteParser {
       final ingredients = recipe['recipeIngredient'] as List;
       recipe['recipeIngredient'] = ingredients
           .map((ing) {
-            String cleaned = cleanSwedishText(ing.toString());
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^ca\s+', caseSensitive: false),
-              '',
-            );
-            cleaned = cleaned.replaceAll(
-              RegExp(r'^cirka\s+', caseSensitive: false),
-              '',
-            );
-            return cleaned.trim();
+            var cleaned = cleanSwedishText(ing.toString());
+            if (stripCirkaFromIngredients) {
+              cleaned = cleaned
+                  .replaceAll(RegExp(r'^ca\s+', caseSensitive: false), '')
+                  .replaceAll(RegExp(r'^cirka\s+', caseSensitive: false), '')
+                  .trim();
+            }
+            return cleaned;
           })
           .where((ing) => ing.isNotEmpty)
           .toList();
@@ -192,6 +193,11 @@ abstract class RecipeSiteParser {
 
     return recipe;
   }
+
+  /// Helper: Strip "ca"/"cirka" from the portions and from the start of each
+  /// ingredient, and clean the ingredient and instruction text.
+  Map<String, dynamic> cleanCirkaFormatting(Map<String, dynamic> recipe) =>
+      cleanRecipeFormatting(recipe, stripCirkaFromIngredients: true);
 
   /// Helper: Portions from the shared selectors, with the site's own
   /// [sitePortionsSelector] tried after `.recipe-portions`; failing those, the

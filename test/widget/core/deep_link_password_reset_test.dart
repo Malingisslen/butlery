@@ -150,24 +150,29 @@ void main() {
   });
 
   group('a link arriving while the app is open', () {
-    testWidgets('a reset link opens the view; the app\'s own links do not', (
-      tester,
-    ) async {
+    testWidgets('a reset link opens the view', (tester) async {
       await pumpApp(tester);
-      DeepLinkHandler()
-        ..onLinkWhileRunning('https://butlery.se/recipe?id=1')
-        ..onLinkWhileRunning(_resetLink('abc'));
+      DeepLinkHandler().onLinkWhileRunning(_resetLink('abc'));
       await tester.pumpAndSettle();
       expect(pushed.single.name, Routes.setNewPassword);
     });
 
     testWidgets(
-      'before the app has a screen, the app\'s own links are not kept',
-      (
-        tester,
-      ) async {
+      'a shared link goes the cold-start route, so signed out it is parked',
+      (tester) async {
+        await pumpApp(tester);
         DeepLinkHandler().onLinkWhileRunning('https://butlery.se/recipe?id=1');
-        expect(DeepLinkHandler().debugInfo['has_pending_link'], isFalse);
+        await tester.pumpAndSettle();
+        expect(pushed, isEmpty);
+        expect(DeepLinkHandler().debugInfo['has_pending_link'], isTrue);
+      },
+    );
+
+    testWidgets(
+      'before the app has a screen, a shared link is kept for later',
+      (tester) async {
+        DeepLinkHandler().onLinkWhileRunning('https://butlery.se/recipe?id=1');
+        expect(DeepLinkHandler().debugInfo['has_pending_link'], isTrue);
       },
     );
 
@@ -182,6 +187,59 @@ void main() {
       await tester.pumpAndSettle();
       expect(pushed.single.name, Routes.setNewPassword);
       expect(pushed.single.arguments, 'abc');
+    });
+  });
+
+  group('the stream replaying the link that started the app', () {
+    final started = DateTime(2026, 11, 7, 12);
+    const link = 'https://butlery.se/recipe?id=1';
+    bool replay(String l, {String? start = link, int seconds = 1}) =>
+        DeepLinkHandler.isReplayOfStartLink(
+          link: l,
+          startLink: start,
+          startedAt: start == null ? null : started,
+          now: started.add(Duration(seconds: seconds)),
+        );
+
+    testWidgets('onLinkWhileRunning swallows it only inside the window', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      bool parked(String l, int seconds) {
+        DeepLinkHandler()
+          ..reset()
+          ..debugSeedStartLink(link, started);
+        withClock(
+          Clock.fixed(started.add(Duration(seconds: seconds))),
+          () => DeepLinkHandler().onLinkWhileRunning(l),
+        );
+        return DeepLinkHandler().debugInfo['has_pending_link'] as bool;
+      }
+
+      expect(parked(link, 1), isFalse);
+      expect(parked(link, 6), isTrue);
+      expect(parked('https://butlery.se/menu?id=2', 1), isTrue);
+    });
+
+    test('is swallowed right after the start', () {
+      expect(replay(link), isTrue);
+    });
+
+    test('is handled when the same link is tapped later', () {
+      expect(replay(link, seconds: 6), isFalse);
+    });
+
+    test('is handled when it is a different link', () {
+      expect(replay('https://butlery.se/menu?id=2'), isFalse);
+    });
+
+    test('is handled when the app was not started by a link', () {
+      expect(replay(link, start: null), isFalse);
+    });
+
+    test('leaves mail action links to their own guard', () {
+      final reset = _resetLink('abc');
+      expect(replay(reset, start: reset), isFalse);
     });
   });
 }

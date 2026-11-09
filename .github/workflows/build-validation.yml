@@ -144,9 +144,29 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
+    # The action's own installer fetches the binary from get.trivy.dev, which
+    # GitHub runners could not resolve on 2026-11-03 (BUT-2502). The same
+    # release on GitHub, checked against its checksum file, does not depend
+    # on that host.
+    - name: Install Trivy from GitHub releases
+      env:
+        TRIVY_VERSION: '0.70.0'
+      run: |
+        set -euo pipefail
+        base="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+        tarball="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+        cd "$RUNNER_TEMP"
+        curl -fsSL --retry 3 -o "$tarball" "$base/$tarball"
+        curl -fsSL --retry 3 -o checksums.txt "$base/trivy_${TRIVY_VERSION}_checksums.txt"
+        grep " ${tarball}\$" checksums.txt | sha256sum -c -
+        mkdir -p trivy-bin
+        tar -xzf "$tarball" -C trivy-bin trivy
+        echo "$RUNNER_TEMP/trivy-bin" >> "$GITHUB_PATH"
+
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 — BUT-790 SHA-pin
       with:
+        skip-setup-trivy: true
         scan-type: 'fs'
         scan-ref: '.'
         severity: 'HIGH,CRITICAL'
@@ -245,6 +265,10 @@ jobs:
       shell: bash
       run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
+    - name: Free disk space
+      if: matrix.platform == 'android'
+      run: scripts/ci_free_disk.sh
+
     - name: Setup Flutter
       uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
@@ -286,6 +310,16 @@ jobs:
         keyAlias=$KEY_ALIAS
         storeFile=upload-keystore.jks
         EOF
+
+    # ubuntu-latest's default JDK moved to 25, which Gradle 8.13 cannot run on
+    # ("Unsupported class file major version 69"); pin the JDK the other
+    # Gradle-running workflows use.
+    - name: Setup Java
+      if: matrix.platform == 'android'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
 
     - name: Setup Gradle
       if: matrix.platform == 'android'

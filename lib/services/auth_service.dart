@@ -232,7 +232,7 @@ class AuthService extends ChangeNotifier
     } on FirebaseAuthException catch (e) {
       setLoading(false);
       AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
-      _handleAuthError(e);
+      handleAccountAuthError(e, passwordSignIn: true);
       await _analyticsService.logEvent(
         name: AnalyticsEvents.authFailed,
         parameters: {

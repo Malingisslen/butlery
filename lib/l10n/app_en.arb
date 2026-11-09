@@ -457,8 +457,18 @@
   "errorNetwork": "Network error. Check your internet connection.",
   "errorServer": "Server error. Please try again later.",
   "errorAuthentication": "Authentication error. Please sign in again.",
+  "errorAuthenticationWithCode": "Authentication error ({code}). Please sign in again.",
+  "@errorAuthenticationWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "errorSignupNotInvited": "Butlery is open to invited people only right now.",
   "errorSignupGateUnavailable": "The account could not be created right now. Please try again in a moment.",
+  "errorSignupRefusedUnmarked": "Butlery is open to invited people only right now. Have you been invited? Please try again in a moment.",
+  "errorPasswordResetLinkFailed": "The email for a new password could not be sent right now. Please try again later.",
   "errorSignInEmailUnverified": "Confirm your email through the link we sent. Can't find it? Choose Forgot password.",
   "errorPermissionDenied": "You don't have permission to perform this action.",
   "errorPageNotFound": "The page could not be found",
@@ -3390,6 +3400,16 @@
       }
     }
   },
+  "menuSharedLabel": "Shared",
+  "menuSharedWithTitle": "{name} is shared with",
+  "@menuSharedWithTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "menuSharedWithMissing": "Some people cannot be shown right now.",
   "menuSavedEarlier": "Saved earlier",
   "menuSaveTitle": "Save menu",
   "menuShareWithFriendsDescription": "Share this menu with selected friends",
@@ -5725,8 +5745,8 @@
   "adminCopyFailed": "Could not copy to clipboard",
   "adminRefresh": "Refresh",
   "adminNavFeedback": "Feedback",
-  "adminNavImport": "Import health",
-  "adminImportTitle": "Import health",
+  "adminNavImport": "Recipe import",
+  "adminImportTitle": "Recipe import",
   "adminImportColDomain": "Domain",
   "adminImportColSuccess": "Success",
   "adminImportColFailure": "Failed",
@@ -5735,8 +5755,8 @@
   "adminImportSummarySuccess": "Successful",
   "adminImportSummaryFailure": "Failed",
   "adminImportSummaryRate": "Success rate",
-  "adminNavEngagement": "Engagement",
-  "adminEngagementTitle": "Engagement",
+  "adminNavEngagement": "Usage",
+  "adminEngagementTitle": "Usage",
   "adminEngagementUsers": "Total users",
   "adminEngagementActiveToday": "Active today",
   "adminEngagementActive7d": "Active 7 days",
@@ -5747,8 +5767,8 @@
   "adminEngagementColShared": "Shared",
   "adminEngagementColPlanned": "Planned",
   "adminEngagementColShopped": "Shopped",
-  "adminNavParsing": "Parsing details",
-  "adminParsingTitle": "Parsing details",
+  "adminNavParsing": "Import corrections",
+  "adminParsingTitle": "Import corrections",
   "adminParsingEmpty": "No corrections yet",
   "adminParsingColDomain": "Domain",
   "adminParsingIssueTitle": "Title",
@@ -5765,9 +5785,9 @@
   "adminRecipesMethodText": "Text paste",
   "adminRecipesMethodSocial": "Social media",
   "adminRecipesMethodManual": "Manual / unknown",
-  "adminNavOps": "Ops",
-  "adminNavGuestList": "Guest list",
-  "adminGuestListTitle": "Guest list",
+  "adminNavOps": "System events",
+  "adminNavGuestList": "Invited",
+  "adminGuestListTitle": "Invited",
   "adminGuestListLoading": "Loading the guest list …",
   "adminGuestListLoadFailed": "Couldn't load the guest list",
   "adminGuestListEmpty": "Nobody is invited yet",
@@ -5791,7 +5811,7 @@
   "adminGuestListDuplicate": "That address is already invited.",
   "adminGuestListSaveFailed": "Couldn't save. Try again.",
   "adminNavIngredients": "Ingredients",
-  "adminNavTagRules": "Tag rules",
+  "adminNavTagRules": "Allergen and diet rules",
   "adminIngredientsTitle": "Ingredients",
   "adminIngredientsLoading": "Loading ingredients …",
   "adminIngredientsLoadFailed": "Couldn't load the ingredients. The list can't be shown until loading succeeds.",
@@ -5854,7 +5874,7 @@
   "adminIngredientFieldUpdated": "Updated",
   "adminIngredientYes": "Yes",
   "adminIngredientNo": "No",
-  "adminTagRulesTitle": "Tag rules",
+  "adminTagRulesTitle": "Allergen and diet rules",
   "adminTagRulesLoadFailed": "The tag configuration isn't loaded.",
   "adminTagRulesAllergens": "Allergens",
   "adminTagRulesDiets": "Diets",
@@ -5862,7 +5882,7 @@
   "adminTagRulesEuAllergen": "EU allergen",
   "adminTagRulesExcluded": "Broken by",
   "adminTagRulesRequired": "Requires",
-  "adminOpsTitle": "Operations",
+  "adminOpsTitle": "System events",
   "adminOpsEmpty": "No operations events yet",
   "adminOpsColType": "Type",
   "adminOpsColTime": "Time",
@@ -7688,7 +7708,6 @@
     }
   },
   "errorCouldNotSendInvitations": "Could not send invitations",
-  "shareDefaultShoppingListMessage": "Sharing this shopping list with you.",
   "shoppingListAllDone": "{count, plural, =1{1 item done} other{All {count} items done}}",
   "@shoppingListAllDone": {
     "placeholders": {
@@ -13245,6 +13264,75 @@
   "@settingsAccountTwoStep": {
     "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
   },
+  "settingsSessionsSection": "Sessions",
+  "@settingsSessionsSection": {
+    "description": "BUT-2481: section heading on Konto & s\u00e4kerhet"
+  },
+  "settingsSignOutEverywhereTitle": "Sign out of all devices",
+  "@settingsSignOutEverywhereTitle": {
+    "description": "BUT-2481: row on Konto & s\u00e4kerhet"
+  },
+  "settingsSignOutEverywhereHint": "Signs out all your other devices. You stay signed in here.",
+  "@settingsSignOutEverywhereHint": {
+    "description": "BUT-2481: supporting text under the row"
+  },
+  "signOutEverywhereDialogTitle": "Sign out other devices?",
+  "@signOutEverywhereDialogTitle": {
+    "description": "BUT-2481: confirmation dialog title"
+  },
+  "signOutEverywhereDialogBody": "Other devices may keep working for up to an hour before they are signed out. You stay signed in here.",
+  "@signOutEverywhereDialogBody": {
+    "description": "BUT-2481: confirmation dialog body, honest about the delay"
+  },
+  "signOutEverywhereConfirm": "Sign them out",
+  "@signOutEverywhereConfirm": {
+    "description": "BUT-2481: confirm button"
+  },
+  "signOutEverywhereReauthTitle": "Confirm it's you",
+  "@signOutEverywhereReauthTitle": {
+    "description": "BUT-2481: re-login dialog title"
+  },
+  "signOutEverywhereReauthBody": "For security you need to sign in with {provider} again before other devices are signed out.",
+  "@signOutEverywhereReauthBody": {
+    "description": "BUT-2481: re-login dialog body",
+    "placeholders": {
+      "provider": {"type": "String", "example": "Google eller Apple"}
+    }
+  },
+  "signOutEverywhereReauthAction": "Sign in with {provider}",
+  "@signOutEverywhereReauthAction": {
+    "description": "BUT-2481: re-login dialog button",
+    "placeholders": {
+      "provider": {"type": "String", "example": "Google eller Apple"}
+    }
+  },
+  "signOutEverywhereDone": "Done. Other devices may keep working for up to an hour, then they are signed out.",
+  "@signOutEverywhereDone": {
+    "description": "BUT-2481: snackbar after success"
+  },
+  "signOutEverywhereReauthNeeded": "Sign in again with Google or Apple and try again.",
+  "@signOutEverywhereReauthNeeded": {
+    "description": "BUT-2481: failure, server wants a fresh sign-in"
+  },
+  "signOutEverywhereRateLimited": "You have tried too many times. Try again later.",
+  "@signOutEverywhereRateLimited": {
+    "description": "BUT-2481: failure, rate limited"
+  },
+  "signOutEverywhereFailed": "Could not sign out other devices. Try again.",
+  "@signOutEverywhereFailed": {
+    "description": "BUT-2481: failure, nothing changed"
+  },
+  "signOutEverywhereSignedOut": "Other devices are signed out, but this one could not continue. Sign in again.",
+  "@signOutEverywhereSignedOut": {
+    "description": "BUT-2481: this device was signed out after the swap failed"
+  },
+  "signOutEverywhereNotice": "Your other devices were signed out {when}. Not you? Change your Google or Apple password.",
+  "@signOutEverywhereNotice": {
+    "description": "BUT-2481: notice at next sign-in",
+    "placeholders": {
+      "when": {"type": "String", "example": "7 november"}
+    }
+  },
   "settingsYourChoicesSection": "Your choices",
   "@settingsYourChoicesSection": {
     "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
@@ -14650,6 +14738,48 @@
   "@motivationMisattributionNameRemoved": {
     "description": "BUT-2353: motivation text, key misattribution_name_removed"
   },
+  "decisionSubjectImage": "{who, select, owner{Your image} other{An image}}",
+  "@decisionSubjectImage": {
+    "description": "BUT-818: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorContentTypeImage": "Image",
+  "@moderatorContentTypeImage": {
+    "description": "BUT-818: content type label for an image removed by the automatic check"
+  },
+  "reportReasonExplicitImage": "Inappropriate image (automatic check)",
+  "@reportReasonExplicitImage": {
+    "description": "BUT-818: reason of the report the server files when the automatic image check stops an image; never offered in the report dialog."
+  },
+  "motivationRemovedAutomatedImage": "The image was stopped by the automatic image check because it is very likely sexual or violent. The decision was made automatically. If you appeal, a moderator reviews the image.",
+  "@motivationRemovedAutomatedImage": {
+    "description": "BUT-818: motivation text, key removed_automated_image"
+  },
+  "moderatorAppealShowImage": "Show the image",
+  "@moderatorAppealShowImage": {
+    "description": "BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator"
+  },
+  "moderatorAppealImagesOmitted": "{count, plural, =1{1 image could not be shown} other{{count} images could not be shown}}",
+  "@moderatorAppealImagesOmitted": {
+    "description": "BUT-818: note when some quarantined images were too large or missing to show",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorAppealImagesTitle": "Stopped images",
+  "@moderatorAppealImagesTitle": {
+    "description": "BUT-818: title of the moderator dialog showing quarantined images"
+  },
+  "moderatorAppealImagesFailed": "The image could not be loaded.",
+  "@moderatorAppealImagesFailed": {
+    "description": "BUT-818: shown when the quarantined image could not be fetched"
+  },
   "myContentDecisionsTitle": "Decisions about my content",
   "@myContentDecisionsTitle": {
     "description": "BUT-2353: title of the owner decision list and the row that opens it"
@@ -15249,6 +15379,13 @@
   "authContinueWithApple": "Continue with Apple",
   "@authContinueWithApple": {
     "description": "BUT-549: Sign in with Apple button on the sign-in screen"
+  },
+  "authProviderFailedWithCode": "Signing in with {provider} did not work. Try again. (Error code: {code})",
+  "@authProviderFailedWithCode": {
+    "placeholders": {
+      "provider": {"type": "String"},
+      "code": {"type": "String"}
+    }
   },
   "authProviderFailed": "Signing in with {provider} did not work. Try again.",
   "@authProviderFailed": {
@@ -17679,7 +17816,7 @@
       }
     }
   },
-  "adminNavProposals": "Proposals",
+  "adminNavProposals": "Pending proposals",
   "adminProposalsTitle": "Pending proposals",
   "adminProposalsLoadFailed": "Could not load the proposals. The list cannot be shown until loading succeeds.",
   "adminProposalsEmpty": "No pending proposals",
@@ -17719,6 +17856,41 @@
   "@adminProposalWhen": {"placeholders": {"date": {"type": "String"}}},
   "adminProposalBatchMark": "Part of a bulk change",
   "adminProposalPendingMark": "Pending proposal",
+  "adminProposalSectionPending": "Waiting",
+  "adminProposalSectionInReview": "In review",
+  "adminProposalSectionConflict": "Conflict",
+  "adminProposalSectionRejected": "Rejected",
+  "adminProposalSectionApplied": "Recently applied",
+  "adminProposalDecidedLoadFailed": "Could not load rejected and applied proposals.",
+  "adminProposalCreateReview": "Create review",
+  "adminProposalCreateReviewTitle": "Create review?",
+  "adminProposalCreateReviewMessage": "{count} proposals go into a review on GitHub. Nothing changes in the ingredient file until the review is approved there.",
+  "@adminProposalCreateReviewMessage": {"placeholders": {"count": {"type": "int"}}},
+  "adminProposalReviewCreated": "Review created: {changes, plural, =1{1 change} other{{changes} changes}}, {conflicts, plural, =1{1 conflict} other{{conflicts} conflicts}}",
+  "@adminProposalReviewCreated": {"placeholders": {"changes": {"type": "int"}, "conflicts": {"type": "int"}}},
+  "adminProposalOpenOnGithub": "Open on GitHub",
+  "adminProposalPullRequest": "Review #{number}",
+  "@adminProposalPullRequest": {"placeholders": {"number": {"type": "int"}}},
+  "adminProposalConflictCsv": "Value in the file: {value}",
+  "@adminProposalConflictCsv": {"placeholders": {"value": {"type": "String"}}},
+  "adminProposalConflictOld": "Your old: {value}",
+  "@adminProposalConflictOld": {"placeholders": {"value": {"type": "String"}}},
+  "adminProposalConflictNew": "Your new: {value}",
+  "@adminProposalConflictNew": {"placeholders": {"value": {"type": "String"}}},
+  "adminProposalReasonCsvMismatch": "The file has a different value than the one you started from. The row changed after you proposed.",
+  "adminProposalReasonMissingRow": "The ingredient is no longer in the file.",
+  "adminProposalReasonNoChange": "The file already has that value, so nothing needed changing.",
+  "adminProposalReasonWriteFailed": "The change could not be written to the file.",
+  "adminProposalReasonInvalid": "The server did not accept the value. Propose the change again with a valid value.",
+  "adminReviewErrorNotAdmin": "You are not allowed to create a review.",
+  "adminReviewErrorLocked": "A review is being created right now. Try again in a moment.",
+  "adminReviewErrorTooMany": "Too many proposals are waiting for a single review. Withdraw some and try again.",
+  "adminReviewErrorNotConfigured": "The GitHub connection is not set up yet.",
+  "adminReviewErrorUnavailable": "GitHub is not responding right now. Try again in a moment.",
+  "adminReviewErrorForeignCommits": "Someone else has changed the review branch on GitHub. Ask Claude to take a look.",
+  "adminReviewErrorMainMoved": "The ingredient file changed in the meantime. Try again.",
+  "adminReviewErrorRateLimited": "You created too many reviews in a short time. Wait a moment.",
+  "adminReviewErrorOther": "Could not create the review. Try again.",
   "adminBulkSetStatus": "Set status on selected",
   "adminBulkSelectedCount": "{count} selected",
   "@adminBulkSelectedCount": {"placeholders": {"count": {"type": "String"}}},
@@ -17748,6 +17920,100 @@
   "adminIssueTooMany": "At most {max} entries.",
   "@adminIssueTooMany": {"placeholders": {"max": {"type": "String"}}},
   "adminIssuePrice": "The price must be a number, zero or greater.",
+  "adminOccasionGroupChristmas": "Christmas",
+  "adminOccasionGroupLucia": "Lucia",
+  "adminOccasionGroupEaster": "Easter",
+  "adminOccasionGroupMidsummer": "Midsummer",
+  "adminOccasionGroupCrayfish": "Crayfish party",
+  "adminOccasionGroupNewYear": "New Year",
+  "adminOccasionGroupSpring": "Spring",
+  "adminOccasionGroupSummer": "Summer",
+  "adminOccasionGroupAutumn": "Autumn",
+  "adminOccasionGroupWinter": "Winter",
+  "adminOccasionGroupLuxury": "Luxury",
+  "adminOccasionGroupTitleKeywords": "Title words",
+  "adminOccasionFieldTitleStemFalsePositives": "Words starting with jul that are not Christmas",
+  "adminOccasionFieldTitleWords": "Words in the title",
+  "adminOccasionFieldMainIngredients": "Main ingredients",
+  "adminOccasionFieldSideIngredients": "Side dishes",
+  "adminOccasionFieldSaffronIngredients": "Saffron",
+  "adminOccasionFieldBakeTitleWords": "Baked goods in the title",
+  "adminOccasionFieldLambIngredients": "Lamb",
+  "adminOccasionFieldEggIngredients": "Eggs",
+  "adminOccasionFieldHerringIngredients": "Herring",
+  "adminOccasionFieldNewPotatoIngredients": "New potatoes",
+  "adminOccasionFieldStrawberryIngredients": "Strawberries",
+  "adminOccasionFieldCreamIngredients": "Cream and ice cream",
+  "adminOccasionFieldIngredients": "Ingredients",
+  "adminOccasionFieldDillIngredients": "Dill",
+  "adminOccasionFieldStarkSet": "Hearty: sets the tag",
+  "adminOccasionFieldStarkBoost": "Hearty: boosts",
+  "adminOccasionFieldLyxigSet": "Luxurious: sets the tag",
+  "adminOccasionFieldLyxigBoost": "Luxurious: boosts",
+  "adminOccasionFieldComfortFoodSet": "Comfort food: sets the tag",
+  "adminOccasionFieldComfortFoodBoost": "Comfort food: boosts",
+  "adminOccasionFieldBarnvanligConfirm": "Child-friendly: confirms",
+  "adminOccasionFieldBarnvanligBoost": "Child-friendly: boosts",
+  "adminOccasionFieldSnabblagatSet": "Quick to make: sets the tag",
+  "adminOccasionFieldSnabblagatBoost": "Quick to make: boosts",
+  "adminOccasionListName": "{group}: {field}",
+  "@adminOccasionListName": {"placeholders": {"group": {"type": "String"}, "field": {"type": "String"}}},
+  "adminOccasionListsTitle": "Word lists for holidays and title words",
+  "adminOccasionListsInfo": "A change becomes a proposal in the Proposals tab. It reaches users only in the next app version.",
+  "adminOccasionListEdit": "Edit",
+  "adminOccasionEditTitle": "Edit the word list: {name}",
+  "@adminOccasionEditTitle": {"placeholders": {"name": {"type": "String"}}},
+  "adminOccasionWordsLabel": "Words, one per line",
+  "adminOccasionWordsHelp": "One word or phrase per line. Capital letters are made lower case.",
+  "adminOccasionErrorEmpty": "The list must not be empty.",
+  "adminOccasionErrorTooMany": "The list can have at most {max} words.",
+  "@adminOccasionErrorTooMany": {"placeholders": {"max": {"type": "int"}}},
+  "adminOccasionErrorTooLong": "A word can be at most {max, plural, =1{1 character} other{{max} characters}}.",
+  "@adminOccasionErrorTooLong": {"placeholders": {"max": {"type": "int"}}},
+  "adminOccasionErrorInvalid": "Words can only have letters, digits, apostrophes and hyphens, with single spaces between words.",
+  "adminOccasionErrorDuplicate": "That word is already in the list.",
+  "adminOccasionWordsAdded": "Added: {words}",
+  "@adminOccasionWordsAdded": {"placeholders": {"words": {"type": "String"}}},
+  "adminOccasionWordsRemoved": "Removed: {words}",
+  "@adminOccasionWordsRemoved": {"placeholders": {"words": {"type": "String"}}},
+  "adminOccasionWordsReordered": "Same words in a new order",
+  "adminOccasionWordsMain": "Currently in the app's word list: {words}",
+  "@adminOccasionWordsMain": {"placeholders": {"words": {"type": "String"}}},
+  "adminOccasionSaved": "The proposal is saved. It shows in the Proposals tab and reaches users only in the next app version.",
+  "adminProposalReasonFileMismatch": "The word list in the app has changed since you proposed. Propose the change again from the current list.",
+  "adminProposalCreateReviewMessageWithLists": "{count} proposals are put into reviews on GitHub, {lists} of them for word lists. Nothing changes in the ingredient file or the word lists until the review is approved there.",
+  "@adminProposalCreateReviewMessageWithLists": {"placeholders": {"count": {"type": "int"}, "lists": {"type": "int"}}},
+  "adminProposalWordListReviewCreated": "Word lists: {changes, plural, =1{1 change} other{{changes} changes}}, {conflicts, plural, =1{1 conflict} other{{conflicts} conflicts}}",
+  "@adminProposalWordListReviewCreated": {"placeholders": {"changes": {"type": "int"}, "conflicts": {"type": "int"}}},
+  "adminProposalWordListReviewFailed": "The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.",
+  "adminNavOverview": "Overview",
+  "adminOverviewTitle": "Overview",
+  "adminOverviewAllClearTitle": "Everything looks normal",
+  "adminOverviewAllClearBody": "No new reports or proposals are waiting and imports are going well. Nothing needs doing right now.",
+  "adminOverviewNeedsAction": "{count, plural, =1{1 thing needs your attention} other{{count} things need your attention}}",
+  "@adminOverviewNeedsAction": {"placeholders": {"count": {"type": "int"}}},
+  "adminOverviewAnomaliesAdvice": "The numbers differ from the usual. Open Recipe import and see whether a site has stopped working. A single deviation can also just be an unusually quiet or busy day.",
+  "adminOverviewImportFailuresAdvice": "{percent} % of imports fail. Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.",
+  "@adminOverviewImportFailuresAdvice": {"placeholders": {"percent": {"type": "int"}}},
+  "adminOverviewSomeUnavailable": "Some numbers could not be loaded",
+  "adminOverviewStatusOk": "Looks good",
+  "adminOverviewStatusNeedsLook": "Needs a look",
+  "adminOverviewStatusUnavailable": "Could not be loaded",
+  "adminOverviewStatusNoSignal": "No automatic check",
+  "adminOverviewOpen": "Open",
+  "adminOverviewFeedbackAdvice": "{count, plural, =1{1 new report is waiting. Read it and mark it as handled when you are done.} other{{count} new reports are waiting. Read them and mark them as handled when you are done.}}",
+  "@adminOverviewFeedbackAdvice": {"placeholders": {"count": {"type": "int"}}},
+  "adminOverviewFeedbackManyAdvice": "At least {count} new reports are waiting. Read the newest first and mark them as handled when you are done.",
+  "@adminOverviewFeedbackManyAdvice": {"placeholders": {"count": {"type": "int"}}},
+  "adminOverviewFeedbackOk": "No new reports are waiting.",
+  "adminOverviewProposalsAdvice": "{count, plural, =1{1 proposal is waiting for your decision. Open it and approve or reject.} other{{count} proposals are waiting for your decision. Open them and approve or reject.}}",
+  "@adminOverviewProposalsAdvice": {"placeholders": {"count": {"type": "int"}}},
+  "adminOverviewProposalsManyAdvice": "At least {count} proposals are waiting for your decision. Open the list and approve or reject, and the rest will show.",
+  "@adminOverviewProposalsManyAdvice": {"placeholders": {"count": {"type": "int"}}},
+  "adminOverviewProposalsOk": "No proposals are waiting.",
+  "adminOverviewImportOk": "Imports are going well and no unusual swings have been detected.",
+  "adminOverviewNoSignalAdvice": "The overview does not measure this tab. Open it when you want a closer look.",
+  "adminOverviewUnavailableAdvice": "The number could not be loaded, so it is not possible to say whether anything needs doing. Try again with Refresh.",
   "adminNavAcquisition": "Channels",
   "adminAcquisitionTitle": "New users per channel",
   "adminAcquisitionLoadFailed": "Could not load the channel count. The table cannot be shown until loading succeeds.",

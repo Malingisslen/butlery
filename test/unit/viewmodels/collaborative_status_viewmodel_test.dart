@@ -47,11 +47,8 @@ void main() {
   // Helper to stub recipe-shared checks
   void stubRecipeShared({bool shared = true}) {
     when(
-      () => mockSocial.isRecipeSharedByUser(any(), any()),
-    ).thenAnswer((_) async => shared);
-    when(
-      () => mockSocial.getRecipeParticipants(any()),
-    ).thenAnswer((_) async => []);
+      () => mockSocial.getOwnRecipeParticipants(any(), any()),
+    ).thenAnswer((_) async => shared ? <UserProfile>[] : null);
   }
 
   group('Initialization', () {
@@ -180,10 +177,7 @@ void main() {
 
   group('Async Recipe Status Check', () {
     test('should cache status after async check', () async {
-      when(
-        () => mockSocial.isRecipeSharedByUser(any(), any()),
-      ).thenAnswer((_) async => true);
-      when(() => mockSocial.getRecipeParticipants(any())).thenAnswer(
+      when(() => mockSocial.getOwnRecipeParticipants(any(), any())).thenAnswer(
         (_) async => [
           UserProfile(
             uid: 'u1',
@@ -204,9 +198,21 @@ void main() {
       expect(cached.isValid, isTrue);
     });
 
+    test('a recipe the user has not shared is not collaborative', () async {
+      stubRecipeShared(shared: false);
+
+      viewModel.getRecipeCollaborativeStatus('recipe_1', null);
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final cached = viewModel.getRecipeCollaborativeStatus('recipe_1', null);
+      expect(cached.isCollaborative, isFalse);
+      expect(cached.participants, isEmpty);
+      expect(cached.isValid, isTrue);
+    });
+
     test('should store error on async failure', () async {
       when(
-        () => mockSocial.isRecipeSharedByUser(any(), any()),
+        () => mockSocial.getOwnRecipeParticipants(any(), any()),
       ).thenThrow(Exception('Network error'));
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
@@ -392,15 +398,12 @@ void main() {
     });
 
     test('should not check same content concurrently', () async {
-      when(() => mockSocial.isRecipeSharedByUser(any(), any())).thenAnswer((
+      when(() => mockSocial.getOwnRecipeParticipants(any(), any())).thenAnswer((
         _,
       ) async {
         await Future.delayed(const Duration(milliseconds: 50));
-        return true;
+        return <UserProfile>[];
       });
-      when(
-        () => mockSocial.getRecipeParticipants(any()),
-      ).thenAnswer((_) async => []);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
@@ -408,7 +411,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 150));
 
       verify(
-        () => mockSocial.isRecipeSharedByUser('recipe_1', any()),
+        () => mockSocial.getOwnRecipeParticipants('recipe_1', any()),
       ).called(1);
     });
   });
@@ -436,10 +439,10 @@ void main() {
       );
 
       verify(
-        () => mockSocial.isRecipeSharedByUser('recipe_1', any()),
+        () => mockSocial.getOwnRecipeParticipants('recipe_1', any()),
       ).called(1);
       verify(
-        () => mockSocial.isRecipeSharedByUser('recipe_2', any()),
+        () => mockSocial.getOwnRecipeParticipants('recipe_2', any()),
       ).called(1);
       verify(() => mockSocial.isMenuSharedByUser('menu_1', any())).called(1);
       verify(
@@ -452,11 +455,8 @@ void main() {
 
     test('should skip already cached items in batch', () async {
       when(
-        () => mockSocial.isRecipeSharedByUser('recipe_1', any()),
-      ).thenAnswer((_) async => true);
-      when(
-        () => mockSocial.getRecipeParticipants('recipe_1'),
-      ).thenAnswer((_) async => []);
+        () => mockSocial.getOwnRecipeParticipants('recipe_1', any()),
+      ).thenAnswer((_) async => <UserProfile>[]);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       await Future.delayed(const Duration(milliseconds: 100));
@@ -466,9 +466,9 @@ void main() {
 
       await viewModel.batchCheckContent(recipeIds: ['recipe_1', 'recipe_2']);
 
-      verifyNever(() => mockSocial.isRecipeSharedByUser('recipe_1', any()));
+      verifyNever(() => mockSocial.getOwnRecipeParticipants('recipe_1', any()));
       verify(
-        () => mockSocial.isRecipeSharedByUser('recipe_2', any()),
+        () => mockSocial.getOwnRecipeParticipants('recipe_2', any()),
       ).called(1);
     });
 
@@ -480,7 +480,7 @@ void main() {
       final vm = CollaborativeStatusViewModel(socialRecipeService: mockSocial);
 
       await vm.batchCheckContent(recipeIds: ['recipe_1']);
-      verifyNever(() => mockSocial.isRecipeSharedByUser(any(), any()));
+      verifyNever(() => mockSocial.getOwnRecipeParticipants(any(), any()));
       vm.dispose();
     });
   });
@@ -525,7 +525,7 @@ void main() {
 
     test('should store error on async failure', () async {
       when(
-        () => mockSocial.isRecipeSharedByUser(any(), any()),
+        () => mockSocial.getOwnRecipeParticipants(any(), any()),
       ).thenThrow(Exception('Service error'));
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
@@ -554,13 +554,10 @@ void main() {
       (
         tester,
       ) async {
-        final answer = Completer<bool>();
+        final answer = Completer<List<UserProfile>?>();
         when(
-          () => mockSocial.isRecipeSharedByUser(any(), any()),
+          () => mockSocial.getOwnRecipeParticipants(any(), any()),
         ).thenAnswer((_) => answer.future);
-        when(
-          () => mockSocial.getRecipeParticipants(any()),
-        ).thenAnswer((_) async => []);
         final vm = CollaborativeStatusViewModel(
           socialRecipeService: mockSocial,
         );
@@ -570,7 +567,7 @@ void main() {
         vm.getRecipeCollaborativeStatus('recipe_1', null);
         final beforeDispose = notified;
         vm.dispose();
-        answer.complete(true);
+        answer.complete(<UserProfile>[]);
         await tester.pump();
         await tester.pump();
 

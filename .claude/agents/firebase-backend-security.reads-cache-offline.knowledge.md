@@ -152,6 +152,12 @@
   listener. `JsonCacheHelper.saveJson` swallows its own "user not set" error and returns
   false, so a signed-out cache write does not stop the screen callback after it. Capture the
   uid at delivery and drop the item if it changed after the last await.
+- A TTL read cache added to save reads must be graded by the LIFETIME OF ITS OWNER, not
+  the call it was written for: on an app-scope lazy singleton it outlives every per-view
+  factory VM above it, so a view reopened right after the user's own write (share,
+  revoke) reads the pre-write answer that a fresh VM used to re-fetch, and the VM may
+  then hold it for its own TTL. Grep the DI scope of both layers, and require every
+  WRITER of the cached fact to invalidate, or dedupe inside the one call that asks twice.
 - Per-item analytics loops over a REPLACEMENT set double-count on regeneration — log once
   with a count. A consent check with no in-flight dedupe means N fire-and-forget events on a
   cold cache issue N concurrent reads — wrap the whole emit in one `unawaited(...)`.

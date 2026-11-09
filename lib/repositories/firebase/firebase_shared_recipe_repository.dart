@@ -55,6 +55,7 @@ import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 import 'package:butlery/repositories/firebase/shared_content/shared_recipe_view_repository.dart';
 import 'package:butlery/repositories/firebase/shared_content/shared_recipe_engagement_repository.dart';
 import 'package:butlery/repositories/firebase/shared_content/shared_recipe_dismissal_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_owner_lookup.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -288,6 +289,10 @@ class FirebaseSharedRecipeRepository
     // Use subcollection-based query (Issue #014: Unlimited sharing support)
     return await getSharedContentForUserViaSubcollection(userId);
   }
+
+  /// Rows the current user shared of one of their own recipes (BUT-1504).
+  SharedRecipeOwnerLookup get ownShares =>
+      SharedRecipeOwnerLookup(getCollectionRef(), requireCurrentUserId);
 
   /// Get specific shared recipe by ID
   Future<SharedRecipe?> getSharedRecipe(String recipeId) async {

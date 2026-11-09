@@ -4744,3 +4744,9 @@ Date: 2026-10-31
 Trigger: Steg 4b, beslutskort om omläsning av recept. Jag skrev till Malin att importen alltid läser med logik först och AI bara som reserv. För webbrecept stämmer det, men en första import av ett Instagram- eller TikTok-inlägg eller en YouTube-video går direkt till AI. Malin fattade sitt beslut på den felaktiga meningen och fick en rättelse efteråt.
 Rule: Innan du säger hur en funktion använder AI till Malin, öppna strategin för VARJE indatatyp och säg det per väg. Ett påstående om "importen" är ett påstående om alla importvägar.
 Example: 2026-10-31 — meningen struken i tråden, rättelsen skickad; omläsningen byggdes därefter med AI som reserv bara för bildtexter och videotext.
+
+### En plattformsflagga som testerna själva sätter testar ingenting (2026-11-03)
+Date: 2026-11-03
+Trigger: BUT-2502. `beforeSignInAllowlist` släppte igenom registreringens första inloggning bara om `additionalUserInfo.isNewUser` var sann. firebase-functions sätter den bara för `beforeCreate`, så varje registrering med lösenord nekades i prod. Alla enhetstester skickade in flaggan för hand och var gröna. Samma kväll trodde jag att en profilsparning nekades för att appen skickade `isMinor`; granskaren läste `toFirestore()` och visade att nyckeln aldrig skickas. Jag hade läst `toJson()`.
+Rule: Testa plattformens fält genom den riktiga omslagsfunktionen (`.run` med händelsen som emulatorn faktiskt skickar), inte genom ett tal du väljer själv. Innan du säger att en skrivning innehåller en nyckel: skicka den exakta map som skrivvägen bygger (dumpa den ur koden) mot reglerna i emulatorn.
+Example: 2026-11-03 — emulatorn gav samma sekvens som prod; testet genom `.run` rodnar när omslaget återställs till `isNewUser`.

@@ -21,6 +21,11 @@
 import * as admin from "firebase-admin";
 import { ALLERGEN_RELEVANT_PROPERTIES } from "../shared/allergen-properties";
 import { stripDiacritics } from "../shared/swedish-normalize";
+import {
+  COMPARED_FIELDS,
+  comparableIngredient,
+  comparedFieldEquals,
+} from "./ingredient-compare";
 
 // Allergen block of the property vocabulary. Every entry MUST also be in
 // ALLERGEN_RELEVANT_PROPERTIES (pinned by sync-ingredients-diff.test.ts) so
@@ -231,68 +236,47 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
   return doc;
 }
 
-export function listEquals(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const setA = new Set(a);
-  const setB = new Set(b);
-  return [...setA].every((x) => setB.has(x)) && [...setB].every((x) => setA.has(x));
-}
+export { listEquals } from "./ingredient-compare";
 
 export function hasChanges(
   current: admin.firestore.DocumentData,
   newData: IngredientDoc
 ): boolean {
-  const stringFieldsToCompare = [
-    "swedish", "english", "group", "status",
-    "priceCategory", "carbonFootprintCategory", "notesSv", "notesEn",
-    "typicalStorage", "typicalUnit",
-  ];
-  for (const field of stringFieldsToCompare) {
-    if (String(current[field] || "") !== String(newData[field as keyof IngredientDoc] || "")) {
-      return true;
+  const a = comparableIngredient(current);
+  const b = comparableIngredient(newData);
+  return COMPARED_FIELDS.some((field) => !comparedFieldEquals(field, a, b));
+}
+
+/**
+ * The CSV tokenizer the sync reads the Sheet export with. Cells are trimmed
+ * and `""` unescaped; a quoted cell spanning lines is not supported (the
+ * caller splits on newlines first and fails closed on a short row).
+ */
+export function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += char;
     }
   }
 
-  const currentAvgPrice = current.avgPriceSek as number | undefined;
-  if (currentAvgPrice !== newData.avgPriceSek) {
-    return true;
-  }
-
-  const currentProps = (current.properties as string[]) || [];
-  if (!listEquals(currentProps, newData.properties)) {
-    return true;
-  }
-
-  const currentAliases = (current.aliasesSv as string[]) || [];
-  if (!listEquals(currentAliases, newData.aliasesSv)) {
-    return true;
-  }
-
-  // aliasesEn and searchTerms were historically not compared — Sheet edits
-  // touching only those columns never synced (xhigh review 2026-07-03).
-  const currentAliasesEn = (current.aliasesEn as string[]) || [];
-  if (!listEquals(currentAliasesEn, newData.aliasesEn)) {
-    return true;
-  }
-
-  const currentSearchTerms = (current.searchTerms as string[]) || [];
-  if (!listEquals(currentSearchTerms, newData.searchTerms)) {
-    return true;
-  }
-
-  // normalizedNames backfill (BUT-1468 gate): first sync after this ships
-  // updates every doc once to stamp the field; steady state compares equal.
-  const currentNormalized = (current.normalizedNames as string[]) || [];
-  if (!listEquals(currentNormalized, newData.normalizedNames)) {
-    return true;
-  }
-
-  const currentSeasons = (current.seasonAvailability as string[]) || [];
-  if (!listEquals(currentSeasons, newData.seasonAvailability || [])) {
-    return true;
-  }
-
-  return false;
+  result.push(current.trim());
+  return result;
 }
 
 /**

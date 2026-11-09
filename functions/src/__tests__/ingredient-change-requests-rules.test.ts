@@ -4,7 +4,9 @@
  *
  * Proves: only admins read or create; a create must be a pending proposal
  * by the caller, stamped with the server's time, with known columns and
- * bounded values; no client sets a server status or deletes.
+ * bounded values; a withdrawal is allowed from pending, conflict and
+ * inReview; no client sets a server status or field, or deletes; the run
+ * lock and run records are closed to every client.
  *
  * Prerequisite: Firestore emulator running (`firebase emulators:start
  * --only firestore`). Run with:
@@ -172,13 +174,22 @@ test("createdAt must be the server's time", async () => {
 });
 
 test("a create must start as pending", async () => {
-  for (const status of ["applied", "conflict", "rejected", "withdrawn"]) {
+  for (const status of ["applied", "conflict", "rejected", "withdrawn", "inReview"]) {
     await assertFails(admin().doc(`${COLLECTION}/c9-${status}`).set(proposal({ status })));
   }
 });
 
 test("an unknown top-level field is refused", async () => {
   await assertFails(admin().doc(`${COLLECTION}/c10`).set(proposal({ expireAt: daysFromNow(10) })));
+});
+
+test("a create cannot carry a server field or a kind", async () => {
+  for (const [key, value] of [
+    ["prNumber", 7], ["csvValue", { swedish: "x" }], ["reason", "csv-mismatch"],
+    ["kind", "ingredient"], ["kind", "occasionList"],
+  ] as const) {
+    await assertFails(admin().doc(`${COLLECTION}/sf-${key}-${String(value).slice(0, 8)}`).set(proposal({ [key]: value })));
+  }
 });
 
 test("an unknown column is refused", async () => {
@@ -388,16 +399,46 @@ test("a withdrawal cannot smuggle in a change to the proposal", async () => {
 
 test("a client cannot set a server status", async () => {
   await seed("w7");
-  for (const status of ["applied", "conflict", "rejected"]) {
+  for (const status of ["applied", "conflict", "rejected", "inReview", "pending"]) {
     await assertFails(admin().doc(`${COLLECTION}/w7`).update(withdrawal(ADMIN_UID, { status })));
   }
 });
 
-test("only a pending proposal can be withdrawn", async () => {
+test("an applied or withdrawn proposal cannot be withdrawn", async () => {
   await seed("w8", { status: "applied" });
   await assertFails(admin().doc(`${COLLECTION}/w8`).update(withdrawal(ADMIN_UID)));
   await seed("w9", { status: "withdrawn" });
   await assertFails(admin().doc(`${COLLECTION}/w9`).update(withdrawal(ADMIN_UID)));
+});
+
+test("a proposal in conflict or in review can be withdrawn", async () => {
+  await seed("w11", {
+    status: "conflict", reason: "csv-mismatch", csvValue: { status: "verified" }, expireAt: daysFromNow(90),
+  });
+  await assertSucceeds(admin().doc(`${COLLECTION}/w11`).update(withdrawal(ADMIN_UID)));
+  await seed("w12", { status: "inReview", prNumber: 12, expireAt: daysFromNow(90) });
+  await assertSucceeds(admin().doc(`${COLLECTION}/w12`).update(withdrawal(ADMIN_UID)));
+});
+
+test("a rejected proposal cannot be withdrawn", async () => {
+  await seed("w13", { status: "rejected", reason: "unknown-property", expireAt: daysFromNow(365) });
+  await assertFails(admin().doc(`${COLLECTION}/w13`).update(withdrawal(ADMIN_UID)));
+});
+
+// One deny per server field, each moving only that field beside a valid
+// withdrawal.
+test("a withdrawal cannot change prNumber, csvValue, reason or kind", async () => {
+  await seed("w14", { status: "inReview", prNumber: 12, expireAt: daysFromNow(90) });
+  await assertFails(admin().doc(`${COLLECTION}/w14`).update(withdrawal(ADMIN_UID, { prNumber: 13 })));
+  await seed("w15", { status: "conflict", reason: "csv-mismatch", csvValue: { status: "verified" }, expireAt: daysFromNow(90) });
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { csvValue: { status: "draft" } })));
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { reason: "missing-row" })));
+  await assertFails(admin().doc(`${COLLECTION}/w15`).update(withdrawal(ADMIN_UID, { kind: "occasionList" })));
+});
+
+test("a client cannot move a proposal into review", async () => {
+  await seed("w16");
+  await assertFails(admin().doc(`${COLLECTION}/w16`).update({ status: "inReview", prNumber: 1 }));
 });
 
 test("a non-admin cannot withdraw", async () => {
@@ -411,6 +452,143 @@ test("a non-admin cannot withdraw", async () => {
 test("nobody can delete a proposal (not even admin)", async () => {
   await seed("d1");
   await assertFails(admin().doc(`${COLLECTION}/d1`).delete());
+});
+
+// The run lock and run records of createIngredientChangePr
+
+for (const col of ["ingredient_change_locks", "ingredient_change_runs"]) {
+  test(`${col}: no client reads or writes it, admin included`, async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`${col}/seeded`).set({ owner: "run-1", expiresAt: new Date() });
+    });
+    await assertFails(admin().doc(`${col}/seeded`).get());
+    await assertFails(admin().collection(col).get());
+    await assertFails(env.authenticatedContext(USER_UID).firestore().doc(`${col}/seeded`).get());
+    await assertFails(admin().doc(`${col}/new-${col}`).set({ owner: "x" }));
+    await assertFails(admin().doc(`${col}/seeded`).update({ owner: "x" }));
+    await assertFails(admin().doc(`${col}/seeded`).delete());
+  });
+}
+
+// Step D: word-list proposals (`kind: occasionList`)
+
+function wordList(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: "occasionList",
+    listKey: "christmas.titleWords",
+    oldWords: ["julskinka", "lutfisk", "jansson", "julbord"],
+    newWords: ["julskinka", "lutfisk", "jansson", "julbord", "all'arrabbiata", "go-to", "20 min", "entrecôte"],
+    status: "pending",
+    createdBy: ADMIN_UID,
+    createdAt: serverTimestamp(),
+    ...extra,
+  };
+}
+
+test("admin can create a valid word-list proposal, with a note and a batch id", async () => {
+  await assertSucceeds(admin().doc(`${COLLECTION}/o1`).set(wordList()));
+  await assertSucceeds(admin().doc(`${COLLECTION}/o2`).set(wordList({ note: "Fler julord.", batchId: "b1" })));
+});
+
+test("a word-list proposal may start from an empty old list, never end in an empty new one", async () => {
+  await assertSucceeds(admin().doc(`${COLLECTION}/o3`).set(wordList({ oldWords: [] })));
+  await assertFails(admin().doc(`${COLLECTION}/o4`).set(wordList({ newWords: [] })));
+});
+
+test("non-admin cannot create a word-list proposal", async () => {
+  await assertFails(
+    env.authenticatedContext(USER_UID).firestore().doc(`${COLLECTION}/o5`).set(wordList({ createdBy: USER_UID })),
+  );
+});
+
+test("a word-list proposal needs kind occasionList; an ingredient proposal carries no kind", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o6`).set(wordList({ kind: "ingredient" })));
+  await assertFails(admin().doc(`${COLLECTION}/o7`).set(wordList({ kind: "other" })));
+  await assertFails(admin().doc(`${COLLECTION}/o8`).set(proposal({ kind: "ingredient" })));
+  await assertFails(admin().doc(`${COLLECTION}/o9`).set(proposal({ kind: "occasionList" })));
+});
+
+test("only a known list key is accepted; a tag or the stem is not a list", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o10`).set(wordList({ listKey: "christmas.tag" })));
+  await assertFails(admin().doc(`${COLLECTION}/o11`).set(wordList({ listKey: "christmas.titleStem" })));
+  await assertFails(admin().doc(`${COLLECTION}/o12`).set(wordList({ listKey: "christmas" })));
+  await assertSucceeds(admin().doc(`${COLLECTION}/o13`).set(wordList({ listKey: "titleKeywords.snabblagatSet" })));
+});
+
+test("at most 200 words, each at most 60 characters", async () => {
+  const many = (n: number) => Array.from({ length: n }, (_, i) => `ord${i}`);
+  await assertSucceeds(admin().doc(`${COLLECTION}/o14`).set(wordList({ newWords: many(200) })));
+  await assertFails(admin().doc(`${COLLECTION}/o15`).set(wordList({ newWords: many(201) })));
+  await assertFails(admin().doc(`${COLLECTION}/o16`).set(wordList({ oldWords: many(201) })));
+  await assertSucceeds(admin().doc(`${COLLECTION}/o17`).set(wordList({ newWords: ["a".repeat(60)] })));
+  await assertFails(admin().doc(`${COLLECTION}/o18`).set(wordList({ newWords: ["a".repeat(61)] })));
+});
+
+test("a word must be lower case letters, digits, apostrophe or hyphen with single spaces", async () => {
+  for (const bad of ["Jul", "", " jul", "jul ", "jul  skinka", "jul,skinka", "jul\nskinka", "jul@x", "jul`", "[jul]", "jul\u202e"]) {
+    try {
+      await assertFails(admin().doc(`${COLLECTION}/bad`).set(wordList({ newWords: ["sill", bad] })));
+    } catch (err) {
+      throw new Error(`accepted ${JSON.stringify(bad)}: ${err}`);
+    }
+  }
+  await assertFails(admin().doc(`${COLLECTION}/num`).set(wordList({ newWords: ["sill", 7] })));
+  await assertFails(admin().doc(`${COLLECTION}/str`).set(wordList({ newWords: "sill" })));
+});
+
+test("a word-list proposal cannot carry a server field or another status or author", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o19`).set(wordList({ prNumber: 5 })));
+  await assertFails(admin().doc(`${COLLECTION}/o20`).set(wordList({ csvValue: {} })));
+  await assertFails(admin().doc(`${COLLECTION}/o21`).set(wordList({ ingredientId: "garlic" })));
+  await assertFails(admin().doc(`${COLLECTION}/o22`).set(wordList({ status: "inReview" })));
+  await assertFails(admin().doc(`${COLLECTION}/o23`).set(wordList({ createdBy: OTHER_ADMIN_UID })));
+  await assertFails(admin().doc(`${COLLECTION}/o24`).set(wordList({ note: "x".repeat(501) })));
+});
+
+test("a word-list proposal's createdAt must be the server's time", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o26`).set(wordList({ createdAt: new Date() })));
+});
+
+test("a word-list proposal's batchId must be a string of at most 100 characters", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o27`).set(wordList({ batchId: "b".repeat(101) })));
+});
+
+test("a word-list proposal's batchId cannot be a list", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o28`).set(wordList({ batchId: ["b1"] })));
+});
+
+test("a word-list proposal's note cannot be a list", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o29`).set(wordList({ note: ["x"] })));
+});
+
+test("an empty string is not an empty old word list", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o30`).set(wordList({ oldWords: "" })));
+});
+
+test("an empty map is not an empty old word list", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o31`).set(wordList({ oldWords: {} })));
+});
+
+test("old words are held to the same word shape as new words", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o32`).set(wordList({ oldWords: ["sill", "Jul"] })));
+});
+
+test("an old word may not hide a comma", async () => {
+  await assertFails(admin().doc(`${COLLECTION}/o33`).set(wordList({ oldWords: ["sill", "jul,skinka"] })));
+});
+
+test("a full list of 200 words of 60 characters is accepted, old and new", async () => {
+  const full = Array.from({ length: 200 }, (_, i) => `${String(i).padStart(3, "0")}${"å".repeat(57)}`);
+  await assertSucceeds(admin().doc(`${COLLECTION}/o34`).set(wordList({ oldWords: full, newWords: full })));
+});
+
+test("a word-list proposal is withdrawn like an ingredient proposal, and its words cannot be edited", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`${COLLECTION}/o25`).set({ ...wordList(), createdAt: new Date() });
+  });
+  await assertFails(admin().doc(`${COLLECTION}/o25`).update({ newWords: ["sill"] }));
+  await assertFails(admin().doc(`${COLLECTION}/o25`).update(withdrawal(ADMIN_UID, { newWords: ["sill"] })));
+  await assertSucceeds(admin().doc(`${COLLECTION}/o25`).update(withdrawal(ADMIN_UID)));
 });
 
 async function run(): Promise<void> {

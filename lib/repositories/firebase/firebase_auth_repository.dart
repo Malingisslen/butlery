@@ -173,11 +173,14 @@ class FirebaseAuthRepository implements AuthRepository {
     );
   }
 
+  // No `linkDomain`: Firebase builds the mobile link on the project's default
+  // Hosting domain, which is [PasswordResetLink.linkDomain], and Android's
+  // auth library refuses that default domain when it is named
+  // (`ERROR_INVALID_HOSTING_LINK_DOMAIN`, BUT-2502).
   static final ActionCodeSettings passwordResetActionCodeSettings =
       ActionCodeSettings(
         url: PasswordResetLink.continueUrl,
         handleCodeInApp: true,
-        linkDomain: PasswordResetLink.linkDomain,
         androidPackageName: PasswordResetLink.androidPackageName,
         iOSBundleId: PasswordResetLink.iOSBundleId,
       );
@@ -306,6 +309,10 @@ class FirebaseAuthRepository implements AuthRepository {
           : _firebaseAuth.signInWithProvider(authProvider),
     );
   }
+
+  @override
+  Future<void> signInWithCustomToken(String token) =>
+      _remember(_firebaseAuth.signInWithCustomToken(token));
 
   Future<UserCredential> _remember(Future<UserCredential> signIn) async {
     final credential = await signIn;

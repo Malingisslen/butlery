@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
+import 'package:butlery/models/admin/overview_status.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/ingredient_review_view.dart';
 import 'package:butlery/views/admin/acquisition_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
+import 'package:butlery/views/admin/overview_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/proposals_view.dart';
 import 'package:butlery/views/admin/signup_allowlist_view.dart';
@@ -62,11 +64,27 @@ class _AdminShellState extends State<AdminShell>
     writeTabParam(_index);
   }
 
+  void _openTarget(OverviewTarget target) =>
+      _controller.animateTo(switch (target) {
+        OverviewTarget.feedback => 1,
+        OverviewTarget.proposals => 2,
+        OverviewTarget.import => 3,
+        OverviewTarget.parsing => 4,
+        OverviewTarget.ops => 5,
+        OverviewTarget.engagement => 6,
+        OverviewTarget.recipes => 7,
+        OverviewTarget.ingredients => 8,
+        OverviewTarget.tagRules => 9,
+        OverviewTarget.guestList => 10,
+      });
+
   // Not const: the registry-driven tabs (MetricTabView) carry a closure for
   // their localized title, so the list is built per render. Migrating tabs are
   // swapped to MetricTabView one at a time (Phase 1).
   List<Widget> get _pages => [
+    OverviewView(onOpenTarget: _openTarget),
     const FeedbackInboxView(),
+    const ProposalsView(),
     MetricTabView(
       title: (l) => l.adminImportTitle,
       keys: const [
@@ -77,6 +95,8 @@ class _AdminShellState extends State<AdminShell>
         MetricKey.importDomainTable,
       ],
     ),
+    const ParsingDetailsView(),
+    const OpsLogView(),
     MetricTabView(
       title: (l) => l.adminEngagementTitle,
       keys: const [
@@ -87,16 +107,13 @@ class _AdminShellState extends State<AdminShell>
         MetricKey.engagementDailyTable,
       ],
     ),
-    const ParsingDetailsView(),
     MetricTabView(
       title: (l) => l.adminRecipesTitle,
       keys: const [MetricKey.recipeTotal, MetricKey.recipeByMethod],
     ),
-    const OpsLogView(),
-    const SignupAllowlistView(),
     const IngredientReviewView(),
     const TagRulesView(),
-    const ProposalsView(),
+    const SignupAllowlistView(),
     const AcquisitionView(),
   ];
 
@@ -110,16 +127,17 @@ class _AdminShellState extends State<AdminShell>
           AdminTopBar(
             controller: _controller,
             labels: [
+              l10n.adminNavOverview,
               l10n.adminNavFeedback,
+              l10n.adminNavProposals,
               l10n.adminNavImport,
-              l10n.adminNavEngagement,
               l10n.adminNavParsing,
-              l10n.adminNavRecipes,
               l10n.adminNavOps,
-              l10n.adminNavGuestList,
+              l10n.adminNavEngagement,
+              l10n.adminNavRecipes,
               l10n.adminNavIngredients,
               l10n.adminNavTagRules,
-              l10n.adminNavProposals,
+              l10n.adminNavGuestList,
               l10n.adminNavAcquisition,
             ],
             email: auth.currentUserEmail,

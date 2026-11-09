@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/captured_snackbars.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/pending_proposals_viewmodel.dart';
 import 'package:butlery/views/admin/ingredient_proposal_labels.dart';
+import 'package:butlery/views/admin/occasion_list_labels.dart';
+import 'package:butlery/views/admin/word_list_proposal_tile.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
-import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
-/// Admin "Förslag" tab: pending ingredient proposals, old value to new per
-/// field, with a way to withdraw each one.
+/// Admin "Förslag" tab: the proposal queue by stage, old value to new per
+/// field, a way to withdraw open ones, and the button that creates the review.
 class ProposalsView extends StatefulWidget {
   const ProposalsView({super.key, this.viewModel});
 
@@ -79,28 +84,95 @@ class _ProposalsViewState extends State<ProposalsView> {
         onAction: vm.retry,
       );
     }
-    if (vm.proposals.isEmpty) {
+    if (vm.isEmpty) {
       return StateWidget.empty(title: l10n.adminProposalsEmpty);
     }
-    final list = ListView.builder(
-      itemCount: vm.proposals.length,
-      itemBuilder: (context, i) => ProposalCard(
-        key: ValueKey(vm.proposals[i].id),
-        proposal: vm.proposals[i],
-        onWithdraw: () => _withdraw(context, vm, vm.proposals[i].id),
-      ),
-    );
-    if (!vm.mayHaveMore) return list;
-    return Column(
+    void withdraw(String id) => _withdraw(context, vm, id);
+    return ListView(
       children: [
-        Padding(
-          key: const ValueKey('proposals-more-waiting'),
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Text(l10n.adminProposalsMoreWaiting(vm.proposals.length)),
+        if (vm.mayHaveMore)
+          Padding(
+            key: const ValueKey('proposals-more-waiting'),
+            padding: const EdgeInsets.all(AppDimensions.space16),
+            child: Text(l10n.adminProposalsMoreWaiting(vm.proposals.length)),
+          ),
+        _ReviewBar(vm: vm, onCreate: () => _createReview(context, vm)),
+        _section(
+          l10n.adminProposalSectionPending,
+          vm.pending,
+          withdraw: withdraw,
         ),
-        Expanded(child: list),
+        _section(
+          l10n.adminProposalSectionInReview,
+          vm.inReview,
+          withdraw: withdraw,
+        ),
+        _section(
+          l10n.adminProposalSectionConflict,
+          vm.conflicts,
+          withdraw: withdraw,
+        ),
+        _section(l10n.adminProposalSectionRejected, vm.rejected),
+        if (vm.decidedFailed)
+          Padding(
+            padding: const EdgeInsets.all(AppDimensions.space16),
+            child: Text(l10n.adminProposalDecidedLoadFailed),
+          ),
+        _section(l10n.adminProposalSectionApplied, vm.applied),
       ],
     );
+  }
+
+  Widget _section(
+    String title,
+    List<IngredientChangeRequest> items, {
+    void Function(String id)? withdraw,
+  }) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      key: ValueKey('section-$title'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.space16,
+            AppDimensions.space16,
+            AppDimensions.space16,
+            AppDimensions.space4,
+          ),
+          child: Text(
+            '$title (${items.length})',
+            style: AppTextStyles.titleMedium,
+          ),
+        ),
+        for (final p in items)
+          ProposalCard(
+            key: ValueKey(p.id),
+            proposal: p,
+            onWithdraw: withdraw == null ? null : () => withdraw(p.id),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _createReview(
+    BuildContext context,
+    PendingProposalsViewModel vm,
+  ) async {
+    final l10n = context.l10n;
+    final confirmed = await ConfirmationDialogs.showConfirmationDialog(
+      context,
+      title: l10n.adminProposalCreateReviewTitle,
+      message: vm.waitingWordListCount == 0
+          ? l10n.adminProposalCreateReviewMessage(vm.waitingCount)
+          : l10n.adminProposalCreateReviewMessageWithLists(
+              vm.waitingCount,
+              vm.waitingWordListCount,
+            ),
+      confirmText: l10n.adminProposalCreateReview,
+    );
+    if (!confirmed) return;
+    await vm.createReview();
   }
 
   Future<void> _withdraw(
@@ -121,12 +193,14 @@ class _ProposalsViewState extends State<ProposalsView> {
 class ProposalCard extends StatelessWidget {
   const ProposalCard({
     required this.proposal,
-    required this.onWithdraw,
+    this.onWithdraw,
     super.key,
   });
 
   final IngredientChangeRequest proposal;
-  final VoidCallback onWithdraw;
+
+  /// Null where a withdrawal is no longer possible (rejected, applied).
+  final VoidCallback? onWithdraw;
 
   static String _date(DateTime d) {
     final l = d.toLocal();
@@ -151,21 +225,24 @@ class ProposalCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  proposal.ingredientId,
+                  proposal.isWordList
+                      ? occasionListLabel(l10n, proposal.listKey)
+                      : proposal.ingredientId,
                   style: AppTextStyles.titleSmall,
                 ),
               ),
-              if (proposal.affectsAllergens)
+              if (!proposal.isWordList && proposal.affectsAllergens)
                 StatusPill(
                   key: const ValueKey('allergen-mark'),
                   label: l10n.adminProposalAffectsAllergens,
                 ),
-              ButleryTextButton(
-                key: const ValueKey('withdraw'),
-                label: l10n.adminProposalWithdraw,
-                tone: ButleryTextButtonTone.warning,
-                onPressed: onWithdraw,
-              ),
+              if (onWithdraw != null)
+                ButleryTextButton(
+                  key: const ValueKey('withdraw'),
+                  label: l10n.adminProposalWithdraw,
+                  tone: ButleryTextButtonTone.warning,
+                  onPressed: onWithdraw,
+                ),
             ],
           ),
           if (created != null)
@@ -177,7 +254,25 @@ class ProposalCard extends StatelessWidget {
             ),
           if (proposal.batchId != null)
             Text(l10n.adminProposalBatchMark, style: AppTextStyles.bodySmall),
-          for (final c in proposal.changes) _line(l10n, c),
+          if (proposal.status == IngredientChangeStatus.inReview)
+            _PullRequestLink(number: proposal.prNumber),
+          if (proposal.status == IngredientChangeStatus.conflict ||
+              proposal.status == IngredientChangeStatus.rejected)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.space4),
+              child: Text(
+                key: const ValueKey('proposal-reason'),
+                proposalReasonText(l10n, proposal.reason),
+                style: AppTextStyles.bodySmall,
+              ),
+            ),
+          if (proposal.isWordList)
+            WordListProposalTile(proposal: proposal)
+          else
+            for (final c in proposal.changes)
+              proposal.status == IngredientChangeStatus.conflict
+                  ? _conflictLines(l10n, c)
+                  : _line(l10n, c),
           if (proposal.note.isNotEmpty)
             Text(proposal.note, style: AppTextStyles.bodySmall),
         ],
@@ -195,4 +290,164 @@ class ProposalCard extends StatelessWidget {
       ),
     ),
   );
+
+  Widget _conflictLines(AppLocalizations l10n, IngredientFieldChange c) {
+    final csv = proposal.csvValue;
+    final hasCsv = csv != null && csv.containsKey(c.column.csvName);
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.space8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ingredientColumnLabel(l10n, c.column),
+            style: AppTextStyles.labelLarge,
+          ),
+          if (hasCsv)
+            SelectableText(
+              l10n.adminProposalConflictCsv(
+                ingredientValueText(l10n, csv[c.column.csvName]),
+              ),
+            ),
+          SelectableText(
+            l10n.adminProposalConflictOld(
+              ingredientValueText(l10n, c.oldValue),
+            ),
+          ),
+          SelectableText(
+            l10n.adminProposalConflictNew(
+              ingredientValueText(l10n, c.newValue),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+const String kButleryPullRequestBase =
+    'https://github.com/Malingisslen/butlery/pull/';
+
+/// Only an https link on github.com is opened; the URL comes from a callable
+/// response, so it is checked before it reaches the browser.
+@visibleForTesting
+bool isTrustedGithubUrl(String url) {
+  final uri = Uri.tryParse(url);
+  return uri != null && uri.scheme == 'https' && uri.host == 'github.com';
+}
+
+Future<void> _openUrl(String url) async {
+  if (!isTrustedGithubUrl(url)) return;
+  try {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  } catch (e) {
+    AppLogger.warning('Could not open $url: $e');
+  }
+}
+
+class _PullRequestLink extends StatelessWidget {
+  const _PullRequestLink({required this.number, this.url});
+
+  final int? number;
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final target = (url != null && isTrustedGithubUrl(url!))
+        ? url
+        : (number == null ? null : '$kButleryPullRequestBase$number');
+    if (target == null) return const SizedBox.shrink();
+    return Row(
+      children: [
+        if (number != null && number! > 0)
+          Text(
+            l10n.adminProposalPullRequest(number!),
+            style: AppTextStyles.bodySmall,
+          ),
+        ButleryTextButton(
+          key: const ValueKey('open-github'),
+          label: l10n.adminProposalOpenOnGithub,
+          onPressed: () => _openUrl(target),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReviewBar extends StatelessWidget {
+  const _ReviewBar({required this.vm, required this.onCreate});
+
+  final PendingProposalsViewModel vm;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final result = vm.lastReview;
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ActionButtons.primaryButton(
+            context,
+            key: const ValueKey('create-review'),
+            label: l10n.adminProposalCreateReview,
+            isLoading: vm.isCreatingReview,
+            onPressed: vm.canCreateReview ? onCreate : null,
+          ),
+          if (result != null) ...[
+            const SizedBox(height: AppDimensions.space8),
+            // A run with only word lists leaves the ingredient part without a
+            // pull request; its zero counts and link would mislead.
+            if (result.prNumber > 0 || result.wordLists == null) ...[
+              Text(
+                key: const ValueKey('review-created'),
+                l10n.adminProposalReviewCreated(
+                  result.applied,
+                  result.conflicts,
+                ),
+              ),
+              _PullRequestLink(number: result.prNumber, url: result.prUrl),
+            ],
+            if (result.wordLists case final lists?) ...[
+              const SizedBox(height: AppDimensions.space8),
+              Text(
+                key: const ValueKey('word-list-review-created'),
+                l10n.adminProposalWordListReviewCreated(
+                  lists.applied,
+                  lists.conflicts,
+                ),
+              ),
+              // A run where every word-list proposal conflicted or was
+              // rejected opens no pull request.
+              if (lists.prNumber > 0)
+                _PullRequestLink(number: lists.prNumber, url: lists.prUrl),
+            ],
+            if (result.wordListError != null) ...[
+              const SizedBox(height: AppDimensions.space8),
+              Text(
+                key: const ValueKey('word-list-review-error'),
+                l10n.adminProposalWordListReviewFailed,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
+          ],
+          if (vm.reviewError != null) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Text(
+              key: const ValueKey('review-error'),
+              vm.reviewError!,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }

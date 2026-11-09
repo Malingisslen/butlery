@@ -20,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
@@ -31,6 +32,28 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class _FakeMenuViewModel extends Mock implements MenuViewModel {}
+
+/// Every sheet asks for the share marks on open, so each test starts from
+/// "nothing shared"; a test passes what it needs.
+_FakeMenuViewModel _vm({
+  Map<String, Set<String>> shares = const {},
+  bool sharesFail = false,
+  bool dropProfiles = false,
+}) {
+  final vm = _FakeMenuViewModel();
+  when(() => vm.getOwnMenuShares()).thenAnswer(
+    (_) async => sharesFail ? throw Exception('offline') : shares,
+  );
+  when(() => vm.getShareRecipientProfiles(any())).thenAnswer(
+    (inv) async => [
+      for (final id in (inv.positionalArguments.first as List<String>).take(
+        dropProfiles ? 1 : 99,
+      ))
+        UserProfile.fromMap(id, {'displayName': 'Person $id'}),
+    ],
+  );
+  return vm;
+}
 
 /// Wraps the sheet in a MaterialApp with Swedish l10n so `context.l10n.*` works.
 /// Scaffold is included because `_loadMenu` calls `ScaffoldMessenger.of`.
@@ -57,10 +80,78 @@ SavedMenuInfo _menu({
 
 void main() {
   group('LoadMenuBottomSheet', () {
+    testWidgets('marks only menus shared from here, and a tap names them', (
+      tester,
+    ) async {
+      final vm = _vm(
+        shares: {
+          'k1': {'u1', 'u2'},
+        },
+      );
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(
+        () => vm.savedMenus,
+      ).thenReturn([_menu(), _menu(key: 'k2', name: 'Annan')]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delad'), findsOneWidget);
+      expect(find.text('Sparad tidigare'), findsNWidgets(2));
+
+      verifyNever(() => vm.getShareRecipientProfiles(any()));
+
+      await tester.tap(find.text('Delad'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Veckomeny är delad med'), findsOneWidget);
+      expect(find.text('Person u1'), findsOneWidget);
+      expect(find.text('Person u2'), findsOneWidget);
+    });
+
+    testWidgets('a failed shares query only hides the marks', (tester) async {
+      final vm = _vm(
+        shares: {
+          'k1': {'u1'},
+        },
+        sharesFail: true,
+      );
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([_menu()]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Veckomeny'), findsOneWidget);
+      expect(find.text('Delad'), findsNothing);
+    });
+
+    testWidgets('names the gap when a profile cannot be shown', (tester) async {
+      final vm = _vm(
+        shares: {
+          'k1': {'u1', 'u2'},
+        },
+        dropProfiles: true,
+      );
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([_menu()]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delad'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Person u'), findsOneWidget);
+      expect(
+        find.text('Några personer går inte att visa just nu.'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('renders header with title and close button after load', (
       tester,
     ) async {
-      final vm = _FakeMenuViewModel();
+      final vm = _vm();
       when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
       when(() => vm.savedMenus).thenReturn(<SavedMenuInfo>[]);
 
@@ -77,7 +168,7 @@ void main() {
     testWidgets(
       'shows the plate line while refreshSavedMenus is in flight',
       (tester) async {
-        final vm = _FakeMenuViewModel();
+        final vm = _vm();
         final completer = Completer<void>();
         when(() => vm.refreshSavedMenus()).thenAnswer((_) => completer.future);
         when(() => vm.savedMenus).thenReturn(<SavedMenuInfo>[]);
@@ -98,7 +189,7 @@ void main() {
     testWidgets('empty saved-menus list renders the StateWidget.empty branch', (
       tester,
     ) async {
-      final vm = _FakeMenuViewModel();
+      final vm = _vm();
       when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
       when(() => vm.savedMenus).thenReturn(<SavedMenuInfo>[]);
 
@@ -116,7 +207,7 @@ void main() {
     testWidgets('a failed load shows an error with retry, not "Inga sparade"', (
       tester,
     ) async {
-      final vm = _FakeMenuViewModel();
+      final vm = _vm();
       when(() => vm.refreshSavedMenus()).thenThrow(Exception('offline'));
       when(() => vm.savedMenus).thenReturn(<SavedMenuInfo>[]);
 
@@ -134,7 +225,7 @@ void main() {
     testWidgets('Försök igen loads again and shows the menus when it works', (
       tester,
     ) async {
-      final vm = _FakeMenuViewModel();
+      final vm = _vm();
       var calls = 0;
       when(() => vm.refreshSavedMenus()).thenAnswer((_) {
         calls++;
@@ -161,7 +252,7 @@ void main() {
     testWidgets('populated list renders one item row per saved menu', (
       tester,
     ) async {
-      final vm = _FakeMenuViewModel();
+      final vm = _vm();
       when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
       when(() => vm.savedMenus).thenReturn([
         _menu(key: 'a', name: 'Veckomeny v.45'),
@@ -192,7 +283,7 @@ void main() {
     testWidgets(
       'tapping a list item invokes viewModel.loadSavedMenu with the menu key',
       (tester) async {
-        final vm = _FakeMenuViewModel();
+        final vm = _vm();
         when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
         when(
           () => vm.savedMenus,
@@ -216,7 +307,7 @@ void main() {
     testWidgets(
       'PopupMenuButton "Ladda" option also delegates to loadSavedMenu',
       (tester) async {
-        final vm = _FakeMenuViewModel();
+        final vm = _vm();
         when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
         when(() => vm.savedMenus).thenReturn([_menu(key: 'k1', name: 'M1')]);
         when(() => vm.loadSavedMenu('k1')).thenAnswer((_) async => true);
@@ -240,7 +331,7 @@ void main() {
 
     group('BUT-2145: delete is immediate with Ångra', () {
       _FakeMenuViewModel deletableVm() {
-        final vm = _FakeMenuViewModel();
+        final vm = _vm();
         when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
         when(() => vm.savedMenus).thenReturn([
           _menu(key: 'k1', name: 'M1'),

@@ -59,6 +59,11 @@ const UPLOADER = `uploader-${RUN}`;
 const GOOD_PATH = `users/${UPLOADER}/recipes/good-${RUN}.jpg`;
 const EVIL_PATH = `users/${UPLOADER}/recipes/evil-${RUN}.jpg`;
 const GONE_PATH = `users/${UPLOADER}/recipes/gone-${RUN}.jpg`;
+const EXPLICIT_PATH = `users/${UPLOADER}/recipes/explicit-${RUN}.jpg`;
+const EXPLICIT_COPY_PATH = `users/${UPLOADER}/public_recipes/r-${RUN}/explicit-${RUN}.jpg`;
+const OPS_PATH = `ops/resets/run-${RUN}.json`;
+const annotateCalls: string[] = [];
+let explicitKey: string | null = null;
 const loggedErrors: unknown[][] = [];
 
 // Genuine JPEG head (FF D8 FF E0 + JFIF marker), padded past the 32-byte
@@ -165,6 +170,52 @@ test("object deleted before it was read: the head read is not logged as an error
   assert(rows.length === 0, `expected zero audit rows, got ${rows.length}`);
 });
 
+// I6 (BUT-818): an explicit image is moved, not just deleted — the copy is
+// what an appeal would restore.
+test("explicit image: original gone, quarantine copy kept with its scores", async () => {
+  const [original] = await bucket().file(EXPLICIT_PATH).exists();
+  assert(!original, "explicit original must be removed");
+  const copy = bucket().file(`quarantine/${EXPLICIT_PATH}`);
+  const [kept] = await copy.exists();
+  assert(kept, "quarantine copy must exist");
+  const [meta] = await copy.getMetadata();
+  const custom = (meta.metadata ?? {}) as Record<string, unknown>;
+  assert(custom.originalPath === EXPLICIT_PATH, `originalPath, got ${custom.originalPath}`);
+  assert(custom.adult === "VERY_LIKELY", `adult score, got ${custom.adult}`);
+  assert(
+    custom.firebaseStorageDownloadTokens === undefined,
+    "the copy must not keep the original's download token",
+  );
+});
+
+test("explicit image: one storage_upload_quarantined audit row", async () => {
+  const rows = await auditRowsFor(EXPLICIT_PATH);
+  assert(rows.length === 1, `expected 1 audit row, got ${rows.length}`);
+  assert(rows[0].operation === "storage_upload_quarantined", `operation, got ${rows[0].operation}`);
+  assert(rows[0].userId === UPLOADER, `userId, got ${rows[0].userId}`);
+});
+
+// I7 (BUT-818): Vision is paid per call; the server's public copy has the same
+// bytes and must be judged from the cache.
+test("same bytes again (public copy): Vision called once in total, copy quarantined too", async () => {
+  assert(annotateCalls.length === 1, `annotate calls, got ${JSON.stringify(annotateCalls)}`);
+  const [copyLeft] = await bucket().file(EXPLICIT_COPY_PATH).exists();
+  assert(!copyLeft, "public copy must be removed from the cached verdict");
+  const [copyHeld] = await bucket().file(`quarantine/${EXPLICIT_COPY_PATH}`).exists();
+  assert(copyHeld, "public copy must be held in quarantine");
+  assert(explicitKey !== null, "scan key");
+  const cached = await db().collection("safe_search_scans").doc(explicitKey as string).get();
+  assert(cached.exists && cached.get("explicit") === true, "verdict cached under the checksums");
+});
+
+// I8: a server-written non-image outside the client prefixes is left alone.
+test("ops/ JSON written by the server: kept, no audit row", async () => {
+  const [exists] = await bucket().file(OPS_PATH).exists();
+  assert(exists, "the reset record must not be deleted");
+  const rows = await auditRowsFor(OPS_PATH);
+  assert(rows.length === 0, `expected zero audit rows, got ${rows.length}`);
+});
+
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
@@ -227,6 +278,50 @@ async function run(): Promise<void> {
     logger.error = originalError;
   }
 
+  // BUT-818: Vision cannot read the emulator, so the hit path runs through the
+  // handler with a fake annotate against the real emulator bucket and db.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { handleFinalizedObject } = require("../storage/moderate-upload");
+  const explicitDeps = {
+    db: db(),
+    bucket: () => bucket(),
+    ownerExists: async () => true,
+    annotate: async (uri: string) => {
+      annotateCalls.push(uri);
+      return { adult: "VERY_LIKELY", violence: "VERY_UNLIKELY", racy: "POSSIBLE" };
+    },
+  };
+  // A client upload carries a download token; the quarantine copy must not.
+  await bucket().file(EXPLICIT_PATH).save(JPEG_BYTES, {
+    contentType: "image/jpeg",
+    metadata: { metadata: { firebaseStorageDownloadTokens: `token-${RUN}` } },
+  });
+  await bucket().file(EXPLICIT_PATH).copy(bucket().file(EXPLICIT_COPY_PATH));
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { scanKey } = require("../storage/safe-search");
+  for (const name of [EXPLICIT_PATH, EXPLICIT_COPY_PATH]) {
+    // The event carries the object's own checksums, read here as Storage stored them.
+    const [meta] = await bucket().file(name).getMetadata();
+    explicitKey = scanKey(meta.md5Hash, meta.crc32c, meta.size);
+    await handleFinalizedObject(
+      {
+        bucket: BUCKET,
+        name,
+        contentType: "image/jpeg",
+        md5Hash: meta.md5Hash,
+        crc32c: meta.crc32c,
+        size: meta.size,
+      },
+      explicitDeps,
+    );
+  }
+  await bucket().file(OPS_PATH).save(JSON.stringify({ runId: RUN }), {
+    contentType: "application/json",
+  });
+  await moderateUpload.run({
+    data: { bucket: BUCKET, name: OPS_PATH, contentType: "application/json" },
+  });
+
   let failed = 0;
   for (const t of tests) {
     try {
@@ -242,9 +337,13 @@ async function run(): Promise<void> {
   // Cleanup: remove the kept object + audit rows so re-runs and sibling
   // suites on the shared demo-test namespace stay unpolluted.
   await bucket().file(GOOD_PATH).delete({ ignoreNotFound: true });
+  await bucket().file(OPS_PATH).delete({ ignoreNotFound: true });
+  await bucket().file(`quarantine/${EXPLICIT_PATH}`).delete({ ignoreNotFound: true });
+  await bucket().file(`quarantine/${EXPLICIT_COPY_PATH}`).delete({ ignoreNotFound: true });
+  if (explicitKey) await db().collection("safe_search_scans").doc(explicitKey).delete();
   const leftover = await db()
     .collection("audit_logs")
-    .where("resourceId", "in", [GOOD_PATH, EVIL_PATH])
+    .where("resourceId", "in", [GOOD_PATH, EVIL_PATH, EXPLICIT_PATH, EXPLICIT_COPY_PATH])
     .get();
   await Promise.all(leftover.docs.map((d) => d.ref.delete()));
 

@@ -394,6 +394,20 @@ noncurrent-version posture, and the cascade addition would be code + test surfac
 compliance need. Do NOT file "account deletion misses parse_events / add to cascade" findings
 against the deletion path — decided. — 2026-07-16
 
+### [Privacy/GDPR] SUPERSEDES BUT-1570: account deletion DOES erase parse_events (u10, 2026-11-03)
+Malin decided 2026-11-03 (decision card, option "Radera också vid kontoradering"): a user's
+`parse_events` rows are deleted by the account-deletion cascade (`deleteParseEvents`, tier 1),
+and the residual probe counts them. This retires "do NOT wire parse_events into the deletion
+cascade" in the BUT-1570 entry above. The 30-day TTL on `expireAt` stays.
+The import log is erased by the cascade and is not in the Art. 15 export; the privacy policy
+sends the user to integritet@butlery.se to see it.
+**Why the query is complete:** the only writer is `logParseEvent`, which sets `userId` from
+`request.auth.uid`, so `where userId == uid` reaches every row.
+**Accepted residuals, both bounded by the TTL:** a deletion that bypasses the cascade (Auth
+or console only; `onUserDeleted` has no parse_events leg) leaves the rows to the TTL, and an
+import still running on another device can write a row after the delete, which the residual
+probe then reports. Do NOT file either as a cascade bug. — 2026-11-03
+
 ### [Tagging/Safety] Weekly-menu presence does NOT scope menu generation (BUT-1611 → BUT-1625)
 BUT-1611 added per-meal "who's home" presence to the weekly menu. It deliberately drives
 **display, portions, and the who's-eating record only** — it does NOT feed the menu generator
@@ -6716,6 +6730,10 @@ Decided with the gate (ADR-0034; Malin 2026-10-24, "Lösenord med verifiering").
   (password, unverified) keeps the sign-up session on that one device; every later sign-in is
   refused until the address is verified. The real owner takes the address back with "Glömt
   lösenord" (or with Google for a Gmail address), which ends that session.
+- **Superseded 2026-11-03 (BUT-2502), the bullet above:** it retires "keeps the sign-up session
+  on that one device; every later sign-in is refused". `signUpSessionOf` lets an unverified
+  sign-in through while the account was created less than `SIGN_UP_SESSION_WINDOW_MS` (two
+  minutes) ago; after that every unverified sign-in is refused.
 - **An erased admin's uid stays on their invites until the invites expire** (BUT-2474, Malin
   2026-10-28). Each `signup_allowlist` document carries the inviting admin's uid in `invitedBy`,
   and the deletion cascade does not reach the collection. The document goes when it is used, when
@@ -6788,6 +6806,77 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
 - **Art. 15.** Section `learned_aliases` (`functions/src/exports/erasure-residue/account-sections.ts`)
   reads the same predicate and leaves out `userIds`.
 - Art. 30 record: `docs/security/correction-log-retention.md`.
+
+## SUPERSEDES four lines of the BUT-1797 "Deliberately left" list (BUT-1815, BUT-2444, 2026-11-07)
+
+- **The second deserializer.** Retires "The second deserializer in `recipe_serialization.dart`
+  is unchanged." `_deserializeSocialData` in `lib/models/realtime/recipe_serialization.dart`
+  now returns `RecipeSocialData.fromJson` of the `socialData` map, so `grants` and
+  `descriptionCollaborative` are read by the same code as every other path (BUT-1815 S2).
+- **The token loop.** Retires "The tokens-loop collapse is still owed." The sharing paths
+  build their `grants` through `RecipeShareGrants` (`applyShare`, `fromFlatShare`,
+  `mergeCategoryIds`) instead of three hand-written loops (BUT-1815 S3).
+- **The dead writers.** Retires "Ticket the deletion." `FirebaseRecipeRepository.addCollaborator`,
+  `removeCollaborator` and `RecipeFactory.convertToCollaborative` no longer exist in `lib/`
+  (BUT-1815 S1).
+- **The discovery row.** Retires "A revoke does not trim `shared_content.sharedToUserIds`."
+  `removeMember`, `removeGroup` and `unshareRecipe` now remove the revoked uids from the
+  `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
+  documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
+  not touched by that call.
+
+## "Logga ut från alla enheter": three accepted gaps (BUT-2481, 2026-11-07)
+
+Decided by Malin 2026-11-07 (card "Acceptera, notera som känd avvikelse").
+
+- **A thief with an unlocked phone can press the button.** The server demands a Google or Apple
+  sign-in from the last five minutes (and the second factor if the account has one), so the thief
+  must pass a fresh provider sign-in; a phone that is already signed in to the provider may allow
+  it. The owner is then locked out of her other devices until she signs in again.
+- **The notice can be cleared.** `users/{uid}.sessionsRevokedAt` is written only by
+  `revokeOtherSessions` and the rules refuse any client change, but the owner may delete
+  `users/{uid}` and create it again, which drops the stamp. Pinned by the "KNOWN GAP" case in
+  `functions/src/__tests__/session-revoked-at-rules.test.ts`. The notice is a courtesy, not the
+  protection.
+- **A five-minute window.** The device that pressed the button holds a custom-token session with a
+  fresh `auth_time` and no `sign_in_second_factor`; for five minutes it passes the recent-login
+  checks of account deletion and backup-code generation. A real sign-in, with the second factor,
+  happened seconds earlier, and the session cannot chain another revoke (the callable refuses a
+  `custom` token).
+- Other devices keep working until their ID token expires, up to an hour; the dialog and the
+  snackbar say so.
+
+## [Legal] Kokboksprovet: photos of bought cookbooks stored in the cloud as a parser test (2026-11-07)
+
+Decided by Malin 2026-11-07 on two decision cards: route B "Låst i molnet" (22:53) and, on
+copyright, every book included with the risk accepted (23:00), plus "b men vi sparar dem lokalt
+när vi är klara".
+
+- **What is accepted.** Photographing books Malin owns and letting the parser read them for
+  internal measurement rests on the text-and-data-mining exception (15 b § upphovsrättslagen),
+  which does not apply where the rightholder has reserved it. Whether a printed "kopiering
+  förbjuden" line is such a reservation is untested. Malin takes that residual risk for all books.
+- **Where the material lives.** Photos under `corpus/` in Storage; books, page text, answer keys
+  and run summaries in `corpus_books`, `corpus_pages` and `corpus_runs`. Only an admin reads
+  them (`storage.rules`, `firestore.rules`; `functions/src/__tests__/corpus-rules.test.ts`),
+  and only the Admin SDK writes the Firestore documents.
+- **Retention.** When a book has been read and its answer keys reviewed, its photos are moved
+  from the cloud to Malin's computer; the cloud keeps text and answer keys. A withdrawn book has
+  its text and answer keys deleted.
+- **Use.** Internal measurement and improvement only: never shown to users, never used to train
+  a model, never shared or exported. The public repo, CI logs and artefacts carry ingredient and
+  unit words one at a time and aggregate figures, never photos, text, recipe or book titles, or
+  figures per book or per page. A move towards users needs a new legal review.
+
+## SUPERSEDES the folder of the BUT-2414 `storage_files` line (BUT-818, 2026-11-09)
+
+Retires: "lists the objects under `userStoragePrefix(uid)`, the folder `deleteUserStorageFiles`
+empties".
+
+- `storage_files` lists the objects under `userStoragePrefixes(uid)`: `users/{uid}/` and
+  `quarantine/users/{uid}/`, the two folders `deleteUserStorageFiles` empties. A row from the
+  second folder has its path prefixed `quarantine/`. The fields, the 2000-object cap and the
+  `stored_file_contents` known gap are unchanged.
 
 ## BUT-2406 / BUT-2407 — the acquisition tally counts new accounts, with the channel kept on the account (2026-11-09)
 

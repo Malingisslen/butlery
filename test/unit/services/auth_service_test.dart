@@ -9,6 +9,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
@@ -756,6 +757,82 @@ void main() {
 
         await expectLater(authService.deleteCurrentAuthUser(), completes);
         expect(authService.errorMessage, isNull);
+      });
+    });
+
+    // BUT-2502: on Android a guest-list refusal arrives without its marker.
+    group('Guest-list refusal without a marker', () {
+      final unmarked = FirebaseAuthException(
+        code: 'blocking-function-error-response',
+      );
+
+      test('a password sign-in says to confirm the email', () async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => throw unmarked);
+
+        await authService.signInWithEmail(
+          email: 'anna@example.com',
+          password: 'password',
+        );
+
+        expect(
+          authService.errorMessage,
+          AppLocale.current.errorSignInEmailUnverified,
+        );
+      });
+
+      test('a sign-up gets the text that is true for every refusal', () async {
+        when(
+          () => mockAuthRepository.createUser(any(), any()),
+        ).thenAnswer((_) async => throw unmarked);
+
+        await authService.registerWithEmail(
+          email: 'anna@example.com',
+          password: 'password1A!',
+          displayName: 'Anna',
+        );
+
+        expect(
+          authService.errorMessage,
+          AppLocale.current.errorSignupRefusedUnmarked,
+        );
+      });
+
+      test('a sign-up failing with an unmapped code shows the code', () async {
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'app-not-authorized'),
+        );
+
+        final result = await authService.registerWithEmail(
+          email: 'anna@example.com',
+          password: 'password1A!',
+          displayName: 'Anna',
+        );
+
+        expect(result, false);
+        expect(
+          authService.errorMessage,
+          AppLocale.current.errorAuthenticationWithCode('app-not-authorized'),
+        );
+        expect(authService.errorMessage, contains('app-not-authorized'));
+      });
+
+      test('a sign-up failing with a mapped code keeps its own text', () async {
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'weak-password'),
+        );
+
+        await authService.registerWithEmail(
+          email: 'anna@example.com',
+          password: 'password1A!',
+          displayName: 'Anna',
+        );
+
+        expect(authService.errorMessage, AppLocale.current.errorWeakPassword);
       });
     });
 

@@ -7,6 +7,7 @@
 import { FakeFirestore } from "./_fake-firestore";
 import { OTHER, STRAY, SectionCase, T0, T0_ISO, THIRD, UID } from "./_erasure-residue-cases";
 import { stageFile } from "./_erasure-residue-bucket";
+import { hashUid } from "../shared/hash-uid";
 
 function many(db: FakeFirestore, n: number, path: (i: number) => string, data: object): void {
   for (let i = 0; i < n; i++) db.seed(path(i), { ...data });
@@ -39,7 +40,9 @@ export const CASES_2: SectionCase[] = [
         withdrawnAt: T0, note: "deras text", changes: { swedish: { old: "a", new: "b" } }, ...STRAY,
       });
       db.seed("ingredient_change_requests/icr3", {
-        ingredientId: "gurka", status: "withdrawn", createdBy: UID, withdrawnBy: UID, ...STRAY,
+        ingredientId: "gurka", status: "conflict", createdBy: UID, withdrawnBy: UID, ...STRAY,
+        prNumber: 9, reason: "csv-mismatch",
+        csvValue: { swedish: "Gurka", properties: ["plant-based", 4], verified_by: "x", ...STRAY },
       });
       db.seed("ingredient_change_requests/icr4", { ingredientId: "x", createdBy: OTHER });
     },
@@ -57,8 +60,31 @@ export const CASES_2: SectionCase[] = [
         `a withdrawn-only row carries none of the other admin's proposal: ${JSON.stringify(theirs)}`,
       );
       expect(both.created_by_you === true && both.withdrawn_by_you === true, "both flags");
+      expect(both.prNumber === 9 && both.reason === "csv-mismatch", "server fields exported");
+      expect(
+        JSON.stringify(both.csvValue) === '{"swedish":"Gurka","properties":["plant-based"]}',
+        `csvValue keeps rules columns only: ${JSON.stringify(both.csvValue)}`,
+      );
     },
     overCap: (db) => many(db, ROWS, (i) => `ingredient_change_requests/x${i}`, { createdBy: UID }),
+  },
+  {
+    section: "ingredient_change_runs",
+    idKey: "id",
+    rows: ["run1"],
+    seed: (db) => {
+      db.seed("ingredient_change_runs/run1", {
+        adminUidHash: hashUid(UID), ranAt: T0, prNumber: 7, ...STRAY,
+        counts: { applied: 2, conflicts: 1, rejected: 0, reopened: 0, skipped: 0, ...STRAY },
+      });
+      db.seed("ingredient_change_runs/run2", { adminUidHash: hashUid(OTHER), prNumber: 8 });
+    },
+    check: ([run]) => {
+      expect(!("adminUidHash" in run), "no hash exported");
+      expect(run.prNumber === 7 && run.ranAt === T0_ISO, "run fields");
+      expect(JSON.stringify(run.counts) === '{"applied":2,"conflicts":1,"rejected":0,"reopened":0,"skipped":0}', "counts");
+    },
+    overCap: (db) => many(db, ROWS, (i) => `ingredient_change_runs/x${i}`, { adminUidHash: hashUid(UID) }),
   },
   {
     section: "messages_in_left_conversations",
@@ -263,8 +289,11 @@ export const CASES_2: SectionCase[] = [
   {
     section: "storage_files",
     idKey: "path",
-    rows: ["recipes/r1/photo.jpg"],
+    rows: ["quarantine/recipes/r2/x.jpg", "recipes/r1/photo.jpg"],
     seed: (db) => {
+      // BUT-818: the user's quarantined images are listed too, marked as such.
+      stageFile(db, `quarantine/users/${UID}/recipes/r2/x.jpg`);
+      stageFile(db, `quarantine/users/${OTHER}/y.jpg`);
       stageFile(db, `users/${UID}/recipes/r1/photo.jpg`, {
         size: "123",
         contentType: "image/jpeg",
@@ -277,7 +306,8 @@ export const CASES_2: SectionCase[] = [
       stageFile(db, `users/${UID}x/sibling.jpg`);
       stageFile(db, `users/${OTHER}/theirs.jpg`);
     },
-    check: ([row]) => {
+    check: (rows) => {
+      const row = rows.find((r) => r.path === "recipes/r1/photo.jpg");
       expect(
         JSON.stringify(row) ===
           JSON.stringify({

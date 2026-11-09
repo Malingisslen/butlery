@@ -18,9 +18,18 @@ mixin AuthAccountChanges on ChangeNotifier, StateNotifierMixin {
   void holdMfaChallenge(MfaResolverInfo challenge);
 
   @protected
-  void handleAccountAuthError(FirebaseAuthException e) {
+  void handleAccountAuthError(
+    FirebaseAuthException e, {
+    bool passwordSignIn = false,
+  }) {
     AppLogger.error('Firebase Auth Error Code: ${e.code}');
-    setError(mapAuthErrorToMessage(e));
+    final mapped = mapAuthErrorToMessage(e, passwordSignIn: passwordSignIn);
+    final l = AppLocale.current;
+    setError(
+      mapped == l.errorAuthentication
+          ? l.errorAuthenticationWithCode(e.code)
+          : mapped,
+    );
   }
 
   /// Re-authenticate user with password (required before sensitive operations).

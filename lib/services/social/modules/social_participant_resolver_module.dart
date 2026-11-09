@@ -8,6 +8,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_owner_lookup.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
@@ -35,6 +36,10 @@ class SocialParticipantResolverModule {
   /// Returns UserProfile objects created from denormalized data in member subcollection.
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
     try {
+      // The owner asks by the recipe's own id, a recipient by the share row's.
+      final own = await getOwnRecipeParticipants(recipeId);
+      if (own != null) return own;
+
       final recipe = getSharedRecipes()
           .where((r) => r.id == recipeId)
           .firstOrNull;
@@ -51,6 +56,34 @@ class SocialParticipantResolverModule {
       AppLogger.error('Failed to get recipe participants', e);
       return [];
     }
+  }
+
+  /// Null when the signed-in user has not shared this recipe. Answers "is it
+  /// shared" and "with whom" from one lookup, so a status check pays for it once.
+  Future<List<UserProfile>?> getOwnRecipeParticipants(String recipeId) async {
+    final own = await sharedRecipeRepository.ownShares.find(recipeId);
+    if (own == null) return null;
+    return _ownerParticipants(recipeId, own);
+  }
+
+  /// The share row's own recipient list is the one both writers keep; only
+  /// one of them also writes member documents.
+  Future<List<UserProfile>> _ownerParticipants(
+    String recipeId,
+    OwnRecipeShare share,
+  ) async {
+    final ids = <String>{
+      share.ownerId,
+      ...share.sharedToUserIds,
+    }.toList();
+    final result = await userService.getUserProfiles(ids);
+    if (result.unavailableIds.isNotEmpty) {
+      AppLogger.warning(
+        'Could not resolve ${result.unavailableIds.length}/${ids.length} '
+        'recipe participant profile(s) for $recipeId',
+      );
+    }
+    return result.profiles;
   }
 
   /// Get menu participants using denormalized member info (avoids N+1 lookups)

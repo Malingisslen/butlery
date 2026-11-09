@@ -15,6 +15,7 @@ String moderatorContentTypeLabel(AppLocalizations l10n, ContentType type) =>
       ContentType.cookSnap => l10n.moderatorContentTypeCookSnap,
       ContentType.group => l10n.moderatorContentTypeGroup,
       ContentType.menuDish => l10n.moderatorContentTypeMenuDish,
+      ContentType.image => l10n.moderatorContentTypeImage,
     };
 
 /// Reports saved before reasons had ids hold their label as text; the one

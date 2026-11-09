@@ -203,6 +203,9 @@ class ReportTakedowns {
       case ContentType.menuDish:
         // Not a document — see _removeMenuDish.
         return null;
+      case ContentType.image:
+        // The server removed it before filing the report.
+        return null;
     }
   }
 }

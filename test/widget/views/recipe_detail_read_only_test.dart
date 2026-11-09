@@ -38,7 +38,7 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -77,8 +77,9 @@ class _MockPantryService extends Mock implements PantryService {}
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
-// Minimal mock for SocialRecipeService: only acceptRecipeShareRequest needed.
-class _MockSocialRecipeService extends Mock implements SocialRecipeService {}
+// Minimal mock for RecipeShareRequestModule: only acceptRecipeShareRequest needed.
+class _MockRecipeShareRequestModule extends Mock
+    implements RecipeShareRequestModule {}
 
 void main() {
   late MockUnifiedRecipeService recipeService;
@@ -204,11 +205,13 @@ void main() {
       // Proves: when the owner opens their own recipe via a share-request
       // notification, a banner with the requester's name is shown together with
       // a one-tap share action button.
-      final socialRecipeService = _MockSocialRecipeService();
+      final shareRequestModule = _MockRecipeShareRequestModule();
       when(
-        () => socialRecipeService.acceptRecipeShareRequest(any()),
+        () => shareRequestModule.acceptRecipeShareRequest(any()),
       ).thenAnswer((_) async => true);
-      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+      TestServiceLocator.registerMock<RecipeShareRequestModule>(
+        shareRequestModule,
+      );
 
       final shareRequest = SocialRequest(
         id: 'req-001',
@@ -247,19 +250,21 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(
-        () => socialRecipeService.acceptRecipeShareRequest(any()),
+        () => shareRequestModule.acceptRecipeShareRequest(any()),
       ).called(1);
     });
 
     testWidgets('a failed share names the requester and offers Försök igen', (
       tester,
     ) async {
-      final socialRecipeService = _MockSocialRecipeService();
+      final shareRequestModule = _MockRecipeShareRequestModule();
       var answer = false;
       when(
-        () => socialRecipeService.acceptRecipeShareRequest(any()),
+        () => shareRequestModule.acceptRecipeShareRequest(any()),
       ).thenAnswer((_) async => answer);
-      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+      TestServiceLocator.registerMock<RecipeShareRequestModule>(
+        shareRequestModule,
+      );
 
       final shareRequest = SocialRequest(
         id: 'req-002',
@@ -288,7 +293,7 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(
-        () => socialRecipeService.acceptRecipeShareRequest(any()),
+        () => shareRequestModule.acceptRecipeShareRequest(any()),
       ).called(2);
       expect(find.text('Receptet kunde inte delas med Anna.'), findsNothing);
     });
@@ -297,8 +302,10 @@ void main() {
     // offered one and the share request is not answered.
     testWidgets('a guest pressing the banner\'s share is offered an account '
         'and nothing is shared', (tester) async {
-      final socialRecipeService = _MockSocialRecipeService();
-      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+      final shareRequestModule = _MockRecipeShareRequestModule();
+      TestServiceLocator.registerMock<RecipeShareRequestModule>(
+        shareRequestModule,
+      );
       final guest = _MockFirebaseUser();
       when(() => guest.isAnonymous).thenReturn(true);
       final auth = _MockAuthService();
@@ -325,7 +332,7 @@ void main() {
         find.text(AppLocalizationsSv().guestSheetShareTitle),
         findsOneWidget,
       );
-      verifyNever(() => socialRecipeService.acceptRecipeShareRequest(any()));
+      verifyNever(() => shareRequestModule.acceptRecipeShareRequest(any()));
     });
 
     testWidgets('banner is suppressed when current user is NOT the recipe owner', (
@@ -334,11 +341,13 @@ void main() {
       // Proves: removing the `recipe.createdBy == currentUserId` guard in
       // production would cause this test to fail — the banner must only render
       // when the logged-in user owns the recipe.
-      final socialRecipeService = _MockSocialRecipeService();
+      final shareRequestModule = _MockRecipeShareRequestModule();
       when(
-        () => socialRecipeService.acceptRecipeShareRequest(any()),
+        () => shareRequestModule.acceptRecipeShareRequest(any()),
       ).thenAnswer((_) async => true);
-      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+      TestServiceLocator.registerMock<RecipeShareRequestModule>(
+        shareRequestModule,
+      );
 
       // shareRequest targets the friend's recipe (createdBy == _friendUserId),
       // but the current test user is _testUserId — so the owner guard must fail.
@@ -371,7 +380,7 @@ void main() {
             'Share action must be suppressed when current user is not the owner',
       );
 
-      verifyNever(() => socialRecipeService.acceptRecipeShareRequest(any()));
+      verifyNever(() => shareRequestModule.acceptRecipeShareRequest(any()));
     });
   });
 

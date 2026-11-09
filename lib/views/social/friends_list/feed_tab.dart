@@ -26,7 +26,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Activity feed tab in the friends view.
@@ -423,7 +423,7 @@ class FeedTab {
         confirmText: context.l10n.feedRequestRecipeConfirm,
       );
       if (confirmed != true || !context.mounted) return;
-      final ok = await ServiceLocator.get<SocialRecipeService>()
+      final ok = await ServiceLocator.get<RecipeShareRequestModule>()
           .requestRecipeShare(
             ownerId: event.actorId,
             recipeId: event.recipeId,

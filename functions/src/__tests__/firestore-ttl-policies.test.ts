@@ -297,6 +297,45 @@ const TARGETS: {
     writer: "lib/repositories/firebase/firebase_ingredient_change_request_repository.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
   },
+  // The server's statuses: inReview and conflict 90 days, rejected 365.
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "90d",
+    writer: "functions/src/admin/create-ingredient-change-pr.ts",
+    stamp: /status: "inReview",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "90d",
+    writer: "functions/src/admin/create-ingredient-change-pr.ts",
+    stamp: /status: "conflict",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(now\.getTime\(\) \+ REVIEW_RETENTION_MS\)/,
+  },
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/admin/create-ingredient-change-pr.ts",
+    stamp: /status: "rejected",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(now\.getTime\(\) \+ REJECTED_RETENTION_MS\)/,
+  },
+  // The sync job's `applied` stamp, 365 days.
+  {
+    group: "ingredient_change_requests",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/admin/mark-applied-core.ts",
+    stamp: /status: "applied",(?:(?!\}\);)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
+  // One record per createIngredientChangePr run, 365 days.
+  {
+    group: "ingredient_change_runs",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/admin/create-ingredient-change-pr.ts",
+    stamp:
+      /collection\(Collections\.ingredientChangeRuns\)(?:(?!\}\);)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
   {
     group: "parse_corrections_v2",
     field: "expireAt",
@@ -338,6 +377,7 @@ const EXPECTED_TTL_GROUPS = [
   "erasures_in_progress",
   "feedback",
   "ingredient_change_requests",
+  "ingredient_change_runs",
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",

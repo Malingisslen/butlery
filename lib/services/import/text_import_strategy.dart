@@ -259,6 +259,15 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   static final _letter = RegExp(r'[A-Za-zÅÄÖåäöÉé]');
 
+  /// A lower-case dish name typed without capitals ("korvstroganoff") has
+  /// the shape of an account name.
+  bool _isTitleAboveRows(List<String> lines, int index) =>
+      HeadingWordLists.looksLikeHandle(lines[index]) &&
+      !lines[index].contains(_handleOnlyChar) &&
+      _isQuantityRow(lines[index + 1]);
+
+  static final _handleOnlyChar = RegExp(r'[_.\d@]');
+
   /// Comparison key for the leading-title-fragment skip: letters/digits only,
   /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
   /// "Köttbullar med gräddsås" regardless of the spaces/colons preprocessing
@@ -277,7 +286,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     var index = 0;
     while (index < lines.length - 1 &&
         index < _titleSearchLines &&
-        _isLeadingPageLine(lines[index].trim())) {
+        _isLeadingPageLine(lines[index].trim()) &&
+        !_isTitleAboveRows(lines, index)) {
       index++;
     }
     String firstLine = lines[index].trim();
@@ -356,6 +366,51 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   static final _stepNumber = RegExp(r'^\d{1,2}[.)]$');
+
+  /// A list written on one line ("1 gul lök, 2 burkar krossade tomater, …,
+  /// salt") is one row per item: read as a single line, only the items with
+  /// a unit were found and "lök" and "salt" were lost. A line is such a list
+  /// when its first comma-separated item and at least one more open with an
+  /// amount. A seasoning list ("Salt, svartpeppar, oregano") stays one row,
+  /// and so does a step ("Tillsätt 2 dl mjölk, 1 dl vatten, 1 tsk salt").
+  List<String> _inlineRows(String line) {
+    final text = line.trim();
+    if (text.endsWith('.')) return [line];
+    final items = text.split(_itemSeparator);
+    if (items.length < 3) return [line];
+    final measured = items.where(_leadingQuantity.hasMatch).length;
+    final short = items.every(
+      (item) => item.isNotEmpty && item.split(_whitespace).length <= 6,
+    );
+    return measured >= 2 && short && _leadingQuantity.hasMatch(items.first)
+        ? items
+        : [line];
+  }
+
+  static final _itemSeparator = RegExp(r',\s+');
+  static final _whitespace = RegExp(r'\s+');
+
+  // A sentence opening on an imperative ("Koka pastan.") after the rows is
+  // where the method starts when the writer put no heading over it. The whole
+  // first word must be the verb: a row such as "Riven parmesan" or
+  // "Strösocker att toppa med" only shares its first letters.
+  static final _imperativeOpening = RegExp(
+    r'^(?:stek|koka|blanda|rör|häll|lägg|skär|servera|värm|vispa|grädda|'
+    r'fräs|sjud|tillsätt|smaksätt|strö|vänd|ta|låt|förvärm|sätt|börja|gör|'
+    r'ställ|skala|hacka|riv|strimla|marinera|krydda|toppa|garnera|pressa|'
+    r'skölj|dela|mixa|pensla|forma|baka|rosta|grilla|fyll|kavla|hetta|'
+    r'skiva|tärna|bryn|smaka)'
+    r'(?=[\s,])',
+    caseSensitive: false,
+  );
+
+  bool _opensMethod(String line) {
+    final text = line.trim();
+    if (!_imperativeOpening.hasMatch(text) || _isQuantityRow(text)) {
+      return false;
+    }
+    return text.endsWith('.') || text.split(RegExp(r'\s+')).length >= 3;
+  }
 
   /// Which of [lines] belong to the recipe (BUT-2455). After a heading that
   /// ends the recipe ("Kommentarer", "Fler recept") nothing is read; after a
@@ -601,9 +656,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         afterBlank = true;
         continue;
       }
-      pageLines.add(raw);
-      pageStartsBlock.add(afterBlank);
-      afterBlank = false;
+      for (final row in _inlineRows(raw)) {
+        pageLines.add(row);
+        pageStartsBlock.add(afterBlank);
+        afterBlank = false;
+      }
     }
 
     // Only ingredients and steps are read from the recipe's own lines.
@@ -804,13 +861,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         continue;
       }
 
-      // A colon-terminated block marker the header checks above do not catch
-      // ("Så gör du:", "Detta behövs:") switches block instead of becoming a
-      // component group.
+      // A block marker the header checks above do not catch ("Så gör du:",
+      // "Detta behövs:", "Så här gör du") switches block instead of becoming
+      // a component group or a row.
       if (!inInstructions &&
-          line.endsWith(':') &&
           LineRoles.of(line).kind == LineRoleKind.blockMarker) {
-        final marker = lowerLine.substring(0, lowerLine.length - 1).trim();
+        final marker = lowerLine.endsWith(':')
+            ? lowerLine.substring(0, lowerLine.length - 1).trim()
+            : lowerLine;
         final ingredientSide = HeadingWordLists.ingredientBlockMarkers.contains(
           marker,
         );
@@ -904,6 +962,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           !RecipeSectionDetector.looksLikeIngredient(line) &&
           !_isQuantityRow(line);
 
+      if (inIngredients && _opensMethod(line)) {
+        inIngredients = false;
+        inInstructions = true;
+        afterIngredientRow = false;
+      }
+
       if (inIngredients) {
         if (RecipeSectionDetector.isValidIngredient(line)) {
           final ingredient = _parseIngredientLine(line);
@@ -925,7 +989,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       if (score >= 2 && !listStarted) {
         introLines.add(line);
-      } else if (score >= 2 || stepGoesOn) {
+      } else if (score >= 2 ||
+          stepGoesOn ||
+          // Under rows with no heading over them, "Skiva löken och stek den
+          // mjuk i smör." is a step that ends on an ingredient word.
+          (listStarted && _opensMethod(line))) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           takeStep(line, instruction);
@@ -989,10 +1057,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final keptRows = _deduplicateIngredients(ingredients);
     final cleanedIngredients = [for (final row in keptRows) row.text];
     final sections = [for (final row in keptRows) row.section];
-    final cleanedInstructions = _dropRepeatedStepRuns(
-      instructions
-          .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
-          .toList(),
+    final cleanedInstructions = _joinParagraphSteps(
+      _dropRepeatedStepRuns(
+        instructions
+            .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
+            .toList(),
+      ),
+      titleSource,
     );
 
     // CRIT-12: Log warning when no ingredients/instructions found instead of
@@ -1294,6 +1365,48 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (!drop[i]) steps[i],
     ];
   }
+
+  /// One paragraph of method is one step, as a numbered step is (BUT-2455):
+  /// the preprocessing cuts every line into sentences, so the sentences of a
+  /// source line that holds nothing but steps are put back together. A line
+  /// that also carries something else ("Tillagning: …", rows run together)
+  /// keeps its sentences apart.
+  List<String> _joinParagraphSteps(List<String> steps, String source) {
+    final lineKeys = [
+      for (final line in source.split('\n'))
+        if (_stepKey(line).isNotEmpty) _stepKey(line),
+    ];
+    final keys = steps.map(_stepKey).toList();
+    final joined = <String>[];
+    var i = 0;
+    while (i < steps.length) {
+      var end = i + 1;
+      for (final lineKey in lineKeys) {
+        if (keys[i].isEmpty || !lineKey.startsWith(keys[i])) continue;
+        var covered = keys[i].length;
+        var j = i + 1;
+        while (j < steps.length &&
+            covered < lineKey.length &&
+            keys[j].isNotEmpty &&
+            lineKey.startsWith(keys[j], covered)) {
+          covered += keys[j].length;
+          j++;
+        }
+        if (covered == lineKey.length) {
+          end = j;
+          break;
+        }
+      }
+      joined.add(steps.sublist(i, end).join(' '));
+      i = end;
+    }
+    return joined;
+  }
+
+  static String _stepKey(String text) =>
+      text.toLowerCase().replaceAll(_nonKeyChar, '');
+
+  static final _nonKeyChar = RegExp(r'[^a-zåäöéü0-9]');
 
   int? _extractPortions(String text) {
     // "4-5 portioner" is read as 4, the range's lower bound.

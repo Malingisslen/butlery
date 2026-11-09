@@ -229,8 +229,6 @@
   `queryScope:"COLLECTION_GROUP"` in `firestore.indexes.json`, staged in the
   SAME commit (precedent: `participants/participantId`) — missing, a cascade leg
   throws FAILED_PRECONDITION on every real erasure while the fake stays green.
-  COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
-  field — check exemptions, not `indexes`.
   A uid-keyed MAP (`socialData.memberPermissions.<uid>`) is indexed by an
   override on the MAP field — subfields inherit it — and the BUT-1781 guard
   lists it under `MAP_REQUIRED`. Query `where(new FieldPath(map, uid), "!=",
@@ -244,6 +242,8 @@
   EXEMPTS the field — check exemptions, not `indexes`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
+- **`additionalUserInfo.isNewUser` is false in EVERY `beforeSignIn`** (set only
+  for `beforeCreate`); find the sign-up on `event.data.metadata`, pinned via `.run`.
 - **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,
   and a no-tombstone rule binds every CONSTANT it writes.** Deriving the actor
   from the SUBJECT misnames an eviction; a SENTINEL marks that eviction as well

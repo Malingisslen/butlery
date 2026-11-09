@@ -114,8 +114,16 @@ mixin AuthProviderFlows on ChangeNotifier, StateNotifierMixin {
       'operation-not-allowed' ||
       'internal-error' ||
       'unknown' => l10n.authProviderFailed(name),
-      _ => mapAuthErrorToMessage(error!),
+      _ => _withUnknownCode(mapAuthErrorToMessage(error!), name, error.code),
     });
+  }
+
+  /// BUT-2502: the catch-all "Autentiseringsfel" says nothing we can act on,
+  /// so a code the app has no text for is shown with the code itself.
+  static String _withUnknownCode(String mapped, String name, String code) {
+    final l10n = AppLocale.current;
+    if (mapped != l10n.errorAuthentication) return mapped;
+    return l10n.authProviderFailedWithCode(name, code);
   }
 
   static String providerName(SignInProvider provider) => switch (provider) {
