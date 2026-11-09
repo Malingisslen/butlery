@@ -52,6 +52,7 @@ import * as admin from "firebase-admin";
 import * as readline from "readline";
 import { randomUUID } from "crypto";
 import { initializeAdminApp } from "./admin-init";
+import { QUARANTINE_PREFIX } from "../account/cascade/storage";
 
 // --- Configuration ---
 
@@ -99,7 +100,8 @@ import {
 // `feedback/{userId}/{timestamp}.png` (`firebase_feedback_repository.dart`),
 // so a reset deleted the Firestore row and left the image standing.
 // `ops/` is deliberately NOT here — see `recordRunOutOfBand`.
-const STORAGE_PREFIXES_TO_DELETE = ["users/", "shared/", "feedback/"];
+// BUT-818: `quarantine/` holds copies of users' images under their uid.
+const STORAGE_PREFIXES_TO_DELETE = ["users/", "shared/", "feedback/", QUARANTINE_PREFIX];
 
 const BATCH_SIZE = 500;
 /**

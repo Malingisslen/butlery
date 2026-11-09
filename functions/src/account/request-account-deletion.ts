@@ -15,7 +15,7 @@
  *   2. Callable validates `auth_time < 5 min` (re-auth requirement).
  *   3. Cascade module (`account-deletion-cascade.ts`) deletes the user's
  *      own-data across ~25 Firestore collections, run as Admin SDK.
- *   4. Storage prefix `users/{uid}/` is wiped.
+ *   4. Storage prefixes `users/{uid}/` and `quarantine/users/{uid}/` are wiped.
  *   5. `admin.auth().deleteUser(uid)` runs LAST. This fires the existing
  *      `onUserDeleted` v1 auth trigger which handles cross-user cleanup
  *      (reverse friendships, group memberships, friend counts, presence
@@ -92,7 +92,7 @@ import {
   deleteUserSubcollections,
   deleteUserProfile,
   USER_MODERATION,
-  userStoragePrefix,
+  userStoragePrefixes,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
 import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
@@ -643,13 +643,30 @@ export async function deleteUserStorageFiles(
   storage: admin.storage.Storage,
   uid: string,
 ): Promise<boolean> {
+  // Sequential, users/ first: an in-flight quarantine copy needs its source,
+  // so a copy that lands meanwhile is caught by the quarantine pass after it.
+  let prefixes: string[];
   try {
-    await storage.bucket().deleteFiles({ prefix: userStoragePrefix(uid) });
-    return true;
+    prefixes = userStoragePrefixes(uid);
   } catch (err) {
-    logger.error("[requestAccountDeletion] storage delete failed", { err });
+    logger.error("[requestAccountDeletion] storage delete failed", {
+      errCode: (err as { code?: unknown } | null)?.code ?? null,
+    });
     return false;
   }
+  let ok = true;
+  for (const prefix of prefixes) {
+    try {
+      await storage.bucket().deleteFiles({ prefix });
+    } catch (err) {
+      ok = false;
+      // A Storage error can repeat an object name, which carries the uid.
+      logger.error("[requestAccountDeletion] storage delete failed", {
+        errCode: (err as { code?: unknown } | null)?.code ?? null,
+      });
+    }
+  }
+  return ok;
 }
 
 /**

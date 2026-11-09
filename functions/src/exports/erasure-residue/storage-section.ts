@@ -10,7 +10,8 @@
  * over the cap declines without being listed whole.
  */
 
-import { userStoragePrefix } from "../../account/account-deletion-cascade";
+import { QUARANTINE_PREFIX } from "../../account/cascade/storage";
+import { userStoragePrefixes } from "../../account/account-deletion-cascade";
 import { MAX_SECTION_ROWS, SectionDef } from "./account-sections";
 import { Decline, Row, sortRows } from "./project";
 
@@ -18,38 +19,46 @@ export const STORAGE_SECTIONS: readonly SectionDef[] = [
   {
     name: "storage_files",
     read: async (_database, uid, bucket) => {
-      const prefix = userStoragePrefix(uid);
       const rows: Row[] = [];
       // Placeholders are skipped, so they get a bound of their own.
       let scanned = 0;
-      let pageToken: string | undefined;
-      do {
-        const [files, next] = await bucket().getFiles({
-          prefix,
-          autoPaginate: false,
-          maxResults: MAX_SECTION_ROWS + 1 - rows.length,
-          pageToken,
-        });
-        scanned += files.length;
-        for (const file of files) {
-          // A folder placeholder, not a file.
-          if (file.name.endsWith("/")) continue;
-          rows.push({
-            path: file.name.slice(prefix.length),
-            size: file.metadata.size === undefined ? null : Number(file.metadata.size),
-            contentType: file.metadata.contentType ?? null,
-            timeCreated: file.metadata.timeCreated ?? null,
-            updated: file.metadata.updated ?? null,
+      for (const prefix of userStoragePrefixes(uid)) {
+        // BUT-818: a quarantined image keeps its folder path, marked as held back.
+        const label = prefix.startsWith(QUARANTINE_PREFIX)
+          ? QUARANTINE_PREFIX
+          : "";
+        let pageToken: string | undefined;
+        do {
+          const [files, next] = await bucket().getFiles({
+            prefix,
+            autoPaginate: false,
+            maxResults: MAX_SECTION_ROWS + 1 - rows.length,
+            pageToken,
           });
-        }
-        if (rows.length > MAX_SECTION_ROWS) {
-          throw new Decline("storage_files", rows.length);
-        }
-        if (scanned > 2 * MAX_SECTION_ROWS) {
-          throw new Decline("storage_files_scanned", scanned);
-        }
-        pageToken = next?.pageToken;
-      } while (pageToken);
+          scanned += files.length;
+          for (const file of files) {
+            // A folder placeholder, not a file.
+            if (file.name.endsWith("/")) continue;
+            rows.push({
+              path: label + file.name.slice(prefix.length),
+              size:
+                file.metadata.size === undefined
+                  ? null
+                  : Number(file.metadata.size),
+              contentType: file.metadata.contentType ?? null,
+              timeCreated: file.metadata.timeCreated ?? null,
+              updated: file.metadata.updated ?? null,
+            });
+          }
+          if (rows.length > MAX_SECTION_ROWS) {
+            throw new Decline("storage_files", rows.length);
+          }
+          if (scanned > 2 * MAX_SECTION_ROWS) {
+            throw new Decline("storage_files_scanned", scanned);
+          }
+          pageToken = next?.pageToken;
+        } while (pageToken);
+      }
       return sortRows(rows, "path");
     },
   },

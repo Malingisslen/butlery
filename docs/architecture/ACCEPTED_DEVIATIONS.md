@@ -6867,3 +6867,13 @@ när vi är klara".
   a model, never shared or exported. The public repo, CI logs and artefacts carry ingredient and
   unit words one at a time and aggregate figures, never photos, text, recipe or book titles, or
   figures per book or per page. A move towards users needs a new legal review.
+
+## SUPERSEDES the folder of the BUT-2414 `storage_files` line (BUT-818, 2026-11-09)
+
+Retires: "lists the objects under `userStoragePrefix(uid)`, the folder `deleteUserStorageFiles`
+empties".
+
+- `storage_files` lists the objects under `userStoragePrefixes(uid)`: `users/{uid}/` and
+  `quarantine/users/{uid}/`, the two folders `deleteUserStorageFiles` empties. A row from the
+  second folder has its path prefixed `quarantine/`. The fields, the 2000-object cap and the
+  `stored_file_contents` known gap are unchanged.

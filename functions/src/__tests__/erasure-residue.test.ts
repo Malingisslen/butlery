@@ -248,6 +248,7 @@ const handlerCases: UnitCase[] = [
         "same prefix",
       );
       assertEqual(deleted[0], `users/${UID}/`, "the user's folder, slash-terminated");
+      assertEqual(deleted[1], `quarantine/users/${UID}/`, "BUT-818: the user's quarantined images");
     },
   },
   {

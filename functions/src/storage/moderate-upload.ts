@@ -10,11 +10,9 @@
  *   layer rejects `image/svg+xml`, this CF rejects bytes that LOOK like SVG
  *   regardless of declared MIME.
  *
- * **Out of scope (deferred):** SafeSearch via Vision API. That's a paid GCP
- * call (~$0.0015/image) with billing implications and a privacy-policy
- * disclosure requirement; tracked separately. This CF is the byte-level
- * gate; a future SafeSearch CF would be a sibling trigger on the same
- * `onObjectFinalized` event.
+ * BUT-818: an image that passes the byte gate under `users/` then goes through
+ * Vision SafeSearch (`safe-search.ts`); an explicit one is moved to the
+ * client-unreachable `quarantine/` prefix.
  *
  * Behavior on mismatch:
  * - Delete the object via Admin SDK (bypasses rules).
@@ -29,6 +27,14 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import type { Bucket } from "@google-cloud/storage";
 import { deleteIfOwnerErased } from "./erased-owner-upload";
+import { QUARANTINE_PREFIX } from "../account/cascade/storage";
+import {
+  SafeSearchAnnotate,
+  SafeSearchScores,
+  scanOnce,
+  shouldScan,
+  visionAnnotate,
+} from "./safe-search";
 
 // First few bytes of supported formats. Source:
 // - JPEG:  FF D8 FF
@@ -203,6 +209,68 @@ export interface ModerateUploadDeps {
   bucket: (name: string) => Bucket;
   /** Seam: the unit suite has no Auth emulator. */
   ownerExists?: (uid: string) => Promise<boolean>;
+  annotate: SafeSearchAnnotate;
+}
+
+/**
+ * The prefixes storage.rules lets a client write. Anything else was written
+ * by the server (e.g. `ops/resets/*.json`, `models/`, our own `quarantine/`
+ * copies) and is not a client's to be judged — before this list the byte gate
+ * deleted the reset script's JSON record as a non-image.
+ */
+const CLIENT_WRITABLE_PREFIXES = ["users/", "feedback/", "corpus/"];
+
+async function quarantine(
+  args: { bucket: string; name: string; ownerUid: string; scores: SafeSearchScores },
+  bucketHandle: Bucket,
+  db: admin.firestore.Firestore
+): Promise<void> {
+  const source = bucketHandle.file(args.name);
+  const dest = bucketHandle.file(QUARANTINE_PREFIX + args.name);
+  try {
+    await source.copy(dest, {
+      metadata: { originalPath: args.name, ownerUid: args.ownerUid, ...args.scores },
+    });
+    await dest.setMetadata({ metadata: { firebaseStorageDownloadTokens: null } });
+  } catch (err) {
+    // Object names carry the uid, and the raw error repeats them.
+    const errorCode = errorCodeOf(err);
+    if (errorCode === 404 || errorCode === "404") {
+      logger.info("[moderateUpload] explicit object deleted before quarantine", {
+        bucket: args.bucket,
+      });
+      return;
+    }
+    logger.error("[moderateUpload] quarantine copy failed; image left in place", {
+      bucket: args.bucket,
+      errorCode,
+    });
+    return;
+  }
+  // Copy before delete: a failed delete leaves a visible image plus evidence,
+  // a delete without the copy would leave nothing to restore on appeal.
+  try {
+    await source.delete({ ignoreNotFound: true });
+  } catch (err) {
+    logger.error("[moderateUpload] quarantined original could not be deleted", {
+      bucket: args.bucket,
+      errorCode: errorCodeOf(err),
+    });
+  }
+
+  await db.collection("audit_logs").add({
+    userId: args.ownerUid,
+    operation: "storage_upload_quarantined",
+    resourceType: "storage_object",
+    resourceId: args.name,
+    granted: false,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    metadata: { bucket: args.bucket, reason: "safe_search", ...args.scores },
+  });
+  logger.warn("[moderateUpload] quarantined explicit upload", {
+    bucket: args.bucket,
+    ...args.scores,
+  });
 }
 
 export async function handleFinalizedObject(
@@ -212,10 +280,7 @@ export async function handleFinalizedObject(
   const name = obj.name;
   if (!name) return; // pathologically empty event; nothing to act on.
 
-  // ML models bucket prefix is read-only and only written by ops tooling
-  // (signed-in admin context). Skip; nothing to validate at the byte level
-  // and downloading large model files just to no-op is wasteful.
-  if (name.startsWith("models/")) return;
+  if (!CLIENT_WRITABLE_PREFIXES.some((prefix) => name.startsWith(prefix))) return;
 
   const bucketName = obj.bucket;
 
@@ -323,8 +388,19 @@ export async function handleFinalizedObject(
     return;
   }
 
-  // Happy path — content type matches the bytes. No further action;
-  // SafeSearch (deferred) would slot in here when added.
+  // shouldScan admits only users/, so the path owner is set. The owner comes
+  // from the PATH, never `uploadedBy`, which the client writes.
+  if (!shouldScan(name) || pathOwner === null) return;
+  const scan = await scanOnce(
+    { bucketName, name, md5Hash: obj.md5Hash, crc32c: obj.crc32c, size: obj.size },
+    { db: deps.db, annotate: deps.annotate }
+  );
+  if (!scan?.explicit) return;
+  await quarantine(
+    { bucket: bucketName, name, ownerUid: pathOwner, scores: scan.scores },
+    bucket,
+    deps.db
+  );
 }
 
 export const moderateUpload = onObjectFinalized(
@@ -337,5 +413,6 @@ export const moderateUpload = onObjectFinalized(
     handleFinalizedObject(event.data, {
       db: admin.firestore(),
       bucket: (name) => admin.storage().bucket(name),
+      annotate: visionAnnotate,
     })
 );
