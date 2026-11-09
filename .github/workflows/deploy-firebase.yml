@@ -718,3 +718,22 @@ jobs:
             echo "- Trigger: \`${{ github.event_name }}\` (\`${{ github.ref }}\`)"
             echo "- Status: \`${{ job.status }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # A deploy started by GITHUB_TOKEN does not wake staging-verify.yml through
+  # `workflow_run`, so it asks for its verdict directly (BUT-2425).
+  request-verify:
+    name: Request the staging verdict
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' && (inputs.environment || 'production') == 'staging' && (inputs.target == 'functions' || inputs.target == 'all' || inputs.target == 'rules') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch staging-verify.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run staging-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f verdict_sha="$GITHUB_SHA"

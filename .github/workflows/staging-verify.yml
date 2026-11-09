@@ -12,6 +12,10 @@
 # latest verdict until a later green one replaces it. `inject_failure` ends the
 # run red on purpose, to prove that the production gate stops on it.
 #
+# Why the deploy workflows also dispatch this one: a `workflow_run` trigger does not
+# fire for a deploy that GITHUB_TOKEN itself started (the automatic staging functions
+# deploy), so that deploy asks for its verdict with `verdict_sha`.
+#
 # Read-only against staging: reads `system/config` and one count, calls no LLM.
 name: Staging Verify
 
@@ -19,6 +23,7 @@ name: Staging Verify
 # verdict. A hand-started green run is a probe: it proves nothing was deployed.
 run-name: >-
   ${{ github.event.workflow_run.head_sha && format('Staging verify {0}', github.event.workflow_run.head_sha)
+  || (inputs.verdict_sha && !inputs.inject_failure && format('Staging verify {0}', inputs.verdict_sha))
   || (inputs.inject_failure && format('Staging verify {0} (injected failure)', github.sha)
   || format('Staging probe {0}', github.sha)) }}
 
@@ -28,6 +33,10 @@ on:
     types: [completed]
   workflow_dispatch:
     inputs:
+      verdict_sha:
+        description: "Set by the staging deploy workflows: the revision they just deployed"
+        type: string
+        default: ""
       inject_failure:
         description: "End red on purpose (proves the production gate stops)"
         type: boolean
@@ -88,7 +97,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ inputs.verdict_sha || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
