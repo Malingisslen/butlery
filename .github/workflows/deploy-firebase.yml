@@ -109,10 +109,20 @@ jobs:
             done
           done
 
-          latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow staging-verify.yml \
-            --limit 30 --json conclusion,displayTitle,url \
-            --jq '[.[] | select(.conclusion == "success" or .conclusion == "failure")][0]')
-          if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+          # The newest run whose smoke job really ran. A run for a production
+          # deploy leaves that job skipped while the run itself reads "success".
+          latest=""
+          while read -r row; do
+            id=$(jq -r .databaseId <<< "$row")
+            jobc=$(gh run view "$id" --repo "$GITHUB_REPOSITORY" --json jobs \
+              --jq '.jobs[] | select(.name == "Smoke-test staging") | .conclusion')
+            if [ "$jobc" = "success" ] || [ "$jobc" = "failure" ]; then
+              latest=$(jq -c --arg c "$jobc" '.conclusion = $c' <<< "$row"); break
+            fi
+          done < <(gh run list --repo "$GITHUB_REPOSITORY" --workflow staging-verify.yml --limit 30 \
+            --json databaseId,displayTitle,url \
+            --jq '.[] | select(.displayTitle | startswith("Staging verify ")) | @json')
+          if [ -z "$latest" ]; then
             fail "No Staging Verify run has finished yet. Deploy to staging first."
           fi
           conclusion=$(jq -r .conclusion <<< "$latest")
