@@ -47,6 +47,8 @@ on:
       # BUT-2422: the staging rules deploy follows every green rules run on
       # main, so a broken staging project would otherwise go unseen.
       - Deploy Staging Rules
+      # BUT-2425: a red staging verdict is what stops a production deploy.
+      - Staging Verify
       # Admin-vy C3: the ingredient sync after a CSV merge is a production write.
       - Sync Ingredients
     types: [completed]
