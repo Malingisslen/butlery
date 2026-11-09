@@ -14763,7 +14763,7 @@
   "@moderatorAppealShowImage": {
     "description": "BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator"
   },
-  "moderatorAppealImagesOmitted": "{count} images could not be shown",
+  "moderatorAppealImagesOmitted": "{count, plural, =1{1 image could not be shown} other{{count} images could not be shown}}",
   "@moderatorAppealImagesOmitted": {
     "description": "BUT-818: note when some quarantined images were too large or missing to show",
     "placeholders": {
@@ -14771,6 +14771,10 @@
         "type": "int"
       }
     }
+  },
+  "moderatorAppealImagesTitle": "Stopped images",
+  "@moderatorAppealImagesTitle": {
+    "description": "BUT-818: title of the moderator dialog showing quarantined images"
   },
   "moderatorAppealImagesFailed": "The image could not be loaded.",
   "@moderatorAppealImagesFailed": {

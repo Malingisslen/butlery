@@ -29731,8 +29731,14 @@ abstract class AppLocalizations {
   /// BUT-818: note when some quarantined images were too large or missing to show
   ///
   /// In sv, this message translates to:
-  /// **'{count} bilder kunde inte visas'**
+  /// **'{count, plural, =1{1 bild kunde inte visas} other{{count} bilder kunde inte visas}}'**
   String moderatorAppealImagesOmitted(int count);
+
+  /// BUT-818: title of the moderator dialog showing quarantined images
+  ///
+  /// In sv, this message translates to:
+  /// **'Stoppade bilder'**
+  String get moderatorAppealImagesTitle;
 
   /// BUT-818: shown when the quarantined image could not be fetched
   ///

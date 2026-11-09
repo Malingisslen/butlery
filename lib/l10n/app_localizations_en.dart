@@ -19444,8 +19444,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String moderatorAppealImagesOmitted(int count) {
-    return '$count images could not be shown';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images could not be shown',
+      one: '1 image could not be shown',
+    );
+    return '$_temp0';
   }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stopped images';
 
   @override
   String get moderatorAppealImagesFailed => 'The image could not be loaded.';
