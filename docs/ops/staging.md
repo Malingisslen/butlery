@@ -11,8 +11,9 @@ is our own lab. Plan and decisions: BUT-451, `tasks/firebase-staging-plan.md` (d
 2. Rules, indexes and Storage rules reach staging by themselves:
    `deploy-staging-rules.yml` runs after the "Firestore Rules" suite is green on `main`.
    An index-only change does not trigger that suite; dispatch the workflow by hand.
-3. Functions reach staging by dispatching `deploy-firebase.yml` with
-   `environment=staging`.
+3. Functions reach staging by themselves: `deploy-staging-functions.yml` dispatches
+   `deploy-firebase.yml` with `environment=staging` after the "Cloud Functions Unit
+   Tests" suite is green on `main`.
 4. Try the change in the staging app.
 5. Only then dispatch `deploy-firebase.yml` with `environment=production`. Malin approves
    that run in GitHub before it starts.
