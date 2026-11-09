@@ -14738,6 +14738,44 @@
   "@motivationMisattributionNameRemoved": {
     "description": "BUT-2353: motivation text, key misattribution_name_removed"
   },
+  "decisionSubjectImage": "{who, select, owner{Your image} other{An image}}",
+  "@decisionSubjectImage": {
+    "description": "BUT-818: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorContentTypeImage": "Image",
+  "@moderatorContentTypeImage": {
+    "description": "BUT-818: content type label for an image removed by the automatic check"
+  },
+  "reportReasonExplicitImage": "Inappropriate image (automatic check)",
+  "@reportReasonExplicitImage": {
+    "description": "BUT-818: reason of the report the server files when the automatic image check stops an image; never offered in the report dialog."
+  },
+  "motivationRemovedAutomatedImage": "The image was stopped by the automatic image check because it is very likely sexual or violent. The decision was made automatically. If you appeal, a moderator reviews the image.",
+  "@motivationRemovedAutomatedImage": {
+    "description": "BUT-818: motivation text, key removed_automated_image"
+  },
+  "moderatorAppealShowImage": "Show the image",
+  "@moderatorAppealShowImage": {
+    "description": "BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator"
+  },
+  "moderatorAppealImagesOmitted": "{count} images could not be shown",
+  "@moderatorAppealImagesOmitted": {
+    "description": "BUT-818: note when some quarantined images were too large or missing to show",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorAppealImagesFailed": "The image could not be loaded.",
+  "@moderatorAppealImagesFailed": {
+    "description": "BUT-818: shown when the quarantined image could not be fetched"
+  },
   "myContentDecisionsTitle": "Decisions about my content",
   "@myContentDecisionsTitle": {
     "description": "BUT-2353: title of the owner decision list and the row that opens it"

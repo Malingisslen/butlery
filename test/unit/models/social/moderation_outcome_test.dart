@@ -21,6 +21,7 @@ void main() {
         'kept_already_gone',
         'kept_unclear',
         'misattribution_name_removed',
+        'removed_automated_image',
       ]);
     });
 
@@ -39,6 +40,16 @@ void main() {
         ModerationMotivation.choicesFor(ModeratorDecision.noAction),
         isNot(contains(ModerationMotivation.misattributionNameRemoved)),
       );
+      expect(
+        ModerationMotivation.removedAutomatedImage.decision,
+        isNull,
+      );
+      for (final d in ModeratorDecision.values) {
+        expect(
+          ModerationMotivation.choicesFor(d),
+          isNot(contains(ModerationMotivation.removedAutomatedImage)),
+        );
+      }
     });
 
     test('defaults follow the contract', () {

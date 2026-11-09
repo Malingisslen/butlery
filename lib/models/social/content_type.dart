@@ -15,6 +15,10 @@ enum ContentType {
   cookSnap('cook_snap'),
   group('group'),
 
+  // Filed only by the server's automatic image check; the image is removed
+  // there, so nothing on the client takes it down.
+  image('image'),
+
   // contentId is the shared_content id and dishId names the dish;
   // contentOwnerId is the sharer, never the named creator.
   menuDish('menu_dish')

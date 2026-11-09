@@ -10,6 +10,7 @@ extension ReportReasonLabel on ReportReason {
     ReportReason.copyright => l10n.reportReasonCopyright,
     ReportReason.other => l10n.reportReasonOther,
     ReportReason.misattribution => l10n.reportReasonMisattribution,
+    ReportReason.explicitImage => l10n.reportReasonExplicitImage,
     ReportReason.csam || ReportReason.misinformation => null,
   };
 }

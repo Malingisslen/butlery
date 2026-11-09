@@ -51,7 +51,7 @@ class DecisionRow extends StatelessWidget {
     ContentType.recipe || ContentType.menuDish => ButleryIcons.file,
     ContentType.comment || ContentType.message => ButleryIcons.messageSquare,
     ContentType.profile => ButleryIcons.user,
-    ContentType.cookSnap => ButleryIcons.camera,
+    ContentType.cookSnap || ContentType.image => ButleryIcons.camera,
     ContentType.group => ButleryIcons.users,
     null => ButleryIcons.flag,
   };

@@ -13,14 +13,16 @@ enum ModerationMotivation {
   keptNoBreach('kept_no_breach', ModeratorDecision.noAction),
   keptAlreadyGone('kept_already_gone', ModeratorDecision.noAction),
   keptUnclear('kept_unclear', ModeratorDecision.noAction),
-  misattributionNameRemoved('misattribution_name_removed', null)
+  misattributionNameRemoved('misattribution_name_removed', null),
+  removedAutomatedImage('removed_automated_image', null)
   ;
 
   const ModerationMotivation(this.wireName, this.decision);
 
   final String wireName;
 
-  /// Null for the key the server forces on misattribution reports.
+  /// Null for the keys the server sets itself (misattribution, automatic image
+  /// removal); they are never a moderator's choice.
   final ModeratorDecision? decision;
 
   static ModerationMotivation? fromWire(String? value) {

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:butlery/core/base/base_service.dart';
@@ -42,8 +45,38 @@ class ReopenReportException implements Exception {
   String toString() => 'ReopenReportException($block)';
 }
 
+/// The images the automatic check quarantined for one owner appeal, decoded;
+/// [omitted] counts the ones the server could not send.
+class QuarantinedImages {
+  const QuarantinedImages({required this.images, required this.omitted});
+
+  final List<Uint8List> images;
+  final int omitted;
+
+  static QuarantinedImages fromMap(Map<dynamic, dynamic> data) {
+    final rows = data['images'];
+    final images = <Uint8List>[];
+    if (rows is List) {
+      for (final row in rows) {
+        final b64 = row is Map ? row['base64'] : null;
+        if (b64 is! String || b64.isEmpty) continue;
+        try {
+          images.add(base64Decode(b64));
+        } on FormatException {
+          // A corrupt entry is dropped; the rest still show.
+        }
+      }
+    }
+    final omitted = data['omitted'];
+    return QuarantinedImages(
+      images: images,
+      omitted: omitted is int && omitted > 0 ? omitted : 0,
+    );
+  }
+}
+
 /// The appeal callables: `submitAppeal` for the two parties, and the
-/// admin-only `listOpenAppeals` / `answerAppeal`, `listClosedReports` and
+/// admin-only `listOpenAppeals` / `answerAppeal` / `getQuarantinedImages`, `listClosedReports` and
 /// `reopenReport`.
 class ModerationAppealsService extends BaseService {
   ModerationAppealsService({required FirebaseFunctions functions})
@@ -102,6 +135,28 @@ class ModerationAppealsService extends BaseService {
       for (final row in rows) ?OpenAppeal.fromMap(row),
     ];
   }
+
+  /// [appealId] must be an owner appeal (ending in `_owner`). Fetches every
+  /// page: the server lets the appeal be granted only once all of the case's
+  /// images have been sent.
+  Future<QuarantinedImages> getQuarantinedImages(String appealId) async {
+    final images = <Uint8List>[];
+    var omitted = 0;
+    int? offset = 0;
+    for (var page = 0; offset != null && page < _maxImagePages; page++) {
+      final result = await _callable(
+        'getQuarantinedImages',
+      ).call<Map<dynamic, dynamic>>({'appealId': appealId, 'offset': offset});
+      final parsed = QuarantinedImages.fromMap(result.data);
+      images.addAll(parsed.images);
+      omitted += parsed.omitted;
+      final next = result.data['nextOffset'];
+      offset = next is int && next > offset ? next : null;
+    }
+    return QuarantinedImages(images: images, omitted: omitted);
+  }
+
+  static const _maxImagePages = 20;
 
   /// Throws [AnswerAppealException] on a refusal.
   Future<void> answerAppeal({

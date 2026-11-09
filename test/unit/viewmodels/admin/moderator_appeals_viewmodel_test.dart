@@ -1,4 +1,6 @@
 // BUT-2353: the moderator's appeal queue.
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -44,6 +46,21 @@ void main() {
     expect(await vm.load(), isFalse);
     expect(vm.hasError, isTrue);
   });
+
+  test(
+    'loadQuarantinedImages returns the images, or null on failure',
+    () async {
+      final images = QuarantinedImages(images: [Uint8List(1)], omitted: 0);
+      when(
+        () => service.getQuarantinedImages('a'),
+      ).thenAnswer((_) async => images);
+      expect(await vm.loadQuarantinedImages(_appeal('a')), same(images));
+
+      when(() => service.getQuarantinedImages('a')).thenThrow(Exception('x'));
+      expect(await vm.loadQuarantinedImages(_appeal('a')), isNull);
+      expect(vm.hasError, isFalse);
+    },
+  );
 
   test('answering removes the appeal from the queue', () async {
     when(
