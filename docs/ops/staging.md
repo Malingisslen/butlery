@@ -14,9 +14,16 @@ is our own lab. Plan and decisions: BUT-451, `tasks/firebase-staging-plan.md` (d
 3. Functions reach staging by themselves: `deploy-staging-functions.yml` dispatches
    `deploy-firebase.yml` with `environment=staging` after the "Cloud Functions Unit
    Tests" suite is green on `main`.
-4. Try the change in the staging app.
-5. Only then dispatch `deploy-firebase.yml` with `environment=production`. Malin approves
-   that run in GitHub before it starts.
+4. `staging-verify.yml` smoke-tests staging after each green staging deploy
+   (`functions/scripts/staging-smoke.js`: Cloud Run services Ready, callables answer,
+   anonymous Firestore reads denied, seed data present) and stays red until a later
+   green run replaces it.
+5. Try the change in the staging app.
+6. Only then dispatch `deploy-firebase.yml` with `environment=production`. Its first job
+   (`staging-gate`) refuses to continue unless the latest Staging Verify run is green and
+   the backend code (`functions/src`, rules, indexes, Storage rules, function
+   dependencies) is identical to what staging was verified with. That happens before
+   Malin is asked to approve, so a red staging never reaches her approval prompt.
 
 Deploy only through the Firebase CLI (the workflows), never through the MCP
 `firebase_deploy` tool, and verify every deploy on the resource itself.

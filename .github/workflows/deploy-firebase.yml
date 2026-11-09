@@ -76,8 +76,65 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # BUT-2425: production waits for a green staging verdict on the same backend
+  # code. This job has no `environment`, so a red verdict stops the run BEFORE
+  # Malin is asked to approve anything. Staging runs skip it.
+  staging-gate:
+    name: Staging must be green
+    if: (inputs.environment || 'production') == 'production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Require a green Staging Verify for this code
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1" >&2; exit 1; }
+          paths=(functions/src functions/package.json functions/package-lock.json
+                 firestore.rules firestore.indexes.json storage.rules)
+
+          for wf in deploy-staging-rules.yml staging-verify.yml; do
+            for st in queued in_progress; do
+              n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$wf" --status "$st" --json databaseId --jq 'length')
+              [ "$n" = "0" ] || fail "$wf has $n $st run(s). Wait for staging to settle, then dispatch again."
+            done
+          done
+
+          latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow staging-verify.yml \
+            --limit 30 --json conclusion,displayTitle,url \
+            --jq '[.[] | select(.conclusion == "success" or .conclusion == "failure")][0]')
+          if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+            fail "No Staging Verify run has finished yet. Deploy to staging first."
+          fi
+          conclusion=$(jq -r .conclusion <<< "$latest")
+          url=$(jq -r .url <<< "$latest")
+          sha=$(jq -r '.displayTitle | capture("(?<s>[0-9a-f]{40})").s' <<< "$latest")
+          echo "Latest staging verdict: $conclusion on $sha ($url)"
+          [ "$conclusion" = "success" ] || fail "The latest Staging Verify run is red: $url"
+
+          git cat-file -e "$sha^{commit}" 2>/dev/null || fail "Verified revision $sha is not in this checkout."
+          # Only the backend the staging project runs counts. A difference in
+          # either direction means staging was not tested with this code.
+          if ! git diff --quiet "$sha" "$GITHUB_SHA" -- "${paths[@]}"; then
+            git diff --stat "$sha" "$GITHUB_SHA" -- "${paths[@]}" | tail -20
+            fail "Backend code differs from what staging was verified with ($sha). Let staging deploy and verify this revision first."
+          fi
+          echo "Staging was verified green with the same backend code. Gate passed."
+
   deploy:
     name: Deploy to ${{ inputs.environment || 'production' }}
+    needs: staging-gate
+    # A skipped gate (staging runs) must not skip the deploy with it.
+    if: ${{ !cancelled() && (needs.staging-gate.result == 'success' || needs.staging-gate.result == 'skipped') }}
     runs-on: ubuntu-latest
     # `production` is the manual-approval gate: configure required reviewers on
     # this GitHub Environment so deploys pause until approved.

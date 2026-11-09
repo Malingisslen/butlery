@@ -30,6 +30,7 @@
     "test:script-age-claim-backfill": "node scripts/__tests__/backfill-age-claim.test.js",
     "test:script-meal-type-migration": "node scripts/__tests__/migrate-meal-type.test.js",
     "test:script-seed-staging": "node scripts/__tests__/seed-staging.test.js",
+    "test:script-staging-smoke": "node scripts/__tests__/staging-smoke.test.js",
     "test:rules": "ts-node src/__tests__/reports-rules.test.ts",
     "test:rules:age-gate": "ts-node src/__tests__/age-gate-rules.test.ts",
     "test:rules:account-maturity": "ts-node src/__tests__/account-maturity-rules.test.ts",
