@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 9 november 2026
-**Version:** 1.32
+**Version:** 1.33
 
 ---
 
@@ -115,7 +115,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Identifiera och åtgärda buggar
 - Förbättra användarupplevelsen
 - Mäta appens prestanda
-- Räkna, helt anonymt och per dag, vilken kanal (till exempel Instagram eller nyhetsbrev) nya användare kom från. Räkningen innehåller inget användar-id och kan inte kopplas till dig. Den finns kvar även om du senare raderar ditt konto.
+- Räkna vilken kanal (till exempel Instagram eller nyhetsbrev) nya användare kom från. Öppnar du appen via en kampanjlänk läser appen kanalen ur länken. På Android läser appen också, från Google Play, vilken länk appen installerades från. Det görs först när du har samtyckt, och bara kanalen läses. Kanalen sparas på ditt konto, ingår i din dataexport och raderas med kontot. Den räknas också in i en sammanställning per dag utan användar-id, som inte kan kopplas till dig och som finns kvar även om du raderar kontot.
 
 **Marknadsföring (om du har samtyckt):**
 - Skicka nyhetsbrev om nya funktioner
@@ -289,6 +289,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
 | Analyticsdata | 14 månader (Google Analytics standard) | Samtycke |
+| Kanal du kom från (källa och medium) på ditt konto | Tills du raderar kontot | Samtycke (Art. 6.1.a) |
 | Anonym kanalräkning per dag (inget användar-id) | Tills vidare, eftersom den inte går att koppla till en person | Samtycke (Art. 6.1.a) vid räkningen |
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
@@ -427,7 +428,7 @@ Vi kan uppdatera denna policy när:
 Vid väsentliga ändringar:
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 3 november 2026
+**Senaste ändring:** 9 november 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

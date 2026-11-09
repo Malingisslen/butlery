@@ -6877,3 +6877,34 @@ empties".
   `quarantine/users/{uid}/`, the two folders `deleteUserStorageFiles` empties. A row from the
   second folder has its path prefixed `quarantine/`. The fields, the 2000-object cap and the
   `stored_file_contents` known gap are unchanged.
+
+## BUT-2406 / BUT-2407 — the acquisition tally counts new accounts, with the channel kept on the account (2026-11-09)
+
+### [Privacy/GDPR] SUPERSEDES the "What is kept" and "What it measures" entries of BUT-1997 for days from `SCOPE_V2_FROM`
+
+- **What is kept.** From `SCOPE_V2_FROM` the day document carries `v: 2` and
+  `scope: 'consented-new-account-channel'`; earlier days keep `v: 1` and
+  `scope: 'consented-signed-in-utm'`. `runAcquisitionEligibleSnapshot` also writes
+  `eligible.analyticsConsented`, a `count()` of consent documents with `purposes.analytics == true`,
+  to the day document. Still no uid, hash, event id or per-user time.
+- **What it measures.** `countAcquisition` counts a row only when its Auth account has a sign-in
+  provider (not a guest) and was created at most `NEW_USER_WINDOW_MS` before the row's
+  `firstSeenAt`. The channel reaches the row from a campaign link opened while signed out (held in
+  memory until the person is registered and has consented) or, on Android, from the Google Play
+  install referrer read once after analytics consent.
+- **The per-user row.** It holds the allowlisted source and medium; `campaign` is written as `''`
+  by the current app. Policy 1.30 names the row and its retention.
+- **Accepted residuals:**
+  - The create rule still admits any `campaign`, `source` and `medium` string of up to 100
+    characters, so an app from before BUT-2406 or a hand-rolled client can write a raw campaign
+    name; the tally never reads it.
+  - `eligible.analyticsConsented` counts every account with the consent flag, guests and old
+    accounts included, and a client can create consent documents under any id.
+  - An existing Android account that consents after updating gets the Play referrer channel on its
+    row, and the trigger then returns `not_new_user` for it.
+  - Withdrawing consent does not delete the per-user row (unchanged from BUT-1997).
+  - Guests and deleted accounts are skipped on every day, including days before `SCOPE_V2_FROM`.
+  - The cut-over day is safe only if the functions are deployed before it.
+  - The admin tab shows cells under 5 as "<5" after summing the 30-day window, and rounds the total
+    to the nearest 5.
+

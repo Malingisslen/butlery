@@ -21914,4 +21914,40 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get adminOverviewUnavailableAdvice =>
       'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.';
+
+  @override
+  String get adminNavAcquisition => 'Kanaler';
+
+  @override
+  String get adminAcquisitionTitle => 'Nya användare per kanal';
+
+  @override
+  String get adminAcquisitionLoadFailed =>
+      'Kunde inte ladda kanalräkningen. Tabellen kan inte visas förrän laddningen lyckas.';
+
+  @override
+  String get adminAcquisitionEmpty =>
+      'Ingen kanalräkning för de senaste 30 dagarna';
+
+  @override
+  String get adminAcquisitionColSource => 'Kanal';
+
+  @override
+  String get adminAcquisitionColCount => 'Nya användare';
+
+  @override
+  String get adminAcquisitionTotal => 'Totalt, avrundat till närmaste 5';
+
+  @override
+  String get adminAcquisitionEligible => 'Har sagt ja till statistik';
+
+  @override
+  String get adminAcquisitionNote =>
+      'Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.';
+
+  @override
+  String get adminAcquisitionOther => 'Övrigt';
+
+  @override
+  String get adminAcquisitionLoading => 'Laddar kanalräkningen …';
 }

@@ -97,6 +97,7 @@ async function testRegistryMembership(): Promise<void> {
     "parsingCorrectionsSnapshot",
     "feedbackSnapshot",
     "opsSnapshot",
+    "acquisitionEligibleSnapshot",
     "detectAnomalies",
     // Consumed by nobody — last, so a timeout in it takes
     // nothing else down with it.

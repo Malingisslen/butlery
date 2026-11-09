@@ -18027,5 +18027,16 @@
   "adminOverviewProposalsOk": "Inga förslag väntar.",
   "adminOverviewImportOk": "Importerna går bra och inga ovanliga svängningar har upptäckts.",
   "adminOverviewNoSignalAdvice": "Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.",
-  "adminOverviewUnavailableAdvice": "Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera."
+  "adminOverviewUnavailableAdvice": "Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.",
+  "adminNavAcquisition": "Kanaler",
+  "adminAcquisitionTitle": "Nya användare per kanal",
+  "adminAcquisitionLoadFailed": "Kunde inte ladda kanalräkningen. Tabellen kan inte visas förrän laddningen lyckas.",
+  "adminAcquisitionEmpty": "Ingen kanalräkning för de senaste 30 dagarna",
+  "adminAcquisitionColSource": "Kanal",
+  "adminAcquisitionColCount": "Nya användare",
+  "adminAcquisitionTotal": "Totalt, avrundat till närmaste 5",
+  "adminAcquisitionEligible": "Har sagt ja till statistik",
+  "adminAcquisitionNote": "Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.",
+  "adminAcquisitionOther": "Övrigt",
+  "adminAcquisitionLoading": "Laddar kanalräkningen …"
 }

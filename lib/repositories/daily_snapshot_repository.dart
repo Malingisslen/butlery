@@ -32,4 +32,25 @@ class DailySnapshotRepository {
       rethrow;
     }
   }
+
+  /// Up to [days] newest daily docs for [group], newest first. Reads one
+  /// document per day, so the caller picks a small window.
+  Future<List<Map<String, dynamic>>> getRecent(
+    String group, {
+    required int days,
+  }) async {
+    try {
+      final snapshot = await _firestore
+          .collection(FirestoreCollections.analytics)
+          .doc(group)
+          .collection('daily')
+          .orderBy(FieldPath.documentId, descending: true)
+          .limit(days)
+          .get();
+      return [for (final doc in snapshot.docs) doc.data()];
+    } catch (e) {
+      AppLogger.warning('DailySnapshotRepository: failed for $group: $e');
+      rethrow;
+    }
+  }
 }

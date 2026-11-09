@@ -384,7 +384,8 @@ async function scenario_everyCollectionIsDecided(): Promise<void> {
     // `db.collection("users").doc(uid).collection(...)` chains. If either
     // shows up here the collapse stopped working, and the guard would start
     // demanding a top-level list entry for a subcollection.
-    !fromServer.has("consent") && !fromServer.has("settings"),
+    !fromCollectionLiteral.has("consent") && !fromCollectionLiteral.has("settings") &&
+      !fromConstant.has("consent") && !fromConstant.has("settings"),
     "a users/{uid} subcollection was read as a top-level collection — the " +
       "`.doc(` look-back stopped collapsing chains",
   );
