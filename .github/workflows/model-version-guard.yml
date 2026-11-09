@@ -9,27 +9,11 @@ name: Model Version Guard
 # lands in the registry + ships in a client, every client silently drops
 # to the slower rule-based / LLM parsing tier. This catches that drift.
 #
-# ──────────────────────────────────────────────────────────────────────
-# ONE-TIME SETUP (required before this workflow can pass):
-#
-#   Provision a READ-ONLY Storage service account scoped to models/**,
-#   download its JSON key, and add it as the GitHub secret
-#   `MODELS_RO_SA_KEY`. Concretely:
-#
-#   1. In Google Cloud Console for the production project, create a service
-#      account, e.g. "models-ro-ci".
-#   2. Grant it READ-ONLY access to the model objects only — grant
-#      "Storage Object Viewer" (roles/storage.objectViewer) on the bucket
-#      gs://<production project id>.firebasestorage.app (optionally scope tighter to
-#      the models/ prefix via an IAM condition on resource name).
-#   3. Create a JSON key for that service account and download it.
-#   4. In GitHub: repo Settings → Secrets and variables → Actions → New
-#      repository secret. Name it MODELS_RO_SA_KEY and paste the full JSON
-#      key file contents as the value.
-#
-#   Until the secret exists, the job fails fast with a clear message
-#   (not a cryptic gcloud auth error).
-# ──────────────────────────────────────────────────────────────────────
+# Signs in with Workload Identity Federation (BUT-2421): a short-lived token
+# for a read-only service account, no stored key. The `model-guard` GitHub
+# environment (no reviewers, so the nightly run is not held) holds the variables
+# GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_MODELS_RO_SERVICE_ACCOUNT. The
+# provider only accepts this repository's `model-guard` environment on main.
 
 on:
   schedule:
@@ -47,6 +31,10 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: model-guard
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v6
 
@@ -55,32 +43,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Verify service-account secret is configured
-        env:
-          KEY: ${{ secrets.MODELS_RO_SA_KEY }}
-        run: |
-          if [ -z "$KEY" ]; then
-            echo "::error::Secret MODELS_RO_SA_KEY is not configured. See the" \
-                 "ONE-TIME SETUP comment at the top of" \
-                 ".github/workflows/model-version-guard.yml — a read-only" \
-                 "Storage service-account JSON key must be added as the" \
-                 "MODELS_RO_SA_KEY repository secret."
-            exit 1
-          fi
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_MODELS_RO_SERVICE_ACCOUNT }}
 
-      - name: Write service-account key file
-        env:
-          KEY: ${{ secrets.MODELS_RO_SA_KEY }}
-        run: |
-          printf '%s' "$KEY" > "$RUNNER_TEMP/sa-key.json"
-
-      - name: Authenticate to Google Cloud
+      - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1 — BUT-790 SHA-pin
-
-      - name: Activate service account
-        run: |
-          gcloud auth activate-service-account \
-            --key-file="$RUNNER_TEMP/sa-key.json"
 
       - name: Run model-version guard
         id: guard
@@ -100,10 +70,6 @@ jobs:
               echo '```'
             else
               echo "Guard did not produce output (failed before running —" \
-                   "likely a missing secret or auth error; see the failing step)."
+                   "likely an auth error or a missing environment variable; see the failing step)."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Clean up key file
-        if: always()
-        run: rm -f "$RUNNER_TEMP/sa-key.json"
