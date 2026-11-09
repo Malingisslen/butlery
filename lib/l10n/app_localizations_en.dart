@@ -21962,7 +21962,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminOverviewAllClearBody =>
-      'Imports are going well and no unusual swings have been detected. Nothing needs doing right now.';
+      'No new reports or proposals are waiting and imports are going well. Nothing needs doing right now.';
 
   @override
   String adminOverviewNeedsAction(int count) {
@@ -21976,24 +21976,83 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get adminOverviewAnomaliesTitle => 'The numbers differ from the usual';
-
-  @override
   String get adminOverviewAnomaliesAdvice =>
-      'Something has changed more than usual (see the box above). Start in Recipe import: has a site stopped working? Otherwise System events shows whether something has run wrong. A single deviation can also just be an unusually quiet or busy day.';
+      'The numbers differ from the usual. Open Recipe import and see whether a site has stopped working. A single deviation can also just be an unusually quiet or busy day.';
 
   @override
-  String adminOverviewImportFailuresTitle(int percent) {
-    return '$percent % of imports fail';
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % of imports fail. Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
   }
 
   @override
-  String get adminOverviewImportFailuresAdvice =>
-      'Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
+  String get adminOverviewSomeUnavailable => 'Some numbers could not be loaded';
 
   @override
-  String get adminOverviewOpenImport => 'Open Recipe import';
+  String get adminOverviewStatusOk => 'Looks good';
 
   @override
-  String get adminOverviewLoadFailed => 'Could not load the overview';
+  String get adminOverviewStatusNeedsLook => 'Needs a look';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Could not be loaded';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'No automatic check';
+
+  @override
+  String get adminOverviewOpen => 'Open';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count new reports are waiting. Read them and mark them as handled when you are done.',
+      one:
+          '1 new report is waiting. Read it and mark it as handled when you are done.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'At least $count new reports are waiting. Read the newest first and mark them as handled when you are done.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'No new reports are waiting.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count proposals are waiting for your decision. Open them and approve or reject.',
+      one:
+          '1 proposal is waiting for your decision. Open it and approve or reject.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'At least $count proposals are waiting for your decision. Open the list and approve or reject, and the rest will show.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'No proposals are waiting.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Imports are going well and no unusual swings have been detected.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'The overview does not measure this tab. Open it when you want a closer look.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'The number could not be loaded, so it is not possible to say whether anything needs doing. Try again with Refresh.';
 }

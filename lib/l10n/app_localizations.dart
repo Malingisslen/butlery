@@ -33489,7 +33489,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminOverviewAllClearBody.
   ///
   /// In sv, this message translates to:
-  /// **'Importerna går bra och inga ovanliga svängningar har upptäckts. Inget behöver göras just nu.'**
+  /// **'Inga nya rapporter eller förslag väntar och importerna går bra. Inget behöver göras just nu.'**
   String get adminOverviewAllClearBody;
 
   /// No description provided for @adminOverviewNeedsAction.
@@ -33498,41 +33498,107 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 sak behöver din uppmärksamhet} other{{count} saker behöver din uppmärksamhet}}'**
   String adminOverviewNeedsAction(int count);
 
-  /// No description provided for @adminOverviewAnomaliesTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Siffrorna avviker från det vanliga'**
-  String get adminOverviewAnomaliesTitle;
-
   /// No description provided for @adminOverviewAnomaliesAdvice.
   ///
   /// In sv, this message translates to:
-  /// **'Något har ändrats mer än vanligt (se rutan ovan). Börja i Receptimport: har någon sajt slutat fungera? Annars visar Systemhändelser om något har körts fel. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.'**
+  /// **'Siffrorna avviker från det vanliga. Öppna Receptimport och se om någon sajt har slutat fungera. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.'**
   String get adminOverviewAnomaliesAdvice;
-
-  /// No description provided for @adminOverviewImportFailuresTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'{percent} % av importerna misslyckas'**
-  String adminOverviewImportFailuresTitle(int percent);
 
   /// No description provided for @adminOverviewImportFailuresAdvice.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.'**
-  String get adminOverviewImportFailuresAdvice;
+  /// **'{percent} % av importerna misslyckas. Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.'**
+  String adminOverviewImportFailuresAdvice(int percent);
 
-  /// No description provided for @adminOverviewOpenImport.
+  /// No description provided for @adminOverviewSomeUnavailable.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna Receptimport'**
-  String get adminOverviewOpenImport;
+  /// **'Några siffror kunde inte hämtas'**
+  String get adminOverviewSomeUnavailable;
 
-  /// No description provided for @adminOverviewLoadFailed.
+  /// No description provided for @adminOverviewStatusOk.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte hämta överblicken'**
-  String get adminOverviewLoadFailed;
+  /// **'Ser bra ut'**
+  String get adminOverviewStatusOk;
+
+  /// No description provided for @adminOverviewStatusNeedsLook.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behöver en titt'**
+  String get adminOverviewStatusNeedsLook;
+
+  /// No description provided for @adminOverviewStatusUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämtas'**
+  String get adminOverviewStatusUnavailable;
+
+  /// No description provided for @adminOverviewStatusNoSignal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen automatisk koll'**
+  String get adminOverviewStatusNoSignal;
+
+  /// No description provided for @adminOverviewOpen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna'**
+  String get adminOverviewOpen;
+
+  /// No description provided for @adminOverviewFeedbackAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ny rapport väntar. Läs den och markera den som hanterad när du är klar.} other{{count} nya rapporter väntar. Läs dem och markera dem som hanterade när du är klar.}}'**
+  String adminOverviewFeedbackAdvice(int count);
+
+  /// No description provided for @adminOverviewFeedbackManyAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst {count} nya rapporter väntar. Läs de nyaste först och markera dem som hanterade när du är klar.'**
+  String adminOverviewFeedbackManyAdvice(int count);
+
+  /// No description provided for @adminOverviewFeedbackOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga nya rapporter väntar.'**
+  String get adminOverviewFeedbackOk;
+
+  /// No description provided for @adminOverviewProposalsAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 förslag väntar på ditt beslut. Öppna det och godkänn eller avslå.} other{{count} förslag väntar på ditt beslut. Öppna dem och godkänn eller avslå.}}'**
+  String adminOverviewProposalsAdvice(int count);
+
+  /// No description provided for @adminOverviewProposalsManyAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst {count} förslag väntar på ditt beslut. Öppna listan och godkänn eller avslå, så kommer resten fram.'**
+  String adminOverviewProposalsManyAdvice(int count);
+
+  /// No description provided for @adminOverviewProposalsOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag väntar.'**
+  String get adminOverviewProposalsOk;
+
+  /// No description provided for @adminOverviewImportOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerna går bra och inga ovanliga svängningar har upptäckts.'**
+  String get adminOverviewImportOk;
+
+  /// No description provided for @adminOverviewNoSignalAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.'**
+  String get adminOverviewNoSignalAdvice;
+
+  /// No description provided for @adminOverviewUnavailableAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.'**
+  String get adminOverviewUnavailableAdvice;
 }
 
 class _AppLocalizationsDelegate

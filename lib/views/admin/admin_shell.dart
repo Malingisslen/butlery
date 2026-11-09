@@ -66,8 +66,15 @@ class _AdminShellState extends State<AdminShell>
   void _openTarget(OverviewTarget target) =>
       _controller.animateTo(switch (target) {
         OverviewTarget.feedback => 1,
+        OverviewTarget.proposals => 2,
         OverviewTarget.import => 3,
         OverviewTarget.parsing => 4,
+        OverviewTarget.ops => 5,
+        OverviewTarget.engagement => 6,
+        OverviewTarget.recipes => 7,
+        OverviewTarget.ingredients => 8,
+        OverviewTarget.tagRules => 9,
+        OverviewTarget.guestList => 10,
       });
 
   // Not const: the registry-driven tabs (MetricTabView) carry a closure for
