@@ -118,7 +118,6 @@ async function testRegistryMembership(): Promise<void> {
     "northStarWeekly",
     "importTierWeekly",
     "reconcileBlockMirrors",
-    // BUT-818: also a sweep; a missed week only keeps an image a week longer.
     "quarantineSweep",
   ];
   const actualWeekly = WEEKLY_REPORT_TASKS.map((t) => t.name);

@@ -43,6 +43,8 @@ export const QUARANTINE_RETENTION_DAYS = 200;
 const POINTER_RETENTION_MS = 24 * 60 * 60 * 1000;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Stops before the maintenance chain's per-task timeout cuts the run off. */
+const SWEEP_DEADLINE_MS = 45_000;
 
 function codeOf(err: unknown): unknown {
   return (err as { code?: unknown } | null)?.code ?? null;
@@ -178,6 +180,8 @@ export const onImageAppealAnswered = onDocumentUpdated(
 export interface SweepDeps extends RestoreDeps {
   push: (notices: Notice[]) => Promise<void>;
   now?: Date;
+  /** Injectable so the budget branch is reachable from a test. */
+  deadlineMs?: number;
 }
 
 export interface SweepResult {
@@ -186,18 +190,30 @@ export interface SweepResult {
   keptForAppeal: number;
   decisionsFiled: number;
   failed: number;
+  /** Images left for next week because the run reached its deadline. */
+  deferred: number;
 }
 
 export async function sweepQuarantine(deps: SweepDeps): Promise<SweepResult> {
   const now = deps.now ?? new Date();
   const [files] = await deps.bucket.getFiles({ prefix: QUARANTINE_PREFIX });
   const result: SweepResult = {
-    examined: files.length, deleted: 0, keptForAppeal: 0, decisionsFiled: 0, failed: 0,
+    examined: files.length, deleted: 0, keptForAppeal: 0, decisionsFiled: 0, failed: 0, deferred: 0,
   };
   const decided = new Map<string, boolean>();
   const appealOpen = new Map<string, boolean>();
 
-  for (const file of files) {
+  const deadlineMs = deps.deadlineMs ?? SWEEP_DEADLINE_MS;
+  const startedAt = Date.now();
+  // A random start, so a run that keeps reaching the deadline cannot leave the
+  // same end of the list unswept every week.
+  const start = Math.floor(Math.random() * files.length);
+  for (let i = 0; i < files.length; i++) {
+    if (Date.now() - startedAt > deadlineMs) {
+      result.deferred = files.length - i;
+      break;
+    }
+    const file = files[(start + i) % files.length];
     // One failure must not leave every later image past its deletion date.
     try {
       await sweepOne(file, now, result, decided, appealOpen, deps);
@@ -265,5 +281,6 @@ export async function runQuarantineSweep(): Promise<void> {
     bucket: admin.storage().bucket(),
     push: (notices) => pushNotices(notices, defaultPushDeps(db)),
   });
-  logger.info("quarantine_sweep", { ...result });
+  if (result.deferred > 0) logger.warn("quarantine_sweep_deferred", { ...result });
+  else logger.info("quarantine_sweep", { ...result });
 }

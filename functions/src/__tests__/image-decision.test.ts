@@ -19,6 +19,7 @@ import {
 } from "../storage/image-decision";
 import { isAutomatedImageReport } from "../moderation/report-status";
 import { resolveMotivation } from "../moderation/motivation";
+import { sweepQuarantine } from "../storage/quarantine-restore";
 
 const AUTOMATED = {
   reporterId: null,
@@ -144,6 +145,26 @@ const cases: UnitCase[] = [
       assertEqual(resolveMotivation("content_removed", "explicit_image", undefined), "removed_automated_image", "missing");
       assertEqual(resolveMotivation("content_removed", "explicit_image", "removed_spam"), "removed_automated_image", "other key");
       assertEqual(resolveMotivation("content_removed", "spam", "removed_automated_image"), "removed_other", "not a moderator choice");
+    },
+  },
+  {
+    name: "a sweep that reaches its deadline leaves the rest for next week",
+    fn: async () => {
+      const pointer = (i: number) => ({
+        name: casePointerPath(`u${i}`, NOW),
+        metadata: { timeCreated: NOW.toISOString() },
+        delete: async () => undefined,
+      });
+      const files = [pointer(1), pointer(2), pointer(3)];
+      const bucket = { getFiles: async () => [files] };
+      const deps = { db: fakeDb(), bucket, push: async () => undefined, now: NOW };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stopped = await sweepQuarantine({ ...deps, deadlineMs: -1 } as any);
+      assertEqual(stopped.deferred, 3, "all deferred");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const full = await sweepQuarantine(deps as any);
+      assertEqual(full.deferred, 0, "none deferred");
+      assertEqual(full.failed, 0, "every pointer handled");
     },
   },
 ];
