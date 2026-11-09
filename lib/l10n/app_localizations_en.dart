@@ -8712,10 +8712,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Import health';
+  String get adminNavImport => 'Recipe import';
 
   @override
-  String get adminImportTitle => 'Import health';
+  String get adminImportTitle => 'Recipe import';
 
   @override
   String get adminImportColDomain => 'Domain';
@@ -8742,10 +8742,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminImportSummaryRate => 'Success rate';
 
   @override
-  String get adminNavEngagement => 'Engagement';
+  String get adminNavEngagement => 'Usage';
 
   @override
-  String get adminEngagementTitle => 'Engagement';
+  String get adminEngagementTitle => 'Usage';
 
   @override
   String get adminEngagementUsers => 'Total users';
@@ -8778,10 +8778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEngagementColShopped => 'Shopped';
 
   @override
-  String get adminNavParsing => 'Parsing details';
+  String get adminNavParsing => 'Import corrections';
 
   @override
-  String get adminParsingTitle => 'Parsing details';
+  String get adminParsingTitle => 'Import corrections';
 
   @override
   String get adminParsingEmpty => 'No corrections yet';
@@ -8832,13 +8832,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manual / unknown';
 
   @override
-  String get adminNavOps => 'Ops';
+  String get adminNavOps => 'System events';
 
   @override
-  String get adminNavGuestList => 'Guest list';
+  String get adminNavGuestList => 'Invited';
 
   @override
-  String get adminGuestListTitle => 'Guest list';
+  String get adminGuestListTitle => 'Invited';
 
   @override
   String get adminGuestListLoading => 'Loading the guest list …';
@@ -8893,7 +8893,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavIngredients => 'Ingredients';
 
   @override
-  String get adminNavTagRules => 'Tag rules';
+  String get adminNavTagRules => 'Allergen and diet rules';
 
   @override
   String get adminIngredientsTitle => 'Ingredients';
@@ -9037,7 +9037,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminIngredientNo => 'No';
 
   @override
-  String get adminTagRulesTitle => 'Tag rules';
+  String get adminTagRulesTitle => 'Allergen and diet rules';
 
   @override
   String get adminTagRulesLoadFailed => 'The tag configuration isn\'t loaded.';
@@ -9061,7 +9061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminTagRulesRequired => 'Requires';
 
   @override
-  String get adminOpsTitle => 'Operations';
+  String get adminOpsTitle => 'System events';
 
   @override
   String get adminOpsEmpty => 'No operations events yet';
@@ -21456,7 +21456,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Proposals';
+  String get adminNavProposals => 'Pending proposals';
 
   @override
   String get adminProposalsTitle => 'Pending proposals';
@@ -21993,4 +21993,109 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminProposalWordListReviewFailed =>
       'The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.';
+
+  @override
+  String get adminNavOverview => 'Overview';
+
+  @override
+  String get adminOverviewTitle => 'Overview';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Everything looks normal';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'No new reports or proposals are waiting and imports are going well. Nothing needs doing right now.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things need your attention',
+      one: '1 thing needs your attention',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'The numbers differ from the usual. Open Recipe import and see whether a site has stopped working. A single deviation can also just be an unusually quiet or busy day.';
+
+  @override
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % of imports fail. Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
+  }
+
+  @override
+  String get adminOverviewSomeUnavailable => 'Some numbers could not be loaded';
+
+  @override
+  String get adminOverviewStatusOk => 'Looks good';
+
+  @override
+  String get adminOverviewStatusNeedsLook => 'Needs a look';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Could not be loaded';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'No automatic check';
+
+  @override
+  String get adminOverviewOpen => 'Open';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count new reports are waiting. Read them and mark them as handled when you are done.',
+      one:
+          '1 new report is waiting. Read it and mark it as handled when you are done.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'At least $count new reports are waiting. Read the newest first and mark them as handled when you are done.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'No new reports are waiting.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count proposals are waiting for your decision. Open them and approve or reject.',
+      one:
+          '1 proposal is waiting for your decision. Open it and approve or reject.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'At least $count proposals are waiting for your decision. Open the list and approve or reject, and the rest will show.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'No proposals are waiting.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Imports are going well and no unusual swings have been detected.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'The overview does not measure this tab. Open it when you want a closer look.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'The number could not be loaded, so it is not possible to say whether anything needs doing. Try again with Refresh.';
 }

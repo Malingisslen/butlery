@@ -8673,10 +8673,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Importhälsa';
+  String get adminNavImport => 'Receptimport';
 
   @override
-  String get adminImportTitle => 'Importhälsa';
+  String get adminImportTitle => 'Receptimport';
 
   @override
   String get adminImportColDomain => 'Domän';
@@ -8703,10 +8703,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminImportSummaryRate => 'Andel lyckade';
 
   @override
-  String get adminNavEngagement => 'Engagemang';
+  String get adminNavEngagement => 'Användning';
 
   @override
-  String get adminEngagementTitle => 'Engagemang';
+  String get adminEngagementTitle => 'Användning';
 
   @override
   String get adminEngagementUsers => 'Användare totalt';
@@ -8739,10 +8739,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminEngagementColShopped => 'Handlat';
 
   @override
-  String get adminNavParsing => 'Parsing-detaljer';
+  String get adminNavParsing => 'Rättelser av import';
 
   @override
-  String get adminParsingTitle => 'Parsing-detaljer';
+  String get adminParsingTitle => 'Rättelser av import';
 
   @override
   String get adminParsingEmpty => 'Inga korrigeringar än';
@@ -8793,13 +8793,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manuellt / okänt';
 
   @override
-  String get adminNavOps => 'Drift';
+  String get adminNavOps => 'Systemhändelser';
 
   @override
-  String get adminNavGuestList => 'Gästlista';
+  String get adminNavGuestList => 'Inbjudna';
 
   @override
-  String get adminGuestListTitle => 'Gästlista';
+  String get adminGuestListTitle => 'Inbjudna';
 
   @override
   String get adminGuestListLoading => 'Laddar gästlistan …';
@@ -8855,7 +8855,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavIngredients => 'Ingredienser';
 
   @override
-  String get adminNavTagRules => 'Taggregler';
+  String get adminNavTagRules => 'Allergen- och kostregler';
 
   @override
   String get adminIngredientsTitle => 'Ingredienser';
@@ -8999,7 +8999,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminIngredientNo => 'Nej';
 
   @override
-  String get adminTagRulesTitle => 'Taggregler';
+  String get adminTagRulesTitle => 'Allergen- och kostregler';
 
   @override
   String get adminTagRulesLoadFailed => 'Taggkonfigurationen är inte laddad.';
@@ -9023,7 +9023,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminTagRulesRequired => 'Kräver';
 
   @override
-  String get adminOpsTitle => 'Drift';
+  String get adminOpsTitle => 'Systemhändelser';
 
   @override
   String get adminOpsEmpty => 'Inga driftshändelser än';
@@ -21283,7 +21283,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Förslag';
+  String get adminNavProposals => 'Väntande förslag';
 
   @override
   String get adminProposalsTitle => 'Väntande förslag';
@@ -21809,4 +21809,109 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get adminProposalWordListReviewFailed =>
       'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.';
+
+  @override
+  String get adminNavOverview => 'Överblick';
+
+  @override
+  String get adminOverviewTitle => 'Överblick';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Allt ser normalt ut';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'Inga nya rapporter eller förslag väntar och importerna går bra. Inget behöver göras just nu.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saker behöver din uppmärksamhet',
+      one: '1 sak behöver din uppmärksamhet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'Siffrorna avviker från det vanliga. Öppna Receptimport och se om någon sajt har slutat fungera. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.';
+
+  @override
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % av importerna misslyckas. Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.';
+  }
+
+  @override
+  String get adminOverviewSomeUnavailable => 'Några siffror kunde inte hämtas';
+
+  @override
+  String get adminOverviewStatusOk => 'Ser bra ut';
+
+  @override
+  String get adminOverviewStatusNeedsLook => 'Behöver en titt';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Kunde inte hämtas';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'Ingen automatisk koll';
+
+  @override
+  String get adminOverviewOpen => 'Öppna';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count nya rapporter väntar. Läs dem och markera dem som hanterade när du är klar.',
+      one:
+          '1 ny rapport väntar. Läs den och markera den som hanterad när du är klar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'Minst $count nya rapporter väntar. Läs de nyaste först och markera dem som hanterade när du är klar.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'Inga nya rapporter väntar.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count förslag väntar på ditt beslut. Öppna dem och godkänn eller avslå.',
+      one:
+          '1 förslag väntar på ditt beslut. Öppna det och godkänn eller avslå.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'Minst $count förslag väntar på ditt beslut. Öppna listan och godkänn eller avslå, så kommer resten fram.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'Inga förslag väntar.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Importerna går bra och inga ovanliga svängningar har upptäckts.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.';
 }

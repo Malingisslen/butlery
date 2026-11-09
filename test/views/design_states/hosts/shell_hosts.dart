@@ -13,7 +13,6 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/views/admin/admin_shell.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/legal/community_guidelines_view.dart';
@@ -158,7 +157,7 @@ final shellHosts = <String, StateHost>{
           ),
         ]),
       );
-      return const AdminShell();
+      return const FeedbackInboxView();
     },
   ),
   'admin::EMPTY': StateHost(
