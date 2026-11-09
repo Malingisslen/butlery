@@ -19,7 +19,7 @@
  *   4. Seed data: `system/config` exists and the ingredient database is not
  *      empty (a staging wiped by mistake would otherwise pass every test).
  *
- * Usage (from functions/, after `npm ci`):
+ * Usage (from functions/, after `npm ci && npm run build`):
  *   node scripts/staging-smoke.js --project butlery-app-staging
  * `--inject-failure` makes the run end red on purpose; it exists to prove that
  * the production gate stops on a red run.
@@ -52,15 +52,6 @@ function parseArgs(argv) {
     else if (argv[i] === "--inject-failure") out.injectFailure = true;
   }
   return out;
-}
-
-function requireStaging(project) {
-  if (project !== STAGING_PROJECT) {
-    throw new Error(
-      `REFUSED: this script only targets ${STAGING_PROJECT} (got "${project}"). Nothing has been contacted.`,
-    );
-  }
-  return project;
 }
 
 function serviceIsReady(service) {
@@ -159,19 +150,19 @@ async function runChecks({ project, injectFailure, listServices, fetchFn, db }) 
 }
 
 async function main() {
-  const { project, injectFailure } = parseArgs(process.argv.slice(2));
-  requireStaging(project);
+  const { injectFailure } = parseArgs(process.argv.slice(2));
+  const { requireProject } = require("../lib/admin/require-project");
+  const project = requireProject({ allowed: [STAGING_PROJECT] });
 
-  const { GoogleAuth } = require("google-auth-library");
   const admin = require("firebase-admin");
   admin.initializeApp({ projectId: project });
-  const auth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/cloud-platform"] });
 
   const listServices = async () => {
-    const client = await auth.getClient();
+    const { access_token: token } = await admin.credential.applicationDefault().getAccessToken();
     const url = `https://${REGION}-run.googleapis.com/apis/serving.knative.dev/v1/namespaces/${project}/services`;
-    const res = await client.request({ url });
-    return res.data.items || [];
+    const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`Cloud Run list failed: HTTP ${res.status}`);
+    return (await res.json()).items || [];
   };
 
   const results = await runChecks({
@@ -196,7 +187,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  requireStaging,
   serviceIsReady,
   checkCloudRun,
   checkCallable,

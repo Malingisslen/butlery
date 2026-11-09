@@ -30,13 +30,14 @@ const healthyFetch = async (url) => (url.includes("firestore.googleapis.com") ? 
 
 (async () => {
   await test("refuses any project but staging before contacting anything", () => {
-    assert.throws(() => smoke.requireStaging("butlery-prod"), /REFUSED/);
-    assert.throws(() => smoke.requireStaging(""), /REFUSED/);
-    const r = spawnSync(process.execPath, [path.resolve(__dirname, "../staging-smoke.js"), "--project", "butlery-prod"], {
-      encoding: "utf8",
-    });
-    assert.notStrictEqual(r.status, 0);
-    assert.match(r.stderr, /REFUSED/);
+    for (const args of [["--project", "butlery-prod"], []]) {
+      const r = spawnSync(process.execPath, [path.resolve(__dirname, "../staging-smoke.js"), ...args], {
+        encoding: "utf8",
+        env: { PATH: process.env.PATH },
+      });
+      assert.notStrictEqual(r.status, 0);
+      assert.match(r.stderr, /REFUSED/);
+    }
   });
 
   await test("all green when everything is healthy", async () => {

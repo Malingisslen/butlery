@@ -121,6 +121,10 @@ jobs:
         working-directory: functions
         run: npm ci
 
+      - name: Build the project gate
+        working-directory: functions
+        run: npm run build
+
       - name: Smoke-test staging
         working-directory: functions
         run: |
