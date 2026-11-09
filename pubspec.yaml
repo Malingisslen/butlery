@@ -26,6 +26,7 @@ dependencies:
   firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
   firebase_storage: ^13.3.0    # Updated for bug fixes
   firebase_analytics: ^12.3.0  # Updated for tracking improvements
+  play_install_referrer: ^0.5.0  # Android only: which link Play installed the app from, read after consent
   firebase_app_check: 0.4.5        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`. 0.4.3→0.4.5 reviewed BUT-1367 (2026-06-30): deliberate bump to free firebase_core_platform_interface 7.x for the within-major suite refresh; enforcement not yet flipped on (BUT-760) so no live attestation gate affected.
   firebase_messaging: ^16.2.0  # Updated for FCM improvements
   firebase_performance: ^0.11.3  # For performance monitoring

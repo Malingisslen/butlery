@@ -20,6 +20,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
+import 'package:butlery/services/analytics/pending_acquisition.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/guest/guest_start_coordinator.dart';
 import 'package:butlery/services/onboarding/onboarding_hold.dart';
@@ -68,11 +69,16 @@ class _FakeUser extends Fake implements User {
 class _FakeAuth extends Fake with ChangeNotifier implements AuthService {
   _FakeAuth(this._user);
 
-  final User _user;
+  User? _user;
   int signOuts = 0;
 
   @override
   User? get currentUser => _user;
+
+  void setUser(User? next) {
+    _user = next;
+    notifyListeners();
+  }
 
   @override
   Future<void> signOut() async => signOuts++;
@@ -231,7 +237,10 @@ void main() {
     ServiceLocator.initialize(container);
   }
 
-  tearDown(() => DIContainer().reset());
+  tearDown(() {
+    PendingAcquisition.clear();
+    return DIContainer().reset();
+  });
 
   Widget host() => const MaterialApp(
     locale: Locale('sv'),
@@ -253,6 +262,47 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
   }
+
+  group('campaign channel (BUT-2406)', () {
+    testWidgets('signing out drops a channel learned for the person who left', (
+      tester,
+    ) async {
+      await setUpWrapper(anonymous: false);
+      await pumpHost(tester);
+      auth.notifyListeners();
+      await tester.pump();
+      PendingAcquisition.rememberIfAbsent(
+        AcquisitionChannel.from('tiktok', 'social'),
+      );
+
+      auth.setUser(null);
+      await tester.pump();
+      // The signed-out screen's own dependencies are not registered here; the
+      // listener under test has already run when it fails to build.
+      tester.takeException();
+
+      expect(PendingAcquisition.current, isNull);
+    });
+
+    testWidgets('a channel learned while signed out survives until sign-in', (
+      tester,
+    ) async {
+      await setUpWrapper(anonymous: false);
+      await pumpHost(tester);
+      auth.setUser(null);
+      await tester.pump();
+      tester.takeException();
+      PendingAcquisition.rememberIfAbsent(
+        AcquisitionChannel.from('tiktok', 'social'),
+      );
+
+      auth.notifyListeners();
+      await tester.pump();
+      tester.takeException();
+
+      expect(PendingAcquisition.current?.source, 'tiktok');
+    });
+  });
 
   group('e-mail verification gate', () {
     testWidgets('an anonymous, unverified, new account is let into the app', (

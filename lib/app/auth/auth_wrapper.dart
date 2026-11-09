@@ -16,7 +16,9 @@ import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/services/onboarding/onboarding_hold.dart';
+import 'package:butlery/core/bootstrap/handlers/acquisition_flush_handler.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
+import 'package:butlery/services/analytics/pending_acquisition.dart';
 import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -118,6 +120,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // Re-process pending deep link when transitioning to authenticated
         if (!_wasAuthenticated) {
           DeepLinkHandler().processPendingDeepLink(context);
+          unawaited(AcquisitionFlushHandler.flush());
           // BUT-941: a photo shared in before login routes once authed.
           IncomingShareHandler().processPendingShare();
           // Somebody else now owns this device session, so an unread Art. 12(4)
@@ -132,6 +135,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
       } else {
         AppLogger.debug('AuthWrapper: User signed out');
+        // A channel learned for one person must not follow the next one.
+        if (_wasAuthenticated) PendingAcquisition.clear();
       }
       _wasAuthenticated = user != null;
     }
@@ -140,6 +145,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void _onUserProfileChanged() {
     if (mounted) {
       setState(() {});
+      // A guest who registers keeps the same uid, so no sign-in transition
+      // fires; the profile changing is what shows the upgrade.
+      unawaited(AcquisitionFlushHandler.flush());
       _retryUnfinishedGuestUpgrade();
     }
   }

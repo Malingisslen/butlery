@@ -17747,5 +17747,16 @@
   "@adminIssueSeparator": {"placeholders": {"value": {"type": "String"}}},
   "adminIssueTooMany": "At most {max} entries.",
   "@adminIssueTooMany": {"placeholders": {"max": {"type": "String"}}},
-  "adminIssuePrice": "The price must be a number, zero or greater."
+  "adminIssuePrice": "The price must be a number, zero or greater.",
+  "adminNavAcquisition": "Channels",
+  "adminAcquisitionTitle": "New users per channel",
+  "adminAcquisitionLoadFailed": "Could not load the channel count. The table cannot be shown until loading succeeds.",
+  "adminAcquisitionEmpty": "No channel count for the last 30 days",
+  "adminAcquisitionColSource": "Channel",
+  "adminAcquisitionColCount": "New users",
+  "adminAcquisitionTotal": "Total, rounded to the nearest 5",
+  "adminAcquisitionEligible": "Have said yes to statistics",
+  "adminAcquisitionNote": "Counts new accounts that agreed to statistics, for the last 30 days. It is not every new user: those who did not agree or did not arrive through a link are missing. Numbers below 5 are shown as <5 so that no single person can be picked out.",
+  "adminAcquisitionOther": "Other",
+  "adminAcquisitionLoading": "Loading the channel count …"
 }

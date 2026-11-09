@@ -11,6 +11,8 @@ process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 import * as admin from "firebase-admin";
+import * as fs from "fs";
+import * as path from "path";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: PROJECT_ID });
 }
@@ -21,7 +23,12 @@ import {
   OTHER,
   SOURCE_ALLOWLIST,
   countAcquisition,
+  runAcquisitionEligibleSnapshot,
   onAcquisitionCreated,
+  setAccountLookupForTest,
+  getAuthAccountWith,
+  NEW_USER_WINDOW_MS,
+  type AuthAccount,
 } from "../analytics/acquisition-counter";
 
 type Data = admin.firestore.DocumentData;
@@ -42,8 +49,16 @@ function check(name: string, ok: boolean, detail?: string): void {
   }
 }
 
-const deps = { db };
-const DAY_KEYS = new Set(["date", "v", "scope", "total", "bySource", "byMedium", "unmapped"]);
+/** A signed-in account created an hour before the row it wrote. */
+async function newAccount(uid: string): Promise<AuthAccount> {
+  const row = await db.collection("users").doc(uid).collection("acquisition").doc("current").get();
+  const ts = row.get("firstSeenAt");
+  const at = ts instanceof admin.firestore.Timestamp ? ts.toMillis() : Date.now();
+  return { providerData: [{ providerId: "password" }], metadata: { creationTime: new Date(at - 3600_000).toUTCString() } };
+}
+
+const deps = { db, getAccount: newAccount };
+const DAY_KEYS = new Set(["date", "v", "scope", "total", "bySource", "byMedium", "unmapped", "eligible"]);
 
 function dayRef(date: string) {
   return db.collection("analytics").doc("acquisition").collection("daily").doc(date);
@@ -100,7 +115,7 @@ async function counted(): Promise<void> {
     "the day document holds the allowlisted buckets",
     doc?.total === 1 && doc?.bySource?.instagram === 1 && doc?.byMedium?.social === 1 &&
       doc?.unmapped?.source === 0 && doc?.unmapped?.medium === 0 &&
-      doc?.date === date && doc?.v === 1 && doc?.scope === "consented-signed-in-utm",
+      doc?.date === date && doc?.v === 2 && doc?.scope === "consented-new-account-channel",
     JSON.stringify(doc),
   );
   check(
@@ -262,6 +277,7 @@ async function enabledHandler(): Promise<void> {
   const run = (onAcquisitionCreated as unknown as {
     run: (event: unknown) => Promise<unknown>;
   }).run;
+  setAccountLookupForTest(newAccount);
   await run({ params: { uid }, time: new Date().toISOString(), data: undefined });
   const doc = await day(date);
   check(
@@ -269,6 +285,113 @@ async function enabledHandler(): Promise<void> {
     doc?.total === 1 && doc?.bySource?.instagram === 1 &&
       (await source(uid))?.countedAt instanceof admin.firestore.Timestamp,
     `${JSON.stringify(doc)} ${JSON.stringify(await source(uid))}`,
+  );
+}
+
+async function accountRules(): Promise<void> {
+  const date = "2031-05-01";
+  await dayRef(date).delete();
+  const guest = nextUid();
+  await seed(guest, { source: "instagram", medium: "social", campaign: "" }, `${date}T08:00:00Z`);
+  const guestOutcome = await countAcquisition(event(guest), {
+    db,
+    getAccount: async () => ({ providerData: [], metadata: { creationTime: new Date(`${date}T07:00:00Z`).toUTCString() } }),
+  });
+  check("a guest account is not counted and not stamped", guestOutcome === "guest" && (await day(date)) === undefined && !("countedAt" in ((await source(guest)) ?? {})), guestOutcome);
+
+  const old = nextUid();
+  await seed(old, { source: "instagram", medium: "social", campaign: "" }, `${date}T08:00:00Z`);
+  const oldOutcome = await countAcquisition(event(old), {
+    db,
+    getAccount: async () => ({ providerData: [{}], metadata: { creationTime: new Date("2030-01-01T00:00:00Z").toUTCString() } }),
+  });
+  check("an account older than the window is not a new user", oldOutcome === "not_new_user" && (await day(date)) === undefined, oldOutcome);
+
+  const gone = nextUid();
+  await seed(gone, { source: "instagram", medium: "social", campaign: "" }, `${date}T08:00:00Z`);
+  const goneOutcome = await countAcquisition(event(gone), { db, getAccount: async () => null });
+  check("an account that no longer exists is not counted", goneOutcome === "source_gone", goneOutcome);
+
+  const earlyDate = "2026-11-01";
+  await dayRef(earlyDate).delete();
+  const early = nextUid();
+  await seed(early, { source: "google-play", medium: "organic", campaign: "" }, `${earlyDate}T08:00:00Z`);
+  await countAcquisition(event(early), {
+    db,
+    getAccount: async () => ({ providerData: [{}], metadata: { creationTime: new Date("2020-01-01T00:00:00Z").toUTCString() } }),
+  });
+  const earlyDoc = await day(earlyDate);
+  check(
+    "a day before the cut-over keeps the old scope and the old rule",
+    earlyDoc?.v === 1 && earlyDoc?.scope === "consented-signed-in-utm" && earlyDoc?.bySource?.["google-play"] === 1,
+    JSON.stringify(earlyDoc),
+  );
+}
+
+async function windowEdges(): Promise<void> {
+  const date = "2031-07-01";
+  await dayRef(date).delete();
+  const at = Date.parse(`${date}T12:00:00Z`);
+  const acct = (createdMs: number) => async (): Promise<AuthAccount> => ({
+    providerData: [{}],
+    metadata: { creationTime: new Date(createdMs).toUTCString() },
+  });
+  const edge = nextUid();
+  await seed(edge, { source: "tiktok", medium: "social", campaign: "" }, `${date}T12:00:00Z`);
+  const inside = await countAcquisition(event(edge), { db, getAccount: acct(at - NEW_USER_WINDOW_MS) });
+  check("an account exactly at the window edge counts", inside === "counted", inside);
+  const late = nextUid();
+  await seed(late, { source: "tiktok", medium: "social", campaign: "" }, `${date}T12:00:00Z`);
+  const outside = await countAcquisition(event(late), { db, getAccount: acct(at - NEW_USER_WINDOW_MS - 1000) });
+  check("an account one second past the window edge does not", outside === "not_new_user", outside);
+
+  for (const [d, v] of [["2026-11-13", 1], ["2026-11-14", 2]] as const) {
+    await dayRef(d).delete();
+    const u = nextUid();
+    await seed(u, { source: "tiktok", medium: "social", campaign: "" }, `${d}T12:00:00Z`);
+    await countAcquisition(event(u), { db, getAccount: acct(Date.parse(`${d}T11:00:00Z`)) });
+    check(`${d} is written under schema v${v}`, (await day(d))?.v === v, JSON.stringify(await day(d)));
+  }
+}
+
+async function authLookup(): Promise<void> {
+  const account: AuthAccount = { providerData: [{}], metadata: {} };
+  const throwing = (code: string) => ({ getUser: async () => { throw Object.assign(new Error(code), { code }); } });
+  check("an Auth account that exists is returned", (await getAuthAccountWith({ getUser: async () => account }, "u")) === account);
+  check("auth/user-not-found means gone", (await getAuthAccountWith(throwing("auth/user-not-found"), "u")) === null);
+  check("auth/invalid-uid means gone", (await getAuthAccountWith(throwing("auth/invalid-uid"), "u")) === null);
+  let rethrown = false;
+  try {
+    await getAuthAccountWith(throwing("auth/internal-error"), "u");
+  } catch {
+    rethrown = true;
+  }
+  check("any other Auth error is rethrown so the trigger retries", rethrown);
+}
+
+async function indexOverride(): Promise<void> {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../firestore.indexes.json"), "utf8"));
+  const o = (raw.fieldOverrides as Array<{ collectionGroup: string; fieldPath: string; indexes: Array<{ queryScope: string }> }>)
+    .find((x) => x.collectionGroup === "consent" && x.fieldPath === "purposes.analytics");
+  check(
+    "the consent collection-group index the eligible count needs is declared",
+    !!o && o.indexes.some((i) => i.queryScope === "COLLECTION_GROUP"),
+    JSON.stringify(o),
+  );
+}
+
+async function eligible(): Promise<void> {
+  const date = "2031-06-01";
+  await dayRef(date).delete();
+  const before = (await db.collectionGroup("consent").where("purposes.analytics", "==", true).count().get()).data().count;
+  const uid = nextUid();
+  await db.collection("users").doc(uid).collection("consent").doc("current").set({ purposes: { analytics: true } });
+  const n = await runAcquisitionEligibleSnapshot({ db, now: new Date(`${date}T10:00:00Z`) });
+  const doc = await day(date);
+  check(
+    "the eligible number is stored as a count and nothing else",
+    n === before + 1 && doc?.eligible?.analyticsConsented === n && Object.keys(doc ?? {}).sort().join() === "date,eligible",
+    JSON.stringify(doc),
   );
 }
 
@@ -294,6 +417,11 @@ async function main(): Promise<void> {
   await utcBuckets();
   await missingFirstSeenAt();
   await enabledHandler();
+  await accountRules();
+  await windowEdges();
+  await authLookup();
+  await indexOverride();
+  await eligible();
   endpoint();
   console.log(`\n${run - failed}/${run} passing`);
   if (failed > 0) process.exit(1);

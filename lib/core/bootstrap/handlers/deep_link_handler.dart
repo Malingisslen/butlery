@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics/acquisition_milestone.dart';
+import 'package:butlery/services/analytics/pending_acquisition.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
@@ -239,7 +240,11 @@ class DeepLinkHandler {
 
       // Auth gate: require authentication before processing deep links
       final authRepo = ServiceLocator.get<AuthRepository>();
+      // BUT-2406: a signed-out link's channel is held in memory until the
+      // person is registered and has consented. A signed-in user's link is
+      // recorded for that user below, so it must not wait for the next one.
       if (authRepo.currentUser == null) {
+        _rememberChannel(deepLinkUrl);
         _pendingDeepLink = deepLinkUrl;
         return;
       }
@@ -309,6 +314,18 @@ class DeepLinkHandler {
     }
   }
 
+  void _rememberChannel(String deepLinkUrl) {
+    try {
+      final params = Uri.parse(deepLinkUrl).queryParameters;
+      PendingAcquisition.rememberIfAbsent(
+        AcquisitionChannel.from(params['utm_source'], params['utm_medium']),
+      );
+    } catch (_) {
+      // A malformed link carries no channel.
+      return;
+    }
+  }
+
   /// P8-21: Track UTM campaign attribution from deep links.
   ///
   /// BUT-612: also persists first-arrival UTM as Firebase user properties
@@ -342,6 +359,7 @@ class DeepLinkHandler {
         repository: repo,
         consentService: ServiceLocator.tryGet<ConsentService>(),
         userId: authRepo?.currentUserId,
+        isGuest: authRepo?.currentUser?.isAnonymous ?? false,
         utmSource: utmSource,
         utmMedium: utmMedium,
         utmCampaign: utmCampaign,

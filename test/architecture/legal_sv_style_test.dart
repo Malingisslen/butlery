@@ -27,15 +27,38 @@ void main() {
     });
   }
 
-  test('the privacy policy names the anonymous daily channel count', () {
-    final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
-    final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
+  test(
+    'the privacy policy names the channel, the Play referrer and the daily count',
+    () {
+      final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
+      final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
 
-    expect(sv, contains('helt anonymt och per dag'));
-    expect(sv, contains('Anonym kanalräkning per dag'));
-    expect(en, contains('Count, anonymously and per day'));
-    expect(en, contains('Anonymous daily channel count'));
-  });
+      expect(sv, contains('På Android läser appen också, från Google Play'));
+      expect(
+        sv,
+        contains('Det görs först när du har samtyckt, och bara kanalen läses.'),
+      );
+      expect(
+        sv,
+        contains('Kanal du kom från (källa och medium) på ditt konto'),
+      );
+      expect(sv, contains('Anonym kanalräkning per dag'));
+      expect(en, contains('On Android the app also reads, from Google Play'));
+      expect(
+        en,
+        contains(
+          'This happens only after you have consented, and only the channel is read.',
+        ),
+      );
+      expect(
+        en,
+        contains(
+          'The channel you came from (source and medium) on your account',
+        ),
+      );
+      expect(en, contains('Anonymous daily channel count'));
+    },
+  );
 
   test('the privacy policy names the temporary storage of unsent photos', () {
     final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();

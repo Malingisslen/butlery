@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 31, 2026
-**Version:** 1.29
+**Last updated:** November 9, 2026
+**Version:** 1.30
 
 ---
 
@@ -112,7 +112,7 @@ We use your personal data for the following purposes:
 - Identify and fix bugs
 - Improve user experience
 - Measure app performance
-- Count, anonymously and per day, which channel (for example Instagram or the newsletter) new users came from. The count holds no user ID and cannot be linked to you. It remains if you later delete your account.
+- Count which channel (for example Instagram or the newsletter) new users came from. If you open the app through a campaign link, the app reads the channel from the link. On Android the app also reads, from Google Play, which link the app was installed from. This happens only after you have consented, and only the channel is read. The channel is saved on your account, is included in your data export and is deleted with the account. It is also counted in a summary per day that holds no user ID, cannot be linked to you and remains even if you delete your account.
 
 **Marketing (if you have consented):**
 - Send newsletters about new features
@@ -284,6 +284,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
+| The channel you came from (source and medium) on your account | Until you delete the account | Consent (Art. 6.1.a) |
 | Anonymous daily channel count (no user ID) | Kept indefinitely, as it cannot be linked to a person | Consent (Art. 6.1.a) at the time of counting |
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
@@ -420,7 +421,7 @@ We may update this policy when:
 For significant changes:
 - We may request renewed consent (if applicable)
 
-**Last change:** October 31, 2026
+**Last change:** November 9, 2026
 **Version history:** Available upon request
 
 ---

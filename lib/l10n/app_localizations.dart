@@ -32825,6 +32825,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Priset måste vara ett tal som är noll eller större.'**
   String get adminIssuePrice;
+
+  /// No description provided for @adminNavAcquisition.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanaler'**
+  String get adminNavAcquisition;
+
+  /// No description provided for @adminAcquisitionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nya användare per kanal'**
+  String get adminAcquisitionTitle;
+
+  /// No description provided for @adminAcquisitionLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda kanalräkningen. Tabellen kan inte visas förrän laddningen lyckas.'**
+  String get adminAcquisitionLoadFailed;
+
+  /// No description provided for @adminAcquisitionEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kanalräkning för de senaste 30 dagarna'**
+  String get adminAcquisitionEmpty;
+
+  /// No description provided for @adminAcquisitionColSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanal'**
+  String get adminAcquisitionColSource;
+
+  /// No description provided for @adminAcquisitionColCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nya användare'**
+  String get adminAcquisitionColCount;
+
+  /// No description provided for @adminAcquisitionTotal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt, avrundat till närmaste 5'**
+  String get adminAcquisitionTotal;
+
+  /// No description provided for @adminAcquisitionEligible.
+  ///
+  /// In sv, this message translates to:
+  /// **'Har sagt ja till statistik'**
+  String get adminAcquisitionEligible;
+
+  /// No description provided for @adminAcquisitionNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.'**
+  String get adminAcquisitionNote;
+
+  /// No description provided for @adminAcquisitionOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt'**
+  String get adminAcquisitionOther;
+
+  /// No description provided for @adminAcquisitionLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar kanalräkningen …'**
+  String get adminAcquisitionLoading;
 }
 
 class _AppLocalizationsDelegate

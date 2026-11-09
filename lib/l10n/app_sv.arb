@@ -17760,5 +17760,16 @@
   "@adminIssueSeparator": {"placeholders": {"value": {"type": "String"}}},
   "adminIssueTooMany": "Högst {max} poster.",
   "@adminIssueTooMany": {"placeholders": {"max": {"type": "String"}}},
-  "adminIssuePrice": "Priset måste vara ett tal som är noll eller större."
+  "adminIssuePrice": "Priset måste vara ett tal som är noll eller större.",
+  "adminNavAcquisition": "Kanaler",
+  "adminAcquisitionTitle": "Nya användare per kanal",
+  "adminAcquisitionLoadFailed": "Kunde inte ladda kanalräkningen. Tabellen kan inte visas förrän laddningen lyckas.",
+  "adminAcquisitionEmpty": "Ingen kanalräkning för de senaste 30 dagarna",
+  "adminAcquisitionColSource": "Kanal",
+  "adminAcquisitionColCount": "Nya användare",
+  "adminAcquisitionTotal": "Totalt, avrundat till närmaste 5",
+  "adminAcquisitionEligible": "Har sagt ja till statistik",
+  "adminAcquisitionNote": "Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.",
+  "adminAcquisitionOther": "Övrigt",
+  "adminAcquisitionLoading": "Laddar kanalräkningen …"
 }

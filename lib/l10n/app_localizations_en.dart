@@ -21527,4 +21527,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminIssuePrice => 'The price must be a number, zero or greater.';
+
+  @override
+  String get adminNavAcquisition => 'Channels';
+
+  @override
+  String get adminAcquisitionTitle => 'New users per channel';
+
+  @override
+  String get adminAcquisitionLoadFailed =>
+      'Could not load the channel count. The table cannot be shown until loading succeeds.';
+
+  @override
+  String get adminAcquisitionEmpty => 'No channel count for the last 30 days';
+
+  @override
+  String get adminAcquisitionColSource => 'Channel';
+
+  @override
+  String get adminAcquisitionColCount => 'New users';
+
+  @override
+  String get adminAcquisitionTotal => 'Total, rounded to the nearest 5';
+
+  @override
+  String get adminAcquisitionEligible => 'Have said yes to statistics';
+
+  @override
+  String get adminAcquisitionNote =>
+      'Counts new accounts that agreed to statistics, for the last 30 days. It is not every new user: those who did not agree or did not arrive through a link are missing. Numbers below 5 are shown as <5 so that no single person can be picked out.';
+
+  @override
+  String get adminAcquisitionOther => 'Other';
+
+  @override
+  String get adminAcquisitionLoading => 'Loading the channel count …';
 }

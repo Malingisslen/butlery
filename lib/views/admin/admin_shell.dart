@@ -6,6 +6,7 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/ingredient_review_view.dart';
+import 'package:butlery/views/admin/acquisition_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
@@ -96,6 +97,7 @@ class _AdminShellState extends State<AdminShell>
     const IngredientReviewView(),
     const TagRulesView(),
     const ProposalsView(),
+    const AcquisitionView(),
   ];
 
   @override
@@ -118,6 +120,7 @@ class _AdminShellState extends State<AdminShell>
               l10n.adminNavIngredients,
               l10n.adminNavTagRules,
               l10n.adminNavProposals,
+              l10n.adminNavAcquisition,
             ],
             email: auth.currentUserEmail,
             onSignOut: auth.signOut,
