@@ -61,7 +61,7 @@
           "type": "release-notes"
         }
       ],
-      "lastScan": "2026-11-02",
+      "lastScan": "2026-11-09",
       "snapshot": {
         "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "2026-09-07: direct fetch succeeded — new release v8.2.2 (2026-08-26): 'addressed reporting issues in root and hook detection for Android' — a fix to detection-result reporting, not a threshold, attack-coverage, or callback-API change. pubspec.yaml stays PINNED at 8.0.0 (BUT-1218 review). Not filed — bug-fix release, no CVE, no breaking change.",
         "https://github.com/OWASP/owasp-mastg/releases.atom": "2026-09-07: direct fetch succeeded — still v2.0.0 (2026-06-30) as latest, no new release since baseline. No change.",
@@ -113,6 +113,11 @@
           "date": "2026-11-02",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass covering 2026-10-26 to 2026-11-02. freeRASP Flutter: latest found is v8.1.0 (Aug 5)/8.2.x line, no new release surfaced, still pinned per BUT-1218. Dart/pub CVEs: only the standing CVE-2026-27704 (Zip Slip, Low, already below patched SDK) found, nothing new. whisper.cpp: still shows v1.9.3 (Aug 20) as latest across sources checked; issue #234 remains open and current. No new material item this cycle. No issues filed."
+        },
+        {
+          "date": "2026-11-09",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass covering 2026-11-02 to 2026-11-09. freeRASP Flutter: no dated release found past the 8.2.x line, still pinned per BUT-1218. Dart/pub CVEs: only the standing CVE-2026-27704 (Zip Slip, Low, already below patched SDK) found, nothing new. whisper.cpp: latest found is still v1.9.3 (Aug 20); issue #234 remains open and current. No new material item this cycle. No issues filed."
         }
       ]
     },
@@ -243,7 +248,7 @@
           "type": "rss"
         }
       ],
-      "lastScan": "2026-11-02",
+      "lastScan": "2026-11-09",
       "snapshot": {
         "https://developer.apple.com/news/rss/news.rss": "2026-09-07: direct WebFetch succeeded — new items since 08-24: Hello Developer Sep2026 (Sep2), Rosetta-for-Intel-macOS deprecation timeline (Sep1, N/A — no macOS/Intel distribution), tax/VAT updates for Morocco/Congo/Tanzania (Aug27, N/A — Butlery pricing unaffected by these specific markets today), Apple Event announcement (Aug26, N/A). No new UGC/age-rating/privacy/DPLA item beyond the already-filed issue #235 (EU business terms/DPLA Attachment 14, still the live gate on the next submission) and issue #215 (age-rating questionnaire). No new material item.",
         "https://developer.apple.com/news/upcoming-requirements/": "2026-09-07: direct WebFetch succeeded — unchanged: SDK minimum (Xcode 26+, since 2026-04-28), age-rating migration (deadline 2026-01-31, passed). No new hard gate.",
@@ -294,6 +299,11 @@
           "date": "2026-11-02",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass covering 2026-10-26 to 2026-11-02. No Apple App Review Guidelines revision found past the Oct 16 2026 one already reviewed/judged not material. Google Play: no new announcement found past the Jul 15 2026 wave; the Oct 28 2026 Contacts/Child-Safety items remain the only near-term dated change and were already confirmed inapplicable; issue #223 remains the live tracked item. No new material item; issues #215/#220/#223/#235 remain the live tickets. No new issues filed."
+        },
+        {
+          "date": "2026-11-09",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass covering 2026-11-02 to 2026-11-09. No Apple App Review Guidelines revision found past the Oct 16 2026 one already reviewed/judged not material. Google Play: no new Developer Policy Center announcement found past the Jul 15 2026 wave; issue #223 remains the live tracked item. No new material item; issues #215/#220/#223/#235 remain the live tickets. No new issues filed."
         }
       ]
     }
