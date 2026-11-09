@@ -33636,6 +33636,36 @@ abstract class AppLocalizations {
   /// **'Importerna går bra och inga ovanliga svängningar har upptäckts.'**
   String get adminOverviewImportOk;
 
+  /// No description provided for @adminOverviewOpsStaleAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen systemhändelse har registrerats på {days} dagar. Öppna fliken och se när jobben senast körde.'**
+  String adminOverviewOpsStaleAdvice(int days);
+
+  /// No description provided for @adminOverviewOpsNoneAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen systemhändelse har någonsin registrerats. Öppna fliken och kontrollera att jobben körs.'**
+  String get adminOverviewOpsNoneAdvice;
+
+  /// No description provided for @adminOverviewOpsOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Systemhändelser har registrerats den senaste veckan.'**
+  String get adminOverviewOpsOk;
+
+  /// No description provided for @adminOverviewGuestPendingAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 inbjudan har inte gått ut.} other{{count} inbjudningar har inte gått ut.}}'**
+  String adminOverviewGuestPendingAdvice(int count);
+
+  /// No description provided for @adminOverviewGuestNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga inbjudningar som inte gått ut.'**
+  String get adminOverviewGuestNone;
+
   /// No description provided for @adminOverviewNoSignalAdvice.
   ///
   /// In sv, this message translates to:

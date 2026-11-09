@@ -21908,6 +21908,33 @@ class AppLocalizationsSv extends AppLocalizations {
       'Importerna går bra och inga ovanliga svängningar har upptäckts.';
 
   @override
+  String adminOverviewOpsStaleAdvice(int days) {
+    return 'Ingen systemhändelse har registrerats på $days dagar. Öppna fliken och se när jobben senast körde.';
+  }
+
+  @override
+  String get adminOverviewOpsNoneAdvice =>
+      'Ingen systemhändelse har någonsin registrerats. Öppna fliken och kontrollera att jobben körs.';
+
+  @override
+  String get adminOverviewOpsOk =>
+      'Systemhändelser har registrerats den senaste veckan.';
+
+  @override
+  String adminOverviewGuestPendingAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count inbjudningar har inte gått ut.',
+      one: '1 inbjudan har inte gått ut.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewGuestNone => 'Inga inbjudningar som inte gått ut.';
+
+  @override
   String get adminOverviewNoSignalAdvice =>
       'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.';
 

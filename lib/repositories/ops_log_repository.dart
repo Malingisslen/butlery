@@ -43,4 +43,21 @@ class OpsLogRepository {
       return [];
     }
   }
+
+  /// When the newest system event, of any type, was written; null when none.
+  /// Unlike [getRecentEvents] this throws on a failed read, so the overview can say
+  /// "unavailable" instead of mistaking an error for silence.
+  Future<DateTime?> getLatestReceiptAt() async {
+    final snapshot = await _firestore
+        .collection(FirestoreCollections.systemEvents)
+        .orderBy('executedAt', descending: true)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) return null;
+    final ts = snapshot.docs.first.data()['executedAt'];
+    if (ts is! Timestamp) {
+      throw StateError('system_events receipt without an executedAt timestamp');
+    }
+    return ts.toDate();
+  }
 }

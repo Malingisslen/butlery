@@ -3,6 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/admin/anomaly_report.dart';
 import 'package:butlery/models/admin/overview_status.dart';
 
+final _now = DateTime(2026, 11, 9, 12);
+const Object _unset = Object();
+final _freshOps = OpsHeartbeat(_now.subtract(const Duration(days: 3)));
+
 void main() {
   const calm = AnomalyReport.empty;
   const oneAnomaly = AnomalyReport(
@@ -24,12 +28,17 @@ void main() {
     int? failure = 5,
     int? feedback = 0,
     int? proposals = 0,
+    Object? ops = _unset,
+    int? invites = 0,
   }) => assessOverview(
     anomalies: anomalies,
     importSuccess: success,
     importFailure: failure,
     newFeedback: feedback,
     openProposals: proposals,
+    ops: identical(ops, _unset) ? _freshOps : ops as OpsHeartbeat?,
+    pendingInvites: invites,
+    now: _now,
   );
 
   OverviewRow row(List<OverviewRow> rows, OverviewTarget t) =>
@@ -55,6 +64,11 @@ void main() {
     expect(row(rows, OverviewTarget.feedback).status, OverviewStatus.ok);
     expect(row(rows, OverviewTarget.proposals).status, OverviewStatus.ok);
     expect(row(rows, OverviewTarget.import).status, OverviewStatus.ok);
+    expect(row(rows, OverviewTarget.ops).advice, OverviewAdvice.opsOk);
+    expect(
+      row(rows, OverviewTarget.guestList).advice,
+      OverviewAdvice.guestNone,
+    );
     for (final t in overviewNoSignalTargets) {
       expect(row(rows, t).status, OverviewStatus.noSignal);
     }
@@ -127,6 +141,40 @@ void main() {
     expect(
       row(assess(success: 80, failure: 20), OverviewTarget.import).status,
       OverviewStatus.ok,
+    );
+  });
+
+  test('scheduled jobs silent for 8 days need a look, 7 days is fine', () {
+    OverviewRow ops(int days) => row(
+      assess(ops: OpsHeartbeat(_now.subtract(Duration(days: days)))),
+      OverviewTarget.ops,
+    );
+    expect(ops(7).status, OverviewStatus.ok);
+    final stale = ops(overviewOpsSilenceDays);
+    expect(stale.status, OverviewStatus.needsLook);
+    expect(stale.advice, OverviewAdvice.opsStale);
+    expect(stale.number, overviewOpsSilenceDays);
+  });
+
+  test('no receipt at all needs a look', () {
+    final r = row(assess(ops: const OpsHeartbeat(null)), OverviewTarget.ops);
+    expect(r.status, OverviewStatus.needsLook);
+    expect(r.advice, OverviewAdvice.opsNone);
+  });
+
+  test('unused invitations are informational and never flag the overview', () {
+    final r = row(assess(invites: 4), OverviewTarget.guestList);
+    expect(r.status, OverviewStatus.ok);
+    expect(r.advice, OverviewAdvice.guestPending);
+    expect(r.number, 4);
+  });
+
+  test('failed ops and invitation reads are unavailable, never ok', () {
+    final rows = assess(ops: null, invites: null);
+    expect(row(rows, OverviewTarget.ops).status, OverviewStatus.unavailable);
+    expect(
+      row(rows, OverviewTarget.guestList).status,
+      OverviewStatus.unavailable,
     );
   });
 

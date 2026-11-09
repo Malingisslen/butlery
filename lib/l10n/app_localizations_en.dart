@@ -22092,6 +22092,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Imports are going well and no unusual swings have been detected.';
 
   @override
+  String adminOverviewOpsStaleAdvice(int days) {
+    return 'No system event has been recorded in $days days. Open the tab and see when the jobs last ran.';
+  }
+
+  @override
+  String get adminOverviewOpsNoneAdvice =>
+      'No system event has ever been recorded. Open the tab and check that the jobs are running.';
+
+  @override
+  String get adminOverviewOpsOk =>
+      'System events have been recorded within the last week.';
+
+  @override
+  String adminOverviewGuestPendingAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations have not expired.',
+      one: '1 invitation has not expired.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewGuestNone => 'No invitations that have not expired.';
+
+  @override
   String get adminOverviewNoSignalAdvice =>
       'The overview does not measure this tab. Open it when you want a closer look.';
 

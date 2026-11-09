@@ -195,6 +195,10 @@
   the caller has an error state; keep the neutral value only where it has none. When the
   exception now reaches `AppLogger.error` (raw to Crashlytics `recordError`, unsanitized),
   check the query PATHS for uids, not just the output.
+- A HEARTBEAT read (`orderBy(f, desc).limit(1)` on a shared log collection) is refreshed by
+  EVERY writer stamping `f`, not only the jobs it claims to watch — grep the writer set of
+  the field (`system_events.executedAt` also carries alerts and manual admin runs) before
+  crediting "ok" as "the scheduler ran"; filter on `type` or name the residual.
 - Admin callables with a client `limit` must reject invalid values explicitly
   (`invalid-argument`) — `limit||fallback` wrongly treats `0` as "use fallback."
 - A post-batch `.get()` may not reflect a `FieldValue` transform from the SAME batch — never

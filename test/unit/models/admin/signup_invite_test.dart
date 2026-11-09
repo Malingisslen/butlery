@@ -108,5 +108,21 @@ void main() {
       final list = await repo.listInvites();
       expect(list.map((i) => i.email), ['bo@example.com']);
     });
+
+    test(
+      'countPending counts unexpired entries and skips expired ones',
+      () async {
+        final db = FakeFirebaseFirestore();
+        final repo = _repo(db);
+        await repo.invite('anna@example.com');
+        await repo.invite('bo@example.com');
+        await db.collection('signup_allowlist').doc('old@example.com').set({
+          'expireAt': Timestamp.fromDate(
+            clock.now().subtract(const Duration(days: 1)),
+          ),
+        });
+        expect(await repo.countPending(), 2);
+      },
+    );
   });
 }
