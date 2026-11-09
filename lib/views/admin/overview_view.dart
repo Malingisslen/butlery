@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/overview_loader.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -153,33 +155,31 @@ class _TabRow extends StatelessWidget {
         cs.onSurfaceVariant,
       ),
     };
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: AppDimensions.space12,
-              runSpacing: AppDimensions.space8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  _tabName(l10n, row.target),
-                  style: AppTextStyles.titleMedium,
-                ),
-                Text(
-                  statusLabel,
-                  style: AppTextStyles.bodyMedium.copyWith(color: statusColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            Text(_advice(l10n, row), style: AppTextStyles.bodyMedium),
-            const SizedBox(height: AppDimensions.space8),
-            TextButton(onPressed: onOpen, child: Text(l10n.adminOverviewOpen)),
-          ],
-        ),
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppDimensions.space12,
+            runSpacing: AppDimensions.space8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                _tabName(l10n, row.target),
+                style: AppTextStyles.titleMedium,
+              ),
+              Text(
+                statusLabel,
+                style: AppTextStyles.bodyMedium.copyWith(color: statusColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          Text(_advice(l10n, row), style: AppTextStyles.bodyMedium),
+          const SizedBox(height: AppDimensions.space8),
+          ButleryTextButton(label: l10n.adminOverviewOpen, onPressed: onOpen),
+        ],
       ),
     );
   }
