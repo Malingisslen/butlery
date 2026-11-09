@@ -425,6 +425,8 @@ const cases: UnitCase[] = [
         submitAppeal: [5, 10],
         listOpenAppeals: [30, 200],
         answerAppeal: [30, 200],
+        // BUT-818: the moderator's view of a stopped image.
+        getQuarantinedImages: [60, 400],
         // BUT-1528.
         listClosedReports: [60, 400],
         reopenReport: [30, 200],
@@ -504,6 +506,7 @@ const cases: UnitCase[] = [
         "submitAppeal",
         "listOpenAppeals",
         "answerAppeal",
+        "getQuarantinedImages",
         "listClosedReports",
         "reopenReport",
         "createIngredientChangePr",

@@ -118,10 +118,12 @@ async function testRegistryMembership(): Promise<void> {
     "northStarWeekly",
     "importTierWeekly",
     "reconcileBlockMirrors",
+    // BUT-818: also a sweep; a missed week only keeps an image a week longer.
+    "quarantineSweep",
   ];
   const actualWeekly = WEEKLY_REPORT_TASKS.map((t) => t.name);
   record(
-    "WEEKLY_REPORT_TASKS holds the digest, the reports, then the mirror sweep",
+    "WEEKLY_REPORT_TASKS holds the digest, the reports, then the two sweeps",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
   );

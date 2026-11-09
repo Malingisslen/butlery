@@ -35,6 +35,8 @@ import {
   shouldScan,
   visionAnnotate,
 } from "./safe-search";
+import { chooseReportId, fileImageDecision, newImageReportId } from "./image-decision";
+import { defaultPushDeps, Notice, pushNotices } from "../moderation/moderation-notices";
 
 // First few bytes of supported formats. Source:
 // - JPEG:  FF D8 FF
@@ -210,6 +212,12 @@ export interface ModerateUploadDeps {
   /** Seam: the unit suite has no Auth emulator. */
   ownerExists?: (uid: string) => Promise<boolean>;
   annotate: SafeSearchAnnotate;
+  push: (notices: Notice[]) => Promise<void>;
+  /** Seam: the decision's time and its grouping window. */
+  now?: () => Date;
+  /** Seams: the unit suite's Firestore fake has no `reports`; the emulator suite runs the real ones. */
+  chooseCase?: typeof chooseReportId;
+  fileDecision?: typeof fileImageDecision;
 }
 
 /**
@@ -220,32 +228,62 @@ export interface ModerateUploadDeps {
  */
 const CLIENT_WRITABLE_PREFIXES = ["users/", "feedback/", "corpus/"];
 
+/** The object's first download token, so a granted appeal restores the same URL. */
+function firstToken(metadata: Record<string, string> | undefined): string | null {
+  const token = String(metadata?.firebaseStorageDownloadTokens ?? "").split(",")[0];
+  return token.length > 0 ? token : null;
+}
+
+/** True once the image is in quarantine; false when it was left in place or was already gone. */
 async function quarantine(
-  args: { bucket: string; name: string; ownerUid: string; scores: SafeSearchScores },
+  args: {
+    bucket: string;
+    name: string;
+    ownerUid: string;
+    scores: SafeSearchScores;
+    reportId: string;
+    originalToken: string | null;
+  },
   bucketHandle: Bucket,
   db: admin.firestore.Firestore
-): Promise<void> {
+): Promise<boolean> {
   const source = bucketHandle.file(args.name);
   const dest = bucketHandle.file(QUARANTINE_PREFIX + args.name);
+  // Takes a copy out of its case, so neither the owner's decision nor the
+  // sweep is filed about an image that is still visible. The copy itself stays
+  // as evidence until the sweep deletes it.
+  const detach = () =>
+    dest.setMetadata({ metadata: { reportId: null } }).then(() => undefined, () => undefined);
+  let copied = false;
   try {
     await source.copy(dest, {
-      metadata: { originalPath: args.name, ownerUid: args.ownerUid, ...args.scores },
+      metadata: {
+        originalPath: args.name,
+        ownerUid: args.ownerUid,
+        reportId: args.reportId,
+        // The quarantine copy is unreachable to clients, so keeping the
+        // token here exposes nothing; restoring it keeps the app's stored URL.
+        ...(args.originalToken ? { originalToken: args.originalToken } : {}),
+        ...args.scores,
+      },
     });
+    copied = true;
     await dest.setMetadata({ metadata: { firebaseStorageDownloadTokens: null } });
   } catch (err) {
+    if (copied) await detach();
     // Object names carry the uid, and the raw error repeats them.
     const errorCode = errorCodeOf(err);
     if (errorCode === 404 || errorCode === "404") {
       logger.info("[moderateUpload] explicit object deleted before quarantine", {
         bucket: args.bucket,
       });
-      return;
+      return false;
     }
     logger.error("[moderateUpload] quarantine copy failed; image left in place", {
       bucket: args.bucket,
       errorCode,
     });
-    return;
+    return false;
   }
   // Copy before delete: a failed delete leaves a visible image plus evidence,
   // a delete without the copy would leave nothing to restore on appeal.
@@ -256,6 +294,8 @@ async function quarantine(
       bucket: args.bucket,
       errorCode: errorCodeOf(err),
     });
+    await detach();
+    return false;
   }
 
   await db.collection("audit_logs").add({
@@ -269,8 +309,10 @@ async function quarantine(
   });
   logger.warn("[moderateUpload] quarantined explicit upload", {
     bucket: args.bucket,
+    report_prefix: args.reportId.slice(0, 16),
     ...args.scores,
   });
+  return true;
 }
 
 export async function handleFinalizedObject(
@@ -396,11 +438,45 @@ export async function handleFinalizedObject(
     { db: deps.db, annotate: deps.annotate }
   );
   if (!scan?.explicit) return;
-  await quarantine(
-    { bucket: bucketName, name, ownerUid: pathOwner, scores: scan.scores },
+  const now = deps.now?.() ?? new Date();
+  let reportId: string;
+  try {
+    reportId = await (deps.chooseCase ?? chooseReportId)(deps.db, bucket, pathOwner, now);
+  } catch (err) {
+    // Grouping is a convenience; the quarantine is not.
+    logger.warn("[moderateUpload] case pointer unavailable; filing a case of its own", {
+      bucket: bucketName,
+      errorCode: errorCodeOf(err),
+    });
+    reportId = newImageReportId();
+  }
+  const moved = await quarantine(
+    {
+      bucket: bucketName,
+      name,
+      ownerUid: pathOwner,
+      scores: scan.scores,
+      reportId,
+      originalToken: firstToken(obj.metadata),
+    },
     bucket,
     deps.db
   );
+  if (!moved) return;
+  // After the move, so the owner is never told about an image still visible.
+  try {
+    await (deps.fileDecision ?? fileImageDecision)(
+      { reportId, ownerUid: pathOwner, now },
+      { db: deps.db, push: deps.push },
+    );
+  } catch (err) {
+    // This trigger has no retries; the weekly quarantine sweep files any
+    // decision a quarantined image is still missing.
+    logger.error("[moderateUpload] image decision not filed; the sweep will retry", {
+      report_prefix: reportId.slice(0, 16),
+      errorCode: errorCodeOf(err),
+    });
+  }
 }
 
 export const moderateUpload = onObjectFinalized(
@@ -414,5 +490,6 @@ export const moderateUpload = onObjectFinalized(
       db: admin.firestore(),
       bucket: (name) => admin.storage().bucket(name),
       annotate: visionAnnotate,
+      push: (notices) => pushNotices(notices, defaultPushDeps(admin.firestore())),
     })
 );

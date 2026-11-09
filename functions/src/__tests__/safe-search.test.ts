@@ -134,6 +134,27 @@ test("scanOnce: Vision is asked once per image, the server's copy is served from
   assertEqual(second?.explicit, true, "cached verdict still explicit");
 });
 
+test("scanOnce: an appeal override lets the same explicit bytes through without a new call", async () => {
+  const store = new Map<string, Doc>();
+  const calls: string[] = [];
+  const deps = {
+    db: fakeDb(store, []),
+    sleep: noSleep,
+    annotate: async (uri: string) => {
+      calls.push(uri);
+      return { ...CLEAN, adult: "VERY_LIKELY" as const };
+    },
+  };
+  await scanOnce(input("users/u/recipes/a.jpg"), deps);
+  const key = scanKey(MD5, CRC, "1234") as string;
+  // What overrideVerdict merges in, applied the way a merge-set would.
+  store.set(key, { ...store.get(key), explicit: false, overriddenBy: "appeal" });
+  const after = await scanOnce(input("users/u/recipes/a.jpg"), deps);
+  assertEqual(calls.length, 1, "no second Vision call");
+  assertEqual(after?.explicit, false, "overridden verdict lets the image stand");
+  assertEqual(after?.scores.adult, "VERY_LIKELY", "scores kept for measuring false positives");
+});
+
 test("scanOnce: an md5 collision with a different crc32c is scanned on its own", async () => {
   const store = new Map<string, Doc>();
   let calls = 0;

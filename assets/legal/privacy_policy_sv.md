@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 4 november 2026
-**Version:** 1.31
+**Senast uppdaterad:** 9 november 2026
+**Version:** 1.32
 
 ---
 
@@ -103,6 +103,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Säkerhet och skydd mot missbruk
 - Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
 - Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen. Om en moderator omprövar ett beslut och ändrar det får ni ett nytt besked.
+- Kontrollera bilder: varje bild du laddar upp till ditt konto (profilbild, receptfoton, matbilder och kommentarsbilder) kontrolleras automatiskt en gång med Googles bildkontroll (Cloud Vision SafeSearch), så att sexuella eller våldsamma bilder kan stoppas. En bild som stoppas syns inte längre i appen och sparas låst så att bara moderatorn kommer åt den. Du får en avisering och ett besked i appen med motivering, och du kan överklaga i appen. Bifalls överklagan läggs bilden tillbaka. Resultatet av kontrollen sparas med en kod som räknas fram ur bildens innehåll, utan bilden och utan ditt användar-id, så att samma bild inte behöver kontrolleras igen.
 - Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Om du anger en egen mängd för en ingrediens sparas den på hushållet på samma sätt, antingen för ett recept eller för alla recept. Då sparas även receptets id för det receptet, och mängden följer med i exporten av dina uppgifter. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
 
 **Recept du visar på din profil:** Om du väljer ”Visa på min profil” på ett recept, eller slår på ”Nya recept är publika”, kan alla som är inloggade i Butlery och öppnar din profil se receptet. Gäster och den du har blockerat ser det inte. Det som syns är titel, beskrivning, portioner, tider, ingredienser, steg, receptets bilder, källa och källans författare. Ditt betyg, dina anteckningar och taggar, hur ofta du har lagat receptet och vilka du delar det med syns inte. Bilderna visas som egna kopior, som slutar fungera när du slutar visa receptet. Vi sparar valet och tidpunkten då du senast ändrade det på receptet, och det som visas på profilen ingår i din dataexport. Slutar du visa receptet, raderar det eller raderar kontot tas det bort från profilen inom någon minut. Den som har sett receptet kan ha sparat en egen kopia med ”Skapa kopia”. Den kopian är deras och tas inte bort, men den bär inte ditt namn, ditt användar-id eller dina bilder. Samarbetsrecept visas aldrig på profilen, och den som är under 18 år kan inte visa recept där. Behandlingen bygger på **fullgörande av avtal (art. 6.1 b)**: den sker för att du ber om den.
@@ -222,6 +223,7 @@ Nedan finns en förteckning över de personuppgiftsbiträden som tar emot dina u
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering, inloggningsuppgifter från Google eller Apple | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgien). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Receptfoton du har sagt ja till att AI läser, och text från recept | `europe-west4` (Nederländerna) – ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vision (SafeSearch)** | Bilder du laddar upp till ditt konto | Googles EU-slutpunkt – behandling inom EU, ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 
 När telefonen själv läser ett receptfoto (Google ML Kit) skickas fotot inte till någon.
 
@@ -298,6 +300,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 | Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter det senaste beslutet. Omprövas ett beslut sparas även det tidigare beslutet i samma post | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
+| Bild som stoppats av bildkontrollen | Raderas automatiskt när tiden för att överklaga (6 månader) har gått ut, och när du raderar kontot. Bifalls en överklagan läggs bilden tillbaka | Berättigat intresse (användarnas säkerhet) |
 | En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
 | Importloggen (användar-id, sidans adress och hur importen gick) | Raderas automatiskt cirka 30 dagar efter importen, eller när du raderar kontot | Berättigat intresse |
 | Prov från AI:ns receptläsning (text till och från AI:n, utan bilder och utan namn, e-post eller annat som pekar ut dig) | Raderas automatiskt efter 30 dagar, även om kontot redan är raderat | Samtycke |

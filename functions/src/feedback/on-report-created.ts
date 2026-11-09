@@ -35,7 +35,7 @@ import {
   captureThenWithdraw,
   withdrawReporterCredit,
 } from "../moderation/menu-dish-credit";
-import { reportCountsAgainstOwner } from "../moderation/report-status";
+import { isAutomatedImageReport, reportCountsAgainstOwner } from "../moderation/report-status";
 import {
   checkRateLimit,
   RateLimitCheckResult,
@@ -345,6 +345,11 @@ export const onReportCreated = onDocumentCreated(
   async (event) => {
     const reportData = event.data?.data();
     if (!reportData) return;
+    // BUT-818: the image check files its case already decided. No strike —
+    // SafeSearch misreads food photos, and a strike per misread would walk an
+    // innocent owner towards the threshold — and no moderator page, since there
+    // is nothing left to review.
+    if (isAutomatedImageReport(reportData)) return;
     const reportId = event.params.reportId;
 
     // Field names match the Dart ContentReport model
