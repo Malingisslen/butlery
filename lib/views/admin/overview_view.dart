@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/admin/metrics/metric_key.dart';
-import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/models/admin/overview_status.dart';
-import 'package:butlery/repositories/anomaly_repository.dart';
-import 'package:butlery/services/admin/metrics_assembler.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/admin/overview_loader.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
-/// First admin tab: says in one box whether anything needs the operator, and
-/// for each finding which tab to open.
+/// First admin tab: one row per tab saying whether it needs a look and what to
+/// do, with a button that opens it.
 class OverviewView extends StatefulWidget {
   final void Function(OverviewTarget) onOpenTarget;
   const OverviewView({required this.onOpenTarget, super.key});
@@ -26,9 +22,8 @@ class OverviewView extends StatefulWidget {
 }
 
 class _OverviewViewState extends State<OverviewView> {
-  List<OverviewFinding>? _findings;
+  List<OverviewRow>? _rows;
   bool _loading = false;
-  bool _failed = false;
   bool _started = false;
 
   @override
@@ -40,50 +35,21 @@ class _OverviewViewState extends State<OverviewView> {
     }
   }
 
-  // A metric that did not resolve must fail the load: reading it as 0 would
-  // show the all-clear box on missing data.
-  int _scalar(MetricValue? v) {
-    if (v is ScalarMetric) return v.value.toInt();
-    throw StateError('Overview metric did not resolve to a number');
-  }
-
   Future<void> _load({bool force = false}) async {
     final l10n = AppLocalizations.of(context);
+    setState(() => _loading = true);
+    final rows = await loadOverviewRows(l10n, force: force);
+    if (!mounted) return;
     setState(() {
-      _loading = true;
-      _failed = false;
+      _rows = rows;
+      _loading = false;
     });
-    try {
-      final anomalies = await ServiceLocator.get<AnomalyRepository>()
-          .getLatest();
-      final values = await ServiceLocator.get<MetricsAssembler>().resolve(
-        {MetricKey.importSuccess, MetricKey.importFailure},
-        l10n,
-        force: force,
-      );
-      final findings = assessOverview(
-        anomalies: anomalies,
-        importSuccess: _scalar(values[MetricKey.importSuccess]),
-        importFailure: _scalar(values[MetricKey.importFailure]),
-      );
-      if (!mounted) return;
-      setState(() {
-        _findings = findings;
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _failed = true;
-        _loading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final findings = _findings;
+    final rows = _rows;
     return AdminTabPage(
       title: l10n.adminOverviewTitle,
       actions: [
@@ -93,22 +59,17 @@ class _OverviewViewState extends State<OverviewView> {
           onPressed: _loading ? null : () => _load(force: true),
         ),
       ],
-      body: findings == null
-          ? (_failed
-                ? StateWidget.error(
-                    message: l10n.adminOverviewLoadFailed,
-                    onAction: _load,
-                  )
-                : StateWidget.loading(message: l10n.loadingMetrics))
+      body: rows == null
+          ? StateWidget.loading(message: l10n.loadingMetrics)
           : ListView(
               padding: const EdgeInsets.all(AppDimensions.space16),
               children: [
-                _StatusBox(count: findings.length),
-                for (final finding in findings) ...[
+                _StatusBox(rows: rows),
+                for (final row in rows) ...[
                   const SizedBox(height: AppDimensions.space12),
-                  _FindingCard(
-                    finding: finding,
-                    onOpen: () => widget.onOpenTarget(finding.target),
+                  _TabRow(
+                    row: row,
+                    onOpen: () => widget.onOpenTarget(row.target),
                   ),
                 ],
               ],
@@ -118,17 +79,35 @@ class _OverviewViewState extends State<OverviewView> {
 }
 
 class _StatusBox extends StatelessWidget {
-  final int count;
-  const _StatusBox({required this.count});
+  final List<OverviewRow> rows;
+  const _StatusBox({required this.rows});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    final ok = count == 0;
-    final foreground = ok ? cs.onPrimaryContainer : cs.onErrorContainer;
+    final needsLook = rows
+        .where((r) => r.status == OverviewStatus.needsLook)
+        .length;
+    final unavailable = rows.any((r) => r.status == OverviewStatus.unavailable);
+    final String title;
+    final Color background;
+    final Color foreground;
+    if (needsLook > 0) {
+      title = l10n.adminOverviewNeedsAction(needsLook);
+      background = cs.errorContainer;
+      foreground = cs.onErrorContainer;
+    } else if (unavailable) {
+      title = l10n.adminOverviewSomeUnavailable;
+      background = cs.surfaceContainerHighest;
+      foreground = cs.onSurface;
+    } else {
+      title = l10n.adminOverviewAllClearTitle;
+      background = cs.primaryContainer;
+      foreground = cs.onPrimaryContainer;
+    }
     return Material(
-      color: ok ? cs.primaryContainer : cs.errorContainer,
+      color: background,
       borderRadius: BorderRadius.circular(AppDimensions.space8),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
@@ -136,12 +115,10 @@ class _StatusBox extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ok
-                  ? l10n.adminOverviewAllClearTitle
-                  : l10n.adminOverviewNeedsAction(count),
+              title,
               style: AppTextStyles.titleLarge.copyWith(color: foreground),
             ),
-            if (ok) ...[
+            if (needsLook == 0 && !unavailable) ...[
               const SizedBox(height: AppDimensions.space8),
               Text(
                 l10n.adminOverviewAllClearBody,
@@ -155,42 +132,89 @@ class _StatusBox extends StatelessWidget {
   }
 }
 
-class _FindingCard extends StatelessWidget {
-  final OverviewFinding finding;
+class _TabRow extends StatelessWidget {
+  final OverviewRow row;
   final VoidCallback onOpen;
-  const _FindingCard({required this.finding, required this.onOpen});
+  const _TabRow({required this.row, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final anomalies = finding.kind == OverviewFindingKind.anomalies;
+    final cs = Theme.of(context).colorScheme;
+    final (statusLabel, statusColor) = switch (row.status) {
+      OverviewStatus.ok => (l10n.adminOverviewStatusOk, cs.primary),
+      OverviewStatus.needsLook => (l10n.adminOverviewStatusNeedsLook, cs.error),
+      OverviewStatus.unavailable => (
+        l10n.adminOverviewStatusUnavailable,
+        cs.error,
+      ),
+      OverviewStatus.noSignal => (
+        l10n.adminOverviewStatusNoSignal,
+        cs.onSurfaceVariant,
+      ),
+    };
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              anomalies
-                  ? l10n.adminOverviewAnomaliesTitle
-                  : l10n.adminOverviewImportFailuresTitle(finding.number),
-              style: AppTextStyles.titleMedium,
+            Wrap(
+              spacing: AppDimensions.space12,
+              runSpacing: AppDimensions.space8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  _tabName(l10n, row.target),
+                  style: AppTextStyles.titleMedium,
+                ),
+                Text(
+                  statusLabel,
+                  style: AppTextStyles.bodyMedium.copyWith(color: statusColor),
+                ),
+              ],
             ),
             const SizedBox(height: AppDimensions.space8),
-            Text(
-              anomalies
-                  ? l10n.adminOverviewAnomaliesAdvice
-                  : l10n.adminOverviewImportFailuresAdvice,
-              style: AppTextStyles.bodyMedium,
-            ),
+            Text(_advice(l10n, row), style: AppTextStyles.bodyMedium),
             const SizedBox(height: AppDimensions.space8),
-            TextButton(
-              onPressed: onOpen,
-              child: Text(l10n.adminOverviewOpenImport),
-            ),
+            TextButton(onPressed: onOpen, child: Text(l10n.adminOverviewOpen)),
           ],
         ),
       ),
     );
   }
 }
+
+String _tabName(AppLocalizations l10n, OverviewTarget target) =>
+    switch (target) {
+      OverviewTarget.feedback => l10n.adminNavFeedback,
+      OverviewTarget.proposals => l10n.adminNavProposals,
+      OverviewTarget.import => l10n.adminNavImport,
+      OverviewTarget.parsing => l10n.adminNavParsing,
+      OverviewTarget.ops => l10n.adminNavOps,
+      OverviewTarget.engagement => l10n.adminNavEngagement,
+      OverviewTarget.recipes => l10n.adminNavRecipes,
+      OverviewTarget.ingredients => l10n.adminNavIngredients,
+      OverviewTarget.tagRules => l10n.adminNavTagRules,
+      OverviewTarget.guestList => l10n.adminNavGuestList,
+    };
+
+String _advice(AppLocalizations l10n, OverviewRow row) => switch (row.advice) {
+  OverviewAdvice.feedbackNew =>
+    row.atLeast
+        ? l10n.adminOverviewFeedbackManyAdvice(row.number)
+        : l10n.adminOverviewFeedbackAdvice(row.number),
+  OverviewAdvice.feedbackOk => l10n.adminOverviewFeedbackOk,
+  OverviewAdvice.proposalsOpen =>
+    row.atLeast
+        ? l10n.adminOverviewProposalsManyAdvice(row.number)
+        : l10n.adminOverviewProposalsAdvice(row.number),
+  OverviewAdvice.proposalsOk => l10n.adminOverviewProposalsOk,
+  OverviewAdvice.importFailures => l10n.adminOverviewImportFailuresAdvice(
+    row.number,
+  ),
+  OverviewAdvice.importAnomalies => l10n.adminOverviewAnomaliesAdvice,
+  OverviewAdvice.importOk => l10n.adminOverviewImportOk,
+  OverviewAdvice.noSignal => l10n.adminOverviewNoSignalAdvice,
+  OverviewAdvice.unavailable => l10n.adminOverviewUnavailableAdvice,
+};

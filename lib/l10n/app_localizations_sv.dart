@@ -21779,7 +21779,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminOverviewAllClearBody =>
-      'Importerna går bra och inga ovanliga svängningar har upptäckts. Inget behöver göras just nu.';
+      'Inga nya rapporter eller förslag väntar och importerna går bra. Inget behöver göras just nu.';
 
   @override
   String adminOverviewNeedsAction(int count) {
@@ -21793,25 +21793,83 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get adminOverviewAnomaliesTitle =>
-      'Siffrorna avviker från det vanliga';
-
-  @override
   String get adminOverviewAnomaliesAdvice =>
-      'Något har ändrats mer än vanligt (se rutan ovan). Börja i Receptimport: har någon sajt slutat fungera? Annars visar Systemhändelser om något har körts fel. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.';
+      'Siffrorna avviker från det vanliga. Öppna Receptimport och se om någon sajt har slutat fungera. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.';
 
   @override
-  String adminOverviewImportFailuresTitle(int percent) {
-    return '$percent % av importerna misslyckas';
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % av importerna misslyckas. Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.';
   }
 
   @override
-  String get adminOverviewImportFailuresAdvice =>
-      'Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.';
+  String get adminOverviewSomeUnavailable => 'Några siffror kunde inte hämtas';
 
   @override
-  String get adminOverviewOpenImport => 'Öppna Receptimport';
+  String get adminOverviewStatusOk => 'Ser bra ut';
 
   @override
-  String get adminOverviewLoadFailed => 'Kunde inte hämta överblicken';
+  String get adminOverviewStatusNeedsLook => 'Behöver en titt';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Kunde inte hämtas';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'Ingen automatisk koll';
+
+  @override
+  String get adminOverviewOpen => 'Öppna';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count nya rapporter väntar. Läs dem och markera dem som hanterade när du är klar.',
+      one:
+          '1 ny rapport väntar. Läs den och markera den som hanterad när du är klar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'Minst $count nya rapporter väntar. Läs de nyaste först och markera dem som hanterade när du är klar.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'Inga nya rapporter väntar.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count förslag väntar på ditt beslut. Öppna dem och godkänn eller avslå.',
+      one:
+          '1 förslag väntar på ditt beslut. Öppna det och godkänn eller avslå.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'Minst $count förslag väntar på ditt beslut. Öppna listan och godkänn eller avslå, så kommer resten fram.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'Inga förslag väntar.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Importerna går bra och inga ovanliga svängningar har upptäckts.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.';
 }
