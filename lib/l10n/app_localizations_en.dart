@@ -8712,10 +8712,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Import health';
+  String get adminNavImport => 'Recipe import';
 
   @override
-  String get adminImportTitle => 'Import health';
+  String get adminImportTitle => 'Recipe import';
 
   @override
   String get adminImportColDomain => 'Domain';
@@ -8742,10 +8742,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminImportSummaryRate => 'Success rate';
 
   @override
-  String get adminNavEngagement => 'Engagement';
+  String get adminNavEngagement => 'Usage';
 
   @override
-  String get adminEngagementTitle => 'Engagement';
+  String get adminEngagementTitle => 'Usage';
 
   @override
   String get adminEngagementUsers => 'Total users';
@@ -8778,10 +8778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEngagementColShopped => 'Shopped';
 
   @override
-  String get adminNavParsing => 'Parsing details';
+  String get adminNavParsing => 'Import corrections';
 
   @override
-  String get adminParsingTitle => 'Parsing details';
+  String get adminParsingTitle => 'Import corrections';
 
   @override
   String get adminParsingEmpty => 'No corrections yet';
@@ -8832,13 +8832,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manual / unknown';
 
   @override
-  String get adminNavOps => 'Ops';
+  String get adminNavOps => 'System events';
 
   @override
-  String get adminNavGuestList => 'Guest list';
+  String get adminNavGuestList => 'Invited';
 
   @override
-  String get adminGuestListTitle => 'Guest list';
+  String get adminGuestListTitle => 'Invited';
 
   @override
   String get adminGuestListLoading => 'Loading the guest list …';
@@ -8893,7 +8893,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavIngredients => 'Ingredients';
 
   @override
-  String get adminNavTagRules => 'Tag rules';
+  String get adminNavTagRules => 'Allergen and diet rules';
 
   @override
   String get adminIngredientsTitle => 'Ingredients';
@@ -9037,7 +9037,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminIngredientNo => 'No';
 
   @override
-  String get adminTagRulesTitle => 'Tag rules';
+  String get adminTagRulesTitle => 'Allergen and diet rules';
 
   @override
   String get adminTagRulesLoadFailed => 'The tag configuration isn\'t loaded.';
@@ -9061,7 +9061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminTagRulesRequired => 'Requires';
 
   @override
-  String get adminOpsTitle => 'Operations';
+  String get adminOpsTitle => 'System events';
 
   @override
   String get adminOpsEmpty => 'No operations events yet';
@@ -21413,7 +21413,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Proposals';
+  String get adminNavProposals => 'Pending proposals';
 
   @override
   String get adminProposalsTitle => 'Pending proposals';
@@ -21950,4 +21950,50 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminProposalWordListReviewFailed =>
       'The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.';
+
+  @override
+  String get adminNavOverview => 'Overview';
+
+  @override
+  String get adminOverviewTitle => 'Overview';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Everything looks normal';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'Imports are going well and no unusual swings have been detected. Nothing needs doing right now.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things need your attention',
+      one: '1 thing needs your attention',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesTitle => 'The numbers differ from the usual';
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'Something has changed more than usual (see the box above). Start in Recipe import: has a site stopped working? Otherwise System events shows whether something has run wrong. A single deviation can also just be an unusually quiet or busy day.';
+
+  @override
+  String adminOverviewImportFailuresTitle(int percent) {
+    return '$percent % of imports fail';
+  }
+
+  @override
+  String get adminOverviewImportFailuresAdvice =>
+      'Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
+
+  @override
+  String get adminOverviewOpenImport => 'Open Recipe import';
+
+  @override
+  String get adminOverviewLoadFailed => 'Could not load the overview';
 }

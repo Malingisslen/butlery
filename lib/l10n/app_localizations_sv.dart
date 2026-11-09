@@ -8673,10 +8673,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Importhälsa';
+  String get adminNavImport => 'Receptimport';
 
   @override
-  String get adminImportTitle => 'Importhälsa';
+  String get adminImportTitle => 'Receptimport';
 
   @override
   String get adminImportColDomain => 'Domän';
@@ -8703,10 +8703,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminImportSummaryRate => 'Andel lyckade';
 
   @override
-  String get adminNavEngagement => 'Engagemang';
+  String get adminNavEngagement => 'Användning';
 
   @override
-  String get adminEngagementTitle => 'Engagemang';
+  String get adminEngagementTitle => 'Användning';
 
   @override
   String get adminEngagementUsers => 'Användare totalt';
@@ -8739,10 +8739,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminEngagementColShopped => 'Handlat';
 
   @override
-  String get adminNavParsing => 'Parsing-detaljer';
+  String get adminNavParsing => 'Rättelser av import';
 
   @override
-  String get adminParsingTitle => 'Parsing-detaljer';
+  String get adminParsingTitle => 'Rättelser av import';
 
   @override
   String get adminParsingEmpty => 'Inga korrigeringar än';
@@ -8793,13 +8793,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manuellt / okänt';
 
   @override
-  String get adminNavOps => 'Drift';
+  String get adminNavOps => 'Systemhändelser';
 
   @override
-  String get adminNavGuestList => 'Gästlista';
+  String get adminNavGuestList => 'Inbjudna';
 
   @override
-  String get adminGuestListTitle => 'Gästlista';
+  String get adminGuestListTitle => 'Inbjudna';
 
   @override
   String get adminGuestListLoading => 'Laddar gästlistan …';
@@ -8855,7 +8855,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNavIngredients => 'Ingredienser';
 
   @override
-  String get adminNavTagRules => 'Taggregler';
+  String get adminNavTagRules => 'Allergen- och kostregler';
 
   @override
   String get adminIngredientsTitle => 'Ingredienser';
@@ -8999,7 +8999,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminIngredientNo => 'Nej';
 
   @override
-  String get adminTagRulesTitle => 'Taggregler';
+  String get adminTagRulesTitle => 'Allergen- och kostregler';
 
   @override
   String get adminTagRulesLoadFailed => 'Taggkonfigurationen är inte laddad.';
@@ -9023,7 +9023,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminTagRulesRequired => 'Kräver';
 
   @override
-  String get adminOpsTitle => 'Drift';
+  String get adminOpsTitle => 'Systemhändelser';
 
   @override
   String get adminOpsEmpty => 'Inga driftshändelser än';
@@ -21241,7 +21241,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Förslag';
+  String get adminNavProposals => 'Väntande förslag';
 
   @override
   String get adminProposalsTitle => 'Väntande förslag';
@@ -21767,4 +21767,51 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get adminProposalWordListReviewFailed =>
       'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.';
+
+  @override
+  String get adminNavOverview => 'Överblick';
+
+  @override
+  String get adminOverviewTitle => 'Överblick';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Allt ser normalt ut';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'Importerna går bra och inga ovanliga svängningar har upptäckts. Inget behöver göras just nu.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saker behöver din uppmärksamhet',
+      one: '1 sak behöver din uppmärksamhet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesTitle =>
+      'Siffrorna avviker från det vanliga';
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'Något har ändrats mer än vanligt (se rutan ovan). Börja i Receptimport: har någon sajt slutat fungera? Annars visar Systemhändelser om något har körts fel. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.';
+
+  @override
+  String adminOverviewImportFailuresTitle(int percent) {
+    return '$percent % av importerna misslyckas';
+  }
+
+  @override
+  String get adminOverviewImportFailuresAdvice =>
+      'Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.';
+
+  @override
+  String get adminOverviewOpenImport => 'Öppna Receptimport';
+
+  @override
+  String get adminOverviewLoadFailed => 'Kunde inte hämta överblicken';
 }

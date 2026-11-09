@@ -13463,13 +13463,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavImport.
   ///
   /// In sv, this message translates to:
-  /// **'Importhälsa'**
+  /// **'Receptimport'**
   String get adminNavImport;
 
   /// No description provided for @adminImportTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importhälsa'**
+  /// **'Receptimport'**
   String get adminImportTitle;
 
   /// No description provided for @adminImportColDomain.
@@ -13523,13 +13523,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavEngagement.
   ///
   /// In sv, this message translates to:
-  /// **'Engagemang'**
+  /// **'Användning'**
   String get adminNavEngagement;
 
   /// No description provided for @adminEngagementTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Engagemang'**
+  /// **'Användning'**
   String get adminEngagementTitle;
 
   /// No description provided for @adminEngagementUsers.
@@ -13595,13 +13595,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavParsing.
   ///
   /// In sv, this message translates to:
-  /// **'Parsing-detaljer'**
+  /// **'Rättelser av import'**
   String get adminNavParsing;
 
   /// No description provided for @adminParsingTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Parsing-detaljer'**
+  /// **'Rättelser av import'**
   String get adminParsingTitle;
 
   /// No description provided for @adminParsingEmpty.
@@ -13703,19 +13703,19 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavOps.
   ///
   /// In sv, this message translates to:
-  /// **'Drift'**
+  /// **'Systemhändelser'**
   String get adminNavOps;
 
   /// No description provided for @adminNavGuestList.
   ///
   /// In sv, this message translates to:
-  /// **'Gästlista'**
+  /// **'Inbjudna'**
   String get adminNavGuestList;
 
   /// No description provided for @adminGuestListTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Gästlista'**
+  /// **'Inbjudna'**
   String get adminGuestListTitle;
 
   /// No description provided for @adminGuestListLoading.
@@ -13817,7 +13817,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavTagRules.
   ///
   /// In sv, this message translates to:
-  /// **'Taggregler'**
+  /// **'Allergen- och kostregler'**
   String get adminNavTagRules;
 
   /// No description provided for @adminIngredientsTitle.
@@ -14093,7 +14093,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminTagRulesTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Taggregler'**
+  /// **'Allergen- och kostregler'**
   String get adminTagRulesTitle;
 
   /// No description provided for @adminTagRulesLoadFailed.
@@ -14141,7 +14141,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminOpsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Drift'**
+  /// **'Systemhändelser'**
   String get adminOpsTitle;
 
   /// No description provided for @adminOpsEmpty.
@@ -32653,7 +32653,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavProposals.
   ///
   /// In sv, this message translates to:
-  /// **'Förslag'**
+  /// **'Väntande förslag'**
   String get adminNavProposals;
 
   /// No description provided for @adminProposalsTitle.
@@ -33467,6 +33467,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.'**
   String get adminProposalWordListReviewFailed;
+
+  /// No description provided for @adminNavOverview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblick'**
+  String get adminNavOverview;
+
+  /// No description provided for @adminOverviewTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblick'**
+  String get adminOverviewTitle;
+
+  /// No description provided for @adminOverviewAllClearTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt ser normalt ut'**
+  String get adminOverviewAllClearTitle;
+
+  /// No description provided for @adminOverviewAllClearBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerna går bra och inga ovanliga svängningar har upptäckts. Inget behöver göras just nu.'**
+  String get adminOverviewAllClearBody;
+
+  /// No description provided for @adminOverviewNeedsAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 sak behöver din uppmärksamhet} other{{count} saker behöver din uppmärksamhet}}'**
+  String adminOverviewNeedsAction(int count);
+
+  /// No description provided for @adminOverviewAnomaliesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Siffrorna avviker från det vanliga'**
+  String get adminOverviewAnomaliesTitle;
+
+  /// No description provided for @adminOverviewAnomaliesAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Något har ändrats mer än vanligt (se rutan ovan). Börja i Receptimport: har någon sajt slutat fungera? Annars visar Systemhändelser om något har körts fel. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.'**
+  String get adminOverviewAnomaliesAdvice;
+
+  /// No description provided for @adminOverviewImportFailuresTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percent} % av importerna misslyckas'**
+  String adminOverviewImportFailuresTitle(int percent);
+
+  /// No description provided for @adminOverviewImportFailuresAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.'**
+  String get adminOverviewImportFailuresAdvice;
+
+  /// No description provided for @adminOverviewOpenImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna Receptimport'**
+  String get adminOverviewOpenImport;
+
+  /// No description provided for @adminOverviewLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta överblicken'**
+  String get adminOverviewLoadFailed;
 }
 
 class _AppLocalizationsDelegate
