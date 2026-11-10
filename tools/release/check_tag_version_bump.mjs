@@ -1,4 +1,4 @@
-// Admin-vy D (tasks/admin-vy-cd-plan.md, condition 11): the tagging word
+// Admin-vy D: the tagging word
 // lists are compiled into the app, and recipes are re-tagged only when
 // kTagGeneratorVersion changes. The word-list PRs the admin view opens do not
 // raise the version, so an app release must not ship a changed word list
