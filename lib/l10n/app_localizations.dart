@@ -33639,7 +33639,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminOverviewOpsStaleAdvice.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen systemhändelse har registrerats på {days} dagar. Öppna fliken och se när jobben senast körde.'**
+  /// **'Ingen systemhändelse har registrerats på {days, plural, =1{1 dag} other{{days} dagar}}. Öppna fliken och se när jobben senast körde.'**
   String adminOverviewOpsStaleAdvice(int days);
 
   /// No description provided for @adminOverviewOpsNoneAdvice.

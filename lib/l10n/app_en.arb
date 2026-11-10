@@ -18012,7 +18012,7 @@
   "@adminOverviewProposalsManyAdvice": {"placeholders": {"count": {"type": "int"}}},
   "adminOverviewProposalsOk": "No proposals are waiting.",
   "adminOverviewImportOk": "Imports are going well and no unusual swings have been detected.",
-  "adminOverviewOpsStaleAdvice": "No system event has been recorded in {days} days. Open the tab and see when the jobs last ran.",
+  "adminOverviewOpsStaleAdvice": "No system event has been recorded in {days, plural, =1{1 day} other{{days} days}}. Open the tab and see when the jobs last ran.",
   "@adminOverviewOpsStaleAdvice": {"placeholders": {"days": {"type": "int"}}},
   "adminOverviewOpsNoneAdvice": "No system event has ever been recorded. Open the tab and check that the jobs are running.",
   "adminOverviewOpsOk": "System events have been recorded within the last week.",

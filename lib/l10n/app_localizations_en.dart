@@ -22093,7 +22093,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String adminOverviewOpsStaleAdvice(int days) {
-    return 'No system event has been recorded in $days days. Open the tab and see when the jobs last ran.';
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'No system event has been recorded in $_temp0. Open the tab and see when the jobs last ran.';
   }
 
   @override

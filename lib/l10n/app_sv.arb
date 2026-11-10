@@ -18026,7 +18026,7 @@
   "@adminOverviewProposalsManyAdvice": {"placeholders": {"count": {"type": "int"}}},
   "adminOverviewProposalsOk": "Inga förslag väntar.",
   "adminOverviewImportOk": "Importerna går bra och inga ovanliga svängningar har upptäckts.",
-  "adminOverviewOpsStaleAdvice": "Ingen systemhändelse har registrerats på {days} dagar. Öppna fliken och se när jobben senast körde.",
+  "adminOverviewOpsStaleAdvice": "Ingen systemhändelse har registrerats på {days, plural, =1{1 dag} other{{days} dagar}}. Öppna fliken och se när jobben senast körde.",
   "@adminOverviewOpsStaleAdvice": {"placeholders": {"days": {"type": "int"}}},
   "adminOverviewOpsNoneAdvice": "Ingen systemhändelse har någonsin registrerats. Öppna fliken och kontrollera att jobben körs.",
   "adminOverviewOpsOk": "Systemhändelser har registrerats den senaste veckan.",

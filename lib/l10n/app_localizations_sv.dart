@@ -21909,7 +21909,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String adminOverviewOpsStaleAdvice(int days) {
-    return 'Ingen systemhändelse har registrerats på $days dagar. Öppna fliken och se när jobben senast körde.';
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dagar',
+      one: '1 dag',
+    );
+    return 'Ingen systemhändelse har registrerats på $_temp0. Öppna fliken och se när jobben senast körde.';
   }
 
   @override
