@@ -27,6 +27,11 @@ enum OverviewAdvice {
   importFailures,
   importAnomalies,
   importOk,
+  opsStale,
+  opsNone,
+  opsOk,
+  guestPending,
+  guestNone,
   noSignal,
   unavailable,
 }
@@ -61,16 +66,23 @@ const int overviewFeedbackReadLimit = 50;
 /// How many open proposals the overview reads.
 const int overviewProposalReadLimit = 500;
 
+const int overviewOpsSilenceDays = 8;
+
+/// When the newest scheduled-job receipt was written; [lastReceiptAt] is null
+/// when no receipt exists at all.
+class OpsHeartbeat {
+  final DateTime? lastReceiptAt;
+  const OpsHeartbeat(this.lastReceiptAt);
+}
+
 /// Tabs with no cheap, honest signal: their row says nothing needs doing and
 /// links to the tab.
 const List<OverviewTarget> overviewNoSignalTargets = [
   OverviewTarget.parsing,
-  OverviewTarget.ops,
   OverviewTarget.engagement,
   OverviewTarget.recipes,
   OverviewTarget.ingredients,
   OverviewTarget.tagRules,
-  OverviewTarget.guestList,
 ];
 
 /// Turns what the overview could read into one row per tab. A null input means
@@ -82,7 +94,12 @@ List<OverviewRow> assessOverview({
   required int? importFailure,
   required int? newFeedback,
   required int? openProposals,
+  required OpsHeartbeat? ops,
+  required int? pendingInvites,
+  required DateTime now,
 }) {
+  OverviewRow noSignal(OverviewTarget t) =>
+      OverviewRow(t, OverviewStatus.noSignal, OverviewAdvice.noSignal);
   return [
     _countRow(
       OverviewTarget.feedback,
@@ -99,9 +116,69 @@ List<OverviewRow> assessOverview({
       OverviewAdvice.proposalsOk,
     ),
     _importRow(anomalies, importSuccess, importFailure),
-    for (final target in overviewNoSignalTargets)
-      OverviewRow(target, OverviewStatus.noSignal, OverviewAdvice.noSignal),
+    noSignal(OverviewTarget.parsing),
+    _opsRow(ops, now),
+    noSignal(OverviewTarget.engagement),
+    noSignal(OverviewTarget.recipes),
+    noSignal(OverviewTarget.ingredients),
+    noSignal(OverviewTarget.tagRules),
+    _guestRow(pendingInvites),
   ];
+}
+
+OverviewRow _opsRow(OpsHeartbeat? ops, DateTime now) {
+  const target = OverviewTarget.ops;
+  if (ops == null) {
+    return const OverviewRow(
+      target,
+      OverviewStatus.unavailable,
+      OverviewAdvice.unavailable,
+    );
+  }
+  final last = ops.lastReceiptAt;
+  if (last == null) {
+    return const OverviewRow(
+      target,
+      OverviewStatus.needsLook,
+      OverviewAdvice.opsNone,
+    );
+  }
+  final days = now.difference(last).inDays;
+  if (days >= overviewOpsSilenceDays) {
+    return OverviewRow(
+      target,
+      OverviewStatus.needsLook,
+      OverviewAdvice.opsStale,
+      number: days,
+    );
+  }
+  return const OverviewRow(target, OverviewStatus.ok, OverviewAdvice.opsOk);
+}
+
+// Informational, not a to-do: an invitation waiting to be used needs nothing
+// from the admin, so it never turns the overview red.
+OverviewRow _guestRow(int? pending) {
+  const target = OverviewTarget.guestList;
+  if (pending == null) {
+    return const OverviewRow(
+      target,
+      OverviewStatus.unavailable,
+      OverviewAdvice.unavailable,
+    );
+  }
+  if (pending == 0) {
+    return const OverviewRow(
+      target,
+      OverviewStatus.ok,
+      OverviewAdvice.guestNone,
+    );
+  }
+  return OverviewRow(
+    target,
+    OverviewStatus.ok,
+    OverviewAdvice.guestPending,
+    number: pending,
+  );
 }
 
 OverviewRow _countRow(

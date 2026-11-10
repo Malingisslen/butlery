@@ -215,6 +215,13 @@ String _advice(AppLocalizations l10n, OverviewRow row) => switch (row.advice) {
   ),
   OverviewAdvice.importAnomalies => l10n.adminOverviewAnomaliesAdvice,
   OverviewAdvice.importOk => l10n.adminOverviewImportOk,
+  OverviewAdvice.opsStale => l10n.adminOverviewOpsStaleAdvice(row.number),
+  OverviewAdvice.opsNone => l10n.adminOverviewOpsNoneAdvice,
+  OverviewAdvice.opsOk => l10n.adminOverviewOpsOk,
+  OverviewAdvice.guestPending => l10n.adminOverviewGuestPendingAdvice(
+    row.number,
+  ),
+  OverviewAdvice.guestNone => l10n.adminOverviewGuestNone,
   OverviewAdvice.noSignal => l10n.adminOverviewNoSignalAdvice,
   OverviewAdvice.unavailable => l10n.adminOverviewUnavailableAdvice,
 };

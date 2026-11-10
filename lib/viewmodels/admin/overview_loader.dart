@@ -1,3 +1,5 @@
+import 'package:clock/clock.dart';
+
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -9,6 +11,8 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart';
+import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart';
+import 'package:butlery/repositories/ops_log_repository.dart';
 import 'package:butlery/services/admin/metrics_assembler.dart';
 
 /// Reads the few numbers the overview needs, each on its own: a read that
@@ -47,6 +51,14 @@ Future<List<OverviewRow>> loadOverviewRows(
                   .first)
               .length,
     ),
+    _attempt<OpsHeartbeat>(
+      () async => OpsHeartbeat(
+        await ServiceLocator.get<OpsLogRepository>().getLatestReceiptAt(),
+      ),
+    ),
+    _attempt<int>(
+      () => ServiceLocator.get<SignupAllowlistRepository>().countPending(),
+    ),
   ]);
   final metrics = results[1] as Map<MetricKey, MetricValue>?;
   return assessOverview(
@@ -55,6 +67,9 @@ Future<List<OverviewRow>> loadOverviewRows(
     importFailure: _scalar(metrics?[MetricKey.importFailure]),
     newFeedback: results[2] as int?,
     openProposals: results[3] as int?,
+    ops: results[4] as OpsHeartbeat?,
+    pendingInvites: results[5] as int?,
+    now: clock.now(),
   );
 }
 
