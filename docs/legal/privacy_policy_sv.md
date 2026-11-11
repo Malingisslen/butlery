@@ -1,7 +1,7 @@
 # Integritetspolicy
 
 **Status:** Utkast. Ska granskas av juridiskt ombud och publiceras på en stabil URL (planerad: `butlery.se/integritet` när BUT-680 levereras).
-**Senast uppdaterad:** 2026-10-09
+**Senast uppdaterad:** 2026-11-11
 **Träder i kraft:** TBD vid publicering.
 
 ## 1. Vilka vi är
@@ -52,7 +52,7 @@ Vi använder ONNX-maskininlärningsmodeller direkt på din enhet för:
 
 Dessa modeller körs lokalt på din enhet. Texten och bilderna som bearbetas av dessa modeller **skickas inte till våra servrar** som del av modellberäkning. Modellerna själva laddas ner från vårt CDN (Firebase Storage) en gång per version och verifieras med SHA-256-hash innan användning.
 
-Molnbaserad AI-bearbetning (Gemini via Vertex AI) används för receptanalys från URL och OCR-förbättring. När du aktiverar dessa funktioner skickas indata till Google Clouds Vertex AI i regionen `europe-west4`.
+Molnbaserad AI-bearbetning (Gemini via Vertex AI) används för receptanalys från URL och OCR-förbättring. När du aktiverar dessa funktioner skickas indata till Google Clouds Vertex AI inom EU: text till regionen `europe-west4` (Nederländerna) och foton till Googles EU-multiregion (`eu`), eller till `europe-west4` om den inte svarar.
 
 ## 6. Lagring
 
@@ -76,7 +76,7 @@ Vi delar nödvändiga uppgifter med följande underleverantörer. Samtliga är G
 | Google Cloud — Authentication | Autentisering + MFA | E-post, lösenordshash, MFA-token | Global (EU-routad) |
 | Google Cloud — Storage | Receptbilder, exporter | Användaruppladdade bilder | europe-west1 |
 | Google Cloud — Cloud Functions | Serverlogik | Kontoborttagning, innehållsmoderering | europe-west1 |
-| Google Cloud — Vertex AI (Gemini) | Receptanalys, OCR | Inmatning till AI-funktioner | europe-west4 |
+| Google Cloud — Vertex AI (Gemini) | Receptanalys, OCR | Inmatning till AI-funktioner | Inom EU: europe-west4 (text), EU-multiregion `eu` (foton, annars europe-west4) |
 | Google Cloud — Vision API | Bildmoderering (SafeSearch) | Uppladdade bilder | europe-west1 |
 | Google Cloud — reCAPTCHA Enterprise | App Check (anti-bot) | Enhetsattestering | Global |
 | Firebase Crashlytics | Kraschrapporter | Stack-spår, enhetsmetadata | Global |
