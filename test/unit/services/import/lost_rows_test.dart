@@ -52,6 +52,26 @@ void main() {
     expect(r.instructions.first, 'Fräs löken mjuk.');
   });
 
+  test('a preparation note stays with its item', () async {
+    final r = await parse(
+      'Soppa\n\nIngredienser: 1 lök, skuren i tärningar, 2 dl vatten, '
+      'helst kallt, 1 tsk salt\n\nGör så här: Koka soppan i tio minuter.',
+    );
+    expect(hasRow(r, '1 lök, skuren i tärningar'), isTrue);
+    expect(hasRow(r, '2 dl vatten, helst kallt'), isTrue);
+    expect(r.ingredients, hasLength(3));
+  });
+
+  test('a bare ingredient between measured items stays its own row', () async {
+    final r = await parse(
+      'Gryta\n\nIngredienser: 1 lök, 2 morötter, lagerblad, riven ost, '
+      '100 g smör, choklad\n\nGör så här: Koka gryta i tio minuter.',
+    );
+    expect(hasRow(r, 'lagerblad'), isTrue);
+    expect(hasRow(r, 'riven ost'), isTrue);
+    expect(hasRow(r, 'choklad'), isTrue);
+  });
+
   test('a seasoning list on one line stays one row', () async {
     final r = await parse(
       'Kycklinggryta\nIngredienser\n500 g kyckling\n'
