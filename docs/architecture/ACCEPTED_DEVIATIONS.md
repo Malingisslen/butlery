@@ -6816,6 +6816,14 @@ Decided by Malin 2026-10-31 (”1 och 2 ja”).
   reads the same predicate and leaves out `userIds`.
 - Art. 30 record: `docs/security/correction-log-retention.md`.
 
+## BUT-2033 — ingredient suggestions carry no age gate (2026-11-07)
+
+Decided by Malin 2026-11-07 (decision card, "Nej, förslaget är privat").
+
+`match /ingredient_suggestions/{suggestionId}` in `firestore.rules` has no `isAgeCompliant()`,
+unlike `recipe_comments`, `cook_snaps` and the other social collections. A suggestion is read
+only by its author and the admin. Revisit if a suggestion is ever shown to other users.
+
 ## SUPERSEDES four lines of the BUT-1797 "Deliberately left" list (BUT-1815, BUT-2444, 2026-11-07)
 
 - **The second deserializer.** Retires "The second deserializer in `recipe_serialization.dart`

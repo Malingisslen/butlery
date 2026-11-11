@@ -139,7 +139,7 @@ void main() {
       expect(_codes(IngredientColumn.properties, ['dairy', 'wheat']), {
         IngredientIssueCode.unknownProperty,
       });
-      // Known to the app registry, rejected by the sync.
+      // Retired 2026-11-07 (BUT-1616).
       expect(_codes(IngredientColumn.properties, ['raw-safe']), {
         IngredientIssueCode.unknownProperty,
       });

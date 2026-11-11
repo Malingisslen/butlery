@@ -40,10 +40,6 @@
 /// under `tasks/`, which is gitignored, so do not cite that path as evidence.
 /// (The crossing guard below is an ENGINEERING call, labelled differently on
 /// purpose.)
-///
-/// The leading trim's own budget remains unmeasured — see `leading_noise.dart`
-/// — and `dart run tools/corpus_split_eval.dart --leading-trim` is still owed
-/// before `enable_layout_recipe_split` is turned on.
 library;
 
 import 'package:butlery/services/import/layout/leading_noise.dart';
@@ -99,7 +95,7 @@ import 'package:butlery/services/ocr/text_layout.dart';
   // where the same page carries both — the LEADING cut is the one dropped.
   // Dropping the tail cut instead would change what `withoutOrphanTail`
   // does on that page and re-open the measurement question for the sake of
-  // the newer, unmeasured rule. An ENGINEERING call, stated as judgment call
+  // the newer rule. An ENGINEERING call, stated as judgment call
   // (2) of the plan Malin approved on 2026-08-12 — not a founder decision on
   // this line itself, which is the distinction the entry above draws.
   if (headPageRow != null && textTail != null && textHead! >= textTail) {
