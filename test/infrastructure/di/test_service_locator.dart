@@ -11,6 +11,7 @@ import '../mocks/production_mocks.dart';
 import '../mocks/service_mocks.dart';
 import '../mocks/fallback_values.dart';
 import '../mocks/firestore_singleton.dart';
+import 'generated/production_mock_fallbacks.dart';
 
 // Repository interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -155,6 +156,10 @@ class TestServiceLocator {
     await _registerServices();
     await _registerViewModels();
     await _registerUtilities();
+
+    // Last, so a hand-written fake above always wins; anything production
+    // registers that nothing here covers gets a mock instead of "not registered".
+    registerProductionMockFallbacks(ServiceLocator._getIt);
 
     ServiceLocator._initialized = true;
 
