@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 9, 2026
-**Version:** 1.33
+**Last updated:** November 11, 2026
+**Version:** 1.34
 
 ---
 
@@ -141,7 +141,7 @@ We use your personal data for the following purposes:
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
 
-**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (the Netherlands). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
+**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (Google's EU multi-region for photos, otherwise europe-west4; europe-west4/the Netherlands for text). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
 
 **Shared allergies within your household (if you have consented):**
 
@@ -195,7 +195,7 @@ We share your personal data with the following third parties:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
 - **Purpose:** AI-based recipe extraction and structuring via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's `europe-west4` region (the Netherlands). No transfer to the USA.
+- **Transfer:** Within EU/EEA — text is processed in Google Cloud's `europe-west4` region (the Netherlands) and photos in Google Cloud's EU multi-region (within the EU), or in `europe-west4` if it does not respond. No transfer to the USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** A photo is sent here only after you have said yes to AI reading it (see section 5.2). The photo may contain personal information visible in the picture. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
@@ -221,7 +221,7 @@ The following is a list of the data processors that receive your data, the categ
 |-----------|---------------|----------------|--------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgium). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | Within the EU: Google's EU multi-region for photos (otherwise `europe-west4`), `europe-west4` (the Netherlands) for text — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Cloud Vision (SafeSearch)** | Images you upload to your account | Google's EU endpoint — processing within the EU, no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 
 When the phone reads a recipe photo itself (Google ML Kit), the photo is not sent to anyone.
@@ -427,7 +427,7 @@ We may update this policy when:
 For significant changes:
 - We may request renewed consent (if applicable)
 
-**Last change:** November 9, 2026
+**Last change:** November 11, 2026
 **Version history:** Available upon request
 
 ---

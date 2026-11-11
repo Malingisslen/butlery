@@ -185,7 +185,7 @@ Processors (no sharing flag triggered):
 | Processor | Function | Region | DPA |
 |---|---|---|---|
 | **Google Firebase** (Auth, Firestore, Storage, FCM, Analytics, Crashlytics, Performance, Installations, App Check, Realtime Database) | Backend infrastructure | Firestore data: **`europe-west3` (Frankfurt)** — resolved in BUT-819, 2026-06-14. Compute (Cloud Functions) pinned to `europe-west1`. Auth: global (managed). Both regions are EU. Verify live: `gcloud firestore backups list --location=europe-west3` (see `docs/ops/backups.md`) | Google Cloud DPA |
-| **Google Cloud Vertex AI** (Gemini models for recipe parsing, and reading a recipe photo after the user says yes to AI) | LLM-based recipe extraction | `europe-west4` (Netherlands), `VERTEX_LOCATION` in `functions/src/llm/gemini-client.ts` | Google Cloud DPA |
+| **Google Cloud Vertex AI** (Gemini models for recipe parsing, and reading a recipe photo after the user says yes to AI) | LLM-based recipe extraction | EU: text in `europe-west4` (Netherlands), `VERTEX_LOCATION`; photos in Google's EU multi-region (`eu`), `VISION_LOCATION`; both in `functions/src/llm/gemini-client.ts` | Google Cloud DPA |
 | **Google Cloud Vision** (SafeSearch, BUT-818) | Checks each image uploaded under `users/` once for sexual or violent content | EU endpoint `eu-vision.googleapis.com`, `functions/src/storage/safe-search.ts` | Google Cloud DPA |
 
 A recipe photo is read on the device first, by ML Kit (`lib/services/ocr_extraction_service.dart`,
@@ -201,7 +201,7 @@ The photo goes to Vertex AI (`ocrRecipeImage`) only after the user says yes to A
 reading it, and the server refuses the call without the AI-processing consent (`withAiConsent`,
 `functions/src/llm/ai-consent.ts`).
 
-If Play Console UI insists on declaring transfers when the data leaves the EU/EEA, file under "App functionality" with no Sharing flag. The Vertex AI Netherlands region is EU, so no Chapter V transfer occurs for recipe text/images sent for parsing.
+If Play Console UI insists on declaring transfers when the data leaves the EU/EEA, file under "App functionality" with no Sharing flag. Both Vertex AI locations (`europe-west4` for text, the `eu` multi-region for photos) are EU, so no Chapter V transfer occurs for recipe text/images sent for parsing.
 
 **Open conflict, not resolved here:** `assets/legal/privacy_policy_{sv,en}.md` §6.2 still states
 `europe-west1` for Firestore, while `docs/ops/backups.md` records `europe-west3` as the resolved

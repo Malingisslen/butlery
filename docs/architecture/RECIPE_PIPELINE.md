@@ -34,8 +34,9 @@
         │   service; ocrRecipeImage only after the user says yes to AI)
         ▼
 ┌── CLOUD LLM (functions/src/llm/) ────────────────────────────────────────────┐
-│ structureRecipe + ocrRecipeImage callables → Gemini 2.5 Flash Lite (Vertex,  │
-│ europe-west4). PII scrub both sides (shared fixture), kill switches, prompt  │
+│ structureRecipe → Gemini 2.5 Flash Lite (Vertex, europe-west4);              │
+│ ocrRecipeImage → Gemini 3.1 Flash Lite (Vertex, EU multi-region `eu`).       │
+│ PII scrub both sides (shared fixture), kill switches, prompt                 │
 │ A/B infra (built, no experiment live), per-call sample capture (write-only,  │
 │ 30d TTL).                                                                    │
 └──────────────────────────────────────────────────────────────────────────────┘
