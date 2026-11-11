@@ -11,7 +11,7 @@ void main() {
     final current = File(outputPath).readAsStringSync();
     expect(
       current,
-      buildFallbackFile('.'),
+      formatted(buildFallbackFile('.')),
       reason:
           'A service was added to or removed from lib/core/di. Run: '
           'dart run tools/test_mock_fallbacks.dart',
@@ -21,7 +21,9 @@ void main() {
   test('a hand-written fake wins over the generated fallback', () async {
     await TestServiceLocator.initialize();
     addTearDown(TestServiceLocator.reset);
-    expect(TestServiceLocator.get<AuthService>().runtimeType.toString(),
-        isNot(startsWith('_M')));
+    expect(
+      TestServiceLocator.get<AuthService>().runtimeType.toString(),
+      isNot(startsWith('_M')),
+    );
   });
 }

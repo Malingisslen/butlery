@@ -3,25 +3,33 @@
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/account/account_deletion_service.dart' as p0;
-import 'package:butlery/repositories/interfaces/activity_event_repository.dart' as p1;
+import 'package:butlery/repositories/interfaces/activity_event_repository.dart'
+    as p1;
 import 'package:butlery/services/social/activity_feed_service.dart' as p2;
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart' as p3;
-import 'package:butlery/repositories/interfaces/analytics_repository.dart' as p4;
+import 'package:butlery/repositories/interfaces/analytics_repository.dart'
+    as p4;
 import 'package:butlery/repositories/anomaly_repository.dart' as p5;
 import 'package:butlery/services/monitoring/app_monitoring_service.dart' as p6;
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart' as p7;
 import 'package:butlery/services/auth/auth_mfa_service.dart' as p8;
 import 'package:butlery/viewmodels/auth_viewmodel.dart' as p9;
 import 'package:butlery/services/backup_service.dart' as p10;
-import 'package:butlery/services/social/blocking/blocked_user_filter.dart' as p11;
-import 'package:butlery/repositories/interfaces/category_preferences_repository.dart' as p12;
-import 'package:butlery/repositories/interfaces/chat_group_repository.dart' as p13;
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
+    as p11;
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart'
+    as p12;
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart'
+    as p13;
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart' as p14;
-import 'package:butlery/repositories/interfaces/comments_repository.dart' as p15;
-import 'package:butlery/repositories/interfaces/connectivity_repository.dart' as p16;
+import 'package:butlery/repositories/interfaces/comments_repository.dart'
+    as p15;
+import 'package:butlery/repositories/interfaces/connectivity_repository.dart'
+    as p16;
 import 'package:butlery/services/content_detector_service.dart' as p17;
 import 'package:butlery/viewmodels/conversations_viewmodel.dart' as p18;
-import 'package:butlery/repositories/interfaces/cook_snap_repository.dart' as p19;
+import 'package:butlery/repositories/interfaces/cook_snap_repository.dart'
+    as p19;
 import 'package:butlery/services/cook_snap_service.dart' as p20;
 import 'package:butlery/services/tagging/cookbook_service.dart' as p21;
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart' as p22;
@@ -29,137 +37,203 @@ import 'package:butlery/viewmodels/create_group_viewmodel.dart' as p23;
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart' as p24;
 import 'package:butlery/repositories/daily_snapshot_repository.dart' as p25;
 import 'package:butlery/services/account/data_export_service.dart' as p26;
-import 'package:butlery/repositories/interfaces/deeplink_repository.dart' as p27;
+import 'package:butlery/repositories/interfaces/deeplink_repository.dart'
+    as p27;
 import 'package:butlery/repositories/interfaces/device_repository.dart' as p28;
-import 'package:butlery/repositories/interfaces/diner_profile_repository.dart' as p29;
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart'
+    as p29;
 import 'package:butlery/repositories/engagement_repository.dart' as p30;
 import 'package:butlery/services/analytics/experiment_assignment.dart' as p31;
 import 'package:butlery/services/extraction/extraction_manager.dart' as p32;
 import 'package:butlery/services/notifications/fcm_service.dart' as p33;
-import 'package:butlery/repositories/interfaces/family_rating_repository.dart' as p34;
+import 'package:butlery/repositories/interfaces/family_rating_repository.dart'
+    as p34;
 import 'package:butlery/services/family/family_rating_service.dart' as p35;
-import 'package:butlery/repositories/interfaces/feedback_repository.dart' as p36;
+import 'package:butlery/repositories/interfaces/feedback_repository.dart'
+    as p36;
 import 'package:butlery/services/feedback/feedback_service.dart' as p37;
-import 'package:butlery/repositories/firebase/firebase_audit_repository.dart' as p38;
-import 'package:butlery/repositories/firebase/firebase_block_repository.dart' as p39;
-import 'package:butlery/repositories/firebase/firebase_consent_repository.dart' as p40;
-import 'package:butlery/repositories/firebase/firebase_cooking_session_repository.dart' as p41;
-import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart' as p42;
-import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart' as p43;
-import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart' as p44;
-import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart' as p45;
-import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart' as p46;
-import 'package:butlery/repositories/firebase/firebase_report_repository.dart' as p47;
-import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart' as p48;
-import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart' as p49;
-import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart' as p50;
-import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart' as p51;
-import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart' as p52;
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart'
+    as p38;
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart'
+    as p39;
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart'
+    as p40;
+import 'package:butlery/repositories/firebase/firebase_cooking_session_repository.dart'
+    as p41;
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart'
+    as p42;
+import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart'
+    as p43;
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart'
+    as p44;
+import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart'
+    as p45;
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart'
+    as p46;
+import 'package:butlery/repositories/firebase/firebase_report_repository.dart'
+    as p47;
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart'
+    as p48;
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart'
+    as p49;
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart'
+    as p50;
+import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart'
+    as p51;
+import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart'
+    as p52;
 import 'package:butlery/repositories/firestore_repository.dart' as p53;
 import 'package:butlery/repositories/interfaces/friends_repository.dart' as p54;
 import 'package:butlery/viewmodels/friends_viewmodel.dart' as p55;
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart' as p56;
-import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart' as p57;
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart'
+    as p57;
 import 'package:butlery/services/group_shared_content_service.dart' as p58;
-import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart' as p59;
-import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart' as p60;
+import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart'
+    as p59;
+import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart'
+    as p60;
 import 'package:butlery/services/image_picker_service.dart' as p61;
 import 'package:butlery/services/upload/image_upload_service.dart' as p62;
 import 'package:butlery/services/import/import_manager.dart' as p63;
 import 'package:butlery/services/import/import_rate_limiter.dart' as p64;
-import 'package:butlery/services/tagging/ingredient_change_pr_service.dart' as p65;
-import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart' as p66;
-import 'package:butlery/services/ingredients/ingredient_id_resolver.dart' as p67;
+import 'package:butlery/services/tagging/ingredient_change_pr_service.dart'
+    as p65;
+import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart'
+    as p66;
+import 'package:butlery/services/ingredients/ingredient_id_resolver.dart'
+    as p67;
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart' as p68;
 import 'package:butlery/services/ingredient_match_service.dart' as p69;
-import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart' as p70;
-import 'package:butlery/repositories/interfaces/ingredient_repository.dart' as p71;
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart'
+    as p70;
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
+    as p71;
 import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart' as p72;
-import 'package:butlery/services/import/pipelines/instagram_pipeline.dart' as p73;
-import 'package:butlery/services/performance/intelligent_cache_manager.dart' as p74;
+import 'package:butlery/services/import/pipelines/instagram_pipeline.dart'
+    as p73;
+import 'package:butlery/services/performance/intelligent_cache_manager.dart'
+    as p74;
 import 'package:butlery/services/feedback/interaction_logger.dart' as p75;
 import 'package:butlery/core/cache/json_cache_helper.dart' as p76;
 import 'package:butlery/services/menu/parser/lexicon_provider.dart' as p77;
-import 'package:butlery/services/parsing/line_classifier/line_classifier_model_manager.dart' as p78;
-import 'package:butlery/services/import/llm/llm_enhancement_service.dart' as p79;
+import 'package:butlery/services/parsing/line_classifier/line_classifier_model_manager.dart'
+    as p78;
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart'
+    as p79;
 import 'package:butlery/services/llm/llm_service.dart' as p80;
 import 'package:butlery/core/providers/locale_provider.dart' as p81;
 import 'package:butlery/services/menu_service.dart' as p82;
 import 'package:butlery/viewmodels/menu_viewmodel.dart' as p83;
-import 'package:butlery/repositories/interfaces/menu_voting_repository.dart' as p84;
+import 'package:butlery/repositories/interfaces/menu_voting_repository.dart'
+    as p84;
 import 'package:butlery/services/menu_voting_service.dart' as p85;
-import 'package:butlery/services/messaging/message_reactions_service.dart' as p86;
-import 'package:butlery/repositories/interfaces/messaging_repository.dart' as p87;
+import 'package:butlery/services/messaging/message_reactions_service.dart'
+    as p86;
+import 'package:butlery/repositories/interfaces/messaging_repository.dart'
+    as p87;
 import 'package:butlery/services/messaging_service.dart' as p88;
 import 'package:butlery/services/admin/metrics_assembler.dart' as p89;
-import 'package:butlery/services/moderation/moderation_appeals_service.dart' as p90;
-import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart' as p91;
+import 'package:butlery/services/moderation/moderation_appeals_service.dart'
+    as p90;
+import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart'
+    as p91;
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart' as p92;
 import 'package:butlery/services/parsing/ner/ner_model_manager.dart' as p93;
-import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart' as p94;
-import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart' as p95;
-import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart' as p96;
-import 'package:butlery/repositories/interfaces/notification_batch_repository.dart' as p97;
-import 'package:butlery/repositories/interfaces/notification_history_repository.dart' as p98;
-import 'package:butlery/services/notifications/notification_service.dart' as p99;
-import 'package:butlery/repositories/interfaces/notifications_repository.dart' as p100;
+import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart'
+    as p94;
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart'
+    as p95;
+import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart'
+    as p96;
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart'
+    as p97;
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart'
+    as p98;
+import 'package:butlery/services/notifications/notification_service.dart'
+    as p99;
+import 'package:butlery/repositories/interfaces/notifications_repository.dart'
+    as p100;
 import 'package:butlery/services/nutrition/nutrition_service.dart' as p101;
-import 'package:butlery/services/onboarding/onboarding_progress_service.dart' as p102;
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart'
+    as p102;
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart' as p103;
-import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart' as p104;
+import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart'
+    as p104;
 import 'package:butlery/services/parsing/ner/onnx_ner_service.dart' as p105;
 import 'package:butlery/repositories/ops_log_repository.dart' as p106;
-import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart' as p107;
+import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart'
+    as p107;
 import 'package:butlery/repositories/interfaces/pantry_repository.dart' as p108;
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart' as p109;
 import 'package:butlery/repositories/parse_events_repository.dart' as p110;
 import 'package:butlery/services/import/parser_shadow_sampler.dart' as p111;
 import 'package:butlery/services/auth/password_reset_service.dart' as p112;
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart' as p113;
-import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart' as p114;
-import 'package:butlery/services/account/pending_retention_notice_store.dart' as p115;
-import 'package:butlery/services/performance/performance_monitoring_service.dart' as p116;
+import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart'
+    as p114;
+import 'package:butlery/services/account/pending_retention_notice_store.dart'
+    as p115;
+import 'package:butlery/services/performance/performance_monitoring_service.dart'
+    as p116;
 import 'package:butlery/services/persistence_service.dart' as p117;
-import 'package:butlery/services/tagging/personal_tag_crud_service.dart' as p118;
-import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart' as p119;
+import 'package:butlery/services/tagging/personal_tag_crud_service.dart'
+    as p118;
+import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart'
+    as p119;
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart' as p120;
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart' as p121;
 import 'package:butlery/services/social/ping_service.dart' as p122;
-import 'package:butlery/services/social/profile_searchability_service.dart' as p123;
+import 'package:butlery/services/social/profile_searchability_service.dart'
+    as p123;
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart' as p124;
 import 'package:butlery/services/auth/provider_sign_in_service.dart' as p125;
-import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart' as p126;
+import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart'
+    as p126;
 import 'package:butlery/services/realtime/realtime_menu_service.dart' as p127;
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart' as p128;
 import 'package:butlery/services/recipe/recipe_cooking_service.dart' as p129;
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart' as p130;
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart' as p131;
 import 'package:butlery/services/parsing/recipe_parser_service.dart' as p132;
-import 'package:butlery/services/social/modules/recipe_share_request_module.dart' as p133;
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart'
+    as p133;
 import 'package:butlery/repositories/recipe_stats_repository.dart' as p134;
-import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart' as p135;
+import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart'
+    as p135;
 import 'package:butlery/services/parsing/crf/remote_weight_loader.dart' as p136;
-import 'package:butlery/services/moderation/report_outcomes_service.dart' as p137;
+import 'package:butlery/services/moderation/report_outcomes_service.dart'
+    as p137;
 import 'package:butlery/services/moderation/report_service.dart' as p138;
 import 'package:butlery/services/search_service.dart' as p139;
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart' as p140;
 import 'package:butlery/services/auth/session_revocation_service.dart' as p141;
 import 'package:butlery/services/share_service.dart' as p142;
-import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart' as p143;
-import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart' as p144;
-import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart' as p145;
-import 'package:butlery/repositories/interfaces/shopping_repository.dart' as p146;
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart'
+    as p143;
+import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart'
+    as p144;
+import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart'
+    as p145;
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    as p146;
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart' as p147;
-import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart' as p148;
+import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart'
+    as p148;
 import 'package:butlery/services/social_media_extractor.dart' as p149;
-import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart' as p150;
-import 'package:butlery/services/unified/operations/social_menu_operations.dart' as p151;
-import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart' as p152;
+import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart'
+    as p150;
+import 'package:butlery/services/unified/operations/social_menu_operations.dart'
+    as p151;
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart'
+    as p152;
 import 'package:butlery/services/social_recipe_service.dart' as p153;
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart' as p154;
-import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart' as p155;
+import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart'
+    as p155;
 import 'package:butlery/services/cooking/step_timer_service.dart' as p156;
-import 'package:butlery/repositories/interfaces/storage_repository.dart' as p157;
+import 'package:butlery/repositories/interfaces/storage_repository.dart'
+    as p157;
 import 'package:butlery/services/tagging/tag_config_service.dart' as p158;
 import 'package:butlery/services/tagging/tag_editing_service.dart' as p159;
 import 'package:butlery/repositories/tag_overrides_log_repository.dart' as p160;
@@ -175,201 +249,391 @@ import 'package:butlery/services/unified/unified_menu_service.dart' as p169;
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart' as p170;
 import 'package:butlery/services/unified/unified_shopping_service.dart' as p171;
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart' as p172;
-import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart' as p173;
-import 'package:butlery/repositories/interfaces/ingredient_repository.dart' as p174;
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart'
+    as p173;
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
+    as p174;
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart' as p175;
 import 'package:butlery/services/voice/voice_capture_service.dart' as p176;
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart' as p177;
-import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart' as p178;
-import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart' as p179;
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart'
+    as p178;
+import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart'
+    as p179;
 import 'package:butlery/services/voice/whisper_model_manager.dart' as p180;
-import 'package:butlery/services/analytics/winback_attribution_service.dart' as p181;
-import 'package:butlery/services/import/youtube/youtube_import_strategy.dart' as p182;
-import 'package:butlery/services/import/youtube/youtube_transcript_service.dart' as p183;
+import 'package:butlery/services/analytics/winback_attribution_service.dart'
+    as p181;
+import 'package:butlery/services/import/youtube/youtube_import_strategy.dart'
+    as p182;
+import 'package:butlery/services/import/youtube/youtube_transcript_service.dart'
+    as p183;
 
 class _M0 extends Mock implements p0.AccountDeletionService {}
+
 class _M1 extends Mock implements p1.ActivityEventRepository {}
+
 class _M2 extends Mock implements p2.ActivityFeedService {}
+
 class _M3 extends Mock implements p3.ActivityFeedViewModel {}
+
 class _M4 extends Mock implements p4.AnalyticsRepository {}
+
 class _M5 extends Mock implements p5.AnomalyRepository {}
+
 class _M6 extends Mock implements p6.AppMonitoringService {}
+
 class _M7 extends Mock implements p7.ArchiveImportViewModel {}
+
 class _M8 extends Mock implements p8.AuthMfaService {}
+
 class _M9 extends Mock implements p9.AuthViewModel {}
+
 class _M10 extends Mock implements p10.BackupService {}
+
 class _M11 extends Mock implements p11.BlockedUserFilter {}
+
 class _M12 extends Mock implements p12.CategoryPreferencesRepository {}
+
 class _M13 extends Mock implements p13.ChatGroupRepository {}
+
 class _M14 extends Mock implements p14.CollaborativeStatusViewModel {}
+
 class _M15 extends Mock implements p15.CommentsRepository {}
+
 class _M16 extends Mock implements p16.ConnectivityRepository {}
+
 class _M17 extends Mock implements p17.ContentDetectorService {}
+
 class _M18 extends Mock implements p18.ConversationsViewModel {}
+
 class _M19 extends Mock implements p19.CookSnapRepository {}
+
 class _M20 extends Mock implements p20.CookSnapService {}
+
 class _M21 extends Mock implements p21.CookbookService {}
+
 class _M22 extends Mock implements p22.CookbookViewModel {}
+
 class _M23 extends Mock implements p23.CreateGroupViewModel {}
+
 class _M24 extends Mock implements p24.CreateSharedListViewModel {}
+
 class _M25 extends Mock implements p25.DailySnapshotRepository {}
+
 class _M26 extends Mock implements p26.DataExportService {}
+
 class _M27 extends Mock implements p27.DeepLinkRepository {}
+
 class _M28 extends Mock implements p28.DeviceRepository {}
+
 class _M29 extends Mock implements p29.DinerProfileRepository {}
+
 class _M30 extends Mock implements p30.EngagementRepository {}
+
 class _M31 extends Mock implements p31.ExperimentAssignment {}
+
 class _M32 extends Mock implements p32.ExtractionManager {}
+
 class _M33 extends Mock implements p33.FCMService {}
+
 class _M34 extends Mock implements p34.FamilyRatingRepository {}
+
 class _M35 extends Mock implements p35.FamilyRatingService {}
+
 class _M36 extends Mock implements p36.FeedbackRepository {}
+
 class _M37 extends Mock implements p37.FeedbackService {}
+
 class _M38 extends Mock implements p38.FirebaseAuditRepository {}
+
 class _M39 extends Mock implements p39.FirebaseBlockRepository {}
+
 class _M40 extends Mock implements p40.FirebaseConsentRepository {}
+
 class _M41 extends Mock implements p41.FirebaseCookingSessionRepository {}
+
 class _M42 extends Mock implements p42.FirebaseDataExportRepository {}
+
 class _M43 extends Mock implements p43.FirebaseMenuLexiconRepository {}
+
 class _M44 extends Mock implements p44.FirebasePersonalTagGroupRepository {}
+
 class _M45 extends Mock implements p45.FirebasePersonalTagRepository {}
+
 class _M46 extends Mock implements p46.FirebaseRecipePresenceRepository {}
+
 class _M47 extends Mock implements p47.FirebaseReportRepository {}
+
 class _M48 extends Mock implements p48.FirebaseSharedMenuRepository {}
+
 class _M49 extends Mock implements p49.FirebaseSharedRecipeRepository {}
+
 class _M50 extends Mock implements p50.FirebaseSharedShoppingRepository {}
+
 class _M51 extends Mock implements p51.FirebaseShoppingPresenceRepository {}
+
 class _M52 extends Mock implements p52.FirebaseSocialRequestRepository {}
+
 class _M53 extends Mock implements p53.FirestoreRepository {}
+
 class _M54 extends Mock implements p54.FriendsRepository {}
+
 class _M55 extends Mock implements p55.FriendsViewModel {}
+
 class _M56 extends Mock implements p56.GroupInvitationsViewModel {}
+
 class _M57 extends Mock implements p57.GroupSharedContentRepository {}
+
 class _M58 extends Mock implements p58.GroupSharedContentService {}
+
 class _M59 extends Mock implements p59.GroupWeeklyMenuPlanRepository {}
+
 class _M60 extends Mock implements p60.GroupWeeklyMenuPlanService {}
+
 class _M61 extends Mock implements p61.ImagePickerService {}
+
 class _M62 extends Mock implements p62.ImageUploadService {}
+
 class _M63 extends Mock implements p63.ImportManager {}
+
 class _M64 extends Mock implements p64.ImportRateLimiter {}
+
 class _M65 extends Mock implements p65.IngredientChangePrService {}
+
 class _M66 extends Mock implements p66.IngredientChangeRequestRepository {}
+
 class _M67 extends Mock implements p67.IngredientIdResolver {}
+
 class _M68 extends Mock implements p68.IngredientLookupService {}
+
 class _M69 extends Mock implements p69.IngredientMatchService {}
+
 class _M70 extends Mock implements p70.IngredientParsingStrategy {}
+
 class _M71 extends Mock implements p71.IngredientRepository {}
+
 class _M72 extends Mock implements p72.IngredientSearchViewModel {}
+
 class _M73 extends Mock implements p73.InstagramPipeline {}
+
 class _M74 extends Mock implements p74.IntelligentCacheManager {}
+
 class _M75 extends Mock implements p75.InteractionLogger {}
+
 class _M76 extends Mock implements p76.JsonCacheHelper {}
+
 class _M77 extends Mock implements p77.LexiconProvider {}
+
 class _M78 extends Mock implements p78.LineClassifierModelManager {}
+
 class _M79 extends Mock implements p79.LlmEnhancementService {}
+
 class _M80 extends Mock implements p80.LlmService {}
+
 class _M81 extends Mock implements p81.LocaleProvider {}
+
 class _M82 extends Mock implements p82.MenuService {}
+
 class _M83 extends Mock implements p83.MenuViewModel {}
+
 class _M84 extends Mock implements p84.MenuVotingRepository {}
+
 class _M85 extends Mock implements p85.MenuVotingService {}
+
 class _M86 extends Mock implements p86.MessageReactionsService {}
+
 class _M87 extends Mock implements p87.MessagingRepository {}
+
 class _M88 extends Mock implements p88.MessagingService {}
+
 class _M89 extends Mock implements p89.MetricsAssembler {}
+
 class _M90 extends Mock implements p90.ModerationAppealsService {}
+
 class _M91 extends Mock implements p91.MyContentDecisionsViewModel {}
+
 class _M92 extends Mock implements p92.MyReportsViewModel {}
+
 class _M93 extends Mock implements p93.NerModelManager {}
+
 class _M94 extends Mock implements p94.NeuralIngredientParser {}
+
 class _M95 extends Mock implements p95.NeuralLineClassifier {}
+
 class _M96 extends Mock implements p96.NotificationAnalyticsRepository {}
+
 class _M97 extends Mock implements p97.NotificationBatchRepository {}
+
 class _M98 extends Mock implements p98.NotificationHistoryRepository {}
+
 class _M99 extends Mock implements p99.NotificationService {}
+
 class _M100 extends Mock implements p100.NotificationsRepository {}
+
 class _M101 extends Mock implements p101.NutritionService {}
+
 class _M102 extends Mock implements p102.OnboardingProgressService {}
+
 class _M103 extends Mock implements p103.OnboardingViewModel {}
+
 class _M104 extends Mock implements p104.OnnxLineClassifierService {}
+
 class _M105 extends Mock implements p105.OnnxNerService {}
+
 class _M106 extends Mock implements p106.OpsLogRepository {}
+
 class _M107 extends Mock implements p107.OverwrittenVersionRepository {}
+
 class _M108 extends Mock implements p108.PantryRepository {}
+
 class _M109 extends Mock implements p109.PantryViewModel {}
+
 class _M110 extends Mock implements p110.ParseEventsRepository {}
+
 class _M111 extends Mock implements p111.ParserShadowSampler {}
+
 class _M112 extends Mock implements p112.PasswordResetService {}
+
 class _M113 extends Mock implements p113.PasswordResetViewModel {}
+
 class _M114 extends Mock implements p114.PendingDeletionViewModel {}
+
 class _M115 extends Mock implements p115.PendingRetentionNoticeStore {}
+
 class _M116 extends Mock implements p116.PerformanceMonitoringService {}
+
 class _M117 extends Mock implements p117.PersistenceService {}
+
 class _M118 extends Mock implements p118.PersonalTagCrudService {}
+
 class _M119 extends Mock implements p119.PersonalTagRuleEvaluator {}
+
 class _M120 extends Mock implements p120.PersonalTagViewModel {}
+
 class _M121 extends Mock implements p121.PhotoImportViewModel {}
+
 class _M122 extends Mock implements p122.PingService {}
+
 class _M123 extends Mock implements p123.ProfileSearchabilityService {}
+
 class _M124 extends Mock implements p124.ProfileViewModel {}
+
 class _M125 extends Mock implements p125.ProviderSignInService {}
+
 class _M126 extends Mock implements p126.RealtimeGroupMenuModule {}
+
 class _M127 extends Mock implements p127.RealtimeMenuService {}
+
 class _M128 extends Mock implements p128.RealtimeMenuViewModel {}
+
 class _M129 extends Mock implements p129.RecipeCookingService {}
+
 class _M130 extends Mock implements p130.RecipeFormViewModel {}
+
 class _M131 extends Mock implements p131.RecipeListViewModel {}
+
 class _M132 extends Mock implements p132.RecipeParserService {}
+
 class _M133 extends Mock implements p133.RecipeShareRequestModule {}
+
 class _M134 extends Mock implements p134.RecipeStatsRepository {}
+
 class _M135 extends Mock implements p135.RecipeSuggestionRepository {}
+
 class _M136 extends Mock implements p136.RemoteWeightLoader {}
+
 class _M137 extends Mock implements p137.ReportOutcomesService {}
+
 class _M138 extends Mock implements p138.ReportService {}
+
 class _M139 extends Mock implements p139.SearchService {}
+
 class _M140 extends Mock implements p140.SeasonalHeroService {}
+
 class _M141 extends Mock implements p141.SessionRevocationService {}
+
 class _M142 extends Mock implements p142.ShareService {}
+
 class _M143 extends Mock implements p143.SharedContentCoordinatorViewModel {}
+
 class _M144 extends Mock implements p144.SharedMenuViewModel {}
+
 class _M145 extends Mock implements p145.SharedShoppingListsViewModel {}
+
 class _M146 extends Mock implements p146.ShoppingRepository {}
+
 class _M147 extends Mock implements p147.ShoppingShareViewModel {}
+
 class _M148 extends Mock implements p148.SignupAllowlistRepository {}
+
 class _M149 extends Mock implements p149.SocialMediaExtractor {}
+
 class _M150 extends Mock implements p150.SocialMenuCoordinator {}
+
 class _M151 extends Mock implements p151.SocialMenuOperations {}
+
 class _M152 extends Mock implements p152.SocialRecipeCoordinator {}
+
 class _M153 extends Mock implements p153.SocialRecipeService {}
+
 class _M154 extends Mock implements p154.SocialRecipeViewModel {}
+
 class _M155 extends Mock implements p155.SocialShoppingCoordinator {}
+
 class _M156 extends Mock implements p156.StepTimerService {}
+
 class _M157 extends Mock implements p157.StorageRepository {}
+
 class _M158 extends Mock implements p158.TagConfigService {}
+
 class _M159 extends Mock implements p159.TagEditingService {}
+
 class _M160 extends Mock implements p160.TagOverridesLogRepository {}
+
 class _M161 extends Mock implements p161.TagResolutionService {}
+
 class _M162 extends Mock implements p162.TaggingEventsTracker {}
+
 class _M163 extends Mock implements p163.TextImportViewModel {}
+
 class _M164 extends Mock implements p164.ThemeService {}
+
 class _M165 extends Mock implements p165.TikTokPipeline {}
+
 class _M166 extends Mock implements p166.TrashRepository {}
+
 class _M167 extends Mock implements p167.TrashService {}
+
 class _M168 extends Mock implements p168.TtsService {}
+
 class _M169 extends Mock implements p169.UnifiedMenuService {}
+
 class _M170 extends Mock implements p170.UnifiedRecipeViewModel {}
+
 class _M171 extends Mock implements p171.UnifiedShoppingService {}
+
 class _M172 extends Mock implements p172.UnifiedShoppingViewModel {}
+
 class _M173 extends Mock implements p173.UniversalShareDialogViewModel {}
+
 class _M174 extends Mock implements p174.UserIngredientRepository {}
+
 class _M175 extends Mock implements p175.UserProfileViewModel {}
+
 class _M176 extends Mock implements p176.VoiceCaptureService {}
+
 class _M177 extends Mock implements p177.VoiceImportViewModel {}
+
 class _M178 extends Mock implements p178.WeeklyMenuPlanRepository {}
+
 class _M179 extends Mock implements p179.WeeklyMenuPlanViewModel {}
+
 class _M180 extends Mock implements p180.WhisperModelManager {}
+
 class _M181 extends Mock implements p181.WinbackAttributionService {}
+
 class _M182 extends Mock implements p182.YouTubeImportStrategy {}
+
 class _M183 extends Mock implements p183.YouTubeTranscriptService {}
 
 void registerProductionMockFallbacks(GetIt getIt) {
@@ -506,7 +770,9 @@ void registerProductionMockFallbacks(GetIt getIt) {
     getIt.registerLazySingleton<p43.FirebaseMenuLexiconRepository>(_M43.new);
   }
   if (!getIt.isRegistered<p44.FirebasePersonalTagGroupRepository>()) {
-    getIt.registerLazySingleton<p44.FirebasePersonalTagGroupRepository>(_M44.new);
+    getIt.registerLazySingleton<p44.FirebasePersonalTagGroupRepository>(
+      _M44.new,
+    );
   }
   if (!getIt.isRegistered<p45.FirebasePersonalTagRepository>()) {
     getIt.registerLazySingleton<p45.FirebasePersonalTagRepository>(_M45.new);
@@ -527,7 +793,9 @@ void registerProductionMockFallbacks(GetIt getIt) {
     getIt.registerLazySingleton<p50.FirebaseSharedShoppingRepository>(_M50.new);
   }
   if (!getIt.isRegistered<p51.FirebaseShoppingPresenceRepository>()) {
-    getIt.registerLazySingleton<p51.FirebaseShoppingPresenceRepository>(_M51.new);
+    getIt.registerLazySingleton<p51.FirebaseShoppingPresenceRepository>(
+      _M51.new,
+    );
   }
   if (!getIt.isRegistered<p52.FirebaseSocialRequestRepository>()) {
     getIt.registerLazySingleton<p52.FirebaseSocialRequestRepository>(_M52.new);
@@ -572,7 +840,9 @@ void registerProductionMockFallbacks(GetIt getIt) {
     getIt.registerLazySingleton<p65.IngredientChangePrService>(_M65.new);
   }
   if (!getIt.isRegistered<p66.IngredientChangeRequestRepository>()) {
-    getIt.registerLazySingleton<p66.IngredientChangeRequestRepository>(_M66.new);
+    getIt.registerLazySingleton<p66.IngredientChangeRequestRepository>(
+      _M66.new,
+    );
   }
   if (!getIt.isRegistered<p67.IngredientIdResolver>()) {
     getIt.registerLazySingleton<p67.IngredientIdResolver>(_M67.new);
@@ -803,7 +1073,9 @@ void registerProductionMockFallbacks(GetIt getIt) {
     getIt.registerLazySingleton<p142.ShareService>(_M142.new);
   }
   if (!getIt.isRegistered<p143.SharedContentCoordinatorViewModel>()) {
-    getIt.registerLazySingleton<p143.SharedContentCoordinatorViewModel>(_M143.new);
+    getIt.registerLazySingleton<p143.SharedContentCoordinatorViewModel>(
+      _M143.new,
+    );
   }
   if (!getIt.isRegistered<p144.SharedMenuViewModel>()) {
     getIt.registerLazySingleton<p144.SharedMenuViewModel>(_M144.new);

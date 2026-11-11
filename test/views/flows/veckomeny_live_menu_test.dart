@@ -84,7 +84,9 @@ void main() {
     final sync = _MockSync();
     when(() => sync.conflictStream).thenAnswer((_) => conflicts.stream);
     GetIt.instance.registerSingleton<RealtimeSyncService>(sync);
-    TestServiceLocator.registerSingleton<RealtimeMenuService>(_MockMenuService());
+    TestServiceLocator.registerSingleton<RealtimeMenuService>(
+      _MockMenuService(),
+    );
     TestServiceLocator.registerFactory<RealtimeMenuViewModel>(() => realtime);
     final voting = _MockVotingService();
     when(
