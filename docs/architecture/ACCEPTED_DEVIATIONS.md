@@ -6917,3 +6917,12 @@ empties".
   - The admin tab shows cells under 5 as "<5" after summing the 30-day window, and rounds the total
     to the nearest 5.
 
+
+## SUPERSEDES one BUT-2169 known gap for `shared_content` (BUT-2442, 2026-11-11)
+
+Retired: "**A co-member can add someone the sharer blocked to the sharer's row.**"
+
+The `shared_content` update rule lets only the sharer add people to `sharedToUserIds` or
+remove other people from it. Anyone else may leave the list as stored or take their own uid
+off it (`recipientsChangedOnlyBySelf`). A recipient whose
+member row is already gone may make only that self-removal write.
