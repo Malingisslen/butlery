@@ -382,10 +382,29 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final short = items.every(
       (item) => item.isNotEmpty && item.split(_whitespace).length <= 6,
     );
-    return measured >= 2 && short && _leadingQuantity.hasMatch(items.first)
-        ? items
-        : [line];
+    if (measured < 2 || !short || !_leadingQuantity.hasMatch(items.first)) {
+      return [line];
+    }
+    final rows = <String>[];
+    for (final item in items) {
+      if (rows.isNotEmpty && _itemNote.hasMatch(item)) {
+        rows[rows.length - 1] = '${rows.last}, $item';
+      } else {
+        rows.add(item);
+      }
+    }
+    return rows;
   }
+
+  // What follows an item to say how it is prepared ("skuren i tärningar",
+  // "helst kallt") belongs to that item, not to a row of its own. A participle
+  // alone ("riven ost", "choklad", "lagerblad") is an ingredient and stays a
+  // row, so the participle only counts when a preposition follows it.
+  static final _itemNote = RegExp(
+    r'^(?:(?:skuren|skurna|riven|rivna|kokt|kokta|stekt|stekta|hackad|'
+    r'hackade|skalad|skalade|krossad|krossade)\s+(?:i|till|på|med|och)\s|'
+    r'(?:helst|gärna|ev|eventuellt)(?:\s|$))',
+  );
 
   static final _itemSeparator = RegExp(r',\s+');
   static final _whitespace = RegExp(r'\s+');

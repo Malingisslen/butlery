@@ -25,14 +25,14 @@
       "chromeLeaks": 0
     },
     "stokig": {
-      "recall": 0.9843,
+      "recall": 1.0,
       "headingLeaks": 0,
       "titleExact": 9,
       "stepsExact": 7,
       "portionsExact": 7,
       "timeExact": 2,
       "failures": 0,
-      "extraIngredients": 3,
+      "extraIngredients": 2,
       "extraSteps": 6,
       "chromeLeaks": 0
     },
