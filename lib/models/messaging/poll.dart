@@ -355,3 +355,39 @@ class PollClosedWithoutPlanException implements Exception {
   @override
   String toString() => 'PollClosedWithoutPlanException($cause)';
 }
+
+/// [metadata] with every id in [blockedIds] removed from each poll option's
+/// `voterIds`, or the SAME instance when nothing changed.
+///
+/// Fails OPEN on any unexpected shape: an unreadable poll is returned
+/// untouched, never blanked. The display path and the poll close both go
+/// through here, so they cannot disagree about what a blocked ballot is.
+Map<String, dynamic>? metadataWithoutVoters(
+  Map<String, dynamic>? metadata,
+  Set<String> blockedIds,
+) {
+  if (metadata == null) return metadata;
+  final poll = metadata['poll'];
+  if (poll is! Map) return metadata;
+  final options = poll['options'];
+  if (options is! List) return metadata;
+
+  var changed = false;
+  final rebuiltOptions = options.map((option) {
+    if (option is! Map) return option;
+    final voterIds = option['voterIds'];
+    if (voterIds is! List) return option;
+    final kept = voterIds
+        .whereType<String>()
+        .where((uid) => !blockedIds.contains(uid))
+        .toList(growable: false);
+    if (kept.length == voterIds.length) return option;
+    changed = true;
+    return Map<String, dynamic>.from(option)..['voterIds'] = kept;
+  }).toList();
+
+  if (!changed) return metadata;
+  final rebuiltPoll = Map<String, dynamic>.from(poll)
+    ..['options'] = rebuiltOptions;
+  return Map<String, dynamic>.from(metadata)..['poll'] = rebuiltPoll;
+}
