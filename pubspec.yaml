@@ -54,6 +54,9 @@ dependencies:
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.2.2
+  # Exact pin: native VisionKit/ML Kit bridge, and the newest release (3.1.0) was
+  # under the repo's two-week age rule when this was added.
+  cunning_document_scanner: 3.0.4
   image_cropper: ^12.2.1
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1

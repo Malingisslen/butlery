@@ -254,6 +254,10 @@ class FeatureFlagService {
     // figures above still stand.
     'enable_layout_recipe_split': false,
 
+    // Native document scanner behind the photo-import camera button. Off until
+    // tried in TestFlight; the camera falls back to the plain picker either way.
+    'enable_document_scanner': false,
+
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
 
@@ -512,6 +516,8 @@ abstract final class FeatureFlags {
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;
   // see the defaults map above for the chain and the measured result.
   static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';
+  // Photo-import camera opens the OS document scanner (VisionKit / ML Kit).
+  static const enableDocumentScanner = 'enable_document_scanner';
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';

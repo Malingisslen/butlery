@@ -71,7 +71,7 @@ All Firebase pods ship `PrivacyInfo.xcprivacy` since Firebase iOS SDK 10.17
 |---|---|---|---|
 | shared_preferences | ^2.3.2 | PRESENT (since 2.2.x) | OK |
 | path_provider | ^2.1.4 | PRESENT (declares FileTimestamp) | OK |
-| image_picker | ^1.1.2 | PRESENT (declares FileTimestamp + Photos) | OK |
+| image_picker | ^1.2.2 | PRESENT (declares FileTimestamp + Photos) | OK |
 | url_launcher | ^6.3.1 | PRESENT | OK |
 | package_info_plus | ^9.0.1 | PRESENT (since 8.x) | OK |
 | connectivity_plus | ^7.1.0 | PRESENT (since 5.x) | OK |
@@ -95,6 +95,7 @@ All Firebase pods ship `PrivacyInfo.xcprivacy` since Firebase iOS SDK 10.17
 | flutter_inappwebview | ^6.1.5 | UNVERIFIED_LOCAL — manifest added in 6.1.0 | OK pending CI verification; app-level UserDefaults CA92.1 covers worst case |
 | flutter_onnxruntime | ^1.6.4 | NOT_REQUIRED — on-device inference, no API usage requiring declaration | OK |
 | receive_intent | ^0.2.0 | NOT_REQUIRED — Android-only plugin, no iOS native target | OK |
+| cunning_document_scanner | 3.0.4 (exact) | NOT_REQUIRED — ships no `PrivacyInfo.xcprivacy`; its Swift sources (VisionKit document camera, own cropper) reference none of UserDefaults, file timestamps, system boot time or disk space, and scans stay on the device in `Library/Caches/cunning_document_scanner/`. Checked against the 3.0.4 source archive, not a built `.ipa` | Re-check in the archived `.ipa` (Xcode privacy report) before `enable_document_scanner` is switched on |
 
 ### Pure-Dart packages (no iOS native target)
 
@@ -289,3 +290,5 @@ Re-run this audit when **any** of the following happens:
   April rows: 8 unchanged, 28 moved, 1 removed, plus 14 packages added since, 7 of them with
   an iOS native component and none ever audited. Scoped the "no pod is definitively MISSING"
   conclusion to the April inventory, because it never covered the new ones.
+- 2026-11-11 — added `cunning_document_scanner` 3.0.4 (document scanner in photo import,
+  behind `enable_document_scanner`); `image_picker` row matched to `pubspec.yaml`.

@@ -11,6 +11,8 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 
 // All ViewModels
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/import/document_scan_service.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
@@ -394,9 +396,17 @@ class UIModule implements DIModule {
       );
 
       // Photo Import ViewModel
+      container.registerLazySingleton<DocumentScanService>(
+        () => DocumentScanService.withFlags(
+          container.isRegistered<FeatureFlagService>()
+              ? container<FeatureFlagService>()
+              : null,
+        ),
+      );
       container.registerFactory<PhotoImportViewModel>(
         () => PhotoImportViewModel(
           importManager: container<ImportManager>(),
+          documentScanner: container<DocumentScanService>(),
         ),
       );
 
