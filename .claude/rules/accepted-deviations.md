@@ -21,7 +21,8 @@ review gate names that file in every block message, so a reviewer is pointed at 
 moment it matters. Read it before arguing with any line below.
 
 A new deviation is appended in both
-files in the same edit. Each entry below is its current verdict, cut to one line (or a few for the heaviest) on
+files in the same edit. A deviation about the Art. 15 export also puts its ticket id in
+`docs/security/article-15-4-balancing-register.md` in that edit; a test enforces it. Each entry below is its current verdict, cut to one line (or a few for the heaviest) on
 2026-09-19; the long form each entry had then is in `tasks/archive/accepted-deviations-long-form.md`.
 
 ## Safety and privacy (decided, not open)
