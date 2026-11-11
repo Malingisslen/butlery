@@ -1,6 +1,6 @@
 #!/bin/bash
 # run_e2e_tests.sh - E2E test runner for CI/CD
-# Usage: ./scripts/run_e2e_tests.sh --tier <mock|emulator> [--verbose]
+# Usage: ./scripts/run_e2e_tests.sh --tier <mock|emulator|staging> [--verbose]
 
 set -e
 
@@ -22,15 +22,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 --tier <mock|emulator> [--verbose]"
+      echo "Usage: $0 --tier <mock|emulator|staging> [--verbose]"
       exit 1
       ;;
   esac
 done
 
 # Validate tier
-if [[ "$TIER" != "mock" && "$TIER" != "emulator" ]]; then
-  echo "Error: Invalid tier '$TIER'. Must be 'mock' or 'emulator'."
+if [[ "$TIER" != "mock" && "$TIER" != "emulator" && "$TIER" != "staging" ]]; then
+  echo "Error: Invalid tier '$TIER'. Must be 'mock', 'emulator' or 'staging'."
   exit 1
 fi
 
@@ -41,6 +41,17 @@ echo "Tier: $TIER"
 echo "Verbose: $VERBOSE"
 echo "Test Directory: $TEST_DIR"
 echo "========================================"
+
+# BUT-2424: the staging tier is server journeys with synthetic accounts, run by
+# staging-journeys.yml with the staging credential. It is not a flutter test:
+# plugin channels do not exist in `flutter test`, so the app cannot reach real
+# services from here.
+if [ "$TIER" = "staging" ]; then
+  cd functions
+  npm run build
+  node scripts/staging-journeys.js --project butlery-app-staging
+  exit $?
+fi
 
 # Check if test directory exists
 if [ ! -d "$TEST_DIR" ]; then

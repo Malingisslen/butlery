@@ -18,6 +18,9 @@ is our own lab. Plan and decisions: BUT-451, `tasks/firebase-staging-plan.md` (d
    (`functions/scripts/staging-smoke.js`: Cloud Run services Ready, callables answer,
    anonymous Firestore reads denied, seed data present) and stays red until a later
    green run replaces it.
+   `staging-journeys.yml` (manual start from `main`) goes further: synthetic accounts run the
+   deletion grace period and a full erasure against staging and clean up after themselves
+   (`functions/scripts/staging-journeys.js`, BUT-2424).
 5. Try the change in the staging app.
 6. Only then dispatch `deploy-firebase.yml` with `environment=production`. Its first job
    (`staging-gate`) refuses to continue unless the latest Staging Verify run is green and
