@@ -134,6 +134,5 @@ A new deviation in this area is appended HERE and in that document, in the same 
   is NOT met — and on a LARGER corpus the gap widened (0.3 -> 0.5) rather than averaging out,
   across three consecutive runs.
   **Malin's explicit call, 2026-08-03:** half a point is not worth paying per image for. Do NOT flip `enable_on_device_ocr` off citing the
-  gate — the gate was overridden knowingly, and the paid chain still runs behind the tier for
-  anything it reads poorly. Revisit if a larger corpus shows a real gap. 2026-08-03
+  gate — the gate was overridden knowingly. Revisit if a larger corpus shows a real gap. 2026-08-03
 

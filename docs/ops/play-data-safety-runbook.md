@@ -190,7 +190,14 @@ Processors (no sharing flag triggered):
 
 A recipe photo is read on the device first, by ML Kit (`lib/services/ocr_extraction_service.dart`,
 behind the `enableOnDeviceOcr` flag). On-device ML Kit is not a processor: it runs locally and
-sends nothing. The photo goes to Vertex AI (`ocrRecipeImage`) only after the user says yes to AI
+sends nothing.
+
+When `enable_document_scanner` is on, the camera in photo import is Google's
+ML Kit Document Scanner, which Google Play services downloads as a module and runs on the
+device; the scanned page comes back to the app as a file and is read the same way. It adds
+no collected or shared data type, so the answers in this form are unchanged (2026-11-11).
+
+The photo goes to Vertex AI (`ocrRecipeImage`) only after the user says yes to AI
 reading it, and the server refuses the call without the AI-processing consent (`withAiConsent`,
 `functions/src/llm/ai-consent.ts`).
 

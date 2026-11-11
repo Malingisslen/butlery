@@ -725,6 +725,15 @@ while production preprocesses first, and the paid arm it compared against had be
 through that preprocessing. The artifact was larger than the margin. The harness was fixed and
 the eval re-run before this decision was taken.
 
+**Superseded in part 2026-11-11:** retires *"A read that fails either accept gate — the recipe
+heuristic or the same `confidence >= 0.6` bar every paid provider must clear — falls straight
+through to OCR.space → Vision → Tesseract exactly as before. So the failure mode of a bad
+on-device read is a paid call, not a bad recipe."* No OCR.space, Google Vision OCR or Tesseract
+client exists in `lib/` or `functions/src/`. A page the phone cannot read makes the app offer
+the AI reader (`PhotoAiOfferReason.phoneCouldNotRead` / `noRecipeFound` in
+`lib/viewmodels/photo_import/photo_import_ai_offer_mixin.dart`), which calls `ocrRecipeImage`
+only after the user says yes.
+
 ### [Engineering] `shared_content` membership collapses to one field — supersedes the dual-spelling clause (2026-08-03)
 
 **Supersedes**, in part, the BUT-1798 export entry: the clause reading *"Both spellings are

@@ -12,6 +12,10 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/providers/application_provider.dart' show ServiceLocator;
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/import/document_scan_service.dart';
 import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/layout/page_reflow.dart';
@@ -166,7 +170,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // BUT-1360: connectivity + the isOnline getter now live on
     // ImportBaseViewModel; forward the injection to super (no local copy).
     super.connectivity,
-  }) {
+    DocumentScanService? documentScanner,
+  }) : _documentScanner =
+           documentScanner ??
+           ServiceLocator.tryGet<DocumentScanService>() ??
+           DocumentScanService.withFlags(
+             ServiceLocator.tryGet<FeatureFlagService>(),
+           ) {
     initDraftPersistence(manager: draftManager);
     _initializeOCRService();
   }
@@ -184,9 +194,9 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// than a few cookbook pages; the cap also bounds OCR quota per import.
   static const int maxPages = 5;
 
-  /// BUT-941: per-page byte ceiling for shared photos (matches the 15 MB
-  /// validation `_pickImageAndProcess` applies to picked images).
-  static const int maxPageSizeMb = 15;
+  /// Opens the native document scanner for the camera button when the
+  /// `enable_document_scanner` flag is on; otherwise reports itself unavailable.
+  final DocumentScanService _documentScanner;
 
   @override
   Uint8List? get imageBytes => _imageBytes;
@@ -397,8 +407,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
       for (final path in selected) {
         try {
           final bytes = await XFile(path).readAsBytes();
-          final sizeInMB = bytes.length / (1024 * 1024);
-          if (sizeInMB > maxPageSizeMb || bytes.isEmpty) continue;
+          if (bytes.length > UploadConstants.maxAiReaderPageBytes ||
+              bytes.isEmpty) {
+            continue;
+          }
           // Q4-04: shared photos become pages; the text is read when the
           // user presses "Läs av N sidor", as for pages taken in the app.
           _stagePage(bytes, notify: false);
@@ -670,7 +682,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   @override
   void clearAll() => clearPhoto();
 
-  /// Shared camera/gallery pipeline: pick → validate (format, ≤15MB) →
+  /// Shared camera/gallery pipeline: pick → validate (format, size within the AI reader's limit) →
   /// quality gate → OCR → combine → auto-parse.
   ///
   /// [addAsPage] = false starts a fresh import (replaces all pages); true
@@ -717,12 +729,19 @@ class PhotoImportViewModel extends ImportBaseViewModel
       final remaining = addAsPage ? maxPages - _pages.length : maxPages;
       final multi =
           source == ImageSource.gallery && !_isHandwritten && remaining > 1;
-      final List<XFile> picked = multi
-          ? await _pickGalleryImages(remaining)
-          : await _pickSingleImage(source);
-
-      if (picked.isEmpty) {
-        throw Exception(AppLocale.current.errorNoImageSelected);
+      final scan = source == ImageSource.camera
+          ? await _documentScanner.scanPages(
+              maxPages: _isHandwritten ? 1 : remaining,
+            )
+          : const DocumentScanUnavailable();
+      if (scan is DocumentScanDenied) {
+        _permissionNotice = PhotoPermissionNotice(
+          source: source,
+          outcome: OsPermissionOutcome.denied,
+          addAsPage: addAsPage,
+        );
+        notifyListeners();
+        return;
       }
 
       // Picks arrive in selection order, which becomes the page order. The
@@ -730,15 +749,35 @@ class PhotoImportViewModel extends ImportBaseViewModel
       final staged = <Uint8List>[];
       Object? firstError;
       var overCap = false;
-      for (final file in picked) {
-        if (staged.length == remaining) {
-          overCap = true;
-          break;
+      if (scan is DocumentScanCancelled) {
+        throw Exception(AppLocale.current.errorNoImageSelected);
+      } else if (scan is DocumentScanPages) {
+        overCap = scan.overCap && !_isHandwritten;
+        for (final page in scan.pages) {
+          try {
+            staged.add(_checkedSize(page));
+          } catch (e) {
+            firstError ??= e;
+          }
         }
-        try {
-          staged.add(await _validatedBytes(file));
-        } catch (e) {
-          firstError ??= e;
+      } else {
+        final List<XFile> picked = multi
+            ? await _pickGalleryImages(remaining)
+            : await _pickSingleImage(source);
+
+        if (picked.isEmpty) {
+          throw Exception(AppLocale.current.errorNoImageSelected);
+        }
+        for (final file in picked) {
+          if (staged.length == remaining) {
+            overCap = true;
+            break;
+          }
+          try {
+            staged.add(await _validatedBytes(file));
+          } catch (e) {
+            firstError ??= e;
+          }
         }
       }
       // A single pick keeps its specific error; a batch only fails when no
@@ -791,11 +830,17 @@ class PhotoImportViewModel extends ImportBaseViewModel
         !fileName.endsWith('.png')) {
       throw Exception(AppLocale.current.errorImageFormatUnsupported);
     }
-    final bytes = await picked.readAsBytes();
-    final sizeInMB = bytes.length / (1024 * 1024);
-    if (sizeInMB > maxPageSizeMb) {
+    return _checkedSize(await picked.readAsBytes());
+  }
+
+  /// A page the AI reader's server would refuse is refused here, before the
+  /// user waits on an upload that cannot succeed.
+  Uint8List _checkedSize(Uint8List bytes) {
+    if (bytes.length > UploadConstants.maxAiReaderPageBytes) {
       throw Exception(
-        AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
+        AppLocale.current.errorImageTooLarge(
+          (bytes.length / (1024 * 1024)).toStringAsFixed(1),
+        ),
       );
     }
     return bytes;
