@@ -19,19 +19,19 @@ dependencies:
   meta: ^1.16.0                # @visibleForTesting etc. — pure-Dart annotations, safe under the Dart VM (used by lib/services/rating/canonical_pool_key.dart, which is imported by the dart-run tools/ harness, so it must NOT depend on Flutter)
 
   # ==================== FIREBASE & BACKEND ====================
-  firebase_core: ^4.7.0        # Updated for CVE-2025-0838 fix
-  firebase_core_web: ^3.9.0    # Local test mode wires the Auth emulator through its service registry (lib/core/bootstrap/emulator/auth_emulator_web.dart)
-  firebase_auth: ^6.4.0        # Updated for security patches
-  cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
-  firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
-  firebase_storage: ^13.3.0    # Updated for bug fixes
-  firebase_analytics: ^12.3.0  # Updated for tracking improvements
+  firebase_core: ^5.1.0        # Updated for CVE-2025-0838 fix
+  firebase_core_web: ^4.1.0    # Local test mode wires the Auth emulator through its service registry (lib/core/bootstrap/emulator/auth_emulator_web.dart)
+  firebase_auth: ^7.0.1        # Updated for security patches
+  cloud_firestore: ^7.1.0      # Updated for CVE-2024-7254 fix
+  firebase_database: ^13.0.1   # Realtime Database for presence onDisconnect
+  firebase_storage: ^14.0.1    # Updated for bug fixes
+  firebase_analytics: ^13.0.1  # Updated for tracking improvements
   play_install_referrer: ^0.5.0  # Android only: which link Play installed the app from, read after consent
-  firebase_app_check: 0.4.9        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`.
-  firebase_messaging: ^16.2.0  # Updated for FCM improvements
-  firebase_performance: ^0.11.3  # For performance monitoring
-  firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
-  firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
+  firebase_app_check: 0.5.1        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`.
+  firebase_messaging: ^17.0.1  # Updated for FCM improvements
+  firebase_performance: ^0.12.1  # For performance monitoring
+  firebase_crashlytics: ^6.0.1  # Updated for reporting improvements
+  firebase_remote_config: ^7.0.1  # Feature flags and A/B testing
   flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10). Held below 22.x on purpose: major bump deferred until after the first store release (BUT-2315).
   timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
@@ -110,7 +110,7 @@ dependencies:
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1
   app_links: ^6.4.1          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop). Held below 7.x on purpose: major bump deferred until after the first store release (BUT-2315).
-  cloud_functions: ^6.2.0
+  cloud_functions: ^7.0.1
 
   html_unescape: ^2.0.0
   sqlite3: ^3.0.0
@@ -141,8 +141,8 @@ dev_dependencies:
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.4.0
   cloud_firestore_platform_interface: ^8.0.3  # BUT-1765: recording query platform in test/helpers/recording_firestore.dart
-  firebase_auth_mocks: ^0.15.1
-  firebase_storage_mocks: ^0.8.0+1
+  firebase_auth_mocks: ^0.16.0
+  firebase_storage_mocks: ^0.9.0
   # ==================== TEST DATA GENERATION ====================
   fake_async: ^1.3.3  # For controlling time in tests
   
