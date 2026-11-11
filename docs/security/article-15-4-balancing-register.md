@@ -37,11 +37,12 @@ first and Malin kept it on the second date.
 | 16 | 2026-09-10 | BUT-1957 | `delivered_notifications` | Another user's name inside the text of a friend-share push the requester received | — | Malin | ACCEPTED_DEVIATIONS, BUT-1957: "The Art. 15 `delivered_notifications` section exports another user's NAME …" |
 | 17 | 2026-09-10 | BUT-2062, BUT-2082 | Comments and ratings | `recipe_title`, as the requester can read it today (BUT-2082, 2026-10-09) | `recipeOwnerId`, `sharedWithUserIds`, and the `reactions` map (who reacted with what) | Review panel; Malin confirmed the uid half in BUT-2414 (row 22) | ACCEPTED_DEVIATIONS, BUT-2062: "The Art. 15 comments and ratings sections are PROJECTED …"; "BUT-2082 and BUT-1955 — …" |
 | 18 | 2026-09-30 | BUT-2151, ADR-0023 | Live collaboration (`realtime_resources`) | Other participants' uids | Other participants' display names | Malin | `docs/org/adr/ADR-0023-live-collaboration-collection-and-export-names.md` |
-| 19 | 2026-10-07 | BUT-2169 | `shared_*_received` | — | `blockHeldUserIds` and `blockHeld` (which two people a block stands between), not named in the section's note; a held person's bundle lacks the held rows until unblock | Shipped as a default; the record says Malin's confirmation was awaited on the PR | ACCEPTED_DEVIATIONS: "BUT-2169 — a block hides one-off shares in both directions (2026-10-07)" |
+| 19 | 2026-10-07, 2026-11-11 | BUT-2169 | `shared_*_received` | — | `blockHeldUserIds` and `blockHeld` (which two people a block stands between), not named in the section's note; a held person's bundle lacks the held rows until unblock | Shipped as a default; Malin kept it 2026-11-11 | ACCEPTED_DEVIATIONS: "BUT-2169 — a block hides one-off shares in both directions (2026-10-07)"; "BUT-1805 and BUT-2169 — Malin's two export decisions (2026-11-11)" |
 | 20 | 2026-10-08 | BUT-1747 | `shared_lists_left` | On rows naming the requester: the requester's and the list owner's uids | Every other person's uid on those rows; rows that do not name the requester | Malin | ACCEPTED_DEVIATIONS: "BUT-1747 — lists the requester LEFT, and `shared_content` items, in the Art. 15 bundle (2026-10-07)" |
 | 21 | 2026-10-09 | BUT-1842 | Moderation counters | — | The server's text copy of reported content (`report_evidence`), since together with the report it can identify the reporter | Malin | ACCEPTED_DEVIATIONS: "BUT-1842 — a report keeps a text copy of what it names (2026-10-09)" |
 | 22 | 2026-10-20 | BUT-2414 | Erasure residue (`others_documents` known gap) | — | Where the requester's uid sits on other people's documents (`recipeOwnerId`, `sharedWithUserIds`, a recipe's `memberPermissions` key): not the rows, not a count | Malin ("Inte alls") | ACCEPTED_DEVIATIONS: "BUT-2414 — Malin's three export choices (2026-10-20)" |
 | 23 | 2026-10-20 | BUT-2414, ADR-0030 | Household (diner profiles, family ratings) | Creator: every diner profile. Joiner: profiles they entered. Sole remaining member: every profile and rating, departed members' uids as stored | A group-link owner with joiners left does not get the joiners' own verdicts | Malin ("Behåll koden"); the owner case by the panel's priority order (ADR-0030) | `docs/org/adr/ADR-0030-a-group-owners-export-leaves-out-the-joiners-verdicts.md`; same BUT-2414 section |
+| 24 | 2026-11-11 | BUT-1805 | Audit logs (`removed_from_groups`) | The fact and time of the requester's removal from a group by an admin, and the group id | Which admin removed them (`userId`, `metadata.actor`). In a group with one admin the requester can still infer it | Malin | ACCEPTED_DEVIATIONS: "BUT-1805 and BUT-2169 — Malin's two export decisions (2026-11-11)"; "BUT-1805 — the admin-removal audit row (2026-10-09)" |
 
 ## Superseded
 
@@ -49,14 +50,10 @@ first and Malin kept it on the second date.
   Replaced by row 20 (BUT-1747), which exports the rows naming the requester.
 - **BUT-1718 (2026-09-12)**, and the BUT-1732 "Known gap" — a list the requester left was not in
   the export. Replaced by row 20.
+- **BUT-1805 (2026-10-09)** — the admin-removal audit row was in the admin's export only, with
+  no recorded balancing. Replaced by row 24.
 - **ADR-0017's original call (2026-09-08)** — withhold the moderation count too. Reversed the
   same day; row 15 is the current outcome.
-
-## Withheld from someone with no recorded balancing
-
-- **BUT-1805 (2026-10-09)** — the audit row an admin's removal of a member writes is in the
-  admin's export (actor side) and not in the removed person's. The record gives no Art. 15(4)
-  reasoning for leaving it out of the removed person's bundle.
 
 ## Export decisions that are not about other people
 

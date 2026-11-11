@@ -3584,7 +3584,11 @@ service cloud.firestore {
       // SECURITY: User can only create audit logs for themselves (prevents tampering).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
+        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp'])
+        // BUT-1805: the removed member's Art. 15 export reads these rows by
+        // `metadata.targetUid`, which a client could aim at anyone. Only
+        // `removeChatGroupMember` (Admin SDK) writes this operation.
+        && request.resource.data.operation != 'group_member_removed';
 
       // No updates or deletes allowed (immutable audit trail)
       allow update, delete: if false;

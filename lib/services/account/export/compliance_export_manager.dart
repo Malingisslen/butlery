@@ -71,6 +71,15 @@ class ComplianceExportManager {
   // can be served via an admin-tools manual export.
   static const int _maxAuditLogPages = 10;
 
+  /// BUT-1805 (Malin, 2026-11-11). Names a third party's withheld fact (which
+  /// admin), so it is the same bytes on every path (BUT-2056).
+  static const String removedFromGroupsMinimisation =
+      'Times you were removed from a group by a group admin, with the group. '
+      'Which admin removed you is not included, to protect that person '
+      '(GDPR Art. 15(4)). Leaving a group yourself, and removals the app '
+      'makes on its own, are not recorded. Each record is kept for at most '
+      '180 days.';
+
   ComplianceExportManager({
     required FirebaseDataExportRepository dataExportRepository,
     FirebaseFunctions? functions,
@@ -98,6 +107,7 @@ class ComplianceExportManager {
 
       String? cursor;
       var pages = 0;
+      Object? removedFromGroupsRaw;
       while (true) {
         if (pages >= _maxAuditLogPages) {
           app_logger.AppLogger.warning(
@@ -109,6 +119,7 @@ class ComplianceExportManager {
           cursor != null ? <String, dynamic>{'before': cursor} : null,
         );
         final data = Map<String, dynamic>.from(result.data);
+        if (pages == 0) removedFromGroupsRaw = data['removedFromGroups'];
         final rows =
             (data['rows'] as List?)?.cast<Map<dynamic, dynamic>>() ?? const [];
         for (final row in rows) {
@@ -138,6 +149,7 @@ class ComplianceExportManager {
             ? 'Capped at $_maxAuditLogPages pages (~50,000 entries); contact support for older history'
             : 'Full actor history exported via server-side admin export',
         'gdpr_article': 'Article 15 - Right of Access',
+        'removed_from_groups': _removedFromGroups(removedFromGroupsRaw),
         'summary': {
           'total_granted': auditLogs
               .where((log) => log['granted'] == true)
@@ -185,6 +197,38 @@ class ComplianceExportManager {
         cause: e,
       );
     }
+  }
+
+  /// A missing field (a server from before BUT-1805) or a failed read is
+  /// reported as unknown, never as an empty list, which would read as "you
+  /// were never removed".
+  static Map<String, dynamic> _removedFromGroups(Object? raw) {
+    final section = <String, dynamic>{
+      'data_minimisation': removedFromGroupsMinimisation,
+    };
+    if (raw is Map && raw['rows'] is List) {
+      section['removals'] = [
+        for (final row in (raw['rows'] as List).whereType<Map>())
+          {
+            'timestamp':
+                sanitizeTimestamp(row['timestamp']) ??
+                row['timestamp'] ??
+                'unknown',
+            'group_id': row['groupId'],
+          },
+      ];
+      if (raw['truncated'] == true) {
+        section['note'] =
+            'More removals exist than are listed; contact support for the rest';
+      }
+      return section;
+    }
+    section['error_code'] = raw is Map && raw['error_code'] is String
+        ? raw['error_code']
+        : 'removed-from-groups-unavailable';
+    section['note'] =
+        'Removals from groups could not be fetched; retry the export';
+    return section;
   }
 
   /// Export two-step verification for GDPR Article 15 (BUT-2142, E1): the

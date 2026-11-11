@@ -7,12 +7,11 @@
  * locks out user-side reads but means the only way to satisfy Article 15
  * is a server-side export running under Admin SDK.
  *
- * Schema reality (verified 2026-05-06): `audit_logs` rows carry a single
- * `userId` field naming the actor; there is no separate `subject` field.
- * The "subject" case in the original ticket spec was a misread of the
- * schema — for now, an Article-15 export means "every row where this
- * user was the actor". A subject-side cascade for admin-action audit
- * trails (rare today) is tracked as a follow-up.
+ * BUT-1805 (Malin, 2026-11-11): a member an admin removed from a group sees
+ * that it happened and when, in `removedFromGroups`, and not which admin did
+ * it — the admin's identity is withheld under Art. 15(4). That section is
+ * built field by field from an allowlist, so nothing else on the row (the
+ * admin's uid in `userId` and `metadata.actor`, the doc id) can reach it.
  *
  * Limit rationale: caps at 5000 entries per call so the export bundle
  * doesn't time out the callable. Power users with deeper history can
@@ -23,12 +22,18 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
+import { ADMIN_REMOVAL_AUDIT_OPERATION } from "../groups/remove-chat-group-member";
+import { Collections } from "../shared/collections";
+import { isValidDocId } from "../shared/valid-doc-id";
 
 const db = admin.firestore();
 
 /** Cap on entries returned per call. Sized so a single call fits the
  * default callable response budget; pagination handles deeper histories. */
 const PAGE_SIZE = 5000;
+
+/** Cap on removal rows; one more is read so `truncated` is a measurement. */
+export const MAX_REMOVED_FROM_GROUPS = 200;
 
 export interface ExportAuditLogsRequest {
   /**
@@ -50,11 +55,23 @@ export interface AuditLogExportRow {
   metadata: Record<string, unknown> | null;
 }
 
+export interface RemovedFromGroupRow {
+  /** ISO-8601 server timestamp of the removal. */
+  timestamp: string;
+  groupId: string | null;
+}
+
+export type RemovedFromGroupsSection =
+  | { rows: RemovedFromGroupRow[]; truncated: boolean }
+  | { error_code: string };
+
 export interface ExportAuditLogsResponse {
   /** Total entries in this response (≤ PAGE_SIZE). */
   count: number;
   /** Audit-log rows where this user was the actor. */
   rows: AuditLogExportRow[];
+  /** First page only (no `before` cursor); absent on later pages. */
+  removedFromGroups?: RemovedFromGroupsSection;
   /**
    * Cursor for the next page when more rows exist; absent / null when the
    * caller has reached the end of their history.
@@ -132,16 +149,9 @@ export async function runExportAuditLogsWithDb(
   const snapshot = await query.get();
   const rows: AuditLogExportRow[] = snapshot.docs.map((doc) => {
     const data = doc.data();
-    const tsRaw = data.timestamp;
-    let timestamp = "unknown";
-    if (tsRaw && typeof tsRaw.toDate === "function") {
-      timestamp = (tsRaw as admin.firestore.Timestamp).toDate().toISOString();
-    } else if (typeof tsRaw === "string") {
-      timestamp = tsRaw;
-    }
     return {
       id: doc.id,
-      timestamp,
+      timestamp: isoTimestamp(data.timestamp),
       operation: typeof data.operation === "string" ? data.operation : "unknown",
       resourceType:
         typeof data.resourceType === "string" ? data.resourceType : "unknown",
@@ -160,6 +170,10 @@ export async function runExportAuditLogsWithDb(
       ? rows[rows.length - 1].timestamp
       : null;
 
+  const removedFromGroups = req.before
+    ? undefined
+    : await exportRemovedFromGroups(database, uid);
+
   logger.info("exportAuditLogs.complete", {
     event: "export_audit_logs.complete",
     uid_prefix: uid.slice(0, 6),
@@ -170,9 +184,69 @@ export async function runExportAuditLogsWithDb(
   return {
     count: rows.length,
     rows,
+    ...(removedFromGroups ? { removedFromGroups } : {}),
     nextCursor,
     gdprArticle: "Article 15 - Right of Access",
   };
+}
+
+/**
+ * Equality filters only, so Firestore serves it by merging single-field
+ * indexes; an `orderBy` would need a composite index, so rows are sorted here.
+ *
+ * Rows a client wrote before `firestore.rules` refused this operation are
+ * dropped where they cannot be the server's: the server stamps a Timestamp and
+ * `chat_groups`, and `select` keeps a planted large row out of memory.
+ */
+async function exportRemovedFromGroups(
+  database: admin.firestore.Firestore,
+  uid: string
+): Promise<RemovedFromGroupsSection> {
+  try {
+    const snapshot = await database
+      .collection("audit_logs")
+      .where("metadata.targetUid", "==", uid)
+      .where("operation", "==", ADMIN_REMOVAL_AUDIT_OPERATION)
+      .select("timestamp", "resourceType", "resourceId")
+      .limit(MAX_REMOVED_FROM_GROUPS + 1)
+      .get();
+    const all: RemovedFromGroupRow[] = snapshot.docs.flatMap((doc) => {
+      const data = doc.data();
+      if (data.resourceType !== Collections.chatGroups) return [];
+      if (!(data.timestamp instanceof admin.firestore.Timestamp)) return [];
+      return [
+        {
+          timestamp: data.timestamp.toDate().toISOString(),
+          groupId: isValidDocId(data.resourceId) ? data.resourceId : null,
+        },
+      ];
+    });
+    all.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return {
+      rows: all.slice(0, MAX_REMOVED_FROM_GROUPS),
+      truncated: snapshot.size > MAX_REMOVED_FROM_GROUPS,
+    };
+  } catch (e) {
+    // By code, never `String(e)`: a Firestore error can embed the uid.
+    const code =
+      typeof (e as { code?: unknown })?.code === "string" ||
+      typeof (e as { code?: unknown })?.code === "number"
+        ? String((e as { code: string | number }).code)
+        : "unknown";
+    logger.warn("exportAuditLogs.removedFromGroups.failed", {
+      uid_prefix: uid.slice(0, 6),
+      code,
+    });
+    return { error_code: "removed-from-groups-failed" };
+  }
+}
+
+function isoTimestamp(tsRaw: unknown): string {
+  if (tsRaw && typeof (tsRaw as { toDate?: unknown }).toDate === "function") {
+    return (tsRaw as admin.firestore.Timestamp).toDate().toISOString();
+  }
+  if (typeof tsRaw === "string") return tsRaw;
+  return "unknown";
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
