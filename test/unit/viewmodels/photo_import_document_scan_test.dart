@@ -135,16 +135,19 @@ void main() {
     return vm;
   }
 
-  test('flag off: the plain picker is used and the scanner untouched', () async {
-    final scanner = _FakeScanner(paths: [writeImage(1)]);
-    makeVm(scanner, flagOn: false);
+  test(
+    'flag off: the plain picker is used and the scanner untouched',
+    () async {
+      final scanner = _FakeScanner(paths: [writeImage(1)]);
+      makeVm(scanner, flagOn: false);
 
-    await vm.pickImageFromCamera();
+      await vm.pickImageFromCamera();
 
-    expect(scanner.scanCalls, 0);
-    expect(picker.calls, 1);
-    expect(vm.pageCount, 1);
-  });
+      expect(scanner.scanCalls, 0);
+      expect(picker.calls, 1);
+      expect(vm.pageCount, 1);
+    },
+  );
 
   test('gallery never opens the scanner', () async {
     final scanner = _FakeScanner(paths: [writeImage(1)]);
@@ -259,26 +262,32 @@ void main() {
       expect(limit, 7864320);
     });
 
-    test('an oversize picked photo is rejected with the size message', () async {
-      ImagePickerPlatform.instance = _FakePickerPlatform(
-        XFile(writeImage(5, bytes: limit + 1)),
-      );
-      makeVm(_FakeScanner(), flagOn: false);
+    test(
+      'an oversize picked photo is rejected with the size message',
+      () async {
+        ImagePickerPlatform.instance = _FakePickerPlatform(
+          XFile(writeImage(5, bytes: limit + 1)),
+        );
+        makeVm(_FakeScanner(), flagOn: false);
 
-      await vm.pickImageFromCamera();
+        await vm.pickImageFromCamera();
 
-      expect(vm.pageCount, 0);
-      expect(vm.hasError, isTrue);
-    });
+        expect(vm.pageCount, 0);
+        expect(vm.hasError, isTrue);
+      },
+    );
 
-    test('an oversize scanned page is rejected with the size message', () async {
-      makeVm(_FakeScanner(paths: [writeImage(1, bytes: limit + 1)]));
+    test(
+      'an oversize scanned page is rejected with the size message',
+      () async {
+        makeVm(_FakeScanner(paths: [writeImage(1, bytes: limit + 1)]));
 
-      await vm.pickImageFromCamera();
+        await vm.pickImageFromCamera();
 
-      expect(vm.pageCount, 0);
-      expect(vm.hasError, isTrue);
-    });
+        expect(vm.pageCount, 0);
+        expect(vm.hasError, isTrue);
+      },
+    );
 
     test('a page exactly at the limit is accepted', () async {
       makeVm(_FakeScanner(paths: [writeImage(1, bytes: limit)]));

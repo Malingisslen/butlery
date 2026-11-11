@@ -13,7 +13,8 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
-import 'package:butlery/core/providers/application_provider.dart' show ServiceLocator;
+import 'package:butlery/core/providers/application_provider.dart'
+    show ServiceLocator;
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/import/document_scan_service.dart';
 import 'package:butlery/services/import/import_event.dart';
