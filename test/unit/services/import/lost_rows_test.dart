@@ -98,6 +98,17 @@ void main() {
     expect(r.ingredients.any((i) => i.contains('betala')), isFalse);
   });
 
+  test('a method sentence under the ingredient list is a step', () async {
+    final r = await parse(
+      'Laxpasta\nIngredienser\n400 g pasta\n300 g laxfilé\n'
+      'skär laxen i tärningar och stek dem snabbt.\n'
+      'Koka pastan enligt anvisningen.',
+    );
+    expect(r.ingredients.any((i) => i.contains('tärningar')), isFalse);
+    expect(r.ingredients.any((i) => i.contains('laxfilé')), isTrue);
+    expect(r.instructions.join(' '), contains('tärningar'));
+  });
+
   test('a word split across two lines is joined', () async {
     final r = await parse(
       'Kanelbullar\nDeg\n5 dl mjölk\n2 tsk stött kar-\ndamumma\n'
