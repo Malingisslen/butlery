@@ -65,11 +65,7 @@ class ShoppingListPermissionGuards {
   /// Throws [PermissionDeniedException] if a non-owner's whole-list write would
   /// change who owns the list.
   ///
-  /// Both write paths take their payload from the caller — an entity for
-  /// `updateCollaborativeList`, a mutator for `mutateCollaborativeList` — so
-  /// without this an edit-level member could send back a list naming itself
-  /// `admin` or `ownerId` and keep the escalation. [proposed] is that payload,
-  /// [stored] the server state it is compared against.
+  /// [proposed] is the payload, [stored] the server state it is compared against.
   ///
   /// Still needed after BUT-1719 narrowed the update payload: narrowing decides
   /// WHICH keys are written, this decides whether the caller may write them.
@@ -339,14 +335,21 @@ class ShoppingListPermissionGuards {
     String uid,
     UnifiedShoppingList proposed,
     UnifiedShoppingList stored,
-    MembershipWriteIntent intent,
-  ) async {
+    MembershipWriteIntent intent, {
+    required bool declaresAccessControlBase,
+  }) async {
     if (intent != MembershipWriteIntent.selfRemoval) {
       // Same edit-rights bar as the item path: `validateUpdatePermission` alone
       // accepts any member key including a view-only one, and this writes the
       // WHOLE list, so it must not be the weaker of the two gates.
       await requireEditRights(uid, proposed.id, stored);
-      await requireNoPrivilegeEscalation(uid, proposed, stored);
+      // BUT-2441: a write that declares no access-control base has its
+      // privileged keys dropped by `restrictAccessControlToDeclaredBase`, so
+      // the escalation check would judge a stale member map that is never
+      // sent. Only a write that can carry the keys is judged on them.
+      if (declaresAccessControlBase) {
+        await requireNoPrivilegeEscalation(uid, proposed, stored);
+      }
       return proposed;
     }
 
