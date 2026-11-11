@@ -133,7 +133,7 @@ void main() {
     test('shared recipes are read from the injected repository, not one in '
         'the locator', () async {
       final inLocator = _MockSharedRecipeRepo();
-      GetIt.instance.registerSingleton<FirebaseSharedRecipeRepository>(
+      TestServiceLocator.registerSingleton<FirebaseSharedRecipeRepository>(
         inLocator,
       );
       addTearDown(
