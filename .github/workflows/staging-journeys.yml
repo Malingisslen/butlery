@@ -1,0 +1,82 @@
+# BUT-2424: the `staging` tier of the E2E tests. Journeys with synthetic accounts
+# against the real staging project (functions/scripts/staging-journeys.js): each
+# creates its own throwaway account, runs real backend code, checks what is left
+# and removes everything it made.
+#
+# Manual start only, and only from main. Never production: the job runs in the
+# `staging` environment, whose Workload Identity pool has no role in production,
+# and a guard step refuses to continue unless every project id agrees.
+name: Staging Journeys
+
+on:
+  workflow_dispatch:
+    inputs:
+      inject_failure:
+        description: "End red on purpose (proves the journeys can fail)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-journeys
+  cancel-in-progress: false
+
+jobs:
+  journeys:
+    name: Staging journeys
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Authenticate to Google Cloud (staging WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — target is staging
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1" >&2; exit 1; }
+          EXPECTED=$(jq -r '.projects.staging // empty' .firebaserc)
+          [ -n "$EXPECTED" ] || fail ".firebaserc has no 'staging' alias."
+          [ "$FIREBASE_PROJECT_ID" = "$EXPECTED" ] \
+            || fail "vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the staging alias ($EXPECTED)."
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] \
+            || fail "The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'."
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Run the staging tier
+        env:
+          INJECT_FAILURE: ${{ inputs.inject_failure && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          if [ "$INJECT_FAILURE" = "true" ]; then
+            (cd functions && npm run build && node scripts/staging-journeys.js --project "$FIREBASE_PROJECT_ID" --inject-failure)
+          else
+            ./scripts/run_e2e_tests.sh --tier staging
+          fi
