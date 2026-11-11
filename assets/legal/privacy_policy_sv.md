@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 9 november 2026
-**Version:** 1.33
+**Senast uppdaterad:** 11 november 2026
+**Version:** 1.34
 
 ---
 
@@ -141,7 +141,7 @@ Vi använder dina personuppgifter för följande ändamål:
 
 Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
 
-**Prov från AI:ns receptläsning.** När AI läser ut ett recept från ett foto eller en webbsida sparar vi texten som skickades till AI:n och AI:ns svar, men aldrig själva bilden. E-postadresser, telefonnummer, personnummer, gatuadresser och namn tas bort först. För en liten andel av de recept du importerar med foto, länk eller inklistrad text kan vi också låta AI:n läsa receptet när vår egen tolkning redan lyckats, för att jämföra de två. Jämförelsen ändrar inte ditt recept. Det gör vi bara om du har samtyckt till AI-bearbetning. Proverna använder vi för att förbättra Butlerys egen receptläsning. De märks med en kod som räknas fram ur ditt användar-id, aldrig med ditt namn eller din e-post. Ingen kan läsa dem i appen, och de raderas automatiskt efter 30 dagar, även om du har raderat kontot. AI:n körs i Google Cloud Vertex AI inom EU (Nederländerna). Rättslig grund: ditt samtycke. Återkallar du AI-samtycket görs inga fler jämförelser.
+**Prov från AI:ns receptläsning.** När AI läser ut ett recept från ett foto eller en webbsida sparar vi texten som skickades till AI:n och AI:ns svar, men aldrig själva bilden. E-postadresser, telefonnummer, personnummer, gatuadresser och namn tas bort först. För en liten andel av de recept du importerar med foto, länk eller inklistrad text kan vi också låta AI:n läsa receptet när vår egen tolkning redan lyckats, för att jämföra de två. Jämförelsen ändrar inte ditt recept. Det gör vi bara om du har samtyckt till AI-bearbetning. Proverna använder vi för att förbättra Butlerys egen receptläsning. De märks med en kod som räknas fram ur ditt användar-id, aldrig med ditt namn eller din e-post. Ingen kan läsa dem i appen, och de raderas automatiskt efter 30 dagar, även om du har raderat kontot. AI:n körs i Google Cloud Vertex AI inom EU (Googles EU-multiregion för foton, annars europe-west4; europe-west4/Nederländerna för text). Rättslig grund: ditt samtycke. Återkallar du AI-samtycket görs inga fler jämförelser.
 
 **Delade allergier i hushållet (om du har samtyckt):**
 
@@ -196,7 +196,7 @@ Vi delar dina personuppgifter med följande tredje parter:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Irland)**
 - **Syfte:** AI-baserad receptextrahering och strukturering via Gemini-modeller
 - **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
-- **Överföring:** Inom EU/EES – bearbetningen sker i Google Clouds region `europe-west4` (Nederländerna). Ingen överföring till USA.
+- **Överföring:** Inom EU/EES – text bearbetas i Google Clouds region `europe-west4` (Nederländerna) och foton i Google Clouds EU-multiregion (inom EU), eller i `europe-west4` om den inte svarar. Ingen överföring till USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Obs:** Ett foto skickas hit bara när du har svarat ja på att AI får läsa det (se avsnitt 5.2). Fotot kan innehålla personuppgifter som syns i bilden. Text rensas från kända PII-mönster före bearbetning; bilder kan inte rensas.
 
@@ -222,7 +222,7 @@ Nedan finns en förteckning över de personuppgiftsbiträden som tar emot dina u
 |---------|---------------|---------------|-------------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering, inloggningsuppgifter från Google eller Apple | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgien). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Receptfoton du har sagt ja till att AI läser, och text från recept | `europe-west4` (Nederländerna) – ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Receptfoton du har sagt ja till att AI läser, och text från recept | Inom EU: Googles EU-multiregion för foton (annars `europe-west4`), `europe-west4` (Nederländerna) för text – ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Cloud Vision (SafeSearch)** | Bilder du laddar upp till ditt konto | Googles EU-slutpunkt – behandling inom EU, ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 
 När telefonen själv läser ett receptfoto (Google ML Kit) skickas fotot inte till någon.
@@ -428,7 +428,7 @@ Vi kan uppdatera denna policy när:
 Vid väsentliga ändringar:
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 9 november 2026
+**Senaste ändring:** 11 november 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

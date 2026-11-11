@@ -2,7 +2,11 @@
  * Vertex AI Gemini client configuration and Swedish recipe prompts.
  *
  * This module provides:
- * - Vertex AI client pinned to VERTEX_LOCATION (GDPR Chapter V — EU data residency)
+ * - Two model profiles, both inside the EU (GDPR Chapter V — EU data residency):
+ *   TEXT_PROFILE (VERTEX_LOCATION) for every text call, and VISION_PROFILE
+ *   (VISION_LOCATION via VISION_API_ENDPOINT) for the recipe-photo call
+ * - Vertex AI clients cached per profile, so the photo client never shares
+ *   the text client's location or endpoint
  * - Service-account auth via Application Default Credentials (no API key)
  * - Swedish-language prompts for recipe extraction
  * - Response type definitions and schema enforcement
@@ -19,6 +23,7 @@ import {
   SchemaType,
   type Schema,
   type GenerateContentResponse,
+  type GenerationConfig,
 } from "@google-cloud/vertexai";
 import { logger } from "firebase-functions/logger";
 
@@ -35,10 +40,24 @@ export const PROMPT_VERSION = "3.3.0";
  */
 export const VERTEX_LOCATION = "europe-west4";
 
+/**
+ * Photo-reading location. VISION_MODEL is served only on Google's EU
+ * multi-region, which the SDK cannot reach by `location` alone (it would
+ * build a `<location>-aiplatform.googleapis.com` host that does not exist),
+ * so the endpoint is pinned too. Both are constants with no env override:
+ * the photo call must never move to `global` or any location outside the EU.
+ */
+export const VISION_LOCATION = "eu";
+export const VISION_API_ENDPOINT = "aiplatform.eu.rep.googleapis.com";
+
 // Singleton client instance — keyed by resolved project id so test overrides
 // (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.
 let vertexClient: VertexAI | null = null;
 let vertexClientProject: string | null = null;
+// Separate cache: a VertexAI instance carries its location and endpoint, so
+// reusing the text client would send photos to the text region.
+let visionClient: VertexAI | null = null;
+let visionClientProject: string | null = null;
 
 /**
  * Resolve the GCP project id from runtime environment.
@@ -72,6 +91,23 @@ export function getGeminiClient(): VertexAI {
 }
 
 /**
+ * Get or create the Vertex AI client for the recipe-photo call
+ * (VISION_PROFILE). Same auth as `getGeminiClient`.
+ */
+export function getVisionClient(): VertexAI {
+  const project = resolveProjectId();
+  if (!visionClient || visionClientProject !== project) {
+    visionClient = new VertexAI({
+      project,
+      location: VISION_PROFILE.location,
+      apiEndpoint: VISION_PROFILE.apiEndpoint,
+    });
+    visionClientProject = project;
+  }
+  return visionClient;
+}
+
+/**
  * Get a Gemini model configured for text tasks.
  */
 export function getTextModel(client: VertexAI): GenerativeModel {
@@ -83,6 +119,26 @@ export function getTextModel(client: VertexAI): GenerativeModel {
       responseMimeType: "application/json",
       responseSchema: RECIPE_SCHEMA,
     },
+  });
+}
+
+/**
+ * Get the photo-reading model: same schema, temperature and token cap as
+ * `getTextModel`, plus VISION_PROFILE's extras (thinking level).
+ */
+export function getVisionModel(client: VertexAI): GenerativeModel {
+  // SDK 1.12.0's GenerationConfig type has no `thinkingConfig`; the SDK
+  // forwards generationConfig to the API as JSON, so the extra key arrives.
+  const generationConfig: GenerationConfig & Record<string, unknown> = {
+    temperature: TEMPERATURE,
+    maxOutputTokens: MAX_TOKENS,
+    responseMimeType: "application/json",
+    responseSchema: RECIPE_SCHEMA,
+    ...VISION_PROFILE.generationConfigExtras,
+  };
+  return client.getGenerativeModel({
+    model: VISION_PROFILE.id,
+    generationConfig,
   });
 }
 
@@ -838,7 +894,8 @@ function validateDifficulty(
 // =============================================================================
 
 /**
- * Single model for both text and vision — Gemini Flash is natively multimodal.
+ * Text model: every text call, and the photo call's fallback (see
+ * VISION_MODEL for the photo call itself).
  *
  * BUT-785: pinned to a specific version snapshot rather than a moving alias.
  * Google rotates aliases without notice; a pinned id means the model behind
@@ -851,8 +908,7 @@ function validateDifficulty(
  * the retired id, so every recipe-import text/vision call was failing in
  * production. Migrated to `gemini-2.5-flash-lite`, the doc-recommended
  * cost-parity replacement for the 2.0-flash tier: GA on Vertex, natively
- * multimodal (preserves the single-model-for-text+vision assumption above),
- * and supports systemInstruction + responseSchema structured output. The
+ * multimodal, and supports systemInstruction + responseSchema structured output. The
  * @google-cloud/vertexai SDK forwards this id as a plain string to the
  * endpoint, so it's a drop-in. Thinking is off by default on flash-lite — we
  * deliberately do not set `thinkingConfig` (keeps cost/latency at the 2.0-flash
@@ -863,9 +919,16 @@ function validateDifficulty(
  */
 export const TEXT_MODEL = "gemini-2.5-flash-lite";
 
-/** Stable identifier for the model used in analytics events. Same value as
- * `TEXT_MODEL` today; if vision/text diverge we'll add a per-mode mapping. */
+/** Stable identifier for the text model in analytics events. The photo call
+ * stamps the id of the model it actually used instead. */
 export const MODEL_ID = TEXT_MODEL;
+
+/**
+ * Photo-reading model (Malin's decision 2026-11-11, see
+ * `docs/architecture/llm-versions.md`). Pinned snapshot id for the same
+ * reason as TEXT_MODEL. Served only on VISION_LOCATION.
+ */
+export const VISION_MODEL = "gemini-3.1-flash-lite";
 
 /** Maximum tokens for responses */
 export const MAX_TOKENS = 2000;
@@ -873,35 +936,88 @@ export const MAX_TOKENS = 2000;
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;
 
+/** USD per 1M tokens. `cachedInputPerM` is the rate for implicitly cached
+ * prompt tokens (`usageMetadata.cachedContentTokenCount`). */
+export interface ModelPricing {
+  inputPerM: number;
+  outputPerM: number;
+  cachedInputPerM: number;
+}
+
 // Gemini 2.5 Flash-Lite pricing per 1M tokens (Vertex AI).
 // BUT-1479 (closes the BUT-1187 TODO): verified 2026-07-07 against Google's
 // published Gemini 2.5 Flash-Lite pricing — input $0.10/M, output $0.40/M,
-// unchanged (no drift). Re-verify if falling back to gemini-2.5-flash, which
-// is pricier + bills thinking tokens. `llm_cost_ledger.ts` sums these costs
+// unchanged (no drift). Cached tokens bill at 10% of the input rate
+// (BUT-1032, verified the same day). `llm_cost_ledger.ts` sums these costs
 // against each user's ceiling (BUT-2243).
-const INPUT_COST_PER_M = 0.10;
-const OUTPUT_COST_PER_M = 0.40;
+export const TEXT_PRICING: ModelPricing = {
+  inputPerM: 0.10,
+  outputPerM: 0.40,
+  cachedInputPerM: 0.01,
+};
+
+// Gemini 3.1 Flash-Lite, non-global endpoint rate, read 2026-11-11 from
+// https://cloud.google.com/vertex-ai/generative-ai/pricing
+export const VISION_PRICING: ModelPricing = {
+  inputPerM: 0.275,
+  outputPerM: 1.65,
+  cachedInputPerM: 0.0275,
+};
+
+export interface ModelProfile {
+  id: string;
+  location: string;
+  /** Set when the SDK cannot derive the host from `location`. */
+  apiEndpoint?: string;
+  generationConfigExtras?: Record<string, unknown>;
+}
+
+export const TEXT_PROFILE: ModelProfile = {
+  id: TEXT_MODEL,
+  location: VERTEX_LOCATION,
+};
+
+export const VISION_PROFILE: ModelProfile = {
+  id: VISION_MODEL,
+  location: VISION_LOCATION,
+  apiEndpoint: VISION_API_ENDPOINT,
+  // The photo prompt needs no reasoning, and thinking tokens bill at the
+  // output rate.
+  generationConfigExtras: { thinkingConfig: { thinkingLevel: "MINIMAL" } },
+};
+
+const PRICING_BY_MODEL: Record<string, ModelPricing> = {
+  [TEXT_MODEL]: TEXT_PRICING,
+  [VISION_MODEL]: VISION_PRICING,
+};
 
 /**
- * BUT-1032: Vertex AI implicit caching is on by default for Gemini 2.5
- * models — cached prompt tokens (reported as
- * `usageMetadata.cachedContentTokenCount`) are billed at ~10% of the
- * standard input rate.
- *
- * BUT-1479: verified 2026-07-07 — Vertex bills 2.5-series cached tokens at
- * 10% of the input rate (90% discount), so 0.10 is correct.
+ * Pricing for a model id. An id missing from the table gets the highest
+ * listed rate per field, so a model swap that forgets the table over-charges
+ * the user's ledger instead of under-charging it.
  */
-const CACHED_INPUT_DISCOUNT = 0.10;
+export function pricingForModel(modelId: string): ModelPricing {
+  const known = PRICING_BY_MODEL[modelId];
+  if (known) return known;
+  const all = Object.values(PRICING_BY_MODEL);
+  return {
+    inputPerM: Math.max(...all.map((p) => p.inputPerM)),
+    outputPerM: Math.max(...all.map((p) => p.outputPerM)),
+    cachedInputPerM: Math.max(...all.map((p) => p.cachedInputPerM)),
+  };
+}
 
 /**
  * Calculate actual cost from Gemini API usage data.
  * Co-located with model config so pricing updates happen in one place.
  *
- * Cache-aware (BUT-1032): when the response reports
- * `cachedContentTokenCount`, that slice of the prompt is priced at
- * `CACHED_INPUT_DISCOUNT` × the input rate. The count is defensively
- * clamped to `[0, promptTokenCount]` so a malformed API value can never
- * produce a negative input cost.
+ * Cache-aware (BUT-1032): the `cachedContentTokenCount` slice of the prompt
+ * is priced at `pricing.cachedInputPerM`. The count is defensively clamped to
+ * `[0, promptTokenCount]` so a malformed API value can never produce a
+ * negative input cost. `thoughtsTokenCount` is billed at the output rate.
+ *
+ * `minCost` is a floor, not an estimate. The photo call passes its own
+ * higher floor so the ledger charges photos conservatively, by design.
  */
 export function calculateGeminiCost(
   usage:
@@ -909,9 +1025,11 @@ export function calculateGeminiCost(
         promptTokenCount?: number;
         candidatesTokenCount?: number;
         cachedContentTokenCount?: number;
+        thoughtsTokenCount?: number;
       }
     | undefined,
   minCost = 0.001,
+  pricing: ModelPricing = TEXT_PRICING,
 ): number {
   if (!usage) return minCost;
   const promptTokens = usage.promptTokenCount ?? 0;
@@ -921,8 +1039,10 @@ export function calculateGeminiCost(
   );
   const freshTokens = promptTokens - cachedTokens;
   const inputCost =
-    ((freshTokens + cachedTokens * CACHED_INPUT_DISCOUNT) / 1_000_000) *
-    INPUT_COST_PER_M;
-  const outputCost = ((usage.candidatesTokenCount ?? 0) / 1_000_000) * OUTPUT_COST_PER_M;
+    (freshTokens * pricing.inputPerM + cachedTokens * pricing.cachedInputPerM) /
+    1_000_000;
+  const outputTokens =
+    (usage.candidatesTokenCount ?? 0) + Math.max(usage.thoughtsTokenCount ?? 0, 0);
+  const outputCost = (outputTokens / 1_000_000) * pricing.outputPerM;
   return Math.max(inputCost + outputCost, minCost);
 }
