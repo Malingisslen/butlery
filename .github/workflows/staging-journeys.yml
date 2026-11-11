@@ -78,5 +78,5 @@ jobs:
           if [ "$INJECT_FAILURE" = "true" ]; then
             (cd functions && npm run build && node scripts/staging-journeys.js --project "$FIREBASE_PROJECT_ID" --inject-failure)
           else
-            ./scripts/run_e2e_tests.sh --tier staging
+            bash scripts/run_e2e_tests.sh --tier staging
           fi
