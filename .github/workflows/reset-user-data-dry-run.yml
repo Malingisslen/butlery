@@ -1,0 +1,74 @@
+# BUT-2045: the pre-launch dry run of reset-user-data against production, and
+# its "Unknown collections" report (docs/ops/reset-user-data-runbook.md).
+#
+# Dry run only. There is no input that reaches a live run: the script is called
+# with `--dry-run` hard-coded, and a live run would also stop at its typed
+# confirmation, which a runner cannot give.
+name: Reset user data — dry run (read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    name: Dry run and unknown-collection report
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Authenticate to Google Cloud (WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Guard — project matches the environment
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'." >&2; exit 1; }
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
+
+      - name: Dry run
+        working-directory: functions
+        run: |
+          set -o pipefail
+          {
+            echo '```'
+            rc=0
+            npx ts-node src/admin/reset-user-data.ts --dry-run --project "$FIREBASE_PROJECT_ID" < /dev/null 2>&1 || rc=$?
+            echo '```'
+            exit $rc
+          } | tee -a "$GITHUB_STEP_SUMMARY"
