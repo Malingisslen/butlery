@@ -190,7 +190,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |
-| `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 846 | DI registrations for content layer |
 | `ui_module.dart` | 516 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |

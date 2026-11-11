@@ -38,11 +38,12 @@ Decision tree:
 ## 4. Favourite / featured / saved icon convention (BUT-944)
 
 One icon per *concept* — use the semantic aliases in
-`lib/widgets/common/icons/adaptive_icon.dart` at call sites, not raw `Icons.*`:
-- **Heart** (`AdaptiveIcons.favouriteFilled` / `favouriteOutline`) → personal preference
+`lib/widgets/common/icons/butlery_icons.dart` at call sites, not raw `Icons.*`:
+- **Heart** (`ButleryIcons.favourite` / `favouriteOutline`) → personal preference
   (favourite, like; the `isFavorite` boolean on Recipe).
-- **Star** (`primaryFilled` / `primaryOutline`) → system designation (primary image, featured).
-- **Bookmark** (`savedTemplate` / `savedTemplateOutline`) → template / saved-for-later.
+- **Star** (`ButleryIcons.primary` / `primaryOutline`) → system designation (primary image,
+  featured). The same star glyph is also the rating icon (`ButleryIcons.star` / `starOutline`).
+- **Bookmark** (`ButleryIcons.savedTemplate` / `savedTemplateOutline`) → template / saved-for-later.
 
 Colour (BUT-1213): active personal favourite → `colorScheme.primary` (green); active social
 like → `colorScheme.error` (red); inactive → `onSurfaceVariant`. **Exception:** recipe-detail
