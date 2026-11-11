@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-11-10T10:53:40.432554Z (UTC).
+**Measured:** 2026-11-11T10:32:41.993611Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
