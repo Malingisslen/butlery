@@ -305,6 +305,7 @@ const PRODUCTION_CLOUD_WORKFLOWS = [
   "measure-production.yml",
   "migrate-meal-type.yml",
   "repair-feature-retention.yml",
+  "reset-user-data-dry-run.yml",
   "sync-ingredients.yml",
 ];
 

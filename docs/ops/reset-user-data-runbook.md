@@ -118,6 +118,10 @@ cd functions
 npm run reset-user-data:dry-run -- --project <id>
 ```
 
+Against production, run the GitHub Actions workflow **Reset user data — dry run
+(read-only)** instead: it signs in through the `production` environment and
+writes the output to the run's summary.
+
 Read the unknown-collection section. Anything it names is either a collection
 that needs a decision (add it to one of the three lists) or an orphan like
 BUT-2040's.
