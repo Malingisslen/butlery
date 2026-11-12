@@ -124,7 +124,7 @@ const MAP_REQUIRED: {
     order: "ASCENDING",
     queriers: [
       "functions/src/account/cascade/recipe-members-reactions.ts",
-      "functions/src/account/cascade/residual-probe.ts",
+      "functions/src/account/cascade/residual-probe-recipe-social.ts",
     ],
   },
 ];
