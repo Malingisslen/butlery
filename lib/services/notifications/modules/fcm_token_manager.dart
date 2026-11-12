@@ -583,7 +583,7 @@ class FCMTokenManager {
   /// Called by `NotificationService` when push consent is revoked mid-session.
   /// Distinct from [cleanup]: does NOT unsubscribe topics, mark device
   /// inactive, or invalidate the token on Google's servers — those are
-  /// handled by `FCMService._revokePushAccess()` (SDK + Firestore + memory)
+  /// handled by `PushAccessRevoker.revoke` (SDK + Firestore)
   /// and the persistent device-doc lifecycle. The user remains "logged in"
   /// after a consent revoke; they just shouldn't have a push token sitting
   /// in the device keystore that was minted under the old (granted) consent.
