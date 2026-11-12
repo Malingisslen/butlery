@@ -13,7 +13,7 @@ import {
  * Cap on one erasure's sweep of OTHER people's block mirrors.
  *
  * Same contract as the sibling caps and the same DECLINE-rather-than-truncate
- * choice, for the roster cap's reason rather than the poll-vote one: the row
+ * choice: the row
  * count here is chosen by how many people this user blocked, which is their own
  * doing — but each mirror belongs to somebody else, and a half-finished sweep
  * would leave the erased uid inside a live safety control on an unknown subset
@@ -90,14 +90,12 @@ export async function deleteBlockMirrors(
  * count is theirs, and the cap is the self-inflation guard.
  *
  * `blockedId == uid` is chosen by OTHER PEOPLE. Any authenticated account may
- * block this user, and nothing rate-limits it, so this leg has the roster
- * cap's argument rather than the poll-vote one: a peer can seat rows keyed on
+ * block this user, and nothing rate-limits it: a peer can seat rows keyed on
  * this user. That is the leg the cap is really for.
  *
  * Above the cap the leg DECLINES rather than truncating, and the step reports
  * itself incomplete — `gdprCompliant: false`. Declining is strictly less
- * erasure for the same alarm, which is the choice `deleteOwnRosterRows` already
- * made.
+ * erasure for the same alarm.
  *
  * Recovery is a human running `admin/reset-user-data.ts`, which names this
  * collection. That script was inert from 2026-03-19 to 2026-09-05 —

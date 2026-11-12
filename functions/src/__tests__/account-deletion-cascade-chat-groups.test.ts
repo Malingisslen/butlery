@@ -1,5 +1,5 @@
 /**
- * BUT-1766 / BUT-1768: deletion cascade chat groups and rosters scenarios, split out of
+ * BUT-1766 / BUT-1768: deletion cascade chat groups scenarios, split out of
  * `account-deletion-cascade.test.ts` (BUT-2113). Shared fakes and seeds are
  * `_account-deletion-cascade-fake-firestore.ts` and `_account-deletion-cascade-test-seeds.ts`.
  *
@@ -25,217 +25,58 @@ const {
   deleteMessages,
 } = require("../account/account-deletion-cascade");
 
-/** Seed one roster row the way `ConversationParticipant.toFirestore` writes it. */
-function seedRosterRow(
-  db: FakeFirestore,
-  conversationId: string,
-  uid: string,
-  displayName: string,
-): void {
-  db.set(`conversations/${conversationId}/participants/${uid}`, {
-    conversationId,
-    participantId: uid,
-    displayName,
-    avatarUrl: `https://example.test/${uid}.jpg`,
-    role: "member",
-    isMuted: false,
-  });
-}
-
 /**
- * BUT-1822 leg 2: the erased user's OWN roster row, in a surviving group. It
- * carries their displayName and avatarUrl, and nothing in the cascade had ever
- * touched this path — the conversation document keeps running for everyone else,
- * so there is no later erasure that could find it.
+ * A 1:1 conversation is deleted outright, and a failure to delete it is reported
+ * rather than swallowed: the step returns false so the audit row cannot say
+ * `gdprCompliant`. A second, healthy 1:1 in the same run is still deleted — a
+ * failure is collected per conversation, not thrown out of the whole loop.
  */
-async function scenario_ownRosterRowIsErasedInSurvivingGroup(): Promise<void> {
+async function scenario_failedDirectConversationDeleteReportsIncomplete(): Promise<void> {
   const db = new FakeFirestore();
-  db.set("conversations/c-group", {
-    participantIds: [UID, OTHER, "third-uid"],
-    participantDisplayNames: { [UID]: "Raderad", [OTHER]: "Kvar" },
-  });
-  seedRosterRow(db, "c-group", UID, "Raderad");
-  seedRosterRow(db, "c-group", OTHER, "Kvar");
-
-  await deleteMessages(asDb(db), UID);
-
-  check(
-    "the erased user's roster row is deleted from a surviving group",
-    !db.has(`conversations/c-group/participants/${UID}`),
-  );
-  check(
-    "another member's roster row is untouched",
-    db.has(`conversations/c-group/participants/${OTHER}`),
-  );
-  check(
-    "the surviving group document itself is kept",
-    db.has("conversations/c-group"),
-  );
-}
-
-/**
- * BUT-1822 leg 1, and the ordering it turns on. Deleting the conversation is the
- * write that makes `parentDoc() == null` true, and every predicate that could
- * surface a row reads through the parent — so whatever rows survive become
- * UNREADABLE forever (delete and the `lastReadAt` stamp key on the subject's
- * own uid, and no client flow uses either). The SURVIVING partner's row is
- * the one that matters: its `participantId` is not the erased uid, so leg 2's
- * collection-group sweep can never reach it either. Until BUT-1838 this was worse
- * than unreachable — a bootstrap branch re-opened those rows to any signed-in
- * user, so the partner kept LIST over the erased user's name and avatar forever.
- *
- * Asserting only "both are gone" would pass on the broken code too, since the
- * sweep would still take the erased user's own row. The ORDER is the test.
- */
-async function scenario_rosterIsClearedBeforeTheParentDelete(): Promise<void> {
-  const db = new FakeFirestore();
-  db.set("conversations/direct_a_b", { participantIds: [UID, OTHER] });
-  seedRosterRow(db, "direct_a_b", UID, "Raderad");
-  seedRosterRow(db, "direct_a_b", OTHER, "Partner");
-
-  await deleteMessages(asDb(db), UID);
-
-  check(
-    "the 1:1 conversation is gone",
-    !db.has("conversations/direct_a_b"),
-  );
-  check(
-    "the SURVIVING partner's roster row is gone too (no collectionGroup leg can find it)",
-    !db.has(`conversations/direct_a_b/participants/${OTHER}`),
-    `left: ${JSON.stringify(db.pathsUnder("conversations/direct_a_b/participants"))}`,
-  );
-  const parentAt = db.deletedPaths.indexOf("conversations/direct_a_b");
-  const partnerAt = db.deletedPaths.indexOf(
-    `conversations/direct_a_b/participants/${OTHER}`,
-  );
-  check(
-    "the roster row is deleted BEFORE the parent document",
-    partnerAt >= 0 && parentAt >= 0 && partnerAt < parentAt,
-    `delete order: ${JSON.stringify(db.deletedPaths)}`,
-  );
-}
-
-/**
- * When the roster cannot be proven clear, `tryClearRoster` returns false and the
- * parent must NOT be deleted — a live parent that no longer names the erased
- * user still lets the SURVIVING partner list what is left — the read rule is
- * not row-scoped and `buildGroupDepartureUpdate` only `arrayRemove`s the erased
- * uid — which is acceptable because leg 2 sweeps the erased user's own row.
- * Deleting the parent instead makes every row unreadable
- * forever (and, until BUT-1838, re-opened a bootstrap branch over them). But an untouched document keeps their name in
- * `participantDisplayNames` forever, so the departure update runs instead.
- *
- * Staged SYNTHETICALLY, via the clearer's refusal cap — the cheapest way to
- * force a false verdict. Production does NOT reach the branch that way for a
- * direct conversation: only the two attested participants may write rows, and
- * `directIdBinds` pins `participantIds` to exactly two with the update rule
- * denying any diff that touches it — so such a roster holds at most TWO
- * client-written rows, ever, which can never reach the refusal cap. For a
- * `direct_` id the real route is therefore a transient roster read or delete
- * failure; a LEGACY non-direct conversation reaches this branch too and can hit
- * the cap through rows seeded before BUT-1838.
- */
-async function scenario_unclearableRosterLeavesTheParentStanding(): Promise<void> {
-  const db = new FakeFirestore();
-  db.set("conversations/direct_seeded", {
+  db.set("conversations/direct_ok", {
     participantIds: [UID, OTHER],
     participantDisplayNames: { [UID]: "Raderad", [OTHER]: "Partner" },
-    participantAvatarUrls: { [UID]: "https://example.test/x.jpg" },
   });
-  seedRosterRow(db, "direct_seeded", UID, "Raderad");
-  seedRosterRow(db, "direct_seeded", OTHER, "Partner");
-  // 500 is MAX_ROSTER_ROWS; the read is `.limit(MAX + 1)`, so 501 rows is the
-  // smallest roster the clearer refuses.
-  for (let i = 0; i < 499; i++) {
-    seedRosterRow(db, "direct_seeded", `seeded-${i}`, `Seeded ${i}`);
-  }
+  db.set("conversations/direct_fail", {
+    participantIds: [UID, THIRD],
+    participantDisplayNames: { [UID]: "Raderad", [THIRD]: "Tredje" },
+  });
+  seedMessage(db, "dm1", "direct_ok", UID);
+  db.deleteFailures.add("conversations/direct_fail");
 
   const ok = await deleteMessages(asDb(db), UID);
 
   check(
-    "an unclearable roster leaves the conversation standing",
-    db.has("conversations/direct_seeded"),
-  );
-  check(
-    "…and the step reports INCOMPLETE, so the audit cannot say gdprCompliant",
+    "a conversation that cannot be deleted makes the step report INCOMPLETE",
     ok === false,
-    // A `direct_` id is literally `direct_<erasedUid>_<survivorUid>`: the
-    // surviving document keeps the erased user's identifier in its own id,
-    // where no field-keyed probe can see it. Reporting success here would
-    // certify an erasure that did not happen.
     `deleteMessages returned ${ok}`,
   );
-  // `?? {}` deliberately: the failure this scenario guards against is the
-  // conversation being DELETED, and reading through an absent document would
-  // throw a TypeError that kills the whole runner instead of reddening one
-  // assertion.
-  const convo = (db.get("conversations/direct_seeded") ?? {}) as DocData;
-  // Mutation-proven, with one honest caveat: this single assertion passes
-  // VACUOUSLY if the conversation is deleted instead (an absent document has no
-  // name to find), so it is the two below — participantIds present-and-cleaned,
-  // and the partner's name still there — that catch a wrongly-deleted parent.
-  // Do not "simplify" them away as redundant; each of the three reddens under a
-  // different mutant.
   check(
-    "…but the erased user's name is stripped from it anyway",
-    (convo.participantDisplayNames as DocData)?.[UID] === undefined &&
-      (convo.participantAvatarUrls as DocData)?.[UID] === undefined,
-    `left: ${JSON.stringify(convo.participantDisplayNames)}`,
+    "the healthy 1:1 conversation is still deleted",
+    !db.has("conversations/direct_ok"),
   );
   check(
-    "…and their participantIds entry is removed",
-    Array.isArray(convo.participantIds) &&
-      !(convo.participantIds as string[]).includes(UID),
-    `participantIds: ${JSON.stringify(convo.participantIds)}`,
+    "…with its thread",
+    !db.has("messages/dm1"),
   );
   check(
-    "the partner's name is kept — it is not theirs to erase",
-    (convo.participantDisplayNames as DocData)?.[OTHER] === "Partner",
+    "no roster row is written under either conversation",
+    db.pathsUnder("conversations/direct_ok/participants").length === 0 &&
+      db.pathsUnder("conversations/direct_fail/participants").length === 0,
   );
-}
 
-/**
- * The residual probe is the safety net for this whole class of gap: the deleter
- * must stay a strict superset of it. Before BUT-1822 the probe had NO
- * collection-group leg for `participants`, so it certified every erasure clean
- * over live roster rows.
- *
- * A clean store is asserted first. Without it, a stub method the probe needs but
- * does not have would land in one of its per-leg catches, count as residual, and
- * make the second half of this scenario pass for the wrong reason.
- */
-async function scenario_probeSeesLeftoverRosterRows(): Promise<void> {
-  const { probeResidualData } = require("../account/account-deletion-cascade");
-
+  // Control: a store without the injected failure reports COMPLETE, so
+  // the `false` above is the failure's and not the fixture's.
   const clean = new FakeFirestore();
-  clean.set("conversations/c-group", { participantIds: [OTHER] });
-  const cleanResult = {
-    deletedCollections: [],
-    failedCollections: [] as string[],
-    errors: [],
-    retained: [],
-  };
-  await probeResidualData(asDb(clean), UID, cleanResult);
+  clean.set("conversations/direct_fail", {
+    participantIds: [UID, THIRD],
+    participantDisplayNames: { [UID]: "Raderad", [THIRD]: "Tredje" },
+  });
+  const cleanOk = await deleteMessages(asDb(clean), UID);
   check(
-    "a store with nothing of the user's left probes CLEAN",
-    !cleanResult.failedCollections.includes("residual_data_detected"),
-    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
-  );
-
-  const dirty = new FakeFirestore();
-  dirty.set("conversations/c-group", { participantIds: [OTHER] });
-  seedRosterRow(dirty, "c-group", UID, "Raderad");
-  const dirtyResult = {
-    deletedCollections: [],
-    failedCollections: [] as string[],
-    errors: [],
-    retained: [],
-  };
-  await probeResidualData(asDb(dirty), UID, dirtyResult);
-  check(
-    "one leftover roster row is reported as residual data",
-    dirtyResult.failedCollections.includes("residual_data_detected"),
-    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    "control: without the failure the step reports COMPLETE and the 1:1 is gone",
+    cleanOk === true && !clean.has("conversations/direct_fail"),
+    `deleteMessages returned ${cleanOk}`,
   );
 }
 
@@ -243,8 +84,8 @@ async function scenario_probeSeesLeftoverRosterRows(): Promise<void> {
 
 /**
  * Seeds a chat group the way `groups/chat-group-writes.ts` writes one: the group
- * document, its conversation (carrying `groupId`, which is what marks the
- * conversation group-owned) and a roster row per member. Every uid-keyed
+ * document and its conversation (carrying `groupId`, which is what marks the
+ * conversation group-owned). Every uid-keyed
  * carrier is populated, because
  * an assertion that a key is GONE proves nothing over a key that was never there.
  */
@@ -289,9 +130,6 @@ function seedChatGroup(
     isGroup: true,
     title: "Familjen",
   });
-  for (const uid of members) {
-    seedRosterRow(db, conversationId, uid, uid === UID ? "Raderad" : `Namn ${uid}`);
-  }
 }
 
 /** The five uid-keyed maps a conversation document carries. */
@@ -304,11 +142,9 @@ const CONVERSATION_UID_MAPS = [
 ] as const;
 
 /**
- * BUT-1838, the surviving-group case. "Who is in this group" lives in three
- * places (group, conversation, roster row) precisely because three readers need
- * it and none can read the others — so an erasure that clears one and not the
- * others leaves copies that disagree, which is the BUT-1798 failure in a new
- * collection. All three go through the one writer, `stageMemberRemoval`.
+ * BUT-1838, the surviving-group case. An erasure that clears one copy of "who
+ * is in this group" and not the others leaves copies that disagree, which is
+ * the BUT-1798 failure in a new collection.
  *
  * `memberSince` is the newest of the five conversation maps and the easiest to
  * forget: it is the history cut-off `firestore.rules` reads, and a stale entry
@@ -376,12 +212,8 @@ async function scenario_chatGroupMembershipIsErasedEverywhere(): Promise<void> {
   );
 
   check(
-    "the roster row goes with them",
-    !db.has(`conversations/cg-keep/participants/${UID}`),
-  );
-  check(
-    "another member's roster row is untouched",
-    db.has(`conversations/cg-keep/participants/${OTHER}`),
+    "no roster row is written",
+    db.pathsUnder("conversations/cg-keep/participants").length === 0,
   );
   check(
     "the group and its conversation keep running for everyone else",
@@ -444,21 +276,9 @@ async function scenario_createdByIsReHomedWhenTheCreatorIsErased(): Promise<void
 }
 
 /**
- * The erased user was the LAST member: the group has nobody left, so it goes —
- * and the order is the test, not the end state.
- *
- * Deleting the conversation is the write that makes `parentDoc() == null` true in
- * firestore.rules. With the bootstrap branch gone that no longer re-opens a write
- * path, but the rows would still be orphaned under a parent nobody can produce,
- * carrying names and avatars, which is exactly the residual BUT-1825 exists for.
- * So: roster FIRST, then the thread, then the conversation, then the group.
- *
- * The stale `ghost` row is what makes the ordering observable at all — the erased
- * user's own row goes inside the removal transaction, so a fixture with only that
- * row would leave `tryClearRoster` nothing to delete and nothing to order against.
- * It is also the realistic shape: a row whose owner left without it being cleared.
+ * The erased user was the LAST member: the group has nobody left, so it goes.
  */
-async function scenario_emptiedChatGroupIsTakenDownRosterFirst(): Promise<void> {
+async function scenario_emptiedChatGroupIsTakenDown(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { deleteChatGroupMemberships } = require("../account/account-deletion-cascade");
   const db = new FakeFirestore();
@@ -467,7 +287,6 @@ async function scenario_emptiedChatGroupIsTakenDownRosterFirst(): Promise<void> 
     admins: [UID],
     createdBy: UID,
   });
-  seedRosterRow(db, "cg-solo", "ghost-uid", "Spöke");
   seedMessage(db, "gm1", "cg-solo", UID);
   seedMessage(db, "gm2", "cg-solo", OTHER);
 
@@ -481,24 +300,16 @@ async function scenario_emptiedChatGroupIsTakenDownRosterFirst(): Promise<void> 
     db.idsIn("messages").length === 0,
     `left: ${JSON.stringify(db.idsIn("messages"))}`,
   );
-  check(
-    "no roster row outlives the parent",
-    db.pathsUnder("conversations/cg-solo/participants").length === 0,
-    `left: ${JSON.stringify(db.pathsUnder("conversations/cg-solo/participants"))}`,
-  );
 
   const at = (path: string) => db.deletedPaths.indexOf(path);
-  const rosterAt = at("conversations/cg-solo/participants/ghost-uid");
   const threadAt = at("messages/gm1");
   const convoAt = at("conversations/cg-solo");
   const groupAt = at("chat_groups/g-solo");
   check(
-    "order: roster, then thread, then conversation, then group",
-    rosterAt >= 0 &&
-      threadAt >= 0 &&
+    "order: thread, then conversation, then group",
+    threadAt >= 0 &&
       convoAt >= 0 &&
       groupAt >= 0 &&
-      rosterAt < threadAt &&
       threadAt < convoAt &&
       convoAt < groupAt,
     `delete order: ${JSON.stringify(db.deletedPaths)}`,
@@ -506,16 +317,10 @@ async function scenario_emptiedChatGroupIsTakenDownRosterFirst(): Promise<void> 
 }
 
 /**
- * The gate. When the roster cannot be proven clear the parent must NOT be
- * deleted — an empty group whose documents linger is untidy, whereas an
- * unreachable set of rows carrying people's names is a disclosure — and the step
- * must report INCOMPLETE rather than certifying an erasure it did not finish.
- *
- * Staged SYNTHETICALLY, via the clearer's refusal cap, which is the cheapest way
- * to force a false verdict. Production reaches it through a transient roster read
- * or delete failure; nothing writes 501 rows to a group conversation.
+ * A teardown that fails is reported, not swallowed: with the conversation delete
+ * failing, the group is left standing and the step reports INCOMPLETE.
  */
-async function scenario_unclearableRosterLeavesTheChatGroupStanding(): Promise<void> {
+async function scenario_failedEmptiedGroupTeardownReportsIncomplete(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { deleteChatGroupMemberships } = require("../account/account-deletion-cascade");
   const db = new FakeFirestore();
@@ -524,40 +329,24 @@ async function scenario_unclearableRosterLeavesTheChatGroupStanding(): Promise<v
     admins: [UID],
     createdBy: UID,
   });
-  // 500 is MAX_ROSTER_ROWS and the read is `.limit(MAX + 1)`, so 501 rows is the
-  // smallest roster the clearer refuses. All 501 are seeded ON TOP of the erased
-  // user's own row, because that one is deleted inside the removal transaction
-  // BEFORE the clearer ever reads — counting it (as the 1:1 fixture above can)
-  // leaves 500 and the clearer succeeds, which is how the first version of this
-  // fixture passed while proving nothing.
-  for (let i = 0; i < 501; i++) {
-    seedRosterRow(db, "cg-shell", `seeded-${i}`, `Seeded ${i}`);
-  }
+  db.deleteFailures.add("conversations/cg-shell");
 
   const ok = await deleteChatGroupMemberships(asDb(db), UID);
 
   check(
-    "an unclearable roster leaves the group standing",
-    db.has("chat_groups/g-shell"),
-  );
-  check(
-    "…and its conversation standing",
-    db.has("conversations/cg-shell"),
-  );
-  check(
-    "…and the step reports INCOMPLETE, so the audit cannot say gdprCompliant",
+    "a failed conversation delete makes the step report INCOMPLETE",
     ok === false,
     `deleteChatGroupMemberships returned ${ok}`,
+  );
+  check(
+    "…and the group is not deleted after it",
+    db.has("chat_groups/g-shell"),
   );
   check(
     "…while the membership cut still landed",
     Array.isArray((db.get("chat_groups/g-shell") as DocData)?.memberIds) &&
       ((db.get("chat_groups/g-shell") as DocData).memberIds as string[]).length === 0,
     `memberIds: ${JSON.stringify((db.get("chat_groups/g-shell") as DocData)?.memberIds)}`,
-  );
-  check(
-    "…and the refusal deleted NOTHING — a partial clear is the worst outcome",
-    db.has("conversations/cg-shell/participants/seeded-0"),
   );
 }
 
@@ -761,8 +550,7 @@ async function scenario_mealVotePointerOwnerIsErased(): Promise<void> {
  *
  * What deleteMessages still legitimately does to a group conversation: it
  * tombstones the user's own MESSAGE rows (their content is theirs wherever it
- * was written), and `deleteOwnRosterRows` sweeps their roster row as a backstop.
- * Both are idempotent with the group leg, and neither writes membership.
+ * was written).
  */
 async function scenario_deleteMessagesSkipsGroupOwnedConversations(): Promise<void> {
   const db = new FakeFirestore();
@@ -832,14 +620,11 @@ async function scenario_probeSeesLeftoverChatGroupMembership(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  await scenario_ownRosterRowIsErasedInSurvivingGroup();
-  await scenario_rosterIsClearedBeforeTheParentDelete();
-  await scenario_unclearableRosterLeavesTheParentStanding();
-  await scenario_probeSeesLeftoverRosterRows();
+  await scenario_failedDirectConversationDeleteReportsIncomplete();
   await scenario_chatGroupMembershipIsErasedEverywhere();
   await scenario_createdByIsReHomedWhenTheCreatorIsErased();
-  await scenario_emptiedChatGroupIsTakenDownRosterFirst();
-  await scenario_unclearableRosterLeavesTheChatGroupStanding();
+  await scenario_emptiedChatGroupIsTakenDown();
+  await scenario_failedEmptiedGroupTeardownReportsIncomplete();
   await scenario_implausibleChatGroupCountDeclines();
   await scenario_departureTombstoneIsErased();
   await scenario_mealVotePointerOwnerIsErased();
@@ -847,7 +632,7 @@ async function main(): Promise<void> {
   await scenario_deleteMessagesSkipsGroupOwnedConversations();
   await scenario_probeSeesLeftoverChatGroupMembership();
 
-  finishSuite("BUT-1766/BUT-1768 deletion cascade chat groups and rosters");
+  finishSuite("BUT-1766/BUT-1768 deletion cascade chat groups");
 }
 
 main().catch((err) => {

@@ -191,6 +191,40 @@ void main() {
       expect(names['user-a'], equals('A'));
       expect(names['user-b'], equals('B'));
     });
+
+    // BUT-2110: the conversation's `participants` subcollection is gone and
+    // `firestore.rules` denies every client write to it.
+    test(
+      'writes nothing under the conversation\'s participants path',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = ConversationMutationModule(
+          firestore: firestore,
+          collectionName: _convoCollection,
+        );
+
+        final id = await module.createDirectConversation(
+          user1Id: 'user-a',
+          user1DisplayName: 'A',
+          user2Id: 'user-b',
+          user2DisplayName: 'B',
+        );
+
+        final conversation = await firestore
+            .collection(_convoCollection)
+            .doc(id)
+            .get();
+        expect(conversation.exists, isTrue);
+        final rows = await firestore
+            .collection(_convoCollection)
+            .doc(id)
+            .collection('participants')
+            .get();
+        expect(rows.docs, isEmpty);
+        final anywhere = await firestore.collectionGroup('participants').get();
+        expect(anywhere.docs, isEmpty);
+      },
+    );
   });
 
   // BUT-1838: createGroupConversation is deleted from this module (and from

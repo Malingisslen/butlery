@@ -135,7 +135,7 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // is capped separately by MAX_CHAT_GROUP_MEMBERS.
   //
   // Creating groups carries a daily cap as well: a group create writes a group
-  // document, a conversation, N roster rows and a system message, so it is
+  // document, a conversation and a system message, so it is
   // write-amplified and an obvious one to abuse.
   createChatGroup: {
     maxTokens: 5,

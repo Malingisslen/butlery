@@ -42,8 +42,7 @@ import { hashUid } from "../shared/hash-uid";
  * Cap on one mirror's entry count.
  *
  * The list is chosen by OTHER PEOPLE — anyone may block this user and nothing
- * rate-limits it — so this is the roster cap's argument, not the poll-vote
- * one. Reaching it needs that many DISTINCT accounts, because the block
+ * rate-limits it. Reaching it needs that many DISTINCT accounts, because the block
  * document id is `{blockerId}_{blockedId}` and one blocker yields one row.
  *
  * Above the cap the mirror is written TRUNCATED and flagged, and the overflow

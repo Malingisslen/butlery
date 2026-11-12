@@ -1,7 +1,7 @@
 /**
  * BUT-2414 — emulator-backed test for the collection-group legs of
  * `exportErasureResidue`: `members` and `engagements` under `shared_content`
- * (with the document-id range), roster `participants`, `report_history`,
+ * (with the document-id range), `report_history`,
  * `activeUsers`, and the legacy `comments` and `ratings`.
  *
  * The emulator runs these queries for real, including the `shared_content`
@@ -73,10 +73,6 @@ async function run_(): Promise<void> {
     [`shared_content/${share}/x/y/members/${UID}`, { userId: UID }],
     [`shared_content/${share}/engagements/${UID}`, { userId: UID, action: "viewed" }],
     [`recipes/r-${RUN}/engagements/${UID}`, { userId: UID }],
-    [`conversations/c-${RUN}/participants/${UID}`, {
-      conversationId: `c-${RUN}`, participantId: UID, displayName: "Me",
-    }],
-    [`conversations/c-${RUN}/participants/${OTHER}`, { participantId: OTHER }],
     [`user_moderation/${OTHER}/report_history/rep-${RUN}`, {
       reportId: `rep-${RUN}`, reporterId: UID, reason: "spam",
     }],
@@ -89,7 +85,6 @@ async function run_(): Promise<void> {
   const names = [
     "share_memberships",
     "share_engagements",
-    "conversation_roster_rows",
     "report_history_as_reporter",
     "active_users",
     "legacy_comments",
@@ -119,12 +114,6 @@ async function run_(): Promise<void> {
     "engagements: only the row under shared_content",
     rows("share_engagements").length === 1 && rows("share_engagements")[0].shareId === share,
     dump("share_engagements"),
-  );
-  check(
-    "participants: the requester's roster row only",
-    rows("conversation_roster_rows").length === 1 &&
-      rows("conversation_roster_rows")[0].participantId === UID,
-    dump("conversation_roster_rows"),
   );
   check(
     "report_history: the reporter's row, without the reported person's uid",

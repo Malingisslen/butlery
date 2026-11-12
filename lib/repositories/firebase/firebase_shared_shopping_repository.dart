@@ -92,9 +92,6 @@ class FirebaseSharedShoppingRepository
   String get contentTypeName => 'shopping_list';
 
   @override
-  String get counterTypeKey => 'shared_shopping_lists';
-
-  @override
   String get resourceType => 'shared_shopping_list';
 
   @override
@@ -244,7 +241,6 @@ class FirebaseSharedShoppingRepository
   @override
   Future<void> markAsViewed(String listId, String userId) async {
     await addView(listId, userId);
-    await decrementUnreadCounter(userId);
   }
 
   /// Mark shared shopping list as joined by user
@@ -271,13 +267,6 @@ class FirebaseSharedShoppingRepository
   Future<void> deleteSharedShoppingList(String listId) async {
     // Delegate to base class method
     return await deleteSharedContent(listId);
-  }
-
-  /// Get unread shared shopping lists count for user
-  @override
-  Future<int> getUnreadCountForUser(String userId) async {
-    // Delegate to base class method
-    return await super.getUnreadCountForUser(userId);
   }
 
   /// Get joined shared shopping lists for user

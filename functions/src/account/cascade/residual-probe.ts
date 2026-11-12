@@ -36,7 +36,6 @@ import {
   probeSharedShoppingLists,
   probeSharedListAttribution,
 } from "./residual-probe-shopping-lists";
-import { probeConversationRoster } from "./residual-probe-conversations";
 
 /**
  * GDPR canary — query the highest-risk collections AFTER the cascade.
@@ -101,7 +100,6 @@ export async function probeResidualData(
   residual += await probeSharedListAttribution(db, uid);
   residual += await probeFeatureRetention(db, uid);
   residual += await probeRetentionAnalytics(db, uid);
-  residual += await probeConversationRoster(db, uid);
 
   if (
     residual > 0 &&

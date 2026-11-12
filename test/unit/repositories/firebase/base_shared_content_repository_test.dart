@@ -2,7 +2,7 @@
 ///
 /// The class is abstract; we exercise it via FirebaseSharedShoppingRepository
 /// (a concrete subclass) so the base-class behaviours under test — member /
-/// collaborator subcollections, denormalized counters, view/engagement/dismissal
+/// collaborator subcollections, view/engagement/dismissal
 /// metadata delegation, content lookup via collection-group query — get real
 /// coverage without owning the concrete class's specifics.
 ///
@@ -101,157 +101,6 @@ Future<void> _seedDoc(
 }
 
 void main() {
-  group('BaseSharedContentRepository — counter operations', () {
-    test('incrementUnreadCounter creates counter doc with merge', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-
-      await repo.incrementUnreadCounter(_userId);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(doc.exists, isTrue);
-      // FakeFirestore resolves FieldValue.increment(1) to 1 on first write.
-      expect(doc.data()?['unreadSharedShoppingLists'], 1);
-      expect(doc.data()?['totalSharedContent'], 1);
-    });
-
-    test('incrementUnreadCounter increments existing value', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.incrementUnreadCounter(_userId);
-      await repo.incrementUnreadCounter(_userId);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(doc.data()?['unreadSharedShoppingLists'], 2);
-      expect(doc.data()?['totalSharedContent'], 2);
-    });
-
-    test('decrementUnreadCounter no-ops when counter is missing', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-
-      await repo.decrementUnreadCounter(_userId);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      // Transaction reads then no-ops because exists==false → still no doc.
-      expect(doc.exists, isFalse);
-    });
-
-    test('decrementUnreadCounter no-ops when count is already 0', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Seed counter at 0.
-      await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .set({'unreadSharedShoppingLists': 0});
-
-      await repo.decrementUnreadCounter(_userId);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(doc.data()?['unreadSharedShoppingLists'], 0);
-    });
-
-    test('decrementUnreadCounter decrements when count > 0', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.incrementUnreadCounter(_userId);
-      await repo.incrementUnreadCounter(_userId);
-
-      await repo.decrementUnreadCounter(_userId);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(doc.data()?['unreadSharedShoppingLists'], 1);
-    });
-
-    test(
-      'decrementUnreadCounter rejects cross-user and leaves the counter',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final repo = _repo(firestore);
-        final counterRef = firestore
-            .collection('users')
-            .doc(_otherUserId)
-            .collection('counters')
-            .doc('shared_content');
-        await counterRef.set({'unreadSharedShoppingLists': 2});
-
-        await expectLater(
-          repo.decrementUnreadCounter(_otherUserId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-        expect(
-          (await counterRef.get()).data()?['unreadSharedShoppingLists'],
-          2,
-        );
-      },
-    );
-
-    test('getUnreadCountFromCounter returns 0 when doc missing', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-
-      expect(await repo.getUnreadCountFromCounter(_userId), 0);
-    });
-
-    test('getUnreadCountFromCounter returns stored value', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .set({'unreadSharedShoppingLists': 7});
-
-      expect(await repo.getUnreadCountFromCounter(_userId), 7);
-    });
-
-    test('getUnreadCountForUser delegates to counter doc for self', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.incrementUnreadCounter(_userId);
-
-      expect(await repo.getUnreadCountForUser(_userId), 1);
-    });
-
-    test('getUnreadCountForUser rejects access for another user', () async {
-      final repo = _repo(FakeFirebaseFirestore());
-
-      expect(
-        () => repo.getUnreadCountForUser(_otherUserId),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-  });
-
   group('BaseSharedContentRepository — createSharedContent', () {
     test('persists doc with contentType discriminator', () async {
       final firestore = FakeFirebaseFirestore();
@@ -345,7 +194,7 @@ void main() {
 
   group('BaseSharedContentRepository — members subcollection', () {
     test(
-      'addMember writes member doc + sharedToUserIds + counter bump',
+      'addMember writes member doc + sharedToUserIds and no counter',
       () async {
         final firestore = FakeFirebaseFirestore();
         final repo = _repo(firestore);
@@ -381,17 +230,18 @@ void main() {
             .collection('counters')
             .doc('shared_content')
             .get();
-        expect(counter.data()?['unreadSharedShoppingLists'], 1);
+        expect(
+          counter.exists,
+          isFalse,
+          reason: 'BUT-2443: sharing no longer writes an unread counter',
+        );
       },
     );
 
-    /// BUT-1152: re-adding an existing member must be idempotent w.r.t.
-    /// the unread counter and must preserve the original addedAt. Before
-    /// the fix, a second addMember overwrote addedAt with `now` and fired
-    /// incrementUnreadCounter again — inflating the recipient's badge and
-    /// reordering the member list. This pins both invariants.
+    /// BUT-1152: re-adding an existing member must preserve the original
+    /// addedAt; overwriting it with `now` reordered the member list.
     test(
-      'addMember on existing member preserves addedAt + skips counter bump',
+      'addMember on existing member preserves addedAt',
       () async {
         final firestore = FakeFirebaseFirestore();
         final repo = _repo(firestore);
@@ -446,11 +296,7 @@ void main() {
             .collection('counters')
             .doc('shared_content')
             .get();
-        expect(
-          counter.data()?['unreadSharedShoppingLists'],
-          1,
-          reason: 're-add must NOT bump the unread counter a second time',
-        );
+        expect(counter.exists, isFalse);
       },
     );
 
@@ -677,13 +523,11 @@ void main() {
     });
 
     test(
-      'markAsImportedOrJoined writes engagement + view + bumps counter',
+      'markAsImportedOrJoined writes engagement + view',
       () async {
         final firestore = FakeFirebaseFirestore();
         final repo = _repo(firestore);
         await _seedDoc(firestore, _list());
-        // Pre-bump counter so decrement has somewhere to land.
-        await repo.incrementUnreadCounter(_userId);
 
         await repo.markAsImportedOrJoined(_listId, _userId);
 
@@ -802,39 +646,6 @@ void main() {
 
       expect(
         () => repo.getSharedContentForUser(_otherUserId),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-
-    test(
-      'recalculateUnreadCount syncs counter to actual unread membership',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final repo = _repo(firestore);
-        // Two lists the user is a member of; neither viewed.
-        await _seedDoc(firestore, _list(id: 'l1'), members: [_userId]);
-        await _seedDoc(firestore, _list(id: 'l2'), members: [_userId]);
-
-        final count = await repo.recalculateUnreadCount(_userId);
-
-        // FirebaseSharedShoppingRepository.shouldShowToUser → true,
-        // isViewedByUser → false, so both contribute.
-        expect(count, 2);
-        final counter = await firestore
-            .collection('users')
-            .doc(_userId)
-            .collection('counters')
-            .doc('shared_content')
-            .get();
-        expect(counter.data()?['unreadSharedShoppingLists'], 2);
-      },
-    );
-
-    test('recalculateUnreadCount rejects cross-user', () async {
-      final repo = _repo(FakeFirebaseFirestore());
-
-      expect(
-        () => repo.recalculateUnreadCount(_otherUserId),
         throwsA(isA<PermissionDeniedException>()),
       );
     });

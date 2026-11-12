@@ -317,11 +317,6 @@ class SocialShoppingCoordinator
     return await markAsViewed(sharedShoppingListId);
   }
 
-  /// Get unread shopping list invitation count
-  Future<int> getUnreadShoppingListCount() async {
-    return await getUnreadCount();
-  }
-
   /// Get joined shopping lists for user
   Future<List<SharedShoppingList>> getJoinedShoppingLists() async {
     final currentUserId = this.currentUserId;

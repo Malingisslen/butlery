@@ -7002,3 +7002,18 @@ erasure), "Ja, men utan spår av anmälaren" (the reporter's erasure), "Ja, bygg
   report_evidence`) when a frozen copy names the person, with the latest three-year cap as
   `holdUntil`; `gdprCompliant` is untouched.
 - Privacy policy 1.35 names the row and the disclosure to authorities.
+
+## SUPERSEDES the conversation roster entries (BUT-2110, Malin, 2026-11-12)
+
+Retired:
+- "The conversation roster's bootstrap branch is GONE, and so is the read fallback"
+- "Account deletion erases `conversations/{id}/participants/{uid}` in TWO legs, and one leg
+  alone is not enough"
+- "`tryClearRoster` refuses an implausibly large roster and leaves the conversation STANDING"
+
+No code writes, deletes, sweeps, probes or exports `conversations/{id}/participants/{uid}`.
+`firestore.rules` has no block for the path, so every client read and write is denied.
+`deleteMessages`, the emptied-group step of `deleteChatGroupMemberships` and
+`removeChatGroupMember` delete the conversation without a roster check. butlery-prod held 0
+rows (measure-production.yml, run 43131610396). Rows left in staging are test data and are
+not cleaned.

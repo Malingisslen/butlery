@@ -2,6 +2,10 @@
 
 Se `tasks/but-2329-plan.md`. Godkänd av Malin via kort 2026-11-12.
 
+# Aktiv plan (2026-11-12): BUT-2110, ta bort chattens extra deltagarlista
+
+Se `tasks/but-2110-plan.md`.
+
 # Aktiv plan (2026-11-07): BUT-2399, dela inköpslista = alltid inbjudan
 
 Se `tasks/but-2399-plan.md`.

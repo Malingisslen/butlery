@@ -265,9 +265,7 @@ export async function deleteDeepLinks(
 }
 
 /**
- * BUT-2038. Same SHAPE as `MAX_ROSTER_SWEEP_ROWS`, not the same reason — that
- * cap exists because a PEER can seat rows keyed on this user. No such route
- * exists here: the create limb pins `userId == request.auth.uid`, so only the
+ * BUT-2038. The create limb pins `userId == request.auth.uid`, so only the
  * subject inflates their own count, which is the poll-vote cap's argument.
  *
  * What it bounds is the read: an unbounded `.get()` in a callable held to 540s
@@ -304,7 +302,7 @@ export async function deleteIngredientSuggestions(
   uid: string,
 ): Promise<boolean> {
   // BUT-2038: DECLINES above the cap rather than truncating, the same verdict
-  // as the roster and block sweeps. Truncating would half-erase somebody and
+  // as the block sweeps. Truncating would half-erase somebody and
   // report success; declining returns false, which lands in `failedCollections`
   // and reports `gdprCompliant: false` about itself.
   //

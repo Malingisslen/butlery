@@ -1,8 +1,7 @@
 /**
  * BUT-1838: the ONE writer of chat-group membership.
  *
- * "Who is in this group, and since when" is stored in three places, because
- * three different readers need it and none of them can read the others:
+ * "Who is in this group, and since when" is stored in two places:
  *
  * 1. `chat_groups/{groupId}.memberIds` — the SOURCE OF TRUTH. Server-written
  *    only; the gate runs before anything lands here.
@@ -10,19 +9,17 @@
  *    `firestore.rules` can actually see. The messages read rule already `get()`s
  *    this document, so putting the join stamp here costs nothing extra; putting
  *    it on the group instead would cost a second `get()` per message read.
- * 3. `conversations/{conversationId}/participants/{uid}` — the roster row the
- *    client lists, whose `joinedAt` is the same fact a third time.
  *
- * Three copies of one fact is the shape this repo has been burned by
+ * Two copies of one fact is the shape this repo has been burned by
  * repeatedly (BUT-1798's dual-spelt membership field, BUT-1732's `grants`).
  * The mitigation is not fewer readers — each one is load-bearing — it is that
  * every copy is written HERE, in one transaction, from one value. Nothing else
- * in the codebase may write `memberIds`, `participantIds`, `memberSince` or
- * `joinedAt`. If you find yourself adding a fourth writer, you are adding the
+ * in the codebase may write `memberIds`, `participantIds` or `memberSince`. If
+ * you find yourself adding a third writer, you are adding the
  * drift.
  *
  * The stamp is an explicit `Timestamp`, not `FieldValue.serverTimestamp()`, for
- * exactly that reason: one value is computed once and written to all three
+ * exactly that reason: one value is computed once and written to both
  * copies, so "they agree" is a property a test can assert byte-for-byte rather
  * than a property of how Firestore resolves sentinels.
  */
@@ -52,30 +49,6 @@ export interface ChatGroupMember {
   avatarUrl: string | null;
 }
 
-/** Roster-row shape. Mirrors `validParticipant()` in firestore.rules exactly. */
-function rosterRow(
-  conversationId: string,
-  member: ChatGroupMember,
-  joinedAt: admin.firestore.Timestamp,
-): Record<string, unknown> {
-  return {
-    conversationId,
-    participantId: member.uid,
-    displayName: member.displayName,
-    avatarUrl: member.avatarUrl,
-    joinedAt,
-    lastReadAt: joinedAt,
-    // DESCRIPTIVE, never authorization. `chat_groups.adminIds` is the only
-    // thing any code may consult to decide what someone may do; this field
-    // exists because the roster's `hasOnly` validator requires it and the
-    // client renders it. Same discipline as `socialData.grants` (BUT-1797):
-    // one authoritative list, one descriptive echo, and the echo is never read
-    // by a decision. Added 2026-08-13.
-    role: "member",
-    isMuted: false,
-  };
-}
-
 /**
  * Admins at birth. Anyone named who is not a member is dropped rather than
  * seated: an admin who is not in
@@ -95,7 +68,7 @@ function resolveAdminIds(
 }
 
 /**
- * Stages the three documents a brand-new group is made of.
+ * Stages the documents a brand-new group is made of.
  *
  * Lives beside `stageMemberAdditions` rather than in the create callable, so the
  * module's promise — every copy of "who is in this group, and since when" is
@@ -193,7 +166,7 @@ export function stageGroupCreation(
 }
 
 /**
- * The conversation half of a group: its document and one roster row per member.
+ * The conversation half of a group: its document.
  * BUT-1958: also used ALONE to rebuild a group conversation somebody deleted,
  * for the members the `chat_groups` document still lists.
  */
@@ -220,10 +193,6 @@ export function stageConversation(
     displayNames[member.uid] = member.displayName;
     avatarUrls[member.uid] = member.avatarUrl;
     stamps[member.uid] = joinedAt;
-    tx.set(
-      convoRef.collection(Collections.participants).doc(member.uid),
-      rosterRow(conversationId, member, joinedAt),
-    );
   }
 
   tx.set(convoRef, {
@@ -231,7 +200,7 @@ export function stageConversation(
     participantDisplayNames: displayNames,
     participantAvatarUrls: avatarUrls,
     lastReadTimestamps: stamps,
-    // The history cut-off, from the same value as the roster rows above.
+    // The history cut-off.
     memberSince: stamps,
     perUserSettings: {},
     // What tells `firestore.rules` this conversation is group-owned: the
@@ -248,7 +217,7 @@ export function stageConversation(
 }
 
 /**
- * Stages every write that adds members to a group, across all three documents.
+ * Stages every write that adds members to a group, across both documents.
  *
  * Callers pass a transaction because the group document must be read (for the
  * current membership and the member cap) in the same atomic step that writes it
@@ -314,10 +283,6 @@ export function stageMemberAdditions(
     // existing member's stamp is never restamped, or rejoining a group would
     // silently erase the history they already had access to.
     convoUpdate[`memberSince.${member.uid}`] = joinedAt;
-    tx.set(
-      convoRef.collection(Collections.participants).doc(member.uid),
-      rosterRow(conversationId, member, joinedAt),
-    );
   }
 
   tx.update(groupRef, groupUpdate);
@@ -325,7 +290,7 @@ export function stageMemberAdditions(
 }
 
 /**
- * Stages every write that removes one member, across all three documents.
+ * Stages every write that removes one member, across both documents.
  *
  * `memberSince` goes with them. Leaving it behind would keep a record of when a
  * departed person joined on a document the group still reads — the residual
@@ -386,5 +351,4 @@ export function stageMemberRemoval(
 
   tx.update(groupRef, groupUpdate);
   tx.update(convoRef, convoUpdate);
-  tx.delete(convoRef.collection(Collections.participants).doc(uid));
 }

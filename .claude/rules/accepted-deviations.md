@@ -73,6 +73,7 @@ files in the same edit. A deviation about the Art. 15 export also puts its ticke
   - Do not fold the two legs into one query, remove the cap, relax the decline-or-probe pair, reorder leg 1, turn its INCOMPLETE report into a success, or let a future edit delete the parent on a false answer from either leg.
   - The decline behaviour and the probe are FROZEN — they are the Art. 17 completeness signal.
 - `tryClearRoster` refuses an implausibly large roster and leaves the conversation STANDING … A sweep that cleans this up must clear the ROSTER FIRST (BUT-1838, 2026-08-15)
+- SUPERSEDES the three conversation-roster lines above (bootstrap branch, TWO legs, `tryClearRoster`): no code writes, deletes, sweeps, probes or exports `conversations/{id}/participants/{uid}`; `firestore.rules` has no block for it, so clients are denied; conversations are deleted without a roster check; butlery-prod held 0 rows; staging rows are test data, not cleaned (BUT-2110, Malin 2026-11-12)
 - A chat message's `sentAt` may sit at most ONE HOUR ahead of the server … Do not propose tightening it to minutes (BUT-1903, 2026-08-19)
 - A minor may be added to a group by any of their FRIENDS … Do not widen it silently, and do not narrow it to "the creator" (BUT-1838, 2026-08-13)
 - Other members' `memberSince` is STRIPPED from the conversations GDPR export; the requester's own is kept (BUT-1838, 2026-08-13)

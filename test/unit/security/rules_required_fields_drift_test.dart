@@ -86,12 +86,6 @@ final _requiredLists = <_Required>[
     writer: 'RecipeSuggestion.toFirestore',
   ),
   const _Required(
-    label: 'conversations/{id}/participants',
-    anchor: 'match /participants/{participantId}',
-    mustContain: 'participantId',
-    writer: 'ConversationParticipant.toFirestore',
-  ),
-  const _Required(
     label: 'recipe_comments create',
     anchor: 'match /recipe_comments/{commentId}',
     mustContain: 'authorId',
