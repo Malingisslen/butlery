@@ -9,6 +9,7 @@ import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/models/admin/ops_event.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -169,6 +170,9 @@ final reviewAdminHosts = <String, StateHost>{
           _report('2', 'spam', ContentType.comment),
         ]),
       );
+      when(
+        reports.watchFrozenEvidence,
+      ).thenAnswer((_) => const Stream<List<ReportEvidence>>.empty());
       when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
       when(
         () => reports.getReportEvidence(any(), round: any(named: 'round')),

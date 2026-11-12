@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:clock/clock.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' show FieldValue;
+import 'package:cloud_firestore/cloud_firestore.dart'
+    show FieldValue, Timestamp;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -220,9 +221,8 @@ class ReportService extends BaseService {
     int round = 0,
   }) {
     return getCachedOrExecute<({ReportEvidence? evidence})>(
-      // BUT-1528: a reopen deletes the copy and takes a new one, so each
-      // round is read on its own.
-      'reportEvidence_${reportId}_$round',
+      // BUT-1528: each round is read on its own.
+      _evidenceCacheKey(reportId, round),
       () async {
         final snap = await _firestore
             .collection(FirestoreCollections.reportEvidence)
@@ -232,6 +232,33 @@ class ReportService extends BaseService {
       },
       cacheDuration: const Duration(minutes: 1),
     );
+  }
+
+  static String _evidenceCacheKey(String reportId, int round) =>
+      'reportEvidence_${reportId}_$round';
+
+  /// A freeze, extension or release changes the copy; the next read must
+  /// not come from the one-minute cache.
+  void forgetReportEvidence(String reportId, {int round = 0}) =>
+      clearCache(_evidenceCacheKey(reportId, round));
+
+  /// Copies a moderator keeps past their case, the soonest to expire first.
+  Stream<List<ReportEvidence>> watchFrozenEvidence() {
+    return _firestore
+        .collection(FirestoreCollections.reportEvidence)
+        .where(
+          'frozen.until',
+          isGreaterThan: Timestamp.fromMillisecondsSinceEpoch(0),
+        )
+        .orderBy('frozen.until')
+        .limit(100)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(ReportEvidence.fromFirestore)
+              .whereType<ReportEvidence>()
+              .toList(),
+        );
   }
 
   /// Whether [userId]'s account is flagged as a minor. Reads the

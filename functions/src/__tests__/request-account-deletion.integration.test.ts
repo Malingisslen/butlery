@@ -824,6 +824,15 @@ async function seedFixtures(): Promise<void> {
   await db.collection("ingredient_change_requests").doc(`icr-control-${RUN}`)
     .set({ ingredientId: "gurka", status: "withdrawn", createdBy: OTHER, withdrawnBy: OTHER });
 
+  // --- BUT-2329: a frozen report copy naming target is kept and disclosed ---
+  const firstFrozen = admin.firestore.Timestamp.fromDate(new Date("2026-11-01T00:00:00Z"));
+  await db.collection("report_evidence").doc(`ev-frozen-${RUN}`).set({
+    contentOwnerId: TARGET,
+    outcome: "captured",
+    text: { content: "kvar" },
+    frozen: { reason: "legal_claim", firstFrozenAt: firstFrozen, frozenAt: firstFrozen },
+  });
+
   // --- users/{target} root doc (deleted last) ---
   await db.collection("users").doc(TARGET).set({ displayName: "Target" });
 }
@@ -2001,7 +2010,16 @@ let RESULT: {
   deletedCollections: string[];
   failedCollections: string[];
   errors: string[];
+  retained: Array<{ resourceType: string; holdUntil: string }>;
 } | null = null;
+
+test("report_evidence: a frozen copy is kept and named in retained", async () => {
+  const kept = await db.collection("report_evidence").doc(`ev-frozen-${RUN}`).get();
+  assert(kept.exists, "frozen copy must survive the erasure");
+  const record = RESULT!.retained.find((r) => r.resourceType === "report_evidence");
+  assert(record !== undefined, `expected a report_evidence record, got ${JSON.stringify(RESULT!.retained)}`);
+  assert(record!.holdUntil.startsWith("2029-10-31"), `three-year cap, got ${record!.holdUntil}`);
+});
 
 // I21: the cascade reported success with no failed collections.
 test("cascade: completed with no failed collections", async () => {

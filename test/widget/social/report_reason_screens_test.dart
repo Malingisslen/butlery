@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -91,6 +92,9 @@ void main() {
       tester,
     ) async {
       when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
+      when(
+        () => reports.watchFrozenEvidence(),
+      ).thenAnswer((_) => const Stream<List<ReportEvidence>>.empty());
       when(() => reports.watchOpenReports()).thenAnswer(
         (_) => Stream.value([
           _report('r1', 'abuse'),

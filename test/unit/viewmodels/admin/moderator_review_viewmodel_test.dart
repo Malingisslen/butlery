@@ -17,12 +17,16 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/viewmodels/admin/freeze_result.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 
 import '../../../test_support/base_unit_test.dart';
 
 class _MockReportService extends Mock implements ReportService {}
+
+class _MockAppealsService extends Mock implements ModerationAppealsService {}
 
 ContentReport _report({required ContentType contentType}) => ContentReport(
   id: 'r1',
@@ -35,6 +39,7 @@ ContentReport _report({required ContentType contentType}) => ContentReport(
 );
 
 void main() {
+  _freezeEvidenceTests();
   group('ModeratorReviewViewModel.takeDown dispatch', () {
     late _MockReportService mockService;
     late ModeratorReviewViewModel vm;
@@ -566,6 +571,125 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(vm.isLoading, isFalse);
       expect(vm.error, isNull);
+    });
+  });
+}
+
+// BUT-2329: keeping a copy longer re-reads it for the card.
+void _freezeEvidenceTests() {
+  group('ModeratorReviewViewModel.freezeEvidence', () {
+    late _MockReportService reports;
+    late _MockAppealsService appeals;
+    late ModeratorReviewViewModel vm;
+    late StreamController<List<ContentReport>> stream;
+
+    final report = ContentReport(
+      id: 'r1',
+      reporterId: 'reporter',
+      contentType: ContentType.recipe,
+      contentId: 'c1',
+      contentOwnerId: 'owner',
+      reason: 'spam',
+      createdAt: DateTime(2026, 4, 26),
+      reviewRound: 2,
+    );
+
+    ReportEvidence copy({FrozenEvidence? frozen}) => ReportEvidence(
+      reportId: 'r1',
+      outcome: EvidenceOutcome.captured,
+      frozen: frozen,
+    );
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+      registerFallbackValue(FreezeAction.freeze);
+    });
+
+    setUp(() async {
+      reports = _MockReportService();
+      appeals = _MockAppealsService();
+      stream = StreamController<List<ContentReport>>.broadcast();
+      when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
+      when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
+      when(
+        () => reports.forgetReportEvidence(any(), round: any(named: 'round')),
+      ).thenReturn(null);
+      // First read: not kept. Re-read after the freeze: kept.
+      var reads = 0;
+      when(
+        () => reports.getReportEvidence('r1', round: 2),
+      ).thenAnswer((_) async {
+        reads++;
+        return (
+          evidence: reads == 1
+              ? copy()
+              : copy(
+                  frozen: FrozenEvidence(
+                    reason: FreezeReason.police,
+                    until: DateTime.utc(2027, 10, 9),
+                  ),
+                ),
+        );
+      });
+      vm = ModeratorReviewViewModel(
+        reportService: reports,
+        appealsService: appeals,
+      );
+      vm.startListening();
+      stream.add([report]);
+      await pumpEventQueue();
+    });
+
+    tearDown(() async {
+      vm.dispose();
+      await stream.close();
+    });
+
+    test(
+      'success forgets the report round and shows the re-read copy',
+      () async {
+        expect(
+          (vm.evidenceFor(report) as ReportEvidenceLoaded).evidence.isFrozen,
+          isFalse,
+        );
+        when(
+          () => appeals.freezeEvidence(
+            'r1',
+            action: FreezeAction.freeze,
+            reason: FreezeReason.threat,
+          ),
+        ).thenAnswer(
+          (_) async => FreezeOutcome(until: DateTime.utc(2027, 10, 9)),
+        );
+
+        final result = await vm.freezeEvidence(report, FreezeReason.threat);
+
+        expect(result, isA<FreezeSucceeded>());
+        verify(() => reports.forgetReportEvidence('r1', round: 2)).called(1);
+        final state = vm.evidenceFor(report) as ReportEvidenceLoaded;
+        expect(state.evidence.isFrozen, isTrue);
+      },
+    );
+
+    test('a failure forgets nothing and keeps the card as it was', () async {
+      when(
+        () => appeals.freezeEvidence(
+          any(),
+          action: any(named: 'action'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenThrow(Exception('network'));
+
+      final result = await vm.freezeEvidence(report, FreezeReason.threat);
+
+      expect(result, isA<FreezeFailed>());
+      verifyNever(
+        () => reports.forgetReportEvidence(any(), round: any(named: 'round')),
+      );
+      expect(
+        (vm.evidenceFor(report) as ReportEvidenceLoaded).evidence.isFrozen,
+        isFalse,
+      );
     });
   });
 }

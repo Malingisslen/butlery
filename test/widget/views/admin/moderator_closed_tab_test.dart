@@ -80,6 +80,9 @@ void main() {
     stream = StreamController<List<ContentReport>>.broadcast();
     when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
+    when(
+      () => reports.watchFrozenEvidence(),
+    ).thenAnswer((_) => const Stream<List<ReportEvidence>>.empty());
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
     when(
       () => reports.getReportEvidence(any(), round: any(named: 'round')),

@@ -89,6 +89,8 @@ class _PendingNoticeGateState extends State<PendingNoticeGate> {
         provisional: notice.provisional,
         reviewKept: notice.reviewKept,
         ownReportKept: notice.ownReportKept,
+        frozenCopyKept: notice.frozenCopyKept,
+        frozenCopyUntil: notice.frozenCopyUntil,
         startCollapsed: !live,
       );
       unawaited(

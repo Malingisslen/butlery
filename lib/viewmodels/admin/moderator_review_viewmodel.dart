@@ -8,7 +8,9 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/viewmodels/admin/freeze_result.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// What the review card knows about a report's saved text copy.
@@ -38,6 +40,7 @@ class ReportEvidenceLoaded extends ReportEvidenceState {
 /// filtered to open reports (status != 'closed').
 class ModeratorReviewViewModel extends BaseViewModel {
   final ReportService _reportService;
+  final ModerationAppealsService? _appealsService;
 
   StreamSubscription<List<ContentReport>>? _reportsSub;
   List<ContentReport> _reports = const [];
@@ -53,8 +56,11 @@ class ModeratorReviewViewModel extends BaseViewModel {
   final Map<String, ReportEvidenceState> _evidence = {};
   final Set<String> _evidenceLookupsInFlight = {};
 
-  ModeratorReviewViewModel({ReportService? reportService})
-    : _reportService = reportService ?? ServiceLocator.get<ReportService>();
+  ModeratorReviewViewModel({
+    ReportService? reportService,
+    ModerationAppealsService? appealsService,
+  }) : _reportService = reportService ?? ServiceLocator.get<ReportService>(),
+       _appealsService = appealsService;
 
   List<ContentReport> get reports => _reports;
 
@@ -101,12 +107,42 @@ class ModeratorReviewViewModel extends BaseViewModel {
   bool isMinorOwner(ContentReport report) =>
       _minorOwners[report.contentOwnerId] ?? false;
 
-  // A reopened report gets a fresh copy of the content, so each round has
-  // its own entry.
+  // Each round has its own entry.
   static String _evidenceKey(ContentReport r) => '${r.id}#${r.reviewRound}';
 
   ReportEvidenceState evidenceFor(ContentReport report) =>
       _evidence[_evidenceKey(report)] ?? const ReportEvidenceLoading();
+
+  /// Keeps the copy past the case, then re-reads it so the card shows the
+  /// hold. A refusal is re-read too: it usually means the copy changed.
+  Future<FreezeResult> freezeEvidence(
+    ContentReport report,
+    FreezeReason reason,
+  ) async {
+    if (isDisposed) return const FreezeFailed();
+    final result = await runFreeze(
+      _appealsService ?? ServiceLocator.get<ModerationAppealsService>(),
+      report.id,
+      action: FreezeAction.freeze,
+      reason: reason,
+    );
+    if (result is! FreezeFailed) await _refreshEvidence(report);
+    return result;
+  }
+
+  Future<void> _refreshEvidence(ContentReport report) async {
+    _reportService.forgetReportEvidence(report.id, round: report.reviewRound);
+    final result = await _reportService.getReportEvidence(
+      report.id,
+      round: report.reviewRound,
+    );
+    if (isDisposed || result == null) return;
+    final evidence = result.evidence;
+    _evidence[_evidenceKey(report)] = evidence == null
+        ? const ReportEvidenceNone()
+        : ReportEvidenceLoaded(evidence);
+    notifyListeners();
+  }
 
   Future<void> _resolveEvidence(List<ContentReport> reports) async {
     final pending = {

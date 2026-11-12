@@ -68,6 +68,8 @@ class PendingRetentionNoticeStore {
     required bool provisional,
     bool reviewKept = true,
     bool ownReportKept = false,
+    bool frozenCopyKept = false,
+    DateTime? frozenCopyUntil,
     DateTime? now,
   }) async {
     try {
@@ -79,6 +81,8 @@ class PendingRetentionNoticeStore {
           'provisional': provisional,
           'reviewKept': reviewKept,
           'ownReportKept': ownReportKept,
+          'frozenCopyKept': frozenCopyKept,
+          'frozenCopyUntil': frozenCopyUntil?.toIso8601String(),
           'writtenAt': (now ?? DateTime.now()).toIso8601String(),
         }),
       );
@@ -107,7 +111,16 @@ class PendingRetentionNoticeStore {
           ? null
           : DateTime.parse(holdUntilRaw);
 
-      final expiresAt = holdUntil ?? writtenAt.add(fallbackLifetime);
+      final frozenUntilRaw = map['frozenCopyUntil'] as String?;
+      final frozenCopyUntil = frozenUntilRaw == null
+          ? null
+          : DateTime.parse(frozenUntilRaw);
+
+      // Whichever hold lasts longest keeps the notice alive; a frozen copy's
+      // date must not cut a review's short, nor the reverse.
+      final expiresAt =
+          _laterOf(holdUntil, frozenCopyUntil) ??
+          writtenAt.add(fallbackLifetime);
       if (!(now ?? DateTime.now()).isBefore(expiresAt)) return null;
 
       return PendingRetentionNotice(
@@ -116,11 +129,19 @@ class PendingRetentionNoticeStore {
         // A record written before these fields existed was always a review.
         reviewKept: map['reviewKept'] as bool? ?? true,
         ownReportKept: map['ownReportKept'] as bool? ?? false,
+        frozenCopyKept: map['frozenCopyKept'] as bool? ?? false,
+        frozenCopyUntil: frozenCopyUntil,
       );
     } catch (e) {
       AppLogger.error('Could not read the retention notice', e);
       return null;
     }
+  }
+
+  static DateTime? _laterOf(DateTime? a, DateTime? b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    return a.isAfter(b) ? a : b;
   }
 
   /// Forget the notice. Best-effort, for the reason [write] is.
@@ -141,6 +162,8 @@ class PendingRetentionNotice {
     required this.provisional,
     this.reviewKept = true,
     this.ownReportKept = false,
+    this.frozenCopyKept = false,
+    this.frozenCopyUntil,
   });
 
   /// When the hold lifts at the latest. Absent when the server sent no
@@ -157,4 +180,10 @@ class PendingRetentionNotice {
 
   /// A report the person filed was kept.
   final bool ownReportKept;
+
+  /// A saved copy of reported content was kept (BUT-2329).
+  final bool frozenCopyKept;
+
+  /// When that copy is deleted at the latest; null says "at most three years".
+  final DateTime? frozenCopyUntil;
 }

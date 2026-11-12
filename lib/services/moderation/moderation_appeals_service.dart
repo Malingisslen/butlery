@@ -6,6 +6,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/models/social/closed_report.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 
 /// Why an appeal was refused, mapped from the callable's error codes.
 enum AppealFailure {
@@ -45,6 +46,24 @@ class ReopenReportException implements Exception {
   String toString() => 'ReopenReportException($block)';
 }
 
+/// `freezeReportEvidence` was refused; [block] is null for any other failure.
+class FreezeEvidenceException implements Exception {
+  const FreezeEvidenceException(this.block);
+  final FreezeBlock? block;
+
+  @override
+  String toString() => 'FreezeEvidenceException($block)';
+}
+
+/// What the server did: [until] is the hold's new end for freeze and extend;
+/// [deleted] is true when a release removed the copy because its case is
+/// already closed.
+class FreezeOutcome {
+  const FreezeOutcome({this.until, this.deleted = false});
+  final DateTime? until;
+  final bool deleted;
+}
+
 /// The images the automatic check quarantined for one owner appeal, decoded;
 /// [omitted] counts the ones the server could not send.
 class QuarantinedImages {
@@ -77,7 +96,7 @@ class QuarantinedImages {
 
 /// The appeal callables: `submitAppeal` for the two parties, and the
 /// admin-only `listOpenAppeals` / `answerAppeal` / `getQuarantinedImages`, `listClosedReports` and
-/// `reopenReport`.
+/// `reopenReport` and `freezeReportEvidence`.
 class ModerationAppealsService extends BaseService {
   ModerationAppealsService({required FirebaseFunctions functions})
     : _functions = functions;
@@ -213,4 +232,32 @@ class ModerationAppealsService extends BaseService {
 
   static ReopenBlock? reopenBlockFor(FirebaseFunctionsException e) =>
       e.code == 'failed-precondition' ? ReopenBlock.fromWire(e.message) : null;
+
+  /// [reason] is required by the server for freeze and extend. Throws
+  /// [FreezeEvidenceException] on a refusal.
+  Future<FreezeOutcome> freezeEvidence(
+    String reportId, {
+    required FreezeAction action,
+    FreezeReason? reason,
+  }) async {
+    try {
+      final result = await _callable('freezeReportEvidence')
+          .call<Map<dynamic, dynamic>>({
+            'reportId': reportId,
+            'action': action.wireName,
+            if (reason != null) 'reason': reason.wireName,
+          });
+      final until = result.data['until'];
+      final deleted = result.data['deleted'];
+      return FreezeOutcome(
+        until: until is String ? DateTime.tryParse(until) : null,
+        deleted: deleted is bool && deleted,
+      );
+    } on FirebaseFunctionsException catch (e) {
+      throw FreezeEvidenceException(freezeBlockFor(e));
+    }
+  }
+
+  static FreezeBlock? freezeBlockFor(FirebaseFunctionsException e) =>
+      e.code == 'failed-precondition' ? FreezeBlock.fromWire(e.message) : null;
 }

@@ -33743,6 +33743,198 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Laddar kanalräkningen …'**
   String get adminAcquisitionLoading;
+
+  /// Button on a saved copy: keep it past the case (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara längre'**
+  String get moderatorKeepLonger;
+
+  /// Muted line on a copy kept past the case (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparas till {date} · {reason}'**
+  String moderatorFrozenUntilLine(String date, String reason);
+
+  /// Reason for keeping a copy longer (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Polis eller myndighet'**
+  String get moderatorFreezeReasonPolice;
+
+  /// Reason for keeping a copy longer (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hot mot någons säkerhet'**
+  String get moderatorFreezeReasonThreat;
+
+  /// Reason for keeping a copy longer (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Rättslig tvist'**
+  String get moderatorFreezeReasonLegalClaim;
+
+  /// Reason written by a newer server than this app (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänt skäl'**
+  String get moderatorFreezeReasonUnknown;
+
+  /// Title of the sheet and its confirm button (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara kopian längre'**
+  String get moderatorFreezeSheetTitle;
+
+  /// Help text in the keep-longer sheet (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian sparas ett år, även om ärendet stängs eller kontot raderas. Du kan förlänga ett år i taget, högst tre år.'**
+  String get moderatorFreezeSheetHelp;
+
+  /// Overline above the reason choices (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skäl'**
+  String get moderatorFreezeChooseReason;
+
+  /// Snackbar after keeping or extending a copy (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian sparas till {date}'**
+  String moderatorFreezeSaved(String date);
+
+  /// Failure snackbar, what happened (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte ändra hur länge kopian sparas.'**
+  String get moderatorFreezeFailed;
+
+  /// Failure snackbar, what is kept (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian är som den var.'**
+  String get moderatorFreezeFailedKept;
+
+  /// freezeBlock no_copy (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns ingen kopia att spara.'**
+  String get moderatorFreezeBlockNoCopy;
+
+  /// freezeBlock not_captured (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen text sparades för den här anmälan, så det finns inget att spara längre.'**
+  String get moderatorFreezeBlockNotCaptured;
+
+  /// freezeBlock already_frozen (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian sparas redan längre.'**
+  String get moderatorFreezeBlockAlreadyFrozen;
+
+  /// freezeBlock not_frozen (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian sparas inte längre än vanligt.'**
+  String get moderatorFreezeBlockNotFrozen;
+
+  /// freezeBlock at_cap (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kan inte sparas längre än tre år.'**
+  String get moderatorFreezeBlockAtCap;
+
+  /// Fourth moderator tab, copies kept past their case (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparade ({count})'**
+  String moderatorTabFrozen(int count);
+
+  /// Empty state of the Sparade tab (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade kopior'**
+  String get moderatorFrozenEmpty;
+
+  /// Error state of the Sparade tab (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte hämta de sparade kopiorna.'**
+  String get moderatorFrozenLoadFailed;
+
+  /// Button and sheet confirm on a kept copy (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förläng ett år'**
+  String get moderatorFrozenExtend;
+
+  /// Button and confirm on a kept copy (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta spara'**
+  String get moderatorFrozenRelease;
+
+  /// Confirm dialog title (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta spara kopian?'**
+  String get moderatorFrozenReleaseTitle;
+
+  /// Confirm dialog body (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian följer sedan vanliga regler igen. Om ärendet redan är stängt raderas den.'**
+  String get moderatorFrozenReleaseBody;
+
+  /// Snackbar after release when the case was closed (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian raderas'**
+  String get moderatorFrozenReleasedDeleted;
+
+  /// Snackbar after release when the case is open (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian följer vanliga regler igen'**
+  String get moderatorFrozenReleasedKept;
+
+  /// WHAT line when only a frozen report copy was kept (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'En sak har sparats: en kopia av innehåll som anmälts.'**
+  String get profileDeletionNoticeWhatFrozen;
+
+  /// WHY line when only a frozen report copy was kept (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför: kopian behövs i ett ärende om säkerhet eller rättsliga anspråk.'**
+  String get profileDeletionNoticeWhyFrozen;
+
+  /// HOW LONG line when only a frozen copy was kept (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: senast {date}.'**
+  String profileDeletionNoticeHowLongFrozen(String date);
+
+  /// HOW LONG line for a frozen copy with no date (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur länge: högst tre år.'**
+  String get profileDeletionNoticeHowLongFrozenUnknown;
+
+  /// Extra line when a frozen copy is kept together with other records (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, senast {date}.'**
+  String profileDeletionNoticeExtraFrozen(String date);
+
+  /// Extra line for a frozen copy with no date (BUT-2329).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, högst tre år.'**
+  String get profileDeletionNoticeExtraFrozenUnknown;
 }
 
 class _AppLocalizationsDelegate

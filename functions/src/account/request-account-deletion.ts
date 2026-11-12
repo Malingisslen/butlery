@@ -95,6 +95,7 @@ import {
   userStoragePrefixes,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { frozenEvidenceRetained } from "../moderation/freeze-report-evidence";
 import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
 import { cleanUserFromLearnedAliases } from "./cascade/learned-aliases";
 import { scrubIngredientChangeRequestAuthors } from "./cascade/ingredient-change-requests";
@@ -338,6 +339,14 @@ export async function runAccountDeletionWithDeps(
     // it would let the steps below destroy what the hold decided to keep.
     result.retained = outcome.retained;
     return outcome.ok;
+  });
+  // BUT-2329: a copy a moderator froze stays whatever the erasure does, and
+  // the person is owed the notice for it. Not a collection name, for the
+  // reason given on the step above.
+  await runStep("frozen_report_evidence_evaluated", result, async () => {
+    const record = await frozenEvidenceRetained(database, uid);
+    if (record) result.retained.push(record);
+    return true;
   });
   // Scoped to the resource rather than to `retained` being non-empty — see the
   // note on `held` in `probeResidualData`, which must agree with this line.
