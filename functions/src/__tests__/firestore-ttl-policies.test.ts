@@ -205,6 +205,15 @@ const TARGETS: {
   // behind "Återställ". One writer: the model's
   // `toFirestore`, which RealtimeSyncService stores through the repository.
   // firestore.rules pins expiresAt to overwrittenAt + 30 d on create.
+  // BUT-1517 — the pooled-ratings alarm's daily vote counts (pool keys and
+  // numbers only), kept long enough for the 28-day baseline.
+  {
+    group: "pool_velocity_days",
+    field: "expireAt",
+    retention: "35d",
+    writer: "functions/src/analytics/detect-pool-velocity.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+  },
   {
     group: "overwritten_versions",
     field: "expiresAt",
@@ -391,6 +400,7 @@ const EXPECTED_TTL_GROUPS = [
   "overwritten_versions",
   "parse_corrections_v2",
   "parse_events",
+  "pool_velocity_days",
   "parsing_corrections",
   "report_evidence",
   "report_history",

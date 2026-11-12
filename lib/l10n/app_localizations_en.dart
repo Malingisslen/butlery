@@ -22284,4 +22284,157 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileDeletionNoticeExtraFrozenUnknown =>
       'In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, for three years at most.';
+
+  @override
+  String get adminNavPools => 'Ratings';
+
+  @override
+  String get adminAnomalyMetricPoolVelocity => 'Rating rush';
+
+  @override
+  String get adminAnomalyMetricPoolSkew => 'Ratings pull the average';
+
+  @override
+  String get adminAnomalyMetricPoolNew => 'New dish got five votes fast';
+
+  @override
+  String get adminAnomalyMetricPoolOverflow =>
+      'Rating alarm did not read every vote';
+
+  @override
+  String get adminAnomalyReviewPool => 'Review';
+
+  @override
+  String get adminPoolTitle => 'Ratings';
+
+  @override
+  String get adminPoolIntro =>
+      'Paste the key from the warning to see the numbers. There is no information about individual people here.';
+
+  @override
+  String get adminPoolKeyLabel => 'Rating key';
+
+  @override
+  String get adminPoolShow => 'Show';
+
+  @override
+  String get adminPoolInvalidKey =>
+      'The key should look like v1: followed by digits and the letters a-f. Copy it from the alert.';
+
+  @override
+  String get adminPoolLoadFailed => 'Could not load the rating. Try again.';
+
+  @override
+  String get adminPoolNotAllowed =>
+      'You are not allowed to view or change ratings.';
+
+  @override
+  String get adminPoolRateLimited =>
+      'Too many calls in a short time. Wait a moment and try again.';
+
+  @override
+  String get adminPoolVotes => 'Number of votes';
+
+  @override
+  String get adminPoolAverage => 'Average';
+
+  @override
+  String get adminPoolDistribution => 'Votes per star';
+
+  @override
+  String adminPoolStarsRow(int stars) {
+    String _temp0 = intl.Intl.pluralLogic(
+      stars,
+      locale: localeName,
+      other: '$stars stars',
+      one: '1 star',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminPoolVotes24h => 'Votes in the last day';
+
+  @override
+  String get adminPoolVotes7d => 'Votes in the last 7 days';
+
+  @override
+  String adminPoolYoungShare(int percent, int sampled) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sampled,
+      locale: localeName,
+      other: '$sampled votes',
+      one: 'vote',
+    );
+    return '$percent% new accounts (under 7 days) of the latest $_temp0';
+  }
+
+  @override
+  String adminPoolUnverifiedShare(int percent, int sampled) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sampled,
+      locale: localeName,
+      other: '$sampled votes',
+      one: 'vote',
+    );
+    return '$percent% unverified accounts of the latest $_temp0';
+  }
+
+  @override
+  String get adminPoolNoShares => 'No votes to work out shares from.';
+
+  @override
+  String get adminPoolStateActive => 'The rating is shown';
+
+  @override
+  String get adminPoolStateQuarantined => 'The rating is switched off';
+
+  @override
+  String adminPoolReason(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get adminPoolReasonBrigading => 'Cheating';
+
+  @override
+  String get adminPoolReasonBadMerge => 'Wrong merge';
+
+  @override
+  String get adminPoolReasonOther => 'Other';
+
+  @override
+  String get adminPoolQuarantine => 'Switch off the rating';
+
+  @override
+  String get adminPoolLift => 'Switch the rating back on';
+
+  @override
+  String get adminPoolReasonTitle => 'Why are you switching off the rating?';
+
+  @override
+  String get adminPoolQuarantineConfirmTitle => 'Switch off the rating?';
+
+  @override
+  String get adminPoolQuarantineConfirmBody =>
+      'The rating is hidden from everyone at once. The votes are kept and you can switch the rating back on. Honest votes in the same rating are hidden too.';
+
+  @override
+  String get adminPoolLiftConfirmTitle => 'Switch the rating back on?';
+
+  @override
+  String get adminPoolLiftConfirmBody =>
+      'The rating is shown to everyone again and recalculated from all votes.';
+
+  @override
+  String get adminPoolChangeFailed => 'Could not change the rating. Try again.';
+
+  @override
+  String get adminPoolQuarantined => 'The rating is switched off.';
+
+  @override
+  String get adminPoolLifted => 'The rating is switched back on.';
+
+  @override
+  String get adminPoolLoading => 'Fetching the rating …';
 }

@@ -26,7 +26,11 @@ if (!admin.apps.length) {
 import * as fs from "fs";
 import * as path from "path";
 
-import { updatePooledRatingStats, CANONICAL_STATS_COLLECTION } from "../ratings/update-pooled-rating-stats";
+import {
+  updatePooledRatingStats,
+  CANONICAL_STATS_COLLECTION,
+  POOL_QUARANTINE_COLLECTION,
+} from "../ratings/update-pooled-rating-stats";
 import { drainPoolAggregationQueue, POOL_EVENT_TRIGGER_PATH, __test__ } from "../ratings/pool-aggregation";
 import { CANONICAL_EVENTS_SUBCOLLECTION } from "../ratings/canonical-rating-aggregation";
 
@@ -292,6 +296,68 @@ async function emptyPoolWritesZero(): Promise<void> {
   );
 }
 
+async function quarantinedPoolPublishesEmpty(): Promise<void> {
+  // Real votes AND a stale published number: the zero must come from the
+  // quarantine branch, not from an empty pool.
+  const db = new FakeFirestore();
+  for (let i = 0; i < 6; i++) seedEvent(db, `u${i}`, POOL, 5);
+  db.store.set(`${CANONICAL_STATS_COLLECTION}/${POOL}`, { count: 6, average: 5 });
+  db.store.set(`${POOL_QUARANTINE_COLLECTION}/${POOL}`, { quarantined: true });
+
+  await updatePooledRatingStats(POOL, db as never);
+
+  const stats = db.store.get(`${CANONICAL_STATS_COLLECTION}/${POOL}`);
+  record(
+    "quarantine: quarantined pool with 6 real votes -> count 0 / average null written over the old number",
+    stats?.count === 0 && stats?.average === null && typeof stats?.updatedAt !== "undefined",
+    JSON.stringify(stats)
+  );
+  record(
+    "quarantine: no aggregate query and no fold issued for a quarantined pool",
+    db.aggregateCalls === 0 && db.foldGetCalls === 0,
+    `aggregateCalls=${db.aggregateCalls} foldGetCalls=${db.foldGetCalls}`
+  );
+}
+
+async function notQuarantinedAggregatesNormally(): Promise<void> {
+  const cases: Array<[string, Record<string, unknown> | null, string?]> = [
+    ["quarantined:false", { quarantined: false }],
+    ["doc without a quarantined key", { poolKey: POOL }],
+    ["another pool quarantined", null, OTHER],
+  ];
+  for (const [label, doc, quarantinedKey] of cases) {
+    const db = new FakeFirestore();
+    for (let i = 0; i < 5; i++) seedEvent(db, `u${i}`, POOL, 4);
+    if (doc) db.store.set(`${POOL_QUARANTINE_COLLECTION}/${POOL}`, doc);
+    if (quarantinedKey) db.store.set(`${POOL_QUARANTINE_COLLECTION}/${quarantinedKey}`, { quarantined: true });
+
+    await updatePooledRatingStats(POOL, db as never);
+
+    const stats = db.store.get(`${CANONICAL_STATS_COLLECTION}/${POOL}`);
+    record(
+      `quarantine: ${label} -> normal aggregate (count 5, average 4, one aggregate query)`,
+      stats?.count === 5 && stats?.average === 4 && db.aggregateCalls === 1 && db.foldGetCalls === 0,
+      `${JSON.stringify(stats)} aggregateCalls=${db.aggregateCalls}`
+    );
+  }
+}
+
+async function liftedQuarantineRestoresNumber(): Promise<void> {
+  const db = new FakeFirestore();
+  for (let i = 0; i < 5; i++) seedEvent(db, `u${i}`, POOL, 2);
+  db.store.set(`${POOL_QUARANTINE_COLLECTION}/${POOL}`, { quarantined: true });
+  await updatePooledRatingStats(POOL, db as never);
+  const hidden = db.store.get(`${CANONICAL_STATS_COLLECTION}/${POOL}`);
+  db.store.delete(`${POOL_QUARANTINE_COLLECTION}/${POOL}`);
+  await updatePooledRatingStats(POOL, db as never);
+  const restored = db.store.get(`${CANONICAL_STATS_COLLECTION}/${POOL}`);
+  record(
+    "quarantine: lifting it and re-running restores the real number (count 5, average 2)",
+    hidden?.count === 0 && restored?.count === 5 && restored?.average === 2,
+    `hidden=${JSON.stringify(hidden)} restored=${JSON.stringify(restored)}`
+  );
+}
+
 async function drainRunsAggregatorPerMarker(): Promise<void> {
   // Two pending markers → aggregator called for each, markers claimed (deleted).
   const db = new FakeFirestore();
@@ -448,6 +514,9 @@ async function runAll(): Promise<void> {
   await statsCorrectnessSmallPool();
   await aggregateNotFold();
   await emptyPoolWritesZero();
+  await quarantinedPoolPublishesEmpty();
+  await notQuarantinedAggregatesNormally();
+  await liftedQuarantineRestoresNumber();
   await drainRunsAggregatorPerMarker();
   await drainUnwiredFailsLoudly();
   await productionWiringGuard();

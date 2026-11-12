@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 12 november 2026
-**Version:** 1.35
+**Version:** 1.36
 
 ---
 
@@ -168,6 +168,13 @@ siffrorna.**
   underliggande betyget.
 - **Familjens privata betyg räknas aldrig in** – hushållets/”familjens” betyg
   ligger separat och är strukturellt undantagna.
+- **Skydd mot fusk:** Butlery räknar varje natt hur många betyg varje rätt har fått
+  och larmar om en rätt plötsligt får ovanligt många betyg, eller betyg som drar
+  snittet kraftigt. En administratör kan då titta på rättens siffror (antal röster,
+  snitt, fördelning och hur stor andel av rösterna som kommer från nya konton) och
+  tillfälligt stänga av rättens Butlery-betyg. Granskningen visar aldrig vem som har
+  röstat eller vad ditt recept heter, och ditt betyg ändras inte. Varje granskning
+  loggas och loggen raderas efter 6 månader.
 - **Rättslig grund – berättigat intresse (Art. 6.1.f):** att förbättra
   receptupptäckt och menykvalitet med en pålitlig gemensam signal. Detta kräver
   **inte** ditt samtycke, men du har **rätt att invända (Art. 21)**: att ta bort ett

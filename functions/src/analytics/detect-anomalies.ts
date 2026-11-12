@@ -26,6 +26,8 @@
  * **Read budget (per run)**: 5 series × ≤29 daily docs ≈ ≤145 reads/day —
  * effectively free. Each series is a single ordered, limited subcollection
  * scan.
+ * The pooled-ratings alarm (`detect-pool-velocity.ts`) runs after the five
+ * series and has its own budget, stated there.
  *
  * **Detection rule** (per series, ALL must hold to flag):
  *   1. baseline sample count ≥ MIN_SAMPLES (14)
@@ -38,6 +40,13 @@
 
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { PoolAnomaly, runDetectPoolVelocity } from "./detect-pool-velocity";
+
+/**
+ * The pool alarm's own deadline, inside the task's TASK_TIMEOUT_MS, so a slow
+ * window read still leaves time to write the rest of the report.
+ */
+export const POOL_ALARM_BUDGET_MS = 40_000;
 
 /** Minimum baseline sample count before a series can be flagged. */
 const MIN_SAMPLES = 14;
@@ -104,6 +113,14 @@ export const MONITORED_SERIES: readonly MonitoredSeries[] = [
 export interface RunDeps {
   db?: admin.firestore.Firestore;
   now?: Date;
+  /** Test seam for the pooled-ratings alarm (BUT-1517). */
+  poolVelocity?: (args: {
+    db: admin.firestore.Firestore;
+    nowMs: number;
+    dateStr: string;
+  }) => Promise<PoolAnomaly[]>;
+  /** Test seam for POOL_ALARM_BUDGET_MS. */
+  poolAlarmBudgetMs?: number;
 }
 
 const getDb = () => admin.firestore();
@@ -124,6 +141,8 @@ export interface AnomalyEntry {
   /** z-score, rounded to 1 decimal. */
   z: number;
   direction: "up" | "down";
+  /** Set on the pooled-ratings entries only; the admin view opens this pool. */
+  poolKey?: string;
 }
 
 export interface AnomalyReport {
@@ -269,6 +288,31 @@ export async function runDetectAnomalies(
         baselineSamples: baseline.length,
       });
     }
+  }
+
+  // Isolated from both a throw and a hang: neither may cost the morning its other alarms.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const poolAnomalies = await Promise.race([
+      (deps.poolVelocity ?? runDetectPoolVelocity)({ db, nowMs, dateStr }),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("pool_alarm_deadline")),
+          deps.poolAlarmBudgetMs ?? POOL_ALARM_BUDGET_MS,
+        );
+      }),
+    ]);
+    anomalies.push(...poolAnomalies);
+  } catch (err) {
+    // No `message`: a Firestore error here can carry a users/<uid>/... path.
+    logger.error("detect_anomalies_pool_velocity_failed", {
+      date: dateStr,
+      errName: err instanceof Error ? err.name : typeof err,
+      errCode: (err as { code?: unknown })?.code ?? null,
+      deadline: err instanceof Error && err.message === "pool_alarm_deadline",
+    });
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 
   const result: AnomalyReport = { date: dateStr, anomalies, computedAt };

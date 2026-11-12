@@ -18187,5 +18187,79 @@
   "profileDeletionNoticeExtraFrozenUnknown": "In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, for three years at most.",
   "@profileDeletionNoticeExtraFrozenUnknown": {
     "description": "Extra line for a frozen copy with no date (BUT-2329)."
-  }
+  },
+  "adminNavPools": "Ratings",
+  "adminAnomalyMetricPoolVelocity": "Rating rush",
+  "adminAnomalyMetricPoolSkew": "Ratings pull the average",
+  "adminAnomalyMetricPoolNew": "New dish got five votes fast",
+  "adminAnomalyMetricPoolOverflow": "Rating alarm did not read every vote",
+  "adminAnomalyReviewPool": "Review",
+  "adminPoolTitle": "Ratings",
+  "adminPoolIntro": "Paste the key from the warning to see the numbers. There is no information about individual people here.",
+  "adminPoolKeyLabel": "Rating key",
+  "adminPoolShow": "Show",
+  "adminPoolInvalidKey": "The key should look like v1: followed by digits and the letters a-f. Copy it from the alert.",
+  "adminPoolLoadFailed": "Could not load the rating. Try again.",
+  "adminPoolNotAllowed": "You are not allowed to view or change ratings.",
+  "adminPoolRateLimited": "Too many calls in a short time. Wait a moment and try again.",
+  "adminPoolVotes": "Number of votes",
+  "adminPoolAverage": "Average",
+  "adminPoolDistribution": "Votes per star",
+  "adminPoolStarsRow": "{stars, plural, =1{1 star} other{{stars} stars}}",
+  "@adminPoolStarsRow": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolVotes24h": "Votes in the last day",
+  "adminPoolVotes7d": "Votes in the last 7 days",
+  "adminPoolYoungShare": "{percent}% new accounts (under 7 days) of the latest {sampled, plural, =1{vote} other{{sampled} votes}}",
+  "@adminPoolYoungShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "sampled": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolUnverifiedShare": "{percent}% unverified accounts of the latest {sampled, plural, =1{vote} other{{sampled} votes}}",
+  "@adminPoolUnverifiedShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "sampled": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolNoShares": "No votes to work out shares from.",
+  "adminPoolStateActive": "The rating is shown",
+  "adminPoolStateQuarantined": "The rating is switched off",
+  "adminPoolReason": "Reason: {reason}",
+  "@adminPoolReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "adminPoolReasonBrigading": "Cheating",
+  "adminPoolReasonBadMerge": "Wrong merge",
+  "adminPoolReasonOther": "Other",
+  "adminPoolQuarantine": "Switch off the rating",
+  "adminPoolLift": "Switch the rating back on",
+  "adminPoolReasonTitle": "Why are you switching off the rating?",
+  "adminPoolQuarantineConfirmTitle": "Switch off the rating?",
+  "adminPoolQuarantineConfirmBody": "The rating is hidden from everyone at once. The votes are kept and you can switch the rating back on. Honest votes in the same rating are hidden too.",
+  "adminPoolLiftConfirmTitle": "Switch the rating back on?",
+  "adminPoolLiftConfirmBody": "The rating is shown to everyone again and recalculated from all votes.",
+  "adminPoolChangeFailed": "Could not change the rating. Try again.",
+  "adminPoolQuarantined": "The rating is switched off.",
+  "adminPoolLifted": "The rating is switched back on.",
+  "adminPoolLoading": "Fetching the rating …"
 }

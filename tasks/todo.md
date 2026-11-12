@@ -6,6 +6,10 @@ Se `tasks/but-2329-plan.md`. Godkänd av Malin via kort 2026-11-12.
 
 Se `tasks/but-2110-plan.md`.
 
+# Aktiv plan (2026-11-12): BUT-1517, skydd mot fusk i Butlery-betyget (C9)
+
+Se `tasks/but-1517-plan.md`. Godkänd av Malin 2026-11-12 ("kör"); korten om röstborttagning och titlar körs på rekommenderat svar tills hon väljer.
+
 # Aktiv plan (2026-11-07): BUT-2399, dela inköpslista = alltid inbjudan
 
 Se `tasks/but-2399-plan.md`.

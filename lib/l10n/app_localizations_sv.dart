@@ -22100,4 +22100,147 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get profileDeletionNoticeExtraFrozenUnknown =>
       'Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, högst tre år.';
+
+  @override
+  String get adminNavPools => 'Betyg';
+
+  @override
+  String get adminAnomalyMetricPoolVelocity => 'Betygsrusning';
+
+  @override
+  String get adminAnomalyMetricPoolSkew => 'Betyg drar snittet';
+
+  @override
+  String get adminAnomalyMetricPoolNew => 'Ny rätt fick snabbt fem röster';
+
+  @override
+  String get adminAnomalyMetricPoolOverflow =>
+      'Betygslarmet läste inte alla röster';
+
+  @override
+  String get adminAnomalyReviewPool => 'Granska';
+
+  @override
+  String get adminPoolTitle => 'Betyg';
+
+  @override
+  String get adminPoolIntro =>
+      'Klistra in nyckeln från varningen för att se siffrorna. Här finns inga uppgifter om enskilda personer.';
+
+  @override
+  String get adminPoolKeyLabel => 'Betygsnyckel';
+
+  @override
+  String get adminPoolShow => 'Visa';
+
+  @override
+  String get adminPoolInvalidKey =>
+      'Nyckeln ska se ut som v1: följt av siffror och bokstäverna a–f. Kopiera den från varningen.';
+
+  @override
+  String get adminPoolLoadFailed =>
+      'Det gick inte att hämta betyget. Försök igen.';
+
+  @override
+  String get adminPoolNotAllowed =>
+      'Du har inte behörighet att se eller ändra betyg.';
+
+  @override
+  String get adminPoolRateLimited =>
+      'För många anrop på kort tid. Vänta en stund och försök igen.';
+
+  @override
+  String get adminPoolVotes => 'Antal röster';
+
+  @override
+  String get adminPoolAverage => 'Snitt';
+
+  @override
+  String get adminPoolDistribution => 'Fördelning per stjärna';
+
+  @override
+  String adminPoolStarsRow(int stars) {
+    String _temp0 = intl.Intl.pluralLogic(
+      stars,
+      locale: localeName,
+      other: '$stars stjärnor',
+      one: '1 stjärna',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminPoolVotes24h => 'Röster senaste dygnet';
+
+  @override
+  String get adminPoolVotes7d => 'Röster senaste 7 dagarna';
+
+  @override
+  String adminPoolYoungShare(int percent, int sampled) {
+    return '$percent % nya konton (under 7 dagar) av de $sampled senaste rösterna';
+  }
+
+  @override
+  String adminPoolUnverifiedShare(int percent, int sampled) {
+    return '$percent % overifierade konton av de $sampled senaste rösterna';
+  }
+
+  @override
+  String get adminPoolNoShares => 'Inga röster att räkna andelar på.';
+
+  @override
+  String get adminPoolStateActive => 'Betyget visas';
+
+  @override
+  String get adminPoolStateQuarantined => 'Betyget är avstängt';
+
+  @override
+  String adminPoolReason(String reason) {
+    return 'Orsak: $reason';
+  }
+
+  @override
+  String get adminPoolReasonBrigading => 'Fusk';
+
+  @override
+  String get adminPoolReasonBadMerge => 'Felaktig sammanslagning';
+
+  @override
+  String get adminPoolReasonOther => 'Annat';
+
+  @override
+  String get adminPoolQuarantine => 'Stäng av betyget';
+
+  @override
+  String get adminPoolLift => 'Slå på betyget igen';
+
+  @override
+  String get adminPoolReasonTitle => 'Varför stänger du av betyget?';
+
+  @override
+  String get adminPoolQuarantineConfirmTitle => 'Stänga av betyget?';
+
+  @override
+  String get adminPoolQuarantineConfirmBody =>
+      'Betyget döljs direkt för alla. Rösterna finns kvar och du kan slå på betyget igen. Ärliga röster i samma betyg döljs också.';
+
+  @override
+  String get adminPoolLiftConfirmTitle => 'Slå på betyget igen?';
+
+  @override
+  String get adminPoolLiftConfirmBody =>
+      'Betyget visas för alla igen och räknas om från alla röster.';
+
+  @override
+  String get adminPoolChangeFailed =>
+      'Det gick inte att ändra betyget. Försök igen.';
+
+  @override
+  String get adminPoolQuarantined => 'Betyget är avstängt.';
+
+  @override
+  String get adminPoolLifted => 'Betyget är påslaget igen.';
+
+  @override
+  String get adminPoolLoading => 'Hämtar betyget …';
 }

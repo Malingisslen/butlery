@@ -304,6 +304,19 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
   },
+  // BUT-1517: admin pool inspection and quarantine.
+  adminInspectPool: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
+  adminSetPoolQuarantine: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
   // BUT-2329: freeze, extend or release a report's text copy (admin only).
   freezeReportEvidence: {
     maxTokens: 30,

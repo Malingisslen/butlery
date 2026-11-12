@@ -18201,5 +18201,79 @@
   "profileDeletionNoticeExtraFrozenUnknown": "Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, högst tre år.",
   "@profileDeletionNoticeExtraFrozenUnknown": {
     "description": "Extra line for a frozen copy with no date (BUT-2329)."
-  }
+  },
+  "adminNavPools": "Betyg",
+  "adminAnomalyMetricPoolVelocity": "Betygsrusning",
+  "adminAnomalyMetricPoolSkew": "Betyg drar snittet",
+  "adminAnomalyMetricPoolNew": "Ny rätt fick snabbt fem röster",
+  "adminAnomalyMetricPoolOverflow": "Betygslarmet läste inte alla röster",
+  "adminAnomalyReviewPool": "Granska",
+  "adminPoolTitle": "Betyg",
+  "adminPoolIntro": "Klistra in nyckeln från varningen för att se siffrorna. Här finns inga uppgifter om enskilda personer.",
+  "adminPoolKeyLabel": "Betygsnyckel",
+  "adminPoolShow": "Visa",
+  "adminPoolInvalidKey": "Nyckeln ska se ut som v1: följt av siffror och bokstäverna a–f. Kopiera den från varningen.",
+  "adminPoolLoadFailed": "Det gick inte att hämta betyget. Försök igen.",
+  "adminPoolNotAllowed": "Du har inte behörighet att se eller ändra betyg.",
+  "adminPoolRateLimited": "För många anrop på kort tid. Vänta en stund och försök igen.",
+  "adminPoolVotes": "Antal röster",
+  "adminPoolAverage": "Snitt",
+  "adminPoolDistribution": "Fördelning per stjärna",
+  "adminPoolStarsRow": "{stars, plural, =1{1 stjärna} other{{stars} stjärnor}}",
+  "@adminPoolStarsRow": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolVotes24h": "Röster senaste dygnet",
+  "adminPoolVotes7d": "Röster senaste 7 dagarna",
+  "adminPoolYoungShare": "{percent} % nya konton (under 7 dagar) av de {sampled} senaste rösterna",
+  "@adminPoolYoungShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "sampled": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolUnverifiedShare": "{percent} % overifierade konton av de {sampled} senaste rösterna",
+  "@adminPoolUnverifiedShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "sampled": {
+        "type": "int"
+      }
+    }
+  },
+  "adminPoolNoShares": "Inga röster att räkna andelar på.",
+  "adminPoolStateActive": "Betyget visas",
+  "adminPoolStateQuarantined": "Betyget är avstängt",
+  "adminPoolReason": "Orsak: {reason}",
+  "@adminPoolReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "adminPoolReasonBrigading": "Fusk",
+  "adminPoolReasonBadMerge": "Felaktig sammanslagning",
+  "adminPoolReasonOther": "Annat",
+  "adminPoolQuarantine": "Stäng av betyget",
+  "adminPoolLift": "Slå på betyget igen",
+  "adminPoolReasonTitle": "Varför stänger du av betyget?",
+  "adminPoolQuarantineConfirmTitle": "Stänga av betyget?",
+  "adminPoolQuarantineConfirmBody": "Betyget döljs direkt för alla. Rösterna finns kvar och du kan slå på betyget igen. Ärliga röster i samma betyg döljs också.",
+  "adminPoolLiftConfirmTitle": "Slå på betyget igen?",
+  "adminPoolLiftConfirmBody": "Betyget visas för alla igen och räknas om från alla röster.",
+  "adminPoolChangeFailed": "Det gick inte att ändra betyget. Försök igen.",
+  "adminPoolQuarantined": "Betyget är avstängt.",
+  "adminPoolLifted": "Betyget är påslaget igen.",
+  "adminPoolLoading": "Hämtar betyget …"
 }
