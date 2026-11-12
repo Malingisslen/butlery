@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Shows the saved copy as plain `Text` only: it is untrusted user content,
 /// so no markdown and no link detection.
@@ -14,12 +17,16 @@ class ModeratorEvidenceSection extends StatelessWidget {
   const ModeratorEvidenceSection({
     required this.state,
     this.reopened = false,
+    this.onKeepLonger,
     super.key,
   });
 
   /// The copy was taken when the case was reopened, so it shows the content
   /// as it is now rather than as it was when reported.
   final bool reopened;
+
+  /// Offered on a captured copy that is not yet kept past its case.
+  final VoidCallback? onKeepLonger;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +48,8 @@ class ModeratorEvidenceSection extends StatelessWidget {
             capturedAt,
             localeName: l10n.localeName,
           );
-    final heading = reopened
+    // A kept copy was taken when the report came in, not at the reopen.
+    final heading = reopened && !evidence.isFrozen
         ? (time == null
               ? l10n.moderatorEvidenceNowHeading
               : l10n.moderatorEvidenceNowHeadingAt(time))
@@ -60,6 +68,8 @@ class ModeratorEvidenceSection extends StatelessWidget {
       EvidenceOutcome.unknown => l10n.moderatorEvidenceFailed,
     };
 
+    final frozen = evidence.frozen;
+    final captured = evidence.outcome == EvidenceOutcome.captured;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -91,6 +101,30 @@ class ModeratorEvidenceSection extends StatelessWidget {
             child: Text(l10n.moderatorEvidenceTextOnly, style: muted),
           ),
         ],
+        if (frozen != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
+            child: Text(
+              l10n.moderatorFrozenUntilLine(
+                DateFormat.yMMMd(
+                  l10n.localeName,
+                ).format(frozen.until.toLocal()),
+                freezeReasonLabel(l10n, frozen.reason),
+              ),
+              key: const ValueKey('evidence-frozen-line'),
+              style: muted,
+            ),
+          )
+        else if (captured && onKeepLonger != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ActionButtons.textButton(
+              context,
+              key: const ValueKey('evidence-keep-longer'),
+              label: l10n.moderatorKeepLonger,
+              onPressed: onKeepLonger,
+            ),
+          ),
       ],
     );
   }

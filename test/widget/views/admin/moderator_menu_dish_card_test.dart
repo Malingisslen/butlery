@@ -48,6 +48,9 @@ void main() {
     stream = StreamController<List<ContentReport>>.broadcast();
     when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
+    when(
+      () => reports.watchFrozenEvidence(),
+    ).thenAnswer((_) => const Stream<List<ReportEvidence>>.empty());
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
     GetIt.instance.registerSingleton<ReportService>(reports);
     final appeals = _MockAppealsService();

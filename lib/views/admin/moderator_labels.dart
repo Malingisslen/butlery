@@ -4,6 +4,7 @@ import 'package:butlery/models/social/closed_report.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 
 String moderatorContentTypeLabel(AppLocalizations l10n, ContentType type) =>
@@ -73,3 +74,18 @@ String pastDecisionLine(
     ),
   decisionMakerLabel(l10n, d.moderator),
 ].join(' · ');
+
+String freezeReasonLabel(AppLocalizations l10n, FreezeReason r) => switch (r) {
+  FreezeReason.police => l10n.moderatorFreezeReasonPolice,
+  FreezeReason.threat => l10n.moderatorFreezeReasonThreat,
+  FreezeReason.legalClaim => l10n.moderatorFreezeReasonLegalClaim,
+  FreezeReason.unknown => l10n.moderatorFreezeReasonUnknown,
+};
+
+String freezeBlockText(AppLocalizations l10n, FreezeBlock b) => switch (b) {
+  FreezeBlock.noCopy => l10n.moderatorFreezeBlockNoCopy,
+  FreezeBlock.notCaptured => l10n.moderatorFreezeBlockNotCaptured,
+  FreezeBlock.alreadyFrozen => l10n.moderatorFreezeBlockAlreadyFrozen,
+  FreezeBlock.notFrozen => l10n.moderatorFreezeBlockNotFrozen,
+  FreezeBlock.atCap => l10n.moderatorFreezeBlockAtCap,
+};
