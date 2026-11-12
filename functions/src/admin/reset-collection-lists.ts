@@ -268,6 +268,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "recipe_social_stats" },
   { name: "canonical_recipe_stats" },
 
+  // An admin's quarantine flag on a rating pool. The key is derived from the
+  // recipe, not the voters, so a flag kept across a reset would silently
+  // suppress the pooled rating of whatever is rated under that key afterwards.
+  { name: "pool_quarantine" },
+
   // The admin operations log. It was first registered as deliberately
   // untouched on the ground that it holds no uid; the commit-gate review
   // measured otherwise. `feedback/on-report-created.ts` writes a
