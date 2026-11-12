@@ -178,6 +178,28 @@ void main() {
       expect(reviewOnly.reviewKept, isTrue);
     });
 
+    test('a frozen copy is neither a review nor a review date (BUT-2329)', () {
+      final frozenUntil = DateTime.utc(2029, 10, 9);
+      final frozenOnly = RetentionNoticeFacts.from([
+        record('report_evidence', until: frozenUntil, provisional: true),
+      ]);
+      expect(frozenOnly.frozenCopyKept, isTrue);
+      expect(frozenOnly.frozenCopyUntil, frozenUntil);
+      expect(frozenOnly.reviewKept, isFalse);
+      expect(frozenOnly.ownReportKept, isFalse);
+      expect(frozenOnly.provisional, isFalse);
+      expect(frozenOnly.holdUntil, isNull);
+
+      final reviewDate = DateTime.utc(2027, 1, 1);
+      final both = RetentionNoticeFacts.from([
+        record('report_evidence', until: frozenUntil),
+        record('user_moderation', until: reviewDate),
+      ]);
+      expect(both.reviewKept, isTrue);
+      expect(both.holdUntil, reviewDate);
+      expect(both.frozenCopyUntil, frozenUntil);
+    });
+
     test('gives the LATEST cap when both were kept', () {
       final early = DateTime.utc(2027, 1, 1);
       final late = DateTime.utc(2027, 3, 1);
@@ -207,6 +229,151 @@ void main() {
         record('user_moderation', provisional: true),
       ]);
       expect(review.provisional, isTrue);
+    });
+  });
+
+  group('a frozen copy (BUT-2329)', () {
+    Future<AppLocalizations> openFrozen(
+      WidgetTester tester, {
+      required bool reviewKept,
+      DateTime? until,
+    }) async {
+      await tester.pumpWidget(
+        _host(
+          (context) => ProfileDialogs.showRetentionNoticeDialog(
+            context,
+            reviewKept: reviewKept,
+            holdUntil: reviewKept ? DateTime.utc(2027, 1, 1) : null,
+            frozenCopyKept: true,
+            frozenCopyUntil: until,
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      return AppLocalizations.of(tester.element(find.byType(AlertDialog)));
+    }
+
+    testWidgets('alone it has its own what, why and how long', (tester) async {
+      final l10n = await openFrozen(
+        tester,
+        reviewKept: false,
+        until: DateTime.utc(2029, 10, 9),
+      );
+
+      expect(find.text(l10n.profileDeletionNoticeWhatFrozen), findsOneWidget);
+      expect(find.text(l10n.profileDeletionNoticeWhyFrozen), findsOneWidget);
+      expect(find.textContaining('Hur länge: senast'), findsOneWidget);
+      expect(find.textContaining('granskningen'), findsNothing);
+      expect(find.text(l10n.profileDeletionNoticeRights), findsOneWidget);
+    });
+
+    testWidgets('alone and without a date it says three years at most', (
+      tester,
+    ) async {
+      final l10n = await openFrozen(tester, reviewKept: false);
+
+      expect(
+        find.text(l10n.profileDeletionNoticeHowLongFrozenUnknown),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('beside a review it adds one line and keeps the review lines', (
+      tester,
+    ) async {
+      final l10n = await openFrozen(
+        tester,
+        reviewKept: true,
+        until: DateTime.utc(2029, 10, 9),
+      );
+
+      expect(find.text(l10n.profileDeletionNoticeWhat), findsOneWidget);
+      expect(find.text(l10n.profileDeletionNoticeWhy), findsOneWidget);
+      expect(find.textContaining('tills granskningen är klar'), findsOneWidget);
+      expect(find.textContaining('Dessutom sparas en kopia'), findsOneWidget);
+      expect(find.textContaining('polis'), findsNothing);
+    });
+
+    testWidgets('beside a review and without a date it says three years', (
+      tester,
+    ) async {
+      final l10n = await openFrozen(tester, reviewKept: true);
+
+      expect(
+        find.text(l10n.profileDeletionNoticeExtraFrozenUnknown),
+        findsOneWidget,
+      );
+    });
+
+    Future<void> openWith(
+      WidgetTester tester, {
+      bool reviewKept = true,
+      bool ownReportKept = false,
+    }) async {
+      await tester.pumpWidget(
+        _host(
+          (context) => ProfileDialogs.showRetentionNoticeDialog(
+            context,
+            reviewKept: reviewKept,
+            ownReportKept: ownReportKept,
+            holdUntil: DateTime.utc(2027, 3, 11),
+            frozenCopyKept: true,
+            frozenCopyUntil: DateTime.utc(2029, 10, 9),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('each line carries its own date, so a swap shows', (
+      tester,
+    ) async {
+      await openWith(tester);
+
+      expect(
+        find.text(
+          'Hur länge: tills granskningen är klar, senast 11 mars 2027.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('rättsliga anspråk, senast 9 oktober 2029.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('alone, how long carries the frozen date', (tester) async {
+      await openWith(tester, reviewKept: false);
+
+      expect(find.text('Hur länge: senast 9 oktober 2029.'), findsOneWidget);
+      expect(find.textContaining('11 mars 2027'), findsNothing);
+    });
+
+    testWidgets('beside only a filed report: handling wording plus the extra', (
+      tester,
+    ) async {
+      await openWith(tester, reviewKept: false, ownReportKept: true);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(AlertDialog)),
+      );
+      expect(
+        find.text(l10n.profileDeletionNoticeWhatOwnReport),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.profileDeletionNoticeWhyHandling), findsOneWidget);
+      expect(
+        find.text(
+          'Hur länge: tills handläggningen är klar, senast 11 mars 2027.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Dessutom sparas en kopia av innehåll som anmälts'),
+        findsOneWidget,
+      );
     });
   });
 }

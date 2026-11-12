@@ -154,12 +154,16 @@ Future<void> _writtenByEarlierProcess({
   bool reviewKept = true,
   bool ownReportKept = false,
   DateTime? holdUntil,
+  bool frozenCopyKept = false,
+  DateTime? frozenCopyUntil,
   DateTime? now,
 }) => PendingRetentionNoticeStore().write(
   holdUntil: holdUntil ?? _farFuture,
   provisional: false,
   reviewKept: reviewKept,
   ownReportKept: ownReportKept,
+  frozenCopyKept: frozenCopyKept,
+  frozenCopyUntil: frozenCopyUntil,
   now: now,
 );
 
@@ -235,6 +239,55 @@ void main() {
       findsNothing,
       reason: 'only a filed report was kept, not a review of their content',
     );
+  });
+
+  testWidgets(
+    'a kept frozen copy and its own date reach the dialog (BUT-2329)',
+    (
+      tester,
+    ) async {
+      await _writtenByEarlierProcess(
+        frozenCopyKept: true,
+        frozenCopyUntil: DateTime.utc(2999, 9, 12),
+      );
+
+      await tester.pumpWidget(_host());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Visa mer'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('Dessutom sparas en kopia av innehåll som anmälts'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('12 september 2999'), findsOneWidget);
+      expect(
+        find.textContaining('tills granskningen är klar, senast 11 mars 2999'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('a frozen copy alone is told as that, with its own date', (
+    tester,
+  ) async {
+    await _writtenByEarlierProcess(
+      reviewKept: false,
+      frozenCopyKept: true,
+      frozenCopyUntil: DateTime.utc(2999, 9, 12),
+    );
+
+    await tester.pumpWidget(_host());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Visa mer'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('En sak har sparats: en kopia av innehåll som anmälts.'),
+      findsOneWidget,
+    );
+    expect(find.text('Hur länge: senast 12 september 2999.'), findsOneWidget);
+    expect(find.textContaining('granskningen'), findsNothing);
   });
 
   testWidgets('the record survives until the notice is actually closed', (
