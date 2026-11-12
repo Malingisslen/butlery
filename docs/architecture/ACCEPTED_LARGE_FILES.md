@@ -99,13 +99,11 @@ Already modular services or well-organized modules within service facades. Furth
 | `messaging_service.dart` | 871 | Chat/messaging service. Poll close and winner resolution live in `messaging/poll_resolution_operations.dart` (BUT-1923). |
 | `text_import_strategy.dart` | 1420 | Text-based recipe import strategy. Row refreshed 2026-10-30. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
-| `intelligent_cache_manager.dart` | 607 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 681 | Friend category CRUD operations |
 | `social_menu_coordinator.dart` | 626 | Social menu sharing coordinator |
 | `rating_statistics.dart` | 682 | Recipe rating stats calculations |
 | `unified_friends_service.dart` | 630 | Friends service facade |
 | `personal_shopping_operations.dart` | 621 | Personal shopping list CRUD |
-| `fcm_service.dart` | 738 | FCM push notification service |
 | `social_recipe_sharing_service.dart` | 523 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
 | `recipe_sharing_manager.dart` | 817 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
@@ -225,7 +223,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `menu_content_widgets.dart` | 313 | **candidate**: multiple static widget builders for distinct menu sections — splittable by section type |
 | `image_gallery_widget.dart` | 507 | Image gallery widget |
 | `duplicate_merge_sheet.dart` | 498 | Single-purpose bottom sheet; merge logic and UI tightly coupled by design |
-| `shopping_sharing_status_dialog.dart` | 567 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
 | `calendar_cells.dart` | 235 | Focused stateless widget for calendar cell rendering; extracted for reuse |
 | `selection_app_bar.dart` | 704 | Single-purpose bulk-selection app bar extracted from `mina_recept_view` |
 | `shared_content_actions.dart` | 483 | Static action helper with one responsibility: import/dismiss shared content |
@@ -233,16 +230,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `family_member_form_view.dart` | 496 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design |
 | `unified_shopping_view.dart` | 824 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
 | `recipe_detail_comments.dart` | 675 | Extracted sub-widget for comments section; single cohesive concern |
-| `veckomeny_view.dart` | 1181 | **candidate**: top-level weekly-menu view pulling many widget builders — split candidates exist |
 | `collection_stats_view.dart` | 185 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |
-| `collaborative_shopping_items.dart` | 534 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
-| `tag_result_display.dart` | 605 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
-| `onboarding_viewmodel.dart` | 614 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
-| `photo_import_viewmodel.dart` | 1,146 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
-| `friends_viewmodel.dart` | 691 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
-| `performance_monitoring_service.dart` | 524 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
-| `social_group_detail_viewmodel.dart` | 616 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
-| `fcm_service.dart` | 738 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
 | `user_profile_viewmodel.dart` | — | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
 | `recipe_detail_metadata.dart` | 541 | Inline metadata row (time, portions, rating, badges) — one cohesive widget plus its state |
 | `shopping_list_operations.dart` | 500 | Static dialog builders for shopping-list management on a namespace class with no state, plus the private `_ConvertToCollaborativeDialog` widget and its state. The two conversion dialogs share `_warnConversionIncomplete` |
@@ -253,20 +241,8 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 
 | File | Lines | Why it's a candidate |
 |------|-------|---------------------|
-| `veckomeny_view.dart` | 1181 | Top-level weekly-menu view pulling many widget builders; extract section sub-widgets |
 | `collection_stats_view.dart` | 185 | Stats sections (_HeroBanner, _SectionHeader, etc.) are self-contained; good widget-extraction candidates |
-| `shopping_sharing_status_dialog.dart` | 567 | 5+ distinct sections in one dialog; extract as private sub-widgets |
 | `menu_content_widgets.dart` | 313 | Multiple static widget builders for distinct menu sections; group by section into separate files |
-| `performance_monitoring_service.dart` | 524 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
-| `social_group_detail_viewmodel.dart` | 616 | Group load, events, leave, ownership transfer, content sharing — extract managers |
-| `collaborative_shopping_items.dart` | 534 | Three view-mode rendering paths + claim logic — split by mode |
-| `tag_result_display.dart` | 605 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
-| `onboarding_viewmodel.dart` | 614 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
-| `photo_import_viewmodel.dart` | 1,146 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
-| `friends_viewmodel.dart` | 691 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |
-| `fcm_service.dart` | 738 | FCM token management, permission-gating, deep-link routing, and notification display are separable |
-| `menu_generator.dart` | 922 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
-| `intelligent_cache_manager.dart` | 607 | Behavior-analysis, prefetching, friend-activity cache, and eviction policies are separable strategies |
 
 ## Cloud Functions (TypeScript)
 
