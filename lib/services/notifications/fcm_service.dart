@@ -16,28 +16,23 @@
 /// cache. The split keeps app-singleton lifecycle (this class) separate from
 /// per-user lifecycle (token manager).
 
-import 'package:butlery/core/utils/stored_display_name.dart';
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/fcm_service/fcm_platform_setup.dart';
+import 'package:butlery/services/notifications/fcm_service/notification_navigator.dart';
+import 'package:butlery/services/notifications/fcm_service/push_access_revoker.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
@@ -78,6 +73,12 @@ class FCMService extends BaseService {
   bool _isDisposed = false;
   bool _pushPermissionsRequested = false;
   ConsentService? _consentService;
+  late final NotificationNavigator _navigation = NotificationNavigator(
+    getRecipeRepository: _getRecipeRepository,
+    getSharedMenuRepository: _getSharedMenuRepository,
+    getRecipeService: _getRecipeService,
+    getPermissionService: _getPermissionService,
+  );
 
   Function(RemoteMessage)? _onMessageReceived;
   Function(RemoteMessage)? _onMessageOpenedApp;
@@ -87,10 +88,6 @@ class FCMService extends BaseService {
   StreamSubscription<RemoteMessage>? _onMessageOpenedAppSubscription;
 
   bool _consentChangeInProgress = false;
-
-  static const String _generalChannelId = 'butlery_general';
-  static const String _socialChannelId = 'butlery_social';
-  static const String _messagingChannelId = 'butlery_messaging';
 
   /// Initialize FCM. Permission requests + token registration are gated
   /// behind `pushNotifications` consent via [consentService].
@@ -127,12 +124,15 @@ class FCMService extends BaseService {
         // co-exist.
         _consentService?.addListener(_onConsentChanged);
 
-        await _initializeNotificationChannels();
+        await FcmPlatformSetup.initializeAndroidChannels(
+          _localNotifications,
+          onTapped: _onLocalNotificationTapped,
+        );
         await _setupMessageHandlers();
 
         final hasConsent = await _hasPushConsent();
         if (hasConsent) {
-          await _requestPermissions();
+          await FcmPlatformSetup.requestPermissions(_messaging);
           await _refreshToken();
           _pushPermissionsRequested = true;
         } else {
@@ -242,14 +242,18 @@ class FCMService extends BaseService {
         AppLogger.info(
           '🔔 FCM: Push consent granted mid-session — requesting permissions',
         );
-        await _requestPermissions();
+        await FcmPlatformSetup.requestPermissions(_messaging);
         await _refreshToken();
         _pushPermissionsRequested = true;
       } else if (!hasConsent && _pushPermissionsRequested) {
         AppLogger.info(
           '🔔 FCM: Push consent revoked mid-session — clearing token (BUT-573)',
         );
-        await _revokePushAccess();
+        await PushAccessRevoker.revoke(
+          messaging: _messaging,
+          getUserService: _getUserService,
+        );
+        _currentToken = null;
         _pushPermissionsRequested = false;
       }
     } catch (e) {
@@ -259,139 +263,13 @@ class FCMService extends BaseService {
     }
   }
 
-  /// Delete FCM token from SDK + Firestore + memory after consent revoke
-  /// (BUT-573). Best-effort: each cleanup is independent so partial success
-  /// beats total failure. SDK + Firestore deletes run in parallel — they
-  /// don't depend on each other.
-  ///
-  /// Companion: NotificationService.`_handleConsentChange` →
-  /// FCMTokenManager.`clearLocalToken()` covers the per-user SecureStorage
-  /// cache (BUT-754). The split is intentional: FCMService is app-singleton
-  /// (SDK + Firestore + memory); FCMTokenManager is per-user (SecureStorage +
-  /// instance memory). Each half owns its own lifecycle scope.
-  Future<void> _revokePushAccess() async {
-    final userService = _getUserService();
-    final hasUserService = userService != null;
-
-    await Future.wait<void>([
-      // ignore: deprecated_member_use
-      _messaging.deleteToken().catchError((e) {
-        AppLogger.warning('⚠️ FCM: Failed to delete SDK token: $e');
-      }),
-      if (hasUserService)
-        userService.clearFCMToken().catchError((e) {
-          AppLogger.warning('⚠️ FCM: Failed to clear profile token: $e');
-        }),
-    ]);
-
-    if (!hasUserService) {
-      AppLogger.info(
-        '🔔 FCM: UserService not registered — skipping profile-token clear',
-      );
-    }
-
-    _currentToken = null;
-  }
-
-  Future<void> _initializeNotificationChannels() async {
-    if (kIsWeb || !Platform.isAndroid) return;
-
-    try {
-      AppLogger.info('🔔 Initializing Android notification channels...');
-
-      final generalChannel = AndroidNotificationChannel(
-        _generalChannelId,
-        AppLocale.current.fcmChannelGeneralTitle,
-        description: AppLocale.current.fcmChannelGeneralDescription,
-        importance: Importance.defaultImportance,
-      );
-
-      final socialChannel = AndroidNotificationChannel(
-        _socialChannelId,
-        AppLocale.current.fcmChannelSocialTitle,
-        description: AppLocale.current.fcmChannelSocialDescription,
-        importance: Importance.high,
-      );
-
-      final messagingChannel = AndroidNotificationChannel(
-        _messagingChannelId,
-        AppLocale.current.fcmChannelMessagingTitle,
-        description: AppLocale.current.fcmChannelMessagingDescription,
-        importance: Importance.high,
-        enableVibration: true,
-        playSound: true,
-      );
-
-      final androidPlugin = _localNotifications
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-
-      if (androidPlugin != null) {
-        await androidPlugin.createNotificationChannel(generalChannel);
-        await androidPlugin.createNotificationChannel(socialChannel);
-        await androidPlugin.createNotificationChannel(messagingChannel);
-        AppLogger.success('✅ Android notification channels created');
-      }
-
-      const initializationSettingsAndroid = AndroidInitializationSettings(
-        '@mipmap/ic_launcher',
-      );
-      const initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid,
-      );
-
-      await _localNotifications.initialize(
-        settings: initializationSettings,
-        onDidReceiveNotificationResponse: _onLocalNotificationTapped,
-      );
-    } catch (e) {
-      AppLogger.warning('⚠️ Failed to initialize notification channels: $e');
-      // Non-critical — FCM still works with default channel
-    }
-  }
-
-  Future<NotificationSettings> _requestPermissions() async {
-    try {
-      AppLogger.info('🔔 Requesting notification permissions...');
-
-      final settings = await _messaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
-
-      AppLogger.info(
-        '🔔 Notification permission status: ${settings.authorizationStatus}',
-      );
-
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        AppLogger.success('✅ Notification permissions granted');
-      } else if (settings.authorizationStatus ==
-          AuthorizationStatus.provisional) {
-        AppLogger.info('📋 Provisional notification permissions granted');
-      } else {
-        AppLogger.warning('⚠️ Notification permissions denied');
-      }
-
-      return settings;
-    } catch (e) {
-      AppLogger.error('❌ Failed to request notification permissions', e);
-      rethrow;
-    }
-  }
-
   Future<void> _setupMessageHandlers() async {
     try {
       _onMessageSubscription = FirebaseMessaging.onMessage.listen((
         RemoteMessage message,
       ) {
         AppLogger.info('🔔 Received foreground message: ${message.messageId}');
-        _logMessageDetails(message);
+        FcmPlatformSetup.logMessageDetails(message);
         _onMessageReceived?.call(message);
       });
 
@@ -400,7 +278,7 @@ class FCMService extends BaseService {
             AppLogger.info(
               '🔔 App opened from notification: ${message.messageId}',
             );
-            _logMessageDetails(message);
+            FcmPlatformSetup.logMessageDetails(message);
             _onMessageOpenedApp?.call(message);
           });
 
@@ -409,7 +287,7 @@ class FCMService extends BaseService {
         AppLogger.info(
           '🔔 App launched from notification: ${initialMessage.messageId}',
         );
-        _logMessageDetails(initialMessage);
+        FcmPlatformSetup.logMessageDetails(initialMessage);
         _onMessageOpenedApp?.call(initialMessage);
       }
 
@@ -547,51 +425,8 @@ class FCMService extends BaseService {
   }
 
   /// Uses [appNavigatorKey] to avoid stale BuildContext crashes.
-  Future<void> handleNotificationNavigation(RemoteMessage message) async {
-    try {
-      final data = message.data;
-      final notificationType = data['type'];
-      final screen = data['screen'];
-
-      AppLogger.info(
-        '🔔 Handling notification navigation: type=$notificationType, screen=$screen',
-      );
-
-      final navigator = appNavigatorKey.currentState;
-      if (navigator == null) {
-        AppLogger.warning('⚠️ Cannot navigate - no navigator available');
-        return;
-      }
-
-      switch (notificationType) {
-        case NotificationPayloadType.friendRequest:
-          navigator.pushNamed(Routes.friendRequests);
-          break;
-        case NotificationPayloadType.recipeShared:
-          await _navigateToSharedRecipe(navigator, data);
-          break;
-        case NotificationPayloadType.collaborationInvite:
-          await _navigateToCollaboration(navigator, data);
-          break;
-        case NotificationPayloadType.recipeComment:
-          await _navigateToSharedRecipe(
-            navigator,
-            data,
-            scrollToComments: true,
-          );
-          break;
-        case NotificationPayloadType.recipeShareRequest:
-          await _navigateToOwnRecipeForShareRequest(navigator, data);
-          break;
-        default:
-          AppLogger.warning(
-            '⚠️ Unknown notification type for navigation: $notificationType',
-          );
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to handle notification navigation', e);
-    }
-  }
+  Future<void> handleNotificationNavigation(RemoteMessage message) =>
+      _navigation.handle(message);
 
   void _onLocalNotificationTapped(NotificationResponse response) {
     final payload = response.payload;
@@ -603,119 +438,11 @@ class FCMService extends BaseService {
     );
   }
 
-  Future<void> _navigateToSharedRecipe(
-    NavigatorState navigator,
-    Map<String, dynamic> data, {
-    bool scrollToComments = false,
-  }) async {
-    final recipeId = data['recipeId'] as String?;
-    if (recipeId == null) return;
-
-    final recipeRepo = _getRecipeRepository();
-    final recipe = await recipeRepo.read(recipeId);
-    if (recipe != null) {
-      final arguments = scrollToComments
-          ? <String, dynamic>{'recipe': recipe, 'scrollToComments': true}
-          : recipe;
-      navigator.pushNamed(Routes.recipeDetail, arguments: arguments);
-    }
-  }
-
   /// BUT-1744: the sender stores no placeholder, so the fallback is resolved
   /// here, in the recipient's own language.
   @visibleForTesting
-  static String shareRequestSenderName(Map<String, dynamic> data) {
-    return storedNameOr(
-      data['fromUserName'] as String?,
-      AppLocale.current.displayUnknownUser,
-    );
-  }
-
-  /// Opens the owner's own recipe with a one-tap share-back banner.
-  /// Tapped when the owner receives a "X wants your recipe" push notification.
-  Future<void> _navigateToOwnRecipeForShareRequest(
-    NavigatorState navigator,
-    Map<String, dynamic> data,
-  ) async {
-    final recipeId = data['recipeId'] as String?;
-    final requestId = data['requestId'] as String?;
-    if (recipeId == null || requestId == null) return;
-
-    final fromUserId = data['fromUserId'] as String?;
-    if (fromUserId == null || fromUserId.isEmpty) return;
-    final fromUserName = shareRequestSenderName(data);
-
-    final recipe = _getRecipeService().getRecipeById(
-      recipeId,
-    );
-    if (recipe == null) return;
-
-    final currentUserId = _getPermissionService().currentUserId;
-
-    final request = SocialRequest(
-      id: requestId,
-      type: SocialRequestType.recipeShareRequest,
-      fromUserId: fromUserId.orEmpty(),
-      toUserId: currentUserId.orEmpty(),
-      recipeId: recipeId,
-      fromUserName: fromUserName,
-    );
-
-    navigator.pushNamed(
-      Routes.recipeDetail,
-      arguments: <String, dynamic>{'recipe': recipe, 'shareRequest': request},
-    );
-  }
-
-  Future<void> _navigateToCollaboration(
-    NavigatorState navigator,
-    Map<String, dynamic> data,
-  ) async {
-    final resourceId = data['resourceId'] as String?;
-    final resourceType = data['resourceType'] as String?;
-
-    if (resourceId == null || resourceType == null) return;
-
-    switch (resourceType) {
-      case 'recipe':
-        final recipeRepo = _getRecipeRepository();
-        final recipe = await recipeRepo.read(resourceId);
-        if (recipe != null) {
-          navigator.pushNamed(Routes.recipeDetail, arguments: recipe);
-        }
-        break;
-      case 'menu':
-        final menuRepo = _getSharedMenuRepository();
-        final menu = await menuRepo.getSharedMenu(resourceId);
-        if (menu != null) {
-          navigator.pushNamed(Routes.menuPreview, arguments: menu);
-        }
-        break;
-      case 'shopping_list':
-        navigator.pushNamed(
-          Routes.collaborativeShopping,
-          arguments: resourceId,
-        );
-        break;
-      default:
-        AppLogger.warning(
-          '⚠️ Unknown collaboration resource type: $resourceType',
-        );
-    }
-  }
-
-  void _logMessageDetails(RemoteMessage message) {
-    if (kDebugMode) {
-      AppLogger.debug(
-        '🔔 Message details: '
-        'messageId=${message.messageId}, '
-        'title=${message.notification?.title}, '
-        'body=${message.notification?.body}, '
-        'from=${message.from}, '
-        'category=${message.category}',
-      );
-    }
-  }
+  static String shareRequestSenderName(Map<String, dynamic> data) =>
+      NotificationNavigator.shareRequestSenderName(data);
 
   @override
   Future<void> onDispose() async {

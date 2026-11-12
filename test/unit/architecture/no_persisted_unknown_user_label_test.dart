@@ -21,7 +21,7 @@ const _allowlist = <String, String>{
       'reader: builds the attribution text on the importing device',
   'lib/services/messaging/message_sending_operations.dart':
       'push text built at send time; never stored on the message',
-  'lib/services/notifications/fcm_service.dart':
+  'lib/services/notifications/fcm_service/notification_navigator.dart':
       'reader: resolves the share-request sender in the recipient language',
   'lib/services/social/modules/recipe_share_request_module.dart':
       'push builder: each language slot uses its own localization',
