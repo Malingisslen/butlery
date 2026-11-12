@@ -30,14 +30,10 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/menu_service.dart';
-import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
-import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/errors/chat_group_error_mapper.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -47,29 +43,11 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/models/social/group_hand_over_outcome.dart';
+import 'package:butlery/viewmodels/social_group_detail/group_meal_vote_manager.dart';
+import 'package:butlery/viewmodels/social_group_detail/leave_group_decision.dart';
 
-/// Information about ownership succession when owner leaves group.
-/// Used to communicate leave group requirements to the UI.
-class LeaveGroupDecision {
-  final bool requiresOwnershipTransfer;
-  final bool groupIsEmpty;
-  final List<UserProfile> availableNewOwners;
-
-  /// At least one member's profile could not be READ, so the member list this
-  /// decision was taken from is a subset of unknown size. Both other outcomes
-  /// are then unsafe: `groupIsEmpty` routes the owner to a delete dialog, and
-  /// `availableNewOwners` would offer a truncated candidate list.
-  final bool rosterIncomplete;
-
-  const LeaveGroupDecision({
-    required this.requiresOwnershipTransfer,
-    required this.groupIsEmpty,
-    required this.availableNewOwners,
-    this.rosterIncomplete = false,
-  });
-}
+export 'package:butlery/viewmodels/social_group_detail/leave_group_decision.dart';
 
 /// ViewModel for social group detail view business logic.
 /// Manages state, business logic, and service coordination for social group (FriendCategory) details.
@@ -92,6 +70,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   DateTime? _lastRefresh;
   bool _isResolvingLeave = false;
   bool _disposed = false;
+  late final GroupMealVoteManager _mealVotes = GroupMealVoteManager(
+    userService: _userService,
+  );
 
   /// Creates ViewModel with required dependencies.
   SocialGroupDetailViewModel({
@@ -154,22 +135,13 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Whether current user can edit this group.
-  bool get canEditGroup {
-    if (_group == null) return false;
-    return _permissionService.isGroupAdmin(_group!.id);
-  }
+  bool get canEditGroup => isAdmin;
 
   /// Whether current user can delete this group.
-  bool get canDeleteGroup {
-    if (_group == null) return false;
-    return _permissionService.isGroupAdmin(_group!.id);
-  }
+  bool get canDeleteGroup => isAdmin;
 
   /// Whether current user can add members to this group.
-  bool get canAddMembers {
-    if (_group == null) return false;
-    return _permissionService.isGroupAdmin(_group!.id);
-  }
+  bool get canAddMembers => isAdmin;
 
   /// Whether [group] holds anyone besides the current user. A new group's
   /// roster is only its owner, so an empty `friendUserIds` is never the case
@@ -332,51 +304,12 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       throw StateError('Cannot leave group without authenticated user');
     }
 
-    final isOwner = isAdmin;
-
-    if (!isOwner) {
-      // Non-owner can leave freely
-      return const LeaveGroupDecision(
-        requiresOwnershipTransfer: false,
-        groupIsEmpty: false,
-        availableNewOwners: [],
-      );
-    }
-
-    // An owner whose members failed to load would otherwise be told the group
-    // is EMPTY and offered deletion — `_members` is the same subset
-    // `hasUnresolvedMembers` warns about, and the view routes `groupIsEmpty`
-    // straight into a delete dialog. Refused rather than guessed: the failure
-    // is transient, and re-reading is free.
-    if (hasUnresolvedMembers) {
-      return const LeaveGroupDecision(
-        requiresOwnershipTransfer: false,
-        groupIsEmpty: false,
-        availableNewOwners: [],
-        rosterIncomplete: true,
-      );
-    }
-
-    // Owner leaving - check for other members
-    final otherMembers = _members
-        .where((member) => member.uid != currentUserId)
-        .toList();
-
-    if (otherMembers.isEmpty) {
-      // Empty group - owner can delete it
-      return const LeaveGroupDecision(
-        requiresOwnershipTransfer: false,
-        groupIsEmpty: true,
-        availableNewOwners: [],
-      );
-    } else {
-      // Has other members - requires ownership transfer
-      return LeaveGroupDecision(
-        requiresOwnershipTransfer: true,
-        groupIsEmpty: false,
-        availableNewOwners: otherMembers,
-      );
-    }
+    return LeaveGroupDecision.forMembers(
+      isOwner: isAdmin,
+      rosterIncomplete: hasUnresolvedMembers,
+      members: _members,
+      currentUserId: currentUserId,
+    );
   }
 
   /// A refusal for an incomplete roster is often a transient read failure, so
@@ -491,52 +424,10 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Pick up to [maxCount] recipe suggestions from the household-filtered
-  /// recipe pool for a "Vad ska vi äta?" poll. Biases toward variety by
-  /// grouping by meal type and round-robining across types.
-  /// Returns an empty list when the pool is empty (UI shows import CTA).
-  Future<List<Recipe>> pickMealVoteSuggestions({int maxCount = 4}) async {
-    final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-    final menuService = ServiceLocator.get<MenuService>();
-    final generator = MenuGenerator(
-      menuService: menuService,
-      recipeService: recipeService,
-      userService: _userService,
-      filterByAllergens: true,
-      filterByDietary: true,
-    );
-
-    final pool = await generator.getAvailableRecipesAsync();
-    if (pool.isEmpty) return const [];
-
-    // Group by meal type to encourage variety — cheap deterministic
-    // bucketing, no LLM involvement. Fall back to title hash when meal type
-    // is missing so recipes without one still get distributed.
-    final buckets = <String, List<Recipe>>{};
-    for (final recipe in pool) {
-      final rawMealType = recipe.mealType;
-      final key = rawMealType.isNotEmpty
-          ? rawMealType
-          : (recipe.title.hashCode & 0x3).toString();
-      buckets.putIfAbsent(key, () => []).add(recipe);
-    }
-
-    final picked = <Recipe>[];
-    final bucketIterators = buckets.values
-        .map((b) => b.iterator)
-        .toList(growable: false);
-    while (picked.length < maxCount) {
-      var anyAdded = false;
-      for (final it in bucketIterators) {
-        if (picked.length >= maxCount) break;
-        if (it.moveNext()) {
-          picked.add(it.current);
-          anyAdded = true;
-        }
-      }
-      if (!anyAdded) break;
-    }
-    return picked;
-  }
+  /// recipe pool for a "Vad ska vi äta?" poll. Returns an empty list when the
+  /// pool is empty (UI shows import CTA).
+  Future<List<Recipe>> pickMealVoteSuggestions({int maxCount = 4}) =>
+      _mealVotes.pickSuggestions(maxCount: maxCount);
 
   /// Post [recipes] as a poll in this social group's chat and return the
   /// conversation id, or null on failure with [errorMessage] set.
@@ -573,38 +464,15 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
 
     try {
-      return await executeAsync(() async {
-        final messagingService = ServiceLocator.get<MessagingService>();
-
-        final conversationId = await messagingService.ensureCategoryChat(
-          ownerId: group.ownerId,
-          categoryId: group.id,
-        );
-
-        final options = recipes
-            .map(
-              (r) => PollOption.create(
-                text: r.title,
-                recipeId: r.id,
-                recipeImageUrl: r.primaryImageUrl,
-                recipePortions: r.portions,
-              ),
-            )
-            .toList();
-
-        final poll = Poll.fromOptions(
+      return await executeAsync(
+        () => _mealVotes.postPoll(
+          group: group,
+          currentUserId: currentUserId,
           question: question,
-          options: options,
-          creatorId: currentUserId,
+          recipes: recipes,
           allowMultipleChoices: allowMultipleChoices,
-        );
-
-        await messagingService.sendPollMessage(
-          conversationId: conversationId,
-          pollData: poll.toMap(),
-        );
-        return conversationId;
-      });
+        ),
+      );
     } catch (e) {
       setError(
         ChatGroupErrorMapper.map(
