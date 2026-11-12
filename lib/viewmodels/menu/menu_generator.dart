@@ -1,115 +1,28 @@
 // lib/viewmodels/menu/menu_generator.dart
 
-import 'package:clock/clock.dart';
-import 'package:butlery/core/di/household_links_from_locator.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
-import 'package:butlery/services/menu/menu_allergen_trust.dart';
-import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
-import 'package:butlery/services/rating/canonical_pool_key.dart';
-import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/utils/iso_week_utils.dart';
-import 'package:butlery/services/tagging/config/cuisine_config.dart';
-import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
 import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
-import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/menu_pool_models.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/menu_pool_prefs.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/menu_scoring_reads.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/prompt_keyword_filter.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/recent_plan_reader.dart';
+import 'package:butlery/viewmodels/menu/menu_generator/swap_candidates.dart';
 
-/// Result of a recipe swap operation, including alternatives info.
-class SwapResult {
-  final Recipe? recipe;
-  final int alternativesRemaining;
-  final String? exhaustedMessage;
-
-  const SwapResult({
-    this.recipe,
-    required this.alternativesRemaining,
-    this.exhaustedMessage,
-  });
-}
-
-/// Whose preferences filtered the last menu pool. The UI attributes the
-/// hidden-recipe hint to "hushållets allergier" only when the household or
-/// present-diner union was actually in play — a solo user's own filter gets
-/// neutral wording (BUT-1464 review M2, no over-attribution).
-/// [householdIncomplete] is the household union built while at least one
-/// member's profile could not be read (BUT-1663): the pool was filtered by a
-/// widened, safety-floored set rather than the household's real preferences,
-/// so telemetry must not report it as a plain [household] run.
-/// [presentIncomplete] is the same situation for the who's-eating-today union
-/// (BUT-2076).
-enum MenuPrefSource {
-  present,
-  presentIncomplete,
-  household,
-  householdIncomplete,
-  singleUser
-  ;
-
-  /// The pool was filtered by a widened safety floor because someone eating
-  /// could not be read — the menu must say so rather than claim precision.
-  bool get isRosterIncomplete =>
-      this == presentIncomplete || this == householdIncomplete;
-}
-
-/// Pool statistics from the last [MenuGenerator.getAvailableRecipesAsync]
-/// run, so the menu UI can explain a shrunken pool instead of it looking
-/// like a bug (BUT-1464, PM conditions 1-3).
-class MenuPoolStats {
-  /// Recipes removed by the allergen/dietary filter (household union when a
-  /// household exists).
-  final int hiddenByAllergenFilter;
-
-  /// Recipes that stayed in the pool despite an UNKNOWN effective status for
-  /// a tracked allergen — the `includeUnknownInMenu` soft path. The UI marks
-  /// these with an "allergener okända" chip.
-  final Set<String> unknownSoftRecipeIds;
-
-  /// How many allergens were tracked by the preferences used for filtering
-  /// (analytics context for the hidden count).
-  final int trackedAllergenCount;
-
-  /// Which preference set did the filtering — drives the hint wording.
-  final MenuPrefSource prefSource;
-
-  const MenuPoolStats({
-    required this.hiddenByAllergenFilter,
-    required this.unknownSoftRecipeIds,
-    required this.trackedAllergenCount,
-    required this.prefSource,
-  });
-
-  static const empty = MenuPoolStats(
-    hiddenByAllergenFilter: 0,
-    unknownSoftRecipeIds: {},
-    trackedAllergenCount: 0,
-    prefSource: MenuPrefSource.singleUser,
-  );
-}
-
-/// P6-U01: the library has no recipe the generation may use. Its own
-/// message (errorNoRecipesAvailable), kept apart from "Inga recept matchar",
-/// which is a library with recipes where none matched.
-class MenuNoRecipesException implements Exception {
-  const MenuNoRecipesException();
-
-  @override
-  String toString() => AppLocale.current.errorNoRecipesAvailable;
-}
+export 'package:butlery/viewmodels/menu/menu_generator/menu_pool_models.dart';
 
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
@@ -272,11 +185,14 @@ class MenuGenerator {
       return recipes;
     }
 
-    final (prefs, prefSource) = await _resolveActivePrefs();
+    final (prefs, prefSource) = await MenuPoolPrefs.resolveActive(
+      _userService,
+      presentMemberIds,
+    );
     final beforeCount = recipes.length;
     final unknownSoft = <String>{};
     if (filterByAllergens) {
-      final safe = filterByPrefs(
+      final safe = MenuPoolPrefs.filterByPrefs(
         recipes,
         prefs,
         allergens: true,
@@ -295,7 +211,7 @@ class MenuGenerator {
             ];
     }
     if (filterByDietary) {
-      recipes = filterByPrefs(recipes, prefs, allergens: false);
+      recipes = MenuPoolPrefs.filterByPrefs(recipes, prefs, allergens: false);
     }
     if (isCancelled?.call() ?? false) return recipes;
     lastPoolStats = MenuPoolStats(
@@ -307,149 +223,23 @@ class MenuGenerator {
     return recipes;
   }
 
-  /// Resolves which allergen/dietary preferences the async pool filters by.
-  ///
-  /// Priority: present-diner union (opt-in, NON-EMPTY set required — an empty
-  /// "no one selected" list must NOT disable filtering) → whole-household
-  /// union → the single user's own preferences. Every fall-through lands on a
-  /// FILTERED pool, never an unfiltered one.
-  Future<(UserAllergenPreferences, MenuPrefSource)>
-  _resolveActivePrefs() async {
-    final present = presentMemberIds;
-    if (present != null && present.isNotEmpty) {
-      final resolved = await PresentDinerPrefsResolver(
-        householdLinksFromLocator(),
-      ).resolve(present);
-      if (resolved != null) {
-        return (
-          resolved.preferences,
-          resolved.isComplete
-              ? MenuPrefSource.present
-              : MenuPrefSource.presentIncomplete,
-        );
-      }
-    }
-    return resolveHouseholdPrefs(_userService);
-  }
-
-  /// The whole-household half of [_resolveActivePrefs]: household union, or
-  /// the single user's own preferences, plus every diner profile. Every
-  /// fall-through lands on a FILTERED set, never an unfiltered one. Static so
-  /// the per-meal allergen scope (BUT-2362) judges against exactly what
-  /// generation filters by.
-  static Future<(UserAllergenPreferences, MenuPrefSource)>
-  resolveHouseholdPrefs(UserService userService) async {
-    final useHouseholdAllergens =
-        userService.currentUserProfile?.useHouseholdAllergens ?? true;
-    final ownPrefs = HouseholdService.ownMenuPreferences(
-      userService.currentUserProfile,
-    );
-    final householdService = ServiceLocator.tryGet<HouseholdService>();
-    final hasFriendHousehold = householdService?.hasHousehold ?? false;
-    var (prefs, source) = (ownPrefs, MenuPrefSource.singleUser);
-    if (useHouseholdAllergens && hasFriendHousehold) {
-      final aggregate = await householdService!.aggregateAllergenPreferences();
-      (prefs, source) = (
-        aggregate.preferences,
-        aggregate.isRosterComplete
-            ? MenuPrefSource.household
-            : MenuPrefSource.householdIncomplete,
-      );
-    }
-    // Family diner profiles (children) join the union. The household toggle
-    // is only shown with a friend-based household, so without one a stale
-    // `false` must not silently drop a child's allergens.
-    if (useHouseholdAllergens || !hasFriendHousehold) {
-      final withDiners = await PresentDinerPrefsResolver(
-        householdLinksFromLocator(),
-      ).addHouseholdDiners(prefs);
-      if (withDiners != null && withDiners.changed) {
-        final complete =
-            withDiners.prefs.isComplete && !source.isRosterIncomplete;
-        return (
-          withDiners.prefs.preferences,
-          complete
-              ? MenuPrefSource.household
-              : MenuPrefSource.householdIncomplete,
-        );
-      }
-    }
-    return (prefs, source);
-  }
-
-  /// Filter recipes using explicit prefs — the ONE allergen/dietary filter
-  /// for menu pools (household, present-diner, and single-user paths all
-  /// land here so the trust guards can't diverge between them).
-  ///
-  /// Statuses go through [MenuAllergenTrust] (BUT-1464): manual overrides
-  /// honoured, stale FREE downgraded to UNKNOWN, stale CONTAINS kept.
-  /// A recipe with NO tagResult is functionally UNKNOWN (BUT-1394) and
-  /// follows the same `includeUnknownInMenu` opt-out as tagged-but-unknown.
-  ///
-  /// [unknownSoftCollector], when supplied on the allergen pass, receives the
-  /// ids of recipes that were INCLUDED despite an UNKNOWN effective status
-  /// for a tracked allergen — the UI marks these (PM condition 2).
-  ///
-  /// Static so the onboarding sample menu (BUT-2299) filters through the same
-  /// guards as a generated menu.
-  static List<Recipe> filterByPrefs(
-    List<Recipe> recipes,
-    UserAllergenPreferences prefs, {
-    required bool allergens,
-    Set<String>? unknownSoftCollector,
-  }) {
-    if (allergens) {
-      if (!prefs.hasTrackedAllergens) return recipes;
-      final tracked = prefs.trackedAllergens;
-      final includeUnknown = prefs.includeUnknownInMenu;
-      return recipes.where((recipe) {
-        var sawUnknown = false;
-        for (final allergen in tracked) {
-          final status = MenuAllergenTrust.effectiveAllergenStatus(
-            recipe,
-            allergen,
-          );
-          if (status == TriState.contains) return false;
-          if (status == TriState.unknown) {
-            if (!includeUnknown) return false;
-            sawUnknown = true;
-          }
-        }
-        if (sawUnknown) unknownSoftCollector?.add(recipe.id);
-        return true;
-      }).toList();
-    } else {
-      if (!prefs.hasTrackedDietary) return recipes;
-      final tracked = prefs.trackedDietary;
-      final includeUnknown = prefs.includeUnknownInMenu;
-      return recipes.where((recipe) {
-        for (final dietary in tracked) {
-          final status = MenuAllergenTrust.effectiveDietaryStatus(
-            recipe,
-            dietary,
-          );
-          if (status == TriState.contains) return false;
-          if (!includeUnknown && status == TriState.unknown) return false;
-        }
-        return true;
-      }).toList();
-    }
-  }
-
   /// Single-user allergen filtering (sync pool only) — same trust-guarded
   /// filter as the async paths, fed by the user's own preferences.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
-      filterByPrefs(recipes, _ownPrefs, allergens: true);
+      MenuPoolPrefs.filterByPrefs(recipes, _ownPrefs, allergens: true);
 
   /// Single-user dietary filtering (sync pool only) — see
   /// [_filterByAllergenPreferences].
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
-      filterByPrefs(recipes, _ownPrefs, allergens: false);
+      MenuPoolPrefs.filterByPrefs(recipes, _ownPrefs, allergens: false);
 
   /// The signed-in user's own preferences as the MENU filters by them —
   /// see [HouseholdService.ownMenuPreferences] (BUT-2085, BUT-1694).
   UserAllergenPreferences get _ownPrefs =>
       HouseholdService.ownMenuPreferences(_userService.currentUserProfile);
+
+  static const resolveHouseholdPrefs = MenuPoolPrefs.resolveHousehold;
+  static const filterByPrefs = MenuPoolPrefs.filterByPrefs;
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
@@ -490,9 +280,9 @@ class MenuGenerator {
       throw const MenuNoRecipesException();
     }
 
-    final pool = _applyPromptKeywordFilter(prompt, available);
+    final pool = PromptKeywordFilter.apply(prompt, available);
 
-    final recent = await _recentlyUsedRecipeIds();
+    final recent = await recentlyUsedRecipeIds(_weeklyMenuPlanService);
     _stopIfCancelled(isCancelled);
     lastRecencyReadFailed = recent.readFailed;
     final recentIds = recent.ids;
@@ -533,38 +323,6 @@ class MenuGenerator {
     );
   }
 
-  /// Collects recipe IDs used in the last 1-2 weekly plans so generation can
-  /// down-weight them (BUT-1318). Returns an empty set with no history (first
-  /// menu ever) or when no plan service is wired — generation then uses the
-  /// full pool unchanged. Errors are swallowed: a recent-plan read failure
-  /// must never block menu generation, but it is reported in `readFailed` so
-  /// the screen can say that dishes may repeat.
-  Future<({Set<String> ids, bool readFailed})> _recentlyUsedRecipeIds() async {
-    final service = _weeklyMenuPlanService;
-    if (service == null) return (ids: const <String>{}, readFailed: false);
-    try {
-      final now = clock.now();
-      final thisWeek = IsoWeekUtils.weekStartOf(now);
-      final lastWeek = thisWeek.subtract(const Duration(days: 7));
-      // Read this week + last week only (1-2 plans) — bounded, cheap, and the
-      // weeks the user is most likely repeating from.
-      final reads = await Future.wait([
-        service.readWeek(thisWeek),
-        service.readWeek(lastWeek),
-      ]);
-      final ids = <String>{};
-      for (final read in reads) {
-        for (final entry in read.plan.entries) {
-          ids.add(entry.recipeId);
-        }
-      }
-      return (ids: ids, readFailed: reads.any((r) => r.readFailed));
-    } catch (e) {
-      AppLogger.warning('Recent-plan dedup skipped: $e');
-      return (ids: const <String>{}, readFailed: true);
-    }
-  }
-
   /// Builds the per-generation personalisation context (BUT-1321): pantry
   /// overlap. The signal is optional — an unregistered [PantryService] or a
   /// pantry read failure simply yields an empty context, so generation degrades
@@ -580,8 +338,8 @@ class MenuGenerator {
   Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
     // The pantry, pooled and dislike reads are independent I/O — start all
     // before awaiting any so generation waits for the slowest, not the sum.
-    final pantryFuture = _buildPantryMatch(pool);
-    final pooledFuture = _buildPooledStats(pool);
+    final pantryFuture = MenuScoringReads.buildPantryMatch(_userService, pool);
+    final pooledFuture = MenuScoringReads.buildPooledStats(pool);
     final dislikedFuture = _unplaceableIn(pool);
     final pantryMatch = await pantryFuture;
     final pooledStats = await pooledFuture;
@@ -592,121 +350,6 @@ class MenuGenerator {
       pooledStatsByRecipeId: pooledStats,
       dislikedRecipeIds: disliked,
     );
-  }
-
-  /// Reads pantry ingredient overlap for the candidate [pool] (BUT-1321), keyed
-  /// by recipeId. Fail-open: an unregistered [PantryService] or a read failure
-  /// yields an empty map and generation proceeds without the pantry boost.
-  Future<Map<String, double>> _buildPantryMatch(List<Recipe> pool) async {
-    final pantryMatch = <String, double>{};
-    final pantryService = ServiceLocator.tryGet<PantryService>();
-    final userId = _userService.currentUserId;
-    if (pantryService != null && userId != null && pool.isNotEmpty) {
-      try {
-        final matches = await pantryService.getMatchingRecipes(userId, pool);
-        for (final match in matches) {
-          pantryMatch[match.recipe.id] = match.matchPercent;
-        }
-      } catch (e) {
-        // Never let a pantry read block menu generation — fall through with
-        // no pantry boost.
-        AppLogger.warning('Pantry-aware menu scoring skipped: $e');
-      }
-    }
-    return pantryMatch;
-  }
-
-  /// Reads pooled "Butlery-betyget" community stats for the candidate [pool]
-  /// (BUT-1516), keyed by recipeId, so the scorer can apply the shrinkage boost.
-  /// Gated on the `enable_pooled_ratings` flag, so it issues ZERO Firestore
-  /// reads while the feature is dark. Fail-open: any error (or an unregistered
-  /// repository) yields an empty map and generation proceeds unweighted, exactly
-  /// like the pantry read.
-  Future<Map<String, PooledStats>> _buildPooledStats(List<Recipe> pool) async {
-    final pooledOn =
-        ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
-          FeatureFlags.enablePooledRatings,
-        ) ??
-        false;
-    if (!pooledOn || pool.isEmpty) return const {};
-
-    final ratingsRepo = ServiceLocator.tryGet<RatingsRepository>();
-    if (ratingsRepo == null) return const {};
-
-    try {
-      // Derive each candidate's poolKey — the pre-stamped hint, else compute it
-      // (older recipes saved before the flag went live carry no hint). Both may
-      // be null for a generic/no-anchor dish; those simply get no pooled signal.
-      final poolKeyByRecipeId = <String, String>{};
-      for (final recipe in pool) {
-        final key =
-            recipe.core.ratingPoolKey ??
-            CanonicalPoolKey.compute(
-              title: recipe.core.title,
-              ingredients: recipe.core.ingredients,
-            );
-        if (key != null && key.isNotEmpty) {
-          poolKeyByRecipeId[recipe.id] = key;
-        }
-      }
-      if (poolKeyByRecipeId.isEmpty) return const {};
-
-      // getBulkPooledStats de-dupes + drops empties internally, so pass the
-      // per-recipe keys directly (duplicate dishes collapse to one query).
-      final statsByKey = await ratingsRepo.getBulkPooledStats(
-        poolKeyByRecipeId.values.toList(),
-      );
-      final byRecipeId = <String, PooledStats>{};
-      poolKeyByRecipeId.forEach((recipeId, key) {
-        final stats = statsByKey[key];
-        if (stats != null) byRecipeId[recipeId] = stats;
-      });
-      return byRecipeId;
-    } catch (e) {
-      // Never let a pooled-ratings read block menu generation.
-      AppLogger.warning('Pooled-rating menu scoring skipped: $e');
-      return const {};
-    }
-  }
-
-  /// Filters or boosts recipes based on prompt keywords.
-  ///
-  /// Returns filtered pool if large enough (>= 3), otherwise returns
-  /// full pool so generation can still proceed.
-  static const _minFilteredPoolSize = 3;
-
-  List<Recipe> _applyPromptKeywordFilter(String prompt, List<Recipe> recipes) {
-    final lower = prompt.toLowerCase();
-
-    final wantsFavorites =
-        lower.contains('favoriter') || lower.contains('favourites');
-    final wantsRecent = lower.contains('senaste') || lower.contains('recent');
-
-    if (!wantsFavorites && !wantsRecent) return recipes;
-
-    final now = clock.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-
-    List<Recipe> filtered;
-    if (wantsFavorites) {
-      filtered = recipes.where((r) => r.isFavorite).toList();
-    } else {
-      filtered = recipes
-          .where(
-            (r) =>
-                r.lastCookedAt != null &&
-                r.lastCookedAt!.isAfter(thirtyDaysAgo),
-          )
-          .toList();
-    }
-
-    if (filtered.length >= _minFilteredPoolSize) return filtered;
-
-    // Pool too small — fall back to full pool
-    AppLogger.info(
-      'Filtered pool too small (${filtered.length}), using full pool',
-    );
-    return recipes;
   }
 
   /// Regenerate specific menu section using the original prompt if available.
@@ -725,7 +368,7 @@ class MenuGenerator {
     // BUT-1329: a single-slot re-roll must get the same cross-week freshness
     // down-weighting as a full generation, so last-week recipes are deprioritised
     // here too. Empty set / no plan service → behaves exactly as before.
-    final recent = await _recentlyUsedRecipeIds();
+    final recent = await recentlyUsedRecipeIds(_weeklyMenuPlanService);
     _stopIfCancelled(isCancelled);
     if (recent.readFailed) lastRecencyReadFailed = true;
     final recentIds = recent.ids;
@@ -735,7 +378,7 @@ class MenuGenerator {
     _stopIfCancelled(isCancelled);
     // The menu came from a "favoriter"/"senaste" prompt; a re-roll that left
     // the keyword out of the pool would bring back dishes the prompt excluded.
-    final pool = _applyPromptKeywordFilter(prompt, available);
+    final pool = PromptKeywordFilter.apply(prompt, available);
     // A re-roll rebuilds the scoring context from scratch so it scores against
     // the LIVE pantry + pooled stats (founder decision 2026-07-12, reverting the
     // BUT-1455 within-session cache): if the cook marked ingredients used since
@@ -779,7 +422,7 @@ class MenuGenerator {
       }
     }
 
-    final allEligible = _filterEligibleForSwap(
+    final allEligible = SwapCandidates.filterEligible(
       await getAvailableRecipesAsync(),
       currentMenuRecipeIds,
       category,
@@ -797,7 +440,7 @@ class MenuGenerator {
 
     // Same intent as generation's repeat down-weighting: prefer a dish not
     // used in the last two weeks, but never run out of swaps because of it.
-    final recent = await _recentlyUsedRecipeIds();
+    final recent = await recentlyUsedRecipeIds(_weeklyMenuPlanService);
     if (recent.readFailed) lastRecencyReadFailed = true;
     if (recent.ids.isNotEmpty) {
       final fresh = eligibleRecipes
@@ -819,7 +462,7 @@ class MenuGenerator {
 
     final Recipe chosen;
     if (useSmartSwap) {
-      chosen = _scoreAndPickBest(eligibleRecipes, currentRecipe);
+      chosen = SwapCandidates.scoreAndPickBest(eligibleRecipes, currentRecipe);
     } else {
       eligibleRecipes.shuffle();
       chosen = eligibleRecipes.first;
@@ -839,61 +482,6 @@ class MenuGenerator {
       alternativesRemaining: allEligible.length - 1,
     );
   }
-
-  /// Filters recipes eligible for swap: matches category, not in menu.
-  List<Recipe> _filterEligibleForSwap(
-    List<Recipe> pool,
-    Set<String> excludeIds,
-    String category,
-  ) {
-    return pool.where((recipe) {
-      if (excludeIds.contains(recipe.id)) return false;
-
-      return fitsMealSlot(recipe.mealType, category);
-    }).toList();
-  }
-
-  /// Scores candidates and picks the highest. Ties are broken randomly.
-  Recipe _scoreAndPickBest(List<Recipe> candidates, Recipe current) {
-    final seasonTag = SeasonUtils.currentSeasonTag();
-    final currentCuisine = _extractCuisine(current);
-    final currentCategory = menuMealKey(current.mealType);
-
-    var bestScore = -1;
-    final bestCandidates = <Recipe>[];
-
-    for (final candidate in candidates) {
-      var score = 0;
-
-      // +3 same cuisine
-      if (currentCuisine != null) {
-        final candidateCuisine = _extractCuisine(candidate);
-        if (candidateCuisine == currentCuisine) score += 3;
-      }
-
-      // +2 same category
-      if (menuMealKey(candidate.mealType) == currentCategory) score += 2;
-
-      // +1 seasonal match
-      final tags = candidate.tagResult?.tags;
-      if (tags != null && tags.contains(seasonTag)) score += 1;
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestCandidates
-          ..clear()
-          ..add(candidate);
-      } else if (score == bestScore) {
-        bestCandidates.add(candidate);
-      }
-    }
-
-    bestCandidates.shuffle();
-    return bestCandidates.first;
-  }
-
-  static String? _extractCuisine(Recipe recipe) =>
-      CuisineConfig.extractCuisineTag(recipe);
 
   /// Analyze generated menu quality (delegates to [MenuQualityAnalyzer]).
   Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) =>
