@@ -40,6 +40,7 @@ import {
   runOpsSnapshot,
   runFeedbackSnapshot,
 } from "../analytics/daily-snapshots";
+import { runAcquisitionEligibleSnapshot } from "../analytics/acquisition-counter";
 import { runTrackRetention } from "../analytics/track-retention";
 import { runComputeFeatureRetention } from "../analytics/compute-feature-retention";
 import {
@@ -59,6 +60,7 @@ import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
 import { recordRatingReads } from "../ratings/rating-read-counter";
 import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
+import { runQuarantineSweep } from "../storage/quarantine-restore";
 
 /**
  * BUT-1814: budget for a daily task.
@@ -123,6 +125,7 @@ export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   { name: "parsingCorrectionsSnapshot", run: () => runParsingCorrectionsSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "feedbackSnapshot", run: () => runFeedbackSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "opsSnapshot", run: () => runOpsSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "acquisitionEligibleSnapshot", run: () => runAcquisitionEligibleSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "detectAnomalies", run: () => runDetectAnomalies(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "correlateNotificationEffectiveness", run: () => runCorrelateNotificationEffectiveness(), timeoutMs: TASK_TIMEOUT_MS },
 ];
@@ -168,6 +171,8 @@ export const WEEKLY_REPORT_TASKS: MaintenanceTask[] = [
     run: () => runReconcileBlockMirrors(),
     timeoutMs: TASK_TIMEOUT_MS,
   },
+  // BUT-818: stopped images go once the appeal window is over.
+  { name: "quarantineSweep", run: () => runQuarantineSweep(), timeoutMs: TASK_TIMEOUT_MS },
 ];
 
 export const dailyAnalytics = onSchedule(

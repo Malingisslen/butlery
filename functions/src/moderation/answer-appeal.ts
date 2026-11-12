@@ -34,6 +34,7 @@ import {
 import { applyReversal, readReversal, ReversalEffects } from "./appeal-reversal";
 import { stageModerationAudit } from "./decision-revision";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
+import { isImageReportId } from "../storage/image-decision";
 
 export const RATE_LIMIT_KEY = "answerAppeal";
 
@@ -120,6 +121,17 @@ export async function runAnswerAppealWithDb(
     const reportId = appeal.get("reportId");
     if (!isAppealRole(role) || !isSafeDocId(reportId)) {
       throw new HttpsError("failed-precondition", "appeal_malformed");
+    }
+    // BUT-818: a granted image appeal restores only the images the moderator
+    // was shown (`getQuarantinedImages`), so it waits until every page of the
+    // case has been viewed.
+    if (
+      outcome === "reversed" &&
+      role === "owner" &&
+      isImageReportId(reportId) &&
+      appeal.get("reviewedAll") !== true
+    ) {
+      throw new HttpsError("failed-precondition", "image_not_reviewed");
     }
 
     // The appellant comes from the appeal, never the report: the reporter's

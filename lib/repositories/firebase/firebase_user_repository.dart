@@ -754,6 +754,22 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     }, SetOptions(merge: true));
   }
 
+  @override
+  Future<DateTime?> fetchSessionsRevokedAt(String userId) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'read sessions revoked notice',
+    );
+    final snapshot = await firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .get();
+    final value = snapshot.data()?['sessionsRevokedAt'];
+    return value is Timestamp ? value.toDate() : null;
+  }
+
   /// BUT-1400: record the Terms-of-Service acceptance event on `users/{uid}`.
   /// `termsAcceptedAt` uses a server timestamp so the record is authoritative;
   /// `termsVersion` pins it to the accepted ToS version. Merge-write so it

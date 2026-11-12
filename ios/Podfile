@@ -3,6 +3,11 @@ platform :ios, '17.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# firebase_core 5.1 pins the Firebase iOS SDK to 12.19.3, but CocoaPods trunk has
+# no FirebaseAnalytics 12.19.3, so pod install cannot resolve. Remove once every
+# Firebase pod has the pinned version (BUT-2508).
+$FirebaseSDKVersion = '12.19.0'
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,

@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 4, 2026
-**Version:** 1.31
+**Last updated:** November 11, 2026
+**Version:** 1.34
 
 ---
 
@@ -103,6 +103,7 @@ We use your personal data for the following purposes:
 - Security and protection against misuse
 - Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
 - Handle reports: the person who reported something, and the person whose content was removed or whose profile was hidden, get a notification and a notice in the app with the decision and the reason for it, and can appeal the decision in the app. If a moderator reviews a decision and changes it, both get a new notice.
+- Check images: every image you upload to your account (profile picture, recipe photos, food photos and comment images) is checked automatically once with Google's image check (Cloud Vision SafeSearch), so that sexual or violent images can be stopped. An image that is stopped is no longer shown in the app and is kept locked so that only the moderator can reach it. You get a notification and a notice in the app with the reason, and you can appeal in the app. If the appeal is granted, the image is put back. The result of the check is stored under a code calculated from the image's content, without the image and without your user id, so that the same image does not need to be checked again.
 - Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. If you enter your own amount for an ingredient, it is saved on your household in the same way, either for one recipe or for all recipes. For one recipe, the recipe's id is saved too, and the amount is included in the export of your data. The app does not record what you eat and has no personal goals or daily values.
 
 **Recipes you show on your profile:** If you choose "Show on my profile" on a recipe, or turn on "New recipes are public", everyone signed in to Butlery who opens your profile can see the recipe. Guests and people you have blocked cannot. What shows is the title, description, servings, times, ingredients, steps, the recipe's photos, the source and the source's author. Your rating, your notes and tags, how often you have cooked the recipe and who you share it with do not show. The photos are shown as separate copies, which stop working when you stop showing the recipe. We store the choice and when you last changed it on the recipe, and what is shown on your profile is included in your data export. If you stop showing the recipe, delete it or delete your account, it is removed from your profile within a minute or so. Someone who has seen the recipe may have saved their own copy with "Create copy". That copy is theirs and is not removed, but it does not carry your name, your user id or your photos. Collaborative recipes are never shown on the profile, and people under 18 cannot show recipes there. The processing is based on **performance of a contract (Art. 6.1 b)**: it happens because you ask for it.
@@ -114,7 +115,7 @@ We use your personal data for the following purposes:
 - Identify and fix bugs
 - Improve user experience
 - Measure app performance
-- Count, anonymously and per day, which channel (for example Instagram or the newsletter) new users came from. The count holds no user ID and cannot be linked to you. It remains if you later delete your account.
+- Count which channel (for example Instagram or the newsletter) new users came from. If you open the app through a campaign link, the app reads the channel from the link. On Android the app also reads, from Google Play, which link the app was installed from. This happens only after you have consented, and only the channel is read. The channel is saved on your account, is included in your data export and is deleted with the account. It is also counted in a summary per day that holds no user ID, cannot be linked to you and remains even if you delete your account.
 
 **Marketing (if you have consented):**
 - Send newsletters about new features
@@ -140,7 +141,7 @@ We use your personal data for the following purposes:
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
 
-**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (the Netherlands). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
+**Samples from AI recipe reading.** When AI reads a recipe from a photo or a web page, we store the text sent to the AI and the AI's answer, but never the image itself. Email addresses, phone numbers, personal identity numbers, street addresses and names are removed first. For a small share of the recipes you import by photo, link or pasted text, we may also let the AI read the recipe when our own parsing has already succeeded, to compare the two. The comparison does not change your recipe. We only do this if you have consented to AI processing. We use the samples to improve Butlery's own recipe reading. They are labelled with a code derived from your user id, never with your name or email. No one can read them in the app, and they are deleted automatically after 30 days, even if you have deleted your account. The AI runs in Google Cloud Vertex AI within the EU (Google's EU multi-region for photos, otherwise europe-west4; europe-west4/the Netherlands for text). Legal basis: your consent. If you withdraw your AI consent, no further comparisons are made.
 
 **Shared allergies within your household (if you have consented):**
 
@@ -194,7 +195,7 @@ We share your personal data with the following third parties:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
 - **Purpose:** AI-based recipe extraction and structuring via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's `europe-west4` region (the Netherlands). No transfer to the USA.
+- **Transfer:** Within EU/EEA — text is processed in Google Cloud's `europe-west4` region (the Netherlands) and photos in Google Cloud's EU multi-region (within the EU), or in `europe-west4` if it does not respond. No transfer to the USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** A photo is sent here only after you have said yes to AI reading it (see section 5.2). The photo may contain personal information visible in the picture. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
@@ -220,7 +221,8 @@ The following is a list of the data processors that receive your data, the categ
 |-----------|---------------|----------------|--------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Storage: `europe-west1` (Belgium). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe photos you have said yes to AI reading, and text from recipes | Within the EU: Google's EU multi-region for photos (otherwise `europe-west4`), `europe-west4` (the Netherlands) for text — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vision (SafeSearch)** | Images you upload to your account | Google's EU endpoint — processing within the EU, no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 
 When the phone reads a recipe photo itself (Google ML Kit), the photo is not sent to anyone.
 
@@ -286,6 +288,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
+| The channel you came from (source and medium) on your account | Until you delete the account | Consent (Art. 6.1.a) |
 | Anonymous daily channel count (no user ID) | Kept indefinitely, as it cannot be linked to a person | Consent (Art. 6.1.a) at the time of counting |
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
@@ -297,6 +300,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Backup codes (protected versions only) | Until you turn off two-step verification, use a code to recover your account, or delete your account | Performance of contract |
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the latest decision. If a decision is reviewed, the earlier decision is kept in the same record | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
+| Image stopped by the image check | Deleted automatically once the time to appeal (6 months) has run out, and when you delete your account. If an appeal is granted, the image is put back | Legitimate interest (user safety) |
 | An appeal (what you wrote, when it arrived and our answer) | 12 months after the decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 | Import log (user id, the page address and how the import went) | Deleted automatically about 30 days after the import, or when you delete your account | Legitimate interest |
 | Samples from AI recipe reading (text to and from the AI, without images and without names, email or anything else that identifies you) | Deleted automatically after 30 days, even if the account has already been deleted | Consent |
@@ -423,7 +427,7 @@ We may update this policy when:
 For significant changes:
 - We may request renewed consent (if applicable)
 
-**Last change:** November 3, 2026
+**Last change:** November 11, 2026
 **Version history:** Available upon request
 
 ---

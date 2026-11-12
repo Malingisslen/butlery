@@ -10,11 +10,9 @@
  *   layer rejects `image/svg+xml`, this CF rejects bytes that LOOK like SVG
  *   regardless of declared MIME.
  *
- * **Out of scope (deferred):** SafeSearch via Vision API. That's a paid GCP
- * call (~$0.0015/image) with billing implications and a privacy-policy
- * disclosure requirement; tracked separately. This CF is the byte-level
- * gate; a future SafeSearch CF would be a sibling trigger on the same
- * `onObjectFinalized` event.
+ * BUT-818: an image that passes the byte gate under `users/` then goes through
+ * Vision SafeSearch (`safe-search.ts`); an explicit one is moved to the
+ * client-unreachable `quarantine/` prefix.
  *
  * Behavior on mismatch:
  * - Delete the object via Admin SDK (bypasses rules).
@@ -29,6 +27,16 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import type { Bucket } from "@google-cloud/storage";
 import { deleteIfOwnerErased } from "./erased-owner-upload";
+import { QUARANTINE_PREFIX } from "../account/cascade/storage";
+import {
+  SafeSearchAnnotate,
+  SafeSearchScores,
+  scanOnce,
+  shouldScan,
+  visionAnnotate,
+} from "./safe-search";
+import { chooseReportId, fileImageDecision, newImageReportId } from "./image-decision";
+import { defaultPushDeps, Notice, pushNotices } from "../moderation/moderation-notices";
 
 // First few bytes of supported formats. Source:
 // - JPEG:  FF D8 FF
@@ -160,8 +168,6 @@ async function rejectAndAudit(
     // the cleanup; ops can re-run a sweep if delete fails.
   }
 
-  // Storage rules only permit writes under uid-keyed paths, so an unresolvable
-  // uid signals either rule drift or an Admin SDK upload bypassing the gate.
   // Log at error level so the alert pipeline catches a sustained spike.
   if (!args.uploaderUid) {
     logger.error("[moderateUpload] rejected upload with unresolvable uploader", {
@@ -205,6 +211,108 @@ export interface ModerateUploadDeps {
   bucket: (name: string) => Bucket;
   /** Seam: the unit suite has no Auth emulator. */
   ownerExists?: (uid: string) => Promise<boolean>;
+  annotate: SafeSearchAnnotate;
+  push: (notices: Notice[]) => Promise<void>;
+  /** Seam: the decision's time and its grouping window. */
+  now?: () => Date;
+  /** Seams: the unit suite's Firestore fake has no `reports`; the emulator suite runs the real ones. */
+  chooseCase?: typeof chooseReportId;
+  fileDecision?: typeof fileImageDecision;
+}
+
+/**
+ * The prefixes storage.rules lets a client write. Anything else was written
+ * by the server (e.g. `ops/resets/*.json`, `models/`, our own `quarantine/`
+ * copies) and is not a client's to be judged — before this list the byte gate
+ * deleted the reset script's JSON record as a non-image.
+ */
+const CLIENT_WRITABLE_PREFIXES = ["users/", "feedback/", "corpus/"];
+
+/** The object's first download token, so a granted appeal restores the same URL. */
+function firstToken(metadata: Record<string, string> | undefined): string | null {
+  const token = String(metadata?.firebaseStorageDownloadTokens ?? "").split(",")[0];
+  return token.length > 0 ? token : null;
+}
+
+/** True once the image is in quarantine; false when it was left in place or was already gone. */
+async function quarantine(
+  args: {
+    bucket: string;
+    name: string;
+    ownerUid: string;
+    scores: SafeSearchScores;
+    reportId: string;
+    originalToken: string | null;
+  },
+  bucketHandle: Bucket,
+  db: admin.firestore.Firestore
+): Promise<boolean> {
+  const source = bucketHandle.file(args.name);
+  const dest = bucketHandle.file(QUARANTINE_PREFIX + args.name);
+  // Takes a copy out of its case, so neither the owner's decision nor the
+  // sweep is filed about an image that is still visible. The copy itself stays
+  // as evidence until the sweep deletes it.
+  const detach = () =>
+    dest.setMetadata({ metadata: { reportId: null } }).then(() => undefined, () => undefined);
+  let copied = false;
+  try {
+    await source.copy(dest, {
+      metadata: {
+        originalPath: args.name,
+        ownerUid: args.ownerUid,
+        reportId: args.reportId,
+        // The quarantine copy is unreachable to clients, so keeping the
+        // token here exposes nothing; restoring it keeps the app's stored URL.
+        ...(args.originalToken ? { originalToken: args.originalToken } : {}),
+        ...args.scores,
+      },
+    });
+    copied = true;
+    await dest.setMetadata({ metadata: { firebaseStorageDownloadTokens: null } });
+  } catch (err) {
+    if (copied) await detach();
+    // Object names carry the uid, and the raw error repeats them.
+    const errorCode = errorCodeOf(err);
+    if (errorCode === 404 || errorCode === "404") {
+      logger.info("[moderateUpload] explicit object deleted before quarantine", {
+        bucket: args.bucket,
+      });
+      return false;
+    }
+    logger.error("[moderateUpload] quarantine copy failed; image left in place", {
+      bucket: args.bucket,
+      errorCode,
+    });
+    return false;
+  }
+  // Copy before delete: a failed delete leaves a visible image plus evidence,
+  // a delete without the copy would leave nothing to restore on appeal.
+  try {
+    await source.delete({ ignoreNotFound: true });
+  } catch (err) {
+    logger.error("[moderateUpload] quarantined original could not be deleted", {
+      bucket: args.bucket,
+      errorCode: errorCodeOf(err),
+    });
+    await detach();
+    return false;
+  }
+
+  await db.collection("audit_logs").add({
+    userId: args.ownerUid,
+    operation: "storage_upload_quarantined",
+    resourceType: "storage_object",
+    resourceId: args.name,
+    granted: false,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    metadata: { bucket: args.bucket, reason: "safe_search", ...args.scores },
+  });
+  logger.warn("[moderateUpload] quarantined explicit upload", {
+    bucket: args.bucket,
+    report_prefix: args.reportId.slice(0, 16),
+    ...args.scores,
+  });
+  return true;
 }
 
 export async function handleFinalizedObject(
@@ -214,10 +322,7 @@ export async function handleFinalizedObject(
   const name = obj.name;
   if (!name) return; // pathologically empty event; nothing to act on.
 
-  // ML models bucket prefix is read-only and only written by ops tooling
-  // (signed-in admin context). Skip; nothing to validate at the byte level
-  // and downloading large model files just to no-op is wasteful.
-  if (name.startsWith("models/")) return;
+  if (!CLIENT_WRITABLE_PREFIXES.some((prefix) => name.startsWith(prefix))) return;
 
   const bucketName = obj.bucket;
 
@@ -325,8 +430,53 @@ export async function handleFinalizedObject(
     return;
   }
 
-  // Happy path — content type matches the bytes. No further action;
-  // SafeSearch (deferred) would slot in here when added.
+  // shouldScan admits only users/, so the path owner is set. The owner comes
+  // from the PATH, never `uploadedBy`, which the client writes.
+  if (!shouldScan(name) || pathOwner === null) return;
+  const scan = await scanOnce(
+    { bucketName, name, md5Hash: obj.md5Hash, crc32c: obj.crc32c, size: obj.size },
+    { db: deps.db, annotate: deps.annotate }
+  );
+  if (!scan?.explicit) return;
+  const now = deps.now?.() ?? new Date();
+  let reportId: string;
+  try {
+    reportId = await (deps.chooseCase ?? chooseReportId)(deps.db, bucket, pathOwner, now);
+  } catch (err) {
+    // Grouping is a convenience; the quarantine is not.
+    logger.warn("[moderateUpload] case pointer unavailable; filing a case of its own", {
+      bucket: bucketName,
+      errorCode: errorCodeOf(err),
+    });
+    reportId = newImageReportId();
+  }
+  const moved = await quarantine(
+    {
+      bucket: bucketName,
+      name,
+      ownerUid: pathOwner,
+      scores: scan.scores,
+      reportId,
+      originalToken: firstToken(obj.metadata),
+    },
+    bucket,
+    deps.db
+  );
+  if (!moved) return;
+  // After the move, so the owner is never told about an image still visible.
+  try {
+    await (deps.fileDecision ?? fileImageDecision)(
+      { reportId, ownerUid: pathOwner, now },
+      { db: deps.db, push: deps.push },
+    );
+  } catch (err) {
+    // This trigger has no retries; the weekly quarantine sweep files any
+    // decision a quarantined image is still missing.
+    logger.error("[moderateUpload] image decision not filed; the sweep will retry", {
+      report_prefix: reportId.slice(0, 16),
+      errorCode: errorCodeOf(err),
+    });
+  }
 }
 
 export const moderateUpload = onObjectFinalized(
@@ -339,5 +489,7 @@ export const moderateUpload = onObjectFinalized(
     handleFinalizedObject(event.data, {
       db: admin.firestore(),
       bucket: (name) => admin.storage().bucket(name),
+      annotate: visionAnnotate,
+      push: (notices) => pushNotices(notices, defaultPushDeps(admin.firestore())),
     })
 );

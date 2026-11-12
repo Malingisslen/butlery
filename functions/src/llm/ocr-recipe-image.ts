@@ -17,16 +17,27 @@ import {
   OcrUrlValidationResult,
   OcrUrlRejectionReason,
 } from "../shared/ocr-url-validator";
-import type { Part } from "@google-cloud/vertexai";
+import type {
+  GenerateContentRequest,
+  GenerateContentResponse,
+  Part,
+} from "@google-cloud/vertexai";
 import {
   getGeminiClient,
   getTextModel,
+  getVisionClient,
+  getVisionModel,
+  pricingForModel,
   extractResponseText,
   parseRecipeResponse,
   calculateGeminiCost,
   ExtractedRecipe,
   IMAGE_OCR_SYSTEM_PROMPT,
   MODEL_ID,
+  TEXT_PROFILE,
+  VISION_MODEL,
+  VISION_PROFILE,
+  type ModelProfile,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
@@ -86,7 +97,9 @@ interface OcrRecipeImageResponse {
   /** Prompt version used for this extraction */
   promptVersion?: string;
   /**
-   * BUT-785: pinned Vertex model id used for the OCR call. Threaded through
+   * BUT-785: pinned Vertex model id that produced the returned result: the
+   * photo call's model, or the text model when the structureRecipe retry
+   * produced the recipe. Threaded through
    * to clients so on-device analytics can correlate OCR quality / cost
    * regressions to model version rotations.
    */
@@ -222,14 +235,48 @@ export interface OcrPerformResult {
     candidatesTokenCount?: number;
     cachedContentTokenCount?: number;
   };
+  /**
+   * Id of the model that produced `content`: VISION_MODEL, or TEXT_MODEL
+   * after the NOT_FOUND fallback. Optional so older test seams keep
+   * compiling; absent is read as VISION_MODEL.
+   */
+  modelId?: string;
 }
 
-async function defaultPerformOcr(
-  args: OcrPerformArgs
-): Promise<OcrPerformResult> {
-  const client = getGeminiClient();
-  const model = getTextModel(client);
+/** One generateContent call on a profile. Injectable so tests can drive the
+ * NOT_FOUND fallback without Vertex. */
+export type OcrModelCall = (
+  profile: ModelProfile,
+  request: GenerateContentRequest
+) => Promise<GenerateContentResponse>;
 
+const callVertexProfile: OcrModelCall = async (profile, request) => {
+  const model =
+    profile === VISION_PROFILE
+      ? getVisionModel(getVisionClient())
+      : getTextModel(getGeminiClient());
+  return (await model.generateContent(request)).response;
+};
+
+/**
+ * True when Vertex answered 404 / NOT_FOUND, which is how it reports a model
+ * that this project is not served (or that was retired). The SDK wraps the
+ * API error as `cause` on a ClientError.
+ */
+export function isModelNotFoundError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const cause = (error as { cause?: { code?: unknown; status?: unknown } })
+    .cause;
+  if (cause && (cause.code === 404 || cause.status === "NOT_FOUND")) {
+    return true;
+  }
+  return error.message.includes("got status: 404 ");
+}
+
+export async function defaultPerformOcr(
+  args: OcrPerformArgs,
+  callModel: OcrModelCall = callVertexProfile
+): Promise<OcrPerformResult> {
   // Build user prompt — scrub context text for PII
   let userPrompt =
     "Läs texten i denna bild och extrahera receptet. Svara med JSON.";
@@ -250,19 +297,51 @@ async function defaultPerformOcr(
     userPrompt
   );
 
-  const result = await model.generateContent({
+  const request: GenerateContentRequest = {
     contents: [{ role: "user", parts }],
     systemInstruction: args.systemPrompt ?? IMAGE_OCR_SYSTEM_PROMPT,
-  });
+  };
 
-  const response = result.response;
+  // The fallback stays inside the EU (TEXT_PROFILE is europe-west4) and runs
+  // only on NOT_FOUND, so a staging project without the vision model, or an
+  // early retirement, still reads photos. Every other error propagates.
+  let profile: ModelProfile = VISION_PROFILE;
+  let response: GenerateContentResponse;
+  try {
+    response = await callModel(VISION_PROFILE, request);
+  } catch (error) {
+    if (!isModelNotFoundError(error)) throw error;
+    profile = TEXT_PROFILE;
+    logger.warn("ocr_recipe_image.vision_model_not_found", {
+      event: "ocr_recipe_image.vision_model_not_found",
+      failedModelId: VISION_PROFILE.id,
+      modelId: TEXT_PROFILE.id,
+    });
+    response = await callModel(TEXT_PROFILE, request);
+  }
+
   const content = extractResponseText(response) ?? "";
-  const cost = calculateGeminiCost(response.usageMetadata, 0.01);
+
+  // SDK 1.12.0's UsageMetadata type has no `thoughtsTokenCount`; the API
+  // still returns it for thinking-capable models.
+  const usage = response.usageMetadata as
+    | (GenerateContentResponse["usageMetadata"] & { thoughtsTokenCount?: number })
+    | undefined;
+  // The 0.01 floor is deliberate: the ledger charges photos conservatively.
+  const cost = calculateGeminiCost(usage, 0.01, pricingForModel(profile.id));
+  if (profile === VISION_PROFILE && (usage?.thoughtsTokenCount ?? 0) > 0) {
+    // thinkingLevel MINIMAL is meant to keep this at zero; thought tokens
+    // bill at the output rate.
+    logger.warn("ocr_recipe_image.vision_thoughts_billed", {
+      event: "ocr_recipe_image.vision_thoughts_billed",
+      modelId: profile.id,
+      thoughtsTokenCount: usage?.thoughtsTokenCount,
+    });
+  }
 
   // BUT-1032/BUT-1222: raw token counts ride along in the result so the
   // caller's `ocr_recipe_image.complete` event carries them — one queryable
   // event for duration + success + token counts.
-  const usage = response.usageMetadata;
   return {
     content,
     cost,
@@ -271,6 +350,7 @@ async function defaultPerformOcr(
       candidatesTokenCount: usage?.candidatesTokenCount,
       cachedContentTokenCount: usage?.cachedContentTokenCount,
     },
+    modelId: profile.id,
   };
 }
 
@@ -322,6 +402,9 @@ export async function runOcrRecipeImage(
   // deploy. Token counts are captured after the vision call; before it
   // they're undefined and Cloud Logging drops them (absence ≠ zero).
   let ocrUsage: OcrPerformResult["usage"];
+  // The model that answered the photo call. Starts as the vision model so
+  // exits before the call name the model that would have been used.
+  let ocrModelId: string = VISION_MODEL;
 
   // BUT-626: mutable variables captured by emitTiming. Assigned after
   // getPromptsConfig() resolves; undefined for early validation exits.
@@ -334,7 +417,7 @@ export async function runOcrRecipeImage(
       event: "ocr_recipe_image.complete",
       durationMs: now() - ocrStartMs,
       success,
-      modelId: MODEL_ID,
+      modelId: ocrModelId,
       promptTokenCount: ocrUsage?.promptTokenCount,
       candidatesTokenCount: ocrUsage?.candidatesTokenCount,
       cachedContentTokenCount: ocrUsage?.cachedContentTokenCount,
@@ -411,7 +494,7 @@ export async function runOcrRecipeImage(
         estimatedCost: 0,
         retryCount: 0,
         retryOutcome: null,
-        modelId: MODEL_ID,
+        modelId: ocrModelId,
       };
     }
 
@@ -440,7 +523,12 @@ export async function runOcrRecipeImage(
       { inputType: imageUrl ? "url" : "base64" }
     );
 
-    const { content, cost: ocrCost, usage } = await performOcr({
+    const {
+      content,
+      cost: ocrCost,
+      usage,
+      modelId: usedModelId,
+    } = await performOcr({
       imageBase64,
       imageUrl,
       mimeType,
@@ -449,6 +537,7 @@ export async function runOcrRecipeImage(
       locale,
     });
     ocrUsage = usage;
+    ocrModelId = usedModelId ?? VISION_MODEL;
 
     if (!content) {
       logger.error("[ocrRecipeImage] Empty response from Gemini");
@@ -464,7 +553,7 @@ export async function runOcrRecipeImage(
         promptVersion,
         retryCount: 0,
         retryOutcome: null,
-        modelId: MODEL_ID,
+        modelId: ocrModelId,
       };
     }
 
@@ -481,7 +570,7 @@ export async function runOcrRecipeImage(
       experimentBucket,
       promptVariant,
       authUidHash,
-      modelId: MODEL_ID,
+      modelId: ocrModelId,
       promptTokenCount: usage?.promptTokenCount,
       candidatesTokenCount: usage?.candidatesTokenCount,
     });
@@ -504,7 +593,7 @@ export async function runOcrRecipeImage(
         promptVersion,
         retryCount: 0,
         retryOutcome: null,
-        modelId: MODEL_ID,
+        modelId: ocrModelId,
       };
     }
 
@@ -547,6 +636,7 @@ export async function runOcrRecipeImage(
         promptVersion: retryResult.promptVersion ?? promptVersion,
         retryCount: retryResult.retryCount,
         retryOutcome: retryResult.retryOutcome,
+        // The returned recipe came from structureRecipe on the text model.
         modelId: MODEL_ID,
       };
     }
@@ -566,7 +656,7 @@ export async function runOcrRecipeImage(
       promptVersion: retryResult.promptVersion ?? promptVersion,
       retryCount: retryResult.retryCount,
       retryOutcome: retryResult.retryOutcome,
-      modelId: MODEL_ID,
+      modelId: ocrModelId,
     };
   } catch (error) {
     logger.error("[ocrRecipeImage] Error:", error);

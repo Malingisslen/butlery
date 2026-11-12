@@ -121,6 +121,9 @@ export { exportErasureResidue } from "./exports/erasure-residue";
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
 // or executable past the Storage rule's contentType allow-list.
 export { moderateUpload } from "./storage/moderate-upload";
+// BUT-818: a granted appeal restores a stopped image; the moderator sees it first.
+export { onImageAppealAnswered } from "./storage/quarantine-restore";
+export { getQuarantinedImages } from "./storage/quarantine-review";
 
 // BUT-778: server-side conversation.lastMessage sync. Replaces the deprecated
 // client-side ConversationAutoHealerModule, which spawned ~50 per-conversation
@@ -204,6 +207,9 @@ export {
   recoverWithMfaBackupCode,
   clearMfaBackupCodes,
 } from "./account/mfa-backup-codes";
+
+// BUT-2481: sign out every other device of a Google/Apple account.
+export { revokeOtherSessions } from "./account/revoke-other-sessions";
 
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";

@@ -24,7 +24,12 @@ if (!admin.apps.length) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { runExportAuditLogsWithDb } = require("../exports/audit-logs");
+const {
+  runExportAuditLogsWithDb,
+  MAX_REMOVED_FROM_GROUPS,
+} = require("../exports/audit-logs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { ADMIN_REMOVAL_AUDIT_OPERATION } = require("../groups/remove-chat-group-member");
 
 interface SeedDoc {
   id: string;
@@ -35,39 +40,49 @@ interface SeedDoc {
   resourceId?: string;
   granted: boolean;
   metadata?: Record<string, unknown>;
+  /** Stored as-is instead of a Timestamp, as a client could write it. */
+  rawTimestamp?: unknown;
 }
 
 interface FakeStore {
   docs: SeedDoc[];
 }
 
-interface FakeTimestamp {
-  toDate(): Date;
-  toMillis(): number;
-  valueOf(): number;
-}
+type FakeTimestamp = admin.firestore.Timestamp;
 
+// A real Timestamp: the removal section drops any row whose timestamp is not
+// one, so a look-alike would make every removal fixture vanish.
 function ts(ms: number): FakeTimestamp {
-  return {
-    toDate: () => new Date(ms),
-    toMillis: () => ms,
-    valueOf: () => ms,
-  };
+  return admin.firestore.Timestamp.fromMillis(ms);
 }
 
-function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
+function resolvePath(d: SeedDoc, field: string): unknown {
+  const parts = field.split(".");
+  let cur: unknown = d;
+  for (const p of parts) {
+    if (cur === null || typeof cur !== "object") return undefined;
+    cur = (cur as Record<string, unknown>)[p];
+  }
+  return cur;
+}
+
+// Applies EVERY equality filter, dotted paths included, so a query on
+// `metadata.targetUid` + `operation` is measured rather than answered empty.
+function makeFakeDb(
+  store: FakeStore,
+  opts: { failOn?: string } = {}
+): admin.firestore.Firestore {
   function buildQuery(filter: {
-    userId?: string;
+    equals: Array<[string, unknown]>;
     descByTs?: boolean;
     before?: number;
     limit?: number;
+    select?: string[];
   }) {
     return {
-      where(_field: string, op: string, value: unknown) {
-        if (_field === "userId" && op === "==") {
-          return buildQuery({ ...filter, userId: value as string });
-        }
-        return buildQuery(filter);
+      where(field: string, op: string, value: unknown) {
+        if (op !== "==") throw new Error(`fake supports == only, got ${op}`);
+        return buildQuery({ ...filter, equals: [...filter.equals, [field, value]] });
       },
       orderBy(field: string, direction: string) {
         if (field === "timestamp" && direction === "desc") {
@@ -81,8 +96,18 @@ function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
       limit(n: number) {
         return buildQuery({ ...filter, limit: n });
       },
+      select(...fields: string[]) {
+        return buildQuery({ ...filter, select: fields });
+      },
       async get() {
-        let rows = store.docs.filter((d) => d.userId === filter.userId);
+        if (opts.failOn && filter.equals.some(([f]) => f === opts.failOn)) {
+          throw Object.assign(new Error("boom audit_logs/x for uid"), {
+            code: "failed-precondition",
+          });
+        }
+        let rows = store.docs.filter((d) =>
+          filter.equals.every(([f, v]) => resolvePath(d, f) === v)
+        );
         if (filter.descByTs) {
           rows = rows.sort((a, b) => b.timestampMs - a.timestampMs);
         }
@@ -97,15 +122,20 @@ function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
           docs: rows.map((d) => ({
             id: d.id,
             data() {
-              return {
+              const full: Record<string, unknown> = {
                 userId: d.userId,
                 operation: d.operation,
                 resourceType: d.resourceType,
                 resourceId: d.resourceId,
                 granted: d.granted,
-                timestamp: ts(d.timestampMs),
+                timestamp:
+                  "rawTimestamp" in d ? d.rawTimestamp : ts(d.timestampMs),
                 metadata: d.metadata,
               };
+              if (!filter.select) return full;
+              return Object.fromEntries(
+                filter.select.map((f) => [f, full[f]])
+              );
             },
           })),
         };
@@ -115,7 +145,7 @@ function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
 
   return {
     collection(_name: string) {
-      return buildQuery({});
+      return buildQuery({ equals: [] });
     },
   } as unknown as admin.firestore.Firestore;
 }
@@ -220,6 +250,116 @@ test("BUT-770: row shape preserved", async () => {
   if (row.resourceId !== "rec-1") throw new Error("resourceId missing");
   if (row.granted !== true) throw new Error("granted missing");
   if (!row.metadata || row.metadata.ip !== "1.2.3.4") throw new Error("metadata missing");
+});
+
+// BUT-1805 — the removed member's side. The fixture is the exact shape
+// `stageAdminRemovalAudit` writes.
+function removalRow(id: string, admin: string, target: string, ms: number): SeedDoc {
+  return {
+    id,
+    userId: admin,
+    timestampMs: ms,
+    operation: ADMIN_REMOVAL_AUDIT_OPERATION,
+    resourceType: "chat_groups",
+    resourceId: `group-${id}`,
+    granted: true,
+    metadata: { actor: admin, targetUid: target, conversationId: `conv-${id}` },
+  };
+}
+
+test("BUT-1805: removed member gets exactly {timestamp, groupId}, no admin", async () => {
+  const store: FakeStore = { docs: [removalRow("rm1", "adminUid", "bob", 5000)] };
+  const result = await runExportAuditLogsWithDb(makeFakeDb(store), "bob", {});
+  const section = result.removedFromGroups;
+  if (!section || !("rows" in section)) throw new Error("section missing");
+  if (section.rows.length !== 1) throw new Error(`expected 1 row, got ${section.rows.length}`);
+  const keys = Object.keys(section.rows[0]).sort().join(",");
+  if (keys !== "groupId,timestamp") throw new Error(`keys were ${keys}`);
+  if (section.rows[0].groupId !== "group-rm1") throw new Error("groupId wrong");
+  const wire = JSON.stringify(section);
+  for (const leak of ["adminUid", "conv-rm1"]) {
+    if (wire.includes(leak)) throw new Error(`section leaks ${leak}: ${wire}`);
+  }
+  if (result.count !== 0) throw new Error("a removal must not appear among bob's actor rows");
+});
+
+test("BUT-1805: other operations naming the uid, and the admin's own removals, stay out", async () => {
+  const store: FakeStore = {
+    docs: [
+      { ...removalRow("x1", "someone", "bob", 1000), operation: "account_deletion_share_scrub" },
+      removalRow("x2", "bob", "carol", 2000),
+    ],
+  };
+  const result = await runExportAuditLogsWithDb(makeFakeDb(store), "bob", {});
+  const section = result.removedFromGroups;
+  if (!section || !("rows" in section)) throw new Error("section missing");
+  if (section.rows.length !== 0) throw new Error(`expected 0 rows, got ${JSON.stringify(section)}`);
+  if (section.truncated !== false) throw new Error("truncated should be false");
+  if (result.count !== 1 || result.rows[0].id !== "x2")
+    throw new Error("the admin's removal stays on the actor side");
+});
+
+test("BUT-1805: a later page carries no removedFromGroups", async () => {
+  const store: FakeStore = { docs: [removalRow("rm1", "adminUid", "bob", 5000)] };
+  const result = await runExportAuditLogsWithDb(makeFakeDb(store), "bob", {
+    before: new Date(10000).toISOString(),
+  });
+  if ("removedFromGroups" in result) throw new Error("section repeated on a later page");
+});
+
+test("BUT-1805: cap is exact and truncated is measured", async () => {
+  const atCap = Array.from({ length: MAX_REMOVED_FROM_GROUPS }, (_, i) =>
+    removalRow(`c${i}`, "adminUid", "bob", 1000 + i)
+  );
+  const at = await runExportAuditLogsWithDb(makeFakeDb({ docs: atCap }), "bob", {});
+  if (!at.removedFromGroups || !("rows" in at.removedFromGroups)) throw new Error("missing");
+  if (at.removedFromGroups.rows.length !== MAX_REMOVED_FROM_GROUPS || at.removedFromGroups.truncated)
+    throw new Error("at the cap: all rows, not truncated");
+  if (at.removedFromGroups.rows[0].timestamp < at.removedFromGroups.rows[1].timestamp)
+    throw new Error("rows should be newest first");
+
+  const over = [...atCap, removalRow("extra", "adminUid", "bob", 999)];
+  const o = await runExportAuditLogsWithDb(makeFakeDb({ docs: over }), "bob", {});
+  if (!o.removedFromGroups || !("rows" in o.removedFromGroups)) throw new Error("missing");
+  if (o.removedFromGroups.rows.length !== MAX_REMOVED_FROM_GROUPS || !o.removedFromGroups.truncated)
+    throw new Error("over the cap: capped and truncated");
+});
+
+test("BUT-1805: rows a client could have planted are dropped", async () => {
+  const store: FakeStore = {
+    docs: [
+      { ...removalRow("p1", "stranger", "bob", 1000), rawTimestamp: "you were removed" },
+      { ...removalRow("p2", "stranger", "bob", 2000), resourceType: "recipe" },
+      { ...removalRow("p3", "stranger", "bob", 3000), resourceId: "see admin/x for details" },
+      removalRow("real", "adminUid", "bob", 4000),
+    ],
+  };
+  const result = await runExportAuditLogsWithDb(makeFakeDb(store), "bob", {});
+  const section = result.removedFromGroups;
+  if (!section || !("rows" in section)) throw new Error("section missing");
+  const wire = JSON.stringify(section.rows);
+  if (section.rows.length !== 2) throw new Error(`expected 2 rows, got ${wire}`);
+  if (wire.includes("you were removed")) throw new Error("string timestamp passed through");
+  if (wire.includes("see admin/x")) throw new Error("free-text group id passed through");
+  if (section.rows[1].groupId !== null) throw new Error("invalid group id should be null");
+});
+
+test("BUT-1805: a failed removal query keeps the actor rows", async () => {
+  const store: FakeStore = {
+    docs: [
+      { id: "a", userId: "bob", timestampMs: 1000, operation: "read", resourceType: "r", granted: true },
+      removalRow("rm1", "adminUid", "bob", 5000),
+    ],
+  };
+  const result = await runExportAuditLogsWithDb(
+    makeFakeDb(store, { failOn: "metadata.targetUid" }),
+    "bob",
+    {}
+  );
+  if (result.count !== 1) throw new Error("actor rows lost");
+  const section = result.removedFromGroups;
+  if (!section || !("error_code" in section) || section.error_code !== "removed-from-groups-failed")
+    throw new Error(`expected error_code, got ${JSON.stringify(section)}`);
 });
 
 async function run(): Promise<void> {

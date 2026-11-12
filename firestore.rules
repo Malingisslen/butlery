@@ -34,7 +34,8 @@ service cloud.firestore {
     //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
     //   ingredient_suggestions, ingredient_change_requests, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
-    //   user_shared_shopping_lists, user_shared_menus
+    //   user_shared_shopping_lists, user_shared_menus,
+    //   corpus_books, corpus_pages, corpus_runs (kokboksprovet, admin only)
     //
     // Collection groups: members, engagements, comments, ratings
     //
@@ -442,6 +443,16 @@ service cloud.firestore {
     function hasSharedAccess(collectionName, docId) {
       return isSharedOwner(collectionName, docId) || isSharedMember(collectionName, docId);
     }
+    // BUT-2442.
+    function recipientsChangedOnlyBySelf() {
+      let beforeList = resource.data.get('sharedToUserIds', []);
+      let afterList = request.resource.data.get('sharedToUserIds', []);
+      let before = beforeList.toSet();
+      let after = afterList.toSet();
+      return after.difference(before).size() == 0
+        && before.difference(after).hasOnly([request.auth.uid])
+        && afterList.size() <= beforeList.size();
+    }
 
     // Realtime collaboration helper — used by realtime_menus
     // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
@@ -562,14 +573,21 @@ service cloud.firestore {
       // create-absent + update-immutable clauses. NOTE: `isSearchable` stays
       // freely client-writable — a minor's private default is set once by the CF,
       // but the user may later opt into discovery by toggling it (Q1).
+      //
+      // BUT-2481: `sessionsRevokedAt` is the same shape — written ONLY by the
+      // `revokeOtherSessions` Cloud Function; the app reads it to tell the
+      // owner that other devices were signed out.
       allow create: if isOwner(userId)
         && request.resource.data.get('birthYear', null) == null
-        && request.resource.data.get('isMinor', null) == null;
+        && request.resource.data.get('isMinor', null) == null
+        && request.resource.data.get('sessionsRevokedAt', null) == null;
       allow update: if isOwner(userId)
         && request.resource.data.get('birthYear', null)
            == resource.data.get('birthYear', null)
         && request.resource.data.get('isMinor', null)
-           == resource.data.get('isMinor', null);
+           == resource.data.get('isMinor', null)
+        && request.resource.data.get('sessionsRevokedAt', null)
+           == resource.data.get('sessionsRevokedAt', null);
       allow delete: if isOwner(userId);
 
       // User's recipes
@@ -1188,10 +1206,21 @@ service cloud.firestore {
       // The mirror is consulted only when the recipient list GAINS someone, so
       // a member leaving or editing a list is never refused for a block
       // between other people.
+      //
+      // BUT-2442: only the sharer changes who else is on the recipient list.
+      // Anyone else may leave it as it is or take their own uid off it, and
+      // nothing more: removing another recipient hides the share from them and
+      // from their Art. 15 export, and adding someone grants them `get` and
+      // `list` with no member row. `removeMember` deletes the leaver's member
+      // row before it updates this list.
       allow update: if isAuthenticated()
         && cannotModify(['sharedByUserId', 'contentType', 'sharedAt', 'blockHeldUserIds', 'blockHeld'])
         && (request.auth.uid == resource.data.sharedByUserId
-            || isSharedMember('shared_content', contentId))
+            || (isSharedMember('shared_content', contentId)
+                && recipientsChangedOnlyBySelf())
+            || (request.auth.uid in resource.data.get('sharedToUserIds', [])
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sharedToUserIds'])
+                && recipientsChangedOnlyBySelf()))
         && !request.resource.data.get('sharedToUserIds', [])
               .hasAny(resource.data.get('blockHeldUserIds', []))
         && (request.resource.data.get('sharedToUserIds', []).toSet()
@@ -3576,7 +3605,11 @@ service cloud.firestore {
       // SECURITY: User can only create audit logs for themselves (prevents tampering).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
+        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp'])
+        // BUT-1805: the removed member's Art. 15 export reads these rows by
+        // `metadata.targetUid`, which a client could aim at anyone. Only
+        // `removeChatGroupMember` (Admin SDK) writes this operation.
+        && request.resource.data.operation != 'group_member_removed';
 
       // No updates or deletes allowed (immutable audit trail)
       allow update, delete: if false;
@@ -4467,6 +4500,26 @@ service cloud.firestore {
 
     match /ingredient_change_runs/{runId} {
       allow read, write: if false;
+    }
+
+    // KOKBOKSPROVET - the admin's own cookbooks as a parser test (photos in
+    // storage.rules corpus/). The books, each page's text and answer key, and
+    // the nightly run summaries are copyright material (decision 2026-11-07 in
+    // docs/architecture/ACCEPTED_DEVIATIONS.md): an admin reads them, and only
+    // the Admin SDK writes them.
+    match /corpus_books/{bookId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /corpus_pages/{pageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /corpus_runs/{runId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // DEEP LINKS - Shareable recipe/content links

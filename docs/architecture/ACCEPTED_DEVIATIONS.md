@@ -725,6 +725,15 @@ while production preprocesses first, and the paid arm it compared against had be
 through that preprocessing. The artifact was larger than the margin. The harness was fixed and
 the eval re-run before this decision was taken.
 
+**Superseded in part 2026-11-11:** retires *"A read that fails either accept gate — the recipe
+heuristic or the same `confidence >= 0.6` bar every paid provider must clear — falls straight
+through to OCR.space → Vision → Tesseract exactly as before. So the failure mode of a bad
+on-device read is a paid call, not a bad recipe."* No OCR.space, Google Vision OCR or Tesseract
+client exists in `lib/` or `functions/src/`. A page the phone cannot read makes the app offer
+the AI reader (`PhotoAiOfferReason.phoneCouldNotRead` / `noRecipeFound` in
+`lib/viewmodels/photo_import/photo_import_ai_offer_mixin.dart`), which calls `ocrRecipeImage`
+only after the user says yes.
+
 ### [Engineering] `shared_content` membership collapses to one field — supersedes the dual-spelling clause (2026-08-03)
 
 **Supersedes**, in part, the BUT-1798 export entry: the clause reading *"Both spellings are
@@ -6814,3 +6823,141 @@ Decided by Malin 2026-11-07 (decision card, "Nej, förslaget är privat").
 `match /ingredient_suggestions/{suggestionId}` in `firestore.rules` has no `isAgeCompliant()`,
 unlike `recipe_comments`, `cook_snaps` and the other social collections. A suggestion is read
 only by its author and the admin. Revisit if a suggestion is ever shown to other users.
+
+## SUPERSEDES four lines of the BUT-1797 "Deliberately left" list (BUT-1815, BUT-2444, 2026-11-07)
+
+- **The second deserializer.** Retires "The second deserializer in `recipe_serialization.dart`
+  is unchanged." `_deserializeSocialData` in `lib/models/realtime/recipe_serialization.dart`
+  now returns `RecipeSocialData.fromJson` of the `socialData` map, so `grants` and
+  `descriptionCollaborative` are read by the same code as every other path (BUT-1815 S2).
+- **The token loop.** Retires "The tokens-loop collapse is still owed." The sharing paths
+  build their `grants` through `RecipeShareGrants` (`applyShare`, `fromFlatShare`,
+  `mergeCategoryIds`) instead of three hand-written loops (BUT-1815 S3).
+- **The dead writers.** Retires "Ticket the deletion." `FirebaseRecipeRepository.addCollaborator`,
+  `removeCollaborator` and `RecipeFactory.convertToCollaborative` no longer exist in `lib/`
+  (BUT-1815 S1).
+- **The discovery row.** Retires "A revoke does not trim `shared_content.sharedToUserIds`."
+  `removeMember`, `removeGroup` and `unshareRecipe` now remove the revoked uids from the
+  `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
+  documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
+  not touched by that call.
+
+## "Logga ut från alla enheter": three accepted gaps (BUT-2481, 2026-11-07)
+
+Decided by Malin 2026-11-07 (card "Acceptera, notera som känd avvikelse").
+
+- **A thief with an unlocked phone can press the button.** The server demands a Google or Apple
+  sign-in from the last five minutes (and the second factor if the account has one), so the thief
+  must pass a fresh provider sign-in; a phone that is already signed in to the provider may allow
+  it. The owner is then locked out of her other devices until she signs in again.
+- **The notice can be cleared.** `users/{uid}.sessionsRevokedAt` is written only by
+  `revokeOtherSessions` and the rules refuse any client change, but the owner may delete
+  `users/{uid}` and create it again, which drops the stamp. Pinned by the "KNOWN GAP" case in
+  `functions/src/__tests__/session-revoked-at-rules.test.ts`. The notice is a courtesy, not the
+  protection.
+- **A five-minute window.** The device that pressed the button holds a custom-token session with a
+  fresh `auth_time` and no `sign_in_second_factor`; for five minutes it passes the recent-login
+  checks of account deletion and backup-code generation. A real sign-in, with the second factor,
+  happened seconds earlier, and the session cannot chain another revoke (the callable refuses a
+  `custom` token).
+- Other devices keep working until their ID token expires, up to an hour; the dialog and the
+  snackbar say so.
+
+## [Legal] Kokboksprovet: photos of bought cookbooks stored in the cloud as a parser test (2026-11-07)
+
+Decided by Malin 2026-11-07 on two decision cards: route B "Låst i molnet" (22:53) and, on
+copyright, every book included with the risk accepted (23:00), plus "b men vi sparar dem lokalt
+när vi är klara".
+
+- **What is accepted.** Photographing books Malin owns and letting the parser read them for
+  internal measurement rests on the text-and-data-mining exception (15 b § upphovsrättslagen),
+  which does not apply where the rightholder has reserved it. Whether a printed "kopiering
+  förbjuden" line is such a reservation is untested. Malin takes that residual risk for all books.
+- **Where the material lives.** Photos under `corpus/` in Storage; books, page text, answer keys
+  and run summaries in `corpus_books`, `corpus_pages` and `corpus_runs`. Only an admin reads
+  them (`storage.rules`, `firestore.rules`; `functions/src/__tests__/corpus-rules.test.ts`),
+  and only the Admin SDK writes the Firestore documents.
+- **Retention.** When a book has been read and its answer keys reviewed, its photos are moved
+  from the cloud to Malin's computer; the cloud keeps text and answer keys. A withdrawn book has
+  its text and answer keys deleted.
+- **Use.** Internal measurement and improvement only: never shown to users, never used to train
+  a model, never shared or exported. The public repo, CI logs and artefacts carry ingredient and
+  unit words one at a time and aggregate figures, never photos, text, recipe or book titles, or
+  figures per book or per page. A move towards users needs a new legal review.
+
+## SUPERSEDES the folder of the BUT-2414 `storage_files` line (BUT-818, 2026-11-09)
+
+Retires: "lists the objects under `userStoragePrefix(uid)`, the folder `deleteUserStorageFiles`
+empties".
+
+- `storage_files` lists the objects under `userStoragePrefixes(uid)`: `users/{uid}/` and
+  `quarantine/users/{uid}/`, the two folders `deleteUserStorageFiles` empties. A row from the
+  second folder has its path prefixed `quarantine/`. The fields, the 2000-object cap and the
+  `stored_file_contents` known gap are unchanged.
+
+## BUT-2406 / BUT-2407 — the acquisition tally counts new accounts, with the channel kept on the account (2026-11-09)
+
+### [Privacy/GDPR] SUPERSEDES the "What is kept" and "What it measures" entries of BUT-1997 for days from `SCOPE_V2_FROM`
+
+- **What is kept.** From `SCOPE_V2_FROM` the day document carries `v: 2` and
+  `scope: 'consented-new-account-channel'`; earlier days keep `v: 1` and
+  `scope: 'consented-signed-in-utm'`. `runAcquisitionEligibleSnapshot` also writes
+  `eligible.analyticsConsented`, a `count()` of consent documents with `purposes.analytics == true`,
+  to the day document. Still no uid, hash, event id or per-user time.
+- **What it measures.** `countAcquisition` counts a row only when its Auth account has a sign-in
+  provider (not a guest) and was created at most `NEW_USER_WINDOW_MS` before the row's
+  `firstSeenAt`. The channel reaches the row from a campaign link opened while signed out (held in
+  memory until the person is registered and has consented) or, on Android, from the Google Play
+  install referrer read once after analytics consent.
+- **The per-user row.** It holds the allowlisted source and medium; `campaign` is written as `''`
+  by the current app. Policy 1.30 names the row and its retention.
+- **Accepted residuals:**
+  - The create rule still admits any `campaign`, `source` and `medium` string of up to 100
+    characters, so an app from before BUT-2406 or a hand-rolled client can write a raw campaign
+    name; the tally never reads it.
+  - `eligible.analyticsConsented` counts every account with the consent flag, guests and old
+    accounts included, and a client can create consent documents under any id.
+  - An existing Android account that consents after updating gets the Play referrer channel on its
+    row, and the trigger then returns `not_new_user` for it.
+  - Withdrawing consent does not delete the per-user row (unchanged from BUT-1997).
+  - Guests and deleted accounts are skipped on every day, including days before `SCOPE_V2_FROM`.
+  - The cut-over day is safe only if the functions are deployed before it.
+  - The admin tab shows cells under 5 as "<5" after summing the 30-day window, and rounds the total
+    to the nearest 5.
+
+
+## BUT-1805 and BUT-2169 — Malin's two export decisions (2026-11-11)
+
+- **SUPERSEDES "appears in the admin's Art. 15 export only" in the BUT-1805 entry (Malin,
+  2026-11-11, decision card "Ja, men inte vem som gjorde det").** `exportAuditLogs` also
+  returns, on its first page only, every `group_member_removed` row whose `metadata.targetUid`
+  is the caller, as `removedFromGroups`: `{timestamp, groupId}` built field by field, never
+  `userId`, `metadata.actor`, `conversationId` or the document id. Equality filters only, so no
+  composite index; capped at 200 with `truncated`, and above the cap the kept rows are not chosen
+  by time. A failed read returns `error_code` and the actor rows still ship.
+  `firestore.rules` now refuses a client `audit_logs` create with this operation, because the
+  client create limb pins only `userId` and a planted row could put a fake removal in anyone's
+  export or push the real ones past the cap. The export also drops a row whose `timestamp` is
+  not a Timestamp or whose `resourceType` is not `chat_groups`, and nulls a `groupId` that is not
+  a valid document id. Named residual: a row a client planted before the rule is deployed, with a
+  Timestamp and `chat_groups`, still shows.
+  `ComplianceExportManager` puts it in the `audit_logs` section as `removed_from_groups`; a
+  missing field or a failed read is reported as `error_code` with a retry note, never as an empty
+  list. Its `data_minimisation` sentence (`removedFromGroupsMinimisation`) is the same bytes on
+  every path (BUT-2056). The basis for withholding the admin is Art. 15(4): the admin is a third
+  party, and the removed person's own data is the fact and the time. In a group with one admin
+  the removed person can still infer who it was; the field is withheld, the inference is not
+  prevented.
+- **RESOLVED (BUT-2169, Malin, 2026-11-11, decision card "Ja, behåll som nu").** The Art. 15
+  received sections keep stripping `blockHeldUserIds` and `blockHeld`, unnamed in
+  `data_minimisation`. Retires "shipped and awaiting Malin's confirmation on the PR" for that
+  half of the BUT-2169 known-gaps line.
+
+## SUPERSEDES one BUT-2169 known gap for `shared_content` (BUT-2442, 2026-11-11)
+
+Retired: "**A co-member can add someone the sharer blocked to the sharer's row.**"
+
+The `shared_content` update rule lets only the sharer add people to `sharedToUserIds` or
+remove other people from it. Anyone else may leave the list as stored or take their own uid
+off it (`recipientsChangedOnlyBySelf`). A recipient whose
+member row is already gone may make only that self-removal write.

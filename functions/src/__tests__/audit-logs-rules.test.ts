@@ -160,6 +160,23 @@ test("audit_logs: user cannot create a log under another user's id", async () =>
   );
 });
 
+// BUT-1805: a client cannot plant a group-removal row naming someone else,
+// which would put a fake removal in that person's Art. 15 export.
+test("audit_logs: client cannot create a group_member_removed row", async () => {
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit_logs/al-planted-removal`)
+      .set({
+        ...validAuditBody(USER_UID),
+        operation: "group_member_removed",
+        resourceType: "chat_groups",
+        metadata: { actor: USER_UID, targetUid: OTHER_UID },
+      })
+  );
+});
+
 // regression: updates and deletes are immutable per the rule.
 test("audit_logs: nobody can update or delete an existing row", async () => {
   const userCtx = env.authenticatedContext(USER_UID);

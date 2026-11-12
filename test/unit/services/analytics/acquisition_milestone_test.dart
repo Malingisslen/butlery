@@ -100,7 +100,7 @@ void main() {
         verify(
           () => analytics.setUserProperty(
             name: 'acquisition_campaign',
-            value: 'spring2026',
+            value: null,
           ),
         ).called(1);
         verify(
@@ -351,19 +351,71 @@ void main() {
         expect(prefs.getBool(fsFlag), isTrue);
       });
 
-      test('consent refused still sets user properties', () async {
+      test(
+        'consent refused sets no properties; a later yes still does',
+        () async {
+          when(
+            () => consent.hasConsent(ConsentPurpose.analytics),
+          ).thenAnswer((_) async => false);
+
+          await arrive(consentService: consent);
+
+          verifyNever(
+            () => analytics.setUserProperty(
+              name: any(named: 'name'),
+              value: any(named: 'value'),
+            ),
+          );
+
+          when(
+            () => consent.hasConsent(ConsentPurpose.analytics),
+          ).thenAnswer((_) async => true);
+          await arrive(consentService: consent);
+
+          verify(
+            () => analytics.setUserProperty(
+              name: 'acquisition_source',
+              value: 'instagram',
+            ),
+          ).called(1);
+        },
+      );
+
+      test('the campaign name is not written to the account', () async {
         when(
           () => consent.hasConsent(ConsentPurpose.analytics),
-        ).thenAnswer((_) async => false);
+        ).thenAnswer((_) async => true);
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          consentService: consent,
+          userId: 'user-1',
+          utmSource: 'instagram',
+          utmMedium: 'social',
+          utmCampaign: 'spring2026',
+        );
+        final written =
+            verify(
+                  () =>
+                      repository.setAcquisitionIfAbsent('user-1', captureAny()),
+                ).captured.single
+                as AcquisitionAttribution;
+        expect(written.campaign, '');
+      });
 
-        await arrive(consentService: consent);
-
-        verify(
-          () => analytics.setUserProperty(
-            name: 'acquisition_source',
-            value: 'instagram',
-          ),
-        ).called(1);
+      test('a guest account writes no Firestore row', () async {
+        when(
+          () => consent.hasConsent(ConsentPurpose.analytics),
+        ).thenAnswer((_) async => true);
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          consentService: consent,
+          userId: 'user-1',
+          isGuest: true,
+          utmSource: 'instagram',
+        );
+        verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
       });
     });
   });

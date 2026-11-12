@@ -50,9 +50,13 @@ export type Decision = (typeof MODERATOR_ACTIONS)[number] | "no_action";
 const RULES = [
   "spam", "abuse", "harassment", "csam", "copyright", "misinformation", "other",
   "misattribution",
+  // BUT-818: written by the server's image check alone, never by a client.
+  "explicit_image",
 ];
 
-const CONTENT_TYPES = ["recipe", "comment", "message", "profile", "cook_snap", "group", "menu_dish"];
+const CONTENT_TYPES = [
+  "recipe", "comment", "message", "profile", "cook_snap", "group", "menu_dish", "image",
+];
 
 /**
  * Principal kinds that are not a signed-in person. Listed as exclusions rather

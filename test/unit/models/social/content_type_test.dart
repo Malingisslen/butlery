@@ -26,6 +26,7 @@ void main() {
       expect(ContentType.cookSnap.wireName, equals('cook_snap'));
       expect(ContentType.group.wireName, equals('group'));
       expect(ContentType.menuDish.wireName, equals('menu_dish'));
+      expect(ContentType.image.wireName, equals('image'));
     });
 
     test('fromWire round-trips every value', () {

@@ -83,6 +83,18 @@ class FirebaseSignupAllowlistRepository
   }
 
   @override
+  Future<int> countPending() async {
+    requireCurrentUserId();
+    // The expiry sweep is a TTL and can lag, so expired entries are excluded
+    // by the query rather than assumed gone.
+    final snapshot = await collection
+        .where('expireAt', isGreaterThan: Timestamp.fromDate(clock.now()))
+        .count()
+        .get();
+    return snapshot.count ?? 0;
+  }
+
+  @override
   Future<void> invite(String email) async {
     final invite = SignupInvite(email: email);
     final ref = collection.doc(email);

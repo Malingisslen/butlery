@@ -11,6 +11,10 @@ abstract class SignupAllowlistRepository {
   Future<void> invite(String email);
 
   Future<void> remove(String email);
+
+  /// How many invitations have not expired yet. A count only: no address is
+  /// read.
+  Future<int> countPending();
 }
 
 class SignupInviteExistsException implements Exception {

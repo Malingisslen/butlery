@@ -13463,13 +13463,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavImport.
   ///
   /// In sv, this message translates to:
-  /// **'Importhälsa'**
+  /// **'Receptimport'**
   String get adminNavImport;
 
   /// No description provided for @adminImportTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importhälsa'**
+  /// **'Receptimport'**
   String get adminImportTitle;
 
   /// No description provided for @adminImportColDomain.
@@ -13523,13 +13523,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavEngagement.
   ///
   /// In sv, this message translates to:
-  /// **'Engagemang'**
+  /// **'Användning'**
   String get adminNavEngagement;
 
   /// No description provided for @adminEngagementTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Engagemang'**
+  /// **'Användning'**
   String get adminEngagementTitle;
 
   /// No description provided for @adminEngagementUsers.
@@ -13595,13 +13595,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavParsing.
   ///
   /// In sv, this message translates to:
-  /// **'Parsing-detaljer'**
+  /// **'Rättelser av import'**
   String get adminNavParsing;
 
   /// No description provided for @adminParsingTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Parsing-detaljer'**
+  /// **'Rättelser av import'**
   String get adminParsingTitle;
 
   /// No description provided for @adminParsingEmpty.
@@ -13703,19 +13703,19 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavOps.
   ///
   /// In sv, this message translates to:
-  /// **'Drift'**
+  /// **'Systemhändelser'**
   String get adminNavOps;
 
   /// No description provided for @adminNavGuestList.
   ///
   /// In sv, this message translates to:
-  /// **'Gästlista'**
+  /// **'Inbjudna'**
   String get adminNavGuestList;
 
   /// No description provided for @adminGuestListTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Gästlista'**
+  /// **'Inbjudna'**
   String get adminGuestListTitle;
 
   /// No description provided for @adminGuestListLoading.
@@ -13817,7 +13817,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavTagRules.
   ///
   /// In sv, this message translates to:
-  /// **'Taggregler'**
+  /// **'Allergen- och kostregler'**
   String get adminNavTagRules;
 
   /// No description provided for @adminIngredientsTitle.
@@ -14093,7 +14093,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminTagRulesTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Taggregler'**
+  /// **'Allergen- och kostregler'**
   String get adminTagRulesTitle;
 
   /// No description provided for @adminTagRulesLoadFailed.
@@ -14141,7 +14141,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminOpsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Drift'**
+  /// **'Systemhändelser'**
   String get adminOpsTitle;
 
   /// No description provided for @adminOpsEmpty.
@@ -18360,12 +18360,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte skicka inbjudningar'**
   String get errorCouldNotSendInvitations;
-
-  /// No description provided for @shareDefaultShoppingListMessage.
-  ///
-  /// In sv, this message translates to:
-  /// **'Delar gärna den här inköpslistan med dig.'**
-  String get shareDefaultShoppingListMessage;
 
   /// No description provided for @shoppingListAllDone.
   ///
@@ -27880,6 +27874,96 @@ abstract class AppLocalizations {
   /// **'Tvåstegsverifiering'**
   String get settingsAccountTwoStep;
 
+  /// BUT-2481: section heading on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Sessioner'**
+  String get settingsSessionsSection;
+
+  /// BUT-2481: row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut från alla enheter'**
+  String get settingsSignOutEverywhereTitle;
+
+  /// BUT-2481: supporting text under the row
+  ///
+  /// In sv, this message translates to:
+  /// **'Loggar ut alla dina andra enheter. Du stannar inloggad här.'**
+  String get settingsSignOutEverywhereHint;
+
+  /// BUT-2481: confirmation dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut andra enheter?'**
+  String get signOutEverywhereDialogTitle;
+
+  /// BUT-2481: confirmation dialog body, honest about the delay
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra enheter kan fungera i upp till en timme innan de loggas ut. Du stannar inloggad här.'**
+  String get signOutEverywhereDialogBody;
+
+  /// BUT-2481: confirm button
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut dem'**
+  String get signOutEverywhereConfirm;
+
+  /// BUT-2481: re-login dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta att det är du'**
+  String get signOutEverywhereReauthTitle;
+
+  /// BUT-2481: re-login dialog body
+  ///
+  /// In sv, this message translates to:
+  /// **'Av säkerhetsskäl behöver du logga in med {provider} igen innan andra enheter loggas ut.'**
+  String signOutEverywhereReauthBody(String provider);
+
+  /// BUT-2481: re-login dialog button
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med {provider}'**
+  String signOutEverywhereReauthAction(String provider);
+
+  /// BUT-2481: snackbar after success
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart. Andra enheter kan fungera i upp till en timme, sedan loggas de ut.'**
+  String get signOutEverywhereDone;
+
+  /// BUT-2481: failure, server wants a fresh sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen med Google eller Apple och försök på nytt.'**
+  String get signOutEverywhereReauthNeeded;
+
+  /// BUT-2481: failure, rate limited
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har försökt för många gånger. Försök igen senare.'**
+  String get signOutEverywhereRateLimited;
+
+  /// BUT-2481: failure, nothing changed
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att logga ut andra enheter. Försök igen.'**
+  String get signOutEverywhereFailed;
+
+  /// BUT-2481: this device was signed out after the swap failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra enheter är utloggade, men den här kunde inte fortsätta. Logga in igen.'**
+  String get signOutEverywhereSignedOut;
+
+  /// BUT-2481: notice at next sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina andra enheter loggades ut {when}. Var det inte du? Byt lösenord hos Google eller Apple.'**
+  String signOutEverywhereNotice(String when);
+
   /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
   ///
   /// In sv, this message translates to:
@@ -29613,6 +29697,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ditt namn har tagits bort från rätten.'**
   String get motivationMisattributionNameRemoved;
+
+  /// BUT-818: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din bild} other{En bild}}'**
+  String decisionSubjectImage(String who);
+
+  /// BUT-818: content type label for an image removed by the automatic check
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get moderatorContentTypeImage;
+
+  /// BUT-818: reason of the report the server files when the automatic image check stops an image; never offered in the report dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Olämplig bild (automatisk kontroll)'**
+  String get reportReasonExplicitImage;
+
+  /// BUT-818: motivation text, key removed_automated_image
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden stoppades av den automatiska bildkontrollen, eftersom den med stor sannolikhet är sexuell eller våldsam. Beslutet togs automatiskt. Om du överklagar granskar en moderator bilden.'**
+  String get motivationRemovedAutomatedImage;
+
+  /// BUT-818: button on an owner appeal about an image; loads the quarantined image for the moderator
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa bilden'**
+  String get moderatorAppealShowImage;
+
+  /// BUT-818: note when some quarantined images were too large or missing to show
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 bild kunde inte visas} other{{count} bilder kunde inte visas}}'**
+  String moderatorAppealImagesOmitted(int count);
+
+  /// BUT-818: title of the moderator dialog showing quarantined images
+  ///
+  /// In sv, this message translates to:
+  /// **'Stoppade bilder'**
+  String get moderatorAppealImagesTitle;
+
+  /// BUT-818: shown when the quarantined image could not be fetched
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte hämtas.'**
+  String get moderatorAppealImagesFailed;
 
   /// BUT-2353: title of the owner decision list and the row that opens it
   ///
@@ -32569,7 +32701,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminNavProposals.
   ///
   /// In sv, this message translates to:
-  /// **'Förslag'**
+  /// **'Väntande förslag'**
   String get adminNavProposals;
 
   /// No description provided for @adminProposalsTitle.
@@ -33383,6 +33515,234 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ordlistorna kom inte med i granskningen, men ingrediensändringarna gick igenom. Försök igen om en stund.'**
   String get adminProposalWordListReviewFailed;
+
+  /// No description provided for @adminNavOverview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblick'**
+  String get adminNavOverview;
+
+  /// No description provided for @adminOverviewTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblick'**
+  String get adminOverviewTitle;
+
+  /// No description provided for @adminOverviewAllClearTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt ser normalt ut'**
+  String get adminOverviewAllClearTitle;
+
+  /// No description provided for @adminOverviewAllClearBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga nya rapporter eller förslag väntar och importerna går bra. Inget behöver göras just nu.'**
+  String get adminOverviewAllClearBody;
+
+  /// No description provided for @adminOverviewNeedsAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 sak behöver din uppmärksamhet} other{{count} saker behöver din uppmärksamhet}}'**
+  String adminOverviewNeedsAction(int count);
+
+  /// No description provided for @adminOverviewAnomaliesAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Siffrorna avviker från det vanliga. Öppna Receptimport och se om någon sajt har slutat fungera. En enstaka avvikelse kan också bara vara en ovanligt lugn eller livlig dag.'**
+  String get adminOverviewAnomaliesAdvice;
+
+  /// No description provided for @adminOverviewImportFailuresAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percent} % av importerna misslyckas. Öppna Receptimport och se vilka sajter som misslyckas mest. En sajt som nästan alltid misslyckas har oftast ändrat sin sida och behöver nytt stöd.'**
+  String adminOverviewImportFailuresAdvice(int percent);
+
+  /// No description provided for @adminOverviewSomeUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Några siffror kunde inte hämtas'**
+  String get adminOverviewSomeUnavailable;
+
+  /// No description provided for @adminOverviewStatusOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ser bra ut'**
+  String get adminOverviewStatusOk;
+
+  /// No description provided for @adminOverviewStatusNeedsLook.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behöver en titt'**
+  String get adminOverviewStatusNeedsLook;
+
+  /// No description provided for @adminOverviewStatusUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämtas'**
+  String get adminOverviewStatusUnavailable;
+
+  /// No description provided for @adminOverviewStatusNoSignal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen automatisk koll'**
+  String get adminOverviewStatusNoSignal;
+
+  /// No description provided for @adminOverviewOpen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna'**
+  String get adminOverviewOpen;
+
+  /// No description provided for @adminOverviewFeedbackAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ny rapport väntar. Läs den och markera den som hanterad när du är klar.} other{{count} nya rapporter väntar. Läs dem och markera dem som hanterade när du är klar.}}'**
+  String adminOverviewFeedbackAdvice(int count);
+
+  /// No description provided for @adminOverviewFeedbackManyAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst {count} nya rapporter väntar. Läs de nyaste först och markera dem som hanterade när du är klar.'**
+  String adminOverviewFeedbackManyAdvice(int count);
+
+  /// No description provided for @adminOverviewFeedbackOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga nya rapporter väntar.'**
+  String get adminOverviewFeedbackOk;
+
+  /// No description provided for @adminOverviewProposalsAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 förslag väntar på ditt beslut. Öppna det och godkänn eller avslå.} other{{count} förslag väntar på ditt beslut. Öppna dem och godkänn eller avslå.}}'**
+  String adminOverviewProposalsAdvice(int count);
+
+  /// No description provided for @adminOverviewProposalsManyAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst {count} förslag väntar på ditt beslut. Öppna listan och godkänn eller avslå, så kommer resten fram.'**
+  String adminOverviewProposalsManyAdvice(int count);
+
+  /// No description provided for @adminOverviewProposalsOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag väntar.'**
+  String get adminOverviewProposalsOk;
+
+  /// No description provided for @adminOverviewImportOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerna går bra och inga ovanliga svängningar har upptäckts.'**
+  String get adminOverviewImportOk;
+
+  /// No description provided for @adminOverviewOpsStaleAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen systemhändelse har registrerats på {days, plural, =1{1 dag} other{{days} dagar}}. Öppna fliken och se när jobben senast körde.'**
+  String adminOverviewOpsStaleAdvice(int days);
+
+  /// No description provided for @adminOverviewOpsNoneAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen systemhändelse har någonsin registrerats. Öppna fliken och kontrollera att jobben körs.'**
+  String get adminOverviewOpsNoneAdvice;
+
+  /// No description provided for @adminOverviewOpsOk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Systemhändelser har registrerats den senaste veckan.'**
+  String get adminOverviewOpsOk;
+
+  /// No description provided for @adminOverviewGuestPendingAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 inbjudan har inte gått ut.} other{{count} inbjudningar har inte gått ut.}}'**
+  String adminOverviewGuestPendingAdvice(int count);
+
+  /// No description provided for @adminOverviewGuestNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga inbjudningar som inte gått ut.'**
+  String get adminOverviewGuestNone;
+
+  /// No description provided for @adminOverviewNoSignalAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överblicken mäter inte den här fliken. Öppna den när du vill titta närmare.'**
+  String get adminOverviewNoSignalAdvice;
+
+  /// No description provided for @adminOverviewUnavailableAdvice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Siffran kunde inte hämtas, så det går inte att säga om något behöver göras. Försök igen med Uppdatera.'**
+  String get adminOverviewUnavailableAdvice;
+
+  /// No description provided for @adminNavAcquisition.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanaler'**
+  String get adminNavAcquisition;
+
+  /// No description provided for @adminAcquisitionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nya användare per kanal'**
+  String get adminAcquisitionTitle;
+
+  /// No description provided for @adminAcquisitionLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda kanalräkningen. Tabellen kan inte visas förrän laddningen lyckas.'**
+  String get adminAcquisitionLoadFailed;
+
+  /// No description provided for @adminAcquisitionEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kanalräkning för de senaste 30 dagarna'**
+  String get adminAcquisitionEmpty;
+
+  /// No description provided for @adminAcquisitionColSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kanal'**
+  String get adminAcquisitionColSource;
+
+  /// No description provided for @adminAcquisitionColCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nya användare'**
+  String get adminAcquisitionColCount;
+
+  /// No description provided for @adminAcquisitionTotal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt, avrundat till närmaste 5'**
+  String get adminAcquisitionTotal;
+
+  /// No description provided for @adminAcquisitionEligible.
+  ///
+  /// In sv, this message translates to:
+  /// **'Har sagt ja till statistik'**
+  String get adminAcquisitionEligible;
+
+  /// No description provided for @adminAcquisitionNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.'**
+  String get adminAcquisitionNote;
+
+  /// No description provided for @adminAcquisitionOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt'**
+  String get adminAcquisitionOther;
+
+  /// No description provided for @adminAcquisitionLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar kanalräkningen …'**
+  String get adminAcquisitionLoading;
 }
 
 class _AppLocalizationsDelegate

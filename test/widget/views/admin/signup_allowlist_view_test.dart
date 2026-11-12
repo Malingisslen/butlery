@@ -30,6 +30,9 @@ class _FakeRepo implements SignupAllowlistRepository {
   }
 
   @override
+  Future<int> countPending() async => stored.length;
+
+  @override
   Future<void> invite(String email) async {
     stored[email] = SignupInvite(email: email, invitedAt: clock.now());
   }

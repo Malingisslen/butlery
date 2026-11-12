@@ -23,14 +23,30 @@ import { dailyDocRef, formatUtcDate } from "./daily-snapshots";
 export const ACQUISITION_COUNTER_ENABLED = true;
 
 /** Bumped when the day document's shape changes. */
-export const ACQUISITION_SCHEMA_VERSION = 1;
+export const ACQUISITION_SCHEMA_VERSION = 2;
 
 /**
- * Who the tally can count: signed-in users with analytics consent who opened
- * a UTM link. Stored on every day document so a reader cannot take it for an
- * install or sign-up count.
+ * Who the tally can count, stored on every day document so a reader cannot
+ * take it for an install or sign-up count.
+ *
+ * V1 (days before [SCOPE_V2_FROM]): signed-in users with analytics consent
+ * who opened a UTM link.
+ * V2: non-guest accounts created at most [NEW_USER_WINDOW_MS] before their
+ * row was written, with analytics consent, whose channel the app learned
+ * from a link or from Google Play.
  */
-export const ACQUISITION_SCOPE = "consented-signed-in-utm";
+export const ACQUISITION_SCOPE_V1 = "consented-signed-in-utm";
+export const ACQUISITION_SCOPE = "consented-new-account-channel";
+
+/**
+ * First UTC day written under V2. A day document is written with
+ * `merge: true`, so one scope per day keeps earlier counts from being
+ * relabelled by the switch.
+ */
+export const SCOPE_V2_FROM = "2026-11-14";
+
+/** A row counts only if its account is at most this much older than the row. */
+export const NEW_USER_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** The bucket for anything not on an allowlist. */
 export const OTHER = "other";
@@ -47,6 +63,7 @@ export const SOURCE_ALLOWLIST: ReadonlySet<string> = new Set([
   "newsletter",
   "email",
   "friend_invite",
+  "google-play",
 ]);
 
 /** `utm_medium` values counted by name. Everything else counts as `other`. */
@@ -92,6 +109,8 @@ export type AcquisitionCountOutcome =
   | "counted"
   | "already_counted"
   | "no_consent"
+  | "guest"
+  | "not_new_user"
   | "source_gone";
 
 export interface AcquisitionCountEvent {
@@ -100,8 +119,16 @@ export interface AcquisitionCountEvent {
   eventTime: string;
 }
 
+/** The part of the Admin Auth user record the counter reads. */
+export interface AuthAccount {
+  providerData: readonly unknown[];
+  metadata: { creationTime?: string };
+}
+
 export interface AcquisitionCountDeps {
   db: admin.firestore.Firestore;
+  /** Returns null when the account no longer exists. */
+  getAccount: (uid: string) => Promise<AuthAccount | null>;
 }
 
 /** Test seam — the trigger body with Firestore injected. */
@@ -110,6 +137,19 @@ export async function countAcquisition(
   deps: AcquisitionCountDeps,
 ): Promise<AcquisitionCountOutcome> {
   const { db } = deps;
+  // A guest is an account with no sign-in provider. Any client can mint one
+  // per +1, so a guest never counts, and an account that is not new is not a
+  // new user for the channel.
+  const account = await deps.getAccount(event.uid);
+  if (account == null) {
+    logger.info("acquisition_counter", { outcome: "source_gone" });
+    return "source_gone";
+  }
+  if (account.providerData.length === 0) {
+    logger.info("acquisition_counter", { outcome: "guest" });
+    return "guest";
+  }
+  const createdMs = Date.parse(account.metadata.creationTime ?? "");
   const sourceRef = db.collection("users").doc(event.uid).collection("acquisition").doc("current");
   const consentRef = db.collection("users").doc(event.uid).collection("consent").doc("current");
   const inc = admin.firestore.FieldValue.increment;
@@ -124,7 +164,12 @@ export async function countAcquisition(
     const ms = firstSeenAt instanceof admin.firestore.Timestamp
       ? firstSeenAt.toMillis()
       : Date.parse(event.eventTime);
-    const date = formatUtcDate(Number.isFinite(ms) ? ms : Date.now());
+    const rowMs = Number.isFinite(ms) ? ms : Date.now();
+    const date = formatUtcDate(rowMs);
+    const v2 = date >= SCOPE_V2_FROM;
+    if (v2 && !(Number.isFinite(createdMs) && rowMs - createdMs <= NEW_USER_WINDOW_MS)) {
+      return "not_new_user";
+    }
 
     const { source: src, medium } = normaliseAttribution(source.data());
     tx.set(
@@ -132,8 +177,8 @@ export async function countAcquisition(
       dailyDocRef(db, "acquisition", date),
       {
         date,
-        v: ACQUISITION_SCHEMA_VERSION,
-        scope: ACQUISITION_SCOPE,
+        v: v2 ? ACQUISITION_SCHEMA_VERSION : 1,
+        scope: v2 ? ACQUISITION_SCOPE : ACQUISITION_SCOPE_V1,
         total: inc(1),
         bySource: { [src.key]: inc(1) },
         byMedium: { [medium.key]: inc(1) },
@@ -164,7 +209,59 @@ export const onAcquisitionCreated = onDocumentCreated(
     }
     await countAcquisition(
       { uid: event.params.uid, eventTime: event.time },
-      { db: admin.firestore() },
+      { db: admin.firestore(), getAccount: (uid) => accountLookup(uid) },
     );
   },
 );
+
+let accountLookup: (uid: string) => Promise<AuthAccount | null> = getAuthAccount;
+
+/** Test seam for the deployed handler, which has no Auth emulator behind it. */
+export function setAccountLookupForTest(
+  lookup: ((uid: string) => Promise<AuthAccount | null>) | null,
+): void {
+  accountLookup = lookup ?? getAuthAccount;
+}
+
+/** Exported with the Auth object as a parameter so a test can drive each error code. */
+export async function getAuthAccountWith(
+  auth: { getUser: (uid: string) => Promise<AuthAccount> },
+  uid: string,
+): Promise<AuthAccount | null> {
+  try {
+    return await auth.getUser(uid);
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    if (code === "auth/user-not-found" || code === "auth/invalid-uid") return null;
+    throw e;
+  }
+}
+
+function getAuthAccount(uid: string): Promise<AuthAccount | null> {
+  return getAuthAccountWith(admin.auth(), uid);
+}
+
+/**
+ * How many accounts have said yes to analytics, written to today's day
+ * document so a reader of the tally can see what it is a share of. Only the
+ * number is stored. It is a `count()` aggregation, so it bills about one read
+ * per thousand matching index entries and never reads a uid.
+ */
+export async function runAcquisitionEligibleSnapshot(
+  deps: { db?: admin.firestore.Firestore; now?: Date } = {},
+): Promise<number> {
+  const db = deps.db ?? admin.firestore();
+  const date = formatUtcDate((deps.now ?? new Date()).getTime());
+  const agg = await db
+    .collectionGroup("consent")
+    .where("purposes.analytics", "==", true)
+    .count()
+    .get();
+  const analyticsConsented = agg.data().count;
+  await dailyDocRef(db, "acquisition", date).set(
+    { date, eligible: { analyticsConsented } },
+    { merge: true },
+  );
+  logger.info("acquisition_eligible_snapshot", { date });
+  return analyticsConsented;
+}

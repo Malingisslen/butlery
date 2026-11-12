@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -64,8 +65,9 @@ void main() {
       );
     });
 
-    testWidgets('a live share of a personal list is a copy and keeps the '
-        'plain receipt', (tester) async {
+    testWidgets('a share of a personal list is an invitation too (BUT-2399)', (
+      tester,
+    ) async {
       final list = UnifiedShoppingList.personal(
         name: 'Veckohandling',
         ownerId: 'me',
@@ -73,7 +75,7 @@ void main() {
       );
       expect(
         await successMessage(tester, 3, ShareMode.realtime, sharedList: list),
-        'Delat med 3 personer. Ändringar syns för alla.',
+        AppLocale.current.listInviteShareSent,
       );
     });
 

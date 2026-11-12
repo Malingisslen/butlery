@@ -96,7 +96,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `friends_state_manager.dart` | 657 | Friends list state + stream management |
 | `tagging_service.dart` | 547 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `user_service.dart` | 1255 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
-| `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
+| `messaging_service.dart` | 871 | Chat/messaging service. Poll close and winner resolution live in `messaging/poll_resolution_operations.dart` (BUT-1923). |
 | `text_import_strategy.dart` | 1420 | Text-based recipe import strategy. Row refreshed 2026-10-30. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 607 | Adaptive caching based on usage patterns |
@@ -190,7 +190,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |
-| `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 846 | DI registrations for content layer |
 | `ui_module.dart` | 516 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |
@@ -275,7 +274,6 @@ The size guard and `tools/count_large_files.sh` look at `lib/` Dart files only; 
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `residual-probe.ts` | 1085 | `probeResidualData` moved whole from the deletion cascade (BUT-2113). One ordered sequence of legs whose order BUT-1822 and BUT-1838 froze, with tables that mix areas; splitting it means rewriting bodies. Follow-up: BUT-2408. |
 | `reset-collection-lists.ts` | 552 | Data, not logic: five exported collection lists for `reset-user-data.ts` and one predicate (`isKeptAnalyticsSeries`), each entry carrying the reason it sits in its list. A reviewer of a reset change reads where a collection went against where it could have gone, which a split across files would hide. (BUT-2475) |
 
 ## Categories

@@ -7,7 +7,13 @@ to a newer version. A single source of truth lives in
 ```ts
 export const TEXT_MODEL = "gemini-2.5-flash-lite";
 export const MODEL_ID = TEXT_MODEL;
+export const VISION_MODEL = "gemini-3.1-flash-lite";
 ```
+
+Text calls use `TEXT_PROFILE` (`VERTEX_LOCATION`); the recipe-photo call
+(`ocrRecipeImage`) uses `VISION_PROFILE` (`VISION_LOCATION` via
+`VISION_API_ENDPOINT`), and falls back to `TEXT_PROFILE` only when Vertex
+answers NOT_FOUND.
 
 `MODEL_ID` is exported separately so analytics events stamp the actual model
 used per call rather than a derived name.
@@ -38,7 +44,7 @@ snapshot. The decision criteria:
    sample of recent prompts (sample 50–100 calls from the past month).
 3. **No regression on the prompt-changelog gate** (HIGH-AI8) — the candidate
    model must respect the schema-enforced JSON output without tightening.
-4. **Vertex AI region still EU-resident** (`VERTEX_LOCATION` in `gemini-client.ts`).
+4. **Vertex AI region still EU-resident** (`VERTEX_LOCATION` and `VISION_LOCATION` in `gemini-client.ts`).
    Model×region availability is project-allowlist dependent and changes often —
    verify the candidate model is actually served on the configured region for
    THIS project before pinning.
@@ -90,3 +96,4 @@ Re-verify on every bump.
 | 2026-05-06 | `gemini-2.0-flash-001`    | Initial pin (BUT-785). Was the moving `gemini-2.0-flash` alias. |
 | 2026-06-03 | `gemini-2.5-flash-lite` + region `europe-west1`→`eu` | BUT-1187: forced migration — Google retired `gemini-2.0-flash-001` on 2026-06-01 (Vertex returned 404, all imports failing). `gemini-2.5-flash-lite` is the GA cost-parity replacement for the 2.0-flash tier; natively multimodal, drop-in. Region moved europe-west1→`eu` multi-region (still EU-resident) because 2.5-series models aren't reliably served in europe-west1 single-region. Not a quarterly golden-test bump (incident response). **Needs deploy-time live verification + residency ratification (BUT-1187).** |
 | 2026-10-22 | `gemini-2.5-flash-lite` + region `europe-west1`→`europe-west4` | BUT-2431: `butlery-prod` gets NOT_FOUND for both `gemini-2.5-flash-lite` and `gemini-2.5-flash` in `europe-west1`; both answer in `europe-west4` for `butlery-prod` and `butlery-app-staging` (probed 2026-10-22). Still EU-resident. |
+| 2026-11-11 | Photo call (`ocrRecipeImage`) → `gemini-3.1-flash-lite`, location `eu` via `apiEndpoint` `aiplatform.eu.rep.googleapis.com` | Malin's decision 2026-11-11 ("Byt till 3.1 Flash-Lite"), after a measurement on cookbook pages. Text calls stay on `gemini-2.5-flash-lite` in `europe-west4`. The cost delta (about 3x per photo, list price $0.275/$1.65 per 1M in/out read 2026-11-11) deliberately exceeds the 20 % gate above, by her decision. `thinkingLevel: MINIMAL`. A NOT_FOUND falls back to the text profile once. Google lists shutdown of `gemini-3.1-flash-lite` on 2027-05-07. |

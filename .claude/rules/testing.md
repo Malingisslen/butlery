@@ -17,6 +17,12 @@ Tests verify **intended behavior**, not green status.
 4. **Test the contract** — inputs → outputs and side effects, not implementation details.
    One meaningful behavioral test beats ten getter checks.
 
+The test DI container mirrors production through a generated file. After changing
+anything in `lib/core/di`, run `dart run tools/test_mock_fallbacks.dart` and commit the
+result; a test fails with that command when you forget. Tests that register a service
+after `TestServiceLocator.initialize()` use `TestServiceLocator.registerSingleton`, never
+raw `GetIt.instance.registerSingleton`, which throws "already registered".
+
 Run a single suite with `flutter test test/unit/<file>_test.dart`. Always use forward
 slashes in test paths on this machine.
 

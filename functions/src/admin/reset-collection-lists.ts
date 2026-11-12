@@ -381,6 +381,13 @@ export const COLLECTIONS_TO_KEEP = [
   // closing summary in `reset-user-data.ts` prints the exception beside the
   // list for the same reason.
   "analytics",
+  // Kokboksprovet: the admin's own cookbooks and the answer keys written for
+  // them, which hold no user data. The
+  // photos survive a reset already, because `corpus/` is not among the
+  // storage prefixes the script deletes.
+  "corpus_books",
+  "corpus_pages",
+  "corpus_runs",
 ];
 
 /**
@@ -432,6 +439,11 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
   // Each of these is server-written and admin-read. A reset wipes USER data;
   // deleting the operator's own record of what the system did is a separate
   // decision, and this file is where it would be made.
+
+  safe_search_scans:
+    "BUT-818: the Vision SafeSearch verdict per image, keyed by the image's " +
+    "checksums (storage/safe-search.ts), with no uid or path. Deleting it would " +
+    "only pay Vision again for the same bytes.",
 
   metrics:
     "North-star weekly snapshots (scheduled/north-star-weekly.ts), keyed by " +
@@ -544,6 +556,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "activeUsers", // recipePresence/{id}, shoppingPresence/{id}, realtime_*/{id}
   "block_mirror", // users/{uid}
   "clicks", // deep_links/{code} (BUT-2463)
+  "consent", // users/{uid}; read as a collection group by the acquisition eligible count (BUT-2406)
   "friendCategories", // users/{uid}, pre-rename spelling (BUT-2044)
   "comments", // menu_comments/{menuId}, and the {path=**} comment group
   "engagements", // shared_recipes/{id}, shared_menus/{id}

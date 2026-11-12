@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-11-02",
+  "lastRun": "2026-11-09",
   "dossiersRefreshed": 0,
   "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": 0.98,
-  "notes": "No stale dossiers, no world-watch findings, retro overdue since go-live, accept rate healthy"
+  "retroDue": false,
+  "acceptRate": 0.795,
+  "notes": "No stale dossiers, no world-watch findings, both retros already logged, accept rate down from 0.98 to 0.795 but still above the 0.5 floor; archived 2 shipped plan files"
 }

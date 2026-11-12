@@ -160,6 +160,9 @@ class FCMTokenManager {
     try {
       AppLogger.debug('🔔 Refreshing FCM token');
 
+      // Cloud Functions send by FCM token; the FID API (register/onRegistered)
+      // needs the server send path moved first (BUT-2508).
+      // ignore: deprecated_member_use
       final newToken = await _messaging.getToken();
 
       if (newToken == null) {
@@ -203,6 +206,7 @@ class FCMTokenManager {
   /// Set up listener for automatic token refresh
   void _setupTokenRefreshListener() {
     try {
+      // ignore: deprecated_member_use
       _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
         (newToken) async {
           AppLogger.info('🔄 FCM token refreshed automatically');
@@ -613,6 +617,7 @@ class FCMTokenManager {
 
       // Invalidate token on Google's servers (not just Firestore)
       try {
+        // ignore: deprecated_member_use
         await _messaging.deleteToken();
       } catch (e) {
         AppLogger.warning('⚠️ Failed to delete FCM token from SDK: $e');

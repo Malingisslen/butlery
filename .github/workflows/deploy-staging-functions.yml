@@ -1,0 +1,54 @@
+# BUT-2447: keeps the staging project's Cloud Functions in step with `main`.
+#
+# Rules, indexes and Storage rules already follow `main` through
+# deploy-staging-rules.yml. This does the same for functions by dispatching
+# deploy-firebase.yml with `environment=staging`, so the deploy keeps its guard
+# steps, its smoke gate and its rollback in one place.
+#
+# It waits for the Cloud Functions unit suite instead of running on push: a red
+# suite must never reach any project, staging included. The suite's own `paths:`
+# decide when that happens, so a docs-only push deploys nothing.
+#
+# Staging only. Production stays manual: dispatch deploy-firebase.yml with
+# `environment=production`, which waits for Malin's approval.
+name: Deploy Staging Functions
+
+on:
+  workflow_run:
+    workflows: [Cloud Functions Unit Tests]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging-functions-trigger
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Dispatch the staging functions deploy
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+      || (github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.head_branch == 'main'
+          && github.event.workflow_run.head_repository.full_name == github.repository
+          && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      # A workflow_dispatch made with GITHUB_TOKEN is the one event that token
+      # may start. The deploy runs on `main`'s current head, which is never older
+      # than the commit the suite tested.
+      - name: Dispatch deploy-firebase.yml for staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run deploy-firebase.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main \
+            -f target=functions -f environment=staging
+          echo "Dispatched a staging functions deploy for ${{ github.event.workflow_run.head_sha || github.sha }}." >> "$GITHUB_STEP_SUMMARY"

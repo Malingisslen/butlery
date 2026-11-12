@@ -8712,10 +8712,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavFeedback => 'Feedback';
 
   @override
-  String get adminNavImport => 'Import health';
+  String get adminNavImport => 'Recipe import';
 
   @override
-  String get adminImportTitle => 'Import health';
+  String get adminImportTitle => 'Recipe import';
 
   @override
   String get adminImportColDomain => 'Domain';
@@ -8742,10 +8742,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminImportSummaryRate => 'Success rate';
 
   @override
-  String get adminNavEngagement => 'Engagement';
+  String get adminNavEngagement => 'Usage';
 
   @override
-  String get adminEngagementTitle => 'Engagement';
+  String get adminEngagementTitle => 'Usage';
 
   @override
   String get adminEngagementUsers => 'Total users';
@@ -8778,10 +8778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEngagementColShopped => 'Shopped';
 
   @override
-  String get adminNavParsing => 'Parsing details';
+  String get adminNavParsing => 'Import corrections';
 
   @override
-  String get adminParsingTitle => 'Parsing details';
+  String get adminParsingTitle => 'Import corrections';
 
   @override
   String get adminParsingEmpty => 'No corrections yet';
@@ -8832,13 +8832,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manual / unknown';
 
   @override
-  String get adminNavOps => 'Ops';
+  String get adminNavOps => 'System events';
 
   @override
-  String get adminNavGuestList => 'Guest list';
+  String get adminNavGuestList => 'Invited';
 
   @override
-  String get adminGuestListTitle => 'Guest list';
+  String get adminGuestListTitle => 'Invited';
 
   @override
   String get adminGuestListLoading => 'Loading the guest list …';
@@ -8893,7 +8893,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminNavIngredients => 'Ingredients';
 
   @override
-  String get adminNavTagRules => 'Tag rules';
+  String get adminNavTagRules => 'Allergen and diet rules';
 
   @override
   String get adminIngredientsTitle => 'Ingredients';
@@ -9037,7 +9037,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminIngredientNo => 'No';
 
   @override
-  String get adminTagRulesTitle => 'Tag rules';
+  String get adminTagRulesTitle => 'Allergen and diet rules';
 
   @override
   String get adminTagRulesLoadFailed => 'The tag configuration isn\'t loaded.';
@@ -9061,7 +9061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminTagRulesRequired => 'Requires';
 
   @override
-  String get adminOpsTitle => 'Operations';
+  String get adminOpsTitle => 'System events';
 
   @override
   String get adminOpsEmpty => 'No operations events yet';
@@ -11863,10 +11863,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCouldNotSendInvitations => 'Could not send invitations';
-
-  @override
-  String get shareDefaultShoppingListMessage =>
-      'Sharing this shopping list with you.';
 
   @override
   String shoppingListAllDone(int count) {
@@ -18261,6 +18257,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccountTwoStep => 'Two-step verification';
 
   @override
+  String get settingsSessionsSection => 'Sessions';
+
+  @override
+  String get settingsSignOutEverywhereTitle => 'Sign out of all devices';
+
+  @override
+  String get settingsSignOutEverywhereHint =>
+      'Signs out all your other devices. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereDialogTitle => 'Sign out other devices?';
+
+  @override
+  String get signOutEverywhereDialogBody =>
+      'Other devices may keep working for up to an hour before they are signed out. You stay signed in here.';
+
+  @override
+  String get signOutEverywhereConfirm => 'Sign them out';
+
+  @override
+  String get signOutEverywhereReauthTitle => 'Confirm it\'s you';
+
+  @override
+  String signOutEverywhereReauthBody(String provider) {
+    return 'For security you need to sign in with $provider again before other devices are signed out.';
+  }
+
+  @override
+  String signOutEverywhereReauthAction(String provider) {
+    return 'Sign in with $provider';
+  }
+
+  @override
+  String get signOutEverywhereDone =>
+      'Done. Other devices may keep working for up to an hour, then they are signed out.';
+
+  @override
+  String get signOutEverywhereReauthNeeded =>
+      'Sign in again with Google or Apple and try again.';
+
+  @override
+  String get signOutEverywhereRateLimited =>
+      'You have tried too many times. Try again later.';
+
+  @override
+  String get signOutEverywhereFailed =>
+      'Could not sign out other devices. Try again.';
+
+  @override
+  String get signOutEverywhereSignedOut =>
+      'Other devices are signed out, but this one could not continue. Sign in again.';
+
+  @override
+  String signOutEverywhereNotice(String when) {
+    return 'Your other devices were signed out $when. Not you? Change your Google or Apple password.';
+  }
+
+  @override
   String get settingsYourChoicesSection => 'Your choices';
 
   @override
@@ -19361,6 +19415,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get motivationMisattributionNameRemoved =>
       'Your name has been removed from the dish.';
+
+  @override
+  String decisionSubjectImage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your image',
+        'other': 'An image',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorContentTypeImage => 'Image';
+
+  @override
+  String get reportReasonExplicitImage =>
+      'Inappropriate image (automatic check)';
+
+  @override
+  String get motivationRemovedAutomatedImage =>
+      'The image was stopped by the automatic image check because it is very likely sexual or violent. The decision was made automatically. If you appeal, a moderator reviews the image.';
+
+  @override
+  String get moderatorAppealShowImage => 'Show the image';
+
+  @override
+  String moderatorAppealImagesOmitted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images could not be shown',
+      one: '1 image could not be shown',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moderatorAppealImagesTitle => 'Stopped images';
+
+  @override
+  String get moderatorAppealImagesFailed => 'The image could not be loaded.';
 
   @override
   String get myContentDecisionsTitle => 'Decisions about my content';
@@ -21359,7 +21456,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get adminNavProposals => 'Proposals';
+  String get adminNavProposals => 'Pending proposals';
 
   @override
   String get adminProposalsTitle => 'Pending proposals';
@@ -21896,4 +21993,177 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminProposalWordListReviewFailed =>
       'The word lists did not make it into the review, but the ingredient changes went through. Try again in a moment.';
+
+  @override
+  String get adminNavOverview => 'Overview';
+
+  @override
+  String get adminOverviewTitle => 'Overview';
+
+  @override
+  String get adminOverviewAllClearTitle => 'Everything looks normal';
+
+  @override
+  String get adminOverviewAllClearBody =>
+      'No new reports or proposals are waiting and imports are going well. Nothing needs doing right now.';
+
+  @override
+  String adminOverviewNeedsAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things need your attention',
+      one: '1 thing needs your attention',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewAnomaliesAdvice =>
+      'The numbers differ from the usual. Open Recipe import and see whether a site has stopped working. A single deviation can also just be an unusually quiet or busy day.';
+
+  @override
+  String adminOverviewImportFailuresAdvice(int percent) {
+    return '$percent % of imports fail. Open Recipe import and see which sites fail most. A site that almost always fails has usually changed its page and needs new support.';
+  }
+
+  @override
+  String get adminOverviewSomeUnavailable => 'Some numbers could not be loaded';
+
+  @override
+  String get adminOverviewStatusOk => 'Looks good';
+
+  @override
+  String get adminOverviewStatusNeedsLook => 'Needs a look';
+
+  @override
+  String get adminOverviewStatusUnavailable => 'Could not be loaded';
+
+  @override
+  String get adminOverviewStatusNoSignal => 'No automatic check';
+
+  @override
+  String get adminOverviewOpen => 'Open';
+
+  @override
+  String adminOverviewFeedbackAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count new reports are waiting. Read them and mark them as handled when you are done.',
+      one:
+          '1 new report is waiting. Read it and mark it as handled when you are done.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewFeedbackManyAdvice(int count) {
+    return 'At least $count new reports are waiting. Read the newest first and mark them as handled when you are done.';
+  }
+
+  @override
+  String get adminOverviewFeedbackOk => 'No new reports are waiting.';
+
+  @override
+  String adminOverviewProposalsAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count proposals are waiting for your decision. Open them and approve or reject.',
+      one:
+          '1 proposal is waiting for your decision. Open it and approve or reject.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminOverviewProposalsManyAdvice(int count) {
+    return 'At least $count proposals are waiting for your decision. Open the list and approve or reject, and the rest will show.';
+  }
+
+  @override
+  String get adminOverviewProposalsOk => 'No proposals are waiting.';
+
+  @override
+  String get adminOverviewImportOk =>
+      'Imports are going well and no unusual swings have been detected.';
+
+  @override
+  String adminOverviewOpsStaleAdvice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'No system event has been recorded in $_temp0. Open the tab and see when the jobs last ran.';
+  }
+
+  @override
+  String get adminOverviewOpsNoneAdvice =>
+      'No system event has ever been recorded. Open the tab and check that the jobs are running.';
+
+  @override
+  String get adminOverviewOpsOk =>
+      'System events have been recorded within the last week.';
+
+  @override
+  String adminOverviewGuestPendingAdvice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations have not expired.',
+      one: '1 invitation has not expired.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOverviewGuestNone => 'No invitations that have not expired.';
+
+  @override
+  String get adminOverviewNoSignalAdvice =>
+      'The overview does not measure this tab. Open it when you want a closer look.';
+
+  @override
+  String get adminOverviewUnavailableAdvice =>
+      'The number could not be loaded, so it is not possible to say whether anything needs doing. Try again with Refresh.';
+
+  @override
+  String get adminNavAcquisition => 'Channels';
+
+  @override
+  String get adminAcquisitionTitle => 'New users per channel';
+
+  @override
+  String get adminAcquisitionLoadFailed =>
+      'Could not load the channel count. The table cannot be shown until loading succeeds.';
+
+  @override
+  String get adminAcquisitionEmpty => 'No channel count for the last 30 days';
+
+  @override
+  String get adminAcquisitionColSource => 'Channel';
+
+  @override
+  String get adminAcquisitionColCount => 'New users';
+
+  @override
+  String get adminAcquisitionTotal => 'Total, rounded to the nearest 5';
+
+  @override
+  String get adminAcquisitionEligible => 'Have said yes to statistics';
+
+  @override
+  String get adminAcquisitionNote =>
+      'Counts new accounts that agreed to statistics, for the last 30 days. It is not every new user: those who did not agree or did not arrive through a link are missing. Numbers below 5 are shown as <5 so that no single person can be picked out.';
+
+  @override
+  String get adminAcquisitionOther => 'Other';
+
+  @override
+  String get adminAcquisitionLoading => 'Loading the channel count …';
 }

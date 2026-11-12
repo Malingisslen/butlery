@@ -10,7 +10,7 @@
 ///    - The strategy only works through FilePicker UI interaction
 ///
 /// 2. import() method ignores the input parameter
-///    - It calls FilePicker.pickFiles() directly
+///    - It calls FilePicker.pickFile() directly
 ///    - This requires actual UI interaction which isn't available in unit tests
 ///    - Tests will fail with LateInitializationError for FilePicker
 ///
@@ -31,9 +31,7 @@
 /// - Data type conversions
 library;
 
-import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:file_picker/file_picker.dart';
 
 // Production imports
 import 'package:butlery/services/import/file_import_strategy.dart';
@@ -43,44 +41,9 @@ import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
-// Using MockPlatformFile and MockFilePickerResult from production_mocks.dart
-// Note: The production mocks don't have constructor-based configuration,
-// so we'll create test-specific subclasses if needed for data setup
-
 // Test-specific configured platform file
-class TestPlatformFile extends MockPlatformFile {
-  final String _name;
-  final Uint8List? _bytes;
-  final String? _path;
-
-  TestPlatformFile({required String name, Uint8List? bytes, String? path})
-    : _name = name,
-      _bytes = bytes,
-      _path = path;
-
-  @override
-  String get name => _name;
-
-  @override
-  Uint8List? get bytes => _bytes;
-
-  @override
-  String? get path => _path;
-
-  @override
-  int get size => _bytes?.length ?? 0;
-}
-
-// Test-specific configured file picker result
-class TestFilePickerResult extends MockFilePickerResult {
-  final List<PlatformFile> _files;
-
-  TestFilePickerResult({required List<PlatformFile> files}) : _files = files;
-
-  @override
-  List<PlatformFile> get files => _files;
-
-  PlatformFile? get single => _files.isNotEmpty ? _files.first : null;
+final class TestPlatformFile extends MockPlatformFile {
+  TestPlatformFile({required super.name, super.bytes});
 }
 
 void main() {

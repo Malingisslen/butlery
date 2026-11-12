@@ -18,6 +18,7 @@ import {
   parseRecipeResponse,
   parseIngredientLinesResponse,
   calculateGeminiCost,
+  pricingForModel,
   stripCodeFences,
   ExtractedRecipe,
   MODEL_ID,
@@ -355,7 +356,11 @@ export async function runStructureRecipe(
     }
 
     // Calculate actual cost from API usage
-    const actualCost = calculateGeminiCost(response.usageMetadata);
+    const actualCost = calculateGeminiCost(
+      response.usageMetadata,
+      undefined,
+      pricingForModel(MODEL_ID),
+    );
 
     // BUT-1451: capture the (scrubbed) input + raw output of this paid call
     // BEFORE parsing — so parse failures (the interesting cases) are sampled

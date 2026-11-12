@@ -22,6 +22,8 @@ String motivationText(AppLocalizations l10n, ModerationMotivation m) =>
       ModerationMotivation.keptUnclear => l10n.motivationKeptUnclear,
       ModerationMotivation.misattributionNameRemoved =>
         l10n.motivationMisattributionNameRemoved,
+      ModerationMotivation.removedAutomatedImage =>
+        l10n.motivationRemovedAutomatedImage,
     };
 
 String decisionHeadline(AppLocalizations l10n, ModeratorDecision d) =>
@@ -46,6 +48,7 @@ String decisionSubject(
     ContentType.cookSnap => l10n.decisionSubjectCookSnap(who),
     ContentType.group => l10n.decisionSubjectGroup(who),
     ContentType.menuDish => l10n.decisionSubjectMenuDish(who),
+    ContentType.image => l10n.decisionSubjectImage(who),
   };
 }
 

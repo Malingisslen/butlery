@@ -108,7 +108,7 @@
   deletion, a TTL or `UNREVIEWED`; `erasure-export-coverage.test.ts` maps every residue section to
   a step). The cheaper shape is often to keep identity OUT: a lock naming the RUN, not the admin
   (`ingredient_change_locks`), needs only an `UNREVIEWED` line. A probe leg on a hash cannot ride
-  the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg.
+  the uid-valued loop in `residual-probe-owner-keyed.ts`; it is its own `count()` leg.
 - **GitHub's REST ref update has no compare-and-swap** (`PATCH /git/refs` takes only `force`).
   A bot that force-rebuilds a branch re-reads `main` AND the branch ref immediately before the
   PATCH and aborts on either moving; the residual window is named, not claimed closed. Errors from
@@ -145,3 +145,26 @@
 - **A `retry: true` trigger that deletes on a status TRANSITION must re-read the stored
   state before deleting once any path can reverse that transition** (`reopenReport` vs
   the evidence lifecycle), or a late delivery destroys what the reversal re-created.
+- **A create-only copy (`ifGenerationMatch: 0`) followed by a second write is not
+  idempotent if 412 means "skip the rest"**: on redelivery the 412 comes from YOUR OWN
+  earlier copy, so the follow-up (`setMetadata` with the download token) never runs. On 412,
+  read the destination and finish the job when it carries your marker (e.g. the same
+  `reportId`); treat only a marker-less object as someone else's.
+- **An action that a reviewer view gates must be bounded by what that view SHOWED.** A
+  view that caps (count, bytes) or omits items while the action covers the whole set lets
+  the action reach unseen items; record the shown set server-side (generations, not
+  names) and act on that set only. Budget a base64 callable answer on ENCODED size (×4/3).
+  A "saw everything" flag built with `Array.every` is TRUE on an empty set — require the
+  set to be non-empty, or a case of only unviewable items unlocks the action.
+- **I/O added AHEAD of a fail-open protective step inherits that step's fail-open duty.**
+  `moderateUpload` declares no `retry` and the sweep walks only `quarantine/`, so a throw from
+  a case-grouping read (`chooseReportId`) before `quarantine()` leaves an explicit image public
+  for good: wrap it, fall back to a fresh id. A notice gated on a helper's boolean ("moved") is
+  only as true as the branches that helper SWALLOWS: a caught `source.delete` failure that still
+  returns true tells the owner "removed" about a visible image. Any copy that carries `reportId`
+  is also re-filed by the sweep.
+- **A NAME cannot tell a server object from a client one under a mirrored prefix.**
+  `quarantine/users/{uid}/…` mirrors `users/{uid}/{allPaths=**}`, which a client may name
+  anything, so no regex (anchored or not) separates a pointer from a quarantined image.
+  Classify on server-only metadata (a quarantine copy always carries `reportId`), and test the
+  classifier against the client-shaped name itself.

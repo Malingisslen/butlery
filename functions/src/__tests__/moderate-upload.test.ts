@@ -160,6 +160,11 @@ interface Harness {
   audits: Record<string, unknown>[];
   ownerLookups: string[];
   markerReads: string[];
+  annotateCalls: string[];
+  copies: string[];
+  metadataSets: Record<string, unknown>[];
+  copyMetadata: Record<string, unknown>[];
+  decisions: Record<string, unknown>[];
   deps: Record<string, unknown>;
 }
 
@@ -172,6 +177,8 @@ function harness(opts: {
   authError?: string;
   markers?: Record<string, Record<string, unknown>>;
   markerError?: string;
+  explicit?: boolean;
+  decisionError?: boolean;
 }): Harness {
   const h: Harness = {
     deletes: [],
@@ -179,6 +186,11 @@ function harness(opts: {
     audits: [],
     ownerLookups: [],
     markerReads: [],
+    annotateCalls: [],
+    copies: [],
+    metadataSets: [],
+    copyMetadata: [],
+    decisions: [],
     deps: {},
   };
   const db = {
@@ -211,12 +223,23 @@ function harness(opts: {
           },
         };
       }
+      // BUT-818: the cache has its own suite; here every scan misses it.
+      if (name === "safe_search_scans") {
+        return {
+          doc: () => ({
+            get: async () => ({ exists: false, get: () => undefined }),
+            create: async () => undefined,
+            set: async () => undefined,
+          }),
+        };
+      }
       throw new Error(`unexpected collection ${name}`);
     },
   };
   const bucket = {
     file(name: string) {
       return {
+        name,
         async delete() {
           h.deletes.push(name);
         },
@@ -224,18 +247,41 @@ function harness(opts: {
           h.downloads.push(name);
           return [JPEG_HEAD];
         },
+        async copy(dest: { name: string }, options?: { metadata?: Record<string, unknown> }) {
+          h.copies.push(`${name}->${dest.name}`);
+          h.copyMetadata.push(options?.metadata ?? {});
+        },
+        async setMetadata(meta: Record<string, unknown>) {
+          h.metadataSets.push({ name, ...meta });
+        },
       };
     },
   };
   h.deps = {
     db,
     bucket: () => bucket,
+    annotate: async (uri: string) => {
+      h.annotateCalls.push(uri);
+      return {
+        adult: opts.explicit ? "VERY_LIKELY" : "VERY_UNLIKELY",
+        violence: "VERY_UNLIKELY",
+        racy: "VERY_UNLIKELY",
+      };
+    },
     ownerExists: async (uid: string) => {
       h.ownerLookups.push(uid);
       if (opts.authError) {
         throw Object.assign(new Error("auth"), { code: opts.authError });
       }
       return !(opts.gone ?? []).includes(uid);
+    },
+    push: async () => undefined,
+    now: () => new Date(0),
+    chooseCase: async (_db: unknown, _bucket: unknown, owner: string) => `case-of-${owner}`,
+    fileDecision: async (input: Record<string, unknown>) => {
+      if (opts.decisionError) throw Object.assign(new Error("decision"), { code: 14 });
+      h.decisions.push(input);
+      return "recorded";
     },
   };
   return h;
@@ -345,6 +391,7 @@ test("BUT-2294: objects outside users/ trigger no owner lookup", async () => {
     `feedback/${ERASED}/shot.png`,
     "shared/recipes/r1/cover.jpg",
     `models/${ERASED}/m.bin`,
+    `corpus/${ERASED}/p0001.jpg`,
   ]) {
     const h = harness({ gone: [ERASED] });
     await handleFinalizedObject(
@@ -355,6 +402,34 @@ test("BUT-2294: objects outside users/ trigger no owner lookup", async () => {
     assertEqual(h.markerReads.length, 0, `marker reads for ${name}`);
     assertEqual(h.deletes.length, 0, `deletes for ${name}`);
   }
+});
+
+// Kokboksprovet (decision 2026-11-07): cookbook photos under corpus/ get the
+// same byte check as every other upload, and no owner lookup.
+test("corpus/: a page photo whose bytes match its type is kept", async () => {
+  const h = harness({});
+  const name = "corpus/book-0001/p0001.jpg";
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.downloads), JSON.stringify([name]), "downloads");
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(h.ownerLookups.length, 0, "owner lookups");
+});
+
+test("corpus/: a page photo declared HEIC with JPEG bytes is deleted and audited", async () => {
+  const h = harness({});
+  const name = "corpus/book-0001/p0002.heic";
+  await handleFinalizedObject(
+    { bucket: "b", name, contentType: "image/heic" },
+    h.deps
+  );
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "deletes");
+  assertEqual(h.audits.length, 1, "audit rows");
+  assertEqual(
+    (h.audits[0].metadata as Record<string, unknown>).reason,
+    "magic_byte_mismatch_declared_heic_actual_jpeg",
+    "reason"
+  );
 });
 
 test("BUT-2294: through accountExists, auth/user-not-found deletes and auth/internal-error keeps", async () => {
@@ -375,6 +450,143 @@ test("BUT-2294: through accountExists, auth/user-not-found deletes and auth/inte
   await handleFinalizedObject(jpegAt(name), transient.deps);
   assertEqual(transient.deletes.length, 0, "internal-error keeps");
   assertEqual(transient.downloads.length, 1, "internal-error still moderates");
+});
+
+test("BUT-818: only users/ images are sent to Vision", async () => {
+  const h = harness({});
+  for (const name of [`users/${LIVE}/recipes/r.jpg`, `feedback/${LIVE}/s.jpg`, "corpus/book-1/p.jpg"]) {
+    await handleFinalizedObject(jpegAt(name), h.deps);
+  }
+  assertEqual(JSON.stringify(h.annotateCalls), JSON.stringify([`gs://b/users/${LIVE}/recipes/r.jpg`]), "annotate");
+});
+
+test("BUT-818: explicit image is copied to quarantine without its token, then deleted; the PATH owner is audited", async () => {
+  const h = harness({ explicit: true });
+  const name = `users/${LIVE}/recipes/r.jpg`;
+  await handleFinalizedObject(jpegAt(name, { uploadedBy: ERASED }), h.deps);
+  assertEqual(JSON.stringify(h.copies), JSON.stringify([`${name}->quarantine/${name}`]), "copy");
+  assertEqual(
+    JSON.stringify(h.metadataSets),
+    JSON.stringify([{ name: `quarantine/${name}`, metadata: { firebaseStorageDownloadTokens: null } }]),
+    "token stripped from the copy"
+  );
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "original deleted");
+  assertEqual(h.audits[0]?.operation, "storage_upload_quarantined", "audit operation");
+  assertEqual(h.audits[0]?.userId, LIVE, "path owner, never metadata.uploadedBy");
+});
+
+test("BUT-818 step 2: the copy names its case and keeps the original token; the owner's decision is filed after the move", async () => {
+  const h = harness({ explicit: true });
+  const name = `users/${LIVE}/recipes/r.jpg`;
+  await handleFinalizedObject(
+    jpegAt(name, { firebaseStorageDownloadTokens: "tok-1,tok-2" }),
+    h.deps
+  );
+  assertEqual(h.copyMetadata[0]?.reportId, `case-of-${LIVE}`, "case on the copy");
+  assertEqual(h.copyMetadata[0]?.originalToken, "tok-1", "first token kept for the restore");
+  assertEqual(
+    JSON.stringify(h.decisions),
+    JSON.stringify([{ reportId: `case-of-${LIVE}`, ownerUid: LIVE, now: new Date(0) }]),
+    "one decision for the path owner"
+  );
+});
+
+test("BUT-818 step 2: no decision when the image could not be moved, or was clean", async () => {
+  const clean = harness({});
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r.jpg`), clean.deps);
+  assertEqual(clean.decisions.length, 0, "clean image");
+
+  const h = harness({ explicit: true });
+  const bucket = (h.deps.bucket as () => { file(n: string): Record<string, unknown> })();
+  h.deps.bucket = () => ({
+    file(n: string) {
+      return {
+        ...bucket.file(n),
+        async copy() {
+          throw Object.assign(new Error("copy"), { code: 503 });
+        },
+      };
+    },
+  });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r.jpg`), h.deps);
+  assertEqual(h.decisions.length, 0, "image left in place, so no decision");
+});
+
+test("BUT-818 step 2: an unreachable case pointer still quarantines, under a case of its own", async () => {
+  const h = harness({ explicit: true });
+  h.deps.chooseCase = async () => {
+    throw Object.assign(new Error(`No such object: quarantine/users/${LIVE}/.cases/1`), { code: 503 });
+  };
+  const name = `users/${LIVE}/recipes/r.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "original still removed");
+  assertEqual(/^safesearch_[0-9a-f]{24}$/.test(String(h.copyMetadata[0]?.reportId)), true, "fresh case id");
+  assertEqual(h.decisions.length, 1, "decision still filed");
+});
+
+test("BUT-818 step 2: an original that cannot be deleted files no decision, and its copy leaves the case", async () => {
+  const h = harness({ explicit: true });
+  const bucket = (h.deps.bucket as () => { file(n: string): Record<string, unknown> })();
+  h.deps.bucket = () => ({
+    file(n: string) {
+      const f = bucket.file(n);
+      return n.startsWith("quarantine/")
+        ? f
+        : {
+          ...f,
+          async delete() {
+            throw Object.assign(new Error("delete"), { code: 503 });
+          },
+        };
+    },
+  });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r.jpg`), h.deps);
+  assertEqual(h.decisions.length, 0, "the owner is not told about a still-visible image");
+  assertEqual(
+    JSON.stringify(h.metadataSets.at(-1)),
+    JSON.stringify({ name: `quarantine/users/${LIVE}/recipes/r.jpg`, metadata: { reportId: null } }),
+    "copy detached from its case"
+  );
+});
+
+test("BUT-818 step 2: a copy whose token could not be stripped leaves the case, and the original stays", async () => {
+  const h = harness({ explicit: true });
+  const bucket = (h.deps.bucket as () => { file(n: string): Record<string, unknown> })();
+  h.deps.bucket = () => ({
+    file(n: string) {
+      const f = bucket.file(n) as { setMetadata(m: Record<string, unknown>): Promise<void> };
+      return {
+        ...f,
+        async setMetadata(meta: { metadata?: Record<string, unknown> }) {
+          if (meta.metadata && "firebaseStorageDownloadTokens" in meta.metadata) {
+            throw Object.assign(new Error("strip"), { code: 503 });
+          }
+          await f.setMetadata(meta);
+        },
+      };
+    },
+  });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r.jpg`), h.deps);
+  assertEqual(h.decisions.length, 0, "no decision");
+  assertEqual(h.deletes.length, 0, "original left in place");
+  assertEqual(
+    JSON.stringify(h.metadataSets.at(-1)),
+    JSON.stringify({ name: `quarantine/users/${LIVE}/recipes/r.jpg`, metadata: { reportId: null } }),
+    "copy detached from its case"
+  );
+});
+
+test("BUT-818 step 2: a failed decision does not throw; the image stays quarantined", async () => {
+  const h = harness({ explicit: true, decisionError: true });
+  const name = `users/${LIVE}/recipes/r.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "original still deleted");
+});
+
+test("BUT-818: an ops/ file the server wrote is left alone", async () => {
+  const h = harness({});
+  await handleFinalizedObject({ bucket: "b", name: "ops/resets/r1.json", contentType: "application/json" }, h.deps);
+  assertEqual(h.deletes.length + h.downloads.length + h.audits.length, 0, "untouched");
 });
 
 async function run(): Promise<void> {

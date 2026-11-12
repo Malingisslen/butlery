@@ -5,6 +5,8 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "lib",
+    "rootDir": "src",
+    "types": ["node"],
     "sourceMap": true,
     "strict": true,
     "target": "es2022",

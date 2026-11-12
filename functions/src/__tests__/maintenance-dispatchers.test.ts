@@ -97,6 +97,7 @@ async function testRegistryMembership(): Promise<void> {
     "parsingCorrectionsSnapshot",
     "feedbackSnapshot",
     "opsSnapshot",
+    "acquisitionEligibleSnapshot",
     "detectAnomalies",
     // Consumed by nobody — last, so a timeout in it takes
     // nothing else down with it.
@@ -118,10 +119,11 @@ async function testRegistryMembership(): Promise<void> {
     "northStarWeekly",
     "importTierWeekly",
     "reconcileBlockMirrors",
+    "quarantineSweep",
   ];
   const actualWeekly = WEEKLY_REPORT_TASKS.map((t) => t.name);
   record(
-    "WEEKLY_REPORT_TASKS holds the digest, the reports, then the mirror sweep",
+    "WEEKLY_REPORT_TASKS holds the digest, the reports, then the two sweeps",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
   );

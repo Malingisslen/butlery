@@ -16,7 +16,12 @@
 
 import * as admin from "firebase-admin";
 import * as fs from "fs";
-import { calculateGeminiCost, MAX_TOKENS } from "../llm/gemini-client";
+import {
+  calculateGeminiCost,
+  MAX_TOKENS,
+  MODEL_ID,
+  pricingForModel,
+} from "../llm/gemini-client";
 import { runStructureRecipe } from "../llm/structure-recipe";
 import {
   GOLDEN_CI_UID_HASH,
@@ -35,7 +40,7 @@ function ceilingFor(input: GoldenInput): number {
   return calculateGeminiCost({
     promptTokenCount: Math.ceil(input.text.length / 3) + PROMPT_OVERHEAD_TOKENS,
     candidatesTokenCount: MAX_TOKENS,
-  });
+  }, undefined, pricingForModel(MODEL_ID));
 }
 
 async function main(): Promise<void> {

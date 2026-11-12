@@ -234,6 +234,7 @@ class ShoppingRepositoryRoutingModule {
       entity,
       stored,
       intent,
+      declaresAccessControlBase: accessControlBase != null,
     );
 
     // BUT-1719: write only what the caller actually changed, and never let a

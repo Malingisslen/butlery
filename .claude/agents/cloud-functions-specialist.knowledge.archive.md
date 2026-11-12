@@ -21499,3 +21499,82 @@ generation, tolerates 404/412, reports counts in `finally`; the script maps a mi
 mutant (pin dropped, missing-generation skip removed, `finally` removed). Suite 16/16, tsc clean.
 Residual Info: a `null` generation would stringify to "null" and fail the delete (fail closed).
 Verdict pass.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 review: quarantine restore/review [storage]
+Reviewed staged image-decision.ts, quarantine-restore.ts, quarantine-review.ts, safe-search.ts.
+FAIL, 2 blocking. (1) `restoreCase`: copy with `ifGenerationMatch: 0`, then `setMetadata`
+(token + clearing quarantine keys); a failure/timeout between them makes the redelivery hit
+412 on our own copy, set `copied=false`, skip `setMetadata`, then delete the quarantine copy —
+restored image left tokenless (app URL dead) and carrying `ownerUid`/`reportId`/scores.
+(2) `getQuarantinedImages` shows at most 4 images and skips >2 MB (storage.rules allow 10 MB),
+but `restoreCase` restores every object with the reportId: a cook-snap album of 6 in one
+window, or ordering by name, restores images the moderator never saw. Non-blocking: uncaught
+Storage errors in the retry:true trigger log the object name (uid) per retry; 4 x 2 MiB is
+~11.18 MB base64, over the 10 MB the comment names (gen2 limit not verified); one throw in
+`sweepQuarantine` aborts that week's remaining 200-day deletions; `isCasePointer` substring
+match is reachable from a client path `users/{uid}/.cases/x.jpg` (sweep deletes that
+quarantined copy after a day); duplicate `audit_logs.add` rows per redelivery.
+Measured: test:image-decision 6/6 (brief said 7/7), test:safe-search 13/13; both test files
+untracked at review time.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 re-review [storage]
+Re-read image-decision.ts, quarantine-restore.ts, quarantine-review.ts, safe-search.ts,
+moderation/answer-appeal.ts. Blocking 1 (412 on own copy) and 2 (restore beyond what was
+shown, now `reviewedGenerations` + `image_not_reviewed` guard) fixed. PASS, 0 blocking.
+Finding 6 NOT fixed, and the regex I proposed in round 1 was itself wrong:
+`node -e` shows /^quarantine\/users\/[^/]+\/\.cases\/[^/]+$/ matches
+`quarantine/users/u1/.cases/x.jpg` (true) — the exact client-shaped name. Superseded chapter
+bullet, retired verbatim:
+"- **A path classifier on a client-writable wildcard (`users/{uid}/{allPaths=**}`) must be
+  anchored** (`^quarantine/users/[^/]+/\.cases/[^/]+$`), never `includes("/.cases/")`: a
+  client can name a folder anything, and its quarantined copy then reads as server state."
+New non-blocking: a grant restores only shown images while the owner is told "granted" (a >9 MB
+encoded image can never be shown); audit row is written after the quarantine delete, so a
+failed create is lost on retry. Unit suites re-run: image-decision 6/6, safe-search 13/13.
+
+### 2026-11-09 — BUT-818 step 2 batch 1 third round [storage]
+Re-read image-decision.ts, quarantine-restore.ts, quarantine-review.ts, answer-appeal.ts,
+image-decision.test.ts, image-appeal.integration.test.ts. Findings 6 (pointer decided on
+missing `reportId`, unit case for the client-shaped name), 8 (`offset` paging, `reviewedAll`
+required by answerAppeal) and 9 (audit create before delete) fixed. PASS, 0 blocking.
+New Medium: `viewable.every(...)` in handleGetQuarantinedImages is true when every case image
+is over MAX_ENCODED_BYTES (`node -e` `[].every(()=>false)` → true), so such a case gets
+`reviewedAll: true` with nothing shown and can be granted while nothing is restored.
+Info: oversize images are never restored on a grant (design choice, Malin should see it);
+rate limit 30/h vs up to 20 pages per view fails safe.
+
+### 2026-11-09 — BUT-818 step 2 batch 2: case grouping ahead of quarantine, "moved" with a failed delete [storage]
+Reviewed moderate-upload, quarantine-review, on-report-created, report-status, motivation,
+report-decision (staged index; hash-object == ls-files for all six). Units green:
+test:moderate-upload 32/32, test:image-decision 6/6, test:report-rate-cap 14/14; emulator
+suite not re-run (caller reported image-appeal 11/11).
+High: `handleFinalizedObject` awaits `chooseReportId` (pointer download/save, appeal get)
+outside any try, before `quarantine()`. The trigger has no retry and `sweepQuarantine` lists
+only `quarantine/`, so a transient GCS/Firestore error leaves the explicit image in place,
+never revisited; the uncaught error can carry the pointer name `quarantine/users/{uid}/...`.
+Step 1 reached quarantine with no I/O in between. Fix: try/catch, fall back to `newImageReportId()`.
+Medium: `quarantine()` returns true after a caught `source.delete` failure, so
+`fileImageDecision` notifies "content_removed" while the image is public; and on a
+setMetadata failure after copy it returns false but leaves a copy with `reportId`, which the
+weekly sweep files. Early return in onReportCreated verified unbypassable: the create rule pins
+reporterId == auth.uid and enumerates reason/contentType without the new values.
+
+### 2026-11-11 — BUT-2408: probeResidualData split into ordered leg modules [gdpr-erasure]
+`residual-probe.ts` (1143 lines on origin/main bc20505) became an orchestrator calling 24 leg
+functions in 11 `residual-probe-<area>.ts` modules, each returning its own `residual`
+contribution; the orchestrator sums them with sequential awaits. Bodies were cut by verbatim
+line range by a script, so every code and comment line is the old one. Proof: a throwaway
+extractor inlined each leg into the orchestrator in call order and compared every string
+literal, `Collections.*` and CONSTANT token against the old body (equal, 264 tokens, 60
+log-label literals), and every non-blank line (equal, 1092); a swapped-call negative control
+reddened it. The first draft grouped calls by FILE and so ran feature_retention/retention
+before the shopping-list legs: derive call order from the old source position, never from
+module grouping. Import selection must ignore names that appear only in moved comments
+(`TRIGGER_OWNED_SUBCOLLECTIONS` in the owner-keyed table's comment).
+Two source-path suites named the old file and moved with the code:
+`recipe-collection-group-indexes.test.ts` MAP_REQUIRED `queriers` (recipe-member leg, now
+`residual-probe-recipe-social.ts`) and `reset-analytics-prune.test.ts`
+`reviewedVariableChains` (now `residual-probe-analytics.ts`).
+Superseded in the data-pipelines chapter (path moved), retired text verbatim:
+"the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg."
+Core card source-path bullet gained the two suite names above.

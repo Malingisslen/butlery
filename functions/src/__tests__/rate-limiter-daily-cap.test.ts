@@ -36,6 +36,7 @@ import {
   RateLimitConfig,
 } from "../middleware/rate_limiter";
 import { MAX_BATCH_NOTIFICATIONS } from "../notifications/send-notification";
+import { REVOKE_RATE_LIMIT_KEY } from "../account/revoke-other-sessions";
 import { RATE_LIMIT_KEY as ANSWER_APPEAL_KEY } from "../moderation/answer-appeal";
 import { RATE_LIMIT_KEY as LIST_CLOSED_REPORTS_KEY } from "../moderation/list-closed-reports";
 import { RATE_LIMIT_KEY as LIST_OPEN_APPEALS_KEY } from "../moderation/list-open-appeals";
@@ -43,6 +44,7 @@ import { RATE_LIMIT_KEY as MY_CONTENT_DECISIONS_KEY } from "../moderation/my-con
 import { RATE_LIMIT_KEY as MY_REPORT_OUTCOMES_KEY } from "../moderation/my-report-outcomes";
 import { RATE_LIMIT_KEY as REOPEN_REPORT_KEY } from "../moderation/reopen-report";
 import { RATE_LIMIT_KEY as SUBMIT_APPEAL_KEY } from "../moderation/submit-appeal";
+import { RATE_LIMIT_KEY as QUARANTINED_IMAGES_KEY } from "../storage/quarantine-review";
 import { SHADOW_OPERATION } from "../llm/shadow-compare-import";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
@@ -71,7 +73,8 @@ const cases: UnitCase[] = [
     fn: async () => {
       for (const key of [
         ANSWER_APPEAL_KEY, LIST_CLOSED_REPORTS_KEY, LIST_OPEN_APPEALS_KEY, MY_CONTENT_DECISIONS_KEY,
-        MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY,
+        MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY, REVOKE_RATE_LIMIT_KEY,
+        QUARANTINED_IMAGES_KEY,
       ]) {
         assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
       }
@@ -424,12 +427,16 @@ const cases: UnitCase[] = [
         submitAppeal: [5, 10],
         listOpenAppeals: [30, 200],
         answerAppeal: [30, 200],
+        // BUT-818: the moderator's view of a stopped image.
+        getQuarantinedImages: [60, 400],
         // BUT-1528.
         listClosedReports: [60, 400],
         reopenReport: [30, 200],
         // Admin-vy step C.
         createIngredientChangePr: [10, 30],
         createIngredientChangePrGlobal: [20, 60],
+        // BUT-2481.
+        revokeOtherSessions: [3, 10],
       };
       for (const [name, [perHour, perDay]] of Object.entries(expected)) {
         const cfg = RATE_LIMIT_CONFIGS[name];
@@ -501,6 +508,7 @@ const cases: UnitCase[] = [
         "submitAppeal",
         "listOpenAppeals",
         "answerAppeal",
+        "getQuarantinedImages",
         "listClosedReports",
         "reopenReport",
         "createIngredientChangePr",
@@ -510,6 +518,7 @@ const cases: UnitCase[] = [
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",
+        "revokeOtherSessions",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

@@ -131,9 +131,7 @@ class _FakeCoordinator extends SharedContentCoordinatorViewModel {
           friendsService: _FakeFriendsService(),
           recipeCoordinator: _FakeSocialRecipeCoordinator(),
           menuCoordinator: _FakeSocialMenuCoordinator(),
-          shoppingCoordinator: _FakeSocialShoppingCoordinator(),
           menuService: _FakeMenuService(),
-          shoppingService: _FakeShoppingService(),
         ),
       );
 

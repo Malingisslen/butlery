@@ -29,6 +29,9 @@ check false 'test/unit/x/baseline.md\n'
 check false 'functions/src/llm/PROMPT_CHANGELOG.md\n'
 check false 'lib/notes/readme.md\n'
 check false 'docsfoo/x.dart\n'
+check false '.claude/rules/accepted-deviations.md\n'
+check false 'docs/security/article-15-4-balancing-register.md\n'
+check true  'docs/security/audit-logs-retention.md\n'
 
 if [ "$fail" -eq 0 ]; then echo "ci_docs_only: all fixtures passed"; fi
 exit "$fail"

@@ -289,8 +289,11 @@ export const CASES_2: SectionCase[] = [
   {
     section: "storage_files",
     idKey: "path",
-    rows: ["recipes/r1/photo.jpg"],
+    rows: ["quarantine/recipes/r2/x.jpg", "recipes/r1/photo.jpg"],
     seed: (db) => {
+      // BUT-818: the user's quarantined images are listed too, marked as such.
+      stageFile(db, `quarantine/users/${UID}/recipes/r2/x.jpg`);
+      stageFile(db, `quarantine/users/${OTHER}/y.jpg`);
       stageFile(db, `users/${UID}/recipes/r1/photo.jpg`, {
         size: "123",
         contentType: "image/jpeg",
@@ -303,7 +306,8 @@ export const CASES_2: SectionCase[] = [
       stageFile(db, `users/${UID}x/sibling.jpg`);
       stageFile(db, `users/${OTHER}/theirs.jpg`);
     },
-    check: ([row]) => {
+    check: (rows) => {
+      const row = rows.find((r) => r.path === "recipes/r1/photo.jpg");
       expect(
         JSON.stringify(row) ===
           JSON.stringify({

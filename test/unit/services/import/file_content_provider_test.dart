@@ -13,7 +13,6 @@ library;
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/services/import/file_content_provider.dart';
@@ -21,23 +20,16 @@ import 'package:butlery/services/import/file_content_provider.dart';
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
-import '../../../infrastructure/mocks/production_mocks.dart';
 
-// Using centralized MockFilePickerResult and MockPlatformFile from production_mocks.dart
-
-// Test implementation for abstract class
 class TestFileContentProvider implements FileContentProvider {
-  FilePickerResult? mockResult;
+  PlatformFile? mockResult;
   bool shouldThrow = false;
   Exception? exceptionToThrow;
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     FileType type = FileType.any,
     List<String>? allowedExtensions,
-    bool allowMultiple = false,
-    bool withData = true,
-    bool withReadStream = false,
   }) async {
     if (shouldThrow && exceptionToThrow != null) {
       throw exceptionToThrow!;
@@ -46,7 +38,7 @@ class TestFileContentProvider implements FileContentProvider {
   }
 
   @override
-  Future<FilePickerResult?> provideContent(
+  Future<PlatformFile?> provideContent(
     Uint8List content,
     String fileName,
     String? extension,
@@ -55,24 +47,11 @@ class TestFileContentProvider implements FileContentProvider {
       throw exceptionToThrow!;
     }
 
-    // Create mock platform file with the provided data
-    final mockFile = MockPlatformFile();
-    when(() => mockFile.name).thenReturn(fileName);
-    when(() => mockFile.bytes).thenReturn(content);
-    when(() => mockFile.size).thenReturn(content.length);
-    when(() => mockFile.extension).thenReturn(extension);
-    when(() => mockFile.path).thenReturn(null);
-    when(() => mockFile.identifier).thenReturn(null);
-    when(() => mockFile.readStream).thenReturn(null);
-
-    final result = MockFilePickerResult();
-    when(() => result.files).thenReturn([mockFile]);
-    when(() => result.paths).thenReturn([null]);
-    when(() => result.names).thenReturn([fileName]);
-    when(() => result.count).thenReturn(1);
-    when(() => result.isSinglePick).thenReturn(true);
-
-    return result;
+    return InMemoryPlatformFile(
+      name: fileName,
+      bytes: content,
+      extension: extension,
+    );
   }
 }
 
@@ -108,24 +87,18 @@ void main() {
 
       test('should return mock result from pickFiles', () async {
         // Arrange
-        final mockFile = MockPlatformFile();
-        when(() => mockFile.name).thenReturn('test.txt');
-        when(() => mockFile.size).thenReturn(100);
-        when(() => mockFile.extension).thenReturn('txt');
-
-        final mockResult = MockFilePickerResult();
-        when(() => mockResult.files).thenReturn([mockFile]);
-        when(() => mockResult.count).thenReturn(1);
-
-        provider.mockResult = mockResult;
+        provider.mockResult = InMemoryPlatformFile(
+          name: 'test.txt',
+          bytes: Uint8List(100),
+          extension: 'txt',
+        );
 
         // Act
-        final result = await provider.pickFiles();
+        final result = await provider.pickFile();
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
-        expect(result.files.first.name, equals('test.txt'));
+        expect(result!.name, equals('test.txt'));
       });
 
       test('should return null when no files picked', () async {
@@ -133,7 +106,7 @@ void main() {
         provider.mockResult = null;
 
         // Act
-        final result = await provider.pickFiles();
+        final result = await provider.pickFile();
 
         // Assert
         expect(result, isNull);
@@ -146,7 +119,7 @@ void main() {
 
         // Act & Assert
         expect(
-          () => provider.pickFiles(),
+          () => provider.pickFile(),
           throwsA(isA<Exception>()),
         );
       });
@@ -166,12 +139,11 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
 
-        final file = result.files.first;
+        final file = result!;
         expect(file.name, equals(fileName));
-        expect(file.bytes, equals(content));
-        expect(file.size, equals(5));
+        expect(await file.readAsBytes(), equals(content));
+        expect(await file.length(), equals(5));
         expect(file.extension, equals(extension));
       });
     });
@@ -214,12 +186,11 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
 
-        final file = result.files.first;
+        final file = result!;
         expect(file.name, equals(fileName));
-        expect(file.bytes, equals(content));
-        expect(file.size, equals(content.length));
+        expect(await file.readAsBytes(), equals(content));
+        expect(await file.length(), equals(content.length));
         expect(file.extension, equals(extension));
       });
 
@@ -233,9 +204,8 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
-        expect(result.files.first.size, equals(0));
-        expect(result.files.first.bytes!.isEmpty, isTrue);
+        expect(await result!.length(), equals(0));
+        expect((await result.readAsBytes()).isEmpty, isTrue);
       });
 
       test('should handle null extension', () async {
@@ -248,8 +218,7 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
-        expect(result.files.first.extension, isNull);
+        expect(result!.extension, isNull);
       });
 
       test('should handle large content', () async {
@@ -265,9 +234,8 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.length, equals(1));
-        expect(result.files.first.size, equals(1024 * 1024));
-        expect(result.files.first.bytes!.length, equals(1024 * 1024));
+        expect(await result!.length(), equals(1024 * 1024));
+        expect((await result.readAsBytes()).length, equals(1024 * 1024));
       });
 
       test('should handle special characters in filename', () async {
@@ -280,7 +248,7 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.name, equals(fileName));
+        expect(result!.name, equals(fileName));
       });
     });
 
@@ -305,9 +273,9 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.extension, equals('json'));
+        expect(result!.extension, equals('json'));
         expect(
-          String.fromCharCodes(result.files.first.bytes!),
+          String.fromCharCodes(await result.readAsBytes()),
           equals(jsonString),
         );
       });
@@ -336,9 +304,9 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.extension, equals('txt'));
+        expect(result!.extension, equals('txt'));
         expect(
-          String.fromCharCodes(result.files.first.bytes!),
+          String.fromCharCodes(await result.readAsBytes()),
           equals(textContent),
         );
       });
@@ -357,9 +325,9 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.extension, equals('html'));
+        expect(result!.extension, equals('html'));
         expect(
-          String.fromCharCodes(result.files.first.bytes!),
+          String.fromCharCodes(await result.readAsBytes()),
           equals(htmlContent),
         );
       });
@@ -381,71 +349,48 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.extension, equals('jpg'));
-        expect(result.files.first.bytes, equals(content));
-        expect(result.files.first.size, equals(12));
+        expect(result!.extension, equals('jpg'));
+        expect(await result.readAsBytes(), equals(content));
+        expect(await result.length(), equals(12));
       });
     });
 
-    group('Multiple Files Support', () {
+    group('Single File Support', () {
       test('should handle single file result', () async {
         // Arrange
         final provider = TestFileContentProvider();
-        final mockFile = MockPlatformFile();
-        when(() => mockFile.name).thenReturn('file1.txt');
-        when(() => mockFile.size).thenReturn(50);
-
-        final mockResult = MockFilePickerResult();
-        when(() => mockResult.files).thenReturn([mockFile]);
-        when(() => mockResult.count).thenReturn(1);
-        when(() => mockResult.isSinglePick).thenReturn(true);
-
-        provider.mockResult = mockResult;
+        provider.mockResult = InMemoryPlatformFile(
+          name: 'file1.txt',
+          bytes: Uint8List(50),
+        );
 
         // Act
-        final result = await provider.pickFiles(allowMultiple: false);
+        final result = await provider.pickFile();
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.count, equals(1));
-        expect(result.isSinglePick, isTrue);
+        expect(result!.name, equals('file1.txt'));
+        expect(await result.length(), equals(50));
       });
 
-      test('should handle multiple files result', () async {
+      test('should return each file from successive picks', () async {
         // Arrange
         final provider = TestFileContentProvider();
-
-        final mockFile1 = MockPlatformFile();
-        when(() => mockFile1.name).thenReturn('file1.txt');
-        when(() => mockFile1.size).thenReturn(50);
-
-        final mockFile2 = MockPlatformFile();
-        when(() => mockFile2.name).thenReturn('file2.json');
-        when(() => mockFile2.size).thenReturn(100);
-
-        final mockFile3 = MockPlatformFile();
-        when(() => mockFile3.name).thenReturn('file3.html');
-        when(() => mockFile3.size).thenReturn(150);
-
-        final mockResult = MockFilePickerResult();
-        when(
-          () => mockResult.files,
-        ).thenReturn([mockFile1, mockFile2, mockFile3]);
-        when(() => mockResult.count).thenReturn(3);
-        when(() => mockResult.isSinglePick).thenReturn(false);
-
-        provider.mockResult = mockResult;
+        final files = [
+          InMemoryPlatformFile(name: 'file1.txt', bytes: Uint8List(50)),
+          InMemoryPlatformFile(name: 'file2.json', bytes: Uint8List(100)),
+          InMemoryPlatformFile(name: 'file3.html', bytes: Uint8List(150)),
+        ];
 
         // Act
-        final result = await provider.pickFiles(allowMultiple: true);
+        final names = <String>[];
+        for (final file in files) {
+          provider.mockResult = file;
+          names.add((await provider.pickFile())!.name);
+        }
 
         // Assert
-        expect(result, isNotNull);
-        expect(result!.count, equals(3));
-        expect(result.isSinglePick, isFalse);
-        expect(result.files[0].name, equals('file1.txt'));
-        expect(result.files[1].name, equals('file2.json'));
-        expect(result.files[2].name, equals('file3.html'));
+        expect(names, equals(['file1.txt', 'file2.json', 'file3.html']));
       });
     });
 
@@ -466,8 +411,8 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.name, equals(fileName));
-        expect(result.files.first.extension, isNull);
+        expect(result!.name, equals(fileName));
+        expect(result.extension, isNull);
       });
 
       test('should handle filename with multiple dots', () async {
@@ -480,8 +425,8 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.name, equals(fileName));
-        expect(result.files.first.extension, equals('json'));
+        expect(result!.name, equals(fileName));
+        expect(result.extension, equals('json'));
       });
 
       test('should handle content with UTF-8 BOM', () async {
@@ -505,8 +450,8 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.bytes, equals(content));
-        expect(result.files.first.size, equals(7));
+        expect(await result!.readAsBytes(), equals(content));
+        expect(await result.length(), equals(7));
       });
 
       test('should handle maximum filename length', () async {
@@ -524,7 +469,7 @@ Instructions:
 
         // Assert
         expect(result, isNotNull);
-        expect(result!.files.first.name, equals(longFileName));
+        expect(result!.name, equals(longFileName));
       });
     });
   });

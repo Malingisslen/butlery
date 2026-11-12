@@ -310,6 +310,10 @@ class FirebaseAuthRepository implements AuthRepository {
     );
   }
 
+  @override
+  Future<void> signInWithCustomToken(String token) =>
+      _remember(_firebaseAuth.signInWithCustomToken(token));
+
   Future<UserCredential> _remember(Future<UserCredential> signIn) async {
     final credential = await signIn;
     _cachedUser = credential.user;

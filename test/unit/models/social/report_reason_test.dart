@@ -47,6 +47,8 @@ void main() {
     test('every wireName is one the create rule on reports admits', () {
       // Read from the rule itself, so an edit to either side reddens here.
       // A value the rule does not list is denied exactly as the labels were.
+      // Filed by the server only, so deliberately not client-creatable.
+      const serverOnly = {'explicit_image'};
       final rules = File('firestore.rules').readAsStringSync();
       final block = rules.substring(rules.indexOf('match /reports/{reportId}'));
       final list = RegExp(
@@ -58,12 +60,22 @@ void main() {
 
       expect(ruleAdmits, isNotEmpty);
       for (final reason in ReportReason.values) {
+        if (serverOnly.contains(reason.wireName)) continue;
         expect(
           ruleAdmits,
           contains(reason.wireName),
           reason: '${reason.name} would be denied by the reports create rule',
         );
       }
+      expect(ruleAdmits, isNot(contains('explicit_image')));
+    });
+
+    test('explicit_image exists but is never offered in the dialog', () {
+      expect(
+        ReportReason.fromWire('explicit_image'),
+        ReportReason.explicitImage,
+      );
+      expect(ReportReason.offered, isNot(contains(ReportReason.explicitImage)));
     });
   });
 }
