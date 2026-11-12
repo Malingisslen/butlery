@@ -81,7 +81,7 @@ const Map<String, List<String>> kIngredientPropertyCategories = {
     'vegan-friendly',
     'needs-cooking',
     'doesnt-freeze-well',
-    'raw-safe',
+    'processed', // Sausage, bacon, chips
   ],
 };
 

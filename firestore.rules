@@ -443,6 +443,16 @@ service cloud.firestore {
     function hasSharedAccess(collectionName, docId) {
       return isSharedOwner(collectionName, docId) || isSharedMember(collectionName, docId);
     }
+    // BUT-2442.
+    function recipientsChangedOnlyBySelf() {
+      let beforeList = resource.data.get('sharedToUserIds', []);
+      let afterList = request.resource.data.get('sharedToUserIds', []);
+      let before = beforeList.toSet();
+      let after = afterList.toSet();
+      return after.difference(before).size() == 0
+        && before.difference(after).hasOnly([request.auth.uid])
+        && afterList.size() <= beforeList.size();
+    }
 
     // Realtime collaboration helper — used by realtime_menus
     // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
@@ -1196,10 +1206,21 @@ service cloud.firestore {
       // The mirror is consulted only when the recipient list GAINS someone, so
       // a member leaving or editing a list is never refused for a block
       // between other people.
+      //
+      // BUT-2442: only the sharer changes who else is on the recipient list.
+      // Anyone else may leave it as it is or take their own uid off it, and
+      // nothing more: removing another recipient hides the share from them and
+      // from their Art. 15 export, and adding someone grants them `get` and
+      // `list` with no member row. `removeMember` deletes the leaver's member
+      // row before it updates this list.
       allow update: if isAuthenticated()
         && cannotModify(['sharedByUserId', 'contentType', 'sharedAt', 'blockHeldUserIds', 'blockHeld'])
         && (request.auth.uid == resource.data.sharedByUserId
-            || isSharedMember('shared_content', contentId))
+            || (isSharedMember('shared_content', contentId)
+                && recipientsChangedOnlyBySelf())
+            || (request.auth.uid in resource.data.get('sharedToUserIds', [])
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sharedToUserIds'])
+                && recipientsChangedOnlyBySelf()))
         && !request.resource.data.get('sharedToUserIds', [])
               .hasAny(resource.data.get('blockHeldUserIds', []))
         && (request.resource.data.get('sharedToUserIds', []).toSet()

@@ -599,9 +599,13 @@ void main() {
     // withdrawal's affectedKeys().hasOnly, a diff restriction.
     // Admin-vy D added the word-list create's keys().hasOnly
     // (occasionCreateOk), guarded in allowlists.
+    // BUT-2442 added two on the shared_content update: the set difference in
+    // recipientsChangedOnlyBySelf and the row-less self-leave's
+    // affectedKeys().hasOnly(['sharedToUserIds']), a diff restriction; neither
+    // is a payload allowlist.
     expect(
       'hasOnly('.allMatches(rules).length,
-      64,
+      66,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

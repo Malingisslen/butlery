@@ -21558,3 +21558,23 @@ Medium: `quarantine()` returns true after a caught `source.delete` failure, so
 setMetadata failure after copy it returns false but leaves a copy with `reportId`, which the
 weekly sweep files. Early return in onReportCreated verified unbypassable: the create rule pins
 reporterId == auth.uid and enumerates reason/contentType without the new values.
+
+### 2026-11-11 — BUT-2408: probeResidualData split into ordered leg modules [gdpr-erasure]
+`residual-probe.ts` (1143 lines on origin/main bc20505) became an orchestrator calling 24 leg
+functions in 11 `residual-probe-<area>.ts` modules, each returning its own `residual`
+contribution; the orchestrator sums them with sequential awaits. Bodies were cut by verbatim
+line range by a script, so every code and comment line is the old one. Proof: a throwaway
+extractor inlined each leg into the orchestrator in call order and compared every string
+literal, `Collections.*` and CONSTANT token against the old body (equal, 264 tokens, 60
+log-label literals), and every non-blank line (equal, 1092); a swapped-call negative control
+reddened it. The first draft grouped calls by FILE and so ran feature_retention/retention
+before the shopping-list legs: derive call order from the old source position, never from
+module grouping. Import selection must ignore names that appear only in moved comments
+(`TRIGGER_OWNED_SUBCOLLECTIONS` in the owner-keyed table's comment).
+Two source-path suites named the old file and moved with the code:
+`recipe-collection-group-indexes.test.ts` MAP_REQUIRED `queriers` (recipe-member leg, now
+`residual-probe-recipe-social.ts`) and `reset-analytics-prune.test.ts`
+`reviewedVariableChains` (now `residual-probe-analytics.ts`).
+Superseded in the data-pipelines chapter (path moved), retired text verbatim:
+"the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg."
+Core card source-path bullet gained the two suite names above.

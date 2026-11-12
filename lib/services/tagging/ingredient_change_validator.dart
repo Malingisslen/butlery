@@ -4,15 +4,10 @@ import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/services/tagging/config/valid_properties.dart';
 
-/// Vocabulary of the ingredient sync (`sync-ingredients-core.ts`), not of the
-/// app's tag config: a value the sync rejects must not be proposable. The
-/// property set differs from [kValidIngredientProperties] by exactly the two
-/// properties the registry and the sync disagree on; a drift test pins the
-/// result against the TypeScript source.
-final Set<String> kProposableProperties = Set.unmodifiable({
-  ...kValidIngredientProperties.difference(const {'raw-safe'}),
-  'processed',
-});
+/// Vocabulary of the ingredient sync (`sync-ingredients-core.ts`): a value
+/// the sync rejects must not be proposable. A drift test pins it against the
+/// TypeScript source.
+final Set<String> kProposableProperties = kValidIngredientProperties;
 
 const List<String> kProposableGroupPrefixes = [
   'protein',

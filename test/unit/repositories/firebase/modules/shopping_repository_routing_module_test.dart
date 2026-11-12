@@ -480,13 +480,15 @@ void main() {
         );
 
         await expectLater(
-          () => bob.updateCollaborativeList(
+          () => bob.updateCollaborativeListMembership(
             saved.copyWith(
               memberPermissions: {
                 ...saved.memberPermissions,
                 'bob': SharedListPermission.admin,
               },
             ),
+            saved,
+            intent: MembershipWriteIntent.ordinary,
           ),
           throwsA(isA<PermissionDeniedException>()),
         );
@@ -522,7 +524,11 @@ void main() {
       );
 
       await expectLater(
-        () => bob.updateCollaborativeList(hijacked),
+        () => bob.updateCollaborativeListMembership(
+          hijacked,
+          saved,
+          intent: MembershipWriteIntent.ordinary,
+        ),
         throwsA(isA<PermissionDeniedException>()),
       );
 
@@ -543,6 +549,70 @@ void main() {
       final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
       expect(snap.data()!['name'], 'Söndagshandel');
     });
+
+    // BUT-2441: a rename that carries a stale member map used to be refused as
+    // an escalation although the written payload never contains the map.
+    test(
+      'a member renames the list although his member map is stale',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+
+        final bob = _routing(firestore, currentUid: 'bob');
+        await bob.updateCollaborativeList(
+          saved.copyWith(
+            name: 'Söndagshandel',
+            memberPermissions: {
+              ...saved.memberPermissions,
+              'bob': SharedListPermission.admin,
+              'ghost': SharedListPermission.edit,
+            },
+          ),
+        );
+
+        final snap = await firestore
+            .collection(_sharedPath)
+            .doc(saved.id)
+            .get();
+        expect(snap.data()!['name'], 'Söndagshandel');
+        expect(snap.data()!['memberPermissions'], {
+          _userId: 'admin',
+          'bob': 'edit',
+        });
+      },
+    );
+
+    test(
+      'a rename by a member never moves ownerId, even when it names him',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+
+        final bob = _routing(firestore, currentUid: 'bob');
+        await bob.updateCollaborativeList(
+          UnifiedShoppingList(
+            id: saved.id,
+            name: 'Söndagshandel',
+            ownerId: 'bob',
+            ownerDisplayName: 'Bob',
+            items: saved.items,
+            type: saved.type,
+            memberPermissions: saved.memberPermissions,
+          ),
+        );
+
+        final snap = await firestore
+            .collection(_sharedPath)
+            .doc(saved.id)
+            .get();
+        expect(snap.data()!['name'], 'Söndagshandel');
+        expect(snap.data()!['ownerId'], _userId);
+      },
+    );
 
     // The owner is the only role the Firestore rule lets touch the member map.
     // BUT-1726: member management (add/remove/permission/leave) now goes
@@ -1988,7 +2058,11 @@ void main() {
       );
 
       await expectLater(
-        () => bob.updateCollaborativeList(moved),
+        () => bob.updateCollaborativeListMembership(
+          moved,
+          saved,
+          intent: MembershipWriteIntent.ordinary,
+        ),
         throwsA(isA<PermissionDeniedException>()),
       );
       expect(permissionCalls.last.granted, isFalse);

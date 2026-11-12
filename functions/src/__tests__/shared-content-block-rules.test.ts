@@ -256,6 +256,112 @@ test("trim: the sharer may take twenty-five people off one row in one batch", as
   await assertSucceeds(trim(sharer, id, gone));
 });
 
+// ---- BUT-2442: a recipient changes the recipient list only by leaving it
+
+test("recipients: a member cannot take another recipient off the row", async () => {
+  const sharer = u("r1-sharer");
+  const member = u("r1-member");
+  const other = u("r1-other");
+  const id = await seedRecipeRow("r1", sharer, [member, other]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(other) }));
+});
+
+test("recipients: the same member may take themselves off the row", async () => {
+  const sharer = u("r2-sharer");
+  const member = u("r2-member");
+  const other = u("r2-other");
+  const id = await seedRecipeRow("r2", sharer, [member, other]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertSucceeds(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(member) }));
+});
+
+test("recipients: a member cannot add someone to the row", async () => {
+  const sharer = u("r3-sharer");
+  const member = u("r3-member");
+  const id = await seedRecipeRow("r3", sharer, [member]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayUnion(u("r3-stranger")) }));
+});
+
+test("recipients: a member may still edit the row without touching the recipient list", async () => {
+  const sharer = u("r4-sharer");
+  const member = u("r4-member");
+  const id = await seedRecipeRow("r4", sharer, [member]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertSucceeds(db.doc(`shared_content/${id}`).update({ title: "Ny" }));
+});
+
+test("recipients: someone neither on the list nor a member cannot write the list", async () => {
+  const sharer = u("r8-sharer");
+  const stranger = u("r8-stranger");
+  const id = await seedRecipeRow("r8", sharer, [u("r8-member")]);
+  const db = env.authenticatedContext(stranger, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(stranger) }));
+});
+
+test("recipients: a member cannot add a duplicate entry to the list", async () => {
+  const sharer = u("r9-sharer");
+  const member = u("r9-member");
+  const other = u("r9-other");
+  const id = await seedRecipeRow("r9", sharer, [member, other]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: [sharer, member, other, other] }));
+});
+
+test("recipients: a member cannot swap their own place for someone else", async () => {
+  const sharer = u("r10-sharer");
+  const member = u("r10-member");
+  const other = u("r10-other");
+  const id = await seedRecipeRow("r10", sharer, [member, other]);
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: [sharer, other, u("r10-stranger")] }));
+});
+
+/** The two writes `BaseSharedContentRepository.removeMember` makes for a self-leave, in its order. */
+async function leave(actor: string, id: string): Promise<void> {
+  const db = env.authenticatedContext(actor, CLAIMS).firestore();
+  await db.doc(`shared_content/${id}/members/${actor}`).delete();
+  await db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(actor) });
+}
+
+test("recipients: a member leaves in removeMember's order (member row first, then the list)", async () => {
+  const sharer = u("r5-sharer");
+  const member = u("r5-member");
+  const other = u("r5-other");
+  const id = await seedRecipeRow("r5", sharer, [member, other]);
+  await assertSucceeds(leave(member, id));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const row = (await ctx.firestore().doc(`shared_content/${id}`).get()).data() as { sharedToUserIds: string[] };
+    if (row.sharedToUserIds.includes(member) || !row.sharedToUserIds.includes(other)) {
+      throw new Error(`unexpected recipients: ${row.sharedToUserIds.join(",")}`);
+    }
+  });
+});
+
+test("recipients: a recipient without a member row cannot take another recipient off", async () => {
+  const sharer = u("r6-sharer");
+  const member = u("r6-member");
+  const other = u("r6-other");
+  const id = await seedRecipeRow("r6", sharer, [member, other]);
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`shared_content/${id}/members/${member}`).delete();
+  });
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(other) }));
+});
+
+test("recipients: a recipient without a member row cannot change anything beside leaving", async () => {
+  const sharer = u("r7-sharer");
+  const member = u("r7-member");
+  const id = await seedRecipeRow("r7", sharer, [member]);
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`shared_content/${id}/members/${member}`).delete();
+  });
+  const db = env.authenticatedContext(member, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(member), title: "Ny" }));
+});
+
 // ---- members
 
 test("members: the sharer may add a member row for someone not held", async () => {

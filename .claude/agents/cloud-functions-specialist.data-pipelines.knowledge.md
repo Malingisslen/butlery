@@ -108,7 +108,7 @@
   deletion, a TTL or `UNREVIEWED`; `erasure-export-coverage.test.ts` maps every residue section to
   a step). The cheaper shape is often to keep identity OUT: a lock naming the RUN, not the admin
   (`ingredient_change_locks`), needs only an `UNREVIEWED` line. A probe leg on a hash cannot ride
-  the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg.
+  the uid-valued loop in `residual-probe-owner-keyed.ts`; it is its own `count()` leg.
 - **GitHub's REST ref update has no compare-and-swap** (`PATCH /git/refs` takes only `force`).
   A bot that force-rebuilds a branch re-reads `main` AND the branch ref immediately before the
   PATCH and aborts on either moving; the residual window is named, not claimed closed. Errors from

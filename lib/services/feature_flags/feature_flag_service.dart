@@ -226,25 +226,10 @@ class FeatureFlagService {
     // conclusion, wrong mechanism, and the mechanism is what a future reader
     // would rely on.
     //
-    // **UNMEASURED, unlike the tail trim above it.** The leading rule's
-    // budget (`_leadingBudget`, 60 characters, read by `leadingNoiseCutRow`)
-    // was written without corpus
-    // access — it borrows the tail trim's OTHER measured row rather than an
-    // invented number, but nobody has run `dart run
-    // tools/corpus_split_eval.dart --leading-trim` against it. Do that, read
-    // the printed per-page list AGAINST THE PHOTOGRAPHS (same discipline as
-    // the tail trim's own history — a text-only read got two tails wrong),
-    // and update `leading_noise.dart`'s doc with the result before trusting
-    // this rule at scale. It also carries a safety guard the tail trim does
-    // not need: it refuses to cut anything that reads like real ingredient or
-    // instruction content. The reason is NOT that the tail trim's cut is
-    // "always a piece of a block the splitter would have discarded anyway" —
-    // an earlier draft said that and it is doubly wrong: `orphan_tail.dart`
-    // calls its own version of that argument a MARGIN and "not a theorem",
-    // and it measured that on 14 of 19 real pages the splitter never builds a
-    // block at all (it exits at `flat.length < 2`), which is the very reason
-    // the tail trim exists. Read `leading_noise.dart`'s library doc for the
-    // asymmetry that does hold. The ORDERING HAZARD it used to
+    // The leading rule's budget (`_leadingBudget`) was measured against the
+    // corpus on 2026-11-07 (BUT-1836); the figures and the command are in
+    // `leading_noise.dart`'s library doc, which also records the asymmetry
+    // with the tail trim. The ORDERING HAZARD it used to
     // record — a single photo makes page zero and the last page the same
     // page, so chaining the two trims let the first cut move the median under
     // the second and cost a real recipe title — is FIXED: `frame_trim.dart`
