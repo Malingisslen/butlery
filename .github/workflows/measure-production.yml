@@ -1,4 +1,5 @@
-# BUT-2278, BUT-2260, BUT-2031, BUT-1814 and BUT-2332: read-only measurements against production.
+# BUT-2278, BUT-2260, BUT-2031, BUT-1814, BUT-2332, BUT-2109, BUT-1441 and
+# BUT-2110: read-only measurements against production.
 #
 # Writes nothing to Firestore or anywhere else in the project. Prints counts
 # only, never a uid or a log line's text, because the onUserDeleted error line
@@ -71,6 +72,12 @@ jobs:
         run: |
           set -o pipefail
           node scripts/measure-launch-risks.js --project "$FIREBASE_PROJECT_ID" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: "BUT-2109, BUT-1441 and BUT-2110: leftover rows, feedback time zones, conversation sizes"
+        working-directory: functions
+        run: |
+          set -o pipefail
+          node scripts/measure-data-sizes.js --project "$FIREBASE_PROJECT_ID" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: "BUT-2031: onUserDeleted social cleanup failures"
         run: |
