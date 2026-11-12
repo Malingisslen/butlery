@@ -42,6 +42,7 @@ import { RATE_LIMIT_KEY as LIST_CLOSED_REPORTS_KEY } from "../moderation/list-cl
 import { RATE_LIMIT_KEY as LIST_OPEN_APPEALS_KEY } from "../moderation/list-open-appeals";
 import { RATE_LIMIT_KEY as MY_CONTENT_DECISIONS_KEY } from "../moderation/my-content-decisions";
 import { RATE_LIMIT_KEY as MY_REPORT_OUTCOMES_KEY } from "../moderation/my-report-outcomes";
+import { RATE_LIMIT_KEY as FREEZE_REPORT_EVIDENCE_KEY } from "../moderation/freeze-report-evidence";
 import { RATE_LIMIT_KEY as REOPEN_REPORT_KEY } from "../moderation/reopen-report";
 import { RATE_LIMIT_KEY as SUBMIT_APPEAL_KEY } from "../moderation/submit-appeal";
 import { RATE_LIMIT_KEY as QUARANTINED_IMAGES_KEY } from "../storage/quarantine-review";
@@ -74,7 +75,7 @@ const cases: UnitCase[] = [
       for (const key of [
         ANSWER_APPEAL_KEY, LIST_CLOSED_REPORTS_KEY, LIST_OPEN_APPEALS_KEY, MY_CONTENT_DECISIONS_KEY,
         MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY, REVOKE_RATE_LIMIT_KEY,
-        QUARANTINED_IMAGES_KEY,
+        QUARANTINED_IMAGES_KEY, FREEZE_REPORT_EVIDENCE_KEY,
       ]) {
         assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
       }
