@@ -4,7 +4,7 @@
  * **The problem.** `SocialGroupDetailViewModel.startMealVotePoll` called
  * `createChatGroup` on every "Vad ska vi äta?" poll. Since BUT-1838 that
  * callable writes a durable group object — a `chat_groups` document, a
- * conversation, a roster row per member and a system message — and the app
+ * conversation and a system message — and the app
  * refuses to delete a conversation carrying a `groupId`. Weekly polls therefore
  * minted a chat per vote that nobody could remove.
  *
@@ -73,12 +73,6 @@ import {
 } from "./group-system-message";
 
 const getDb = () => admin.firestore();
-
-/**
- * Roster rows a deleted conversation may leave behind that a rebuild will clean.
- * Above it the rebuild declines rather than cleaning in part.
- */
-const MAX_LEFTOVER_ROSTER_ROWS = 500;
 
 /** Shown when a social group has no name of its own to borrow. */
 const FALLBACK_GROUP_NAME = "Matgruppen";
@@ -562,18 +556,6 @@ async function restoreConversation(
   conversationId: string,
 ): Promise<void> {
   const convoRef = db.collection(Collections.conversations).doc(conversationId);
-  // Deleting a conversation leaves its roster rows behind. A row for someone
-  // the group no longer holds would put them back in the rebuilt chat's roster,
-  // so those go. Read outside the transaction; a row a concurrent writer adds
-  // in between belongs to a current member.
-  const leftover = await convoRef
-    .collection(Collections.participants)
-    .limit(MAX_LEFTOVER_ROSTER_ROWS + 1)
-    .get();
-  if (leftover.size > MAX_LEFTOVER_ROSTER_ROWS) {
-    throw conversationDeleted();
-  }
-
   const judgedSnap = await groupRef.get();
   const judged: string[] = Array.isArray(judgedSnap.get("memberIds"))
     ? (judgedSnap.get("memberIds") as unknown[]).filter(isValidDocId)
@@ -642,9 +624,6 @@ async function restoreConversation(
     const createdBy = group.get("createdBy");
     const joinedAt = admin.firestore.Timestamp.now();
 
-    for (const row of leftover.docs) {
-      if (!memberIds.includes(row.id)) tx.delete(row.ref);
-    }
     stageConversation(tx, {
       db,
       groupId: group.id,

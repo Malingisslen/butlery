@@ -113,7 +113,7 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "group_invitations" },
   {
     name: "conversations",
-    subcollections: ["participants", "userSettings"],
+    subcollections: ["userSettings"],
   },
   { name: "messages" },
   { name: "recipe_comments", subcollections: ["likes"] },
@@ -562,7 +562,6 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "items", // unified_shopping_lists/{listId}, shared_shopping_lists/{id}
   "likes", // recipe_comments/{commentId} (BUT-2112)
   "members", // shared_recipes/{id}, shared_menus/{id}
-  "participants", // conversations/{conversationId}
   "poll_votes", // messages/{messageId}
   "public_recipes", // users/{uid} (steg 10E)
   "report_history", // user_moderation/{contentOwnerId} (BUT-2046)

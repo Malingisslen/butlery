@@ -4,8 +4,7 @@
  * BUT-1441: read-only count of `feedback` documents whose `createdAt` is a
  * string without a time zone, the shape written before BUT-1408.
  * BUT-2110: read-only conversation sizes and rows in
- * `conversations/{id}/participants`, to decide whether that subcollection gets
- * a reader or is removed.
+ * `conversations/{id}/participants`.
  *
  * Prints counts only, never a uid or a document id. Writes nothing.
  *

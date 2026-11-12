@@ -1,18 +1,9 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
-// Deliberate cross-domain import (BUT-1822). `tryClearRoster` lives in a
-// minor-safety TRIGGER module, but it is the one roster clearer: bounded,
-// never-throwing, and it answers the exact question this cascade must ask before
-// it deletes a conversation. A second implementation here would be a second
-// contract to keep in sync on a GDPR path. Extraction into a neutral module is
-// tracked separately; until then, that function's docstring names this caller.
-import { tryClearRoster } from "../../messaging/enforce-group-minor-membership";
-import { logSafeConversationId } from "../../shared/log-safe-conversation-id";
 // BUT-1838: the single writer of chat-group membership. Imported rather than
-// re-implemented for the same reason as `tryClearRoster` above — a second
-// spelling of "remove this member" on a GDPR path is a contract to keep in sync,
-// and this one touches three documents.
+// re-implemented — a second spelling of "remove this member" on a GDPR path is
+// a contract to keep in sync.
 import { stageMemberRemoval } from "../../groups/chat-group-writes";
 import { batchDeleteAll } from "./core";
 
@@ -38,13 +29,9 @@ import { batchDeleteAll } from "./core";
  *  2. **The membership goes**, through `stageMemberRemoval` — the same
  *     transaction that clears `memberIds`, `adminIds`, both display maps,
  *     `memberAddedBy`, the conversation's `participantIds`, all five uid-keyed
- *     conversation maps (including `memberSince`) and the roster row.
- *  3. **An emptied group is taken down**, roster FIRST. Deleting a conversation
- *     is what makes `parentDoc()` null in `firestore.rules`; with the bootstrap
- *     branch gone that no longer re-opens a write path, but orphaned roster rows
- *     still carry names and avatars, so the parent delete stays gated on
- *     `tryClearRoster` reporting success. A group left standing reports the step
- *     INCOMPLETE rather than quietly passing.
+ *     conversation maps (including `memberSince`).
+ *  3. **An emptied group is taken down**: its thread, its conversation and the
+ *     group document.
  *
  * Capped like every other sweep here. Above the cap it DECLINES rather than
  * truncating: a partial pass that reported success would certify an erasure it
@@ -132,18 +119,6 @@ export async function deleteChatGroupMemberships(
       });
 
       if (survivors.length === 0) {
-        const cleared = await tryClearRoster(db, conversationId);
-        if (!cleared) {
-          complete = false;
-          logger.warn(
-            "[deletion-cascade] roster not clear; empty group left standing",
-            {
-              uid_prefix: uid.slice(0, 6),
-              conversationId: logSafeConversationId(conversationId),
-            },
-          );
-          continue;
-        }
         const thread = await db
           .collection(Collections.messages)
           .where("conversationId", "==", conversationId)

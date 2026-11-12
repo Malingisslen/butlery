@@ -3,9 +3,7 @@
  *
  * **This operation has never once worked.** The client rebuilt
  * `participantIds` and wrote it back, which the conversations update rule
- * refuses outright, and then wrote the new member's roster row, which
- * `attestedWriter()` refuses because the parent cannot yet name them. Two
- * different walls, one button, both silent.
+ * refuses outright.
  *
  * It is also where the child-safety hole lived: `enforceGroupMinorMembership`
  * fires on conversation CREATE, so anyone added afterwards was checked by

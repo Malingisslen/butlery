@@ -69,8 +69,8 @@ const LEGAL_BASIS = "GDPR Art. 17(3)(e)";
 
 /**
  * Cap on one sweep run. The sibling caps in this domain
- * (`MAX_REPORT_HISTORY_SWEEP_ROWS`, `MAX_SYSTEM_EVENT_SWEEP_ROWS`,
- * `MAX_ROSTER_SWEEP_ROWS`) all decline rather than truncate, and so does this.
+ * (`MAX_REPORT_HISTORY_SWEEP_ROWS`, `MAX_SYSTEM_EVENT_SWEEP_ROWS`) all
+ * decline rather than truncate, and so does this.
  *
  * It is load-bearing for a second reason the siblings do not have: this sweep
  * runs FIRST in `DAILY_ANALYTICS_TASKS`, and `runTaskChain` ABORTS the chain on

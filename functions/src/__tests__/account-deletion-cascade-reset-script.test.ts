@@ -20,8 +20,7 @@ import {
  * `MAX_BLOCK_SWEEP_ROWS` says that above the cap the leg declines and a human
  * recovers by running `admin/reset-user-data.ts`. That script is list-driven —
  * it iterates `COLLECTIONS_TO_DELETE` — so membership in that list is
- * NECESSARY for the recovery to reach this collection. It was absent, and the claim had been inherited from
- * `MAX_ROSTER_SWEEP_ROWS`, where `conversations` IS listed.
+ * NECESSARY for the recovery to reach this collection. It was absent.
  *
  * Membership is not SUFFICIENT, and this scenario does not claim it is. The
  * script also has to RUN, which it did not between 2026-03-19 and 2026-09-05

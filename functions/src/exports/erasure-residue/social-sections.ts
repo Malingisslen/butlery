@@ -84,18 +84,6 @@ export const SHARE_ENGAGEMENT_KEYS: Allowlist = scalars(
   "targetId",
 );
 
-/** `ConversationParticipant.toFirestore` and `rosterRow`. */
-export const ROSTER_ROW_KEYS: Allowlist = scalars(
-  "conversationId",
-  "participantId",
-  "displayName",
-  "avatarUrl",
-  "joinedAt",
-  "lastReadAt",
-  "role",
-  "isMuted",
-);
-
 /**
  * The reporter's own fields of `onReportCreated`'s row. The row lives under
  * the reported person's moderation record, so its path is never exported.
@@ -240,23 +228,6 @@ export const SOCIAL_SECTIONS: readonly SectionDef[] = [
   },
   // deleteChatGroupMemberships, via clearUnreachableChatGroupResiduals
   { name: "chat_groups_left", read: chatGroupsLeft },
-  {
-    // deleteMessages, via deleteOwnRosterRows
-    name: "conversation_roster_rows",
-    read: async (database, uid) =>
-      sortRows(
-        (
-          await cappedDocs(
-            database
-              .collectionGroup(Collections.participants)
-              .where("participantId", "==", uid),
-            MAX_SECTION_ROWS,
-            "conversation_roster_rows",
-          )
-        ).map((doc) => project(doc.data(), ROSTER_ROW_KEYS)),
-        "conversationId",
-      ),
-  },
   {
     // deleteReportHistoryByReporter
     name: "report_history_as_reporter",

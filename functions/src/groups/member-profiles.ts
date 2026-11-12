@@ -19,9 +19,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import type { ChatGroupMember } from "./chat-group-writes";
 
-/** Matches the roster validator's `displayName.size() <= 100` in firestore.rules. */
 const MAX_DISPLAY_NAME = 100;
-/** Matches the roster validator's `avatarUrl.size() <= 1000`. */
 const MAX_AVATAR_URL = 1000;
 
 export const UNKNOWN_MEMBER_NAME = "?";

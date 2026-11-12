@@ -43,15 +43,15 @@ import {
   readIsMinor,
 } from "../groups/minor-membership-gate";
 import { stageMemberRemoval } from "../groups/chat-group-writes";
-import { MAX_GROUP_PARTICIPANTS } from "./roster-cleanup";
 
-// BUT-1840: re-exported so imports and tests written against this module keep
-// resolving after the move.
-export {
-  MAX_GROUP_PARTICIPANTS,
-  MAX_ROSTER_ROWS,
-  tryClearRoster,
-} from "./roster-cleanup";
+/**
+ * Upper bound on group members this backstop trigger will read. Far above any
+ * real group chat, so it never fires legitimately; it exists purely to bound
+ * the billed read fan-out (and its retry replays) on a tampered write. The
+ * trigger is `onDocumentWritten` on `chat_groups/{groupId}` and this bounds the
+ * sanitised `memberIds` it reads.
+ */
+export const MAX_GROUP_PARTICIPANTS = 100;
 
 /**
  * Stage the backstop's evictions — and NEVER a departure tombstone (BUT-1856).

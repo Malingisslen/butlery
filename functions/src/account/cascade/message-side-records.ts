@@ -50,13 +50,10 @@ import { batchDeleteAll } from "./core";
 export const MESSAGE_TOMBSTONE = "[Borttaget meddelande]";
 
 /**
- * Cap on one erasure's poll-vote sweep. Same contract as `MAX_ROSTER_SWEEP_ROWS`
- * and set to the same number — but NOT for the same reason, and the
- * difference is worth stating because the first version of this docstring
- * borrowed the roster's argument and was wrong (BUT-1801 review, 2026-08-17).
+ * Cap on one erasure's poll-vote sweep.
  *
- * The roster cap exists because a PEER can seat rows keyed on this user.
- * Here they cannot: in `firestore.rules`, every write verb under
+ * A PEER cannot seat rows keyed on this user here: in `firestore.rules`,
+ * every write verb under
  * `match /messages/{messageId}/poll_votes/{voterId}` requires
  * `request.auth.uid == voterId`, and `isValidVote()` additionally pins
  * `request.resource.data.voterId == voterId`. Posting a poll into a conversation
@@ -87,8 +84,8 @@ const MAX_POLL_VOTE_SWEEP_ROWS = 2000;
  * `messages/{messageId}/poll_votes/{voterUid}` — the uid is the document ID and
  * is also copied into a `voterId` field, which is the only one a query can see. claim-lint:ok moved unchanged, BUT-2113
  * They live under messages this user may never have sent, in conversations
- * `deleteMessages` leaves standing (any group, and any 1:1 whose roster clear
- * declined), so nothing else in this cascade reaches them. Written against the
+ * `deleteMessages` leaves standing (any group), so nothing else in this
+ * cascade reaches them. Written against the
  * subcollection shape, NOT the inline `metadata.poll.options[].voterIds` array
  * it replaced. That array is still EMITTED — `Poll.toMap` writes it and
  * `closePoll` rewrites the whole metadata map — but nothing has written a VOTER

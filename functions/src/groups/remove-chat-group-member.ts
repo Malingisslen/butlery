@@ -33,7 +33,6 @@ import {
 } from "./group-menu-access";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
-import { tryClearRoster } from "../messaging/roster-cleanup";
 import { stageMemberRemoval } from "./chat-group-writes";
 import {
   writeGroupSystemMessage,
@@ -362,10 +361,9 @@ async function deleteGroupMenuPlans(
   groupKey: string,
 ): Promise<void> {
   try {
-    // CAPPED, and it DECLINES above the cap rather than truncating — the same
-    // shape as `tryClearRoster` and the account cascade's roster sweep, and for
-    // the same reason: the row count is chosen by whoever can write the
-    // collection, not by us. `firestore.rules`' create limb for
+    // CAPPED, and it DECLINES above the cap rather than truncating: the row
+    // count is chosen by whoever can write the collection, not by us.
+    // `firestore.rules`' create limb for
     // `group_weekly_menu_plans` ties the caller only to their OWN submitted
     // `memberPermissions`, never to the chat group's members, and the doc-id
     // suffix is free — so any signed-in account can plant rows carrying another
@@ -405,9 +403,8 @@ async function deleteGroupMenuPlans(
     }
     const payload = { groupKey, count: snap.docs.length - failed, failed };
     if (failed > 0) {
-      // At ERROR, matching `tryClearRoster`'s partial-failure severity: a leave
-      // that strands plans is otherwise invisible to any error-level view, and
-      // the teardown is never retried.
+      // At ERROR: a leave that strands plans is otherwise invisible to any
+      // error-level view, and the teardown is never retried.
       logger.error(
         "[removeChatGroupMember] group menu plans partially deleted",
         payload,
@@ -426,18 +423,7 @@ async function deleteGroupMenuPlans(
 /**
  * The last member left: take the empty group down.
  *
- * **ORDER MATTERS, and it is the opposite of the obvious one.** The roster rows
- * must go BEFORE the conversation document, and the conversation before the
- * group. Deleting the conversation is the write that makes `parentDoc() == null`
- * true in `firestore.rules`; with the bootstrap branch removed in BUT-1838 that
- * no longer re-opens a write path, but the rows would still be orphaned under a
- * parent nobody can produce, and orphaned roster rows carrying names and avatars
- * are precisely the residual BUT-1825 exists for.
- *
- * `tryClearRoster` reports rather than throws, and a false answer means rows may
- * survive — so the conversation is left standing in that case. An empty group
- * whose documents linger is untidy; an unreachable set of rows carrying people's
- * names is a disclosure. Best-effort throughout: the access cut already happened
+ * Best-effort throughout: the access cut already happened
  * in the transaction above, and failing the caller's "leave" because cleanup
  * stumbled would be the wrong answer to give a person trying to get out.
  */
@@ -446,21 +432,8 @@ async function deleteEmptyGroup(
   groupId: string,
   conversationId: string,
 ): Promise<void> {
-  // BEFORE the roster gate, deliberately. These plans never dereference the
-  // conversation — `firestore.rules` gates their read, update and delete on
-  // `memberPermissions` alone — so a declined roster clear must not strand
-  // them for a reason that has nothing to do with them. A step that
-  // early-returns skips every leg below it.
   await deleteGroupMenuPlans(db, conversationId);
 
-  const cleared = await tryClearRoster(db, conversationId);
-  if (!cleared) {
-    logger.error(
-      "[removeChatGroupMember] roster not cleared; leaving the empty group standing",
-      { groupId },
-    );
-    return;
-  }
   await db
     .collection(Collections.conversations)
     .doc(conversationId)

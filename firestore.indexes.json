@@ -646,14 +646,6 @@
       ]
     },
     {
-      "collectionGroup": "participants",
-      "fieldPath": "participantId",
-      "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION" },
-        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
-      ]
-    },
-    {
       "collectionGroup": "block_mirror",
       "fieldPath": "blockedByUserIds",
       "indexes": [
