@@ -22,6 +22,7 @@
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
     "test:parity:poolkey": "ts-node src/__tests__/pool-key-parity.test.ts",
     "test:parity:poolkey-wordlists": "ts-node src/__tests__/pool-key-wordlist-parity.test.ts",
+    "test:pool-key-adversarial": "ts-node src/__tests__/pool-key-adversarial.test.ts",
     "test:sync-block-mirror": "ts-node src/__tests__/sync-block-mirror.test.ts",
     "test:hold-shares-on-block": "ts-node src/__tests__/hold-shares-on-block.test.ts",
     "test:script-coverage-report": "node scripts/__tests__/rules-coverage-report.test.js",

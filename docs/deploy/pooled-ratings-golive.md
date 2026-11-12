@@ -42,8 +42,15 @@ client hides the pill instantly. No existing rating data is mutated; the two new
 Folding pre-existing ratings into scores is NOT part of going live (pooling works going-forward
 without it). The backfill CF (`functions/src/migrations/backfill-canonical-ratings.ts`) refuses a
 real run unless the flag is on, AND is operationally hard-gated on: privacy policy LIVE + the
-real-corpus hit-rate re-measure with 0 false merges (C6/C7/C8, still pending real scans). Preview
+real-corpus hit-rate re-measure with 0 false merges (C6/C7/C8). Preview
 with `{ dryRun: true }` any time; do NOT run a real backfill until those clear.
+
+- **C6/C7** — measured with `tools/poolkey_corpus_eval.dart` on the machine that holds the
+  cookbook corpus (`BUTLERY_CORPUS_DIR`); it prints totals only. Not run yet. A run against
+  unverified answer keys is preliminary.
+- **C8** — the tagged adversarial set is `test/fixtures/pool_key_adversarial.json`, run in Dart
+  and TS. Cases marked `known_gap` are measured weaknesses of the key and keep C8 open until a
+  key change removes them.
 
 ## Still-open pre-ship conditions (from the plan)
 - **C9** — BUILT (BUT-1517, 2026-11-12) as a nightly alarm on the admin anomaly banner
