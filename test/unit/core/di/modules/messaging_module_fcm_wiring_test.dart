@@ -205,6 +205,9 @@ void main() {
         await resetLocator();
         wired = _newFcmMocks();
         messaging = MockFirebaseMessaging();
+        // Cloud Functions send by FCM token; the FID API (register/onRegistered)
+        // needs the server send path moved first (BUT-2508).
+        // ignore: deprecated_member_use
         when(() => messaging.deleteToken()).thenAnswer((_) async {});
         fcm = await build(wired, messaging);
         putDecoys();
