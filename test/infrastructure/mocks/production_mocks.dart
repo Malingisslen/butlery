@@ -3360,32 +3360,28 @@ class MockImagePickerProvider extends Mock implements ImagePickerProvider {
 
 /// ✅ FIXED: Complete FileContentProvider interface alignment - PHASE 4C SUCCESS!
 class MockFileContentProvider extends Mock implements FileContentProvider {
-  // Configuration state
-  FilePickerResult? _mockResult;
+  PlatformFile? _pickedFile;
 
-  /// Configure mock result for testing
-  void setFilePickerResult(FilePickerResult? result) {
-    _mockResult = result;
+  /// Configure the file the next pick returns; null simulates a cancel.
+  void setPickedFile(PlatformFile? file) {
+    _pickedFile = file;
   }
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     FileType type = FileType.any,
     List<String>? allowedExtensions,
-    bool allowMultiple = false,
-    bool withData = true,
-    bool withReadStream = false,
   }) async {
-    return _mockResult;
+    return _pickedFile;
   }
 
   @override
-  Future<FilePickerResult?> provideContent(
+  Future<PlatformFile?> provideContent(
     Uint8List content,
     String fileName,
     String? extension,
   ) async {
-    return _mockResult;
+    return _pickedFile;
   }
 }
 
@@ -3400,11 +3396,40 @@ class MockImagePicker extends Mock implements ImagePicker {}
 /// Mock implementation of XFile
 class MockXFile extends Mock implements XFile {}
 
-/// Mock implementation of FilePickerResult
-class MockFilePickerResult extends Mock implements FilePickerResult {}
+/// Configurable PlatformFile; PlatformFile is a base class, so it cannot be
+/// mocked with mocktail. Null [bytes] makes the read fail like an unreadable
+/// cloud-provider file.
+base class MockPlatformFile extends PlatformFile {
+  MockPlatformFile({this.name = 'file', this.bytes, String? extension})
+    : _extension = extension;
 
-/// Mock implementation of PlatformFile
-class MockPlatformFile extends Mock implements PlatformFile {}
+  @override
+  final String name;
+  final Uint8List? bytes;
+  final String? _extension;
+
+  @override
+  String? get extension => _extension;
+
+  @override
+  Uri get uri => Uri.parse('mock://$name');
+
+  @override
+  XFile get xFile => XFile('/mock/$name');
+
+  @override
+  int? lengthSync() => bytes?.length;
+
+  @override
+  Future<int?> length() async => bytes?.length;
+
+  @override
+  Future<Uint8List> readAsBytes() async =>
+      bytes ?? (throw StateError('Could not read $name'));
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream.fromFuture(readAsBytes());
+}
 
 /// Mock implementation of SharedPreferences
 class MockSharedPreferences extends Mock implements SharedPreferences {}

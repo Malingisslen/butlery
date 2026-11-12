@@ -37,8 +37,6 @@ import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
 import 'package:clock/clock.dart';
 import 'package:file_picker/file_picker.dart';
-// ignore: implementation_imports
-import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -49,10 +47,10 @@ import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
 
 /// Programmable FilePicker platform that lets a test answer the next
-/// `FilePicker.pickFiles(...)` call with cancellation, an error, a payload of
+/// `FilePicker.pickFile(...)` call with cancellation, an error, a payload of
 /// raw bytes, or a payload missing bytes.
 class _FakeFilePickerPlatform extends FilePickerPlatform {
-  FilePickerResult? _next;
+  PlatformFile? _next;
   Object? _throws;
 
   void respondWithCancellation() {
@@ -61,16 +59,12 @@ class _FakeFilePickerPlatform extends FilePickerPlatform {
   }
 
   void respondWithBytes(Uint8List bytes, {String name = 'backup.json'}) {
-    _next = FilePickerResult([
-      PlatformFile(name: name, size: bytes.lengthInBytes, bytes: bytes),
-    ]);
+    _next = MockPlatformFile(name: name, bytes: bytes);
     _throws = null;
   }
 
   void respondWithNullBytes({String name = 'backup.json'}) {
-    _next = FilePickerResult([
-      PlatformFile(name: name, size: 0, bytes: null),
-    ]);
+    _next = MockPlatformFile(name: name, bytes: null);
     _throws = null;
   }
 
@@ -80,19 +74,18 @@ class _FakeFilePickerPlatform extends FilePickerPlatform {
   }
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     String? dialogTitle,
     String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     Function(FilePickerStatus)? onFileLoading,
     int compressionQuality = 0,
-    bool allowMultiple = false,
-    bool withData = false,
-    bool withReadStream = false,
-    bool lockParentWindow = false,
-    bool readSequential = false,
-    bool cancelUploadOnWindowBlur = true,
+    AndroidOptions androidOptions = const AndroidOptions(),
+    DarwinOptions darwinOptions = const DarwinOptions(),
+    WindowsOptions windowsOptions = const WindowsOptions(),
+    LinuxOptions linuxOptions = const LinuxOptions(),
+    WebOptions webOptions = const WebOptions(),
   }) async {
     if (_throws != null) throw _throws!;
     return _next;
@@ -918,7 +911,7 @@ void main() {
         expect(label, isNot(contains('Mormors')));
       });
 
-      test('neither import catch hands the exception object to the logger', () {
+      test('no import catch hands the exception object to the logger', () {
         final source = File(
           'lib/services/backup_service.dart',
         ).readAsStringSync();
@@ -929,7 +922,7 @@ void main() {
         final calls = RegExp(
           r'AppLogger\.error\(([^;]*)\);',
         ).allMatches(importBody);
-        expect(calls, hasLength(2));
+        expect(calls, hasLength(3));
         for (final call in calls) {
           expect(call.group(1), contains('importFailureLabel(e)'));
           expect(call.group(1), isNot(matches(RegExp(r',\s*e\s*,'))));

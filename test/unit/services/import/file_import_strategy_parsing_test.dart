@@ -509,17 +509,17 @@ Recipe,"vegetarian,quick,easy"''';
 
     group('FilePicker Integration Tests', () {
       test('should use content provider for file selection', () async {
-        // Arrange — MockFileContentProvider has a concrete pickFiles override,
-        // so use setFilePickerResult() instead of when().
-        final mockResult = MockFilePickerResult();
-        final mockFile = MockPlatformFile();
+        // Arrange — MockFileContentProvider has a concrete pickFile override,
+        // so use setPickedFile() instead of when().
         final fileBytes = Uint8List.fromList(utf8.encode('Title\nRecipe'));
 
-        mockContentProvider.setFilePickerResult(mockResult);
-
-        when(() => mockResult.files).thenReturn([mockFile]);
-        when(() => mockFile.bytes).thenReturn(fileBytes);
-        when(() => mockFile.extension).thenReturn('csv');
+        mockContentProvider.setPickedFile(
+          MockPlatformFile(
+            name: 'recipes.csv',
+            bytes: fileBytes,
+            extension: 'csv',
+          ),
+        );
 
         // Act
         final result = await strategy.import('');
@@ -530,7 +530,7 @@ Recipe,"vegetarian,quick,easy"''';
 
       test('should handle cancelled file picker', () async {
         // Arrange — null result simulates cancelled picker
-        mockContentProvider.setFilePickerResult(null);
+        mockContentProvider.setPickedFile(null);
 
         // Act
         final result = await strategy.import('');
@@ -542,13 +542,7 @@ Recipe,"vegetarian,quick,easy"''';
 
       test('should handle file without bytes', () async {
         // Arrange
-        final mockResult = MockFilePickerResult();
-        final mockFile = MockPlatformFile();
-
-        mockContentProvider.setFilePickerResult(mockResult);
-
-        when(() => mockResult.files).thenReturn([mockFile]);
-        when(() => mockFile.bytes).thenReturn(null);
+        mockContentProvider.setPickedFile(MockPlatformFile(bytes: null));
 
         // Act
         final result = await strategy.import('');

@@ -101,9 +101,8 @@ class _CannedFileStrategy extends FileImportStrategy {
   }
 }
 
-final _csv = PlatformFile(
+final _csv = MockPlatformFile(
   name: 'recept.csv',
-  size: 3,
   bytes: Uint8List.fromList([1, 2, 3]),
 );
 
