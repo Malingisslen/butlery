@@ -59,7 +59,7 @@ dependencies:
   cunning_document_scanner: ^3.1.0
   image_cropper: ^12.2.1
   cached_network_image: ^3.4.1
-  permission_handler: ^13.0.2
+  permission_handler: ^12.0.1  # 13.x needs AGP 9 and compileSdk 37, and changes when Android reports permanentlyDenied (BUT-2508)
   flutter_image_compress: ^2.4.0
   image: ">=4.8.0 <4.9.0"     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
 
