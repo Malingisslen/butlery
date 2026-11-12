@@ -6926,6 +6926,33 @@ empties".
     to the nearest 5.
 
 
+## BUT-1805 and BUT-2169 — Malin's two export decisions (2026-11-11)
+
+- **SUPERSEDES "appears in the admin's Art. 15 export only" in the BUT-1805 entry (Malin,
+  2026-11-11, decision card "Ja, men inte vem som gjorde det").** `exportAuditLogs` also
+  returns, on its first page only, every `group_member_removed` row whose `metadata.targetUid`
+  is the caller, as `removedFromGroups`: `{timestamp, groupId}` built field by field, never
+  `userId`, `metadata.actor`, `conversationId` or the document id. Equality filters only, so no
+  composite index; capped at 200 with `truncated`, and above the cap the kept rows are not chosen
+  by time. A failed read returns `error_code` and the actor rows still ship.
+  `firestore.rules` now refuses a client `audit_logs` create with this operation, because the
+  client create limb pins only `userId` and a planted row could put a fake removal in anyone's
+  export or push the real ones past the cap. The export also drops a row whose `timestamp` is
+  not a Timestamp or whose `resourceType` is not `chat_groups`, and nulls a `groupId` that is not
+  a valid document id. Named residual: a row a client planted before the rule is deployed, with a
+  Timestamp and `chat_groups`, still shows.
+  `ComplianceExportManager` puts it in the `audit_logs` section as `removed_from_groups`; a
+  missing field or a failed read is reported as `error_code` with a retry note, never as an empty
+  list. Its `data_minimisation` sentence (`removedFromGroupsMinimisation`) is the same bytes on
+  every path (BUT-2056). The basis for withholding the admin is Art. 15(4): the admin is a third
+  party, and the removed person's own data is the fact and the time. In a group with one admin
+  the removed person can still infer who it was; the field is withheld, the inference is not
+  prevented.
+- **RESOLVED (BUT-2169, Malin, 2026-11-11, decision card "Ja, behåll som nu").** The Art. 15
+  received sections keep stripping `blockHeldUserIds` and `blockHeld`, unnamed in
+  `data_minimisation`. Retires "shipped and awaiting Malin's confirmation on the PR" for that
+  half of the BUT-2169 known-gaps line.
+
 ## SUPERSEDES one BUT-2169 known gap for `shared_content` (BUT-2442, 2026-11-11)
 
 Retired: "**A co-member can add someone the sharer blocked to the sharer's row.**"
