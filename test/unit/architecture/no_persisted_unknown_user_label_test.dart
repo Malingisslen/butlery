@@ -38,7 +38,9 @@ const _allowlist = <String, String>{
   'lib/views/social/collaborative_shopping/collaborative_shopping_header.dart':
       'reader: active shopper presence line',
   'lib/views/social/collaborative_shopping/collaborative_shopping_items.dart':
-      'reader: assignee section title and claim conflict message',
+      'reader: assignee section title',
+  'lib/views/social/collaborative_shopping/collaborative_shopping_items/collaborative_item_card.dart':
+      'reader: claim conflict message',
   'lib/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart':
       'reader: friend rows and not-invited summary',
   'lib/widgets/cooking/cooking_session_card.dart':
@@ -67,7 +69,9 @@ const _allowlist = <String, String>{
   'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart':
       'reader: member rows',
   'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
-      'reader: owner and member rows',
+      'reader: owner row',
+  'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog/shopping_member_row.dart':
+      'reader: member rows',
   'lib/widgets/messaging/conversation_list_item.dart':
       'reader: last-message preview',
   'lib/widgets/messaging/message_bubble.dart':
