@@ -1,5 +1,5 @@
-# BUT-2278, BUT-2260, BUT-2031, BUT-1814, BUT-2332, BUT-2109, BUT-1441 and
-# BUT-2110: read-only measurements against production.
+# BUT-2278, BUT-2260, BUT-2031, BUT-1814, BUT-2332, BUT-2109, BUT-1441,
+# BUT-2110, BUT-1224 and BUT-1655: read-only measurements against production.
 #
 # Writes nothing to Firestore or anywhere else in the project. Prints counts
 # only, never a uid or a log line's text, because the onUserDeleted error line
@@ -129,3 +129,40 @@ jobs:
             echo "::error::Cloud Logging read refused: $(head -c 300 "$RUNNER_TEMP/logging.err")"
             exit 1
           fi
+
+      - name: "BUT-1224 and BUT-1655: AI call volume, prompt-cache hit rate, global counter peaks, last 30 days"
+        run: |
+          set -uo pipefail
+          # Reads only the two completion events. Their payloads carry mode,
+          # model, token counts and outcome, never a user id or recipe text.
+          if gcloud logging read \
+                'jsonPayload.event=("structure_recipe.complete" OR "ocr_recipe_image.complete")' \
+                --project "$FIREBASE_PROJECT_ID" --freshness=30d --limit=50000 \
+                --format=json >"$RUNNER_TEMP/llm.json" 2>"$RUNNER_TEMP/logging.err"; then
+            jq -r '
+              def pct(p): (sort | .[((length - 1) * p | floor)]);
+              def peak(n): (map(.timestamp[0:n]) | group_by(.) | map(length) | max // 0);
+              . as $all
+              | "llm_events=\($all | length) oldest=\($all | map(.timestamp) | min // "none") newest=\($all | map(.timestamp) | max // "none")",
+                "peak_calls_per_hour=\($all | peak(13)) peak_calls_per_minute=\($all | peak(16)) peak_calls_per_second=\($all | peak(19))",
+                "days_with_calls=\($all | map(.timestamp[0:10]) | unique | length)",
+                ($all | map(.jsonPayload)
+                 | map(select(.promptTokenCount != null))
+                 | group_by(.event + "/" + (.mode // "image") + "/" + (.modelId // "?"))
+                 | map(
+                     (map(.promptTokenCount) | add) as $p
+                     | (map(.cachedContentTokenCount // 0) | add) as $c
+                     | "\(.[0].event)/\(.[0].mode // "image")/\(.[0].modelId // "?") calls=\(length) prompt_p50=\(map(.promptTokenCount) | pct(0.5)) prompt_max=\(map(.promptTokenCount) | max) calls_over_2048=\(map(select(.promptTokenCount >= 2048)) | length) calls_with_cache_hit=\(map(select((.cachedContentTokenCount // 0) > 0)) | length) cached_share=\(if $p > 0 then ($c * 1000 / $p | floor) / 10 else 0 end)%")
+                 | .[])
+            ' "$RUNNER_TEMP/llm.json" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Cloud Logging read refused: $(head -c 300 "$RUNNER_TEMP/logging.err")"
+            exit 1
+          fi
+          # Contention on system/llmLimits shows up as the fail-closed error
+          # line; a cap hit shows up as the exceeded line. Counts only.
+          for q in '"Global limit check failed, denying request"' '"Global LLM limit exceeded"'; do
+            n=$(gcloud logging read "$q" --project "$FIREBASE_PROJECT_ID" --freshness=30d \
+                  --format='value(timestamp)' 2>/dev/null | grep -c . || true)
+            echo "count[$q]=$n" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
