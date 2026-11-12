@@ -112,9 +112,6 @@ class FirebaseSharedMenuRepository
   String get contentTypeName => 'menu';
 
   @override
-  String get counterTypeKey => 'shared_menus';
-
-  @override
   String get resourceType => 'shared_menu';
 
   @override
@@ -258,7 +255,6 @@ class FirebaseSharedMenuRepository
   @override
   Future<void> markAsViewed(String menuId, String userId) async {
     await addView(menuId, userId);
-    await decrementUnreadCounter(userId);
   }
 
   /// Mark shared menu as imported by user (copy-on-write)
@@ -285,13 +281,6 @@ class FirebaseSharedMenuRepository
   Future<void> deleteSharedMenu(String menuId) async {
     // Delegate to base class method
     return await deleteSharedContent(menuId);
-  }
-
-  /// Get unread shared menus count for user
-  @override
-  Future<int> getUnreadCountForUser(String userId) async {
-    // Delegate to base class method
-    return await super.getUnreadCountForUser(userId);
   }
 
   /// Get imported shared menus for user

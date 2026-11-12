@@ -210,8 +210,7 @@ void main() {
         },
       );
 
-      test('re-adding an existing member neither resets addedAt nor '
-          'double-counts their unread badge', () async {
+      test('re-adding an existing member does not reset addedAt', () async {
         // BUT-1152. Arrange - one recipient, added once by createSharedMenu.
         final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
         final menuId = await repository.createSharedMenu(
@@ -249,17 +248,14 @@ void main() {
           equals([testUserId, testFriendId]),
         );
 
-        // ...and the recipient's unread badge counted the share ONCE. Read the
-        // counter document directly: getUnreadCountForUser refuses to answer
-        // for anyone but the signed-in user.
+        // ...and sharing writes no unread counter (BUT-2443).
         final counters = await fakeFirestore
             .collection('users')
             .doc(testFriendId)
             .collection('counters')
             .doc('shared_content')
             .get();
-        expect(counters.data()?['unreadSharedMenus'], equals(1));
-        expect(counters.data()?['totalSharedContent'], equals(1));
+        expect(counters.exists, isFalse);
       });
 
       test(
@@ -553,26 +549,6 @@ void main() {
     // ===== QUERY OPERATIONS =====
 
     group('Query Operations', () {
-      test(
-        'should return 0 unread count when no counter document exists (denormalized counter)',
-        () async {
-          // getUnreadCountForUser reads from denormalized counter doc,
-          // not from actual view subcollections. Without seeding counters
-          // the count is 0.
-          final menu1 = createSharedMenu(
-            id: 'menu-1',
-            sharedByUserId: testOtherUserId,
-          );
-          await seedSharedMenu(menu1, memberUserIds: [testUserId]);
-
-          final unreadCount = await repository.getUnreadCountForUser(
-            testUserId,
-          );
-
-          expect(unreadCount, 0);
-        },
-      );
-
       test('should get imported menus for user', () async {
         final menu1 = createSharedMenu(
           id: 'menu-1',

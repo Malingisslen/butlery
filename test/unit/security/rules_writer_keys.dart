@@ -19,7 +19,6 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
-import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -88,16 +87,6 @@ const allowlists = <Allowlist>[
     writer:
         'lib/models/recipe_suggestion.dart RecipeSuggestion.toFirestore, '
         'stored by FirebaseRecipeSuggestionRepository.suggest (P5-U27b)',
-  ),
-  Allowlist(
-    label: 'users/{uid}/counters',
-    mustContain: 'totalSharedContent',
-    anchor: 'match /counters/{counterId}',
-    writer:
-        'lib/repositories/firebase/base_shared_content_repository.dart — '
-        'incrementUnreadCounter, decrementUnreadCounter, and the recalculate '
-        'path (named, not line-numbered: the line numbers were already off by '
-        'one, and a method name survives the edits a number does not)',
   ),
   Allowlist(
     label: 'conversations/{id}/participants',
@@ -306,25 +295,6 @@ Map<String, Set<String>> writtenKeys() => {
     joinedAt: DateTime(2026),
     lastReadAt: DateTime(2026),
   ).toFirestore().keys.toSet(),
-  // Field names derived, key SET retyped — see the scope note in the header.
-  // `incrementUnreadCounter` sends
-  // `fieldForType(counterTypeKey)`, and THREE subclasses supply a different
-  // key, so naming only `unreadSharedRecipes` left the menu and shopping fields
-  // unguarded — remove either from the rules and this stayed green while that
-  // badge silently stopped moving. Which is D1 verbatim, in the collection D1
-  // was found in. Caught in review; the same "convenient set, not the widest
-  // set" mistake as the first tagResult fixture.
-  // RESIDUAL, stated because the same mistake was already made twice above: the
-  // three type STRINGS are still typed by hand, so a FOURTH
-  // `BaseSharedContentRepository` subclass produces a field this guard never
-  // asks about. There are exactly three today, re-verified 2026-08-12.
-  //
-  // A typo in an existing `counterTypeKey` is NOT that residual, though an
-  // earlier version of this comment said it was: `fieldForType` ends in
-  // `throw ArgumentError`, and `incrementUnreadCounter` wraps the call in a
-  // best-effort try/catch — so a typo throws before any write and sends no
-  // field at all. Different failure (the badge silently stops moving, nothing
-  // is denied), and not one this guard is the instrument for.
   // Derived from the model, so a new field in toFirestore reddens here.
   'users/{uid}/overwritten_versions': OverwrittenVersion(
     id: 'v',
@@ -363,16 +333,6 @@ Map<String, Set<String>> writtenKeys() => {
     suggestion: const <String, dynamic>{},
     at: DateTime.utc(2026),
   ).toFirestore().keys.toSet(),
-  'users/{uid}/counters': {
-    for (final type in const [
-      'shared_recipes',
-      'shared_menus',
-      'shared_shopping_lists',
-    ])
-      UserCounterIncrements.fieldForType(type),
-    UserCounterIncrements.totalSharedContent,
-    'lastUpdated',
-  },
   // Hand-built maps — no model to derive from. See the writer in allowlists.
   'notification_history': {
     'userId',

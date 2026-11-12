@@ -18,10 +18,6 @@ const _direct = <String, (int, String)>{
     1,
     'executeTransaction has no caller; it takes its handler from the caller',
   ),
-  'lib/repositories/firebase/base_shared_content_repository.dart': (
-    1,
-    'decrementUnreadCounter: the handler throws nothing and the catch logs',
-  ),
   'lib/repositories/firebase/friends/friend_relationship_repository.dart': (
     2,
     'the handlers throw nothing and addMutualFriends has no production '
