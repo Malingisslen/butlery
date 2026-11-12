@@ -12,6 +12,7 @@ import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/overview_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
+import 'package:butlery/views/admin/pool_review_view.dart';
 import 'package:butlery/views/admin/proposals_view.dart';
 import 'package:butlery/views/admin/signup_allowlist_view.dart';
 import 'package:butlery/views/admin/tag_rules_view.dart';
@@ -33,6 +34,7 @@ class _AdminShellState extends State<AdminShell>
     with SingleTickerProviderStateMixin {
   late final TabController _controller;
   late int _index = _initialIndex();
+  String? _reviewPoolKey;
 
   @override
   void initState() {
@@ -78,6 +80,13 @@ class _AdminShellState extends State<AdminShell>
         OverviewTarget.guestList => 10,
       });
 
+  static const int _poolTab = 12;
+
+  void _reviewPool(String poolKey) {
+    setState(() => _reviewPoolKey = poolKey);
+    _controller.animateTo(_poolTab);
+  }
+
   // Not const: the registry-driven tabs (MetricTabView) carry a closure for
   // their localized title, so the list is built per render. Migrating tabs are
   // swapped to MetricTabView one at a time (Phase 1).
@@ -115,6 +124,10 @@ class _AdminShellState extends State<AdminShell>
     const TagRulesView(),
     const SignupAllowlistView(),
     const AcquisitionView(),
+    PoolReviewView(
+      key: ValueKey(_reviewPoolKey),
+      initialPoolKey: _reviewPoolKey,
+    ),
   ];
 
   @override
@@ -139,11 +152,12 @@ class _AdminShellState extends State<AdminShell>
               l10n.adminNavTagRules,
               l10n.adminNavGuestList,
               l10n.adminNavAcquisition,
+              l10n.adminNavPools,
             ],
             email: auth.currentUserEmail,
             onSignOut: auth.signOut,
           ),
-          const AnomalyBanner(),
+          AnomalyBanner(onReviewPool: _reviewPool),
           Expanded(child: _pages[_index]),
         ],
       ),

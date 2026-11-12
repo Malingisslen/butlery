@@ -33743,6 +33743,246 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Laddar kanalräkningen …'**
   String get adminAcquisitionLoading;
+
+  /// No description provided for @adminNavPools.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg'**
+  String get adminNavPools;
+
+  /// No description provided for @adminAnomalyMetricPoolVelocity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsrusning'**
+  String get adminAnomalyMetricPoolVelocity;
+
+  /// No description provided for @adminAnomalyMetricPoolSkew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg drar snittet'**
+  String get adminAnomalyMetricPoolSkew;
+
+  /// No description provided for @adminAnomalyMetricPoolNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny rätt fick snabbt fem röster'**
+  String get adminAnomalyMetricPoolNew;
+
+  /// No description provided for @adminAnomalyMetricPoolOverflow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygslarmet läste inte alla röster'**
+  String get adminAnomalyMetricPoolOverflow;
+
+  /// No description provided for @adminAnomalyReviewPool.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granska'**
+  String get adminAnomalyReviewPool;
+
+  /// No description provided for @adminPoolTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg'**
+  String get adminPoolTitle;
+
+  /// No description provided for @adminPoolIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in nyckeln från varningen för att se siffrorna. Här finns inga uppgifter om enskilda personer.'**
+  String get adminPoolIntro;
+
+  /// No description provided for @adminPoolKeyLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsnyckel'**
+  String get adminPoolKeyLabel;
+
+  /// No description provided for @adminPoolShow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa'**
+  String get adminPoolShow;
+
+  /// No description provided for @adminPoolInvalidKey.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyckeln ska se ut som v1: följt av siffror och bokstäverna a–f. Kopiera den från varningen.'**
+  String get adminPoolInvalidKey;
+
+  /// No description provided for @adminPoolLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att hämta betyget. Försök igen.'**
+  String get adminPoolLoadFailed;
+
+  /// No description provided for @adminPoolNotAllowed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att se eller ändra betyg.'**
+  String get adminPoolNotAllowed;
+
+  /// No description provided for @adminPoolRateLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många anrop på kort tid. Vänta en stund och försök igen.'**
+  String get adminPoolRateLimited;
+
+  /// No description provided for @adminPoolVotes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal röster'**
+  String get adminPoolVotes;
+
+  /// No description provided for @adminPoolAverage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snitt'**
+  String get adminPoolAverage;
+
+  /// No description provided for @adminPoolDistribution.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fördelning per stjärna'**
+  String get adminPoolDistribution;
+
+  /// No description provided for @adminPoolStarsRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'{stars, plural, =1{1 stjärna} other{{stars} stjärnor}}'**
+  String adminPoolStarsRow(int stars);
+
+  /// No description provided for @adminPoolVotes24h.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röster senaste dygnet'**
+  String get adminPoolVotes24h;
+
+  /// No description provided for @adminPoolVotes7d.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röster senaste 7 dagarna'**
+  String get adminPoolVotes7d;
+
+  /// No description provided for @adminPoolYoungShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percent} % nya konton (under 7 dagar) av de {sampled} senaste rösterna'**
+  String adminPoolYoungShare(int percent, int sampled);
+
+  /// No description provided for @adminPoolUnverifiedShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percent} % overifierade konton av de {sampled} senaste rösterna'**
+  String adminPoolUnverifiedShare(int percent, int sampled);
+
+  /// No description provided for @adminPoolNoShares.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga röster att räkna andelar på.'**
+  String get adminPoolNoShares;
+
+  /// No description provided for @adminPoolStateActive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget visas'**
+  String get adminPoolStateActive;
+
+  /// No description provided for @adminPoolStateQuarantined.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget är avstängt'**
+  String get adminPoolStateQuarantined;
+
+  /// No description provided for @adminPoolReason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Orsak: {reason}'**
+  String adminPoolReason(String reason);
+
+  /// No description provided for @adminPoolReasonBrigading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fusk'**
+  String get adminPoolReasonBrigading;
+
+  /// No description provided for @adminPoolReasonBadMerge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Felaktig sammanslagning'**
+  String get adminPoolReasonBadMerge;
+
+  /// No description provided for @adminPoolReasonOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Annat'**
+  String get adminPoolReasonOther;
+
+  /// No description provided for @adminPoolQuarantine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng av betyget'**
+  String get adminPoolQuarantine;
+
+  /// No description provided for @adminPoolLift.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på betyget igen'**
+  String get adminPoolLift;
+
+  /// No description provided for @adminPoolReasonTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför stänger du av betyget?'**
+  String get adminPoolReasonTitle;
+
+  /// No description provided for @adminPoolQuarantineConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stänga av betyget?'**
+  String get adminPoolQuarantineConfirmTitle;
+
+  /// No description provided for @adminPoolQuarantineConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget döljs direkt för alla. Rösterna finns kvar och du kan slå på betyget igen. Ärliga röster i samma betyg döljs också.'**
+  String get adminPoolQuarantineConfirmBody;
+
+  /// No description provided for @adminPoolLiftConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på betyget igen?'**
+  String get adminPoolLiftConfirmTitle;
+
+  /// No description provided for @adminPoolLiftConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget visas för alla igen och räknas om från alla röster.'**
+  String get adminPoolLiftConfirmBody;
+
+  /// No description provided for @adminPoolChangeFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att ändra betyget. Försök igen.'**
+  String get adminPoolChangeFailed;
+
+  /// No description provided for @adminPoolQuarantined.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget är avstängt.'**
+  String get adminPoolQuarantined;
+
+  /// No description provided for @adminPoolLifted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget är påslaget igen.'**
+  String get adminPoolLifted;
+
+  /// No description provided for @adminPoolLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar betyget …'**
+  String get adminPoolLoading;
 }
 
 class _AppLocalizationsDelegate

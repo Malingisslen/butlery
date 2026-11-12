@@ -10,12 +10,16 @@ class Anomaly {
   /// 'up' or 'down' (sign of today − mean).
   final String direction;
 
+  /// Set on the `pool_*` metrics: the pooled rating the entry is about.
+  final String? poolKey;
+
   const Anomaly({
     required this.metric,
     required this.today,
     required this.mean,
     required this.z,
     required this.direction,
+    this.poolKey,
   });
 
   bool get isUp => direction == 'up';
@@ -26,6 +30,10 @@ class Anomaly {
     mean: (data['mean'] as num?) ?? 0,
     z: (data['z'] as num?)?.toDouble() ?? 0,
     direction: (data['direction'] as String?) ?? 'up',
+    poolKey: switch (data['poolKey']) {
+      final String key when key.isNotEmpty => key,
+      _ => null,
+    },
   );
 }
 

@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/anomaly_report.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -17,7 +18,11 @@ import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 /// baseline. Shows nothing until the nightly snapshots have accrued enough
 /// history. Dismissal is per-date (session-scoped).
 class AnomalyBanner extends StatefulWidget {
-  const AnomalyBanner({super.key});
+  const AnomalyBanner({super.key, this.onReviewPool});
+
+  /// Opens the pool view for an entry that names a pool. Without it the
+  /// entries are text only.
+  final ValueChanged<String>? onReviewPool;
 
   /// Dates the operator dismissed this session (so a reload re-checks, but
   /// flipping tabs doesn't nag).
@@ -93,12 +98,7 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
                   ),
                   const SizedBox(height: AppDimensions.space4),
                   for (final anomaly in _report.anomalies)
-                    Text(
-                      _line(l10n, anomaly),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onErrorContainer,
-                      ),
-                    ),
+                    _entry(context, l10n, anomaly, cs),
                 ],
               ),
             ),
@@ -111,6 +111,34 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _entry(
+    BuildContext context,
+    AppLocalizations l10n,
+    Anomaly anomaly,
+    ColorScheme cs,
+  ) {
+    final text = Text(
+      _line(l10n, anomaly),
+      style: AppTextStyles.bodySmall.copyWith(color: cs.onErrorContainer),
+    );
+    final poolKey = anomaly.poolKey;
+    final onReview = widget.onReviewPool;
+    if (poolKey == null || onReview == null) return text;
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: AppDimensions.space8,
+      children: [
+        text,
+        ActionButtons.textButton(
+          context,
+          key: ValueKey('anomaly-review-$poolKey'),
+          label: l10n.adminAnomalyReviewPool,
+          onPressed: () => onReview(poolKey),
+        ),
+      ],
     );
   }
 
@@ -132,6 +160,14 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
         return l10n.adminAnomalyMetricOps;
       case 'feedback_total':
         return l10n.adminAnomalyMetricFeedback;
+      case 'pool_velocity':
+        return l10n.adminAnomalyMetricPoolVelocity;
+      case 'pool_rating_skew':
+        return l10n.adminAnomalyMetricPoolSkew;
+      case 'pool_new_over_floor':
+        return l10n.adminAnomalyMetricPoolNew;
+      case 'pool_window_overflow':
+        return l10n.adminAnomalyMetricPoolOverflow;
       default:
         return metric;
     }

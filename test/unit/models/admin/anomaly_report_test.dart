@@ -98,4 +98,23 @@ void main() {
       expect(r.anomalies, isEmpty);
     });
   });
+
+  group('Anomaly.poolKey', () {
+    test('is read from poolKey and absent on the older metrics', () {
+      final pool = Anomaly.fromMap(const {
+        'metric': 'pool_velocity',
+        'poolKey': 'v1:0123456789abcdef',
+      });
+      expect(pool.poolKey, 'v1:0123456789abcdef');
+      expect(
+        Anomaly.fromMap(const {'metric': 'recipes_total'}).poolKey,
+        isNull,
+      );
+    });
+
+    test('an empty or non-string poolKey is no pool', () {
+      expect(Anomaly.fromMap(const {'poolKey': ''}).poolKey, isNull);
+      expect(Anomaly.fromMap(const {'poolKey': 7}).poolKey, isNull);
+    });
+  });
 }
