@@ -1544,15 +1544,15 @@ for (const [label, uid] of ROSTER_ACTORS) {
 // A payload and id the old `allow create` admitted: every required key, and
 // a `participantId` equal to the path id of a member with no row yet.
 test("participants (removed): a member cannot create a valid row for another member", async () => {
-  const path = `conversations/${ROSTER_CONVO}/participants/${FRIEND_UID}`;
+  const rowPath = `conversations/${ROSTER_CONVO}/participants/${FRIEND_UID}`;
   await env.withSecurityRulesDisabled(async (ctx) => {
-    await ctx.firestore().doc(path).delete();
+    await ctx.firestore().doc(rowPath).delete();
   });
   await assertFails(
     env
       .authenticatedContext(ROSTER_MEMBER)
       .firestore()
-      .doc(path)
+      .doc(rowPath)
       .set({
         conversationId: ROSTER_CONVO,
         participantId: FRIEND_UID,
