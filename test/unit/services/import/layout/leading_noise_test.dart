@@ -52,8 +52,8 @@ void main() {
   group('withoutLeadingNoise', () {
     test('drops a short furniture line before the first heading', () {
       final lines = [
-        // 13 characters, well under the 60-char budget, and not shaped like
-        // an ingredient or instruction — a running header/folio stand-in.
+        // 13 characters, well under the 60-char budget — a running
+        // header/folio stand-in.
         line('Kokboken 2024', wordHeight: 70, words: 2),
         heading('Mandelforell'),
         ...body(),
@@ -74,29 +74,10 @@ void main() {
       expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
     });
 
-    test('keeps an ingredient-shaped leading line even under budget', () {
+    test('cuts a previous recipe\'s tail under budget', () {
       final lines = [
-        // Short (10 chars, under budget) but reads as an ingredient row via
-        // `RecipeSectionDetector.looksLikeIngredient`'s measurement pattern —
-        // the guard this rule carries specifically so a stray ingredient line
-        // is never mistaken for furniture.
-        line('2 dl mjolk', wordHeight: 70, words: 3),
-        heading('Mandelforell'),
-        ...body(),
-      ];
-      final layout = doc([page(lines)]);
-      final input = layout.text!;
-
-      final cut = withoutLeadingNoise(input, layout);
-
-      expect(identical(cut.text, input), isTrue);
-      expect(cut.text.contains('2 dl mjolk'), isTrue);
-    });
-
-    test('keeps an instruction-shaped leading line even under budget', () {
-      final lines = [
-        // Under budget, but contains a cooking-instruction keyword
-        // (`RecipeSectionDetector.hasInstructionKeywords`).
+        // The last step of the recipe on the page before reads like recipe
+        // content, and cutting it is what this rule is for (BUT-1836).
         line('Koka upp vattnet', wordHeight: 70, words: 3),
         heading('Mandelforell'),
         ...body(),
@@ -106,15 +87,14 @@ void main() {
 
       final cut = withoutLeadingNoise(input, layout);
 
-      expect(identical(cut.text, input), isTrue);
-      expect(cut.text.contains('Koka upp vattnet'), isTrue);
+      expect(cut.text.contains('Koka upp vattnet'), isFalse);
+      expect(cut.text.startsWith('Mandelforell'), isTrue);
+      expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
     });
 
     test('leaves a long leading passage alone — over the budget', () {
       final lines = [
-        // Three 22-character lines = 66 characters, over the 60-char budget,
-        // and shaped like neither an ingredient nor an instruction — isolates
-        // the budget gate from the content gate above.
+        // Three 22-character lines = 66 characters, over the 60-char budget.
         line('brodtext rad med ord 0', wordHeight: 70),
         line('brodtext rad med ord 1', wordHeight: 70),
         line('brodtext rad med ord 2', wordHeight: 70),
@@ -191,8 +171,8 @@ void main() {
 
     group('the 60-character budget is the decision, so pin its edge', () {
       // `_leadingBudget` is private and every claim in `leading_noise.dart`'s
-      // own doc about it ("half of `_tailBudget`", "the tail trim's OTHER
-      // measured row") rests on its value staying 60. Without a boundary
+      // own doc about it ("half of `_tailBudget`") rests on its value staying
+      // 60. Without a boundary
       // pair it could drift with the suite green — same rationale
       // `orphan_tail_test.dart` states for its own 119/120 pair.
       //

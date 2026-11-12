@@ -107,14 +107,6 @@
 /// justification — "the BEFORE column has to be what the previous stage hands
 /// this one" — which is true of `--trim` and not of this arm.)
 ///
-/// **`leading_noise.dart`'s own budget is unmeasured — this arm exists so it
-/// stops being unmeasured.** It was written without corpus access, using the
-/// tail trim's OTHER measured row (60, not the shipped 120) as a
-/// deliberately conservative placeholder. Run this arm, read the printed
-/// per-page list of what was cut, sweep `_leadingBudget`, and update that
-/// constant's doc — not this comment — with the result. Nothing here should
-/// be trusted as a finding until that run has happened at least once.
-///
 /// ## `--no-frame-cut`: scoring against gold that is not frame-cut debris
 ///
 ///   dart run tools/corpus_split_eval.dart --trim --no-frame-cut
@@ -770,9 +762,7 @@ void main(List<String> args) {
 /// It is NOT "the leading trim applied to the tail trim's output": since
 /// `frame_trim.dart` the two no longer run in sequence, both decisions come
 /// from the untouched page, and measuring the old chain would measure a
-/// pipeline nobody runs. See `leading_noise.dart` for why this rule's budget
-/// is a provisional placeholder rather than a measured one — running this arm
-/// and reading its output is the step that placeholder is waiting on.
+/// pipeline nobody runs.
 ({String text, Map<String, dynamic> summary}) _formatLeadingTrim(
   List<_Page> pages,
   MultiRecipeSplitter splitter, {
@@ -871,15 +861,9 @@ void main(List<String> args) {
     ..writeln('  ${_engineCaveat()}')
     ..writeln()
     ..writeln(
-      '  UNMEASURED BUDGET: _leadingBudget (60) was set without corpus',
+      '  Read the per-page list below against the photographs, never',
     )
-    ..writeln(
-      '  access, borrowed from the tail trim\'s OTHER measured row.',
-    )
-    ..writeln(
-      '  Read the per-page list below against the photographs before',
-    )
-    ..writeln('  trusting this rule at scale.')
+    ..writeln('  against the OCR text.')
     ..writeln()
     ..writeln(
       dropFrameCut

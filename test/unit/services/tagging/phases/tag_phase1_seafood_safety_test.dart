@@ -301,16 +301,13 @@ void main() {
     // Three hand-maintained copies exist, all pinned here: PROPERTIES.csv
     // (Sheet vocabulary), sync-ingredients.ts VALID_PROPERTIES (data gate),
     // and Dart PropertyRegistry.validProperties (config gate). Historical
-    // drift is pinned exactly; ANY new divergence in any pair fails here. Reconciliation of the
-    // historical set is a roadmap cleanup item — don't grow it.
-    // BUT-1498 (2026-07-14) reconciled the shellfish/wheat pair: 'wheat' was a
-    // phantom (removed from the registry) and 'shellfish' was added to the
-    // registry to match the data gate. Only 'raw-safe' / 'processed' remain.
-    const knownDartOnly = {'raw-safe'};
-    const knownTsOnly = {'processed'};
-    // The Sheet vocabulary (PROPERTIES.csv) tracks the TS data gate exactly:
-    // it carries 'processed' and omits 'raw-safe', same split as TS-vs-Dart.
-    const knownCsvOnly = {'processed'};
+    // drift is pinned exactly; ANY new divergence in any pair fails here.
+    // BUT-1498 (2026-07-14) reconciled the shellfish/wheat pair and BUT-1616
+    // (Malin 2026-11-07) the last one: 'processed' joined the registry and
+    // 'raw-safe' was retired.
+    const knownDartOnly = <String>{};
+    const knownTsOnly = <String>{};
+    const knownCsvOnly = <String>{};
 
     Set<String> csvProperties() {
       // PROPERTIES.csv is the Sheet vocabulary export: column 0 is the
