@@ -72,7 +72,7 @@ function makeSessions({ revokeWorks = true } = {}) {
   let revokedAt = 0, clock = 0, n = 0;
   const issued = new Map();
   const fetchFn = async (url, init) => {
-    if (url.includes("signInWithCustomToken")) {
+    if (url.includes("signInWithPassword")) {
       const id = ++n;
       issued.set(`r${id}`, ++clock);
       return { ok: true, json: async () => ({ idToken: `i${id}`, refreshToken: `r${id}` }) };
@@ -90,7 +90,7 @@ const sessionsFor = (env, w, over = {}) => ({
   ...over,
 });
 const withAuth = (env, w) => Object.assign(env.auth, {
-  createCustomToken: async () => "ct",
+  updateUser: async () => {},
   revokeRefreshTokens: async () => w.revokeNow(),
   verifyIdToken: async (t) => { if (w.isRevoked(t)) { const e = new Error("revoked"); e.code = "auth/id-token-revoked"; throw e; } return {}; },
 });

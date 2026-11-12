@@ -97,11 +97,12 @@ async function journeyErasure({ db, auth, storage, uid, email, erase }) {
   return { name, ok: problems.length === 0, detail: problems.join("; ") || "account, profile and recipe erased" };
 }
 
-async function restSession(fetchFn, customToken, apiKey) {
+// Password sign-in, not custom tokens: the staging CI identity may not sign blobs (iam.serviceAccounts.signBlob).
+async function restSession(fetchFn, credentials, apiKey) {
   const res = await fetchFn(
-    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`,
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
     { method: "POST", headers: { "content-type": "application/json", referer: STAGING_REFERER },
-      body: JSON.stringify({ token: customToken, returnSecureToken: true }) },
+      body: JSON.stringify({ email: credentials.email, password: credentials.password, returnSecureToken: true }) },
   );
   const body = await res.json();
   if (!res.ok) throw new Error(`sign-in failed: ${(body.error && body.error.message) || res.status}`);
@@ -120,20 +121,22 @@ async function refreshOutcome(fetchFn, refreshToken, apiKey) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function journeyRevokeOtherSessions({ db, auth, uid, revoke, fetchFn, pauseMs, apiKey }) {
+async function journeyRevokeOtherSessions({ db, auth, uid, email, revoke, fetchFn, pauseMs, apiKey }) {
   const name = "revoke-other-sessions";
   const problems = [];
   await db.collection("users").doc(uid).set({ e2e: true, createdAt: new Date() });
-  const a = await restSession(fetchFn, await auth.createCustomToken(uid), apiKey);
-  const b = await restSession(fetchFn, await auth.createCustomToken(uid), apiKey);
+  const credentials = { email, password: `Pw-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}!` };
+  await auth.updateUser(uid, { password: credentials.password });
+  const a = await restSession(fetchFn, credentials, apiKey);
+  const b = await restSession(fetchFn, credentials, apiKey);
   if ((await refreshOutcome(fetchFn, b.refreshToken, apiKey)) !== "refreshed") problems.push("second session could not refresh before the revoke");
   // Token validity is counted in whole seconds, so the sign-ins must predate the revoke.
   await sleep(pauseMs);
   const nowMs = Date.now();
-  const { customToken } = await revoke(
+  await revoke(
     {
       getAccount: async () => ({ providerIds: ["google.com"], enrolledFactorCount: 0 }),
-      createCustomToken: (id) => auth.createCustomToken(id),
+      createCustomToken: async () => "unused-in-staging-journey",
       revokeRefreshTokens: (id) => auth.revokeRefreshTokens(id),
       enforceRateLimit: async () => {},
       markRevoked: (id) => db.collection("users").doc(id).update({ sessionsRevokedAt: new Date() }),
@@ -148,7 +151,7 @@ async function journeyRevokeOtherSessions({ db, auth, uid, revoke, fetchFn, paus
   if ((await refreshOutcome(fetchFn, a.refreshToken, apiKey)) === "refreshed") problems.push("first session's old refresh token still works");
   const checked = await auth.verifyIdToken(b.idToken, true).then(() => "accepted", (e) => e.code);
   if (checked !== "auth/id-token-revoked") problems.push(`revocation check on second session said ${checked}`);
-  const fresh = await restSession(fetchFn, customToken, apiKey);
+  const fresh = await restSession(fetchFn, credentials, apiKey);
   if ((await refreshOutcome(fetchFn, fresh.refreshToken, apiKey)) !== "refreshed") problems.push("the new session cannot refresh");
   if (!(((await db.collection("users").doc(uid).get()).data() || {}).sessionsRevokedAt)) problems.push("notice not written");
   return { name, ok: problems.length === 0, detail: problems.join("; ") || `second session ends with "${bAfter}", new session works, notice written` };
@@ -190,8 +193,8 @@ async function runJourneys({ db, auth, storage, runId, injectFailure, deletion, 
     journeyErasure({ db, auth, storage, uid, email, erase: erasure.erase }),
   );
   if (sessions) {
-    await run("revoke-other-sessions", (uid) =>
-      journeyRevokeOtherSessions({ db, auth, uid, revoke: sessions.revoke, fetchFn: sessions.fetchFn, pauseMs: sessions.pauseMs, apiKey: sessions.apiKey }),
+    await run("revoke-other-sessions", (uid, email) =>
+      journeyRevokeOtherSessions({ db, auth, uid, email, revoke: sessions.revoke, fetchFn: sessions.fetchFn, pauseMs: sessions.pauseMs, apiKey: sessions.apiKey }),
     );
   }
   if (injectFailure) {
