@@ -1,0 +1,115 @@
+# Uploads the generated tag config documents (scripts/output/tagConfigs) to
+# Firestore. Staging first, then production; the production job waits for the
+# `production` environment's reviewer. `documents` limits the upload so a
+# vocabulary change does not overwrite documents that were not regenerated.
+name: Seed tag configs
+
+on:
+  workflow_dispatch:
+    inputs:
+      documents:
+        description: "Comma-separated tag_configs documents to upload"
+        type: string
+        default: "properties"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  staging:
+    name: Seed staging
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      DOCUMENTS: ${{ inputs.documents }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+      - name: Authenticate to Google Cloud (staging WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Guard — project is staging
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          set -euo pipefail
+          EXPECTED=$(jq -r '.projects.staging // empty' .firebaserc)
+          [ -n "$FIREBASE_PROJECT_ID" ] && [ "$FIREBASE_PROJECT_ID" = "$EXPECTED" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is not the staging alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID'." >&2; exit 1; }
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
+      - name: Dry run
+        working-directory: functions
+        run: |
+          set -o pipefail
+          [ -n "$DOCUMENTS" ] || { echo "::error::documents is empty" >&2; exit 1; }
+          npm run seed-tag-configs -- --project "$FIREBASE_PROJECT_ID" --only "$DOCUMENTS" --dry-run | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Seed
+        working-directory: functions
+        run: npm run seed-tag-configs -- --project "$FIREBASE_PROJECT_ID" --only "$DOCUMENTS"
+
+  production:
+    name: Seed production
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      DOCUMENTS: ${{ inputs.documents }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+      - name: Authenticate to Google Cloud (WIF)
+        id: wif
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Guard — project is production
+        env:
+          WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
+        run: |
+          set -euo pipefail
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] || { echo "::error::The WIF token belongs to '$WIF_PROJECT_ID'." >&2; exit 1; }
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
+      - name: Dry run
+        working-directory: functions
+        run: |
+          set -o pipefail
+          [ -n "$DOCUMENTS" ] || { echo "::error::documents is empty" >&2; exit 1; }
+          npm run seed-tag-configs -- --project "$FIREBASE_PROJECT_ID" --only "$DOCUMENTS" --dry-run | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Seed
+        working-directory: functions
+        run: npm run seed-tag-configs -- --project "$FIREBASE_PROJECT_ID" --only "$DOCUMENTS"
