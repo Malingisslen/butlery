@@ -10,7 +10,12 @@
  *
  * Usage:
  *   cd functions
- *   npm run seed-tag-configs -- --project <id>
+ *   npm run seed-tag-configs -- --project <id> [--only properties] [--dry-run]
+ *
+ * `--only` limits the upload to the named documents, so a vocabulary change
+ * does not overwrite documents that were not regenerated. `--dry-run` writes
+ * nothing and prints which properties the live `properties` document would
+ * gain or lose.
  */
 
 import * as admin from "firebase-admin";
@@ -22,7 +27,29 @@ initializeAdminApp();
 
 const db = admin.firestore();
 
-const CONFIG_TYPES = ["allergens", "dietary", "cuisines", "properties", "display"];
+const ALL_CONFIG_TYPES = ["allergens", "dietary", "cuisines", "properties", "display"];
+
+function optionValue(name: string): string | undefined {
+  const argv = process.argv;
+  const at = argv.indexOf(name);
+  if (at >= 0) return argv[at + 1];
+  const joined = argv.find((arg) => arg.startsWith(`${name}=`));
+  return joined?.slice(name.length + 1);
+}
+
+const DRY_RUN = process.argv.includes("--dry-run");
+const ONLY = optionValue("--only");
+// A cleared workflow input reaches the script as an empty string, so a present
+// flag must name something; only a missing flag means "all documents".
+const ONLY_GIVEN = process.argv.some((a) => a === "--only" || a.startsWith("--only="));
+const CONFIG_TYPES = ONLY_GIVEN
+  ? (ONLY ?? "").split(",").map((t) => t.trim())
+  : ALL_CONFIG_TYPES;
+const unknownTypes = CONFIG_TYPES.filter((t) => !ALL_CONFIG_TYPES.includes(t));
+if (unknownTypes.length > 0) {
+  console.error(`❌ Unknown or empty config type: [${unknownTypes.join(", ")}]`);
+  process.exit(1);
+}
 
 async function seedTagConfigs() {
   console.log("🔄 Tag Config Seeding Tool");
@@ -56,6 +83,23 @@ async function seedTagConfigs() {
     try {
       const jsonContent = fs.readFileSync(jsonPath, "utf-8");
       const data = JSON.parse(jsonContent);
+
+      if (DRY_RUN) {
+        const live = (await db.collection("tag_configs").doc(configType).get()).data();
+        if (configType !== "properties") {
+          console.log(`🔎 ${configType} (dry run) - diff not supported, would overwrite`);
+          successCount++;
+          continue;
+        }
+        const liveList: string[] = live?.validProperties ?? [];
+        const nextList: string[] = data.validProperties ?? [];
+        console.log(
+          `🔎 ${configType} (dry run) - gained: [${nextList.filter((x) => !liveList.includes(x)).join(", ")}], ` +
+            `lost: [${liveList.filter((x) => !nextList.includes(x)).join(", ")}]`,
+        );
+        successCount++;
+        continue;
+      }
 
       // Add upload timestamp
       data.uploadedAt = admin.firestore.FieldValue.serverTimestamp();
