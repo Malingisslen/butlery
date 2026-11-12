@@ -325,8 +325,8 @@ const cases: UnitCase[] = [
     },
   },
   // BUT-1838 added the fourth `dailyLimit`, and it is NOT an LLM-spend cap:
-  // creating a group writes a group document, a conversation, N roster rows and
-  // a system message, so it is the write-amplified one. The claim above — that
+  // creating a group writes a group document, a conversation and
+  // a system message. The claim above — that
   // deleting a daily cap regresses this file rather than shipping silently —
   // went stale the moment it was added, because a coverage promise that
   // QUANTIFIES goes stale by ADDITION with its own bytes untouched. Pinned here
@@ -341,7 +341,7 @@ const cases: UnitCase[] = [
       );
     },
   },
-  // BUT-1856. Write-amplified for the same reason: it can create a group, and it
+  // BUT-1856. It can create a group, and it
   // does so past `createChatGroup`'s own bucket, so its cap is the only thing
   // bounding that path.
   {

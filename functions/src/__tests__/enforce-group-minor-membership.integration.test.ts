@@ -6,8 +6,8 @@
  * `onDocumentWritten("chat_groups/{groupId}")` rather than on the CREATE of
  * `conversations/{id}`, judges each member against `memberAddedBy[uid]` — whoever
  * actually seated THEM — rather than against one creator, and evicts through
- * `stageMemberRemoval`, which writes the group, the conversation and the roster
- * row from one value.
+ * `stageMemberRemoval`, which writes the group and the conversation from one
+ * value.
  *
  * What it still exists to prove is unchanged: the destructive-I/O branches the
  * unit suites cannot reach. The reads hit real emulator documents
@@ -25,14 +25,10 @@
  *    there is no second layer to stay in step with and the trigger now judges
  *    the sanitised list. The equivalent protection moved to
  *    the gate, BEFORE the write (`minor-membership-gate.test.ts`).
- *  - *"delete branch: collapsing below 2 members deletes the conversation"* and
- *    *"an unclearable roster leaves the shell standing"*. This trigger no longer
- *    owns a conversation's lifecycle: it cuts membership and nothing else. The
- *    collapse-and-delete decision, and the `tryClearRoster` verdict that gates
- *    it, moved to `removeChatGroupMember` and are pinned there
- *    (`chat-group-callables.test.ts`), including the case where the verdict is
- *    FALSE and both documents must survive. `tryClearRoster`'s own read/delete
- *    failure paths stay in `enforce-group-minor-membership.test.ts`.
+ *  - *"delete branch: collapsing below 2 members deletes the conversation"*.
+ *    This trigger no longer owns a conversation's lifecycle: it cuts membership
+ *    and nothing else. The collapse-and-delete decision moved to
+ *    `removeChatGroupMember` and is pinned there (`chat-group-callables.test.ts`).
  *
  * Skip gate (local machines without the emulator / Java): if 8080 doesn't
  * answer, print SKIP and exit 0 — unless CI is set, where a missing emulator
@@ -89,11 +85,8 @@ async function run(): Promise<void> {
   const userRef = (uid: string) => db.collection("users").doc(uid);
   const groupRef = (id: string) => db.collection("chat_groups").doc(id);
   const convRef = (id: string) => db.collection("conversations").doc(id);
-  // The TOP-LEVEL roster row: the document that carries a display name and an
-  // avatar. An evicted member whose row survives keeps both readable by the
-  // group that removed them.
-  const rosterRef = (uid: string, convId: string) =>
-    convRef(convId).collection("participants").doc(uid);
+  const rosterRowCount = async (convId: string): Promise<number> =>
+    (await convRef(convId).collection("participants").listDocuments()).length;
 
   const seededGroups: string[] = [];
   const seededPlans: string[] = [];
@@ -113,9 +106,8 @@ async function run(): Promise<void> {
   }
 
   /**
-   * Seeds the three documents a real group is made of — written the way
-   * `stageGroupCreation` writes them, from one timestamp — plus each member's
-   * roster row.
+   * Seeds the documents a real group is made of — written the way
+   * `stageGroupCreation` writes them, from one timestamp.
    */
   async function seedGroup(
     groupId: string,
@@ -157,16 +149,6 @@ async function run(): Promise<void> {
       createdAt: now,
       updatedAt: now,
     });
-    await Promise.all(
-      members.flatMap((uid) => [
-        rosterRef(uid, convId).set({
-          conversationId: convId,
-          participantId: uid,
-          displayName: uid.slice(0, 8),
-          joinedAt: now,
-        }),
-      ]),
-    );
     return convId;
   }
 
@@ -192,8 +174,8 @@ async function run(): Promise<void> {
   const adult = `adult-${RUN}`;
 
   // 1. The update branch: a minor seated by someone who is not their friend is
-  //    stripped from all three copies of the membership.
-  test("strips a non-friend-added minor from the group, the conversation and the roster", async () => {
+  //    stripped from every copy of the membership.
+  test("strips a non-friend-added minor from the group and the conversation", async () => {
     const gid = `grp-update-${RUN}`;
     const minor = `minor-strip-${RUN}`;
     await seedUser(creator, false);
@@ -242,12 +224,8 @@ async function run(): Promise<void> {
     assert(adult in names, "the adult's entries must survive the dot-path deletes");
 
     assert(
-      !(await rosterRef(minor, conv).get()).exists,
-      "the evicted minor's roster row must be deleted — it carries their name and avatar",
-    );
-    assert(
-      (await rosterRef(adult, conv).get()).exists,
-      "the adult's roster row must be left intact — the cut is scoped to the removed uids",
+      (await rosterRowCount(conv)) === 0,
+      "the eviction must write no row under conversations/<id>/participants",
     );
   });
 
@@ -272,7 +250,7 @@ async function run(): Promise<void> {
     // lookup this fixture would keep them.
     await seedFriend(minorLater, creator);
 
-    const conv = await seedGroup(gid, [creator, otherAdmin, minorOk, minorLater], {
+    await seedGroup(gid, [creator, otherAdmin, minorOk, minorLater], {
       [creator]: creator,
       [otherAdmin]: creator,
       [minorOk]: creator,
@@ -290,11 +268,6 @@ async function run(): Promise<void> {
       !memberIds.includes(minorLater),
       `a minor added by a non-friend must go, got ${JSON.stringify(memberIds)}`,
     );
-    assert(
-      (await rosterRef(minorOk, conv).get()).exists &&
-        !(await rosterRef(minorLater, conv).get()).exists,
-      "roster rows must follow the same per-member verdict",
-    );
   });
 
   // 3. Keep path: a real friend doc means no removal at all, and no write.
@@ -305,7 +278,7 @@ async function run(): Promise<void> {
     await seedUser(adult, false);
     await seedUser(friendMinor, true);
     await seedFriend(friendMinor, creator);
-    const conv = await seedGroup(gid, [creator, adult, friendMinor], {
+    await seedGroup(gid, [creator, adult, friendMinor], {
       [creator]: creator,
       [adult]: creator,
       [friendMinor]: creator,
@@ -316,10 +289,6 @@ async function run(): Promise<void> {
     const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
     assert(memberIds.includes(friendMinor), "a friend-added minor must be kept");
     assert(memberIds.length === 3, `no one should be removed, got ${JSON.stringify(memberIds)}`);
-    assert(
-      (await rosterRef(friendMinor, conv).get()).exists,
-      "kept minor's roster row stays — the cleanup must not fire on the keep path",
-    );
   });
 
   // 4. CONVERGENCE. The eviction write re-fires this same trigger, so the second
@@ -371,8 +340,8 @@ async function run(): Promise<void> {
       { length: MAX_GROUP_PARTICIPANTS },
       (_, i) => `filler-${i}-${RUN}`,
     );
-    // Written directly rather than through `seedGroup`: no user documents, no
-    // roster rows for the filler uids, because the guard must
+    // Written directly rather than through `seedGroup`: no user documents
+    // for the filler uids, because the guard must
     // return BEFORE any read. A fixture that needed them seeded would be
     // measuring the reads instead of the refusal — and would litter the shared
     // demo-test namespace with 100 unswept users.
@@ -549,14 +518,9 @@ async function run(): Promise<void> {
     }
   }
 
-  // Cleanup the shared demo-test namespace. Roster rows outlive their parent by
-  // design (no cascade), so sweep them explicitly — otherwise every run leaves
-  // rows under a deleted conversation, which is the exact state the production
-  // code exists to prevent.
+  // Cleanup the shared demo-test namespace.
   await Promise.all(
     seededGroups.map(async (gid) => {
-      const rows = await convRef(gid).collection("participants").listDocuments();
-      await Promise.all(rows.map((r) => r.delete().catch(() => undefined)));
       await convRef(gid).delete().catch(() => undefined);
       await groupRef(gid).delete().catch(() => undefined);
     }),

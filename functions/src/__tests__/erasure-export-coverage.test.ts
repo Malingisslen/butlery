@@ -82,7 +82,7 @@ const COVERAGE: Record<string, Coverage[]> = {
   chat_groups: [{ client: "messages" }, { residue: ["chat_groups_left"] }],
   messages: [
     { client: "messages" },
-    { residue: ["messages_in_left_conversations", "conversation_roster_rows"] },
+    { residue: ["messages_in_left_conversations"] },
   ],
   shared_content: [
     { client: "shared_content" },

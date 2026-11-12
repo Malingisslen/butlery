@@ -13,8 +13,7 @@ export async function probePollVotes(
   // lets the step report success; only the CAP can falsify it. So a single
   // failed commit can leave up to 500 rows whose DOCUMENT ID is the erased uid, claim-lint:ok moved unchanged, BUT-2113
   // with the step reporting a clean erasure. This leg is the only thing that claim-lint:ok moved unchanged, BUT-2113
-  // contradicts it. Uncapped and separate for the same reason as the roster leg
-  // below: `count()` is cheap, and it must stay loud exactly when the deleter
+  // contradicts it. Uncapped: `count()` is cheap, and it must stay loud exactly when the deleter
   // DECLINED. It also fails CLOSED while the collection-group index builds —
   // FAILED_PRECONDITION lands in the catch as a false alarm, never a false
   // all-clear.

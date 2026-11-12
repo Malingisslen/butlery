@@ -57,55 +57,6 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
 }
 
 /**
- * The collection-group query needs a declared
- * index; Firestore's automatic single-field indexes cover COLLECTION scope only.
- * Nothing in a stub-backed suite can notice a missing or misspelled one — the
- * query would throw FAILED_PRECONDITION in production, land in the probe's own
- * catch, and be logged as a residual that isn't there.
- *
- * The COLLECTION entry is not optional either: a `fieldOverride` REPLACES the
- * automatic indexing for that field.
- */
-async function scenario_rosterIndexIsDeclared(): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-  const config = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
-      "utf8",
-    ),
-  ) as {
-    fieldOverrides?: {
-      collectionGroup: string;
-      fieldPath: string;
-      indexes: { order?: string; queryScope: string }[];
-    }[];
-  };
-  const entry = (config.fieldOverrides ?? []).find(
-    (o) => o.collectionGroup === "participants" && o.fieldPath === "participantId",
-  );
-  check(
-    "firestore.indexes.json declares the participants/participantId override",
-    entry !== undefined,
-  );
-  const scopes = (entry?.indexes ?? [])
-    .filter((i) => i.order === "ASCENDING")
-    .map((i) => i.queryScope);
-  check(
-    "…for COLLECTION_GROUP scope, which the cascade's sweep and probe query",
-    scopes.includes("COLLECTION_GROUP"),
-    `scopes: ${JSON.stringify(scopes)}`,
-  );
-  check(
-    "…and for COLLECTION scope, which the override would otherwise remove",
-    scopes.includes("COLLECTION"),
-    `scopes: ${JSON.stringify(scopes)}`,
-  );
-}
-
-/**
  * BUT-2028: every Firestore collection this repo knows about is DECIDED —
  * deleted, kept, or deliberately untouched with a reason.
  *
@@ -1155,7 +1106,6 @@ async function scenario_pingsSenderIndexIsDeclared(): Promise<void> {
 
 async function main(): Promise<void> {
   await scenario_messagesInLeftConversationsAreReached();
-  await scenario_rosterIndexIsDeclared();
   await scenario_blockMirrorExemptionRestsOnTheSameDecision();
   await scenario_reportHistoryIndexAndTtlAreDeclared();
   await scenario_everyCollectionIsDecided();

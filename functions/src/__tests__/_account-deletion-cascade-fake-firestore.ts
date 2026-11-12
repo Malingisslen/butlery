@@ -207,13 +207,10 @@ export class FakeFirestore {
    * only observable through this one.
    */
   readonly batchFailures = new Map<string, number>();
-  /**
-   * Every path deleted, in order. BUT-1822 turns on an ORDERING invariant —
-   * roster rows before the conversation document — and "both are gone at the
-   * end" is exactly the assertion that cannot tell the fixed code from the
-   * broken code.
-   */
+  /** Every path deleted, in order. */
   readonly deletedPaths: string[] = [];
+  /** Paths whose `ref.delete()` rejects. */
+  readonly deleteFailures = new Set<string>();
   /**
    * Paths whose `ref.get()` rejects. The reporter legs read each linked
    * `reports/{id}` one document at a time, and their fail-closed branch (keep
@@ -289,6 +286,11 @@ export class FakeFirestore {
         return { exists: data !== undefined, data: () => data };
       },
       delete: async () => {
+        if (this.deleteFailures.has(path)) {
+          throw Object.assign(new Error(`injected delete failure on ${path}`), {
+            code: 14,
+          });
+        }
         this.deletedPaths.push(path);
         this.docs.delete(path);
       },
@@ -621,14 +623,7 @@ export class FakeFirestore {
       };
     };
     // BUT-1822: `name` can be a SLASH-SEPARATED path, and the read can be
-    // unfiltered-but-limited. `tryClearRoster` — which the cascade now calls
-    // before deleting a 1:1 conversation — does exactly
-    // `db.collection("conversations/<id>/participants").limit(N + 1).get()`.
-    // The matcher above cannot serve that: it only ever considers 2-segment
-    // paths, and it is reached only through `where()` — the object `collection()`
-    // itself returned had neither `get` nor `limit`, so wiring the roster clear
-    // in without this would throw a TypeError that says nothing about the logic
-    // under test.
+    // unfiltered-but-limited.
     const unfiltered = (max?: number) => ({
       get: async () => {
         const paths = this.pathsUnder(name);
@@ -763,10 +758,6 @@ export class FakeFirestore {
         value: unknown,
       ) => ({
         get: async () => snapshotOf(matching(field, op, value)),
-        // BUT-1822. The roster sweep reads `.limit(MAX + 1)` so it can tell
-        // "plausible" from "seeded" and decline rather than truncate, and the
-        // residual probe reads `.count()`. Neither existed on this stub, so
-        // neither could be tested — and `probeResidualData` had no test at all.
         limit: (max: number) => ({
           get: async () => snapshotOf(matching(field, op, value).slice(0, max)),
         }),

@@ -13,9 +13,7 @@
  *     from the conversation. "Admin" is an authoritative list rather than a
  *     `metadata.creatorId` field on a document clients can write other parts of,
  *     so every "creator" fixture became an "admin" fixture.
- *   - `buildDepartureUpdate` became `stageMemberRemoval`, which writes THREE
- *     documents (group, conversation, roster row) rather than one, so the
- *     write-shape case asserts all three.
+ *   - `buildDepartureUpdate` became `stageMemberRemoval`.
  *   - the write assertions run against a fake that APPLIES the payload, so they
  *     check the resulting document rather than the payload's shape alone.
  *
@@ -74,7 +72,7 @@ function verdict(
 // ---------------------------------------------------------------------------
 // Fixtures for the ORCHESTRATION half.
 //
-// A three-person group, its conversation and its roster rows — every document
+// A three-person group and its conversation — every document
 // the removal path touches, so an assertion
 // that one of them changed is not an assertion about an absent document.
 // ---------------------------------------------------------------------------
@@ -123,14 +121,6 @@ function seedGroup(
     isGroup: true,
     title: "Familjen",
   });
-  for (const uid of memberIds) {
-    fake.seed(`conversations/c1/participants/${uid}`, {
-      conversationId: "c1",
-      participantId: uid,
-      displayName: names[uid] ?? "?",
-      joinedAt: JOINED,
-    });
-  }
 }
 
 async function captureError(fn: () => Promise<unknown>): Promise<string> {
@@ -252,14 +242,14 @@ const cases: UnitCase[] = [
     },
   },
 
-  // --- stageMemberRemoval: the write shape, across all three documents ------
+  // --- stageMemberRemoval: the write shape ----------------------------------
   {
     // Was "the write erases all four uid-keyed maps plus participantIds". There
     // are FIVE maps now (`memberSince` joined them), the group carries three of
-    // its own, and the roster row is deleted outright. A missed key leaves a
+    // its own. A missed key leaves a
     // departed member's name on a document they can no longer read — BUT-1705
     // in a new collection.
-    name: "the removal write clears every uid-keyed copy in all three documents",
+    name: "the removal write clears every uid-keyed copy in both documents",
     fn: () => {
       const fake = new FakeFirestore();
       const updates: { path: string; data: Record<string, unknown> }[] = [];
@@ -310,11 +300,7 @@ const cases: UnitCase[] = [
       for (const map of PER_USER_CONVERSATION_MAPS) {
         assertEqual(convo[`${map}.u1`], DELETE, `conversation ${map} key deleted`);
       }
-      assertEqual(
-        deletes.includes("conversations/c1/participants/u1"),
-        true,
-        "roster row deleted",
-      );
+      assertEqual(deletes.length, 0, "stages no document delete");
     },
   },
   {
@@ -396,14 +382,9 @@ const cases: UnitCase[] = [
       }
 
       assertEqual(
-        fake.has("conversations/c1/participants/member"),
-        false,
-        "roster row deleted",
-      );
-      assertEqual(
-        fake.has("conversations/c1/participants/other"),
-        true,
-        "the cleanup is scoped to the removed uid",
+        writePaths(fake).filter((w) => w.includes("/participants/")).length,
+        0,
+        "no write under conversations/c1/participants",
       );
       const thread = messages(fake);
       assertEqual(thread.length, 1, "exactly one system message");

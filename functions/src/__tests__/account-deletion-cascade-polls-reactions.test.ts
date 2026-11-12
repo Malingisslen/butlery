@@ -292,8 +292,7 @@ async function scenario_pollCreatorScrubToleratesOnlyNotFound(): Promise<void> {
  * requires `request.auth.uid == voterId` on every write verb of
  * `poll_votes/{voterId}`, and posting a poll creates zero rows; a row exists
  * only when this user votes. That sentence stood here and in the constant's own
- * docstring until the BUT-1801 review disproved it (2026-08-17); it was borrowed
- * from the roster cap, where peer-seeding IS the threat.
+ * docstring until the BUT-1801 review disproved it (2026-08-17).
  *
  * What the cap still guards: self-inflation, and a tampered or non-standard
  * Admin-SDK writer that rules never see. A truncated sweep would report a clean

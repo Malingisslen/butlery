@@ -12,9 +12,8 @@
  * **What it deliberately does not trust the client for.** Display names and
  * avatars are read from `public_profiles`, not taken from the request. The old
  * client path passed them, which meant the person creating a group chose what
- * everyone else's name looked like in it — visible in the roster the whole group
- * lists. The read costs one batched `getAll`, on a path this callable already
- * pays for.
+ * everyone else's name looked like in it. The read costs one batched
+ * `getAll`, on a path this callable already pays for.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
@@ -39,7 +38,6 @@ import { writeGroupSystemMessage, SystemGroupEvent } from "./group-system-messag
 
 const getDb = () => admin.firestore();
 
-/** Matches the `title`/`name` budget the roster validator already allows. */
 export const MAX_GROUP_NAME_LENGTH = 100;
 
 export interface CreateChatGroupRequest {

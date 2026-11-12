@@ -61,7 +61,7 @@ Reviewed for this register and left out of the table, because each one concerns 
 own data, an anti-abuse exemption, or the bundle's form rather than a third party: BUT-2413 and
 BUT-1832 (own poll votes), BUT-2040 and ADR-0020 (rate-limit exemption), BUT-2138
 (`system_rate_limits`), BUT-1981 (the bundle no longer names Article 30), BUT-1693 (a failed
-audit write), BUT-2106 (rating review text), BUT-1850 (a removed section), BUT-2112, BUT-2114,
+audit write), BUT-2106 (rating review text), BUT-1850 and BUT-2110 (removed sections), BUT-2112, BUT-2114,
 BUT-2115, BUT-2318 and BUT-2398 (own likes and reactions), BUT-2330 (the moderation decision
 record; an emailed request is answered from it), ADR-0038 (AI samples), and BUT-2414's
 `storage_files`.

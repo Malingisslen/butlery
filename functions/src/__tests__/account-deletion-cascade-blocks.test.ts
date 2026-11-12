@@ -235,8 +235,7 @@ async function scenario_implausibleMirrorCountDeclines(): Promise<void> {
  * would not have been enough and the row has to go.
  *
  * The second direction is the one worth a test of its own: those rows were
- * created by OTHER living users. That is not unprecedented here —
- * `deleteOwnRosterRows` and `tryClearRoster` do it too — but it is the half a
+ * created by OTHER living users. It is the half a
  * reader is most likely to assume was left alone.
  */
 async function scenario_blocksAreErasedInBothDirections(): Promise<void> {

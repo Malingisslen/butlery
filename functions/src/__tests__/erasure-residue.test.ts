@@ -272,14 +272,14 @@ const handlerCases: UnitCase[] = [
       db.seed("tag_overrides_log/t1", { userId: UID, tag: "gluten" });
       const group = db.collectionGroup.bind(db);
       (db as unknown as { collectionGroup: (n: string) => unknown }).collectionGroup = (n) => {
-        if (n !== "participants") return group(n);
+        if (n !== "report_history") return group(n);
         throw Object.assign(new Error("FAILED_PRECONDITION"), { code: 9 });
       };
       const out = await residue.runExportErasureResidueWithDb(db.db, UID, residue.SECTIONS, bucketOf(db));
       assertEqual(
-        JSON.stringify(out.sections.conversation_roster_rows),
+        JSON.stringify(out.sections.report_history_as_reporter),
         JSON.stringify({ error_code: residue.READ_FAILED_ERROR_CODE }),
-        "roster section",
+        "report_history section",
       );
       assertEqual(rowsOf(out.sections.tag_overrides_log, "tag").length, 1, "other section ships");
     },
@@ -420,7 +420,6 @@ const GROUP_LEGS = [
   "comments.commentedBy",
   "engagements.userId",
   "members.userId",
-  "participants.participantId",
   "ratings.ratedBy",
   "report_history.reporterId",
 ];

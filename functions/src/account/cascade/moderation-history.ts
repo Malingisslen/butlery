@@ -18,8 +18,7 @@ import {
  * a report naming this user as `contentOwnerId`, and `firestore.rules` has no
  * write limb on this collection at all — every row here is an Admin-SDK write
  * from `onReportCreated`, so nothing a client can be rate-limited on bounds it
- * directly. That is the roster cap's argument, not the poll-vote cap's, and the
- * two differ (BUT-1801).
+ * directly.
  */
 const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
 
@@ -257,8 +256,7 @@ export async function deleteModerationSystemEvents(
  * Cap on one erasure's `report_history` sweeps. Same contract as
  * `MAX_SYSTEM_EVENT_SWEEP_ROWS`: decline above it rather than truncate.
  *
- * BOTH legs need it, and for the roster cap's reason rather than the poll
- * cap's: the row count is chosen by OTHER PEOPLE. Anyone may report this user
+ * BOTH legs need it: the row count is chosen by OTHER PEOPLE. Anyone may report this user
  * (the owner leg) and there is no client-side throttle on report creation, and
  * anyone may be reported by them (the reporter leg).
  */
@@ -273,11 +271,7 @@ const MAX_REPORT_HISTORY_SWEEP_ROWS = 2000;
  * per report, each naming a reporter. Firestore never cascade-deletes a
  * subcollection, so the parent alone leaves every row standing.
  *
- * CHILDREN FIRST, parent last. The repo's rule about orphaning is a one-way
- * door does NOT bite here, and the reason is worth stating so a later reader
- * does not reason from the conversation-roster case by analogy: those rows are
- * discovered through a query on the PARENT, so losing the parent loses the
- * rows forever. These sit at a path derived from the uid alone, so a retry — and
+ * CHILDREN FIRST, parent last. These sit at a path derived from the uid alone, so a retry — and
  * `probeResidualData`'s own leg — reaches them whether or not the parent
  * survived. The order is kept anyway because it costs nothing.
  */

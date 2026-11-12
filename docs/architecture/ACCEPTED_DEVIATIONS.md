@@ -6970,3 +6970,18 @@ The `shared_content` update rule lets only the sharer add people to `sharedToUse
 remove other people from it. Anyone else may leave the list as stored or take their own uid
 off it (`recipientsChangedOnlyBySelf`). A recipient whose
 member row is already gone may make only that self-removal write.
+
+## SUPERSEDES the conversation roster entries (BUT-2110, Malin, 2026-11-12)
+
+Retired:
+- "The conversation roster's bootstrap branch is GONE, and so is the read fallback"
+- "Account deletion erases `conversations/{id}/participants/{uid}` in TWO legs, and one leg
+  alone is not enough"
+- "`tryClearRoster` refuses an implausibly large roster and leaves the conversation STANDING"
+
+No code writes, deletes, sweeps, probes or exports `conversations/{id}/participants/{uid}`.
+`firestore.rules` has no block for the path, so every client read and write is denied.
+`deleteMessages`, the emptied-group step of `deleteChatGroupMemberships` and
+`removeChatGroupMember` delete the conversation without a roster check. butlery-prod held 0
+rows (measure-production.yml, run 43131610396). Rows left in staging are test data and are
+not cleaned.

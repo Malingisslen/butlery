@@ -9,7 +9,6 @@ library;
 
 import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/models/admin/signup_invite.dart';
-import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
@@ -87,12 +86,6 @@ const allowlists = <Allowlist>[
     writer:
         'lib/models/recipe_suggestion.dart RecipeSuggestion.toFirestore, '
         'stored by FirebaseRecipeSuggestionRepository.suggest (P5-U27b)',
-  ),
-  Allowlist(
-    label: 'conversations/{id}/participants',
-    mustContain: 'displayName',
-    anchor: 'match /participants/{participantId}',
-    writer: 'lib/models/messaging/conversation_participant.dart toFirestore',
   ),
   Allowlist(
     label: 'notification_history',
@@ -283,17 +276,6 @@ Map<String, Set<String>> writtenKeys() => {
         reason: 'fixture',
       ),
     ],
-  ).toFirestore().keys.toSet(),
-  // avatarUrl is emitted only when non-null, so the fixture carries one: the
-  // guard has to compare against the WIDEST set the writer can send, not the
-  // narrowest.
-  'conversations/{id}/participants': ConversationParticipant(
-    conversationId: 'c',
-    participantId: 'u',
-    displayName: 'n',
-    avatarUrl: 'https://example.com/a.png',
-    joinedAt: DateTime(2026),
-    lastReadAt: DateTime(2026),
   ).toFirestore().keys.toSet(),
   // Derived from the model, so a new field in toFirestore reddens here.
   'users/{uid}/overwritten_versions': OverwrittenVersion(

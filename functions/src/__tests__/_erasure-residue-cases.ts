@@ -344,19 +344,6 @@ export const CASES: SectionCase[] = [
     overCap: (db) => many(db, 201, (i) => `chat_groups/d${i}`, { departedUserIds: [UID] }),
   },
   {
-    section: "conversation_roster_rows",
-    idKey: "conversationId",
-    rows: ["C1"],
-    seed: (db) => {
-      db.seed(`conversations/C1/participants/${UID}`, {
-        conversationId: "C1", participantId: UID, displayName: "Me", joinedAt: T0, ...STRAY,
-      });
-      db.seed(`conversations/C1/participants/${OTHER}`, { participantId: OTHER });
-    },
-    overCap: (db) =>
-      many(db, ROWS, (i) => `conversations/c${i}/participants/${UID}`, { participantId: UID }),
-  },
-  {
     section: "report_history_as_reporter",
     idKey: "reportId",
     rows: ["R1"],

@@ -58,9 +58,6 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
 
-// Feature flags for subcollection participants
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
-
 // Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
@@ -155,11 +152,7 @@ class MessagingModule implements DIModule {
     try {
       // Messaging repository for direct messages and conversations
       container.registerLazySingleton<MessagingRepository>(
-        () => FirebaseMessagingRepository(
-          featureFlagService: container.isRegistered<FeatureFlagService>()
-              ? container<FeatureFlagService>()
-              : null,
-        ),
+        () => FirebaseMessagingRepository(),
       );
 
       // BUT-1838: chat groups. Read-only from the app; every membership change

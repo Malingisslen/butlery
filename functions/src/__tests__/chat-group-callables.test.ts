@@ -10,11 +10,7 @@
  *
  * The removal callable's authorization is NOT re-tested here; it lives in
  * `remove-chat-group-member.test.ts`, moved there from the BUT-1788 suite. What
- * this file adds for removal is the EMPTY-GROUP teardown and its gate: the
- * `tryClearRoster` verdict that decides whether the conversation may be deleted.
- * That gate is the shape the repo has been burned by — a boolean verdict
- * guarding a destructive delete is invisible to any suite whose fixtures all
- * make the verdict TRUE — so both outcomes are fixtures here.
+ * this file adds for removal is the EMPTY-GROUP teardown.
  *
  * The fake applies writes (see `_fake-firestore.ts`), so "wrote nothing" is an
  * assertion about the store and not merely about a recorded payload.
@@ -82,7 +78,7 @@ function seedFriend(fake: FakeFirestore, minorUid: string, adderUid: string): vo
 const EARLIER = admin.firestore.Timestamp.fromMillis(1_500_000_000_000);
 
 /**
- * An existing group with its conversation and roster, as `stageGroupCreation`
+ * An existing group with its conversation, as `stageGroupCreation`
  * would have left them — every document an add or a remove has to touch.
  */
 function seedExistingGroup(
@@ -116,11 +112,6 @@ function seedExistingGroup(
     title: "Familjen",
   });
   for (const uid of members) {
-    fake.seed(`conversations/c1/participants/${uid}`, {
-      conversationId: "c1",
-      participantId: uid,
-      joinedAt: EARLIER,
-    });
     seedProfile(fake, uid, uid);
   }
 }
@@ -187,7 +178,7 @@ const cases: UnitCase[] = [
     // `[...new Set([callerUid, ...requested])]` injection itself lives in the
     // onCall wrapper above this core, which needs an auth context and App Check
     // to reach; what is pinned here is that the core seats whoever it is handed
-    // as member, admin, roster row and conversation participant — the four
+    // as member, admin and conversation participant — the
     // places a missing seat would strand them.)
     name: "create seats the caller as a member and the sole admin",
     fn: async () => {
@@ -219,9 +210,9 @@ const cases: UnitCase[] = [
         "the caller is a conversation participant",
       );
       assertEqual(
-        fake.has(`conversations/${res.conversationId}/participants/creator`),
-        true,
-        "the caller has a roster row",
+        fake.childPaths(`conversations/${res.conversationId}/participants`).length,
+        0,
+        "no roster row is written",
       );
       assertEqual(
         (convo.groupId as string) === res.groupId,
@@ -231,12 +222,11 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // D1: "joined when" is stored three times because three readers need it and
-    // none can read the others. The mitigation is that all three are written
+    // D1: every copy of "joined when" is written
     // HERE, from ONE value — which is a property a test can assert exactly,
     // rather than a property of how Firestore resolves a serverTimestamp
     // sentinel per document.
-    name: "the three copies of the join stamp are byte-identical",
+    name: "the copies of the join stamp are byte-identical",
     fn: async () => {
       const fake = new FakeFirestore();
       seedProfile(fake, "creator", "Ada");
@@ -247,21 +237,14 @@ const cases: UnitCase[] = [
         "friend",
       ]);
       const convo = fake.read(`conversations/${res.conversationId}`) ?? {};
-      const roster =
-        fake.read(`conversations/${res.conversationId}/participants/friend`) ?? {};
       const group = fake.read(`chat_groups/${res.groupId}`) ?? {};
 
       const memberSince = (convo.memberSince as Record<string, admin.firestore.Timestamp>)
         .friend;
       assertEqual(
-        memberSince.isEqual(roster.joinedAt as admin.firestore.Timestamp),
-        true,
-        "conversation memberSince == roster joinedAt",
-      );
-      assertEqual(
         memberSince.isEqual(group.createdAt as admin.firestore.Timestamp),
         true,
-        "and both == the group's createdAt",
+        "conversation memberSince == the group's createdAt",
       );
     },
   },
@@ -420,11 +403,6 @@ const cases: UnitCase[] = [
         "the refusal names who was blocked",
       );
       assertEqual(fake.writes.length, 0, "nothing written");
-      assertEqual(
-        fake.has("conversations/c1/participants/minor"),
-        false,
-        "no roster row for a refused member",
-      );
     },
   },
   {
@@ -478,11 +456,10 @@ const cases: UnitCase[] = [
         false,
         "the new member's cut-off is the moment they were added",
       );
-      const roster = fake.read("conversations/c1/participants/newbie") ?? {};
       assertEqual(
-        stamps.newbie.isEqual(roster.joinedAt as admin.firestore.Timestamp),
-        true,
-        "the roster mirror is written from the same value",
+        fake.writes.filter((w) => w.path.includes("/participants/")).length,
+        0,
+        "no roster row is written",
       );
       assertEqual(messagePaths(fake).length, 1, "one system message for one addition");
     },
@@ -1144,11 +1121,8 @@ const cases: UnitCase[] = [
   },
   // --- removeChatGroupMemberWithDeps: the empty-group teardown --------------
   {
-    // The last member out takes the group down with them. ORDER MATTERS and it
-    // is the opposite of the obvious one: roster rows first, then the
-    // conversation, then the group — deleting the conversation is what orphans
-    // rows that carry names and avatars under a parent nobody can produce.
-    name: "the last member leaving deletes the roster, the conversation and the group",
+    // The last member out takes the group down with them.
+    name: "the last member leaving deletes the conversation and the group",
     fn: async () => {
       const fake = new FakeFirestore();
       seedExistingGroup(fake, ["solo"], ["solo"]);
@@ -1156,7 +1130,6 @@ const cases: UnitCase[] = [
       const res = await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
       assertEqual(res.removed, true, "removed");
       assertEqual(res.remainingMembers, 0, "group is empty");
-      assertEqual(fake.childPaths("conversations/c1/participants").length, 0, "roster cleared");
       assertEqual(fake.has("conversations/c1"), false, "conversation deleted");
       assertEqual(fake.has("chat_groups/g1"), false, "group deleted");
 
@@ -1167,60 +1140,6 @@ const cases: UnitCase[] = [
         order.indexOf("conversations/c1") < order.indexOf("chat_groups/g1"),
         true,
         "the conversation goes before the group",
-      );
-      assertEqual(
-        order.indexOf("conversations/c1/participants/solo") <
-          order.indexOf("conversations/c1"),
-        true,
-        "and the roster row goes before the conversation",
-      );
-    },
-  },
-  {
-    // THE GATE, with the verdict FALSE. A boolean guarding a destructive delete
-    // is invisible to a suite whose fixtures all make it true — measured once
-    // already on this very trigger family, where neutralising the gate left the
-    // whole suite green. Here a roster row refuses to delete, so
-    // `tryClearRoster` reports false and BOTH documents must survive: an empty
-    // group whose documents linger is untidy, but an unreachable set of rows
-    // carrying people's names is a disclosure.
-    name: "an unclearable roster leaves the conversation and the group standing",
-    fn: async () => {
-      const fake = new FakeFirestore({
-        failDeleteAt: (path) => path === "conversations/c1/participants/ghost",
-      });
-      seedExistingGroup(fake, ["solo"], ["solo"]);
-      // A row no uid list can name — the roster is enumerated, not derived, and
-      // this one cannot be cleared.
-      fake.seed("conversations/c1/participants/ghost", {
-        conversationId: "c1",
-        participantId: "ghost",
-      });
-
-      // BUT-1979: the menu sweep is INDEPENDENT of the roster outcome, so it
-      // must have run even though the teardown declined. With the call below
-      // the decline this assertion fails, which is what makes it worth having.
-      fake.seed("group_weekly_menu_plans/c1_2026-W16", { groupId: "c1" });
-
-      const res = await removeChatGroupMemberWithDeps(fake.db, "solo", "g1", "solo");
-      assertEqual(res.removed, true, "the access cut still happened");
-      assertEqual(res.remainingMembers, 0, "group is empty");
-      assertEqual(
-        fake.has("group_weekly_menu_plans/c1_2026-W16"),
-        false,
-        "the menu plans went even though the roster clear declined",
-      );
-      assertEqual(fake.has("conversations/c1"), true, "conversation NOT deleted");
-      assertEqual(fake.has("chat_groups/g1"), true, "group NOT deleted");
-      assertEqual(
-        (fake.read("chat_groups/g1")?.memberIds as string[]).length,
-        0,
-        "the membership cut landed even though the teardown declined",
-      );
-      assertEqual(
-        fake.has("conversations/c1/participants/ghost"),
-        true,
-        "the row that could not be deleted is still there — a partial clear is the worst outcome",
       );
     },
   },

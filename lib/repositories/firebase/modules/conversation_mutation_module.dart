@@ -4,7 +4,6 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
-import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -38,12 +37,10 @@ class ConversationMutationModule {
   // remaining method reaches the top-level collection directly. They are
   // deleted rather than left wired, because a dead seam pointing at the wrong
   // path is the handle the next author reaches for.
-  final ConversationParticipantModule? participantModule;
 
   ConversationMutationModule({
     required this.firestore,
     required this.collectionName,
-    this.participantModule,
   });
 
   /// Create deterministic direct conversation (get or create pattern).
@@ -122,20 +119,6 @@ class ConversationMutationModule {
         guardedDocId: conversationId,
       );
       await batch.commit();
-
-      // Write to participant subcollections for scalability
-      await participantModule?.addParticipants(
-        conversationId: conversationId,
-        participantDisplayNames: {
-          user1Id: user1DisplayName,
-          user2Id: user2DisplayName,
-        },
-        participantAvatarUrls: {
-          user1Id: user1AvatarUrl,
-          user2Id: user2AvatarUrl,
-        },
-        ownerId: user1Id,
-      );
 
       AppLogger.success(
         '✅ Direct conversation created with deterministic ID: ${conversationId.maskedConversationId}',

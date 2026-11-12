@@ -72,9 +72,6 @@ export async function probeOwnerKeyedDocs(
   //   realtime_menus.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
-  // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
-  // the same inventory but cannot be probed from this loop at all — they need a
-  // collection-group query, so their leg is appended at the end of this function.
   // `messages` is the highest-value leg here: the collection this probe could
   // not see is the one the cascade never touched for two years. The claim-lint:ok moved unchanged, BUT-2113
   // `participantIds` legs are the only map-shaped residual Firestore can claim-lint:ok moved unchanged, BUT-2113
