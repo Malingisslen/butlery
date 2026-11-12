@@ -327,6 +327,10 @@ jobs:
       with:
         cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
+    - name: Limit Gradle memory
+      if: matrix.platform == 'android'
+      run: scripts/ci_gradle_memory.sh
+
     - name: Cache Gradle
       if: matrix.platform == 'android'
       uses: actions/cache@v5
