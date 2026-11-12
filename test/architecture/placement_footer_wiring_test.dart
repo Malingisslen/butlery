@@ -92,9 +92,12 @@ void main() {
   late String source;
 
   setUp(() {
-    source = _normalize(
-      File('lib/views/veckomeny_view.dart').readAsStringSync(),
-    );
+    final parts = [
+      File('lib/views/veckomeny_view.dart'),
+      for (final f in Directory('lib/views/veckomeny_view').listSync())
+        if (f is File && f.path.endsWith('.dart')) f,
+    ]..sort((a, b) => a.path.compareTo(b.path));
+    source = _normalize(parts.map((f) => f.readAsStringSync()).join('\n'));
   });
 
   group('the call parser', () {
@@ -152,9 +155,9 @@ void main() {
   });
 
   /// The calls whose `onPublished` is a closure written at the call site, as
-  /// opposed to the pass-through inside [_applyGeneratedToCalendar] itself.
+  /// opposed to the pass-through inside [applyGeneratedToCalendar] itself.
   List<String> inlineCallbackCalls() => [
-    for (final args in callArguments(source, '_applyGeneratedToCalendar'))
+    for (final args in callArguments(source, 'applyGeneratedToCalendar'))
       if ((namedArgument(args, 'onPublished') ?? '').startsWith('(')) args,
   ];
 
@@ -166,7 +169,7 @@ void main() {
     expect(skipping, hasLength(1), reason: 'the handler moved; move this lint');
     expect(
       namedArgument(skipping.single, 'onPublished'),
-      contains('_showAutoPlacedToast(placed)'),
+      contains('showAutoPlacedToast(placed)'),
       reason:
           'reading the return value here is what left the kalender path silent '
           'offline',
@@ -182,14 +185,14 @@ void main() {
     final callback = namedArgument(auto.single, 'onPublished')!;
     expect(
       callback,
-      contains('_setViewMode(VeckomenyViewMode.kalender)'),
+      contains('setViewMode(VeckomenyViewMode.kalender)'),
       reason:
           'switching the view after the await is what made the button look '
           'dead offline',
     );
     expect(
       callback,
-      contains('_showAutoPlacedToast(placed)'),
+      contains('showAutoPlacedToast(placed)'),
       reason: 'the toast has to describe the week the user can already see',
     );
   });
@@ -204,7 +207,7 @@ void main() {
     final failures = callArguments(source, 'showWeekPlacementFailure');
     expect(failures, hasLength(1), reason: 'the retry moved; move this lint');
     final retry = namedArgument(failures.single, 'onRetry')!;
-    final retried = callArguments(retry, '_applyGeneratedToCalendar');
+    final retried = callArguments(retry, 'applyGeneratedToCalendar');
     expect(retried, hasLength(1), reason: 'the retry moved; move this lint');
     expect(
       namedArgument(retried.single, 'skipConfirm'),

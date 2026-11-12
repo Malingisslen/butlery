@@ -147,9 +147,10 @@ void main() {
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(header), isFalse);
 
     final week = code('lib/views/veckomeny_view.dart');
+    final headerStart = week.indexOf('List<Widget> _buildHeaderActions(');
     final weekHeader = week.substring(
-      week.indexOf('List<Widget> _buildHeaderActions('),
-      week.indexOf('Widget _buildBody('),
+      headerStart,
+      week.indexOf('\n}', headerStart),
     );
     expect(RegExp(r'ButleryMenu<').allMatches(weekHeader).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(weekHeader), isFalse);
