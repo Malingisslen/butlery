@@ -5,7 +5,6 @@
 
 import 'dart:async';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -16,20 +15,20 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
-import 'package:butlery/services/auth/email_verification_refresh.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/viewmodels/friends/friend_lookups.dart';
+import 'package:butlery/viewmodels/friends/friend_request_manager.dart';
+
+export 'package:butlery/viewmodels/friends/friend_lookups.dart'
+    show FriendshipStatus;
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_profile_cache_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_selection_manager.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-
-/// Friendship status between current user and another user
-enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
 
 /// Coordinates social relationship operations through service and manager delegation.
 class FriendsViewModel extends BaseViewModel {
@@ -44,13 +43,14 @@ class FriendsViewModel extends BaseViewModel {
   late final FriendsSearchManager _searchManager;
   late final FriendsProfileCacheManager _profileCacheManager;
   late final FriendsSelectionManager _selectionManager;
+  late final FriendRequestManager _requests;
+  late final FriendLookups _lookups;
 
   StreamSubscription? _friendsServiceSubscription;
   bool _isDisposed = false;
   bool _notifyScheduled = false;
   bool _isCreatingGroup = false;
   String? _groupCreationError;
-  bool _blockedByUnverifiedEmail = false;
 
   FriendsViewModel({
     required UnifiedFriendsService friendsService,
@@ -72,6 +72,18 @@ class FriendsViewModel extends BaseViewModel {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
+    _lookups = FriendLookups(friendsService);
+    _requests = FriendRequestManager(
+      friendsService: friendsService,
+      userService: userService,
+      analyticsService: _analyticsService,
+      authService: _authService,
+      isAccountMatured: () => isAccountMatured,
+      isDisposed: () => _isDisposed,
+      hasSearchQuery: () => hasSearchQuery,
+      incomingRequests: () => incomingRequests,
+      onChanged: notifyListeners,
+    );
 
     AppLogger.info('Registering Friends ViewModel service listeners...');
     _friendsServiceSubscription = _friendsService.stateStream.listen(
@@ -213,99 +225,16 @@ class FriendsViewModel extends BaseViewModel {
     firebaseUser: _authRepository.currentUser,
   );
 
-  // BUT-2306: a second tap while the first call is still running joins it.
-  // Run twice, the send failed on the request its twin had just added and
-  // reported "Kunde inte skicka vänförfrågan" for a request that went out.
-  final _inFlight = <String, Future<bool>>{};
+  bool isSendingTo(String userId) => _requests.isSendingTo(userId);
 
-  // The block body matters: `remove` returns this very future, and a
-  // whenComplete callback that returns a future is awaited, so an arrow body
-  // would make the call wait on itself forever.
-  Future<bool> _joined(String key, Future<bool> Function() run) {
-    final running = _inFlight[key];
-    if (running != null) return running;
-    final started = _inFlight[key] = run().whenComplete(() {
-      _inFlight.remove(key);
-      notifyListeners();
-    });
-    notifyListeners();
-    return started;
-  }
+  bool isAccepting(String requestId) => _requests.isAccepting(requestId);
 
-  /// Whether a friend request to [userId] is on its way, so its button can
-  /// show that it is working instead of inviting a second tap.
-  bool isSendingTo(String userId) => _inFlight.containsKey('send:$userId');
+  bool get blockedByUnverifiedEmail => _requests.blockedByUnverifiedEmail;
 
-  /// Whether the request [requestId] is being accepted. Accepting goes
-  /// through a Cloud Function and can take seconds.
-  bool isAccepting(String requestId) =>
-      _inFlight.containsKey('accept:$requestId');
+  Future<bool> resendVerificationEmail() => _requests.resendVerificationEmail();
 
-  /// True when the last send stopped at the maturity gate. The caller says so
-  /// with a way to resend the mail, instead of a banner with no way forward.
-  bool get blockedByUnverifiedEmail => _blockedByUnverifiedEmail;
-
-  /// Sends a new verification mail; false when it could not be sent.
-  Future<bool> resendVerificationEmail() async {
-    final auth = _authService;
-    if (auth == null) return false;
-    try {
-      await auth.sendEmailVerification();
-      return true;
-    } catch (e) {
-      AppLogger.warning('Could not resend verification email: $e');
-      return false;
-    }
-  }
-
-  /// Send friend request to user
-  Future<bool> sendFriendRequest(String userId, {String? message}) => _joined(
-    'send:$userId',
-    () => _sendFriendRequest(userId, message: message),
-  );
-
-  Future<bool> _sendFriendRequest(String userId, {String? message}) async {
-    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
-    // The server is still the authority; this prevents the opaque
-    // permission-denied that new accounts would otherwise see.
-    // BUT-2305: the link may have been opened since sign-in.
-    if (!isAccountMatured) await refreshEmailVerification(_authService);
-    if (_isDisposed) return false;
-    _blockedByUnverifiedEmail = !isAccountMatured;
-    if (_blockedByUnverifiedEmail) {
-      notifyListeners();
-      return false;
-    }
-
-    AppLogger.info('🔄 Sending friend request to ${userId.maskedUserId}...');
-
-    final success = await _friendsService.management.sendFriendRequest(
-      userId,
-      message: message,
-    );
-
-    if (success) {
-      AppLogger.success(
-        '✅ Friend request sent successfully to ${userId.maskedUserId}',
-      );
-
-      // Track friend request sent
-      await _analyticsService.logFriendRequestSent(
-        recipientId: userId,
-        source: hasSearchQuery ? 'search' : 'discovery',
-      );
-
-      // BUT-2306: the search stays, so the card can say the request went;
-      // clearing it flashed "Inga vänner matchade din sökning".
-      notifyListeners();
-    } else {
-      AppLogger.error(
-        '❌ Failed to send friend request to ${userId.maskedUserId}',
-      );
-    }
-
-    return success;
-  }
+  Future<bool> sendFriendRequest(String userId, {String? message}) =>
+      _requests.sendFriendRequest(userId, message: message);
 
   /// Block a user. The service also drops the friendship and cancels pending
   /// requests both ways — unblocking does not restore any of it, and it is the
@@ -335,101 +264,23 @@ class FriendsViewModel extends BaseViewModel {
     return success;
   }
 
-  /// Accept incoming friend request
   Future<bool> acceptFriendRequest(String requestId) =>
-      _joined('accept:$requestId', () => _acceptFriendRequest(requestId));
+      _requests.acceptFriendRequest(requestId);
 
-  Future<bool> _acceptFriendRequest(String requestId) async {
-    // Find the request to get sender ID for analytics. The request may have
-    // already vanished (cancelled on another device / double-tap) — don't
-    // throw; the service safely no-ops on a missing request.
-    final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
+  Future<bool> rejectFriendRequest(String requestId) =>
+      _requests.rejectFriendRequest(requestId);
 
-    final success = await _friendsService.management.acceptFriendRequest(
-      requestId,
-    );
+  Future<bool> cancelSentRequest(String requestId) =>
+      _requests.cancelSentRequest(requestId);
 
-    if (success) {
-      // Track friend request accepted (only when we still have the sender id).
-      if (request != null) {
-        await _analyticsService.logFriendRequestAccepted(
-          senderId: request.fromUserId,
-        );
-      }
-      // First-friend milestone fires at most once per user (BUT-593).
-      await _analyticsService.social.logFirstFriendIfMilestone(
-        userId: _userService.currentUserId,
-        joinedAt: _userService.currentUserProfile?.joinedAt,
-      );
-    }
-
-    return success;
-  }
-
-  /// Reject incoming friend request
-  Future<bool> rejectFriendRequest(String requestId) async {
-    // Look up sender id before mutation removes it from state. The request may
-    // have already vanished (cancelled on another device / double-tap) — don't
-    // throw; the service safely no-ops on a missing request.
-    final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
-
-    final success = await _friendsService.management.rejectFriendRequest(
-      requestId,
-    );
-
-    if (success && request != null) {
-      await _analyticsService.social.logFriendRequestRejected(
-        senderId: request.fromUserId,
-      );
-    }
-
-    return success;
-  }
-
-  /// Cancel sent friend request
-  Future<bool> cancelSentRequest(String requestId) async {
-    return await _friendsService.management.cancelFriendRequest(requestId);
-  }
-
-  /// Accept several incoming requests. Loops [acceptFriendRequest] rather than
-  /// the service method it wraps, because the analytics for an accept live on
-  /// this ViewModel — a batch built on the service layer would write the
-  /// friendships and record none of them.
-  ///
-  /// Returns the ids that landed — a request can legitimately have vanished
-  /// from another device, so one failure must not strand the rest, and the
-  /// caller needs to know which ones to stop offering.
   Future<List<String>> acceptFriendRequests(List<String> requestIds) =>
-      _runBatch(requestIds, acceptFriendRequest);
+      _requests.acceptFriendRequests(requestIds);
 
-  /// Reject several incoming requests. See [acceptFriendRequests].
   Future<List<String>> rejectFriendRequests(List<String> requestIds) =>
-      _runBatch(requestIds, rejectFriendRequest);
+      _requests.rejectFriendRequests(requestIds);
 
-  /// Cancel several sent requests. [cancelSentRequest] adds nothing of its own,
-  /// so this exists for one contract towards the view rather than for the
-  /// analytics reason the other two have.
   Future<List<String>> cancelSentRequests(List<String> requestIds) =>
-      _runBatch(requestIds, cancelSentRequest);
-
-  /// Each id keeps the per-request analytics of the single-request path,
-  /// which this adds a catch around: one id that throws must not strand the
-  /// ids after it.
-  Future<List<String>> _runBatch(
-    List<String> requestIds,
-    Future<bool> Function(String) operation,
-  ) async {
-    final succeeded = <String>[];
-    for (final requestId in List<String>.of(requestIds)) {
-      try {
-        if (await operation(requestId)) succeeded.add(requestId);
-      } catch (e) {
-        AppLogger.error('❌ Batch operation failed for one request: $e');
-      }
-    }
-    if (succeeded.isNotEmpty) notifyListeners();
-    return succeeded;
-  }
+      _requests.cancelSentRequests(requestIds);
 
   /// Remove friend (unfriend)
   Future<bool> removeFriend(String friendUserId) async {
@@ -485,65 +336,22 @@ class FriendsViewModel extends BaseViewModel {
     }
   }
 
-  /// Get friends in a specific group.
-  List<UserProfile> getFriendsInGroup(String groupId) {
-    return _friendsService.categories.getFriendsInCategory(groupId);
-  }
+  List<UserProfile> getFriendsInGroup(String groupId) =>
+      _lookups.getFriendsInGroup(groupId);
 
-  /// Check if group name is available.
-  bool isGroupNameAvailable(String name) {
-    return _friendsService.categories.getCategoryByName(name) == null;
-  }
+  bool isGroupNameAvailable(String name) => _lookups.isGroupNameAvailable(name);
 
-  /// Get groups for a specific friend.
-  List<FriendCategory> getGroupsForFriend(String friendUserId) {
-    return _friendsService.categories.getCategoriesForFriend(friendUserId);
-  }
+  List<FriendCategory> getGroupsForFriend(String friendUserId) =>
+      _lookups.getGroupsForFriend(friendUserId);
 
-  /// Search groups.
-  List<FriendCategory> searchGroups(String query) {
-    if (query.trim().isEmpty) return [];
-    final lowerQuery = query.toLowerCase();
-    return _friendsService.categoriesList
-        .where((category) => category.name.toLowerCase().contains(lowerQuery))
-        .toList();
-  }
+  List<FriendCategory> searchGroups(String query) =>
+      _lookups.searchGroups(query);
 
-  /// Get relationship status with user.
-  ///
-  /// The order below is load-bearing and is NOT the safety answer: `friends`
-  /// / `requestSent` / `requestReceived` are all tested before `blocked`, so
-  /// during (or after a failed) block cleanup this returns `friends` about
-  /// someone who is blocked. Surfaces that gate on blocking call [isBlocked]
-  /// instead. Deliberately left as it is — it has other callers whose
-  /// meaning depends on this precedence (BUT-2022).
-  FriendshipStatus getFriendshipStatus(String userId) {
-    // Check if user is already a friend
-    if (_friendsService.friends.any((friend) => friend.uid == userId)) {
-      return FriendshipStatus.friends;
-    }
-
-    // Check if there's an outgoing request
-    if (_friendsService.outgoingRequests.any(
-      (request) => request.toUserId == userId,
-    )) {
-      return FriendshipStatus.requestSent;
-    }
-
-    // Check if there's an incoming request
-    if (_friendsService.incomingRequests.any(
-      (request) => request.fromUserId == userId,
-    )) {
-      return FriendshipStatus.requestReceived;
-    }
-
-    // Check if user is blocked
-    if (_friendsService.blockedUsers.contains(userId)) {
-      return FriendshipStatus.blocked;
-    }
-
-    return FriendshipStatus.none;
-  }
+  /// Relationship status with a user. The precedence is documented on
+  /// [FriendLookups.getFriendshipStatus]; surfaces that gate on blocking call
+  /// [isBlocked] instead.
+  FriendshipStatus getFriendshipStatus(String userId) =>
+      _lookups.getFriendshipStatus(userId);
 
   /// Get mutual friends with user
   Future<List<UserProfile>> getMutualFriends(String userId) async {
