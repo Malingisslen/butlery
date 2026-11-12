@@ -288,10 +288,6 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     "unified_recipes",
     "conversations",
     "fcm_tokens",
-    // BUT-1850 removed the writer, the model, the rules block and the export
-    // section. The `subs` entry stays: rows written before that removal are
-    // reached by nothing else, and the probe enumerates.
-    "conversation_memberships",
     // BUT-2040. Measured in production, not inferred: the reset script's dry
     // run counted 5 rows under this pre-rename spelling on 2026-09-07, while
     // the deleter's list named only `rate_limits`. The probe enumerates, so

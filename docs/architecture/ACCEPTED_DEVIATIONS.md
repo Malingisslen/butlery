@@ -5264,6 +5264,15 @@ Raised by the `firebase-backend-security` and `integration-reviewer` gates. — 
   accounts. Attributed, not reproducible from this repo — it was a one-off read, committed
   nowhere, and it must be re-measured before the rules deploy. BUT-1850, 2026-09-17
 
+- **SUPERSEDES, 2026-11-12 (BUT-2109):** "Erasure of the user's OWN
+  `conversation_memberships` rows is untouched by all of this and already happens in
+  `deleteUserSubcollections`", and in the BUT-1850 entry above, "the `USER_SUBCOLLECTIONS`
+  entry stays and the cascade still sweeps them" and "Three things are left in place on
+  purpose". `USER_SUBCOLLECTIONS`, `EXPORT_EXEMPT` and the reset inventory in
+  `admin/reset-collection-lists.ts` no longer name `conversation_memberships`, so the cascade
+  does not sweep it and `probeResidualData` would report a surviving row. butlery-prod held 0
+  rows (`measure-production.yml` run 43131610396, 2026-11-12). BUT-2109, 2026-11-12
+
 ## Art. 15 — the four open withholding questions, answered (2026-09-17)
 
 **Every answer keeps the code as it ships.** The wording below is this file's own; the
