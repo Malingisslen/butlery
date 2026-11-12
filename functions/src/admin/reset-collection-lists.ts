@@ -48,7 +48,6 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "personal_tag_groups",
       "settings",
       "consent",
-      "conversation_memberships",
       "user_shared_menus",
       "user_shared_shopping_lists",
       "ingredients",

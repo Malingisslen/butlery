@@ -182,6 +182,7 @@ files in the same edit. A deviation about the Art. 15 export also puts its ticke
 - `recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a string, on BOTH limbs … The update limb is deliberately NOT scoped to `affectedKeys()`. (BUT-2079, 2026-09-17)
 - SUPERSEDES the 2000-unit `recipe_ratings.review` line: `review` is absent or null on both limbs; the key stays in both `hasOnly` lists and in the Art. 15 export; a review surface reopens it only with a content filter and a report type (BUT-2106, 2026-10-09)
 - The `conversation_memberships` collection is GONE, and so is its Art. 15 export section … Do NOT delete the three surviving references as dead code. (BUT-1850, 2026-09-17)
+- SUPERSEDES "Do NOT delete the three surviving references" in the BUT-1850 line: the cascade's `subs` list, `EXPORT_EXEMPT` and the reset inventory no longer name `conversation_memberships`; butlery-prod held 0 rows (BUT-2109, BUT-1850, 2026-11-12)
 - all four open Art. 15 withholding questions are now DECISIONS, and every one of them keeps the code as it ships. (BUT-1838, BUT-1971, BUT-2028, 2026-09-17)
 - `contributorUserIds` on the group weekly menu plan records uids that left a trace on the week, not the roster. (BUT-2006, 2026-09-18)
 - A REPORTER's erasure keeps an OPEN case's report, without their uid and WITH their free text, until the case closes or 180 days pass (ADR-0016, 2026-09-18)
