@@ -18,7 +18,8 @@ const _handWritten = <String, int>{
   'lib/core/utils/snackbar_utils.dart': 9,
   'lib/core/utils/undo_window.dart': 1,
   'lib/services/performance/optimized_image_loader.dart': 3,
-  'lib/services/performance/performance_monitoring_service/performance_models.dart': 3,
+  'lib/services/performance/performance_monitoring_service/performance_models.dart':
+      3,
   'lib/views/account/data_export_helpers/download_web.dart': 2,
   'lib/views/account/data_export_view.dart': 1,
   'lib/views/auth/email_verification_view.dart': 3,
