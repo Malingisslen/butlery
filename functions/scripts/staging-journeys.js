@@ -10,6 +10,11 @@
  *      request, cancel it, see both gone.
  *   2. erasure: erase an account that owns a profile and a recipe, see the
  *      Auth user and both documents gone.
+ *   3. revoke-other-sessions (BUT-2507): two real sessions for one account, the
+ *      real revoke core, then the second session can no longer refresh or pass
+ *      a revocation check while the fresh session works. This is the part the
+ *      Auth emulator cannot show. The Google/Apple sign-in itself is the one
+ *      thing synthetic accounts cannot do, so the caller's claims are supplied.
  *
  * Never production: the project gate (BUT-2419) refuses anything but
  * butlery-app-staging, and an emulator host variable is refused because it
@@ -23,6 +28,14 @@
 
 const STAGING_PROJECT = "butlery-app-staging";
 const STORAGE_BUCKET = "butlery-app-staging.firebasestorage.app";
+// The web client key is public and already shipped in the app; read it from there instead of copying it.
+function stagingWebApiKey() {
+  const src = require("fs").readFileSync(require("path").join(__dirname, "../../lib/firebase_options_staging.dart"), "utf8");
+  const m = /FirebaseOptions web = FirebaseOptions\(\s*apiKey: '([^']+)'/.exec(src);
+  if (!m) throw new Error("web apiKey not found in firebase_options_staging.dart");
+  return m[1];
+}
+const STAGING_REFERER = "https://butlery-app-staging.firebaseapp.com/";
 const EMULATOR_HOST_VARS = [
   "FIRESTORE_EMULATOR_HOST",
   "FIREBASE_AUTH_EMULATOR_HOST",
@@ -84,6 +97,63 @@ async function journeyErasure({ db, auth, storage, uid, email, erase }) {
   return { name, ok: problems.length === 0, detail: problems.join("; ") || "account, profile and recipe erased" };
 }
 
+async function restSession(fetchFn, customToken, apiKey) {
+  const res = await fetchFn(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`,
+    { method: "POST", headers: { "content-type": "application/json", referer: STAGING_REFERER },
+      body: JSON.stringify({ token: customToken, returnSecureToken: true }) },
+  );
+  const body = await res.json();
+  if (!res.ok) throw new Error(`sign-in failed: ${(body.error && body.error.message) || res.status}`);
+  return { idToken: body.idToken, refreshToken: body.refreshToken };
+}
+
+async function refreshOutcome(fetchFn, refreshToken, apiKey) {
+  const res = await fetchFn(
+    `https://securetoken.googleapis.com/v1/token?key=${apiKey}`,
+    { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", referer: STAGING_REFERER },
+      body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}` },
+  );
+  const body = await res.json();
+  return res.ok ? "refreshed" : (body.error && body.error.message) || `http ${res.status}`;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function journeyRevokeOtherSessions({ db, auth, uid, revoke, fetchFn, pauseMs, apiKey }) {
+  const name = "revoke-other-sessions";
+  const problems = [];
+  await db.collection("users").doc(uid).set({ e2e: true, createdAt: new Date() });
+  const a = await restSession(fetchFn, await auth.createCustomToken(uid), apiKey);
+  const b = await restSession(fetchFn, await auth.createCustomToken(uid), apiKey);
+  if ((await refreshOutcome(fetchFn, b.refreshToken, apiKey)) !== "refreshed") problems.push("second session could not refresh before the revoke");
+  // Token validity is counted in whole seconds, so the sign-ins must predate the revoke.
+  await sleep(pauseMs);
+  const nowMs = Date.now();
+  const { customToken } = await revoke(
+    {
+      getAccount: async () => ({ providerIds: ["google.com"], enrolledFactorCount: 0 }),
+      createCustomToken: (id) => auth.createCustomToken(id),
+      revokeRefreshTokens: (id) => auth.revokeRefreshTokens(id),
+      enforceRateLimit: async () => {},
+      markRevoked: (id) => db.collection("users").doc(id).update({ sessionsRevokedAt: new Date() }),
+      audit: async () => {},
+      now: () => nowMs,
+    },
+    { uid, token: { auth_time: Math.floor(nowMs / 1000), firebase: { sign_in_provider: "google.com" } } },
+  );
+  await sleep(pauseMs);
+  const bAfter = await refreshOutcome(fetchFn, b.refreshToken, apiKey);
+  if (bAfter === "refreshed") problems.push("second session still refreshes after the revoke");
+  if ((await refreshOutcome(fetchFn, a.refreshToken, apiKey)) === "refreshed") problems.push("first session's old refresh token still works");
+  const checked = await auth.verifyIdToken(b.idToken, true).then(() => "accepted", (e) => e.code);
+  if (checked !== "auth/id-token-revoked") problems.push(`revocation check on second session said ${checked}`);
+  const fresh = await restSession(fetchFn, customToken, apiKey);
+  if ((await refreshOutcome(fetchFn, fresh.refreshToken, apiKey)) !== "refreshed") problems.push("the new session cannot refresh");
+  if (!(((await db.collection("users").doc(uid).get()).data() || {}).sessionsRevokedAt)) problems.push("notice not written");
+  return { name, ok: problems.length === 0, detail: problems.join("; ") || `second session ends with "${bAfter}", new session works, notice written` };
+}
+
 async function withSyntheticAccount({ auth, db, runId, suffix }, body) {
   const email = syntheticEmail(`${runId}-${suffix}`);
   const user = await auth.createUser({ email, emailVerified: true, disabled: false });
@@ -96,7 +166,7 @@ async function withSyntheticAccount({ auth, db, runId, suffix }, body) {
   }
 }
 
-async function runJourneys({ db, auth, storage, runId, injectFailure, deletion, erasure }) {
+async function runJourneys({ db, auth, storage, runId, injectFailure, deletion, erasure, sessions }) {
   const results = [];
   const run = async (suffix, journey) => {
     try {
@@ -119,6 +189,11 @@ async function runJourneys({ db, auth, storage, runId, injectFailure, deletion, 
   await run("erasure", (uid, email) =>
     journeyErasure({ db, auth, storage, uid, email, erase: erasure.erase }),
   );
+  if (sessions) {
+    await run("revoke-other-sessions", (uid) =>
+      journeyRevokeOtherSessions({ db, auth, uid, revoke: sessions.revoke, fetchFn: sessions.fetchFn, pauseMs: sessions.pauseMs, apiKey: sessions.apiKey }),
+    );
+  }
   if (injectFailure) {
     results.push({ name: "injected-failure", ok: false, detail: "requested with --inject-failure" });
   }
@@ -153,6 +228,12 @@ async function main() {
       claim: sched.DELETION_CLAIM,
     },
     erasure: { erase: del.runAccountDeletionWithDeps },
+    sessions: {
+      revoke: require("../lib/account/revoke-other-sessions").runRevokeOtherSessions,
+      fetchFn: fetch,
+      apiKey: stagingWebApiKey(),
+      pauseMs: 1500,
+    },
   });
 
   for (const r of results) console.log(`${r.ok ? "PASS" : "FAIL"} ${r.name}: ${r.detail}`);
@@ -168,4 +249,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { runJourneys, journeyDeletionGrace, journeyErasure, syntheticEmail, parseArgs };
+module.exports = { runJourneys, journeyDeletionGrace, journeyErasure, journeyRevokeOtherSessions, syntheticEmail, parseArgs };

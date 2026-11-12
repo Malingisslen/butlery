@@ -19,7 +19,8 @@ function makeEnv() {
   const users = new Map();
   let n = 0;
   const ref = (p) => ({
-    get: async () => ({ exists: docs.has(p) }),
+    get: async () => ({ exists: docs.has(p), data: () => docs.get(p) }),
+    update: async (v) => { docs.set(p, { ...docs.get(p), ...v }); },
     set: async (v) => { docs.set(p, v); },
     delete: async () => { docs.delete(p); },
     collection: (c) => ({ doc: (id) => ref(`${p}/${c}/${id}`), _path: `${p}/${c}` }),
@@ -65,6 +66,34 @@ const goodErasure = {
 const run = (env, over = {}) =>
   journeys.runJourneys({ db: env.db, auth: env.auth, storage: {}, runId: "r1", injectFailure: false,
     deletion: goodDeletion(env), erasure: goodErasure, ...over });
+
+// A tiny Auth world: sessions refresh until the account is revoked after they were issued.
+function makeSessions({ revokeWorks = true } = {}) {
+  let revokedAt = 0, clock = 0, n = 0;
+  const issued = new Map();
+  const fetchFn = async (url, init) => {
+    if (url.includes("signInWithCustomToken")) {
+      const id = ++n;
+      issued.set(`r${id}`, ++clock);
+      return { ok: true, json: async () => ({ idToken: `i${id}`, refreshToken: `r${id}` }) };
+    }
+    const rt = /refresh_token=([^&]+)/.exec(init.body)[1];
+    const ok = issued.get(rt) > revokedAt;
+    return { ok, status: ok ? 200 : 400, json: async () => (ok ? {} : { error: { message: "TOKEN_EXPIRED" } }) };
+  };
+  const revokeNow = () => { if (revokeWorks) revokedAt = ++clock; };
+  return { fetchFn, revokeNow, isRevoked: (idToken) => issued.get(`r${idToken.slice(1)}`) <= revokedAt };
+}
+const sessionsFor = (env, w, over = {}) => ({
+  pauseMs: 0, apiKey: "k", fetchFn: w.fetchFn,
+  revoke: async (deps, caller) => { await deps.revokeRefreshTokens(caller.uid); await deps.markRevoked(caller.uid); return { customToken: "ct" }; },
+  ...over,
+});
+const withAuth = (env, w) => Object.assign(env.auth, {
+  createCustomToken: async () => "ct",
+  revokeRefreshTokens: async () => w.revokeNow(),
+  verifyIdToken: async (t) => { if (w.isRevoked(t)) { const e = new Error("revoked"); e.code = "auth/id-token-revoked"; throw e; } return {}; },
+});
 
 (async () => {
   await test("refuses any project but staging before contacting anything", () => {
@@ -130,6 +159,22 @@ const run = (env, over = {}) =>
     const out = await run(env, { deletion: d });
     assert.match(out.find((x) => x.name === "deletion-grace").detail, /boom/);
     assert.strictEqual(env.users.size, 0);
+  });
+
+
+  await test("revoke-other-sessions: green when the old session dies and the new one lives", async () => {
+    const env = makeEnv(), w = makeSessions(); withAuth(env, w);
+    const out = await run(env, { sessions: sessionsFor(env, w) });
+    const r = out.find((x) => x.name === "revoke-other-sessions");
+    assert.ok(r.ok, r.detail);
+  });
+
+  await test("revoke-other-sessions: red when the revoke does nothing", async () => {
+    const env = makeEnv(), w = makeSessions({ revokeWorks: false }); withAuth(env, w);
+    const out = await run(env, { sessions: sessionsFor(env, w) });
+    const r = out.find((x) => x.name === "revoke-other-sessions");
+    assert.strictEqual(r.ok, false);
+    assert.match(r.detail, /second session still refreshes/);
   });
 
   await test("--inject-failure ends red even when everything else is green", async () => {
