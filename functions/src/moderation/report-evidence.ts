@@ -2,8 +2,7 @@
  * BUT-1842: a server-side TEXT copy of what a report points at, so the
  * moderator still sees what was reported after its author edits or deletes it.
  *
- * Malin's call, 2026-10-09: the server keeps the copy, text only (no images),
- * deleted when the case closes and at the latest 180 days after capture.
+ * Malin's call, 2026-10-09: the server keeps the copy, text only (no images).
  *
  * Every field the client wrote on the report is untrusted: `contentType`,
  * `contentId` and `contentOwnerId` choose WHICH document the Admin SDK reads.
@@ -11,9 +10,7 @@
  * themselves under `firestore.rules` — otherwise a forged report would have the
  * server preserve somebody else's private text.
  *
- * The copy carries no `reporterId`. It is deleted by `onReportEvidenceLifecycle`
- * when its report is deleted, closed or loses its `contentOwnerId` (the
- * reported person's erasure nulls that field), and by the TTL on `expireAt`.
+ * The copy carries no `reporterId`.
  */
 
 import * as admin from "firebase-admin";
@@ -23,7 +20,7 @@ import { isClosedReportStatus, REPORTS } from "./report-status";
 
 export const REPORT_EVIDENCE = "report_evidence";
 
-/** Malin's cap, counted from capture — not extended by an erasure hold. */
+/** Counted from capture — not extended by an erasure hold. */
 export const EVIDENCE_RETENTION_DAYS = 180;
 
 /**
@@ -372,9 +369,76 @@ export function evidenceShouldGo(before: Data | undefined, after: Data | undefin
   return after.contentOwnerId !== before.contentOwnerId;
 }
 
+/**
+ * Facts on a copy that can point at the reporter rather than at the reported
+ * person. A frozen copy outlives the reporter's report, and Malin's call
+ * (BUT-2329, 2026-11-12) is that it does so without them.
+ */
+export const REPORTER_FACTS = ["claimedCreatorIsReporter"] as const;
+
+export type EvidenceDeleteOutcome = "deleted" | "kept_frozen" | "absent";
+
+export function isFrozenEvidence(data: Data | undefined): boolean {
+  return typeof data?.frozen === "object" && data.frozen !== null;
+}
+
+/**
+ * Deletes the copy unless a moderator has frozen it (BUT-2329). Read and
+ * delete share one transaction: a freeze that commits between a plain read
+ * and a plain delete would otherwise be lost.
+ *
+ * With [opts.reporterLeft], a frozen copy that is kept loses
+ * [REPORTER_FACTS] instead.
+ */
 export async function deleteReportEvidence(
   db: admin.firestore.Firestore,
   reportId: string,
-): Promise<void> {
-  await db.collection(REPORT_EVIDENCE).doc(reportId).delete();
+  opts: { reporterLeft?: boolean } = {},
+): Promise<EvidenceDeleteOutcome> {
+  const ref = db.collection(REPORT_EVIDENCE).doc(reportId);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return "absent";
+    if (!isFrozenEvidence(snap.data())) {
+      tx.delete(ref);
+      return "deleted";
+    }
+    if (opts.reporterLeft) stageStripReporterFacts(tx, ref, snap.data());
+    return "kept_frozen";
+  });
+}
+
+function stageStripReporterFacts(
+  tx: admin.firestore.Transaction,
+  ref: admin.firestore.DocumentReference,
+  data: Data | undefined,
+): boolean {
+  const present = REPORTER_FACTS.filter((f) => data && f in data);
+  if (present.length === 0) return false;
+  tx.update(ref, Object.fromEntries(
+    present.map((f) => [f, admin.firestore.FieldValue.delete()]),
+  ));
+  return true;
+}
+
+/**
+ * Removes [REPORTER_FACTS] from a FROZEN copy. An unfrozen copy keeps them:
+ * it still follows its report, which the moderator is deciding on.
+ */
+export async function stripReporterFactsIfFrozen(
+  db: admin.firestore.Firestore,
+  reportId: string,
+): Promise<boolean> {
+  const ref = db.collection(REPORT_EVIDENCE).doc(reportId);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists || !isFrozenEvidence(snap.data())) return false;
+    return stageStripReporterFacts(tx, ref, snap.data());
+  });
+}
+
+/** True when the write took the reporter's uid off the report, or the report. */
+export function reporterLeft(before: Data | undefined, after: Data | undefined): boolean {
+  if (typeof before?.reporterId !== "string" || before.reporterId.length === 0) return false;
+  return !after || after.reporterId !== before.reporterId;
 }

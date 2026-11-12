@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-12): BUT-2329, spara textkopian längre i allvarliga ärenden
+
+Se `tasks/but-2329-plan.md`. Godkänd av Malin via kort 2026-11-12.
+
 # Aktiv plan (2026-11-07): BUT-2399, dela inköpslista = alltid inbjudan
 
 Se `tasks/but-2399-plan.md`.

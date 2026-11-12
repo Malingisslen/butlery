@@ -13,8 +13,7 @@
  * - the reported person is gone from it: there is nobody left to decide about.
  *
  * Moves `closed → actioned` with the Admin SDK; the client rules forbid
- * leaving `closed`. A fresh copy of the content, as it is now, is taken after
- * the commit and deleted again by the next close.
+ * leaving `closed`.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
@@ -27,7 +26,7 @@ import { requireAdmin } from "../shared/require-admin";
 import { appealRef, canHoldAppeal, isSafeDocId } from "./appeals";
 import { revisionOf, roundOf, stageModerationAudit } from "./decision-revision";
 import { MODERATION_DECISIONS, MODERATOR_ACTIONS } from "./report-decision";
-import { captureReportEvidence, REPORT_EVIDENCE } from "./report-evidence";
+import { captureReportEvidence, isFrozenEvidence, REPORT_EVIDENCE } from "./report-evidence";
 import { isClosedReportStatus, REPORTS } from "./report-status";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
@@ -115,9 +114,11 @@ export async function runReopenReportWithDb(
     .map((role) => appealRef(db, reportId, role));
 
   return db.runTransaction(async (tx) => {
-    const [report, decision, ...appeals] = await Promise.all([
+    const evidenceRef = db.collection(REPORT_EVIDENCE).doc(reportId);
+    const [report, decision, evidence, ...appeals] = await Promise.all([
       tx.get(reportRef),
       tx.get(decisionRef),
+      tx.get(evidenceRef),
       ...appealRefs.map((ref) => tx.get(ref)),
     ]);
     const block = reopenBlock(report, decision.data(), appeals.some((a) => a.exists));
@@ -135,8 +136,10 @@ export async function runReopenReportWithDb(
       // the decision being reviewed apart from it.
       reopenedDecision: typeof action === "string" ? action : admin.firestore.FieldValue.delete(),
     });
-    // A copy the close has not deleted yet would read as this round's.
-    tx.delete(db.collection(REPORT_EVIDENCE).doc(reportId));
+    // A copy the close has not deleted yet would read as this round's. A
+    // frozen copy (BUT-2329) stays, and the capture after the commit then
+    // finds it and writes no new one.
+    if (!isFrozenEvidence(evidence.data())) tx.delete(evidenceRef);
     stageModerationAudit(db, tx, {
       actorUid: adminUid,
       operation: "moderation_report_reopened",

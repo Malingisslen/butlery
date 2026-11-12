@@ -155,7 +155,10 @@ export type ModerationAuditOperation =
   | "moderation_decision_changed"
   | "moderation_decision_reconfirmed"
   | "moderation_report_reopened"
-  | "moderation_appeal_answered";
+  | "moderation_appeal_answered"
+  | "moderation_evidence_frozen"
+  | "moderation_evidence_extended"
+  | "moderation_evidence_released";
 
 /**
  * One `audit_logs` row in the caller's transaction, shaped like the rest of

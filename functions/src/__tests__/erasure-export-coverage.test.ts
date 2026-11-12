@@ -33,6 +33,7 @@ type Coverage =
 
 const COVERAGE: Record<string, Coverage[]> = {
   erasure_hold_evaluated: [{ erasesNothing: true }],
+  frozen_report_evidence_evaluated: [{ erasesNothing: true }],
   shared_content_block_held: [
     { decided: "A held person's Art. 15 bundle" },
   ],

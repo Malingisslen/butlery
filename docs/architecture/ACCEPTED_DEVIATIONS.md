@@ -6970,3 +6970,35 @@ The `shared_content` update rule lets only the sharer add people to `sharedToUse
 remove other people from it. Anyone else may leave the list as stored or take their own uid
 off it (`recipientsChangedOnlyBySelf`). A recipient whose
 member row is already gone may make only that self-removal write.
+
+## SUPERSEDES the BUT-1842 retention cap for frozen copies (BUT-2329, Malin, 2026-11-12)
+
+Retired, for a copy a moderator has frozen: "it goes when the report is deleted, closed or
+loses its owner, and at most 180 days after capture, never extended by a hold", and in the
+BUT-1842 section the known gap "no preserve state that would keep a serious case's copy past
+180 days".
+
+Malin's cards 2026-11-12: "Ett år, kan förlängas", "Ja, finns kvar" (the reported person's
+erasure), "Ja, men utan spår av anmälaren" (the reporter's erasure), "Ja, bygg".
+
+- `freezeReportEvidence` (`functions/src/moderation/freeze-report-evidence.ts`, admin only,
+  App Check, rate-limited) takes `freeze`, `extend` or `release` and, for the first two, a
+  reason from `police`, `threat`, `legal_claim`. A freeze needs a copy with `outcome:
+  captured`. It writes `frozen {reason, frozenAt, frozenBy, firstFrozenAt, until, extensions}`
+  and sets `expireAt = until`: one year from now, never past three years from
+  `firstFrozenAt`. Each action writes an `audit_logs` row; those expire after 180 days, so
+  `frozen` on the copy is the lasting record.
+- A frozen copy is kept by `onReportEvidenceLifecycle` (close, report deletion, owner
+  change) and by `reopenReport`; the delete and the frozen check share a transaction. The
+  reported person's uid stays on it after their erasure.
+- When the reporter's uid leaves the report, or the report is deleted, a FROZEN copy loses
+  `claimedCreatorIsReporter` (`REPORTER_FACTS`). An unfrozen copy keeps it while its case is
+  open. This supersedes, for frozen copies, ADR-0016's "the reporter's cap wins".
+- `release` deletes the copy when the BUT-1842 rules would already have deleted it (report
+  gone, closed, owner changed, or 180 days past capture), and otherwise restores
+  `expireAt = capture + 180 days`.
+- The reset script (`reset-collection-lists.ts`) still deletes every copy, frozen or not.
+- The account-deletion cascade adds one `RetainedRecord` (`resourceType:
+  report_evidence`) when a frozen copy names the person, with the latest three-year cap as
+  `holdUntil`; `gdprCompliant` is untouched.
+- Privacy policy 1.35 names the row and the disclosure to authorities.
