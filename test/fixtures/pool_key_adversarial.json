@@ -1,0 +1,492 @@
+{
+  "description": "BUT-1520 condition C8: adversarial precision set for the pooled-ratings key. Invented recipes only (no corpus content). Read by test/unit/services/rating/canonical_pool_key_adversarial_test.dart and functions/src/__tests__/pool-key-adversarial.test.ts. Every 'distinct' pair is two different dishes that must NOT share a key (one side may fail closed to null); every 'must_not_pool' recipe must key to null. Each case is tagged by class so a clean run reads as coverage per class. A case with 'known_gap' documents a measured weakness: the tests pin that it still behaves as measured, so a key fix turns it red and the entry must then lose its 'known_gap'.",
+  "classes": [
+    "dessert_family",
+    "protein_swap",
+    "synonym_title",
+    "generic_anchor"
+  ],
+  "distinct": [
+    {
+      "class": "dessert_family",
+      "why": "sponge cake vs muffins, identical batter",
+      "a": {
+        "title": "Sockerkaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "b": {
+        "title": "Muffins",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      }
+    },
+    {
+      "class": "dessert_family",
+      "why": "muffins vs cupcakes, identical batter",
+      "a": {
+        "title": "Vaniljmuffins",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "b": {
+        "title": "Cupcakes",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      }
+    },
+    {
+      "class": "dessert_family",
+      "why": "mud cake vs brownies, identical batter",
+      "a": {
+        "title": "Kladdkaka",
+        "ingredients": [
+          "200 g smör",
+          "3 dl strösocker",
+          "4 ägg",
+          "2 dl vetemjöl",
+          "1 dl kakao",
+          "1 krm salt"
+        ]
+      },
+      "b": {
+        "title": "Brownies",
+        "ingredients": [
+          "200 g smör",
+          "3 dl strösocker",
+          "4 ägg",
+          "2 dl vetemjöl",
+          "1 dl kakao",
+          "1 krm salt"
+        ]
+      }
+    },
+    {
+      "class": "dessert_family",
+      "why": "cinnamon vs cardamom buns",
+      "a": {
+        "title": "Kanelbullar",
+        "ingredients": [
+          "25 g jäst",
+          "3 dl mjölk",
+          "75 g smör",
+          "1 dl socker",
+          "8 dl vetemjöl",
+          "2 tsk kanel"
+        ]
+      },
+      "b": {
+        "title": "Kardemummabullar",
+        "ingredients": [
+          "25 g jäst",
+          "3 dl mjölk",
+          "75 g smör",
+          "1 dl socker",
+          "8 dl vetemjöl",
+          "2 tsk kardemumma"
+        ]
+      }
+    },
+    {
+      "class": "dessert_family",
+      "why": "apple pie vs apple crumble cake, same ingredients",
+      "a": {
+        "title": "Äppelpaj",
+        "ingredients": [
+          "4 äpplen",
+          "100 g smör",
+          "1 dl socker",
+          "2 dl vetemjöl"
+        ]
+      },
+      "b": {
+        "title": "Äppelkaka",
+        "ingredients": [
+          "4 äpplen",
+          "100 g smör",
+          "1 dl socker",
+          "2 dl vetemjöl"
+        ]
+      }
+    },
+    {
+      "class": "protein_swap",
+      "why": "chicken vs pork stew",
+      "a": {
+        "title": "Kycklinggryta",
+        "ingredients": [
+          "2 dl grädde",
+          "1 gul lök",
+          "1 msk curry",
+          "1 tsk salt",
+          "600 g kycklingfilé"
+        ]
+      },
+      "b": {
+        "title": "Fläskgryta",
+        "ingredients": [
+          "2 dl grädde",
+          "1 gul lök",
+          "1 msk curry",
+          "1 tsk salt",
+          "600 g fläskfilé"
+        ]
+      }
+    },
+    {
+      "class": "protein_swap",
+      "why": "pasta with chicken vs prawns, same title shape",
+      "a": {
+        "title": "Pasta med kyckling",
+        "ingredients": [
+          "400 g pasta",
+          "2 dl grädde",
+          "300 g kyckling"
+        ]
+      },
+      "b": {
+        "title": "Pasta med räkor",
+        "ingredients": [
+          "400 g pasta",
+          "2 dl grädde",
+          "300 g räkor"
+        ]
+      }
+    },
+    {
+      "class": "protein_swap",
+      "why": "beef vs chicken mince tacos",
+      "a": {
+        "title": "Tacos",
+        "ingredients": [
+          "500 g nötfärs",
+          "1 påse tacokrydda",
+          "8 tortillabröd"
+        ]
+      },
+      "b": {
+        "title": "Tacos",
+        "ingredients": [
+          "500 g kycklingfärs",
+          "1 påse tacokrydda",
+          "8 tortillabröd"
+        ]
+      }
+    },
+    {
+      "class": "protein_swap",
+      "why": "salmon vs herring pudding",
+      "a": {
+        "title": "Laxpudding",
+        "ingredients": [
+          "8 potatisar",
+          "4 ägg",
+          "5 dl mjölk",
+          "300 g gravad lax"
+        ]
+      },
+      "b": {
+        "title": "Laxpudding",
+        "ingredients": [
+          "8 potatisar",
+          "4 ägg",
+          "5 dl mjölk",
+          "300 g inlagd sill"
+        ]
+      }
+    },
+    {
+      "class": "protein_swap",
+      "why": "meat vs lentil lasagne",
+      "a": {
+        "title": "Lasagne",
+        "ingredients": [
+          "500 g köttfärs",
+          "1 burk krossade tomater",
+          "12 lasagneplattor",
+          "5 dl mjölk"
+        ]
+      },
+      "b": {
+        "title": "Lasagne",
+        "ingredients": [
+          "3 dl röda linser",
+          "1 burk krossade tomater",
+          "12 lasagneplattor",
+          "5 dl mjölk"
+        ]
+      }
+    },
+    {
+      "class": "synonym_title",
+      "why": "cabbage pudding vs cabbage gratin, same ingredients",
+      "a": {
+        "title": "Kålpudding",
+        "ingredients": [
+          "1 vitkål",
+          "500 g köttfärs",
+          "2 dl grädde",
+          "1 ägg"
+        ]
+      },
+      "b": {
+        "title": "Kålgratäng",
+        "ingredients": [
+          "1 vitkål",
+          "500 g köttfärs",
+          "2 dl grädde",
+          "1 ägg"
+        ]
+      }
+    },
+    {
+      "class": "synonym_title",
+      "why": "cheese pie vs curd cake",
+      "a": {
+        "title": "Ostpaj",
+        "ingredients": [
+          "3 ägg",
+          "3 dl mjölk",
+          "200 g riven ost"
+        ]
+      },
+      "b": {
+        "title": "Ostkaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl mjölk",
+          "1 liter keso"
+        ]
+      }
+    },
+    {
+      "class": "synonym_title",
+      "why": "carrot cake vs carrot bread",
+      "a": {
+        "title": "Morotskaka",
+        "ingredients": [
+          "3 morötter",
+          "3 ägg",
+          "3 dl vetemjöl",
+          "2 dl socker"
+        ]
+      },
+      "b": {
+        "title": "Morotsbröd",
+        "ingredients": [
+          "3 morötter",
+          "3 ägg",
+          "3 dl vetemjöl",
+          "25 g jäst"
+        ]
+      }
+    },
+    {
+      "class": "synonym_title",
+      "why": "potato pancakes: raggmunk vs rårakor",
+      "a": {
+        "title": "Raggmunk",
+        "ingredients": [
+          "8 potatisar",
+          "3 dl mjölk",
+          "2 ägg",
+          "2 dl vetemjöl"
+        ]
+      },
+      "b": {
+        "title": "Rårakor",
+        "ingredients": [
+          "8 potatisar",
+          "1 ägg",
+          "1 tsk salt"
+        ]
+      }
+    },
+    {
+      "class": "dessert_family",
+      "why": "chocolate muffins vs chocolate cake, identical batter",
+      "a": {
+        "title": "Choklad muffins",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "b": {
+        "title": "Choklad kaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+    },
+    {
+      "class": "generic_anchor",
+      "why": "grandma's stew vs grandma's soup, identical ingredients",
+      "a": {
+        "title": "Mormors gryta",
+        "ingredients": [
+          "600 g högrev",
+          "2 morötter",
+          "5 dl buljong"
+        ]
+      },
+      "b": {
+        "title": "Mormors soppa",
+        "ingredients": [
+          "600 g högrev",
+          "2 morötter",
+          "5 dl buljong"
+        ]
+      },
+      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+    },
+    {
+      "class": "generic_anchor",
+      "why": "OCR-split sponge cake vs OCR-split sugar buns, identical ingredients",
+      "a": {
+        "title": "Socker kaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "b": {
+        "title": "Socker bullar",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+    }
+  ],
+  "must_not_pool": [
+    {
+      "class": "generic_anchor",
+      "why": "bare category noun",
+      "recipe": {
+        "title": "Soppa",
+        "ingredients": [
+          "1 liter vatten",
+          "2 morötter",
+          "1 purjolök"
+        ]
+      }
+    },
+    {
+      "class": "generic_anchor",
+      "why": "OCR split of köttbullar",
+      "recipe": {
+        "title": "Kött bullar",
+        "ingredients": [
+          "500 g köttfärs",
+          "1 ägg",
+          "1 dl ströbröd"
+        ]
+      }
+    },
+    {
+      "class": "generic_anchor",
+      "why": "generic noun behind qualifiers",
+      "recipe": {
+        "title": "Mammas goda gryta",
+        "ingredients": [
+          "600 g högrev",
+          "2 morötter",
+          "5 dl buljong"
+        ]
+      },
+      "known_gap": "The generic noun is shorter than the modifier before it, so the modifier becomes the anchor and the recipe pools instead of failing closed. Needs a key change (own plan)."
+    },
+    {
+      "class": "generic_anchor",
+      "why": "bare dessert",
+      "recipe": {
+        "title": "Dessert",
+        "ingredients": [
+          "2 dl grädde",
+          "1 dl socker",
+          "200 g jordgubbar"
+        ]
+      }
+    },
+    {
+      "class": "generic_anchor",
+      "why": "definite form",
+      "recipe": {
+        "title": "Pajen",
+        "ingredients": [
+          "3 ägg",
+          "3 dl mjölk",
+          "200 g riven ost"
+        ]
+      }
+    },
+    {
+      "class": "generic_anchor",
+      "why": "OCR split of sockerkaka",
+      "recipe": {
+        "title": "Socker kaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "known_gap": "The generic noun is shorter than the modifier before it, so the modifier becomes the anchor and the recipe pools instead of failing closed. Needs a key change (own plan)."
+    },
+    {
+      "class": "generic_anchor",
+      "why": "no ingredients",
+      "recipe": {
+        "title": "Köttbullar",
+        "ingredients": []
+      }
+    }
+  ]
+}

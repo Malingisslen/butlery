@@ -17,6 +17,8 @@ on:
       - "functions/package-lock.json"
       - "functions/tsconfig.json"
       - "functions/scripts/**"
+      # BUT-1520: the pool-key suites read these shared fixtures.
+      - "test/fixtures/pool_key_*.json"
       - ".github/workflows/cloud-functions-unit.yml"
       # Admin-vy C1/C2: suites read the ingredient CSV and two Dart column/allergen files.
       - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
@@ -77,6 +79,8 @@ on:
       - "functions/package-lock.json"
       - "functions/tsconfig.json"
       - "functions/scripts/**"
+      # BUT-1520: the pool-key suites read these shared fixtures.
+      - "test/fixtures/pool_key_*.json"
       - ".github/workflows/cloud-functions-unit.yml"
       # Admin-vy C1/C2: suites read the ingredient CSV and two Dart column/allergen files.
       - "docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv"
