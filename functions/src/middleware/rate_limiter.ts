@@ -304,6 +304,19 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
   },
+  // BUT-1517: admin pool inspection and quarantine.
+  adminInspectPool: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
+  adminSetPoolQuarantine: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
   // Admin-vy "Skapa granskning": each run rebuilds the bot branch and PR on
   // GitHub, per admin and across all admins (subject `all-admins`).
   createIngredientChangePr: {

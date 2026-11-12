@@ -50,6 +50,8 @@ const UNREVIEWED: Record<string, string> = {
   corpus_runs: "kokboksprovet: nightly counts over those pages; no user id field",
   group_invitations: "fromUserId; on-profile-updated.ts only renames, account deletion does not reach it",
   group_moves: "holds only movedAt per group id (hand-over-group.ts)",
+  pool_quarantine:
+    "server-only; pool key, state, reason code and updatedAt, never a user id (admin/pool-moderation.ts)",
   ingredient_change_locks: "holds a run id and an expiry, no user id (create-ingredient-change-pr.ts)",
   snapshots: "not looked at",
   summary: "not looked at",

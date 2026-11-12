@@ -432,6 +432,9 @@ const cases: UnitCase[] = [
         // BUT-1528.
         listClosedReports: [60, 400],
         reopenReport: [30, 200],
+        // BUT-1517.
+        adminInspectPool: [30, 200],
+        adminSetPoolQuarantine: [30, 200],
         // Admin-vy step C.
         createIngredientChangePr: [10, 30],
         createIngredientChangePrGlobal: [20, 60],
@@ -511,6 +514,8 @@ const cases: UnitCase[] = [
         "getQuarantinedImages",
         "listClosedReports",
         "reopenReport",
+        "adminInspectPool",
+        "adminSetPoolQuarantine",
         "createIngredientChangePr",
         "createIngredientChangePrGlobal",
         "exportModerationAppeals",

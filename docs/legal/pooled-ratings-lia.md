@@ -151,3 +151,16 @@ anonymous aggregate (no read-all), the n≥5 display floor, the feature-flag kil
 switch, and the same-PR GDPR coverage (deletion cascade + residual probe + export
 of `canonical_rating_events`). What remains is **legal/DPO sign-off** and the
 real-corpus backfill gate — not engineering work.
+
+## 10. Amendment 2026-11-12 (BUT-1517)
+The safeguard §4 lists as "admin split-a-bad-merge tooling (decision 13)" is
+delivered as an admin quarantine instead: `adminSetPoolQuarantine`
+(`functions/src/admin/pool-moderation.ts`) hides a pool's published number while
+keeping every vote, and `adminInspectPool` returns the pool's aggregate numbers and
+two shares (accounts younger than 7 days, unverified accounts) over its newest 200
+votes, with no uid, uid hash, recipe id or title. The nightly alarm
+(`functions/src/analytics/detect-pool-velocity.ts`) stores pool keys and daily
+counts only, deleted after 35 days. Every inspection and quarantine change writes an
+`audit_logs` row (180-day purge). New purpose: abuse prevention for the public
+aggregate, under the same legitimate interest; disclosed in privacy policy 5.3
+(version 1.35). **Approved by Malin 2026-11-12.**

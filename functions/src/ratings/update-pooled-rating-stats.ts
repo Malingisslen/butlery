@@ -42,6 +42,15 @@ import { CANONICAL_EVENTS_SUBCOLLECTION } from "./canonical-rating-aggregation";
 /** The public per-pool stats collection (decision 5 / 10). */
 export const CANONICAL_STATS_COLLECTION = "canonical_recipe_stats";
 
+/**
+ * Admin emergency stop (BUT-1517): `pool_quarantine/{poolKey}` with
+ * `quarantined: true` makes this aggregator publish an empty pool, so the pill
+ * and the menu weighting drop it while every vote stays stored. Lifting the
+ * quarantine and re-running this restores the real number. Server-only
+ * (default-deny in firestore.rules); written by `admin/pool-moderation.ts`.
+ */
+export const POOL_QUARANTINE_COLLECTION = "pool_quarantine";
+
 export interface PooledRatingStats {
   count: number;
   /** Mean of `ratingValue` across the pool, or null when the pool is empty. */
@@ -68,6 +77,16 @@ export async function updatePooledRatingStats(
     return;
   }
   const db = dbArg ?? admin.firestore();
+
+  const quarantine = await db.collection(POOL_QUARANTINE_COLLECTION).doc(poolKey).get();
+  if (quarantine.exists && quarantine.data()?.quarantined === true) {
+    await db.collection(CANONICAL_STATS_COLLECTION).doc(poolKey).set(
+      { count: 0, average: null, updatedAt: admin.firestore.Timestamp.now() },
+      { merge: true },
+    );
+    logger.info("pool_aggregation.quarantined", { poolKey });
+    return;
+  }
 
   // Decision 5: aggregate in the index layer — NEVER fetch the events. One
   // query returns both scalars; average is null when the pool is empty.

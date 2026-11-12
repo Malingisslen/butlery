@@ -159,7 +159,12 @@ function readReport(store: FakeStore, date: string): AnomalyReport {
   return store.writes.get(path) as unknown as AnomalyReport;
 }
 
+const noPool = async () => [];
+
 async function main() {
+  // Fail closed: case (m) pins a deadline against a promise that never
+  // resolves, and if the deadline is gone Node exits 0 with the summary unprinted.
+  process.exitCode = 1;
   console.log("detect-anomalies tests\n");
 
   const now = new Date(Date.UTC(2026, 5, 20, 6, 0, 0));
@@ -176,7 +181,7 @@ async function main() {
       ...baseline,
     ]);
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const hit = report.anomalies.find(
       (a) => a.metric === "import_health_totalFailure",
     );
@@ -198,7 +203,7 @@ async function main() {
     const baseline = Array.from({ length: 10 }, () => 2);
     seedSeries(store, bySeries("recipes_total"), nowMs, [100, ...baseline]);
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const hit = report.anomalies.find((a) => a.metric === "recipes_total");
     record(
       "(b) under MIN_SAMPLES baseline is not flagged",
@@ -222,7 +227,7 @@ async function main() {
       stats.stddev > 0 ? (2 - stats.mean) / stats.stddev : 0;
     const sanity = stats.stddev > 0 && Math.abs(z) > 3;
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const hit = report.anomalies.find((a) => a.metric === "feedback_total");
     record(
       "(c) within-floor small numbers not flagged despite z>3",
@@ -238,7 +243,7 @@ async function main() {
     const baseline = Array.from({ length: 28 }, () => 100);
     seedSeries(store, bySeries("ops_totalEvents"), nowMs, [1000, ...baseline]);
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const hit = report.anomalies.find((a) => a.metric === "ops_totalEvents");
     record(
       "(d) flat baseline (stddev 0) not flagged",
@@ -256,7 +261,7 @@ async function main() {
     );
     seedSeries(store, bySeries("recipes_total"), nowMs, [5, ...baseline]);
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const hit = report.anomalies.find((a) => a.metric === "recipes_total");
     record(
       "(e) a drop is flagged with direction down",
@@ -277,7 +282,7 @@ async function main() {
       baseline,
     );
 
-    const report = await runDetectAnomalies({ db: makeFakeDb(store), now });
+    const report = await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     record(
       "(f) missing run-day doc → series skipped, report still written",
       report.anomalies.length === 0 && readReport(store, runDate) != null,
@@ -313,8 +318,8 @@ async function main() {
       40,
       ...baseline,
     ]);
-    await runDetectAnomalies({ db: makeFakeDb(store), now });
-    await runDetectAnomalies({ db: makeFakeDb(store), now });
+    await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
+    await runDetectAnomalies({ db: makeFakeDb(store), now, poolVelocity: noPool });
     const reportPaths = Array.from(store.writes.keys()).filter((p) =>
       p.startsWith("analytics/anomalies/daily/"),
     );
@@ -325,8 +330,114 @@ async function main() {
     );
   }
 
+  // ── pooled-ratings alarm (BUT-1517) is appended and isolated ───────────
+  {
+    const store = newStore();
+    const baseline = Array.from({ length: 28 }, (_, i) => (i % 2 === 0 ? 2 : 3));
+    seedSeries(store, bySeries("import_health_totalFailure"), nowMs, [40, ...baseline]);
+    const POOL_KEY = "v1:aaaabbbbccccdddd";
+    const OTHER_KEY = "v1:9999888877776666";
+    let seenArgs: { nowMs: number; dateStr: string } | null = null;
+    const report = await runDetectAnomalies({
+      db: makeFakeDb(store),
+      now,
+      poolVelocity: async (args) => {
+        seenArgs = { nowMs: args.nowMs, dateStr: args.dateStr };
+        return [
+          { metric: "pool_velocity", poolKey: POOL_KEY, today: 12, mean: 0, z: 0, direction: "up" },
+          { metric: "pool_rating_skew", poolKey: OTHER_KEY, today: 1, mean: 4.5, z: 0, direction: "down" },
+        ];
+      },
+    });
+    const stored = readReport(store, runDate);
+    const poolEntries = report.anomalies.filter((a) => a.poolKey != null);
+    record(
+      "(j) injected poolVelocity entries are appended after the series entries, keeping poolKey",
+      report.anomalies.length === 3 &&
+        report.anomalies[0].metric === "import_health_totalFailure" &&
+        report.anomalies[0].poolKey === undefined &&
+        poolEntries.length === 2 &&
+        poolEntries[0].metric === "pool_velocity" &&
+        poolEntries[0].poolKey === POOL_KEY &&
+        poolEntries[1].metric === "pool_rating_skew" &&
+        poolEntries[1].poolKey === OTHER_KEY,
+      JSON.stringify(report.anomalies),
+    );
+    record(
+      "(j) the stored report carries the pool entries and poolVelocity got the run's nowMs and date",
+      stored.anomalies.length === 3 &&
+        stored.anomalies.filter((a) => a.poolKey === POOL_KEY).length === 1 &&
+        seenArgs != null &&
+        (seenArgs as { nowMs: number }).nowMs === nowMs &&
+        (seenArgs as { dateStr: string }).dateStr === runDate,
+      JSON.stringify(seenArgs),
+    );
+  }
+
+  {
+    const store = newStore();
+    const baseline = Array.from({ length: 28 }, (_, i) => (i % 2 === 0 ? 2 : 3));
+    seedSeries(store, bySeries("import_health_totalFailure"), nowMs, [40, ...baseline]);
+    let called = 0;
+    const report = await runDetectAnomalies({
+      db: makeFakeDb(store),
+      now,
+      poolVelocity: async () => {
+        called++;
+        throw new Error("boom");
+      },
+    });
+    record(
+      "(k) a throwing poolVelocity does not stop the report: series anomaly kept, no pool entry, doc written",
+      called === 1 &&
+        report.anomalies.length === 1 &&
+        report.anomalies[0].metric === "import_health_totalFailure" &&
+        readReport(store, runDate) != null &&
+        readReport(store, runDate).anomalies.length === 1 &&
+        store.writeCount === 1,
+      JSON.stringify(report.anomalies),
+    );
+  }
+
+  {
+    const store = newStore();
+    const baseline = Array.from({ length: 28 }, (_, i) => (i % 2 === 0 ? 2 : 3));
+    seedSeries(store, bySeries("import_health_totalFailure"), nowMs, [40, ...baseline]);
+    const started = Date.now();
+    const report = await runDetectAnomalies({
+      db: makeFakeDb(store),
+      now,
+      poolAlarmBudgetMs: 50,
+      poolVelocity: () => new Promise(() => undefined),
+    });
+    const elapsed = Date.now() - started;
+    record(
+      "(m) a poolVelocity that never resolves hits the deadline: report written with the series anomaly, fast",
+      elapsed < 2000 &&
+        report.anomalies.length === 1 &&
+        report.anomalies[0].metric === "import_health_totalFailure" &&
+        readReport(store, runDate) != null &&
+        store.writeCount === 1,
+      `elapsed=${elapsed}ms ${JSON.stringify(report.anomalies)}`,
+    );
+  }
+
+  {
+    const store = newStore();
+    const report = await runDetectAnomalies({
+      db: makeFakeDb(store),
+      now,
+      poolVelocity: async () => [],
+    });
+    record(
+      "(l) poolVelocity returning nothing leaves an empty report that is still written",
+      report.anomalies.length === 0 && readReport(store, runDate) != null,
+    );
+  }
+
   console.log(`\n${totalRun - totalFailed}/${totalRun} passed`);
   if (totalFailed > 0) process.exit(1);
+  process.exitCode = 0;
 }
 
 main().catch((err) => {

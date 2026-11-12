@@ -46,8 +46,16 @@ real-corpus hit-rate re-measure with 0 false merges (C6/C7/C8, still pending rea
 with `{ dryRun: true }` any time; do NOT run a real backfill until those clear.
 
 ## Still-open pre-ship conditions (from the plan)
-- **C9** — pooled-rating spike detection + admin "split a bad merge" tooling should be OPERATIONAL
-  before ship (a shared score is a public reputation signal). Not yet built.
+- **C9** — BUILT (BUT-1517, 2026-11-12) as a nightly alarm on the admin anomaly banner
+  (`pool_velocity`, `pool_rating_skew`, `pool_new_over_floor`) plus an admin quarantine instead of
+  "split a bad merge" (see `functions/src/admin/pool-moderation.ts` for why). Known limit: an attack
+  slower than a few votes a day trips no rule. Before the flag flips: deploy the two
+  `canonical_rating_events` indexes on `createdAt` and the `pool_velocity_days` TTL policy
+  (`firebase deploy --only firestore:indexes`), and ship privacy policy 1.35 in a store build.
+  The backfill (BUT-1520) rewrites `createdAt` on every event it folds in, so the night after it
+  every pool with 10+ old votes fires `pool_velocity`/`pool_new_over_floor` and that day's counts
+  enter the 28-day baseline: run the backfill, expect that one false morning, and delete that
+  day's `analytics/pool_velocity/pool_velocity_days/{date}` doc.
 - **C10** — anchor-only title-change telemetry (rating-laundering visibility). Not yet built.
 - **BUT-417** (moderation SLA) is NOT a v1 blocker — v1 shares only numbers, no user content.
 

@@ -71,7 +71,9 @@ import { runQuarantineSweep } from "../storage/quarantine-restore";
  * 10 s. `trackDayNRetention`, `computeFeatureRetention` and
  * `correlateNotificationEffectiveness` page through data that grows with the
  * user base and have no wall clock of their own, so they keep
- * `TASK_TIMEOUT_MS` too.
+ * `TASK_TIMEOUT_MS` too. `detectAnomalies` gets it since BUT-1517: its
+ * pooled-ratings alarm reads every pool vote of the last 48 h, under its own
+ * `POOL_ALARM_BUDGET_MS`.
  */
 export const SHORT_TASK_TIMEOUT_MS = 15_000;
 
@@ -126,7 +128,7 @@ export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   { name: "feedbackSnapshot", run: () => runFeedbackSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "opsSnapshot", run: () => runOpsSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "acquisitionEligibleSnapshot", run: () => runAcquisitionEligibleSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
-  { name: "detectAnomalies", run: () => runDetectAnomalies(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "detectAnomalies", run: () => runDetectAnomalies(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "correlateNotificationEffectiveness", run: () => runCorrelateNotificationEffectiveness(), timeoutMs: TASK_TIMEOUT_MS },
 ];
 

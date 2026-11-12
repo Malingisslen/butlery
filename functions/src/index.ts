@@ -273,6 +273,7 @@ export { logSignInFailure } from "./events/log-sign-in-failure";
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
+export { adminInspectPool, adminSetPoolQuarantine } from "./admin/pool-moderation";
 // Admin-vy step C: the queued ingredient proposals become one rolling PR.
 export { createIngredientChangePr } from "./admin/create-ingredient-change-pr";
 

@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 11, 2026
-**Version:** 1.34
+**Last updated:** November 12, 2026
+**Version:** 1.35
 
 ---
 
@@ -167,6 +167,13 @@ of its title and ingredients — **no recipe text is shared, only the numbers.**
   or the underlying rating.
 - **Your family's private ratings never feed this** — household/"family" ratings
   are kept in a separate place and are structurally excluded.
+- **Protection against manipulation:** every night Butlery counts how many ratings
+  each dish received and raises an alert if a dish suddenly gets unusually many
+  ratings, or ratings that pull its average sharply. An administrator can then look
+  at the dish's numbers (vote count, average, distribution and the share of votes
+  from new accounts) and temporarily switch off that dish's Butlery-betyget. The
+  review never shows who voted or what your recipe is called, and your rating is not
+  changed. Every review is logged and the log is deleted after 6 months.
 - **Legal basis — legitimate interest (Art. 6.1.f):** improving recipe discovery
   and menu quality with a trustworthy shared signal. This does **not** require your
   consent, but you have the **right to object (Art. 21)**: deleting a rating

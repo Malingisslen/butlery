@@ -62,6 +62,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "getQuarantinedImages", // storage/quarantine-review.ts — BUT-818 requireAdmin, called from the moderator's appeal card
   "listClosedReports", // moderation/list-closed-reports.ts — BUT-1528 requireAdmin, called from the app's moderator screen
   "reopenReport", // moderation/reopen-report.ts — BUT-1528 requireAdmin, called from the app's moderator screen
+  "adminInspectPool", // admin/pool-moderation.ts — BUT-1517 requireAdmin, called from the app's admin pool view
+  "adminSetPoolQuarantine", // admin/pool-moderation.ts — BUT-1517 requireAdmin, called from the app's admin pool view
   "createIngredientChangePr", // admin/create-ingredient-change-pr.ts — requireAdmin, called from the admin web's Förslag tab
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts

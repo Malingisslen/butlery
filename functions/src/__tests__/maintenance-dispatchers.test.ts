@@ -225,6 +225,7 @@ async function testTimeoutBudgetsFitTheChain(): Promise<void> {
     "trackDayNRetention",
     "computeFeatureRetention",
     "correlateNotificationEffectiveness",
+    "detectAnomalies",
   ];
   const full = DAILY_ANALYTICS_TASKS.filter((t) => fullBudget.includes(t.name));
   record(
