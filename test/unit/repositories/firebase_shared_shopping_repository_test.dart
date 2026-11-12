@@ -217,14 +217,14 @@ void main() {
           equals([testUserId, testFriendId]),
         );
 
-        // ...and their unread badge counted this share once.
+        // ...and sharing writes no unread counter (BUT-2443).
         final counters = await fakeFirestore
             .collection('users')
             .doc(testFriendId)
             .collection('counters')
             .doc('shared_content')
             .get();
-        expect(counters.data()?['unreadSharedShoppingLists'], equals(1));
+        expect(counters.exists, isFalse);
       });
 
       test(
@@ -534,14 +534,6 @@ void main() {
     // ===== QUERY OPERATIONS =====
 
     group('Query Operations', () {
-      test('should get unread count of 0 when no counter exists', () async {
-        // getUnreadCountForUser uses denormalized counters.
-        // Without seeding, the counter doc doesn't exist -> returns 0.
-        final unreadCount = await repository.getUnreadCountForUser(testUserId);
-
-        expect(unreadCount, 0);
-      });
-
       test('should get joined shopping lists for user', () async {
         final list1 = createSharedShoppingList(
           id: 'list-1',

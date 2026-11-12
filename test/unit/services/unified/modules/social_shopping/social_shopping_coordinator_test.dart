@@ -8,7 +8,7 @@
 /// Behaviours pinned:
 /// - Identity: `serviceName` (`SocialShoppingCoordinator`) and
 ///   `contentTypeName` (`shopping_list`). Both are interpolated into log
-///   strings and used for counter routing; a rename here is silent damage.
+///   strings; a rename here is silent damage.
 /// - `getContentTitle`: returns the list's `name` verbatim. The "Delat
 ///   med mig" card title comes from here — a wrong field would render
 ///   blank cards or leak description text into the title slot.
@@ -62,8 +62,7 @@
 ///   errors and returns `[]` without calling `setError`. Same shape as
 ///   BUT-1087 (SocialRecipeService) and BUT-1094 (SocialMenuCoordinator).
 ///   `loadStatusForShoppingList` (line 349) ALSO swallows without error.
-///   The base class's `markAsViewed` (base line 408) and `getUnreadCount`
-///   (base line 425) also lack `_error`. File as "BUT-1094 family extension".
+///   The base class's `markAsViewed` (base line 408) also lacks `_error`. File as "BUT-1094 family extension".
 ///
 /// - **Save-through throws UnsupportedError (BUT-1105 fix)**:
 ///   `ShoppingListServiceAdapter.saveShoppingList` now throws [UnsupportedError]
@@ -249,9 +248,7 @@ void main() {
         expect(coordinator.serviceName, 'SocialShoppingCoordinator');
       });
 
-      /// Pins contentTypeName — interpolated into log strings AND used by
-      /// the BaseSharedContentRepository for counter routing. A typo
-      /// would silently route counters to the wrong content type.
+      /// Pins contentTypeName — interpolated into log strings.
       test('contentTypeName is "shopping_list"', () {
         expect(coordinator.contentTypeName, 'shopping_list');
       });
@@ -1011,38 +1008,6 @@ void main() {
         expect(out, isTrue);
         verify(() => mockRepo.undismiss('s1', 'me-uid')).called(1);
       });
-
-      /// getUnreadCount delegates to repo. Bug-family note: failure on
-      /// this path returns 0 silently (BUT-1094 family, base class).
-      test('getUnreadShoppingListCount → forwards to repo', () async {
-        when(
-          () => mockRepo.getUnreadCountForUser('me-uid'),
-        ).thenAnswer((_) async => 7);
-
-        final out = await coordinator.getUnreadShoppingListCount();
-
-        expect(out, 7);
-      });
-
-      /// getUnreadCount on throw → 0 AND setError populated (BUT-1094 fix
-      /// at base_social_coordinator.dart:425, commit fee1147ae).
-      test(
-        'getUnreadShoppingListCount on throw → 0 + setError (BUT-1094 fix)',
-        () async {
-          when(
-            () => mockRepo.getUnreadCountForUser(any()),
-          ).thenThrow(Exception('boom'));
-
-          final out = await coordinator.getUnreadShoppingListCount();
-
-          expect(out, 0);
-          expect(
-            lastError,
-            isNotNull,
-            reason: 'BUT-1094 fix: base getUnreadCount now calls setError',
-          );
-        },
-      );
     });
   });
 }

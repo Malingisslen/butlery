@@ -40,7 +40,7 @@
 /// - **BUT-1087 (inconsistent _error population)**: BaseSocialCoordinator's
 ///   `dismiss*` / `restore*` / `import*` paths populate `_error` on failure
 ///   via `_setError(sanitizeErrorForUser(e))`, but `markAsViewed` (line
-///   408) and `getUnreadCount` (line 425) silently swallow without
+///   408) silently swallows without
 ///   touching `_error`. SocialMenuCoordinator's `getSharedMenusForUser`
 ///   and `getSharedMenuById` ALSO swallow without setting error. Same
 ///   shape as the BUT-1087 finding from batch 4.
@@ -361,8 +361,7 @@ void main() {
         expect(coordinator.serviceName, 'SocialMenuCoordinator');
       });
 
-      /// Pins contentTypeName — interpolated into log strings and used for
-      /// counter-field routing in the base repo. A typo here breaks both.
+      /// Pins contentTypeName — interpolated into log strings.
       test('contentTypeName is "menu"', () {
         expect(coordinator.contentTypeName, 'menu');
       });

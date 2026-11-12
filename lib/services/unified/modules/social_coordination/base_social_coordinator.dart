@@ -486,24 +486,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     }
   }
 
-  /// Get unread shared content count
-  Future<int> getUnreadCount() async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      AppLogger.warning('Cannot get unread count: No authenticated user');
-      return 0;
-    }
-
-    try {
-      return await sharedRepository.getUnreadCountForUser(currentUserId);
-    } catch (e) {
-      // BUT-1094: populate _error so failed inbox counts surface in the UI.
-      AppLogger.error('Failed to get unread $contentTypeName count: $e');
-      _setError(sanitizeErrorForUser(e));
-      return 0;
-    }
-  }
-
   /// Send invitation notifications (placeholder for future implementation)
   Future<void> sendInvitationNotifications(
     String contentId,

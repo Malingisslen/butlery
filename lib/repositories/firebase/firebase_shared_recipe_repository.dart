@@ -117,9 +117,6 @@ class FirebaseSharedRecipeRepository
   String get contentTypeName => 'recipe';
 
   @override
-  String get counterTypeKey => 'shared_recipes';
-
-  @override
   String get resourceType => 'shared_recipe';
 
   @override
@@ -334,7 +331,6 @@ class FirebaseSharedRecipeRepository
   @override
   Future<void> markAsViewed(String recipeId, String userId) async {
     await addView(recipeId, userId);
-    await decrementUnreadCounter(userId);
   }
 
   /// The recipe [shared] points at, read from its owner's collection, or null
@@ -424,13 +420,6 @@ class FirebaseSharedRecipeRepository
       }
       await batch.commit();
     }
-  }
-
-  /// Get unread shared recipes count for user
-  @override
-  Future<int> getUnreadCountForUser(String userId) async {
-    // Delegate to base class method
-    return await super.getUnreadCountForUser(userId);
   }
 
   /// Get imported shared recipes for user
