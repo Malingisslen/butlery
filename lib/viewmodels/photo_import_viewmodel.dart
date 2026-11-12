@@ -11,47 +11,21 @@ import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
-import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
-import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     show ServiceLocator;
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/import/document_scan_service.dart';
-import 'package:butlery/services/import/import_event.dart';
-import 'package:butlery/services/import/import_manager_result.dart';
-import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/os_permission_helper.dart';
 
-/// Resolves the camera or photo-library permission for a pick (flow 07).
-/// The view supplies it, because our explanation before the system prompt
-/// needs a BuildContext.
-///
-/// [askAgain] is true after an explicit "Fråga igen": the user has just asked
-/// for the system prompt, so our explanation is not repeated
-typedef PhotoPermissionResolver =
-    Future<OsPermissionOutcome> Function(ImageSource source, bool askAgain);
+import 'package:butlery/viewmodels/photo_import/photo_import_pick_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_read_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_state_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_page.dart';
 
-/// The permission state the photo-import view explains inline: which source
-/// was asked for and what the OS answered.
-@immutable
-class PhotoPermissionNotice {
-  const PhotoPermissionNotice({
-    required this.source,
-    required this.outcome,
-    this.addAsPage = false,
-  });
-
-  final ImageSource source;
-  final OsPermissionOutcome outcome;
-
-  /// The refused pick was "add a page", so "Fråga igen" adds one too.
-  final bool addAsPage;
-}
+export 'package:butlery/viewmodels/photo_import/photo_permission_notice.dart';
 
 /// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
 /// auto-parse to a Recipe. Extends [ImportBaseViewModel] for the shared
@@ -61,105 +35,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
     with
         PhotoImportHeirloomFormMixin,
         PhotoImportDraftMixin,
-        PhotoImportAiOfferMixin {
-  /// Raw image bytes from the selected photo (OCR input + preview).
-  /// In multi-page mode (BUT-903) this mirrors the FIRST page so every existing
-  /// single-image consumer — preview thumbnail, heirloom scan, draft staging —
-  /// keeps working unchanged. The full ordered set lives in [_pages].
-  Uint8List? _imageBytes;
-
-  /// Extracted OCR text awaiting parse/review. In multi-page mode this is the
-  /// per-page OCR text concatenated in page order, so the single downstream
-  /// parse sees the whole recipe spread as one document.
-  String _ocrText = '';
-
-  /// BUT-903: ordered photo pages (max [maxPages]) combined into ONE recipe.
-  /// A long recipe split across several cookbook pages OCRs each page then
-  /// concatenates the text in this order before a single parse. The single-page
-  /// flow is simply the `length == 1` case — [_imageBytes]/[_ocrText] stay the
-  /// live combined state so no existing consumer changes.
-  final List<_PhotoPage> _pages = [];
-
-  /// This import has written its one parse event (BUT-2238). Adding, removing
-  /// or reordering a page re-parses the same import, so it writes no second.
-  bool _measured = false;
-
-  /// The AI reading has read this import, so a parse that finds nothing is
-  /// not offered to it again.
-  bool _aiUsed = false;
-
-  /// BUT-684: user opted in to handwritten-recipe mode. When true the pick
-  /// pipeline routes the image through the LLM-vision path (which uses a
-  /// handwriting-tuned Cloud Function prompt) instead of the char-OCR cascade,
-  /// which reliably fails on handwriting.
-  bool _isHandwritten = false;
-
-  /// Last OCR quality score from image assessment (0.0-1.0).
-  /// Enables quality-based error messaging and user guidance on image quality.
-  double? _lastQualityScore;
-
-  /// Last OCR quality recommendations from image assessment.
-  /// Provides actionable suggestions for improving OCR success (lighting, focus, etc.).
-  List<String>? _lastRecommendations;
-
-  /// Last OCR confidence score from successful extraction (0.0-1.0).
-  /// Indicates reliability of extracted text for user confidence and retry decisions.
-  double? _lastConfidence;
-
-  /// All recipes detected on the page. A cookbook spread can hold several;
-  /// when >1 the view shows a picker instead of the single "edit" CTA. For a
-  /// single recipe this holds one item AND [parsedRecipe] is set, so every
-  /// existing single-recipe consumer behaves exactly as before.
-  final List<Recipe> _parsedRecipes = [];
-
-  /// Flow 07: resolves the permission before a pick. Null (tests, and any
-  /// caller without a view) lets the picker ask the OS itself, as before.
-  PhotoPermissionResolver? permissionResolver;
-
-  PhotoPermissionNotice? _permissionNotice;
-
-  /// Where the last page came from; the handwriting path reports it.
-  ImageSource _lastPickSource = ImageSource.gallery;
-
-  /// What the view should explain about the last permission answer: a no, a
-  /// permanent no, a device block, or the limited "valda bilder" state.
-  /// Null when there is nothing to say.
-  PhotoPermissionNotice? get permissionNotice => _permissionNotice;
-
-  /// "Fråga igen" after a no: asks the OS again
-  /// for the same source, without repeating our explanation, and picks on a
-  /// yes.
-  Future<void> askPermissionAgain() async {
-    final notice = _permissionNotice;
-    if (notice == null) return;
-    await _pickImageAndProcess(
-      notice.source,
-      addAsPage: notice.addAsPage,
-      askAgain: true,
-    );
-  }
-
-  /// "Välj ur bildbiblioteket" after the camera was refused
-  /// Keeps what the refused pick was for: a
-  /// refused add-page leads to adding a page from the library, so the pages
-  /// already taken stay; a refused fresh import starts a fresh one.
-  Future<void> chooseFromGalleryInstead() async {
-    final addAsPage = _permissionNotice?.addAsPage ?? false;
-    clearPermissionNotice();
-    if (addAsPage) {
-      await addPageFromGallery();
-    } else {
-      await pickImageFromGallery();
-    }
-  }
-
-  /// Clears the permission notice (the user chose a fallback).
-  void clearPermissionNotice() {
-    if (_permissionNotice == null) return;
-    _permissionNotice = null;
-    notifyListeners();
-  }
-
+        PhotoImportAiOfferMixin,
+        PhotoImportStateMixin,
+        PhotoImportPickMixin,
+        PhotoImportReadMixin {
   // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
 
   /// [draftManager] is a test seam (BUT-910) — production passes nothing.
@@ -191,105 +70,30 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
   }
 
-  /// BUT-903: hard cap on combinable pages. A single recipe rarely spans more
-  /// than a few cookbook pages; the cap also bounds OCR quota per import.
-  static const int maxPages = 5;
+  static const int maxPages = kPhotoImportMaxPages;
 
   /// Opens the native document scanner for the camera button when the
   /// `enable_document_scanner` flag is on; otherwise reports itself unavailable.
   final DocumentScanService _documentScanner;
 
   @override
-  Uint8List? get imageBytes => _imageBytes;
+  DocumentScanService get documentScanner => _documentScanner;
 
-  /// BUT-684: whether the user marked the current import as a handwritten
-  /// recipe (drives the toggle on the photo-import screen).
-  bool get isHandwritten => _isHandwritten;
-
-  /// BUT-1460: the toggle is freely switchable except while an import is in
-  /// flight. Handwritten mode is a single-image REPLACE flow — a fresh pick
-  /// clears the previous capture — so there is no multi-page data-loss to guard
-  /// against and no reason to lock the toggle once a capture exists (the old
-  /// `_pages.isEmpty` lock trapped the user ON after a handwritten capture). We
-  /// only block mid-processing, where flipping would race the running pipeline.
-  ///
-  /// Q4-04 stages pages before reading, and the handwriting path reads one
-  /// image. So handwritten mode cannot be switched on while more than one
-  /// page is staged: "Läs av N sidor" would otherwise read the first page and
-  /// drop the rest without a word. Switching it off is always allowed.
-  bool get canToggleHandwritten =>
-      !isProcessing && (_isHandwritten || _pages.length <= 1);
-
-  /// BUT-684: flip handwritten mode. Applies to the NEXT capture — the toggle
-  /// sits next to the pick action so the user sets it before choosing a photo.
-  /// Ignored while an import is processing (see [canToggleHandwritten]).
-  void setHandwritten(bool value) {
-    if (isDisposed || _isHandwritten == value || !canToggleHandwritten) return;
-    _isHandwritten = value;
-    notifyListeners();
-  }
-
-  String get ocrText => _ocrText;
-
-  bool get hasImage => _imageBytes != null;
-
-  bool get hasOcrResult => _ocrText.isNotEmpty;
-
-  /// Q4-04 = A: pages are taken or chosen
-  /// first, and the text is read only when the user presses "Läs av N
-  /// sidor". This counts the pages still
-  /// waiting to be read.
-  int get unreadPageCount => _pages.where((p) => !p.isRead).length;
-
-  /// The "Läs av N sidor" button can run.
-  bool get canReadPages => unreadPageCount > 0 && !isProcessing;
-
-  /// BUT-903: the ordered image bytes for every added page (for the page-strip
-  /// thumbnails). One entry per page; index 0 is the first/cover page.
-  List<Uint8List> get pageImages =>
-      List.unmodifiable(_pages.map((p) => p.bytes));
-
-  /// Number of pages currently combined into the import.
-  int get pageCount => _pages.length;
-
-  /// True once a second page exists — the view shows the page strip + reorder
-  /// affordances only then, keeping the single-photo flow visually unchanged.
-  bool get hasMultiplePages => _pages.length > 1;
-
-  /// False once the page cap is reached, so the "add page" CTA can disable.
-  bool get canAddPage => _pages.length < maxPages;
-
-  /// Last OCR quality score for error messaging and user guidance (Phase 2 Enhancement).
-  /// Returns quality score from image assessment (0.0-1.0) enabling quality-based
-  /// error messages and recommendations display in UI.
-  double? get qualityScore => _lastQualityScore;
-
-  /// Last OCR quality recommendations for user guidance (Phase 2 Enhancement).
-  /// Returns actionable suggestions from quality assessment for improving OCR success.
-  List<String>? get recommendations => _lastRecommendations;
-
-  /// Last OCR confidence score for user confidence indication (Phase 2 Enhancement).
-  /// Returns confidence of extracted text (0.0-1.0) enabling reliability display in UI.
-  double? get confidence => _lastConfidence;
-
-  /// All recipes detected on the current page (≥1 when parsing succeeded).
-  List<Recipe> get parsedRecipes => List.unmodifiable(_parsedRecipes);
-
-  /// True when the page held more than one recipe → show the picker.
-  bool get hasMultipleRecipes => _parsedRecipes.length > 1;
+  @override
+  Uint8List? get imageBytes => photoBytes;
 
   /// BUT-1171: test-only seams that populate the REAL backing fields the
-  /// production import pipeline reads (`_ocrText`, `_imageBytes`). Tests now
+  /// production import pipeline reads (`photoOcrText`, `photoBytes`). Tests now
   /// set the real fields, exercising the production code.
   @visibleForTesting
   void setOcrTextForTesting(String text) {
-    _ocrText = text;
+    photoOcrText = text;
     notifyListeners();
   }
 
   @visibleForTesting
   void setImageBytesForTesting(Uint8List? bytes) {
-    _imageBytes = bytes;
+    photoBytes = bytes;
     notifyListeners();
   }
 
@@ -297,7 +101,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// OCR pipeline) so tests can verify single vs. multi routing without a
   /// camera/OCR round-trip.
   @visibleForTesting
-  Future<void> parseOcrTextForTesting(String text) => _autoParseOcrText(text);
+  Future<void> parseOcrTextForTesting(String text) => autoParseOcrText(text);
 
   /// BUT-903: append a page with pre-extracted OCR text (skipping the
   /// camera/OCR round-trip) and run the real combine+parse path, so tests can
@@ -316,21 +120,16 @@ class PhotoImportViewModel extends ImportBaseViewModel
     PageLayout? layout,
   }) async {
     if (!canAddPage) return;
-    _pages.add(
-      _PhotoPage(bytes: bytes, text: text, layout: layout, isRead: true),
+    photoPages.add(
+      PhotoPage(bytes: bytes, text: text, layout: layout, isRead: true),
     );
-    await _recombineAndParse();
+    await recombineAndParse();
   }
 
   /// Q4-04: stages a picked page without reading it, exactly as a capture
   /// does, so tests can prove that nothing is read until [readPages].
   @visibleForTesting
-  void stagePageForTesting(Uint8List bytes) => _stagePage(bytes);
-
-  /// OCR processing state indicator for UI progress indication and interaction control.
-  /// Indicates active OCR processing operations for loading indicators
-  /// and user interaction management during photo processing.
-  bool get isProcessing => isLoading;
+  void stagePageForTesting(Uint8List bytes) => stagePage(bytes);
 
   /// Import readiness indicator based on OCR results availability.
   /// Determines whether photo import can proceed based on OCR text availability
@@ -348,293 +147,35 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   @override
   void clearImportData() {
-    _measured = false;
-    _aiUsed = false;
+    importMeasured = false;
+    aiReadingUsed = false;
     clearAiOffer();
     super.clearImportData();
   }
-
-  /// Captures a photo from the camera and runs the OCR + auto-parse pipeline.
-  /// Starts a fresh import — replaces any existing pages.
-  Future<void> pickImageFromCamera() async {
-    await _pickImageAndProcess(ImageSource.camera);
-  }
-
-  /// Selects an image from the gallery and runs the OCR + auto-parse pipeline.
-  /// Starts a fresh import — replaces any existing pages.
-  Future<void> pickImageFromGallery() async {
-    await _pickImageAndProcess(ImageSource.gallery);
-  }
-
-  /// BUT-903: append a camera photo as the next page of the SAME recipe, then
-  /// re-OCR-combine + re-parse. No-op (with an error) once the cap is hit.
-  Future<void> addPageFromCamera() async {
-    await _pickImageAndProcess(ImageSource.camera, addAsPage: true);
-  }
-
-  /// BUT-903: append a gallery photo as the next page of the same recipe.
-  Future<void> addPageFromGallery() async {
-    await _pickImageAndProcess(ImageSource.gallery, addAsPage: true);
-  }
-
-  /// BUT-941: non-fatal note from the last [loadImagesFromPaths] run (e.g. the
-  /// over-cap message). Consumed once by the view to show a snackbar so a
-  /// truncated share is never silent.
-  String? _infoMessage;
-  String? consumeInfoMessage() {
-    final msg = _infoMessage;
-    _infoMessage = null;
-    return msg;
-  }
-
-  /// BUT-941: seed the import with photos shared from the OS share sheet.
-  /// Single- and multi-photo share reuse the multi-page OCR pipeline. Each
-  /// page is OCR'd, then the whole set is combined + parsed ONCE (not once
-  /// per page) to bound LLM parse cost on a batch share.
-  ///
-  /// Resilient by design: a corrupt, oversized, or blank page is skipped;
-  /// only a batch where every page failed surfaces an error.
-  Future<void> loadImagesFromPaths(List<String> paths) async {
-    if (isDisposed || paths.isEmpty) return;
-
-    final overCap = paths.length > maxPages;
-    final selected = overCap ? paths.sublist(0, maxPages) : paths;
-
-    clearImportData();
-    _pages.clear();
-
-    await executeAsyncVoid(() async {
-      var staged = 0;
-      for (final path in selected) {
-        try {
-          final bytes = await XFile(path).readAsBytes();
-          if (bytes.length > UploadConstants.maxAiReaderPageBytes ||
-              bytes.isEmpty) {
-            continue;
-          }
-          // Q4-04: shared photos become pages; the text is read when the
-          // user presses "Läs av N sidor", as for pages taken in the app.
-          _stagePage(bytes, notify: false);
-          staged++;
-        } catch (_) {
-          // Skip this page; a single bad attachment must not abort the batch.
-        }
-      }
-      if (staged == 0) {
-        throw Exception(AppLocale.current.shareImportUnreadable);
-      }
-      notifyListeners();
-      // Flag truncation only on a SUCCESSFUL staging — never staple a
-      // "max N pages" note onto the all-failed error banner.
-      if (overCap) {
-        _infoMessage = AppLocale.current.importPhotoPagesMaxReached(maxPages);
-      }
-    }, errorPrefix: AppLocale.current.errorGeneric);
-  }
-
-  /// Q4-04: reads every page not yet read — OCR (or the handwriting path)
-  /// page by page in page order — then combines and parses the recipe once.
-  Future<void> readPages() async {
-    if (isDisposed || unreadPageCount == 0) return;
-    await executeAsyncVoid(() async {
-      clearError();
-      clearAiOffer();
-      if (_isHandwritten && _pages.length == 1) {
-        // Handwritten mode is a single-image flow (BUT-1460). With more than
-        // one page (not reachable through the toggle, see
-        // canToggleHandwritten) every page goes through the printed path
-        // below rather than being dropped.
-        // No phone reading exists for handwriting, so offline there is
-        // nothing to try and no point asking for consent.
-        if (!isOnline) {
-          setError(AppLocale.current.importOfflineMessage);
-          return;
-        }
-        final page = _pages.first;
-        _lastQualityScore = null;
-        _lastRecommendations = null;
-        _lastConfidence = null;
-        // The phone cannot read handwriting, so the photo would have to be
-        // sent; without consent that is asked first.
-        if (!await hasAiConsent()) {
-          await offerAi(PhotoAiOfferReason.handwriting);
-          return;
-        }
-        _aiUsed = true;
-        await _extractWithAi(page.bytes, _lastPickSource);
-        return;
-      }
-      var phoneMissedAPage = false;
-      for (var i = 0; i < _pages.length; i++) {
-        final page = _pages[i];
-        if (page.isRead) continue;
-        await _assessQuality(page.bytes);
-        final ocrResult = await OCRExtractionService.instance.extractText(
-          page.bytes,
-        );
-        if (!ocrResult.isSuccessful || ocrResult.text.isEmpty) {
-          final message = _buildEnhancedErrorMessage(ocrResult);
-          // A photo the quality gate refused is too small or blurred for the
-          // AI reading too, so its own advice is shown instead of the offer.
-          if (ocrResult.processingMethod == 'pre_ocr_quality_gate') {
-            throw Exception(message);
-          }
-          phoneMissedAPage = true;
-          continue;
-        }
-        _pages[i] = _PhotoPage(
-          bytes: page.bytes,
-          text: ocrResult.text,
-          layout: ocrResult.layout,
-          isRead: true,
-        );
-        _lastConfidence = ocrResult.confidence;
-      }
-      // Every page gets the phone's try first, so only the pages it missed
-      // are offered to the AI reading.
-      if (phoneMissedAPage) {
-        await offerAi(PhotoAiOfferReason.phoneCouldNotRead);
-        return;
-      }
-      await _recombineAndParse();
-      if (_parsedRecipes.isEmpty && !_aiUsed) {
-        await offerAi(PhotoAiOfferReason.noRecipeFound);
-      }
-    }, errorPrefix: AppLocale.current.errorGeneric);
-  }
-
-  /// "Ja, skicka fotot": records the consent if it is not given yet, then lets
-  /// the AI reading read the photo. With one page the AI's recipe is used as
-  /// it comes; with several, each page the phone could not read (or every
-  /// page, when the phone's text held no recipe) is read and the text joined.
-  Future<void> acceptAiOffer() async {
-    if (isDisposed || aiOffer == null) return;
-    if (!isOnline) {
-      setError(AppLocale.current.importOfflineMessage);
-      return;
-    }
-    final reason = takeAiOffer();
-    await executeAsyncVoid(() async {
-      clearError();
-      if (!await ensureAiConsent()) {
-        if (reason != null) await offerAi(reason);
-        return;
-      }
-      _aiUsed = true;
-      if (_pages.length == 1) {
-        await _extractWithAi(_pages.first.bytes, _lastPickSource);
-        return;
-      }
-      for (var i = 0; i < _pages.length; i++) {
-        final page = _pages[i];
-        if (page.isRead && reason != PhotoAiOfferReason.noRecipeFound) continue;
-        final result = await _readWithAi(page.bytes, _lastPickSource);
-        final text = result.isSuccess && result.recipe != null
-            ? _recipeToReviewText(result.recipe!)
-            : result.extractedText.orEmpty().trim();
-        if (text.isEmpty) {
-          final denied = result.rateLimitDenied;
-          setError(
-            denied != null
-                ? denied.swedishMessage
-                : (result.errorMessage ?? AppLocale.current.errorGeneric),
-          );
-          return;
-        }
-        _pages[i] = _PhotoPage(bytes: page.bytes, text: text, isRead: true);
-      }
-      await _recombineAndParse();
-    }, errorPrefix: AppLocale.current.errorGeneric);
-  }
-
-  /// "Nej, jag skriver själv": nothing is sent. What the phone read stays as
-  /// editable text, and a page it could not read counts as read with no text.
-  Future<void> declineAiOffer() async {
-    if (isDisposed || aiOffer == null) return;
-    takeAiOffer();
-    for (var i = 0; i < _pages.length; i++) {
-      if (!_pages[i].isRead) {
-        _pages[i] = _PhotoPage(bytes: _pages[i].bytes, text: '', isRead: true);
-      }
-    }
-    await _recombineAndParse();
-  }
-
-  /// BUT-903: drop the page at [index] and recombine. Removing the last page
-  /// clears the whole import (same as [clearPhoto]).
-  Future<void> removePage(int index) async {
-    if (isDisposed || index < 0 || index >= _pages.length) return;
-    _pages.removeAt(index);
-    clearAiOffer();
-    if (_pages.isEmpty) {
-      clearPhoto();
-      return;
-    }
-    await _recombineAndParse();
-  }
-
-  /// BUT-903: move the page at [oldIndex] to [newIndex] (drag-to-reorder) and
-  /// recombine — page order is the OCR concatenation order, so reordering can
-  /// fix an out-of-sequence capture without re-shooting.
-  Future<void> reorderPage(int oldIndex, int newIndex) async {
-    if (isDisposed) return;
-    if (oldIndex < 0 || oldIndex >= _pages.length) return;
-    var target = newIndex;
-    // ReorderableListView reports an index past the end when dropping last.
-    if (target > oldIndex) target -= 1;
-    target = target.clamp(0, _pages.length - 1);
-    if (target == oldIndex) return;
-    final page = _pages.removeAt(oldIndex);
-    _pages.insert(target, page);
-    clearAiOffer();
-    await _recombineAndParse();
-  }
-
-  /// Re-runs OCR on the current image after a failure — without this the user
-  /// is stuck in a navigation trap (failed OCR, no recovery besides re-shoot).
-  Future<void> retryOcr() async {
-    if (_imageBytes == null) {
-      setError(AppLocale.current.errorNoImageToProcess);
-      return;
-    }
-
-    // Q4-04: a failed read leaves its page unread, so a retry reads the
-    // pages still waiting — the ones already read keep their text.
-    if (_pages.isEmpty) _stagePage(_imageBytes!, notify: false);
-    if (unreadPageCount == 0) {
-      // Nothing waits (a restored draft): read every page again.
-      for (var i = 0; i < _pages.length; i++) {
-        _pages[i] = _PhotoPage(bytes: _pages[i].bytes, text: '');
-      }
-    }
-    await readPages();
-  }
-
-  /// Whether the retry button should show (image still in memory).
-  bool get canRetryOcr => _imageBytes != null;
 
   // BUT-410 heirloom getters/setters live in PhotoImportHeirloomFormMixin.
 
   /// Clears all photo + OCR state. Call sites are explicit user actions only
   /// (preview X button, post-save cleanup) — see the draft note below.
+  @override
   void clearPhoto() {
     if (isDisposed) return;
 
-    _imageBytes = null;
-    _ocrText = '';
-    _pages.clear();
-    _lastQualityScore = null;
-    _lastRecommendations = null;
-    _lastConfidence = null;
-    _parsedRecipes.clear();
-    _permissionNotice = null;
+    photoBytes = null;
+    photoOcrText = '';
+    photoPages.clear();
+    lastQualityScore = null;
+    lastRecommendations = null;
+    lastConfidence = null;
+    parsedRecipeList.clear();
+    permissionNoticeState = null;
     // BUT-684: the handwritten opt-in is per-import. Reset it here (the
     // explicit X-button / post-save cleanup) so it isn't sticky across imports
     // and doesn't silently keep the next fresh import on the costlier LLM path.
     // NOT reset in clearImportData(): that runs mid-pick (fresh capture) BEFORE
     // the handwritten branch reads the flag, so resetting there would wipe the
     // toggle the user just set and break the feature.
-    _isHandwritten = false;
+    handwrittenMode = false;
     // Heirloom form clears with the photo — they belong to the same capture.
     clearHeirloomForm();
     clearImportData();
@@ -660,14 +201,14 @@ class PhotoImportViewModel extends ImportBaseViewModel
     if (draft == null || isDisposed) return false;
     final bytes = await readDraftImage(draft);
     if (isDisposed) return false;
-    _imageBytes = bytes;
-    _ocrText = draft.ocrText;
+    photoBytes = bytes;
+    photoOcrText = draft.ocrText;
     // BUT-903: the draft schema stages one image + the combined OCR text, so a
     // restore rebuilds a single-page set. The user can add more pages on top.
-    _pages
+    photoPages
       ..clear()
       ..add(
-        _PhotoPage(
+        PhotoPage(
           bytes: bytes ?? Uint8List(0),
           text: draft.ocrText,
           isRead: true,
@@ -675,202 +216,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
       );
     notifyListeners();
     // The draft's import was measured when it was first read.
-    _measured = true;
-    await _autoParseOcrText(_ocrText, reflow: true);
+    importMeasured = true;
+    await autoParseOcrText(photoOcrText, reflow: true);
     return true;
   }
 
   @override
   void clearAll() => clearPhoto();
-
-  /// Shared camera/gallery pipeline: pick → validate (format, size within the AI reader's limit) →
-  /// quality gate → OCR → combine → auto-parse.
-  ///
-  /// [addAsPage] = false starts a fresh import (replaces all pages); true
-  /// (BUT-903) appends the picked image as the next page of the current recipe
-  /// and re-runs the combine+parse over every page in order.
-  Future<void> _pickImageAndProcess(
-    ImageSource source, {
-    bool addAsPage = false,
-    bool askAgain = false,
-  }) async {
-    if (addAsPage && !canAddPage) {
-      setError(AppLocale.current.importPhotoPagesMaxReached(maxPages));
-      return;
-    }
-    // Flow 07: camera and photos go through the permission contract — our
-    // explanation before the system prompt, and a typed answer the view
-    // explains.
-    final resolver = permissionResolver;
-    if (resolver != null) {
-      final outcome = await resolver(source, askAgain);
-      if (isDisposed) return;
-      if (!outcome.isUsable) {
-        _permissionNotice = PhotoPermissionNotice(
-          source: source,
-          outcome: outcome,
-          addAsPage: addAsPage,
-        );
-        notifyListeners();
-        return;
-      }
-      // Limited photo access is its own state with a way to choose more
-      // anything else clears the notice.
-      _permissionNotice = outcome == OsPermissionOutcome.limited
-          ? PhotoPermissionNotice(source: source, outcome: outcome)
-          : null;
-    }
-
-    if (!addAsPage) {
-      clearImportData();
-      _pages.clear();
-    }
-
-    await executeAsyncVoid(() async {
-      final remaining = addAsPage ? maxPages - _pages.length : maxPages;
-      final multi =
-          source == ImageSource.gallery && !_isHandwritten && remaining > 1;
-      final scan = source == ImageSource.camera
-          ? await _documentScanner.scanPages(
-              maxPages: _isHandwritten ? 1 : remaining,
-            )
-          : const DocumentScanUnavailable();
-      if (scan is DocumentScanDenied) {
-        _permissionNotice = PhotoPermissionNotice(
-          source: source,
-          outcome: OsPermissionOutcome.denied,
-          addAsPage: addAsPage,
-        );
-        notifyListeners();
-        return;
-      }
-
-      // Picks arrive in selection order, which becomes the page order. The
-      // cap counts valid photos, so a bad one never costs a good one its slot.
-      final staged = <Uint8List>[];
-      Object? firstError;
-      var overCap = false;
-      if (scan is DocumentScanCancelled) {
-        throw Exception(AppLocale.current.errorNoImageSelected);
-      } else if (scan is DocumentScanPages) {
-        overCap = scan.overCap && !_isHandwritten;
-        for (final page in scan.pages) {
-          try {
-            staged.add(_checkedSize(page));
-          } catch (e) {
-            firstError ??= e;
-          }
-        }
-      } else {
-        final List<XFile> picked = multi
-            ? await _pickGalleryImages(remaining)
-            : await _pickSingleImage(source);
-
-        if (picked.isEmpty) {
-          throw Exception(AppLocale.current.errorNoImageSelected);
-        }
-        for (final file in picked) {
-          if (staged.length == remaining) {
-            overCap = true;
-            break;
-          }
-          try {
-            staged.add(await _validatedBytes(file));
-          } catch (e) {
-            firstError ??= e;
-          }
-        }
-      }
-      // A single pick keeps its specific error; a batch only fails when no
-      // page survived, so one bad photo never discards the others.
-      if (staged.isEmpty) throw firstError!;
-
-      // Q4-04: pages wait here until "Läs av N sidor". Handwritten mode is a
-      // single-image flow, so a new pick replaces the page (BUT-1460).
-      if (_isHandwritten) _pages.clear();
-      _lastPickSource = source;
-      for (final bytes in staged) {
-        _stagePage(bytes, notify: false);
-      }
-      notifyListeners();
-      if (overCap) {
-        _infoMessage = AppLocale.current.importPhotoPagesMaxReached(maxPages);
-      }
-    }, errorPrefix: AppLocale.current.errorGeneric);
-  }
-
-  /// Test seam: the real gallery picker needs a platform channel.
-  @visibleForTesting
-  Future<List<XFile>> Function(int limit)? galleryPickerOverride;
-
-  Future<List<XFile>> _pickGalleryImages(int limit) async {
-    final override = galleryPickerOverride;
-    if (override != null) return override(limit);
-    return ImagePicker().pickMultiImage(
-      maxWidth: 2048,
-      maxHeight: 2048,
-      imageQuality: 85,
-      limit: limit,
-    );
-  }
-
-  Future<List<XFile>> _pickSingleImage(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 2048,
-      maxHeight: 2048,
-      imageQuality: 85,
-    );
-    return picked == null ? const [] : [picked];
-  }
-
-  Future<Uint8List> _validatedBytes(XFile picked) async {
-    final fileName = picked.name.toLowerCase();
-    if (!fileName.endsWith('.jpg') &&
-        !fileName.endsWith('.jpeg') &&
-        !fileName.endsWith('.png')) {
-      throw Exception(AppLocale.current.errorImageFormatUnsupported);
-    }
-    return _checkedSize(await picked.readAsBytes());
-  }
-
-  /// A page the AI reader's server would refuse is refused here, before the
-  /// user waits on an upload that cannot succeed.
-  Uint8List _checkedSize(Uint8List bytes) {
-    if (bytes.length > UploadConstants.maxAiReaderPageBytes) {
-      throw Exception(
-        AppLocale.current.errorImageTooLarge(
-          (bytes.length / (1024 * 1024)).toStringAsFixed(1),
-        ),
-      );
-    }
-    return bytes;
-  }
-
-  /// Adds [bytes] as the next page, unread, and drops any combined text and
-  /// parse — they no longer describe every page.
-  void _stagePage(Uint8List bytes, {bool notify = true}) {
-    _pages.add(_PhotoPage(bytes: bytes, text: ''));
-    _imageBytes = _pages.first.bytes;
-    _ocrText = '';
-    _parsedRecipes.clear();
-    clearAiOffer();
-    if (notify) notifyListeners();
-  }
-
-  /// BUT-660 pre-flight quality assessment on the printed-text path. A
-  /// rejected image throws before any OCR quota is spent.
-  Future<void> _assessQuality(Uint8List bytes) async {
-    final qualityAssessment = await OCRExtractionService.instance
-        .assessImageQuality(bytes);
-    _lastQualityScore = qualityAssessment.qualityScore;
-    _lastRecommendations = qualityAssessment.recommendations;
-    if (qualityAssessment.isRejected) {
-      throw Exception(
-        qualityAssessment.rejectionReason ?? AppLocale.current.ocrImageRejected,
-      );
-    }
-  }
 
   /// Test seam for a pick followed by "Läs av": stages [bytes] as the real
   /// pick does (a fresh pick replaces the pages), then reads them through
@@ -883,12 +235,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
     ImageSource source, {
     bool addAsPage = false,
   }) async {
-    if (!addAsPage || _isHandwritten) {
+    if (!addAsPage || handwrittenMode) {
       clearImportData();
-      _pages.clear();
+      photoPages.clear();
     }
-    _lastPickSource = source;
-    _stagePage(bytes);
+    lastPickSource = source;
+    stagePage(bytes);
     await readPages();
   }
 
@@ -903,179 +255,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   Future<void> extractHandwrittenForTesting(
     Uint8List bytes, {
     ImageSource source = ImageSource.gallery,
-  }) => _extractWithAi(bytes, source);
-
-  /// BUT-1460: importSinglePhoto, NOT autoImport. The LLM-vision result is
-  /// terminal — autoImport's multi-strategy fallback loop would swallow a
-  /// terminal failure (or rate-limit denial) into a generic English "No import
-  /// strategy could handle" message. importSinglePhoto returns the strategy's
-  /// own result so the caller surfaces the real text.
-  Future<ImportManagerResult> _readWithAi(
-    Uint8List bytes,
-    ImageSource source,
-  ) async {
-    final result = await importManager.importSinglePhoto(
-      'photo',
-      options: {
-        'imageBytes': bytes,
-        'sourceType': source == ImageSource.camera ? 'camera' : 'gallery',
-        'isHandwritten': _isHandwritten,
-        'visionOnly': true,
-      },
-    );
-    _measured = result.rateLimitDenied == null;
-    return result;
-  }
-
-  Future<void> _extractWithAi(Uint8List bytes, ImageSource source) async {
-    final result = await _readWithAi(bytes, source);
-
-    if (result.isSuccess && result.recipe != null) {
-      final recipe = result.recipe!;
-      final reviewText = _recipeToReviewText(recipe);
-      // _imageBytes was already set by the caller (_pickImageAndProcess) before
-      // routing here — no need to reassign.
-      _ocrText = reviewText;
-      _lastConfidence = null;
-      _pages
-        ..clear()
-        ..add(_PhotoPage(bytes: bytes, text: reviewText, isRead: true));
-      _parsedRecipes
-        ..clear()
-        ..add(recipe);
-      setParsedRecipe(recipe);
-      unawaited(persistPhotoDraft(imageBytes: bytes, ocrText: _ocrText));
-      return;
-    }
-
-    if (result.needsAssistance &&
-        result.extractedText.orEmpty().trim().isNotEmpty) {
-      final text = result.extractedText!;
-      _ocrText = text;
-      _lastConfidence = null; // vision path carries no char-OCR confidence
-      _pages
-        ..clear()
-        ..add(_PhotoPage(bytes: bytes, text: text, isRead: true));
-      notifyListeners();
-      unawaited(persistPhotoDraft(imageBytes: bytes, ocrText: _ocrText));
-      await _autoParseOcrText(text);
-      return;
-    }
-
-    // BUT-684 (review BUG 2): surface the structured rate-limit message the
-    // normal import path shows (BUT-1144) — and otherwise the failure's own
-    // message — instead of collapsing everything to a generic error. We call
-    // setError directly rather than throwing: executeAsyncVoid only shows its
-    // errorPrefix on a throw, which would discard this detail (the user would
-    // see "something went wrong" instead of "try again in N minutes").
-    final denied = result.rateLimitDenied;
-    setError(
-      denied != null
-          ? denied.swedishMessage
-          : (result.errorMessage ?? AppLocale.current.errorGeneric),
-    );
-  }
-
-  /// Render a parsed recipe back to a plain-text block for the interpreted-text
-  /// preview. The handwriting vision path returns a structured recipe directly;
-  /// this keeps the text-review UX identical to the char-OCR path.
-  String _recipeToReviewText(Recipe recipe) {
-    final buffer = StringBuffer()..writeln(recipe.title);
-    if (recipe.ingredients.isNotEmpty) {
-      buffer
-        ..writeln()
-        ..writeln(recipe.ingredients.join('\n'));
-    }
-    if (recipe.instructions.isNotEmpty) {
-      buffer
-        ..writeln()
-        ..writeln(recipe.instructions.join('\n'));
-    }
-    return buffer.toString().trim();
-  }
-
-  /// BUT-903: rebuild the combined OCR text from every page in order, keep the
-  /// first page as the live preview/heirloom image, persist the draft, then run
-  /// ONE auto-parse over the joined text. Shared by add/remove/reorder so all
-  /// page mutations converge on the same combine+parse path.
-  Future<void> _recombineAndParse() async {
-    if (_pages.isEmpty) return;
-    _imageBytes = _pages.first.bytes;
-    // Q4-04: while a page waits to be read, the combined text would describe
-    // only some of the pages. Show none until "Läs av N sidor" runs.
-    if (_pages.any((p) => !p.isRead)) {
-      _ocrText = '';
-      _parsedRecipes.clear();
-      notifyListeners();
-      return;
-    }
-    // BUT-2455: each page loses its screenshot chrome, a page loses the lines
-    // it shares with the page before it, and the pages are joined — with a
-    // blank line at every boundary when every page has geometry, so the text
-    // and `DocumentLayout` agree row for row and the splitter's precondition
-    // can confirm it rather than assume it.
-    //
-    // Any page without geometry makes the layout incomplete, and the splitter
-    // then falls back to the text rules for the whole import. That is
-    // deliberate and it is checked there, not here: this method's job is to
-    // build the pair, never to decide whether it is trustworthy.
-    final prepared = prepareScreenPages([
-      for (final p in _pages) PageText(p.text, layout: p.layout),
-    ]);
-    _ocrText = prepared.text;
-    final layout = DocumentLayout(prepared.layouts);
-
-    notifyListeners();
-
-    // BUT-910: OCR is the expensive step — persist as soon as combined text
-    // exists so nav-away can't lose it. Fire-and-forget; persist the first
-    // page's bytes (the draft schema stages one image) alongside the full text.
-    unawaited(persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText));
-
-    await _autoParseOcrText(_ocrText, layout: layout, reflow: true);
-  }
-
-  /// Parse-only auto-parse: recipes exist in memory until the user explicitly
-  /// saves (no silent persistence). Failures degrade to the manual-parse path.
-  ///
-  /// [layout] is omitted by every caller that has no geometry to offer. In
-  /// production that is [restoreDraft] — the draft schema stages text and one
-  /// image, never per-line boxes — and the handwriting path's
-  /// needs-assistance branch, which never went near an OCR tier. Omitting it
-  /// is not a degraded path; it is the path that ships today.
-  ///
-  /// [reflow] rejoins OCR-wrapped lines. The page paths ask for it; the
-  /// text behind a handwritten photo never had OCR line breaks and does not.
-  Future<void> _autoParseOcrText(
-    String text, {
-    DocumentLayout? layout,
-    bool reflow = false,
-  }) async {
-    try {
-      final channel = _measured ? null : ImportChannel.photo;
-      _measured = true;
-      final result = await importManager.autoParseMulti(
-        text,
-        layout: layout,
-        channel: channel,
-        reflow: reflow,
-      );
-      final recipes = result.successfulRecipes;
-      _parsedRecipes
-        ..clear()
-        ..addAll(recipes);
-      if (recipes.length == 1) {
-        // Single recipe → keep the existing single-recipe behaviour exactly:
-        // setParsedRecipe drives every current getter/consumer unchanged.
-        setParsedRecipe(recipes.first);
-      } else if (recipes.length > 1) {
-        notifyListeners();
-      }
-    } catch (e) {
-      // Don't throw error for auto-parsing failures
-      // User can still manually parse the OCR text
-    }
-  }
+  }) => extractWithAi(bytes, source);
 
   /// Save the recipes the user ticked in the multi-recipe picker. Uses the
   /// import-layer save per recipe.
@@ -1111,33 +291,15 @@ class PhotoImportViewModel extends ImportBaseViewModel
     });
   }
 
-  /// BUT-1022: testing seam — the metadata→Swedish-copy contract is load-bearing
-  /// for the error the user sees, so it gets direct unit coverage without mocking
-  /// the OCR singleton. Build logic lives in [OcrErrorMessageBuilder].
-  @visibleForTesting
-  String buildEnhancedErrorMessageForTesting(OCRResult result) =>
-      _buildEnhancedErrorMessage(result);
-
-  /// BUT-1154: message construction moved to [OcrErrorMessageBuilder]; the VM
-  /// keeps the quality-field side effects that the `qualityScore` /
-  /// `recommendations` / `confidence` getters expose.
-  String _buildEnhancedErrorMessage(OCRResult result) {
-    final built = OcrErrorMessageBuilder.build(result);
-    _lastQualityScore = built.qualityScore;
-    _lastRecommendations = built.recommendations;
-    _lastConfidence = built.confidence;
-    return built.message;
-  }
-
   @override
   Map<String, dynamic> get debugState => {
     ...super.debugState,
     'hasImage': hasImage,
     'hasOcrResult': hasOcrResult,
     'pageCount': pageCount,
-    'ocrTextLength': _ocrText.length,
+    'ocrTextLength': photoOcrText.length,
     'isProcessing': isProcessing,
-    'imageBytesSize': _imageBytes?.length ?? 0,
+    'imageBytesSize': photoBytes?.length ?? 0,
     'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
   };
 
@@ -1146,42 +308,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // BUT-910: dispose the manager, do NOT discard the draft — surviving
     // disposal (the view disposes this VM on nav-away) is the feature.
     disposeDraftPersistence();
-    _imageBytes = null;
-    _ocrText = '';
-    _pages.clear();
-    _lastQualityScore = null;
-    _lastRecommendations = null;
-    _lastConfidence = null;
-    _parsedRecipes.clear();
+    photoBytes = null;
+    photoOcrText = '';
+    photoPages.clear();
+    lastQualityScore = null;
+    lastRecommendations = null;
+    lastConfidence = null;
+    parsedRecipeList.clear();
     super.dispose();
   }
-}
-
-/// BUT-903: one captured page of a multi-page photo import — the raw bytes and
-/// the OCR text extracted from just that page. Pages are concatenated in list
-/// order to form the combined recipe text.
-class _PhotoPage {
-  final Uint8List bytes;
-  final String text;
-
-  /// Where the words sat on this page, when the reader measured them.
-  ///
-  /// Null unless the free on-device tier read it AND
-  /// `enable_layout_recipe_split` is on. A page from a paid tier, from the
-  /// handwriting path, or restored from a draft has none — and one such page
-  /// makes the whole document decline, by design: `DocumentLayout.isComplete`
-  /// is false, its text is null, and the splitter's row-count precondition
-  /// refuses it. Mixed provenance means mixed engines, whose type sizes are
-  /// not comparable in the first place.
-  final PageLayout? layout;
-
-  /// Q4-04: false while the page waits for "Läs av N sidor".
-  final bool isRead;
-
-  const _PhotoPage({
-    required this.bytes,
-    required this.text,
-    this.layout,
-    this.isRead = false,
-  });
 }
