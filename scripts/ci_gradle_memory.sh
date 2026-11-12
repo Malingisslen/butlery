@@ -19,7 +19,7 @@ fi
 
 mkdir -p "$HOME/.gradle"
 cat >> "$HOME/.gradle/gradle.properties" <<'PROPS'
-org.gradle.jvmargs=-Xmx2560M -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.jvmargs=-Xmx2560M -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError
 kotlin.daemon.jvmargs=-Xmx1536M
 org.gradle.workers.max=2
 PROPS
