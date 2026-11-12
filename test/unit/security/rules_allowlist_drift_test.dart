@@ -17,7 +17,7 @@
 /// hand-written fixture in the rules suite that was supposed to catch it.
 ///
 /// **It does not cover every allowlist.** An actual drift was found in:
-/// `isValidTagResult`, `counters`,
+/// `isValidTagResult`,
 /// `notification_history` and the deep-link `clicks`.
 /// `participants` and the poll vote never drifted and could not have — each
 /// `match` block was new when it was added here, so those writes were failing on
@@ -36,15 +36,9 @@
 ///
 /// **Scope, stated honestly: some key sets are hand-assembled**,
 /// not derived, because their writer builds its map inline in a repository with
-/// no model to call. The counters entry looks derived and is
-/// only half so: the field NAMES come from `UserCounterIncrements`, but WHICH
-/// keys the writer sends is read off `base_shared_content_repository.dart` and
-/// retyped, so adding a key to that `set({...})` leaves this guard green. Every
-/// hand-assembled set names its writer's file AND the method that builds the
-/// payload, never a line number — a method name survives the edits a line
-/// number does not. Genuinely deriving the counters set means driving
-/// `incrementUnreadCounter` against a fake Firestore and reading the written
-/// document back; worth doing, not done here.
+/// no model to call. Every hand-assembled set names its writer's file AND the
+/// method that builds the payload, never a line number — a method name survives
+/// the edits a line number does not.
 ///
 /// **This guard checks ONE DIRECTION on purpose: every key the writer sends is
 /// allowed.** It does not assert the reverse. `sent` not in `allowed` is a fact
@@ -164,6 +158,10 @@ const _knowinglyUncovered = <_Uncovered>[
     'user_moderation — read gate, compared against the Art. 15 projection',
     'match /user_moderation/{userId}',
   ),
+  // BUT-2443: no Dart code writes `users/{uid}/counters` any more (the unread
+  // counter was removed); the block stays in the rules until a release without
+  // the old writer is out, so it is counted here and not compared to a writer.
+  _Uncovered('users/{uid}/counters — no writer', 'match /counters/{counterId}'),
   _Uncovered('recipe_comments/{id}/likes', 'match /likes/{userId}'),
   _Uncovered(
     'recipe_cook_events — CookEvent.toFirestore',

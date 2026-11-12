@@ -473,26 +473,6 @@ void main() {
 
     group('Query Operations', () {
       test(
-        'should return 0 unread count when no counter document exists (denormalized counter)',
-        () async {
-          // getUnreadCountForUser reads from denormalized counter doc,
-          // not from actual view subcollections. Without seeding counters
-          // the count is 0.
-          final recipe1 = createSharedRecipe(
-            id: 'recipe-1',
-            sharedByUserId: testOtherUserId,
-          );
-          await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
-
-          final unreadCount = await repository.getUnreadCountForUser(
-            testUserId,
-          );
-
-          expect(unreadCount, 0);
-        },
-      );
-
-      test(
         'should get imported recipes using engagements subcollection',
         () async {
           final recipe1 = createSharedRecipe(

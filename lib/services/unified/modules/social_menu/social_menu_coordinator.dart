@@ -510,11 +510,6 @@ class SocialMenuCoordinator
     return await markAsViewed(sharedMenuId);
   }
 
-  /// Get unread menu invitation count
-  Future<int> getUnreadMenuCount() async {
-    return await getUnreadCount();
-  }
-
   /// Validate menu content for sharing
   bool validateMenuForSharing(Map<String, List<Recipe>> menu) {
     if (menu.isEmpty) {

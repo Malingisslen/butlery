@@ -7,7 +7,7 @@
 /// Behaviours pinned:
 /// - **Auth gating**: every public method short-circuits when
 ///   `getCurrentUserId()` returns null. Each returns its sentinel
-///   (`null`/`false`/`[]`/`0`) without touching the repository OR setError.
+///   (`null`/`false`/`[]`) without touching the repository OR setError.
 /// - **`createInvitation`**: missing content → null; missing user-profile →
 ///   null; happy path calls `createSharedContent` THEN one `addMember` per
 ///   invitee (in order); profile-map fallback uses `'?'` when an invitee
@@ -27,10 +27,8 @@
 ///   "always-notify on success" contract — the UI badge depends on it.
 /// - **`markAsViewed`**: PINS BUT-1094 — on success notifies + returns true;
 ///   on **error swallows silently** (no setError, no notify, returns false).
-///   The base-class siblings DO setError; this one doesn't. Same shape as
-///   `getUnreadCount`. Cross-reference: BUT-1087/1094 from batches 4-6.
-/// - **`getUnreadCount`**: PINS BUT-1094 — happy returns repo count, throw
-///   returns 0 SILENTLY (no setError).
+///   The base-class siblings DO setError; this one doesn't.
+///   Cross-reference: BUT-1087/1094 from batches 4-6.
 /// - **`notifyStateChanged` / `setError`**: expose the constructor callbacks
 ///   one-for-one. Pin the wiring so a refactor that adds a "dirty" gate
 ///   doesn't silently swallow notifications.
@@ -44,10 +42,10 @@
 ///
 /// Bug-finding cross-references (REPORTED, not fixed here):
 /// - **BUT-1094 (inconsistent `_error` population)** — root cause lives here.
-///   Lines 408 (`markAsViewed`) and 425 (`getUnreadCount`) catch + log + return
-///   sentinel WITHOUT calling `_setError(sanitizeErrorForUser(e))`. Every
-///   OTHER catch in this file does. A one-line fix in both catches would
-///   close BUT-1094 for all three coordinators that extend this base.
+///   Line 408 (`markAsViewed`) catches + logs + returns a sentinel WITHOUT
+///   calling `_setError(sanitizeErrorForUser(e))`. Every OTHER catch in this
+///   file does. A one-line fix would close BUT-1094 for all three
+///   coordinators that extend this base.
 /// - **BUT-1087 (joinSharedX missing try-catch)** — base class has
 ///   try-catch around every repo round-trip; the bug-pin from batch 5
 ///   (`joinSharedMenu`) is in the SUBCLASS, not here. Pinning the base's
@@ -384,9 +382,6 @@ void main() {
       ).thenAnswer((_) async {});
       when(() => mockRepo.undismiss(any(), any())).thenAnswer((_) async {});
       when(() => mockRepo.markAsViewed(any(), any())).thenAnswer((_) async {});
-      when(
-        () => mockRepo.getUnreadCountForUser(any()),
-      ).thenAnswer((_) async => 0);
 
       coordinator = _TestSocialCoordinator(
         filterShareRecipients: (ids) async => ids,
@@ -1037,50 +1032,6 @@ void main() {
           reason: 'BUT-1094 fix: production line 408 must call setError.',
         );
         expect(notifyCount, 0, reason: 'No notify on the error path.');
-      });
-    });
-
-    // -------------------------------------------------------------------------
-    // getUnreadCount — PINS BUT-1094
-    // -------------------------------------------------------------------------
-    group('getUnreadCount (BUT-1094 contract)', () {
-      /// Pin: no auth → 0, no repo touch.
-      test('no authenticated user → 0, repo never called', () async {
-        currentUserId = null;
-
-        final count = await coordinator.getUnreadCount();
-
-        expect(count, 0);
-        verifyNever(() => mockRepo.getUnreadCountForUser(any()));
-      });
-
-      /// Happy path pin: returns repo value verbatim. A mistakenly-doubled
-      /// or zero-clamped value would break the badge UI.
-      test('happy → returns repo value verbatim', () async {
-        when(
-          () => mockRepo.getUnreadCountForUser('me-uid'),
-        ).thenAnswer((_) async => 7);
-
-        final count = await coordinator.getUnreadCount();
-
-        expect(count, 7);
-      });
-
-      /// **BUT-1094 FIX VERIFIED** (commit fee1147ae): throw → 0 AND
-      /// errors populated, matching the markAsViewed fix.
-      test('throw → 0 AND errors is populated (BUT-1094 fix)', () async {
-        when(
-          () => mockRepo.getUnreadCountForUser(any()),
-        ).thenThrow(Exception('forbidden'));
-
-        final count = await coordinator.getUnreadCount();
-
-        expect(count, 0);
-        expect(
-          errors,
-          isNotEmpty,
-          reason: 'BUT-1094 fix: production line 425 must call setError.',
-        );
       });
     });
 
