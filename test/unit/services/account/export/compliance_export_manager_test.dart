@@ -235,6 +235,138 @@ void main() {
     });
   });
 
+  group('ComplianceExportManager.exportAuditLogs removed_from_groups '
+      '(BUT-1805)', () {
+    Future<Map<String, dynamic>> run(List<Map<String, dynamic>> pages) {
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(_ScriptedHttpsCallable(pages)),
+        dataExportRepository: _UnusedExports(),
+        authRepository: _UnusedAuth(),
+      );
+      return manager.exportAuditLogs('user-uid');
+    }
+
+    test('first-page removals are carried as timestamp and group only, '
+        'outside the actor rows', () async {
+      final result = await run([
+        {
+          ..._page(rowCount: 2, nextCursor: 'c1'),
+          'removedFromGroups': {
+            'rows': [
+              {
+                'timestamp': '2026-11-01T10:00:00.000Z',
+                'groupId': 'group-a',
+                'actor': 'admin-uid',
+              },
+            ],
+            'truncated': false,
+          },
+        },
+        {
+          ..._page(rowCount: 1, nextCursor: null, idOffset: 2),
+          'removedFromGroups': {'error_code': 'must-be-ignored'},
+        },
+      ]);
+
+      final section = result['removed_from_groups'] as Map<String, dynamic>;
+      expect(section['removals'], [
+        {'timestamp': '2026-11-01T10:00:00.000Z', 'group_id': 'group-a'},
+      ]);
+      expect(section.containsKey('error_code'), isFalse);
+      expect(section.containsKey('note'), isFalse);
+      expect(result['total_count'], 3);
+      expect((result['audit_logs'] as List), hasLength(3));
+    });
+
+    test(
+      'a server without the field is reported as unknown, not as none',
+      () async {
+        final result = await run([_page(rowCount: 1, nextCursor: null)]);
+
+        final section = result['removed_from_groups'] as Map<String, dynamic>;
+        expect(section.containsKey('removals'), isFalse);
+        expect(section['error_code'], 'removed-from-groups-unavailable');
+        expect(section['note'], contains('could not be fetched'));
+      },
+    );
+
+    test('a failed server read passes its error code through', () async {
+      final result = await run([
+        {
+          ..._page(rowCount: 1, nextCursor: null),
+          'removedFromGroups': {'error_code': 'removed-from-groups-failed'},
+        },
+      ]);
+
+      final section = result['removed_from_groups'] as Map<String, dynamic>;
+      expect(section.containsKey('removals'), isFalse);
+      expect(section['error_code'], 'removed-from-groups-failed');
+    });
+
+    test('a truncated list says so', () async {
+      final result = await run([
+        {
+          ..._page(rowCount: 0, nextCursor: null),
+          'removedFromGroups': {
+            'rows': <Map<String, dynamic>>[],
+            'truncated': true,
+          },
+        },
+      ]);
+
+      final section = result['removed_from_groups'] as Map<String, dynamic>;
+      expect(section['note'], contains('More removals exist'));
+    });
+
+    test('a read with no removals ships an empty list, not unknown', () async {
+      final result = await run([
+        {
+          ..._page(rowCount: 0, nextCursor: null),
+          'removedFromGroups': {
+            'rows': <Map<String, dynamic>>[],
+            'truncated': false,
+          },
+        },
+      ]);
+
+      final section = result['removed_from_groups'] as Map<String, dynamic>;
+      expect(section['removals'], isEmpty);
+      expect(section.containsKey('removals'), isTrue);
+      expect(section.containsKey('error_code'), isFalse);
+      expect(section.containsKey('note'), isFalse);
+    });
+
+    test('the data_minimisation sentence is the same bytes on every path '
+        '(BUT-2056)', () async {
+      final shapes = <Object?>[
+        null,
+        {'rows': <Map<String, dynamic>>[], 'truncated': false},
+        {
+          'rows': [
+            {'timestamp': '2026-11-01T10:00:00.000Z', 'groupId': 'g'},
+          ],
+          'truncated': true,
+        },
+        {'error_code': 'removed-from-groups-failed'},
+      ];
+      for (final shape in shapes) {
+        final page = _page(rowCount: 0, nextCursor: null);
+        if (shape != null) page['removedFromGroups'] = shape;
+        final result = await run([page]);
+        final section = result['removed_from_groups'] as Map<String, dynamic>;
+        expect(
+          section['data_minimisation'],
+          ComplianceExportManager.removedFromGroupsMinimisation,
+          reason: 'shape: $shape',
+        );
+      }
+      expect(
+        ComplianceExportManager.removedFromGroupsMinimisation,
+        contains('Which admin removed you is not included'),
+      );
+    });
+  });
+
   group('ComplianceExportManager.exportAuditLogs error handling (BUT-842)', () {
     test(
       'transient FirebaseFunctionsException returns recoverable error map',
