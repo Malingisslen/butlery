@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** November 12, 2026
-**Version:** 1.35
+**Version:** 1.36
 
 ---
 
@@ -212,6 +212,7 @@ We may share information if:
 - We are required by law
 - It is necessary to protect our rights
 - It is necessary to prevent crime
+- If a moderator has kept a text copy of reported content in a serious case, we may disclose it to the police or another authority where the law requires it.
 
 ### 6.3 What we do NOT do
 
@@ -303,6 +304,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Account deletion request (date and the reason you gave) | Until the account is deleted, at most 7 days after the request, or until you cancel | Carrying out your erasure request and letting you cancel it (Art. 17) |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
+| Text copy of reported content in a serious case (a police report or a request from the police or another authority, a threat or danger to someone's safety, or a legal dispute) that a moderator has chosen to keep longer | One year from when the moderator kept it. The moderator can extend it one year at a time, at most three years in total. The copy is kept even if the case is closed or if the person who reported or was reported deletes their account, and is used only so that it can be disclosed in the case | Legitimate interest (Art. 6(1)(f): user safety and establishing, exercising or defending legal claims), or legal obligation (Art. 6(1)(c)) where an authority has asked us to preserve the data |
 | Key for two-step verification | Until you turn off two-step verification, use a backup code to sign in, or delete your account | Performance of contract |
 | Backup codes (protected versions only) | Until you turn off two-step verification, use a code to recover your account, or delete your account | Performance of contract |
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |

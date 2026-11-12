@@ -360,6 +360,8 @@ export { listOpenAppeals } from "./moderation/list-open-appeals";
 export { answerAppeal } from "./moderation/answer-appeal";
 export { listClosedReports } from "./moderation/list-closed-reports";
 export { reopenReport } from "./moderation/reopen-report";
+// BUT-2329: a moderator keeps a report's text copy longer in a serious case.
+export { freezeReportEvidence } from "./moderation/freeze-report-evidence";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

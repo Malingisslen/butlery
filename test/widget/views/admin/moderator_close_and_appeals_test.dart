@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
@@ -77,6 +78,9 @@ void main() {
     stream = StreamController<List<ContentReport>>.broadcast();
     when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
+    when(
+      () => reports.watchFrozenEvidence(),
+    ).thenAnswer((_) => const Stream<List<ReportEvidence>>.empty());
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
     when(
       () => reports.getReportEvidence(any(), round: any(named: 'round')),

@@ -61,6 +61,12 @@ class RetainedRecord {
   /// of content they were reported for.
   bool get isOwnReport => resourceType == ownReportResource;
 
+  /// The `resourceType` of a saved text copy a moderator froze (BUT-2329).
+  /// It is not a review, so it never feeds the review wording or its date.
+  static const String frozenCopyResource = 'report_evidence';
+
+  bool get isFrozenCopy => resourceType == frozenCopyResource;
+
   /// Parses the callable's `retained` field, whatever shape it arrives in.
   ///
   /// An older deployment does not send the field at all, which reads here as
@@ -86,10 +92,11 @@ class RetentionNoticeFacts {
     required this.ownReportKept,
     required this.provisional,
     required this.holdUntil,
+    this.frozenCopyKept = false,
+    this.frozenCopyUntil,
   });
 
-  factory RetentionNoticeFacts.from(List<RetainedRecord> records) {
-    final reviews = records.where((r) => !r.isOwnReport);
+  static DateTime? _latest(Iterable<RetainedRecord> records) {
     DateTime? latest;
     for (final r in records) {
       final until = r.holdUntil;
@@ -97,11 +104,20 @@ class RetentionNoticeFacts {
         latest = until;
       }
     }
+    return latest;
+  }
+
+  factory RetentionNoticeFacts.from(List<RetainedRecord> records) {
+    final frozen = records.where((r) => r.isFrozenCopy).toList();
+    final rest = records.where((r) => !r.isFrozenCopy).toList();
+    final reviews = rest.where((r) => !r.isOwnReport);
     return RetentionNoticeFacts(
       reviewKept: reviews.isNotEmpty,
-      ownReportKept: records.any((r) => r.isOwnReport),
+      ownReportKept: rest.any((r) => r.isOwnReport),
       provisional: reviews.any((r) => r.provisional),
-      holdUntil: latest,
+      holdUntil: _latest(rest),
+      frozenCopyKept: frozen.isNotEmpty,
+      frozenCopyUntil: _latest(frozen),
     );
   }
 
@@ -117,4 +133,11 @@ class RetentionNoticeFacts {
   /// The LATEST cap among the records: the notice gives one "at the latest"
   /// date, and an earlier one would promise too little.
   final DateTime? holdUntil;
+
+  /// A saved copy of reported content a moderator keeps for up to three
+  /// years. Kept apart so its date never lengthens the review's.
+  final bool frozenCopyKept;
+
+  /// The LATEST cap among the frozen copies.
+  final DateTime? frozenCopyUntil;
 }

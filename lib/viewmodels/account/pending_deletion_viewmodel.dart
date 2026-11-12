@@ -53,6 +53,8 @@ class PendingDeletionViewModel extends BaseViewModel {
           provisional: facts.provisional,
           reviewKept: facts.reviewKept,
           ownReportKept: facts.ownReportKept,
+          frozenCopyKept: facts.frozenCopyKept,
+          frozenCopyUntil: facts.frozenCopyUntil,
         );
       }
       return outcome;

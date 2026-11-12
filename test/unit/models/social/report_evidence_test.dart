@@ -132,4 +132,65 @@ void main() {
       },
     );
   });
+
+  group('ReportEvidence frozen hold (BUT-2329)', () {
+    final until = DateTime.utc(2027, 10, 9);
+
+    test('a copy with no frozen map is not frozen', () async {
+      final e = ReportEvidence.fromFirestore(
+        await _doc({'outcome': 'captured', 'contentType': 'recipe'}),
+      )!;
+      expect(e.isFrozen, isFalse);
+      expect(e.frozen, isNull);
+      expect(e.contentType, 'recipe');
+    });
+
+    test('reads every field of the hold', () async {
+      final e = ReportEvidence.fromFirestore(
+        await _doc({
+          'outcome': 'captured',
+          'frozen': {
+            'reason': 'legal_claim',
+            'frozenAt': Timestamp.fromDate(DateTime.utc(2026, 10, 9)),
+            'frozenBy': 'admin1',
+            'firstFrozenAt': Timestamp.fromDate(DateTime.utc(2026, 10, 9)),
+            'until': Timestamp.fromDate(until),
+            'extensions': 2,
+          },
+        }),
+      )!;
+      expect(e.isFrozen, isTrue);
+      expect(e.frozen!.reason, FreezeReason.legalClaim);
+      expect(e.frozen!.until.toUtc(), until);
+      expect(e.frozen!.firstFrozenAt!.toUtc(), DateTime.utc(2026, 10, 9));
+      expect(e.frozen!.extensions, 2);
+    });
+
+    test('maps each reason from its wire name; unknown stays unknown', () {
+      expect(FreezeReason.fromWire('police'), FreezeReason.police);
+      expect(FreezeReason.fromWire('threat'), FreezeReason.threat);
+      expect(FreezeReason.fromWire('legal_claim'), FreezeReason.legalClaim);
+      expect(FreezeReason.fromWire('from_the_future'), FreezeReason.unknown);
+      expect(FreezeReason.fromWire(null), FreezeReason.unknown);
+    });
+
+    test('a hold without a readable end date is not a hold', () async {
+      final e = ReportEvidence.fromFirestore(
+        await _doc({
+          'outcome': 'captured',
+          'frozen': {'reason': 'police'},
+        }),
+      )!;
+      expect(e.isFrozen, isFalse);
+    });
+
+    test('block names map from the callable message', () {
+      expect(FreezeBlock.fromWire('at_cap'), FreezeBlock.atCap);
+      expect(FreezeBlock.fromWire('no_copy'), FreezeBlock.noCopy);
+      expect(FreezeBlock.fromWire('not_captured'), FreezeBlock.notCaptured);
+      expect(FreezeBlock.fromWire('already_frozen'), FreezeBlock.alreadyFrozen);
+      expect(FreezeBlock.fromWire('not_frozen'), FreezeBlock.notFrozen);
+      expect(FreezeBlock.fromWire('other'), isNull);
+    });
+  });
 }

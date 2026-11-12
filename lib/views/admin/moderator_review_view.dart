@@ -9,8 +9,10 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
 import 'package:butlery/viewmodels/admin/moderator_closed_viewmodel.dart';
+import 'package:butlery/viewmodels/admin/moderator_frozen_viewmodel.dart';
 import 'package:butlery/views/admin/moderator_close_sheet.dart';
 import 'package:butlery/views/admin/moderator_evidence_section.dart';
+import 'package:butlery/views/admin/moderator_freeze_sheet.dart';
 import 'package:butlery/views/admin/moderator_reopened_section.dart';
 import 'package:butlery/views/admin/moderator_review_tabs.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -48,6 +50,7 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   late final ModeratorReviewViewModel _vm;
   late final ModeratorAppealsViewModel _appealsVm;
   late final ModeratorClosedViewModel _closedVm;
+  late final ModeratorFrozenViewModel _frozenVm;
   late final ReportService _reportService;
   bool _appealsRequested = false;
 
@@ -62,6 +65,10 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
       service: ServiceLocator.get<ModerationAppealsService>(),
     );
     _reportService = ServiceLocator.get<ReportService>();
+    _frozenVm = ModeratorFrozenViewModel(
+      reportService: _reportService,
+      appealsService: ServiceLocator.get<ModerationAppealsService>(),
+    );
   }
 
   @override
@@ -69,6 +76,7 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
     _vm.dispose();
     _appealsVm.dispose();
     _closedVm.dispose();
+    _frozenVm.dispose();
     super.dispose();
   }
 
@@ -104,6 +112,10 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
               ),
               ChangeNotifierProvider<ModeratorClosedViewModel>.value(
                 value: _closedVm,
+              ),
+              ChangeNotifierProvider<ModeratorFrozenViewModel>.value(
+                // Listens from the start so the tab label can show its count.
+                value: _frozenVm..startListening(),
               ),
             ],
             child: const ModeratorReviewTabs(reports: _ReportsList()),
@@ -252,6 +264,7 @@ class _ReportCard extends StatelessWidget {
             ModeratorEvidenceSection(
               state: evidence,
               reopened: report.isReopened,
+              onKeepLonger: () => _keepLonger(context, vm),
             ),
           ],
           // BUT-1609: moderation on a minor's account carries extra care
@@ -321,6 +334,21 @@ class _ReportCard extends StatelessWidget {
     ReportStatus.actioned => l10n.moderatorStatusActioned,
     ReportStatus.closed => l10n.moderatorStatusClosed,
   };
+
+  Future<void> _keepLonger(
+    BuildContext context,
+    ModeratorReviewViewModel vm,
+  ) async {
+    final l10n = context.l10n;
+    final reason = await showModeratorFreezeSheet(
+      context,
+      confirmLabel: l10n.moderatorFreezeSheetTitle,
+    );
+    if (reason == null || !context.mounted) return;
+    final result = await vm.freezeEvidence(report, reason);
+    if (!context.mounted) return;
+    showFreezeResult(context, result, retry: () => _keepLonger(context, vm));
+  }
 
   Future<void> _confirmTakeDown(
     BuildContext context,

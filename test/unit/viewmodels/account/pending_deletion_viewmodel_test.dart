@@ -164,6 +164,40 @@ void main() {
       },
     );
 
+    test(
+      'a frozen copy is stored apart from the review and its date',
+      () async {
+        when(
+          () => profile.deleteAccount(reason: any(named: 'reason')),
+        ).thenAnswer(
+          (_) async => AccountDeletionOutcome(
+            success: true,
+            accountDeleted: true,
+            retained: [
+              RetainedRecord(
+                resourceType: 'user_moderation',
+                legalBasis: 'GDPR Art. 17(3)(e)',
+                holdUntil: DateTime.utc(2999, 3, 11),
+              ),
+              RetainedRecord(
+                resourceType: RetainedRecord.frozenCopyResource,
+                legalBasis: 'GDPR Art. 17(3)(e)',
+                holdUntil: DateTime.utc(2999, 9, 12),
+              ),
+            ],
+          ),
+        );
+
+        await viewModel.deleteNow();
+
+        final stored = await store.read();
+        expect(stored!.frozenCopyKept, isTrue);
+        expect(stored.frozenCopyUntil, DateTime.utc(2999, 9, 12));
+        expect(stored.reviewKept, isTrue);
+        expect(stored.holdUntil, DateTime.utc(2999, 3, 11));
+      },
+    );
+
     test('the notice is stored even when the screen is already gone', () async {
       // The sign-out inside the deletion replaces the screen and disposes this
       // view model before the outcome comes back.

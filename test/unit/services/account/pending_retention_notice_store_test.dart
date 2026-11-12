@@ -46,6 +46,8 @@ void main() {
           'provisional',
           'reviewKept',
           'ownReportKept',
+          'frozenCopyKept',
+          'frozenCopyUntil',
           'writtenAt',
         },
       );
@@ -210,6 +212,69 @@ void main() {
 
       expect(notice, isNotNull);
       expect(notice!.provisional, isFalse);
+    });
+  });
+
+  group('frozen copy (BUT-2329)', () {
+    test('survives the round trip beside the review hold', () async {
+      await store.write(
+        holdUntil: DateTime.utc(2027),
+        provisional: false,
+        frozenCopyKept: true,
+        frozenCopyUntil: DateTime.utc(2029, 10, 9),
+      );
+
+      final notice = await store.read(now: DateTime.utc(2026, 10));
+
+      expect(notice!.frozenCopyKept, isTrue);
+      expect(notice.frozenCopyUntil, DateTime.utc(2029, 10, 9));
+      expect(notice.holdUntil, DateTime.utc(2027));
+    });
+
+    test('a notice about a frozen copy lives until the copy goes', () async {
+      await store.write(
+        holdUntil: null,
+        provisional: false,
+        reviewKept: false,
+        frozenCopyKept: true,
+        frozenCopyUntil: DateTime.utc(2029, 10, 9),
+      );
+
+      expect(await store.read(now: DateTime.utc(2028)), isNotNull);
+      expect(await store.read(now: DateTime.utc(2029, 10, 10)), isNull);
+    });
+
+    test(
+      'with both dates it outlives the review date, not the frozen one',
+      () async {
+        await store.write(
+          holdUntil: DateTime.utc(2027),
+          provisional: false,
+          frozenCopyKept: true,
+          frozenCopyUntil: DateTime.utc(2029, 10, 9),
+        );
+
+        expect(await store.read(now: DateTime.utc(2028)), isNotNull);
+        expect(await store.read(now: DateTime.utc(2029, 10, 10)), isNull);
+      },
+    );
+
+    test('a stored map from before the keys reads as not kept', () async {
+      SharedPreferences.setMockInitialValues({
+        key: jsonEncode({
+          'holdUntil': DateTime.utc(2027).toIso8601String(),
+          'provisional': false,
+          'reviewKept': true,
+          'ownReportKept': false,
+          'writtenAt': DateTime.utc(2026, 9, 12).toIso8601String(),
+        }),
+      });
+
+      final notice = await store.read(now: DateTime.utc(2026, 9, 13));
+
+      expect(notice!.frozenCopyKept, isFalse);
+      expect(notice.frozenCopyUntil, isNull);
+      expect(notice.reviewKept, isTrue);
     });
   });
 

@@ -163,4 +163,4 @@ votes, with no uid, uid hash, recipe id or title. The nightly alarm
 counts only, deleted after 35 days. Every inspection and quarantine change writes an
 `audit_logs` row (180-day purge). New purpose: abuse prevention for the public
 aggregate, under the same legitimate interest; disclosed in privacy policy 5.3
-(version 1.35). **Approved by Malin 2026-11-12.**
+(version 1.36). **Approved by Malin 2026-11-12.**

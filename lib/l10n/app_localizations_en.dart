@@ -22168,6 +22168,124 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAcquisitionLoading => 'Loading the channel count …';
 
   @override
+  String get moderatorKeepLonger => 'Keep longer';
+
+  @override
+  String moderatorFrozenUntilLine(String date, String reason) {
+    return 'Kept until $date · $reason';
+  }
+
+  @override
+  String get moderatorFreezeReasonPolice => 'Police or authority';
+
+  @override
+  String get moderatorFreezeReasonThreat => 'Threat to someone\'s safety';
+
+  @override
+  String get moderatorFreezeReasonLegalClaim => 'Legal dispute';
+
+  @override
+  String get moderatorFreezeReasonUnknown => 'Unknown reason';
+
+  @override
+  String get moderatorFreezeSheetTitle => 'Keep the copy longer';
+
+  @override
+  String get moderatorFreezeSheetHelp =>
+      'The copy is kept for one year, even if the case is closed or the account is deleted. You can extend it one year at a time, at most three years.';
+
+  @override
+  String get moderatorFreezeChooseReason => 'Reason';
+
+  @override
+  String moderatorFreezeSaved(String date) {
+    return 'The copy is kept until $date';
+  }
+
+  @override
+  String get moderatorFreezeFailed =>
+      'We could not change how long the copy is kept.';
+
+  @override
+  String get moderatorFreezeFailedKept => 'The copy is as it was.';
+
+  @override
+  String get moderatorFreezeBlockNoCopy => 'There is no copy to keep.';
+
+  @override
+  String get moderatorFreezeBlockNotCaptured =>
+      'No text was saved for this report, so there is nothing to keep.';
+
+  @override
+  String get moderatorFreezeBlockAlreadyFrozen =>
+      'The copy is already kept longer.';
+
+  @override
+  String get moderatorFreezeBlockNotFrozen =>
+      'The copy is not kept longer than usual.';
+
+  @override
+  String get moderatorFreezeBlockAtCap =>
+      'The copy cannot be kept longer than three years.';
+
+  @override
+  String moderatorTabFrozen(int count) {
+    return 'Kept ($count)';
+  }
+
+  @override
+  String get moderatorFrozenEmpty => 'No kept copies';
+
+  @override
+  String get moderatorFrozenLoadFailed => 'We could not load the kept copies.';
+
+  @override
+  String get moderatorFrozenExtend => 'Extend one year';
+
+  @override
+  String get moderatorFrozenRelease => 'Stop keeping';
+
+  @override
+  String get moderatorFrozenReleaseTitle => 'Stop keeping the copy?';
+
+  @override
+  String get moderatorFrozenReleaseBody =>
+      'The copy then follows the usual rules again. If the case is already closed, it is deleted.';
+
+  @override
+  String get moderatorFrozenReleasedDeleted => 'The copy is being deleted';
+
+  @override
+  String get moderatorFrozenReleasedKept =>
+      'The copy follows the usual rules again';
+
+  @override
+  String get profileDeletionNoticeWhatFrozen =>
+      'One thing has been kept: a copy of content that was reported.';
+
+  @override
+  String get profileDeletionNoticeWhyFrozen =>
+      'Why: the copy is needed in a matter of safety or legal claims.';
+
+  @override
+  String profileDeletionNoticeHowLongFrozen(String date) {
+    return 'How long: until $date at the latest.';
+  }
+
+  @override
+  String get profileDeletionNoticeHowLongFrozenUnknown =>
+      'How long: three years at most.';
+
+  @override
+  String profileDeletionNoticeExtraFrozen(String date) {
+    return 'In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, until $date at the latest.';
+  }
+
+  @override
+  String get profileDeletionNoticeExtraFrozenUnknown =>
+      'In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, for three years at most.';
+
+  @override
   String get adminNavPools => 'Ratings';
 
   @override

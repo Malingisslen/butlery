@@ -18032,6 +18032,162 @@
   "adminAcquisitionNote": "Counts new accounts that agreed to statistics, for the last 30 days. It is not every new user: those who did not agree or did not arrive through a link are missing. Numbers below 5 are shown as <5 so that no single person can be picked out.",
   "adminAcquisitionOther": "Other",
   "adminAcquisitionLoading": "Loading the channel count …",
+  "moderatorKeepLonger": "Keep longer",
+  "@moderatorKeepLonger": {
+    "description": "Button on a saved copy: keep it past the case (BUT-2329)."
+  },
+  "moderatorFrozenUntilLine": "Kept until {date} · {reason}",
+  "@moderatorFrozenUntilLine": {
+    "description": "Muted line on a copy kept past the case (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorFreezeReasonPolice": "Police or authority",
+  "@moderatorFreezeReasonPolice": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonThreat": "Threat to someone's safety",
+  "@moderatorFreezeReasonThreat": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonLegalClaim": "Legal dispute",
+  "@moderatorFreezeReasonLegalClaim": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonUnknown": "Unknown reason",
+  "@moderatorFreezeReasonUnknown": {
+    "description": "Reason written by a newer server than this app (BUT-2329)."
+  },
+  "moderatorFreezeSheetTitle": "Keep the copy longer",
+  "@moderatorFreezeSheetTitle": {
+    "description": "Title of the sheet and its confirm button (BUT-2329)."
+  },
+  "moderatorFreezeSheetHelp": "The copy is kept for one year, even if the case is closed or the account is deleted. You can extend it one year at a time, at most three years.",
+  "@moderatorFreezeSheetHelp": {
+    "description": "Help text in the keep-longer sheet (BUT-2329)."
+  },
+  "moderatorFreezeChooseReason": "Reason",
+  "@moderatorFreezeChooseReason": {
+    "description": "Overline above the reason choices (BUT-2329)."
+  },
+  "moderatorFreezeSaved": "The copy is kept until {date}",
+  "@moderatorFreezeSaved": {
+    "description": "Snackbar after keeping or extending a copy (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorFreezeFailed": "We could not change how long the copy is kept.",
+  "@moderatorFreezeFailed": {
+    "description": "Failure snackbar, what happened (BUT-2329)."
+  },
+  "moderatorFreezeFailedKept": "The copy is as it was.",
+  "@moderatorFreezeFailedKept": {
+    "description": "Failure snackbar, what is kept (BUT-2329)."
+  },
+  "moderatorFreezeBlockNoCopy": "There is no copy to keep.",
+  "@moderatorFreezeBlockNoCopy": {
+    "description": "freezeBlock no_copy (BUT-2329)."
+  },
+  "moderatorFreezeBlockNotCaptured": "No text was saved for this report, so there is nothing to keep.",
+  "@moderatorFreezeBlockNotCaptured": {
+    "description": "freezeBlock not_captured (BUT-2329)."
+  },
+  "moderatorFreezeBlockAlreadyFrozen": "The copy is already kept longer.",
+  "@moderatorFreezeBlockAlreadyFrozen": {
+    "description": "freezeBlock already_frozen (BUT-2329)."
+  },
+  "moderatorFreezeBlockNotFrozen": "The copy is not kept longer than usual.",
+  "@moderatorFreezeBlockNotFrozen": {
+    "description": "freezeBlock not_frozen (BUT-2329)."
+  },
+  "moderatorFreezeBlockAtCap": "The copy cannot be kept longer than three years.",
+  "@moderatorFreezeBlockAtCap": {
+    "description": "freezeBlock at_cap (BUT-2329)."
+  },
+  "moderatorTabFrozen": "Kept ({count})",
+  "@moderatorTabFrozen": {
+    "description": "Fourth moderator tab, copies kept past their case (BUT-2329).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorFrozenEmpty": "No kept copies",
+  "@moderatorFrozenEmpty": {
+    "description": "Empty state of the Sparade tab (BUT-2329)."
+  },
+  "moderatorFrozenLoadFailed": "We could not load the kept copies.",
+  "@moderatorFrozenLoadFailed": {
+    "description": "Error state of the Sparade tab (BUT-2329)."
+  },
+  "moderatorFrozenExtend": "Extend one year",
+  "@moderatorFrozenExtend": {
+    "description": "Button and sheet confirm on a kept copy (BUT-2329)."
+  },
+  "moderatorFrozenRelease": "Stop keeping",
+  "@moderatorFrozenRelease": {
+    "description": "Button and confirm on a kept copy (BUT-2329)."
+  },
+  "moderatorFrozenReleaseTitle": "Stop keeping the copy?",
+  "@moderatorFrozenReleaseTitle": {
+    "description": "Confirm dialog title (BUT-2329)."
+  },
+  "moderatorFrozenReleaseBody": "The copy then follows the usual rules again. If the case is already closed, it is deleted.",
+  "@moderatorFrozenReleaseBody": {
+    "description": "Confirm dialog body (BUT-2329)."
+  },
+  "moderatorFrozenReleasedDeleted": "The copy is being deleted",
+  "@moderatorFrozenReleasedDeleted": {
+    "description": "Snackbar after release when the case was closed (BUT-2329)."
+  },
+  "moderatorFrozenReleasedKept": "The copy follows the usual rules again",
+  "@moderatorFrozenReleasedKept": {
+    "description": "Snackbar after release when the case is open (BUT-2329)."
+  },
+  "profileDeletionNoticeWhatFrozen": "One thing has been kept: a copy of content that was reported.",
+  "@profileDeletionNoticeWhatFrozen": {
+    "description": "WHAT line when only a frozen report copy was kept (BUT-2329)."
+  },
+  "profileDeletionNoticeWhyFrozen": "Why: the copy is needed in a matter of safety or legal claims.",
+  "@profileDeletionNoticeWhyFrozen": {
+    "description": "WHY line when only a frozen report copy was kept (BUT-2329)."
+  },
+  "profileDeletionNoticeHowLongFrozen": "How long: until {date} at the latest.",
+  "@profileDeletionNoticeHowLongFrozen": {
+    "description": "HOW LONG line when only a frozen copy was kept (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeHowLongFrozenUnknown": "How long: three years at most.",
+  "@profileDeletionNoticeHowLongFrozenUnknown": {
+    "description": "HOW LONG line for a frozen copy with no date (BUT-2329)."
+  },
+  "profileDeletionNoticeExtraFrozen": "In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, until {date} at the latest.",
+  "@profileDeletionNoticeExtraFrozen": {
+    "description": "Extra line when a frozen copy is kept together with other records (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeExtraFrozenUnknown": "In addition, a copy of content that was reported is kept, for a matter of safety or legal claims, for three years at most.",
+  "@profileDeletionNoticeExtraFrozenUnknown": {
+    "description": "Extra line for a frozen copy with no date (BUT-2329)."
+  },
   "adminNavPools": "Ratings",
   "adminAnomalyMetricPoolVelocity": "Rating rush",
   "adminAnomalyMetricPoolSkew": "Ratings pull the average",

@@ -21985,6 +21985,123 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminAcquisitionLoading => 'Laddar kanalräkningen …';
 
   @override
+  String get moderatorKeepLonger => 'Spara längre';
+
+  @override
+  String moderatorFrozenUntilLine(String date, String reason) {
+    return 'Sparas till $date · $reason';
+  }
+
+  @override
+  String get moderatorFreezeReasonPolice => 'Polis eller myndighet';
+
+  @override
+  String get moderatorFreezeReasonThreat => 'Hot mot någons säkerhet';
+
+  @override
+  String get moderatorFreezeReasonLegalClaim => 'Rättslig tvist';
+
+  @override
+  String get moderatorFreezeReasonUnknown => 'Okänt skäl';
+
+  @override
+  String get moderatorFreezeSheetTitle => 'Spara kopian längre';
+
+  @override
+  String get moderatorFreezeSheetHelp =>
+      'Kopian sparas ett år, även om ärendet stängs eller kontot raderas. Du kan förlänga ett år i taget, högst tre år.';
+
+  @override
+  String get moderatorFreezeChooseReason => 'Skäl';
+
+  @override
+  String moderatorFreezeSaved(String date) {
+    return 'Kopian sparas till $date';
+  }
+
+  @override
+  String get moderatorFreezeFailed =>
+      'Vi kunde inte ändra hur länge kopian sparas.';
+
+  @override
+  String get moderatorFreezeFailedKept => 'Kopian är som den var.';
+
+  @override
+  String get moderatorFreezeBlockNoCopy => 'Det finns ingen kopia att spara.';
+
+  @override
+  String get moderatorFreezeBlockNotCaptured =>
+      'Ingen text sparades för den här anmälan, så det finns inget att spara längre.';
+
+  @override
+  String get moderatorFreezeBlockAlreadyFrozen => 'Kopian sparas redan längre.';
+
+  @override
+  String get moderatorFreezeBlockNotFrozen =>
+      'Kopian sparas inte längre än vanligt.';
+
+  @override
+  String get moderatorFreezeBlockAtCap =>
+      'Kopian kan inte sparas längre än tre år.';
+
+  @override
+  String moderatorTabFrozen(int count) {
+    return 'Sparade ($count)';
+  }
+
+  @override
+  String get moderatorFrozenEmpty => 'Inga sparade kopior';
+
+  @override
+  String get moderatorFrozenLoadFailed =>
+      'Vi kunde inte hämta de sparade kopiorna.';
+
+  @override
+  String get moderatorFrozenExtend => 'Förläng ett år';
+
+  @override
+  String get moderatorFrozenRelease => 'Sluta spara';
+
+  @override
+  String get moderatorFrozenReleaseTitle => 'Sluta spara kopian?';
+
+  @override
+  String get moderatorFrozenReleaseBody =>
+      'Kopian följer sedan vanliga regler igen. Om ärendet redan är stängt raderas den.';
+
+  @override
+  String get moderatorFrozenReleasedDeleted => 'Kopian raderas';
+
+  @override
+  String get moderatorFrozenReleasedKept => 'Kopian följer vanliga regler igen';
+
+  @override
+  String get profileDeletionNoticeWhatFrozen =>
+      'En sak har sparats: en kopia av innehåll som anmälts.';
+
+  @override
+  String get profileDeletionNoticeWhyFrozen =>
+      'Varför: kopian behövs i ett ärende om säkerhet eller rättsliga anspråk.';
+
+  @override
+  String profileDeletionNoticeHowLongFrozen(String date) {
+    return 'Hur länge: senast $date.';
+  }
+
+  @override
+  String get profileDeletionNoticeHowLongFrozenUnknown =>
+      'Hur länge: högst tre år.';
+
+  @override
+  String profileDeletionNoticeExtraFrozen(String date) {
+    return 'Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, senast $date.';
+  }
+
+  @override
+  String get profileDeletionNoticeExtraFrozenUnknown =>
+      'Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, högst tre år.';
+
+  @override
   String get adminNavPools => 'Betyg';
 
   @override

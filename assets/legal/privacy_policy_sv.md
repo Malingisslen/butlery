@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 12 november 2026
-**Version:** 1.35
+**Version:** 1.36
 
 ---
 
@@ -213,6 +213,7 @@ Vi kan dela information om:
 - Vi är skyldiga enligt lag
 - Det krävs för att skydda våra rättigheter
 - Det är nödvändigt för att förhindra brott
+- Om en moderator har sparat en textkopia av anmält innehåll i ett allvarligt ärende kan vi lämna ut den till polis eller annan myndighet när lagen kräver det.
 
 ### 6.3 Vad vi INTE gör
 
@@ -304,6 +305,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Begäran om kontoradering (datum och den anledning du angav) | Tills kontot raderas, högst 7 dagar efter begäran, eller tills du ångrar | Fullgöra din begäran om radering och låta dig ångra den (Art. 17) |
 | Gemensamma betygsbidrag (”Butlery-betyget”) | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
+| Textkopia av anmält innehåll i ett allvarligt ärende (polisanmälan eller förfrågan från polis eller annan myndighet, hot eller fara för någons säkerhet, eller en rättslig tvist) som en moderator har valt att spara längre | Ett år från att moderatorn sparade den. Moderatorn kan förlänga ett år i taget, högst tre år totalt. Kopian sparas även om ärendet stängs eller om den som anmälde eller anmäldes raderar sitt konto, och används bara för att kunna lämnas ut i ärendet | Berättigat intresse (art. 6.1 f: användares säkerhet och att kunna fastställa, göra gällande eller försvara rättsliga anspråk), eller rättslig förpliktelse (art. 6.1 c) när en myndighet har begärt att vi bevarar uppgifterna |
 | Nyckel för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering, använder en reservkod för att logga in eller raderar kontot | Fullgörande av avtal |
 | Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |

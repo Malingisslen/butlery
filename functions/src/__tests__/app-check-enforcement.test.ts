@@ -64,6 +64,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "reopenReport", // moderation/reopen-report.ts — BUT-1528 requireAdmin, called from the app's moderator screen
   "adminInspectPool", // admin/pool-moderation.ts — BUT-1517 requireAdmin, called from the app's admin pool view
   "adminSetPoolQuarantine", // admin/pool-moderation.ts — BUT-1517 requireAdmin, called from the app's admin pool view
+  "freezeReportEvidence", // moderation/freeze-report-evidence.ts — BUT-2329 requireAdmin, called from the app's moderator screen
   "createIngredientChangePr", // admin/create-ingredient-change-pr.ts — requireAdmin, called from the admin web's Förslag tab
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts

@@ -18046,6 +18046,162 @@
   "adminAcquisitionNote": "Räknar nya konton med samtycke till statistik, för de senaste 30 dagarna. Det är inte alla nya användare: de som inte sagt ja eller inte kommit via en länk syns inte. Tal under 5 visas som <5 så att ingen enskild person kan pekas ut.",
   "adminAcquisitionOther": "Övrigt",
   "adminAcquisitionLoading": "Laddar kanalräkningen …",
+  "moderatorKeepLonger": "Spara längre",
+  "@moderatorKeepLonger": {
+    "description": "Button on a saved copy: keep it past the case (BUT-2329)."
+  },
+  "moderatorFrozenUntilLine": "Sparas till {date} · {reason}",
+  "@moderatorFrozenUntilLine": {
+    "description": "Muted line on a copy kept past the case (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorFreezeReasonPolice": "Polis eller myndighet",
+  "@moderatorFreezeReasonPolice": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonThreat": "Hot mot någons säkerhet",
+  "@moderatorFreezeReasonThreat": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonLegalClaim": "Rättslig tvist",
+  "@moderatorFreezeReasonLegalClaim": {
+    "description": "Reason for keeping a copy longer (BUT-2329)."
+  },
+  "moderatorFreezeReasonUnknown": "Okänt skäl",
+  "@moderatorFreezeReasonUnknown": {
+    "description": "Reason written by a newer server than this app (BUT-2329)."
+  },
+  "moderatorFreezeSheetTitle": "Spara kopian längre",
+  "@moderatorFreezeSheetTitle": {
+    "description": "Title of the sheet and its confirm button (BUT-2329)."
+  },
+  "moderatorFreezeSheetHelp": "Kopian sparas ett år, även om ärendet stängs eller kontot raderas. Du kan förlänga ett år i taget, högst tre år.",
+  "@moderatorFreezeSheetHelp": {
+    "description": "Help text in the keep-longer sheet (BUT-2329)."
+  },
+  "moderatorFreezeChooseReason": "Skäl",
+  "@moderatorFreezeChooseReason": {
+    "description": "Overline above the reason choices (BUT-2329)."
+  },
+  "moderatorFreezeSaved": "Kopian sparas till {date}",
+  "@moderatorFreezeSaved": {
+    "description": "Snackbar after keeping or extending a copy (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorFreezeFailed": "Vi kunde inte ändra hur länge kopian sparas.",
+  "@moderatorFreezeFailed": {
+    "description": "Failure snackbar, what happened (BUT-2329)."
+  },
+  "moderatorFreezeFailedKept": "Kopian är som den var.",
+  "@moderatorFreezeFailedKept": {
+    "description": "Failure snackbar, what is kept (BUT-2329)."
+  },
+  "moderatorFreezeBlockNoCopy": "Det finns ingen kopia att spara.",
+  "@moderatorFreezeBlockNoCopy": {
+    "description": "freezeBlock no_copy (BUT-2329)."
+  },
+  "moderatorFreezeBlockNotCaptured": "Ingen text sparades för den här anmälan, så det finns inget att spara längre.",
+  "@moderatorFreezeBlockNotCaptured": {
+    "description": "freezeBlock not_captured (BUT-2329)."
+  },
+  "moderatorFreezeBlockAlreadyFrozen": "Kopian sparas redan längre.",
+  "@moderatorFreezeBlockAlreadyFrozen": {
+    "description": "freezeBlock already_frozen (BUT-2329)."
+  },
+  "moderatorFreezeBlockNotFrozen": "Kopian sparas inte längre än vanligt.",
+  "@moderatorFreezeBlockNotFrozen": {
+    "description": "freezeBlock not_frozen (BUT-2329)."
+  },
+  "moderatorFreezeBlockAtCap": "Kopian kan inte sparas längre än tre år.",
+  "@moderatorFreezeBlockAtCap": {
+    "description": "freezeBlock at_cap (BUT-2329)."
+  },
+  "moderatorTabFrozen": "Sparade ({count})",
+  "@moderatorTabFrozen": {
+    "description": "Fourth moderator tab, copies kept past their case (BUT-2329).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorFrozenEmpty": "Inga sparade kopior",
+  "@moderatorFrozenEmpty": {
+    "description": "Empty state of the Sparade tab (BUT-2329)."
+  },
+  "moderatorFrozenLoadFailed": "Vi kunde inte hämta de sparade kopiorna.",
+  "@moderatorFrozenLoadFailed": {
+    "description": "Error state of the Sparade tab (BUT-2329)."
+  },
+  "moderatorFrozenExtend": "Förläng ett år",
+  "@moderatorFrozenExtend": {
+    "description": "Button and sheet confirm on a kept copy (BUT-2329)."
+  },
+  "moderatorFrozenRelease": "Sluta spara",
+  "@moderatorFrozenRelease": {
+    "description": "Button and confirm on a kept copy (BUT-2329)."
+  },
+  "moderatorFrozenReleaseTitle": "Sluta spara kopian?",
+  "@moderatorFrozenReleaseTitle": {
+    "description": "Confirm dialog title (BUT-2329)."
+  },
+  "moderatorFrozenReleaseBody": "Kopian följer sedan vanliga regler igen. Om ärendet redan är stängt raderas den.",
+  "@moderatorFrozenReleaseBody": {
+    "description": "Confirm dialog body (BUT-2329)."
+  },
+  "moderatorFrozenReleasedDeleted": "Kopian raderas",
+  "@moderatorFrozenReleasedDeleted": {
+    "description": "Snackbar after release when the case was closed (BUT-2329)."
+  },
+  "moderatorFrozenReleasedKept": "Kopian följer vanliga regler igen",
+  "@moderatorFrozenReleasedKept": {
+    "description": "Snackbar after release when the case is open (BUT-2329)."
+  },
+  "profileDeletionNoticeWhatFrozen": "En sak har sparats: en kopia av innehåll som anmälts.",
+  "@profileDeletionNoticeWhatFrozen": {
+    "description": "WHAT line when only a frozen report copy was kept (BUT-2329)."
+  },
+  "profileDeletionNoticeWhyFrozen": "Varför: kopian behövs i ett ärende om säkerhet eller rättsliga anspråk.",
+  "@profileDeletionNoticeWhyFrozen": {
+    "description": "WHY line when only a frozen report copy was kept (BUT-2329)."
+  },
+  "profileDeletionNoticeHowLongFrozen": "Hur länge: senast {date}.",
+  "@profileDeletionNoticeHowLongFrozen": {
+    "description": "HOW LONG line when only a frozen copy was kept (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeHowLongFrozenUnknown": "Hur länge: högst tre år.",
+  "@profileDeletionNoticeHowLongFrozenUnknown": {
+    "description": "HOW LONG line for a frozen copy with no date (BUT-2329)."
+  },
+  "profileDeletionNoticeExtraFrozen": "Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, senast {date}.",
+  "@profileDeletionNoticeExtraFrozen": {
+    "description": "Extra line when a frozen copy is kept together with other records (BUT-2329).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeletionNoticeExtraFrozenUnknown": "Dessutom sparas en kopia av innehåll som anmälts, för ett ärende om säkerhet eller rättsliga anspråk, högst tre år.",
+  "@profileDeletionNoticeExtraFrozenUnknown": {
+    "description": "Extra line for a frozen copy with no date (BUT-2329)."
+  },
   "adminNavPools": "Betyg",
   "adminAnomalyMetricPoolVelocity": "Betygsrusning",
   "adminAnomalyMetricPoolSkew": "Betyg drar snittet",

@@ -418,11 +418,19 @@ class ProfileDialogs {
     bool provisional = false,
     bool reviewKept = true,
     bool ownReportKept = false,
+    bool frozenCopyKept = false,
+    DateTime? frozenCopyUntil,
     bool startCollapsed = false,
   }) {
     final l10n = context.l10n;
+    final dateFormat = DateFormat.yMMMMd(
+      Localizations.localeOf(context).languageCode,
+    );
+    final frozenOnly = frozenCopyKept && !reviewKept && !ownReportKept;
     final String what;
-    if (reviewKept && ownReportKept) {
+    if (frozenOnly) {
+      what = l10n.profileDeletionNoticeWhatFrozen;
+    } else if (reviewKept && ownReportKept) {
       what = provisional
           ? l10n.profileDeletionNoticeWhatBothUnclear
           : l10n.profileDeletionNoticeWhatBoth;
@@ -435,22 +443,35 @@ class ProfileDialogs {
     }
     // A kept report of the person's own is being HANDLED, not reviewed, so
     // those two lines speak of the handling whenever one is among the records.
-    final why = ownReportKept
+    final why = frozenOnly
+        ? l10n.profileDeletionNoticeWhyFrozen
+        : ownReportKept
         ? l10n.profileDeletionNoticeWhyHandling
         : l10n.profileDeletionNoticeWhy;
     final String howLong;
-    if (holdUntil == null) {
+    if (frozenOnly) {
+      howLong = frozenCopyUntil == null
+          ? l10n.profileDeletionNoticeHowLongFrozenUnknown
+          : l10n.profileDeletionNoticeHowLongFrozen(
+              dateFormat.format(frozenCopyUntil),
+            );
+    } else if (holdUntil == null) {
       howLong = ownReportKept
           ? l10n.profileDeletionNoticeHowLongHandlingUnknown
           : l10n.profileDeletionNoticeHowLongUnknown;
     } else {
-      final date = DateFormat.yMMMMd(
-        Localizations.localeOf(context).languageCode,
-      ).format(holdUntil);
+      final date = dateFormat.format(holdUntil);
       howLong = ownReportKept
           ? l10n.profileDeletionNoticeHowLongHandling(date)
           : l10n.profileDeletionNoticeHowLong(date);
     }
+    final String? frozenExtra = frozenCopyKept && !frozenOnly
+        ? (frozenCopyUntil == null
+              ? l10n.profileDeletionNoticeExtraFrozenUnknown
+              : l10n.profileDeletionNoticeExtraFrozen(
+                  dateFormat.format(frozenCopyUntil),
+                ))
+        : null;
 
     // Per CALL, never a static: the bystander protection is per-showing, and a
     // flag living on the class would stay set when a dialog is torn down
@@ -484,6 +505,10 @@ class ProfileDialogs {
                       Text(why),
                       const SizedBox(height: AppDimensions.space16),
                       Text(howLong),
+                      if (frozenExtra != null) ...[
+                        const SizedBox(height: AppDimensions.space16),
+                        Text(frozenExtra),
+                      ],
                       const SizedBox(height: AppDimensions.space16),
                       Text(
                         l10n.profileDeletionNoticeRights,
