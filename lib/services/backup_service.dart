@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -163,23 +164,28 @@ class BackupService extends BaseService {
 
   Future<ImportResult> importFromFile() async {
     try {
-      final result = await FilePicker.pickFiles(
+      final file = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        withData: true,
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (file == null) {
         return ImportResult.cancelled();
       }
 
-      final file = result.files.first;
-
-      if (file.bytes == null) {
+      final Uint8List bytes;
+      try {
+        bytes = await file.readAsBytes();
+      } catch (e) {
+        AppLogger.error(
+          'Kunde inte läsa backupfilen: ${importFailureLabel(e)}',
+          null,
+          'BackupService',
+        );
         return ImportResult.error(AppLocale.current.backupCouldNotReadFile);
       }
 
-      final jsonString = utf8.decode(file.bytes!);
+      final jsonString = utf8.decode(bytes);
       final jsonData = json.decode(jsonString);
 
       if (!jsonData.containsKey('butlery_backup') &&

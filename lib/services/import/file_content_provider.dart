@@ -1,19 +1,17 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart' show XFile;
 
 /// Abstraction for file content provision to enable dependency injection and testing
 abstract class FileContentProvider {
-  /// Pick files using platform file picker
-  Future<FilePickerResult?> pickFiles({
+  /// Pick a single file using the platform file picker; null when cancelled.
+  Future<PlatformFile?> pickFile({
     FileType type = FileType.any,
     List<String>? allowedExtensions,
-    bool allowMultiple = false,
-    bool withData = true,
-    bool withReadStream = false,
   });
 
   /// Import from raw content for testing
-  Future<FilePickerResult?> provideContent(
+  Future<PlatformFile?> provideContent(
     Uint8List content,
     String fileName,
     String? extension,
@@ -23,59 +21,66 @@ abstract class FileContentProvider {
 /// Default implementation using FilePicker
 class DefaultFileContentProvider implements FileContentProvider {
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     FileType type = FileType.any,
     List<String>? allowedExtensions,
-    bool allowMultiple = false,
-    bool withData = true,
-    bool withReadStream = false,
   }) async {
-    return await FilePicker.pickFiles(
+    return await FilePicker.pickFile(
       type: type,
       allowedExtensions: allowedExtensions,
-      allowMultiple: allowMultiple,
-      withData: withData,
-      withReadStream: withReadStream,
     );
   }
 
   @override
-  Future<FilePickerResult?> provideContent(
+  Future<PlatformFile?> provideContent(
     Uint8List content,
     String fileName,
     String? extension,
   ) async {
-    // Create a mock FilePickerResult with the provided content
-    // This is for testing purposes
-    return _MockFilePickerResult(
-      files: [
-        _MockPlatformFile(
-          name: fileName,
-          bytes: content,
-          size: content.length,
-          extension: extension,
-        ),
-      ],
+    return InMemoryPlatformFile(
+      name: fileName,
+      bytes: content,
+      extension: extension,
     );
   }
 }
 
-/// Mock FilePickerResult for testing
-class _MockFilePickerResult extends FilePickerResult {
-  _MockFilePickerResult({required List<PlatformFile> files}) : super(files);
-}
+/// A [PlatformFile] backed by bytes already in memory; the package ships no
+/// concrete one and `PlatformFile` is a base class, so tests and
+/// [DefaultFileContentProvider.provideContent] need this subclass.
+final class InMemoryPlatformFile extends PlatformFile {
+  InMemoryPlatformFile({
+    required this.name,
+    required Uint8List bytes,
+    String? extension,
+  }) : _bytes = bytes,
+       _extension = extension;
 
-/// Mock PlatformFile for testing
-class _MockPlatformFile extends PlatformFile {
+  final Uint8List _bytes;
   final String? _extension;
 
-  _MockPlatformFile({
-    required super.name,
-    required super.size,
-    super.bytes,
-    String? extension,
-  }) : _extension = extension;
+  @override
+  final String name;
 
   @override
   String? get extension => _extension;
+
+  @override
+  Uri get uri => Uri.dataFromBytes(_bytes);
+
+  // cross_file is not a direct dependency; image_picker re-exports XFile.
+  @override
+  XFile get xFile => XFile.fromData(_bytes, name: name);
+
+  @override
+  int? lengthSync() => _bytes.length;
+
+  @override
+  Future<int?> length() async => _bytes.length;
+
+  @override
+  Future<Uint8List> readAsBytes() async => _bytes;
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream.value(_bytes);
 }

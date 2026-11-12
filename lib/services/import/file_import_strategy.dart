@@ -52,23 +52,22 @@ class FileImportStrategy extends ImportStrategy {
   }) async {
     // This method uses file picker to select files
     try {
-      final result = await _contentProvider.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: _extensions,
-        withData: true,
-      );
+      final file = await pickFile();
 
-      if (result == null || result.files.isEmpty) {
+      if (file == null) {
         return ImportResult.failure('No file selected');
       }
 
-      final file = result.files.first;
-      if (file.bytes == null) {
+      final Uint8List bytes;
+      try {
+        bytes = await file.readAsBytes();
+      } catch (e) {
+        AppLogger.error('File import failed: could not read file', e);
         return ImportResult.failure('Could not read file');
       }
 
       return await importFromContent(
-        file.bytes!,
+        bytes,
         (file.extension?.toLowerCase()).orEmpty(),
         options: options,
       );
@@ -102,12 +101,10 @@ class FileImportStrategy extends ImportStrategy {
 
   /// Asks the user for one file; null when they picked none.
   Future<PlatformFile?> pickFile() async {
-    final result = await _contentProvider.pickFiles(
+    return _contentProvider.pickFile(
       type: FileType.custom,
       allowedExtensions: _extensions,
-      withData: true,
     );
-    return result?.files.firstOrNull;
   }
 
   /// Every recipe in a file the user picked.
@@ -115,9 +112,11 @@ class FileImportStrategy extends ImportStrategy {
     PlatformFile file, {
     Map<String, dynamic>? options,
   }) async {
-    final bytes = file.bytes;
-    if (bytes == null) {
-      AppLogger.error('File import failed: could not read file');
+    final Uint8List bytes;
+    try {
+      bytes = await file.readAsBytes();
+    } catch (e) {
+      AppLogger.error('File import failed: could not read file', e);
       return [];
     }
     return importMultipleFromContent(

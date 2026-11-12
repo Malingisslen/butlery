@@ -35,7 +35,7 @@ class CunningDocumentScannerAdapter implements DocumentScanner {
   @override
   Future<List<String>?> scan({required int maxPages}) async {
     try {
-      return await CunningDocumentScanner.getPictures(
+      final result = await CunningDocumentScanner.scanDocuments(
         noOfPages: maxPages,
         scannerSource: ScannerSource.camera,
         androidScannerMode: AndroidScannerMode.full,
@@ -44,6 +44,7 @@ class CunningDocumentScannerAdapter implements DocumentScanner {
           jpgCompressionQuality: 0.85,
         ),
       );
+      return result == null ? null : List.of(result.images);
     } on CunningDocumentScannerException catch (e) {
       if (e.code == 'permission_denied') {
         throw const DocumentScanPermissionDenied();
