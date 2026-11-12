@@ -1,5 +1,5 @@
 /// Firebase implementation for real-time messaging with conversation management.
-/// Supports direct/group conversations, real-time delivery, read receipts, and participant management.
+/// Supports direct/group conversations, real-time delivery, and read receipts.
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,13 +10,11 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
-import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
 import 'package:butlery/models/messaging/pending_image_status.dart';
@@ -33,7 +31,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   // Cloud Function trigger.
   late final ConversationQueryModule _conversationQueryModule;
   late final ConversationMutationModule _conversationMutationModule;
-  late final ConversationParticipantModule? _participantModule;
   late final MessageQueryModule _messageQueryModule;
   late final MessageMutationModule _messageMutationModule;
   late final MessageDeletionModule _messageDeletionModule;
@@ -43,18 +40,9 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
-    FeatureFlagService? featureFlagService,
   }) : super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        ) {
-    // Initialize participant module if feature flag service is provided
-    _participantModule = featureFlagService != null
-        ? ConversationParticipantModule(
-            firestore: firestore,
-            featureFlags: featureFlagService,
-          )
-        : null;
-
     // Initialize modules
     _conversationQueryModule = ConversationQueryModule(
       firestore: firestore,
@@ -65,7 +53,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     _conversationMutationModule = ConversationMutationModule(
       firestore: firestore,
       collectionName: collectionName,
-      participantModule: _participantModule,
     );
 
     _messageQueryModule = MessageQueryModule(

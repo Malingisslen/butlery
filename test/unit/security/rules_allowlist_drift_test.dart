@@ -19,9 +19,9 @@
 /// **It does not cover every allowlist.** An actual drift was found in:
 /// `isValidTagResult`, `counters`,
 /// `notification_history` and the deep-link `clicks`.
-/// `participants` and the poll vote never drifted and could not have — each
+/// The poll vote never drifted and could not have — its
 /// `match` block was new when it was added here, so those writes were failing on
-/// default-deny, not on a stale allowlist. Both are guarded because a brand-new
+/// default-deny, not on a stale allowlist. It is guarded because a brand-new
 /// allowlist is the likeliest of all to drift next.
 ///
 /// The poll vote is also the census earning its keep: it shipped UNGUARDED on
@@ -108,9 +108,8 @@ Set<String> _allowlistAfter(String rules, String anchor, String mustContain) {
 
   // Pin WHICH list was found. Anchoring on the enclosing block is not enough,
   // because this extractor scans FORWARD and does not stop at a closing brace:
-  // the participants block contains two `hasOnly` calls, and `isValidTagResult`
-  // is immediately followed by a sibling function carrying another. Either way
-  // a reordering would silently rebind this comparison to an unrelated list. A
+  // `isValidTagResult` is immediately followed by a sibling function carrying
+  // another. A reordering would silently rebind this comparison to an unrelated list. A
   // sentinel only the intended list contains fails loudly instead.
   expect(
     found,
@@ -603,9 +602,12 @@ void main() {
     // recipientsChangedOnlyBySelf and the row-less self-leave's
     // affectedKeys().hasOnly(['sharedToUserIds']), a diff restriction; neither
     // is a payload allowlist.
+    // BUT-2110 removed two with the conversation roster block: its create
+    // keys().hasOnly (guarded in allowlists until then) and the subject's
+    // lastReadAt affectedKeys().hasOnly.
     expect(
       'hasOnly('.allMatches(rules).length,
-      66,
+      64,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

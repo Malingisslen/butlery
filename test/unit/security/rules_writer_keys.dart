@@ -9,7 +9,6 @@ library;
 
 import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/models/admin/signup_invite.dart';
-import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
@@ -98,12 +97,6 @@ const allowlists = <Allowlist>[
         'incrementUnreadCounter, decrementUnreadCounter, and the recalculate '
         'path (named, not line-numbered: the line numbers were already off by '
         'one, and a method name survives the edits a number does not)',
-  ),
-  Allowlist(
-    label: 'conversations/{id}/participants',
-    mustContain: 'displayName',
-    anchor: 'match /participants/{participantId}',
-    writer: 'lib/models/messaging/conversation_participant.dart toFirestore',
   ),
   Allowlist(
     label: 'notification_history',
@@ -294,17 +287,6 @@ Map<String, Set<String>> writtenKeys() => {
         reason: 'fixture',
       ),
     ],
-  ).toFirestore().keys.toSet(),
-  // avatarUrl is emitted only when non-null, so the fixture carries one: the
-  // guard has to compare against the WIDEST set the writer can send, not the
-  // narrowest.
-  'conversations/{id}/participants': ConversationParticipant(
-    conversationId: 'c',
-    participantId: 'u',
-    displayName: 'n',
-    avatarUrl: 'https://example.com/a.png',
-    joinedAt: DateTime(2026),
-    lastReadAt: DateTime(2026),
   ).toFirestore().keys.toSet(),
   // Field names derived, key SET retyped — see the scope note in the header.
   // `incrementUnreadCounter` sends

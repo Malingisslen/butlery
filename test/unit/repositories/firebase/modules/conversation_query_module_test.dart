@@ -4,7 +4,6 @@
 /// participants accessor, the unread-message count, and the unread-conversations
 /// count.
 ///
-/// No read path consults a `ConversationParticipantModule`.
 /// The unread-conversations count reads the conversations themselves, which is
 /// what the last two tests in that group hold in place — one where a READ
 /// conversation must not be counted, one where a GROUP must be.
@@ -313,7 +312,7 @@ void main() {
 
   group('getUnreadConversationsCount', () {
     test(
-      'counts unread conversations when no participant module is wired',
+      'counts unread conversations',
       () async {
         final firestore = FakeFirebaseFirestore();
         await _seedConvo(

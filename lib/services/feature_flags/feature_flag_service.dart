@@ -35,8 +35,6 @@ class FeatureFlagService {
   /// Default flag values - used when Remote Config is unavailable or flag not set
   static const Map<String, dynamic> _defaults = {
     // Phase 2 Scalability Flags
-    'enable_subcollection_participants': true,
-    'max_inline_participants': 10,
     'enable_reference_shared_content': true,
 
     // Phase 3 Scalability Flags
@@ -460,9 +458,6 @@ class FeatureFlagService {
 /// Use these instead of string literals.
 abstract final class FeatureFlags {
   // Phase 2 Scalability Flags
-  static const enableSubcollectionParticipants =
-      'enable_subcollection_participants';
-  static const maxInlineParticipants = 'max_inline_participants';
   static const enableReferenceSharedContent = 'enable_reference_shared_content';
 
   // Phase 3 Scalability Flags

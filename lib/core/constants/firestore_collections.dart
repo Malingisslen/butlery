@@ -179,7 +179,6 @@ abstract final class FirestoreCollections {
 
   // ── Other subcollections ──
 
-  static const String participants = 'participants';
   static const String items = 'items';
 
   /// BUT-1838: the shared group a group chat hangs off. Named `chat_groups`
