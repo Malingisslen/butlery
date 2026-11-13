@@ -1088,6 +1088,18 @@ void main() {
         verify(() => mockUserRepository.fetchProfile('cached_user')).called(1);
       });
 
+      test('logout empties the profile cache', () async {
+        when(() => mockUserRepository.fetchProfile('other_user')).thenAnswer(
+          (_) async => MockFactory.createUserProfile(userId: 'other_user'),
+        );
+
+        await userService.getUserProfile('other_user');
+        userService.resetForLogout();
+        await userService.getUserProfile('other_user');
+
+        verify(() => mockUserRepository.fetchProfile('other_user')).called(2);
+      });
+
       test('should get multiple user profiles', () async {
         // Arrange
         final profiles = [
