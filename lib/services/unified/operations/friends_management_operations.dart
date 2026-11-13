@@ -15,7 +15,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/services/notifications/notification_translations.dart';
 
-import 'package:butlery/services/user_service.dart' as user_svc;
+import 'package:butlery/services/user_service/user_service_roles.dart'
+    as user_svc;
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
@@ -74,7 +75,7 @@ class FriendsManagementOperations extends BaseService {
   final Future<void> Function(FriendRequest) _updateFriendRequestStatus;
   final Future<void> Function() _refresh;
 
-  final user_svc.UserService _userService;
+  final user_svc.ProfileDirectory _userService;
   final FirebaseBlockRepository _blockRepository;
   final notif.NotificationService? Function() _getNotificationService;
   final AnalyticsService? Function() _getAnalyticsService;
@@ -96,7 +97,7 @@ class FriendsManagementOperations extends BaseService {
     required Future<void> Function(FriendRequest) syncFriendRequestToFirebase,
     required Future<void> Function(FriendRequest) updateFriendRequestStatus,
     required Future<void> Function() refresh,
-    required user_svc.UserService userService,
+    required user_svc.ProfileDirectory userService,
     required FirebaseBlockRepository blockRepository,
     notif.NotificationService? Function()? getNotificationService,
     AnalyticsService? Function()? getAnalyticsService,

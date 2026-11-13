@@ -8,7 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -36,13 +36,13 @@ class RealtimeMenuService extends ChangeNotifier
   RealtimeMenuService({
     required RealtimeSyncService syncService,
     required AuthService authService,
-    required UserService? Function() userService,
+    required OwnProfileReader? Function() userService,
   }) : _syncService = syncService,
        _authService = authService,
        _userService = userService;
 
   // A closure: the profile service can be registered after this one.
-  final UserService? Function() _userService;
+  final OwnProfileReader? Function() _userService;
 
   /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;

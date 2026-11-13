@@ -22,7 +22,7 @@ import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Result of [WeeklyMenuPlanService.distributeFromGeneratedMenu]: the new
 /// plan plus any recipes that didn't fit (rendered in the overflow tray).
@@ -307,11 +307,11 @@ typedef LateWeekConflict = ({WeeklyMenuPlan sent, WeeklyMenuPlan remote});
 
 class WeeklyMenuPlanService extends BaseService {
   final WeeklyMenuPlanRepository _repository;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   WeeklyMenuPlanService({
     required WeeklyMenuPlanRepository repository,
-    required UserService userService,
+    required OwnProfileReader userService,
   }) : _repository = repository,
        _userService = userService;
 

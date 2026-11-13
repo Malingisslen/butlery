@@ -23,7 +23,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/notifications/fcm_service/fcm_platform_setup.dart';
 import 'package:butlery/services/notifications/fcm_service/notification_navigator.dart';
 import 'package:butlery/services/notifications/fcm_service/push_access_revoker.dart';
@@ -40,7 +40,7 @@ class FCMService extends BaseService {
   FCMService({
     FirebaseMessaging? messaging,
     FlutterLocalNotificationsPlugin? localNotifications,
-    required UserService? Function() getUserService,
+    required OwnProfileEditor? Function() getUserService,
     required RecipeRepository Function() getRecipeRepository,
     required FirebaseSharedMenuRepository Function() getSharedMenuRepository,
     required UnifiedRecipeService Function() getRecipeService,
@@ -62,7 +62,7 @@ class FCMService extends BaseService {
 
   // Lookups, not instances: the user-scoped services change with the signed-in
   // user and UserService may not be registered yet when a consent change fires.
-  final UserService? Function() _getUserService;
+  final OwnProfileEditor? Function() _getUserService;
   final RecipeRepository Function() _getRecipeRepository;
   final FirebaseSharedMenuRepository Function() _getSharedMenuRepository;
   final UnifiedRecipeService Function() _getRecipeService;

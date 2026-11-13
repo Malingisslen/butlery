@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -18,12 +18,12 @@ import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 class ShoppingSocialShareModule {
   final FirebaseFirestore _firestore;
   final PermissionService _permissionService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   ShoppingSocialShareModule({
     required FirebaseFirestore firestore,
     required PermissionService permissionService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ShareRecipientFilter filterShareRecipients,
   }) : _firestore = firestore,
        _permissionService = permissionService,

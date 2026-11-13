@@ -1,6 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Consent-revoke cleanup of the FCM token in the SDK and on the profile.
 class PushAccessRevoker {
@@ -18,7 +18,7 @@ class PushAccessRevoker {
   /// instance memory). Each half owns its own lifecycle scope.
   static Future<void> revoke({
     required FirebaseMessaging messaging,
-    required UserService? Function() getUserService,
+    required OwnProfileEditor? Function() getUserService,
   }) async {
     final userService = getUserService();
     final hasUserService = userService != null;

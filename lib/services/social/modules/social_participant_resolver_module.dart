@@ -4,7 +4,7 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/shared_content_member.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
@@ -16,7 +16,7 @@ import 'package:clock/clock.dart';
 /// Provides participant lookup and profile resolution for recipes, menus, and shopping lists.
 /// Note (V1-QP-001): Uses denormalized member info from subcollection to avoid N+1 queries.
 class SocialParticipantResolverModule {
-  final UserService userService;
+  final ProfileDirectory userService;
   final UnifiedShoppingService? Function() getShoppingService;
   final List<SharedRecipe> Function() getSharedRecipes;
   final List<SharedMenu> Function() getSharedMenus;

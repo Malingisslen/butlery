@@ -13,7 +13,8 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
-import 'package:butlery/services/user_service.dart' as user_svc;
+import 'package:butlery/services/user_service/user_service_roles.dart'
+    as user_svc;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -37,7 +38,7 @@ class PermissionService extends BaseService {
   final UnifiedRecipeService Function() _recipeService;
   final UnifiedShoppingService Function() _shoppingService;
   final UnifiedFriendsService Function() _friendsService;
-  final user_svc.UserService Function() _userService;
+  final user_svc.ProfileDirectory Function() _userService;
 
   /// Permission modules (lazy initialized)
   RecipePermissionModule? _recipeModuleInstance;
@@ -54,7 +55,7 @@ class PermissionService extends BaseService {
     required UnifiedRecipeService Function() recipeService,
     required UnifiedShoppingService Function() shoppingService,
     required UnifiedFriendsService Function() friendsService,
-    required user_svc.UserService Function() userService,
+    required user_svc.ProfileDirectory Function() userService,
   }) {
     _instance ??= PermissionService._internal(
       authRepository ?? FirebaseAuthRepository(),

@@ -9,7 +9,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
@@ -36,7 +36,7 @@ class RecipeCommentsManager {
 
   final CommentsRepository? _commentsRepository;
   final AnalyticsService _analyticsService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   final BlockedUserFilter? _blockedUserFilter;
 
   // Built on first use: callers that never touch comments may be constructed
@@ -57,7 +57,7 @@ class RecipeCommentsManager {
     required NotificationService? notificationService,
     required CommentsRepository? commentsRepository,
     required AnalyticsService analyticsService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required BlockedUserFilter? blockedUserFilter,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,

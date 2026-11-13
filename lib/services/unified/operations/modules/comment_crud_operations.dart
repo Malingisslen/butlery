@@ -5,7 +5,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for comment CRUD operations
@@ -18,7 +18,7 @@ import 'package:butlery/core/utils/logger.dart';
 class CommentCrudOperations {
   final CommentsRepository _commentsRepository;
   final AnalyticsService _analyticsService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   // BUT-544: null behaves as if no users are blocked (filter is a soft-fail
   // surface, never a permission gate — rules layer enforces the security
   // contract).
@@ -27,7 +27,7 @@ class CommentCrudOperations {
   CommentCrudOperations({
     required CommentsRepository commentsRepository,
     required AnalyticsService analyticsService,
-    required UserService userService,
+    required OwnProfileReader userService,
     BlockedUserFilter? blockedFilter,
   }) : _commentsRepository = commentsRepository,
        _analyticsService = analyticsService,

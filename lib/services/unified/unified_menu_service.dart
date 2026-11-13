@@ -18,7 +18,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -72,7 +72,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
   // Links rather than instances: these are resolved only when a method needs
   // them, as the module builds this service before any of them is used.
-  final UserService Function() _userServiceLink;
+  final OwnProfileReader Function() _userServiceLink;
   final RealtimeMenuService Function() _realtimeMenuServiceLink;
   final PermissionService Function() _permissionServiceLink;
   final ShareRecipientFilter _filterShareRecipients;
@@ -112,7 +112,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
   UnifiedMenuService({
     required FirestoreRepository firestoreRepository,
-    required UserService Function() userService,
+    required OwnProfileReader Function() userService,
     required RealtimeMenuService Function() realtimeMenuService,
     required PermissionService Function() permissionService,
     required ShareRecipientFilter filterShareRecipients,

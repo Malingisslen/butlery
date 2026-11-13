@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/ingredients/ingredient_identity.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// BUT-1050: the policy seam between shopping-list checkoff and the pantry.
@@ -23,12 +23,12 @@ import 'package:butlery/utils/text/unit_definitions.dart';
 class ShoppingCheckoffPantryService {
   ShoppingCheckoffPantryService({
     required PantryService pantryService,
-    required UserService userService,
+    required OwnProfileReader userService,
   }) : _pantryService = pantryService,
        _userService = userService;
 
   final PantryService _pantryService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   /// Called when a shopping item's bought-state has just changed.
   ///
