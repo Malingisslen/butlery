@@ -84,17 +84,26 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
 
   Future<void>? _initializing;
 
+  // Bumped by [clearAllData]. A load started under an older value belongs to
+  // an account that has since signed out, so nothing it brings back is kept.
+  int _generation = 0;
+
   /// Overlapping callers share one load rather than each repeating the reads.
   Future<void> initialize() async {
     if (_isInitialized) {
       return;
     }
-    return _initializing ??= _initializeOnce().whenComplete(
-      () => _initializing = null,
-    );
+    final inFlight = _initializing;
+    if (inFlight != null) return inFlight;
+    final load = _initializeOnce(_generation);
+    _initializing = load;
+    return load.whenComplete(() {
+      if (identical(_initializing, load)) _initializing = null;
+    });
   }
 
-  Future<void> _initializeOnce() async {
+  Future<void> _initializeOnce(int generation) async {
+    bool stale() => generation != _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -107,18 +116,20 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       }
 
       await Future.wait([
-        _loadFriends(currentUserId),
-        _loadFriendRequests(),
-        _loadCategories(currentUserId),
-        _loadGroupInvitations(currentUserId),
-        _loadBlockedUsers(currentUserId),
+        _loadFriends(currentUserId, stale),
+        _loadFriendRequests(stale),
+        _loadCategories(currentUserId, stale),
+        _loadGroupInvitations(currentUserId, stale),
+        _loadBlockedUsers(currentUserId, stale),
       ]).timeout(const Duration(seconds: 10));
+      if (stale()) return;
 
       _setupRealtimeListeners(currentUserId);
 
       _isInitialized = true;
       _isLoading = false;
     } on TimeoutException {
+      if (stale()) return;
       // Proceed with whatever data loaded — individual methods catch their own errors
       // The live listeners are what bring results to screens after this.
       _setupRealtimeListeners(currentUserId!);
@@ -128,6 +139,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
         'FriendsStateManager init timed out, proceeding with partial data',
       );
     } catch (e, stackTrace) {
+      if (stale()) return;
       _isInitialized = true;
       _isLoading = false;
       _error = AppLocale.current.friendsLoadFailed;
@@ -140,9 +152,10 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  Future<void> _loadFriends(String userId) async {
+  Future<void> _loadFriends(String userId, bool Function() stale) async {
     try {
       final friendIds = await _repository.fetchFriendIds(userId);
+      if (stale()) return;
 
       if (friendIds.isNotEmpty) {
         final filteredFriendIds = friendIds
@@ -153,6 +166,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
           final friendProfiles = await _repository.fetchFriendProfiles(
             filteredFriendIds,
           );
+          if (stale()) return;
           _friends = friendProfiles;
         } else {
           _friends = [];
@@ -162,18 +176,20 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.warning('Failed to load friends: $e');
+      if (stale()) return;
       // An empty list would tell the user they have no friends.
       _friendsLoadFailed = true;
       _error = AppLocale.current.friendsLoadFailed;
     }
   }
 
-  Future<void> _loadFriendRequests() async {
+  Future<void> _loadFriendRequests(bool Function() stale) async {
     try {
       final incomingFuture = _repository.getIncomingRequests();
       final outgoingFuture = _repository.getSentRequests();
 
       final results = await Future.wait([incomingFuture, outgoingFuture]);
+      if (stale()) return;
 
       _incomingRequests = results[0];
       _outgoingRequests = results[1];
@@ -183,43 +199,56 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       );
     } catch (e) {
       AppLogger.warning('Failed to load friend requests: $e');
+      if (stale()) return;
       _incomingRequests = [];
       _outgoingRequests = [];
     }
   }
 
-  Future<void> _loadCategories(String userId) async {
+  Future<void> _loadCategories(String userId, bool Function() stale) async {
     try {
       // BUG-018 FIX: Use fetchMemberCategories to get ALL categories where user
       // is a member (across all users' collections), not just categories they own
-      _categories = await _categoryRepository.fetchMemberCategories(userId);
+      final categories = await _categoryRepository.fetchMemberCategories(
+        userId,
+      );
+      if (stale()) return;
+      _categories = categories;
       AppLogger.debug(
         'Loaded ${_categories.length} member categories (BUG-018 fix)',
       );
     } catch (e) {
       AppLogger.warning('Failed to load categories: $e');
+      if (stale()) return;
       _categories = [];
     }
   }
 
-  Future<void> _loadGroupInvitations(String userId) async {
+  Future<void> _loadGroupInvitations(
+    String userId,
+    bool Function() stale,
+  ) async {
     try {
       final receivedInvitations = await _repository.fetchReceivedInvitations(
         userId,
       );
+      if (stale()) return;
       _receivedInvitations = receivedInvitations;
 
       final sentInvitations = await _repository.fetchSentInvitations(userId);
+      if (stale()) return;
       _sentInvitations = sentInvitations;
     } catch (e) {
+      if (stale()) return;
       _receivedInvitations = [];
       _sentInvitations = [];
     }
   }
 
-  Future<void> _loadBlockedUsers(String userId) async {
+  Future<void> _loadBlockedUsers(String userId, bool Function() stale) async {
     try {
       final blocked = await _blockRepository.getBlockedUserIds();
+      if (stale()) return;
       _blockedUsers
         ..clear()
         ..addAll(blocked);
@@ -252,6 +281,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     _blockedUsers.clear();
 
     _friendsLoadFailed = false;
+    _generation++;
+    _initializing = null;
     _isInitialized = false;
     _isLoading = false;
     _error = null;
@@ -360,8 +391,11 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             AppLogger.warning(
               '⚠️ Firestore assertion in invitations stream, retry ${retryCount + 1}/$maxRetries...',
             );
+            final generation = _generation;
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (_isInitialized && !isStreamDisposed) {
+              if (generation == _generation &&
+                  _isInitialized &&
+                  !isStreamDisposed) {
                 _setupGroupInvitationsStream(
                   userId,
                   retryCount: retryCount + 1,
@@ -432,8 +466,11 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             AppLogger.warning(
               '⚠️ Firestore assertion in owned categories stream, retry ${retryCount + 1}/$maxRetries...',
             );
+            final generation = _generation;
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (_isInitialized && !isStreamDisposed) {
+              if (generation == _generation &&
+                  _isInitialized &&
+                  !isStreamDisposed) {
                 _setupCategoriesStream(userId, retryCount: retryCount + 1);
               }
             });
@@ -482,20 +519,24 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       return;
     }
 
+    final generation = _generation;
+    bool stale() => generation != _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       await Future.wait([
-        _loadFriends(currentUserId),
-        _loadFriendRequests(),
-        _loadCategories(currentUserId),
-        _loadGroupInvitations(currentUserId),
+        _loadFriends(currentUserId, stale),
+        _loadFriendRequests(stale),
+        _loadCategories(currentUserId, stale),
+        _loadGroupInvitations(currentUserId, stale),
       ]);
+      if (stale()) return;
 
       _isLoading = false;
     } catch (e) {
+      if (stale()) return;
       _error = AppLocale.current.friendsRefreshFailed;
       _isLoading = false;
       AppLogger.error('❌ Failed to refresh friends data: $e');
