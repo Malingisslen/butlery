@@ -25,12 +25,16 @@ import 'package:butlery/services/user_service.dart';
 
 import '../../../test_support/emulator_lane.dart';
 
-const _uid = 'settings-user-1';
+// A new uid per test: clearLane() empties the emulator's server but not the
+// device's Firestore cache, so a reused uid would let a profile cached by the
+// previous test stand in for one the server no longer holds.
+var _testCount = 0;
 
 void main() {
   group('User settings persist through UserService (BUT-1507)', () {
     late FirebaseFirestore firestore;
     late FirebaseAuthRepository auth;
+    late String uid;
     final services = <UserService>[];
 
     UserService buildService() {
@@ -60,7 +64,7 @@ void main() {
             roster: () => null,
             householdService: () => null,
             allergenShares: () => null,
-            currentUserId: () => _uid,
+            currentUserId: () => uid,
           ),
         ),
       );
@@ -78,10 +82,11 @@ void main() {
     setUp(() async {
       firestore = await firestoreForLane();
       await clearLane();
+      uid = 'settings-user-${++_testCount}';
       auth = FirebaseAuthRepository(
         firebaseAuth: MockFirebaseAuth(
           mockUser: MockUser(
-            uid: _uid,
+            uid: uid,
             email: 'settings@example.com',
             displayName: 'Settings User',
           ),
