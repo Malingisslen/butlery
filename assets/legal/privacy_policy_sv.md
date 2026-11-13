@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 12 november 2026
-**Version:** 1.36
+**Senast uppdaterad:** 13 november 2026
+**Version:** 1.37
 
 ---
 
@@ -107,6 +107,8 @@ Vi använder dina personuppgifter för följande ändamål:
 - Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Om du anger en egen mängd för en ingrediens sparas den på hushållet på samma sätt, antingen för ett recept eller för alla recept. Då sparas även receptets id för det receptet, och mängden följer med i exporten av dina uppgifter. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
 
 **Recept du visar på din profil:** Om du väljer ”Visa på min profil” på ett recept, eller slår på ”Nya recept är publika”, kan alla som är inloggade i Butlery och öppnar din profil se receptet. Gäster och den du har blockerat ser det inte. Det som syns är titel, beskrivning, portioner, tider, ingredienser, steg, receptets bilder, källa och källans författare. Ditt betyg, dina anteckningar och taggar, hur ofta du har lagat receptet och vilka du delar det med syns inte. Bilderna visas som egna kopior, som slutar fungera när du slutar visa receptet. Vi sparar valet och tidpunkten då du senast ändrade det på receptet, och det som visas på profilen ingår i din dataexport. Slutar du visa receptet, raderar det eller raderar kontot tas det bort från profilen inom någon minut. Den som har sett receptet kan ha sparat en egen kopia med ”Skapa kopia”. Den kopian är deras och tas inte bort, men den bär inte ditt namn, ditt användar-id eller dina bilder. Samarbetsrecept visas aldrig på profilen, och den som är under 18 år kan inte visa recept där. Behandlingen bygger på **fullgörande av avtal (art. 6.1 b)**: den sker för att du ber om den.
+
+**Om mig på din profil:** Det du skriver i ”Om mig” kan alla som är inloggade i Butlery se när de öppnar din profil, även den du har blockerat. Skriv inte in uppgifter om hälsa eller om andra personer. Den som är under 18 år kan inte skriva något där. Du kan ändra eller tömma texten när du vill. Texten ingår i din dataexport och raderas när du raderar kontot. Behandlingen bygger på **fullgörande av avtal (art. 6.1 b)**.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
