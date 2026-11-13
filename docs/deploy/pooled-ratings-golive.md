@@ -46,8 +46,13 @@ real-corpus hit-rate re-measure with 0 false merges (C6/C7/C8). Preview
 with `{ dryRun: true }` any time; do NOT run a real backfill until those clear.
 
 - **C6/C7** — measured with `tools/poolkey_corpus_eval.dart` on the machine that holds the
-  cookbook corpus (`BUTLERY_CORPUS_DIR`); it prints totals only. Not run yet. A run against
-  unverified answer keys is preliminary.
+  cookbook corpus (`BUTLERY_CORPUS_DIR`); it prints totals only. A run against unverified
+  answer keys is preliminary.
+  - 2026-11-13, main 0a02f4370, `BUTLERY_CORPUS_DIR=<corpus> dart run tools/poolkey_corpus_eval.dart`: 250 pages (131 verified, 119 proposed answer keys). 361
+    answer-key recipes, 342 keyed. C6: 0 shared keys between answer-key recipes; 1 between
+    OCR drafts, which local review found is the same recipe photographed twice (the tool's
+    verdict was STOP). C7: the OCR draft gives the answer key's key for 2 recipes, another or no key for 340.
+    A different key is a miss, not a false merge.
 - **C8** — the tagged adversarial set is `test/fixtures/pool_key_adversarial.json`, run in Dart
   and TS. Cases marked `known_gap` are measured weaknesses of the key and keep C8 open until a
   key change removes them.
