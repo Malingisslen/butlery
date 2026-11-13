@@ -25,6 +25,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -278,7 +279,12 @@ void main() {
       _getIt.unregister<UnifiedFriendsService>();
     }
     await SocialModule().configureUserScope(_getIt);
-    return _getIt<UnifiedFriendsService>();
+    final friends = _getIt<UnifiedFriendsService>();
+    // BUT-1507: the module hands out this same instance under every role.
+    expect(identical(_getIt<FriendsReader>(), friends), isTrue);
+    expect(identical(_getIt<FriendsActions>(), friends), isTrue);
+    expect(identical(_getIt<FriendsSession>(), friends), isTrue);
+    return friends;
   });
 
   defineSuite('built directly while the locator holds other instances', ({

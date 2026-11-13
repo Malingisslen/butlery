@@ -100,6 +100,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 class SocialModule implements DIModule {
@@ -182,6 +183,7 @@ class SocialModule implements DIModule {
       ),
       dispose: (s) => s.dispose(),
     );
+    registerFriendsServiceRoles(container);
 
     final householdLinks = householdLinksFromLocator();
 
@@ -417,6 +419,7 @@ class SocialModule implements DIModule {
           ),
         ),
       );
+      registerUserServiceRoles(container);
 
       // UnifiedFriendsService, SocialRecipeService,
       // coordinators, SocialMenuOperations: registered in configureUserScope

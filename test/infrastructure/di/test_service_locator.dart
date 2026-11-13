@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import '../factories/mock_factory.dart';
 import '../mocks/production_mocks.dart';
 import '../mocks/service_mocks.dart';
@@ -377,6 +378,7 @@ class TestServiceLocator {
     getIt.registerSingleton<UserService>(
       MockFactory.createUserService(),
     );
+    registerUserServiceRoles(getIt);
 
     // Permission Service
     getIt.registerSingleton<PermissionService>(
@@ -414,6 +416,7 @@ class TestServiceLocator {
     getIt.registerSingleton<UnifiedFriendsService>(
       MockFactory.createUnifiedFriendsService(),
     );
+    registerFriendsServiceRoles(getIt);
 
     // Messaging Service
     getIt.registerSingleton(
