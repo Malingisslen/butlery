@@ -32,21 +32,27 @@ class CookingIdentitySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeading(context.l10n.profileBio),
-        const SizedBox(height: AppDimensions.space4),
-        StyledInput(
-          controller: bioController,
-          hint: context.l10n.profileBioHint,
-          maxLines: 3,
-          minLines: 2,
-          maxLength: UserProfileViewModel.maxBioLength,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          onChanged: viewModel.updateBio,
-          // BUT-517: profanity gate on bio (optional field — empty passes).
-          validator: FormValidators.contentFilter(context.l10n.profileBio),
-        ),
-        const SizedBox(height: AppDimensions.space24),
+        // BUT-2509: every signed-in account can read "Om mig", so an account
+        // under 18 gets no field (the profile model and firestore.rules refuse
+        // the text too).
+        if (!viewModel.isMinor) ...[
+          SectionHeading(context.l10n.profileBio),
+          const SizedBox(height: AppDimensions.space4),
+          StyledInput(
+            controller: bioController,
+            hint: context.l10n.profileBioHint,
+            helperText: context.l10n.profileBioVisibility,
+            maxLines: 3,
+            minLines: 2,
+            maxLength: UserProfileViewModel.maxBioLength,
+            keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.newline,
+            onChanged: viewModel.updateBio,
+            // BUT-517: profanity gate on bio (optional field — empty passes).
+            validator: FormValidators.contentFilter(context.l10n.profileBio),
+          ),
+          const SizedBox(height: AppDimensions.space24),
+        ],
         // Skill level + cuisine affinities (profile bio data; no longer menu-tuning)
         CookingPreferenceControls(viewModel: viewModel),
       ],

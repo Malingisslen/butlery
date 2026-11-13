@@ -6367,3 +6367,18 @@ Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
   `==`/`in`/`is list` conjunct).
 - All 36 lists in occasions.json measured against the rule shape (<=200, <=60, regex, lower, no comma,
   NFC): zero violations, so oldWords from the live file cannot be refused.
+
+## 2026-11-13 — public_profiles `bioAllowed` (BUT-2509), commit-gate review
+
+- Staged: `bioAllowed(userId)` = `get('bio', null) == null || (bio is string && size <= 160 && !accountIsMinor)`,
+  always on create, on the owner update disjunct only when `bio` is in affectedKeys. 7 new tests in
+  age-gate-rules.test.ts; suite 71/71.
+- Nine mutants, sliced from `match /public_profiles` to `match /social_requests`, count asserted 1:
+  drop `is string` -> 70/71 (non-string map test only); `< 160` -> 70/71 (160 allow); `<= 161` -> 70/71
+  (161 deny); drop `!accountIsMinor` -> 70/71 (minor test); drop affectedKeys scope -> 69/71 (stored
+  over-long, minor clear); drop create call -> 69/71; update call -> `true` -> 68/71; presence spelling
+  `!('bio' in d)` -> 68/71 (null-clear cases); `.get('bio','')` -> 65/71.
+- Throwaway probe: guest create/update with bio ALLOW; no users doc + no claim ALLOW; users doc
+  without isMinor + no claim ALLOW; stranger friendsCount +1 on a minor's over-long-bio profile ALLOW,
+  with bio added DENY; admin hide on the same ALLOW, with `bio: null` added DENY.
+- Client truncation is Dart `String.length` (UTF-16 units), the same unit as rules `size()`.

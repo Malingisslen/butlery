@@ -11490,6 +11490,15 @@ Staged: `OpsLogRepository.getLatestReceiptAt` (system_events orderBy executedAt 
 ## 2026-11-11 — BUT-1923 poll-resolution extraction (verified clean, archive only)
 `closePoll` and its helpers moved from `messaging_service.dart` to `messaging/poll_resolution_operations.dart`; the ballot strip's map walk moved to the top-level `metadataWithoutVoters` in `models/messaging/poll.dart`. A mechanical diff of the moved block against `git show HEAD:` differed only in the strip's call name. The BUT-1909/1917/1926 fail-closed guard (null filter refuses, `requireBlockedIds` union `requireBlockedByIds`, catch refuses with the offline split) and the display path's fail-open `_filterBlocked` were both unchanged. The new class adds no ServiceLocator or Firestore access; collaborators are passed in as the same closures. No new principle.
 
+## 2026-11-13 - BUT-2509 Om mig (bio) moved from settings/preferences to public_profiles (staged-diff gate, pass)
+
+- Diff: UserProfile.toFirestore writes bio as (isMinor ? null : bio), so toFirestoreEditable carries it. toPrivateSettings drops it. New visibleBio getter (null while isHidden). saveProfile adds a FieldValue.delete() for bio to the settings merge. Rules (bioAllowed, HEAD 064c53ee4) were already on the branch.
+- Verified: the settings update rule pins only birthYear and isMinor, so the delete sentinel is allowed. The public update limb evaluates bioAllowed only when bio is in affectedKeys, so a merge re-sending an unchanged bio bills no get(). A minor save writing bio null passes the null arm with no document read. report-evidence.ts already captures bio for profile reports.
+- Two-doc lesson applied: the old copy lived on the private doc, and publishing on the public doc alone would have left the private copy forever, hence the delete sentinel in the SAME merge write. The settings collection is in the Art. 15 export, so the legacy copy was visible to its owner there. The repository comment claiming nobody saw it is prose (Info, strike).
+- Residual noted, not blocking: rules size() vs Flutter maxLength (grapheme count) disagreement on emoji-heavy text would deny the whole profile save. Not measured.
+- Views consuming visibleBio were unstaged at review time (HEAD views read .bio), so this change alone shows a hidden profile bio until the view change lands.
+- Re-read 2026-11-13: the repository comment clause was struck as advised. The size() Medium is closed by measurement from the coordinator: the rules test with 160 copies of a two-byte letter passes, so size() does not count bytes, and the viewmodel truncates to 160 UTF-16 units, which bounds code points too.
+
 ## 2026-11-13 — BUT-1507 step 4: `FriendsInternalPort` mixin extraction (verified clean)
 Pure move of the `*Internal` forwards, four Firebase sync forwards, `currentUserDisplayName`,
 `friendsRepositoryInternal`, `friendsCategoryRepositoryInternal` from `UnifiedFriendsService`

@@ -9002,6 +9002,12 @@ abstract class AppLocalizations {
   /// **'Beskriv dig som matlagare (max 160 tecken)'**
   String get profileBioHint;
 
+  /// No description provided for @profileBioVisibility.
+  ///
+  /// In sv, this message translates to:
+  /// **'Syns för alla som är inloggade i Butlery.'**
+  String get profileBioVisibility;
+
   /// No description provided for @profileCouldNotSave.
   ///
   /// In sv, this message translates to:

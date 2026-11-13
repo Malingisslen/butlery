@@ -59,8 +59,8 @@ class FriendsTab {
                       displayName: friend.displayName,
                     ),
                     title: friend.displayName,
-                    subtitle: friend.bio?.isNotEmpty == true
-                        ? friend.bio
+                    subtitle: friend.visibleBio?.isNotEmpty == true
+                        ? friend.visibleBio
                         : null,
                     chevron: true,
                     onTap: () => Navigator.pushNamed(

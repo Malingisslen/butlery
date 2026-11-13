@@ -50,6 +50,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0042](ADR-0042-old-private-bios-not-published.md) — old private "Om mig" texts are not published automatically; every seated role objected to a silent move to `public_profiles`, Malin chose to delete the private copy on the next save, and no text for under-18 accounts — escalated to Malin (BUT-2509, 2026-11-13).
 - [ADR-0041](ADR-0041-public-recipe-photo-copies.md) — a recipe shown on the profile shows its own photo copies, deleted when it stops being shown, so the link stops working; Malin chose the copy over pointing at the owner's photo — escalated to Malin (steg 10E plan, 2026-10-31).
 - [ADR-0040](ADR-0040-public-recipes-imports-allowed.md) — imported recipes may be shown on the profile; Legal Counsel asked for hand-written only, Malin chose "Allt kan bli publikt" — escalated to Malin (steg 10E plan, 2026-10-31).
 - [ADR-0039](ADR-0039-no-inactivity-logout.md) — the 45-minute inactivity logout is removed; the user stays signed in until she signs out herself, Malin accepted the unattended-device risk — accepted (session-timeout removal plan, 2026-10-30).

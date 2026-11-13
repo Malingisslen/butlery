@@ -574,6 +574,32 @@ void main() {
         },
       );
 
+      test(
+        'saveProfile publishes bio on the public doc only, removes a '
+        'legacy private copy, and it round-trips on fetch (BUT-2509)',
+        () async {
+          const userId = 'user-123';
+          final settingsRef = fakeFirestore
+              .collection('users')
+              .doc(userId)
+              .collection('settings')
+              .doc('preferences');
+          await settingsRef.set({'bio': 'gammal privat kopia'});
+
+          await repository.saveProfile(
+            _createUserProfile(userId).copyWith(bio: 'Hej'),
+          );
+
+          final publicDoc = await fakeFirestore
+              .collection('public_profiles')
+              .doc(userId)
+              .get();
+          expect(publicDoc.data()!['bio'], 'Hej');
+          expect((await settingsRef.get()).data()!.containsKey('bio'), isFalse);
+          expect((await repository.fetchProfile(userId))!.bio, 'Hej');
+        },
+      );
+
       test('saveProfile with writeAvatarUrl:false leaves the stored picture, '
           'and a deliberate null still clears it (BUT-2294)', () async {
         const userId = 'user-123';

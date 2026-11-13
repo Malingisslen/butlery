@@ -5733,6 +5733,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileBioHint => 'Beskriv dig som matlagare (max 160 tecken)';
 
   @override
+  String get profileBioVisibility =>
+      'Syns för alla som är inloggade i Butlery.';
+
+  @override
   String get profileCouldNotSave => 'Kunde inte spara profil';
 
   @override

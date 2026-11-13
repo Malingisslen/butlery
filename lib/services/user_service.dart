@@ -116,6 +116,11 @@ class UserService extends ChangeNotifier
   /// picture nor writes the copy this device holds back over a newer one.
   static const Object avatarUntouched = _unset;
 
+  /// "Leave this field as it is" for `cookingSkillLevel`, `cuisineAffinities`
+  /// and `bio`, where null (or an empty list) is the user clearing it
+  /// (BUT-2509).
+  static const Object profileFieldUntouched = _unset;
+
   bool _termsPending = false;
 
   /// BUT-916 C1: a Google/Apple account with no profile. Nothing is created
@@ -212,9 +217,9 @@ class UserService extends ChangeNotifier
     Object? avatarUrl = _unset,
     bool? isSearchable,
     bool? allowEmailSearch,
-    CookingSkillLevel? cookingSkillLevel,
-    List<String>? cuisineAffinities,
-    String? bio,
+    Object? cookingSkillLevel = _unset,
+    Object? cuisineAffinities = _unset,
+    Object? bio = _unset,
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
@@ -254,14 +259,18 @@ class UserService extends ChangeNotifier
           allowEmailSearch: allowEmailSearch,
           lastActiveAt: clock.now(),
         );
-        if (cookingSkillLevel != null) {
-          profile = profile.copyWith(cookingSkillLevel: cookingSkillLevel);
+        if (!identical(cookingSkillLevel, _unset)) {
+          profile = profile.copyWith(
+            cookingSkillLevel: cookingSkillLevel as CookingSkillLevel?,
+          );
         }
-        if (cuisineAffinities != null) {
-          profile = profile.copyWith(cuisineAffinities: cuisineAffinities);
+        if (!identical(cuisineAffinities, _unset)) {
+          profile = profile.copyWith(
+            cuisineAffinities: cuisineAffinities as List<String>?,
+          );
         }
-        if (bio != null) {
-          profile = profile.copyWith(bio: bio);
+        if (!identical(bio, _unset)) {
+          profile = profile.copyWith(bio: bio as String?);
         }
         if (showOnlineStatus != null) {
           // BUT-912: when the user turns visibility off, also clear isOnline so
@@ -305,9 +314,13 @@ class UserService extends ChangeNotifier
           showOnlineStatus: showOnlineStatus ?? true,
           shareActivityToFeed: shareActivityToFeed ?? true,
           activityFeedEventTypes: activityFeedEventTypes ?? const {},
-          cookingSkillLevel: cookingSkillLevel,
-          cuisineAffinities: cuisineAffinities,
-          bio: bio,
+          cookingSkillLevel: identical(cookingSkillLevel, _unset)
+              ? null
+              : cookingSkillLevel as CookingSkillLevel?,
+          cuisineAffinities: identical(cuisineAffinities, _unset)
+              ? null
+              : cuisineAffinities as List<String>?,
+          bio: identical(bio, _unset) ? null : bio as String?,
           householdSize: identical(householdSize, _unset)
               ? null
               : householdSize as int?,

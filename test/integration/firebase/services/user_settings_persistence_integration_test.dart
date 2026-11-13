@@ -220,6 +220,7 @@ void main() {
         displayName: 'Ny Kock',
         showOnlineStatus: false,
         householdSize: 3,
+        bio: 'Jag bakar surdeg',
       );
       expect(saved, isNotNull, reason: writer.error);
 
@@ -228,6 +229,42 @@ void main() {
       expect(after.displayName, 'Ny Kock');
       expect(after.showOnlineStatus, isFalse);
       expect(after.householdSize, 3);
+      expect(after.bio, 'Jag bakar surdeg');
+    });
+
+    // BUT-2509: "Om mig" lived only in the private settings document, which the
+    // load path never read, so it was gone after a restart; and null meant
+    // "untouched", so a cleared text came back.
+    test('"Om mig", favourite cuisines and skill level can be set and cleared '
+        'and a new service reads both back', () async {
+      final writer = buildService();
+      await loadedProfile(writer);
+
+      await writer.createOrUpdateProfile(
+        displayName: 'Kock',
+        bio: 'Jag bakar surdeg',
+        cuisineAffinities: const ['svensk'],
+        cookingSkillLevel: CookingSkillLevel.intermediate,
+      );
+      expect(writer.error, isNull);
+      final set = await loadedProfile(buildService());
+      expect(set.bio, 'Jag bakar surdeg');
+      expect(set.cuisineAffinities, ['svensk']);
+      expect(set.cookingSkillLevel, CookingSkillLevel.intermediate);
+
+      final clearer = buildService();
+      await loadedProfile(clearer);
+      await clearer.createOrUpdateProfile(
+        displayName: 'Kock',
+        bio: null,
+        cuisineAffinities: const <String>[],
+        cookingSkillLevel: null,
+      );
+      expect(clearer.error, isNull);
+      final cleared = await loadedProfile(buildService());
+      expect(cleared.bio, isNull);
+      expect(cleared.cuisineAffinities ?? const <String>[], isEmpty);
+      expect(cleared.cookingSkillLevel, isNull);
     });
 
     test('completing onboarding with preferences is read back by a new '

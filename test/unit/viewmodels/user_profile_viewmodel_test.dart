@@ -1000,6 +1000,130 @@ void main() {
         );
       });
 
+      group('cooking identity fields (BUT-2509)', () {
+        UserProfileViewModel buildWithIdentity({
+          CookingSkillLevel? skill = CookingSkillLevel.advanced,
+          List<String>? cuisines = const ['svensk'],
+          String? bio = 'Erfaren hobbykock',
+        }) {
+          mockUserService.setUserState(
+            currentUser: UserProfileBuilder.build(
+              uid: testUserId,
+              displayName: 'Test User',
+              cookingSkillLevel: skill,
+              cuisineAffinities: cuisines,
+              bio: bio,
+            ),
+            users: {},
+            isLoading: false,
+            error: null,
+          );
+          final vm = UserProfileViewModel(
+            mockUserService,
+            mockImagePickerService,
+            uploadService: mockImageUploadService,
+          );
+          addTearDown(vm.dispose);
+          return vm;
+        }
+
+        // [skill, cuisines, bio] in the order of the captureAny calls.
+        List<Object?> identityPassedOnSave() => verify(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: captureAny(named: 'cookingSkillLevel'),
+            cuisineAffinities: captureAny(named: 'cuisineAffinities'),
+            bio: captureAny(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
+          ),
+        ).captured;
+
+        test('an unrelated edit leaves skill, cuisines and bio untouched '
+            'so the service keeps what is stored', () async {
+          registerAnalytics();
+          final vm = buildWithIdentity();
+          vm.updateDisplayName('New Name');
+
+          expect(await vm.saveProfile(), isTrue);
+
+          final passed = identityPassedOnSave();
+          for (final value in passed) {
+            expect(
+              identical(value, UserService.profileFieldUntouched),
+              isTrue,
+              reason: 'got $value',
+            );
+          }
+        });
+
+        test(
+          'emptying a bio that had text saves null, which clears it',
+          () async {
+            registerAnalytics();
+            final vm = buildWithIdentity();
+            vm.updateBio('');
+
+            expect(await vm.saveProfile(), isTrue);
+
+            final passed = identityPassedOnSave();
+            expect(passed[2], isNull);
+            expect(
+              identical(passed[0], UserService.profileFieldUntouched),
+              isTrue,
+            );
+            expect(
+              identical(passed[1], UserService.profileFieldUntouched),
+              isTrue,
+            );
+          },
+        );
+
+        test('toggling off the only cuisine saves an empty list, which '
+            'clears it', () async {
+          registerAnalytics();
+          final vm = buildWithIdentity();
+          expect(vm.toggleCuisineAffinity('svensk'), isTrue);
+
+          expect(await vm.saveProfile(), isTrue);
+
+          expect(identityPassedOnSave()[1], <String>[]);
+        });
+
+        test(
+          'deselecting the skill level saves null, which clears it',
+          () async {
+            registerAnalytics();
+            final vm = buildWithIdentity();
+            vm.updateCookingSkillLevel(null);
+
+            expect(await vm.saveProfile(), isTrue);
+
+            final passed = identityPassedOnSave();
+            expect(passed[0], isNull);
+            expect(
+              identical(passed[2], UserService.profileFieldUntouched),
+              isTrue,
+            );
+          },
+        );
+
+        test('a changed bio is sent as the new text', () async {
+          registerAnalytics();
+          final vm = buildWithIdentity();
+          vm.updateBio('Ny text');
+
+          expect(await vm.saveProfile(), isTrue);
+
+          expect(identityPassedOnSave()[2], 'Ny text');
+        });
+      });
+
       test('a picture the user chose is saved once, and the save after it '
           'leaves the picture alone', () async {
         registerAnalytics();

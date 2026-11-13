@@ -379,6 +379,10 @@ class UserProfile with JsonSerializableMixin {
     return tokenAge.inDays < 30; // FCM tokens should be refreshed regularly
   }
 
+  /// "Om mig" as other people see it: not shown while a moderator has hidden
+  /// the profile (BUT-2509).
+  String? get visibleBio => isHidden ? null : bio;
+
   /// Check if user can receive push notifications
   bool get canReceiveNotifications {
     return notificationsEnabled && fcmToken != null && fcmToken!.isNotEmpty;
@@ -427,6 +431,9 @@ class UserProfile with JsonSerializableMixin {
       'activityFeedEventTypes': activityFeedEventTypes,
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
+      // BUT-2509: "Om mig" is read by every signed-in account, like the name,
+      // so a minor's is never written (firestore.rules refuse it too).
+      'bio': isMinor ? null : bio,
       'isHidden': isHidden,
       'hiddenAt': hiddenAt != null
           ? AppTimestamp.fromDateTime(hiddenAt!).toFirestore()
@@ -479,7 +486,6 @@ class UserProfile with JsonSerializableMixin {
       'onboardingSkippedAt': onboardingSkippedAt != null
           ? AppTimestamp.fromDateTime(onboardingSkippedAt!).toFirestore()
           : null,
-      'bio': bio,
       // BUT-1386 (ADR-0002): birthYear is CF-authoritative (verifySignupAge),
       // never written from the client. Rules deny client birthYear writes on
       // both the settings doc and the profile doc.

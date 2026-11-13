@@ -5811,6 +5811,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Describe yourself as a cook (max 160 characters)';
 
   @override
+  String get profileBioVisibility =>
+      'Visible to everyone signed in to Butlery.';
+
+  @override
   String get profileCouldNotSave => 'Could not save profile';
 
   @override

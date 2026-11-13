@@ -1022,11 +1022,12 @@ void main() {
             firestore['cuisineAffinities'],
             equals(['italiensk', 'svensk']),
           );
-          expect(firestore.containsKey('bio'), isFalse);
+          // BUT-2509: "Om mig" is public, read back with the profile.
+          expect(firestore['bio'], equals('Min matbio'));
+          expect(profile.toFirestoreEditable()['bio'], equals('Min matbio'));
 
-          // Private settings should contain bio
           final privateSettings = profile.toPrivateSettings();
-          expect(privateSettings['bio'], equals('Min matbio'));
+          expect(privateSettings.containsKey('bio'), isFalse);
           expect(privateSettings.containsKey('cookingSkillLevel'), isFalse);
           expect(privateSettings.containsKey('cuisineAffinities'), isFalse);
 
@@ -1037,6 +1038,18 @@ void main() {
           expect(json['bio'], equals('Min matbio'));
         },
       );
+
+      test('BUT-2509: a minor\'s "Om mig" is never written publicly', () {
+        final minor = testProfile.copyWith(isMinor: true, bio: 'Hej');
+        expect(minor.toFirestore()['bio'], isNull);
+        expect(minor.toFirestore().containsKey('bio'), isTrue);
+      });
+
+      test('BUT-2509: a hidden profile shows no "Om mig" to others', () {
+        final visible = testProfile.copyWith(bio: 'Hej');
+        expect(visible.visibleBio, equals('Hej'));
+        expect(visible.copyWith(isHidden: true).visibleBio, isNull);
+      });
 
       test('should deserialize from Firestore map', () {
         // Arrange
