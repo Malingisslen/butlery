@@ -45,8 +45,7 @@ and malformed shapes when the validator changes.
   collection whenever a gate is added.
 - **`accountIsMinor(uid)` fails OPEN; `isAgeCompliant()` fails CLOSED. A "no minor may publish
   X" gate built on the first admits a guest, an account with no `users` doc, and one whose
-  `isMinor` is not written yet** (measured ALLOW on all three for `public_profiles.bio`,
-  BUT-2509). Probe those three actors on every new minor gate and say which helper the gate
+  `isMinor` is not written yet**. Probe those three actors on every new minor gate and say which helper the gate
   uses. An allow fixture with no `users` doc and no claim then pins the fail-open as well as
   the allow, so switching the gate to `isAgeCompliant()` reddens it, which looks like a
   regression. Name that dependence in the report.
