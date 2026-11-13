@@ -21,6 +21,8 @@ import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 import 'package:butlery/services/account/terms_acceptance.dart';
 import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service/profile_cache.dart';
+import 'package:butlery/services/user_service/profile_lookups.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -64,17 +66,17 @@ class UserService extends ChangeNotifier
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
   String? _localeWritePending;
-  final Map<String, UserProfile> _profileCache = {};
-  final Map<String, DateTime> _cacheTimestamps = {};
+  final ProfileCache _cache = ProfileCache();
+  late final ProfileLookups _lookups = ProfileLookups(
+    repository: _repository,
+    authRepository: _authRepository,
+    cache: _cache,
+  );
 
   // State
   bool _isLoading = false;
   bool _isInitialized = false;
   String? _error;
-
-  // Constants
-  static const int _cacheDurationMinutes = 30;
-  static const int _maxCacheSize = 200;
 
   /// BUT-1322: "not passed" sentinel for nullable [createOrUpdateProfile]
   /// fields where an explicit null is a meaningful value (clear-to-default).
@@ -169,8 +171,7 @@ class UserService extends ChangeNotifier
         } else {
           _currentUserProfile = null;
           _termsPending = false;
-          _profileCache.clear();
-          _cacheTimestamps.clear();
+          _cache.clear();
           notifyListeners();
         }
       },
@@ -490,93 +491,22 @@ class UserService extends ChangeNotifier
   }
 
   /// Get user profile by ID (with caching)
-  Future<UserProfile?> getUserProfile(String userId) async {
-    // Check cache first
-    if (_profileCache.containsKey(userId) && !_isProfileCacheExpired(userId)) {
-      return _profileCache[userId]!;
-    }
+  Future<UserProfile?> getUserProfile(String userId) =>
+      _lookups.getUserProfile(userId);
 
-    // Fetch from repository
-    final profile = await safeExecute(
-      () async {
-        final profile = await _getProfileFromRepository(userId);
-        if (profile != null) {
-          _cacheProfile(userId, profile);
-        }
-        return profile;
-      },
-      operationName: 'Get user profile',
-    );
+  /// Get multiple profiles efficiently (batch); see
+  /// [ProfileLookups.getUserProfiles] for what the result reports.
+  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) =>
+      _lookups.getUserProfiles(userIds);
 
-    return profile;
-  }
+  /// Check if display name is available
+  Future<bool> isDisplayNameAvailable(String displayName) =>
+      _lookups.isDisplayNameAvailable(displayName);
 
-  /// Get multiple profiles efficiently (batch). Reports which ids, if any,
-  /// could not be resolved — and whether that is because they are confirmed
-  /// absent or because the read itself failed — rather than silently
-  /// returning a subset that looks complete (BUT-2027).
-  Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) async {
-    if (userIds.isEmpty) {
-      return const ProfileBatchLookup(
-        profiles: [],
-        missingIds: {},
-        unavailableIds: {},
-      );
-    }
-
-    final results = <UserProfile>[];
-    final uncachedIds = <String>[];
-
-    // Check cache first
-    for (final userId in userIds) {
-      if (_profileCache.containsKey(userId)) {
-        final cached = _profileCache[userId]!;
-        if (!_isProfileCacheExpired(userId)) {
-          results.add(cached);
-        } else {
-          uncachedIds.add(userId);
-        }
-      } else {
-        uncachedIds.add(userId);
-      }
-    }
-
-    if (uncachedIds.isEmpty) {
-      return ProfileBatchLookup(
-        profiles: results,
-        missingIds: const {},
-        unavailableIds: const {},
-      );
-    }
-
-    try {
-      final fetched = await _repository.fetchProfiles(uncachedIds);
-      for (final profile in fetched) {
-        results.add(profile);
-        _cacheProfile(profile.uid, profile);
-      }
-      // The call returned, so every id it was asked for and did not return
-      // is a CONFIRMED absence, not a dropped read.
-      final fetchedIds = fetched.map((p) => p.uid).toSet();
-      final missing = uncachedIds
-          .where((id) => !fetchedIds.contains(id))
-          .toSet();
-      return ProfileBatchLookup(
-        profiles: results,
-        missingIds: missing,
-        unavailableIds: const {},
-      );
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
-      // The call threw, so nothing about these ids is known — they are
-      // UNAVAILABLE, never folded into "missing" or dropped outright.
-      return ProfileBatchLookup(
-        profiles: results,
-        missingIds: const {},
-        unavailableIds: uncachedIds.toSet(),
-      );
-    }
-  }
+  /// BUT-1663: a profile read that keeps "absent" and "failed" apart; see
+  /// [ProfileLookups.lookupUserProfile].
+  Future<ProfileLookup> lookupUserProfile(String userId) =>
+      _lookups.lookupUserProfile(userId);
 
   /// Update user's online status
   Future<void> updateOnlineStatus(bool isOnline) async {
@@ -628,18 +558,6 @@ class UserService extends ChangeNotifier
       }
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte uppdatera profilstatistik: $e');
-    }
-  }
-
-  /// Check if display name is available
-  Future<bool> isDisplayNameAvailable(String displayName) async {
-    if (ValidationUtils.isNullOrWhitespace(displayName)) return false;
-
-    try {
-      return await _repository.isDisplayNameAvailable(displayName);
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte kontrollera displayName: $e');
-      return false;
     }
   }
 
@@ -796,78 +714,6 @@ class UserService extends ChangeNotifier
     }
   }
 
-  /// BUT-1663: a profile read that keeps "absent" and "failed" apart.
-  ///
-  /// [getUserProfile] cannot answer this: `_getProfileFromRepository` catches
-  /// and returns null, and `safeExecute` catches again, so a deleted account
-  /// and a dropped connection are the same null by the time a caller sees it.
-  /// The repository DOES distinguish them — `fetchProfile` returns null for a
-  /// missing document and rethrows on a read error — so this goes to the
-  /// repository directly rather than through either swallow.
-  ///
-  /// Reuses the same 30-minute cache as [getUserProfile]: the household
-  /// allergen union calls this once per member per menu generation, and an
-  /// uncached read would add a Firestore read per member per generation.
-  Future<ProfileLookup> lookupUserProfile(String userId) async {
-    // Only the signed-in user's own settings are ever readable, so only their
-    // profile can be "settings-merged". For anyone else the flag is always
-    // false and means nothing — the caller already knows their preferences are
-    // unreachable and compensates.
-    final isSelf = userId == _authRepository.currentUser?.uid;
-
-    // A cached self-profile that was never settings-merged is NOT usable here.
-    // `getUserProfiles` fills this same cache from `fetchProfiles`, which
-    // batch-reads public_profiles only — so the roster screen can leave the
-    // owner cached with no preferences and no failure recorded. Serving that
-    // as `found` would read the user's own allergens as "declared none".
-    final cached = _profileCache[userId];
-    if (cached != null && !_isProfileCacheExpired(userId)) {
-      if (!isSelf || cached.settingsMerged) return ProfileLookup.found(cached);
-    }
-
-    try {
-      final profile = await _repository.fetchProfile(userId);
-      if (profile == null) {
-        // A stale roster id genuinely points at nobody — but the SIGNED-IN
-        // user is definitionally at the table. Their public profile doc going
-        // absent is a broken state (a half-completed save leaves the settings
-        // sub-doc behind), not a person who left, so it must fail safe rather
-        // than drop them from the union as "nobody to protect".
-        return isSelf
-            ? const ProfileLookup.unavailable()
-            : const ProfileLookup.missing();
-      }
-
-      if (isSelf && !profile.settingsMerged) {
-        // Read succeeded, preferences did not. Do NOT cache it: a one-second
-        // blip would otherwise pin the household to the cautious floor for the
-        // full 30 minutes, and hand a preference-less profile to every other
-        // cache consumer.
-        return ProfileLookup.foundSettingsUnavailable(profile);
-      }
-      _cacheProfile(userId, profile);
-      return ProfileLookup.found(profile);
-    } catch (e) {
-      AppLogger.error('Profile lookup failed for ${userId.maskedUserId}: $e');
-      return const ProfileLookup.unavailable();
-    }
-  }
-
-  bool _isProfileCacheExpired(String userId) {
-    final cacheTime = _cacheTimestamps[userId];
-    if (cacheTime == null) return true;
-    return clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
-  }
-
-  Future<UserProfile?> _getProfileFromRepository(String userId) async {
-    try {
-      return await _repository.fetchProfile(userId);
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte hämta profil ${userId.maskedUserId}: $e');
-      return null;
-    }
-  }
-
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
@@ -882,8 +728,7 @@ class UserService extends ChangeNotifier
     _isInitialized = false;
     _termsPending = false;
     _currentUserProfile = null;
-    _profileCache.clear();
-    _cacheTimestamps.clear();
+    _cache.clear();
     _clearError();
   }
 
@@ -891,18 +736,8 @@ class UserService extends ChangeNotifier
     _error = null;
   }
 
-  /// LRU cache insert: removes existing key (resets order), inserts at end, evicts oldest if over cap.
-  void _cacheProfile(String userId, UserProfile profile) {
-    _profileCache.remove(userId);
-    _cacheTimestamps.remove(userId);
-    _profileCache[userId] = profile;
-    _cacheTimestamps[userId] = clock.now();
-    if (_profileCache.length > _maxCacheSize) {
-      final oldest = _profileCache.keys.first;
-      _profileCache.remove(oldest);
-      _cacheTimestamps.remove(oldest);
-    }
-  }
+  void _cacheProfile(String userId, UserProfile profile) =>
+      _cache.put(userId, profile);
 
   /// Public error clearing
   void clearError() {
@@ -1334,8 +1169,7 @@ class UserService extends ChangeNotifier
 
   /// Clear cache (useful for testing or manual refresh)
   void clearCache() {
-    _profileCache.clear();
-    _cacheTimestamps.clear();
+    _cache.clear();
     AppLogger.info('🗑️ Profil-cache rensad');
   }
 
