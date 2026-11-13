@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 12, 2026
-**Version:** 1.36
+**Last updated:** November 13, 2026
+**Version:** 1.37
 
 ---
 
@@ -107,6 +107,8 @@ We use your personal data for the following purposes:
 - Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. If you enter your own amount for an ingredient, it is saved on your household in the same way, either for one recipe or for all recipes. For one recipe, the recipe's id is saved too, and the amount is included in the export of your data. The app does not record what you eat and has no personal goals or daily values.
 
 **Recipes you show on your profile:** If you choose "Show on my profile" on a recipe, or turn on "New recipes are public", everyone signed in to Butlery who opens your profile can see the recipe. Guests and people you have blocked cannot. What shows is the title, description, servings, times, ingredients, steps, the recipe's photos, the source and the source's author. Your rating, your notes and tags, how often you have cooked the recipe and who you share it with do not show. The photos are shown as separate copies, which stop working when you stop showing the recipe. We store the choice and when you last changed it on the recipe, and what is shown on your profile is included in your data export. If you stop showing the recipe, delete it or delete your account, it is removed from your profile within a minute or so. Someone who has seen the recipe may have saved their own copy with "Create copy". That copy is theirs and is not removed, but it does not carry your name, your user id or your photos. Collaborative recipes are never shown on the profile, and people under 18 cannot show recipes there. The processing is based on **performance of a contract (Art. 6.1 b)**: it happens because you ask for it.
+
+**About me on your profile:** What you write in "About me" can be seen by everyone signed in to Butlery who opens your profile, including people you have blocked. Do not include information about health or about other people. People under 18 cannot write anything there. You can change or clear the text at any time. The text is included in your data export and is deleted when you delete your account. The processing is based on **performance of a contract (Art. 6.1 b)**.
 
 ### 5.2 Optional features (require consent)
 
