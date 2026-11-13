@@ -75,6 +75,7 @@ import 'package:butlery/services/unified/friends/friends_internal_operations.dar
 import 'package:butlery/services/unified/friends/friends_firebase_sync.dart';
 import 'package:butlery/services/unified/friends/friends_utility_operations.dart';
 import 'package:butlery/services/unified/friends/friends_internal_port.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 
 // Friends service classes consolidated during nuclear consolidation
 
@@ -86,7 +87,8 @@ import 'package:butlery/services/unified/friends/friends_internal_port.dart';
 /// - Feature operations: Handle specific business logic
 /// Maintains 100% backward compatibility while providing clean modular architecture.
 class UnifiedFriendsService
-    with StreamManagementMixin, ErrorHandlingMixin, FriendsInternalPort {
+    with StreamManagementMixin, ErrorHandlingMixin, FriendsInternalPort
+    implements FriendsReader, FriendsActions, FriendsSession {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
@@ -116,7 +118,9 @@ class UnifiedFriendsService
     const FriendsStateLoading(),
   );
 
+  @override
   Stream<FriendsServiceState> get stateStream => _stateSubject.stream;
+  @override
   FriendsServiceState get currentState => _stateSubject.value;
 
   // Constructor
@@ -211,39 +215,52 @@ class UnifiedFriendsService
     );
   }
 
+  @override
   List<UserProfile> get friends => _stateManager.friends;
 
-  /// Look up a friend by UID, or null if [uid] isn't in the friends list.
-  /// Centralizes the `friends.firstWhereOrNull` pattern that several
-  /// callers (push senders, deep-link resolvers) need.
+  @override
   UserProfile? friendByUid(String uid) =>
       _stateManager.friends.firstWhereOrNull((f) => f.uid == uid);
+  @override
   List<FriendRequest> get incomingRequests => _stateManager.incomingRequests;
+  @override
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
+  @override
   List<FriendCategory> get categoriesList => _stateManager.categories;
+  @override
   List<GroupInvitation> get sentInvitations => _stateManager.sentInvitations;
+  @override
   List<GroupInvitation> get receivedInvitations =>
       _stateManager.receivedInvitations;
+  @override
   Set<String> get blockedUsers => _stateManager.blockedUsers;
+  @override
   Map<String, Set<String>> get friendCategoryRelationships =>
       _stateManager.friendCategoryRelationships;
 
+  @override
   bool get isInitialized => _stateManager.isInitialized;
+  @override
   bool get isLoading => _stateManager.isLoading;
+  @override
   String? get error => _stateManager.error;
+  @override
   bool get hasError => _stateManager.hasError;
 
+  @override
   String? get currentUserId => _permissionService.currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
   FriendRelationshipRepository get relationshipRepository =>
       _relationshipRepository;
+  @override
   FriendsManagementOperations get management => _managementOps;
+  @override
   FriendsCategoriesOperations get categories => _categoriesOps;
+  @override
   FriendsInvitationsOperations get invitations => _invitationsOps;
   Future<void>? _initializing;
 
-  /// Share dialogs await this when they open, so it runs once and later
-  /// callers share the same load instead of repeating its reads and writes.
+  @override
   Future<void> initialize() =>
       _initializing ??= _initializeOnce().catchError((Object e, StackTrace st) {
         _initializing = null;
@@ -424,40 +441,39 @@ class UnifiedFriendsService
     AppLogger.debug('Feature interfaces initialized');
   }
 
-  /// Internal method to refresh data (for operations classes)
+  @override
   Future<void> refresh() async => await _stateManager.refresh();
 
-  /// Get all friend requests (incoming and outgoing combined)
+  @override
   List<FriendRequest> get friendRequests => _utilityOps.friendRequests;
 
-  /// Search for users by query
+  @override
   Future<List<UserProfile>> searchUsers(String query) async =>
       await management.searchUsers(query);
 
-  /// Get friends of a specific user
+  @override
   Future<List<UserProfile>> getFriendsOfUser(String userId) async =>
       await _utilityOps.getFriendsOfUser(userId);
 
-  /// Get recent collaborators
+  @override
   Future<List<UserProfile>> getRecentCollaborators() async =>
       await _utilityOps.getRecentCollaborators();
 
-  /// Clear error state (for ViewModels)
+  @override
   void clearError() => _stateManager.clearError();
 
-  /// Get friends list (for ViewModels)
+  @override
   List<UserProfile> get friendsList => friends;
 
-  /// Get category by ID (for ViewModels)
+  @override
   FriendCategory? getCategoryById(String categoryId) =>
       _stateManager.getCategoryById(categoryId);
 
-  /// Cancel sent invitation (for ViewModels)
+  @override
   Future<bool> cancelSentInvitation(String invitationId) async =>
       await invitations.cancelInvitation(invitationId);
 
-  /// Clear user-specific state only — does NOT dispose stream resources
-  /// (the auth listener must survive to handle the next login).
+  @override
   void resetForLogout() {
     _stateManager.clearAllData();
     _stateSubject.add(const FriendsStateLoading());

@@ -22,6 +22,7 @@ import 'package:butlery/services/user_service/own_profile_port.dart';
 import 'package:butlery/services/user_service/own_profile_loader.dart';
 import 'package:butlery/services/user_service/profile_status_writer.dart';
 import 'package:butlery/services/user_service/user_settings_writer.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -29,7 +30,12 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
 class UserService extends ChangeNotifier
-    with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
+    with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin
+    implements
+        OwnProfileReader,
+        ProfileDirectory,
+        OwnProfileEditor,
+        ProfileSession {
   final UserRepository _repository;
   final AuthRepository _authRepository;
   final FirestoreRepository _firestoreRepository;
@@ -126,54 +132,37 @@ class UserService extends ChangeNotifier
 
   bool _termsPending = false;
 
-  /// BUT-916 C1: a Google/Apple account with no profile. Nothing is created
-  /// for it until [acceptProviderTerms]; AuthWrapper shows the terms step
-  /// instead. Read from Firestore on every load, so it holds across a
-  /// restart.
+  @override
   bool get termsPending => _termsPending;
 
   // Getters
+  @override
   UserProfile? get currentUserProfile => _currentUserProfile;
+  @override
   bool get isLoading => _isLoading;
+  @override
   String? get error => _error;
+  @override
   bool get hasError => _error != null;
+  @override
   String? get currentUserId => _permissionService().currentUserId;
 
-  /// BUT-1705: the profile name and NOTHING else — no Firebase Auth fallback.
-  ///
-  /// Use this wherever the name is about to be PERSISTED as attribution on a
-  /// document other people read (shared shopping lists, collaborative items).
-  /// The Auth handle is the legal name attached to the user's Google/Apple
-  /// account, not a display name they chose to expose, and it is also invisible
-  /// to the two systems that maintain such copies: `on-profile-updated.ts`
-  /// propagates the PROFILE name, and account deletion scrubs what that CF
-  /// wrote — so an Auth-sourced stamp is both unconsented and un-erasable.
-  ///
-  /// Null before the profile loads. Callers stamp empty rather than blocking;
-  /// a name is a label, an unlabelled edit is better than a wrong one.
+  @override
   String? get profileDisplayName {
     final profileName = _currentUserProfile?.displayName;
     return (profileName != null && profileName.isNotEmpty) ? profileName : null;
   }
 
-  /// [profileDisplayName] for a writer whose field cannot be null: empty
-  /// instead, never the Auth name (BUT-2009). Empty rather than a label so each
-  /// reader shows "unknown" in its own language (BUT-2351).
+  @override
   String get attributionDisplayName => profileDisplayName.orEmpty();
 
-  /// The profile picture and NOTHING else — the Firebase Auth `photoURL` is the
-  /// Google/Apple account picture, which the user never chose to show in the
-  /// app (BUT-2009). Null when the profile has none, so a writer stores the
-  /// field absent rather than an empty string a reader would take for a URL.
+  @override
   String? get profileAvatarUrl {
     final url = _currentUserProfile?.avatarUrl;
     return (url != null && url.isNotEmpty) ? url : null;
   }
 
-  /// Display name with Firebase Auth fallback for pre-profile-load state.
-  ///
-  /// For DISPLAY only. Anything that persists the name as attribution must use
-  /// [profileDisplayName] instead (BUT-1705).
+  @override
   String? get currentDisplayName {
     final profileName = _currentUserProfile?.displayName;
     if (profileName != null && profileName.isNotEmpty) return profileName;
@@ -181,12 +170,12 @@ class UserService extends ChangeNotifier
     return (authName != null && authName.isNotEmpty) ? authName : null;
   }
 
-  /// Get user's allergen preferences, returns defaults if not set.
+  @override
   UserAllergenPreferences get allergenPreferences =>
       _currentUserProfile?.allergenPreferences ??
       UserAllergenPreferences.defaults;
 
-  /// Initialize service och ladda current user profile
+  @override
   Future<void> initialize() async {
     if (_isInitialized) return;
     _isInitialized = true;
@@ -214,7 +203,7 @@ class UserService extends ChangeNotifier
     }
   }
 
-  /// Create or update user profile
+  @override
   Future<UserProfile?> createOrUpdateProfile({
     required String displayName,
     Object? avatarUrl = _unset,
@@ -251,21 +240,19 @@ class UserService extends ChangeNotifier
   ///
   /// Returns the value the server stored, or null when the call failed (the
   /// caller should leave the toggle where it was and surface [error]).
+  @override
   Future<bool?> setMinorSearchable(bool value) =>
       _settings.setMinorSearchable(value);
 
-  /// See [UserSettingsWriter.setShowNameOnSharedDishes].
+  @override
   Future<bool> setShowNameOnSharedDishes(bool enabled) =>
       _settings.setShowNameOnSharedDishes(enabled);
 
-  /// Search users by display name or email - OPTIMERAD VERSION
+  @override
   Future<List<UserProfile>> searchUsers(String query) async =>
       (await searchUsersResult(query)).hits;
 
-  /// Like [searchUsers] but carries a `failed` flag (BUT-1442): true when the
-  /// search backend errored on every attempt (an outage), vs. a legitimate
-  /// zero-match search. Lets the friend-search UI show a degraded notice
-  /// instead of a neutral "no users found" state.
+  @override
   Future<SearchResult<UserProfile>> searchUsersResult(String query) async {
     if (ValidationUtils.isNullOrWhitespace(query)) {
       return const SearchResult(
@@ -297,29 +284,27 @@ class UserService extends ChangeNotifier
     }
   }
 
-  /// Get user profile by ID (with caching)
+  @override
   Future<UserProfile?> getUserProfile(String userId) =>
       _lookups.getUserProfile(userId);
 
-  /// Get multiple profiles efficiently (batch); see
-  /// [ProfileLookups.getUserProfiles] for what the result reports.
+  @override
   Future<ProfileBatchLookup> getUserProfiles(List<String> userIds) =>
       _lookups.getUserProfiles(userIds);
 
-  /// Check if display name is available
+  @override
   Future<bool> isDisplayNameAvailable(String displayName) =>
       _lookups.isDisplayNameAvailable(displayName);
 
-  /// BUT-1663: a profile read that keeps "absent" and "failed" apart; see
-  /// [ProfileLookups.lookupUserProfile].
+  @override
   Future<ProfileLookup> lookupUserProfile(String userId) =>
       _lookups.lookupUserProfile(userId);
 
-  /// Update user's online status
+  @override
   Future<void> updateOnlineStatus(bool isOnline) =>
       _status.updateOnlineStatus(isOnline);
 
-  /// Update profile statistics (friend count)
+  @override
   Future<void> updateProfileStats({int? friendsCount}) =>
       _status.updateProfileStats(friendsCount: friendsCount);
 
@@ -328,13 +313,11 @@ class UserService extends ChangeNotifier
   /// then the profile is made with the name the user confirmed. False when
   /// either write failed; [error] then says so and nothing is half-made
   /// that would let the next load skip the step without a record.
+  @override
   Future<bool> acceptProviderTerms({required String displayName}) =>
       _loader.acceptProviderTerms(displayName: displayName);
 
-  /// BUG-13: Clear the load/create error and re-run the profile load.
-  /// Wired to the "Försök igen" button in AuthWrapper's error state so a
-  /// transient profile-load failure (permission-denied / App Check / unavailable)
-  /// is recoverable without a full sign-out. No-op-safe when already loaded.
+  @override
   Future<void> retryLoadProfile() => _loader.retryLoadProfile();
 
   void _setLoading(bool loading) {
@@ -347,6 +330,7 @@ class UserService extends ChangeNotifier
     notifyListeners();
   }
 
+  @override
   void resetForLogout() {
     _isInitialized = false;
     _termsPending = false;
@@ -362,63 +346,63 @@ class UserService extends ChangeNotifier
   void _cacheProfile(String userId, UserProfile profile) =>
       _cache.put(userId, profile);
 
-  /// Public error clearing
+  @override
   void clearError() {
     _clearError();
     notifyListeners();
   }
 
-  /// Update user's FCM token for push notifications
+  @override
   Future<void> updateFCMToken(String token) => _status.updateFCMToken(token);
 
-  /// See [UserSettingsWriter.updatePreferredLocale].
+  @override
   Future<void> updatePreferredLocale(
     String localeCode, {
     bool onlyIfUnset = false,
   }) => _settings.updatePreferredLocale(localeCode, onlyIfUnset: onlyIfUnset);
 
-  /// Update user's notification preferences
+  @override
   Future<void> updateNotificationSettings(bool enabled) =>
       _settings.updateNotificationSettings(enabled);
 
-  /// Update user's allergen preferences.
+  @override
   Future<bool> updateAllergenPreferences(UserAllergenPreferences preferences) =>
       _settings.updateAllergenPreferences(preferences);
 
-  /// See [ProfileStatusWriter.setQueuedAvatar].
+  @override
   Future<AvatarWriteOutcome> setQueuedAvatar({
     required String? expected,
     required String url,
   }) => _status.setQueuedAvatar(expected: expected, url: url);
 
-  /// Mark onboarding as completed for the current user.
+  @override
   Future<void> markOnboardingComplete() => _status.markOnboardingComplete();
 
-  /// See [UserSettingsWriter.setAutoAddToPantry].
+  @override
   Future<void> setAutoAddToPantry(bool enabled) =>
       _settings.setAutoAddToPantry(enabled);
 
-  /// See [UserSettingsWriter.setUseHouseholdAllergens].
+  @override
   Future<void> setUseHouseholdAllergens(bool enabled) =>
       _settings.setUseHouseholdAllergens(enabled);
 
-  /// See [UserSettingsWriter.setUseMealAllergenScope].
+  @override
   Future<void> setUseMealAllergenScope(bool enabled) =>
       _settings.setUseMealAllergenScope(enabled);
 
-  /// See [UserSettingsWriter.setShowNutritionStrip].
+  @override
   Future<void> setShowNutritionStrip(bool enabled) =>
       _settings.setShowNutritionStrip(enabled);
 
-  /// See [UserSettingsWriter.setNewRecipesShowOnProfile].
+  @override
   Future<bool> setNewRecipesShowOnProfile(bool enabled) =>
       _settings.setNewRecipesShowOnProfile(enabled);
 
-  /// See [UserSettingsWriter.markPantryAutoAddPrompted].
+  @override
   Future<void> markPantryAutoAddPrompted() =>
       _settings.markPantryAutoAddPrompted();
 
-  /// See [UserSettingsWriter.markActivityFeedHintSeen].
+  @override
   Future<void> markActivityFeedHintSeen() =>
       _settings.markActivityFeedHintSeen();
 
@@ -429,6 +413,7 @@ class UserService extends ChangeNotifier
   /// `verifySignupAge` Cloud Function is the sole authority for the age gate
   /// and the only writer of birthYear (firestore.rules deny client writes of
   /// it). The onboarding ViewModel calls that CF before this method.
+  @override
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,
@@ -439,10 +424,10 @@ class UserService extends ChangeNotifier
     isMinor: isMinor,
   );
 
-  /// Clear FCM token (e.g., on logout)
+  @override
   Future<void> clearFCMToken() => _status.clearFCMToken();
 
-  /// Clear cache (useful for testing or manual refresh)
+  @override
   void clearCache() {
     _cache.clear();
     AppLogger.info('🗑️ Profil-cache rensad');
