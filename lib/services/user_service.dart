@@ -2,28 +2,24 @@
 
 import 'dart:async';
 
-import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/family/own_allergen_share_mirror.dart';
-import 'package:butlery/services/account/terms_acceptance.dart';
-import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service/profile_cache.dart';
 import 'package:butlery/services/user_service/profile_lookups.dart';
 import 'package:butlery/services/user_service/own_profile_port.dart';
+import 'package:butlery/services/user_service/own_profile_loader.dart';
 import 'package:butlery/services/user_service/profile_status_writer.dart';
 import 'package:butlery/services/user_service/user_settings_writer.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
@@ -31,7 +27,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 
 class UserService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
@@ -83,6 +78,14 @@ class UserService extends ChangeNotifier
     setError: _setError,
     clearError: _clearError,
     setLoading: _setLoading,
+    hasError: () => hasError,
+    setTermsPending: (pending) => _termsPending = pending,
+  );
+  late final OwnProfileLoader _loader = OwnProfileLoader(
+    port: _port,
+    repository: _repository,
+    authRepository: _authRepository,
+    settings: _settings,
   );
   late final UserSettingsWriter _settings = UserSettingsWriter(
     port: _port,
@@ -194,7 +197,7 @@ class UserService extends ChangeNotifier
       _authRepository.authStateChanges(),
       (user) {
         if (user != null) {
-          _loadCurrentUserProfile();
+          _loader.loadCurrentUserProfile();
         } else {
           _currentUserProfile = null;
           _termsPending = false;
@@ -207,7 +210,7 @@ class UserService extends ChangeNotifier
 
     // Load current user if already authenticated
     if (_authRepository.currentUser != null) {
-      await _loadCurrentUserProfile();
+      await _loader.loadCurrentUserProfile();
     }
   }
 
@@ -223,193 +226,22 @@ class UserService extends ChangeNotifier
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
-    // BUT-1322: sentinel default (not plain null) so callers that don't pass
-    // the field (auto-creation, social handler) can't wipe a saved household
-    // size, while an explicit null still clears it back to "recipe default".
     Object? householdSize = _unset,
-    // Only read when no profile exists yet (NewProfileDefaults).
     bool newProfileCompletedOnboarding = false,
-  }) async {
-    final user = _authRepository.currentUser;
-    if (user == null) {
-      _setError(AppLocale.current.errorNoUserLoggedIn);
-      return null;
-    }
-
-    try {
-      _setLoading(true);
-      _clearError();
-
-      // Prefer in-memory profile to avoid re-fetching, which can silently lose
-      // hasCompletedOnboarding if the private settings sub-doc fetch fails (BUG-044).
-      // Tradeoff: won't pick up changes made on other devices since last load.
-      final existingProfile =
-          _currentUserProfile ?? await _repository.fetchProfile(user.uid);
-
-      UserProfile profile;
-      if (existingProfile != null) {
-        // Only pass cooking identity fields when caller provides them,
-        // so other callers (auto-creation, social handler) don't wipe them.
-        profile = existingProfile.copyWith(
-          displayName: displayName,
-          avatarUrl: identical(avatarUrl, _unset)
-              ? existingProfile.avatarUrl
-              : avatarUrl as String?,
-          isSearchable: isSearchable,
-          allowEmailSearch: allowEmailSearch,
-          lastActiveAt: clock.now(),
-        );
-        if (!identical(cookingSkillLevel, _unset)) {
-          profile = profile.copyWith(
-            cookingSkillLevel: cookingSkillLevel as CookingSkillLevel?,
-          );
-        }
-        if (!identical(cuisineAffinities, _unset)) {
-          profile = profile.copyWith(
-            cuisineAffinities: cuisineAffinities as List<String>?,
-          );
-        }
-        if (!identical(bio, _unset)) {
-          profile = profile.copyWith(bio: bio as String?);
-        }
-        if (showOnlineStatus != null) {
-          // BUT-912: when the user turns visibility off, also clear isOnline so
-          // the live dot disappears the moment they save (not just on the next
-          // heartbeat). The presence gate then keeps them dark.
-          profile = profile.copyWith(
-            showOnlineStatus: showOnlineStatus,
-            isOnline: showOnlineStatus ? profile.isOnline : false,
-          );
-        }
-        if (shareActivityToFeed != null) {
-          profile = profile.copyWith(shareActivityToFeed: shareActivityToFeed);
-        }
-        if (activityFeedEventTypes != null) {
-          profile = profile.copyWith(
-            activityFeedEventTypes: activityFeedEventTypes,
-          );
-        }
-        if (!identical(householdSize, _unset)) {
-          profile = profile.copyWith(householdSize: householdSize as int?);
-        }
-      } else {
-        final now = clock.now();
-        profile = UserProfile(
-          uid: user.uid,
-          displayName: displayName,
-          email: user.email.orEmpty(),
-          avatarUrl: identical(avatarUrl, _unset) ? null : avatarUrl as String?,
-          isSearchable: isSearchable ?? true,
-          allowEmailSearch: allowEmailSearch ?? false,
-          publicRecipeCount: 0,
-          friendsCount: 0,
-          joinedAt: now,
-          lastActiveAt: now,
-          isOnline: true,
-          // This service is writing the first settings doc right now, so the
-          // settings ARE known: empty. Left false, the menu would treat the
-          // whole first session as a failed read and filter by the
-          // common-allergen floor (HouseholdService.ownMenuPreferences).
-          settingsMerged: true,
-          showOnlineStatus: showOnlineStatus ?? true,
-          shareActivityToFeed: shareActivityToFeed ?? true,
-          activityFeedEventTypes: activityFeedEventTypes ?? const {},
-          cookingSkillLevel: identical(cookingSkillLevel, _unset)
-              ? null
-              : cookingSkillLevel as CookingSkillLevel?,
-          cuisineAffinities: identical(cuisineAffinities, _unset)
-              ? null
-              : cuisineAffinities as List<String>?,
-          bio: identical(bio, _unset) ? null : bio as String?,
-          householdSize: identical(householdSize, _unset)
-              ? null
-              : householdSize as int?,
-          hasCompletedOnboarding: newProfileCompletedOnboarding,
-        );
-      }
-
-      // BUT-1637 (data-safety): decide whether the post-save re-assert may
-      // restore this minor's discoverability BEFORE the save below clobbers it.
-      // Read the AUTHORITATIVE server value — not the possibly-stale in-memory
-      // `existingProfile` — so an opt-out made on another device can never be
-      // silently re-granted by an unrelated profile edit, and an explicit
-      // `isSearchable:false` on THIS save is honoured. Fail closed: a read the
-      // server can't answer (offline) leaves the minor not searchable.
-      var minorReassertSearchable = false;
-      var minorSearchabilityReadFailed = false;
-      if (profile.isMinor && isSearchable != false) {
-        try {
-          minorReassertSearchable = await _repository.fetchPersistedSearchable(
-            user.uid,
-          );
-        } catch (e) {
-          AppLogger.warning(
-            'Could not read persisted minor searchability; leaving it off: $e',
-          );
-          minorReassertSearchable = false;
-          minorSearchabilityReadFailed = true;
-        }
-      }
-
-      // BUT-1322 (review): only write the householdSize key when the caller
-      // deliberately set/cleared it — see UserRepository.saveProfile.
-      await _repository.saveProfile(
-        profile,
-        writeHouseholdSize: !identical(householdSize, _unset),
-        writeAvatarUrl: !identical(avatarUrl, _unset),
-      );
-
-      // BUT-1629: [UserProfile.toFirestore] forces `isSearchable:false` for a
-      // minor — deliberately, so no client write can make one discoverable.
-      // The side effect is that EVERY full-document profile save silently
-      // revokes an opted-in minor's discoverability, whatever the save was
-      // actually about (bio, avatar, household size…). Compensate here, at the
-      // same layer as the chokepoint, so all three call sites inherit it
-      // instead of each having to remember.
-      var savedProfile = profile;
-      if (profile.isMinor) {
-        // Gated on [minorReassertSearchable] — the fresh, server-authoritative
-        // pre-save value. This restores an EXISTING opt-in, never grants a new
-        // one, and can never re-grant one the user disabled elsewhere.
-        final actuallySearchable =
-            minorReassertSearchable &&
-            await _settings.callSetSearchable(true) == true;
-        // Carry the server's real answer, never the requested one: a privacy
-        // toggle that renders the opposite of reality is worse than the
-        // revocation itself.
-        savedProfile = profile.copyWith(isSearchable: actuallySearchable);
-        // Surface the revocation whenever it was NOT the user's intent on this
-        // save: either the re-assert callable failed, OR the pre-save server
-        // read failed while the (stale) in-memory value said they were opted in
-        // — otherwise an opted-in minor silently loses discoverability on an
-        // unrelated bio/avatar edit and must rediscover the toggle. A minor who
-        // was already not-searchable gets no spurious error (the stale-value
-        // guard), and the profile still saves fail-closed either way.
-        final staleOptedIn = existingProfile?.isSearchable == true;
-        final revokedUnintentionally =
-            (minorReassertSearchable && !actuallySearchable) ||
-            (minorSearchabilityReadFailed && staleOptedIn);
-        if (revokedUnintentionally) {
-          _setError(AppLocale.current.errorCouldNotUpdateSearchability);
-        }
-      }
-
-      _currentUserProfile = savedProfile;
-      _cacheProfile(user.uid, savedProfile);
-
-      // Profile propagation handled by Cloud Function (on-profile-updated.ts)
-
-      AppLogger.success('Profil sparad: ${profile.displayName.maskedName}');
-      notifyListeners();
-      return savedProfile;
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte spara profil: $e');
-      _setError(extractUserMessage(e));
-      return null;
-    } finally {
-      _setLoading(false);
-    }
-  }
+  }) => _loader.createOrUpdateProfile(
+    displayName: displayName,
+    avatarUrl: avatarUrl,
+    isSearchable: isSearchable,
+    allowEmailSearch: allowEmailSearch,
+    cookingSkillLevel: cookingSkillLevel,
+    cuisineAffinities: cuisineAffinities,
+    bio: bio,
+    showOnlineStatus: showOnlineStatus,
+    shareActivityToFeed: shareActivityToFeed,
+    activityFeedEventTypes: activityFeedEventTypes,
+    householdSize: householdSize,
+    newProfileCompletedOnboarding: newProfileCompletedOnboarding,
+  );
 
   /// BUT-1629: set a MINOR's search discoverability through the audited
   /// `setProfileSearchability` callable — the only path that works, since
@@ -491,158 +323,19 @@ class UserService extends ChangeNotifier
   Future<void> updateProfileStats({int? friendsCount}) =>
       _status.updateProfileStats(friendsCount: friendsCount);
 
-  /// Private methods - UPPDATERAD med auto-create
-  Future<void> _loadCurrentUserProfile() async {
-    final user = _authRepository.currentUser;
-    if (user == null) return;
-
-    try {
-      // BUT-916 C1: checked BEFORE anything is written for the account.
-      UserProfile? fetched;
-      if (_signsInWithProviderOnly(user)) {
-        fetched = await _repository.fetchProfile(user.uid);
-        if (fetched == null && user.email == null) {
-          _setError(AppLocale.current.providerTermsNoEmail);
-          return;
-        }
-        // The profile decides, not a terms record: an earlier answer whose
-        // profile was never made is asked again, so the profile is only made
-        // from the name the user confirmed, never the provider's full name.
-        if (fetched == null) {
-          _termsPending = true;
-          notifyListeners();
-          return;
-        }
-      }
-      _termsPending = false;
-
-      // NYTT: Skapa base user document i 'users' collection för friends system
-      await _ensureBaseUserDocument(user.uid);
-
-      // BUT-2264: the address is not on the public document; Auth holds it.
-      _currentUserProfile =
-          (fetched ?? await _repository.fetchProfile(user.uid))?.copyWith(
-            email: user.email.orEmpty(),
-          );
-
-      // NY: Om profil inte finns, skapa en automatiskt
-      if (_currentUserProfile == null && NewProfileDefaults.appliesTo(user)) {
-        AppLogger.info(
-          '👤 Ingen profil hittad - skapar automatiskt för ${user.uid.maskedUserId}',
-        );
-        final defaults = NewProfileDefaults.forUser(
-          user,
-          registrationName: _authRepository.registrationDisplayNameFor,
-        );
-        _currentUserProfile = await createOrUpdateProfile(
-          displayName: defaults.displayName,
-          isSearchable: defaults.isSearchable,
-          allowEmailSearch: false,
-          newProfileCompletedOnboarding: defaults.completedOnboarding,
-        );
-
-        if (_currentUserProfile != null) {
-          // This branch only runs when no profile existed yet, which is the
-          // account-creation moment.
-          await recordTermsAcceptance(_repository, user.uid);
-          AppLogger.success(
-            '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}',
-          );
-        } else {
-          // BUG-13: the lazy auto-create returned null (e.g. permission-denied /
-          // App Check / unavailable during createOrUpdateProfile). Surface a
-          // user-visible error so AuthWrapper can show a retryable error state
-          // instead of an indefinite spinner. createOrUpdateProfile already set
-          // a specific _error; only fall back to the generic message if it didn't.
-          AppLogger.error('❌ Kunde inte skapa profil automatiskt');
-          if (!hasError) {
-            _setError(AppLocale.current.errorCouldNotLoadProfile);
-          }
-        }
-      }
-
-      if (_currentUserProfile != null) {
-        _cacheProfile(user.uid, _currentUserProfile!);
-        AppLogger.info(
-          '👤 Nuvarande profil laddad: ${_currentUserProfile!.displayName}',
-        );
-      } else if (user.email == null && !user.isAnonymous) {
-        // C2: no address means no profile can be made; a retryable error,
-        // never the endless busy screen. A guest (anonymous) has no address
-        // by design and is not a failed Google/Apple sign-up (BUT-920).
-        _setError(AppLocale.current.providerTermsNoEmail);
-      } else {
-        AppLogger.warning(
-          '⚠️ Kunde inte ladda eller skapa profil för användare',
-        );
-      }
-
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Kunde inte ladda nuvarande profil: $e');
-      _setError(AppLocale.current.errorCouldNotLoadProfile);
-      notifyListeners();
-    }
-  }
-
-  static bool _signsInWithProviderOnly(User user) {
-    final ids = user.providerData.map((info) => info.providerId);
-    return ids.isNotEmpty && !ids.contains('password');
-  }
-
   /// BUT-916: the terms step's "Skapa konto". The acceptance is recorded
   /// first and awaited (not the best-effort record of an e-mail sign-up),
   /// then the profile is made with the name the user confirmed. False when
   /// either write failed; [error] then says so and nothing is half-made
   /// that would let the next load skip the step without a record.
-  Future<bool> acceptProviderTerms({required String displayName}) async {
-    final user = _authRepository.currentUser;
-    if (user == null) return false;
-    _clearError();
-    try {
-      await _repository.recordTermsAcceptance(user.uid, currentTermsVersion);
-    } catch (e) {
-      AppLogger.warning('Terms acceptance not recorded: $e');
-      _setError(AppLocale.current.providerTermsSaveFailed);
-      return false;
-    }
-    _termsPending = false;
-    final created = await createOrUpdateProfile(
-      displayName: displayName,
-      isSearchable: true,
-      allowEmailSearch: false,
-    );
-    if (created == null) {
-      if (!hasError) _setError(AppLocale.current.providerTermsSaveFailed);
-      return false;
-    }
-    await _loadCurrentUserProfile();
-    return true;
-  }
+  Future<bool> acceptProviderTerms({required String displayName}) =>
+      _loader.acceptProviderTerms(displayName: displayName);
 
   /// BUG-13: Clear the load/create error and re-run the profile load.
   /// Wired to the "Försök igen" button in AuthWrapper's error state so a
   /// transient profile-load failure (permission-denied / App Check / unavailable)
   /// is recoverable without a full sign-out. No-op-safe when already loaded.
-  Future<void> retryLoadProfile() async {
-    _clearError();
-    notifyListeners();
-    await _loadCurrentUserProfile();
-  }
-
-  /// Ensures base user document exists in 'users' collection for friends system
-  Future<void> _ensureBaseUserDocument(String userId) async {
-    try {
-      await _repository.ensureBaseUserDocument(userId);
-
-      AppLogger.info(
-        '✅ Base user document ensured for: ${userId.maskedUserId}',
-      );
-    } catch (e) {
-      AppLogger.warning('⚠️ Could not ensure base user document: $e');
-      // Don't throw - this is not critical for user functionality
-    }
-  }
+  Future<void> retryLoadProfile() => _loader.retryLoadProfile();
 
   void _setLoading(bool loading) {
     _isLoading = loading;

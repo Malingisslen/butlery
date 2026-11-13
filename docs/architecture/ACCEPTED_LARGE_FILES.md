@@ -95,7 +95,6 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 657 | Friends list state + stream management |
 | `tagging_service.dart` | 547 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
-| `user_service.dart` | 1255 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 871 | Chat/messaging service. Poll close and winner resolution live in `messaging/poll_resolution_operations.dart` (BUT-1923). |
 | `text_import_strategy.dart` | 1420 | Text-based recipe import strategy. Row refreshed 2026-10-30. |
 | `friends_management_operations.dart` | 780 | Add/remove/block friends operations |
