@@ -197,7 +197,7 @@ class UserService extends ChangeNotifier
       _authRepository.authStateChanges(),
       (user) {
         if (user != null) {
-          _loader.loadCurrentUserProfile();
+          _loader.loadCurrentUserProfileShared();
         } else {
           _currentUserProfile = null;
           _termsPending = false;
@@ -210,7 +210,7 @@ class UserService extends ChangeNotifier
 
     // Load current user if already authenticated
     if (_authRepository.currentUser != null) {
-      await _loader.loadCurrentUserProfile();
+      await _loader.loadCurrentUserProfileShared();
     }
   }
 

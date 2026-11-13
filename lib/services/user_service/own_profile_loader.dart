@@ -67,8 +67,11 @@ class OwnProfileLoader with ErrorHandlingMixin {
       // Prefer in-memory profile to avoid re-fetching, which can silently lose
       // hasCompletedOnboarding if the private settings sub-doc fetch fails (BUG-044).
       // Tradeoff: won't pick up changes made on other devices since last load.
-      final existingProfile =
-          _port.profile ?? await _repository.fetchProfile(user.uid);
+      final inMemory = _port.profile;
+      final existingProfile = inMemory?.uid == user.uid
+          ? inMemory
+          : await _repository.fetchProfile(user.uid);
+      if (!_isStillSignedInAs(user.uid)) return null;
 
       UserProfile profile;
       if (existingProfile != null) {
@@ -175,6 +178,8 @@ class OwnProfileLoader with ErrorHandlingMixin {
         }
       }
 
+      if (!_isStillSignedInAs(user.uid)) return null;
+
       // BUT-1322 (review): only write the householdSize key when the caller
       // deliberately set/cleared it — see UserRepository.saveProfile.
       await _repository.saveProfile(
@@ -191,6 +196,9 @@ class OwnProfileLoader with ErrorHandlingMixin {
       // same layer as the chokepoint, so all three call sites inherit it
       // instead of each having to remember.
       var savedProfile = profile;
+      // The searchability callable acts on whoever is signed in NOW, so after
+      // a switch it would re-assert the other account's discoverability.
+      if (!_isStillSignedInAs(user.uid)) return savedProfile;
       if (profile.isMinor) {
         // Gated on [minorReassertSearchable] — the fresh, server-authoritative
         // pre-save value. This restores an EXISTING opt-in, never grants a new
@@ -213,11 +221,12 @@ class OwnProfileLoader with ErrorHandlingMixin {
         final revokedUnintentionally =
             (minorReassertSearchable && !actuallySearchable) ||
             (minorSearchabilityReadFailed && staleOptedIn);
-        if (revokedUnintentionally) {
+        if (revokedUnintentionally && _isStillSignedInAs(user.uid)) {
           _port.setError(AppLocale.current.errorCouldNotUpdateSearchability);
         }
       }
 
+      if (!_isStillSignedInAs(user.uid)) return savedProfile;
       _port.profile = savedProfile;
       _port.cacheProfile(user.uid, savedProfile);
 
@@ -228,22 +237,50 @@ class OwnProfileLoader with ErrorHandlingMixin {
       return savedProfile;
     } catch (e) {
       AppLogger.error('❌ Kunde inte spara profil: $e');
-      _port.setError(extractUserMessage(e));
+      if (_isStillSignedInAs(user.uid)) _port.setError(extractUserMessage(e));
       return null;
     } finally {
       _port.setLoading(false);
     }
   }
 
+  Future<void>? _loadInFlight;
+  String? _loadInFlightUid;
+
+  /// At sign-in both `initialize` and the auth listener start a load. For the
+  /// same account they share one, so the second cannot create the profile a
+  /// second time. A retry or the load after accepting the terms calls
+  /// [loadCurrentUserProfile] and always reads afresh.
+  Future<void> loadCurrentUserProfileShared() {
+    final uid = _authRepository.currentUser?.uid;
+    final inFlight = _loadInFlight;
+    if (inFlight != null && uid == _loadInFlightUid) return inFlight;
+    final load = loadCurrentUserProfile();
+    _loadInFlight = load;
+    _loadInFlightUid = uid;
+    return load.whenComplete(() {
+      if (identical(_loadInFlight, load)) {
+        _loadInFlight = null;
+        _loadInFlightUid = null;
+      }
+    });
+  }
+
   Future<void> loadCurrentUserProfile() async {
     final user = _authRepository.currentUser;
     if (user == null) return;
+
+    // Every await below can outlive a switch of account; what it brings back
+    // then belongs to the account that left, so it is dropped rather than
+    // installed in, cached for or written on behalf of the one now signed in.
+    bool switched() => !_isStillSignedInAs(user.uid);
 
     try {
       // BUT-916 C1: checked BEFORE anything is written for the account.
       UserProfile? fetched;
       if (_signsInWithProviderOnly(user)) {
         fetched = await _repository.fetchProfile(user.uid);
+        if (switched()) return;
         if (fetched == null && user.email == null) {
           _port.setError(AppLocale.current.providerTermsNoEmail);
           return;
@@ -261,12 +298,13 @@ class OwnProfileLoader with ErrorHandlingMixin {
 
       // NYTT: Skapa base user document i 'users' collection för friends system
       await _ensureBaseUserDocument(user.uid);
+      if (switched()) return;
 
       // BUT-2264: the address is not on the public document; Auth holds it.
-      _port.profile = (fetched ?? await _repository.fetchProfile(user.uid))
-          ?.copyWith(
-            email: user.email.orEmpty(),
-          );
+      final loaded = (fetched ?? await _repository.fetchProfile(user.uid))
+          ?.copyWith(email: user.email.orEmpty());
+      if (switched()) return;
+      _port.profile = loaded;
 
       // NY: Om profil inte finns, skapa en automatiskt
       if (_port.profile == null && NewProfileDefaults.appliesTo(user)) {
@@ -277,12 +315,14 @@ class OwnProfileLoader with ErrorHandlingMixin {
           user,
           registrationName: _authRepository.registrationDisplayNameFor,
         );
-        _port.profile = await createOrUpdateProfile(
+        final created = await createOrUpdateProfile(
           displayName: defaults.displayName,
           isSearchable: defaults.isSearchable,
           allowEmailSearch: false,
           newProfileCompletedOnboarding: defaults.completedOnboarding,
         );
+        if (switched()) return;
+        _port.profile = created;
 
         if (_port.profile != null) {
           // This branch only runs when no profile existed yet, which is the
@@ -304,6 +344,7 @@ class OwnProfileLoader with ErrorHandlingMixin {
         }
       }
 
+      if (switched()) return;
       if (_port.profile != null) {
         _port.cacheProfile(user.uid, _port.profile!);
         AppLogger.info(
@@ -323,10 +364,14 @@ class OwnProfileLoader with ErrorHandlingMixin {
       _port.notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Kunde inte ladda nuvarande profil: $e');
+      if (switched()) return;
       _port.setError(AppLocale.current.errorCouldNotLoadProfile);
       _port.notifyListeners();
     }
   }
+
+  bool _isStillSignedInAs(String uid) =>
+      _authRepository.currentUser?.uid == uid;
 
   static bool _signsInWithProviderOnly(User user) {
     final ids = user.providerData.map((info) => info.providerId);
@@ -344,15 +389,19 @@ class OwnProfileLoader with ErrorHandlingMixin {
       );
     } catch (e) {
       AppLogger.warning('Terms acceptance not recorded: $e');
-      _port.setError(AppLocale.current.providerTermsSaveFailed);
+      if (_isStillSignedInAs(user.uid)) {
+        _port.setError(AppLocale.current.providerTermsSaveFailed);
+      }
       return false;
     }
+    if (!_isStillSignedInAs(user.uid)) return false;
     _port.setTermsPending(false);
     final created = await createOrUpdateProfile(
       displayName: displayName,
       isSearchable: true,
       allowEmailSearch: false,
     );
+    if (!_isStillSignedInAs(user.uid)) return false;
     if (created == null) {
       if (!_port.hasError) {
         _port.setError(AppLocale.current.providerTermsSaveFailed);
