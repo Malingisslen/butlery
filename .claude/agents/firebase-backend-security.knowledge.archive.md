@@ -11489,3 +11489,14 @@ Staged: `OpsLogRepository.getLatestReceiptAt` (system_events orderBy executedAt 
 
 ## 2026-11-11 — BUT-1923 poll-resolution extraction (verified clean, archive only)
 `closePoll` and its helpers moved from `messaging_service.dart` to `messaging/poll_resolution_operations.dart`; the ballot strip's map walk moved to the top-level `metadataWithoutVoters` in `models/messaging/poll.dart`. A mechanical diff of the moved block against `git show HEAD:` differed only in the strip's call name. The BUT-1909/1917/1926 fail-closed guard (null filter refuses, `requireBlockedIds` union `requireBlockedByIds`, catch refuses with the offline split) and the display path's fail-open `_filterBlocked` were both unchanged. The new class adds no ServiceLocator or Firestore access; collaborators are passed in as the same closures. No new principle.
+
+## 2026-11-13 — BUT-1507 step 4: `FriendsInternalPort` mixin extraction (verified clean)
+Pure move of the `*Internal` forwards, four Firebase sync forwards, `currentUserDisplayName`,
+`friendsRepositoryInternal`, `friendsCategoryRepositoryInternal` from `UnifiedFriendsService`
+into `lib/services/unified/friends/friends_internal_port.dart`. Removed vs added bodies diffed
+line-for-line: identical. The mixin's `_stateManager` etc. are library-private to the mixin's
+library, so they are distinct fields from the service's same-named ones; `bindFriendsInternalPort`
+hands them the service's existing instances (no second repository/state manager). Tear-offs in
+`_initializeFeatureInterfaces` run after the bind. Every hand-written `implements UnifiedFriendsService`
+test double extends Mock/Fake or defines `noSuchMethod`, so the new public bind method breaks none.
+No new principle; archive only.
