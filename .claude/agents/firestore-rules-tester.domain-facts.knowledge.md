@@ -43,6 +43,13 @@ and malformed shapes when the validator changes.
   (measured 63/64 — the seeded `true -> false` deny survives). Adding the gate to an EXISTING create rule fails closed every prior
   create-allow test lacking the claim — grep `authenticatedContext(<actor>)` for that
   collection whenever a gate is added.
+- **`accountIsMinor(uid)` fails OPEN; `isAgeCompliant()` fails CLOSED. A "no minor may publish
+  X" gate built on the first admits a guest, an account with no `users` doc, and one whose
+  `isMinor` is not written yet** (measured ALLOW on all three for `public_profiles.bio`,
+  BUT-2509). Probe those three actors on every new minor gate and say which helper the gate
+  uses. An allow fixture with no `users` doc and no claim then pins the fail-open as well as
+  the allow, so switching the gate to `isAgeCompliant()` reddens it, which looks like a
+  regression. Name that dependence in the report.
 - **`conversations/{id}/participants` roster**: a GROUP's parent conversation doc is
   written under `users/{creator}/conversations/{id}` and the top-level doc doesn't exist
   until the first message — a rule attesting only via `get(parent)` denies every group
