@@ -3912,6 +3912,7 @@
   "profileAvatarUploaded": "Avataren är uppladdad.",
   "profileBio": "Om mig",
   "profileBioHint": "Beskriv dig som matlagare (max 160 tecken)",
+  "profileBioVisibility": "Syns för alla som är inloggade i Butlery.",
   "profileCouldNotSave": "Kunde inte spara profil",
   "profileCouldNotUploadAvatar": "Kunde inte ladda upp avatar",
   "profileCookingSkill": "Kunskapsnivå",

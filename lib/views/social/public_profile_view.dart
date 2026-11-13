@@ -144,7 +144,7 @@ class _PublicProfileContent extends StatelessWidget {
             displayName: profile.displayName,
             avatarUrl: profile.avatarUrl,
             subline: profile.memberSinceText,
-            bio: profile.bio,
+            bio: profile.visibleBio,
             statsLayout: ProfileStatsLayout.inline,
             stats: [
               ProfileStat(

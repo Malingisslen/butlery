@@ -140,7 +140,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                     displayName: friend.displayName,
                     avatarUrl: friend.avatarUrl,
                     subline: friend.memberSinceText,
-                    bio: friend.bio,
+                    bio: friend.visibleBio,
                     stats: [
                       ProfileStat(
                         value: friend.friendsCount,

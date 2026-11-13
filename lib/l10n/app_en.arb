@@ -3890,6 +3890,7 @@
   "profileAvatarUploaded": "Avatar uploaded.",
   "profileBio": "About me",
   "profileBioHint": "Describe yourself as a cook (max 160 characters)",
+  "profileBioVisibility": "Visible to everyone signed in to Butlery.",
   "profileCouldNotSave": "Could not save profile",
   "profileCouldNotUploadAvatar": "Could not upload avatar",
   "profileCookingSkill": "Skill level",
