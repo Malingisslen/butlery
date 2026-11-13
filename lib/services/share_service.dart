@@ -17,7 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
 enum RecipeShareFormat { complete, compact, markdown }
@@ -26,7 +26,7 @@ enum RecipeShareFormat { complete, compact, markdown }
 class ShareService extends BaseService {
   ShareService({
     AnalyticsService? Function()? getAnalytics,
-    UserService? Function()? getUserService,
+    OwnProfileReader? Function()? getUserService,
     PermissionService? Function()? getPermissionService,
     ShortUrlGenerator? generateShortUrl,
   }) : _generateShortUrl = generateShortUrl ?? ((longUrl) async => longUrl),
@@ -36,7 +36,7 @@ class ShareService extends BaseService {
 
   final ShortUrlGenerator _generateShortUrl;
   final AnalyticsService? Function() _getAnalytics;
-  final UserService? Function() _getUserService;
+  final OwnProfileReader? Function() _getUserService;
   final PermissionService? Function() _getPermissionService;
 
   @override

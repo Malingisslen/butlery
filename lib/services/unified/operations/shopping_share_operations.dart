@@ -7,7 +7,7 @@ import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
     show ShareRecipientFilter;
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Shopping share operations coordinator.
 /// Orchestrates shopping list sharing via export, import, templates, external sharing, and social collaboration.
@@ -97,14 +97,14 @@ class ShoppingShareOperations {
 
   final FirestoreRepository _firestoreRepository;
   final PermissionService _permissionService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   final ShortUrlGenerator _generateShortUrl;
   final ShareRecipientFilter _filterShareRecipients;
 
   ShoppingShareOperations({
     required FirestoreRepository firestoreRepository,
     required PermissionService permissionService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ShortUrlGenerator generateShortUrl,
     required ShareRecipientFilter filterShareRecipients,
   }) : _firestoreRepository = firestoreRepository,

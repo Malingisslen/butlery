@@ -14,7 +14,7 @@ import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -54,7 +54,7 @@ class SocialRecipeOperations {
     required AnalyticsService analyticsService,
     required NotificationService? notificationService,
     required PermissionService permissionService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ActivityFeedService activityFeedService,
     required CommentsRepository? commentsRepository,
     required BlockedUserFilter? blockedUserFilter,

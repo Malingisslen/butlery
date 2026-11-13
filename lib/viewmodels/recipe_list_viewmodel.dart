@@ -14,7 +14,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
@@ -1303,7 +1303,7 @@ class RecipeListViewModel extends BaseViewModel {
   Future<void> _loadOnboardingBannerState() async {
     try {
       final persistence = ServiceLocator.get<PersistenceService>();
-      final profile = ServiceLocator.get<UserService>().currentUserProfile;
+      final profile = ServiceLocator.get<OwnProfileReader>().currentUserProfile;
       // Profile not yet loaded at ViewModel init — banners stay hidden (this
       // runs once from init; same observable outcome as the prior guard).
       if (profile == null) return;

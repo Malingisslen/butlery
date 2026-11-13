@@ -14,6 +14,8 @@
 // path; the no-op-on-empty-queue case is already covered at unit level in
 // test/unit/viewmodels/recipe_form/recipe_image_deletion_undo_test.dart.
 
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -635,6 +637,9 @@ void main() {
     setUp(() {
       userService = _MockUserService();
       GetIt.instance.registerSingleton<UserService>(userService);
+      if (!GetIt.instance.isRegistered<OwnProfileReader>()) {
+        registerUserServiceRoles(GetIt.instance);
+      }
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(DIContainer());
       when(

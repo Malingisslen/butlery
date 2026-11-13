@@ -6,7 +6,7 @@ import 'package:butlery/repositories/firebase/friends/friend_category_repository
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
@@ -22,7 +22,7 @@ class FriendsInternalOperations {
   final AuthRepository _authRepository;
   final PermissionService _permissionService;
   final FriendsRepository _friendsRepository;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   late final FriendsStateManager _stateManager;
 
   FriendsInternalOperations({
@@ -30,7 +30,7 @@ class FriendsInternalOperations {
     required AuthRepository authRepository,
     required PermissionService permissionService,
     required FriendsRepository friendsRepository,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ShortUrlGenerator generateShortUrl,
   }) : _categoryRepository = categoryRepository,
        _authRepository = authRepository,

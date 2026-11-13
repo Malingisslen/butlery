@@ -10,7 +10,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -83,7 +83,7 @@ class RecipeSharingManager {
   final NotificationService? _notificationService;
   final FirestoreRepository _firestoreRepository;
   final PermissionService _permissionService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   final ActivityFeedService _activityFeedService;
   final BlockedUserFilter? _blockedUserFilter;
 
@@ -104,7 +104,7 @@ class RecipeSharingManager {
     required NotificationService? notificationService,
     required FirestoreRepository firestoreRepository,
     required PermissionService permissionService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ActivityFeedService activityFeedService,
     required BlockedUserFilter? blockedUserFilter,
     void Function(String)? onShareError,

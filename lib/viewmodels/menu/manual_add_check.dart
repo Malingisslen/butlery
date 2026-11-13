@@ -11,7 +11,7 @@ import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/tagging/allergen_verdict.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// What a recipe placed in the menu by hand conflicts with.
@@ -93,14 +93,14 @@ class ManualAddCheck {
 
   static Future<UserAllergenPreferences> _liveHouseholdPrefs() async {
     final (prefs, _) = await MenuGenerator.resolveHouseholdPrefs(
-      ServiceLocator.get<UserService>(),
+      ServiceLocator.get<OwnProfileReader>(),
     );
     return prefs;
   }
 
   static UserAllergenPreferences _liveOwnPrefs() =>
       HouseholdService.ownMenuPreferences(
-        ServiceLocator.tryGet<UserService>()?.currentUserProfile,
+        ServiceLocator.tryGet<OwnProfileReader>()?.currentUserProfile,
       );
 
   static List<ManualAddFinding> findingsFor(

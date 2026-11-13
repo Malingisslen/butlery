@@ -21,7 +21,7 @@ import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
@@ -75,7 +75,7 @@ class UnifiedShoppingService
   final ShoppingRepository _shoppingRepository;
   final PermissionService _permissionService;
   final CategoryPreferencesRepository _categoryPreferencesRepository;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   // Read on first use rather than at construction.
   final AnalyticsService? Function()? _getAnalyticsService;
   final UnifiedFriendsService Function() _getFriendsService;
@@ -126,7 +126,7 @@ class UnifiedShoppingService
     required ShoppingRepository shoppingRepository,
     required PermissionService permissionService,
     required CategoryPreferencesRepository categoryPreferencesRepository,
-    required UserService userService,
+    required OwnProfileReader userService,
     required UnifiedFriendsService Function() getFriendsService,
     required OfflineService Function() getOfflineService,
     required IngredientLookupService Function() getLookupService,

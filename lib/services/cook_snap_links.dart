@@ -11,7 +11,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 class CookSnapLinks {
   const CookSnapLinks({
@@ -35,7 +35,7 @@ class CookSnapLinks {
   final ImagePickerService Function() imagePicker;
   final PermissionService Function() permissions;
   final ImageUploadService Function() imageUpload;
-  final UserService Function() users;
+  final OwnProfileReader Function() users;
   final ActivityFeedService Function() activityFeed;
 
   /// Null before the friends service exists: friend ids come from the

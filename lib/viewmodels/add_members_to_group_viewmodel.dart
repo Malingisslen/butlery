@@ -10,7 +10,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -28,7 +28,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
   final AccountMaturityHelper _maturityHelper;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   final AuthRepository _authRepository;
 
   late final MemberSearchManager _searchManager;
@@ -51,11 +51,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     required this.groupId,
     required UnifiedFriendsService friendsService,
     AccountMaturityHelper? maturityHelper,
-    UserService? userService,
+    OwnProfileReader? userService,
     AuthRepository? authRepository,
   }) : _friendsService = friendsService,
        _maturityHelper = maturityHelper ?? AccountMaturityHelper(),
-       _userService = userService ?? ServiceLocator.get<UserService>(),
+       _userService = userService ?? ServiceLocator.get<OwnProfileReader>(),
        _authRepository =
            authRepository ?? ServiceLocator.get<AuthRepository>() {
     _searchManager = MemberSearchManager();

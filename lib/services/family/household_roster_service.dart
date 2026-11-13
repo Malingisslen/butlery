@@ -4,7 +4,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Resolves a household's full roster — account holders plus non-account diner
 /// profiles — into one unified [HouseholdRosterMember] list.
@@ -17,7 +17,7 @@ class HouseholdRosterService extends BaseService {
   HouseholdRosterService({
     required HouseholdRepository householdRepository,
     required DinerProfileRepository dinerProfileRepository,
-    required UserService userService,
+    required ProfileDirectory userService,
   }) : _householdRepository = householdRepository,
        _dinerProfileRepository = dinerProfileRepository,
        _userService = userService;
@@ -27,7 +27,7 @@ class HouseholdRosterService extends BaseService {
 
   final HouseholdRepository _householdRepository;
   final DinerProfileRepository _dinerProfileRepository;
-  final UserService _userService;
+  final ProfileDirectory _userService;
 
   /// Resolve every member of [householdId] — accounts first (in stored member
   /// order), then diner profiles. Returns an empty list if the household is

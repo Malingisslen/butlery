@@ -2,7 +2,7 @@
 
 import 'dart:ui' show Locale;
 
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -19,7 +19,7 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 class RecipeShareRequestModule {
   final FirebaseSocialRequestRepository socialRequestRepository;
   final PermissionService permissionService;
-  final UserService userService;
+  final OwnProfileReader userService;
 
   RecipeShareRequestModule({
     required this.socialRequestRepository,

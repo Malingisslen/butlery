@@ -1,7 +1,7 @@
 // lib/services/attribution_source.dart
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Who the signed-in user is SHOWN as on a document other people read: a
 /// message, a comment, a shared menu or list (BUT-2009).
@@ -15,10 +15,10 @@ import 'package:butlery/services/user_service.dart';
 /// the next write carries. Name and photo travel together so a writer cannot
 /// take one from here and the other from Auth.
 class AttributionSource {
-  AttributionSource({required UserService? Function() userService})
+  AttributionSource({required OwnProfileReader? Function() userService})
     : _userService = userService;
 
-  final UserService? Function() _userService;
+  final OwnProfileReader? Function() _userService;
 
   String get displayName => (_userService()?.attributionDisplayName).orEmpty();
 

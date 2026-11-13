@@ -28,7 +28,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -89,7 +89,7 @@ class UnifiedRecipeService
   final RatingsRepository _ratingsRepository;
   final AnalyticsService _analyticsService;
   final PermissionService _permissionService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
   final ActivityFeedService _activityFeedService;
   final NotificationsRepository? _notificationsRepository;
   final IngredientIdResolver? _ingredientIdResolver;
@@ -239,7 +239,7 @@ class UnifiedRecipeService
     required RatingsRepository ratingsRepository,
     required AnalyticsService analyticsService,
     required PermissionService permissionService,
-    required UserService userService,
+    required OwnProfileReader userService,
     required ActivityFeedService activityFeedService,
     NotificationsRepository? notificationsRepository,
     IngredientIdResolver? ingredientIdResolver,

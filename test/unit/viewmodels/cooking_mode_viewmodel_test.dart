@@ -1,5 +1,7 @@
 // test/unit/viewmodels/cooking_mode_viewmodel_test.dart
 
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -855,6 +857,9 @@ void main() {
         getIt.unregister<UserService>();
       }
       getIt.registerSingleton<UserService>(mockUser);
+      if (!getIt.isRegistered<OwnProfileReader>()) {
+        registerUserServiceRoles(getIt);
+      }
     }
 
     tearDown(() {
@@ -967,6 +972,9 @@ void main() {
         getIt.unregister<UserService>();
       }
       getIt.registerSingleton<UserService>(fake);
+      if (!getIt.isRegistered<OwnProfileReader>()) {
+        registerUserServiceRoles(getIt);
+      }
       return fake;
     }
 
@@ -1059,6 +1067,9 @@ void main() {
         getIt.unregister<UserService>();
       }
       getIt.registerSingleton<UserService>(fake);
+      if (!getIt.isRegistered<OwnProfileReader>()) {
+        registerUserServiceRoles(getIt);
+      }
       return fake;
     }
 

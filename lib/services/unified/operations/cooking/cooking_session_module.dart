@@ -13,7 +13,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_cooking_session_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 abstract class CookingSessionModule {
   Future<void> startSession(Recipe recipe);
@@ -44,7 +44,7 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
   final FirebaseCookingSessionRepository _repository;
   final PermissionService _permissionService;
   final UnifiedFriendsService _friendsService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   /// Group IDs where the current user currently has an active session row,
   /// captured at [startSession] time. Used by [updateStep] to target the
@@ -65,7 +65,7 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     required FirebaseCookingSessionRepository repository,
     required PermissionService permissionService,
     required UnifiedFriendsService friendsService,
-    required UserService userService,
+    required OwnProfileReader userService,
   }) : _repository = repository,
        _permissionService = permissionService,
        _friendsService = friendsService,

@@ -6,7 +6,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// BUT-2157: a draft brought back onto the screen.
 @immutable
@@ -51,7 +51,7 @@ class MenuDraftManager {
   /// Whose draft this device keeps, the same owner the overflow tray uses
   /// (WeeklyMenuPlanService.overflowTrayOwnerId).
   static String? _signedInUserId() =>
-      ServiceLocator.tryGet<UserService>()?.currentUserProfile?.uid;
+      ServiceLocator.tryGet<OwnProfileReader>()?.currentUserProfile?.uid;
 
   /// Whether the menu on screen is one this device generated, so its later
   /// edits are drafts too.

@@ -25,7 +25,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
@@ -37,7 +37,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
 class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
-  final UserService _userService;
+  final ProfileDirectory _userService;
   final UnifiedRecipeService _recipeService;
   final PermissionService _permissionService;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
@@ -58,7 +58,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   String? _error;
 
   SocialRecipeService({
-    required UserService userService,
+    required ProfileDirectory userService,
     required UnifiedRecipeService recipeService,
     required PermissionService permissionService,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,

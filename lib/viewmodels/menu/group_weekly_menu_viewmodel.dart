@@ -9,7 +9,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// Why an edit did not happen. Rendered as a passing notice by the widget,
@@ -44,14 +44,14 @@ enum GroupMenuFailure { none, permissionDenied, transient }
 class GroupWeeklyMenuViewModel extends BaseViewModel {
   final GroupWeeklyMenuPlanService _service;
   final RealtimeGroupMenuModule _realtime;
-  final UserService _userService;
+  final ProfileDirectory _userService;
   final String groupId;
   final String currentUserId;
 
   GroupWeeklyMenuViewModel({
     required GroupWeeklyMenuPlanService service,
     required RealtimeGroupMenuModule realtime,
-    required UserService userService,
+    required ProfileDirectory userService,
     required this.groupId,
     required this.currentUserId,
   }) : _service = service,
