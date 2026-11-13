@@ -23,6 +23,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -61,7 +62,7 @@ void main() {
       rating: 4.5,
       type: RecipeType.personal,
     );
-    recipe.core.ratingPoolKey = 'v1:kottbullar';
+    recipe.core.ratingPoolKey = '${CanonicalPoolKey.version}:kottbullar';
 
     recipeService = MockUnifiedRecipeService();
     recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
@@ -166,6 +167,42 @@ void main() {
     // familj" button can never trip this guard.
     expect(find.textContaining(' betyg'), findsNothing);
     expect(find.text('butlery-betyget'), findsNothing);
+  });
+
+  testWidgets('a current-version hint is read as stored', (tester) async {
+    setFlag(enabled: true);
+    when(() => ratingsRepo.getPooledStats(any())).thenAnswer(
+      (_) async => const PooledStats(count: 12, average: 4.3),
+    );
+
+    await pump(tester);
+
+    final asked = verify(
+      () => ratingsRepo.getPooledStats(captureAny()),
+    ).captured;
+    expect(asked.toSet(), {'${CanonicalPoolKey.version}:kottbullar'});
+  });
+
+  testWidgets('a hint from another key version is recomputed, not read', (
+    tester,
+  ) async {
+    recipe.core.ratingPoolKey = 'v1:stale';
+    final current = CanonicalPoolKey.compute(
+      title: recipe.core.title,
+      ingredients: recipe.core.ingredients,
+    );
+    expect(current, isNotNull, reason: 'premise: the recipe keys');
+    setFlag(enabled: true);
+    when(() => ratingsRepo.getPooledStats(any())).thenAnswer(
+      (_) async => const PooledStats(count: 12, average: 4.3),
+    );
+
+    await pump(tester);
+
+    final asked = verify(
+      () => ratingsRepo.getPooledStats(captureAny()),
+    ).captured;
+    expect(asked.toSet(), {current});
   });
 
   testWidgets('flag OFF never fetches and shows no community pill', (

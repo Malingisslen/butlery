@@ -30,18 +30,20 @@ void main() {
     // so editing the JSON's key set (adding/removing/renaming a list there)
     // can't pass silently, and a per-list assertion below can't be quietly
     // dropped without this failing. LIMIT: it compares the JSON against a
-    // hardcoded expected set — it does NOT see a sixth list added to the
+    // hardcoded expected set — it does NOT see a list added to the
     // algorithm code but never registered here or in the JSON (nothing
     // enumerates the algorithm's lists). That residual is backstopped by the C4
     // end-to-end parity fixture (a new list that changes any sampled key fails
     // Dart↔TS parity) plus review. `_`-prefixed keys (e.g. `_comment`) are metadata.
-    test('the JSON pins exactly the five expected lists', () {
+    test('the JSON pins exactly the expected lists', () {
       expect(json.keys.where((k) => !k.startsWith('_')).toSet(), {
         'ingredientUnits',
         'titleStopWords',
         'approximateWords',
         'dishQualifiers',
         'genericAnchors',
+        'ownerWords',
+        'dishHeads',
       });
     });
 
@@ -94,5 +96,13 @@ void main() {
         );
       },
     );
+
+    test('ownerWords matches the shared JSON source of truth, in order', () {
+      expect(CanonicalPoolKey.ownerWords.toList(), shared('ownerWords'));
+    });
+
+    test('dishHeads matches the shared JSON source of truth, in order', () {
+      expect(CanonicalPoolKey.dishHeads.toList(), shared('dishHeads'));
+    });
   });
 }

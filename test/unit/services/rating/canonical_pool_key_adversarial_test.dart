@@ -25,6 +25,7 @@ void main() {
   final distinct = (fixture['distinct'] as List).cast<Map<String, dynamic>>();
   final mustNotPool = (fixture['must_not_pool'] as List)
       .cast<Map<String, dynamic>>();
+  final mustPool = (fixture['must_pool'] as List).cast<Map<String, dynamic>>();
 
   bool isGap(Map<String, dynamic> c) => c['known_gap'] is String;
 
@@ -32,12 +33,13 @@ void main() {
     expect(classes, isNotEmpty);
     expect(distinct, isNotEmpty);
     expect(mustNotPool, isNotEmpty);
+    expect(mustPool, isNotEmpty);
     final covered = {
-      for (final c in [...distinct, ...mustNotPool])
+      for (final c in [...distinct, ...mustNotPool, ...mustPool])
         if (!isGap(c)) c['class'] as String,
     };
     expect(covered, classes);
-    for (final c in [...distinct, ...mustNotPool]) {
+    for (final c in [...distinct, ...mustNotPool, ...mustPool]) {
       expect(classes, contains(c['class']), reason: '${c['why']}');
     }
   });
@@ -68,6 +70,16 @@ void main() {
         } else {
           expect(key, isNull);
         }
+      });
+    }
+  });
+
+  group('one dish written two ways shares a key', () {
+    for (final c in mustPool) {
+      test('${c['class']}: ${c['why']}', () {
+        final a = _key(c['a'] as Map<String, dynamic>);
+        expect(a, isNotNull);
+        expect(_key(c['b'] as Map<String, dynamic>), a);
       });
     }
   });

@@ -33,10 +33,18 @@ interface NoPoolCase {
   known_gap?: string;
 }
 
+interface SamePoolCase {
+  class: string;
+  why: string;
+  a: Recipe;
+  b: Recipe;
+}
+
 interface Fixture {
   classes: string[];
   distinct: DistinctCase[];
   must_not_pool: NoPoolCase[];
+  must_pool: SamePoolCase[];
 }
 
 const key = (r: Recipe): string | null =>
@@ -56,7 +64,8 @@ function run(): void {
   if (
     !fixture.classes?.length ||
     !fixture.distinct?.length ||
-    !fixture.must_not_pool?.length
+    !fixture.must_not_pool?.length ||
+    !fixture.must_pool?.length
   ) {
     console.error(
       "pool_key_adversarial.json has an empty section; refusing to pass vacuously",
@@ -68,17 +77,22 @@ function run(): void {
   const isGap = (c: { known_gap?: unknown }): boolean =>
     typeof c.known_gap === "string";
 
-  const covered = new Set(
-    [...fixture.distinct, ...fixture.must_not_pool]
+  const covered = new Set([
+    ...[...fixture.distinct, ...fixture.must_not_pool]
       .filter((c) => !isGap(c))
       .map((c) => c.class),
-  );
+    ...fixture.must_pool.map((c) => c.class),
+  ]);
   checks++;
   for (const cls of fixture.classes) {
     if (!covered.has(cls))
       failures.push(`class ${cls} has no case outside the known gaps`);
   }
-  for (const c of [...fixture.distinct, ...fixture.must_not_pool]) {
+  for (const c of [
+    ...fixture.distinct,
+    ...fixture.must_not_pool,
+    ...fixture.must_pool,
+  ]) {
     if (!fixture.classes.includes(c.class))
       failures.push(`${c.why}: undeclared class ${c.class}`);
   }
@@ -104,6 +118,15 @@ function run(): void {
         failures.push(`${c.class}: ${c.why}: gap fixed? drop known_gap`);
     } else if (k !== null) {
       failures.push(`${c.class}: ${c.why}: pools as ${k}, must fail closed`);
+    }
+  }
+
+  for (const c of fixture.must_pool) {
+    checks++;
+    const a = key(c.a);
+    const b = key(c.b);
+    if (a === null || a !== b) {
+      failures.push(`${c.class}: ${c.why}: ${a} vs ${b}, must share a key`);
     }
   }
 

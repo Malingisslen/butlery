@@ -14,6 +14,12 @@
   `/g` regexes are stateful with `.test()`/`.exec()` in long-lived isolates.
   Shared word lists and cross-port VECTORS: compiled-in consts or one shared
   JSON fixture, pinned on BOTH sides, never a runtime load.
+- **A golden parity fixture pins only the branches its vectors REACH.** "TS matches
+  Dart" stays green with a TS branch deleted when no vector enters it, and the TS side
+  is the authority. A new rule in `dishAnchor` (or any twin) owes one vector per branch
+  in `pool_key_parity.json`, each probed by mutating a scratch COPY of the TS file
+  against both fixtures (adjacency-break by a stop word, by a qualifier, by an
+  empty OCR token).
 
 ### Telemetry callables (events/)
 - **A counter a callable bumps from a client event is only as true as the set of events

@@ -192,6 +192,18 @@ void main() {
       },
     );
 
+    test('a draft key shared by two photos of one recipe is no collision', () {
+      write('b/p1/gold.proposed.json', _recipe('Pizza', ['1 deg']));
+      write('b/p1/draft.json', _recipe('Sidonot', ['1 deg']));
+      write('b/p2/gold.proposed.json', _recipe('Pizza', ['1 deg']));
+      write('b/p2/draft.json', _recipe('Sidonot', ['1 deg']));
+
+      final r = measure(loadPages(root), _titleKeyer);
+
+      expect(r.duplicateGroups, 1);
+      expect(r.draftCollisions, isEmpty);
+    });
+
     test('the summary carries no title or page id', () {
       write('b/hemligsida/gold.proposed.json', _recipe('Hemlig', ['2 ägg']));
       write('b/annan/gold.proposed.json', _recipe('Hemlig', ['3 ägg']));

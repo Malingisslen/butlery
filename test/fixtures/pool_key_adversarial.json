@@ -1,10 +1,11 @@
 {
-  "description": "BUT-1520 condition C8: adversarial precision set for the pooled-ratings key. Invented recipes only (no corpus content). Read by test/unit/services/rating/canonical_pool_key_adversarial_test.dart and functions/src/__tests__/pool-key-adversarial.test.ts. Every 'distinct' pair is two different dishes that must NOT share a key (one side may fail closed to null); every 'must_not_pool' recipe must key to null. Each case is tagged by class so a clean run reads as coverage per class. A case with 'known_gap' documents a measured weakness: the tests pin that it still behaves as measured, so a key fix turns it red and the entry must then lose its 'known_gap'.",
+  "description": "BUT-1520 condition C8: adversarial precision set for the pooled-ratings key. Invented recipes only (no corpus content). Read by test/unit/services/rating/canonical_pool_key_adversarial_test.dart and functions/src/__tests__/pool-key-adversarial.test.ts. Every 'distinct' pair is two different dishes that must NOT share a key (one side may fail closed to null); every 'must_not_pool' recipe must key to null. Every 'must_pool' pair is one dish written two ways and must share a non-null key. Each case is tagged by class so a clean run reads as coverage per class. A case with 'known_gap' documents a measured weakness: the tests pin that it still behaves as measured, so a key fix turns it red and the entry must then lose its 'known_gap'.",
   "classes": [
     "dessert_family",
     "protein_swap",
     "synonym_title",
-    "generic_anchor"
+    "generic_anchor",
+    "split_compound"
   ],
   "distinct": [
     {
@@ -350,8 +351,7 @@
           "1 dl mjölk",
           "75 g smör"
         ]
-      },
-      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+      }
     },
     {
       "class": "generic_anchor",
@@ -371,8 +371,7 @@
           "2 morötter",
           "5 dl buljong"
         ]
-      },
-      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+      }
     },
     {
       "class": "generic_anchor",
@@ -398,8 +397,7 @@
           "1 dl mjölk",
           "75 g smör"
         ]
-      },
-      "known_gap": "The title modifier, not the dish noun, becomes the anchor, so two dishes with identical ingredients share a key. Needs a key change (own plan)."
+      }
     }
   ],
   "must_not_pool": [
@@ -417,18 +415,6 @@
     },
     {
       "class": "generic_anchor",
-      "why": "OCR split of köttbullar",
-      "recipe": {
-        "title": "Kött bullar",
-        "ingredients": [
-          "500 g köttfärs",
-          "1 ägg",
-          "1 dl ströbröd"
-        ]
-      }
-    },
-    {
-      "class": "generic_anchor",
       "why": "generic noun behind qualifiers",
       "recipe": {
         "title": "Mammas goda gryta",
@@ -437,8 +423,7 @@
           "2 morötter",
           "5 dl buljong"
         ]
-      },
-      "known_gap": "The generic noun is shorter than the modifier before it, so the modifier becomes the anchor and the recipe pools instead of failing closed. Needs a key change (own plan)."
+      }
     },
     {
       "class": "generic_anchor",
@@ -466,8 +451,50 @@
     },
     {
       "class": "generic_anchor",
-      "why": "OCR split of sockerkaka",
+      "why": "no ingredients",
       "recipe": {
+        "title": "Köttbullar",
+        "ingredients": []
+      }
+    },
+    {
+      "class": "generic_anchor",
+      "why": "owner word in front of a generic noun",
+      "recipe": {
+        "title": "Mormors gryta",
+        "ingredients": [
+          "600 g högrev",
+          "2 morötter",
+          "5 dl buljong"
+        ]
+      }
+    }
+  ],
+  "must_pool": [
+    {
+      "class": "split_compound",
+      "why": "OCR split of köttbullar pools with the joined title",
+      "a": {
+        "title": "Kött bullar",
+        "ingredients": [
+          "500 g köttfärs",
+          "1 ägg",
+          "1 dl ströbröd"
+        ]
+      },
+      "b": {
+        "title": "Köttbullar",
+        "ingredients": [
+          "500 g köttfärs",
+          "1 ägg",
+          "1 dl ströbröd"
+        ]
+      }
+    },
+    {
+      "class": "split_compound",
+      "why": "OCR split of sockerkaka pools with the joined title",
+      "a": {
         "title": "Socker kaka",
         "ingredients": [
           "3 ägg",
@@ -478,14 +505,42 @@
           "75 g smör"
         ]
       },
-      "known_gap": "The generic noun is shorter than the modifier before it, so the modifier becomes the anchor and the recipe pools instead of failing closed. Needs a key change (own plan)."
+      "b": {
+        "title": "Sockerkaka",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      }
     },
     {
-      "class": "generic_anchor",
-      "why": "no ingredients",
-      "recipe": {
-        "title": "Köttbullar",
-        "ingredients": []
+      "class": "split_compound",
+      "why": "split chocolate muffins pool with the joined title",
+      "a": {
+        "title": "Choklad muffins",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
+      },
+      "b": {
+        "title": "Chokladmuffins",
+        "ingredients": [
+          "3 ägg",
+          "3 dl strösocker",
+          "3 dl vetemjöl",
+          "2 tsk bakpulver",
+          "1 dl mjölk",
+          "75 g smör"
+        ]
       }
     }
   ]

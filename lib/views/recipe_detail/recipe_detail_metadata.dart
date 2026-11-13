@@ -339,7 +339,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     );
   }
 
-  /// Resolve this dish's pool key: the stored hint, or a fail-closed on-the-fly
+  /// Resolve this dish's pool key: a current-version hint, or a fail-closed on-the-fly
   /// compute for older hint-less recipes. GUARDED — `CanonicalPoolKey.compute`
   /// is pure but treated as able-to-throw (the recipe write path guards this
   /// exact call identically), so a throw can never propagate into a rating
@@ -348,7 +348,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   String? _resolvePoolKey() {
     final recipe = widget.viewModel.recipe;
     final hint = recipe.core.ratingPoolKey;
-    if (hint != null && hint.isNotEmpty) return hint;
+    if (CanonicalPoolKey.isCurrent(hint)) return hint;
     try {
       return CanonicalPoolKey.compute(
         title: recipe.core.title,

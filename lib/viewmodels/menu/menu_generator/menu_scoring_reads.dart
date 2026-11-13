@@ -55,17 +55,18 @@ abstract final class MenuScoringReads {
     if (ratingsRepo == null) return const {};
 
     try {
-      // Derive each candidate's poolKey — the pre-stamped hint, else compute it
+      // Derive each candidate's poolKey — a current-version hint, else compute it
       // (older recipes saved before the flag went live carry no hint). Both may
       // be null for a generic/no-anchor dish; those simply get no pooled signal.
       final poolKeyByRecipeId = <String, String>{};
       for (final recipe in pool) {
-        final key =
-            recipe.core.ratingPoolKey ??
-            CanonicalPoolKey.compute(
-              title: recipe.core.title,
-              ingredients: recipe.core.ingredients,
-            );
+        final hint = recipe.core.ratingPoolKey;
+        final key = CanonicalPoolKey.isCurrent(hint)
+            ? hint
+            : CanonicalPoolKey.compute(
+                title: recipe.core.title,
+                ingredients: recipe.core.ingredients,
+              );
         if (key != null && key.isNotEmpty) {
           poolKeyByRecipeId[recipe.id] = key;
         }

@@ -27,6 +27,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
@@ -198,9 +199,9 @@ void main() {
       // Give the pool pre-stamped poolKey hints so the plumbing doesn't hinge on
       // CanonicalPoolKey.compute succeeding over the factory's ingredients.
       final r1 = RecipeFactory.build(id: 'r1', title: 'r1', mealType: 'middag');
-      r1.core.ratingPoolKey = 'v1:pool1';
+      r1.core.ratingPoolKey = '${CanonicalPoolKey.version}:pool1';
       final r2 = RecipeFactory.build(id: 'r2', title: 'r2', mealType: 'middag');
-      r2.core.ratingPoolKey = 'v1:pool2';
+      r2.core.ratingPoolKey = '${CanonicalPoolKey.version}:pool2';
       recipeService.setRecipeState(isInitialized: true, recipes: [r1, r2]);
 
       // Override any real bindings the production locator may hold for the
@@ -231,7 +232,12 @@ void main() {
           () => flags.isEnabled(FeatureFlags.enablePooledRatings),
         ).thenReturn(true);
         when(() => ratings.getBulkPooledStats(any())).thenAnswer(
-          (_) async => {'v1:pool1': const PooledStats(count: 40, average: 4.6)},
+          (_) async => {
+            '${CanonicalPoolKey.version}:pool1': const PooledStats(
+              count: 40,
+              average: 4.6,
+            ),
+          },
         );
 
         await generator.generateMenuFromPrompt('veckomeny');
@@ -248,6 +254,39 @@ void main() {
           reason: 'a recipe whose pool has no stat doc gets no pooled entry',
         );
         verify(() => ratings.getBulkPooledStats(any())).called(1);
+      },
+    );
+
+    test(
+      'a hint from another key version is recomputed, not read',
+      () async {
+        final stale = RecipeFactory.build(
+          id: 'r3',
+          title: 'Köttbullar',
+          mealType: 'middag',
+        );
+        stale.core.ratingPoolKey = 'v1:stale';
+        final current = CanonicalPoolKey.compute(
+          title: stale.core.title,
+          ingredients: stale.core.ingredients,
+        );
+        expect(current, isNotNull, reason: 'premise: the recipe keys');
+        recipeService.setRecipeState(isInitialized: true, recipes: [stale]);
+        when(
+          () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+        ).thenReturn(true);
+        when(
+          () => ratings.getBulkPooledStats(any()),
+        ).thenAnswer((_) async => {});
+
+        await generator.generateMenuFromPrompt('veckomeny');
+
+        final asked =
+            verify(
+                  () => ratings.getBulkPooledStats(captureAny()),
+                ).captured.single
+                as List<String>;
+        expect(asked, [current]);
       },
     );
 
