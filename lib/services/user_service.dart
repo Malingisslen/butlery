@@ -23,6 +23,9 @@ import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service/profile_cache.dart';
 import 'package:butlery/services/user_service/profile_lookups.dart';
+import 'package:butlery/services/user_service/own_profile_port.dart';
+import 'package:butlery/services/user_service/profile_status_writer.dart';
+import 'package:butlery/services/user_service/user_settings_writer.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -65,12 +68,31 @@ class UserService extends ChangeNotifier
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
-  String? _localeWritePending;
   final ProfileCache _cache = ProfileCache();
   late final ProfileLookups _lookups = ProfileLookups(
     repository: _repository,
     authRepository: _authRepository,
     cache: _cache,
+  );
+  late final OwnProfilePort _port = OwnProfilePort(
+    userId: () => currentUserId,
+    readProfile: () => _currentUserProfile,
+    writeProfile: (profile) => _currentUserProfile = profile,
+    cacheProfile: _cacheProfile,
+    notifyListeners: notifyListeners,
+    setError: _setError,
+    clearError: _clearError,
+    setLoading: _setLoading,
+  );
+  late final UserSettingsWriter _settings = UserSettingsWriter(
+    port: _port,
+    repository: _repository,
+    profileSearchability: _profileSearchability,
+    allergenShareMirror: _allergenShareMirror,
+  );
+  late final ProfileStatusWriter _status = ProfileStatusWriter(
+    port: _port,
+    repository: _repository,
   );
 
   // State
@@ -337,7 +359,8 @@ class UserService extends ChangeNotifier
         // pre-save value. This restores an EXISTING opt-in, never grants a new
         // one, and can never re-grant one the user disabled elsewhere.
         final actuallySearchable =
-            minorReassertSearchable && await _callSetSearchable(true) == true;
+            minorReassertSearchable &&
+            await _settings.callSetSearchable(true) == true;
         // Carry the server's real answer, never the requested one: a privacy
         // toggle that renders the opposite of reality is worse than the
         // revocation itself.
@@ -383,73 +406,12 @@ class UserService extends ChangeNotifier
   ///
   /// Returns the value the server stored, or null when the call failed (the
   /// caller should leave the toggle where it was and surface [error]).
-  Future<bool?> setMinorSearchable(bool value) async {
-    final stored = await _callSetSearchable(value);
-    if (stored == null) {
-      _setError(AppLocale.current.errorCouldNotUpdateSearchability);
-      return null;
-    }
+  Future<bool?> setMinorSearchable(bool value) =>
+      _settings.setMinorSearchable(value);
 
-    final profile = _currentUserProfile;
-    if (profile != null) {
-      final updated = profile.copyWith(isSearchable: stored);
-      _currentUserProfile = updated;
-      _cacheProfile(updated.uid, updated);
-    }
-    notifyListeners();
-    return stored;
-  }
-
-  /// BUT-2221: persists the name-on-shared-dishes opt-in on its own write
-  /// path.
-  Future<bool> setShowNameOnSharedDishes(bool enabled) async {
-    _clearError();
-    final profile = _currentUserProfile;
-    if (profile == null) {
-      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
-      return false;
-    }
-    try {
-      await _repository.setShowNameOnSharedDishes(profile.uid, enabled);
-    } catch (e) {
-      AppLogger.error('setShowNameOnSharedDishes failed: $e');
-      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
-      return false;
-    }
-    // Re-read after the await: a sign-out or a profile reload may have
-    // replaced the profile captured above.
-    final current = _currentUserProfile;
-    if (current != null && current.uid == profile.uid) {
-      final updated = current.copyWith(
-        showNameOnSharedDishes: enabled,
-        showNameOnSharedDishesChangedAt: clock.now(),
-      );
-      _currentUserProfile = updated;
-      _cacheProfile(updated.uid, updated);
-    }
-    notifyListeners();
-    return true;
-  }
-
-  /// Invokes the searchability callable. Returns the stored value, or null on
-  /// any failure (offline, rate-limited, App Check, service unregistered) —
-  /// the distinction between "server said false" and "we never reached the
-  /// server" is what lets callers avoid reporting a state they don't hold.
-  Future<bool?> _callSetSearchable(bool value) async {
-    final service = _profileSearchability();
-    if (service == null) {
-      AppLogger.warning(
-        'ProfileSearchabilityService unavailable — searchability left unchanged',
-      );
-      return null;
-    }
-    try {
-      return await service.setSearchable(value);
-    } catch (e) {
-      AppLogger.error('setProfileSearchability failed: $e');
-      return null;
-    }
-  }
+  /// See [UserSettingsWriter.setShowNameOnSharedDishes].
+  Future<bool> setShowNameOnSharedDishes(bool enabled) =>
+      _settings.setShowNameOnSharedDishes(enabled);
 
   /// Search users by display name or email - OPTIMERAD VERSION
   Future<List<UserProfile>> searchUsers(String query) async =>
@@ -509,57 +471,12 @@ class UserService extends ChangeNotifier
       _lookups.lookupUserProfile(userId);
 
   /// Update user's online status
-  Future<void> updateOnlineStatus(bool isOnline) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) return;
-
-    // BUT-912: respect the online-status privacy opt-out. When visibility is
-    // off we write NO presence at all — not even lastActiveAt — so neither the
-    // dot nor a "last active" time advances. isOnline was already cleared to
-    // false when the user saved the toggle, so they stay fully dark.
-    if (!_currentUserProfile!.showOnlineStatus) return;
-
-    try {
-      await _repository.updateOnlineStatus(userId, isOnline);
-
-      _currentUserProfile = _currentUserProfile!.copyWith(
-        isOnline: isOnline,
-        lastActiveAt: clock.now(),
-      );
-
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.warning('⚠️ Kunde inte uppdatera online-status: $e');
-    }
-  }
+  Future<void> updateOnlineStatus(bool isOnline) =>
+      _status.updateOnlineStatus(isOnline);
 
   /// Update profile statistics (friend count)
-  Future<void> updateProfileStats({int? friendsCount}) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) return;
-
-    try {
-      final updates = <String, dynamic>{};
-      if (friendsCount != null) updates['friendsCount'] = friendsCount;
-
-      if (updates.isNotEmpty) {
-        await _repository.updateProfileStats(
-          userId,
-          friendsCount: friendsCount,
-        );
-
-        _currentUserProfile = _currentUserProfile!.copyWith(
-          friendsCount: friendsCount,
-        );
-
-        _cacheProfile(userId, _currentUserProfile!);
-        notifyListeners();
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Kunde inte uppdatera profilstatistik: $e');
-    }
-  }
+  Future<void> updateProfileStats({int? friendsCount}) =>
+      _status.updateProfileStats(friendsCount: friendsCount);
 
   /// Private methods - UPPDATERAD med auto-create
   Future<void> _loadCurrentUserProfile() async {
@@ -746,360 +663,58 @@ class UserService extends ChangeNotifier
   }
 
   /// Update user's FCM token for push notifications
-  Future<void> updateFCMToken(String token) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) {
-      AppLogger.warning('⚠️ Cannot update FCM token - no current user');
-      return;
-    }
+  Future<void> updateFCMToken(String token) => _status.updateFCMToken(token);
 
-    try {
-      AppLogger.info('🔔 Updating FCM token for user: ${userId.maskedUserId}');
-
-      await _repository.updateFCMToken(userId, token);
-
-      _currentUserProfile = _currentUserProfile!.copyWith(
-        fcmToken: token,
-        fcmTokenUpdatedAt: clock.now(),
-      );
-
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-
-      AppLogger.success('✅ FCM token updated successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to update FCM token', e);
-      _setError(AppLocale.current.errorCouldNotUpdateNotificationToken);
-    }
-  }
-
-  /// Stores the app language where the server reads it, so a push is written
-  /// in the recipient's language. [onlyIfUnset] fills an account that has no
-  /// language yet and never replaces one, for the sync that runs without the
-  /// user having chosen anything. Failure is logged only.
+  /// See [UserSettingsWriter.updatePreferredLocale].
   Future<void> updatePreferredLocale(
     String localeCode, {
     bool onlyIfUnset = false,
-  }) async {
-    final userId = currentUserId;
-    final stored = _currentUserProfile?.preferredLocale;
-    if (userId == null || _currentUserProfile == null) return;
-    if (stored == localeCode || (onlyIfUnset && stored != null)) return;
-    if (_localeWritePending == localeCode) return;
-
-    _localeWritePending = localeCode;
-    try {
-      await _repository.updatePreferredLocale(userId, localeCode);
-      // The profile may have been replaced or signed out while the write was
-      // in flight; patch what is there now, never a copy taken before.
-      final current = _currentUserProfile;
-      if (current != null && current.uid == userId) {
-        _currentUserProfile = current.copyWith(preferredLocale: localeCode);
-        _cacheProfile(userId, _currentUserProfile!);
-      }
-    } catch (e) {
-      AppLogger.warning('Could not store the preferred locale: $e');
-    } finally {
-      _localeWritePending = null;
-    }
-  }
+  }) => _settings.updatePreferredLocale(localeCode, onlyIfUnset: onlyIfUnset);
 
   /// Update user's notification preferences
-  Future<void> updateNotificationSettings(bool enabled) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) {
-      AppLogger.warning(
-        '⚠️ Cannot update notification settings - no current user',
-      );
-      return;
-    }
-
-    try {
-      AppLogger.info(
-        '🔔 Updating notification settings for user: ${userId.maskedUserId}',
-      );
-
-      await _repository.updateNotificationSettings(userId, enabled);
-
-      _currentUserProfile = _currentUserProfile!.copyWith(
-        notificationsEnabled: enabled,
-      );
-
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-
-      AppLogger.success('✅ Notification settings updated successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to update notification settings', e);
-      _setError(AppLocale.current.errorCouldNotUpdateNotificationSettings);
-    }
-  }
+  Future<void> updateNotificationSettings(bool enabled) =>
+      _settings.updateNotificationSettings(enabled);
 
   /// Update user's allergen preferences.
-  Future<bool> updateAllergenPreferences(
-    UserAllergenPreferences preferences,
-  ) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) {
-      AppLogger.warning(
-        '⚠️ Cannot update allergen preferences - no current user',
-      );
-      return false;
-    }
+  Future<bool> updateAllergenPreferences(UserAllergenPreferences preferences) =>
+      _settings.updateAllergenPreferences(preferences);
 
-    try {
-      _setLoading(true);
-      _clearError();
-      AppLogger.info(
-        '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}',
-      );
-
-      final sharedCopies = await _allergenShareMirror.sharesFor(
-        userId,
-        preferences,
-      );
-      await _repository.updateAllergenPreferences(
-        userId,
-        preferences,
-        sharedCopies: sharedCopies,
-      );
-
-      _currentUserProfile = _currentUserProfile!.copyWith(
-        allergenPreferences: preferences,
-      );
-
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-
-      AppLogger.success('✅ Allergen preferences updated successfully');
-      return true;
-    } catch (e) {
-      AppLogger.error('❌ Failed to update allergen preferences', e);
-      _setError(AppLocale.current.errorCouldNotUpdateAllergenSettings);
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  /// BUT-2294: puts a profile picture that waited on the device onto the
-  /// profile, unless the profile holds a different picture than [expected]
-  /// (see [UserRepository.setAvatarIfUnchanged]). Brings the in-memory profile
-  /// and its cache along when the picture is now the profile's.
+  /// See [ProfileStatusWriter.setQueuedAvatar].
   Future<AvatarWriteOutcome> setQueuedAvatar({
     required String? expected,
     required String url,
-  }) async {
-    final userId = currentUserId;
-    if (userId == null) throw StateError('No current user for avatar');
-    final outcome = await _repository.setAvatarIfUnchanged(
-      userId,
-      expected: expected,
-      url: url,
-    );
-    final held = _currentUserProfile;
-    // The account may have changed while the transaction ran.
-    if (held != null &&
-        held.uid == userId &&
-        (outcome == AvatarWriteOutcome.set ||
-            outcome == AvatarWriteOutcome.alreadySet)) {
-      final updated = held.copyWith(avatarUrl: url);
-      _currentUserProfile = updated;
-      _cacheProfile(userId, updated);
-      notifyListeners();
-    }
-    return outcome;
-  }
+  }) => _status.setQueuedAvatar(expected: expected, url: url);
 
   /// Mark onboarding as completed for the current user.
-  Future<void> markOnboardingComplete() async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) return;
+  Future<void> markOnboardingComplete() => _status.markOnboardingComplete();
 
-    try {
-      final updated = _currentUserProfile!.copyWith(
-        hasCompletedOnboarding: true,
-      );
-      await _repository.saveProfile(
-        updated,
-        writeHouseholdSize:
-            false, // onboarding never edits it (BUT-1322 review)
-        writeAvatarUrl: false,
-      );
+  /// See [UserSettingsWriter.setAutoAddToPantry].
+  Future<void> setAutoAddToPantry(bool enabled) =>
+      _settings.setAutoAddToPantry(enabled);
 
-      _currentUserProfile = updated;
-      _cacheProfile(userId, updated);
-      notifyListeners();
+  /// See [UserSettingsWriter.setUseHouseholdAllergens].
+  Future<void> setUseHouseholdAllergens(bool enabled) =>
+      _settings.setUseHouseholdAllergens(enabled);
 
-      AppLogger.success('Onboarding marked as complete');
-    } catch (e) {
-      AppLogger.error('Failed to mark onboarding complete', e);
-      rethrow;
-    }
-  }
+  /// See [UserSettingsWriter.setUseMealAllergenScope].
+  Future<void> setUseMealAllergenScope(bool enabled) =>
+      _settings.setUseMealAllergenScope(enabled);
 
-  /// BUT-1050: persist the "auto-add bought shopping items to pantry" preference
-  /// (the Settings toggle). Optimistically updates the in-memory profile after
-  /// the targeted single-field write succeeds.
-  Future<void> setAutoAddToPantry(bool enabled) async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) {
-      AppLogger.warning('⚠️ Cannot set auto-add-to-pantry - no current user');
-      return;
-    }
+  /// See [UserSettingsWriter.setShowNutritionStrip].
+  Future<void> setShowNutritionStrip(bool enabled) =>
+      _settings.setShowNutritionStrip(enabled);
 
-    try {
-      await _repository.setAutoAddBoughtToPantry(userId, enabled);
-      _currentUserProfile = profile.copyWith(autoAddBoughtToPantry: enabled);
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Failed to set auto-add-to-pantry', e);
-      rethrow;
-    }
-  }
+  /// See [UserSettingsWriter.setNewRecipesShowOnProfile].
+  Future<bool> setNewRecipesShowOnProfile(bool enabled) =>
+      _settings.setNewRecipesShowOnProfile(enabled);
 
-  /// BUT-1465: persist the household-allergen-filter opt-out. `enabled` = the
-  /// weekly menu filters by the whole household's allergens; false = the owner's
-  /// allergens only. Targeted single-field write, then updates the in-memory
-  /// profile + cache and notifies so the menu generator + the toggle reflect it.
-  Future<void> setUseHouseholdAllergens(bool enabled) async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) {
-      AppLogger.warning(
-        '⚠️ Cannot set use-household-allergens - no current user',
-      );
-      return;
-    }
+  /// See [UserSettingsWriter.markPantryAutoAddPrompted].
+  Future<void> markPantryAutoAddPrompted() =>
+      _settings.markPantryAutoAddPrompted();
 
-    try {
-      await _repository.setUseHouseholdAllergens(userId, enabled);
-      _currentUserProfile = profile.copyWith(useHouseholdAllergens: enabled);
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Failed to set use-household-allergens', e);
-      rethrow;
-    }
-  }
-
-  /// BUT-2362: persist the per-meal allergen choice, then update the in-memory
-  /// profile and notify, as [setUseHouseholdAllergens] does. Rethrows so the
-  /// settings tile can say the change did not save.
-  Future<void> setUseMealAllergenScope(bool enabled) async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) {
-      AppLogger.warning('⚠️ Cannot set meal allergen scope - no current user');
-      return;
-    }
-
-    try {
-      await _repository.setUseMealAllergenScope(userId, enabled);
-      _currentUserProfile = profile.copyWith(useMealAllergenScope: enabled);
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Failed to set meal allergen scope', e);
-      rethrow;
-    }
-  }
-
-  /// BUT-643: persist the nutrition-strip choice, then update the in-memory
-  /// profile and notify. Rethrows so the settings tile can say it did not save.
-  Future<void> setShowNutritionStrip(bool enabled) async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) {
-      AppLogger.warning('⚠️ Cannot set nutrition strip - no current user');
-      return;
-    }
-
-    try {
-      await _repository.setShowNutritionStrip(userId, enabled);
-      _currentUserProfile = profile.copyWith(showNutritionStrip: enabled);
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Failed to set nutrition strip', e);
-      rethrow;
-    }
-  }
-
-  /// Persist the new-recipes-are-public preference, then update the in-memory
-  /// profile and notify. Returns false on failure so the caller can say so.
-  Future<bool> setNewRecipesShowOnProfile(bool enabled) async {
-    _clearError();
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) {
-      AppLogger.warning('⚠️ Cannot set new recipes public - no current user');
-      return false;
-    }
-    try {
-      await _repository.setNewRecipesShowOnProfile(userId, enabled);
-    } catch (e) {
-      AppLogger.error('❌ Failed to set new recipes public', e);
-      _setError(AppLocale.current.errorCouldNotSaveNewRecipesPublic);
-      return false;
-    }
-    // Re-read after the await: a sign-out may have replaced the profile.
-    final current = _currentUserProfile;
-    if (current != null && current.uid == userId) {
-      _currentUserProfile = current.copyWith(newRecipesShowOnProfile: enabled);
-      _cacheProfile(userId, _currentUserProfile!);
-    }
-    notifyListeners();
-    return true;
-  }
-
-  /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,
-  /// so it never re-nags across sessions/devices. Idempotent and best-effort —
-  /// a no-op when there's no profile or the flag is already set.
-  Future<void> markPantryAutoAddPrompted() async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) return;
-    if (profile.pantryAutoAddPrompted) return;
-
-    try {
-      await _repository.markPantryAutoAddPrompted(userId);
-      _currentUserProfile = profile.copyWith(pantryAutoAddPrompted: true);
-      _cacheProfile(userId, _currentUserProfile!);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Failed to mark pantry auto-add prompted', e);
-    }
-  }
-
-  /// BUT-1220: persist that the one-time activity-feed hint has been shown, so
-  /// it never fires again across sessions/devices. Idempotent and best-effort —
-  /// a no-op when there's no profile or the flag is already set.
-  Future<void> markActivityFeedHintSeen() async {
-    final userId = currentUserId;
-    final profile = _currentUserProfile;
-    if (userId == null || profile == null) return;
-    if (profile.hasSeenActivityFeedHint) return;
-
-    try {
-      // BUT-1220: targeted single-field write, NOT saveProfile (a full-document
-      // set). This fires automatically on the first activity broadcast, so a
-      // full set built from a possibly-stale in-memory profile would clobber
-      // fields owned by other writers (friendsCount, via friend-creation
-      // transactions) or moderators (isHidden/hiddenAt). The flag itself only
-      // changes locally.
-      await _repository.markActivityFeedHintSeen(userId);
-
-      final updated = profile.copyWith(hasSeenActivityFeedHint: true);
-      _currentUserProfile = updated;
-      _cacheProfile(userId, updated);
-      notifyListeners();
-    } catch (e) {
-      AppLogger.warning('Failed to persist activity-feed hint flag: $e');
-    }
-  }
+  /// See [UserSettingsWriter.markActivityFeedHintSeen].
+  Future<void> markActivityFeedHintSeen() =>
+      _settings.markActivityFeedHintSeen();
 
   /// Complete onboarding with preferences in a single atomic write.
   /// [onboardingSkippedAt] records a skip.
@@ -1111,61 +726,15 @@ class UserService extends ChangeNotifier
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,
-    // BUT-1454: when the verifySignupAge CF flagged this account as a compliant
-    // 15–17-year-old, stamp `isMinor` so the profile's public_profiles write
-    // serializes `isSearchable:false` (default-private search-suppression). ORed
-    // with the existing value so it never DOWNGRADES a server-set minor flag
-    // that a resumed session already merged in; the client never writes isMinor
-    // itself (CF-authoritative) — it only drives the derived isSearchable.
     bool isMinor = false,
-  }) async {
-    final userId = currentUserId;
-    if (userId == null || _currentUserProfile == null) {
-      throw StateError('No current user for onboarding completion');
-    }
-
-    final updated = _currentUserProfile!.copyWith(
-      allergenPreferences:
-          preferences ?? _currentUserProfile!.allergenPreferences,
-      hasCompletedOnboarding: true,
-      onboardingSkippedAt: onboardingSkippedAt,
-      isMinor: isMinor || _currentUserProfile!.isMinor,
-    );
-    await _repository.saveProfile(
-      updated,
-      writeHouseholdSize: false, // onboarding never edits it (BUT-1322 review)
-      writeAvatarUrl: false,
-    );
-
-    _currentUserProfile = updated;
-    _cacheProfile(userId, updated);
-    notifyListeners();
-  }
+  }) => _status.completeOnboardingWithPreferences(
+    preferences,
+    onboardingSkippedAt: onboardingSkippedAt,
+    isMinor: isMinor,
+  );
 
   /// Clear FCM token (e.g., on logout)
-  Future<void> clearFCMToken() async {
-    final userId = currentUserId;
-    if (userId == null) return;
-
-    try {
-      AppLogger.info('🔔 Clearing FCM token for user: ${userId.maskedUserId}');
-
-      await _repository.clearFCMToken(userId);
-
-      if (_currentUserProfile != null) {
-        _currentUserProfile = _currentUserProfile!.copyWith(
-          fcmToken: null,
-          fcmTokenUpdatedAt: null,
-        );
-        _cacheProfile(userId, _currentUserProfile!);
-        notifyListeners();
-      }
-
-      AppLogger.success('✅ FCM token cleared successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to clear FCM token', e);
-    }
-  }
+  Future<void> clearFCMToken() => _status.clearFCMToken();
 
   /// Clear cache (useful for testing or manual refresh)
   void clearCache() {
