@@ -572,6 +572,117 @@ void main() {
         expect(stateManager.error, AppLocale.current.authRequiredError);
       });
 
+      test('a load that outlives a sign-out installs no friends list and '
+          'starts no live listener for the account that left', () async {
+        final ids = Completer<List<String>>();
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenAnswer((_) => ids.future);
+        when(
+          () => mockFriendsRepository.fetchFriendProfiles(any()),
+        ).thenAnswer(
+          (_) async => [
+            SocialFactory.createUserProfile(
+              uid: 'friend_of_anna',
+              email: 'f@test.com',
+              displayName: 'Annas vän',
+            ),
+          ],
+        );
+
+        final load = stateManager.initialize();
+        await Future<void>.delayed(Duration.zero);
+        stateManager.clearAllData();
+        ids.complete(['friend_of_anna']);
+        await load;
+
+        expect(stateManager.friends, isEmpty);
+        expect(stateManager.isInitialized, isFalse);
+        verifyNever(
+          () => mockFriendsRepository.friendProfilesStream(testUserId),
+        );
+      });
+
+      test('the next account starts its own load instead of joining the '
+          'one still running for the account that left', () async {
+        final ids = Completer<List<String>>();
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenAnswer((_) => ids.future);
+        const nextUser = 'next_user_456';
+        when(
+          () => mockFriendsRepository.fetchFriendIds(nextUser),
+        ).thenAnswer((_) async => <String>[]);
+        when(
+          () => mockCategoryRepository.fetchMemberCategories(any()),
+        ).thenAnswer((_) async => <FriendCategory>[]);
+        when(
+          () => mockFriendsRepository.fetchReceivedInvitations(nextUser),
+        ).thenAnswer((_) async => <GroupInvitation>[]);
+        when(
+          () => mockFriendsRepository.fetchSentInvitations(nextUser),
+        ).thenAnswer((_) async => <GroupInvitation>[]);
+        for (final stub in [
+          () => mockFriendsRepository.incomingRequestsStream(nextUser),
+          () => mockFriendsRepository.sentRequestsStream(nextUser),
+        ]) {
+          when(stub).thenAnswer((_) => const Stream.empty());
+        }
+        when(
+          () => mockFriendsRepository.receivedInvitationsStream(nextUser),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockCategoryRepository.categoriesStream(nextUser),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockCategoryRepository.memberCategoriesStream(nextUser),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockFriendsRepository.friendProfilesStream(nextUser),
+        ).thenAnswer((_) => const Stream.empty());
+
+        final first = stateManager.initialize();
+        await Future<void>.delayed(Duration.zero);
+        stateManager.clearAllData();
+        when(() => mockFriendsRepository.currentUserId).thenReturn(nextUser);
+        await stateManager.initialize().timeout(const Duration(seconds: 2));
+
+        verify(() => mockFriendsRepository.fetchFriendIds(nextUser)).called(1);
+        expect(stateManager.isInitialized, isTrue);
+        ids.complete(<String>[]);
+        await first;
+      });
+
+      test(
+        'a refresh that outlives a sign-out keeps nothing it brings back',
+        () async {
+          await stateManager.initialize();
+          final ids = Completer<List<String>>();
+          when(
+            () => mockFriendsRepository.fetchFriendIds(testUserId),
+          ).thenAnswer((_) => ids.future);
+          when(
+            () => mockFriendsRepository.fetchFriendProfiles(any()),
+          ).thenAnswer(
+            (_) async => [
+              SocialFactory.createUserProfile(
+                uid: 'friend_of_anna',
+                email: 'f@test.com',
+                displayName: 'Annas vän',
+              ),
+            ],
+          );
+
+          final refresh = stateManager.refresh();
+          await Future<void>.delayed(Duration.zero);
+          stateManager.clearAllData();
+          ids.complete(['friend_of_anna']);
+          await refresh;
+
+          expect(stateManager.friends, isEmpty);
+        },
+      );
+
       test('should clear all state and cancel subscriptions', () async {
         // Arrange
         await stateManager.initialize();
