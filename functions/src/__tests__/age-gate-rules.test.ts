@@ -710,6 +710,121 @@ test("public_profiles: minor can edit displayName while non-searchable", async (
   );
 });
 
+// BUT-2509: "Om mig" (bio) is read by every signed-in account. It is absent,
+// null or a string of at most 160 characters written by a verified adult.
+test("public_profiles: adult can create with a 160-character bio", async () => {
+  const uid = `pp-bio-160-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set(publicProfileBody({ bio: "å".repeat(160) }))
+  );
+});
+
+test("public_profiles: a 161-character bio is denied on create and update", async () => {
+  const uid = `pp-bio-161-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set(publicProfileBody({ bio: "a".repeat(161) }))
+  );
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ bio: "a".repeat(161) }, { merge: true })
+  );
+});
+
+test("public_profiles: a bio that is not a string is denied", async () => {
+  const uid = `pp-bio-type-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+  const ctx = env.authenticatedContext(uid, AGE_OK);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ bio: { text: "Hej" } }, { merge: true })
+  );
+});
+
+test("public_profiles: owner can change and clear a bio", async () => {
+  const uid = `pp-bio-edit-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody({ bio: "Hej" }));
+  const ref = env
+    .authenticatedContext(uid, AGE_OK)
+    .firestore()
+    .doc(`public_profiles/${uid}`);
+  await assertSucceeds(ref.set({ bio: "Jag bakar surdeg" }, { merge: true }));
+  await assertSucceeds(ref.set({ bio: null }, { merge: true }));
+  await assertSucceeds(ref.set({ bio: deleteField() }, { merge: true }));
+});
+
+test("public_profiles: a stored over-long bio does not block a name change", async () => {
+  const uid = `pp-bio-legacy-${RUN}`;
+  await seedDoc(
+    `public_profiles/${uid}`,
+    publicProfileBody({ bio: "a".repeat(200) })
+  );
+  await assertSucceeds(
+    env
+      .authenticatedContext(uid)
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ displayName: "Anna B" }, { merge: true })
+  );
+});
+
+test("public_profiles: a minor cannot create or set a bio", async () => {
+  const uid = `pp-bio-minor-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  const ref = env
+    .authenticatedContext(uid, AGE_OK)
+    .firestore()
+    .doc(`public_profiles/${uid}`);
+  await assertFails(ref.set(publicProfileBody({ bio: "Hej" })));
+  await assertSucceeds(ref.set(publicProfileBody({ bio: null })));
+  await assertFails(ref.set({ bio: "Hej" }, { merge: true }));
+});
+
+test("public_profiles: an account without a verified age cannot set a bio", async () => {
+  const noClaim = `pp-bio-noclaim-${RUN}`;
+  await seedDoc(`users/${noClaim}`, { uid: noClaim, isMinor: false });
+  const noClaimRef = env
+    .authenticatedContext(noClaim)
+    .firestore()
+    .doc(`public_profiles/${noClaim}`);
+  await assertFails(noClaimRef.set(publicProfileBody({ bio: "Hej" })));
+  await assertSucceeds(noClaimRef.set(publicProfileBody({ bio: null })));
+
+  const noUserDoc = `pp-bio-nodoc-${RUN}`;
+  await assertFails(
+    env
+      .authenticatedContext(noUserDoc, AGE_OK)
+      .firestore()
+      .doc(`public_profiles/${noUserDoc}`)
+      .set(publicProfileBody({ bio: "Hej" }))
+  );
+});
+
+test("public_profiles: a minor can clear a bio and edit other fields", async () => {
+  const uid = `pp-bio-minor-clear-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody({ bio: "Hej" }));
+  const ref = env.authenticatedContext(uid).firestore().doc(`public_profiles/${uid}`);
+  await assertSucceeds(ref.set({ displayName: "Anna B" }, { merge: true }));
+  await assertSucceeds(ref.set({ bio: null }, { merge: true }));
+});
+
 // PP6 (BUT-1629): the deliberate opt-in path. A privileged (Admin-SDK) write
 // of isSearchable:true for a minor SURVIVES — that is exactly what the
 // `setProfileSearchability` callable does — while the minor's own CLIENT can

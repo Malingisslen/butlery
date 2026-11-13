@@ -1001,6 +1001,16 @@ service cloud.firestore {
     // PUBLIC PROFILES - Readable by all authenticated users
     
     match /public_profiles/{userId} {
+      // BUT-2509: "Om mig" is absent, null, or at most 160 characters written
+      // by a verified adult, as `mayShowNameOnSharedDishes`. The age check is
+      // a document read, so it runs only for a text.
+      function bioAllowed(userId) {
+        return request.resource.data.get('bio', null) == null
+          || (request.resource.data.bio is string
+            && request.resource.data.bio.size() <= 160
+            && mayShowNameOnSharedDishes(userId));
+      }
+
       // Anyone authenticated can read profiles for user search functionality
       allow read: if isAuthenticated();
 
@@ -1023,6 +1033,8 @@ service cloud.firestore {
           || !accountIsMinor(userId))
         // Steg 10E: `syncPublicRecipe` owns the count of profile recipes.
         && request.resource.data.get('publicRecipeCount', 0) == 0
+        // BUT-2509: "Om mig" is read by every signed-in account.
+        && bioAllowed(userId)
         // BUT-2221: the opt-in is set on an existing profile only, by the
         // targeted update below.
         && !request.resource.data.keys().hasAny([
@@ -1061,6 +1073,10 @@ service cloud.firestore {
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isSearchable'])
           || request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // BUT-2509: checked only when the text changes, so a stored text never
+        // blocks another edit; removing it is always allowed.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['bio'])
+          || bioAllowed(userId))
         // BUT-2221: the name-on-dishes opt-in and its change time move
         // together, the time is the server's own, and only a verified adult
         // may turn it on. Turning it off is always allowed.
