@@ -151,7 +151,14 @@
   in-memory list: cancelling the subscription stops NEW events, not a chain already past the
   listener. `JsonCacheHelper.saveJson` swallows its own "user not set" error and returns
   false, so a signed-out cache write does not stop the screen callback after it. Capture the
-  uid at delivery and drop the item if it changed after the last await.
+  uid at delivery and drop the item if it changed after the last await. A single-flight
+  wrapper keyed on uid dedupes SAME-uid callers only; it fences nothing across a switch —
+  the wrapped load still installs into shared state after its awaits, so grade the inner
+  load for the uid re-check, not the wrapper. When grading such a fence, list EVERY shared
+  write after an await, not just the install: a `catch` that calls `setError`, and an error
+  set right after an awaited callable, are writes too and usually go unfenced. A callable
+  that acts on the CURRENT caller (`setProfileSearchability`) needs its own check before
+  the call, since after a switch it acts on the other account.
 - A TTL read cache added to save reads must be graded by the LIFETIME OF ITS OWNER, not
   the call it was written for: on an app-scope lazy singleton it outlives every per-view
   factory VM above it, so a view reopened right after the user's own write (share,
