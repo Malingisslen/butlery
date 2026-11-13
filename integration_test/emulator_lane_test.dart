@@ -30,6 +30,8 @@ import '../test/integration/firebase/repositories/user_repository_integration_te
     as users;
 import '../test/integration/firebase/services/notification_analytics_integration_test.dart'
     as notification_analytics;
+import '../test/integration/firebase/services/user_settings_persistence_integration_test.dart'
+    as user_settings;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -43,4 +45,5 @@ void main() {
   users.main();
   public_recipes.main();
   offline_writes.main();
+  user_settings.main();
 }
