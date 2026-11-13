@@ -9,7 +9,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -36,7 +36,7 @@ class ChatViewModel extends ChangeNotifier
   UnifiedFriendsService? _friendsService;
   StreamSubscription? _friendsSubscription;
   final AccountMaturityHelper _maturityHelper;
-  UserService? _userService;
+  OwnProfileReader? _userService;
   AuthRepository? _authRepository;
 
   final String conversationId;
@@ -67,7 +67,7 @@ class ChatViewModel extends ChangeNotifier
     Conversation? initialConversation,
     PresenceService? presenceService,
     AccountMaturityHelper? maturityHelper,
-    UserService? userService,
+    OwnProfileReader? userService,
     AuthRepository? authRepository,
   }) : _messagingService = messagingService,
        _presenceService = presenceService,
@@ -85,7 +85,7 @@ class ChatViewModel extends ChangeNotifier
     } catch (_) {
       // Friends service not available — allow sending by default
     }
-    _userService ??= ServiceLocator.tryGet<UserService>();
+    _userService ??= ServiceLocator.tryGet<OwnProfileReader>();
     _authRepository ??= ServiceLocator.tryGet<AuthRepository>();
     // Start in loading state until messages arrive from stream
     setLoading(true);

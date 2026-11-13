@@ -8,7 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Which allergens a dish has to avoid at each meal of one week (BUT-2362).
@@ -72,7 +72,7 @@ class MealAllergenScope {
   /// Whether the user's per-meal choice applies: it is on, the household
   /// filter it narrows is on, and there is a household. A stored `true`
   /// without the other two is ignored.
-  static bool isOn(UserService userService) {
+  static bool isOn(OwnProfileReader userService) {
     final profile = userService.currentUserProfile;
     if (!(profile?.useMealAllergenScope ?? false)) return false;
     if (!(profile?.useHouseholdAllergens ?? true)) return false;
@@ -84,7 +84,7 @@ class MealAllergenScope {
   /// be read, every meal follows the user's own allergens plus the
   /// common-allergen floor.
   static Future<MealAllergenScope> resolve({
-    required UserService userService,
+    required OwnProfileReader userService,
     required WeeklyMenuPlan? plan,
   }) async {
     final household = await _householdPrefs(userService);
@@ -116,7 +116,7 @@ class MealAllergenScope {
   }
 
   static Future<UserAllergenPreferences> _householdPrefs(
-    UserService userService,
+    OwnProfileReader userService,
   ) async {
     try {
       return (await MenuGenerator.resolveHouseholdPrefs(userService)).$1;
@@ -138,7 +138,7 @@ class MealAllergenScope {
   /// With none registered every meal follows the user's own allergens and
   /// the common-allergen floor.
   static Future<MealAllergenScope> resolveFromLocator(WeeklyMenuPlan plan) {
-    final users = ServiceLocator.tryGet<UserService>();
+    final users = ServiceLocator.tryGet<OwnProfileReader>();
     if (users == null) {
       return Future.value(MealAllergenScope(household: _floorOnly));
     }
@@ -147,14 +147,14 @@ class MealAllergenScope {
 
   /// What the whole household avoids, with the registered [UserService].
   static Future<UserAllergenPreferences> householdFromLocator() {
-    final users = ServiceLocator.tryGet<UserService>();
+    final users = ServiceLocator.tryGet<OwnProfileReader>();
     if (users == null) return Future.value(_floorOnly);
     return _householdPrefs(users);
   }
 
   /// [isOn] with the registered [UserService]; off when there is none.
   static bool isOnFromLocator() {
-    final users = ServiceLocator.tryGet<UserService>();
+    final users = ServiceLocator.tryGet<OwnProfileReader>();
     return users != null && isOn(users);
   }
 

@@ -5,14 +5,14 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Suggestions and chat poll for a social group's "Vad ska vi äta?" vote.
 class GroupMealVoteManager {
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
-  GroupMealVoteManager({required UserService userService})
+  GroupMealVoteManager({required OwnProfileReader userService})
     : _userService = userService;
 
   /// Biases toward variety by grouping by meal type and round-robining across

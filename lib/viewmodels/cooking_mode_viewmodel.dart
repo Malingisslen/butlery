@@ -8,7 +8,7 @@ import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/utils/step_quantity_matcher.dart';
@@ -45,7 +45,7 @@ class CookingModeViewModel extends ChangeNotifier {
   // BUT-1515: UserService reference kept so the boot-race listener can be
   // removed on dispose. `_manualPortionOverride` latches once the user scales
   // by hand so a late profile-load re-apply never clobbers their choice.
-  UserService? _userService;
+  OwnProfileReader? _userService;
   bool _manualPortionOverride = false;
 
   // BUT-1613: when cooking mode is opened from a planned weekly-menu meal, the
@@ -97,7 +97,7 @@ class CookingModeViewModel extends ChangeNotifier {
     // the household default once the profile loads — unless a present count
     // already set the target (the sharper signal, which must stick).
     try {
-      _userService = ServiceLocator.tryGet<UserService>();
+      _userService = ServiceLocator.tryGet<OwnProfileReader>();
       _userService?.addListener(_onUserServiceChanged);
     } catch (_) {}
   }
@@ -155,7 +155,9 @@ class CookingModeViewModel extends ChangeNotifier {
   int? _resolveHouseholdDefault() {
     try {
       return _clampPortions(
-        ServiceLocator.tryGet<UserService>()?.currentUserProfile?.householdSize,
+        ServiceLocator.tryGet<OwnProfileReader>()
+            ?.currentUserProfile
+            ?.householdSize,
       );
     } catch (_) {
       return null;

@@ -71,7 +71,7 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Comprehensive group creation ViewModel providing advanced social group creation through service integration.
 /// Manages group creation form state enabling social group creation with friend selection, form validation,
@@ -376,7 +376,7 @@ class CreateGroupViewModel extends ChangeNotifier
 
         // First-group milestone fires at most once per user (BUT-593) — covers
         // both the create path and the join path.
-        final userService = ServiceLocator.tryGet<UserService>();
+        final userService = ServiceLocator.tryGet<OwnProfileReader>();
         await _analytics?.social.logFirstGroupIfMilestone(
           userId: userService?.currentUserId,
           joinedAt: userService?.currentUserProfile?.joinedAt,

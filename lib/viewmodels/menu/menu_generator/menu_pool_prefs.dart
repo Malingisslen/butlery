@@ -6,7 +6,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/menu_generator/menu_pool_models.dart';
 
 /// The allergen/dietary preferences the menu pool is filtered by, and the one
@@ -19,7 +19,7 @@ abstract final class MenuPoolPrefs {
   /// union → the single user's own preferences. Every fall-through lands on a
   /// FILTERED pool, never an unfiltered one.
   static Future<(UserAllergenPreferences, MenuPrefSource)> resolveActive(
-    UserService userService,
+    OwnProfileReader userService,
     List<String>? presentMemberIds,
   ) async {
     final present = presentMemberIds;
@@ -45,7 +45,7 @@ abstract final class MenuPoolPrefs {
   /// the per-meal allergen scope (BUT-2362) judges against exactly what
   /// generation filters by.
   static Future<(UserAllergenPreferences, MenuPrefSource)> resolveHousehold(
-    UserService userService,
+    OwnProfileReader userService,
   ) async {
     final useHouseholdAllergens =
         userService.currentUserProfile?.useHouseholdAllergens ?? true;

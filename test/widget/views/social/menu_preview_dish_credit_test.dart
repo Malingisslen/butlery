@@ -1,6 +1,8 @@
 /// BUT-2221: the creator line under a dish on a shared menu.
 library;
 
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -181,6 +183,9 @@ void main() {
         _optedIn('cecilia-uid', 'Cecilia'),
       ]),
     );
+    if (!GetIt.instance.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(GetIt.instance);
+    }
     GetIt.instance.registerSingleton<PermissionService>(
       FakePermissionService()..setPermissionState(currentUserId: 'viewer-uid'),
     );

@@ -7,7 +7,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// What the credit line under one dish shows.
@@ -40,11 +40,11 @@ class MenuDishCreditViewModel extends BaseViewModel {
   MenuDishCreditViewModel({
     required SharedMenu menu,
     this.scope = DishCreditScope.everyCreator,
-    UserService? userService,
+    ProfileDirectory? userService,
     Set<String> Function()? blockedUserIds,
     String? viewerId,
   }) : _menu = menu,
-       _userService = userService ?? ServiceLocator.get<UserService>(),
+       _userService = userService ?? ServiceLocator.get<ProfileDirectory>(),
        _blockedUserIds =
            blockedUserIds ??
            (() =>
@@ -59,7 +59,7 @@ class MenuDishCreditViewModel extends BaseViewModel {
 
   final SharedMenu _menu;
   final DishCreditScope scope;
-  final UserService _userService;
+  final ProfileDirectory _userService;
   final Set<String> Function() _blockedUserIds;
   final String? _viewerId;
   final Map<String, DishCredit> _credits = {};

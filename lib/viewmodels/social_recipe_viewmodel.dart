@@ -10,7 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/social_recipe/social_comments_manager.dart';
 import 'package:butlery/viewmodels/social_recipe/social_engagement_manager.dart';
@@ -19,7 +19,7 @@ import 'package:butlery/viewmodels/social_recipe/social_profile_manager.dart';
 class SocialRecipeViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
   final UnifiedRecipeService _recipeService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   late final SocialCommentsManager _commentsManager;
   late final SocialEngagementManager _engagementManager;
@@ -28,7 +28,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
   SocialRecipeViewModel({
     required UnifiedFriendsService friendsService,
     required UnifiedRecipeService recipeService,
-    required UserService userService,
+    required OwnProfileReader userService,
   }) : _friendsService = friendsService,
        _recipeService = recipeService,
        _userService = userService {

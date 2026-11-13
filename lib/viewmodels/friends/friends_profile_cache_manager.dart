@@ -6,20 +6,20 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class FriendsProfileCacheManager extends ChangeNotifier
     with DisposalGuardMixin {
-  final UserService _userService;
+  final ProfileDirectory _userService;
 
   static const int _maxCacheSize = 100;
   final Map<String, UserProfile> _requestUserProfiles = {};
   bool _isLoadingUserProfiles = false;
 
-  FriendsProfileCacheManager({required UserService userService})
+  FriendsProfileCacheManager({required ProfileDirectory userService})
     : _userService = userService;
 
   bool get isLoadingUserProfiles => _isLoadingUserProfiles;

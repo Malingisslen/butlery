@@ -8,7 +8,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -30,14 +30,14 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     required this.targetGroup,
     required this.groupMembers,
     AnalyticsService? analyticsService,
-    UserService? userService,
+    OwnProfileReader? userService,
   }) : _recipeService = recipeService,
        _analyticsService =
            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
-       _userService = userService ?? ServiceLocator.tryGet<UserService>();
+       _userService = userService ?? ServiceLocator.tryGet<OwnProfileReader>();
 
   final AnalyticsService? _analyticsService;
-  final UserService? _userService;
+  final OwnProfileReader? _userService;
 
   // State
   List<Recipe> _allRecipes = [];

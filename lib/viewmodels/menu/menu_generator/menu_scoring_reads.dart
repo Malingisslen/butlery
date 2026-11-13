@@ -5,7 +5,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// The optional personalisation reads that feed a generation's scoring
 /// context. Both fail open.
@@ -14,7 +14,7 @@ abstract final class MenuScoringReads {
   /// by recipeId. Fail-open: an unregistered [PantryService] or a read failure
   /// yields an empty map and generation proceeds without the pantry boost.
   static Future<Map<String, double>> buildPantryMatch(
-    UserService userService,
+    OwnProfileReader userService,
     List<Recipe> pool,
   ) async {
     final pantryMatch = <String, double>{};

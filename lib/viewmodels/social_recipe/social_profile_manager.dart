@@ -4,13 +4,13 @@ import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 class SocialProfileManager extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   List<UserProfile> _friends = [];
   UserProfile? _currentUser;

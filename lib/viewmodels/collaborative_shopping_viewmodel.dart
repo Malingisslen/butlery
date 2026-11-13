@@ -13,7 +13,7 @@ import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/shopping/shopping_presence_module.dart';
 import 'package:collection/collection.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -65,7 +65,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   CollaborativeShoppingViewModel({
     required this.listId,
     UnifiedShoppingService? shoppingService,
-    UserService? userService,
+    OwnProfileReader? userService,
     ShoppingPresenceModule? presenceModule,
   }) : _shoppingService =
            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),

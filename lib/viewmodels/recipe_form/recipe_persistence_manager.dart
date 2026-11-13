@@ -25,7 +25,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics/recipe_edit_analytics_emitter.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages recipe persistence with atomic save, fork, and delete operations.
@@ -530,7 +530,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// A second write after the create, so a refusal by the rules (an account
   /// not yet verified) costs the profile entry and never the recipe.
   Future<Recipe> _applyNewRecipeProfileDefault(Recipe created) async {
-    final profile = ServiceLocator.tryGet<UserService>()?.currentUserProfile;
+    final profile =
+        ServiceLocator.tryGet<OwnProfileReader>()?.currentUserProfile;
     if (!showsNewRecipeOnProfile(
       profile: profile,
       recipe: created,
@@ -556,7 +557,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
   void _trackFirstRecipeMetrics() {
     try {
-      final userService = ServiceLocator.tryGet<UserService>();
+      final userService = ServiceLocator.tryGet<OwnProfileReader>();
       final joinedAt = userService?.currentUserProfile?.joinedAt;
       if (joinedAt == null) return;
 

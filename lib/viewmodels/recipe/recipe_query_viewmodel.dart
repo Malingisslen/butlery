@@ -14,7 +14,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/models/recipe/recipe_insights.dart';
 import 'package:butlery/services/search/recipe_search_matcher.dart';
@@ -43,7 +43,8 @@ class RecipeQueryViewModel extends ChangeNotifier
   final UnifiedRecipeService _recipeService;
   late final AnalyticsService? _analyticsService =
       ServiceLocator.tryGet<AnalyticsService>();
-  late final UserService? _userService = ServiceLocator.tryGet<UserService>();
+  late final OwnProfileReader? _userService =
+      ServiceLocator.tryGet<OwnProfileReader>();
 
   String get serviceName => 'RecipeQueryViewModel';
 

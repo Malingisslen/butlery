@@ -69,7 +69,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -371,7 +371,7 @@ class RecipeDetailViewModel extends BaseViewModel {
         // because most VM callsites don't need it. ServiceLocator returns
         // null in degraded modes (tests, cold-start race) and the helpers
         // tolerate null inputs.
-        final userService = ServiceLocator.tryGet<UserService>();
+        final userService = ServiceLocator.tryGet<OwnProfileReader>();
         final profile = userService?.currentUserProfile;
         final userId = userService?.currentUserId;
 
@@ -529,7 +529,7 @@ class RecipeDetailViewModel extends BaseViewModel {
     return updateRecipeTagOverrides(
       current.withoutAllergenOverride(
         allergenKey,
-        editedBy: (ServiceLocator.tryGet<UserService>()?.currentUserId)
+        editedBy: (ServiceLocator.tryGet<OwnProfileReader>()?.currentUserId)
             .orEmpty(),
       ),
     );

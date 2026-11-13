@@ -21,7 +21,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -163,7 +163,7 @@ class MenuViewModel extends BaseViewModel {
     _generator = MenuGenerator(
       menuService: _menuService,
       recipeService: _recipeService,
-      userService: ServiceLocator.get<UserService>(),
+      userService: ServiceLocator.get<OwnProfileReader>(),
       // BUT-1318: reuse the registered plan service to down-weight recipes
       // used in the last 1-2 weeks. tryGet keeps construction safe in tests
       // that don't register it (recent-use dedup is simply skipped then).
@@ -884,7 +884,7 @@ class MenuViewModel extends BaseViewModel {
       );
 
       // First-meal-plan milestone fires at most once per user (BUT-576).
-      final userService = ServiceLocator.tryGet<UserService>();
+      final userService = ServiceLocator.tryGet<OwnProfileReader>();
       await _analyticsService.menu.logFirstMealPlanIfMilestone(
         userId: userService?.currentUserId,
         recipeCountInPlan: totalRecipeCount,

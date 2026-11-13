@@ -8,7 +8,7 @@ import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -34,7 +34,7 @@ export 'package:butlery/viewmodels/menu/menu_generator/menu_pool_models.dart';
 class MenuGenerator {
   final MenuService _menuService;
   final UnifiedRecipeService _recipeService;
-  final UserService _userService;
+  final OwnProfileReader _userService;
 
   /// Whether to filter out recipes containing user's tracked allergens.
   bool filterByAllergens;
@@ -111,7 +111,7 @@ class MenuGenerator {
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
-    required UserService userService,
+    required OwnProfileReader userService,
     WeeklyMenuPlanService? weeklyMenuPlanService,
     this.filterByAllergens = false,
     this.filterByDietary = false,
@@ -127,7 +127,7 @@ class MenuGenerator {
   static Future<List<Recipe>> readHouseholdSafePool({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
-    required UserService userService,
+    required OwnProfileReader userService,
   }) async {
     final generator = MenuGenerator(
       menuService: menuService,

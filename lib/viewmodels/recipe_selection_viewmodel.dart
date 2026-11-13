@@ -42,7 +42,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -86,14 +86,14 @@ class RecipeSelectionViewModel extends ChangeNotifier
     required UnifiedRecipeService recipeService,
     required this.targetFriend,
     AnalyticsService? analyticsService,
-    UserService? userService,
+    OwnProfileReader? userService,
   }) : _recipeService = recipeService,
        _analyticsService =
            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
-       _userService = userService ?? ServiceLocator.tryGet<UserService>();
+       _userService = userService ?? ServiceLocator.tryGet<OwnProfileReader>();
 
   final AnalyticsService? _analyticsService;
-  final UserService? _userService;
+  final OwnProfileReader? _userService;
 
   /// Complete recipe collection for selection and sharing coordination.
   /// Stores all available recipes enabling recipe discovery, selection functionality,
