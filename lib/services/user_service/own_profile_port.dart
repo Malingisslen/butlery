@@ -5,8 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 /// profile, one cache and one ChangeNotifier that views listen to.
 ///
 /// [userId] is the facade's `currentUserId` (PermissionService, the auth
-/// source); [profile] is its `currentUserProfile`. The parts never look
-/// either up on their own.
+/// source); [profile] is its `currentUserProfile`.
 class OwnProfilePort {
   OwnProfilePort({
     required String? Function() userId,
@@ -17,6 +16,8 @@ class OwnProfilePort {
     required void Function(String message) setError,
     required void Function() clearError,
     required void Function(bool loading) setLoading,
+    required bool Function() hasError,
+    required void Function(bool pending) setTermsPending,
   }) : _userId = userId,
        _readProfile = readProfile,
        _writeProfile = writeProfile,
@@ -24,7 +25,9 @@ class OwnProfilePort {
        _notifyListeners = notifyListeners,
        _setError = setError,
        _clearError = clearError,
-       _setLoading = setLoading;
+       _setLoading = setLoading,
+       _hasError = hasError,
+       _setTermsPending = setTermsPending;
 
   final String? Function() _userId;
   final UserProfile? Function() _readProfile;
@@ -34,10 +37,14 @@ class OwnProfilePort {
   final void Function(String) _setError;
   final void Function() _clearError;
   final void Function(bool) _setLoading;
+  final bool Function() _hasError;
+  final void Function(bool) _setTermsPending;
 
   String? get userId => _userId();
   UserProfile? get profile => _readProfile();
   set profile(UserProfile? value) => _writeProfile(value);
+  bool get hasError => _hasError();
+  void setTermsPending(bool value) => _setTermsPending(value);
 
   void cacheProfile(String userId, UserProfile profile) =>
       _cacheProfile(userId, profile);
