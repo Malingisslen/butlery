@@ -190,6 +190,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // BUT-2264: clears an address an older save left on the public document.
     data['email'] = FieldValue.delete();
     final settings = profile.toPrivateSettings();
+    // BUT-2509: removes the copy of "Om mig" older apps kept here. It is not
+    // published.
+    settings['bio'] = FieldValue.delete();
     if (!writeHouseholdSize) {
       // Merge-writes only skip ABSENT keys — an explicit null would clear the
       // stored value. Dropping the key preserves it.
