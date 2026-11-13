@@ -17282,7 +17282,7 @@
     "description": "BUT-2221: privacy toggle title. Off by default."
   },
   "@privacyShowNameOnDishesSubtitle": {
-    "description": "BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache (UserService._cacheDurationMinutes)."
+    "description": "BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache."
   },
   "@privacyShowNameOnDishesMinor": {
     "description": "BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled."

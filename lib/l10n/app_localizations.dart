@@ -27508,7 +27508,7 @@ abstract class AppLocalizations {
   /// **'Visa mitt namn på mina rätter i delade menyer'**
   String get privacyShowNameOnDishesTitle;
 
-  /// BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache (UserService._cacheDurationMinutes).
+  /// BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache.
   ///
   /// In sv, this message translates to:
   /// **'Den som öppnar en delad meny ser ditt namn under de rätter du har gjort och kan gå till din profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Stänger du av försvinner namnet inom 30 minuter.'**
