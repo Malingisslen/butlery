@@ -11498,3 +11498,14 @@ Staged: `OpsLogRepository.getLatestReceiptAt` (system_events orderBy executedAt 
 - Residual noted, not blocking: rules size() vs Flutter maxLength (grapheme count) disagreement on emoji-heavy text would deny the whole profile save. Not measured.
 - Views consuming visibleBio were unstaged at review time (HEAD views read .bio), so this change alone shows a hidden profile bio until the view change lands.
 - Re-read 2026-11-13: the repository comment clause was struck as advised. The size() Medium is closed by measurement from the coordinator: the rules test with 160 copies of a two-byte letter passes, so size() does not count bytes, and the viewmodel truncates to 160 UTF-16 units, which bounds code points too.
+
+## 2026-11-13 — BUT-1507 step 4: `FriendsInternalPort` mixin extraction (verified clean)
+Pure move of the `*Internal` forwards, four Firebase sync forwards, `currentUserDisplayName`,
+`friendsRepositoryInternal`, `friendsCategoryRepositoryInternal` from `UnifiedFriendsService`
+into `lib/services/unified/friends/friends_internal_port.dart`. Removed vs added bodies diffed
+line-for-line: identical. The mixin's `_stateManager` etc. are library-private to the mixin's
+library, so they are distinct fields from the service's same-named ones; `bindFriendsInternalPort`
+hands them the service's existing instances (no second repository/state manager). Tear-offs in
+`_initializeFeatureInterfaces` run after the bind. Every hand-written `implements UnifiedFriendsService`
+test double extends Mock/Fake or defines `noSuchMethod`, so the new public bind method breaks none.
+No new principle; archive only.
