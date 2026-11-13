@@ -516,6 +516,69 @@ void main() {
         ).called(1);
       });
 
+      group('cooking identity fields (BUT-2509)', () {
+        late List<UserProfile> saved;
+
+        setUp(() {
+          saved = [];
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer(
+            (_) async => testProfile.copyWith(
+              bio: 'Hej',
+              cuisineAffinities: ['svensk'],
+              cookingSkillLevel: CookingSkillLevel.advanced,
+            ),
+          );
+          when(
+            () => mockUserRepository.saveProfile(
+              any(),
+              writeHouseholdSize: any(named: 'writeHouseholdSize'),
+              writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            ),
+          ).thenAnswer((inv) async {
+            saved.add(inv.positionalArguments.first as UserProfile);
+          });
+        });
+
+        test('a save that does not mention them keeps all three', () async {
+          await userService.createOrUpdateProfile(displayName: 'Updated Name');
+
+          expect(saved.single.displayName, 'Updated Name');
+          expect(saved.single.bio, 'Hej');
+          expect(saved.single.cuisineAffinities, ['svensk']);
+          expect(saved.single.cookingSkillLevel, CookingSkillLevel.advanced);
+        });
+
+        test(
+          'passing null, or an empty list for cuisines, clears them',
+          () async {
+            await userService.createOrUpdateProfile(
+              displayName: 'Updated Name',
+              bio: null,
+              cuisineAffinities: const <String>[],
+              cookingSkillLevel: null,
+            );
+
+            expect(saved.single.bio, isNull);
+            expect(saved.single.cuisineAffinities, isEmpty);
+            expect(saved.single.cookingSkillLevel, isNull);
+          },
+        );
+
+        test('naming a new value replaces the stored one', () async {
+          await userService.createOrUpdateProfile(
+            displayName: 'Updated Name',
+            bio: 'Ny',
+            cookingSkillLevel: CookingSkillLevel.beginner,
+          );
+
+          expect(saved.single.bio, 'Ny');
+          expect(saved.single.cookingSkillLevel, CookingSkillLevel.beginner);
+          expect(saved.single.cuisineAffinities, ['svensk']);
+        });
+      });
+
       test(
         'a save that names the picture writes it, and null clears it',
         () async {

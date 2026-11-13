@@ -463,6 +463,10 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // What the form showed, which it keeps while there are unsaved changes.
     final baseAvatarUrl = _originalProfile?.avatarUrl;
     _avatarQueuedBySave = false;
+    // BUT-2509: a field is sent only when the form changed it, so clearing it
+    // is saved.
+    final original = _originalProfile;
+    const untouched = UserService.profileFieldUntouched;
 
     return await safeExecute(() async {
           final updatedProfile = await _userService.createOrUpdateProfile(
@@ -472,11 +476,20 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
                 : UserService.avatarUntouched,
             isSearchable: edited.isSearchable,
             allowEmailSearch: edited.allowEmailSearch,
-            cookingSkillLevel: edited.cookingSkillLevel,
-            cuisineAffinities: edited.cuisineAffinities?.isEmpty == true
-                ? null
-                : edited.cuisineAffinities,
-            bio: edited.bio?.isEmpty == true ? null : edited.bio,
+            cookingSkillLevel:
+                edited.cookingSkillLevel == original?.cookingSkillLevel
+                ? untouched
+                : edited.cookingSkillLevel,
+            cuisineAffinities:
+                listEquals(
+                  edited.cuisineAffinities ?? const <String>[],
+                  original?.cuisineAffinities ?? const <String>[],
+                )
+                ? untouched
+                : (edited.cuisineAffinities ?? const <String>[]),
+            bio: edited.bio.orEmpty() == original?.bio.orEmpty()
+                ? untouched
+                : (edited.bio.orEmpty().isEmpty ? null : edited.bio),
             showOnlineStatus: edited.showOnlineStatus,
             shareActivityToFeed: edited.shareActivityToFeed,
             activityFeedEventTypes: edited.activityFeedEventTypes,
