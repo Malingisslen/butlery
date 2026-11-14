@@ -23,7 +23,7 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 
 class PingRateLimitedException implements Exception {
   final String message;
@@ -39,13 +39,13 @@ const Duration kPingRateWindow = Duration(hours: 1);
 class PingService extends BaseService with PermissionValidationMixin {
   final FirestoreRepository _firestoreRepository;
   final PermissionService Function() _getPermissionService;
-  final UnifiedFriendsService Function() _getFriendsService;
+  final FriendsReader Function() _getFriendsService;
   final NotificationService? Function() _getNotificationService;
 
   PingService({
     required FirestoreRepository firestoreRepository,
     required PermissionService Function() getPermissionService,
-    required UnifiedFriendsService Function() getFriendsService,
+    required FriendsReader Function() getFriendsService,
     NotificationService? Function()? getNotificationService,
   }) : _firestoreRepository = firestoreRepository,
        _getPermissionService = getPermissionService,
@@ -57,7 +57,7 @@ class PingService extends BaseService with PermissionValidationMixin {
 
   PermissionService get _permissionService => _getPermissionService();
 
-  UnifiedFriendsService get _friendsService => _getFriendsService();
+  FriendsReader get _friendsService => _getFriendsService();
 
   // Optional: tests and offline-first flows can skip the FCM leg entirely by
   // not providing a NotificationService.

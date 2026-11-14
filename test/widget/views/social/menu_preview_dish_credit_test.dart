@@ -18,6 +18,7 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/shared_content/menu_dish_credit_viewmodel.dart';
@@ -192,6 +193,9 @@ void main() {
     GetIt.instance.registerSingleton<UnifiedFriendsService>(
       _FriendsService(blocked),
     );
+    if (!GetIt.instance.isRegistered<FriendsReader>()) {
+      registerFriendsServiceRoles(GetIt.instance);
+    }
     prod.ServiceLocator.initialize(DIContainer());
 
     await tester.pumpWidget(

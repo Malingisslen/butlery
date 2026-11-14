@@ -11,13 +11,13 @@ import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class FriendsSearchManager extends ChangeNotifier
     with DebounceMixin, DisposalGuardMixin {
-  final UnifiedFriendsService _friendsService;
+  final FriendsActions _friendsService;
 
   String _searchQuery = '';
   List<UserProfile> _searchResults = [];
@@ -29,7 +29,7 @@ class FriendsSearchManager extends ChangeNotifier
   final Map<String, List<UserProfile>> _searchCache = {};
   static const int _maxCacheSize = 10;
 
-  FriendsSearchManager({required UnifiedFriendsService friendsService})
+  FriendsSearchManager({required FriendsActions friendsService})
     : _friendsService = friendsService;
 
   String get searchQuery => _searchQuery;

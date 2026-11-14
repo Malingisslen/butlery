@@ -6,7 +6,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
@@ -48,7 +48,7 @@ class MenuDishCreditViewModel extends BaseViewModel {
        _blockedUserIds =
            blockedUserIds ??
            (() =>
-               ServiceLocator.tryGet<UnifiedFriendsService>()?.blockedUsers ??
+               ServiceLocator.tryGet<FriendsReader>()?.blockedUsers ??
                const <String>{}),
        _viewerId =
            viewerId ?? ServiceLocator.get<PermissionService>().currentUserId;

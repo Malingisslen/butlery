@@ -3,7 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/models/user_profile.dart' as models;
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -37,7 +37,7 @@ class PermissionService extends BaseService {
 
   final UnifiedRecipeService Function() _recipeService;
   final UnifiedShoppingService Function() _shoppingService;
-  final UnifiedFriendsService Function() _friendsService;
+  final FriendsReader Function() _friendsService;
   final user_svc.ProfileDirectory Function() _userService;
 
   /// Permission modules (lazy initialized)
@@ -54,7 +54,7 @@ class PermissionService extends BaseService {
     RecipeRepository? recipeRepository,
     required UnifiedRecipeService Function() recipeService,
     required UnifiedShoppingService Function() shoppingService,
-    required UnifiedFriendsService Function() friendsService,
+    required FriendsReader Function() friendsService,
     required user_svc.ProfileDirectory Function() userService,
   }) {
     _instance ??= PermissionService._internal(

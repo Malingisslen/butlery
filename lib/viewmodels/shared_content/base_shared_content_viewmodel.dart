@@ -33,7 +33,7 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 
 /// Abstract base ViewModel for shared content management.
 /// Provides common patterns for loading, filtering, state management,
@@ -81,7 +81,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier
   bool _showImported = false;
 
   /// Blocked-user set from UnifiedFriendsService (optional dependency).
-  final UnifiedFriendsService? _friendsService;
+  final FriendsReader? _friendsService;
 
   /// Permission service for the current-user lookup. Injectable for tests
   /// (BUT-1075); defaults to the production locator so callers are unchanged.
@@ -99,11 +99,11 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier
   /// `currentUserId` reads from it lazily, preserving the prior timing.
   BaseSharedContentViewModel({
     PermissionService? permissionService,
-    UnifiedFriendsService? friendsService,
+    FriendsReader? friendsService,
   }) : _permissionService =
            permissionService ?? ServiceLocator.get<PermissionService>(),
        _friendsService =
-           friendsService ?? ServiceLocator.tryGet<UnifiedFriendsService>() {
+           friendsService ?? ServiceLocator.tryGet<FriendsReader>() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
     // Don't auto-initialize - coordinator will trigger when ready
     // This prevents race condition where currentUserId is null at constructor time

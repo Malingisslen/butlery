@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -18,7 +18,7 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 // a disposed VM; the base's guards fix that.
 class CreateSharedListViewModel extends BaseViewModel {
   final UnifiedShoppingService _shoppingService;
-  final UnifiedFriendsService _friendsService;
+  final FriendsReader _friendsService;
 
   // Form state
   String _title = '';
@@ -33,11 +33,10 @@ class CreateSharedListViewModel extends BaseViewModel {
 
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
-    UnifiedFriendsService? friendsService,
+    FriendsReader? friendsService,
   }) : _shoppingService =
            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
-       _friendsService =
-           friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
+       _friendsService = friendsService ?? ServiceLocator.get<FriendsReader>();
   String get title => _title;
   String get description => _description;
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);

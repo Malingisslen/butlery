@@ -11,7 +11,7 @@ import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
@@ -23,7 +23,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
   final UnifiedRecipeService _recipeService;
   ContentFilterService? _contentFilter;
-  UnifiedFriendsService? _friendsService;
+  FriendsReader? _friendsService;
   OwnProfileReader? _userService;
   AuthRepository? _authRepository;
   final AccountMaturityHelper _maturityHelper;
@@ -48,7 +48,7 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
     AuthRepository? authRepository,
   }) : _maturityHelper = maturityHelper ?? AccountMaturityHelper() {
     _contentFilter = ServiceLocator.tryGet<ContentFilterService>();
-    _friendsService = ServiceLocator.tryGet<UnifiedFriendsService>();
+    _friendsService = ServiceLocator.tryGet<FriendsReader>();
     _userService = userService ?? ServiceLocator.tryGet<OwnProfileReader>();
     _authRepository = authRepository ?? ServiceLocator.tryGet<AuthRepository>();
   }

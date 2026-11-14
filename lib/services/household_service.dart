@@ -11,7 +11,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_links.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service.dart';
 
 export 'package:butlery/models/household_allergen_aggregate.dart';
@@ -19,7 +19,7 @@ export 'package:butlery/models/household_allergen_aggregate.dart';
 /// Aggregates allergen preferences across household members for menu planning.
 class HouseholdService extends BaseService {
   HouseholdService({
-    required UnifiedFriendsService friendsService,
+    required FriendsActions friendsService,
     required UserService userService,
     required HouseholdLinks links,
   }) : _friendsService = friendsService,
@@ -41,7 +41,7 @@ class HouseholdService extends BaseService {
   static final Set<String> _allergenSafetyFloor =
       UserAllergenPreferences.defaults.trackedAllergens;
 
-  final UnifiedFriendsService _friendsService;
+  final FriendsActions _friendsService;
   final UserService _userService;
   final HouseholdLinks _links;
 
