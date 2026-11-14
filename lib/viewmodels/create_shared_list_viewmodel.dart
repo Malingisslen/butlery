@@ -36,8 +36,7 @@ class CreateSharedListViewModel extends BaseViewModel {
     FriendsReader? friendsService,
   }) : _shoppingService =
            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
-       _friendsService =
-           friendsService ?? ServiceLocator.get<FriendsReader>();
+       _friendsService = friendsService ?? ServiceLocator.get<FriendsReader>();
   String get title => _title;
   String get description => _description;
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
