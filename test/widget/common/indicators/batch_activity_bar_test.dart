@@ -89,7 +89,7 @@ void main() {
     // tree says whether they ended up on the same one.
     expect(
       tester.getSemantics(labelled(l10nOf(tester).a11yLoading)),
-      containsSemantics(isLiveRegion: true),
+      isSemantics(isLiveRegion: true),
     );
     handle.dispose();
   });

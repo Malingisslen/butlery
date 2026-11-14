@@ -20,7 +20,7 @@ permissions:
 
 env:
   # Keep in step with test.yml, so the PNGs match what the cross-os job compares.
-  FLUTTER_VERSION: '3.38.5'
+  FLUTTER_VERSION: '3.41.9'
 
 jobs:
   render:

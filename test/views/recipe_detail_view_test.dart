@@ -488,12 +488,12 @@ void main() {
             );
             expect(
               tester.getSemantics(sameTile),
-              containsSemantics(isSelected: true),
+              isSemantics(isSelected: true),
               reason: '"Samma som receptet" must start selected',
             );
             expect(
               tester.getSemantics(onlyMeRadio()),
-              containsSemantics(isSelected: false),
+              isSemantics(isSelected: false),
             );
 
             await tester.tap(onlyMeRadio());
@@ -501,12 +501,12 @@ void main() {
 
             expect(
               tester.getSemantics(onlyMeRadio()),
-              containsSemantics(isSelected: true),
+              isSemantics(isSelected: true),
               reason: 'tapping "Bara jag" must visibly select it',
             );
             expect(
               tester.getSemantics(sameTile),
-              containsSemantics(isSelected: false),
+              isSemantics(isSelected: false),
               reason: 'single-choice picker: the default must deselect',
             );
 

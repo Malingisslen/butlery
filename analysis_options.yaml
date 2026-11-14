@@ -28,6 +28,7 @@ analyzer:
     - "test/**/*.mocks.dart"
   errors:
     dangling_library_doc_comments: ignore
+    deprecated_lint: ignore
     # Treat architecture violations as errors
     invalid_use_of_visible_for_testing_member: error
     missing_required_param: error

@@ -42,7 +42,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLUTTER_VERSION: "3.38.5"
+  FLUTTER_VERSION: "3.41.9"
 
 jobs:
   # BUT-771: assert every workflow's node-version matches functions/package.json

@@ -115,7 +115,7 @@ void main() {
       );
       expect(
         tester.getSemantics(find.bySemanticsLabel(RegExp('Öppna kortet'))),
-        containsSemantics(
+        isSemantics(
           label: 'Öppna kortet',
           isButton: true,
         ),
@@ -148,7 +148,7 @@ void main() {
       expect(material.color, cs.surfaceContainerHighest);
       expect(
         tester.getSemantics(find.bySemanticsLabel(RegExp('Kort'))),
-        containsSemantics(
+        isSemantics(
           label: 'Kort',
           isButton: true,
           isSelected: true,

@@ -260,7 +260,7 @@ void main() {
     await tester.pump();
     expect(
       tester.getSemantics(find.text(l10n.importProceedToEdit)),
-      containsSemantics(
+      isSemantics(
         isButton: true,
         hasEnabledState: true,
         isEnabled: false,
@@ -271,7 +271,7 @@ void main() {
     await tester.pump();
     expect(
       tester.getSemantics(find.text(l10n.importProceedToEdit)),
-      containsSemantics(isButton: true, hasEnabledState: true, isEnabled: true),
+      isSemantics(isButton: true, hasEnabledState: true, isEnabled: true),
     );
     handle.dispose();
   });

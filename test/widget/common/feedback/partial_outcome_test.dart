@@ -137,7 +137,7 @@ void main() {
 
     expect(
       tester.getSemantics(find.text('Vi hämtade 7 av 9 länkar')),
-      containsSemantics(isLiveRegion: true, isHeader: true),
+      isSemantics(isLiveRegion: true, isHeader: true),
     );
     handle.dispose();
   });
