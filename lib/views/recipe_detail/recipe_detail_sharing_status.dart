@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -34,13 +34,13 @@ class RecipeDetailSharingStatus extends StatefulWidget {
 
 class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
   late final String? _currentUserId;
-  late final UnifiedFriendsService _friendsService;
+  late final FriendsReader _friendsService;
 
   @override
   void initState() {
     super.initState();
     _currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
-    _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    _friendsService = ServiceLocator.get<FriendsReader>();
   }
 
   Recipe get recipe => widget.recipe;

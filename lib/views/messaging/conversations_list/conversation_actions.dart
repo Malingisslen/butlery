@@ -14,7 +14,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
@@ -249,7 +249,7 @@ Future<void> _navigateToUserProfile(
       orElse: () => conversation.participantIds.firstOrNull.orEmpty(),
     );
 
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<FriendsReader>();
 
     // Try friends list first, fall back to UserService for non-friend DM partners
     final profile =

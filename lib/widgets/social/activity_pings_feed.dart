@@ -15,7 +15,7 @@ import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/services/social/ping_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -36,7 +36,7 @@ class ActivityPingsFeed extends StatefulWidget {
   final String groupId;
   final PingService? pingService;
   final ActivityEventRepository? activityRepository;
-  final UnifiedFriendsService? friendsService;
+  final FriendsReader? friendsService;
 
   @override
   State<ActivityPingsFeed> createState() => _ActivityPingsFeedState();
@@ -68,8 +68,8 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed>
       widget.activityRepository ??
       ServiceLocator.get<ActivityEventRepository>();
 
-  UnifiedFriendsService? get _friendsService =>
-      widget.friendsService ?? ServiceLocator.tryGet<UnifiedFriendsService>();
+  FriendsReader? get _friendsService =>
+      widget.friendsService ?? ServiceLocator.tryGet<FriendsReader>();
 
   @override
   void initState() {

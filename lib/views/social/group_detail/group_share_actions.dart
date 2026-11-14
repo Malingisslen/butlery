@@ -9,7 +9,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
@@ -140,7 +140,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
 
     // Step 2: Show UniversalShareDialog for collaboration control
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<FriendsReader>();
 
     await showUniversalShareSheet(
       context,
@@ -179,7 +179,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
 
     // Step 2: Show UniversalShareDialog for collaboration control
     final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<FriendsReader>();
 
     await showUniversalShareSheet(
       context,

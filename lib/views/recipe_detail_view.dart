@@ -17,7 +17,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/views/recipe_detail/cook_snap_visibility.dart';
 import 'package:butlery/views/recipe_detail/cook_snap_visibility_dialog.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -1083,7 +1083,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   Map<String, String> _friendDisplayNames() {
     final names = <String, String>{};
     try {
-      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
+      for (final f in ServiceLocator.get<FriendsReader>().friendsList) {
         names[f.uid] = f.displayName;
       }
     } catch (_) {

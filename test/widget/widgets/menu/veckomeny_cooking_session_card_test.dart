@@ -29,10 +29,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
@@ -100,6 +102,9 @@ void _wire({
   CookingSessionModule? module,
 }) {
   GetIt.instance.registerSingleton<UnifiedFriendsService>(friends);
+  if (!GetIt.instance.isRegistered<FriendsReader>()) {
+    registerFriendsServiceRoles(GetIt.instance);
+  }
   if (module != null) {
     GetIt.instance.registerSingleton<CookingSessionModule>(module);
   }

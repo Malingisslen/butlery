@@ -20,7 +20,7 @@ import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -215,7 +215,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
     final friendNames = <String, String>{};
     try {
-      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
+      for (final f in ServiceLocator.get<FriendsReader>().friendsList) {
         // A nameless friend stays unresolved, so the label counts them in
         // "+N" instead of showing a blank or an invented name.
         final known = knownStoredName(f.displayName);

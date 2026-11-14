@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -38,7 +38,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
   }
 
   Future<void> _loadBlockedUsers() async {
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<FriendsActions>();
     final blocked = friendsService.management.getBlockedUsers();
 
     // Batch-fetch display names for all blocked users
@@ -91,7 +91,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     );
 
     if (confirmed == true) {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final friendsService = ServiceLocator.get<FriendsActions>();
       await friendsService.management.unblockUser(userId);
       await _loadBlockedUsers();
     }
@@ -139,7 +139,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     );
     if (confirmed != true || !mounted) return;
 
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<FriendsActions>();
     final succeeded = await friendsService.management.unblockUsers(ids);
     if (!mounted) return;
 

@@ -25,11 +25,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -115,6 +117,9 @@ void main() {
       GetIt.instance.unregister<UnifiedFriendsService>();
     }
     GetIt.instance.registerSingleton<UnifiedFriendsService>(friends);
+    if (!GetIt.instance.isRegistered<FriendsReader>()) {
+      registerFriendsServiceRoles(GetIt.instance);
+    }
 
     // Its `social` is FakeSocialRecipeOperations. The asymmetry is deliberate
     // and load-bearing: `removeGroup` answers this flag while `removeMember` is
