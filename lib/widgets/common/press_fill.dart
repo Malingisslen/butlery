@@ -132,6 +132,9 @@ class _PressScaleState extends State<PressScale> {
     final still = MediaQuery.disableAnimationsOf(context);
     return InkWell(
       onTap: widget.onTap,
+      // InkWell's default cursor is an arrow outside the web; R8-4 = C
+      // promises the hand on every platform.
+      mouseCursor: WidgetStateMouseCursor.clickable,
       overlayColor: ownPressOverlay,
       onHighlightChanged: (value) => setState(() => _pressed = value),
       child: AnimatedScale(
