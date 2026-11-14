@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
 
-/// Behavioral contract for the v1 pooled-ratings identity key. Each test states
+/// Behavioral contract for the pooled-ratings identity key. Each test states
 /// the property it proves; these are the recall (same recipe → same pool) and
 /// precision (different dishes → different pools; fail-closed) guarantees the
 /// Step 0 gate + panel review committed to.
@@ -133,8 +133,8 @@ void main() {
         // the ingredient set constant (recall) or varies the anchor (precision),
         // so a key that ignored ingredients entirely would pass them all. This
         // one fails unless the ingredient NAMES actually participate in the key.
-        // It ALSO pins the deliberate v1 exact-set-match limitation: adding an
-        // ingredient to an otherwise-identical recipe SPLITS the pool. If v1
+        // It ALSO pins the deliberate exact-set-match limitation: adding an
+        // ingredient to an otherwise-identical recipe SPLITS the pool. If the key
         // ever moves to fuzzy/Jaccard pooling this test must be revisited, not
         // silently deleted.
         final lean = key('Köttbullar', const ['blandfärs', 'lök']);

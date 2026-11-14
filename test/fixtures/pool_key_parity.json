@@ -1,7 +1,7 @@
 {
-  "version": "v1",
+  "version": "v2",
   "description": "Cross-language parity vectors for the pooled-ratings CanonicalPoolKey (condition C4). Read by BOTH the Dart test (test/unit/services/rating/canonical_pool_key_parity_test.dart) and the TS test (functions/src/__tests__/pool-key-parity.test.ts). Dart hint and TS authority MUST produce identical keys, or pool routing diverges. expected=null means the recipe must NOT pool (fail closed).",
-  "contract": "key = 'v1:' + sha256(dishAnchor + '::' + sortedFoldedIngredientNames.take(12).join('|')).hex[0:16]; null when ingredients empty, no ingredient names survive, or the dish anchor is empty/generic.",
+  "contract": "key = 'v2:' + sha256(dishAnchor + '::' + sortedFoldedIngredientNames.take(12).join('|')).hex[0:16]; null when ingredients empty, no ingredient names survive, or the dish anchor is empty/generic.",
   "cases": [
     {
       "name": "kottbullar_clean",
@@ -11,7 +11,7 @@
         "1 gul lök",
         "1 dl ströbröd"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "kottbullar_ocr_same_pool",
@@ -21,7 +21,7 @@
         "1 gul lok",
         "1 dl strobrod"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "kottbullar_glued_units_same_pool",
@@ -31,7 +31,7 @@
         "1 gul lök",
         "1dl ströbröd"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "kottbullar_hashtag_same_pool",
@@ -41,7 +41,7 @@
         "1 gul lök",
         "1 dl ströbröd"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "kottbullar_qualifier_same_pool",
@@ -51,7 +51,7 @@
         "500 g blandfärs",
         "1 gul lök"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "sockerkaka_distinct",
@@ -62,7 +62,7 @@
         "3 dl vetemjöl",
         "100 g smör"
       ],
-      "expected": "v1:935e60fec6a9baac"
+      "expected": "v2:935e60fec6a9baac"
     },
     {
       "name": "muffins_distinct_from_sockerkaka",
@@ -73,7 +73,7 @@
         "3 dl vetemjöl",
         "100 g smör"
       ],
-      "expected": "v1:c35a811fd3ae20ed"
+      "expected": "v2:c35a811fd3ae20ed"
     },
     {
       "name": "generic_anchor_fails_closed",
@@ -109,7 +109,7 @@
         "lök",
         "kryddpeppar"
       ],
-      "expected": "v1:fcb7529d95d4bd66"
+      "expected": "v2:fcb7529d95d4bd66"
     },
     {
       "name": "decimal_amounts_same_pool_as_integer",
@@ -119,7 +119,7 @@
         "2,5 dl socker",
         "0,5 tsk salt"
       ],
-      "expected": "v1:75852925e70d8cb1"
+      "expected": "v2:75852925e70d8cb1"
     },
     {
       "name": "integer_amounts_twin_of_decimal",
@@ -129,7 +129,7 @@
         "3 dl socker",
         "1 tsk salt"
       ],
-      "expected": "v1:75852925e70d8cb1"
+      "expected": "v2:75852925e70d8cb1"
     },
     {
       "name": "period_decimal_same_pool",
@@ -139,7 +139,7 @@
         "2.5 dl socker",
         "0.5 tsk salt"
       ],
-      "expected": "v1:75852925e70d8cb1"
+      "expected": "v2:75852925e70d8cb1"
     },
     {
       "name": "all_caps_same_as_clean",
@@ -149,7 +149,7 @@
         "1 GUL LÖK",
         "1 DL STRÖBRÖD"
       ],
-      "expected": "v1:48c582de54bffd84"
+      "expected": "v2:48c582de54bffd84"
     },
     {
       "name": "mixed_case_and_fold_dedup",
@@ -160,7 +160,7 @@
         "LÖK",
         "buljong"
       ],
-      "expected": "v1:b594716e874c2a7b"
+      "expected": "v2:b594716e874c2a7b"
     },
     {
       "name": "over_twelve_ingredients_sort_take_boundary",
@@ -182,7 +182,126 @@
         "persilja",
         "selleri"
       ],
-      "expected": "v1:38f7ef691df11788"
+      "expected": "v2:38f7ef691df11788"
+    },
+    {
+      "name": "split_compound_joined",
+      "title": "Kött bullar",
+      "ingredients": [
+        "500 g köttfärs",
+        "1 ägg",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:06b86f5b67ebf2cb"
+    },
+    {
+      "name": "owner_word_dropped",
+      "title": "Mormors köttbullar",
+      "ingredients": [
+        "500 g köttfärs",
+        "1 ägg",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:06b86f5b67ebf2cb"
+    },
+    {
+      "name": "owner_word_before_generic_fails_closed",
+      "title": "Mammas goda gryta",
+      "ingredients": [
+        "600 g högrev",
+        "2 morötter",
+        "5 dl buljong"
+      ],
+      "expected": null
+    },
+    {
+      "name": "join_only_adjacent_words",
+      "title": "Pasta med kyckling bollar",
+      "ingredients": [
+        "400 g pasta",
+        "300 g kycklingfärs"
+      ],
+      "expected": "v2:41432fb60d2bfad9"
+    },
+    {
+      "name": "stop_word_breaks_join",
+      "title": "Kött och bullar",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": null
+    },
+    {
+      "name": "empty_ocr_token_breaks_join",
+      "title": "Kött 123 bullar",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": null
+    },
+    {
+      "name": "dropped_qualifier_breaks_join",
+      "title": "Choklad goda kaka",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:6c372da50023224d"
+    },
+    {
+      "name": "two_category_words_stay_generic",
+      "title": "Middag gryta",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": null
+    },
+    {
+      "name": "join_after_non_generic_head",
+      "title": "Pizza muffins",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:340be50588d03180"
+    },
+    {
+      "name": "chained_join",
+      "title": "Kött bullar gryta",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:88671ed7edff36b9"
+    },
+    {
+      "name": "comma_does_not_break_join",
+      "title": "Socker, kaka",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:ac88dae35da936ae"
+    },
+    {
+      "name": "hyphen_does_not_break_join",
+      "title": "Kött-bullar",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v2:48c582de54bffd84"
     }
   ]
 }

@@ -1,5 +1,5 @@
 /**
- * CanonicalPoolKey — SERVER AUTHORITY for the v1 pooled-ratings recipe-identity
+ * CanonicalPoolKey — SERVER AUTHORITY for the pooled-ratings recipe-identity
  * key ("Butlery-betyget"). See tasks/archive/pooled-ratings-plan.md (decision 1,
  * revised 2026-07-03) and the Dart twin lib/services/rating/canonical_pool_key.dart.
  *
@@ -23,49 +23,235 @@
 
 import { createHash } from "crypto";
 
-const VERSION = "v1";
+const VERSION = "v2";
 
 // Mirror of RecipeTextNormalizer.ingredientUnits (Dart). Contains diacritics;
 // a folded copy drives ingredient unit-stripping (see foldedUnitsRe).
 // Exported for the C5 word-list parity test.
 export const INGREDIENT_UNITS = [
-  "dl", "msk", "tsk", "krm", "g", "kg", "ml", "l", "cl", "st", "stk", "port",
-  "portion", "portioner", "nypa", "nypor", "bit", "bitar", "skiva", "skivor",
-  "klyfta", "klyftor", "kvist", "kvistar", "blad", "paket", "burk", "burkar",
-  "påse", "påsar", "ask", "askar",
+  "dl",
+  "msk",
+  "tsk",
+  "krm",
+  "g",
+  "kg",
+  "ml",
+  "l",
+  "cl",
+  "st",
+  "stk",
+  "port",
+  "portion",
+  "portioner",
+  "nypa",
+  "nypor",
+  "bit",
+  "bitar",
+  "skiva",
+  "skivor",
+  "klyfta",
+  "klyftor",
+  "kvist",
+  "kvistar",
+  "blad",
+  "paket",
+  "burk",
+  "burkar",
+  "påse",
+  "påsar",
+  "ask",
+  "askar",
 ];
 
 // Mirror of RecipeTextNormalizer.titleStopWords (Dart). Diacritic forms — the
 // stop-word filter runs on unfolded lowercased title words.
 export const TITLE_STOP_WORDS = new Set([
-  "och", "med", "på", "i", "till", "för", "av", "en", "ett", "den", "det", "de",
-  "som", "från", "and", "with", "the", "a", "an", "of", "for", "to", "in", "on",
-  "enkel", "enkelt", "lätt", "snabb", "snabbt", "god", "gott", "bästa",
-  "klassisk", "klassiskt", "hemlagad", "hemlagat", "äkta",
+  "och",
+  "med",
+  "på",
+  "i",
+  "till",
+  "för",
+  "av",
+  "en",
+  "ett",
+  "den",
+  "det",
+  "de",
+  "som",
+  "från",
+  "and",
+  "with",
+  "the",
+  "a",
+  "an",
+  "of",
+  "for",
+  "to",
+  "in",
+  "on",
+  "enkel",
+  "enkelt",
+  "lätt",
+  "snabb",
+  "snabbt",
+  "god",
+  "gott",
+  "bästa",
+  "klassisk",
+  "klassiskt",
+  "hemlagad",
+  "hemlagat",
+  "äkta",
 ]);
 
 export const APPROXIMATE_WORDS = [
-  "ca", "cirka", "ungefär", "about", "approximately",
+  "ca",
+  "cirka",
+  "ungefär",
+  "about",
+  "approximately",
 ];
 
 // Folded (å/ä/ö→a/o) — matched against the folded dish anchor.
 export const DISH_QUALIFIERS = new Set([
-  "gammaldags", "tunna", "tunn", "tunt", "mjuk", "mjuka", "mjukt", "kramig",
-  "kramiga", "saftig", "saftiga", "nyttig", "nyttiga", "festlig", "festliga",
-  "matig", "matiga", "krispig", "krispiga", "ugnsbakad", "ugnsbakade",
-  "grillad", "grillade", "stekt", "stekta", "kokt", "kokta", "perfekt",
-  "perfekta", "lyxig", "lyxiga", "billig", "billiga", "vardaglig",
-  "vardagliga", "fina", "godaste", "allra",
+  "gammaldags",
+  "tunna",
+  "tunn",
+  "tunt",
+  "mjuk",
+  "mjuka",
+  "mjukt",
+  "kramig",
+  "kramiga",
+  "saftig",
+  "saftiga",
+  "nyttig",
+  "nyttiga",
+  "festlig",
+  "festliga",
+  "matig",
+  "matiga",
+  "krispig",
+  "krispiga",
+  "ugnsbakad",
+  "ugnsbakade",
+  "grillad",
+  "grillade",
+  "stekt",
+  "stekta",
+  "kokt",
+  "kokta",
+  "perfekt",
+  "perfekta",
+  "lyxig",
+  "lyxiga",
+  "billig",
+  "billiga",
+  "vardaglig",
+  "vardagliga",
+  "fina",
+  "godaste",
+  "allra",
+  "goda",
+  "enkla",
+  "snabba",
+  "latta",
+  "sma",
+  "stor",
+  "stora",
+  "nya",
+  "klassiska",
+  "hemlagade",
+  "extra",
+  "supergoda",
+  "varldens",
+]);
+
+// Folded owner words ("Mormors gryta") — say whose recipe it is, never the dish.
+export const OWNER_WORDS = new Set([
+  "mormors",
+  "farmors",
+  "morfars",
+  "farfars",
+  "mammas",
+  "pappas",
+  "mosters",
+  "fasters",
+  "morbrors",
+  "farbrors",
+  "tantens",
+  "min",
+  "mina",
+  "mitt",
+  "vara",
+  "familjens",
+  "barnens",
+  "husets",
+  "kockens",
+]);
+
+// Folded dish nouns that end a Swedish compound. A token written apart directly
+// in front of one ("socker kaka") is joined to it; GENERIC_ANCHORS are heads too.
+export const DISH_HEADS = new Set([
+  "muffins",
+  "cupcakes",
+  "pudding",
+  "biffar",
+  "bollar",
+  "pannkaka",
+  "pannkakor",
+  "plattar",
+  "tacos",
+  "pizza",
 ]);
 
 // Folded generic dish-category nouns → fail closed (do not pool).
 export const GENERIC_ANCHORS = new Set([
-  "soppa", "sas", "kaka", "kakor", "bullar", "bulle", "paj", "gryta", "grateng",
-  "sallad", "rora", "pytt", "lada", "form", "gratin", "mos", "stuvning",
-  "soppor", "ratt", "ratter", "mat", "middag", "lunch", "frukost", "efterratt",
-  "dessert", "bakelse", "tarta", "paltbrod", "brod", "kex", "soppan", "sasen",
-  "kakan", "grytan", "pajen", "salladen", "roran", "tartan", "bakelsen",
-  "stuvningen", "gratengen", "brodet", "moset",
+  "soppa",
+  "sas",
+  "kaka",
+  "kakor",
+  "bullar",
+  "bulle",
+  "paj",
+  "gryta",
+  "grateng",
+  "sallad",
+  "rora",
+  "pytt",
+  "lada",
+  "form",
+  "gratin",
+  "mos",
+  "stuvning",
+  "soppor",
+  "ratt",
+  "ratter",
+  "mat",
+  "middag",
+  "lunch",
+  "frukost",
+  "efterratt",
+  "dessert",
+  "bakelse",
+  "tarta",
+  "paltbrod",
+  "brod",
+  "kex",
+  "soppan",
+  "sasen",
+  "kakan",
+  "grytan",
+  "pajen",
+  "salladen",
+  "roran",
+  "tartan",
+  "bakelsen",
+  "stuvningen",
+  "gratengen",
+  "brodet",
+  "moset",
 ]);
 
 // JS `\w` is ASCII (same as Dart) — åäö included explicitly where needed.
@@ -86,23 +272,12 @@ function foldDiacritics(s: string): string {
 
 const foldedUnitsRe = new RegExp(
   "\\b(" + INGREDIENT_UNITS.map(foldDiacritics).join("|") + ")\\b",
-  "gi"
+  "gi",
 );
 const foldedApproxRe = new RegExp(
   "\\b(" + APPROXIMATE_WORDS.map(foldDiacritics).join("|") + ")\\b",
-  "g"
+  "g",
 );
-
-function significantTitleWords(title: string): string[] {
-  const normalized = title
-    .toLowerCase()
-    .replace(punctuationRe, " ")
-    .replace(multiSpaceRe, " ")
-    .trim();
-  return normalized
-    .split(" ")
-    .filter((w) => w.length > 2 && !TITLE_STOP_WORDS.has(w));
-}
 
 // Strip a leading numeric run FIRST so a glued quantity ("500g", "2dl") is not
 // turned into letters ("5oog") before it can be recognized as an amount; then
@@ -128,12 +303,42 @@ function strengthenIngredientName(raw: string): string {
   return s.length < 2 ? "" : s;
 }
 
+function isHead(t: string): boolean {
+  return DISH_HEADS.has(t) || GENERIC_ANCHORS.has(t);
+}
+
 function dishAnchor(title: string): string | null {
-  const deHashed = title.replace(hashtagRe, " ");
-  const tokens = significantTitleWords(deHashed)
-    .map(foldDiacritics)
-    .map(repairOcrDigitsToken)
-    .filter((w) => !DISH_QUALIFIERS.has(w));
+  const words = title
+    .replace(hashtagRe, " ")
+    .toLowerCase()
+    .replace(punctuationRe, " ")
+    .replace(multiSpaceRe, " ")
+    .trim()
+    .split(" ");
+
+  // A word that was dropped breaks adjacency, so only words that stood next to
+  // each other in the title are joined.
+  const tokens: string[] = [];
+  let lastKept = -2;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (w.length <= 2 || TITLE_STOP_WORDS.has(w)) continue;
+    const t = repairOcrDigitsToken(foldDiacritics(w));
+    if (t === "" || DISH_QUALIFIERS.has(t) || OWNER_WORDS.has(t)) continue;
+    // Two category words written apart ("middag gryta") stay apart, so the
+    // title still fails closed as generic.
+    if (
+      lastKept === i - 1 &&
+      isHead(t) &&
+      !GENERIC_ANCHORS.has(tokens[tokens.length - 1])
+    ) {
+      tokens[tokens.length - 1] = tokens[tokens.length - 1] + t;
+    } else {
+      tokens.push(t);
+    }
+    lastKept = i;
+  }
+
   let anchor = "";
   for (const t of tokens) {
     if (t.length > anchor.length) anchor = t; // first-wins on tie
@@ -148,7 +353,7 @@ function dishAnchor(title: string): string | null {
 export interface PoolKeyComponents {
   /** The full pool key (`VERSION:hash` of anchor + ingredient names). */
   poolKey: string;
-  /** The dish anchor — the longest significant title token the key is built on;
+  /** The dish anchor the key is built on;
    *  the cheap "rating-laundering" lever is editing the title to move THIS.
    *  NEVER log this in cleartext: a Swedish dish title can carry a personal name
    *  ("Farmors köttbullar") and telemetry is a log-only tier that must not see
@@ -176,14 +381,14 @@ export interface PoolKeyComponents {
  */
 export function poolKeyComponents(
   title: string,
-  ingredients: string[]
+  ingredients: string[],
 ): PoolKeyComponents | null {
   if (!ingredients || ingredients.length === 0) return null;
 
   const names = Array.from(
     new Set(
-      ingredients.map(strengthenIngredientName).filter((s) => s.length > 0)
-    )
+      ingredients.map(strengthenIngredientName).filter((s) => s.length > 0),
+    ),
   ).sort();
   if (names.length === 0) return null;
 
@@ -212,7 +417,7 @@ export function poolKeyComponents(
  */
 export function computePoolKey(
   title: string,
-  ingredients: string[]
+  ingredients: string[],
 ): string | null {
   return poolKeyComponents(title, ingredients)?.poolKey ?? null;
 }

@@ -23,6 +23,8 @@ import {
   APPROXIMATE_WORDS,
   DISH_QUALIFIERS,
   GENERIC_ANCHORS,
+  OWNER_WORDS,
+  DISH_HEADS,
 } from "../ratings/canonical-pool-key";
 
 interface WordLists {
@@ -31,6 +33,8 @@ interface WordLists {
   approximateWords: string[];
   dishQualifiers: string[];
   genericAnchors: string[];
+  ownerWords: string[];
+  dishHeads: string[];
 }
 
 function run(): void {
@@ -43,7 +47,7 @@ function run(): void {
     "..",
     "test",
     "fixtures",
-    "pool_key_wordlists.json"
+    "pool_key_wordlists.json",
   );
 
   if (!fs.existsSync(fixturePath)) {
@@ -60,6 +64,8 @@ function run(): void {
     approximateWords: [...APPROXIMATE_WORDS],
     dishQualifiers: Array.from(DISH_QUALIFIERS),
     genericAnchors: Array.from(GENERIC_ANCHORS),
+    ownerWords: Array.from(OWNER_WORDS),
+    dishHeads: Array.from(DISH_HEADS),
   };
 
   const failures: string[] = [];
@@ -69,7 +75,7 @@ function run(): void {
   // editing the JSON's key set (adding/removing/renaming a list there) can't
   // pass silently and a per-list check below can't be quietly dropped. LIMIT: it
   // compares the JSON against `actual`'s hardcoded key set — it does NOT see a
-  // sixth list added to the algorithm code but never registered here or in the
+  // list added to the algorithm code but never registered here or in the
   // JSON. That residual is backstopped by the C4 end-to-end parity fixture plus
   // review. `_`-prefixed keys (e.g. _comment) are metadata.
   const expectedKeys = Object.keys(actual).sort();
@@ -82,7 +88,7 @@ function run(): void {
   ) {
     failures.push(
       `  completeness: the JSON's lists ${JSON.stringify(jsonKeys)} do not ` +
-        `match the pinned set ${JSON.stringify(expectedKeys)}`
+        `match the pinned set ${JSON.stringify(expectedKeys)}`,
     );
   }
 
@@ -100,7 +106,7 @@ function run(): void {
       failures.push(
         `  ${key}: TS const does not match the shared JSON (in order)\n` +
           `      TS  : ${JSON.stringify(a)}\n` +
-          `      JSON: ${JSON.stringify(b)}`
+          `      JSON: ${JSON.stringify(b)}`,
       );
     }
   });
@@ -113,7 +119,7 @@ function run(): void {
     console.error(
       "\nCRITICAL: TS word-lists drifted from the source of truth. Reconcile " +
         "functions/src/ratings/canonical-pool-key.ts, the Dart twins, and " +
-        "test/fixtures/pool_key_wordlists.json so all three agree.\n"
+        "test/fixtures/pool_key_wordlists.json so all three agree.\n",
     );
     process.exit(1);
   }

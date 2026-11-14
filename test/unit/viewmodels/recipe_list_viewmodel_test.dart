@@ -25,6 +25,7 @@ import '../../infrastructure/mocks/service_mocks.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 
 // ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
@@ -175,6 +176,8 @@ void main() {
       late RatingsRepository ratingsRepo;
       late _MockFeatureFlagService flags;
 
+      String k(String pool) => '${CanonicalPoolKey.version}:$pool';
+
       Recipe pooled(String id, String title, String? poolKey) {
         final r = RecipeFactory.build(id: id, title: title);
         r.core.ratingPoolKey = poolKey;
@@ -213,14 +216,14 @@ void main() {
       test('re-keys poolKey stats onto recipe ids; shared pool reaches '
           'BOTH copies; pool-less recipes get none', () async {
         when(() => ratingsRepo.getBulkPooledStats(any())).thenAnswer(
-          (_) async => {'v1:soppa': const PooledStats(count: 12, average: 4.3)},
+          (_) async => {k('soppa'): const PooledStats(count: 12, average: 4.3)},
         );
         // r1 + r2 are two copies of the SAME dish (shared poolKey) — the exact
         // pooling premise; r3's pool has no stats; r4 has no pool at all.
         await load([
-          pooled('r1', 'Soppa', 'v1:soppa'),
-          pooled('r2', 'Soppa kopia', 'v1:soppa'),
-          pooled('r3', 'Gryta', 'v1:gryta'),
+          pooled('r1', 'Soppa', k('soppa')),
+          pooled('r2', 'Soppa kopia', k('soppa')),
+          pooled('r3', 'Gryta', k('gryta')),
           pooled('r4', 'Ny rätt', null),
         ]);
 
@@ -235,14 +238,35 @@ void main() {
         expect(stats.containsKey('r4'), isFalse, reason: 'no poolKey at all');
       });
 
+      test(
+        'a hint from another key version is neither read nor shown',
+        () async {
+          when(
+            () => ratingsRepo.getBulkPooledStats(any()),
+          ).thenAnswer((_) async => {k('soppa'): const PooledStats(count: 12)});
+          await load([
+            pooled('r1', 'Soppa', k('soppa')),
+            pooled('r2', 'Gryta', 'v1:stale'),
+          ]);
+
+          final asked =
+              verify(
+                    () => ratingsRepo.getBulkPooledStats(captureAny()),
+                  ).captured.single
+                  as List<String>;
+          expect(asked, [k('soppa')]);
+          expect(viewModel.pooledStats.keys, ['r1']);
+        },
+      );
+
       test('flag OFF → no read, empty map (per-copy fallback)', () async {
         when(
           () => flags.isEnabled(FeatureFlags.enablePooledRatings),
         ).thenReturn(false);
         when(
           () => ratingsRepo.getBulkPooledStats(any()),
-        ).thenAnswer((_) async => {'v1:soppa': const PooledStats(count: 9)});
-        await load([pooled('r1', 'Soppa', 'v1:soppa')]);
+        ).thenAnswer((_) async => {k('soppa'): const PooledStats(count: 9)});
+        await load([pooled('r1', 'Soppa', k('soppa'))]);
 
         expect(viewModel.pooledStats, isEmpty);
         verifyNever(() => ratingsRepo.getBulkPooledStats(any()));
@@ -252,7 +276,7 @@ void main() {
         when(
           () => ratingsRepo.getBulkPooledStats(any()),
         ).thenThrow(Exception('network'));
-        await load([pooled('r1', 'Soppa', 'v1:soppa')]);
+        await load([pooled('r1', 'Soppa', k('soppa'))]);
 
         expect(viewModel.pooledStats, isEmpty);
       });

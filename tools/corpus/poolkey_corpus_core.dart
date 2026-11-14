@@ -280,21 +280,29 @@ PoolKeyCorpusResult measure(PageLoad load, PoolKeyer keyer) {
   }
 
   // A draft key shared across pages is a false merge only when those pages'
-  // answer keys disagree; pages whose gold shares that key are a duplicate or
-  // already reported above.
+  // answer keys disagree; pages whose gold shares that key, or whose gold is
+  // the same recipe photographed twice, are a duplicate or already reported
+  // above.
   final goldKeysByPage = <String, Set<String>>{};
   for (final e in goldByKey.entries) {
     for (final r in e.value) {
       goldKeysByPage.putIfAbsent(r.pageId, () => {}).add(e.key);
     }
   }
+  final goldPrintsByPage = {
+    for (final page in load.pages)
+      page.pageId: {for (final g in page.gold) g.fingerprint},
+  };
   final draftCollisions = <Collision>[];
   for (final e in draftByKey.entries) {
     final pageIds = e.value.map((r) => r.pageId).toSet();
     if (pageIds.length < 2) continue;
-    final explained = pageIds.every(
-      (p) => goldKeysByPage[p]?.contains(e.key) ?? false,
-    );
+    final sharedPrints = pageIds
+        .map((p) => goldPrintsByPage[p] ?? const <String>{})
+        .reduce((a, b) => a.intersection(b));
+    final explained =
+        sharedPrints.isNotEmpty ||
+        pageIds.every((p) => goldKeysByPage[p]?.contains(e.key) ?? false);
     if (!explained) draftCollisions.add(Collision(e.key, e.value));
   }
 

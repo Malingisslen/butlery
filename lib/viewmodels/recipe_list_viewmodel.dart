@@ -25,6 +25,7 @@ import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
@@ -654,9 +655,11 @@ class RecipeListViewModel extends BaseViewModel {
       return;
     }
     final visible = recipes; // already limited to the display window
+    // A hint from another key version names a pool the server no longer
+    // aggregates into; that card shows no pooled pill, like a hint-less one.
     final poolKeys = <String>[
       for (final r in visible)
-        if (r.core.ratingPoolKey != null && r.core.ratingPoolKey!.isNotEmpty)
+        if (CanonicalPoolKey.isCurrent(r.core.ratingPoolKey))
           r.core.ratingPoolKey!,
     ];
     if (poolKeys.isEmpty) {

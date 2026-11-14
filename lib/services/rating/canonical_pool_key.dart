@@ -1,4 +1,4 @@
-/// CanonicalPoolKey — the v1 recipe-identity key for pooled ratings
+/// CanonicalPoolKey — the recipe-identity key for pooled ratings
 /// ("Butlery-betyget"). See tasks/archive/pooled-ratings-plan.md (decision 1, revised
 /// 2026-07-03 after the Step 0 gate + focused panel).
 ///
@@ -31,7 +31,7 @@ class CanonicalPoolKey {
   /// Version prefix baked into the key so a future algorithm change is a
   /// distinct key space (kTagGeneratorVersion precedent). Bump on ANY change to
   /// the algorithm below.
-  static const version = 'v1';
+  static const version = 'v2';
 
   /// Descriptive title qualifiers that vary between sources but do not change
   /// the dish. Removed before choosing the dish anchor. Stored folded
@@ -84,6 +84,64 @@ class CanonicalPoolKey {
     'fina',
     'godaste',
     'allra',
+    'goda',
+    'enkla',
+    'snabba',
+    'latta',
+    'sma',
+    'stor',
+    'stora',
+    'nya',
+    'klassiska',
+    'hemlagade',
+    'extra',
+    'supergoda',
+    'varldens',
+  };
+
+  /// Whose recipe it is ("Mormors gryta"). Says nothing about the dish, so it
+  /// must never become the anchor. Folded form. Pinned to the shared JSON — see
+  /// [dishQualifiers].
+  @visibleForTesting
+  static const ownerWords = {
+    'mormors',
+    'farmors',
+    'morfars',
+    'farfars',
+    'mammas',
+    'pappas',
+    'mosters',
+    'fasters',
+    'morbrors',
+    'farbrors',
+    'tantens',
+    'min',
+    'mina',
+    'mitt',
+    'vara',
+    'familjens',
+    'barnens',
+    'husets',
+    'kockens',
+  };
+
+  /// Dish nouns that end a Swedish compound. A token written apart directly in
+  /// front of one ("socker kaka", "choklad muffins") is joined to it, so the
+  /// anchor is the dish ("sockerkaka") and not its modifier ("socker"). The
+  /// [genericAnchors] are heads too. Folded form. Pinned to the shared JSON —
+  /// see [dishQualifiers].
+  @visibleForTesting
+  static const dishHeads = {
+    'muffins',
+    'cupcakes',
+    'pudding',
+    'biffar',
+    'bollar',
+    'pannkaka',
+    'pannkakor',
+    'plattar',
+    'tacos',
+    'pizza',
   };
 
   /// Generic dish-CATEGORY nouns that carry almost no disambiguating power. If
@@ -101,6 +159,12 @@ class CanonicalPoolKey {
     'soppan', 'sasen', 'kakan', 'grytan', 'pajen', 'salladen', 'roran',
     'tartan', 'bakelsen', 'stuvningen', 'gratengen', 'brodet', 'moset',
   };
+
+  /// Whether a stored key was made by this version of the algorithm. A key
+  /// from another version names a pool the server no longer aggregates into,
+  /// so a reader recomputes instead of trusting it.
+  static bool isCurrent(String? key) =>
+      key != null && key.startsWith('$version:');
 
   /// Compute the pool key for a recipe, or null if it must not pool
   /// (too little to key on, or no usable dish anchor — fail closed).
@@ -163,17 +227,44 @@ class CanonicalPoolKey {
     '\\b(${RecipeTextNormalizer.approximateWords.map(_foldDiacritics).join('|')})\\b',
   );
 
-  /// Dish anchor = longest significant title token after hashtag strip, base
-  /// keyword extraction (uses diacritic stop words), folding, OCR repair, and
-  /// qualifier removal. First-wins on length ties (pinned — the TS twin and the
-  /// golden fixture must agree). Returns null when empty or generic.
+  /// Dish anchor = longest title token after hashtag strip, stop-word removal,
+  /// folding, OCR repair, qualifier and owner-word removal, and joining a token
+  /// to a [dishHeads]/[genericAnchors] noun written apart right after it.
+  /// First-wins on length ties (pinned — the TS twin and the golden fixture must
+  /// agree). Returns null when empty or generic.
   static String? _dishAnchor(String title) {
-    final deHashed = title.replaceAll(_hashtagRe, ' ');
-    final tokens = RecipeTextNormalizer.significantTitleWords(deHashed)
-        .map(_foldDiacritics)
-        .map(_repairOcrDigitsToken)
-        .where((w) => !dishQualifiers.contains(w))
-        .toList();
+    final words = title
+        .replaceAll(_hashtagRe, ' ')
+        .toLowerCase()
+        .replaceAll(RecipeTextNormalizer.punctuationRe, ' ')
+        .replaceAll(RecipeTextNormalizer.multiSpaceRe, ' ')
+        .trim()
+        .split(' ');
+
+    // A word that was dropped breaks adjacency, so only words that stood next to
+    // each other in the title are joined.
+    final tokens = <String>[];
+    var lastKept = -2;
+    for (var i = 0; i < words.length; i++) {
+      final w = words[i];
+      if (w.length <= 2 || RecipeTextNormalizer.titleStopWords.contains(w)) {
+        continue;
+      }
+      final t = _repairOcrDigitsToken(_foldDiacritics(w));
+      if (t.isEmpty || dishQualifiers.contains(t) || ownerWords.contains(t)) {
+        continue;
+      }
+      // Two category words written apart ("middag gryta") stay apart, so the
+      // title still fails closed as generic.
+      if (lastKept == i - 1 &&
+          _isHead(t) &&
+          !genericAnchors.contains(tokens.last)) {
+        tokens[tokens.length - 1] = tokens.last + t;
+      } else {
+        tokens.add(t);
+      }
+      lastKept = i;
+    }
 
     var anchor = '';
     for (final t in tokens) {
@@ -183,6 +274,9 @@ class CanonicalPoolKey {
     if (anchor.isEmpty || genericAnchors.contains(anchor)) return null;
     return anchor;
   }
+
+  static bool _isHead(String t) =>
+      dishHeads.contains(t) || genericAnchors.contains(t);
 
   // `\w` is ASCII even with the unicode flag, so include åäö explicitly or a
   // Swedish-letter hashtag ("#kött") leaves a remnant ("ött") that can hijack

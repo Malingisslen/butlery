@@ -21,7 +21,18 @@
     "matig", "matiga", "krispig", "krispiga", "ugnsbakad", "ugnsbakade",
     "grillad", "grillade", "stekt", "stekta", "kokt", "kokta", "perfekt",
     "perfekta", "lyxig", "lyxiga", "billig", "billiga", "vardaglig",
-    "vardagliga", "fina", "godaste", "allra"
+    "vardagliga", "fina", "godaste", "allra", "goda", "enkla", "snabba", "latta",
+    "sma", "stor", "stora", "nya", "klassiska", "hemlagade", "extra", "supergoda",
+    "varldens"
+  ],
+  "ownerWords": [
+    "mormors", "farmors", "morfars", "farfars", "mammas", "pappas", "mosters",
+    "fasters", "morbrors", "farbrors", "tantens", "min", "mina", "mitt", "vara",
+    "familjens", "barnens", "husets", "kockens"
+  ],
+  "dishHeads": [
+    "muffins", "cupcakes", "pudding", "biffar", "bollar", "pannkaka", "pannkakor",
+    "plattar", "tacos", "pizza"
   ],
   "genericAnchors": [
     "soppa", "sas", "kaka", "kakor", "bullar", "bulle", "paj", "gryta", "grateng",

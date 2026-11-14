@@ -21578,3 +21578,27 @@ Two source-path suites named the old file and moved with the code:
 Superseded in the data-pipelines chapter (path moved), retired text verbatim:
 "the uid-valued loop in `residual-probe.ts`; it is its own `count()` leg."
 Core card source-path bullet gained the two suite names above.
+
+### 2026-11-13 — BUT-1520 C8 pool key v2: parity fixture leaves adjacency branches unpinned [ratings][tests]
+Reviewed staged `canonical-pool-key.ts` (v2 anchor), `pool-key-adversarial.test.ts`,
+`pool-key-wordlist-parity.test.ts`. TS reads identically to the Dart twin
+(`_dishAnchor`, same regexes via `RecipeTextNormalizer.punctuationRe/multiSpaceRe`).
+Mutation probe on scratch copies of the TS file, scored against
+`pool_key_parity.json` + `pool_key_adversarial.json`: M1 (join on any kept
+predecessor, ignoring dropped words), M2 (empty OCR token keeps adjacency), M3
+(qualifier/owner drop keeps adjacency) all scored 0 failures on both fixtures;
+dropping OWNER_WORDS or GENERIC_ANCHORS-as-heads did redden. Vectors that kill
+M1/M2/M3 with blandfärs/lök/ströbröd ingredients: "Kött och bullar" (null),
+"Kött 123 bullar" (null), "Choklad goda kaka" (anchor choklad). Also measured:
+"Middag gryta", "Lunch sallad", "Frukost bröd" now pool (v1 null) because two
+generic tokens join into a non-generic compound — same key behaviour v1 already
+had for the closed spellings ("Middaggryta"). Server callers: POOL_KEY_PATTERN
+`/^v\d+:[0-9a-f]{16}$/` is version-agnostic; mirror retraction is by recipeId.
+Principle added to data-pipelines chapter (golden parity pins only reached branches).
+
+### 2026-11-13 — BUT-1520 C8 re-review: adjacency vectors + generic-join guard [ratings][tests]
+Coordinator added `!GENERIC_ANCHORS.has(previous token)` to the join (TS + Dart) and four
+parity vectors ("Kött och bullar", "Kött 123 bullar", "Choklad goda kaka", "Middag gryta").
+Re-probed scratch copies of the staged blob against both fixtures: M1 parity 3 fails, M2 1,
+M3 1, guard-removal 1 — all killed; BASE 0/0. Suites: parity 25/25, adversarial 27/27,
+word lists 7/7. Prior blocking finding closed.
