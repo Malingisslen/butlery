@@ -41,7 +41,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -162,8 +162,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
   Future<void> _useTheirVersion() async {
     if (_saving || !mounted) return;
     setState(() => _saving = true);
-    final myName = (ServiceLocator.tryGet<UserService>()?.profileDisplayName)
-        .orEmpty();
+    final myName =
+        (ServiceLocator.tryGet<OwnProfileReader>()?.profileDisplayName)
+            .orEmpty();
 
     try {
       final svc = ServiceLocator.tryGet<RealtimeSyncService>();

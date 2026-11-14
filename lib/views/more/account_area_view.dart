@@ -13,7 +13,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth/auth_provider_flows.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -30,13 +30,13 @@ class AccountAreaView extends StatefulWidget {
 class _AccountAreaViewState extends State<AccountAreaView> {
   static final _unchanging = ValueNotifier<void>(null);
 
-  UserService? _userService;
+  OwnProfileReader? _userService;
   AuthService? _authService;
 
   @override
   void initState() {
     super.initState();
-    _userService = ServiceLocator.tryGet<UserService>();
+    _userService = ServiceLocator.tryGet<OwnProfileReader>();
     _authService = ServiceLocator.tryGet<AuthService>();
   }
 

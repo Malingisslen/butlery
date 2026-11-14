@@ -18,6 +18,8 @@ import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
@@ -104,6 +106,9 @@ void main() {
 
     container = DIContainer();
     container.container.registerSingleton<UserService>(users);
+    if (!container.container.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(container.container);
+    }
     container.container.registerSingleton<ReportService>(reports);
     ServiceLocator.initialize(container);
 

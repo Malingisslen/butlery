@@ -29,7 +29,7 @@ import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/recipe_form_handoff.dart';
@@ -277,7 +277,7 @@ class _FranSocialaMedierViewContentState
       // One allergen-setup prompt covers the whole batch (mirrors
       // PhotoImportView._navigateToMultiRecipePicker) — reuses the Phase-1 tags
       // ImportManager attached during parse, no new LLM/network.
-      final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+      final prefs = ServiceLocator.get<OwnProfileReader>().allergenPreferences;
       if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
         AllergenSetupBanner.show(context);
       }

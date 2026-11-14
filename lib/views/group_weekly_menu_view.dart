@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
 import 'package:butlery/widgets/menu/group_weekly_menu_widget.dart';
 
@@ -38,7 +38,7 @@ class GroupWeeklyMenuView extends StatelessWidget {
       create: (_) => GroupWeeklyMenuViewModel(
         service: ServiceLocator.get<GroupWeeklyMenuPlanService>(),
         realtime: ServiceLocator.get<RealtimeGroupMenuModule>(),
-        userService: ServiceLocator.get<UserService>(),
+        userService: ServiceLocator.get<ProfileDirectory>(),
         groupId: groupId,
         currentUserId: currentUserId,
       )..loadWeek(DateTime.now()),

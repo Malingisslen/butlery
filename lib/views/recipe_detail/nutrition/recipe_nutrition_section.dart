@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_sheet.dart';
@@ -40,12 +40,12 @@ class RecipeNutritionSection extends StatefulWidget {
 
 class _RecipeNutritionSectionState extends State<RecipeNutritionSection> {
   late final NutritionViewModel _vm;
-  late final UserService _userService;
+  late final OwnProfileReader _userService;
 
   @override
   void initState() {
     super.initState();
-    _userService = ServiceLocator.get<UserService>();
+    _userService = ServiceLocator.get<OwnProfileReader>();
     _vm =
         widget.viewModel ??
         NutritionViewModel(

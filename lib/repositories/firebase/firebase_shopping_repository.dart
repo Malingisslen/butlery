@@ -12,7 +12,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
@@ -116,7 +116,7 @@ class FirebaseShoppingRepository
       // propagates or the one account deletion scrubs, so an Auth-sourced
       // stamp survives both.
       resolveDisplayName: () =>
-          ServiceLocator.tryGet<UserService>()?.profileDisplayName,
+          ServiceLocator.tryGet<OwnProfileReader>()?.profileDisplayName,
     );
 
     _mergeModule = ShoppingPersonalMergeModule(
