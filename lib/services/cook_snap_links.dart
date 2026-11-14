@@ -9,7 +9,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 
@@ -40,6 +40,6 @@ class CookSnapLinks {
 
   /// Null before the friends service exists: friend ids come from the
   /// repository instead.
-  final UnifiedFriendsService? Function() friends;
+  final FriendsReader? Function() friends;
   final NotificationService Function() notifications;
 }

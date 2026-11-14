@@ -26,7 +26,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
@@ -78,7 +78,7 @@ class UnifiedShoppingService
   final OwnProfileReader _userService;
   // Read on first use rather than at construction.
   final AnalyticsService? Function()? _getAnalyticsService;
-  final UnifiedFriendsService Function() _getFriendsService;
+  final FriendsActions Function() _getFriendsService;
   final OfflineService Function() _getOfflineService;
   final IngredientLookupService Function() _getLookupService;
   final ShortUrlGenerator _generateShortUrl;
@@ -127,7 +127,7 @@ class UnifiedShoppingService
     required PermissionService permissionService,
     required CategoryPreferencesRepository categoryPreferencesRepository,
     required OwnProfileReader userService,
-    required UnifiedFriendsService Function() getFriendsService,
+    required FriendsActions Function() getFriendsService,
     required OfflineService Function() getOfflineService,
     required IngredientLookupService Function() getLookupService,
     required ShortUrlGenerator generateShortUrl,

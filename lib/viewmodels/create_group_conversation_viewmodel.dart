@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/core/errors/chat_group_error_mapper.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -51,7 +51,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 class CreateGroupConversationViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final ChatGroupRepository _chatGroupRepository;
-  final UnifiedFriendsService _friendsService;
+  final FriendsReader _friendsService;
 
   // State
   bool _isDisposed = false;
@@ -65,7 +65,7 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   String? _validationError;
 
   CreateGroupConversationViewModel({
-    required UnifiedFriendsService friendsService,
+    required FriendsReader friendsService,
     ChatGroupRepository? chatGroupRepository,
   }) : _friendsService = friendsService,
        _chatGroupRepository =

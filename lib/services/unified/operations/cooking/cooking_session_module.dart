@@ -12,7 +12,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_cooking_session_repository.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 
 abstract class CookingSessionModule {
@@ -43,7 +43,7 @@ const Duration stepDebounce = Duration(milliseconds: 500);
 class FirebaseCookingSessionModule implements CookingSessionModule {
   final FirebaseCookingSessionRepository _repository;
   final PermissionService _permissionService;
-  final UnifiedFriendsService _friendsService;
+  final FriendsReader _friendsService;
   final OwnProfileReader _userService;
 
   /// Group IDs where the current user currently has an active session row,
@@ -64,7 +64,7 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
   FirebaseCookingSessionModule({
     required FirebaseCookingSessionRepository repository,
     required PermissionService permissionService,
-    required UnifiedFriendsService friendsService,
+    required FriendsReader friendsService,
     required OwnProfileReader userService,
   }) : _repository = repository,
        _permissionService = permissionService,

@@ -85,199 +85,197 @@ import 'package:butlery/repositories/firebase/firebase_social_request_repository
 import 'package:butlery/repositories/firestore_repository.dart' as p53;
 import 'package:butlery/services/unified/friends/friends_service_roles.dart'
     as p54;
+import 'package:butlery/repositories/interfaces/friends_repository.dart' as p55;
 import 'package:butlery/services/unified/friends/friends_service_roles.dart'
-    as p55;
-import 'package:butlery/repositories/interfaces/friends_repository.dart' as p56;
-import 'package:butlery/services/unified/friends/friends_service_roles.dart'
-    as p57;
-import 'package:butlery/viewmodels/friends_viewmodel.dart' as p58;
-import 'package:butlery/viewmodels/group_invitations_viewmodel.dart' as p59;
+    as p56;
+import 'package:butlery/viewmodels/friends_viewmodel.dart' as p57;
+import 'package:butlery/viewmodels/group_invitations_viewmodel.dart' as p58;
 import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart'
-    as p60;
-import 'package:butlery/services/group_shared_content_service.dart' as p61;
+    as p59;
+import 'package:butlery/services/group_shared_content_service.dart' as p60;
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart'
-    as p62;
+    as p61;
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart'
-    as p63;
-import 'package:butlery/services/image_picker_service.dart' as p64;
-import 'package:butlery/services/upload/image_upload_service.dart' as p65;
-import 'package:butlery/services/import/import_manager.dart' as p66;
-import 'package:butlery/services/import/import_rate_limiter.dart' as p67;
+    as p62;
+import 'package:butlery/services/image_picker_service.dart' as p63;
+import 'package:butlery/services/upload/image_upload_service.dart' as p64;
+import 'package:butlery/services/import/import_manager.dart' as p65;
+import 'package:butlery/services/import/import_rate_limiter.dart' as p66;
 import 'package:butlery/services/tagging/ingredient_change_pr_service.dart'
-    as p68;
+    as p67;
 import 'package:butlery/repositories/interfaces/ingredient_change_request_repository.dart'
-    as p69;
+    as p68;
 import 'package:butlery/services/ingredients/ingredient_id_resolver.dart'
-    as p70;
-import 'package:butlery/services/tagging/ingredient_lookup_service.dart' as p71;
-import 'package:butlery/services/ingredient_match_service.dart' as p72;
+    as p69;
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart' as p70;
+import 'package:butlery/services/ingredient_match_service.dart' as p71;
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart'
+    as p72;
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
     as p73;
-import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
-    as p74;
-import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart' as p75;
+import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart' as p74;
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart'
-    as p76;
+    as p75;
 import 'package:butlery/services/performance/intelligent_cache_manager.dart'
-    as p77;
-import 'package:butlery/services/feedback/interaction_logger.dart' as p78;
-import 'package:butlery/core/cache/json_cache_helper.dart' as p79;
-import 'package:butlery/services/menu/parser/lexicon_provider.dart' as p80;
+    as p76;
+import 'package:butlery/services/feedback/interaction_logger.dart' as p77;
+import 'package:butlery/core/cache/json_cache_helper.dart' as p78;
+import 'package:butlery/services/menu/parser/lexicon_provider.dart' as p79;
 import 'package:butlery/services/parsing/line_classifier/line_classifier_model_manager.dart'
-    as p81;
+    as p80;
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart'
-    as p82;
-import 'package:butlery/services/llm/llm_service.dart' as p83;
-import 'package:butlery/core/providers/locale_provider.dart' as p84;
-import 'package:butlery/services/menu_service.dart' as p85;
-import 'package:butlery/viewmodels/menu_viewmodel.dart' as p86;
+    as p81;
+import 'package:butlery/services/llm/llm_service.dart' as p82;
+import 'package:butlery/core/providers/locale_provider.dart' as p83;
+import 'package:butlery/services/menu_service.dart' as p84;
+import 'package:butlery/viewmodels/menu_viewmodel.dart' as p85;
 import 'package:butlery/repositories/interfaces/menu_voting_repository.dart'
-    as p87;
-import 'package:butlery/services/menu_voting_service.dart' as p88;
+    as p86;
+import 'package:butlery/services/menu_voting_service.dart' as p87;
 import 'package:butlery/services/messaging/message_reactions_service.dart'
-    as p89;
+    as p88;
 import 'package:butlery/repositories/interfaces/messaging_repository.dart'
-    as p90;
-import 'package:butlery/services/messaging_service.dart' as p91;
-import 'package:butlery/services/admin/metrics_assembler.dart' as p92;
+    as p89;
+import 'package:butlery/services/messaging_service.dart' as p90;
+import 'package:butlery/services/admin/metrics_assembler.dart' as p91;
 import 'package:butlery/services/moderation/moderation_appeals_service.dart'
-    as p93;
+    as p92;
 import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart'
-    as p94;
-import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart' as p95;
-import 'package:butlery/services/parsing/ner/ner_model_manager.dart' as p96;
+    as p93;
+import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart' as p94;
+import 'package:butlery/services/parsing/ner/ner_model_manager.dart' as p95;
 import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart'
-    as p97;
+    as p96;
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart'
-    as p98;
+    as p97;
 import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart'
-    as p99;
+    as p98;
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart'
-    as p100;
+    as p99;
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart'
-    as p101;
+    as p100;
 import 'package:butlery/services/notifications/notification_service.dart'
-    as p102;
+    as p101;
 import 'package:butlery/repositories/interfaces/notifications_repository.dart'
-    as p103;
-import 'package:butlery/services/nutrition/nutrition_service.dart' as p104;
+    as p102;
+import 'package:butlery/services/nutrition/nutrition_service.dart' as p103;
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart'
-    as p105;
-import 'package:butlery/viewmodels/onboarding_viewmodel.dart' as p106;
+    as p104;
+import 'package:butlery/viewmodels/onboarding_viewmodel.dart' as p105;
 import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart'
-    as p107;
-import 'package:butlery/services/parsing/ner/onnx_ner_service.dart' as p108;
-import 'package:butlery/repositories/ops_log_repository.dart' as p109;
+    as p106;
+import 'package:butlery/services/parsing/ner/onnx_ner_service.dart' as p107;
+import 'package:butlery/repositories/ops_log_repository.dart' as p108;
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart'
-    as p110;
-import 'package:butlery/services/user_service/user_service_roles.dart' as p111;
-import 'package:butlery/repositories/interfaces/pantry_repository.dart' as p112;
-import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart' as p113;
-import 'package:butlery/repositories/parse_events_repository.dart' as p114;
-import 'package:butlery/services/import/parser_shadow_sampler.dart' as p115;
-import 'package:butlery/services/auth/password_reset_service.dart' as p116;
-import 'package:butlery/viewmodels/password_reset_viewmodel.dart' as p117;
+    as p109;
+import 'package:butlery/services/user_service/user_service_roles.dart' as p110;
+import 'package:butlery/repositories/interfaces/pantry_repository.dart' as p111;
+import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart' as p112;
+import 'package:butlery/repositories/parse_events_repository.dart' as p113;
+import 'package:butlery/services/import/parser_shadow_sampler.dart' as p114;
+import 'package:butlery/services/auth/password_reset_service.dart' as p115;
+import 'package:butlery/viewmodels/password_reset_viewmodel.dart' as p116;
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart'
-    as p118;
+    as p117;
 import 'package:butlery/services/account/pending_retention_notice_store.dart'
-    as p119;
+    as p118;
 import 'package:butlery/services/performance/performance_monitoring_service.dart'
-    as p120;
-import 'package:butlery/services/persistence_service.dart' as p121;
+    as p119;
+import 'package:butlery/services/persistence_service.dart' as p120;
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart'
-    as p122;
+    as p121;
 import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart'
-    as p123;
-import 'package:butlery/viewmodels/personal_tag_viewmodel.dart' as p124;
-import 'package:butlery/viewmodels/photo_import_viewmodel.dart' as p125;
-import 'package:butlery/services/social/ping_service.dart' as p126;
+    as p122;
+import 'package:butlery/viewmodels/personal_tag_viewmodel.dart' as p123;
+import 'package:butlery/viewmodels/photo_import_viewmodel.dart' as p124;
+import 'package:butlery/services/social/ping_service.dart' as p125;
 import 'package:butlery/services/moderation/pool_moderation_service.dart'
-    as p127;
-import 'package:butlery/services/user_service/user_service_roles.dart' as p128;
+    as p126;
+import 'package:butlery/services/user_service/user_service_roles.dart' as p127;
 import 'package:butlery/services/social/profile_searchability_service.dart'
-    as p129;
-import 'package:butlery/services/user_service/user_service_roles.dart' as p130;
-import 'package:butlery/viewmodels/profile/profile_viewmodel.dart' as p131;
-import 'package:butlery/services/auth/provider_sign_in_service.dart' as p132;
+    as p128;
+import 'package:butlery/services/user_service/user_service_roles.dart' as p129;
+import 'package:butlery/viewmodels/profile/profile_viewmodel.dart' as p130;
+import 'package:butlery/services/auth/provider_sign_in_service.dart' as p131;
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart'
-    as p133;
-import 'package:butlery/services/realtime/realtime_menu_service.dart' as p134;
-import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart' as p135;
-import 'package:butlery/services/recipe/recipe_cooking_service.dart' as p136;
-import 'package:butlery/viewmodels/recipe_form_viewmodel.dart' as p137;
-import 'package:butlery/viewmodels/recipe_list_viewmodel.dart' as p138;
-import 'package:butlery/services/parsing/recipe_parser_service.dart' as p139;
+    as p132;
+import 'package:butlery/services/realtime/realtime_menu_service.dart' as p133;
+import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart' as p134;
+import 'package:butlery/services/recipe/recipe_cooking_service.dart' as p135;
+import 'package:butlery/viewmodels/recipe_form_viewmodel.dart' as p136;
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart' as p137;
+import 'package:butlery/services/parsing/recipe_parser_service.dart' as p138;
 import 'package:butlery/services/social/modules/recipe_share_request_module.dart'
-    as p140;
-import 'package:butlery/repositories/recipe_stats_repository.dart' as p141;
+    as p139;
+import 'package:butlery/repositories/recipe_stats_repository.dart' as p140;
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart'
-    as p142;
-import 'package:butlery/services/parsing/crf/remote_weight_loader.dart' as p143;
+    as p141;
+import 'package:butlery/services/parsing/crf/remote_weight_loader.dart' as p142;
 import 'package:butlery/services/moderation/report_outcomes_service.dart'
-    as p144;
-import 'package:butlery/services/moderation/report_service.dart' as p145;
-import 'package:butlery/services/search_service.dart' as p146;
-import 'package:butlery/services/seasonal/seasonal_hero_service.dart' as p147;
-import 'package:butlery/services/auth/session_revocation_service.dart' as p148;
-import 'package:butlery/services/share_service.dart' as p149;
+    as p143;
+import 'package:butlery/services/moderation/report_service.dart' as p144;
+import 'package:butlery/services/search_service.dart' as p145;
+import 'package:butlery/services/seasonal/seasonal_hero_service.dart' as p146;
+import 'package:butlery/services/auth/session_revocation_service.dart' as p147;
+import 'package:butlery/services/share_service.dart' as p148;
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart'
-    as p150;
+    as p149;
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart'
-    as p151;
+    as p150;
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart'
-    as p152;
+    as p151;
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
-    as p153;
-import 'package:butlery/viewmodels/shopping_share_viewmodel.dart' as p154;
+    as p152;
+import 'package:butlery/viewmodels/shopping_share_viewmodel.dart' as p153;
 import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart'
-    as p155;
-import 'package:butlery/services/social_media_extractor.dart' as p156;
+    as p154;
+import 'package:butlery/services/social_media_extractor.dart' as p155;
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart'
-    as p157;
+    as p156;
 import 'package:butlery/services/unified/operations/social_menu_operations.dart'
-    as p158;
+    as p157;
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart'
-    as p159;
-import 'package:butlery/services/social_recipe_service.dart' as p160;
-import 'package:butlery/viewmodels/social_recipe_viewmodel.dart' as p161;
+    as p158;
+import 'package:butlery/services/social_recipe_service.dart' as p159;
+import 'package:butlery/viewmodels/social_recipe_viewmodel.dart' as p160;
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart'
-    as p162;
-import 'package:butlery/services/cooking/step_timer_service.dart' as p163;
+    as p161;
+import 'package:butlery/services/cooking/step_timer_service.dart' as p162;
 import 'package:butlery/repositories/interfaces/storage_repository.dart'
-    as p164;
-import 'package:butlery/services/tagging/tag_config_service.dart' as p165;
-import 'package:butlery/services/tagging/tag_editing_service.dart' as p166;
-import 'package:butlery/repositories/tag_overrides_log_repository.dart' as p167;
-import 'package:butlery/services/tagging/tag_resolution_service.dart' as p168;
-import 'package:butlery/services/tagging/tagging_events_tracker.dart' as p169;
-import 'package:butlery/viewmodels/text_import_viewmodel.dart' as p170;
-import 'package:butlery/services/theme_service.dart' as p171;
-import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart' as p172;
-import 'package:butlery/repositories/interfaces/trash_repository.dart' as p173;
-import 'package:butlery/services/trash/trash_service.dart' as p174;
-import 'package:butlery/services/voice/tts_service.dart' as p175;
-import 'package:butlery/services/unified/unified_menu_service.dart' as p176;
-import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart' as p177;
-import 'package:butlery/services/unified/unified_shopping_service.dart' as p178;
-import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart' as p179;
+    as p163;
+import 'package:butlery/services/tagging/tag_config_service.dart' as p164;
+import 'package:butlery/services/tagging/tag_editing_service.dart' as p165;
+import 'package:butlery/repositories/tag_overrides_log_repository.dart' as p166;
+import 'package:butlery/services/tagging/tag_resolution_service.dart' as p167;
+import 'package:butlery/services/tagging/tagging_events_tracker.dart' as p168;
+import 'package:butlery/viewmodels/text_import_viewmodel.dart' as p169;
+import 'package:butlery/services/theme_service.dart' as p170;
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart' as p171;
+import 'package:butlery/repositories/interfaces/trash_repository.dart' as p172;
+import 'package:butlery/services/trash/trash_service.dart' as p173;
+import 'package:butlery/services/voice/tts_service.dart' as p174;
+import 'package:butlery/services/unified/unified_menu_service.dart' as p175;
+import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart' as p176;
+import 'package:butlery/services/unified/unified_shopping_service.dart' as p177;
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart' as p178;
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart'
-    as p180;
+    as p179;
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
-    as p181;
-import 'package:butlery/viewmodels/user_profile_viewmodel.dart' as p182;
-import 'package:butlery/services/voice/voice_capture_service.dart' as p183;
-import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart' as p184;
+    as p180;
+import 'package:butlery/viewmodels/user_profile_viewmodel.dart' as p181;
+import 'package:butlery/services/voice/voice_capture_service.dart' as p182;
+import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart' as p183;
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart'
-    as p185;
+    as p184;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart'
-    as p186;
-import 'package:butlery/services/voice/whisper_model_manager.dart' as p187;
+    as p185;
+import 'package:butlery/services/voice/whisper_model_manager.dart' as p186;
 import 'package:butlery/services/analytics/winback_attribution_service.dart'
-    as p188;
+    as p187;
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart'
-    as p189;
+    as p188;
 import 'package:butlery/services/import/youtube/youtube_transcript_service.dart'
-    as p190;
+    as p189;
 
 class _M0 extends Mock implements p0.AccountDeletionService {}
 
@@ -389,277 +387,275 @@ class _M53 extends Mock implements p53.FirestoreRepository {}
 
 class _M54 extends Mock implements p54.FriendsActions {}
 
-class _M55 extends Mock implements p55.FriendsReader {}
+class _M55 extends Mock implements p55.FriendsRepository {}
 
-class _M56 extends Mock implements p56.FriendsRepository {}
+class _M56 extends Mock implements p56.FriendsSession {}
 
-class _M57 extends Mock implements p57.FriendsSession {}
+class _M57 extends Mock implements p57.FriendsViewModel {}
 
-class _M58 extends Mock implements p58.FriendsViewModel {}
+class _M58 extends Mock implements p58.GroupInvitationsViewModel {}
 
-class _M59 extends Mock implements p59.GroupInvitationsViewModel {}
+class _M59 extends Mock implements p59.GroupSharedContentRepository {}
 
-class _M60 extends Mock implements p60.GroupSharedContentRepository {}
+class _M60 extends Mock implements p60.GroupSharedContentService {}
 
-class _M61 extends Mock implements p61.GroupSharedContentService {}
+class _M61 extends Mock implements p61.GroupWeeklyMenuPlanRepository {}
 
-class _M62 extends Mock implements p62.GroupWeeklyMenuPlanRepository {}
+class _M62 extends Mock implements p62.GroupWeeklyMenuPlanService {}
 
-class _M63 extends Mock implements p63.GroupWeeklyMenuPlanService {}
+class _M63 extends Mock implements p63.ImagePickerService {}
 
-class _M64 extends Mock implements p64.ImagePickerService {}
+class _M64 extends Mock implements p64.ImageUploadService {}
 
-class _M65 extends Mock implements p65.ImageUploadService {}
+class _M65 extends Mock implements p65.ImportManager {}
 
-class _M66 extends Mock implements p66.ImportManager {}
+class _M66 extends Mock implements p66.ImportRateLimiter {}
 
-class _M67 extends Mock implements p67.ImportRateLimiter {}
+class _M67 extends Mock implements p67.IngredientChangePrService {}
 
-class _M68 extends Mock implements p68.IngredientChangePrService {}
+class _M68 extends Mock implements p68.IngredientChangeRequestRepository {}
 
-class _M69 extends Mock implements p69.IngredientChangeRequestRepository {}
+class _M69 extends Mock implements p69.IngredientIdResolver {}
 
-class _M70 extends Mock implements p70.IngredientIdResolver {}
+class _M70 extends Mock implements p70.IngredientLookupService {}
 
-class _M71 extends Mock implements p71.IngredientLookupService {}
+class _M71 extends Mock implements p71.IngredientMatchService {}
 
-class _M72 extends Mock implements p72.IngredientMatchService {}
+class _M72 extends Mock implements p72.IngredientParsingStrategy {}
 
-class _M73 extends Mock implements p73.IngredientParsingStrategy {}
+class _M73 extends Mock implements p73.IngredientRepository {}
 
-class _M74 extends Mock implements p74.IngredientRepository {}
+class _M74 extends Mock implements p74.IngredientSearchViewModel {}
 
-class _M75 extends Mock implements p75.IngredientSearchViewModel {}
+class _M75 extends Mock implements p75.InstagramPipeline {}
 
-class _M76 extends Mock implements p76.InstagramPipeline {}
+class _M76 extends Mock implements p76.IntelligentCacheManager {}
 
-class _M77 extends Mock implements p77.IntelligentCacheManager {}
+class _M77 extends Mock implements p77.InteractionLogger {}
 
-class _M78 extends Mock implements p78.InteractionLogger {}
+class _M78 extends Mock implements p78.JsonCacheHelper {}
 
-class _M79 extends Mock implements p79.JsonCacheHelper {}
+class _M79 extends Mock implements p79.LexiconProvider {}
 
-class _M80 extends Mock implements p80.LexiconProvider {}
+class _M80 extends Mock implements p80.LineClassifierModelManager {}
 
-class _M81 extends Mock implements p81.LineClassifierModelManager {}
+class _M81 extends Mock implements p81.LlmEnhancementService {}
 
-class _M82 extends Mock implements p82.LlmEnhancementService {}
+class _M82 extends Mock implements p82.LlmService {}
 
-class _M83 extends Mock implements p83.LlmService {}
+class _M83 extends Mock implements p83.LocaleProvider {}
 
-class _M84 extends Mock implements p84.LocaleProvider {}
+class _M84 extends Mock implements p84.MenuService {}
 
-class _M85 extends Mock implements p85.MenuService {}
+class _M85 extends Mock implements p85.MenuViewModel {}
 
-class _M86 extends Mock implements p86.MenuViewModel {}
+class _M86 extends Mock implements p86.MenuVotingRepository {}
 
-class _M87 extends Mock implements p87.MenuVotingRepository {}
+class _M87 extends Mock implements p87.MenuVotingService {}
 
-class _M88 extends Mock implements p88.MenuVotingService {}
+class _M88 extends Mock implements p88.MessageReactionsService {}
 
-class _M89 extends Mock implements p89.MessageReactionsService {}
+class _M89 extends Mock implements p89.MessagingRepository {}
 
-class _M90 extends Mock implements p90.MessagingRepository {}
+class _M90 extends Mock implements p90.MessagingService {}
 
-class _M91 extends Mock implements p91.MessagingService {}
+class _M91 extends Mock implements p91.MetricsAssembler {}
 
-class _M92 extends Mock implements p92.MetricsAssembler {}
+class _M92 extends Mock implements p92.ModerationAppealsService {}
 
-class _M93 extends Mock implements p93.ModerationAppealsService {}
+class _M93 extends Mock implements p93.MyContentDecisionsViewModel {}
 
-class _M94 extends Mock implements p94.MyContentDecisionsViewModel {}
+class _M94 extends Mock implements p94.MyReportsViewModel {}
 
-class _M95 extends Mock implements p95.MyReportsViewModel {}
+class _M95 extends Mock implements p95.NerModelManager {}
 
-class _M96 extends Mock implements p96.NerModelManager {}
+class _M96 extends Mock implements p96.NeuralIngredientParser {}
 
-class _M97 extends Mock implements p97.NeuralIngredientParser {}
+class _M97 extends Mock implements p97.NeuralLineClassifier {}
 
-class _M98 extends Mock implements p98.NeuralLineClassifier {}
+class _M98 extends Mock implements p98.NotificationAnalyticsRepository {}
 
-class _M99 extends Mock implements p99.NotificationAnalyticsRepository {}
+class _M99 extends Mock implements p99.NotificationBatchRepository {}
 
-class _M100 extends Mock implements p100.NotificationBatchRepository {}
+class _M100 extends Mock implements p100.NotificationHistoryRepository {}
 
-class _M101 extends Mock implements p101.NotificationHistoryRepository {}
+class _M101 extends Mock implements p101.NotificationService {}
 
-class _M102 extends Mock implements p102.NotificationService {}
+class _M102 extends Mock implements p102.NotificationsRepository {}
 
-class _M103 extends Mock implements p103.NotificationsRepository {}
+class _M103 extends Mock implements p103.NutritionService {}
 
-class _M104 extends Mock implements p104.NutritionService {}
+class _M104 extends Mock implements p104.OnboardingProgressService {}
 
-class _M105 extends Mock implements p105.OnboardingProgressService {}
+class _M105 extends Mock implements p105.OnboardingViewModel {}
 
-class _M106 extends Mock implements p106.OnboardingViewModel {}
+class _M106 extends Mock implements p106.OnnxLineClassifierService {}
 
-class _M107 extends Mock implements p107.OnnxLineClassifierService {}
+class _M107 extends Mock implements p107.OnnxNerService {}
 
-class _M108 extends Mock implements p108.OnnxNerService {}
+class _M108 extends Mock implements p108.OpsLogRepository {}
 
-class _M109 extends Mock implements p109.OpsLogRepository {}
+class _M109 extends Mock implements p109.OverwrittenVersionRepository {}
 
-class _M110 extends Mock implements p110.OverwrittenVersionRepository {}
+class _M110 extends Mock implements p110.OwnProfileEditor {}
 
-class _M111 extends Mock implements p111.OwnProfileEditor {}
+class _M111 extends Mock implements p111.PantryRepository {}
 
-class _M112 extends Mock implements p112.PantryRepository {}
+class _M112 extends Mock implements p112.PantryViewModel {}
 
-class _M113 extends Mock implements p113.PantryViewModel {}
+class _M113 extends Mock implements p113.ParseEventsRepository {}
 
-class _M114 extends Mock implements p114.ParseEventsRepository {}
+class _M114 extends Mock implements p114.ParserShadowSampler {}
 
-class _M115 extends Mock implements p115.ParserShadowSampler {}
+class _M115 extends Mock implements p115.PasswordResetService {}
 
-class _M116 extends Mock implements p116.PasswordResetService {}
+class _M116 extends Mock implements p116.PasswordResetViewModel {}
 
-class _M117 extends Mock implements p117.PasswordResetViewModel {}
+class _M117 extends Mock implements p117.PendingDeletionViewModel {}
 
-class _M118 extends Mock implements p118.PendingDeletionViewModel {}
+class _M118 extends Mock implements p118.PendingRetentionNoticeStore {}
 
-class _M119 extends Mock implements p119.PendingRetentionNoticeStore {}
+class _M119 extends Mock implements p119.PerformanceMonitoringService {}
 
-class _M120 extends Mock implements p120.PerformanceMonitoringService {}
+class _M120 extends Mock implements p120.PersistenceService {}
 
-class _M121 extends Mock implements p121.PersistenceService {}
+class _M121 extends Mock implements p121.PersonalTagCrudService {}
 
-class _M122 extends Mock implements p122.PersonalTagCrudService {}
+class _M122 extends Mock implements p122.PersonalTagRuleEvaluator {}
 
-class _M123 extends Mock implements p123.PersonalTagRuleEvaluator {}
+class _M123 extends Mock implements p123.PersonalTagViewModel {}
 
-class _M124 extends Mock implements p124.PersonalTagViewModel {}
+class _M124 extends Mock implements p124.PhotoImportViewModel {}
 
-class _M125 extends Mock implements p125.PhotoImportViewModel {}
+class _M125 extends Mock implements p125.PingService {}
 
-class _M126 extends Mock implements p126.PingService {}
+class _M126 extends Mock implements p126.PoolModerationService {}
 
-class _M127 extends Mock implements p127.PoolModerationService {}
+class _M127 extends Mock implements p127.ProfileDirectory {}
 
-class _M128 extends Mock implements p128.ProfileDirectory {}
+class _M128 extends Mock implements p128.ProfileSearchabilityService {}
 
-class _M129 extends Mock implements p129.ProfileSearchabilityService {}
+class _M129 extends Mock implements p129.ProfileSession {}
 
-class _M130 extends Mock implements p130.ProfileSession {}
+class _M130 extends Mock implements p130.ProfileViewModel {}
 
-class _M131 extends Mock implements p131.ProfileViewModel {}
+class _M131 extends Mock implements p131.ProviderSignInService {}
 
-class _M132 extends Mock implements p132.ProviderSignInService {}
+class _M132 extends Mock implements p132.RealtimeGroupMenuModule {}
 
-class _M133 extends Mock implements p133.RealtimeGroupMenuModule {}
+class _M133 extends Mock implements p133.RealtimeMenuService {}
 
-class _M134 extends Mock implements p134.RealtimeMenuService {}
+class _M134 extends Mock implements p134.RealtimeMenuViewModel {}
 
-class _M135 extends Mock implements p135.RealtimeMenuViewModel {}
+class _M135 extends Mock implements p135.RecipeCookingService {}
 
-class _M136 extends Mock implements p136.RecipeCookingService {}
+class _M136 extends Mock implements p136.RecipeFormViewModel {}
 
-class _M137 extends Mock implements p137.RecipeFormViewModel {}
+class _M137 extends Mock implements p137.RecipeListViewModel {}
 
-class _M138 extends Mock implements p138.RecipeListViewModel {}
+class _M138 extends Mock implements p138.RecipeParserService {}
 
-class _M139 extends Mock implements p139.RecipeParserService {}
+class _M139 extends Mock implements p139.RecipeShareRequestModule {}
 
-class _M140 extends Mock implements p140.RecipeShareRequestModule {}
+class _M140 extends Mock implements p140.RecipeStatsRepository {}
 
-class _M141 extends Mock implements p141.RecipeStatsRepository {}
+class _M141 extends Mock implements p141.RecipeSuggestionRepository {}
 
-class _M142 extends Mock implements p142.RecipeSuggestionRepository {}
+class _M142 extends Mock implements p142.RemoteWeightLoader {}
 
-class _M143 extends Mock implements p143.RemoteWeightLoader {}
+class _M143 extends Mock implements p143.ReportOutcomesService {}
 
-class _M144 extends Mock implements p144.ReportOutcomesService {}
+class _M144 extends Mock implements p144.ReportService {}
 
-class _M145 extends Mock implements p145.ReportService {}
+class _M145 extends Mock implements p145.SearchService {}
 
-class _M146 extends Mock implements p146.SearchService {}
+class _M146 extends Mock implements p146.SeasonalHeroService {}
 
-class _M147 extends Mock implements p147.SeasonalHeroService {}
+class _M147 extends Mock implements p147.SessionRevocationService {}
 
-class _M148 extends Mock implements p148.SessionRevocationService {}
+class _M148 extends Mock implements p148.ShareService {}
 
-class _M149 extends Mock implements p149.ShareService {}
+class _M149 extends Mock implements p149.SharedContentCoordinatorViewModel {}
 
-class _M150 extends Mock implements p150.SharedContentCoordinatorViewModel {}
+class _M150 extends Mock implements p150.SharedMenuViewModel {}
 
-class _M151 extends Mock implements p151.SharedMenuViewModel {}
+class _M151 extends Mock implements p151.SharedShoppingListsViewModel {}
 
-class _M152 extends Mock implements p152.SharedShoppingListsViewModel {}
+class _M152 extends Mock implements p152.ShoppingRepository {}
 
-class _M153 extends Mock implements p153.ShoppingRepository {}
+class _M153 extends Mock implements p153.ShoppingShareViewModel {}
 
-class _M154 extends Mock implements p154.ShoppingShareViewModel {}
+class _M154 extends Mock implements p154.SignupAllowlistRepository {}
 
-class _M155 extends Mock implements p155.SignupAllowlistRepository {}
+class _M155 extends Mock implements p155.SocialMediaExtractor {}
 
-class _M156 extends Mock implements p156.SocialMediaExtractor {}
+class _M156 extends Mock implements p156.SocialMenuCoordinator {}
 
-class _M157 extends Mock implements p157.SocialMenuCoordinator {}
+class _M157 extends Mock implements p157.SocialMenuOperations {}
 
-class _M158 extends Mock implements p158.SocialMenuOperations {}
+class _M158 extends Mock implements p158.SocialRecipeCoordinator {}
 
-class _M159 extends Mock implements p159.SocialRecipeCoordinator {}
+class _M159 extends Mock implements p159.SocialRecipeService {}
 
-class _M160 extends Mock implements p160.SocialRecipeService {}
+class _M160 extends Mock implements p160.SocialRecipeViewModel {}
 
-class _M161 extends Mock implements p161.SocialRecipeViewModel {}
+class _M161 extends Mock implements p161.SocialShoppingCoordinator {}
 
-class _M162 extends Mock implements p162.SocialShoppingCoordinator {}
+class _M162 extends Mock implements p162.StepTimerService {}
 
-class _M163 extends Mock implements p163.StepTimerService {}
+class _M163 extends Mock implements p163.StorageRepository {}
 
-class _M164 extends Mock implements p164.StorageRepository {}
+class _M164 extends Mock implements p164.TagConfigService {}
 
-class _M165 extends Mock implements p165.TagConfigService {}
+class _M165 extends Mock implements p165.TagEditingService {}
 
-class _M166 extends Mock implements p166.TagEditingService {}
+class _M166 extends Mock implements p166.TagOverridesLogRepository {}
 
-class _M167 extends Mock implements p167.TagOverridesLogRepository {}
+class _M167 extends Mock implements p167.TagResolutionService {}
 
-class _M168 extends Mock implements p168.TagResolutionService {}
+class _M168 extends Mock implements p168.TaggingEventsTracker {}
 
-class _M169 extends Mock implements p169.TaggingEventsTracker {}
+class _M169 extends Mock implements p169.TextImportViewModel {}
 
-class _M170 extends Mock implements p170.TextImportViewModel {}
+class _M170 extends Mock implements p170.ThemeService {}
 
-class _M171 extends Mock implements p171.ThemeService {}
+class _M171 extends Mock implements p171.TikTokPipeline {}
 
-class _M172 extends Mock implements p172.TikTokPipeline {}
+class _M172 extends Mock implements p172.TrashRepository {}
 
-class _M173 extends Mock implements p173.TrashRepository {}
+class _M173 extends Mock implements p173.TrashService {}
 
-class _M174 extends Mock implements p174.TrashService {}
+class _M174 extends Mock implements p174.TtsService {}
 
-class _M175 extends Mock implements p175.TtsService {}
+class _M175 extends Mock implements p175.UnifiedMenuService {}
 
-class _M176 extends Mock implements p176.UnifiedMenuService {}
+class _M176 extends Mock implements p176.UnifiedRecipeViewModel {}
 
-class _M177 extends Mock implements p177.UnifiedRecipeViewModel {}
+class _M177 extends Mock implements p177.UnifiedShoppingService {}
 
-class _M178 extends Mock implements p178.UnifiedShoppingService {}
+class _M178 extends Mock implements p178.UnifiedShoppingViewModel {}
 
-class _M179 extends Mock implements p179.UnifiedShoppingViewModel {}
+class _M179 extends Mock implements p179.UniversalShareDialogViewModel {}
 
-class _M180 extends Mock implements p180.UniversalShareDialogViewModel {}
+class _M180 extends Mock implements p180.UserIngredientRepository {}
 
-class _M181 extends Mock implements p181.UserIngredientRepository {}
+class _M181 extends Mock implements p181.UserProfileViewModel {}
 
-class _M182 extends Mock implements p182.UserProfileViewModel {}
+class _M182 extends Mock implements p182.VoiceCaptureService {}
 
-class _M183 extends Mock implements p183.VoiceCaptureService {}
+class _M183 extends Mock implements p183.VoiceImportViewModel {}
 
-class _M184 extends Mock implements p184.VoiceImportViewModel {}
+class _M184 extends Mock implements p184.WeeklyMenuPlanRepository {}
 
-class _M185 extends Mock implements p185.WeeklyMenuPlanRepository {}
+class _M185 extends Mock implements p185.WeeklyMenuPlanViewModel {}
 
-class _M186 extends Mock implements p186.WeeklyMenuPlanViewModel {}
+class _M186 extends Mock implements p186.WhisperModelManager {}
 
-class _M187 extends Mock implements p187.WhisperModelManager {}
+class _M187 extends Mock implements p187.WinbackAttributionService {}
 
-class _M188 extends Mock implements p188.WinbackAttributionService {}
+class _M188 extends Mock implements p188.YouTubeImportStrategy {}
 
-class _M189 extends Mock implements p189.YouTubeImportStrategy {}
-
-class _M190 extends Mock implements p190.YouTubeTranscriptService {}
+class _M189 extends Mock implements p189.YouTubeTranscriptService {}
 
 void registerProductionMockFallbacks(GetIt getIt) {
   if (!getIt.isRegistered<p0.AccountDeletionService>()) {
@@ -831,416 +827,413 @@ void registerProductionMockFallbacks(GetIt getIt) {
   if (!getIt.isRegistered<p54.FriendsActions>()) {
     getIt.registerLazySingleton<p54.FriendsActions>(_M54.new);
   }
-  if (!getIt.isRegistered<p55.FriendsReader>()) {
-    getIt.registerLazySingleton<p55.FriendsReader>(_M55.new);
+  if (!getIt.isRegistered<p55.FriendsRepository>()) {
+    getIt.registerLazySingleton<p55.FriendsRepository>(_M55.new);
   }
-  if (!getIt.isRegistered<p56.FriendsRepository>()) {
-    getIt.registerLazySingleton<p56.FriendsRepository>(_M56.new);
+  if (!getIt.isRegistered<p56.FriendsSession>()) {
+    getIt.registerLazySingleton<p56.FriendsSession>(_M56.new);
   }
-  if (!getIt.isRegistered<p57.FriendsSession>()) {
-    getIt.registerLazySingleton<p57.FriendsSession>(_M57.new);
+  if (!getIt.isRegistered<p57.FriendsViewModel>()) {
+    getIt.registerLazySingleton<p57.FriendsViewModel>(_M57.new);
   }
-  if (!getIt.isRegistered<p58.FriendsViewModel>()) {
-    getIt.registerLazySingleton<p58.FriendsViewModel>(_M58.new);
+  if (!getIt.isRegistered<p58.GroupInvitationsViewModel>()) {
+    getIt.registerLazySingleton<p58.GroupInvitationsViewModel>(_M58.new);
   }
-  if (!getIt.isRegistered<p59.GroupInvitationsViewModel>()) {
-    getIt.registerLazySingleton<p59.GroupInvitationsViewModel>(_M59.new);
+  if (!getIt.isRegistered<p59.GroupSharedContentRepository>()) {
+    getIt.registerLazySingleton<p59.GroupSharedContentRepository>(_M59.new);
   }
-  if (!getIt.isRegistered<p60.GroupSharedContentRepository>()) {
-    getIt.registerLazySingleton<p60.GroupSharedContentRepository>(_M60.new);
+  if (!getIt.isRegistered<p60.GroupSharedContentService>()) {
+    getIt.registerLazySingleton<p60.GroupSharedContentService>(_M60.new);
   }
-  if (!getIt.isRegistered<p61.GroupSharedContentService>()) {
-    getIt.registerLazySingleton<p61.GroupSharedContentService>(_M61.new);
+  if (!getIt.isRegistered<p61.GroupWeeklyMenuPlanRepository>()) {
+    getIt.registerLazySingleton<p61.GroupWeeklyMenuPlanRepository>(_M61.new);
   }
-  if (!getIt.isRegistered<p62.GroupWeeklyMenuPlanRepository>()) {
-    getIt.registerLazySingleton<p62.GroupWeeklyMenuPlanRepository>(_M62.new);
+  if (!getIt.isRegistered<p62.GroupWeeklyMenuPlanService>()) {
+    getIt.registerLazySingleton<p62.GroupWeeklyMenuPlanService>(_M62.new);
   }
-  if (!getIt.isRegistered<p63.GroupWeeklyMenuPlanService>()) {
-    getIt.registerLazySingleton<p63.GroupWeeklyMenuPlanService>(_M63.new);
+  if (!getIt.isRegistered<p63.ImagePickerService>()) {
+    getIt.registerLazySingleton<p63.ImagePickerService>(_M63.new);
   }
-  if (!getIt.isRegistered<p64.ImagePickerService>()) {
-    getIt.registerLazySingleton<p64.ImagePickerService>(_M64.new);
+  if (!getIt.isRegistered<p64.ImageUploadService>()) {
+    getIt.registerLazySingleton<p64.ImageUploadService>(_M64.new);
   }
-  if (!getIt.isRegistered<p65.ImageUploadService>()) {
-    getIt.registerLazySingleton<p65.ImageUploadService>(_M65.new);
+  if (!getIt.isRegistered<p65.ImportManager>()) {
+    getIt.registerLazySingleton<p65.ImportManager>(_M65.new);
   }
-  if (!getIt.isRegistered<p66.ImportManager>()) {
-    getIt.registerLazySingleton<p66.ImportManager>(_M66.new);
+  if (!getIt.isRegistered<p66.ImportRateLimiter>()) {
+    getIt.registerLazySingleton<p66.ImportRateLimiter>(_M66.new);
   }
-  if (!getIt.isRegistered<p67.ImportRateLimiter>()) {
-    getIt.registerLazySingleton<p67.ImportRateLimiter>(_M67.new);
+  if (!getIt.isRegistered<p67.IngredientChangePrService>()) {
+    getIt.registerLazySingleton<p67.IngredientChangePrService>(_M67.new);
   }
-  if (!getIt.isRegistered<p68.IngredientChangePrService>()) {
-    getIt.registerLazySingleton<p68.IngredientChangePrService>(_M68.new);
-  }
-  if (!getIt.isRegistered<p69.IngredientChangeRequestRepository>()) {
-    getIt.registerLazySingleton<p69.IngredientChangeRequestRepository>(
-      _M69.new,
+  if (!getIt.isRegistered<p68.IngredientChangeRequestRepository>()) {
+    getIt.registerLazySingleton<p68.IngredientChangeRequestRepository>(
+      _M68.new,
     );
   }
-  if (!getIt.isRegistered<p70.IngredientIdResolver>()) {
-    getIt.registerLazySingleton<p70.IngredientIdResolver>(_M70.new);
+  if (!getIt.isRegistered<p69.IngredientIdResolver>()) {
+    getIt.registerLazySingleton<p69.IngredientIdResolver>(_M69.new);
   }
-  if (!getIt.isRegistered<p71.IngredientLookupService>()) {
-    getIt.registerLazySingleton<p71.IngredientLookupService>(_M71.new);
+  if (!getIt.isRegistered<p70.IngredientLookupService>()) {
+    getIt.registerLazySingleton<p70.IngredientLookupService>(_M70.new);
   }
-  if (!getIt.isRegistered<p72.IngredientMatchService>()) {
-    getIt.registerLazySingleton<p72.IngredientMatchService>(_M72.new);
+  if (!getIt.isRegistered<p71.IngredientMatchService>()) {
+    getIt.registerLazySingleton<p71.IngredientMatchService>(_M71.new);
   }
-  if (!getIt.isRegistered<p73.IngredientParsingStrategy>()) {
-    getIt.registerLazySingleton<p73.IngredientParsingStrategy>(_M73.new);
+  if (!getIt.isRegistered<p72.IngredientParsingStrategy>()) {
+    getIt.registerLazySingleton<p72.IngredientParsingStrategy>(_M72.new);
   }
-  if (!getIt.isRegistered<p74.IngredientRepository>()) {
-    getIt.registerLazySingleton<p74.IngredientRepository>(_M74.new);
+  if (!getIt.isRegistered<p73.IngredientRepository>()) {
+    getIt.registerLazySingleton<p73.IngredientRepository>(_M73.new);
   }
-  if (!getIt.isRegistered<p75.IngredientSearchViewModel>()) {
-    getIt.registerLazySingleton<p75.IngredientSearchViewModel>(_M75.new);
+  if (!getIt.isRegistered<p74.IngredientSearchViewModel>()) {
+    getIt.registerLazySingleton<p74.IngredientSearchViewModel>(_M74.new);
   }
-  if (!getIt.isRegistered<p76.InstagramPipeline>()) {
-    getIt.registerLazySingleton<p76.InstagramPipeline>(_M76.new);
+  if (!getIt.isRegistered<p75.InstagramPipeline>()) {
+    getIt.registerLazySingleton<p75.InstagramPipeline>(_M75.new);
   }
-  if (!getIt.isRegistered<p77.IntelligentCacheManager>()) {
-    getIt.registerLazySingleton<p77.IntelligentCacheManager>(_M77.new);
+  if (!getIt.isRegistered<p76.IntelligentCacheManager>()) {
+    getIt.registerLazySingleton<p76.IntelligentCacheManager>(_M76.new);
   }
-  if (!getIt.isRegistered<p78.InteractionLogger>()) {
-    getIt.registerLazySingleton<p78.InteractionLogger>(_M78.new);
+  if (!getIt.isRegistered<p77.InteractionLogger>()) {
+    getIt.registerLazySingleton<p77.InteractionLogger>(_M77.new);
   }
-  if (!getIt.isRegistered<p79.JsonCacheHelper>()) {
-    getIt.registerLazySingleton<p79.JsonCacheHelper>(_M79.new);
+  if (!getIt.isRegistered<p78.JsonCacheHelper>()) {
+    getIt.registerLazySingleton<p78.JsonCacheHelper>(_M78.new);
   }
-  if (!getIt.isRegistered<p80.LexiconProvider>()) {
-    getIt.registerLazySingleton<p80.LexiconProvider>(_M80.new);
+  if (!getIt.isRegistered<p79.LexiconProvider>()) {
+    getIt.registerLazySingleton<p79.LexiconProvider>(_M79.new);
   }
-  if (!getIt.isRegistered<p81.LineClassifierModelManager>()) {
-    getIt.registerLazySingleton<p81.LineClassifierModelManager>(_M81.new);
+  if (!getIt.isRegistered<p80.LineClassifierModelManager>()) {
+    getIt.registerLazySingleton<p80.LineClassifierModelManager>(_M80.new);
   }
-  if (!getIt.isRegistered<p82.LlmEnhancementService>()) {
-    getIt.registerLazySingleton<p82.LlmEnhancementService>(_M82.new);
+  if (!getIt.isRegistered<p81.LlmEnhancementService>()) {
+    getIt.registerLazySingleton<p81.LlmEnhancementService>(_M81.new);
   }
-  if (!getIt.isRegistered<p83.LlmService>()) {
-    getIt.registerLazySingleton<p83.LlmService>(_M83.new);
+  if (!getIt.isRegistered<p82.LlmService>()) {
+    getIt.registerLazySingleton<p82.LlmService>(_M82.new);
   }
-  if (!getIt.isRegistered<p84.LocaleProvider>()) {
-    getIt.registerLazySingleton<p84.LocaleProvider>(_M84.new);
+  if (!getIt.isRegistered<p83.LocaleProvider>()) {
+    getIt.registerLazySingleton<p83.LocaleProvider>(_M83.new);
   }
-  if (!getIt.isRegistered<p85.MenuService>()) {
-    getIt.registerLazySingleton<p85.MenuService>(_M85.new);
+  if (!getIt.isRegistered<p84.MenuService>()) {
+    getIt.registerLazySingleton<p84.MenuService>(_M84.new);
   }
-  if (!getIt.isRegistered<p86.MenuViewModel>()) {
-    getIt.registerLazySingleton<p86.MenuViewModel>(_M86.new);
+  if (!getIt.isRegistered<p85.MenuViewModel>()) {
+    getIt.registerLazySingleton<p85.MenuViewModel>(_M85.new);
   }
-  if (!getIt.isRegistered<p87.MenuVotingRepository>()) {
-    getIt.registerLazySingleton<p87.MenuVotingRepository>(_M87.new);
+  if (!getIt.isRegistered<p86.MenuVotingRepository>()) {
+    getIt.registerLazySingleton<p86.MenuVotingRepository>(_M86.new);
   }
-  if (!getIt.isRegistered<p88.MenuVotingService>()) {
-    getIt.registerLazySingleton<p88.MenuVotingService>(_M88.new);
+  if (!getIt.isRegistered<p87.MenuVotingService>()) {
+    getIt.registerLazySingleton<p87.MenuVotingService>(_M87.new);
   }
-  if (!getIt.isRegistered<p89.MessageReactionsService>()) {
-    getIt.registerLazySingleton<p89.MessageReactionsService>(_M89.new);
+  if (!getIt.isRegistered<p88.MessageReactionsService>()) {
+    getIt.registerLazySingleton<p88.MessageReactionsService>(_M88.new);
   }
-  if (!getIt.isRegistered<p90.MessagingRepository>()) {
-    getIt.registerLazySingleton<p90.MessagingRepository>(_M90.new);
+  if (!getIt.isRegistered<p89.MessagingRepository>()) {
+    getIt.registerLazySingleton<p89.MessagingRepository>(_M89.new);
   }
-  if (!getIt.isRegistered<p91.MessagingService>()) {
-    getIt.registerLazySingleton<p91.MessagingService>(_M91.new);
+  if (!getIt.isRegistered<p90.MessagingService>()) {
+    getIt.registerLazySingleton<p90.MessagingService>(_M90.new);
   }
-  if (!getIt.isRegistered<p92.MetricsAssembler>()) {
-    getIt.registerLazySingleton<p92.MetricsAssembler>(_M92.new);
+  if (!getIt.isRegistered<p91.MetricsAssembler>()) {
+    getIt.registerLazySingleton<p91.MetricsAssembler>(_M91.new);
   }
-  if (!getIt.isRegistered<p93.ModerationAppealsService>()) {
-    getIt.registerLazySingleton<p93.ModerationAppealsService>(_M93.new);
+  if (!getIt.isRegistered<p92.ModerationAppealsService>()) {
+    getIt.registerLazySingleton<p92.ModerationAppealsService>(_M92.new);
   }
-  if (!getIt.isRegistered<p94.MyContentDecisionsViewModel>()) {
-    getIt.registerLazySingleton<p94.MyContentDecisionsViewModel>(_M94.new);
+  if (!getIt.isRegistered<p93.MyContentDecisionsViewModel>()) {
+    getIt.registerLazySingleton<p93.MyContentDecisionsViewModel>(_M93.new);
   }
-  if (!getIt.isRegistered<p95.MyReportsViewModel>()) {
-    getIt.registerLazySingleton<p95.MyReportsViewModel>(_M95.new);
+  if (!getIt.isRegistered<p94.MyReportsViewModel>()) {
+    getIt.registerLazySingleton<p94.MyReportsViewModel>(_M94.new);
   }
-  if (!getIt.isRegistered<p96.NerModelManager>()) {
-    getIt.registerLazySingleton<p96.NerModelManager>(_M96.new);
+  if (!getIt.isRegistered<p95.NerModelManager>()) {
+    getIt.registerLazySingleton<p95.NerModelManager>(_M95.new);
   }
-  if (!getIt.isRegistered<p97.NeuralIngredientParser>()) {
-    getIt.registerLazySingleton<p97.NeuralIngredientParser>(_M97.new);
+  if (!getIt.isRegistered<p96.NeuralIngredientParser>()) {
+    getIt.registerLazySingleton<p96.NeuralIngredientParser>(_M96.new);
   }
-  if (!getIt.isRegistered<p98.NeuralLineClassifier>()) {
-    getIt.registerLazySingleton<p98.NeuralLineClassifier>(_M98.new);
+  if (!getIt.isRegistered<p97.NeuralLineClassifier>()) {
+    getIt.registerLazySingleton<p97.NeuralLineClassifier>(_M97.new);
   }
-  if (!getIt.isRegistered<p99.NotificationAnalyticsRepository>()) {
-    getIt.registerLazySingleton<p99.NotificationAnalyticsRepository>(_M99.new);
+  if (!getIt.isRegistered<p98.NotificationAnalyticsRepository>()) {
+    getIt.registerLazySingleton<p98.NotificationAnalyticsRepository>(_M98.new);
   }
-  if (!getIt.isRegistered<p100.NotificationBatchRepository>()) {
-    getIt.registerLazySingleton<p100.NotificationBatchRepository>(_M100.new);
+  if (!getIt.isRegistered<p99.NotificationBatchRepository>()) {
+    getIt.registerLazySingleton<p99.NotificationBatchRepository>(_M99.new);
   }
-  if (!getIt.isRegistered<p101.NotificationHistoryRepository>()) {
-    getIt.registerLazySingleton<p101.NotificationHistoryRepository>(_M101.new);
+  if (!getIt.isRegistered<p100.NotificationHistoryRepository>()) {
+    getIt.registerLazySingleton<p100.NotificationHistoryRepository>(_M100.new);
   }
-  if (!getIt.isRegistered<p102.NotificationService>()) {
-    getIt.registerLazySingleton<p102.NotificationService>(_M102.new);
+  if (!getIt.isRegistered<p101.NotificationService>()) {
+    getIt.registerLazySingleton<p101.NotificationService>(_M101.new);
   }
-  if (!getIt.isRegistered<p103.NotificationsRepository>()) {
-    getIt.registerLazySingleton<p103.NotificationsRepository>(_M103.new);
+  if (!getIt.isRegistered<p102.NotificationsRepository>()) {
+    getIt.registerLazySingleton<p102.NotificationsRepository>(_M102.new);
   }
-  if (!getIt.isRegistered<p104.NutritionService>()) {
-    getIt.registerLazySingleton<p104.NutritionService>(_M104.new);
+  if (!getIt.isRegistered<p103.NutritionService>()) {
+    getIt.registerLazySingleton<p103.NutritionService>(_M103.new);
   }
-  if (!getIt.isRegistered<p105.OnboardingProgressService>()) {
-    getIt.registerLazySingleton<p105.OnboardingProgressService>(_M105.new);
+  if (!getIt.isRegistered<p104.OnboardingProgressService>()) {
+    getIt.registerLazySingleton<p104.OnboardingProgressService>(_M104.new);
   }
-  if (!getIt.isRegistered<p106.OnboardingViewModel>()) {
-    getIt.registerLazySingleton<p106.OnboardingViewModel>(_M106.new);
+  if (!getIt.isRegistered<p105.OnboardingViewModel>()) {
+    getIt.registerLazySingleton<p105.OnboardingViewModel>(_M105.new);
   }
-  if (!getIt.isRegistered<p107.OnnxLineClassifierService>()) {
-    getIt.registerLazySingleton<p107.OnnxLineClassifierService>(_M107.new);
+  if (!getIt.isRegistered<p106.OnnxLineClassifierService>()) {
+    getIt.registerLazySingleton<p106.OnnxLineClassifierService>(_M106.new);
   }
-  if (!getIt.isRegistered<p108.OnnxNerService>()) {
-    getIt.registerLazySingleton<p108.OnnxNerService>(_M108.new);
+  if (!getIt.isRegistered<p107.OnnxNerService>()) {
+    getIt.registerLazySingleton<p107.OnnxNerService>(_M107.new);
   }
-  if (!getIt.isRegistered<p109.OpsLogRepository>()) {
-    getIt.registerLazySingleton<p109.OpsLogRepository>(_M109.new);
+  if (!getIt.isRegistered<p108.OpsLogRepository>()) {
+    getIt.registerLazySingleton<p108.OpsLogRepository>(_M108.new);
   }
-  if (!getIt.isRegistered<p110.OverwrittenVersionRepository>()) {
-    getIt.registerLazySingleton<p110.OverwrittenVersionRepository>(_M110.new);
+  if (!getIt.isRegistered<p109.OverwrittenVersionRepository>()) {
+    getIt.registerLazySingleton<p109.OverwrittenVersionRepository>(_M109.new);
   }
-  if (!getIt.isRegistered<p111.OwnProfileEditor>()) {
-    getIt.registerLazySingleton<p111.OwnProfileEditor>(_M111.new);
+  if (!getIt.isRegistered<p110.OwnProfileEditor>()) {
+    getIt.registerLazySingleton<p110.OwnProfileEditor>(_M110.new);
   }
-  if (!getIt.isRegistered<p112.PantryRepository>()) {
-    getIt.registerLazySingleton<p112.PantryRepository>(_M112.new);
+  if (!getIt.isRegistered<p111.PantryRepository>()) {
+    getIt.registerLazySingleton<p111.PantryRepository>(_M111.new);
   }
-  if (!getIt.isRegistered<p113.PantryViewModel>()) {
-    getIt.registerLazySingleton<p113.PantryViewModel>(_M113.new);
+  if (!getIt.isRegistered<p112.PantryViewModel>()) {
+    getIt.registerLazySingleton<p112.PantryViewModel>(_M112.new);
   }
-  if (!getIt.isRegistered<p114.ParseEventsRepository>()) {
-    getIt.registerLazySingleton<p114.ParseEventsRepository>(_M114.new);
+  if (!getIt.isRegistered<p113.ParseEventsRepository>()) {
+    getIt.registerLazySingleton<p113.ParseEventsRepository>(_M113.new);
   }
-  if (!getIt.isRegistered<p115.ParserShadowSampler>()) {
-    getIt.registerLazySingleton<p115.ParserShadowSampler>(_M115.new);
+  if (!getIt.isRegistered<p114.ParserShadowSampler>()) {
+    getIt.registerLazySingleton<p114.ParserShadowSampler>(_M114.new);
   }
-  if (!getIt.isRegistered<p116.PasswordResetService>()) {
-    getIt.registerLazySingleton<p116.PasswordResetService>(_M116.new);
+  if (!getIt.isRegistered<p115.PasswordResetService>()) {
+    getIt.registerLazySingleton<p115.PasswordResetService>(_M115.new);
   }
-  if (!getIt.isRegistered<p117.PasswordResetViewModel>()) {
-    getIt.registerLazySingleton<p117.PasswordResetViewModel>(_M117.new);
+  if (!getIt.isRegistered<p116.PasswordResetViewModel>()) {
+    getIt.registerLazySingleton<p116.PasswordResetViewModel>(_M116.new);
   }
-  if (!getIt.isRegistered<p118.PendingDeletionViewModel>()) {
-    getIt.registerLazySingleton<p118.PendingDeletionViewModel>(_M118.new);
+  if (!getIt.isRegistered<p117.PendingDeletionViewModel>()) {
+    getIt.registerLazySingleton<p117.PendingDeletionViewModel>(_M117.new);
   }
-  if (!getIt.isRegistered<p119.PendingRetentionNoticeStore>()) {
-    getIt.registerLazySingleton<p119.PendingRetentionNoticeStore>(_M119.new);
+  if (!getIt.isRegistered<p118.PendingRetentionNoticeStore>()) {
+    getIt.registerLazySingleton<p118.PendingRetentionNoticeStore>(_M118.new);
   }
-  if (!getIt.isRegistered<p120.PerformanceMonitoringService>()) {
-    getIt.registerLazySingleton<p120.PerformanceMonitoringService>(_M120.new);
+  if (!getIt.isRegistered<p119.PerformanceMonitoringService>()) {
+    getIt.registerLazySingleton<p119.PerformanceMonitoringService>(_M119.new);
   }
-  if (!getIt.isRegistered<p121.PersistenceService>()) {
-    getIt.registerLazySingleton<p121.PersistenceService>(_M121.new);
+  if (!getIt.isRegistered<p120.PersistenceService>()) {
+    getIt.registerLazySingleton<p120.PersistenceService>(_M120.new);
   }
-  if (!getIt.isRegistered<p122.PersonalTagCrudService>()) {
-    getIt.registerLazySingleton<p122.PersonalTagCrudService>(_M122.new);
+  if (!getIt.isRegistered<p121.PersonalTagCrudService>()) {
+    getIt.registerLazySingleton<p121.PersonalTagCrudService>(_M121.new);
   }
-  if (!getIt.isRegistered<p123.PersonalTagRuleEvaluator>()) {
-    getIt.registerLazySingleton<p123.PersonalTagRuleEvaluator>(_M123.new);
+  if (!getIt.isRegistered<p122.PersonalTagRuleEvaluator>()) {
+    getIt.registerLazySingleton<p122.PersonalTagRuleEvaluator>(_M122.new);
   }
-  if (!getIt.isRegistered<p124.PersonalTagViewModel>()) {
-    getIt.registerLazySingleton<p124.PersonalTagViewModel>(_M124.new);
+  if (!getIt.isRegistered<p123.PersonalTagViewModel>()) {
+    getIt.registerLazySingleton<p123.PersonalTagViewModel>(_M123.new);
   }
-  if (!getIt.isRegistered<p125.PhotoImportViewModel>()) {
-    getIt.registerLazySingleton<p125.PhotoImportViewModel>(_M125.new);
+  if (!getIt.isRegistered<p124.PhotoImportViewModel>()) {
+    getIt.registerLazySingleton<p124.PhotoImportViewModel>(_M124.new);
   }
-  if (!getIt.isRegistered<p126.PingService>()) {
-    getIt.registerLazySingleton<p126.PingService>(_M126.new);
+  if (!getIt.isRegistered<p125.PingService>()) {
+    getIt.registerLazySingleton<p125.PingService>(_M125.new);
   }
-  if (!getIt.isRegistered<p127.PoolModerationService>()) {
-    getIt.registerLazySingleton<p127.PoolModerationService>(_M127.new);
+  if (!getIt.isRegistered<p126.PoolModerationService>()) {
+    getIt.registerLazySingleton<p126.PoolModerationService>(_M126.new);
   }
-  if (!getIt.isRegistered<p128.ProfileDirectory>()) {
-    getIt.registerLazySingleton<p128.ProfileDirectory>(_M128.new);
+  if (!getIt.isRegistered<p127.ProfileDirectory>()) {
+    getIt.registerLazySingleton<p127.ProfileDirectory>(_M127.new);
   }
-  if (!getIt.isRegistered<p129.ProfileSearchabilityService>()) {
-    getIt.registerLazySingleton<p129.ProfileSearchabilityService>(_M129.new);
+  if (!getIt.isRegistered<p128.ProfileSearchabilityService>()) {
+    getIt.registerLazySingleton<p128.ProfileSearchabilityService>(_M128.new);
   }
-  if (!getIt.isRegistered<p130.ProfileSession>()) {
-    getIt.registerLazySingleton<p130.ProfileSession>(_M130.new);
+  if (!getIt.isRegistered<p129.ProfileSession>()) {
+    getIt.registerLazySingleton<p129.ProfileSession>(_M129.new);
   }
-  if (!getIt.isRegistered<p131.ProfileViewModel>()) {
-    getIt.registerLazySingleton<p131.ProfileViewModel>(_M131.new);
+  if (!getIt.isRegistered<p130.ProfileViewModel>()) {
+    getIt.registerLazySingleton<p130.ProfileViewModel>(_M130.new);
   }
-  if (!getIt.isRegistered<p132.ProviderSignInService>()) {
-    getIt.registerLazySingleton<p132.ProviderSignInService>(_M132.new);
+  if (!getIt.isRegistered<p131.ProviderSignInService>()) {
+    getIt.registerLazySingleton<p131.ProviderSignInService>(_M131.new);
   }
-  if (!getIt.isRegistered<p133.RealtimeGroupMenuModule>()) {
-    getIt.registerLazySingleton<p133.RealtimeGroupMenuModule>(_M133.new);
+  if (!getIt.isRegistered<p132.RealtimeGroupMenuModule>()) {
+    getIt.registerLazySingleton<p132.RealtimeGroupMenuModule>(_M132.new);
   }
-  if (!getIt.isRegistered<p134.RealtimeMenuService>()) {
-    getIt.registerLazySingleton<p134.RealtimeMenuService>(_M134.new);
+  if (!getIt.isRegistered<p133.RealtimeMenuService>()) {
+    getIt.registerLazySingleton<p133.RealtimeMenuService>(_M133.new);
   }
-  if (!getIt.isRegistered<p135.RealtimeMenuViewModel>()) {
-    getIt.registerLazySingleton<p135.RealtimeMenuViewModel>(_M135.new);
+  if (!getIt.isRegistered<p134.RealtimeMenuViewModel>()) {
+    getIt.registerLazySingleton<p134.RealtimeMenuViewModel>(_M134.new);
   }
-  if (!getIt.isRegistered<p136.RecipeCookingService>()) {
-    getIt.registerLazySingleton<p136.RecipeCookingService>(_M136.new);
+  if (!getIt.isRegistered<p135.RecipeCookingService>()) {
+    getIt.registerLazySingleton<p135.RecipeCookingService>(_M135.new);
   }
-  if (!getIt.isRegistered<p137.RecipeFormViewModel>()) {
-    getIt.registerLazySingleton<p137.RecipeFormViewModel>(_M137.new);
+  if (!getIt.isRegistered<p136.RecipeFormViewModel>()) {
+    getIt.registerLazySingleton<p136.RecipeFormViewModel>(_M136.new);
   }
-  if (!getIt.isRegistered<p138.RecipeListViewModel>()) {
-    getIt.registerLazySingleton<p138.RecipeListViewModel>(_M138.new);
+  if (!getIt.isRegistered<p137.RecipeListViewModel>()) {
+    getIt.registerLazySingleton<p137.RecipeListViewModel>(_M137.new);
   }
-  if (!getIt.isRegistered<p139.RecipeParserService>()) {
-    getIt.registerLazySingleton<p139.RecipeParserService>(_M139.new);
+  if (!getIt.isRegistered<p138.RecipeParserService>()) {
+    getIt.registerLazySingleton<p138.RecipeParserService>(_M138.new);
   }
-  if (!getIt.isRegistered<p140.RecipeShareRequestModule>()) {
-    getIt.registerLazySingleton<p140.RecipeShareRequestModule>(_M140.new);
+  if (!getIt.isRegistered<p139.RecipeShareRequestModule>()) {
+    getIt.registerLazySingleton<p139.RecipeShareRequestModule>(_M139.new);
   }
-  if (!getIt.isRegistered<p141.RecipeStatsRepository>()) {
-    getIt.registerLazySingleton<p141.RecipeStatsRepository>(_M141.new);
+  if (!getIt.isRegistered<p140.RecipeStatsRepository>()) {
+    getIt.registerLazySingleton<p140.RecipeStatsRepository>(_M140.new);
   }
-  if (!getIt.isRegistered<p142.RecipeSuggestionRepository>()) {
-    getIt.registerLazySingleton<p142.RecipeSuggestionRepository>(_M142.new);
+  if (!getIt.isRegistered<p141.RecipeSuggestionRepository>()) {
+    getIt.registerLazySingleton<p141.RecipeSuggestionRepository>(_M141.new);
   }
-  if (!getIt.isRegistered<p143.RemoteWeightLoader>()) {
-    getIt.registerLazySingleton<p143.RemoteWeightLoader>(_M143.new);
+  if (!getIt.isRegistered<p142.RemoteWeightLoader>()) {
+    getIt.registerLazySingleton<p142.RemoteWeightLoader>(_M142.new);
   }
-  if (!getIt.isRegistered<p144.ReportOutcomesService>()) {
-    getIt.registerLazySingleton<p144.ReportOutcomesService>(_M144.new);
+  if (!getIt.isRegistered<p143.ReportOutcomesService>()) {
+    getIt.registerLazySingleton<p143.ReportOutcomesService>(_M143.new);
   }
-  if (!getIt.isRegistered<p145.ReportService>()) {
-    getIt.registerLazySingleton<p145.ReportService>(_M145.new);
+  if (!getIt.isRegistered<p144.ReportService>()) {
+    getIt.registerLazySingleton<p144.ReportService>(_M144.new);
   }
-  if (!getIt.isRegistered<p146.SearchService>()) {
-    getIt.registerLazySingleton<p146.SearchService>(_M146.new);
+  if (!getIt.isRegistered<p145.SearchService>()) {
+    getIt.registerLazySingleton<p145.SearchService>(_M145.new);
   }
-  if (!getIt.isRegistered<p147.SeasonalHeroService>()) {
-    getIt.registerLazySingleton<p147.SeasonalHeroService>(_M147.new);
+  if (!getIt.isRegistered<p146.SeasonalHeroService>()) {
+    getIt.registerLazySingleton<p146.SeasonalHeroService>(_M146.new);
   }
-  if (!getIt.isRegistered<p148.SessionRevocationService>()) {
-    getIt.registerLazySingleton<p148.SessionRevocationService>(_M148.new);
+  if (!getIt.isRegistered<p147.SessionRevocationService>()) {
+    getIt.registerLazySingleton<p147.SessionRevocationService>(_M147.new);
   }
-  if (!getIt.isRegistered<p149.ShareService>()) {
-    getIt.registerLazySingleton<p149.ShareService>(_M149.new);
+  if (!getIt.isRegistered<p148.ShareService>()) {
+    getIt.registerLazySingleton<p148.ShareService>(_M148.new);
   }
-  if (!getIt.isRegistered<p150.SharedContentCoordinatorViewModel>()) {
-    getIt.registerLazySingleton<p150.SharedContentCoordinatorViewModel>(
-      _M150.new,
+  if (!getIt.isRegistered<p149.SharedContentCoordinatorViewModel>()) {
+    getIt.registerLazySingleton<p149.SharedContentCoordinatorViewModel>(
+      _M149.new,
     );
   }
-  if (!getIt.isRegistered<p151.SharedMenuViewModel>()) {
-    getIt.registerLazySingleton<p151.SharedMenuViewModel>(_M151.new);
+  if (!getIt.isRegistered<p150.SharedMenuViewModel>()) {
+    getIt.registerLazySingleton<p150.SharedMenuViewModel>(_M150.new);
   }
-  if (!getIt.isRegistered<p152.SharedShoppingListsViewModel>()) {
-    getIt.registerLazySingleton<p152.SharedShoppingListsViewModel>(_M152.new);
+  if (!getIt.isRegistered<p151.SharedShoppingListsViewModel>()) {
+    getIt.registerLazySingleton<p151.SharedShoppingListsViewModel>(_M151.new);
   }
-  if (!getIt.isRegistered<p153.ShoppingRepository>()) {
-    getIt.registerLazySingleton<p153.ShoppingRepository>(_M153.new);
+  if (!getIt.isRegistered<p152.ShoppingRepository>()) {
+    getIt.registerLazySingleton<p152.ShoppingRepository>(_M152.new);
   }
-  if (!getIt.isRegistered<p154.ShoppingShareViewModel>()) {
-    getIt.registerLazySingleton<p154.ShoppingShareViewModel>(_M154.new);
+  if (!getIt.isRegistered<p153.ShoppingShareViewModel>()) {
+    getIt.registerLazySingleton<p153.ShoppingShareViewModel>(_M153.new);
   }
-  if (!getIt.isRegistered<p155.SignupAllowlistRepository>()) {
-    getIt.registerLazySingleton<p155.SignupAllowlistRepository>(_M155.new);
+  if (!getIt.isRegistered<p154.SignupAllowlistRepository>()) {
+    getIt.registerLazySingleton<p154.SignupAllowlistRepository>(_M154.new);
   }
-  if (!getIt.isRegistered<p156.SocialMediaExtractor>()) {
-    getIt.registerLazySingleton<p156.SocialMediaExtractor>(_M156.new);
+  if (!getIt.isRegistered<p155.SocialMediaExtractor>()) {
+    getIt.registerLazySingleton<p155.SocialMediaExtractor>(_M155.new);
   }
-  if (!getIt.isRegistered<p157.SocialMenuCoordinator>()) {
-    getIt.registerLazySingleton<p157.SocialMenuCoordinator>(_M157.new);
+  if (!getIt.isRegistered<p156.SocialMenuCoordinator>()) {
+    getIt.registerLazySingleton<p156.SocialMenuCoordinator>(_M156.new);
   }
-  if (!getIt.isRegistered<p158.SocialMenuOperations>()) {
-    getIt.registerLazySingleton<p158.SocialMenuOperations>(_M158.new);
+  if (!getIt.isRegistered<p157.SocialMenuOperations>()) {
+    getIt.registerLazySingleton<p157.SocialMenuOperations>(_M157.new);
   }
-  if (!getIt.isRegistered<p159.SocialRecipeCoordinator>()) {
-    getIt.registerLazySingleton<p159.SocialRecipeCoordinator>(_M159.new);
+  if (!getIt.isRegistered<p158.SocialRecipeCoordinator>()) {
+    getIt.registerLazySingleton<p158.SocialRecipeCoordinator>(_M158.new);
   }
-  if (!getIt.isRegistered<p160.SocialRecipeService>()) {
-    getIt.registerLazySingleton<p160.SocialRecipeService>(_M160.new);
+  if (!getIt.isRegistered<p159.SocialRecipeService>()) {
+    getIt.registerLazySingleton<p159.SocialRecipeService>(_M159.new);
   }
-  if (!getIt.isRegistered<p161.SocialRecipeViewModel>()) {
-    getIt.registerLazySingleton<p161.SocialRecipeViewModel>(_M161.new);
+  if (!getIt.isRegistered<p160.SocialRecipeViewModel>()) {
+    getIt.registerLazySingleton<p160.SocialRecipeViewModel>(_M160.new);
   }
-  if (!getIt.isRegistered<p162.SocialShoppingCoordinator>()) {
-    getIt.registerLazySingleton<p162.SocialShoppingCoordinator>(_M162.new);
+  if (!getIt.isRegistered<p161.SocialShoppingCoordinator>()) {
+    getIt.registerLazySingleton<p161.SocialShoppingCoordinator>(_M161.new);
   }
-  if (!getIt.isRegistered<p163.StepTimerService>()) {
-    getIt.registerLazySingleton<p163.StepTimerService>(_M163.new);
+  if (!getIt.isRegistered<p162.StepTimerService>()) {
+    getIt.registerLazySingleton<p162.StepTimerService>(_M162.new);
   }
-  if (!getIt.isRegistered<p164.StorageRepository>()) {
-    getIt.registerLazySingleton<p164.StorageRepository>(_M164.new);
+  if (!getIt.isRegistered<p163.StorageRepository>()) {
+    getIt.registerLazySingleton<p163.StorageRepository>(_M163.new);
   }
-  if (!getIt.isRegistered<p165.TagConfigService>()) {
-    getIt.registerLazySingleton<p165.TagConfigService>(_M165.new);
+  if (!getIt.isRegistered<p164.TagConfigService>()) {
+    getIt.registerLazySingleton<p164.TagConfigService>(_M164.new);
   }
-  if (!getIt.isRegistered<p166.TagEditingService>()) {
-    getIt.registerLazySingleton<p166.TagEditingService>(_M166.new);
+  if (!getIt.isRegistered<p165.TagEditingService>()) {
+    getIt.registerLazySingleton<p165.TagEditingService>(_M165.new);
   }
-  if (!getIt.isRegistered<p167.TagOverridesLogRepository>()) {
-    getIt.registerLazySingleton<p167.TagOverridesLogRepository>(_M167.new);
+  if (!getIt.isRegistered<p166.TagOverridesLogRepository>()) {
+    getIt.registerLazySingleton<p166.TagOverridesLogRepository>(_M166.new);
   }
-  if (!getIt.isRegistered<p168.TagResolutionService>()) {
-    getIt.registerLazySingleton<p168.TagResolutionService>(_M168.new);
+  if (!getIt.isRegistered<p167.TagResolutionService>()) {
+    getIt.registerLazySingleton<p167.TagResolutionService>(_M167.new);
   }
-  if (!getIt.isRegistered<p169.TaggingEventsTracker>()) {
-    getIt.registerLazySingleton<p169.TaggingEventsTracker>(_M169.new);
+  if (!getIt.isRegistered<p168.TaggingEventsTracker>()) {
+    getIt.registerLazySingleton<p168.TaggingEventsTracker>(_M168.new);
   }
-  if (!getIt.isRegistered<p170.TextImportViewModel>()) {
-    getIt.registerLazySingleton<p170.TextImportViewModel>(_M170.new);
+  if (!getIt.isRegistered<p169.TextImportViewModel>()) {
+    getIt.registerLazySingleton<p169.TextImportViewModel>(_M169.new);
   }
-  if (!getIt.isRegistered<p171.ThemeService>()) {
-    getIt.registerLazySingleton<p171.ThemeService>(_M171.new);
+  if (!getIt.isRegistered<p170.ThemeService>()) {
+    getIt.registerLazySingleton<p170.ThemeService>(_M170.new);
   }
-  if (!getIt.isRegistered<p172.TikTokPipeline>()) {
-    getIt.registerLazySingleton<p172.TikTokPipeline>(_M172.new);
+  if (!getIt.isRegistered<p171.TikTokPipeline>()) {
+    getIt.registerLazySingleton<p171.TikTokPipeline>(_M171.new);
   }
-  if (!getIt.isRegistered<p173.TrashRepository>()) {
-    getIt.registerLazySingleton<p173.TrashRepository>(_M173.new);
+  if (!getIt.isRegistered<p172.TrashRepository>()) {
+    getIt.registerLazySingleton<p172.TrashRepository>(_M172.new);
   }
-  if (!getIt.isRegistered<p174.TrashService>()) {
-    getIt.registerLazySingleton<p174.TrashService>(_M174.new);
+  if (!getIt.isRegistered<p173.TrashService>()) {
+    getIt.registerLazySingleton<p173.TrashService>(_M173.new);
   }
-  if (!getIt.isRegistered<p175.TtsService>()) {
-    getIt.registerLazySingleton<p175.TtsService>(_M175.new);
+  if (!getIt.isRegistered<p174.TtsService>()) {
+    getIt.registerLazySingleton<p174.TtsService>(_M174.new);
   }
-  if (!getIt.isRegistered<p176.UnifiedMenuService>()) {
-    getIt.registerLazySingleton<p176.UnifiedMenuService>(_M176.new);
+  if (!getIt.isRegistered<p175.UnifiedMenuService>()) {
+    getIt.registerLazySingleton<p175.UnifiedMenuService>(_M175.new);
   }
-  if (!getIt.isRegistered<p177.UnifiedRecipeViewModel>()) {
-    getIt.registerLazySingleton<p177.UnifiedRecipeViewModel>(_M177.new);
+  if (!getIt.isRegistered<p176.UnifiedRecipeViewModel>()) {
+    getIt.registerLazySingleton<p176.UnifiedRecipeViewModel>(_M176.new);
   }
-  if (!getIt.isRegistered<p178.UnifiedShoppingService>()) {
-    getIt.registerLazySingleton<p178.UnifiedShoppingService>(_M178.new);
+  if (!getIt.isRegistered<p177.UnifiedShoppingService>()) {
+    getIt.registerLazySingleton<p177.UnifiedShoppingService>(_M177.new);
   }
-  if (!getIt.isRegistered<p179.UnifiedShoppingViewModel>()) {
-    getIt.registerLazySingleton<p179.UnifiedShoppingViewModel>(_M179.new);
+  if (!getIt.isRegistered<p178.UnifiedShoppingViewModel>()) {
+    getIt.registerLazySingleton<p178.UnifiedShoppingViewModel>(_M178.new);
   }
-  if (!getIt.isRegistered<p180.UniversalShareDialogViewModel>()) {
-    getIt.registerLazySingleton<p180.UniversalShareDialogViewModel>(_M180.new);
+  if (!getIt.isRegistered<p179.UniversalShareDialogViewModel>()) {
+    getIt.registerLazySingleton<p179.UniversalShareDialogViewModel>(_M179.new);
   }
-  if (!getIt.isRegistered<p181.UserIngredientRepository>()) {
-    getIt.registerLazySingleton<p181.UserIngredientRepository>(_M181.new);
+  if (!getIt.isRegistered<p180.UserIngredientRepository>()) {
+    getIt.registerLazySingleton<p180.UserIngredientRepository>(_M180.new);
   }
-  if (!getIt.isRegistered<p182.UserProfileViewModel>()) {
-    getIt.registerLazySingleton<p182.UserProfileViewModel>(_M182.new);
+  if (!getIt.isRegistered<p181.UserProfileViewModel>()) {
+    getIt.registerLazySingleton<p181.UserProfileViewModel>(_M181.new);
   }
-  if (!getIt.isRegistered<p183.VoiceCaptureService>()) {
-    getIt.registerLazySingleton<p183.VoiceCaptureService>(_M183.new);
+  if (!getIt.isRegistered<p182.VoiceCaptureService>()) {
+    getIt.registerLazySingleton<p182.VoiceCaptureService>(_M182.new);
   }
-  if (!getIt.isRegistered<p184.VoiceImportViewModel>()) {
-    getIt.registerLazySingleton<p184.VoiceImportViewModel>(_M184.new);
+  if (!getIt.isRegistered<p183.VoiceImportViewModel>()) {
+    getIt.registerLazySingleton<p183.VoiceImportViewModel>(_M183.new);
   }
-  if (!getIt.isRegistered<p185.WeeklyMenuPlanRepository>()) {
-    getIt.registerLazySingleton<p185.WeeklyMenuPlanRepository>(_M185.new);
+  if (!getIt.isRegistered<p184.WeeklyMenuPlanRepository>()) {
+    getIt.registerLazySingleton<p184.WeeklyMenuPlanRepository>(_M184.new);
   }
-  if (!getIt.isRegistered<p186.WeeklyMenuPlanViewModel>()) {
-    getIt.registerLazySingleton<p186.WeeklyMenuPlanViewModel>(_M186.new);
+  if (!getIt.isRegistered<p185.WeeklyMenuPlanViewModel>()) {
+    getIt.registerLazySingleton<p185.WeeklyMenuPlanViewModel>(_M185.new);
   }
-  if (!getIt.isRegistered<p187.WhisperModelManager>()) {
-    getIt.registerLazySingleton<p187.WhisperModelManager>(_M187.new);
+  if (!getIt.isRegistered<p186.WhisperModelManager>()) {
+    getIt.registerLazySingleton<p186.WhisperModelManager>(_M186.new);
   }
-  if (!getIt.isRegistered<p188.WinbackAttributionService>()) {
-    getIt.registerLazySingleton<p188.WinbackAttributionService>(_M188.new);
+  if (!getIt.isRegistered<p187.WinbackAttributionService>()) {
+    getIt.registerLazySingleton<p187.WinbackAttributionService>(_M187.new);
   }
-  if (!getIt.isRegistered<p189.YouTubeImportStrategy>()) {
-    getIt.registerLazySingleton<p189.YouTubeImportStrategy>(_M189.new);
+  if (!getIt.isRegistered<p188.YouTubeImportStrategy>()) {
+    getIt.registerLazySingleton<p188.YouTubeImportStrategy>(_M188.new);
   }
-  if (!getIt.isRegistered<p190.YouTubeTranscriptService>()) {
-    getIt.registerLazySingleton<p190.YouTubeTranscriptService>(_M190.new);
+  if (!getIt.isRegistered<p189.YouTubeTranscriptService>()) {
+    getIt.registerLazySingleton<p189.YouTubeTranscriptService>(_M189.new);
   }
 }

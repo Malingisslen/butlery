@@ -8,7 +8,7 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/errors/chat_group_error_mapper.dart';
@@ -66,7 +66,7 @@ class GroupDetailViewModel extends ChangeNotifier
         AsyncOperationMixin {
   final String _conversationId;
   final MessagingService _messagingService;
-  final UnifiedFriendsService _friendsService;
+  final FriendsReader _friendsService;
   final ChatGroupRepository _chatGroupRepository;
 
   // State
@@ -91,7 +91,7 @@ class GroupDetailViewModel extends ChangeNotifier
   GroupDetailViewModel({
     required String conversationId,
     required MessagingService messagingService,
-    required UnifiedFriendsService friendsService,
+    required FriendsReader friendsService,
     ChatGroupRepository? chatGroupRepository,
   }) : _conversationId = conversationId,
        _messagingService = messagingService,

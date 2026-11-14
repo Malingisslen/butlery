@@ -38,7 +38,7 @@ import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dar
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 /// Thrown when the recipe a suggestion is for no longer exists or is no
@@ -175,7 +175,7 @@ class RecipeSuggestionService {
   /// suggester stored, so a member cannot pose as someone else.
   static String suggesterNameOf(
     RecipeSuggestion suggestion,
-    UnifiedFriendsService? friends,
+    FriendsReader? friends,
   ) {
     if (friends == null) return '';
     for (final f in friends.friendsList) {

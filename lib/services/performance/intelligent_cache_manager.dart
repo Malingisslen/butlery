@@ -17,7 +17,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
@@ -45,17 +45,17 @@ class IntelligentCacheManager {
 
   // Services (lazy loaded)
   UnifiedRecipeService? _recipeService;
-  UnifiedFriendsService? _friendsService;
+  FriendsReader? _friendsService;
   PermissionService? _permissionService;
 
   final UnifiedRecipeService Function() _recipeServiceLink;
-  final UnifiedFriendsService Function() _friendsServiceLink;
+  final FriendsReader Function() _friendsServiceLink;
   final PermissionService Function() _permissionServiceLink;
   final JsonCacheHelper Function() _behaviorCacheLink;
 
   IntelligentCacheManager({
     required UnifiedRecipeService Function() recipeService,
-    required UnifiedFriendsService Function() friendsService,
+    required FriendsReader Function() friendsService,
     required PermissionService Function() permissionService,
     required JsonCacheHelper Function() behaviorCache,
   }) : _recipeServiceLink = recipeService,

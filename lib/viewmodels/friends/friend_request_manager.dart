@@ -5,14 +5,14 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth/email_verification_refresh.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 
 /// Friend-request operations for the friends screen: send, accept, reject,
 /// cancel and their batches, with the in-flight joining and analytics each
 /// of them carries.
 class FriendRequestManager {
-  final UnifiedFriendsService _friendsService;
+  final FriendsActions _friendsService;
   final OwnProfileReader _userService;
   final AnalyticsService _analyticsService;
   final AuthService? _authService;
@@ -25,7 +25,7 @@ class FriendRequestManager {
   bool _blockedByUnverifiedEmail = false;
 
   FriendRequestManager({
-    required UnifiedFriendsService friendsService,
+    required FriendsActions friendsService,
     required OwnProfileReader userService,
     required AnalyticsService analyticsService,
     required AuthService? authService,

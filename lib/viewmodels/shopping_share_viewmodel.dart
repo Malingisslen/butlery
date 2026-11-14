@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -24,7 +24,7 @@ import 'package:butlery/services/analytics_service.dart';
 class ShoppingShareViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedShoppingService _shoppingService;
-  final UnifiedFriendsService _friendsService;
+  final FriendsActions _friendsService;
 
   /// Share operation state for UI progress indication during sharing operations.
   /// Indicates active sharing operation for loading indicators and interaction
@@ -67,7 +67,7 @@ class ShoppingShareViewModel extends ChangeNotifier
 
   ShoppingShareViewModel({
     required UnifiedShoppingService shoppingService,
-    required UnifiedFriendsService friendsService,
+    required FriendsActions friendsService,
   }) : _shoppingService = shoppingService,
        _friendsService = friendsService;
 

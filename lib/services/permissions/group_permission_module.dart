@@ -1,17 +1,17 @@
 // lib/services/permissions/group_permission_module.dart
 
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling group (friend category) permission checks and admin validation.
 /// Provides comprehensive permission validation for group management, admin privileges, and invitations.
 class GroupPermissionModule {
   final String? Function() getCurrentUserId;
-  final UnifiedFriendsService Function() _friendsService;
+  final FriendsReader Function() _friendsService;
 
   GroupPermissionModule({
     required this.getCurrentUserId,
-    required UnifiedFriendsService Function() friendsService,
+    required FriendsReader Function() friendsService,
   }) : _friendsService = friendsService;
 
   /// Validates whether the current user has administrative privileges for a specific group.
