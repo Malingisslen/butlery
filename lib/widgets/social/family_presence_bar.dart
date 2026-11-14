@@ -9,7 +9,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -147,7 +147,7 @@ class _FamilyPresenceBarState extends State<FamilyPresenceBar> {
   List<UserProfile> _resolveMembers() {
     if (widget.memberProfiles != null) return widget.memberProfiles!;
 
-    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    final friends = ServiceLocator.tryGet<FriendsReader>();
     if (friends == null) return const <UserProfile>[];
 
     final currentUserId = friends.currentUserId;

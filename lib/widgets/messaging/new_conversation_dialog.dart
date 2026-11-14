@@ -15,7 +15,7 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -39,7 +39,7 @@ class NewConversationDialog extends StatefulWidget {
 class _NewConversationDialogState extends State<NewConversationDialog> {
   final TextEditingController _searchController = TextEditingController();
 
-  late final UnifiedFriendsService _friendsService;
+  late final FriendsReader _friendsService;
   late final MessagingService _messagingService;
 
   List<UserProfile> _friends = [];
@@ -52,7 +52,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   @override
   void initState() {
     super.initState();
-    _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    _friendsService = ServiceLocator.get<FriendsReader>();
     _messagingService = ServiceLocator.get<MessagingService>();
     _loadFriends();
     _searchController.addListener(_filterFriends);

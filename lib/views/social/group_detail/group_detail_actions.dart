@@ -7,7 +7,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -72,7 +72,7 @@ class GroupDetailActions {
     );
     if (shouldRemove != true) return null;
 
-    final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+    final categoriesService = ServiceLocator.get<FriendsActions>();
     final removed = <String>[];
     final failed = <UserProfile>[];
     final reasons = <String, MemberRemovalFailure>{};
@@ -136,7 +136,7 @@ class GroupDetailActions {
 
     if (shouldRemove == true) {
       try {
-        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+        final categoriesService = ServiceLocator.get<FriendsActions>();
         final success = await categoriesService.categories
             .removeFriendFromCategory(
               member.uid,
@@ -181,7 +181,7 @@ class GroupDetailActions {
 
     if (shouldLeave == true) {
       try {
-        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+        final categoriesService = ServiceLocator.get<FriendsActions>();
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUserId;
 

@@ -15,7 +15,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -87,8 +87,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
         VeckomenyShoppingFlow<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
   final FocusNode _promptFocusNode = FocusNode();
-  final UnifiedFriendsService _friendsService =
-      ServiceLocator.get<UnifiedFriendsService>();
+  final FriendsReader _friendsService = ServiceLocator.get<FriendsReader>();
 
   VeckomenyViewMode _viewMode = VeckomenyViewMode.lista;
 

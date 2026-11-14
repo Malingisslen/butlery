@@ -82,7 +82,7 @@ import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
 
 // Service integration for functionality and data management
@@ -610,7 +610,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Hidden entirely when no active sessions stream through.
   Widget _buildCookingSessionCard() {
     final module = ServiceLocator.tryGet<CookingSessionModule>();
-    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    final friends = ServiceLocator.tryGet<FriendsReader>();
     if (module == null || friends == null) return const SizedBox.shrink();
 
     final userId = friends.currentUserId;

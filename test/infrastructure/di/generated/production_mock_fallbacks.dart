@@ -254,28 +254,29 @@ import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart' as p171;
 import 'package:butlery/repositories/interfaces/trash_repository.dart' as p172;
 import 'package:butlery/services/trash/trash_service.dart' as p173;
 import 'package:butlery/services/voice/tts_service.dart' as p174;
-import 'package:butlery/services/unified/unified_menu_service.dart' as p175;
-import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart' as p176;
-import 'package:butlery/services/unified/unified_shopping_service.dart' as p177;
-import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart' as p178;
+import 'package:butlery/services/unified/unified_friends_service.dart' as p175;
+import 'package:butlery/services/unified/unified_menu_service.dart' as p176;
+import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart' as p177;
+import 'package:butlery/services/unified/unified_shopping_service.dart' as p178;
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart' as p179;
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart'
-    as p179;
-import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
     as p180;
-import 'package:butlery/viewmodels/user_profile_viewmodel.dart' as p181;
-import 'package:butlery/services/voice/voice_capture_service.dart' as p182;
-import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart' as p183;
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart'
+    as p181;
+import 'package:butlery/viewmodels/user_profile_viewmodel.dart' as p182;
+import 'package:butlery/services/voice/voice_capture_service.dart' as p183;
+import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart' as p184;
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart'
-    as p184;
-import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart'
     as p185;
-import 'package:butlery/services/voice/whisper_model_manager.dart' as p186;
+import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart'
+    as p186;
+import 'package:butlery/services/voice/whisper_model_manager.dart' as p187;
 import 'package:butlery/services/analytics/winback_attribution_service.dart'
-    as p187;
-import 'package:butlery/services/import/youtube/youtube_import_strategy.dart'
     as p188;
-import 'package:butlery/services/import/youtube/youtube_transcript_service.dart'
+import 'package:butlery/services/import/youtube/youtube_import_strategy.dart'
     as p189;
+import 'package:butlery/services/import/youtube/youtube_transcript_service.dart'
+    as p190;
 
 class _M0 extends Mock implements p0.AccountDeletionService {}
 
@@ -627,35 +628,37 @@ class _M173 extends Mock implements p173.TrashService {}
 
 class _M174 extends Mock implements p174.TtsService {}
 
-class _M175 extends Mock implements p175.UnifiedMenuService {}
+class _M175 extends Mock implements p175.UnifiedFriendsService {}
 
-class _M176 extends Mock implements p176.UnifiedRecipeViewModel {}
+class _M176 extends Mock implements p176.UnifiedMenuService {}
 
-class _M177 extends Mock implements p177.UnifiedShoppingService {}
+class _M177 extends Mock implements p177.UnifiedRecipeViewModel {}
 
-class _M178 extends Mock implements p178.UnifiedShoppingViewModel {}
+class _M178 extends Mock implements p178.UnifiedShoppingService {}
 
-class _M179 extends Mock implements p179.UniversalShareDialogViewModel {}
+class _M179 extends Mock implements p179.UnifiedShoppingViewModel {}
 
-class _M180 extends Mock implements p180.UserIngredientRepository {}
+class _M180 extends Mock implements p180.UniversalShareDialogViewModel {}
 
-class _M181 extends Mock implements p181.UserProfileViewModel {}
+class _M181 extends Mock implements p181.UserIngredientRepository {}
 
-class _M182 extends Mock implements p182.VoiceCaptureService {}
+class _M182 extends Mock implements p182.UserProfileViewModel {}
 
-class _M183 extends Mock implements p183.VoiceImportViewModel {}
+class _M183 extends Mock implements p183.VoiceCaptureService {}
 
-class _M184 extends Mock implements p184.WeeklyMenuPlanRepository {}
+class _M184 extends Mock implements p184.VoiceImportViewModel {}
 
-class _M185 extends Mock implements p185.WeeklyMenuPlanViewModel {}
+class _M185 extends Mock implements p185.WeeklyMenuPlanRepository {}
 
-class _M186 extends Mock implements p186.WhisperModelManager {}
+class _M186 extends Mock implements p186.WeeklyMenuPlanViewModel {}
 
-class _M187 extends Mock implements p187.WinbackAttributionService {}
+class _M187 extends Mock implements p187.WhisperModelManager {}
 
-class _M188 extends Mock implements p188.YouTubeImportStrategy {}
+class _M188 extends Mock implements p188.WinbackAttributionService {}
 
-class _M189 extends Mock implements p189.YouTubeTranscriptService {}
+class _M189 extends Mock implements p189.YouTubeImportStrategy {}
+
+class _M190 extends Mock implements p190.YouTubeTranscriptService {}
 
 void registerProductionMockFallbacks(GetIt getIt) {
   if (!getIt.isRegistered<p0.AccountDeletionService>()) {
@@ -1191,49 +1194,52 @@ void registerProductionMockFallbacks(GetIt getIt) {
   if (!getIt.isRegistered<p174.TtsService>()) {
     getIt.registerLazySingleton<p174.TtsService>(_M174.new);
   }
-  if (!getIt.isRegistered<p175.UnifiedMenuService>()) {
-    getIt.registerLazySingleton<p175.UnifiedMenuService>(_M175.new);
+  if (!getIt.isRegistered<p175.UnifiedFriendsService>()) {
+    getIt.registerLazySingleton<p175.UnifiedFriendsService>(_M175.new);
   }
-  if (!getIt.isRegistered<p176.UnifiedRecipeViewModel>()) {
-    getIt.registerLazySingleton<p176.UnifiedRecipeViewModel>(_M176.new);
+  if (!getIt.isRegistered<p176.UnifiedMenuService>()) {
+    getIt.registerLazySingleton<p176.UnifiedMenuService>(_M176.new);
   }
-  if (!getIt.isRegistered<p177.UnifiedShoppingService>()) {
-    getIt.registerLazySingleton<p177.UnifiedShoppingService>(_M177.new);
+  if (!getIt.isRegistered<p177.UnifiedRecipeViewModel>()) {
+    getIt.registerLazySingleton<p177.UnifiedRecipeViewModel>(_M177.new);
   }
-  if (!getIt.isRegistered<p178.UnifiedShoppingViewModel>()) {
-    getIt.registerLazySingleton<p178.UnifiedShoppingViewModel>(_M178.new);
+  if (!getIt.isRegistered<p178.UnifiedShoppingService>()) {
+    getIt.registerLazySingleton<p178.UnifiedShoppingService>(_M178.new);
   }
-  if (!getIt.isRegistered<p179.UniversalShareDialogViewModel>()) {
-    getIt.registerLazySingleton<p179.UniversalShareDialogViewModel>(_M179.new);
+  if (!getIt.isRegistered<p179.UnifiedShoppingViewModel>()) {
+    getIt.registerLazySingleton<p179.UnifiedShoppingViewModel>(_M179.new);
   }
-  if (!getIt.isRegistered<p180.UserIngredientRepository>()) {
-    getIt.registerLazySingleton<p180.UserIngredientRepository>(_M180.new);
+  if (!getIt.isRegistered<p180.UniversalShareDialogViewModel>()) {
+    getIt.registerLazySingleton<p180.UniversalShareDialogViewModel>(_M180.new);
   }
-  if (!getIt.isRegistered<p181.UserProfileViewModel>()) {
-    getIt.registerLazySingleton<p181.UserProfileViewModel>(_M181.new);
+  if (!getIt.isRegistered<p181.UserIngredientRepository>()) {
+    getIt.registerLazySingleton<p181.UserIngredientRepository>(_M181.new);
   }
-  if (!getIt.isRegistered<p182.VoiceCaptureService>()) {
-    getIt.registerLazySingleton<p182.VoiceCaptureService>(_M182.new);
+  if (!getIt.isRegistered<p182.UserProfileViewModel>()) {
+    getIt.registerLazySingleton<p182.UserProfileViewModel>(_M182.new);
   }
-  if (!getIt.isRegistered<p183.VoiceImportViewModel>()) {
-    getIt.registerLazySingleton<p183.VoiceImportViewModel>(_M183.new);
+  if (!getIt.isRegistered<p183.VoiceCaptureService>()) {
+    getIt.registerLazySingleton<p183.VoiceCaptureService>(_M183.new);
   }
-  if (!getIt.isRegistered<p184.WeeklyMenuPlanRepository>()) {
-    getIt.registerLazySingleton<p184.WeeklyMenuPlanRepository>(_M184.new);
+  if (!getIt.isRegistered<p184.VoiceImportViewModel>()) {
+    getIt.registerLazySingleton<p184.VoiceImportViewModel>(_M184.new);
   }
-  if (!getIt.isRegistered<p185.WeeklyMenuPlanViewModel>()) {
-    getIt.registerLazySingleton<p185.WeeklyMenuPlanViewModel>(_M185.new);
+  if (!getIt.isRegistered<p185.WeeklyMenuPlanRepository>()) {
+    getIt.registerLazySingleton<p185.WeeklyMenuPlanRepository>(_M185.new);
   }
-  if (!getIt.isRegistered<p186.WhisperModelManager>()) {
-    getIt.registerLazySingleton<p186.WhisperModelManager>(_M186.new);
+  if (!getIt.isRegistered<p186.WeeklyMenuPlanViewModel>()) {
+    getIt.registerLazySingleton<p186.WeeklyMenuPlanViewModel>(_M186.new);
   }
-  if (!getIt.isRegistered<p187.WinbackAttributionService>()) {
-    getIt.registerLazySingleton<p187.WinbackAttributionService>(_M187.new);
+  if (!getIt.isRegistered<p187.WhisperModelManager>()) {
+    getIt.registerLazySingleton<p187.WhisperModelManager>(_M187.new);
   }
-  if (!getIt.isRegistered<p188.YouTubeImportStrategy>()) {
-    getIt.registerLazySingleton<p188.YouTubeImportStrategy>(_M188.new);
+  if (!getIt.isRegistered<p188.WinbackAttributionService>()) {
+    getIt.registerLazySingleton<p188.WinbackAttributionService>(_M188.new);
   }
-  if (!getIt.isRegistered<p189.YouTubeTranscriptService>()) {
-    getIt.registerLazySingleton<p189.YouTubeTranscriptService>(_M189.new);
+  if (!getIt.isRegistered<p189.YouTubeImportStrategy>()) {
+    getIt.registerLazySingleton<p189.YouTubeImportStrategy>(_M189.new);
+  }
+  if (!getIt.isRegistered<p190.YouTubeTranscriptService>()) {
+    getIt.registerLazySingleton<p190.YouTubeTranscriptService>(_M190.new);
   }
 }

@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/social/groups/remove_member_dialog.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
@@ -64,7 +64,7 @@ class GroupDialogs {
       irreversible: true,
       primaryActionText: l10n.groupDeleteTheGroup,
       onConfirm: () async {
-        final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+        final friendsService = ServiceLocator.get<FriendsActions>();
         final success = await friendsService.categories.deleteCategory(
           group.id,
         );

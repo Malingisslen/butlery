@@ -21,7 +21,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/pending_invitees_section.dart';
@@ -87,7 +87,7 @@ class _ShoppingMemberManagementDialogState
 
     _invitations =
         widget.invitations ??
-        ServiceLocator.get<UnifiedFriendsService>().invitations.listInvitations;
+        ServiceLocator.get<FriendsActions>().invitations.listInvitations;
     _declaredBase = widget.list;
     _localPermissions = Map<String, SharedListPermission>.from(
       widget.list.memberPermissions,

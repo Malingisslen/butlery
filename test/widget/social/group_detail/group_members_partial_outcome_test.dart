@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
@@ -70,6 +72,9 @@ void main() {
     GetIt.instance
       ..registerSingleton<PermissionService>(_StubPermissionService())
       ..registerSingleton<UnifiedFriendsService>(friends);
+    if (!GetIt.instance.isRegistered<FriendsReader>()) {
+      registerFriendsServiceRoles(GetIt.instance);
+    }
     production.ServiceLocator.initialize(DIContainer());
     reloads = 0;
   });

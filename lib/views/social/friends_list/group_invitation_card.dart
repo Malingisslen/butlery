@@ -5,7 +5,7 @@ import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/button_row.dart';
 import 'package:butlery/models/group_invitation.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -19,7 +19,7 @@ class GroupInvitationCard {
   static Widget build(
     BuildContext context,
     GroupInvitation invitation,
-    UnifiedFriendsService service,
+    FriendsActions service,
   ) {
     return StyledCard(
       child: Padding(
@@ -124,7 +124,7 @@ class GroupInvitationCard {
   static Future<void> _acceptInvitation(
     BuildContext context,
     String invitationId,
-    UnifiedFriendsService service,
+    FriendsActions service,
   ) async {
     AppLogger.info(
       '🔘 [UI] Accept button pressed for invitation: $invitationId',
@@ -171,7 +171,7 @@ class GroupInvitationCard {
   static Future<void> _rejectInvitation(
     BuildContext context,
     String invitationId,
-    UnifiedFriendsService service,
+    FriendsActions service,
   ) async {
     final success = await service.invitations.rejectGroupInvitation(
       invitationId,

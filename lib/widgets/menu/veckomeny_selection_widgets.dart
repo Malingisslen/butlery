@@ -13,7 +13,7 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -67,8 +67,7 @@ class VeckomenyCookingSessionCard extends StatefulWidget {
 
 class _VeckomenyCookingSessionCardState
     extends State<VeckomenyCookingSessionCard> {
-  final UnifiedFriendsService _friendsService =
-      ServiceLocator.get<UnifiedFriendsService>();
+  final FriendsReader _friendsService = ServiceLocator.get<FriendsReader>();
   final CookingSessionStreamHolder _sessionsHolder =
       CookingSessionStreamHolder();
 

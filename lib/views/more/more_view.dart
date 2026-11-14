@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/friends/friends_service_roles.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -402,7 +402,7 @@ class _IncomingRequestsCountState extends State<_IncomingRequestsCount> {
   @override
   void initState() {
     super.initState();
-    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    final friends = ServiceLocator.tryGet<FriendsReader>();
     if (friends == null) return;
     _count = friends.incomingRequests.length;
     _subscription = friends.stateStream.listen(
