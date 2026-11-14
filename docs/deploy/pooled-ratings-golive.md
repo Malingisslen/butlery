@@ -53,9 +53,13 @@ with `{ dryRun: true }` any time; do NOT run a real backfill until those clear.
     OCR drafts, which local review found is the same recipe photographed twice (the tool's
     verdict was STOP). C7: the OCR draft gives the answer key's key for 2 recipes, another or no key for 340.
     A different key is a miss, not a false merge.
+  - 2026-11-13, key v2 (PR #1284), same command: 250 pages, 342 keyed. C6: 0 shared keys
+    between answer-key recipes and 0 between OCR drafts (duplicate photos no longer count);
+    verdict PRELIMINARY PASS. C7 unchanged from v1.
 - **C8** — the tagged adversarial set is `test/fixtures/pool_key_adversarial.json`, run in Dart
   and TS. Cases marked `known_gap` are measured weaknesses of the key and keep C8 open until a
   key change removes them.
+  - 2026-11-13, key v2 (PR #1284): no case is marked `known_gap`.
 
 ## Still-open pre-ship conditions (from the plan)
 - **C9** — BUILT (BUT-1517, 2026-11-12) as a nightly alarm on the admin anomaly banner
