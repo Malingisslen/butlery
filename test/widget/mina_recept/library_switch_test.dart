@@ -34,7 +34,7 @@ void main() {
     return changes;
   }
 
-  Matcher tab({required bool selected}) => containsSemantics(
+  Matcher tab({required bool selected}) => isSemantics(
     isButton: true,
     hasSelectedState: true,
     isSelected: selected,

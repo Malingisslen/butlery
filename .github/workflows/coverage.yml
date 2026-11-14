@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  FLUTTER_VERSION: '3.38.5'
+  FLUTTER_VERSION: '3.41.9'
 
 jobs:
   # Sharded 4 ways (--total-shards) at --concurrency=4, like the unit lane in

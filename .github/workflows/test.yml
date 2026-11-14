@@ -45,7 +45,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLUTTER_VERSION: '3.38.5'
+  FLUTTER_VERSION: '3.41.9'
 
 jobs:
   # A required check that never starts blocks the pull request forever, which is

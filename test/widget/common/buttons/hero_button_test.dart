@@ -84,7 +84,7 @@ void main() {
     expect(find.text('Planerar veckan …'), findsOneWidget);
     expect(
       tester.getSemantics(find.byType(HeroButton)),
-      containsSemantics(label: 'Planerar veckan …', isButton: true),
+      isSemantics(label: 'Planerar veckan …', isButton: true),
     );
     await tester.tap(find.byType(FilledButton), warnIfMissed: false);
     expect(taps, 0);
@@ -261,7 +261,7 @@ void main() {
       expect(find.byType(ButtonPlateLine), findsOneWidget);
       expect(
         tester.getSemantics(find.byType(FormButton)),
-        containsSemantics(label: 'Sparar …', isButton: true),
+        isSemantics(label: 'Sparar …', isButton: true),
       );
       await tester.tap(find.byType(FilledButton), warnIfMissed: false);
       expect(taps, 0);

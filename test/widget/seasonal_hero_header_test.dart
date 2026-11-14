@@ -68,7 +68,7 @@ void main() {
 
     expect(
       tester.getSemantics(find.byType(SeasonalHeroHeader)),
-      isNot(containsSemantics(isButton: true)),
+      isNot(isSemantics(isButton: true)),
     );
   });
 }

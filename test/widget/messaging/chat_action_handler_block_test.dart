@@ -313,7 +313,7 @@ void main() {
     expect(
       tester.getSemantics(find.bySemanticsLabel(RegExp('Anna Svensson'))),
       // Label, flag and tap are one merged node, so the row is one focus stop.
-      containsSemantics(isButton: true, hasTapAction: true),
+      isSemantics(isButton: true, hasTapAction: true),
     );
 
     handle.dispose();

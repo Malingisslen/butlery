@@ -25,7 +25,7 @@ concurrency:
 
 env:
   # Keep in step with test.yml.
-  FLUTTER_VERSION: '3.38.5'
+  FLUTTER_VERSION: '3.41.9'
 
 jobs:
   census:

@@ -201,8 +201,8 @@ void main() {
 
       SemanticsNode row(String id) =>
           tester.getSemantics(find.byKey(ValueKey('blocked-user-$id')));
-      expect(row('u1'), containsSemantics(isSelected: true));
-      expect(row('u2'), containsSemantics(isSelected: false));
+      expect(row('u1'), isSemantics(isSelected: true));
+      expect(row('u2'), isSemantics(isSelected: false));
       handle.dispose();
     });
 

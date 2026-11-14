@@ -379,8 +379,8 @@ void main() {
         final unreadWeight = unreadTitle.style?.fontWeight ?? FontWeight.normal;
         final readWeight = readTitle.style?.fontWeight ?? FontWeight.normal;
         expect(
-          unreadWeight.index,
-          greaterThan(readWeight.index),
+          unreadWeight.value,
+          greaterThan(readWeight.value),
           reason: 'unread title should be visually heavier than read title',
         );
 

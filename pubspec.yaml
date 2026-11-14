@@ -4,8 +4,8 @@ publish_to: 'none'
 version: 0.9.0+24
 
 environment:
-  sdk: ^3.10.0
-  flutter: ">=3.38.0"
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
@@ -46,7 +46,7 @@ dependencies:
   flutter_secure_storage: ^11.2.0  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
-  wakelock_plus: ^1.4.0  # Keep screen awake during cooking mode
+  wakelock_plus: ^1.7.0
 
   # ==================== NETWORKING ====================
   http: ^1.6.0
@@ -61,7 +61,7 @@ dependencies:
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1  # 13.x needs AGP 9 and compileSdk 37, and changes when Android reports permanentlyDenied (BUT-2508)
   flutter_image_compress: ^2.4.0
-  image: ">=4.8.0 <4.9.0"     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
+  image: ^4.9.0     # OCR image processing
 
   # ==================== PLATFORM INFO ====================
   package_info_plus: ^10.2.2
@@ -83,7 +83,7 @@ dependencies:
   html: ^0.15.6
   flutter_inappwebview: ^6.1.5
   csv: ^8.0.0                 # BUT-435: bumped to 8.x with Dart 3.10
-  xml: ">=6.5.0 <7.0.0"       # .xlsx import parsing (XlsxReader) — replaces excel (BUT-503); 7.x needs Dart 3.11
+  xml: ^7.0.0       # .xlsx import parsing (XlsxReader)
   flutter_onnxruntime: ^1.7.0  # On-device BERT NER inference (MIT licensed)
   # Free on-device OCR (tier 0). MIT. Caret-pinned like flutter_tts: an
   # OS-bridge plugin, not a bundled inference engine, so the exact-pin discipline that governs
@@ -98,7 +98,7 @@ dependencies:
   # Exact pin per Security panel condition. `record` captures the 16 kHz
   # mono WAV whisper.cpp expects.
   whisper_ggml_plus: 1.5.2
-  record: ^6.1.1  # 7.x needs Dart 3.11 (BUT-2315)
+  record: ^6.1.1  # 7.x needs Dart 3.12 (BUT-2508)
   # Köksbutlern: OS-native text-to-speech
   # passthrough (Android TextToSpeech / iOS AVSpeechSynthesizer) for cooking-
   # mode readouts. Caret pin deliberately — unlike whisper_ggml_plus, this
