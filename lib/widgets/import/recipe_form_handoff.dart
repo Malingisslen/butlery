@@ -5,7 +5,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 
 /// Opens the recipe form holding [recipe].
@@ -23,7 +23,7 @@ void handOffRecipeToForm(
   // Non-blocking: the app-level ScaffoldMessenger survives the push, and the
   // tags come from the parse, so no extra LLM or network call is made.
   if (recipe != null) {
-    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    final prefs = ServiceLocator.get<OwnProfileReader>().allergenPreferences;
     if (AllergenMismatch.unconfiguredContainedAllergens(
       recipe,
       prefs,

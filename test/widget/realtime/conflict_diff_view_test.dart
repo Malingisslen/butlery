@@ -35,6 +35,8 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -515,6 +517,9 @@ void main() {
       final users = _MockUserService();
       when(() => users.profileDisplayName).thenReturn('Malin');
       GetIt.instance.registerSingleton<UserService>(users);
+      if (!GetIt.instance.isRegistered<OwnProfileReader>()) {
+        registerUserServiceRoles(GetIt.instance);
+      }
       when(
         () => service.recoverLocalVersion<RealtimeResource>(any()),
       ).thenAnswer((_) async {});

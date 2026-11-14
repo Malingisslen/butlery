@@ -14,6 +14,8 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/more/more_view.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
@@ -135,6 +137,9 @@ void main() {
     final users = _FakeUserService(name);
     production.ServiceLocator.initialize(DIContainer());
     GetIt.instance.registerSingleton<UserService>(users);
+    if (!GetIt.instance.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(GetIt.instance);
+    }
     return users;
   }
 

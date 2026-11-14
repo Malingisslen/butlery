@@ -11,7 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -55,7 +55,7 @@ ButleryMenuChoice<T>? profileVisibilityChoice<T>(
 // An unknown profile counts as an adult: firestore.rules is what actually
 // refuses a minor, this only decides what the menu offers.
 bool _viewerIsMinor() =>
-    ServiceLocator.get<UserService>().currentUserProfile?.isMinor ?? false;
+    ServiceLocator.get<OwnProfileReader>().currentUserProfile?.isMinor ?? false;
 
 /// Whether [recipe]'s public text passes the same profanity filter as every
 /// other user-generated surface. The text is what a stranger will read.

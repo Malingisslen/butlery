@@ -7,7 +7,7 @@ import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/services/household_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
@@ -169,12 +169,12 @@ class _PortionsRow extends StatefulWidget {
 }
 
 class _PortionsRowState extends State<_PortionsRow> {
-  late final UserService _userService;
+  late final OwnProfileReader _userService;
 
   @override
   void initState() {
     super.initState();
-    _userService = ServiceLocator.get<UserService>();
+    _userService = ServiceLocator.get<OwnProfileReader>();
     _userService.addListener(_onProfileChanged);
   }
 

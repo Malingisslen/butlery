@@ -5,7 +5,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
@@ -90,7 +90,7 @@ class RecipeDetailActions {
   /// `tryGet` keeps this safe when UserService isn't registered (tests).
   int? _resolveHouseholdDefault() {
     try {
-      return ServiceLocator.tryGet<UserService>()
+      return ServiceLocator.tryGet<OwnProfileReader>()
           ?.currentUserProfile
           ?.householdSize;
     } catch (_) {

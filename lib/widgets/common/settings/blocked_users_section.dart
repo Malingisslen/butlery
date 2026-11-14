@@ -6,7 +6,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -44,7 +44,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     // Batch-fetch display names for all blocked users
     final Map<String, UserProfile> profiles = {};
     if (blocked.isNotEmpty) {
-      final userService = ServiceLocator.get<UserService>();
+      final userService = ServiceLocator.get<ProfileDirectory>();
       final result = await userService.getUserProfiles(blocked);
       for (final profile in result.profiles) {
         profiles[profile.uid] = profile;

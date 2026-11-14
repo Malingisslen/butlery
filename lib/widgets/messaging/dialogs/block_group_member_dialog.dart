@@ -8,7 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -47,7 +47,7 @@ class BlockGroupMemberDialog extends StatefulWidget {
 }
 
 class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
-  late final UserService _userService;
+  late final ProfileDirectory _userService;
   late final PermissionService _permissionService;
   List<UserProfile>? _members;
   bool _failed = false;
@@ -55,7 +55,7 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
   @override
   void initState() {
     super.initState();
-    _userService = ServiceLocator.get<UserService>();
+    _userService = ServiceLocator.get<ProfileDirectory>();
     _permissionService = ServiceLocator.get<PermissionService>();
     _load();
   }

@@ -11,7 +11,7 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
@@ -214,7 +214,7 @@ abstract final class ImportResultHandler {
   /// ScaffoldMessenger so it survives the pushReplacement and never gates the
   /// import.
   static void navigateToRecipeEditor(BuildContext context, Recipe recipe) {
-    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    final prefs = ServiceLocator.get<OwnProfileReader>().allergenPreferences;
     if (AllergenMismatch.unconfiguredContainedAllergens(
       recipe,
       prefs,
@@ -262,7 +262,7 @@ abstract final class ImportResultHandler {
       );
       return;
     }
-    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    final prefs = ServiceLocator.get<OwnProfileReader>().allergenPreferences;
     if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
       AllergenSetupBanner.show(context);
     }

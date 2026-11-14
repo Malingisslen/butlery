@@ -22,6 +22,8 @@ import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/nutrition/nutrition_table.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -119,6 +121,9 @@ void main() {
 
     final container = DIContainer();
     container.container.registerSingleton<UserService>(userService);
+    if (!container.container.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(container.container);
+    }
     container.container.registerSingleton<NutritionService>(nutrition);
     ServiceLocator.initialize(container);
   });

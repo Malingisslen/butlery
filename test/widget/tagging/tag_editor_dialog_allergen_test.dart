@@ -17,6 +17,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -193,6 +195,9 @@ void main() {
     ServiceLocator.reset();
     final container = DIContainer();
     container.container.registerSingleton<UserService>(userService);
+    if (!container.container.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(container.container);
+    }
     ServiceLocator.initialize(container);
 
     TagOverrides? result;

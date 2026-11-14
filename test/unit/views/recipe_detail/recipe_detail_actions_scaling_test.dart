@@ -16,6 +16,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/core/di/service_roles_registration.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -70,6 +72,9 @@ void main() {
       getIt.unregister<UserService>();
     }
     getIt.registerSingleton<UserService>(mockUser);
+    if (!getIt.isRegistered<OwnProfileReader>()) {
+      registerUserServiceRoles(getIt);
+    }
   }
 
   _MockAnalyticsService registerAnalytics() {

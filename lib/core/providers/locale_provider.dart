@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Provider for managing app locale preference.
@@ -49,7 +49,7 @@ class LocaleProvider extends ChangeNotifier {
       } else {
         // Check UserProfile for preference as fallback
         try {
-          final userService = ServiceLocator.get<UserService>();
+          final userService = ServiceLocator.get<OwnProfileReader>();
           final profile = userService.currentUserProfile;
           if (profile?.preferredLocale != null &&
               supportedLocales.contains(profile!.preferredLocale)) {

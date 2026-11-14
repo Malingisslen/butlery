@@ -8,7 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/widgets/tagging/tag_editor_allergen_section.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -72,7 +72,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       widget.recipe,
       overrides: _allergenOverrides,
       tracked:
-          ServiceLocator.tryGet<UserService>()
+          ServiceLocator.tryGet<OwnProfileReader>()
               ?.currentUserProfile
               ?.allergenPreferences
               ?.trackedAllergens ??
