@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-11-09",
+  "lastRun": "2026-11-16",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
+  "worldWatchRoles": 3,
   "retroDue": false,
-  "acceptRate": 0.795,
-  "notes": "No stale dossiers, no world-watch findings, both retros already logged, accept rate down from 0.98 to 0.795 but still above the 0.5 floor; archived 2 shipped plan files"
+  "acceptRate": 1.0,
+  "notes": "No stale dossiers. Security Architect, Legal Counsel and Release/App-Store Compliance Manager all due (weekly/monthly); freeRASP 9.0.0 is a breaking release on the pinned root-detection lib (app stays pinned at 8.0.0) -- filed GitHub issue #1293, needs a Linear mirror. No other material finding. Accept rate 1.0 over 30 days (0 reworked of 46), up from 0.795 last week. No plan files to archive."
 }
