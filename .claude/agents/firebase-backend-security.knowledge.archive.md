@@ -11533,3 +11533,9 @@ Re-review same day: both Mediums taken. `createOrUpdateProfile`'s `catch` sets t
 ## 2026-11-17 — permission_validation_mixin.dart lint-only change (verified clean)
 
 Staged diff in `logPermissionCheck`: `if (metadata != null) ...metadata,` -> `...?metadata,` in the `auditMetadata` map literal (Flutter 3.44 / Dart 3.12 lint `use_null_aware_elements`, pubspec sdk ^3.12.0). Both forms skip a null map and otherwise spread its entries at the same position, so key order and precedence (caller metadata after `details`, able to override it) are unchanged; `metadata` is a parameter, so no promotion difference. No change to permission decisions, audit `userId`, the fire-and-forget/catch structure, or what reaches `audit_logs`. No new principle; archive only.
+
+## 2026-11-17 — firebase_data_export_repository.dart: dart-format reflow, verified clean
+
+Staged diff moved the `ExportResourceType` enum's terminating `;` from its own line onto
+`shoppingListTemplates('shopping_list_templates')`. Token stream unchanged; worktree bytes
+equal index bytes. No guard, query, projection, cap or resource tag changed. No new principle.
