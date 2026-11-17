@@ -271,6 +271,9 @@ Two rules. The commit gate depends on both, and neither is a formality.
    excerpt or a `--name-only` listing does NOT count as having read a file. A hook
    records what you actually opened and pins the exact bytes; a file you did not `Read`
    is a file the gate treats as unreviewed, whatever your report says about it.
+   On a re-run after a fix, the brief (or the gate message) lists the files that still lack a pass:
+   open ONLY those. Files not listed already have a recorded pass for their exact bytes, and
+   re-reading them costs tokens without changing the gate.
 2. **End your final message with exactly this line, on its own:**
 
    `REVIEW-VERDICT: pass (0 blocking)`  — or —  `REVIEW-VERDICT: fail (N blocking)`
