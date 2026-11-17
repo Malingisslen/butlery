@@ -3,8 +3,7 @@
 enum QuarantineReason {
   brigading('brigading'),
   badMerge('bad_merge'),
-  other('other')
-  ;
+  other('other');
 
   const QuarantineReason(this.wireName);
   final String wireName;

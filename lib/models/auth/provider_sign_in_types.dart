@@ -5,8 +5,7 @@ library;
 /// A sign-in provider the app offers beside e-mail and password.
 enum SignInProvider {
   google('google.com', 'google'),
-  apple('apple.com', 'apple')
-  ;
+  apple('apple.com', 'apple');
 
   const SignInProvider(this.providerId, this.analyticsMethod);
 

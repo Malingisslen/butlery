@@ -13,8 +13,7 @@ enum DinerAgeBand {
   toddler,
   child,
   teen,
-  adult
-  ;
+  adult;
 
   /// Whether this band represents a minor (guardian consent required to
   /// store the profile, per ADR-0001 / GDPR Art. 8).

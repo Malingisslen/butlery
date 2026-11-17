@@ -443,8 +443,7 @@ enum CuisineMatchMode {
   titleOrIngredients,
   titleAndIngredients,
   titleOnly,
-  ingredientsOnly
-  ;
+  ingredientsOnly;
 
   static CuisineMatchMode fromString(String value) {
     return switch (value) {

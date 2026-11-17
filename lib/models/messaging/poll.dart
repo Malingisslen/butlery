@@ -117,8 +117,7 @@ enum PollVoteHydration {
   capped,
 
   /// The read was attempted and errored. May be permanent.
-  failed
-  ;
+  failed;
 
   /// The key this is stored under, as a sibling of `poll` inside a message's
   /// metadata — NOT inside the poll map, which is the shape Firestore persists.

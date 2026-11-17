@@ -20,8 +20,7 @@ enum ReportReason {
 
   // Filed by the server's image check only; the reports create rule must not
   // admit it from a client.
-  explicitImage('explicit_image')
-  ;
+  explicitImage('explicit_image');
 
   const ReportReason(this.wireName);
 

@@ -14,8 +14,7 @@ enum FeedbackCategory { bug, featureRequest, general }
 enum FeedbackStatus {
   newReport('new'),
   triaged('triaged'),
-  resolved('resolved')
-  ;
+  resolved('resolved');
 
   const FeedbackStatus(this.wireName);
 

@@ -6,8 +6,7 @@ import 'package:butlery/models/social/moderation_motivation.dart';
 /// Which side of a report the caller is on when appealing.
 enum AppealRole {
   reporter('reporter'),
-  owner('owner')
-  ;
+  owner('owner');
 
   const AppealRole(this.wireName);
   final String wireName;
@@ -23,8 +22,7 @@ enum AppealRole {
 enum AppealStatus {
   open('open'),
   upheld('upheld'),
-  reversed('reversed')
-  ;
+  reversed('reversed');
 
   const AppealStatus(this.wireName);
   final String wireName;

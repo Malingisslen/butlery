@@ -14,8 +14,7 @@ enum PantryLocation {
   fridge,
   freezer,
   pantry,
-  spiceRack
-  ;
+  spiceRack;
 
   /// Infers a location from an [IngredientData.typicalStorage] value.
   ///

@@ -14,8 +14,7 @@ enum ModerationMotivation {
   keptAlreadyGone('kept_already_gone', ModeratorDecision.noAction),
   keptUnclear('kept_unclear', ModeratorDecision.noAction),
   misattributionNameRemoved('misattribution_name_removed', null),
-  removedAutomatedImage('removed_automated_image', null)
-  ;
+  removedAutomatedImage('removed_automated_image', null);
 
   const ModerationMotivation(this.wireName, this.decision);
 

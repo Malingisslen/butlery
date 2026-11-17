@@ -41,8 +41,7 @@ enum UserActionContext {
   appStartup,
   dataSync,
   backgroundUpload,
-  offline
-  ;
+  offline;
 
   /// Localized description of the action
   String get localizedDescription {
@@ -107,8 +106,7 @@ enum ErrorSeverity {
   minimal('minimal'), // Just show icon/indicator
   standard('standard'), // Show standard message
   detailed('detailed'), // Show detailed message with context
-  diagnostic('diagnostic')
-  ; // Show full diagnostic information
+  diagnostic('diagnostic'); // Show full diagnostic information
 
   const ErrorSeverity(this.level);
   final String level;

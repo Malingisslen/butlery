@@ -14,8 +14,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 enum CookingSkillLevel {
   beginner,
   intermediate,
-  advanced
-  ;
+  advanced;
 
   /// Parse from string, returning null for unknown values.
   static CookingSkillLevel? tryParse(String? value) {

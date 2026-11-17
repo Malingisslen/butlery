@@ -12,8 +12,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 enum RealtimeResourceType {
   recipe('recipe'),
   menu('menu'),
-  shoppingList('shopping_list')
-  ;
+  shoppingList('shopping_list');
 
   const RealtimeResourceType(this.value);
 

@@ -13,8 +13,7 @@ enum PingType {
   // Forward-compat sentinel: a newer client writes a type this build doesn't
   // know. Surfaces as "unknown" in UI rather than being silently relabeled as
   // nudge — wrong copy would be worse than generic copy.
-  unknown
-  ;
+  unknown;
 
   static PingType fromString(String? value) {
     if (value == null) return PingType.unknown;

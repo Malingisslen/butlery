@@ -13,8 +13,7 @@ enum IngredientChangeStatus {
   applied('applied'),
   inReview('inReview'),
   conflict('conflict'),
-  rejected('rejected')
-  ;
+  rejected('rejected');
 
   const IngredientChangeStatus(this.wireName);
 

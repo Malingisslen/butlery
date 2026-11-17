@@ -5,8 +5,7 @@ import 'package:butlery/models/social/content_type.dart';
 enum DecisionMaker {
   self('self'),
   other('other'),
-  auto('auto')
-  ;
+  auto('auto');
 
   const DecisionMaker(this.wireName);
   final String wireName;
@@ -28,8 +27,7 @@ enum ReopenBlock {
   appealed('appealed'),
   reporterErased('reporter_erased'),
   ownerErased('owner_erased'),
-  noDecision('no_decision')
-  ;
+  noDecision('no_decision');
 
   const ReopenBlock(this.wireName);
   final String wireName;

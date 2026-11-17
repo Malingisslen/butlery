@@ -12,8 +12,7 @@ enum ReportStatus {
   newReport('new'),
   inReview('in_review'),
   actioned('actioned'),
-  closed('closed')
-  ;
+  closed('closed');
 
   final String wireName;
   const ReportStatus(this.wireName);
@@ -48,8 +47,7 @@ enum ReportStatus {
 enum ModeratorDecision {
   contentRemoved('content_removed'),
   profileHidden('profile_hidden'),
-  noAction('no_action')
-  ;
+  noAction('no_action');
 
   final String wireName;
   const ModeratorDecision(this.wireName);

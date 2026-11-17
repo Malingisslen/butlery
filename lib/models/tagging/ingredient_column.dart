@@ -28,8 +28,7 @@ enum IngredientColumn {
     'carbon_footprint_category',
     IngredientColumnKind.text,
   ),
-  status('status', IngredientColumnKind.text)
-  ;
+  status('status', IngredientColumnKind.text);
 
   const IngredientColumn(this.csvName, this.kind);
 

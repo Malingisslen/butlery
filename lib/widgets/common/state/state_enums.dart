@@ -43,8 +43,7 @@ enum EmptyStateVariant {
   noConversations(EmptyStateKind.ownCollection),
   noPantryItems(EmptyStateKind.ownCollection),
   nothingQueued(EmptyStateKind.resultOrSection),
-  generic(EmptyStateKind.resultOrSection)
-  ;
+  generic(EmptyStateKind.resultOrSection);
 
   const EmptyStateVariant(this.kind);
 
