@@ -87,6 +87,10 @@ treating anything as a real finding.
 calls are decided, and the full reasoning is in `docs/architecture/ACCEPTED_DEVIATIONS.md`,
 which the commit gate names when it blocks. Point review agents at it too.
 
+- **Explore (cheap model) does the reading** — searches, CI/test logs and any file
+  that is long go to an Explore agent that returns the conclusion; this thread keeps
+  decisions and edits. A hook reminds you on big reads. A reviewer re-run opens only the
+  files the gate lists as unproven.
 - **debugger** — strongly recommended for any bug, error, test failure, or unexpected behavior.
 - **Commit-gated specialists** — a `.dart` or `functions/src` diff is blocked until the
   matching specialist has reviewed it and the marker names every staged file. The gate
