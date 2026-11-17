@@ -297,7 +297,7 @@ class _Header extends StatelessWidget {
 
   final String title;
   final String? trailing;
-  final ButleryGlyph? icon;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {

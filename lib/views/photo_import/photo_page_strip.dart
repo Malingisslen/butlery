@@ -48,6 +48,7 @@ class PhotoPageStrip extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             buildDefaultDragHandles: viewModel.hasMultiplePages,
             itemCount: pages.length,
+            // ignore: deprecated_member_use
             onReorder: viewModel.reorderPage,
             // BUT-684: handwritten mode is a single-image, different-pipeline
             // flow — hide the add-page tile so the affordance can't offer an

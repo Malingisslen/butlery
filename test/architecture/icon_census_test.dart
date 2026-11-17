@@ -90,7 +90,7 @@ void main() {
       hits,
       isEmpty,
       reason:
-          'A ButleryGlyph has no font; wrap it in '
+          'A ButleryIcons icon has no font; wrap it in '
           'ButleryIcon (lib/widgets/common/icons/butlery_glyph.dart).',
     );
   });

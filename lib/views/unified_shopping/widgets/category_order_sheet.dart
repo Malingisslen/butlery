@@ -101,6 +101,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
               child: ReorderableListView.builder(
                 scrollController: scrollController,
                 itemCount: _order.length,
+                // ignore: deprecated_member_use
                 onReorder: (oldIndex, newIndex) {
                   setState(() {
                     if (newIndex > oldIndex) newIndex--;

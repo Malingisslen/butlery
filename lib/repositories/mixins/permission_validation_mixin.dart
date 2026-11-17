@@ -426,7 +426,7 @@ mixin PermissionValidationMixin {
         // Build metadata with additional context
         final auditMetadata = <String, dynamic>{
           'details': ?details,
-          if (metadata != null) ...metadata,
+          ...?metadata,
         };
 
         // Fire-and-forget persistent logging

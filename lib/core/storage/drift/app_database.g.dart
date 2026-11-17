@@ -3519,7 +3519,16 @@ class $$OfflineRecipesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$OfflineRecipesTable, OfflineRecipe>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $OfflineRecipesTable,
+                    OfflineRecipe
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -3881,7 +3890,16 @@ class $$SyncQueueEntriesTableTableManager
                 firstFailedAt: firstFailedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SyncQueueEntriesTable, SyncQueueEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SyncQueueEntriesTable,
+                    SyncQueueEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -4087,7 +4105,16 @@ class $$JsonCacheEntriesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$JsonCacheEntriesTable, JsonCacheEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $JsonCacheEntriesTable,
+                    JsonCacheEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -4319,7 +4346,16 @@ class $$ParseCacheEntriesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ParseCacheEntriesTable, ParseCacheEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ParseCacheEntriesTable,
+                    ParseCacheEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -4854,7 +4890,18 @@ class $$UploadQueueEntriesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UploadQueueEntriesTable, UploadQueueEntry>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $UploadQueueEntriesTable,
+                    UploadQueueEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
