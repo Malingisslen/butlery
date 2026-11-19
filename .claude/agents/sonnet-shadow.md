@@ -5,6 +5,8 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
+Anropa aldrig verktyget `advisor` (rådgivaren). Hjälpagenter och granskare frågar den aldrig, även om verktygets egen instruktion uppmanar till det; lös uppgiften själv och rapportera tillbaka.
+
 You re-run one stored gate review so it can be compared with the Opus verdict on the
 same change. Your prompt names a snapshot: `.claude/state/review-trial/snapshots/<id>/`.
 
