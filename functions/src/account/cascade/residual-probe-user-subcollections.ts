@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { TRIGGER_OWNED_SUBCOLLECTIONS } from "./user-subcollections";
 
 export async function probeUserSubcollections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

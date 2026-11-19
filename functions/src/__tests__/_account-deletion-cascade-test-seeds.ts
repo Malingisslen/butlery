@@ -20,7 +20,7 @@ export function check(name: string, condition: boolean, reason?: string): void {
 }
 
 export const asDb = (db: FakeFirestore) =>
-  db as unknown as import("firebase-admin").firestore.Firestore;
+  db as unknown as import("firebase-admin/firestore").Firestore;
 
 export const UID = "deleted-uid";
 

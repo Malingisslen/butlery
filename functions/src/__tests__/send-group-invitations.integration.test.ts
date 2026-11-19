@@ -17,11 +17,12 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -58,7 +59,7 @@ async function expectThrows(
 }
 
 async function befriend(a: string, b: string): Promise<void> {
-  const at = admin.firestore.FieldValue.serverTimestamp();
+  const at = FieldValue.serverTimestamp();
   await db.doc(`users/${a}/friends/${b}`).set({ addedAt: at });
   await db.doc(`users/${b}/friends/${a}`).set({ addedAt: at });
 }
@@ -111,7 +112,7 @@ async function run_(): Promise<void> {
       row.type === "groupInvitation" && row.groupName === "Hemma" &&
         row.groupEmoji === "🏠" && row.fromUserName === "Ägaren" &&
         row.message === "Välkomna" && row.sentAt instanceof
-          admin.firestore.Timestamp &&
+          Timestamp &&
         row.expiresAt.toMillis() - row.sentAt.toMillis() === 7 * 86400000,
       JSON.stringify(row),
     );
@@ -163,7 +164,7 @@ async function run_(): Promise<void> {
     // An invitation expired but still pending (the cleanup job has not run)
     // must not block a fresh one.
     const s = await seed("expired", 1);
-    const past = admin.firestore.Timestamp.fromMillis(Date.now() - 86400000);
+    const past = Timestamp.fromMillis(Date.now() - 86400000);
     await db.collection("social_requests").add({
       type: "groupInvitation", fromUserId: s.owner, toUserId: s.friends[0],
       groupId: s.groupId, status: "pending", sentAt: past, expiresAt: past,

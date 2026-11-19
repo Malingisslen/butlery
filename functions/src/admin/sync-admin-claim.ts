@@ -14,19 +14,19 @@ import {
   onDocumentDeleted,
 } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getAuth } from "firebase-admin/auth";
 import { hashUid } from "../shared/hash-uid";
 
 async function setAdminClaim(uid: string, isAdmin: boolean): Promise<void> {
   try {
-    const user = await admin.auth().getUser(uid);
+    const user = await getAuth().getUser(uid);
     const claims = { ...(user.customClaims ?? {}) };
     if (isAdmin) {
       claims.admin = true;
     } else {
       delete claims.admin;
     }
-    await admin.auth().setCustomUserClaims(uid, claims);
+    await getAuth().setCustomUserClaims(uid, claims);
     logger.info(
       `Admin claim ${isAdmin ? "granted" : "revoked"} for ${hashUid(uid)}`
     );

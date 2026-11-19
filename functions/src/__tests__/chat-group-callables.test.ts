@@ -18,7 +18,8 @@
  * Run with: npx ts-node src/__tests__/chat-group-callables.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 import { createChatGroupWithDeps } from "../groups/create-chat-group";
@@ -37,8 +38,8 @@ import { RATE_LIMIT_CONFIGS } from "../middleware/rate_limiter";
 import * as fs from "fs";
 import * as path from "path";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-chat-group-callables" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-chat-group-callables" });
 }
 
 interface CapturedError {
@@ -75,7 +76,7 @@ function seedFriend(fake: FakeFirestore, minorUid: string, adderUid: string): vo
   fake.seed(`users/${minorUid}/friends/${adderUid}`, { createdAt: null });
 }
 
-const EARLIER = admin.firestore.Timestamp.fromMillis(1_500_000_000_000);
+const EARLIER = Timestamp.fromMillis(1_500_000_000_000);
 
 /**
  * An existing group with its conversation, as `stageGroupCreation`
@@ -239,10 +240,10 @@ const cases: UnitCase[] = [
       const convo = fake.read(`conversations/${res.conversationId}`) ?? {};
       const group = fake.read(`chat_groups/${res.groupId}`) ?? {};
 
-      const memberSince = (convo.memberSince as Record<string, admin.firestore.Timestamp>)
+      const memberSince = (convo.memberSince as Record<string, Timestamp>)
         .friend;
       assertEqual(
-        memberSince.isEqual(group.createdAt as admin.firestore.Timestamp),
+        memberSince.isEqual(group.createdAt as Timestamp),
         true,
         "conversation memberSince == the group's createdAt",
       );
@@ -445,7 +446,7 @@ const cases: UnitCase[] = [
       );
 
       const convo = fake.read("conversations/c1") ?? {};
-      const stamps = convo.memberSince as Record<string, admin.firestore.Timestamp>;
+      const stamps = convo.memberSince as Record<string, Timestamp>;
       assertEqual(
         stamps.member.isEqual(EARLIER),
         true,
@@ -578,7 +579,7 @@ const cases: UnitCase[] = [
           groupId: "g1",
           conversationId: "c1",
           uids: ["minor"],
-          removedAt: admin.firestore.Timestamp.now(),
+          removedAt: Timestamp.now(),
         });
       });
 
@@ -610,7 +611,7 @@ const cases: UnitCase[] = [
           groupId: "g1",
           conversationId: "c1",
           uid: "gone",
-          removedAt: admin.firestore.Timestamp.now(),
+          removedAt: Timestamp.now(),
         });
       });
 

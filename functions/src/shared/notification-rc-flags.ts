@@ -19,7 +19,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getRemoteConfig } from "firebase-admin/remote-config";
 
 export const RC_CACHE_TTL_MS = 5 * 60 * 1000;
 export const RC_FLAG_PREFIX = "notifications.enabled.";
@@ -39,7 +39,7 @@ export function __resetRcFlagsCacheForTests(): void {
 }
 
 export interface RcFlagsDeps {
-  /** Test seam — production resolves to admin.remoteConfig().getTemplate(). */
+  /** Test seam — production resolves to getRemoteConfig().getTemplate(). */
   loader?: () => Promise<Record<string, unknown>>;
   /** Test seam for now-time. */
   now?: () => number;
@@ -47,7 +47,7 @@ export interface RcFlagsDeps {
 }
 
 async function defaultLoader(): Promise<Record<string, unknown>> {
-  const template = await admin.remoteConfig().getTemplate();
+  const template = await getRemoteConfig().getTemplate();
   const out: Record<string, unknown> = {};
   for (const [key, param] of Object.entries(template.parameters ?? {})) {
     const def = (param as { defaultValue?: { value?: string } }).defaultValue;
@@ -128,7 +128,7 @@ export async function setNotificationTypeEnabled(
     cache = null;
     return;
   }
-  const remoteConfig = admin.remoteConfig();
+  const remoteConfig = getRemoteConfig();
   const template = await remoteConfig.getTemplate();
   template.parameters = template.parameters ?? {};
   template.parameters[key] = {

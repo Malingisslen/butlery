@@ -6,7 +6,7 @@
  * Run with: npx ts-node src/__tests__/account-deletion-cascade-moderation-reporters.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import {
   DocData,
   FakeFirestore,
@@ -128,10 +128,10 @@ async function scenario_reporterReportsSplitOnCaseStatus(): Promise<void> {
     open.description === "hen skrev",
     `description: ${JSON.stringify(open.description)}`,
   );
-  const until = open.reporterRetainUntil as admin.firestore.Timestamp | undefined;
+  const until = open.reporterRetainUntil as Timestamp | undefined;
   check(
     "a kept report carries its 180-day cap, counted from the erasure",
-    until instanceof admin.firestore.Timestamp &&
+    until instanceof Timestamp &&
       until.toMillis() === now.getTime() + 180 * 24 * 60 * 60 * 1000,
     `reporterRetainUntil: ${JSON.stringify(until)}`,
   );
@@ -354,8 +354,8 @@ async function scenario_retainedReportsSweep(): Promise<void> {
   } = require("../moderation/reporter-retention");
 
   const now = new Date("2026-09-18T12:00:00Z");
-  const future = admin.firestore.Timestamp.fromMillis(now.getTime() + 86_400_000);
-  const past = admin.firestore.Timestamp.fromMillis(now.getTime() - 1);
+  const future = Timestamp.fromMillis(now.getTime() + 86_400_000);
+  const past = Timestamp.fromMillis(now.getTime() - 1);
 
   const store = new FakeFirestore();
   const seed = (id: string, owner: string, data: DocData) => {

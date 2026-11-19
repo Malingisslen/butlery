@@ -22,7 +22,7 @@
 
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { CollectionReference, DocumentReference, FieldPath, Firestore, QueryDocumentSnapshot, getFirestore } from "firebase-admin/firestore";
 import { hashUid } from "../shared/hash-uid";
 import {
   batchUpdateQuery,
@@ -31,7 +31,7 @@ import {
 } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export const onProfileUpdated = onDocumentUpdated(
   { document: `${Collections.publicProfiles}/{userId}`, timeoutSeconds: 540 },
@@ -58,7 +58,7 @@ export const onProfileUpdated = onDocumentUpdated(
  * nothing.
  */
 export async function propagateProfileUpdate(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   oldName: string | undefined,
   newName: string | undefined,
@@ -305,16 +305,16 @@ export async function propagateProfileUpdate(
  * Returns the number of list documents actually rewritten.
  */
 async function renameEmbeddedShoppingItems(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   newName: string | undefined
 ): Promise<number> {
   const ordered = db
     .collection(Collections.unifiedSharedShoppingLists)
     .where("contributorUserIds", "array-contains", userId)
-    .orderBy(admin.firestore.FieldPath.documentId());
+    .orderBy(FieldPath.documentId());
 
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let lastDoc: QueryDocumentSnapshot | undefined;
   let updated = 0;
 
   for (;;) {
@@ -346,8 +346,8 @@ const EMBEDDED_ITEMS_PAGE_SIZE = 50;
 
 /** Returns true when the list's item array actually changed. */
 async function renameItemsOnList(
-  db: admin.firestore.Firestore,
-  listRef: admin.firestore.DocumentReference,
+  db: Firestore,
+  listRef: DocumentReference,
   userId: string,
   newName: string | undefined
 ): Promise<boolean> {
@@ -429,8 +429,8 @@ const ITEM_ATTRIBUTION_PAIRS: readonly DualFieldPair[] = [
  * twice, matching the write count).
  */
 async function paginatedDualUpdate(
-  db: admin.firestore.Firestore,
-  collection: admin.firestore.CollectionReference,
+  db: Firestore,
+  collection: CollectionReference,
   userId: string,
   primary: DualFieldPair,
   secondary: DualFieldPair,

@@ -9,9 +9,10 @@
  * Run: npx ts-node src/__tests__/comment-reactions-export.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-comment-reactions" });
+import { Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-comment-reactions" });
 }
 
 import { HttpsError } from "firebase-functions/v2/https";
@@ -38,7 +39,7 @@ interface QuerySpy {
   limits: number[];
 }
 
-function spied(fake: FakeFirestore): { db: admin.firestore.Firestore; spy: QuerySpy } {
+function spied(fake: FakeFirestore): { db: Firestore; spy: QuerySpy } {
   const spy: QuerySpy = { collections: [], filters: [], selects: [], limits: [] };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrap = (q: any): any => ({
@@ -62,7 +63,7 @@ function spied(fake: FakeFirestore): { db: admin.firestore.Firestore; spy: Query
       return wrap(fake.db.collection(name));
     },
   };
-  return { db: db as unknown as admin.firestore.Firestore, spy };
+  return { db: db as unknown as Firestore, spy };
 }
 
 function seedComment(db: FakeFirestore, id: string, r: Record<string, string[]>): void {

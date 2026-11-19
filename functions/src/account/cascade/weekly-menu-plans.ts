@@ -1,10 +1,10 @@
-import * as admin from "firebase-admin";
+import { FieldPath, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
 import { batchDeleteAll } from "./core";
 
 export async function deleteWeeklyMenuPlans(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const owned = await db
@@ -38,7 +38,7 @@ export async function deleteWeeklyMenuPlans(
     // name them.
     db
       .collection(Collections.groupWeeklyMenuPlans)
-      .where(new admin.firestore.FieldPath("memberPermissions", uid), "!=", null)
+      .where(new FieldPath("memberPermissions", uid), "!=", null)
       .get(),
     // The contributor trail. `removeChatGroupMember` takes a leaving member out
     // of `participants` and therefore out of both projections above, while
@@ -50,7 +50,7 @@ export async function deleteWeeklyMenuPlans(
       .where("contributorUserIds", "array-contains", uid)
       .get(),
   ]);
-  const byPath = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  const byPath = new Map<string, QueryDocumentSnapshot>();
   for (const doc of [
     ...byRoster.docs,
     ...byWriter.docs,
@@ -215,22 +215,22 @@ export async function deleteWeeklyMenuPlans(
             // polymorphic — a 50-key map is accepted — so the shape is
             // reachable. Deleted outright: no writer produces it.
             ...(trailRaw !== undefined && !Array.isArray(trailRaw)
-              ? { editTrail: admin.firestore.FieldValue.delete() }
+              ? { editTrail: FieldValue.delete() }
               : {}),
             ...(entriesRaw !== undefined && !Array.isArray(entriesRaw)
-              ? { entries: admin.firestore.FieldValue.delete() }
+              ? { entries: FieldValue.delete() }
               : {}),
             // Tombstoned, not deleted: the Dart reader takes it as a
             // nullable string either way.
             ...(data.lastModifiedBy === uid ? { lastModifiedBy: "deleted" } : {}),
-            [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
+            [`memberPermissions.${uid}`]: FieldValue.delete(),
             // The contributor trail is a list of uids, so it is erasable data
             // in its own right, not just a handle. `arrayRemove` rather than a
             // rewritten array: the client-facing rule refuses a write that
             // drops an entry, and only the Admin SDK — which bypasses rules —
             // may take one out. Unconditional, like the ACL key above.
             contributorUserIds:
-              admin.firestore.FieldValue.arrayRemove(uid),
+              FieldValue.arrayRemove(uid),
           });
         }
       },
@@ -241,7 +241,7 @@ export async function deleteWeeklyMenuPlans(
 }
 
 export async function deletePantryItems(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db.collection("users").doc(uid).collection("pantry").get();

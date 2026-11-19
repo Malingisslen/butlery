@@ -20,7 +20,7 @@
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentSnapshot, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { appealRef, canHoldAppeal, isSafeDocId } from "./appeals";
@@ -69,7 +69,7 @@ export const reopenReport = onCall(
     enforceAppCheck: true,
   },
   (request) => {
-    const db = admin.firestore();
+    const db = getFirestore();
     return handleReopenReport(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
       run: (adminUid, reportId) => runReopenReportWithDb(db, adminUid, reportId),
@@ -83,8 +83,8 @@ export const reopenReport = onCall(
  * with `listClosedReports`, so the list never offers what this refuses.
  */
 export function reopenBlock(
-  report: admin.firestore.DocumentSnapshot,
-  decision: admin.firestore.DocumentData | undefined,
+  report: DocumentSnapshot,
+  decision: DocumentData | undefined,
   appealExists: boolean,
 ): ReopenBlock | null {
   if (!report.exists) return "report_gone";
@@ -102,7 +102,7 @@ export function reopenBlock(
 
 /** Test seam — accepts an injected Firestore and clock. */
 export async function runReopenReportWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   adminUid: string,
   reportId: string,
   now: Date = new Date(),
@@ -130,11 +130,11 @@ export async function runReopenReportWithDb(
     tx.update(reportRef, {
       status: "actioned",
       reviewRound: round,
-      reopenedAt: admin.firestore.Timestamp.fromDate(now),
-      moderatorAction: standing ? action : admin.firestore.FieldValue.delete(),
+      reopenedAt: Timestamp.fromDate(now),
+      moderatorAction: standing ? action : FieldValue.delete(),
       // A takedown this round also stamps moderatorAction, so the app needs
       // the decision being reviewed apart from it.
-      reopenedDecision: typeof action === "string" ? action : admin.firestore.FieldValue.delete(),
+      reopenedDecision: typeof action === "string" ? action : FieldValue.delete(),
     });
     // A copy the close has not deleted yet would read as this round's. A
     // frozen copy (BUT-2329) stays, and the capture after the commit then

@@ -15,7 +15,7 @@
  * Clients cannot read or write it: `firestore.rules` has no block for it.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 import { isClosedReportStatus, REPORTS, reportCountsAgainstOwner } from "./report-status";
 import { resolveMotivation } from "./motivation";
 import { Notice, ownerNotice, reporterNotice, stageNotice } from "./moderation-notices";
@@ -70,7 +70,7 @@ export function isPersonAuth(authType: string | undefined): boolean {
   return typeof authType === "string" && !NON_USER_AUTH.includes(authType);
 }
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 /** True only on the write that moves a report INTO `closed`. */
 export function closesReport(before: Data | undefined, after: Data | undefined): boolean {
@@ -132,7 +132,7 @@ const CLOSE_STAMPS = ["moderatorAction", "motivation", "reopenedDecision"];
  * erased uid back on a new row.
  */
 export async function recordDecision(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   input: DecisionInput,
 ): Promise<DecisionResult> {
   const { reportId, report, decidedAt, authType, authId } = input;
@@ -167,12 +167,12 @@ export async function recordDecision(
     if (stamps.length > 0) {
       tx.update(
         reportRef,
-        Object.fromEntries(stamps.map((key) => [key, admin.firestore.FieldValue.delete()])),
+        Object.fromEntries(stamps.map((key) => [key, FieldValue.delete()])),
       );
     }
     if (done) return { outcome: "already_recorded", notices: [] };
 
-    const decidedAtTs = admin.firestore.Timestamp.fromDate(decidedAt);
+    const decidedAtTs = Timestamp.fromDate(decidedAt);
     const fields = {
       decision,
       rule: typeof reason === "string" && RULES.includes(reason) ? reason : "other",
@@ -182,7 +182,7 @@ export async function recordDecision(
       decidedAt: decidedAtTs,
       moderatorId,
       revision: round,
-      expireAt: admin.firestore.Timestamp.fromDate(
+      expireAt: Timestamp.fromDate(
         new Date(decidedAt.getTime() + DECISION_RETENTION_DAYS * 24 * 60 * 60 * 1000),
       ),
     };
@@ -280,7 +280,7 @@ function revisedNoticesFor(
 }
 
 export async function recordModerationDecision(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   input: DecisionInput,
 ): Promise<DecisionOutcome> {
   return (await recordDecision(db, input)).outcome;

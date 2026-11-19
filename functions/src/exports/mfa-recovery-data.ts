@@ -11,7 +11,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { BACKUP_CODES_COLLECTION } from "../account/mfa-backup-codes";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
@@ -28,7 +28,7 @@ export interface MfaRecoveryDataExport {
 
 /** Test seam: the export for [uid] from an injected Firestore. */
 export async function runExportMfaRecoveryData(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<MfaRecoveryDataExport> {
   const snap = await database.collection(BACKUP_CODES_COLLECTION).doc(uid).get();
@@ -70,6 +70,6 @@ export const exportMfaRecoveryData = onCall(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign-in required.");
     }
-    return runExportMfaRecoveryData(admin.firestore(), request.auth.uid);
+    return runExportMfaRecoveryData(getFirestore(), request.auth.uid);
   },
 );

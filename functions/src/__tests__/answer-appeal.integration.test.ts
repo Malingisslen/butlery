@@ -12,11 +12,12 @@ const PROJECT_ID = "butlery-answer-appeal-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { MODERATION_DECISIONS } from "../moderation/report-decision";
@@ -75,15 +76,15 @@ async function appealed(opts: {
     contentId: `c${id}`,
     reason: "abuse",
     status: "closed",
-    createdAt: admin.firestore.Timestamp.fromDate(NOW),
+    createdAt: Timestamp.fromDate(NOW),
   });
   await db.collection(MODERATION_DECISIONS).doc(id).set({
     decision: opts.decision ?? "content_removed",
     rule: "abuse",
     motivation: "removed_abuse",
     contentType: opts.contentType ?? "recipe",
-    decidedAt: admin.firestore.Timestamp.fromDate(NOW),
-    expireAt: admin.firestore.Timestamp.fromDate(NOW),
+    decidedAt: Timestamp.fromDate(NOW),
+    expireAt: Timestamp.fromDate(NOW),
   });
   await db.doc(`user_moderation/${owner}`).set({ totalReports: 3 }, { merge: true });
   await db.doc(`user_moderation/${owner}/report_history/${id}`).set({ reportId: id, reporterId: reporter });
@@ -96,10 +97,10 @@ async function appealed(opts: {
     ...(appellant !== null ? { appellantId: appellant } : {}),
     text: "Snälla titta igen på detta.",
     status: "open",
-    createdAt: admin.firestore.Timestamp.fromDate(NOW),
+    createdAt: Timestamp.fromDate(NOW),
     answeredAt: null,
     answeredBy: null,
-    expireAt: admin.firestore.Timestamp.fromDate(NOW),
+    expireAt: Timestamp.fromDate(NOW),
   });
   return { id, appealId, reporter, owner };
 }
@@ -110,7 +111,7 @@ const answer = (appealId: string, outcome: "upheld" | "reversed") =>
 /** The inbox row an answer to [appealId] writes. */
 const answerRow = (appealId: string) => `notification_history/appeal_${noticeKey(appealId)}`;
 
-async function get(path: string): Promise<admin.firestore.DocumentData | undefined> {
+async function get(path: string): Promise<DocumentData | undefined> {
   return (await db.doc(path).get()).data();
 }
 
@@ -199,7 +200,7 @@ async function reversals(): Promise<void> {
   );
 
   const hide = await appealed({ role: "owner", decision: "profile_hidden", contentType: "profile" });
-  await db.doc(`public_profiles/${hide.owner}`).set({ displayName: "X", isHidden: true, hiddenAt: admin.firestore.Timestamp.fromDate(NOW) });
+  await db.doc(`public_profiles/${hide.owner}`).set({ displayName: "X", isHidden: true, hiddenAt: Timestamp.fromDate(NOW) });
   const hideResult = await answer(hide.appealId, "reversed");
   const profile = await get(`public_profiles/${hide.owner}`);
   check(
@@ -249,7 +250,7 @@ async function reversals(): Promise<void> {
   // The reporter's erasure deletes the report while the owner, the strike and
   // the hide all remain; the decision record survives it.
   const orphan = await appealed({ role: "owner", decision: "profile_hidden", contentType: "profile" });
-  await db.doc(`public_profiles/${orphan.owner}`).set({ isHidden: true, hiddenAt: admin.firestore.Timestamp.fromDate(NOW) });
+  await db.doc(`public_profiles/${orphan.owner}`).set({ isHidden: true, hiddenAt: Timestamp.fromDate(NOW) });
   await db.doc(`reports/${orphan.id}`).delete();
   const orphanResult = await answer(orphan.appealId, "reversed");
   check(
@@ -376,7 +377,7 @@ async function erasure(): Promise<void> {
   );
 
   const held = await appealed({ role: "owner" });
-  await db.doc(`erasure_holds/${held.owner}`).set({ holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-04-01")) });
+  await db.doc(`erasure_holds/${held.owner}`).set({ holdUntil: Timestamp.fromDate(new Date("2027-04-01")) });
   await anonymizeReportsUnlessHeldWithDb(db, held.owner);
   check(
     "under a legal hold the report keeps the uid, but the appeal still goes",

@@ -18,7 +18,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 
 export const DEFAULT_TOTAL_CAP = 10;
 export const DEFAULT_NONCRITICAL_CAP = 5;
@@ -95,8 +95,8 @@ function dayKey(now: Date): string {
 }
 
 /** Lazy admin SDK accessor — keeps the module import-safe in unit tests. */
-function db(): admin.firestore.Firestore {
-  return admin.firestore();
+function db(): Firestore {
+  return getFirestore();
 }
 
 /**
@@ -151,11 +151,11 @@ export async function checkAndIncrement(args: {
     tx.set(
       counterRef,
       {
-        count: admin.firestore.FieldValue.increment(1),
-        criticalCount: admin.firestore.FieldValue.increment(
+        count: FieldValue.increment(1),
+        criticalCount: FieldValue.increment(
           priority === "critical" ? 1 : 0,
         ),
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: FieldValue.serverTimestamp(),
       },
       { merge: true },
     );

@@ -21,7 +21,8 @@ const EMULATOR_HOST = "127.0.0.1:8080";
 process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
+import { CollectionReference, Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 let run = 0;
 let failed = 0;
@@ -47,8 +48,8 @@ const AFTER_W10 = new Date("2026-03-09T01:00:00Z");
 const BEFORE_W09 = new Date("2026-02-22T12:00:00Z");
 
 async function emptyCollection(
-  db: admin.firestore.Firestore,
-  ref: admin.firestore.CollectionReference
+  db: Firestore,
+  ref: CollectionReference
 ): Promise<void> {
   const snap = await ref.get();
   const batch = db.batch();
@@ -64,8 +65,8 @@ async function main(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) admin.initializeApp({ projectId: PROJECT_ID });
-  const db = admin.firestore();
+  if (!getApps().length) initializeApp({ projectId: PROJECT_ID });
+  const db = getFirestore();
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { runImportTierWeekly } = require("../analytics/import-tier-weekly");
 
@@ -82,7 +83,7 @@ async function main(): Promise<void> {
         userId: "user-should-not-be-read",
         url: "https://example.se/recept",
         domain: "example.se",
-        timestamp: admin.firestore.Timestamp.fromDate(at),
+        timestamp: Timestamp.fromDate(at),
         ...fields,
       });
     }
@@ -117,9 +118,9 @@ async function main(): Promise<void> {
 
   // Record the keys of every document the job reads.
   const seen = new Set<string>();
-  const proto = admin.firestore.QueryDocumentSnapshot.prototype;
+  const proto = QueryDocumentSnapshot.prototype;
   const originalData = proto.data;
-  proto.data = function (this: admin.firestore.QueryDocumentSnapshot) {
+  proto.data = function (this: QueryDocumentSnapshot) {
     const d = originalData.call(this);
     Object.keys(d).forEach((k) => seen.add(k));
     return d;
@@ -185,8 +186,8 @@ async function main(): Promise<void> {
   check(
     "alarm row id and timestamps",
     alarm?.id === "import_tier_shift_2026-W10" &&
-      alarm.data().executedAt instanceof admin.firestore.Timestamp &&
-      alarm.data().timestamp instanceof admin.firestore.Timestamp,
+      alarm.data().executedAt instanceof Timestamp &&
+      alarm.data().timestamp instanceof Timestamp,
     alarm?.id
   );
   check(

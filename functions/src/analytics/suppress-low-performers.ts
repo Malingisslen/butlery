@@ -23,7 +23,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logAnalyticsEvent } from "../shared/analytics-server";
 import {
   isNotificationTypeEnabled,
@@ -51,10 +51,10 @@ interface TypeAgg {
  * projection because the cursor reads it from each page's last document.
  */
 async function aggregateByType(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: string,
   timestampField: string,
-  cutoff: admin.firestore.Timestamp,
+  cutoff: Timestamp,
   agg: Record<string, TypeAgg>,
   bump: (entry: TypeAgg) => void
 ): Promise<void> {
@@ -64,7 +64,7 @@ async function aggregateByType(
     .select("notificationType", timestampField)
     .orderBy(timestampField);
 
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let lastDoc: QueryDocumentSnapshot | undefined;
 
   for (;;) {
     let page = base.limit(EVENTS_PAGE_SIZE);
@@ -87,7 +87,7 @@ async function aggregateByType(
 }
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
   /** Test seam — return a fake "is enabled?" decision per type. */
   isEnabled?: (type: string) => Promise<boolean>;
@@ -99,7 +99,7 @@ export async function runSuppressLowPerformers(deps: RunDeps = {}): Promise<{
   evaluated: number;
   flipped: number;
 }> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? new Date();
   const isEnabled =
     deps.isEnabled ?? ((type: string) => isNotificationTypeEnabled(type));
@@ -108,7 +108,7 @@ export async function runSuppressLowPerformers(deps: RunDeps = {}): Promise<{
     ((type: string, enabled: boolean) =>
       setNotificationTypeEnabled(type, enabled));
 
-  const cutoff = admin.firestore.Timestamp.fromDate(
+  const cutoff = Timestamp.fromDate(
     new Date(now.getTime() - WINDOW_DAYS * MS_PER_DAY)
   );
 

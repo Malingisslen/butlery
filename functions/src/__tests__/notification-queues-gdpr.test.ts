@@ -20,13 +20,13 @@
  * Run with: npx ts-node src/__tests__/notification-queues-gdpr.test.ts
  */
 
-// firebase-admin's module-level `admin.firestore()` in `on-user-deleted.ts`
+// firebase-admin's module-level `getFirestore()` in `on-user-deleted.ts`
 // requires an initialized default app. We don't USE that app —
 // `cleanupNotificationQueuesWithDb` accepts an injected stub — but the
 // import-time side-effect must succeed. Same pattern as `presence-cascade.test.ts`.
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-gdpr-cascade" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-gdpr-cascade" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

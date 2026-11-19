@@ -23,10 +23,10 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { assertNotGuest } from "../shared/caller-eligibility";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 export interface AcceptFriendRequestRequest {
   /** Document id of the `social_requests` doc being accepted. */
@@ -67,7 +67,7 @@ export const acceptFriendRequest = onCall<AcceptFriendRequestRequest>(
  * created (so a partial-state recovery or re-accept never inflates counts).
  */
 export async function acceptFriendRequestWithDeps(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   callerUid: string,
   requestId: string,
 ): Promise<AcceptFriendRequestResponse> {
@@ -137,7 +137,7 @@ export async function acceptFriendRequestWithDeps(
       (toProfileSnap.data()?.displayName as string | undefined) ?? ""
     ).toLowerCase();
 
-    const now = admin.firestore.FieldValue.serverTimestamp();
+    const now = FieldValue.serverTimestamp();
 
     let created = 0;
     // The doc in `from`'s list points at `to`, so it stores `to`'s name.
@@ -164,12 +164,12 @@ export async function acceptFriendRequestWithDeps(
     if (created === 2) {
       tx.set(
         fromProfileRef,
-        { friendsCount: admin.firestore.FieldValue.increment(1) },
+        { friendsCount: FieldValue.increment(1) },
         { merge: true },
       );
       tx.set(
         toProfileRef,
-        { friendsCount: admin.firestore.FieldValue.increment(1) },
+        { friendsCount: FieldValue.increment(1) },
         { merge: true },
       );
     }

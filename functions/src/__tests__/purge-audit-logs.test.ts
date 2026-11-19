@@ -15,9 +15,9 @@
 
 // firebase-admin module-level imports require an initialized default app
 // even when our tests don't use it.
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-audit-purge" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-audit-purge" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -62,7 +62,7 @@ function makeTimestamp(d: Date): FakeTimestamp {
   };
 }
 
-/** Minimal fake admin.firestore() shape for the calls used by
+/** Minimal fake getFirestore() shape for the calls used by
  *  `purgeAuditCategoryWithDb` after BUT-1404 fix.
  *
  *  The production query chain is now:

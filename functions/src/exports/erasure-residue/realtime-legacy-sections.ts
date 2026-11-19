@@ -7,7 +7,7 @@
  * `KNOWN_GAPS`).
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Collections } from "../../shared/collections";
 import {
   Allowlist,
@@ -63,11 +63,11 @@ export const LEGACY_ITEM_KEYS: Allowlist = scalars(
 export const LEGACY_COMMENT_KEYS: Allowlist = scalars("commentedBy", "text", "createdAt", "updatedAt");
 export const LEGACY_RATING_KEYS: Allowlist = scalars("ratedBy", "rating", "createdAt", "updatedAt");
 
-type Snap = admin.firestore.QueryDocumentSnapshot;
+type Snap = QueryDocumentSnapshot;
 
 /** `deleteRealtimeMenus`' three handles, merged per menu. */
 async function realtimeMenuDocs(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<{ owned: Snap[]; edited: Snap[]; joined: Snap[] }> {
   const menus = database.collection(Collections.realtimeMenus);
@@ -90,7 +90,7 @@ function permissionOf(doc: Snap, uid: string): unknown {
   return typeof value === "string" ? value : null;
 }
 
-async function realtimeMenus(database: admin.firestore.Firestore, uid: string): Promise<Row[]> {
+async function realtimeMenus(database: Firestore, uid: string): Promise<Row[]> {
   const { owned, edited, joined } = await realtimeMenuDocs(database, uid);
   const rows = new Map<string, Row>();
   const rowFor = (doc: Snap): Row => {
@@ -123,7 +123,7 @@ async function realtimeMenus(database: admin.firestore.Firestore, uid: string): 
  * user joined and does not own.
  */
 async function realtimeMenuVotes(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const joined = await cappedDocs(
@@ -160,7 +160,7 @@ async function realtimeMenuVotes(
  * owned ones (all children go) and joined ones it does not own.
  */
 async function realtimePresence(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const parents: Array<{ collection: string; doc: Snap }> = [];
@@ -197,7 +197,7 @@ async function realtimePresence(
 
 /** `deleteShoppingLists`' legacy leg: every `users/{uid}/shopping_lists` ref and its items. */
 async function legacyShoppingLists(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const refs = await database

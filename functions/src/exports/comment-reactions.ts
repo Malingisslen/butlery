@@ -21,7 +21,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import {
@@ -31,7 +31,7 @@ import {
 } from "../account/account-deletion-cascade";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 export const RATE_LIMIT_KEY = "exportCommentReactions";
 export const TOO_LARGE_ERROR_CODE = "comment-reactions-too-large";
@@ -94,7 +94,7 @@ export const exportCommentReactions = onCall(
 
 /** Test seam — accepts an injected Firestore. */
 export async function runExportCommentReactionsWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<ExportCommentReactionsResponse> {
   const [commentRows, messageRows] = await Promise.all([
@@ -129,7 +129,7 @@ export async function runExportCommentReactionsWithDb(
  * or the first key holding more than `cap` rows.
  */
 async function reactionRows(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   collection: string,
   uid: string,
   cap: number,

@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { batchUpdateRefs } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -40,7 +40,7 @@ export const MAX_MIRROR_SWEEP_ROWS = 2000;
  * uses, beside the poll-vote leg it is modelled on.
  */
 export async function deleteBlockMirrors(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -65,7 +65,7 @@ export async function deleteBlockMirrors(
   await batchUpdateRefs(
     snap.docs.map((d) => d.ref),
     () => ({
-      blockedByUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+      blockedByUserIds: FieldValue.arrayRemove(uid),
       // Stamped so a `syncBlockMirror` rebuild that read `blocks` BEFORE
       // `deleteBlocks` committed cannot land afterwards and put the uid back:
       // its own `sourceRev` guard then sees a newer revision and skips. Without
@@ -133,7 +133,7 @@ export const MAX_BLOCK_SWEEP_ROWS = 2000;
  * deletes would have been refused and taken the whole batch with them.
  */
 export async function deleteBlocks(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   let complete = true;
@@ -179,7 +179,7 @@ export const MAX_BLOCK_HELD_SWEEP_ROWS = 2000;
  * again after tier 1 for a hold that committed while the cascade was running.
  */
 export async function scrubBlockHeldShares(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   if (uid.includes(".")) {
@@ -209,8 +209,8 @@ export async function scrubBlockHeldShares(
       snap.docs,
       cappedReread(readHeld, MAX_BLOCK_HELD_SWEEP_ROWS, "scrubBlockHeldShares"),
       updateWith({
-        blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(uid),
-        [`blockHeld.${uid}`]: admin.firestore.FieldValue.delete(),
+        blockHeldUserIds: FieldValue.arrayRemove(uid),
+        [`blockHeld.${uid}`]: FieldValue.delete(),
       }),
       "scrubBlockHeldShares",
     );
@@ -238,7 +238,7 @@ export async function scrubBlockHeldShares(
     });
     return false;
   }
-  const holdsSomeone = (doc: admin.firestore.QueryDocumentSnapshot) => {
+  const holdsSomeone = (doc: QueryDocumentSnapshot) => {
     const held = doc.get("blockHeldUserIds");
     return Array.isArray(held) && held.length > 0;
   };
@@ -256,8 +256,8 @@ export async function scrubBlockHeldShares(
         holdsSomeone,
       ),
       updateWith({
-        blockHeldUserIds: admin.firestore.FieldValue.delete(),
-        blockHeld: admin.firestore.FieldValue.delete(),
+        blockHeldUserIds: FieldValue.delete(),
+        blockHeld: FieldValue.delete(),
       }),
       "scrubBlockHeldShares:owned",
     );

@@ -13,7 +13,7 @@
  */
 
 import { createHash } from "crypto";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, Transaction } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { sendPushToUser } from "../shared/fcm-tokens";
 import { buildNotificationPayload, NotificationRoute } from "../shared/notification-payload";
@@ -107,8 +107,8 @@ export function appealAnsweredNotice(
  * planted there first is overwritten instead of failing the transaction.
  */
 export function stageNotice(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   notice: Notice,
   sentAt: Date,
 ): void {
@@ -124,10 +124,10 @@ export function stageNotice(
       targetId: notice.targetId,
       notificationType: notice.notificationType,
     },
-    sentAt: admin.firestore.Timestamp.fromDate(sentAt),
+    sentAt: Timestamp.fromDate(sentAt),
     delivered: false,
     opened: false,
-    expireAt: admin.firestore.Timestamp.fromDate(
+    expireAt: Timestamp.fromDate(
       new Date(sentAt.getTime() + NOTICE_RETENTION_DAYS * 24 * 60 * 60 * 1000),
     ),
   });
@@ -139,7 +139,7 @@ export interface PushDeps {
   send: typeof sendPushToUser;
 }
 
-export function defaultPushDeps(db: admin.firestore.Firestore): PushDeps {
+export function defaultPushDeps(db: Firestore): PushDeps {
   return {
     pushEnabled: async (uid) => {
       const snap = await db.collection("user_notification_preferences").doc(uid).get();

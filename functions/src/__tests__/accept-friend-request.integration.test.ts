@@ -9,7 +9,7 @@
  *
  * The Admin SDK bypasses rules, so seeding is plain writes. Pointing Admin at
  * the emulator only needs `FIRESTORE_EMULATOR_HOST` set BEFORE
- * `admin.initializeApp`.
+ * `initializeApp`.
  *
  * Prerequisite: Firestore emulator running locally
  * (`bash .claude/hooks/ensure-firestore-emulator.sh`).
@@ -24,11 +24,12 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -77,7 +78,7 @@ async function seedRequest(
     fromUserId,
     toUserId,
     status,
-    sentAt: admin.firestore.FieldValue.serverTimestamp(),
+    sentAt: FieldValue.serverTimestamp(),
   });
 }
 

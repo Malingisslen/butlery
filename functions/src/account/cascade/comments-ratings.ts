@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import {
@@ -9,7 +9,7 @@ import {
 } from "./core";
 
 export async function deleteCommentsAndRatings(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // recipe_comments: anonymize to preserve thread structure.
@@ -67,7 +67,7 @@ export const MAX_RATING_OWNER_SWEEP_ROWS = 2000;
  * a `batch.update` on a row deleted underneath it rejects the whole chunk.
  */
 export async function scrubRatingRecipeOwner(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const read = () =>
@@ -92,7 +92,7 @@ export async function scrubRatingRecipeOwner(
       db,
       snap.docs,
       cappedReread(read, MAX_RATING_OWNER_SWEEP_ROWS, "scrubRatingRecipeOwner"),
-      updateWith({ recipeOwnerId: admin.firestore.FieldValue.delete() }),
+      updateWith({ recipeOwnerId: FieldValue.delete() }),
       "scrubRatingRecipeOwner",
     );
   } catch (err) {
@@ -129,7 +129,7 @@ export const MAX_COMMENT_LIKE_SWEEP_ROWS = 2000;
  * field someone else's client wrote. The row stays; only the uid goes.
  */
 export async function scrubCommentField(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   collection: "recipe_comments" | "messages",
   query: { field: string; op: "==" | "array-contains"; cap: number },
@@ -184,7 +184,7 @@ export async function scrubCommentField(
  * the field's PRESENCE.
  */
 export async function scrubCommentRecipeOwner(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   return scrubCommentField(
@@ -192,7 +192,7 @@ export async function scrubCommentRecipeOwner(
     uid,
     "recipe_comments",
     { field: "recipeOwnerId", op: "==", cap: MAX_COMMENT_OWNER_SWEEP_ROWS },
-    { recipeOwnerId: admin.firestore.FieldValue.delete() },
+    { recipeOwnerId: FieldValue.delete() },
     "scrubCommentRecipeOwner",
   );
 }
@@ -202,7 +202,7 @@ export async function scrubCommentRecipeOwner(
  * takes out that one element, so every other recipient keeps read access.
  */
 export async function scrubCommentSharedWith(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   return scrubCommentField(
@@ -214,13 +214,13 @@ export async function scrubCommentSharedWith(
       op: "array-contains",
       cap: MAX_COMMENT_SHARE_SWEEP_ROWS,
     },
-    { sharedWithUserIds: admin.firestore.FieldValue.arrayRemove(uid) },
+    { sharedWithUserIds: FieldValue.arrayRemove(uid) },
     "scrubCommentSharedWith",
   );
 }
 
 /** True for `recipe_comments/{id}`, and for nothing nested deeper. */
-function isRecipeCommentParent(ref: admin.firestore.DocumentReference): boolean {
+function isRecipeCommentParent(ref: DocumentReference): boolean {
   return ref.parent.id === "recipe_comments" && ref.parent.parent === null;
 }
 
@@ -230,9 +230,9 @@ function isRecipeCommentParent(ref: admin.firestore.DocumentReference): boolean 
  * `null` when the read exceeds the cap.
  */
 export async function commentLikeRows(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
-): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
+): Promise<QueryDocumentSnapshot[] | null> {
   const snap = await db
     .collectionGroup("likes")
     .where("userId", "==", uid)
@@ -259,7 +259,7 @@ export async function commentLikeRows(
  * after the first pass, and what is left is a display counter one too high.
  */
 export async function deleteCommentLikes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const rows = await commentLikeRows(db, uid);
@@ -292,17 +292,17 @@ export async function deleteCommentLikes(
 
   let decremented = 0;
   try {
-    const parents: admin.firestore.DocumentReference[] = [];
+    const parents: DocumentReference[] = [];
     const GROUP = 100;
     for (let i = 0; i < rows.length; i += GROUP) {
       const group = rows.slice(i, i + GROUP);
       const snaps = await Promise.all(
-        group.map((doc) => (doc.ref.parent.parent as admin.firestore.DocumentReference).get()),
+        group.map((doc) => (doc.ref.parent.parent as DocumentReference).get()),
       );
       snaps.forEach((snap, j) => {
         const count = snap.data()?.likesCount;
         if (snap.exists && typeof count === "number" && count > 0) {
-          parents.push(group[j].ref.parent.parent as admin.firestore.DocumentReference);
+          parents.push(group[j].ref.parent.parent as DocumentReference);
         }
       });
     }
@@ -312,7 +312,7 @@ export async function deleteCommentLikes(
       parents,
       (batch, ref) => {
         batch.update(ref, {
-          likesCount: admin.firestore.FieldValue.increment(-1),
+          likesCount: FieldValue.increment(-1),
         });
       },
       { label: "decrementCommentLikes", strict: true },

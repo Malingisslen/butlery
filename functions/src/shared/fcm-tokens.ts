@@ -14,7 +14,8 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { BatchResponse, MulticastMessage, getMessaging } from "firebase-admin/messaging";
 
 export interface TokenQueryResult {
   tokens: string[];
@@ -30,8 +31,7 @@ export interface TokenQueryResult {
 export async function getActiveTokensForUser(
   targetUserId: string
 ): Promise<TokenQueryResult> {
-  const tokensSnapshot = await admin
-    .firestore()
+  const tokensSnapshot = await getFirestore()
     .collection("user_fcm_tokens")
     .where("userId", "==", targetUserId)
     .where("isActive", "==", true)
@@ -67,7 +67,7 @@ export async function deactivateStaleTokens(
     `Deactivating ${invalidTokens.length} stale token(s) for user ${targetUserId}`
   );
 
-  const db = admin.firestore();
+  const db = getFirestore();
   const batch = db.batch();
 
   for (const token of invalidTokens) {
@@ -75,7 +75,7 @@ export async function deactivateStaleTokens(
     if (docId) {
       batch.update(db.collection("user_fcm_tokens").doc(docId), {
         isActive: false,
-        deactivatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        deactivatedAt: FieldValue.serverTimestamp(),
         deactivationReason: "fcm_delivery_failure",
       });
     }
@@ -107,7 +107,7 @@ export async function sendPushToUser(
   const { tokens, tokenDocIds } = await getActiveTokensForUser(userId);
   if (tokens.length === 0) return { successCount: 0, failureCount: 0 };
 
-  const message: admin.messaging.MulticastMessage = {
+  const message: MulticastMessage = {
     tokens,
     notification,
     data: data || {},
@@ -124,7 +124,7 @@ export async function sendPushToUser(
     },
   };
 
-  const response = await admin.messaging().sendEachForMulticast(message);
+  const response = await getMessaging().sendEachForMulticast(message);
   const invalidTokens = findInvalidTokens(response, tokens);
   await deactivateStaleTokens(invalidTokens, tokenDocIds, userId);
   return { successCount: response.successCount, failureCount: response.failureCount };
@@ -135,7 +135,7 @@ export async function sendPushToUser(
  * Returns tokens that should be deactivated.
  */
 export function findInvalidTokens(
-  response: admin.messaging.BatchResponse,
+  response: BatchResponse,
   tokens: string[]
 ): string[] {
   const invalidTokens: string[] = [];

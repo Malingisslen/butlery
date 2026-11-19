@@ -10,9 +10,9 @@
  * Run: npx ts-node src/__tests__/cleanup-trash-storage.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-cleanup-trash-storage" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-cleanup-trash-storage" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

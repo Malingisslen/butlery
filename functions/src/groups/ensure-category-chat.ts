@@ -40,7 +40,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { createHash } from "crypto";
 import { Collections } from "../shared/collections";
 import {
@@ -72,7 +72,7 @@ import {
   SystemGroupEvent,
 } from "./group-system-message";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Shown when a social group has no name of its own to borrow. */
 const FALLBACK_GROUP_NAME = "Matgruppen";
@@ -140,7 +140,7 @@ function conversationDeleted(): HttpsError {
  * re-appends them on every login, so the uid can appear twice — which is why
  * this de-duplicates rather than concatenating.
  */
-function rosterOf(data: admin.firestore.DocumentData, ownerId: string): string[] {
+function rosterOf(data: DocumentData, ownerId: string): string[] {
   const listed = Array.isArray(data.friendUserIds)
     ? (data.friendUserIds as unknown[])
     : [];
@@ -187,7 +187,7 @@ export const ensureCategoryChat = onCall<EnsureCategoryChatRequest>(
 
 /** Dependency-injected core — exposed for tests with a fake Firestore. */
 export async function ensureCategoryChatWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   ownerId: string,
   categoryId: string,
@@ -202,7 +202,7 @@ export async function ensureCategoryChatWithDeps(
   if (!categorySnap.exists) {
     throw notAllowed();
   }
-  const categoryData = categorySnap.data() as admin.firestore.DocumentData;
+  const categoryData = categorySnap.data() as DocumentData;
   const roster = rosterOf(categoryData, ownerId);
   if (!roster.includes(callerUid)) throw notAllowed();
 
@@ -264,7 +264,7 @@ export async function ensureCategoryChatWithDeps(
         callerUid,
         ownerId,
         categoryRef,
-        raced as admin.firestore.QueryDocumentSnapshot,
+        raced as QueryDocumentSnapshot,
       );
     }
     return {
@@ -288,11 +288,11 @@ export async function ensureCategoryChatWithDeps(
  * a poll button cannot be used to spam a group with membership rows.
  */
 async function reconcile(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   ownerId: string,
-  categoryRef: admin.firestore.DocumentReference,
-  groupDoc: admin.firestore.QueryDocumentSnapshot,
+  categoryRef: DocumentReference,
+  groupDoc: QueryDocumentSnapshot,
 ): Promise<EnsureCategoryChatResponse> {
   const groupId = groupDoc.id;
   const data = groupDoc.data();
@@ -335,7 +335,7 @@ async function reconcile(
   const categorySnap = await categoryRef.get();
   if (!categorySnap.exists) throw notAllowed();
   const roster = rosterOf(
-    categorySnap.data() as admin.firestore.DocumentData,
+    categorySnap.data() as DocumentData,
     ownerId,
   );
 
@@ -391,7 +391,7 @@ async function reconcile(
 
   const profiles: ChatGroupMember[] =
     toAdd.length > 0 ? await resolveMemberProfiles(db, toAdd) : [];
-  const stamp = admin.firestore.Timestamp.now();
+  const stamp = Timestamp.now();
 
   // What the transaction actually did, which is not necessarily what was asked:
   // a concurrent invite or departure can move the roster between the read above
@@ -422,7 +422,7 @@ async function reconcile(
     }
     if (!freshCategory.exists) throw notAllowed();
     const freshRoster = rosterOf(
-      freshCategory.data() as admin.firestore.DocumentData,
+      freshCategory.data() as DocumentData,
       ownerId,
     );
     const freshMembers: string[] = Array.isArray(fresh.get("memberIds"))
@@ -550,9 +550,9 @@ async function reconcile(
  * conversation that exists and takes them out of the group too.
  */
 async function restoreConversation(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
-  groupRef: admin.firestore.DocumentReference,
+  groupRef: DocumentReference,
   conversationId: string,
 ): Promise<void> {
   const convoRef = db.collection(Collections.conversations).doc(conversationId);
@@ -622,7 +622,7 @@ async function restoreConversation(
         ? rawName
         : FALLBACK_GROUP_NAME;
     const createdBy = group.get("createdBy");
-    const joinedAt = admin.firestore.Timestamp.now();
+    const joinedAt = Timestamp.now();
 
     stageConversation(tx, {
       db,
@@ -655,7 +655,7 @@ async function restoreConversation(
 }
 
 function displayNameOf(
-  data: admin.firestore.DocumentData,
+  data: DocumentData,
   uid: string,
 ): string {
   const names = data.memberDisplayNames as Record<string, unknown> | undefined;

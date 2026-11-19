@@ -15,7 +15,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QueryDocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 
 /**
@@ -51,8 +51,8 @@ export const MAX_CONTRIBUTOR_UIDS = 200;
  * whether there is anything to erase, erasability wins over minimisation.
  */
 async function departingWithATrace(
-  db: admin.firestore.Firestore,
-  d: admin.firestore.QueryDocumentSnapshot,
+  db: Firestore,
+  d: QueryDocumentSnapshot,
   candidates: string[],
   actorUid: string | null,
   promotedUid: string | null,
@@ -185,7 +185,7 @@ async function departingWithATrace(
  * because this stumbled would be the wrong answer.
  */
 export async function cutGroupMenuPlanAccess(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   groupKey: string,
   departingUids: string[],
   actorUid: string | null,
@@ -357,7 +357,7 @@ export async function cutGroupMenuPlanAccess(
           if (toRecord.size > 0) {
             if (known.length + toRecord.size <= MAX_CONTRIBUTOR_UIDS) {
               update.contributorUserIds =
-                admin.firestore.FieldValue.arrayUnion(...toRecord);
+                FieldValue.arrayUnion(...toRecord);
             } else {
               logger.error(
                 `[${logTag}] contributor trail at cap; uids not recorded`,
@@ -392,7 +392,7 @@ export async function cutGroupMenuPlanAccess(
               // backstop passes null.
               actorId: actorUid,
               subjectId: promotedUid,
-              at: admin.firestore.Timestamp.now(),
+              at: Timestamp.now(),
               action: "adminPromoted",
             });
             // Pruned to the same 50 the client prunes to and the rules bound.
@@ -455,10 +455,10 @@ export async function cutGroupMenuPlanAccess(
             delete update.memberPermissions;
             for (const uid of departing) {
               update[`memberPermissions.${uid}`] =
-                admin.firestore.FieldValue.delete();
+                FieldValue.delete();
             }
             update.participantUserIds =
-              admin.firestore.FieldValue.arrayRemove(...departing);
+              FieldValue.arrayRemove(...departing);
             logger.error(`[${logTag}] desynced plan rosters; cut per key`, {
               // The doc id, so the human this asks for can find the week
               // without scanning the group. `{groupId}_{ISO week}`, not PII.

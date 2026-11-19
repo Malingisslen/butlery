@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 import { hashUid } from "../../shared/hash-uid";
@@ -8,7 +8,7 @@ import { REPORTS } from "../../moderation/report-status";
 import { SYSTEM_EVENTS } from "./moderation";
 
 export async function probeNotificationDelivery(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -57,7 +57,7 @@ export async function probeNotificationDelivery(
 }
 
 export async function probeOwnerKeyedDocs(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   held: boolean,
 ): Promise<number> {
@@ -153,7 +153,7 @@ export async function probeOwnerKeyedDocs(
     // directly. Do not "align" the two spellings without changing the loop.
     [
       Collections.groupWeeklyMenuPlans,
-      new admin.firestore.FieldPath("memberPermissions", uid),
+      new FieldPath("memberPermissions", uid),
       "!=",
     ],
     // The contributor trail, which the deleter also reads. A DEPARTURE clears
@@ -207,7 +207,7 @@ export async function probeOwnerKeyedDocs(
     // would write the full uid on the very line that truncates it to a prefix,
     // into a log that outlives the account. Label it instead.
     const fieldLabel =
-      field instanceof admin.firestore.FieldPath
+      field instanceof FieldPath
         ? "memberPermissions.<uid>"
         : field;
     try {
@@ -237,7 +237,7 @@ export async function probeOwnerKeyedDocs(
 }
 
 export async function probeIngredientChangeRuns(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

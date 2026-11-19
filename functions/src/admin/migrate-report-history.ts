@@ -38,7 +38,7 @@
  *   npx ts-node src/admin/migrate-report-history.ts --project <id> --live
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { initializeAdminApp } from "./admin-init";
 
 const PARENT = "user_moderation";
@@ -97,7 +97,7 @@ const ROWS_PER_TRANSACTION = 400;
  * cannot be dropped, because it names a person.
  */
 export async function migrateDocument(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   dryRun: boolean,
 ): Promise<MigrationOutcome> {
@@ -201,7 +201,7 @@ export async function migrateDocument(
           // The array carried no timestamp, so the clock starts now rather than
           // at the report. It expires later than a row written by the live
           // writer would have; the alternative is a row that never expires.
-          expireAt: admin.firestore.Timestamp.fromDate(
+          expireAt: Timestamp.fromDate(
             new Date(Date.now() + RETENTION_DAYS * 24 * 60 * 60 * 1000),
           ),
         });
@@ -216,7 +216,7 @@ export async function migrateDocument(
         outcome.failures.length + failuresThisPass.length === 0
       ) {
         tx.update(parentRef, {
-          [LEGACY_FIELD]: admin.firestore.FieldValue.delete(),
+          [LEGACY_FIELD]: FieldValue.delete(),
         });
         outcome.emptied = 1;
       }
@@ -237,7 +237,7 @@ export async function migrateDocument(
 
 /** Walks every `user_moderation` document. */
 export async function migrateAll(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   dryRun: boolean,
 ): Promise<MigrationOutcome> {
   const total: MigrationOutcome = {
@@ -270,7 +270,7 @@ export async function migrateAll(
 async function main(): Promise<void> {
   const dryRun = !process.argv.includes("--live");
   initializeAdminApp();
-  const db = admin.firestore();
+  const db = getFirestore();
 
   const outcome = await migrateAll(db, dryRun);
 

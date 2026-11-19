@@ -17,7 +17,9 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth, getAuth } from "firebase-admin/auth";
+import { getStorage } from "firebase-admin/storage";
 import type { UserRecord } from "firebase-admin/auth";
 import {
   DeletionDeps,
@@ -62,7 +64,7 @@ export interface GuestSweepSummary {
 }
 
 export interface GuestSweepDeps {
-  auth: Pick<admin.auth.Auth, "listUsers" | "getUser">;
+  auth: Pick<Auth, "listUsers" | "getUser">;
   /** Erases one account; production runs the full account cascade. */
   erase: (
     uid: string,
@@ -80,7 +82,7 @@ export function productionGuestSweepDeps(deps: DeletionDeps): GuestSweepDeps {
     erase: (uid) =>
       runAccountDeletionWithDeps(deps, uid, "", GUEST_INACTIVE_REASON),
     requeue: async (uid, nowMs) => {
-      const now = admin.firestore.Timestamp.fromMillis(nowMs);
+      const now = Timestamp.fromMillis(nowMs);
       await deps.db
         .collection(Collections.accountDeletionRequests)
         .doc(uid)
@@ -184,9 +186,9 @@ export const cleanupInactiveGuests = onSchedule(
   async () => {
     await cleanupInactiveGuestsWithDeps(
       productionGuestSweepDeps({
-        db: admin.firestore(),
-        auth: admin.auth(),
-        storage: admin.storage(),
+        db: getFirestore(),
+        auth: getAuth(),
+        storage: getStorage(),
       }),
       Date.now(),
     );

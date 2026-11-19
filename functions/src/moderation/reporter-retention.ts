@@ -14,7 +14,7 @@
  * stay true.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { isClosedReportStatus, REPORTS } from "./report-status";
 
@@ -46,8 +46,8 @@ export interface RetainedReportSweepResult {
 
 /** Deletes one retained report and the rows derived from it, atomically. */
 async function finishRetainedReport(
-  db: admin.firestore.Firestore,
-  report: admin.firestore.QueryDocumentSnapshot,
+  db: Firestore,
+  report: QueryDocumentSnapshot,
 ): Promise<void> {
   const reportId = report.id;
   const ownerId = report.get("contentOwnerId") as string | null | undefined;
@@ -83,7 +83,7 @@ async function finishRetainedReport(
  * report id.
  */
 export async function sweepRetainedReporterReports(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   now: Date = new Date(),
   /** Injectable so the budget branch is reachable from a test. */
   deadlineMs: number = SWEEP_DEADLINE_MS,
@@ -119,7 +119,7 @@ export async function sweepRetainedReporterReports(
     examined += 1;
 
     const until = doc.get("reporterRetainUntil");
-    if (!(until instanceof admin.firestore.Timestamp)) {
+    if (!(until instanceof Timestamp)) {
       logger.error("[reporter-retention] kept report has no cap; skipping", {
         report_prefix: doc.id.slice(0, 6),
       });
@@ -147,10 +147,10 @@ export async function sweepRetainedReporterReports(
 }
 
 /**
- * Scheduled seam. `admin.firestore()` is resolved per call so importing this
+ * Scheduled seam. `getFirestore()` is resolved per call so importing this
  * module does not demand an initialised app.
  */
 export async function runSweepRetainedReporterReports(): Promise<void> {
-  const result = await sweepRetainedReporterReports(admin.firestore());
+  const result = await sweepRetainedReporterReports(getFirestore());
   logger.info("[reporter-retention] sweep complete", { ...result });
 }

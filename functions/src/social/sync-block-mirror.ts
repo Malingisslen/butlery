@@ -34,7 +34,8 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
 
@@ -71,9 +72,9 @@ export const MAX_RECONCILE_SOURCE_ROWS = 5000;
 
 /** The mirror document for one user. */
 export function mirrorRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
-): admin.firestore.DocumentReference {
+): DocumentReference {
   // Spelled out as a literal `users/{uid}/block_mirror/current` chain rather
   // than assembled from a string, so the account-cascade drift scanner —
   // which greps for this shape — can see that the collection exists and owes
@@ -94,7 +95,7 @@ export function mirrorRef(
  * correct.
  */
 export async function expectedMirrorFor(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   blockedId: string,
 ): Promise<string[]> {
   const snap = await db
@@ -139,7 +140,7 @@ export async function accountExists(
    * `rebuildMirrorFor` replaces this whole function, so nothing driven through
    * that seam can reach this catch.
    */
-  getUser: (uid: string) => Promise<unknown> = (u) => admin.auth().getUser(u),
+  getUser: (uid: string) => Promise<unknown> = (u) => getAuth().getUser(u),
 ): Promise<boolean> {
   try {
     await getUser(uid);
@@ -171,7 +172,7 @@ export async function accountExists(
  * would otherwise resolve on arrival order rather than on event order.
  */
 export async function rebuildMirrorFor(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   blockedId: string,
   sourceRev: number,
   /**
@@ -251,7 +252,7 @@ export async function rebuildMirrorFor(
       blockedByUserIds,
       sourceRev,
       truncated,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
     return true;
   });
@@ -297,8 +298,8 @@ export function isUsableUidSegment(value: unknown): value is string {
  * the create rule requires it and the row is immutable.
  */
 export function blockedIdFromEvent(
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined,
+  before: DocumentData | undefined,
+  after: DocumentData | undefined,
 ): string | null {
   const value = after?.blockedId ?? before?.blockedId;
   // Rejecting lands on the same log-and-return branch as a missing field, which
@@ -321,7 +322,7 @@ export function blockedIdFromEvent(
  * skip below, which is therefore UNPINNED: reverting it reddens nothing.
  */
 export async function collectUidsToReconcile(
-  db: admin.firestore.Firestore,
+  db: Firestore,
 ): Promise<{ uids: Set<string>; partial: boolean }> {
   const uids = new Set<string>();
   let partial = false;
@@ -395,7 +396,7 @@ export async function collectUidsToReconcile(
  * read it took before that write landed.
  */
 export async function reconcileMirrors(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uids: Iterable<string>,
   sourceRev: number,
   /** Seam, passed straight to `rebuildMirrorFor`. See its own parameter. */
@@ -527,7 +528,7 @@ export const RECONCILE_REV_SKEW_MS = 60 * 60 * 1000;
  * had — the v2 default is 60 seconds.
  */
 export async function runReconcileBlockMirrors(): Promise<void> {
-  const db = admin.firestore();
+  const db = getFirestore();
   const { uids, partial } = await collectUidsToReconcile(db);
   const result = await reconcileMirrors(
     db,
@@ -572,7 +573,7 @@ export const syncBlockMirror = onDocumentWritten(
 
     const sourceRev = Date.parse(event.time);
     await rebuildMirrorFor(
-      admin.firestore(),
+      getFirestore(),
       blockedId,
       Number.isNaN(sourceRev) ? Date.now() : sourceRev,
     );

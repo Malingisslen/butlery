@@ -8,9 +8,9 @@
  * Run: npx ts-node src/__tests__/ingredient-change-requests-erasure.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-icr-erasure" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-icr-erasure" });
 }
 
 import * as fs from "fs";

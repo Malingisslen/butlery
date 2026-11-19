@@ -14,7 +14,7 @@
  *   npx ts-node src/admin/export-ingredients.ts --project <id>
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -22,7 +22,7 @@ import { initializeAdminApp } from "./admin-init";
 
 initializeAdminApp();
 
-const db = admin.firestore();
+const db = getFirestore();
 
 interface ExportedIngredient {
   id: string;

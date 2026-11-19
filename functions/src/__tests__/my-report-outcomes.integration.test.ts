@@ -14,11 +14,12 @@ const PROJECT_ID = "butlery-my-report-outcomes-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { HttpsError } from "firebase-functions/v2/https";
 import {
@@ -62,7 +63,7 @@ async function report(
     contentId: `c${RUN}`,
     contentOwnerId: `owner${RUN}`,
     reason: "harassment",
-    createdAt: admin.firestore.Timestamp.fromMillis(Date.UTC(2026, 9, 10) + seq * 1000),
+    createdAt: Timestamp.fromMillis(Date.UTC(2026, 9, 10) + seq * 1000),
   });
   if (decision !== undefined) {
     await db.collection(MODERATION_DECISIONS).doc(id).set({
@@ -70,8 +71,8 @@ async function report(
       rule: "harassment",
       contentType: "comment",
       moderatorId: `mod${RUN}`,
-      decidedAt: admin.firestore.Timestamp.fromDate(DECIDED),
-      expireAt: admin.firestore.Timestamp.now(),
+      decidedAt: Timestamp.fromDate(DECIDED),
+      expireAt: Timestamp.now(),
       ...(motivation !== undefined ? { motivation } : {}),
     });
   }
@@ -90,8 +91,8 @@ async function main(): Promise<void> {
     appellantId: ME,
     text: "jag tycker annorlunda",
     status: "reversed",
-    createdAt: admin.firestore.Timestamp.fromDate(DECIDED),
-    answeredAt: admin.firestore.Timestamp.fromDate(ANSWERED),
+    createdAt: Timestamp.fromDate(DECIDED),
+    answeredAt: Timestamp.fromDate(ANSWERED),
     answeredBy: `mod${RUN}`,
   });
   await db.collection(MODERATION_APPEALS).doc(`${hidden}_owner`).set({
@@ -99,7 +100,7 @@ async function main(): Promise<void> {
     role: "owner",
     text: "ägarens överklagan",
     status: "open",
-    createdAt: admin.firestore.Timestamp.fromDate(DECIDED),
+    createdAt: Timestamp.fromDate(DECIDED),
     answeredAt: null,
   });
   const noRecord = await report(ME, "closed");

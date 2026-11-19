@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 import { commitInChunks } from "../../shared/batch-update";
 import { stageCascadeAuditEntry } from "../../cleanup/cascade-audit-log";
 import {
@@ -9,7 +9,7 @@ import {
 import { batchDeleteAll } from "./core";
 
 export async function deletePingsByUser(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -25,11 +25,11 @@ export interface ReporterErasureOutcome {
   /** Reports kept because their case was still open. */
   keptOpen: number;
   /** When a kept report is deleted at the latest, whatever its case does. */
-  retainUntil: admin.firestore.Timestamp;
+  retainUntil: Timestamp;
 }
 
-function reporterRetainUntilFrom(now: Date): admin.firestore.Timestamp {
-  return admin.firestore.Timestamp.fromDate(
+function reporterRetainUntilFrom(now: Date): Timestamp {
+  return Timestamp.fromDate(
     new Date(now.getTime() + REPORTER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
   );
 }
@@ -52,7 +52,7 @@ function reporterRetainUntilFrom(now: Date): admin.firestore.Timestamp {
  * leaving the uid behind under a success.
  */
 export async function deleteUserReports(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   now: Date = new Date(),
 ): Promise<ReporterErasureOutcome> {
@@ -82,7 +82,7 @@ export async function deleteUserReports(
       keptOpen += 1;
       batch.update(doc.ref, {
         reporterId: null,
-        reporterErasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        reporterErasedAt: FieldValue.serverTimestamp(),
         reporterRetainUntil: retainUntil,
       });
       stageCascadeAuditEntry(db, batch, {
@@ -114,7 +114,7 @@ export async function deleteUserReports(
  * decided. Throws when a read fails; callers treat that as "open".
  */
 export async function openReportIds(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportIds: string[],
 ): Promise<Set<string>> {
   const open = new Set<string>();

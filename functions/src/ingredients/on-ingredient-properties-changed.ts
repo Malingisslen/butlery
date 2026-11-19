@@ -10,7 +10,7 @@
 
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { ingredientMatchVariants } from "../shared/swedish-normalize";
 import { batchUpdateQueryPaginated } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
@@ -22,7 +22,7 @@ import {
 } from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * Compare two property arrays for meaningful differences.

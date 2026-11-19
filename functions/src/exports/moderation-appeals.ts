@@ -18,7 +18,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import {
   AppealRole,
@@ -76,17 +76,17 @@ export const exportModerationAppeals = onCall(
   (request) =>
     handleExportModerationAppeals(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      run: (uid) => runExportModerationAppealsWithDb(admin.firestore(), uid),
+      run: (uid) => runExportModerationAppealsWithDb(getFirestore(), uid),
     }),
 );
 
 function iso(value: unknown): string | null {
-  return value instanceof admin.firestore.Timestamp ? value.toDate().toISOString() : null;
+  return value instanceof Timestamp ? value.toDate().toISOString() : null;
 }
 
 /** Test seam — accepts an injected Firestore. */
 export async function runExportModerationAppealsWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<ExportModerationAppealsResponse> {
   const snap = await db

@@ -7,7 +7,7 @@
  * initialized.
  */
 
-import * as admin from "firebase-admin";
+import { App, applicationDefault, getApp, getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import * as path from "path";
 import { requireProject, RequireProjectOptions } from "./require-project";
@@ -66,7 +66,7 @@ export function initializeAdminApp(
   options: RequireProjectOptions & {
     findCredentials?: () => string | null;
   } = {},
-): admin.app.App {
+): App {
   const env = options.env ?? process.env;
   const credPath = resolveCredentialPath(env, options.findCredentials);
   const projectId = requireProject({
@@ -74,8 +74,8 @@ export function initializeAdminApp(
     env: { ...env, GOOGLE_APPLICATION_CREDENTIALS: credPath },
   });
 
-  if (admin.apps.length) {
-    const existing = admin.app();
+  if (getApps().length) {
+    const existing = getApp();
     if (existing.options.projectId !== projectId) {
       throw new Error(
         `REFUSED: an admin app for "${existing.options.projectId}" is ` +
@@ -94,8 +94,8 @@ export function initializeAdminApp(
     console.error(`Using credentials: ${credPath}`);
   }
   console.error(`Target project: ${projectId}`);
-  return admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+  return initializeApp({
+    credential: applicationDefault(),
     projectId,
   });
 }

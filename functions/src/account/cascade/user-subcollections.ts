@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore } from "firebase-admin/firestore";
 import { batchDeleteAll } from "./core";
 
 /**
  * The `users/{uid}` subcollections `onUserDeleted` (cleanupContentGuardSubcollections)
- * owns, which run AFTER `admin.auth().deleteUser(uid)`.
+ * owns, which run AFTER `getAuth().deleteUser(uid)`.
  *
  * `probeResidualData` runs BEFORE that, so without the exclusion every single claim-lint:ok moved unchanged, BUT-2113
  * deletion would report them as residual and `gdprCompliant` would be false
@@ -144,7 +144,7 @@ export const EXPORT_EXEMPT: Record<string, string> = {
 };
 
 export async function deleteUserPreferences(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // The whole COLLECTION, not `settings/preferences` by id (BUT-1957).
@@ -160,7 +160,7 @@ export async function deleteUserPreferences(
 }
 
 export async function deleteConsentRecords(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -291,13 +291,13 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
 ];
 
 export async function deleteUserSubcollections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const userDoc = db.collection("users").doc(uid);
   // `notificationCounters` + `recentContentHashes` are intentionally NOT
   // included — `onUserDeleted` (cleanupContentGuardSubcollections) owns
-  // those and runs automatically after `admin.auth().deleteUser(uid)`.
+  // those and runs automatically after `getAuth().deleteUser(uid)`.
   const subs = USER_SUBCOLLECTIONS;
   for (const name of subs) {
     const snap = await userDoc.collection(name).get();
@@ -323,7 +323,7 @@ export async function deleteUserSubcollections(
   // different user whose uid is a prefix of this one. No field filter/index needed.
   const rlSnap = await db
     .collection("system_rate_limits")
-    .orderBy(admin.firestore.FieldPath.documentId())
+    .orderBy(FieldPath.documentId())
     .startAt(`${uid}_`)
     .endAt(`${uid}_`)
     .get();
@@ -333,7 +333,7 @@ export async function deleteUserSubcollections(
 }
 
 export async function deleteUserProfile(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   await db.collection("users").doc(uid).delete();

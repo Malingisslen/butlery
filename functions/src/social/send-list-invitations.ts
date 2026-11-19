@@ -20,7 +20,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   assertAccountMatured,
@@ -69,14 +69,14 @@ export function isInvitablePermission(value: unknown): value is InvitablePermiss
 }
 
 /** Whether [uid] may invite to (and stay the inviter of) this list. */
-export function mayInvite(list: admin.firestore.DocumentData, uid: string): boolean {
+export function mayInvite(list: DocumentData, uid: string): boolean {
   if (list.ownerId === uid) return true;
   const perms = list.memberPermissions;
   return typeof perms === "object" && perms !== null &&
     (perms as Record<string, unknown>)[uid] === "admin";
 }
 
-export function memberKeys(list: admin.firestore.DocumentData): string[] {
+export function memberKeys(list: DocumentData): string[] {
   const perms = list.memberPermissions;
   return typeof perms === "object" && perms !== null ? Object.keys(perms) : [];
 }
@@ -108,7 +108,7 @@ export const sendListInvitations = onCall<SendListInvitationsRequest>(
       throw new HttpsError("invalid-argument", "permission is malformed.");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     assertAgeCompliant(request.auth);
     await assertAccountMatured(db, request.auth);
     await enforceRateLimit(request.auth.uid, "sendListInvitations");
@@ -125,7 +125,7 @@ export const sendListInvitations = onCall<SendListInvitationsRequest>(
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function sendListInvitationsWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   listId: string,
   userIds: string[],
@@ -165,7 +165,7 @@ export async function sendListInvitationsWithDeps(
       .filter((d) => d.get("type") === "listInvitation")
       .filter((d) => {
         const expiresAt = d.get("expiresAt");
-        return expiresAt instanceof admin.firestore.Timestamp &&
+        return expiresAt instanceof Timestamp &&
           expiresAt.toMillis() > nowMs;
       })
       .map((d) => d.get("toUserId")),
@@ -177,7 +177,7 @@ export async function sendListInvitationsWithDeps(
       .filter((d) => d.get("type") === "listInvitation")
       .filter((d) => {
         const respondedAt = d.get("respondedAt");
-        return !(respondedAt instanceof admin.firestore.Timestamp) ||
+        return !(respondedAt instanceof Timestamp) ||
           nowMs - respondedAt.toMillis() < DECLINE_MEMORY_MS;
       })
       .map((d) => d.get("toUserId")),
@@ -208,8 +208,8 @@ export async function sendListInvitationsWithDeps(
     ]);
     const snaps = await db.getAll(...refs);
     const [sender] = await resolveMemberProfiles(db, [callerUid]);
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = admin.firestore.Timestamp.fromMillis(
+    const now = Timestamp.now();
+    const expiresAt = Timestamp.fromMillis(
       now.toMillis() + EXPIRY_MS,
     );
     const listName = typeof list.name === "string"

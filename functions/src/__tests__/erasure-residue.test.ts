@@ -15,9 +15,11 @@
  * Run: npx ts-node src/__tests__/erasure-residue.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-erasure-residue" });
+import { Firestore } from "firebase-admin/firestore";
+import { Storage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-erasure-residue" });
 }
 
 import * as fs from "fs";
@@ -223,7 +225,7 @@ const handlerCases: UnitCase[] = [
       };
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { deleteUserStorageFiles } = require("../account/request-account-deletion") as typeof import("../account/request-account-deletion");
-      const ok = await deleteUserStorageFiles(storage as unknown as admin.storage.Storage, "a/b");
+      const ok = await deleteUserStorageFiles(storage as unknown as Storage, "a/b");
       assertEqual(ok, false, "reported as failed");
       assertEqual(deleted.length, 0, "nothing deleted");
     },
@@ -241,7 +243,7 @@ const handlerCases: UnitCase[] = [
       };
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { deleteUserStorageFiles } = require("../account/request-account-deletion") as typeof import("../account/request-account-deletion");
-      await deleteUserStorageFiles(storage as unknown as admin.storage.Storage, UID);
+      await deleteUserStorageFiles(storage as unknown as Storage, UID);
       assertEqual(
         JSON.stringify(stagedBucket(db).calls.map((c) => c.prefix)),
         JSON.stringify(deleted),
@@ -446,7 +448,7 @@ const indexCases: UnitCase[] = [
       const recording = makeRecordingDb();
       const db = { ...recording, doc: (p: string) => ({ path: p }) };
       const out = await residue.runExportErasureResidueWithDb(
-        db as unknown as admin.firestore.Firestore,
+        db as unknown as Firestore,
         UID,
         residue.SECTIONS,
         bucketOf(new FakeFirestore()),

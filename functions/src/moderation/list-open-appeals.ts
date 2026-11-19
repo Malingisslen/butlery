@@ -8,7 +8,7 @@
  */
 
 import { onCall, CallableRequest } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { REPORTS } from "./report-status";
@@ -72,12 +72,12 @@ export const listOpenAppeals = onCall(
   (request) =>
     handleListOpenAppeals(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      run: () => runListOpenAppealsWithDb(admin.firestore()),
+      run: () => runListOpenAppealsWithDb(getFirestore()),
     }),
 );
 
 function iso(value: unknown): string | null {
-  return value instanceof admin.firestore.Timestamp ? value.toDate().toISOString() : null;
+  return value instanceof Timestamp ? value.toDate().toISOString() : null;
 }
 
 function str(value: unknown): string | null {
@@ -90,7 +90,7 @@ function str(value: unknown): string | null {
  * An equality filter alone, sorted here, so no composite index is needed.
  */
 export async function runListOpenAppealsWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   max: number = MAX_OPEN_APPEALS,
 ): Promise<OpenAppealsResponse> {
   const snap = await db

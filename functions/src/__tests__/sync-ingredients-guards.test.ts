@@ -5,7 +5,7 @@
  * Run with: npx ts-node src/__tests__/sync-ingredients-guards.test.ts
  */
 
-import type * as admin from "firebase-admin";
+import type { DocumentData } from "firebase-admin/firestore";
 import { IngredientRow, SyncReport, SyncReportEntry } from "../admin/sync-ingredients-core";
 import {
   CI_MAX_CHANGED_ROWS,
@@ -25,8 +25,8 @@ function csvRows(n = LIVE): IngredientRow[] {
   return Array.from({ length: n }, (_, i) => ({ id: `i${i}`, status: "validated" } as IngredientRow));
 }
 
-function firestore(n = LIVE, deleted = 0): Map<string, admin.firestore.DocumentData> {
-  const m = new Map<string, admin.firestore.DocumentData>();
+function firestore(n = LIVE, deleted = 0): Map<string, DocumentData> {
+  const m = new Map<string, DocumentData>();
   for (let i = 0; i < n; i++) m.set(`i${i}`, { status: "validated" });
   for (let i = 0; i < deleted; i++) m.set(`d${i}`, { status: "deleted" });
   return m;

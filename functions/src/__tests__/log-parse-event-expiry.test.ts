@@ -16,7 +16,7 @@
  * Run with: npx ts-node src/__tests__/log-parse-event-expiry.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import { computeExpireAt } from "../events/log-parse-event";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
@@ -38,8 +38,8 @@ const cases: UnitCase[] = [
   {
     name: "expireAt is a Firestore Timestamp (TTL policies ignore other types)",
     fn: async () => {
-      if (!(computeExpireAt(Date.now()) instanceof admin.firestore.Timestamp)) {
-        throw new Error("expireAt must be an admin.firestore.Timestamp");
+      if (!(computeExpireAt(Date.now()) instanceof Timestamp)) {
+        throw new Error("expireAt must be Timestamp");
       }
     },
   },

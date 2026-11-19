@@ -11,7 +11,8 @@
  */
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import type { Bucket } from "@google-cloud/storage";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
@@ -42,7 +43,7 @@ export interface QuarantinedImagesResponse {
 
 export interface QuarantineReviewDeps {
   rateLimit: (uid: string, operation: string) => Promise<void>;
-  db: admin.firestore.Firestore;
+  db: Firestore;
   bucket: Bucket;
 }
 
@@ -105,7 +106,7 @@ export async function handleGetQuarantinedImages(
     // shown must not come back on this verdict. Generations, not names, since
     // names carry the uid.
     const update: Record<string, unknown> = {};
-    if (shown.length > 0) update[REVIEWED_GENERATIONS] = admin.firestore.FieldValue.arrayUnion(...shown);
+    if (shown.length > 0) update[REVIEWED_GENERATIONS] = FieldValue.arrayUnion(...shown);
     // Every image the view can send has now been sent, on this call or an
     // earlier one: jumping to the last page does not count as seeing the rest.
     const prior = appeal.get(REVIEWED_GENERATIONS);
@@ -135,7 +136,7 @@ export const getQuarantinedImages = onCall(
   (request) =>
     handleGetQuarantinedImages(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      db: admin.firestore(),
-      bucket: admin.storage().bucket(),
+      db: getFirestore(),
+      bucket: getStorage().bucket(),
     }),
 );

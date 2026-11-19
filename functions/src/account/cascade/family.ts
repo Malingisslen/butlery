@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { commitInChunks } from "../../shared/batch-update";
 import { batchDeleteAll } from "./core";
 
@@ -25,7 +25,7 @@ import { batchDeleteAll } from "./core";
  * profiles to the same remaining member.
  */
 export async function deleteFamilyData(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const households = await db
@@ -143,13 +143,13 @@ export async function deleteFamilyData(
     // BUT-2267: a household linked to the erased user's group names them in
     // `sourceGroupOwnerId`. The group goes with them, so the link does too.
     const ownGroupLink = data.sourceGroupOwnerId === uid ? {
-      sourceGroupId: admin.firestore.FieldValue.delete(),
-      sourceGroupOwnerId: admin.firestore.FieldValue.delete(),
+      sourceGroupId: FieldValue.delete(),
+      sourceGroupOwnerId: FieldValue.delete(),
     } : {};
     await hhDoc.ref.update({
       members,
-      memberUserIds: admin.firestore.FieldValue.arrayRemove(uid),
-      [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
+      memberUserIds: FieldValue.arrayRemove(uid),
+      [`memberPermissions.${uid}`]: FieldValue.delete(),
       createdBy: newCreatedBy,
       ...ownGroupLink,
     });

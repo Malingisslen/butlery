@@ -10,11 +10,12 @@ const PROJECT_ID = "butlery-menu-dish-creator-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import {
   handleMenuDishCreator,
@@ -23,7 +24,7 @@ import {
 } from "../moderation/on-menu-dish-creator";
 import { MAX_CREDIT_CHECKS } from "../moderation/menu-dish-creator";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 const RUN = Date.now().toString(36);
 const WRITER = `wri${RUN}`;

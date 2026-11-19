@@ -4,9 +4,10 @@
  * file unchanged so every area suite can share it.
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-cascade" });
+import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-cascade" });
 }
 
 /** Marker standing in for `FieldValue.arrayRemove` (real SDK unavailable). */
@@ -23,7 +24,7 @@ function isArrayRemoveOp(v: unknown): v is ArrayRemoveOp {
   );
 }
 (
-  admin.firestore.FieldValue as unknown as {
+  FieldValue as unknown as {
     arrayRemove: (...values: unknown[]) => ArrayRemoveOp;
   }
 ).arrayRemove = (...values: unknown[]) => ({
@@ -42,7 +43,7 @@ function isDeleteOp(v: unknown): v is DeleteOp {
   );
 }
 (
-  admin.firestore.FieldValue as unknown as { delete: () => DeleteOp }
+  FieldValue as unknown as { delete: () => DeleteOp }
 ).delete = () => ({ [DELETE_MARKER]: true });
 
 /**
@@ -62,7 +63,7 @@ function isIncrementOp(v: unknown): v is IncrementOp {
   );
 }
 (
-  admin.firestore.FieldValue as unknown as {
+  FieldValue as unknown as {
     increment: (by: number) => IncrementOp;
   }
 ).increment = (by: number) => ({ [INCREMENT_MARKER]: true, by });
@@ -172,7 +173,7 @@ interface FakeSubcollection {
    * it, which is precisely the shape of collection the cascade had never swept.
    */
   where(
-    field: string | admin.firestore.FieldPath,
+    field: string | FieldPath,
     op: string,
     value: unknown,
   ): {
@@ -341,7 +342,7 @@ export class FakeFirestore {
         const snapshotOf = (paths: string[]): FakeQuerySnapshot =>
           this.snapshotOfPaths(paths);
         const filtered = (
-          field: string | admin.firestore.FieldPath,
+          field: string | FieldPath,
           op: string,
           value: unknown,
         ) =>
@@ -397,7 +398,7 @@ export class FakeFirestore {
             return [...ids].sort().map((p) => this.makeRef(p));
           },
           where: (
-            field: string | admin.firestore.FieldPath,
+            field: string | FieldPath,
             op: string,
             value: unknown,
           ) => ({
@@ -460,10 +461,10 @@ export class FakeFirestore {
   /** A `FieldPath` is not a dotted string; its parts are its `.segments`. */
   private static readField(
     data: DocData,
-    field: string | admin.firestore.FieldPath,
+    field: string | FieldPath,
   ): unknown {
     const segments =
-      field instanceof admin.firestore.FieldPath
+      field instanceof FieldPath
         ? (field as unknown as { segments: string[] }).segments
         : field.split(".");
     let cursor: unknown = data;
@@ -476,7 +477,7 @@ export class FakeFirestore {
 
   collection(name: string): unknown {
     const matching = (
-      field: string | admin.firestore.FieldPath,
+      field: string | FieldPath,
       op: string,
       value: unknown,
     ) => {
@@ -510,8 +511,8 @@ export class FakeFirestore {
           // Timestamps compare by millis; a missing field, or a value of
           // another type, never matches, as in Firestore.
           if (
-            fieldVal instanceof admin.firestore.Timestamp &&
-            value instanceof admin.firestore.Timestamp &&
+            fieldVal instanceof Timestamp &&
+            value instanceof Timestamp &&
             fieldVal.toMillis() > value.toMillis()
           ) {
             matches.push({ path, data });
@@ -530,7 +531,7 @@ export class FakeFirestore {
     // a TypeError, which the runner's single bottom-level catch turns into a
     // SHRUNKEN suite rather than a named failure.
     type Filter = {
-      field: string | admin.firestore.FieldPath;
+      field: string | FieldPath;
       op: string;
       value: unknown;
     };
@@ -546,14 +547,14 @@ export class FakeFirestore {
           matching(filters[0].field, filters[0].op, filters[0].value),
         );
     const matcher = (
-      field: string | admin.firestore.FieldPath,
+      field: string | FieldPath,
       op: string,
       value: unknown,
       prior: Filter[] = [],
     ): Record<string, unknown> => {
       const filters: Filter[] = [...prior, { field, op, value }];
       const matching = (
-        _f: string | admin.firestore.FieldPath,
+        _f: string | FieldPath,
         _o: string,
         _v: unknown,
       ) => matchingAll(filters);
@@ -561,7 +562,7 @@ export class FakeFirestore {
     };
     const matcherFor = (
       matching: (
-        field: string | admin.firestore.FieldPath,
+        field: string | FieldPath,
         op: string,
         value: unknown,
       ) => { path: string; data: DocData }[],
@@ -573,7 +574,7 @@ export class FakeFirestore {
       const { field, op, value } = filters[0];
       return {
       where: (
-        field: string | admin.firestore.FieldPath,
+        field: string | FieldPath,
         op: string,
         value: unknown,
       ) => matcher(field, op, value, filters),
@@ -657,7 +658,7 @@ export class FakeFirestore {
     });
     return {
       where: (
-        field: string | admin.firestore.FieldPath,
+        field: string | FieldPath,
         op: string,
         value: unknown,
       ) => matcher(field, op, value),
@@ -668,8 +669,8 @@ export class FakeFirestore {
       doc: (id?: string) => this.makeRef(`${name}/${id ?? this.mintId()}`),
       get: unfiltered().get,
       limit: (max: number) => unfiltered(max),
-      orderBy: (field: string | admin.firestore.FieldPath) => {
-        if (!(field instanceof admin.firestore.FieldPath)) {
+      orderBy: (field: string | FieldPath) => {
+        if (!(field instanceof FieldPath)) {
           throw new Error(
             `fake: orderBy is modelled for documentId() only, got ${String(field)}`,
           );
@@ -707,7 +708,7 @@ export class FakeFirestore {
    */
   collectionGroup(name: string): unknown {
     const matching = (
-      field: string | admin.firestore.FieldPath,
+      field: string | FieldPath,
       op: string,
       value: unknown,
     ) => {
@@ -753,7 +754,7 @@ export class FakeFirestore {
     });
     return {
       where: (
-        field: string | admin.firestore.FieldPath,
+        field: string | FieldPath,
         op: string,
         value: unknown,
       ) => ({
@@ -775,7 +776,7 @@ export class FakeFirestore {
     delete: (ref: FakeRef) => void;
     update: (
       ref: FakeRef,
-      dataOrField: DocData | admin.firestore.FieldPath,
+      dataOrField: DocData | FieldPath,
       ...moreFieldsAndValues: unknown[]
     ) => void;
     set: (ref: FakeRef, data: DocData) => void;
@@ -797,7 +798,7 @@ export class FakeFirestore {
       // joined into a dotted string, so a key holding a dot stays one key.
       update: (ref, dataOrField, ...moreFieldsAndValues) => {
         this.updatedPaths.push(ref.path);
-        if (!(dataOrField instanceof admin.firestore.FieldPath)) {
+        if (!(dataOrField instanceof FieldPath)) {
           updates.push({ path: ref.path, data: dataOrField });
           return;
         }
@@ -807,7 +808,7 @@ export class FakeFirestore {
         }
         const fieldPairs: [string[], unknown][] = [];
         for (let i = 0; i < args.length; i += 2) {
-          if (!(args[i] instanceof admin.firestore.FieldPath)) {
+          if (!(args[i] instanceof FieldPath)) {
             throw new Error("fake batch.update: expected a FieldPath");
           }
           fieldPairs.push([

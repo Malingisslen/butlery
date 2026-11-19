@@ -61,7 +61,7 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 // BUT-1872: a DIRECT conversation id is `direct_<uidA>_<uidB>` — two raw uids.
 // One helper, so every logger on a conversation path hashes it the same way.
 import { logSafeConversationId } from "../shared/log-safe-conversation-id";
@@ -87,7 +87,7 @@ interface MessageWireFields {
   content?: string;
   type?: string;
   status?: string;
-  sentAt?: admin.firestore.Timestamp;
+  sentAt?: Timestamp;
 }
 
 /**
@@ -116,10 +116,10 @@ interface MessageWireFields {
  * conversation rather than forever.
  */
 export function shouldReplaceLastMessage(
-  current: { sentAt?: admin.firestore.Timestamp } | null | undefined,
-  candidateSentAt: admin.firestore.Timestamp
+  current: { sentAt?: Timestamp } | null | undefined,
+  candidateSentAt: Timestamp
 ): boolean {
-  if (!(current?.sentAt instanceof admin.firestore.Timestamp)) return true;
+  if (!(current?.sentAt instanceof Timestamp)) return true;
   return candidateSentAt.toMillis() >= current.sentAt.toMillis();
 }
 
@@ -207,7 +207,7 @@ function clockSkewBucket(deltaMs: number): string {
 }
 
 function logClockSkewOnCreate(
-  event: { data?: { after?: { createTime?: admin.firestore.Timestamp } } },
+  event: { data?: { after?: { createTime?: Timestamp } } },
   before: MessageWireFields | undefined,
   after: MessageWireFields | undefined
 ): void {
@@ -227,7 +227,7 @@ function logClockSkewOnCreate(
   // could opt itself out of the histogram. Every row `writeGroupSystemMessage`
   // produces carries the senderId, so nothing is lost by dropping the type half.
   if (after.senderId === "system") return;
-  if (!(after.sentAt instanceof admin.firestore.Timestamp)) return;
+  if (!(after.sentAt instanceof Timestamp)) return;
   // Mirrors `selfCreatedAtMs` in social/duplicate-content-guard.ts — the
   // sibling trigger on this same collection reads the snapshot's own
   // server-assigned createTime exactly this way.
@@ -258,7 +258,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       );
       return;
     }
-    const db = admin.firestore();
+    const db = getFirestore();
     const conversationRef = db.collection("conversations").doc(conversationId);
 
     const isDelete = !!before && !after;
@@ -274,7 +274,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       }
       const convData = convDoc.data() ?? {};
       const currentLastMessage = convData.lastMessage as
-        | { id?: string; sentAt?: admin.firestore.Timestamp }
+        | { id?: string; sentAt?: Timestamp }
         | null
         | undefined;
 
@@ -291,7 +291,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       // pay for the re-read below — a receipt on anything but the newest
       // message is the common case, and it returns here for free.
       if (!isDelete && !payloadBlocked) {
-        if (!(after?.sentAt instanceof admin.firestore.Timestamp)) {
+        if (!(after?.sentAt instanceof Timestamp)) {
           logger.warn(
             "[syncConversationLastMessage] sentAt missing or not a Timestamp; skipping",
             { messageId, conversationId: logSafeConversationId(conversationId) }
@@ -422,7 +422,7 @@ export const syncConversationLastMessage = onDocumentWritten(
           }
           tx.update(conversationRef, {
             lastMessage: null,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
           });
           return;
         }
@@ -461,7 +461,7 @@ export const syncConversationLastMessage = onDocumentWritten(
         // either, which is the second reason this TYPE guard survives any
         // rules change.
         if (
-          !(replacementData.sentAt instanceof admin.firestore.Timestamp)
+          !(replacementData.sentAt instanceof Timestamp)
         ) {
           // A projection with an unusable `sentAt` fails OPEN on the
           // client — `MessageDto.fromMap` substitutes `clock.now()` for a
@@ -481,13 +481,13 @@ export const syncConversationLastMessage = onDocumentWritten(
           );
           tx.update(conversationRef, {
             lastMessage: null,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
           });
           return;
         }
         tx.update(conversationRef, {
           lastMessage: projectLastMessage(replacementDoc.id, replacementData),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         });
         return;
       }
@@ -533,7 +533,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       // PROJECTED — `sentAt` is immutable under the rules and untouched by the
       // guard, so the two agree in every case anyone has staged, and this
       // costs a type test rather than a read.
-      if (!(current?.sentAt instanceof admin.firestore.Timestamp)) {
+      if (!(current?.sentAt instanceof Timestamp)) {
         logger.warn(
           "[syncConversationLastMessage] sentAt missing or not a Timestamp; skipping",
           { messageId, conversationId: logSafeConversationId(conversationId) }
@@ -545,7 +545,7 @@ export const syncConversationLastMessage = onDocumentWritten(
       }
       tx.update(conversationRef, {
         lastMessage: projectLastMessage(messageId, current),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     });
   }

@@ -18,11 +18,12 @@ const EMULATOR_HOST = "127.0.0.1:8080";
 process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { handOverGroupWithDeps } = require("../groups/hand-over-group");
@@ -60,7 +61,7 @@ async function expectThrows(
   }
 }
 
-const ts = () => admin.firestore.Timestamp.now();
+const ts = () => Timestamp.now();
 
 function groupRef(owner: string, groupId: string) {
   return db.doc(`users/${owner}/friend_categories/${groupId}`);

@@ -17,7 +17,7 @@
  */
 
 import { HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QueryDocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { OCCASION_BOT_BRANCH, RepoClient } from "./github-app";
 import {
@@ -50,7 +50,7 @@ export interface OccasionChangePrResult {
   skipped: number;
 }
 
-async function occasionsByStatus(db: admin.firestore.Firestore, status: string) {
+async function occasionsByStatus(db: Firestore, status: string) {
   const snap = await db.collection(Collections.ingredientChangeRequests)
     .where("status", "==", status)
     .where("kind", "==", OCCASION_LIST_KIND)
@@ -59,8 +59,8 @@ async function occasionsByStatus(db: admin.firestore.Firestore, status: string) 
   return snap.docs;
 }
 
-function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedOccasionProposal {
-  const createdAt = doc.get("createdAt") as admin.firestore.Timestamp | undefined;
+function toQueued(doc: QueryDocumentSnapshot): QueuedOccasionProposal {
+  const createdAt = doc.get("createdAt") as Timestamp | undefined;
   return {
     id: doc.id,
     listKey: doc.get("listKey"),
@@ -72,7 +72,7 @@ function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedOccasionPro
 }
 
 export async function runOccasionChangePr(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   github: RepoClient,
   now: Date,
 ): Promise<OccasionChangePrResult> {
@@ -88,12 +88,12 @@ export async function runOccasionChangePr(
 
   const branch = await readBotBranch(github, OCCASION_BOT_BRANCH);
   const pulls = await namedPulls(github, inReview);
-  const stateOf = (d: admin.firestore.QueryDocumentSnapshot) => {
+  const stateOf = (d: QueryDocumentSnapshot) => {
     const pull = pulls.get(d.get("prNumber"));
     return pull ? pullState(pull) : undefined;
   };
-  const del = admin.firestore.FieldValue.delete();
-  const isMergedWithIt = (d: admin.firestore.QueryDocumentSnapshot) => {
+  const del = FieldValue.delete();
+  const isMergedWithIt = (d: QueryDocumentSnapshot) => {
     const head = pulls.get(d.get("prNumber"))?.headSha;
     return stateOf(d) === "merged" && typeof head === "string" && d.get("prHeadSha") === head;
   };
@@ -103,8 +103,8 @@ export async function runOccasionChangePr(
     expected: "inReview",
     data: {
       status: "applied",
-      appliedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + APPLIED_RETENTION_MS),
+      appliedAt: FieldValue.serverTimestamp(),
+      expireAt: Timestamp.fromMillis(now.getTime() + APPLIED_RETENTION_MS),
     },
   })));
   // A proposal left out of the branch after it was written `inReview` (a
@@ -173,9 +173,9 @@ function outcomeWrite(
   prHeadSha: string | null,
   now: Date,
 ): Record<string, unknown> {
-  const del = admin.firestore.FieldValue.delete();
+  const del = FieldValue.delete();
   const o = plan.outcomes.get(id)!;
-  const review = admin.firestore.Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS);
+  const review = Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS);
   if (o.kind === "apply") {
     return { status: "inReview", prNumber, prHeadSha, csvValue: del, reason: del, expireAt: review };
   }
@@ -190,6 +190,6 @@ function outcomeWrite(
     csvValue: del,
     prNumber: del,
     prHeadSha: del,
-    expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + REJECTED_RETENTION_MS),
+    expireAt: Timestamp.fromMillis(now.getTime() + REJECTED_RETENTION_MS),
   };
 }

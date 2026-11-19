@@ -18,17 +18,18 @@
  *   ts-node src/__tests__/analyze-corrections-alias.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { stripDiacritics } = require("../shared/swedish-normalize");
 
 const EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? "localhost:8080";
 process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-alias-learning" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-alias-learning" });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { processCorrectionEvent } = require("../analytics/analyze-corrections");
@@ -46,10 +47,10 @@ function assert(cond: boolean, msg: string): void {
   }
 }
 
-const MATURE = admin.firestore.Timestamp.fromMillis(Date.now() - 2 * 60 * 60 * 1000);
-const FRESH = admin.firestore.Timestamp.now();
+const MATURE = Timestamp.fromMillis(Date.now() - 2 * 60 * 60 * 1000);
+const FRESH = Timestamp.now();
 
-async function seedUser(uid: string, createdAt: admin.firestore.Timestamp): Promise<void> {
+async function seedUser(uid: string, createdAt: Timestamp): Promise<void> {
   await db.collection("users").doc(uid).set({ createdAt });
 }
 

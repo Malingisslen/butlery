@@ -12,11 +12,12 @@
  * Run with: npx ts-node src/__tests__/cascade-audit-log-wirings.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, WriteBatch } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-but886" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-but886" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -25,11 +26,11 @@ const { cascadeArrayRemove } = require("../shared/batch-update");
 const { stageCascadeAuditEntry } = require("../cleanup/cascade-audit-log");
 
 const SERVER_TIMESTAMP_MARKER = Symbol("serverTimestamp");
-(admin.firestore.FieldValue as unknown as {
+(FieldValue as unknown as {
   serverTimestamp: () => unknown;
   arrayRemove: (value: unknown) => unknown;
 }).serverTimestamp = () => SERVER_TIMESTAMP_MARKER;
-(admin.firestore.FieldValue as unknown as {
+(FieldValue as unknown as {
   arrayRemove: (value: unknown) => unknown;
 }).arrayRemove = (value: unknown) => ({ __op: "arrayRemove", value });
 
@@ -177,7 +178,7 @@ const cases: UnitCase[] = [
         db,
         {
           onItemOp: (
-            batch: admin.firestore.WriteBatch,
+            batch: WriteBatch,
             doc: { id: string }
           ) => {
             stageCascadeAuditEntry(db, batch, {
@@ -234,7 +235,7 @@ const cases: UnitCase[] = [
         {
           bestEffort: true,
           onItemOp: (
-            batch: admin.firestore.WriteBatch,
+            batch: WriteBatch,
             doc: { id: string; data: () => Record<string, unknown> }
           ) => {
             stageCascadeAuditEntry(db, batch, {

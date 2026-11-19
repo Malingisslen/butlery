@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -120,7 +120,7 @@ const MAX_POLL_VOTE_SWEEP_ROWS = 2000;
  * matching nothing. It is declared in `firestore.indexes.json`.
  */
 export async function deletePollVotes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   let complete = true;
@@ -244,7 +244,7 @@ export async function deletePollVotes(
  * re-run is a no-op.
  */
 export async function anonymizeSystemMessagesAboutUser(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<void> {
   const about = await db
@@ -335,7 +335,7 @@ export async function anonymizeSystemMessagesAboutUser(
     (batch, doc) => {
       batch.update(doc.ref, {
         content: MESSAGE_TOMBSTONE,
-        "metadata.subjectUserId": admin.firestore.FieldValue.delete(),
+        "metadata.subjectUserId": FieldValue.delete(),
       });
     },
     { label: "anonymizeSystemMessagesAboutUser", strict: false },

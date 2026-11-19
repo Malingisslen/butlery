@@ -2,12 +2,12 @@
  * The AI-cap crossing signal (`middleware/ai_cap_signal.ts`): where a count
  * crosses, and that the guest and per-user hooks emit at the crossing only.
  * The global hook's wiring is proven on staging (tasks/ai-cap-signal-plan.md):
- * `checkGlobalLimit` reads `admin.firestore()` directly and has no seam.
+ * `checkGlobalLimit` reads `getAdminFirestore()` directly and has no seam.
  *
  * Run: npx ts-node src/__tests__/ai-cap-signal.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { FakeFirestore } from "./_fake-firestore";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
@@ -83,12 +83,12 @@ function todayKey(): string {
 function perUserDb(
   dailyCount: number,
   operationType = "structureRecipe",
-): admin.firestore.Firestore {
+): Firestore {
   let stored: Record<string, unknown> = {
     tokens: 10,
-    lastRefill: admin.firestore.Timestamp.now(),
+    lastRefill: Timestamp.now(),
     operationType,
-    updatedAt: admin.firestore.Timestamp.now(),
+    updatedAt: Timestamp.now(),
     dayKey: todayKey(),
     dailyCount,
   };
@@ -105,7 +105,7 @@ function perUserDb(
           stored = { ...d };
         },
       }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 async function callStructureRecipe(): Promise<void> {

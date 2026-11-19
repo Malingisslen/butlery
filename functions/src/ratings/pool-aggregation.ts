@@ -13,7 +13,7 @@
  * identical and the one debounce implementation is the only copy.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import {
   DebounceConfig,
   ScheduleDeps,
@@ -42,7 +42,7 @@ const POOL_DEBOUNCE: DebounceConfig = {
 };
 
 export interface DrainDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
   /**
    * The per-pool recompute. REQUIRED in production — the shared drainer has no

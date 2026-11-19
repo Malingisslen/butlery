@@ -17,11 +17,12 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { sendListInvitationsWithDeps } = require("../social/send-list-invitations");
@@ -59,7 +60,7 @@ async function expectThrows(
 }
 
 async function befriend(a: string, b: string): Promise<void> {
-  const at = admin.firestore.FieldValue.serverTimestamp();
+  const at = FieldValue.serverTimestamp();
   await db.doc(`users/${a}/friends/${b}`).set({ addedAt: at });
   await db.doc(`users/${b}/friends/${a}`).set({ addedAt: at });
 }
@@ -79,7 +80,7 @@ async function seed(tag: string, friendCount: number) {
     ownerId: owner,
     memberPermissions: { [owner]: "admin" },
     items: [],
-    createdAt: admin.firestore.Timestamp.now(),
+    createdAt: Timestamp.now(),
   });
   await db.doc(`public_profiles/${owner}`).set({ displayName: "Ägaren" });
   for (const f of friends) await befriend(owner, f);
@@ -178,8 +179,8 @@ async function run_(): Promise<void> {
     // Decline memory: 30 days per inviter, list and invitee.
     const s = await seed("declined", 2);
     const [recent, old] = s.friends;
-    const recentAt = admin.firestore.Timestamp.fromMillis(Date.now() - 2 * DAY);
-    const oldAt = admin.firestore.Timestamp.fromMillis(Date.now() - 31 * DAY);
+    const recentAt = Timestamp.fromMillis(Date.now() - 2 * DAY);
+    const oldAt = Timestamp.fromMillis(Date.now() - 31 * DAY);
     for (const [uid, at] of [[recent, recentAt], [old, oldAt]] as const) {
       await db.collection("social_requests").add({
         type: "listInvitation", fromUserId: s.owner, toUserId: uid,
@@ -200,7 +201,7 @@ async function run_(): Promise<void> {
     // An expired but still-pending invitation does not block a fresh one, and
     // cannot itself be accepted.
     const s = await seed("expired", 1);
-    const past = admin.firestore.Timestamp.fromMillis(Date.now() - DAY);
+    const past = Timestamp.fromMillis(Date.now() - DAY);
     const stale = await db.collection("social_requests").add({
       type: "listInvitation", fromUserId: s.owner, toUserId: s.friends[0],
       listId: s.listId, permission: "edit", status: "pending",
@@ -296,7 +297,7 @@ async function run_(): Promise<void> {
     await db.collection("social_requests").add({
       type: "listInvitation", fromUserId: `someone-else-${RUN}`,
       toUserId: otherInviter, listId: s.listId, status: "rejected",
-      respondedAt: admin.firestore.Timestamp.now(),
+      respondedAt: Timestamp.now(),
     });
     const res = await sendListInvitationsWithDeps(
       db, s.owner, s.listId, s.friends, "edit",
@@ -325,8 +326,8 @@ async function run_(): Promise<void> {
     const forged = await db.collection("social_requests").add({
       type: "listInvitation", fromUserId: s.owner, toUserId: s.friends[0],
       listId: s.listId, permission: "admin", status: "pending",
-      sentAt: admin.firestore.Timestamp.now(),
-      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + DAY),
+      sentAt: Timestamp.now(),
+      expiresAt: Timestamp.fromMillis(Date.now() + DAY),
     });
     await acceptListInvitationWithDeps(db, s.friends[0], forged.id);
     check("a row naming `admin` seats at `view`",

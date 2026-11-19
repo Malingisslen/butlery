@@ -24,7 +24,7 @@
  *      source of truth), so a rare double-run across concurrent drains is safe.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 
 /**
@@ -51,12 +51,12 @@ export interface DebounceConfig {
 }
 
 export interface ScheduleDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
 }
 
 export interface DrainDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
   /** The per-key work. Test seam — defaults to throwing (caller must wire it). */
   drain?: (key: string) => Promise<void>;
@@ -64,15 +64,15 @@ export interface DrainDeps {
 
 interface DebounceMarker {
   key: string;
-  pendingUntil: admin.firestore.Timestamp;
-  scheduledAt: admin.firestore.Timestamp;
+  pendingUntil: Timestamp;
+  scheduledAt: Timestamp;
 }
 
 export function debounceMarkerRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   config: DebounceConfig,
   key: string
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db.doc(`${config.markerCollection}/${key}`);
 }
 
@@ -89,7 +89,7 @@ export async function scheduleDebounced(
     logger.warn(`${config.logPrefix}.schedule called with empty key`);
     return false;
   }
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const nowMs = (deps.now ?? (() => new Date()))().getTime();
 
   const ref = debounceMarkerRef(db, config, key);
@@ -105,8 +105,8 @@ export async function scheduleDebounced(
     }
     const marker: DebounceMarker = {
       key,
-      pendingUntil: admin.firestore.Timestamp.fromMillis(nowMs + config.debounceMs),
-      scheduledAt: admin.firestore.Timestamp.fromMillis(nowMs),
+      pendingUntil: Timestamp.fromMillis(nowMs + config.debounceMs),
+      scheduledAt: Timestamp.fromMillis(nowMs),
     };
     tx.set(ref, marker);
     return true;
@@ -143,7 +143,7 @@ export async function drainDebounceQueue(
   capped: boolean;
 }> {
   const start = Date.now();
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = (deps.now ?? (() => new Date()))();
   const drain =
     deps.drain ??
@@ -153,7 +153,7 @@ export async function drainDebounceQueue(
 
   const snap = await db
     .collection(config.markerCollection)
-    .where("pendingUntil", "<=", admin.firestore.Timestamp.fromDate(now))
+    .where("pendingUntil", "<=", Timestamp.fromDate(now))
     .limit(DRAIN_LIMIT)
     .get();
 

@@ -126,8 +126,9 @@ async function runMigration(deps, { apply }) {
   return counts;
 }
 
-function firestoreDeps(admin) {
-  const db = admin.firestore();
+function firestoreDeps() {
+  const { FieldPath, getFirestore } = require("firebase-admin/firestore");
+  const db = getFirestore();
   const writer = db.bulkWriter();
   return {
     async *recipes() {
@@ -136,7 +137,7 @@ function firestoreDeps(admin) {
       for (;;) {
         let q = db
           .collectionGroup("recipes")
-          .orderBy(admin.firestore.FieldPath.documentId())
+          .orderBy(FieldPath.documentId())
           .select("core.mealType", "core.title")
           .limit(pageSize);
         if (last) q = q.startAfter(last);
@@ -195,11 +196,11 @@ function report(counts, apply) {
 }
 
 async function main() {
-  const admin = require("firebase-admin");
+  const { initializeApp } = require("firebase-admin/app");
   const { requireProject } = require("../lib/admin/require-project");
-  admin.initializeApp({ projectId: requireProject() });
+  initializeApp({ projectId: requireProject() });
   const apply = process.argv.includes("--apply");
-  const counts = await runMigration(firestoreDeps(admin), { apply });
+  const counts = await runMigration(firestoreDeps(), { apply });
   console.log(report(counts, apply));
   if (counts.failed > 0) process.exitCode = 1;
 }

@@ -7,10 +7,11 @@
  */
 
 import * as assert from "assert";
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import type { AuthBlockingEvent } from "firebase-functions/v2/identity";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-signup-allowlist" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-signup-allowlist" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -96,7 +97,7 @@ test("switch: exact false turns the gate OFF", async () => {
 
 test("inviteState: missing, expired, non-timestamp, valid", async () => {
   const now = Date.now();
-  const ts = admin.firestore.Timestamp;
+  const ts = Timestamp;
   assert.strictEqual(gate.inviteState(null, now), "missing");
   assert.strictEqual(gate.inviteState({ expireAt: ts.fromMillis(now - 1) }, now), "expired");
   assert.strictEqual(gate.inviteState({ expireAt: now + 1000 }, now), "expired");

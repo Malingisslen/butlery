@@ -20,7 +20,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { batchDeleteDocs } from "../shared/batch-delete";
 import { requireAdmin } from "../shared/require-admin";
 
@@ -36,8 +36,8 @@ import { requireAdmin } from "../shared/require-admin";
  * Returns the number of expired docs deleted.
  */
 export async function purgeExpiredDeletionAuditLogs(
-  db: admin.firestore.Firestore,
-  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now()
+  db: Firestore,
+  now: Timestamp = Timestamp.now()
 ): Promise<number> {
   const snapshot = await db
     .collection("deletion_audit_logs")
@@ -59,7 +59,7 @@ export async function purgeExpiredDeletionAuditLogs(
 export const cleanupOldAuditLogs = onSchedule(
   { schedule: "0 3 * * 0", timeZone: "UTC" },
   async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
 
     logger.info("Starting deletion_audit_logs TTL cleanup...");
 
@@ -76,7 +76,7 @@ export const cleanupOldAuditLogs = onSchedule(
       await db.collection("system_events").add({
         type: "deletion_audit_log_cleanup",
         deletionAuditDeletedCount: deletionAuditCount,
-        executedAt: admin.firestore.FieldValue.serverTimestamp(),
+        executedAt: FieldValue.serverTimestamp(),
       });
 
       logger.info(
@@ -102,7 +102,7 @@ export const getAuditLogStats = onCall(
   async (request: CallableRequest) => {
     requireAdmin(request);
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const auditLogsRef = db.collection("audit_logs");
 
     try {

@@ -39,7 +39,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { sendPushToUser } from "./fcm-tokens";
 import {
   checkAndIncrement,
@@ -79,14 +79,14 @@ interface PreferencesShape {
   categorySettings?: Record<string, boolean>;
 }
 
-/** Injected by tests; production resolves via admin.firestore() lazily. */
+/** Injected by tests; production resolves via getFirestore() lazily. */
 export interface Deps {
   getPreferences: (userId: string) => Promise<PreferencesShape | null>;
   getNow: () => Date;
   send: typeof sendPushToUser;
   /**
    * BUT-1223: rate-cap seam. The real `checkAndIncrement` opens a Firestore
-   * transaction via `admin.firestore()` — tests without an initialized app
+   * transaction via `getFirestore()` — tests without an initialized app
    * MUST inject a stub here (same convention as the gate/recordEvent seams
    * on DispatchOptions in send-notification.ts).
    */
@@ -165,8 +165,7 @@ function isCategoryAllowed(
 async function defaultGetPreferences(
   userId: string
 ): Promise<PreferencesShape | null> {
-  const snap = await admin
-    .firestore()
+  const snap = await getFirestore()
     .collection("user_notification_preferences")
     .doc(userId)
     .get();

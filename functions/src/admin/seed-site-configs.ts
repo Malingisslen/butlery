@@ -12,11 +12,12 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { DecodedIdToken } from "firebase-admin/auth";
 import { requireAdmin } from "../shared/require-admin";
 
 // Note: db is accessed lazily to ensure initializeApp() has been called
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * List of admin user IDs allowed to seed configs.
@@ -32,9 +33,9 @@ const ADMIN_UIDS: string[] = [
  * Falls back to UID list only if custom claims aren't set up yet.
  *
  * SECURITY: In production, set admin=true custom claim on admin users:
- *   admin.auth().setCustomUserClaims(uid, { admin: true })
+ *   getAuth().setCustomUserClaims(uid, { admin: true })
  */
-function isAdmin(uid: string, token?: admin.auth.DecodedIdToken): boolean {
+function isAdmin(uid: string, token?: DecodedIdToken): boolean {
   // M16: Primary check - custom claims (preferred)
   if (token?.admin === true) {
     return true;
@@ -104,7 +105,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.9,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Arla - Major Swedish dairy company
@@ -120,7 +121,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.85,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Köket - Popular Swedish recipe site (redesigns frequently)
@@ -139,7 +140,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.85,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Recept.se - Swedish recipe aggregator
@@ -155,7 +156,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.8,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Coop - Swedish grocery cooperative
@@ -171,7 +172,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.8,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Tasteline - Swedish recipe community
@@ -186,7 +187,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.75,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Mathem - Swedish online grocery
@@ -200,7 +201,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.75,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Allt om Mat - Swedish food magazine
@@ -218,7 +219,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.8,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Receptfavoriter - Swedish recipe aggregator (no schema.org)
@@ -235,7 +236,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.75,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 
   // Landleys Kök - Swedish food blog (no schema.org, uses FoodiePress plugin)
@@ -252,7 +253,7 @@ const SITE_CONFIGS: SiteConfigData[] = [
     qualityScore: 0.7,
     successCount: 0,
     failureCount: 0,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdated: FieldValue.serverTimestamp(),
   },
 ];
 
@@ -271,7 +272,7 @@ export const seedSiteConfigs = onCall(
     }
 
     // Check admin permission (M16: pass token for custom claims check)
-    if (!isAdmin(request.auth.uid, request.auth.token as admin.auth.DecodedIdToken)) {
+    if (!isAdmin(request.auth.uid, request.auth.token as DecodedIdToken)) {
       throw new HttpsError(
         "permission-denied",
         "Only admins can seed site configs"

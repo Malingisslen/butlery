@@ -17,11 +17,12 @@
  *     node scripts/backfill-cook-snap-visibility.js --project <id> [--dry-run]
  */
 
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 const { requireProject } = require("../lib/admin/require-project");
 
-admin.initializeApp({ projectId: requireProject() });
-const db = admin.firestore();
+initializeApp({ projectId: requireProject() });
+const db = getFirestore();
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const BATCH_LIMIT = 400; // headroom under Firestore's 500-op batch cap

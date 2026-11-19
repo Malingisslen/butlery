@@ -32,7 +32,7 @@
  * concurrency or index coverage; both live on the emulator lane.
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 
 export type FakeDoc = Record<string, unknown>;
 
@@ -49,7 +49,7 @@ export interface FakeFirestoreOptions {
   /** Make every `collection().add()` reject. */
   failAdds?: boolean;
   /** The value every `serverTimestamp()` sentinel resolves to. */
-  now?: admin.firestore.Timestamp;
+  now?: Timestamp;
   /**
    * Runs every transaction callback this many times, applying only the LAST
    * run's buffered writes, as Firestore does on a contended commit. Default 1.
@@ -102,7 +102,7 @@ export interface FakeQuery {
    * Only `==`, `array-contains` and a `>=`/`<` document-id bound are modelled;
    * anything else throws.
    */
-  where(field: string | admin.firestore.FieldPath, op: string, value: unknown): FakeQuery;
+  where(field: string | FieldPath, op: string, value: unknown): FakeQuery;
   get(): Promise<{ size: number; empty: boolean; docs: FakeDocSnap[] }>;
 }
 
@@ -177,7 +177,7 @@ function transformKind(value: unknown): string | null {
     "NumericIncrementTransform",
   ];
   if (name && known.includes(name)) return name;
-  if (value instanceof admin.firestore.FieldValue) {
+  if (value instanceof FieldValue) {
     throw new Error(
       `fake-firestore: unrecognised FieldValue sentinel ${String(name)} — teach the fake about it rather than storing it`,
     );
@@ -286,16 +286,16 @@ export class FakeFirestore {
   readonly writes: FakeWrite[] = [];
   private autoId = 0;
   private readonly options: FakeFirestoreOptions;
-  private readonly now: admin.firestore.Timestamp;
+  private readonly now: Timestamp;
 
   constructor(options: FakeFirestoreOptions = {}) {
     this.options = options;
-    this.now = options.now ?? admin.firestore.Timestamp.fromMillis(1_700_000_000_000);
+    this.now = options.now ?? Timestamp.fromMillis(1_700_000_000_000);
   }
 
   /** The SUT-facing handle. */
-  get db(): admin.firestore.Firestore {
-    return this as unknown as admin.firestore.Firestore;
+  get db(): Firestore {
+    return this as unknown as Firestore;
   }
 
   /** Puts a document in place without recording a write. */
@@ -323,7 +323,7 @@ export class FakeFirestore {
       .sort();
   }
 
-  // --- the admin.firestore.Firestore surface the SUTs use --------------------
+  // --- the Firestore surface the SUTs use --------------------
 
   collection(path: string): FakeColRef {
     return this.colRef(path);
@@ -508,11 +508,11 @@ export class FakeFirestore {
         }
         return query(limit, filters, f);
       },
-      where: (field: string | admin.firestore.FieldPath, op: string, value: unknown) => {
+      where: (field: string | FieldPath, op: string, value: unknown) => {
         let name: string;
         if (typeof field === "string") {
           name = field;
-        } else if (field.isEqual(admin.firestore.FieldPath.documentId())) {
+        } else if (field.isEqual(FieldPath.documentId())) {
           name = DOCUMENT_ID;
         } else {
           throw new Error("fake-firestore: a FieldPath other than documentId() is not modelled");

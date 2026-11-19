@@ -13,7 +13,7 @@
  */
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { appealRef, canHoldAppeal, isSafeDocId } from "./appeals";
@@ -116,12 +116,12 @@ export const listClosedReports = onCall(
   (request) =>
     handleListClosedReports(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      run: (adminUid, cursor) => runListClosedReportsWithDb(admin.firestore(), adminUid, cursor),
+      run: (adminUid, cursor) => runListClosedReportsWithDb(getFirestore(), adminUid, cursor),
     }),
 );
 
 function iso(value: unknown): string | null {
-  return value instanceof admin.firestore.Timestamp ? value.toDate().toISOString() : null;
+  return value instanceof Timestamp ? value.toDate().toISOString() : null;
 }
 
 function moderatorLabel(moderatorId: unknown, adminUid: string): ModeratorLabel {
@@ -141,17 +141,17 @@ function pastDecision(entry: Record<string, unknown>, adminUid: string): PastDec
 
 /** Test seam — accepts an injected Firestore. */
 export async function runListClosedReportsWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   adminUid: string,
   cursor: Cursor | null,
 ): Promise<ClosedReportsResponse> {
   let query = db
     .collection(MODERATION_DECISIONS)
     .orderBy("decidedAt", "desc")
-    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
+    .orderBy(FieldPath.documentId(), "desc")
     .limit(PAGE_SIZE);
   if (cursor) {
-    query = query.startAfter(admin.firestore.Timestamp.fromMillis(cursor.decidedAtMs), cursor.reportId);
+    query = query.startAfter(Timestamp.fromMillis(cursor.decidedAtMs), cursor.reportId);
   }
   const records = await query.get();
   if (records.empty) return { reports: [], nextCursor: null };
@@ -196,7 +196,7 @@ export async function runListClosedReportsWithDb(
   const last = records.docs[records.docs.length - 1];
   const lastAt = last.get("decidedAt");
   const nextCursor =
-    records.size === PAGE_SIZE && lastAt instanceof admin.firestore.Timestamp
+    records.size === PAGE_SIZE && lastAt instanceof Timestamp
       ? encodeCursor({ decidedAtMs: lastAt.toMillis(), reportId: last.id })
       : null;
   return { reports: rows, nextCursor };

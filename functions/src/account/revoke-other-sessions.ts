@@ -12,7 +12,8 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { REAUTH_MAX_AGE_SECONDS } from "./mfa-backup-codes";
@@ -162,9 +163,9 @@ export function auditRow(entry: Record<string, unknown>): Record<string, unknown
 
 async function writeAudit(entry: Record<string, unknown>): Promise<void> {
   try {
-    await admin.firestore().collection("audit_logs").add({
+    await getFirestore().collection("audit_logs").add({
       ...auditRow(entry),
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
     });
   } catch (err) {
     logger.error("[revoke-other-sessions] audit write failed", {
@@ -198,24 +199,23 @@ export const revokeOtherSessions = onCall(
     return runRevokeOtherSessions(
       {
         getAccount: async (uid) => {
-          const user = await admin.auth().getUser(uid);
+          const user = await getAuth().getUser(uid);
           return {
             providerIds: user.providerData.map((p) => p.providerId),
             enrolledFactorCount: user.multiFactor?.enrolledFactors?.length ?? 0,
           };
         },
-        createCustomToken: (uid) => admin.auth().createCustomToken(uid),
-        revokeRefreshTokens: (uid) => admin.auth().revokeRefreshTokens(uid),
+        createCustomToken: (uid) => getAuth().createCustomToken(uid),
+        revokeRefreshTokens: (uid) => getAuth().revokeRefreshTokens(uid),
         enforceRateLimit: (uid) => enforceRateLimit(uid, REVOKE_RATE_LIMIT_KEY),
         markRevoked: async (uid) => {
           // update(), not set(): an account being erased must not get a stub
           // profile back. A missing document is swallowed by the caller.
-          await admin
-            .firestore()
+          await getFirestore()
             .collection("users")
             .doc(uid)
             .update({
-              sessionsRevokedAt: admin.firestore.FieldValue.serverTimestamp(),
+              sessionsRevokedAt: FieldValue.serverTimestamp(),
             });
         },
         audit: writeAudit,

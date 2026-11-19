@@ -22,7 +22,7 @@
  */
 
 import { randomBytes } from "crypto";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp } from "firebase-admin/firestore";
 import type { Bucket } from "@google-cloud/storage";
 import { recordDecision } from "../moderation/report-decision";
 import { isAutomatedImageReport, REPORTS, SAFE_SEARCH_SOURCE } from "../moderation/report-status";
@@ -68,7 +68,7 @@ export function isCasePointer(file: {
   return POINTER_PATTERN.test(file.name) && file.metadata?.metadata?.reportId === undefined;
 }
 
-function isOwnCase(data: admin.firestore.DocumentData | undefined, ownerUid: string): boolean {
+function isOwnCase(data: DocumentData | undefined, ownerUid: string): boolean {
   return isAutomatedImageReport(data) && data?.contentOwnerId === ownerUid;
 }
 
@@ -79,7 +79,7 @@ function isOwnCase(data: admin.firestore.DocumentData | undefined, ownerUid: str
  * window's case: a granted appeal must not restore an image nobody judged.
  */
 export async function chooseReportId(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   bucket: Bucket,
   ownerUid: string,
   now: Date,
@@ -116,7 +116,7 @@ async function readPointer(pointer: ReturnType<Bucket["file"]>): Promise<string 
 }
 
 export interface ImageDecisionDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   push: (notices: Notice[]) => Promise<void>;
 }
 
@@ -142,7 +142,7 @@ export async function fileImageDecision(
     status: "closed",
     moderatorAction: "content_removed",
     motivation: AUTOMATED_IMAGE_MOTIVATION,
-    createdAt: admin.firestore.Timestamp.fromDate(now),
+    createdAt: Timestamp.fromDate(now),
   };
   try {
     await ref.create(report);

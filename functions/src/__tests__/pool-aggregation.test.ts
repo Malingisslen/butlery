@@ -19,9 +19,10 @@
  * Run with: npx ts-node src/__tests__/pool-aggregation.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-pooled-ratings-stage-b" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-pooled-ratings-stage-b" });
 }
 import * as fs from "fs";
 import * as path from "path";
@@ -361,7 +362,7 @@ async function liftedQuarantineRestoresNumber(): Promise<void> {
 async function drainRunsAggregatorPerMarker(): Promise<void> {
   // Two pending markers → aggregator called for each, markers claimed (deleted).
   const db = new FakeFirestore();
-  const past = admin.firestore.Timestamp.fromMillis(1_000);
+  const past = Timestamp.fromMillis(1_000);
   db.store.set(`${__test__.MARKER_COLLECTION}/${POOL}`, {
     key: POOL,
     pendingUntil: past,
@@ -396,7 +397,7 @@ async function drainUnwiredFailsLoudly(): Promise<void> {
   // No `aggregate` dep → shared drainer's default throws per key → counted as
   // failed (never a silent pass). Guards a production wiring mistake.
   const db = new FakeFirestore();
-  const past = admin.firestore.Timestamp.fromMillis(1_000);
+  const past = Timestamp.fromMillis(1_000);
   db.store.set(`${__test__.MARKER_COLLECTION}/${POOL}`, {
     key: POOL,
     pendingUntil: past,

@@ -5,7 +5,7 @@
  * and returns a structured recipe object.
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { withGuestImportQuota } from "./guest-import-quota";
 import { withAiConsent } from "./ai-consent";
@@ -125,7 +125,7 @@ export interface KillSwitchConfig {
 export type LoadKillSwitch = () => Promise<KillSwitchConfig | undefined>;
 
 async function defaultLoadKillSwitch(): Promise<KillSwitchConfig | undefined> {
-  const configDoc = await admin.firestore().doc("system/config").get();
+  const configDoc = await getFirestore().doc("system/config").get();
   if (!configDoc.exists) return undefined;
   const data = configDoc.data() as KillSwitchConfig | undefined;
   return data;

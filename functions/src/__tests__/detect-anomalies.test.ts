@@ -21,10 +21,11 @@
  * Run with: npx ts-node src/__tests__/detect-anomalies.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({ projectId: "butlery-test-detect-anomalies" });
+if (getApps().length === 0) {
+  initializeApp({ projectId: "butlery-test-detect-anomalies" });
 }
 
 import {
@@ -141,7 +142,7 @@ function makeFakeDb(store: FakeStore) {
         },
       };
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 function newStore(): FakeStore {

@@ -15,9 +15,9 @@
  * Run with: npx ts-node src/__tests__/share-display-name-tombstone.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-but466" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-but466" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -169,7 +169,7 @@ async function scenario_tombstonesTargetSharerOnly(): Promise<void> {
   });
 
   const queued = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -231,11 +231,11 @@ async function scenario_idempotentRerun(): Promise<void> {
   });
 
   const first = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
   const second = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -269,7 +269,7 @@ async function scenario_partialTombstone_displayNameDoneAvatarMissing(): Promise
   });
 
   const queued = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -301,7 +301,7 @@ async function scenario_noMatch(): Promise<void> {
   });
 
   const queued = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     "deleted-user"
   );
 
@@ -324,7 +324,7 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   }
 
   const queued = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -373,7 +373,7 @@ async function scenario_failedChunkContinues(): Promise<void> {
   db.failNextCommit = true; // first commit will throw
 
   const queued = await tombstoneSharedByDisplayNameWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 

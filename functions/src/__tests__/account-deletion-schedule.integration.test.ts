@@ -18,11 +18,14 @@ const EMULATOR_HOST = "127.0.0.1:8080";
 process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth } from "firebase-admin/auth";
+import { Storage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -55,7 +58,7 @@ interface FakeAuthState {
   seenLease?: Map<string, number | null>;
 }
 
-function fakeAuth(state: FakeAuthState): admin.auth.Auth {
+function fakeAuth(state: FakeAuthState): Auth {
   return {
     async getUser(uid: string) {
       if (state.missingUsers?.has(uid)) {
@@ -67,7 +70,7 @@ function fakeAuth(state: FakeAuthState): admin.auth.Auth {
         const lease = snap.get("processingStartedAt");
         state.seenLease.set(
           uid,
-          lease instanceof admin.firestore.Timestamp ? lease.toMillis() : null,
+          lease instanceof Timestamp ? lease.toMillis() : null,
         );
       }
       return {
@@ -87,10 +90,10 @@ function fakeAuth(state: FakeAuthState): admin.auth.Auth {
       if (state.failDeleteFor?.has(uid)) throw new Error("auth unavailable");
       state.deleted.push(uid);
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
-function fakeStorage(): admin.storage.Storage {
+function fakeStorage(): Storage {
   return {
     bucket() {
       return {
@@ -99,7 +102,7 @@ function fakeStorage(): admin.storage.Storage {
         },
       };
     },
-  } as unknown as admin.storage.Storage;
+  } as unknown as Storage;
 }
 
 function newAuthState(): FakeAuthState {
@@ -247,10 +250,10 @@ test("cancel: with no request it reports nothing cancelled", async () => {
 test("cancel: refused once the erasure has started", async () => {
   const uid = `started-${RUN}`;
   await db.doc(`${REQUESTS}/${uid}`).set({
-    requestedAt: admin.firestore.Timestamp.fromMillis(NOW - 8 * DAY_MS),
-    scheduledFor: admin.firestore.Timestamp.fromMillis(NOW - DAY_MS),
+    requestedAt: Timestamp.fromMillis(NOW - 8 * DAY_MS),
+    scheduledFor: Timestamp.fromMillis(NOW - DAY_MS),
     reason: "x",
-    processingStartedAt: admin.firestore.Timestamp.fromMillis(NOW),
+    processingStartedAt: Timestamp.fromMillis(NOW),
   });
   let code: unknown = null;
   try {
@@ -265,8 +268,8 @@ test("cancel: refused once the erasure has started", async () => {
 test("cancel: refused after an incomplete run put the request back", async () => {
   const uid = `partial-${RUN}`;
   await db.doc(`${REQUESTS}/${uid}`).set({
-    requestedAt: admin.firestore.Timestamp.fromMillis(NOW - 8 * DAY_MS),
-    scheduledFor: admin.firestore.Timestamp.fromMillis(NOW - DAY_MS),
+    requestedAt: Timestamp.fromMillis(NOW - 8 * DAY_MS),
+    scheduledFor: Timestamp.fromMillis(NOW - DAY_MS),
     reason: "x",
     attempts: 1,
   });
@@ -295,7 +298,7 @@ test("runDue: erases due and stale-leased accounts, leaves pending and freshly l
   const stale = `stale-${RUN}`;
   const pending = `pending-${RUN}`;
   const leased = `leased-${RUN}`;
-  const ts = admin.firestore.Timestamp.fromMillis;
+  const ts = Timestamp.fromMillis;
   await db.doc(`${REQUESTS}/${due}`).set({
     requestedAt: ts(NOW - 8 * DAY_MS),
     scheduledFor: ts(NOW - DAY_MS),
@@ -364,7 +367,7 @@ test("runDue: erases due and stale-leased accounts, leaves pending and freshly l
 test("runDue: an account already gone from Auth is still erased, and its audit row has no email hash", async () => {
   await clearEmulator();
   const uid = `noauth-${RUN}`;
-  const ts = admin.firestore.Timestamp.fromMillis;
+  const ts = Timestamp.fromMillis;
   await db.doc(`${REQUESTS}/${uid}`).set({
     requestedAt: ts(NOW - 8 * DAY_MS),
     scheduledFor: ts(NOW - DAY_MS),
@@ -392,7 +395,7 @@ test("runDue: an account already gone from Auth is still erased, and its audit r
 test("runDue: an incomplete erasure puts the request back for the next run", async () => {
   await clearEmulator();
   const uid = `retry-${RUN}`;
-  const ts = admin.firestore.Timestamp.fromMillis;
+  const ts = Timestamp.fromMillis;
   await db.doc(`${REQUESTS}/${uid}`).set({
     requestedAt: ts(NOW - 8 * DAY_MS),
     scheduledFor: ts(NOW - DAY_MS),
@@ -422,7 +425,7 @@ test("runDue: an incomplete erasure puts the request back for the next run", asy
 test("runDue: the last allowed attempt gives up instead of looping", async () => {
   await clearEmulator();
   const uid = `giveup-${RUN}`;
-  const ts = admin.firestore.Timestamp.fromMillis;
+  const ts = Timestamp.fromMillis;
   await db.doc(`${REQUESTS}/${uid}`).set({
     requestedAt: ts(NOW - 8 * DAY_MS),
     scheduledFor: ts(NOW - DAY_MS),
@@ -462,7 +465,7 @@ test("resolveDeletionReason: a given reason wins, else the stored one, else the 
 
 test("runDue: at most five accounts per run, the rest wait for the next", async () => {
   await clearEmulator();
-  const ts = admin.firestore.Timestamp.fromMillis;
+  const ts = Timestamp.fromMillis;
   const uids = Array.from({ length: 6 }, (_, i) => `batch${i}-${RUN}`);
   for (const [i, uid] of uids.entries()) {
     await db.doc(`${REQUESTS}/${uid}`).set({

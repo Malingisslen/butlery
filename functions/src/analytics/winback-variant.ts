@@ -31,7 +31,7 @@
  */
 
 import { createHash } from "crypto";
-import * as admin from "firebase-admin";
+import { getRemoteConfig } from "firebase-admin/remote-config";
 import { logger } from "firebase-functions/logger";
 
 /** Baseline Swedish copy. Mirrors what was previously hardcoded inline. */
@@ -95,7 +95,7 @@ export type RcTemplateLoader = () => Promise<
 >;
 
 export interface FetchWinbackCopyDeps {
-  /** Test seam for RC template fetch. Production resolves to admin.remoteConfig(). */
+  /** Test seam for RC template fetch. Production resolves to getRemoteConfig(). */
   loader?: RcTemplateLoader;
   /** Clock seam for TTL math. */
   now?: () => number;
@@ -127,7 +127,7 @@ export function __resetWinbackCacheForTests(): void {
  */
 async function defaultRcLoader(): Promise<Record<string, string> | null> {
   try {
-    const template = await admin.remoteConfig().getTemplate();
+    const template = await getRemoteConfig().getTemplate();
     const out: Record<string, string> = {};
     for (const [key, param] of Object.entries(template.parameters ?? {})) {
       const def = param.defaultValue;

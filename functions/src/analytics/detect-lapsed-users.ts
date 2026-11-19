@@ -34,7 +34,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp, WriteBatch, getFirestore } from "firebase-admin/firestore";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { evaluateSendGate } from "../shared/notification-gate";
 import { recordNotificationSendEvent } from "../shared/notification-send-events";
@@ -49,7 +49,7 @@ import {
   type PageResult,
 } from "./lapsed-users-page";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -96,7 +96,7 @@ const THRESHOLDS: LapsedThreshold[] = [
 
 /** Test seams. Production passes nothing; tests inject everything. */
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
   /** Override variant resolution (e.g. force a specific variant in tests). */
   resolveVariant?: (uid: string, thresholdType: string) => string;
@@ -108,7 +108,7 @@ export interface RunDeps {
   /** Override contextual-copy resolution (BUT-934). */
   resolveContext?: (
     userId: string,
-    userData: admin.firestore.DocumentData,
+    userData: DocumentData,
   ) => Promise<ContextualCopy | null>;
   /** Override the preference-aware push (test the orchestration in isolation). */
   sendPush?: typeof sendPushToUserRespectingPreferences;
@@ -140,14 +140,14 @@ export async function runDetectLapsedUsers(
   const db = deps.db ?? getDb();
   const now =
     deps.now != null
-      ? admin.firestore.Timestamp.fromDate(deps.now)
-      : admin.firestore.Timestamp.now();
+      ? Timestamp.fromDate(deps.now)
+      : Timestamp.now();
   const nowMs = now.toMillis();
   const resolveVariant = deps.resolveVariant ?? resolveWinbackVariant;
   const fetchCopy = deps.fetchCopy ?? fetchWinbackCopy;
   const resolveContext =
     deps.resolveContext ??
-    ((userId: string, userData: admin.firestore.DocumentData) =>
+    ((userId: string, userData: DocumentData) =>
       resolveContextualWinbackCopy(userId, userData, {
         db,
         now: nowMs,
@@ -187,7 +187,7 @@ export async function runDetectLapsedUsers(
     thresholdCursorRef.get(),
   ]);
   const storedCursor = cursorSnap.exists
-    ? (cursorSnap.data()?.lastRunAt as admin.firestore.Timestamp | undefined)
+    ? (cursorSnap.data()?.lastRunAt as Timestamp | undefined)
     : undefined;
   const lastRunMs = storedCursor?.toMillis() ?? nowMs - DEFAULT_CURSOR_LOOKBACK_MS;
   const thresholdCursors = (thresholdCursorSnap.exists
@@ -209,26 +209,26 @@ export async function runDetectLapsedUsers(
     // (just-crossed) and the lower bound exclusive (already handled last run,
     // so no double-notify). BUT-1671: the lower bound is this threshold's own
     // cursor when one is stored, which is where its previous page ended.
-    const crossedByNow = admin.firestore.Timestamp.fromMillis(
+    const crossedByNow = Timestamp.fromMillis(
       nowMs - threshold.days * MS_PER_DAY,
     );
     // The stored Timestamp is used as read, never rebuilt from millis: the
     // bound is exclusive, and dropping its sub-millisecond part would let the
     // users at exactly that instant through a second time.
     const storedBound = thresholdCursors[threshold.type] as
-      | admin.firestore.Timestamp
+      | Timestamp
       | undefined;
     let lowerBound =
       typeof storedBound?.toMillis === "function"
         ? storedBound
-        : admin.firestore.Timestamp.fromMillis(
+        : Timestamp.fromMillis(
             lastRunMs - threshold.days * MS_PER_DAY,
           );
     const thresholdDeadline =
       startedAt + (runBudgetMs * (index + 1)) / THRESHOLDS.length;
     const setCursor =
-      (bound: admin.firestore.Timestamp) =>
-      (batch: admin.firestore.WriteBatch): void => {
+      (bound: Timestamp) =>
+      (batch: WriteBatch): void => {
         batch.set(thresholdCursorRef, { [threshold.type]: bound }, { merge: true });
       };
 
@@ -256,7 +256,7 @@ export async function runDetectLapsedUsers(
         // Everyone sharing the page's last timestamp joins this page, so the
         // next page can start strictly after it without a uid tie-breaker.
         pageBound = docs[docs.length - 1].data()
-          .lastActiveAt as admin.firestore.Timestamp;
+          .lastActiveAt as Timestamp;
         const ties = await db
           .collection("users")
           .where("lastActiveAt", "==", pageBound)

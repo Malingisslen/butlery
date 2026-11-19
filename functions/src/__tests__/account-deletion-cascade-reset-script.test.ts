@@ -6,7 +6,7 @@
  * Run with: npx ts-node src/__tests__/account-deletion-cascade-reset-script.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   check,
@@ -177,7 +177,7 @@ async function scenario_resetKillSwitchSelfHeals(): Promise<void> {
         };
       },
     };
-    return { db: db as unknown as admin.firestore.Firestore, docs, deleted };
+    return { db: db as unknown as Firestore, docs, deleted };
   }
 
   const path = ks.RESET_KILL_SWITCH_PATH as string;
@@ -264,7 +264,7 @@ async function scenario_resetKillSwitchSelfHeals(): Promise<void> {
     const store = db as unknown as { doc(p: string): { set(d: unknown): Promise<void> } };
     await store.doc(path).set({
       active: false,
-      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 3_600_000),
+      expiresAt: Timestamp.fromMillis(Date.now() + 3_600_000),
     });
     const state = await ks.readResetKillSwitch(db);
     check(
@@ -289,7 +289,7 @@ async function scenario_resetKillSwitchSelfHeals(): Promise<void> {
           throw Object.assign(new Error("unavailable"), { code: 14 });
         },
       }),
-    } as unknown as admin.firestore.Firestore;
+    } as unknown as Firestore;
     let threw = false;
     try {
       await ks.readResetKillSwitch(db);

@@ -9,7 +9,7 @@
  * moved to where neither owns it.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { commitInChunks } from "../shared/batch-update";
 import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
 
@@ -30,7 +30,7 @@ import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
  * Takes an injected Firestore so callers can run it against a stub.
  */
 export async function anonymizeReportsByContentOwnerWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   const snapshot = await database
@@ -45,7 +45,7 @@ export async function anonymizeReportsByContentOwnerWithDb(
     (batch, doc) => {
       batch.update(doc.ref, {
         contentOwnerId: null,
-        contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
+        contentOwnerAnonymizedAt: FieldValue.serverTimestamp(),
       });
       // BUT-886: anonymize cascade — the deleted user's id is being scrubbed
       // from /reports rows authored by other users (reporters). The report

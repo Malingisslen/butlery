@@ -323,7 +323,7 @@ function mapQueriersStillMatch(): void {
       .join("");
     const shape = new RegExp(
       `\\.collectionGroup\\(\\s*("recipes"|Collections\\.recipes)\\s*\\)\\s*` +
-        `\\.where\\(\\s*new\\s+admin\\.firestore\\.FieldPath\\(\\s*${segments}[A-Za-z_]`,
+        `\\.where\\(\\s*new\\s+FieldPath\\(\\s*${segments}[A-Za-z_]`,
     );
     for (const querier of req.queriers) {
       const src = readSource(querier);
@@ -332,7 +332,7 @@ function mapQueriersStillMatch(): void {
         src !== "" && shape.test(src),
         src === ""
           ? `source not found at ${querier} — the file moved, so the declared index may now serve nothing`
-          : `no \`collectionGroup("recipes").where(new admin.firestore.FieldPath(${req.fieldPath
+          : `no \`collectionGroup("recipes").where(new FieldPath(${req.fieldPath
               .split(".")
               .map((s) => `"${s}"`)
               .join(", ")}, <key>)\` found — the map override would serve nothing`,

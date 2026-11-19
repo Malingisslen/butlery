@@ -3,7 +3,7 @@
  * `users/{uid}/consent/current` and never taken from the client (ADR-0037).
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
@@ -12,7 +12,7 @@ import { hashUid } from "../shared/hash-uid";
 export const AI_CONSENT_REQUIRED = "ai-consent-required";
 
 export async function hasAiConsentIn(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string
 ): Promise<boolean> {
   const doc = await db.doc(`users/${uid}/consent/current`).get();
@@ -30,7 +30,7 @@ export async function hasAiConsentIn(
 export function withAiConsent<TRequest, TResponse>(
   handler: (request: CallableRequest<TRequest>) => Promise<TResponse>,
   hasAiConsent: (uid: string) => Promise<boolean> = (uid) =>
-    hasAiConsentIn(admin.firestore(), uid)
+    hasAiConsentIn(getFirestore(), uid)
 ): (request: CallableRequest<TRequest>) => Promise<TResponse> {
   return async (request) => {
     if (!request.auth) {

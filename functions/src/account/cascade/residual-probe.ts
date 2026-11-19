@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { DeletionResult } from "./core";
 import { USER_MODERATION } from "./moderation";
 import {
@@ -46,7 +46,7 @@ import {
  * Mirrors `_probeResidualData` in the prior client implementation.
  */
 export async function probeResidualData(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   result: DeletionResult,
 ): Promise<void> {

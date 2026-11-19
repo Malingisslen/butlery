@@ -14,11 +14,12 @@
  * Run with: npx ts-node src/__tests__/cascade-audit-log.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-but455" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-but455" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -28,7 +29,7 @@ const {
 } = require("../cleanup/cascade-audit-log");
 
 const SERVER_TIMESTAMP_MARKER = Symbol("serverTimestamp");
-(admin.firestore.FieldValue as unknown as {
+(FieldValue as unknown as {
   serverTimestamp: () => unknown;
 }).serverTimestamp = () => SERVER_TIMESTAMP_MARKER;
 

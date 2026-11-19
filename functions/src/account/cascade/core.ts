@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, QuerySnapshot, Timestamp, WriteBatch } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 
@@ -11,7 +11,7 @@ export interface RetainedRecord {
   /** GDPR article the retention rests on. */
   legalBasis: string;
   /** When the hold lifts at the latest, regardless of the case. */
-  holdUntil: admin.firestore.Timestamp;
+  holdUntil: Timestamp;
   /**
    * True when the hold was placed without the predicate being answered — the
    * query threw, or the hold write did.
@@ -68,8 +68,8 @@ export async function runStep(
 
 /** Batch-delete every doc, chunked at `BATCH_LIMIT` (500) ops/batch. */
 export async function batchDeleteAll(
-  db: admin.firestore.Firestore,
-  docs: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  docs: QueryDocumentSnapshot[],
 ): Promise<void> {
   if (docs.length === 0) return;
   await commitInChunks(db, docs, (batch, doc) => batch.delete(doc.ref), {
@@ -87,16 +87,16 @@ export async function batchDeleteAll(
  * a second one, or a throwing re-read throws.
  */
 export async function scrubWithOneReread(
-  db: admin.firestore.Firestore,
-  rows: admin.firestore.QueryDocumentSnapshot[],
-  reread: () => Promise<admin.firestore.QueryDocumentSnapshot[]>,
+  db: Firestore,
+  rows: QueryDocumentSnapshot[],
+  reread: () => Promise<QueryDocumentSnapshot[]>,
   mutate: (
-    batch: admin.firestore.WriteBatch,
-    doc: admin.firestore.QueryDocumentSnapshot,
+    batch: WriteBatch,
+    doc: QueryDocumentSnapshot,
   ) => void,
   label: string,
 ): Promise<void> {
-  const write = (docs: admin.firestore.QueryDocumentSnapshot[]) =>
+  const write = (docs: QueryDocumentSnapshot[]) =>
     commitInChunks(db, docs, mutate, { label, strict: true });
 
   try {
@@ -113,11 +113,11 @@ export async function scrubWithOneReread(
  * cap, and keeps only the rows `keep` accepts, as the first read did.
  */
 export function cappedReread(
-  read: () => Promise<admin.firestore.QuerySnapshot>,
+  read: () => Promise<QuerySnapshot>,
   cap: number,
   label: string,
-  keep: (doc: admin.firestore.QueryDocumentSnapshot) => boolean = () => true,
-): () => Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  keep: (doc: QueryDocumentSnapshot) => boolean = () => true,
+): () => Promise<QueryDocumentSnapshot[]> {
   return async () => {
     const again = await read();
     if (again.size > cap) {
@@ -131,8 +131,8 @@ export function cappedReread(
 export function updateWith(
   update: Record<string, unknown>,
 ): (
-  batch: admin.firestore.WriteBatch,
-  doc: admin.firestore.QueryDocumentSnapshot,
+  batch: WriteBatch,
+  doc: QueryDocumentSnapshot,
 ) => void {
   return (batch, doc) => {
     batch.update(doc.ref, update);

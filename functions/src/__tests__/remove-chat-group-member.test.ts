@@ -36,7 +36,8 @@
  * Run with: npx ts-node src/__tests__/remove-chat-group-member.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, Transaction } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 import {
@@ -49,8 +50,8 @@ import {
   PER_USER_CONVERSATION_MAPS,
 } from "../groups/chat-group-writes";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-remove-chat-group" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-remove-chat-group" });
 }
 
 const MEMBERS = ["admin", "member", "other"];
@@ -77,7 +78,7 @@ function verdict(
 // that one of them changed is not an assertion about an absent document.
 // ---------------------------------------------------------------------------
 
-const JOINED = admin.firestore.Timestamp.fromMillis(1_600_000_000_000);
+const JOINED = Timestamp.fromMillis(1_600_000_000_000);
 
 function seedGroup(
   fake: FakeFirestore,
@@ -265,7 +266,7 @@ const cases: UnitCase[] = [
         set: () => {
           throw new Error("stageMemberRemoval must not create documents");
         },
-      } as unknown as admin.firestore.Transaction;
+      } as unknown as Transaction;
 
       stageMemberRemoval(tx, {
         db: fake.db,
@@ -280,8 +281,8 @@ const cases: UnitCase[] = [
       const convo = updates.find((u) => u.path === "conversations/c1")?.data ?? {};
 
       const removesU1 = (v: unknown) =>
-        (v as admin.firestore.FieldValue)?.isEqual?.(
-          admin.firestore.FieldValue.arrayRemove("u1"),
+        (v as FieldValue)?.isEqual?.(
+          FieldValue.arrayRemove("u1"),
         ) === true;
       assertEqual(removesU1(group.memberIds), true, "memberIds arrayRemove");
       // A departing admin loses the right with the membership, in the same
@@ -289,7 +290,7 @@ const cases: UnitCase[] = [
       assertEqual(removesU1(group.adminIds), true, "adminIds arrayRemove");
       assertEqual(removesU1(convo.participantIds), true, "participantIds arrayRemove");
 
-      const DELETE = admin.firestore.FieldValue.delete();
+      const DELETE = FieldValue.delete();
       for (const map of [
         "memberDisplayNames",
         "memberAvatarUrls",
@@ -316,7 +317,7 @@ const cases: UnitCase[] = [
         update: (_ref: unknown, data: Record<string, unknown>) =>
           keys.push(...Object.keys(data)),
         delete: () => undefined,
-      } as unknown as admin.firestore.Transaction;
+      } as unknown as Transaction;
       stageMemberRemoval(tx, {
         db: fake.db,
         groupId: "g1",

@@ -15,7 +15,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS } from "./report-status";
 import { roundOf } from "./decision-revision";
@@ -65,13 +65,13 @@ export const getMyReportOutcomes = onCall(
   (request) =>
     handleGetMyReportOutcomes(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      run: (uid) => runGetMyReportOutcomesWithDb(admin.firestore(), uid),
+      run: (uid) => runGetMyReportOutcomesWithDb(getFirestore(), uid),
     }),
 );
 
 /** Test seam — accepts an injected Firestore. */
 export async function runGetMyReportOutcomesWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<MyReportOutcomesResponse> {
   // Served by the `reporterId, createdAt` composite in firestore.indexes.json.

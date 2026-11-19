@@ -13,11 +13,11 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, FieldPath, FieldValue, Query, Transaction, getFirestore } from "firebase-admin/firestore";
 import { requireAdmin } from "../shared/require-admin";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * BUT-1781: recipes live ONLY at `users/{uid}/recipes/{recipeId}`. Both
@@ -32,7 +32,7 @@ const getDb = () => admin.firestore();
  * The `core.createdBy` filter needs a COLLECTION_GROUP fieldOverride, declared
  * in firestore.indexes.json alongside the two the cascades use.
  */
-const recipesGroup = (): admin.firestore.Query =>
+const recipesGroup = (): Query =>
   getDb().collectionGroup("recipes");
 
 // CRIT-6: Rate limit constants
@@ -61,7 +61,7 @@ async function checkRateLimit(adminUid: string): Promise<boolean> {
     .collection(RATE_LIMIT_COLLECTION)
     .doc(`${adminUid}_bulkRetag_${today}`);
 
-  return db.runTransaction(async (transaction: admin.firestore.Transaction) => {
+  return db.runTransaction(async (transaction: Transaction) => {
     const doc = await transaction.get(rateLimitRef);
     const currentCount = doc.exists ? (doc.data()?.count || 0) : 0;
 
@@ -75,7 +75,7 @@ async function checkRateLimit(adminUid: string): Promise<boolean> {
         adminUid,
         date: today,
         count: currentCount + 1,
-        lastCall: admin.firestore.FieldValue.serverTimestamp(),
+        lastCall: FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
@@ -98,7 +98,7 @@ async function logAuditEntry(
       adminUid,
       action,
       details,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
       ipAddress: null, // Would need to extract from request context if needed
     });
   } catch (error) {
@@ -294,7 +294,7 @@ export const bulkMarkForRetagging = onCall(
 
     try {
       // Build query for outdated recipes
-      let query: admin.firestore.Query = recipesGroup();
+      let query: Query = recipesGroup();
 
       // Filter by user if specified
       if (userId) {
@@ -310,10 +310,10 @@ export const bulkMarkForRetagging = onCall(
       // already does this. It is what makes MAX_BULK_RETAG_LIMIT actually safe
       // against the default memory limit.
       query = query.select("core.tagResult.generatorVersion");
-      query = query.orderBy(admin.firestore.FieldPath.documentId());
+      query = query.orderBy(FieldPath.documentId());
       if (typeof startAfter === "string" && startAfter.length > 0) {
         query = query.startAfter(
-          await admin.firestore().doc(startAfter).get(),
+          await getFirestore().doc(startAfter).get(),
         );
       }
       query = query.limit(limit);
@@ -479,12 +479,12 @@ export const getRetagStatus = onCall(
     try {
       const byVersion: { [version: string]: number } = {};
       let total = 0;
-      let lastDoc: admin.firestore.DocumentSnapshot | null = null;
+      let lastDoc: DocumentSnapshot | null = null;
       const PAGE_SIZE = 1000;
 
       // H12: Paginate through results to handle large collections
       while (true) {
-        let query: admin.firestore.Query = recipesGroup();
+        let query: Query = recipesGroup();
 
         if (userId) {
           query = query.where("core.createdBy", "==", userId);

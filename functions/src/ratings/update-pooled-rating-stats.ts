@@ -35,7 +35,7 @@
  * on n ≥ 5, so a zeroed doc simply shows no pill (never a stale number).
  */
 
-import * as admin from "firebase-admin";
+import { AggregateField, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { CANONICAL_EVENTS_SUBCOLLECTION } from "./canonical-rating-aggregation";
 
@@ -55,7 +55,7 @@ export interface PooledRatingStats {
   count: number;
   /** Mean of `ratingValue` across the pool, or null when the pool is empty. */
   average: number | null;
-  updatedAt: admin.firestore.Timestamp;
+  updatedAt: Timestamp;
 }
 
 /**
@@ -70,18 +70,18 @@ export interface PooledRatingStats {
  */
 export async function updatePooledRatingStats(
   poolKey: string,
-  dbArg?: admin.firestore.Firestore
+  dbArg?: Firestore
 ): Promise<void> {
   if (!poolKey) {
     logger.warn("pool_aggregation.update called with empty poolKey");
     return;
   }
-  const db = dbArg ?? admin.firestore();
+  const db = dbArg ?? getFirestore();
 
   const quarantine = await db.collection(POOL_QUARANTINE_COLLECTION).doc(poolKey).get();
   if (quarantine.exists && quarantine.data()?.quarantined === true) {
     await db.collection(CANONICAL_STATS_COLLECTION).doc(poolKey).set(
-      { count: 0, average: null, updatedAt: admin.firestore.Timestamp.now() },
+      { count: 0, average: null, updatedAt: Timestamp.now() },
       { merge: true },
     );
     logger.info("pool_aggregation.quarantined", { poolKey });
@@ -94,8 +94,8 @@ export async function updatePooledRatingStats(
     .collectionGroup(CANONICAL_EVENTS_SUBCOLLECTION)
     .where("poolKey", "==", poolKey)
     .aggregate({
-      count: admin.firestore.AggregateField.count(),
-      average: admin.firestore.AggregateField.average("ratingValue"),
+      count: AggregateField.count(),
+      average: AggregateField.average("ratingValue"),
     })
     .get();
 
@@ -105,7 +105,7 @@ export async function updatePooledRatingStats(
   const stats: PooledRatingStats = {
     count,
     average,
-    updatedAt: admin.firestore.Timestamp.now(),
+    updatedAt: Timestamp.now(),
   };
 
   await db.collection(CANONICAL_STATS_COLLECTION).doc(poolKey).set(stats, {

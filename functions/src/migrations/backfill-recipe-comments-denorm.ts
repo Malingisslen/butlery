@@ -51,7 +51,7 @@ import {
   CallableRequest,
 } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, getFirestore } from "firebase-admin/firestore";
 import pLimit from "p-limit";
 
 import { requireAdmin } from "../shared/require-admin";
@@ -70,7 +70,7 @@ const MAX_BATCHES_PER_INVOCATION = 23;
 // under Firestore's per-second per-database read quota during the burst.
 const RESOLVE_CONCURRENCY = 20;
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * Resolve the recipe-ownership snapshot for a given recipeId by
@@ -79,13 +79,13 @@ const getDb = () => admin.firestore();
  */
 export async function resolveRecipeOwnership(
   recipeId: string,
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<{ recipeOwnerId: string; sharedWithUserIds: string[] } | null> {
   // Try the user-subcollection path first via collectionGroup. Recipe
   // ids are server-generated UUIDs so we expect 0 or 1 hit.
   const cgQuery = await db
     .collectionGroup("recipes")
-    .where(admin.firestore.FieldPath.documentId(), "==", recipeId)
+    .where(FieldPath.documentId(), "==", recipeId)
     .limit(1)
     .get();
 
@@ -151,7 +151,7 @@ interface BackfillResponse {
  * fields. Exposed for unit testing alongside the callable wrapper.
  */
 export async function runBackfill(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   options: { dryRun: boolean; maxComments: number }
 ): Promise<BackfillResponse> {
   const { dryRun, maxComments } = options;
@@ -168,7 +168,7 @@ export async function runBackfill(
   while (batchesProcessed < MAX_BATCHES_PER_INVOCATION) {
     let query = db
       .collection("recipe_comments")
-      .orderBy(admin.firestore.FieldPath.documentId())
+      .orderBy(FieldPath.documentId())
       .limit(BATCH_SIZE);
 
     if (lastDocId) {

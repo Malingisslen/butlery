@@ -13,7 +13,8 @@
 
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { CleanupDb } from "./cleanup-recipe-storage";
 import {
   deleteRecipePhotos,
@@ -87,8 +88,8 @@ export const onTrashItemDeleted = onDocumentDeleted(
     const { userId, itemId } = event.params;
     await handleTrashItemDeleted(
       {
-        db: admin.firestore() as unknown as CleanupDb,
-        bucket: admin.storage().bucket(),
+        db: getFirestore() as unknown as CleanupDb,
+        bucket: getStorage().bucket(),
       },
       userId,
       itemId,

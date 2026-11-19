@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 
 export async function probeBlockMirrors(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

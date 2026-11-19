@@ -11,7 +11,7 @@
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { MODERATION_DECISIONS } from "./report-decision";
@@ -91,7 +91,7 @@ export const answerAppeal = onCall(
     enforceAppCheck: true,
   },
   (request) => {
-    const db = admin.firestore();
+    const db = getFirestore();
     const pushDeps: PushDeps = defaultPushDeps(db);
     return handleAnswerAppeal(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
@@ -103,7 +103,7 @@ export const answerAppeal = onCall(
 
 /** Test seam — accepts an injected Firestore and clock. */
 export async function runAnswerAppealWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   adminUid: string,
   input: AnswerAppealInput,
   now: Date = new Date(),
@@ -149,7 +149,7 @@ export async function runAnswerAppealWithDb(
       : { strikeRemoved: false, profileUnhidden: false };
     tx.update(ref, {
       status: outcome,
-      answeredAt: admin.firestore.Timestamp.fromDate(now),
+      answeredAt: Timestamp.fromDate(now),
       answeredBy: adminUid,
     });
     stageModerationAudit(db, tx, {

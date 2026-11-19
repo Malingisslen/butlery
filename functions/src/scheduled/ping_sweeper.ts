@@ -17,14 +17,14 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { batchDeleteDocs } from "../shared/batch-delete";
 
 const PAGE_SIZE = 500;
 const MAX_PAGES = 20;
 
 export interface SweeperDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
 }
 
@@ -32,9 +32,9 @@ export async function runPingSweeper(
   deps: SweeperDeps = {}
 ): Promise<{ deleted: number; durationMs: number }> {
   const start = Date.now();
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = (deps.now ?? (() => new Date()))();
-  const cutoff = admin.firestore.Timestamp.fromDate(now);
+  const cutoff = Timestamp.fromDate(now);
 
   let deleted = 0;
   // 500/page × 20 pages = 10k pings/run, far above realistic single-run

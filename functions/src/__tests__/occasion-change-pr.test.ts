@@ -13,7 +13,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { CSV_PATH, handleCreateIngredientChangePr, IngredientChangePrResult } from "../admin/create-ingredient-change-pr";
 import { GITHUB_APP_BOT_LOGIN, INGREDIENT_BOT_BRANCH, OCCASION_BOT_BRANCH, PullRequest, RepoClient } from "../admin/github-app";
@@ -153,7 +153,7 @@ function request(uid: string): CallableRequest<unknown> {
 }
 
 function world() {
-  const store = new FakeFirestore({ now: admin.firestore.Timestamp.fromDate(NOW) });
+  const store = new FakeFirestore({ now: Timestamp.fromDate(NOW) });
   store.seed(`admins/${ADMIN}`, { addedAt: 1 });
   const repo = new FakeRepo();
   let run = 0;
@@ -172,14 +172,14 @@ let seq = 0;
 function seedWords(store: FakeFirestore, id: string, listKey: string, oldWords: string[], newWords: string[], extra: Record<string, unknown> = {}) {
   store.seed(`${COL}/${id}`, {
     kind: "occasionList", listKey, oldWords, newWords, status: "pending", createdBy: ADMIN, note: "privat anteckning",
-    createdAt: admin.firestore.Timestamp.fromMillis(NOW.getTime() - DAY + ++seq), ...extra,
+    createdAt: Timestamp.fromMillis(NOW.getTime() - DAY + ++seq), ...extra,
   });
 }
 
 function seedIngredient(store: FakeFirestore, id: string, next: string) {
   store.seed(`${COL}/${id}`, {
     ingredientId: ING, changes: { notes_sv: { old: ING_NOTES, new: next } }, status: "pending", createdBy: ADMIN,
-    createdAt: admin.firestore.Timestamp.fromMillis(NOW.getTime() - DAY + ++seq),
+    createdAt: Timestamp.fromMillis(NOW.getTime() - DAY + ++seq),
   });
 }
 
@@ -237,7 +237,7 @@ const cases: UnitCase[] = [
       assertEqual(JSON.stringify(w.store.read(`${COL}/c1`)?.csvValue), JSON.stringify({ [TITLE]: TITLE_NOW }), "main's words");
       assertEqual(status(w.store, "r1"), "rejected", "rejected");
       assertEqual(w.store.read(`${COL}/r1`)?.reason, "unknown-list", "reason");
-      const exp = (w.store.read(`${COL}/r1`)?.expireAt as admin.firestore.Timestamp).toMillis() - NOW.getTime();
+      const exp = (w.store.read(`${COL}/r1`)?.expireAt as Timestamp).toMillis() - NOW.getTime();
       assertEqual(exp, 365 * DAY, "expiry");
       assert(!w.repo.refs.has(OCCASION_BOT_BRANCH), "no branch for nothing applied");
     },

@@ -17,10 +17,11 @@
  * Run with: npx ts-node src/__tests__/detect-pool-velocity.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({ projectId: "butlery-test-detect-pool-velocity" });
+if (getApps().length === 0) {
+  initializeApp({ projectId: "butlery-test-detect-pool-velocity" });
 }
 
 import {
@@ -276,7 +277,7 @@ function newFake(): FakeDb {
   };
 }
 
-function asDb(f: FakeDb): admin.firestore.Firestore {
+function asDb(f: FakeDb): Firestore {
   const daysCollection = {
     orderBy(_field: unknown, _dir: string) {
       return {
@@ -336,7 +337,7 @@ function asDb(f: FakeDb): admin.firestore.Firestore {
           let hits = f.events.filter((e) =>
             q.filters.every(([field, op, value]) => {
               if (field !== "createdAt" || op !== ">=") throw new Error("unsupported filter");
-              return e.createdAtMs >= (value as admin.firestore.Timestamp).toMillis();
+              return e.createdAtMs >= (value as Timestamp).toMillis();
             }),
           );
           if (limitN != null) hits = hits.slice(0, limitN);
@@ -344,7 +345,7 @@ function asDb(f: FakeDb): admin.firestore.Firestore {
             data: () => ({
               poolKey: e.poolKey,
               ratingValue: e.ratingValue,
-              createdAt: admin.firestore.Timestamp.fromMillis(e.createdAtMs),
+              createdAt: Timestamp.fromMillis(e.createdAtMs),
             }),
             ref: { path: `users/${e.uid}/${CANONICAL_EVENTS_SUBCOLLECTION}/${String(e.poolKey)}` },
           }));
@@ -381,7 +382,7 @@ function asDb(f: FakeDb): admin.firestore.Firestore {
       }
       throw new Error(`unexpected collection ${name}`);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 function utcDate(ms: number): string {
@@ -439,7 +440,7 @@ async function burstAndWindow(): Promise<void> {
       f.groupQueries[0].filters.length === 1 &&
       f.groupQueries[0].filters[0][0] === "createdAt" &&
       f.groupQueries[0].filters[0][1] === ">=" &&
-      (f.groupQueries[0].filters[0][2] as admin.firestore.Timestamp).toMillis() === NOW - 2 * DAY_MS,
+      (f.groupQueries[0].filters[0][2] as Timestamp).toMillis() === NOW - 2 * DAY_MS,
     JSON.stringify(f.groupQueries),
   );
   record(
@@ -465,7 +466,7 @@ async function burstAndWindow(): Promise<void> {
     Object.keys(counts).length === 2 && counts[POOL] === 12 && counts[POOL_E] === 2,
     JSON.stringify(counts),
   );
-  const expire = day[0]?.data.expireAt as admin.firestore.Timestamp | undefined;
+  const expire = day[0]?.data.expireAt as Timestamp | undefined;
   record(
     "run: expireAt is a Timestamp now + 35 days",
     expire != null &&

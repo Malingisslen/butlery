@@ -19,9 +19,10 @@ process.env.FIREBASE_CONFIG = JSON.stringify({
   projectId: "butlery-test-sync-last-msg",
 });
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-sync-last-msg" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-sync-last-msg" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -36,8 +37,8 @@ function test(name: string, fn: () => void): void {
   tests.push({ name, fn });
 }
 
-function ts(ms: number): admin.firestore.Timestamp {
-  return admin.firestore.Timestamp.fromMillis(ms);
+function ts(ms: number): Timestamp {
+  return Timestamp.fromMillis(ms);
 }
 
 function assertEqual<T>(actual: T, expected: T, msg?: string): void {
@@ -71,11 +72,11 @@ test("BUT-1853: replaces a STORED sentAt that is not a Timestamp", () => {
   // on EVERY later message write in the affected conversation, freezing its
   // preview for good. Replaceable means a real message heals the document.
   assertEqual(
-    shouldReplaceLastMessage({ sentAt: "nope" as unknown as admin.firestore.Timestamp }, ts(1000)),
+    shouldReplaceLastMessage({ sentAt: "nope" as unknown as Timestamp }, ts(1000)),
     true
   );
   assertEqual(
-    shouldReplaceLastMessage({ sentAt: 1000 as unknown as admin.firestore.Timestamp }, ts(1000)),
+    shouldReplaceLastMessage({ sentAt: 1000 as unknown as Timestamp }, ts(1000)),
     true
   );
   // A plain object with the right shape is still not a Timestamp — the check
@@ -83,7 +84,7 @@ test("BUT-1853: replaces a STORED sentAt that is not a Timestamp", () => {
   // this far in the first place.
   assertEqual(
     shouldReplaceLastMessage(
-      { sentAt: { toMillis: () => 9_000_000 } as unknown as admin.firestore.Timestamp },
+      { sentAt: { toMillis: () => 9_000_000 } as unknown as Timestamp },
       ts(1000)
     ),
     true

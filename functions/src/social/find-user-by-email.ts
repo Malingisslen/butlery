@@ -15,7 +15,8 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { Collections } from "../shared/collections";
 import { assertAgeCompliant } from "../shared/caller-eligibility";
 import { enforceRateLimit } from "../middleware/rate_limiter";
@@ -35,7 +36,7 @@ export type UidByEmail = (email: string) => Promise<string | null>;
 
 const authLookup: UidByEmail = async (email) => {
   try {
-    return (await admin.auth().getUserByEmail(email)).uid;
+    return (await getAuth().getUserByEmail(email)).uid;
   } catch (err) {
     const code = (err as { code?: string }).code;
     if (code === "auth/user-not-found") return null;
@@ -65,7 +66,7 @@ export const findUserByEmail = onCall<FindUserByEmailRequest>(
     await enforceRateLimit(request.auth.uid, "findUserByEmail");
 
     return findUserByEmailWithDeps(
-      admin.firestore(),
+      getFirestore(),
       authLookup,
       request.auth.uid,
       raw,
@@ -75,7 +76,7 @@ export const findUserByEmail = onCall<FindUserByEmailRequest>(
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function findUserByEmailWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uidByEmail: UidByEmail,
   callerUid: string,
   email: string,

@@ -25,7 +25,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentSnapshot } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { erasureUnderway } from "../social/hold-shares-on-block";
 import { isClosedReportStatus, REPORTS } from "../moderation/report-status";
@@ -109,7 +109,7 @@ export async function cleanupRecipeReferences(
 
   const marker = (await db
     .doc(`${Collections.erasuresInProgress}/${ownerId}`)
-    .get()) as admin.firestore.DocumentSnapshot;
+    .get()) as DocumentSnapshot;
   if (erasureUnderway(marker, nowMs)) {
     logger.info("[recipeReferenceCleanup] owner erasure underway; skipped", {
       recipeId,

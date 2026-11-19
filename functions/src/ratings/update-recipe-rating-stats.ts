@@ -36,14 +36,14 @@
  * Extracted from index.ts so it can be invoked directly under the emulator.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Query, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 
 export interface RatingStats {
   ratingCount: number;
   averageRating: number;
   ratingDistribution: { [key: number]: number };
-  lastRatedAt: admin.firestore.Timestamp;
+  lastRatedAt: Timestamp;
 }
 
 /** Rows per collection folded in memory before the recompute counts instead. */
@@ -70,10 +70,10 @@ function isStarValue(value: unknown): value is number {
 
 export async function updateRecipeRatingStats(
   recipeId: string,
-  dbArg?: admin.firestore.Firestore,
+  dbArg?: Firestore,
   foldLimit: number = FOLD_LIMIT
 ): Promise<RecomputeResult> {
-  const db = dbArg ?? admin.firestore();
+  const db = dbArg ?? getFirestore();
   logger.info(`Updating rating stats for recipe ${recipeId}`);
 
   const userRatings = db
@@ -113,10 +113,10 @@ export async function updateRecipeRatingStats(
     }
 
     const distribution: { [key: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    let lastRatedAt: admin.firestore.Timestamp | null = null;
+    let lastRatedAt: Timestamp | null = null;
 
     const countInto = async (
-      query: admin.firestore.Query,
+      query: Query,
       field: string
     ): Promise<void> => {
       const counts = await Promise.all(
@@ -131,7 +131,7 @@ export async function updateRecipeRatingStats(
 
     const fold = (
       ratingValue: unknown,
-      ratedAt: admin.firestore.Timestamp | undefined,
+      ratedAt: Timestamp | undefined,
       docId: string
     ): void => {
       if (!isStarValue(ratingValue)) {
@@ -160,7 +160,7 @@ export async function updateRecipeRatingStats(
         const data = doc.data();
         fold(
           data.rating,
-          data.createdAt as admin.firestore.Timestamp | undefined,
+          data.createdAt as Timestamp | undefined,
           doc.id
         );
       });
@@ -174,7 +174,7 @@ export async function updateRecipeRatingStats(
         fold(
           data.stars,
           (data.lastUpdatedAt ?? data.createdAt) as
-            | admin.firestore.Timestamp
+            | Timestamp
             | undefined,
           doc.id
         );
@@ -195,7 +195,7 @@ export async function updateRecipeRatingStats(
       ratingDistribution: distribution,
     };
     if (!counted) {
-      stats.lastRatedAt = lastRatedAt || admin.firestore.Timestamp.now();
+      stats.lastRatedAt = lastRatedAt || Timestamp.now();
     }
 
     await db

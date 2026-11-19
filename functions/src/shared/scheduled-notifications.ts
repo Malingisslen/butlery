@@ -76,7 +76,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const TTL_DAYS = 7;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -93,7 +93,7 @@ export interface EnqueueScheduledNotificationOpts {
   deliverAt: Date;
   payload: ScheduledNotificationPayload;
   /** Test seam. */
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
 }
 
 /**
@@ -103,7 +103,7 @@ export interface EnqueueScheduledNotificationOpts {
 export async function enqueueScheduledNotification(
   opts: EnqueueScheduledNotificationOpts
 ): Promise<string> {
-  const db = opts.db ?? admin.firestore();
+  const db = opts.db ?? getFirestore();
   const ref = db.collection("scheduled_notifications").doc();
   // 7-day TTL anchored to `now` rather than `deliverAt`. Drainer parks
   // permanently-failing docs at status=failed; passive TTL ensures they
@@ -112,12 +112,12 @@ export async function enqueueScheduledNotification(
   await ref.set({
     userId: opts.userId,
     notificationType: opts.notificationType,
-    deliverAt: admin.firestore.Timestamp.fromDate(opts.deliverAt),
+    deliverAt: Timestamp.fromDate(opts.deliverAt),
     payload: opts.payload,
     status: "pending",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     attempts: 0,
-    expireAt: admin.firestore.Timestamp.fromDate(expireAt),
+    expireAt: Timestamp.fromDate(expireAt),
   });
   logger.info("scheduled_notification_enqueued", {
     userId: opts.userId,

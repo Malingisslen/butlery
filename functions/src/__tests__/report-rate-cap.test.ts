@@ -13,8 +13,9 @@
  * Run with: npx ts-node src/__tests__/report-rate-cap.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) admin.initializeApp({ projectId: "report-rate-cap-test" });
+import { Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) initializeApp({ projectId: "report-rate-cap-test" });
 
 import {
   admitReport,
@@ -41,7 +42,7 @@ interface Write {
 
 /** Records `create()` calls; `createError` makes every create throw it. */
 function fakeDb(createError?: unknown): {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   writes: Write[];
 } {
   const writes: Write[] = [];
@@ -54,7 +55,7 @@ function fakeDb(createError?: unknown): {
         },
       }),
     }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, writes };
 }
 
@@ -194,7 +195,7 @@ const cases: UnitCase[] = [
           runTransaction: async () => {
             throw Object.assign(new Error("tx"), { code });
           },
-        }) as unknown as admin.firestore.Firestore;
+        }) as unknown as Firestore;
       try {
         __setFirestoreForTest(throwing(10));
         const aborted = await checkRateLimit("u", REPORT_RATE_OPERATION);
@@ -248,7 +249,7 @@ function handleCases(): UnitCase[] {
     };
     const run = () =>
       handleReport(
-        {} as admin.firestore.Firestore,
+        {} as Firestore,
         { reportId: "rep1", eventId: "ev1", report },
         deps,
       );

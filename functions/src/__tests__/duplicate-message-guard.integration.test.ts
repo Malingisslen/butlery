@@ -52,7 +52,8 @@ process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
+import { DocumentReference, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs/promises";
 
 const RUN = Date.now().toString(36);
@@ -90,10 +91,10 @@ async function run(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID });
   }
-  const db = admin.firestore();
+  const db = getFirestore();
 
   // Import AFTER initializeApp so the modules bind to the emulator app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -140,7 +141,7 @@ async function run(): Promise<void> {
       content,
       type,
       status: "sent",
-      sentAt: admin.firestore.Timestamp.now(),
+      sentAt: Timestamp.now(),
     };
   }
 
@@ -203,7 +204,7 @@ async function run(): Promise<void> {
   }
 
   /** The document BUT-1952's counter increments, for today's UTC date. */
-  function blockCounterDoc(): admin.firestore.DocumentReference {
+  function blockCounterDoc(): DocumentReference {
     const dateKey = new Date().toISOString().slice(0, 10);
     return db
       .collection("analytics")
@@ -294,9 +295,9 @@ async function run(): Promise<void> {
       marked.conversationId === CONV_A,
       `conversationId must be untouched, got "${marked.conversationId}"`,
     );
-    const sentAt = sent.sentAt as admin.firestore.Timestamp;
+    const sentAt = sent.sentAt as Timestamp;
     assert(
-      (marked.sentAt as admin.firestore.Timestamp).isEqual(sentAt),
+      (marked.sentAt as Timestamp).isEqual(sentAt),
       "sentAt must be untouched — it is the row's position in the thread",
     );
   });
@@ -608,7 +609,7 @@ async function run(): Promise<void> {
       .doc("chat")
       .get();
     const hashes = (rolling.data()?.hashes ?? []) as {
-      at: admin.firestore.Timestamp;
+      at: Timestamp;
     }[];
     assert(hashes.length === 1, `expected one entry, got ${hashes.length}`);
     assert(

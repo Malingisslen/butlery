@@ -28,7 +28,7 @@
  *   }
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, WriteBatch } from "firebase-admin/firestore";
 
 export interface CascadeAuditEntry {
   /** Subject — the user whose deletion triggered the cascade. */
@@ -68,8 +68,8 @@ export interface CascadeAuditEntry {
  * @param entry Audit details
  */
 export function stageCascadeAuditEntry(
-  database: admin.firestore.Firestore,
-  batch: admin.firestore.WriteBatch,
+  database: Firestore,
+  batch: WriteBatch,
   entry: CascadeAuditEntry,
 ): void {
   const ref = database.collection("audit_logs").doc();
@@ -79,7 +79,7 @@ export function stageCascadeAuditEntry(
     resourceType: entry.resourceType,
     resourceId: entry.resourceId,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       actor: "system",
       targetUid: entry.targetUid,
@@ -94,9 +94,9 @@ export function stageCascadeAuditEntry(
  * cleanup paths). Returns the audit doc ref so callers can chain.
  */
 export async function writeCascadeAuditEntry(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   entry: CascadeAuditEntry,
-): Promise<admin.firestore.DocumentReference> {
+): Promise<DocumentReference> {
   const ref = database.collection("audit_logs").doc();
   await ref.set({
     userId: entry.subjectUserId,
@@ -104,7 +104,7 @@ export async function writeCascadeAuditEntry(
     resourceType: entry.resourceType,
     resourceId: entry.resourceId,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       actor: "system",
       targetUid: entry.targetUid,

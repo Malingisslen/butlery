@@ -14,7 +14,8 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { enforceRateLimit } from "../../middleware/rate_limiter";
 import { hashUid } from "../../shared/hash-uid";
 import { ACCOUNT_SECTIONS, SectionDef } from "./account-sections";
@@ -36,7 +37,7 @@ export {
 } from "./project";
 import { WEB_CALLABLE_ORIGINS } from "../../shared/web-origins";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 export const RATE_LIMIT_KEY = "exportErasureResidue";
 
@@ -112,10 +113,10 @@ export const exportErasureResidue = onCall(
 
 /** Test seam — accepts an injected Firestore, section list and bucket. */
 export async function runExportErasureResidueWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   sections: readonly SectionDef[] = SECTIONS,
-  bucket: () => FileLister = () => admin.storage().bucket(),
+  bucket: () => FileLister = () => getStorage().bucket(),
 ): Promise<ExportErasureResidueResponse> {
   const results = await Promise.all(
     sections.map((section) =>

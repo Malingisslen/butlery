@@ -13,7 +13,7 @@
  * against `parserShadowDailyUsd`), never to `llm_cost`, the global caps or
  * the guest import quota, so sampling can never eat a user's real allowance.
  */
-import * as admin from "firebase-admin";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { onCall, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import {
@@ -109,7 +109,7 @@ export interface ShadowCompareDeps {
 }
 
 const budgetRef = (dayKey: string) =>
-  admin.firestore().doc(`system/shadowBudget_${dayKey}`);
+  getFirestore().doc(`system/shadowBudget_${dayKey}`);
 
 // Name and code only: a Firestore message can carry a document path, and
 // these paths hold the raw uid.
@@ -118,11 +118,11 @@ function errorFields(e: unknown): { errName?: string; errCode?: unknown } {
 }
 
 async function defaultLoadConfig(): Promise<ShadowConfig | undefined> {
-  const doc = await admin.firestore().doc("system/config").get();
+  const doc = await getFirestore().doc("system/config").get();
   return doc.exists ? (doc.data() as ShadowConfig) : undefined;
 }
 
-const defaultHasAiConsent = (uid: string) => hasAiConsentIn(admin.firestore(), uid);
+const defaultHasAiConsent = (uid: string) => hasAiConsentIn(getFirestore(), uid);
 
 async function defaultReserveBudget(
   dayKey: string,
@@ -130,7 +130,7 @@ async function defaultReserveBudget(
   reserveUsd: number
 ): Promise<boolean> {
   const ref = budgetRef(dayKey);
-  return admin.firestore().runTransaction(async (tx) => {
+  return getFirestore().runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const raw = snap.exists ? snap.get("spentUsd") : 0;
     const spent = typeof raw === "number" && Number.isFinite(raw) ? raw : 0;
@@ -143,7 +143,7 @@ async function defaultReserveBudget(
 async function defaultRecordSpend(dayKey: string, deltaUsd: number): Promise<void> {
   if (deltaUsd <= 0) return;
   await budgetRef(dayKey).set(
-    { spentUsd: admin.firestore.FieldValue.increment(deltaUsd) },
+    { spentUsd: FieldValue.increment(deltaUsd) },
     { merge: true }
   );
 }

@@ -8,7 +8,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { batchDeleteDocs } from "../shared/batch-delete";
 import { BATCH_LIMIT } from "../shared/batch-update";
 
@@ -34,10 +34,10 @@ interface CleanupResult {
 }
 
 export async function cleanupCollection(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collectionName: string,
   timestampField: string,
-  cutoffTimestamp: admin.firestore.Timestamp,
+  cutoffTimestamp: Timestamp,
   maxIterations: number = MAX_DRAIN_ITERATIONS,
 ): Promise<CleanupResult> {
   // Drain every expired doc, not just the first page. Because each page is
@@ -95,11 +95,11 @@ export async function cleanupCollection(
 export const cleanupOldNotifications = onSchedule(
   { schedule: "0 4 * * 0", timeZone: "UTC" },
   async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
-    const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
+    const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
     logger.info(
       `Starting notification cleanup — deleting records older than ${cutoffDate.toISOString()}`
@@ -121,7 +121,7 @@ export const cleanupOldNotifications = onSchedule(
           totalDeleted,
           retentionDays: RETENTION_DAYS,
           cutoffDate: cutoffDate.toISOString(),
-          executedAt: admin.firestore.FieldValue.serverTimestamp(),
+          executedAt: FieldValue.serverTimestamp(),
         });
       }
 

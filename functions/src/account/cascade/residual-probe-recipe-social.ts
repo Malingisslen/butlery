@@ -1,11 +1,11 @@
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../../shared/hash-uid";
 import { commentLikeRows } from "./comments-ratings";
 import { COMMENT_REACTION_KEYS } from "./recipe-members-reactions";
 
 export async function probeRatingOwnerStamps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -38,7 +38,7 @@ export async function probeRatingOwnerStamps(
 }
 
 export async function probeCommentStamps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -76,7 +76,7 @@ export async function probeCommentStamps(
 }
 
 export async function probeRecipeMemberKeys(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -88,7 +88,7 @@ export async function probeRecipeMemberKeys(
     const snap = await db
       .collectionGroup("recipes")
       .where(
-        new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+        new FieldPath("socialData", "memberPermissions", uid),
         "!=",
         null,
       )
@@ -115,7 +115,7 @@ export async function probeRecipeMemberKeys(
 }
 
 export async function probeReactionStamps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -155,7 +155,7 @@ export async function probeReactionStamps(
 }
 
 export async function probeCommentLikes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

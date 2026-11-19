@@ -20,7 +20,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
 import { accountExists } from "../social/sync-block-mirror";
@@ -38,7 +38,7 @@ export interface DeletableBucket {
 }
 
 export interface OwnerCheckDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   /** Seam: the unit suite has no Auth emulator. */
   ownerExists?: (uid: string) => Promise<boolean>;
   nowMs?: number;
@@ -123,7 +123,7 @@ export async function deleteIfOwnerErased(
     resourceType: "storage_object",
     resourceId: `users/${uidHash}/${pathTail}`,
     granted: false,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       bucket: args.bucketName,
       reason: verdict,

@@ -23,7 +23,7 @@
  * Default output: ../scripts/crf/data/corrections.json
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -31,7 +31,7 @@ import { initializeAdminApp } from "./admin-init";
 
 initializeAdminApp();
 
-const db = admin.firestore();
+const db = getFirestore();
 
 interface ExportedCorrection {
   originalLine: string;

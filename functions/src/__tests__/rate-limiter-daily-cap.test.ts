@@ -26,7 +26,7 @@
  * Run with: npx ts-node src/__tests__/rate-limiter-daily-cap.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import {
   __setFirestoreForTest,
   checkRateLimit,
@@ -173,9 +173,9 @@ const cases: UnitCase[] = [
     fn: async () => {
       const fake = fakeRateLimitDb({
         tokens: 10,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "structureRecipe",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: liveTodayKey(),
         dailyCount: 41,
       });
@@ -210,9 +210,9 @@ const cases: UnitCase[] = [
     fn: async () => {
       const fake = fakeRateLimitDb({
         tokens: 10,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "structureRecipe",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: liveTodayKey(),
         dailyCount: 99, // dailyLimit is 100
       });
@@ -597,9 +597,9 @@ const cases: UnitCase[] = [
       // green. Nothing else pins the payload, so this does.
       const fake = fakeRateLimitDb({
         tokens: 0,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "createChatGroup",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: liveTodayKey(),
         dailyCount: 0,
       });
@@ -662,7 +662,7 @@ function liveTodayKey(): string {
 }
 
 interface FakeDbHandle {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   /** Payloads passed to transaction.set/update, in order. */
   writes: Record<string, unknown>[];
   added: Record<string, Record<string, unknown>[]>;
@@ -714,7 +714,7 @@ function fakeRateLimitDb(
       };
       return fn(tx);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, writes, added, getStored: () => stored };
 }
 

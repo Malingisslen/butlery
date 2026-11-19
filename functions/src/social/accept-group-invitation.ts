@@ -19,11 +19,11 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { assertNotGuest } from "../shared/caller-eligibility";
 import { isValidDocId } from "../shared/valid-doc-id";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /** Mirrors the `friendUserIds.size() <= 200` cap in firestore.rules. */
 export const MAX_GROUP_MEMBERS = 200;
@@ -68,7 +68,7 @@ export const acceptGroupInvitation = onCall<AcceptGroupInvitationRequest>(
  * `friendUserIds` and marks the invitation accepted.
  */
 export async function acceptGroupInvitationWithDeps(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   callerUid: string,
   invitationId: string,
 ): Promise<AcceptGroupInvitationResponse> {
@@ -162,14 +162,14 @@ export async function acceptGroupInvitationWithDeps(
         throw new HttpsError("resource-exhausted", "Group is full.");
       }
       tx.update(groupRef, {
-        friendUserIds: admin.firestore.FieldValue.arrayUnion(callerUid),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        friendUserIds: FieldValue.arrayUnion(callerUid),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     }
     if (status !== "accepted") {
       tx.update(invitationRef, {
         status: "accepted",
-        respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+        respondedAt: FieldValue.serverTimestamp(),
       });
     }
 

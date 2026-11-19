@@ -13,7 +13,8 @@
  */
 
 import * as v1 from "firebase-functions/v1";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QuerySnapshot, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { Collections } from "../shared/collections";
 import { anonymizeReportsUnlessHeldWithDb } from "../moderation/erasure-hold";
 import { withTimeout } from "../shared/with-timeout";
@@ -29,7 +30,7 @@ import {
   ResetKillSwitchState,
 } from "../shared/reset-kill-switch";
 
-const db = admin.firestore();
+const db = getFirestore();
 const BATCH_LIMIT = 500;
 
 /**
@@ -130,8 +131,8 @@ export interface UserSocialCleanupResult {
  *
  * The `onUserDeleted` trigger delegates here; exposed for integration tests
  * that run it against a real Firestore emulator. The cascade reads/writes via
- * the module-level `db = admin.firestore()`, which — when the test sets
- * `FIRESTORE_EMULATOR_HOST` before `admin.initializeApp` and requires this
+ * the module-level `db = getFirestore()`, which — when the test sets
+ * `FIRESTORE_EMULATOR_HOST` before `initializeApp` and requires this
  * module afterwards — is already emulator-bound. So no Firestore parameter is
  * needed; this is a pure extraction (formerly the private
  * `cleanupUserSocialData`) that now returns its `results` summary.
@@ -302,7 +303,7 @@ async function tombstoneSharedByDisplayName(userId: string): Promise<number> {
  * (avatar). Best-effort per chunk: commit failure logs warn + continues.
  */
 export async function tombstoneSharedByDisplayNameWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   const snapshot = await database
@@ -442,7 +443,7 @@ async function cleanupLegacySharedWithArrays(userId: string): Promise<number> {
  * collectionGroup sweep would just be cost without coverage.
  */
 export async function cleanupLegacySharedWithArraysWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   return cascadeArrayRemove(
@@ -497,7 +498,7 @@ async function cleanupNotificationQueues(userId: string): Promise<number> {
  * exercised against a stub.
  */
 export async function cleanupNotificationQueuesWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   const collections = [
@@ -577,7 +578,7 @@ async function cleanupRecipeCookEvents(userId: string): Promise<number> {
 
 /** Test seam — accepts an injected Firestore so the cascade can run against a stub. */
 export async function cleanupRecipeCookEventsWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   const rootRef = database.collection("recipe_cook_events").doc(userId);
@@ -666,7 +667,7 @@ export async function cleanupRecipeCookEventsWithDb(
  */
 async function cleanupFriendshipsAndDecrementCounts(
   userId: string,
-  friendsSnapshot: admin.firestore.QuerySnapshot,
+  friendsSnapshot: QuerySnapshot,
 ): Promise<{ friendsRemoved: number; friendCountsUpdated: number }> {
   if (friendsSnapshot.empty) {
     return { friendsRemoved: 0, friendCountsUpdated: 0 };
@@ -742,7 +743,7 @@ async function cleanupFriendshipsAndDecrementCounts(
       if (!profileSnaps[j].exists) continue;
 
       batch.update(profileSnaps[j].ref, {
-        friendsCount: admin.firestore.FieldValue.increment(-1),
+        friendsCount: FieldValue.increment(-1),
       });
       stageCascadeAuditEntry(db, batch, {
         subjectUserId: userId,
@@ -796,7 +797,7 @@ async function cleanupSocialRequests(
 
 /** Test seam — injected Firestore lets the sweep run against a stub. */
 export async function cleanupSocialRequestsWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   collection: string = Collections.socialRequests,
 ): Promise<number> {
@@ -916,10 +917,10 @@ async function cleanupPresenceRows(userId: string): Promise<number> {
  *
  * Exported for use only from `__tests__/`. Non-test callers should use
  * `cleanupPresenceRows(userId)` which closes over the module-level
- * `db = admin.firestore()`.
+ * `db = getFirestore()`.
  */
 export async function cleanupPresenceRowsWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   const snapshot = await database
@@ -1015,7 +1016,7 @@ async function cleanupFeedback(userId: string): Promise<number> {
   // BUT-886: standalone audit entry for the bucket-level delete since
   // this isn't part of a Firestore batch.
   try {
-    await admin.storage().bucket().deleteFiles({
+    await getStorage().bucket().deleteFiles({
       prefix: `feedback/${userId}/`,
     });
     await writeCascadeAuditEntry(db, {

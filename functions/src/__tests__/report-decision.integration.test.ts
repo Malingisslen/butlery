@@ -14,11 +14,12 @@ const PROJECT_ID = "butlery-report-decision-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import {
   closesReport,
@@ -49,7 +50,7 @@ let seq = 0;
 /** Seeds a report as the closing write leaves it and returns its id and data. */
 async function closedReport(
   extra: Record<string, unknown> = {},
-): Promise<{ id: string; data: admin.firestore.DocumentData }> {
+): Promise<{ id: string; data: DocumentData }> {
   const id = `r${RUN}${seq++}`;
   const data = {
     reporterId: REPORTER,
@@ -59,7 +60,7 @@ async function closedReport(
     reason: "harassment",
     description: "free text from the reporter",
     status: "closed",
-    createdAt: admin.firestore.Timestamp.fromDate(NOW),
+    createdAt: Timestamp.fromDate(NOW),
     ...extra,
   };
   await db.collection("reports").doc(id).set(data);
@@ -68,7 +69,7 @@ async function closedReport(
 
 async function decide(
   id: string,
-  data: admin.firestore.DocumentData,
+  data: DocumentData,
   authType: string | undefined = "app_user",
   authId: string | undefined = MODERATOR,
 ) {
@@ -81,7 +82,7 @@ async function decide(
   });
 }
 
-async function record(id: string): Promise<admin.firestore.DocumentData | undefined> {
+async function record(id: string): Promise<DocumentData | undefined> {
   return (await db.collection(MODERATION_DECISIONS).doc(id).get()).data();
 }
 
@@ -100,8 +101,8 @@ function transitions(): void {
     check(
       `transition: ${name} → ${expected ? "record" : "skip"}`,
       closesReport(
-        before as admin.firestore.DocumentData | undefined,
-        after as admin.firestore.DocumentData | undefined,
+        before as DocumentData | undefined,
+        after as DocumentData | undefined,
       ) === expected,
     );
   }
@@ -117,12 +118,12 @@ async function contents(): Promise<void> {
   check("moderator is the closing user", row?.moderatorId === MODERATOR);
   check(
     "decidedAt is the event time",
-    row?.decidedAt instanceof admin.firestore.Timestamp &&
+    row?.decidedAt instanceof Timestamp &&
       row.decidedAt.toMillis() === NOW.getTime(),
   );
   check(
     `expireAt is ${DECISION_RETENTION_DAYS} days after the decision`,
-    row?.expireAt instanceof admin.firestore.Timestamp &&
+    row?.expireAt instanceof Timestamp &&
       row.expireAt.toMillis() - NOW.getTime() === DECISION_RETENTION_DAYS * 86_400_000,
   );
   const keys = Object.keys(row ?? {}).sort().join(",");

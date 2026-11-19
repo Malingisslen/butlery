@@ -17,7 +17,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 
 const DEFAULT_TTL_DAYS = 90;
@@ -39,7 +39,7 @@ const METADATA_SUBCOLLECTIONS = ["views", "engagements", "dismissals"];
 export const cleanupSharedContentMetadata = onSchedule(
   { schedule: "0 4 * * 6", timeZone: "UTC", timeoutSeconds: TIMEOUT_SECONDS },
   async () => {
-    await cleanupSharedContentMetadataCore(admin.firestore());
+    await cleanupSharedContentMetadataCore(getFirestore());
   }
 );
 
@@ -58,11 +58,11 @@ export interface CleanupSharedContentMetadataResult {
  * `shared_content` document is skipped, and the cursor moves past it.
  */
 export async function cleanupSharedContentMetadataCore(
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<CleanupSharedContentMetadataResult> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - DEFAULT_TTL_DAYS);
-  const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
+  const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
   logger.info(
     `Starting shared content metadata cleanup (TTL: ${DEFAULT_TTL_DAYS} days, cutoff: ${cutoffDate.toISOString()})`
@@ -72,7 +72,7 @@ export async function cleanupSharedContentMetadataCore(
   const startTime = Date.now();
 
   for (const subcollection of METADATA_SUBCOLLECTIONS) {
-    let cursor: admin.firestore.QueryDocumentSnapshot | null = null;
+    let cursor: QueryDocumentSnapshot | null = null;
     let deleted = 0;
     let skipped = 0;
     for (;;) {
@@ -116,7 +116,7 @@ export async function cleanupSharedContentMetadataCore(
   return { totalDeleted };
 }
 
-function isUnderSharedContent(doc: admin.firestore.QueryDocumentSnapshot): boolean {
+function isUnderSharedContent(doc: QueryDocumentSnapshot): boolean {
   const parent = doc.ref.parent.parent;
   return parent != null &&
     parent.parent.id === Collections.sharedContent &&

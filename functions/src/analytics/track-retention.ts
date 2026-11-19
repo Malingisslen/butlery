@@ -29,7 +29,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const RETENTION_DAYS = [1, 7, 14, 30, 90, 180] as const;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -95,11 +95,11 @@ export function classifyLifecycleStageServer(args: {
 }
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * Test-seam entrypoint, and the production entrypoint: the `dailyAnalytics`
@@ -113,8 +113,8 @@ export async function runTrackRetention(deps: RunDeps = {}): Promise<{
   const db = deps.db ?? getDb();
   const now =
     deps.now != null
-      ? admin.firestore.Timestamp.fromDate(deps.now)
-      : admin.firestore.Timestamp.now();
+      ? Timestamp.fromDate(deps.now)
+      : Timestamp.now();
   const nowMs = now.toMillis();
 
   logger.info("track_retention_start", { days: RETENTION_DAYS });
@@ -134,9 +134,9 @@ export async function runTrackRetention(deps: RunDeps = {}): Promise<{
   while (usersSnapshot.size > 0) {
     for (const userDoc of usersSnapshot.docs) {
       const data = userDoc.data();
-      const joinedAt = data.joinedAt as admin.firestore.Timestamp | undefined;
+      const joinedAt = data.joinedAt as Timestamp | undefined;
       const lastActiveAt = data.lastActiveAt as
-        | admin.firestore.Timestamp
+        | Timestamp
         | undefined;
 
       if (!joinedAt || !lastActiveAt) {

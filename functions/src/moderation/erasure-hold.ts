@@ -32,7 +32,7 @@
  * would give two truths at two times.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../shared/batch-update";
 import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
@@ -115,7 +115,7 @@ const OPEN_CASE_PAGE = 50;
  * accusing them (BUT-2339, ADR-0029).
  */
 export async function hasOpenModerationCase(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -128,8 +128,8 @@ export async function hasOpenModerationCase(
   return snap.docs.some((doc) => reportCountsAgainstOwner(doc.get("reason")));
 }
 
-function holdUntilFrom(now: Date): admin.firestore.Timestamp {
-  return admin.firestore.Timestamp.fromDate(
+function holdUntilFrom(now: Date): Timestamp {
+  return Timestamp.fromDate(
     new Date(now.getTime() + ERASURE_HOLD_MAX_DAYS * 24 * 60 * 60 * 1000),
   );
 }
@@ -145,7 +145,7 @@ function holdUntilFrom(now: Date): admin.firestore.Timestamp {
  * why, and for the two branches that skip it.
  */
 export async function applyErasureHold(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   now: Date = new Date(),
 ): Promise<HoldOutcome> {
@@ -248,7 +248,7 @@ export async function applyErasureHold(
 }
 
 function retainedRecord(
-  holdUntil: admin.firestore.Timestamp,
+  holdUntil: Timestamp,
   provisional: boolean,
 ): RetainedRecord {
   return {
@@ -260,15 +260,15 @@ function retainedRecord(
 }
 
 async function writeHoldDocument(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
-  holdUntil: admin.firestore.Timestamp,
+  holdUntil: Timestamp,
   opts: { provisional: boolean },
 ): Promise<void> {
   const batch = db.batch();
   batch.set(db.collection(Collections.erasureHolds).doc(uid), {
     holdUntil,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     legalBasis: LEGAL_BASIS,
     // Descriptive only — the sweep treats both kinds identically, because it
     // recomputes openness.
@@ -299,7 +299,7 @@ async function writeHoldDocument(
  * implementation of what a moderation erasure means.
  */
 export async function liftErasureHold(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const eventsOk = await deleteModerationSystemEvents(db, uid);
@@ -381,7 +381,7 @@ const SWEEP_DEADLINE_MS = 45_000;
  * was placed for happened to close.
  */
 export async function sweepErasureHolds(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   now: Date = new Date(),
   /** Injectable so the budget branch is reachable from a test. */
   deadlineMs: number = SWEEP_DEADLINE_MS,
@@ -430,7 +430,7 @@ export async function sweepErasureHolds(
     // erasure indefinitely.
     try {
       const holdUntil = doc.get("holdUntil") as
-        | admin.firestore.Timestamp
+        | Timestamp
         | undefined;
       const capPassed = holdUntil ? holdUntil.toDate() <= now : true;
 
@@ -462,12 +462,12 @@ export async function sweepErasureHolds(
  * Scheduled seam — the maintenance chain calls this, tests call
  * `sweepErasureHolds` with an injected Firestore and clock.
  *
- * `admin.firestore()` is resolved per call rather than at module scope: this
+ * `getFirestore()` is resolved per call rather than at module scope: this
  * module is imported by the deletion callable, and a module-scope handle would
  * demand an initialised app at import time.
  */
 export async function runSweepErasureHolds(): Promise<void> {
-  const result = await sweepErasureHolds(admin.firestore());
+  const result = await sweepErasureHolds(getFirestore());
   logger.info("[erasure-hold] sweep complete", {
     examined: result.examined,
     lifted: result.lifted,
@@ -509,7 +509,7 @@ export async function runSweepErasureHolds(): Promise<void> {
  * whole reason to say this out loud.
  */
 export async function anonymizeReportsUnlessHeldWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   userId: string
 ): Promise<number> {
   // BUT-2353: above the hold check, because a hold does not keep appeals.

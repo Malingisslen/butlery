@@ -17,7 +17,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldPath, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   assertAccountMatured,
@@ -53,7 +53,7 @@ export const acceptListInvitation = onCall<AcceptListInvitationRequest>(
     if (!isValidDocId(invitationId)) {
       throw new HttpsError("invalid-argument", "invitationId is required.");
     }
-    const db = admin.firestore();
+    const db = getFirestore();
     assertAgeCompliant(request.auth);
     await assertAccountMatured(db, request.auth);
     await enforceRateLimit(request.auth.uid, "acceptListInvitation");
@@ -67,7 +67,7 @@ function unavailable(): HttpsError {
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function acceptListInvitationWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   invitationId: string,
 ): Promise<AcceptListInvitationResponse> {
@@ -108,7 +108,7 @@ export async function acceptListInvitationWithDeps(
       if (row.status === "pending") {
         tx.update(invitationRef, {
           status: "accepted",
-          respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+          respondedAt: FieldValue.serverTimestamp(),
         });
       }
       return { alreadyMember: true, listId };
@@ -117,7 +117,7 @@ export async function acceptListInvitationWithDeps(
     const expiresAt = row.expiresAt;
     if (
       row.status !== "pending" ||
-      !(expiresAt instanceof admin.firestore.Timestamp) ||
+      !(expiresAt instanceof Timestamp) ||
       expiresAt.toMillis() <= Date.now() ||
       !listSnap.exists ||
       !mayInvite(list, fromUserId) ||
@@ -135,12 +135,12 @@ export async function acceptListInvitationWithDeps(
     const permission = isInvitablePermission(row.permission) ? row.permission : "view";
     tx.update(
       listRef,
-      new admin.firestore.FieldPath("memberPermissions", callerUid), permission,
-      "updatedAt", admin.firestore.FieldValue.serverTimestamp(),
+      new FieldPath("memberPermissions", callerUid), permission,
+      "updatedAt", FieldValue.serverTimestamp(),
     );
     tx.update(invitationRef, {
       status: "accepted",
-      respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+      respondedAt: FieldValue.serverTimestamp(),
     });
     return { alreadyMember: false, listId };
   });

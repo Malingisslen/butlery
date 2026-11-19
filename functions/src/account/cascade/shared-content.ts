@@ -1,11 +1,11 @@
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { batchDeleteAll, scrubWithOneReread } from "./core";
 import { scrubDishCreator } from "./dish-creator";
 
 export async function removeFromSharedContent(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // BUT-1798 — the members-subcollection scrub below reaches ONLY content shared
@@ -37,7 +37,7 @@ export async function removeFromSharedContent(
 
   const membershipDocs = new Map<
     string,
-    admin.firestore.QueryDocumentSnapshot
+    QueryDocumentSnapshot
   >();
   for (const doc of membershipSnap.docs) {
     // Documents this user OWNS are hard-deleted a few lines below. Updating them
@@ -78,7 +78,7 @@ export async function removeFromSharedContent(
         // once the new scoping sat three lines below an unscoped copy of itself.
         if (parentRef && isSharedContentParent(parentRef)) {
           batch.update(parentRef, {
-            sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+            sharedToUserIds: FieldValue.arrayRemove(uid),
           });
         }
       },
@@ -97,7 +97,7 @@ export async function removeFromSharedContent(
       [...membershipDocs.values()],
       (batch, doc) => {
         batch.update(doc.ref, {
-          sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+          sharedToUserIds: FieldValue.arrayRemove(uid),
         });
       },
       { label: "scrubSharedContentMembership", strict: false },
@@ -178,7 +178,7 @@ export const ITEM_UID_FIELDS = [
 const MAX_SHARED_ITEM_ROWS = 2000;
 
 /** True for `shared_content/{id}`, and for nothing nested deeper. */
-export function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
+export function isSharedContentParent(ref: DocumentReference): boolean {
   return ref.parent.id === "shared_content" && ref.parent.parent === null;
 }
 
@@ -217,7 +217,7 @@ export function isSharedContentParent(ref: admin.firestore.DocumentReference): b
  * Display names go in every case.
  */
 async function scrubSharedContentItemAttribution(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   ownedParentIds: Set<string>,
 ): Promise<{ ok: boolean }> {
@@ -284,11 +284,11 @@ async function scrubSharedContentItemAttribution(
  * logged, when a field is over its cap.
  */
 async function sharedItemRowsNaming(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   ownedParentIds: Set<string>,
-): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
-  const rows = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+): Promise<QueryDocumentSnapshot[] | null> {
+  const rows = new Map<string, QueryDocumentSnapshot>();
   for (const field of ITEM_UID_FIELDS) {
     const snap = await db
       .collectionGroup("items")

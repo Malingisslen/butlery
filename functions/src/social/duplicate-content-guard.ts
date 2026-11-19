@@ -45,7 +45,7 @@
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import * as crypto from "crypto";
 import { hashUid } from "../shared/hash-uid";
 import { logSafeConversationId } from "../shared/log-safe-conversation-id";
@@ -53,10 +53,10 @@ import { isChatDuplicateGuardEnabled } from "./duplicate-message-flag";
 
 // Lazy admin SDK access so this module is import-safe in unit tests that
 // only exercise the pure helpers (`computeDuplicateHash`, `isDuplicate`,
-// `appendAndPrune`). Calling `admin.firestore()` at module scope crashes
+// `appendAndPrune`). Calling `getFirestore()` at module scope crashes
 // when the default app hasn't been initialized.
-function db(): admin.firestore.Firestore {
-  return admin.firestore();
+function db(): Firestore {
+  return getFirestore();
 }
 
 const DEFAULT_WINDOW_MS = 5 * 60 * 1000;
@@ -145,7 +145,7 @@ export function isChatDuplicateCandidate(data: {
 
 interface RecentHash {
   hash: string;
-  at: admin.firestore.Timestamp;
+  at: Timestamp;
   // Cloud Event id of the trigger that wrote this entry. `onDocumentCreated`
   // is at-least-once, so a redelivery must not mistake its own earlier accept
   // for somebody else's duplicate.
@@ -310,7 +310,7 @@ export function appendAndPrune(
    * `createTime`, not the time the trigger ran, so pruning is relative to the
    * document. That is deliberate — see `isDuplicate`.
    */
-  stampedAt: admin.firestore.Timestamp,
+  stampedAt: Timestamp,
   windowMs: number,
   eventId?: string,
 ): RecentHash[] {
@@ -374,7 +374,7 @@ function utcDateKey(nowMs: number): string {
  * `analytics/{group}/daily/{date}` shape the scheduled snapshots use — but its
  * OWN group, written by increment rather than by a nightly recompute.
  */
-function blockCounterRef(dateKey: string): admin.firestore.DocumentReference {
+function blockCounterRef(dateKey: string): DocumentReference {
   return db()
     .collection("analytics")
     .doc("duplicate_guard")
@@ -448,7 +448,7 @@ async function recordBlockEvent(
     await blockCounterRef(dateKey).set(
       {
         date: dateKey,
-        [BLOCK_COUNTER_FIELD[surface]]: admin.firestore.FieldValue.increment(1),
+        [BLOCK_COUNTER_FIELD[surface]]: FieldValue.increment(1),
       },
       { merge: true },
     );
@@ -464,7 +464,7 @@ async function recordBlockEvent(
 async function evaluateAndRecord(args: {
   authorId: string;
   body: string;
-  docRef: admin.firestore.DocumentReference;
+  docRef: DocumentReference;
   surface: "comment" | "chat";
   windowMs: number;
   eventId: string;
@@ -521,7 +521,7 @@ async function evaluateAndRecord(args: {
       (e): e is RecentHash =>
         !!e &&
         typeof e.hash === "string" &&
-        e.at instanceof admin.firestore.Timestamp,
+        e.at instanceof Timestamp,
     );
 
     // Self-retry detection: if THIS exact event already wrote the hash on
@@ -538,7 +538,7 @@ async function evaluateAndRecord(args: {
       return "retry-noop" as const;
     }
 
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     if (isDuplicate(hash, recent, now.toMillis(), windowMs, selfCreatedAtMs)) {
       if (rejectAction === "delete") {
         // Reject: delete the just-created doc so it never reaches readers.
@@ -572,7 +572,7 @@ async function evaluateAndRecord(args: {
         tx.update(docRef, {
           type: DUPLICATE_BLOCKED_TYPE,
           content: "",
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         });
       }
       // BUT-1822 / accepted-deviations: a `direct_` conversation id is two
@@ -610,7 +610,7 @@ async function evaluateAndRecord(args: {
     const nextHashes = appendAndPrune(
       hash,
       recent,
-      admin.firestore.Timestamp.fromMillis(selfCreatedAtMs),
+      Timestamp.fromMillis(selfCreatedAtMs),
       windowMs,
       eventId,
     );

@@ -7,12 +7,12 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { DART_TIER_NAMES } from "../shared/parse-tier-vocabulary";
 
 // Note: db is accessed lazily to ensure initializeApp() has been called
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * BUT-1478: parse_events stores raw userId + sanitized URL, so unbounded
@@ -35,8 +35,8 @@ const RETENTION_DAYS = 30;
  * where a refactor could silently drop it. Also used by the one-time
  * backfill script (admin/backfill-parse-event-expiry.ts).
  */
-export function computeExpireAt(nowMs: number): admin.firestore.Timestamp {
-  return admin.firestore.Timestamp.fromMillis(
+export function computeExpireAt(nowMs: number): Timestamp {
+  return Timestamp.fromMillis(
     nowMs + RETENTION_DAYS * 24 * 60 * 60 * 1000
   );
 }
@@ -319,7 +319,7 @@ export const logParseEvent = onCall(
     const trustedFields = {
       userId,
       ...fields,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
       // BUT-1478: TTL field — see computeExpireAt/RETENTION_DAYS above.
       expireAt: computeExpireAt(Date.now()),
     };
@@ -331,14 +331,14 @@ export const logParseEvent = onCall(
       if (countsForSite(fields) && fields.domain) {
         const siteUpdate: Record<string, unknown> = trustedFields.success
           ? {
-              successCount: admin.firestore.FieldValue.increment(1),
-              lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+              successCount: FieldValue.increment(1),
+              lastSuccessAt: FieldValue.serverTimestamp(),
             }
           : {
-              failureCount: admin.firestore.FieldValue.increment(1),
-              lastFailureAt: admin.firestore.FieldValue.serverTimestamp(),
+              failureCount: FieldValue.increment(1),
+              lastFailureAt: FieldValue.serverTimestamp(),
             };
-        siteUpdate.lastUpdated = admin.firestore.FieldValue.serverTimestamp();
+        siteUpdate.lastUpdated = FieldValue.serverTimestamp();
 
         await getDb()
           .collection("site_configs")

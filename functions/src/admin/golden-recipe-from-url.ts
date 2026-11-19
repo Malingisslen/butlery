@@ -14,7 +14,7 @@
  *   npx ts-node src/admin/golden-recipe-from-url.ts <inputs.json> <summary.json>
  */
 
-import * as admin from "firebase-admin";
+import { deleteApp, getApp, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import {
   calculateGeminiCost,
@@ -58,7 +58,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  admin.initializeApp();
+  initializeApp();
   try {
     const inputs = JSON.parse(fs.readFileSync(inputsPath, "utf8")) as GoldenInput[];
     const outcomes: GoldenOutcome[] = [];
@@ -101,7 +101,7 @@ async function main(): Promise<void> {
     console.log(`recipe_from_url: ${summary.calls} calls, $${summary.total_cost_usd.toFixed(5)}`);
     if (summary.over_cap) process.exitCode = 1;
   } finally {
-    await admin.app().delete();
+    await deleteApp(getApp());
   }
 }
 

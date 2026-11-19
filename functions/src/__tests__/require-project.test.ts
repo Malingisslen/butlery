@@ -14,7 +14,7 @@
  * Run: ts-node src/__tests__/require-project.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { getApps } from "firebase-admin/app";
 import { initializeAdminApp, resolveCredentialPath } from "../admin/admin-init";
 import {
   ADMIN_PROJECTS,
@@ -254,7 +254,7 @@ function testInitializeAdminAppRefusesFirst(): void {
       threw = true;
     }
     assert(
-      threw && admin.apps.length === 0,
+      threw && getApps().length === 0,
       `refuses [${argv.join(" ")}] with no app initialized`,
     );
   }
@@ -298,7 +298,7 @@ function testInitializeAdminAppChecksTheCliCredential(): void {
     threw = String(e);
   }
   assert(
-    threw.includes(PRODUCTION_PROJECT) && admin.apps.length === 0,
+    threw.includes(PRODUCTION_PROJECT) && getApps().length === 0,
     "a CLI credential for production is refused for --project staging",
   );
 }

@@ -21,9 +21,10 @@
  * Run with: npx ts-node src/__tests__/canonical-rating-aggregation.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-pooled-ratings" });
+import { Auth } from "firebase-admin/auth";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-pooled-ratings" });
 }
 import * as fs from "fs";
 import * as path from "path";
@@ -137,7 +138,7 @@ function fakeAuth(
     string,
     { emailVerified: boolean; creationTime: string } | "throw" | "not-found"
   >
-): admin.auth.Auth {
+): Auth {
   return {
     async getUser(uid: string) {
       const u = users[uid];
@@ -152,7 +153,7 @@ function fakeAuth(
         metadata: { creationTime: u.creationTime },
       };
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
 /** A recipe whose content yields a real (non-null) poolKey. */

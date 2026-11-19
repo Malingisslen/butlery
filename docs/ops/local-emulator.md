@@ -41,9 +41,6 @@ through the app's own registration.
 - Web only.
 - App Check: the app sends an unsigned token in local mode. The functions emulator skips
   App Check signature checks but rejects a call that carries no token.
-- `scripts/emulator/admin-namespace-shim.js` works around a firebase-tools bug that
-  strips `admin.firestore.FieldValue` inside the functions emulator. The header comment
-  has the details.
 - Gemini/Vertex calls (URL LLM tier, photo import) and scheduled functions do not run
   locally. Remote Config falls back to in-app defaults.
 - Uploaded image URLs point at `localhost:9199`, which the recipe form's image check

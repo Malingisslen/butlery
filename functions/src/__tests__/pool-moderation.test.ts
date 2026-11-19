@@ -12,10 +12,11 @@
  * Run with: npx ts-node src/__tests__/pool-moderation.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({ projectId: "butlery-test-pool-moderation" });
+if (getApps().length === 0) {
+  initializeApp({ projectId: "butlery-test-pool-moderation" });
 }
 
 import { CallableRequest } from "firebase-functions/v2/https";
@@ -90,7 +91,7 @@ class Fake {
           ? e.createdAtMs
           : (e as unknown as Record<string, unknown>)[f.field];
         const want: unknown = f.field === "createdAt"
-          ? (f.value as admin.firestore.Timestamp).toMillis()
+          ? (f.value as Timestamp).toMillis()
           : f.value;
         if (f.op === "==") return actual === want;
         if (f.op === ">=") return (actual as number) >= (want as number);
@@ -149,7 +150,7 @@ class Fake {
             ratingValue: e.ratingValue,
             recipeId: e.recipeId,
             title: e.title,
-            createdAt: admin.firestore.Timestamp.fromMillis(e.createdAtMs),
+            createdAt: Timestamp.fromMillis(e.createdAtMs),
           }),
           ref: { parent: { parent: { id: e.uid } } },
         }));
@@ -159,7 +160,7 @@ class Fake {
     return q;
   }
 
-  db(): admin.firestore.Firestore {
+  db(): Firestore {
     const self = this;
     return {
       collection(name: string) {
@@ -200,7 +201,7 @@ class Fake {
       collectionGroup(id: string) {
         return self.query(id, [], null, null);
       },
-    } as unknown as admin.firestore.Firestore;
+    } as unknown as Firestore;
   }
 }
 

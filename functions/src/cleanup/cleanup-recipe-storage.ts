@@ -15,7 +15,8 @@
 
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { OPEN_REPORT_STATUSES, REPORTS } from "../moderation/report-status";
 import {
   deleteRecipePhotos,
@@ -205,11 +206,11 @@ export const onRecipeDeleted = onDocumentDeleted(
   async (event) => {
     const { userId, recipeId } = event.params;
     const deletedAtMs = Date.parse(event.time);
-    const db = admin.firestore();
+    const db = getFirestore();
     await onRecipeDeletedEvent(
       {
         db: db as unknown as CleanupDb,
-        bucket: admin.storage().bucket(),
+        bucket: getStorage().bucket(),
         refs: db as unknown as ReferenceCleanupDb,
       },
       userId,

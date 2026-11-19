@@ -14,19 +14,19 @@
  * read of the close's transaction before its first write.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, FieldValue, Firestore, Timestamp, Transaction } from "firebase-admin/firestore";
 import { applyReversal, readReversal, ReversalPlan } from "./appeal-reversal";
 import type { Decision } from "./report-decision";
 import { reportCountsAgainstOwner } from "./report-status";
 
 /** The round a report is in. A report never reopened is in round 0. */
-export function roundOf(report: admin.firestore.DocumentData | undefined): number {
+export function roundOf(report: DocumentData | undefined): number {
   const round = report?.reviewRound;
   return typeof round === "number" && Number.isInteger(round) && round > 0 ? round : 0;
 }
 
 /** The round a record was written in. */
-export function revisionOf(record: admin.firestore.DocumentData | undefined): number {
+export function revisionOf(record: DocumentData | undefined): number {
   return roundOf(record ? { reviewRound: record.revision } : undefined);
 }
 
@@ -39,7 +39,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const STRIKE_RETENTION_DAYS = 180;
 
 /** The fields of a record that move into `history` when the decision changes. */
-export function historyEntry(record: admin.firestore.DocumentData): Record<string, unknown> {
+export function historyEntry(record: DocumentData): Record<string, unknown> {
   return {
     decision: record.decision ?? null,
     rule: record.rule ?? null,
@@ -49,7 +49,7 @@ export function historyEntry(record: admin.firestore.DocumentData): Record<strin
   };
 }
 
-export function nextHistory(record: admin.firestore.DocumentData): Record<string, unknown>[] {
+export function nextHistory(record: DocumentData): Record<string, unknown>[] {
   const prior = Array.isArray(record.history) ? record.history : [];
   return [...prior, historyEntry(record)].slice(-HISTORY_MAX);
 }
@@ -63,8 +63,8 @@ export type StrikePlan =
   | { kind: "remove"; reversal: ReversalPlan }
   | {
       kind: "add";
-      historyRef: admin.firestore.DocumentReference;
-      moderationRef: admin.firestore.DocumentReference;
+      historyRef: DocumentReference;
+      moderationRef: DocumentReference;
       row: Record<string, unknown>;
     };
 
@@ -78,10 +78,10 @@ export type StrikePlan =
  * reopen never revives a strike its TTL has removed.
  */
 export async function readStrikeFollowUp(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   reportId: string,
-  stored: admin.firestore.DocumentData | undefined,
+  stored: DocumentData | undefined,
   previous: Decision | null,
   next: Decision,
   now: Date,
@@ -100,7 +100,7 @@ export async function readStrikeFollowUp(
   }
   if (!had && wants) {
     const createdAt = stored?.createdAt;
-    if (!(createdAt instanceof admin.firestore.Timestamp)) return null;
+    if (!(createdAt instanceof Timestamp)) return null;
     // The reporter writes `createdAt`, so a future value is clamped to now.
     const filedMs = Math.min(createdAt.toMillis(), now.getTime());
     const expireAt = new Date(filedMs + STRIKE_RETENTION_DAYS * DAY_MS);
@@ -118,7 +118,7 @@ export async function readStrikeFollowUp(
         reason: stored?.reason ?? null,
         contentType: stored?.contentType ?? null,
         contentId: stored?.contentId ?? null,
-        expireAt: admin.firestore.Timestamp.fromDate(expireAt),
+        expireAt: Timestamp.fromDate(expireAt),
       },
     };
   }
@@ -132,7 +132,7 @@ export interface StrikeEffects {
 }
 
 export function applyStrikeFollowUp(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   plan: StrikePlan | null,
 ): StrikeEffects {
   if (!plan) return { strikeRemoved: false, strikeAdded: false, profileUnhidden: false };
@@ -144,7 +144,7 @@ export function applyStrikeFollowUp(
   // No `lastReportedAt`: nobody reported anything new.
   tx.set(
     plan.moderationRef,
-    { totalReports: admin.firestore.FieldValue.increment(1) },
+    { totalReports: FieldValue.increment(1) },
     { merge: true },
   );
   return { strikeRemoved: false, strikeAdded: true, profileUnhidden: false };
@@ -166,8 +166,8 @@ export type ModerationAuditOperation =
  * moderator and the report, never the reporter or the reported person.
  */
 export function stageModerationAudit(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   entry: {
     actorUid: string | null;
     operation: ModerationAuditOperation;
@@ -181,7 +181,7 @@ export function stageModerationAudit(
     resourceType: "reports",
     resourceId: entry.reportId,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: { actor: entry.actorUid ? "admin" : "system", ...entry.metadata },
   });
 }

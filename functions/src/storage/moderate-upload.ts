@@ -24,7 +24,8 @@
 
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import type { Bucket } from "@google-cloud/storage";
 import { deleteIfOwnerErased } from "./erased-owner-upload";
 import { QUARANTINE_PREFIX } from "../account/cascade/storage";
@@ -153,7 +154,7 @@ interface RejectArgs {
 async function rejectAndAudit(
   args: RejectArgs,
   bucketHandle: Bucket,
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<void> {
   const file = bucketHandle.file(args.name);
   try {
@@ -183,7 +184,7 @@ async function rejectAndAudit(
     resourceType: "storage_object",
     resourceId: args.name,
     granted: false,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       bucket: args.bucket,
       contentType: args.contentType ?? null,
@@ -207,7 +208,7 @@ function errorCodeOf(err: unknown): number | string | null {
 
 /** What the handler reads and writes through, so the unit suite can fake it. */
 export interface ModerateUploadDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   bucket: (name: string) => Bucket;
   /** Seam: the unit suite has no Auth emulator. */
   ownerExists?: (uid: string) => Promise<boolean>;
@@ -245,7 +246,7 @@ async function quarantine(
     originalToken: string | null;
   },
   bucketHandle: Bucket,
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<boolean> {
   const source = bucketHandle.file(args.name);
   const dest = bucketHandle.file(QUARANTINE_PREFIX + args.name);
@@ -304,7 +305,7 @@ async function quarantine(
     resourceType: "storage_object",
     resourceId: args.name,
     granted: false,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: { bucket: args.bucket, reason: "safe_search", ...args.scores },
   });
   logger.warn("[moderateUpload] quarantined explicit upload", {
@@ -487,9 +488,9 @@ export const moderateUpload = onObjectFinalized(
   },
   async (event: StorageEvent) =>
     handleFinalizedObject(event.data, {
-      db: admin.firestore(),
-      bucket: (name) => admin.storage().bucket(name),
+      db: getFirestore(),
+      bucket: (name) => getStorage().bucket(name),
       annotate: visionAnnotate,
-      push: (notices) => pushNotices(notices, defaultPushDeps(admin.firestore())),
+      push: (notices) => pushNotices(notices, defaultPushDeps(getFirestore())),
     })
 );

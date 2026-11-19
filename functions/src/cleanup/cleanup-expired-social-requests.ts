@@ -9,11 +9,11 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { batchUpdateQuery } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /**
  * Runs weekly on Sundays at 4 AM. Marks pending social requests
@@ -24,7 +24,7 @@ export const cleanupExpiredSocialRequests = onSchedule(
   async () => {
     logger.info("Starting expired social request cleanup");
 
-    const sevenDaysAgo = admin.firestore.Timestamp.fromDate(
+    const sevenDaysAgo = Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     );
 
@@ -38,7 +38,7 @@ export const cleanupExpiredSocialRequests = onSchedule(
         query,
         {
           status: "expired",
-          expiredAt: admin.firestore.FieldValue.serverTimestamp(),
+          expiredAt: FieldValue.serverTimestamp(),
         },
         db
       );
@@ -50,7 +50,7 @@ export const cleanupExpiredSocialRequests = onSchedule(
       // Log cleanup event
       await db.collection("system_events").add({
         type: "cleanup_expired_social_requests",
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
         details: { expiredCount: totalExpired },
       });
     } catch (error) {

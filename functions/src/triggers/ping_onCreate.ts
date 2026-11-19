@@ -27,18 +27,18 @@
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const HOURLY_PING_CAP = 5;
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 interface PingDoc {
   fromUserId?: string;
-  createdAt?: admin.firestore.Timestamp;
+  createdAt?: Timestamp;
 }
 
 export interface RateLimitDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
 }
 
@@ -63,9 +63,9 @@ export async function enforcePingRateLimit(
     return { deleted: false, count: 0 };
   }
 
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = (deps.now ?? (() => new Date()))();
-  const windowStart = admin.firestore.Timestamp.fromMillis(
+  const windowStart = Timestamp.fromMillis(
     now.getTime() - WINDOW_MS
   );
 
@@ -101,7 +101,7 @@ export async function enforcePingRateLimit(
     userId: fromUserId,
     operation: "ping_rate_limit_exceeded",
     resourceType: "ping",
-    timestamp: admin.firestore.Timestamp.fromDate(now),
+    timestamp: Timestamp.fromDate(now),
     deletedPingId: pingId,
     groupId,
     count,

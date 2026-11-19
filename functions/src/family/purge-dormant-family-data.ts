@@ -37,7 +37,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldPath, FieldValue, Firestore, QueryDocumentSnapshot, QuerySnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { commitInChunks } from "../shared/batch-update";
 import { recomputeDenormalisedAverages } from "./family-card-averages";
 
@@ -86,7 +86,7 @@ export interface PurgeRunResult {
 /** String memberIds still present in the household roster (accounts + diners). */
 function rosterMemberIds(
   memberUserIds: string[],
-  diners: admin.firestore.QuerySnapshot
+  diners: QuerySnapshot
 ): Set<string> {
   return new Set<string>([...memberUserIds, ...diners.docs.map((d) => d.id)]);
 }
@@ -99,12 +99,12 @@ function rosterMemberIds(
  * a re-run finds no orphans (set difference) and the recompute is deterministic.
  */
 async function reconcileDepartedMemberRatings(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   memberUserIds: string[],
-  diners: admin.firestore.QuerySnapshot,
-  ratings: admin.firestore.QuerySnapshot,
+  diners: QuerySnapshot,
+  ratings: QuerySnapshot,
   result: PurgeRunResult
-): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+): Promise<QueryDocumentSnapshot[]> {
   if (ratings.empty) return ratings.docs;
   const roster = rosterMemberIds(memberUserIds, diners);
   // Fail closed on a fully-empty keep-set (BOTH id-space halves collapsed). A
@@ -166,14 +166,14 @@ async function reconcileDepartedMemberRatings(
 
 /** Millis of a Firestore Timestamp-ish value, or 0 if absent/!Timestamp. */
 function millisOf(v: unknown): number {
-  return v && typeof (v as admin.firestore.Timestamp).toMillis === "function"
-    ? (v as admin.firestore.Timestamp).toMillis()
+  return v && typeof (v as Timestamp).toMillis === "function"
+    ? (v as Timestamp).toMillis()
     : 0;
 }
 
 /** Best-effort in-app warning to each household member. */
 async function warnMembers(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   memberUserIds: string[],
   now: Date
 ): Promise<void> {
@@ -188,7 +188,7 @@ async function warnMembers(
           body:
             "Hushållet har varit inaktivt länge. Om ingen använder " +
             "familjebetygen snart raderas de automatiskt.",
-          createdAt: admin.firestore.Timestamp.fromDate(now),
+          createdAt: Timestamp.fromDate(now),
         });
       } catch (err) {
         logger.warn(`family-retention: warn notification failed for ${uid}`, {
@@ -201,8 +201,8 @@ async function warnMembers(
 
 /** Warn / purge / reactivate one household. Mutates `result`. */
 async function processHousehold(
-  db: admin.firestore.Firestore,
-  hh: admin.firestore.QueryDocumentSnapshot,
+  db: Firestore,
+  hh: QueryDocumentSnapshot,
   now: Date,
   dormancyCutoffMs: number,
   result: PurgeRunResult
@@ -236,7 +236,7 @@ async function processHousehold(
   if (diners.empty && liveRatings.length === 0) {
     if (data.familyDataPurgeScheduledAt) {
       await hh.ref.update({
-        familyDataPurgeScheduledAt: admin.firestore.FieldValue.delete(),
+        familyDataPurgeScheduledAt: FieldValue.delete(),
       });
     }
     return;
@@ -254,7 +254,7 @@ async function processHousehold(
   if (lastActivityMs >= dormancyCutoffMs) {
     if (data.familyDataPurgeScheduledAt) {
       await hh.ref.update({
-        familyDataPurgeScheduledAt: admin.firestore.FieldValue.delete(),
+        familyDataPurgeScheduledAt: FieldValue.delete(),
       });
       result.reactivated++;
     }
@@ -263,12 +263,12 @@ async function processHousehold(
 
   // Dormant. First time → warn + schedule; never purge on the same pass.
   const scheduledAt = data.familyDataPurgeScheduledAt as
-    | admin.firestore.Timestamp
+    | Timestamp
     | undefined;
   if (!scheduledAt) {
     await warnMembers(db, memberUserIds, now);
     await hh.ref.update({
-      familyDataPurgeScheduledAt: admin.firestore.Timestamp.fromDate(
+      familyDataPurgeScheduledAt: Timestamp.fromDate(
         new Date(now.getTime() + GRACE_DAYS * DAY_MS)
       ),
     });
@@ -288,8 +288,8 @@ async function processHousehold(
     strict: true,
   });
   await hh.ref.update({
-    familyDataPurgeScheduledAt: admin.firestore.FieldValue.delete(),
-    familyDataPurgedAt: admin.firestore.Timestamp.fromDate(now),
+    familyDataPurgeScheduledAt: FieldValue.delete(),
+    familyDataPurgedAt: Timestamp.fromDate(now),
   });
   result.purged++;
   logger.info(
@@ -308,7 +308,7 @@ async function processHousehold(
  * records the run as failed.
  */
 export async function runDormantFamilyPurge(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   now: Date,
   deadlineMs: number = SWEEP_DEADLINE_MS,
   clock: () => number = Date.now
@@ -332,22 +332,22 @@ export async function runDormantFamilyPurge(
   let lastHouseholdId =
     typeof stored?.lastHouseholdId === "string" ? stored.lastHouseholdId : null;
   const passStartedAt =
-    lastHouseholdId != null && stored?.passStartedAt instanceof admin.firestore.Timestamp
+    lastHouseholdId != null && stored?.passStartedAt instanceof Timestamp
       ? stored.passStartedAt
-      : admin.firestore.Timestamp.fromDate(now);
+      : Timestamp.fromDate(now);
 
   const saveCursor = (): Promise<unknown> =>
     cursorRef.set({
       lastHouseholdId,
       passStartedAt,
-      updatedAt: admin.firestore.Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
     });
 
   let deferred = false;
   for (;;) {
     let q = db
       .collection("households")
-      .orderBy(admin.firestore.FieldPath.documentId())
+      .orderBy(FieldPath.documentId())
       .limit(HOUSEHOLDS_PER_RUN);
     // A plain id string, so a cursor household deleted since needs no document.
     if (lastHouseholdId != null) q = q.startAfter(lastHouseholdId);
@@ -419,7 +419,7 @@ export function purgeRunFailure(result: PurgeRunResult): string | null {
 export const purgeDormantFamilyData = onSchedule(
   { schedule: "30 3 * * 0", timeZone: "UTC", timeoutSeconds: 300 },
   async () => {
-    const result = await runDormantFamilyPurge(admin.firestore(), new Date());
+    const result = await runDormantFamilyPurge(getFirestore(), new Date());
     const failure = purgeRunFailure(result);
     if (failure) throw new Error(failure);
   }

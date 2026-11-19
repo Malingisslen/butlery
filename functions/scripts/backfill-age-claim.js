@@ -218,16 +218,18 @@ function parseDeclared(text) {
 }
 
 async function main() {
-  const admin = require("firebase-admin");
+  const { initializeApp } = require("firebase-admin/app");
+  const { getAuth } = require("firebase-admin/auth");
+  const { FieldValue, getFirestore } = require("firebase-admin/firestore");
   const { requireProject } = require("../lib/admin/require-project");
-  admin.initializeApp({ projectId: requireProject() });
+  initializeApp({ projectId: requireProject() });
   const apply = process.argv.includes("--apply");
   const declared = parseDeclared(process.env.DECLARED_BIRTH_YEARS || "");
   const counts = await runBackfill(
     {
-      auth: admin.auth(),
-      db: admin.firestore(),
-      serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
+      auth: getAuth(),
+      db: getFirestore(),
+      serverTimestamp: () => FieldValue.serverTimestamp(),
     },
     { apply, currentYear: new Date().getFullYear(), declared },
   );

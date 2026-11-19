@@ -20,13 +20,16 @@
  * Run: npx ts-node src/__tests__/request-account-deletion.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, Timestamp } from "firebase-admin/firestore";
+import { Auth } from "firebase-admin/auth";
+import { Storage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-acct-deletion" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-acct-deletion" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -132,7 +135,7 @@ function makeBatch() {
   };
 }
 
-function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
+function makeFakeDb(state: FakeDbState): Firestore {
   function makeCollection(name: string, whereDepth = 0): unknown {
     // See `FakeDbState.openReportRow`: two chained `where` clauses on `reports`
     // is `hasOpenModerationCase` and nothing else in the cascade.
@@ -143,7 +146,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     const query: {
       get(): Promise<ReturnType<typeof emptySnapshot>>;
       where(
-        field?: string | admin.firestore.FieldPath,
+        field?: string | FieldPath,
         op?: string,
         value?: unknown,
       ): typeof query;
@@ -196,7 +199,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
         } as ReturnType<typeof emptySnapshot>;
       },
       where(
-        field?: string | admin.firestore.FieldPath,
+        field?: string | FieldPath,
         _op?: string,
         _value?: unknown,
       ) {
@@ -359,7 +362,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
         delete() {},
       });
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 interface FakeAuthCalls {
@@ -368,7 +371,7 @@ interface FakeAuthCalls {
   log?: string[];
 }
 
-function makeFakeAuth(calls: FakeAuthCalls): admin.auth.Auth {
+function makeFakeAuth(calls: FakeAuthCalls): Auth {
   return {
     async deleteUser(uid: string) {
       calls.deleteUserUid = uid;
@@ -377,14 +380,14 @@ function makeFakeAuth(calls: FakeAuthCalls): admin.auth.Auth {
         throw new Error("auth/user-not-found");
       }
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
 interface FakeStorageCalls {
   deletePrefixes: string[];
 }
 
-function makeFakeStorage(calls: FakeStorageCalls): admin.storage.Storage {
+function makeFakeStorage(calls: FakeStorageCalls): Storage {
   return {
     bucket() {
       return {
@@ -393,7 +396,7 @@ function makeFakeStorage(calls: FakeStorageCalls): admin.storage.Storage {
         },
       };
     },
-  } as unknown as admin.storage.Storage;
+  } as unknown as Storage;
 }
 
 interface TestCase {
@@ -583,7 +586,7 @@ test("BUT-2169: the erasure marker precedes every step and is left to its TTL", 
       throw new Error(`marker must be left to its TTL (auth fails: ${throwOnDelete})`);
     }
     const marker = state.markerData as
-      { startedAtMs: number; expireAt: admin.firestore.Timestamp } | undefined;
+      { startedAtMs: number; expireAt: Timestamp } | undefined;
     if (!marker || marker.startedAtMs < before ||
         marker.expireAt.toMillis() !== marker.startedAtMs + 2 * ERASURE_MARKER_WINDOW_MS) {
       throw new Error(`marker must carry startedAtMs and expireAt: ${JSON.stringify(marker)}`);
@@ -754,7 +757,7 @@ test("BUT-788: audit row carries a 180-day expireAt", async () => {
     "d@example.com",
     "r",
   );
-  const expireAt = state.auditRows[0].expireAt as admin.firestore.Timestamp;
+  const expireAt = state.auditRows[0].expireAt as Timestamp;
   const expireMs = expireAt.toMillis();
   const expectedMs = beforeMs + 180 * 24 * 60 * 60 * 1000;
   const drift = Math.abs(expireMs - expectedMs);
@@ -1116,7 +1119,7 @@ test("BUT-920: the callable passes its caller to assertRecentSignIn before resol
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\/\/[^\n]*/g, "");
   const call = "assertRecentSignIn(request.auth, Math.floor(Date.now() / 1000), linkedProviders);";
-  const lookup = "(await admin.auth().getUser(request.auth.uid)).providerData.length";
+  const lookup = "(await getAuth().getUser(request.auth.uid)).providerData.length";
   if (src.split(lookup).length - 1 !== 1 || src.indexOf(lookup) > src.indexOf(call)) {
     throw new Error("the guest exemption must be confirmed against the Auth record before the gate");
   }

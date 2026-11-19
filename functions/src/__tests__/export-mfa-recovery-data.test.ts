@@ -7,9 +7,10 @@
  * Run: npx ts-node src/__tests__/export-mfa-recovery-data.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-export-mfa" });
+import { Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-export-mfa" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -17,7 +18,7 @@ const { runExportMfaRecoveryData } = require("../exports/mfa-recovery-data");
 
 type Docs = Record<string, Record<string, unknown>>;
 
-function makeFakeDb(docs: Docs, reads: string[]): admin.firestore.Firestore {
+function makeFakeDb(docs: Docs, reads: string[]): Firestore {
   return {
     collection(name: string) {
       return {
@@ -33,7 +34,7 @@ function makeFakeDb(docs: Docs, reads: string[]): admin.firestore.Firestore {
         },
       };
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 type TestFn = () => Promise<void>;

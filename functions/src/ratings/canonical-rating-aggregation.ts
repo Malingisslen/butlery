@@ -48,7 +48,8 @@
  * the event write — added in Increment 3, not here.
  */
 
-import * as admin from "firebase-admin";
+import { CollectionReference, FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { Auth, UserRecord, getAuth } from "firebase-admin/auth";
 import { logger } from "firebase-functions/logger";
 import { computePoolKey, poolKeyComponents } from "./canonical-pool-key";
 import { isPooledRatingsEnabled } from "./pooled-ratings-flag";
@@ -95,8 +96,8 @@ export interface MirrorInput {
 }
 
 export interface MirrorDeps {
-  db?: admin.firestore.Firestore;
-  auth?: admin.auth.Auth;
+  db?: Firestore;
+  auth?: Auth;
   /** now in ms; test seam. */
   now?: () => number;
   /** Feature-flag check; test seam. Defaults to the RC-backed kill switch. */
@@ -122,9 +123,9 @@ export interface MirrorResult {
 }
 
 function eventsRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string
-): admin.firestore.CollectionReference {
+): CollectionReference {
   return db.collection("users").doc(uid).collection(CANONICAL_EVENTS_SUBCOLLECTION);
 }
 
@@ -137,7 +138,7 @@ function eventsRef(
 // derives keys through the IDENTICAL code path — a forked copy could silently
 // drift from the live mirror (the C5 word-list lesson applied to the derivation).
 export async function recipeContentToKey(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   recipeId: string,
   computeKey: (title: string, ingredients: string[]) => string | null
@@ -187,8 +188,8 @@ export async function isAccountMatured(
   deps: MirrorDeps
 ): Promise<boolean> {
   if (maturedUids.has(uid)) return true;
-  const auth = deps.auth ?? admin.auth();
-  let user: admin.auth.UserRecord;
+  const auth = deps.auth ?? getAuth();
+  let user: UserRecord;
   try {
     user = await auth.getUser(uid);
   } catch (err) {
@@ -225,7 +226,7 @@ export async function mirrorRatingToPool(
   input: MirrorInput,
   deps: MirrorDeps = {}
 ): Promise<MirrorResult> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? (() => Date.now());
   const computeKey = deps.computeKey ?? computePoolKey;
 
@@ -303,7 +304,7 @@ export async function mirrorRatingToPool(
     // upsert, so a CF retry/reprocess shifts it — last-write, not first-create,
     // semantics. Harmless today (no reader). Stage B must decide deliberately:
     // accept last-write (rename updatedAt) or preserve first-create (merge-if-absent).
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
   });
 
   // ── Rating-laundering visibility (C10 / BUT-1518) ──

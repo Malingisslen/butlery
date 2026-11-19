@@ -26,12 +26,14 @@
  * Run: npx ts-node src/__tests__/verify-signup-age.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
+import { Auth } from "firebase-admin/auth";
+import { getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-verify-signup-age" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-verify-signup-age" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -73,7 +75,7 @@ interface FakeDbState {
 
 /** Minimal Firestore fake recording `add` to audit_logs and `doc().set()`
  *  merge writes — enough to assert the function's documented side effects. */
-function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
+function makeFakeDb(state: FakeDbState): Firestore {
   function makeDocRef(path: string): unknown {
     return {
       async set(data: Record<string, unknown>, opts?: { merge?: boolean }) {
@@ -105,7 +107,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     doc(path: string) {
       return makeDocRef(path);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 interface FakeAuthState {
@@ -119,7 +121,7 @@ interface FakeAuthState {
   throwOnDelete: boolean;
 }
 
-function makeFakeAuth(state: FakeAuthState): admin.auth.Auth {
+function makeFakeAuth(state: FakeAuthState): Auth {
   return {
     async getUser(_uid: string) {
       return { customClaims: state.existingClaims };
@@ -135,7 +137,7 @@ function makeFakeAuth(state: FakeAuthState): admin.auth.Auth {
         throw new Error("auth/user-not-found");
       }
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
 function freshAuthState(
@@ -587,7 +589,7 @@ interface FakeCapState {
   lastSetData: Record<string, unknown> | null;
 }
 
-function makeFakeCapDb(state: FakeCapState): admin.firestore.Firestore {
+function makeFakeCapDb(state: FakeCapState): Firestore {
   const ref = { __isRef: true };
   const tx = {
     async get(_ref: unknown) {
@@ -611,7 +613,7 @@ function makeFakeCapDb(state: FakeCapState): admin.firestore.Firestore {
       if (state.txError) throw new Error("firestore unavailable");
       return fn(tx);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 /** Under the cap (count 0 < 5): resolves and increments the counter. */

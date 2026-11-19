@@ -76,8 +76,7 @@ function loadOverrides(): FieldOverride[] {
  * `field` and `stamp` are per-target on purpose. A shared field name would have
  * hard-coded `expireAt` and made the `activeUsers` entry — the one that spells
  * it `expiresAt` — the single case the suite could not express. A shared regex
- * would have done the same to the Dart writers, which cannot match a
- * `admin.firestore.Timestamp` pattern at all.
+ * would have done the same to the Dart writers.
  */
 const TARGETS: {
   group: string;
@@ -91,14 +90,14 @@ const TARGETS: {
     field: "expireAt",
     retention: "30d",
     writer: "functions/src/shared/notification-send-events.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   {
     group: "scheduled_notifications",
     field: "expireAt",
     retention: "7d",
     writer: "functions/src/shared/scheduled-notifications.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   // BUT-1792 — four more collections stamping an expiry with no policy behind it.
   {
@@ -106,14 +105,14 @@ const TARGETS: {
     field: "expireAt",
     retention: "30d",
     writer: "functions/src/notifications/record-notification-opened.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   {
     group: "report_processing_markers",
     field: "expireAt",
     retention: "180d",
     writer: "functions/src/feedback/on-report-created.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   // BUT-2046 — the reporter-side rows moved out of `user_moderation.reportHistory`
   // into a subcollection, and got a retention with them. TWO entries, because
@@ -123,7 +122,7 @@ const TARGETS: {
   // hole the two `activeUsers` entries below exist to close.
   //
   // Both anchors are scoped to their own write rather than to the file: the
-  // live writer stamps the identical `expireAt: admin.firestore.Timestamp.`
+  // live writer stamps the identical `expireAt: Timestamp.`
   // shape for `report_processing_markers` a few lines below, so the shared
   // regex used above would pass without the report_history write existing at
   // all. The bound is the next `tx.set(` and not a character count — a count
@@ -134,7 +133,7 @@ const TARGETS: {
     retention: "180d",
     writer: "functions/src/feedback/on-report-created.ts",
     stamp:
-      /collection\("report_history"\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
+      /collection\("report_history"\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*Timestamp\./,
   },
   {
     group: "report_history",
@@ -142,7 +141,7 @@ const TARGETS: {
     retention: "180d",
     writer: "functions/src/admin/migrate-report-history.ts",
     stamp:
-      /collection\(CHILD\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
+      /collection\(CHILD\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*Timestamp\./,
   },
   // BUT-1842 — the moderator's text copy of reported content; Malin's 180-day cap.
   {
@@ -158,7 +157,7 @@ const TARGETS: {
     field: "expireAt",
     retention: "365d",
     writer: "functions/src/moderation/report-decision.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromDate\(/,
+    stamp: /expireAt:\s*Timestamp\.fromDate\(/,
   },
   // BUT-2353 — an appeal goes when its decision record does.
   {
@@ -173,7 +172,7 @@ const TARGETS: {
     field: "expireAt",
     retention: "2h",
     writer: "functions/src/account/verify-signup-age.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   // Presence rows. Two Dart writers, one shared helper, and the field is
   // `expiresAt` — see the header. The anchor is the helper call rather than a
@@ -212,7 +211,7 @@ const TARGETS: {
     field: "expireAt",
     retention: "35d",
     writer: "functions/src/analytics/detect-pool-velocity.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\./,
+    stamp: /expireAt:\s*Timestamp\./,
   },
   {
     group: "overwritten_versions",
@@ -228,7 +227,7 @@ const TARGETS: {
     field: "expireAt",
     retention: "2h",
     writer: "functions/src/account/request-account-deletion.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+    stamp: /expireAt:\s*Timestamp\.fromMillis\(/,
   },
   // P6-U09 security review — the backup-code recovery counters (per IP, per
   // account, global). Kept for their window or lock, at most about an hour.
@@ -237,7 +236,7 @@ const TARGETS: {
     field: "expiresAt",
     retention: "1h",
     writer: "functions/src/account/mfa-recovery-attempts.ts",
-    stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+    stamp: /expiresAt:\s*Timestamp\.fromMillis\(/,
   },
   // P5-U27b — a change to someone else's shared recipe, kept 7 days as a
   // suggestion. One writer: the model's `toFirestore`,
@@ -312,21 +311,21 @@ const TARGETS: {
     field: "expireAt",
     retention: "90d",
     writer: "functions/src/admin/create-ingredient-change-pr.ts",
-    stamp: /status: "inReview",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+    stamp: /status: "inReview",(?:(?!return \{)[\s\S])*?expireAt:\s*Timestamp\.fromMillis\(/,
   },
   {
     group: "ingredient_change_requests",
     field: "expireAt",
     retention: "90d",
     writer: "functions/src/admin/create-ingredient-change-pr.ts",
-    stamp: /status: "conflict",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(now\.getTime\(\) \+ REVIEW_RETENTION_MS\)/,
+    stamp: /status: "conflict",(?:(?!return \{)[\s\S])*?expireAt:\s*Timestamp\.fromMillis\(now\.getTime\(\) \+ REVIEW_RETENTION_MS\)/,
   },
   {
     group: "ingredient_change_requests",
     field: "expireAt",
     retention: "365d",
     writer: "functions/src/admin/create-ingredient-change-pr.ts",
-    stamp: /status: "rejected",(?:(?!return \{)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(now\.getTime\(\) \+ REJECTED_RETENTION_MS\)/,
+    stamp: /status: "rejected",(?:(?!return \{)[\s\S])*?expireAt:\s*Timestamp\.fromMillis\(now\.getTime\(\) \+ REJECTED_RETENTION_MS\)/,
   },
   // The sync job's `applied` stamp, 365 days.
   {
@@ -334,7 +333,7 @@ const TARGETS: {
     field: "expireAt",
     retention: "365d",
     writer: "functions/src/admin/mark-applied-core.ts",
-    stamp: /status: "applied",(?:(?!\}\);)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+    stamp: /status: "applied",(?:(?!\}\);)[\s\S])*?expireAt:\s*Timestamp\.fromMillis\(/,
   },
   // One record per createIngredientChangePr run, 365 days.
   {
@@ -343,14 +342,14 @@ const TARGETS: {
     retention: "365d",
     writer: "functions/src/admin/create-ingredient-change-pr.ts",
     stamp:
-      /collection\(Collections\.ingredientChangeRuns\)(?:(?!\}\);)[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+      /collection\(Collections\.ingredientChangeRuns\)(?:(?!\}\);)[\s\S])*?expireAt:\s*Timestamp\.fromMillis\(/,
   },
   {
     group: "parse_corrections_v2",
     field: "expireAt",
     retention: "365d",
     writer: "functions/src/events/log-parse-correction.ts",
-    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+    stamp: /expireAt:\s*Timestamp\.fromMillis\(/,
   },
   // BUT-2452 — an unused guest-list invite. One writer: the admin repository's
   // `toFirestore`; firestore.rules caps it at 30 days ahead.
@@ -441,8 +440,7 @@ function ttlPoliciesDeclared(): void {
   // check was tried first and is VACUOUS: both writers name the field five
   // times in their own docstrings, so renaming the actually-written key to
   // `expiresAt` left the suite 5/5 green (proven by mutation, 2026-07-31).
-  // Anchor on the assignment shape instead — `target.stamp`, per writer, since
-  // the Dart presence writer has no `admin.firestore.Timestamp` to anchor on.
+  // Anchor on the assignment shape instead — `target.stamp`, per writer.
   for (const target of TARGETS) {
     const writerPath = path.resolve(__dirname, "..", "..", "..", target.writer);
     const src = fs.existsSync(writerPath)

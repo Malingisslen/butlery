@@ -13,7 +13,7 @@
  * The copy carries no `reporterId`.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, FieldValue, Firestore, Timestamp, Transaction } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { isValidDocId } from "../shared/valid-doc-id";
 import { isClosedReportStatus, REPORTS } from "./report-status";
@@ -43,10 +43,10 @@ export type EvidenceOutcome =
 /** Why no copy was written at all. */
 export type EvidenceSkip = "report_gone" | "report_closed" | "no_owner" | "already_captured";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 interface Source {
-  ref: admin.firestore.DocumentReference;
+  ref: DocumentReference;
   /** Where the text lives inside the document, keyed by the name the copy uses. */
   textFields: Array<[name: string, path: string[]]>;
   /**
@@ -62,7 +62,7 @@ interface Source {
   reporterCanRead: (
     data: Data,
     reporterId: string,
-    tx: admin.firestore.Transaction,
+    tx: Transaction,
   ) => Promise<boolean>;
 }
 
@@ -93,7 +93,7 @@ export function findMenuDish(data: Data, dishId: unknown): Data | undefined {
 }
 
 function resolveSource(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   contentType: unknown,
   contentId: string,
   ownerId: string,
@@ -263,8 +263,8 @@ export function extractText(
   return { text, truncated };
 }
 
-function expireAtFrom(now: Date): admin.firestore.Timestamp {
-  return admin.firestore.Timestamp.fromDate(
+function expireAtFrom(now: Date): Timestamp {
+  return Timestamp.fromDate(
     new Date(now.getTime() + EVIDENCE_RETENTION_DAYS * 24 * 60 * 60 * 1000),
   );
 }
@@ -279,7 +279,7 @@ function expireAtFrom(now: Date): admin.firestore.Timestamp {
  * moderator can tell it apart from content that was already gone.
  */
 export async function captureReportEvidence(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
   now: Date = new Date(),
 ): Promise<EvidenceOutcome | EvidenceSkip> {
@@ -304,7 +304,7 @@ export async function captureReportEvidence(
         contentType: typeof contentType === "string" ? contentType : null,
         contentId: isValidDocId(contentId) ? contentId : null,
         contentOwnerId: ownerId,
-        capturedAt: admin.firestore.Timestamp.fromDate(now),
+        capturedAt: Timestamp.fromDate(now),
         expireAt: expireAtFrom(now),
       };
       const write = (outcome: EvidenceOutcome, extra: Data = {}): EvidenceOutcome => {
@@ -345,7 +345,7 @@ export async function captureReportEvidence(
       await evidenceRef.create({
         reportId,
         outcome: "capture_failed",
-        capturedAt: admin.firestore.Timestamp.fromDate(now),
+        capturedAt: Timestamp.fromDate(now),
         expireAt: expireAtFrom(now),
       });
     } catch {
@@ -391,7 +391,7 @@ export function isFrozenEvidence(data: Data | undefined): boolean {
  * [REPORTER_FACTS] instead.
  */
 export async function deleteReportEvidence(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
   opts: { reporterLeft?: boolean } = {},
 ): Promise<EvidenceDeleteOutcome> {
@@ -409,14 +409,14 @@ export async function deleteReportEvidence(
 }
 
 function stageStripReporterFacts(
-  tx: admin.firestore.Transaction,
-  ref: admin.firestore.DocumentReference,
+  tx: Transaction,
+  ref: DocumentReference,
   data: Data | undefined,
 ): boolean {
   const present = REPORTER_FACTS.filter((f) => data && f in data);
   if (present.length === 0) return false;
   tx.update(ref, Object.fromEntries(
-    present.map((f) => [f, admin.firestore.FieldValue.delete()]),
+    present.map((f) => [f, FieldValue.delete()]),
   ));
   return true;
 }
@@ -426,7 +426,7 @@ function stageStripReporterFacts(
  * it still follows its report, which the moderator is deciding on.
  */
 export async function stripReporterFactsIfFrozen(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
 ): Promise<boolean> {
   const ref = db.collection(REPORT_EVIDENCE).doc(reportId);

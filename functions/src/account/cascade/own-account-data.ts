@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 // P6-U09: the two-step-verification collections. Imported rather than
@@ -36,7 +36,7 @@ import { batchDeleteAll } from "./core";
  * an existence leg in `probeResidualData`.
  */
 export async function deleteMfaRecoveryData(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   await db.collection(BACKUP_CODES_COLLECTION).doc(uid).delete();
@@ -55,7 +55,7 @@ export async function deleteMfaRecoveryData(
  * idempotent; its existence leg is in `probeResidualData`.
  */
 export async function deleteGuestQuota(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   await db.collection(Collections.guestQuotas).doc(uid).delete();
@@ -81,7 +81,7 @@ export const MAX_HOUSEHOLD_SHARE_SWEEP_ROWS = 50;
  * like [deleteIngredientSuggestions].
  */
 export async function deleteHouseholdAllergenShares(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -129,7 +129,7 @@ export async function deleteHouseholdAllergenShares(
  * recorded for BUT-1789.
  */
 export async function deleteFeatureRetentionFlags(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -171,7 +171,7 @@ export const RETENTION_ANALYTICS_PARENTS = ["retention", "lapsed_users"] as cons
  * `probeResidualData` is the load-bearing half, not this one.
  */
 export async function deleteRetentionAnalytics(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const failed: string[] = [];
@@ -235,7 +235,7 @@ export async function deleteRetentionAnalytics(
  * left behind.
  */
 export async function deleteNotificationEffectiveness(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -249,7 +249,7 @@ export async function deleteNotificationEffectiveness(
 }
 
 export async function deleteFcmTokens(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -261,7 +261,7 @@ export async function deleteFcmTokens(
 }
 
 export async function deleteNotificationPreferences(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // Doc id is the user id per FirebaseNotificationsRepository convention.
@@ -270,7 +270,7 @@ export async function deleteNotificationPreferences(
 }
 
 export async function deleteNotifications(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -282,7 +282,7 @@ export async function deleteNotifications(
 }
 
 export async function deleteNotificationAnalytics(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const [history, batches, engagement, deliverySender, deliveryTarget] =

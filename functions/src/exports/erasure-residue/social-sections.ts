@@ -8,7 +8,7 @@
  * (BUT-1798).
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Collections } from "../../shared/collections";
 import {
   MAX_CHAT_GROUPS_PER_USER,
@@ -115,18 +115,18 @@ export const ACTIVE_USER_KEYS: Allowlist = scalars(
  * out of the raw read, so nobody else can push it past its bound.
  */
 async function sharedContentChildRows(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   group: string,
   uid: string,
   bound: string,
-): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+): Promise<QueryDocumentSnapshot[]> {
   const docs = await cappedDocs(
     database
       .collectionGroup(group)
       .where("userId", "==", uid)
-      .where(admin.firestore.FieldPath.documentId(), ">=", database.doc("shared_content/\u0000"))
+      .where(FieldPath.documentId(), ">=", database.doc("shared_content/\u0000"))
       .where(
-        admin.firestore.FieldPath.documentId(),
+        FieldPath.documentId(),
         "<",
         database.doc("shared_content\u0000/\u0000"),
       ),
@@ -142,7 +142,7 @@ async function sharedContentChildRows(
 }
 
 function shareRow(
-  doc: admin.firestore.QueryDocumentSnapshot,
+  doc: QueryDocumentSnapshot,
   idKey: string,
   keys: Allowlist,
 ): Row {
@@ -155,7 +155,7 @@ function shareRow(
 
 /** The two `clearUnreachableChatGroupResiduals` legs, merged per group. */
 async function chatGroupsLeft(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const groups = database.collection(Collections.chatGroups);

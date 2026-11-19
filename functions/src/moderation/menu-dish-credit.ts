@@ -11,13 +11,13 @@
  * reporter; removing the name first would make every copy say it did not.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { isValidDocId } from "../shared/valid-doc-id";
 import { captureReportEvidence } from "./report-evidence";
 import { REPORTS } from "./report-status";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 export type CreditWithdrawal =
   | "withdrawn"
@@ -61,7 +61,7 @@ export function withoutCredit(snapshot: unknown, dishId: string, uid: string): D
  * `onReportCreated`, which must still write the moderator's row.
  */
 export async function withdrawReporterCredit(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
 ): Promise<CreditWithdrawal> {
   try {
@@ -106,7 +106,7 @@ export async function withdrawReporterCredit(
  * on every report that cannot be one, and the transaction re-checks it.
  */
 export async function captureThenWithdraw(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
   report: { contentType?: unknown; reason?: unknown },
 ): Promise<{ outcome: Awaited<ReturnType<typeof captureReportEvidence>>; credit: CreditWithdrawal }> {

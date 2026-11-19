@@ -21,7 +21,8 @@
 
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import {
   deleteCommentImages,
   deleteRecipePhotos,
@@ -186,7 +187,7 @@ export const onRecipeCommentDeleted = onDocumentDeleted(
   "recipe_comments/{commentId}",
   async (event) => {
     await handleCommentDeleted(
-      admin.storage().bucket(),
+      getStorage().bucket(),
       event.params.commentId,
       event.data?.data(),
     );
@@ -197,8 +198,8 @@ export const onCookSnapDeleted = onDocumentDeleted(
   "cook_snaps/{snapId}",
   async (event) => {
     await onCookSnapDeletedEvent(
-      admin.storage().bucket(),
-      admin.firestore(),
+      getStorage().bucket(),
+      getFirestore(),
       event.params.snapId,
       event.data?.data(),
     );

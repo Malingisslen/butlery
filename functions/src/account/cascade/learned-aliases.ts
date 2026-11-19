@@ -1,11 +1,11 @@
-import * as admin from "firebase-admin";
+import { CollectionReference, DocumentReference, FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../../shared/hash-uid";
 
 /** Firestore path of the alias candidates `processCorrectionEvent` votes on. */
 export function learnedAliasesCollection(
-  db: admin.firestore.Firestore,
-): admin.firestore.CollectionReference {
+  db: Firestore,
+): CollectionReference {
   return db.collection("analytics").doc("ingredients").collection("learned_aliases");
 }
 
@@ -31,7 +31,7 @@ const CONCURRENCY = 20;
  * what is left, since every cleaned document drops out of the query.
  */
 export async function cleanUserFromLearnedAliases(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const col = learnedAliasesCollection(db);
@@ -76,8 +76,8 @@ export async function cleanUserFromLearnedAliases(
 }
 
 async function cleanOne(
-  db: admin.firestore.Firestore,
-  ref: admin.firestore.DocumentReference,
+  db: Firestore,
+  ref: DocumentReference,
   uid: string,
 ): Promise<"deleted" | "removed" | "skipped" | "failed"> {
   try {
@@ -93,8 +93,8 @@ async function cleanOne(
         return "deleted";
       }
       tx.update(ref, {
-        userIds: admin.firestore.FieldValue.arrayRemove(uid),
-        count: admin.firestore.FieldValue.increment(-1),
+        userIds: FieldValue.arrayRemove(uid),
+        count: FieldValue.increment(-1),
       });
       return "removed";
     });

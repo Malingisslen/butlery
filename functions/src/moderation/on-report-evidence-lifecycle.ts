@@ -12,7 +12,7 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, getFirestore } from "firebase-admin/firestore";
 import {
   deleteReportEvidence,
   evidenceShouldGo,
@@ -28,10 +28,10 @@ import { isClosedReportStatus, REPORTS } from "./report-status";
  * before it re-reads the report and leaves the copy of a case open again.
  */
 export async function runEvidenceLifecycle(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined,
+  before: DocumentData | undefined,
+  after: DocumentData | undefined,
 ): Promise<string | null> {
   const left = reporterLeft(before, after);
   if (!evidenceShouldGo(before, after)) {
@@ -56,7 +56,7 @@ export const onReportEvidenceLifecycle = onDocumentWritten(
   async (event) => {
     const reportId = event.params.reportId;
     const reason = await runEvidenceLifecycle(
-      admin.firestore(), reportId, event.data?.before.data(), event.data?.after.data(),
+      getFirestore(), reportId, event.data?.before.data(), event.data?.after.data(),
     );
     if (!reason) return;
     logger.info("report_evidence_lifecycle", { report_prefix: reportId.slice(0, 6), reason });

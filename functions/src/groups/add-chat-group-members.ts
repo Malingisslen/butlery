@@ -20,7 +20,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   assertAccountMatured,
@@ -39,7 +39,7 @@ import {
   SystemGroupEvent,
 } from "./group-system-message";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export interface AddChatGroupMembersRequest {
   groupId: string;
@@ -91,7 +91,7 @@ export const addChatGroupMembers = onCall<AddChatGroupMembersRequest>(
 
 /** Dependency-injected core — exposed for tests with a fake Firestore. */
 export async function addChatGroupMembersWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   groupId: string,
   userIds: string[],
@@ -158,7 +158,7 @@ export async function addChatGroupMembersWithDeps(
   }
 
   const members: ChatGroupMember[] = await resolveMemberProfiles(db, newUids);
-  const joinedAt = admin.firestore.Timestamp.now();
+  const joinedAt = Timestamp.now();
 
   // What the transaction ACTUALLY seated, which is not necessarily what we
   // asked it to. A concurrent invite can seat someone between the read above

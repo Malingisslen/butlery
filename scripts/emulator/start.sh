@@ -22,8 +22,7 @@ grep -q '^IDENTITY_TOOLKIT_API_KEY=' functions/.secret.local ||
 if [ ! -d functions/node_modules ]; then npm --prefix functions ci; fi
 npm --prefix functions run build
 
-NODE_OPTIONS="--require $ROOT/scripts/emulator/admin-namespace-shim.js ${NODE_OPTIONS:-}" \
-  firebase emulators:start --project "$PROJECT" \
+firebase emulators:start --project "$PROJECT" \
   --only auth,firestore,functions,storage,database &
 EMULATORS=$!
 trap 'kill "$EMULATORS" 2>/dev/null || true' INT TERM

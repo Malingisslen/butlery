@@ -17,7 +17,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { assertAgeCompliant } from "../shared/caller-eligibility";
 import { enforceRateLimit } from "../middleware/rate_limiter";
@@ -58,7 +58,7 @@ export const joinGroupHousehold = onCall<JoinGroupHouseholdRequest>(
     assertAgeCompliant(request.auth);
     await enforceRateLimit(request.auth.uid, "joinGroupHousehold");
     return joinGroupHouseholdWithDeps(
-      admin.firestore(),
+      getFirestore(),
       request.auth.uid,
       { ownerId, groupId },
     );
@@ -66,12 +66,12 @@ export const joinGroupHousehold = onCall<JoinGroupHouseholdRequest>(
 );
 
 function millisOf(v: unknown): number {
-  return v instanceof admin.firestore.Timestamp ? v.toMillis() : 0;
+  return v instanceof Timestamp ? v.toMillis() : 0;
 }
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function joinGroupHouseholdWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   ref: GroupRef,
 ): Promise<JoinGroupHouseholdResponse> {
@@ -101,7 +101,7 @@ export async function joinGroupHouseholdWithDeps(
 
     const linked = (await tx.get(linkedHouseholdsQuery(db, ref))).docs
       .filter((d) => isOwnedLink(d.data(), ref));
-    let target: admin.firestore.DocumentSnapshot | undefined = linked[0];
+    let target: DocumentSnapshot | undefined = linked[0];
     if (!target) {
       // The owner's own household not yet linked to any group, oldest first,
       // so the same one is chosen on every call.
@@ -134,7 +134,7 @@ export async function joinGroupHouseholdWithDeps(
       return { householdId: target.id, alreadyMember: true };
     }
 
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     const owner = { userId: ref.ownerId, permission: "admin", addedAt: now };
     const caller = { userId: callerUid, permission: "view", addedAt: now };
     if (!target.exists) {

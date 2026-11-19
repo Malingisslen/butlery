@@ -27,7 +27,7 @@ import {
 } from "firebase-functions/v2/identity";
 import type { AuthBlockingEvent } from "firebase-functions/v2/identity";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { hashUid } from "../shared/hash-uid";
 
 export const INVITE_COLLECTION = "signup_allowlist";
@@ -64,7 +64,7 @@ export function readGateSwitch(data: unknown): boolean {
 export function inviteState(data: unknown, nowMs: number): InviteState {
   if (data === null || data === undefined) return "missing";
   const expireAt = (data as Record<string, unknown>).expireAt;
-  if (!(expireAt instanceof admin.firestore.Timestamp)) return "expired";
+  if (!(expireAt instanceof Timestamp)) return "expired";
   return expireAt.toMillis() > nowMs ? "valid" : "expired";
 }
 
@@ -202,7 +202,7 @@ export async function runSignInAllowlistWithDeps(
   }
 }
 
-export function firestoreAllowlistDeps(db: admin.firestore.Firestore): AllowlistDeps {
+export function firestoreAllowlistDeps(db: Firestore): AllowlistDeps {
   return {
     async gateEnabled() {
       const snap = await db.collection("system").doc("config").get();
@@ -231,7 +231,7 @@ function gateUser(event: AuthBlockingEvent): GateUser {
 export const beforeCreateAllowlist = beforeUserCreated(
   { region: "europe-west1" },
   async (event) => {
-    await runSignupAllowlistWithDeps(firestoreAllowlistDeps(admin.firestore()), gateUser(event));
+    await runSignupAllowlistWithDeps(firestoreAllowlistDeps(getFirestore()), gateUser(event));
   },
 );
 
@@ -239,7 +239,7 @@ export const beforeSignInAllowlist = beforeUserSignedIn(
   { region: "europe-west1" },
   async (event) => {
     await runSignInAllowlistWithDeps(
-      firestoreAllowlistDeps(admin.firestore()),
+      firestoreAllowlistDeps(getFirestore()),
       gateUser(event),
       signUpSessionOf(event, Date.now()),
     );

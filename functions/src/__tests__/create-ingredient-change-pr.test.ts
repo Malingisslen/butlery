@@ -12,7 +12,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import {
   CSV_PATH,
@@ -132,7 +132,7 @@ function request(uid: string | null, claims: Record<string, unknown> = { admin: 
 }
 
 function world() {
-  const store = new FakeFirestore({ now: admin.firestore.Timestamp.fromDate(NOW) });
+  const store = new FakeFirestore({ now: Timestamp.fromDate(NOW) });
   store.seed(`admins/${ADMIN}`, { addedAt: 1 });
   const repo = new FakeRepo();
   const limits: string[] = [];
@@ -151,7 +151,7 @@ let seq = 0;
 function seedProposal(store: FakeFirestore, id: string, ingredientId: string, changes: unknown, extra: Record<string, unknown> = {}) {
   store.seed(`${COL}/${id}`, {
     ingredientId, changes, status: "pending", createdBy: ADMIN, note: "privat anteckning",
-    createdAt: admin.firestore.Timestamp.fromMillis(NOW.getTime() - DAY + ++seq), ...extra,
+    createdAt: Timestamp.fromMillis(NOW.getTime() - DAY + ++seq), ...extra,
   });
 }
 
@@ -170,7 +170,7 @@ async function denied(fn: () => Promise<unknown>, code: string, message?: string
 }
 
 const expireMs = (store: FakeFirestore, id: string) =>
-  (store.read(`${COL}/${id}`)?.expireAt as admin.firestore.Timestamp).toMillis() - NOW.getTime();
+  (store.read(`${COL}/${id}`)?.expireAt as Timestamp).toMillis() - NOW.getTime();
 
 const cases: UnitCase[] = [
   {
@@ -197,13 +197,13 @@ const cases: UnitCase[] = [
     fn: async () => {
       const w = world();
       w.store.seed("ingredient_change_locks/singleton", {
-        owner: "other", expiresAt: admin.firestore.Timestamp.fromMillis(NOW.getTime() + 60_000),
+        owner: "other", expiresAt: Timestamp.fromMillis(NOW.getTime() + 60_000),
       });
       await denied(() => handleCreateIngredientChangePr(request(ADMIN), w.deps), "failed-precondition", "locked");
       assertEqual(w.store.read("ingredient_change_locks/singleton")?.owner, "other", "live lock kept");
 
       w.store.seed("ingredient_change_locks/singleton", {
-        owner: "other", expiresAt: admin.firestore.Timestamp.fromMillis(NOW.getTime() - LOCK_MS - 1),
+        owner: "other", expiresAt: Timestamp.fromMillis(NOW.getTime() - LOCK_MS - 1),
       });
       await handleCreateIngredientChangePr(request(ADMIN), w.deps);
       assert(!w.store.has("ingredient_change_locks/singleton"), "released after success");
@@ -265,7 +265,7 @@ const cases: UnitCase[] = [
       assert(!JSON.stringify(run).includes(ADMIN), "no raw uid");
       assertEqual(run.prNumber, 100, "pr number");
       assertEqual(JSON.stringify(run.counts), '{"applied":1,"conflicts":0,"rejected":0,"reopened":0,"skipped":0}', "counts");
-      assertEqual((run.expireAt as admin.firestore.Timestamp).toMillis() - NOW.getTime(), 365 * DAY, "expiry");
+      assertEqual((run.expireAt as Timestamp).toMillis() - NOW.getTime(), 365 * DAY, "expiry");
     },
   },
   {
@@ -457,7 +457,7 @@ const cases: UnitCase[] = [
       const run = runs[0];
       assert(run.outcome === "failed" && run.errorCode === "github-no-main" && run.counts === null, JSON.stringify(run));
       assertEqual(run[RUN_UID_HASH_FIELD], hashUid(ADMIN), "hashed uid");
-      assertEqual((run.expireAt as admin.firestore.Timestamp).toMillis() - NOW.getTime(), 365 * DAY, "expiry");
+      assertEqual((run.expireAt as Timestamp).toMillis() - NOW.getTime(), 365 * DAY, "expiry");
     },
   },
   {

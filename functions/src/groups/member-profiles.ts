@@ -15,7 +15,7 @@
  * failing the whole invite over a cosmetic field would be the wrong trade.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import type { ChatGroupMember } from "./chat-group-writes";
 
@@ -25,7 +25,7 @@ const MAX_AVATAR_URL = 1000;
 export const UNKNOWN_MEMBER_NAME = "?";
 
 export async function resolveMemberProfiles(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uids: string[],
 ): Promise<ChatGroupMember[]> {
   if (uids.length === 0) return [];

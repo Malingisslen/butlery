@@ -212,16 +212,19 @@ async function main() {
   const { requireProject } = require("../lib/admin/require-project");
   const project = requireProject({ allowed: [STAGING_PROJECT] });
 
-  const admin = require("firebase-admin");
-  admin.initializeApp({ projectId: project, storageBucket: STORAGE_BUCKET });
+  const { initializeApp } = require("firebase-admin/app");
+  const { getAuth } = require("firebase-admin/auth");
+  const { getFirestore } = require("firebase-admin/firestore");
+  const { getStorage } = require("firebase-admin/storage");
+  initializeApp({ projectId: project, storageBucket: STORAGE_BUCKET });
   const sched = require("../lib/account/account-deletion-schedule");
   const del = require("../lib/account/request-account-deletion");
   const { Collections } = require("../lib/shared/collections");
 
   const results = await runJourneys({
-    db: admin.firestore(),
-    auth: admin.auth(),
-    storage: admin.storage(),
+    db: getFirestore(),
+    auth: getAuth(),
+    storage: getStorage(),
     runId: `${Date.now().toString(36)}`,
     injectFailure,
     deletion: {

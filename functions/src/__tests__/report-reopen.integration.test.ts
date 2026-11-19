@@ -12,11 +12,12 @@ const PROJECT_ID = "butlery-report-reopen-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { DECISION_RETENTION_DAYS, recordDecision, MODERATION_DECISIONS } from "../moderation/report-decision";
@@ -53,7 +54,7 @@ function check(name: string, ok: boolean, detail?: string): void {
   }
 }
 
-async function get(path: string): Promise<admin.firestore.DocumentData | undefined> {
+async function get(path: string): Promise<DocumentData | undefined> {
   return (await db.doc(path).get()).data();
 }
 
@@ -74,7 +75,7 @@ async function decidedCase(
 ): Promise<Case> {
   const n = seq++;
   const c = { id: `ro${RUN}${n}`, reporter: `rep${RUN}${n}`, owner: `own${RUN}${n}` };
-  const data: admin.firestore.DocumentData = {
+  const data: DocumentData = {
     reporterId: c.reporter,
     contentType: action === "profile_hidden" ? "profile" : "comment",
     contentId: action === "profile_hidden" ? c.owner : `c${RUN}${n}`,
@@ -82,7 +83,7 @@ async function decidedCase(
     reason: "harassment",
     description: "free text",
     status: "closed",
-    createdAt: admin.firestore.Timestamp.fromDate(FILED),
+    createdAt: Timestamp.fromDate(FILED),
     ...(action ? { moderatorAction: action } : {}),
     ...extra,
   };
@@ -249,7 +250,7 @@ async function unchanged(): Promise<void> {
     "it keeps decidedAt and expireAt and notes the confirmation",
     row?.decidedAt.toMillis() === before?.decidedAt.toMillis() &&
       row?.expireAt.toMillis() === before?.expireAt.toMillis() &&
-      row?.reconfirmedAt instanceof admin.firestore.Timestamp &&
+      row?.reconfirmedAt instanceof Timestamp &&
       row?.revision === 1 && row?.history === undefined,
   );
   check(
@@ -271,7 +272,7 @@ async function changedToNoAction(): Promise<void> {
   const c = await decidedCase("profile_hidden");
   await runReopenReportWithDb(db, MODERATOR, c.id);
   // "Ändra till Ingen åtgärd": the app takes the action off the open report.
-  await db.doc(`reports/${c.id}`).update({ moderatorAction: admin.firestore.FieldValue.delete() });
+  await db.doc(`reports/${c.id}`).update({ moderatorAction: FieldValue.delete() });
   const { result } = await closeAgain(c.id);
   const row = await get(`${MODERATION_DECISIONS}/${c.id}`);
   check("a changed decision is recorded", result.outcome === "recorded" && row?.decision === "no_action");
@@ -361,10 +362,10 @@ async function changedToAction(): Promise<void> {
       (await get(`user_moderation/${c.owner}`))?.totalReports === 1,
   );
 
-  const old = await decidedCase(null, { createdAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 200 * DAY)) });
+  const old = await decidedCase(null, { createdAt: Timestamp.fromDate(new Date(Date.now() - 200 * DAY)) });
   await runReopenReportWithDb(db, MODERATOR, old.id);
   await closeAgain(old.id, { moderatorAction: "content_removed" });
-  const forged = await decidedCase(null, { createdAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 3650 * DAY)) });
+  const forged = await decidedCase(null, { createdAt: Timestamp.fromDate(new Date(Date.now() + 3650 * DAY)) });
   await runReopenReportWithDb(db, MODERATOR, forged.id);
   await closeAgain(forged.id, { moderatorAction: "content_removed" });
   const forgedStrike = await get(`user_moderation/${forged.owner}/report_history/${forged.id}`);
@@ -392,7 +393,7 @@ async function listing(): Promise<void> {
       db.doc(`${MODERATION_DECISIONS}/${id}`).set({
         decision: "no_action",
         rule: "other",
-        decidedAt: admin.firestore.Timestamp.fromDate(FIRST),
+        decidedAt: Timestamp.fromDate(FIRST),
         revision: 0,
       }),
     ),

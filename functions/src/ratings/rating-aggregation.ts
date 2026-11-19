@@ -20,7 +20,7 @@
  * trade-off as BUT-647. Inflection point ~10k debounced events/min.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import {
   DebounceConfig,
   ScheduleDeps,
@@ -41,7 +41,7 @@ const RATING_DEBOUNCE: DebounceConfig = {
 };
 
 export interface DrainDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: () => Date;
   /**
    * The per-recipe recompute. REQUIRED in production — the shared drainer has
@@ -86,6 +86,6 @@ export async function drainRatingAggregationQueue(
 export const __test__ = {
   DEBOUNCE_MS: RATING_DEBOUNCE.debounceMs,
   MARKER_COLLECTION: RATING_DEBOUNCE.markerCollection,
-  markerRef: (db: admin.firestore.Firestore, recipeId: string) =>
+  markerRef: (db: Firestore, recipeId: string) =>
     debounceMarkerRef(db, RATING_DEBOUNCE, recipeId),
 };
