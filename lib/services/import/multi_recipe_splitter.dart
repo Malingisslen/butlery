@@ -186,6 +186,60 @@ class MultiRecipeSplitter {
     return valid;
   }
 
+  /// How many recipes [text] appears to hold: the title-like lines that open
+  /// a recipe, by the same rule [split] uses to open a block, counted even
+  /// when [split] declines the page or discards the block afterwards.
+  ///
+  /// A line that names a component of a recipe ("Sås", "Till servering",
+  /// "Garnering", or anything ending in a colon) is a sub-section and never
+  /// opens one, however many ingredients follow it.
+  ///
+  /// [useHeadings] adds the larger-type headings [layout] measured, as a
+  /// second signal combined by maximum, never by sum. It is off until that
+  /// signal's false alarms on single-recipe pages have been measured.
+  static int countCandidates(
+    String text, {
+    DocumentLayout? layout,
+    bool useHeadings = false,
+  }) {
+    final byText = MultiRecipeSplitter()._countTextCandidates(text);
+    if (!useHeadings || layout == null || !layout.matchesLineCountOf(text)) {
+      return byText;
+    }
+    final headings = HeadingDetector.headingLinesForDocument(layout)?.length;
+    return headings != null && headings > byText ? headings : byText;
+  }
+
+  int _countTextCandidates(String text) {
+    final neLines = <_Line>[];
+    final rawLines = text.split('\n');
+    for (var i = 0; i < rawLines.length; i++) {
+      final t = rawLines[i].trim();
+      if (t.isNotEmpty) neLines.add(_Line(i, t));
+    }
+
+    var count = 0;
+    var hasIngredients = false;
+    var hasInstructions = false;
+    for (var p = 0; p < neLines.length; p++) {
+      final line = neLines[p].text;
+      if (_isTitleish(line) &&
+          !RecipeSectionDetector.isSectionHeader(line) &&
+          _ingredientClusterAhead(neLines, p)) {
+        if (count == 0 || (hasIngredients && hasInstructions)) {
+          count++;
+          hasIngredients = false;
+          hasInstructions = false;
+        }
+      }
+      if (RecipeSectionDetector.looksLikeIngredient(line)) {
+        hasIngredients = true;
+      }
+      if (_isInstructional(line)) hasInstructions = true;
+    }
+    return count;
+  }
+
   /// The layout path, or null when it declines — and it declines often, on
   /// purpose. Null means "the text rules get their normal turn", never "this
   /// page has one recipe".

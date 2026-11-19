@@ -21,6 +21,7 @@ import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 import 'package:butlery/viewmodels/photo_import/photo_import_pick_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_recipes_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_read_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_state_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/photo_page.dart';
@@ -37,6 +38,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         PhotoImportDraftMixin,
         PhotoImportAiOfferMixin,
         PhotoImportStateMixin,
+        PhotoImportAiRecipesMixin,
         PhotoImportPickMixin,
         PhotoImportReadMixin {
   // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
@@ -149,6 +151,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
   void clearImportData() {
     importMeasured = false;
     aiReadingUsed = false;
+    forgetMissedRecipeOffer();
+    forgetAiFoundRecipes();
     clearAiOffer();
     super.clearImportData();
   }

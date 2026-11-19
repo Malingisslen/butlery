@@ -11,6 +11,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
+export 'package:butlery/services/llm/ocr_recipe_image_response.dart';
+
 /// Mode for structuring recipe text.
 enum StructureMode {
   /// Full extraction from raw text
@@ -240,6 +242,10 @@ class ExtractedRecipe {
   final String? difficulty;
   final String? source;
 
+  /// The photo page starts in the middle of a recipe whose title sat on the
+  /// page before; [title] may then be empty.
+  final bool continuesFromPreviousPage;
+
   const ExtractedRecipe({
     required this.title,
     this.description,
@@ -251,6 +257,7 @@ class ExtractedRecipe {
     this.tags = const [],
     this.difficulty,
     this.source,
+    this.continuesFromPreviousPage = false,
   });
 
   factory ExtractedRecipe.fromJson(Map<String, dynamic> json) {
@@ -277,6 +284,8 @@ class ExtractedRecipe {
           [],
       difficulty: json['difficulty'] as String?,
       source: json['source'] as String?,
+      continuesFromPreviousPage:
+          json['continuesFromPreviousPage'] as bool? ?? false,
     );
   }
 
@@ -331,43 +340,6 @@ class StructureRecipeResponse {
       recipe: json['recipe'] != null
           ? ExtractedRecipe.fromJson(json['recipe'] as Map<String, dynamic>)
           : null,
-      error: json['error'] as String?,
-      estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
-      promptVersion: json['promptVersion'] as String?,
-      modelId: json['modelId'] as String?,
-    );
-  }
-}
-
-/// Response from ocrRecipeImage Cloud Function.
-class OcrRecipeImageResponse {
-  final bool success;
-  final ExtractedRecipe? recipe;
-  final String? rawText;
-  final String? error;
-  final double estimatedCost;
-  final String? promptVersion;
-
-  /// BUT-785: pinned Vertex model id (see StructureRecipeResponse.modelId).
-  final String? modelId;
-
-  const OcrRecipeImageResponse({
-    required this.success,
-    this.recipe,
-    this.rawText,
-    this.error,
-    required this.estimatedCost,
-    this.promptVersion,
-    this.modelId,
-  });
-
-  factory OcrRecipeImageResponse.fromJson(Map<String, dynamic> json) {
-    return OcrRecipeImageResponse(
-      success: json['success'] as bool? ?? false,
-      recipe: json['recipe'] != null
-          ? ExtractedRecipe.fromJson(json['recipe'] as Map<String, dynamic>)
-          : null,
-      rawText: json['rawText'] as String?,
       error: json['error'] as String?,
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
       promptVersion: json['promptVersion'] as String?,

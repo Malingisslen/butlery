@@ -31,11 +31,17 @@
 │ Output: ParsedRecipe with per-field confidence.                              │
 └──────────────────────────────────────────────────────────────────────────────┘
         │  (photo = on-device ML Kit → TextImportStrategy regex parser, NOT this
-        │   service; ocrRecipeImage only after the user says yes to AI)
+        │   service; ocrRecipeImage only after the user says yes to AI,
+        │   offered when the phone read fails, finds nothing, or the page seems
+        │   to hold more recipes than found, and on request after a good read)
         ▼
 ┌── CLOUD LLM (functions/src/llm/) ────────────────────────────────────────────┐
 │ structureRecipe → Gemini 2.5 Flash Lite (Vertex, europe-west4);              │
 │ ocrRecipeImage → Gemini 3.1 Flash Lite (Vertex, EU multi-region `eu`).       │
+│ ocrRecipeImage returns every recipe on the page (`recipes[]`, flagged with   │
+│ `continuesFromPreviousPage`; `recipe` stays as the first for old apps) and   │
+│ rescues complete recipes when the answer is cut at the token cap; the app    │
+│ joins continuations across pages (photo_recipe_merge.dart).                  │
 │ PII scrub both sides (shared fixture), kill switches, prompt                 │
 │ A/B infra (built, no experiment live), per-call sample capture (write-only,  │
 │ 30d TTL).                                                                    │

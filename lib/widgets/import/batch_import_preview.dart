@@ -36,11 +36,20 @@ import 'package:butlery/widgets/common/utility_components.dart';
 class BatchImportPreview extends StatefulWidget {
   final List<Recipe> recipes;
 
-  const BatchImportPreview({super.key, required this.recipes, this.backTo});
+  const BatchImportPreview({
+    super.key,
+    required this.recipes,
+    this.backTo,
+    this.readByAi = false,
+  });
 
   /// The name of the import view that opened the preview, for the back
   /// arrow's name "Tillbaka till …".
   final String? backTo;
+
+  /// Every recipe came from an AI reading of a photo, so the list says so:
+  /// AI can misread, and the user checks before saving.
+  final bool readByAi;
 
   @override
   State<BatchImportPreview> createState() => _BatchImportPreviewState();
@@ -221,6 +230,13 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
                           color: cs.onSurfaceVariant,
                         ),
                       ),
+                      if (widget.readByAi)
+                        Text(
+                          l10n.importPreviewReadByAi,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
                     ],
                   ),
                 ),

@@ -39,6 +39,15 @@ import '../../infrastructure/helpers/offline_banner_support.dart';
 /// branches out of the render tree, so the test isolates the announce contract.
 class _FakePhotoImportViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
+  @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  @override
+  Future<void> askAiToRead() async {}
+
   bool _hasOcrResult = false;
   bool _isProcessing = false;
 

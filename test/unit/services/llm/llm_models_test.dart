@@ -384,7 +384,82 @@ void main() {
       final r = OcrRecipeImageResponse.fromJson(<String, dynamic>{});
       expect(r.success, isFalse);
       expect(r.recipe, isNull);
+      expect(r.recipes, isEmpty);
       expect(r.estimatedCost, 0.0);
+    });
+
+    Map<String, dynamic> recipeJson(String title, {bool? continues}) => {
+      'title': title,
+      'ingredients': <Object>[],
+      'instructions': ['Steg'],
+      'continuesFromPreviousPage': ?continues,
+    };
+
+    test('recipes keeps every recipe in order, with the continuation flag', () {
+      final r = OcrRecipeImageResponse.fromJson({
+        'success': true,
+        'recipe': recipeJson('Ett'),
+        'recipes': [
+          recipeJson('', continues: true),
+          recipeJson('Ett'),
+          recipeJson('Två'),
+        ],
+        'estimatedCost': 0.01,
+      });
+
+      expect(r.recipes.map((e) => e.title), ['', 'Ett', 'Två']);
+      expect(r.recipes.map((e) => e.continuesFromPreviousPage), [
+        true,
+        false,
+        false,
+      ]);
+    });
+
+    test('an older server without recipes gives [recipe]', () {
+      final r = OcrRecipeImageResponse.fromJson({
+        'success': true,
+        'recipe': recipeJson('Ensam'),
+        'estimatedCost': 0.01,
+      });
+
+      expect(r.recipes.map((e) => e.title), ['Ensam']);
+    });
+
+    test('null or empty recipes fall back to recipe', () {
+      for (final recipes in [null, <Object>[]]) {
+        final r = OcrRecipeImageResponse.fromJson({
+          'success': true,
+          'recipe': recipeJson('Ensam'),
+          'recipes': recipes,
+          'estimatedCost': 0.01,
+        });
+        expect(r.recipes.map((e) => e.title), ['Ensam']);
+      }
+    });
+
+    test('droppedRecipeCount is read, and absent or negative gives zero', () {
+      OcrRecipeImageResponse parse(Object? count) =>
+          OcrRecipeImageResponse.fromJson({
+            'success': true,
+            'recipe': recipeJson('Ett'),
+            'droppedRecipeCount': ?count,
+            'estimatedCost': 0.01,
+          });
+
+      expect(parse(2).droppedRecipeCount, 2);
+      expect(parse(null).droppedRecipeCount, 0);
+      expect(parse(-3).droppedRecipeCount, 0);
+    });
+
+    test('more than six recipes are cut to six', () {
+      final r = OcrRecipeImageResponse.fromJson({
+        'success': true,
+        'recipes': [for (var i = 0; i < 9; i++) recipeJson('R$i')],
+        'estimatedCost': 0.01,
+      });
+
+      expect(r.recipes, hasLength(OcrRecipeImageResponse.maxRecipes));
+      expect(r.recipes.last.title, 'R5');
     });
   });
 }

@@ -20,6 +20,7 @@ import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -1050,6 +1051,39 @@ void main() {
           verifyNever(() => mockOcrService.extractText(any()));
         },
       );
+
+      test('visionOnly carries every AI recipe, first one as recipe', () async {
+        final first = _createTestRecipe(
+          title: 'Ett',
+          ingredients: ['1 dl mjöl'],
+          instructions: ['Blanda'],
+        );
+        final second = _createTestRecipe(
+          title: 'Två',
+          ingredients: ['2 ägg'],
+          instructions: ['Vispa'],
+        );
+        fakeLlm.result = ImportSuccess(
+          recipe: first,
+          aiRecipes: PhotoAiRecipes([first, second]),
+          confidence: 0.8,
+          pipeline: 'photo',
+          tier: 4,
+          method: 'llm-vision',
+          usedLlm: true,
+        );
+
+        final result = await strategy.import(
+          'photo',
+          options: {'imageBytes': testImageBytes, 'visionOnly': true},
+        );
+
+        expect(result.aiRecipes!.recipes.map((r) => r.title), ['Ett', 'Två']);
+        expect(
+          identical(result.aiRecipes!.recipes.first, result.recipe),
+          isTrue,
+        );
+      });
 
       test('a failed on-device OCR returns failure, no LLM call', () async {
         when(() => mockOcrService.extractText(any())).thenAnswer(

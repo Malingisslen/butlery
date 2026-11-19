@@ -28,10 +28,27 @@ class _MockUserService extends Mock implements UserService {}
 // Answers only what the view reads; anything else fails loudly.
 class _OfferFakeViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
-  _OfferFakeViewModel({this.offer, this.consented = false});
+  @override
+  int get droppedRecipeCount => dropped;
+
+  @override
+  bool get canAskAiToRead => canAsk;
+
+  @override
+  Future<void> askAiToRead() async => asks++;
+
+  _OfferFakeViewModel({
+    this.offer,
+    this.consented = false,
+    this.canAsk = false,
+    this.dropped = 0,
+  });
 
   final PhotoAiOfferReason? offer;
   final bool consented;
+  final bool canAsk;
+  final int dropped;
+  int asks = 0;
   int accepts = 0;
   int declines = 0;
 
@@ -217,5 +234,44 @@ void main() {
     await pumpView(tester, _OfferFakeViewModel());
 
     expect(find.byType(PhotoAiOfferCard), findsNothing);
+  });
+
+  testWidgets('the quiet link shows under a recipe and asks for the AI offer', (
+    tester,
+  ) async {
+    final vm = _OfferFakeViewModel(canAsk: true);
+    await pumpView(tester, vm);
+
+    expect(find.text(sv.photoAiAskToRead), findsOneWidget);
+    expect(find.text('Saknas något? Låt AI läsa fotot.'), findsOneWidget);
+    await tester.tap(find.text(sv.photoAiAskToRead));
+    await tester.pump();
+
+    expect(vm.asks, 1);
+  });
+
+  testWidgets('no link once the viewmodel says it should be hidden', (
+    tester,
+  ) async {
+    await pumpView(tester, _OfferFakeViewModel());
+
+    expect(find.text(sv.photoAiAskToRead), findsNothing);
+  });
+
+  testWidgets('a dropped recipe is said out loud, never silent', (
+    tester,
+  ) async {
+    await pumpView(tester, _OfferFakeViewModel(dropped: 1));
+    expect(find.text('Ett recept kunde inte läsas.'), findsOneWidget);
+  });
+
+  testWidgets('several dropped recipes use the plural line', (tester) async {
+    await pumpView(tester, _OfferFakeViewModel(dropped: 3));
+    expect(find.text('3 recept kunde inte läsas.'), findsOneWidget);
+  });
+
+  testWidgets('no dropped recipes means no notice', (tester) async {
+    await pumpView(tester, _OfferFakeViewModel());
+    expect(find.textContaining('kunde inte läsas'), findsNothing);
   });
 }

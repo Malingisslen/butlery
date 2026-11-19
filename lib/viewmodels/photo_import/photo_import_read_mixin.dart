@@ -7,10 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_ai_recipes_mixin.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_ai_offer_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/import/missed_recipe_check.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/import/multi_recipe_splitter.dart';
+import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/layout/page_reflow.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
@@ -23,6 +29,7 @@ mixin PhotoImportReadMixin
     on
         ImportBaseViewModel,
         PhotoImportAiOfferMixin,
+        PhotoImportAiRecipesMixin,
         PhotoImportDraftMixin,
         PhotoImportStateMixin {
   @protected
@@ -121,25 +128,41 @@ mixin PhotoImportReadMixin
         await extractWithAi(photoPages.first.bytes, lastPickSource);
         return;
       }
+      final aiPages = <int, PhotoAiRecipes>{};
       for (var i = 0; i < photoPages.length; i++) {
         final page = photoPages[i];
-        if (page.isRead && reason != PhotoAiOfferReason.noRecipeFound) continue;
+        if (page.isRead && !(reason?.readsEveryPage ?? false)) continue;
         final result = await readWithAi(page.bytes, lastPickSource);
-        final text = result.isSuccess && result.recipe != null
-            ? recipeToReviewText(result.recipe!)
+        final found = result.isSuccess && result.recipe != null
+            ? _aiRecipesOf(result)
+            : null;
+        final text = found != null
+            ? _reviewTextOf(found.recipes)
             : result.extractedText.orEmpty().trim();
         if (text.isEmpty) {
-          final denied = result.rateLimitDenied;
-          setError(
-            denied != null
-                ? denied.swedishMessage
-                : (result.errorMessage ?? AppLocale.current.errorGeneric),
-          );
+          setError(_aiFailureText(result));
           return;
         }
         photoPages[i] = PhotoPage(bytes: page.bytes, text: text, isRead: true);
+        if (found != null) aiPages[i] = found;
+      }
+      // Pages the phone read, or the AI answered with text for, have no
+      // recipes to merge, so one of them keeps the text route for all pages.
+      if (aiPages.length == photoPages.length) {
+        photoBytes = photoPages.first.bytes;
+        photoOcrText = photoPages.map((p) => p.text).join('\n\n');
+        unawaited(
+          persistPhotoDraft(imageBytes: photoBytes!, ocrText: photoOcrText),
+        );
+        // The phone's reading confidence says nothing about the AI's text.
+        lastConfidence = null;
+        showAiRecipes([
+          for (var i = 0; i < photoPages.length; i++) aiPages[i]!,
+        ]);
+        return;
       }
       await recombineAndParse();
+      keepDroppedRecipes(aiPages.values);
     }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
@@ -147,7 +170,8 @@ mixin PhotoImportReadMixin
   /// editable text, and a page it could not read counts as read with no text.
   Future<void> declineAiOffer() async {
     if (isDisposed || aiOffer == null) return;
-    takeAiOffer();
+    // The phone has a recipe already: nothing is blanked or parsed again.
+    if (takeAiOffer()?.hasPhoneRecipes ?? false) return;
     for (var i = 0; i < photoPages.length; i++) {
       if (!photoPages[i].isRead) {
         photoPages[i] = PhotoPage(
@@ -256,19 +280,15 @@ mixin PhotoImportReadMixin
     final result = await readWithAi(bytes, source);
 
     if (result.isSuccess && result.recipe != null) {
-      final recipe = result.recipe!;
-      final reviewText = recipeToReviewText(recipe);
+      final found = _aiRecipesOf(result);
       // photoBytes was already set by the caller (pickImageAndProcess) before
       // routing here — no need to reassign.
-      photoOcrText = reviewText;
+      photoOcrText = _reviewTextOf(found.recipes);
       lastConfidence = null;
       photoPages
         ..clear()
-        ..add(PhotoPage(bytes: bytes, text: reviewText, isRead: true));
-      parsedRecipeList
-        ..clear()
-        ..add(recipe);
-      setParsedRecipe(recipe);
+        ..add(PhotoPage(bytes: bytes, text: photoOcrText, isRead: true));
+      showAiRecipes([found]);
       unawaited(persistPhotoDraft(imageBytes: bytes, ocrText: photoOcrText));
       return;
     }
@@ -293,13 +313,48 @@ mixin PhotoImportReadMixin
     // setError directly rather than throwing: executeAsyncVoid only shows its
     // errorPrefix on a throw, which would discard this detail (the user would
     // see "something went wrong" instead of "try again in N minutes").
-    final denied = result.rateLimitDenied;
-    setError(
-      denied != null
-          ? denied.swedishMessage
-          : (result.errorMessage ?? AppLocale.current.errorGeneric),
-    );
+    setError(_aiFailureText(result));
   }
+
+  /// The limiter's own message; at a daily cap it also says the recipe can be
+  /// written in by hand, since AI will not read the photo until tomorrow.
+  String _aiFailureText(ImportManagerResult result) {
+    final denied = result.rateLimitDenied;
+    if (denied == null) {
+      return result.errorMessage ?? AppLocale.current.errorGeneric;
+    }
+    final daily =
+        denied.limitType == LimitType.perDay ||
+        denied.limitType == LimitType.llmDaily;
+    return daily
+        ? '${denied.swedishMessage} ${AppLocale.current.photoAiCapWriteByHand}'
+        : denied.swedishMessage;
+  }
+
+  /// "Saknas något?" is offered under a recipe the phone found, until AI has
+  /// read the photo.
+  bool get canAskAiToRead =>
+      parsedRecipeList.isNotEmpty &&
+      !aiReadingUsed &&
+      aiOffer == null &&
+      !isProcessing;
+
+  /// The person's own request to let AI read the photo; goes through the same
+  /// consent question as every other offer.
+  Future<void> askAiToRead() async {
+    if (isDisposed || !canAskAiToRead) return;
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+    await offerAi(PhotoAiOfferReason.userAsked);
+  }
+
+  PhotoAiRecipes _aiRecipesOf(ImportManagerResult result) =>
+      result.aiRecipes ?? PhotoAiRecipes([result.recipe!]);
+
+  String _reviewTextOf(List<Recipe> recipes) =>
+      recipes.map(recipeToReviewText).join('\n\n');
 
   /// Render a parsed recipe back to a plain-text block for the interpreted-text
   /// preview. The handwriting vision path returns a structured recipe directly;
@@ -391,6 +446,7 @@ mixin PhotoImportReadMixin
         reflow: reflow,
       );
       final recipes = result.successfulRecipes;
+      forgetAiFoundRecipes();
       parsedRecipeList
         ..clear()
         ..addAll(recipes);
@@ -400,6 +456,20 @@ mixin PhotoImportReadMixin
         setParsedRecipe(recipes.first);
       } else if (recipes.length > 1) {
         notifyListeners();
+      }
+      // The text of pages the AI read is never counted: it is the AI's own
+      // answer written out, not the phone's reading.
+      if (!aiReadingUsed &&
+          mayHaveMissedRecipes(
+            found: recipes.length,
+            candidates: candidateRecipeCount(
+              textCandidates: MultiRecipeSplitter.countCandidates(
+                reflow ? reflowWrappedLines(text) : text,
+              ),
+              blocksTried: result.totalProcessed,
+            ),
+          )) {
+        await offerMissedRecipesOnce();
       }
     } catch (e) {
       // Don't throw error for auto-parsing failures

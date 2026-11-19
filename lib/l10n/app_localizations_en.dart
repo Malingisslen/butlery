@@ -21373,6 +21373,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoAiOfferDecline => 'No, I\'ll type it myself';
 
   @override
+  String get photoAiOfferMayHaveMissed =>
+      'There seem to be more recipes on the page than the phone found.';
+
+  @override
+  String get photoAiOfferDeclineThanks => 'No thanks';
+
+  @override
+  String get importPreviewReadByAi =>
+      'AI read the photo. Check the recipes before you save.';
+
+  @override
+  String get photoAiAskToRead => 'Missing something? Let AI read the photo.';
+
+  @override
+  String photoAiDroppedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be read.',
+      one: 'One recipe could not be read.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get photoAiCapWriteByHand =>
+      'You can type the recipe in yourself instead.';
+
+  @override
   String shoppingMergeUnresolvedRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

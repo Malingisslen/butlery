@@ -29,6 +29,7 @@ import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/parser_shadow_sampler.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -1154,26 +1155,39 @@ class ImportManager {
       // Preview tagging is an optional enhancement — it must NEVER fail an
       // already-parsed recipe. Wrap it in its own guard so a tagging throw
       // falls back to the untagged recipe instead of discarding the parse.
-      var recipeWithPreview = importResult.recipe!;
       final taggingService = _taggingService;
-      if (taggingService != null && recipeWithPreview.tagResult == null) {
+      Future<Recipe> withPreview(Recipe recipe) async {
+        if (taggingService == null || recipe.tagResult != null) return recipe;
         try {
           final previewTags = await taggingService.generatePhase1Preview(
-            recipeWithPreview,
+            recipe,
           );
-          if (previewTags != null) {
-            recipeWithPreview = Recipe(
-              core: recipeWithPreview.core.copyWith(tagResult: previewTags),
-              type: recipeWithPreview.type,
-              socialData: recipeWithPreview.socialData,
-              realtimeData: recipeWithPreview.realtimeData,
-              offlineData: recipeWithPreview.offlineData,
-            );
-          }
+          if (previewTags == null) return recipe;
+          return Recipe(
+            core: recipe.core.copyWith(tagResult: previewTags),
+            type: recipe.type,
+            socialData: recipe.socialData,
+            realtimeData: recipe.realtimeData,
+            offlineData: recipe.offlineData,
+          );
         } catch (e) {
           AppLogger.warning('Preview tagging failed, saving untagged: $e');
+          return recipe;
         }
       }
+
+      final recipeWithPreview = await withPreview(importResult.recipe!);
+      final ai = importResult.aiRecipes;
+      final aiWithPreview = ai == null
+          ? null
+          : PhotoAiRecipes(
+              [
+                recipeWithPreview,
+                for (final r in ai.recipes.skip(1)) await withPreview(r),
+              ],
+              firstContinuesFromPreviousPage: ai.firstContinuesFromPreviousPage,
+              droppedRecipeCount: ai.droppedRecipeCount,
+            );
 
       // Return parsed recipe WITHOUT saving to storage
       return ImportManagerResult.success(
@@ -1181,6 +1195,7 @@ class ImportManager {
         strategy: strategy.strategyName,
         warnings: importResult.warnings,
         metadata: importResult.metadata,
+        aiRecipes: aiWithPreview,
       );
     } catch (e) {
       return ImportManagerResult.failure(

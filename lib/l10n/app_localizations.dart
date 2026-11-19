@@ -32620,6 +32620,42 @@ abstract class AppLocalizations {
   /// **'Nej, jag skriver själv'**
   String get photoAiOfferDecline;
 
+  /// Photo import AI offer: the page seems to hold more recipes than the phone found
+  ///
+  /// In sv, this message translates to:
+  /// **'Det verkar finnas fler recept på sidan än telefonen hittade.'**
+  String get photoAiOfferMayHaveMissed;
+
+  /// Photo import AI offer: decline button when the phone already found a recipe and nothing needs typing
+  ///
+  /// In sv, this message translates to:
+  /// **'Nej tack'**
+  String get photoAiOfferDeclineThanks;
+
+  /// Multi-recipe picker: line under the counts when every recipe came from an AI reading of a photo
+  ///
+  /// In sv, this message translates to:
+  /// **'AI läste fotot. Kontrollera recepten innan du sparar.'**
+  String get importPreviewReadByAi;
+
+  /// Photo import: quiet text button under a recipe the phone found; opens the AI reading offer
+  ///
+  /// In sv, this message translates to:
+  /// **'Saknas något? Låt AI läsa fotot.'**
+  String get photoAiAskToRead;
+
+  /// Photo import: notice when the AI reading saw recipes it could not read
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ett recept kunde inte läsas.} other{{count} recept kunde inte läsas.}}'**
+  String photoAiDroppedRecipes(int count);
+
+  /// Photo import: added after the daily AI limit message; the recipe can be typed in by hand
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan skriva in receptet själv i stället.'**
+  String get photoAiCapWriteByHand;
+
   /// Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.
   ///
   /// In sv, this message translates to:

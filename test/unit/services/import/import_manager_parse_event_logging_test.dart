@@ -22,6 +22,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
@@ -145,6 +146,17 @@ class _SucceedingStrategy extends _FailingStrategy {
     String input, {
     Map<String, dynamic>? options,
   }) async => ImportResult.success(recipe);
+}
+
+class _SucceedingAiStrategy extends _FailingStrategy {
+  _SucceedingAiStrategy(this.ai) : super('Text Import', null);
+  final PhotoAiRecipes ai;
+
+  @override
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async => ImportResult.success(ai.recipes.first, aiRecipes: ai);
 }
 
 class _PreviewTagging extends Fake implements TaggingService {
@@ -406,6 +418,47 @@ void main() {
       expect(r.recipe!.core.tagResult?.tags, {'pasta'});
       expect(linked.calls, 1);
       expect(decoy.calls, 0);
+    });
+
+    test('every recipe an AI reading found gets preview tags, and the first '
+        'stays the result recipe', () async {
+      final preview = TagResult(
+        tags: const {'pasta'},
+        allergenStatus: const {},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026, 1, 1),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
+      final linked = _PreviewTagging(preview);
+      final second = RecipeFactory.build(title: 'Andra');
+
+      final r = await ImportManager.withStrategies(
+        ops,
+        [
+          _SucceedingAiStrategy(
+            PhotoAiRecipes(
+              [recipe, second],
+              firstContinuesFromPreviousPage: true,
+              droppedRecipeCount: 1,
+            ),
+          ),
+        ],
+        eventLogger: spy,
+        links: ImportLinks(tagging: () => linked),
+      ).importWithStrategy('Text Import', 'text');
+
+      final ai = r.aiRecipes!;
+      expect(ai.recipes.map((x) => x.title), [recipe.title, 'Andra']);
+      expect(ai.recipes.map((x) => x.core.tagResult?.tags), [
+        {'pasta'},
+        {'pasta'},
+      ]);
+      expect(identical(ai.recipes.first, r.recipe), isTrue);
+      expect(ai.firstContinuesFromPreviousPage, isTrue);
+      expect(ai.droppedRecipeCount, 1);
+      expect(linked.calls, 2);
     });
   });
 
