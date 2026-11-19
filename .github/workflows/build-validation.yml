@@ -429,7 +429,14 @@ jobs:
     # aren't preinstalled on the ubuntu runner.
     - name: Install Linux desktop build dependencies
       if: matrix.platform == 'linux'
-      run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev clang cmake pkg-config libsecret-1-dev libonnxruntime-dev
+      # flutter_onnxruntime downloads its runtime from microsoft/onnxruntime
+      # on GitHub, which answers 404 from the runners (2026-11-19), so it
+      # takes the distro package instead; that ships libonnxruntime.pc and
+      # the plugin asks pkg-config for onnxruntime.
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build libgtk-3-dev clang cmake pkg-config libsecret-1-dev libonnxruntime-dev
+        sudo ln -s libonnxruntime.pc /usr/lib/x86_64-linux-gnu/pkgconfig/onnxruntime.pc
 
     - name: Build Linux desktop
       if: matrix.platform == 'linux'
