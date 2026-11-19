@@ -12,8 +12,7 @@ enum EvidenceOutcome {
   captureFailed('capture_failed'),
 
   /// A wire name this build does not know (written by a newer server).
-  unknown('')
-  ;
+  unknown('');
 
   final String wireName;
   const EvidenceOutcome(this.wireName);
@@ -33,8 +32,7 @@ enum FreezeReason {
   legalClaim('legal_claim'),
 
   /// A wire name this build does not know (written by a newer server).
-  unknown('')
-  ;
+  unknown('');
 
   final String wireName;
   const FreezeReason(this.wireName);
@@ -51,8 +49,7 @@ enum FreezeReason {
 enum FreezeAction {
   freeze('freeze'),
   extend('extend'),
-  release('release')
-  ;
+  release('release');
 
   final String wireName;
   const FreezeAction(this.wireName);
@@ -65,8 +62,7 @@ enum FreezeBlock {
   notCaptured('not_captured'),
   alreadyFrozen('already_frozen'),
   notFrozen('not_frozen'),
-  atCap('at_cap')
-  ;
+  atCap('at_cap');
 
   final String wireName;
   const FreezeBlock(this.wireName);

@@ -74,6 +74,7 @@ void main() {
     )
     ..writeln()
     ..writeln(
+      "import 'package:flutter/widgets.dart' show IconData;\n"
       "import 'package:butlery/widgets/common/icons/butlery_glyph.dart';",
     )
     ..writeln()
@@ -81,6 +82,7 @@ void main() {
     ..writeln('///')
     ..writeln('/// Render with `ButleryIcon`, never with a plain `Icon`.')
     ..writeln('abstract final class ButleryIcons {');
+  final glyphs = StringBuffer();
   var code = 0xF1000;
   final members = <String>[];
   for (final e in entries) {
@@ -92,12 +94,18 @@ void main() {
     b
       ..writeln()
       ..writeln('  /// `$name`: $meaning.')
-      ..writeln('  static const ButleryGlyph $member = ButleryGlyph(')
+      ..writeln('  static const IconData $member = IconData(')
       ..writeln('    0x${code.toRadixString(16)},')
-      ..writeln("    name: '$name',")
-      ..writeln('    meaning: ${_sq(meaning)},')
-      ..writeln('    svg: ${_dartString(svg)},')
+      ..writeln('    fontFamily: kButleryGlyphFontFamily,')
       ..writeln('  );');
+    glyphs.writeln(
+      '    ButleryGlyph(\n'
+      '      $member,\n'
+      "      name: '$name',\n"
+      '      meaning: ${_sq(meaning)},\n'
+      '      svg: ${_dartString(svg)},\n'
+      '    ),',
+    );
     code++;
   }
   code = 0xF1100;
@@ -107,13 +115,19 @@ void main() {
     b
       ..writeln()
       ..writeln('  /// `$name` drawn as an outline (the off state).')
-      ..writeln('  static const ButleryGlyph $member = ButleryGlyph(')
+      ..writeln('  static const IconData $member = IconData(')
       ..writeln('    0x${code.toRadixString(16)},')
-      ..writeln("    name: '$name',")
-      ..writeln('    meaning: ${camel(name)}Meaning,')
-      ..writeln('    svg: ${camel(name)}Svg,')
-      ..writeln('    outlined: true,')
+      ..writeln('    fontFamily: kButleryGlyphFontFamily,')
       ..writeln('  );');
+    glyphs.writeln(
+      '    ButleryGlyph(\n'
+      '      $member,\n'
+      "      name: '$name',\n"
+      '      meaning: ${camel(name)}Meaning,\n'
+      '      svg: ${camel(name)}Svg,\n'
+      '      outlined: true,\n'
+      '    ),',
+    );
     b
       ..writeln()
       ..writeln('  /// The meaning of `$name`.')
@@ -133,13 +147,13 @@ void main() {
   _aliases.forEach((alias, member) {
     b
       ..writeln('  /// Semantic alias for [$member].')
-      ..writeln('  static const ButleryGlyph $alias = $member;');
+      ..writeln('  static const IconData $alias = $member;');
   });
   b
     ..writeln()
     ..writeln('  /// Every glyph, one per master, then the outline states.')
-    ..writeln('  static const List<ButleryGlyph> values = [')
-    ..writeln(members.map((m) => '    $m,').join('\n'))
+    ..writeln('  static const List<ButleryGlyph> glyphs = [')
+    ..write(glyphs)
     ..writeln('  ];')
     ..writeln('}');
   File(_out).writeAsStringSync(b.toString());

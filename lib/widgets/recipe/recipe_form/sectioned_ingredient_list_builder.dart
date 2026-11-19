@@ -84,6 +84,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           buildDefaultDragHandles: false,
           itemCount: rows.length,
+          // ignore: deprecated_member_use
           onReorder: onReorder,
           proxyDecorator: _proxyDecorator,
           itemBuilder: (context, index) => _buildRow(context, index, headings),

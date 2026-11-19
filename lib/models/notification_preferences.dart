@@ -30,8 +30,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// Firestore document only changes when its owner next saves this screen.
 enum DigestFrequency {
   never,
-  weekly
-  ;
+  weekly;
 
   /// Total parse: every possible stored string maps to a value.
   ///

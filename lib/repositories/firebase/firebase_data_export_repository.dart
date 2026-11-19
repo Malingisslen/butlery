@@ -84,8 +84,7 @@ enum ExportResourceType {
   // BUT-2082: titles of the recipes the user commented on or rated.
   recipeTitles('users/{owner}/recipes title'),
   // BUT-2354: the user's shopping-list templates (Art. 15 ⊇ Art. 17).
-  shoppingListTemplates('shopping_list_templates')
-  ;
+  shoppingListTemplates('shopping_list_templates');
 
   const ExportResourceType(this.tag);
   final String tag;

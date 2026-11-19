@@ -31,6 +31,8 @@ List<Map<String, dynamic>> _entries() {
   ];
 }
 
+ButleryGlyph _glyph(IconData icon) => ButleryGlyph.lookup(icon)!;
+
 ButleryGlyphPainter _painterOf(WidgetTester tester) {
   final paint = tester.widget<CustomPaint>(
     find.descendant(
@@ -66,9 +68,22 @@ void main() {
   });
 
   group('register', () {
+    test('lookup finds every register member and nothing else', () {
+      for (final g in ButleryIcons.glyphs) {
+        expect(ButleryGlyph.lookup(g.icon), same(g), reason: g.name);
+      }
+      expect(ButleryGlyph.lookup(Icons.add), isNull);
+      expect(
+        ButleryGlyph.lookup(
+          const IconData(0xf1fff, fontFamily: kButleryGlyphFontFamily),
+        ),
+        isNull,
+      );
+    });
+
     test('every member is an icons.json entry and embeds its master', () {
       final byName = {for (final e in _entries()) e['name'] as String: e};
-      for (final g in ButleryIcons.values) {
+      for (final g in ButleryIcons.glyphs) {
         expect(byName.keys, contains(g.name), reason: '$g has no entry');
         expect(
           g.svg,
@@ -76,12 +91,12 @@ void main() {
           reason: '$g does not embed its master',
         );
         expect(g.meaning, byName[g.name]!['meaning'] ?? g.name);
-        expect(g.fontFamily, kButleryGlyphFontFamily);
+        expect(g.icon.fontFamily, kButleryGlyphFontFamily);
       }
     });
 
     test('every icons.json entry has exactly one master member', () {
-      final masters = ButleryIcons.values.where((g) => !g.outlined);
+      final masters = ButleryIcons.glyphs.where((g) => !g.outlined);
       expect(
         masters.map((g) => g.name).toList()..sort(),
         (_entries().map((e) => e['name'] as String).toList()..sort()),
@@ -89,12 +104,12 @@ void main() {
     });
 
     test('code points are unique, so glyphs are distinct IconData', () {
-      final codes = ButleryIcons.values.map((g) => g.codePoint).toSet();
-      expect(codes, hasLength(ButleryIcons.values.length));
+      final codes = ButleryIcons.glyphs.map((g) => g.icon.codePoint).toSet();
+      expect(codes, hasLength(ButleryIcons.glyphs.length));
     });
 
     test('every master parses into at least one shape', () {
-      for (final g in ButleryIcons.values) {
+      for (final g in ButleryIcons.glyphs) {
         final d = GlyphDrawing.parse(g.svg, outlined: g.outlined);
         expect(d.shapes, isNotEmpty, reason: g.name);
         expect(d.viewBox, g.name.startsWith('nav-') ? 160 : 24);
@@ -106,19 +121,19 @@ void main() {
     });
 
     test('filled exceptions fill and the UI family strokes at 1.75', () {
-      final filled = GlyphDrawing.parse(ButleryIcons.star.svg);
+      final filled = GlyphDrawing.parse(_glyph(ButleryIcons.star).svg);
       expect(filled.shapes.single.fill, isTrue);
       expect(filled.shapes.single.stroke, isTrue);
       expect(filled.shapes.single.join, StrokeJoin.round);
-      final outline = GlyphDrawing.of(ButleryIcons.starOutline);
+      final outline = GlyphDrawing.of(_glyph(ButleryIcons.starOutline));
       expect(outline.shapes.single.fill, isFalse);
       expect(outline.shapes.single.stroke, isTrue);
       expect(outline.shapes.single.strokeWidth, kButleryGlyphStroke);
-      final back = GlyphDrawing.of(ButleryIcons.arrowLeft);
+      final back = GlyphDrawing.of(_glyph(ButleryIcons.arrowLeft));
       expect(back.shapes.single.strokeWidth, 1.75);
       expect(back.shapes.single.cap, StrokeCap.round);
       expect(
-        GlyphDrawing.of(ButleryIcons.check).shapes.single.strokeWidth,
+        GlyphDrawing.of(_glyph(ButleryIcons.check)).shapes.single.strokeWidth,
         2.2,
       );
     });
@@ -314,7 +329,8 @@ void main() {
           Wrap(
             children: [
               for (final size in [12.0, 14.0, 24.0, 56.0])
-                for (final g in ButleryIcons.values) ButleryIcon(g, size: size),
+                for (final g in ButleryIcons.glyphs)
+                  ButleryIcon(g.icon, size: size),
             ],
           ),
         ),
@@ -322,7 +338,7 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(
         find.byType(ButleryIcon),
-        findsNWidgets(ButleryIcons.values.length * 4),
+        findsNWidgets(ButleryIcons.glyphs.length * 4),
       );
     });
   });

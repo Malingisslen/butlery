@@ -95,7 +95,7 @@ class _MenuToShoppingBodyState extends State<_MenuToShoppingBody> {
             ),
             if (generated != null)
               Expanded(
-                child: ColoredBox(
+                child: Material(
                   key: const Key('shopping_preview'),
                   color: cs.surfaceContainerHighest,
                   child: generated.isEmpty

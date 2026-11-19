@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
@@ -543,42 +544,45 @@ void main() {
 
   group('PortionScalerUI — compact stepper buttons', () {
     for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
-      testWidgets('${icon.name}: 48x48 hit area around a compactStepperButton '
-          'drawn square', (tester) async {
-        final calls = <int>[];
-        await tester.pumpWidget(
-          _wrap(
-            _Host(
-              currentPortions: 4,
-              originalPortions: 4,
-              convertToSwedish: false,
-              hasAmericanUnits: false,
-              compact: true,
-              onUpdatePortions: calls.add,
+      testWidgets(
+        '${ButleryGlyph.lookup(icon)!.name}: 48x48 hit area around a compactStepperButton '
+        'drawn square',
+        (tester) async {
+          final calls = <int>[];
+          await tester.pumpWidget(
+            _wrap(
+              _Host(
+                currentPortions: 4,
+                originalPortions: 4,
+                convertToSwedish: false,
+                hasAmericanUnits: false,
+                compact: true,
+                onUpdatePortions: calls.add,
+              ),
             ),
-          ),
-        );
+          );
 
-        final inkWell = find.ancestor(
-          of: find.byIcon(icon),
-          matching: find.byType(InkWell),
-        );
-        expect(
-          tester.getSize(inkWell),
-          const Size.square(AppDimensions.minTouchTarget),
-        );
-        expect(
-          tester.getSize(
-            find.descendant(of: inkWell, matching: find.byType(Ink)),
-          ),
-          const Size.square(AppDimensions.compactStepperButton),
-        );
+          final inkWell = find.ancestor(
+            of: find.byIcon(icon),
+            matching: find.byType(InkWell),
+          );
+          expect(
+            tester.getSize(inkWell),
+            const Size.square(AppDimensions.minTouchTarget),
+          );
+          expect(
+            tester.getSize(
+              find.descendant(of: inkWell, matching: find.byType(Ink)),
+            ),
+            const Size.square(AppDimensions.compactStepperButton),
+          );
 
-        // A tap in the hit area outside the drawn square still steps.
-        final hit = tester.getRect(inkWell);
-        await tester.tapAt(hit.topLeft + const Offset(2, 2));
-        expect(calls, hasLength(1));
-      });
+          // A tap in the hit area outside the drawn square still steps.
+          final hit = tester.getRect(inkWell);
+          await tester.tapAt(hit.topLeft + const Offset(2, 2));
+          expect(calls, hasLength(1));
+        },
+      );
     }
 
     testWidgets('the default stepper draws the full 48 dp button', (

@@ -30,8 +30,7 @@ enum OnboardingStep {
   // The dietary page is gone from the wizard; the name stays so progress
   // written before it went still reads, and resumes on the import page.
   dietary('dietary', 2),
-  firstRecipe('first_recipe', 3)
-  ;
+  firstRecipe('first_recipe', 3);
 
   final String wireName;
   final int pageIndex;

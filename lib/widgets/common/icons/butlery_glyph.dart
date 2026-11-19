@@ -11,26 +11,31 @@ library;
 
 import 'package:flutter/widgets.dart';
 import 'package:xml/xml.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// Font family name carried by every [ButleryGlyph]. No font by this name is
-/// bundled: a [ButleryGlyph] is painted by [ButleryIcon], never by a font.
+/// Font family name carried by every icon in `ButleryIcons`.
 const String kButleryGlyphFontFamily = 'ButleryIcons';
 
-/// One glyph of the Butlery icon family.
+/// One glyph of the Butlery icon family: the master's drawing and metadata
+/// behind an [IconData] in `ButleryIcons`.
 ///
-/// It is an [IconData] so it flows through every API that takes an icon
-/// (widget parameters, `find.byIcon`), but it must be rendered through
-/// [ButleryIcon]; a plain [Icon] has no font for it.
+/// `ButleryIcons.x` is a plain
+/// [IconData] (so it flows through every API that takes an icon, and through
+/// `find.byIcon`) that must be rendered through [ButleryIcon]; a plain [Icon]
+/// has no font for it. [ButleryIcon] finds the drawing with [lookup].
 @immutable
-class ButleryGlyph extends IconData {
+class ButleryGlyph {
   /// Creates a glyph. Only the generated `ButleryIcons` register calls this.
   const ButleryGlyph(
-    super.codePoint, {
+    this.icon, {
     required this.name,
     required this.meaning,
     required this.svg,
     this.outlined = false,
-  }) : super(fontFamily: kButleryGlyphFontFamily);
+  });
+
+  /// The icon that stands for this glyph.
+  final IconData icon;
 
   /// The icons.json key, e.g. `arrow-left`.
   final String name;
@@ -45,11 +50,21 @@ class ButleryGlyph extends IconData {
   /// `heart` and `star`).
   final bool outlined;
 
+  static final Map<int, ButleryGlyph> _byCodePoint = {
+    for (final g in ButleryIcons.glyphs) g.icon.codePoint: g,
+  };
+
+  /// The glyph behind [icon], or null for any other [IconData].
+  static ButleryGlyph? lookup(IconData icon) =>
+      icon.fontFamily == kButleryGlyphFontFamily
+      ? _byCodePoint[icon.codePoint]
+      : null;
+
   @override
   String toString() => 'ButleryGlyph($name${outlined ? ', outlined' : ''})';
 }
 
-/// Renders an icon. A [ButleryGlyph] is painted from its SVG master; any
+/// Renders an icon. A glyph of `ButleryIcons` is painted from its SVG master; any
 /// other [IconData] (the Material residue listed in
 /// test/architecture/icon_census_test.dart) falls back to [Icon].
 ///
@@ -72,8 +87,8 @@ class ButleryIcon extends Icon {
 
   @override
   Widget build(BuildContext context) {
-    final glyph = icon;
-    if (glyph is! ButleryGlyph) return super.build(context);
+    final glyph = icon == null ? null : ButleryGlyph.lookup(icon!);
+    if (glyph == null) return super.build(context);
 
     final iconTheme = IconTheme.of(context);
     final scale = applyTextScaling ?? iconTheme.applyTextScaling ?? false;

@@ -1,5 +1,6 @@
 // lib/widgets/image/image_gallery_widget.dart
 
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -101,8 +102,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          cacheExtent:
-              2000, // Performance optimization: cache more items for smooth scrolling
+          scrollCacheExtent: const ScrollCacheExtent.pixels(
+            2000,
+          ), // Performance optimization: cache more items for smooth scrolling
           addRepaintBoundaries: true, // Optimization: reduce repaints
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.crossAxisCount,

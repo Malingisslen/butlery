@@ -23,8 +23,7 @@ import 'package:butlery/models/recipe_unified.dart';
 
 /// What kind of thing a trash row holds. Only recipes in step 1.
 enum TrashItemKind {
-  recipe('recipe')
-  ;
+  recipe('recipe');
 
   const TrashItemKind(this.value);
 

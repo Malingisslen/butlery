@@ -29,8 +29,7 @@ enum MenuPrefSource {
   presentIncomplete,
   household,
   householdIncomplete,
-  singleUser
-  ;
+  singleUser;
 
   /// The pool was filtered by a widened safety floor because someone eating
   /// could not be read — the menu must say so rather than claim precision.

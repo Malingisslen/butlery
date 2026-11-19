@@ -96,6 +96,8 @@ linter:
     unnecessary_breaks: false
     use_setters_to_change_properties: false
     one_member_abstracts: false
+    # Dart 3.12 flags every `_x = x` initializer as convertible to `this._x`.
+    prefer_initializing_formals: false
     use_if_null_to_convert_nulls_to_bools: false
     join_return_with_assignment: false
     prefer_constructors_over_static_methods: false

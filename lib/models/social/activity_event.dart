@@ -18,8 +18,7 @@ enum ActivityEventType {
   // BUT-407/cooking-depth additions — older clients fall back to `cooked`.
   addedIngredient,
   startedCooking,
-  pinged
-  ;
+  pinged;
 
   static ActivityEventType fromString(String value) {
     return ActivityEventType.values.firstWhere(

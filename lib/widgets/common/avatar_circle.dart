@@ -17,8 +17,7 @@ enum AvatarCircleSize {
   row(32),
 
   /// The head of a profile.
-  header(56)
-  ;
+  header(56);
 
   const AvatarCircleSize(this.pixels);
 

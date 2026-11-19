@@ -214,8 +214,7 @@ class ReportTakedowns {
 /// `functions/src/moderation/report-decision.ts`.
 enum _ModeratorAction {
   contentRemoved('content_removed'),
-  profileHidden('profile_hidden')
-  ;
+  profileHidden('profile_hidden');
 
   const _ModeratorAction(this.wireName);
   final String wireName;

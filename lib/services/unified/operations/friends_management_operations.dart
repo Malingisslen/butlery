@@ -40,8 +40,7 @@ enum BlockOutcome {
 
   /// The block row was not written. The user is not protected, and nothing
   /// else was changed either: the write is attempted before any teardown.
-  failed
-  ;
+  failed;
 
   /// Whether the protective write landed. The two blocked states share this;
   /// only [failed] does not. Named apart from

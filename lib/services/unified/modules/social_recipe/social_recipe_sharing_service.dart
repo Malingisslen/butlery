@@ -28,8 +28,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 enum RecipeShareResult {
   failed(accessGranted: false, fullyShared: false),
   partial(accessGranted: true, fullyShared: false),
-  full(accessGranted: true, fullyShared: true)
-  ;
+  full(accessGranted: true, fullyShared: true);
 
   const RecipeShareResult({
     required this.accessGranted,

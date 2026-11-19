@@ -187,7 +187,7 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
       duration: AppMotion.standard.respectingMotion(context),
       transitionBuilder: (child, animation) => SizeTransition(
         sizeFactor: animation,
-        axisAlignment: -1.0,
+        alignment: const AlignmentDirectional(-1.0, -1.0),
         child: child,
       ),
       child: banner ?? const SizedBox.shrink(),

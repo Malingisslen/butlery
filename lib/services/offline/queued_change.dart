@@ -50,8 +50,7 @@ enum QueuedChangeReason {
 
   /// The queue retried for 24 h without success.
   retriesExhausted,
-  unknown
-  ;
+  unknown;
 
   /// The stored codes, as the classifier writes them.
   static const Map<String, QueuedChangeReason> _codes = {

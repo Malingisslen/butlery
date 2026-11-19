@@ -73,8 +73,7 @@ enum ResourcePermission {
 
   /// Legacy administrative permission with highest privilege level for backward compatibility.
   /// Maintained for migration support from traditional administrative permission systems.
-  admin
-  ;
+  admin;
 
   /// Permission capability checking methods for access control validation.
 

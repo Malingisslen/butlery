@@ -179,7 +179,8 @@ void main() {
     // Drag handles only exist with 2+ pages; the strip drives onReorder
     // straight through to the VM so a drop persists the new page order.
     expect(list.buildDefaultDragHandles, isTrue);
-    list.onReorder(2, 0);
+    // ignore: deprecated_member_use
+    list.onReorder!(2, 0);
     expect(vm.reorderOld, 2);
     expect(vm.reorderNew, 0);
   });

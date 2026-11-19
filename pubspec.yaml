@@ -4,8 +4,8 @@ publish_to: 'none'
 version: 0.9.0+24
 
 environment:
-  sdk: ^3.11.0
-  flutter: ">=3.41.0"
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
@@ -42,7 +42,7 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.5.5
-  drift: ^2.33.0
+  drift: ^2.35.0
   flutter_secure_storage: ^11.2.0  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
@@ -98,7 +98,7 @@ dependencies:
   # Exact pin per Security panel condition. `record` captures the 16 kHz
   # mono WAV whisper.cpp expects.
   whisper_ggml_plus: 1.5.2
-  record: ^6.1.1  # 7.x needs Dart 3.12 (BUT-2508)
+  record: ^7.0.0
   # Köksbutlern: OS-native text-to-speech
   # passthrough (Android TextToSpeech / iOS AVSpeechSynthesizer) for cooking-
   # mode readouts. Caret pin deliberately — unlike whisper_ggml_plus, this
@@ -136,7 +136,7 @@ dev_dependencies:
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.5
   build_runner: ^2.8.0
-  drift_dev: ^2.33.0
+  drift_dev: ^2.35.0
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.4.0
@@ -181,6 +181,12 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+
+  # Flutter 3.44 turns Swift Package Manager on by default, and its resolver
+  # cannot place firebase_storage and google_sign_in_ios together (they want
+  # different gtm-session-fetcher). The app keeps using CocoaPods.
+  config:
+    enable-swift-package-manager: false
 
   # Assets
   assets:

@@ -69,6 +69,7 @@ class DynamicListBuilder extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: controllers.length,
+      // ignore: deprecated_member_use
       onReorder: onReorder!,
       proxyDecorator: (child, index, animation) {
         return AnimatedBuilder(

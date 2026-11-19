@@ -7,8 +7,7 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 /// the rater's private personal rating.
 enum HouseholdMemberType {
   user,
-  profile
-  ;
+  profile;
 
   static HouseholdMemberType fromName(String? value) =>
       HouseholdMemberType.values.firstWhere(

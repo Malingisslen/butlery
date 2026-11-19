@@ -33,8 +33,7 @@ enum MetricKey {
   engagementActiveToday,
   engagementActive7d,
   engagementActive28d,
-  engagementDailyTable
-  ;
+  engagementDailyTable;
 
   MetricCategory get category => switch (this) {
     recipeTotal || recipeByMethod => MetricCategory.recipes,

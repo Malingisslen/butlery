@@ -15,8 +15,7 @@ enum CookSnapVisibility {
 
   /// Author-only: filtered from every other viewer in the read path AND
   /// denied by Firestore rules.
-  onlyMe
-  ;
+  onlyMe;
 
   /// Missing/unknown wire values resolve to [sameAsRecipe] so legacy docs
   /// (written before the field existed) keep their inherited behaviour.

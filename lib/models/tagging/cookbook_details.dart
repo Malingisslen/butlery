@@ -11,8 +11,7 @@ enum CookbookCoverKind {
 
   /// The photo of one recipe in the book, resolved from the recipe when drawn
   /// so a deleted recipe falls back to the colour instead of a dead URL.
-  recipe
-  ;
+  recipe;
 
   static CookbookCoverKind fromName(String? name) => CookbookCoverKind.values
       .firstWhere((k) => k.name == name, orElse: () => CookbookCoverKind.color);

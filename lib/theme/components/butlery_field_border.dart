@@ -33,6 +33,23 @@ class ButleryFieldBorder extends OutlineInputBorder {
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
       super.getOuterPath(visualBox(rect), textDirection: textDirection);
 
+  // Flutter 3.44 fills the decorator through paintInterior with the full
+  // rect, not getOuterPath, so the fill needs the same inset.
+  @override
+  void paintInterior(
+    Canvas canvas,
+    Rect rect,
+    Paint paint, {
+    TextDirection? textDirection,
+  }) {
+    super.paintInterior(
+      canvas,
+      visualBox(rect),
+      paint,
+      textDirection: textDirection,
+    );
+  }
+
   @override
   void paint(
     Canvas canvas,

@@ -1,5 +1,6 @@
 /// Application theme orchestrator providing unified design system.
 
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
