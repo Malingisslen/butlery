@@ -63,6 +63,25 @@ void main() {
     );
   });
 
+  test('the fill is painted where a plain border fills a 40 box', () {
+    RRect fill(InputBorder border, Rect rect) {
+      final canvas = TestRecordingCanvas();
+      border.paintInterior(canvas, rect, Paint());
+      return canvas.invocations
+          .where((i) => i.invocation.memberName == #drawRRect)
+          .map((i) => i.invocation.positionalArguments.first as RRect)
+          .single;
+    }
+
+    expect(
+      fill(
+        const ButleryFieldBorder(borderRadius: radius),
+        const Rect.fromLTWH(0, 0, 200, 48),
+      ),
+      fill(const OutlineInputBorder(borderRadius: radius), drawnBox),
+    );
+  });
+
   test('a lerp between two field borders stays a field border', () {
     const a = ButleryFieldBorder(borderSide: BorderSide(color: Colors.red));
     const b = ButleryFieldBorder(borderSide: BorderSide(color: Colors.blue));
