@@ -53,6 +53,19 @@ post_install do |installer|
     # NWPath.isUltraConstrained) compile cleanly.
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+      # permission_handler compiles every iOS permission out unless its macro is
+      # set, and a compiled-out permission reports denied without ever asking,
+      # so the app never appears under Settings for it. One macro per
+      # Permission.* that lib/ requests on iOS; each needs its usage string in
+      # Info.plist.
+      defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+      defs = defs.split(' ') if defs.is_a?(String)
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs + [
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_MICROPHONE=1',
+        'PERMISSION_NOTIFICATIONS=1',
+      ]
     end
   end
 end
