@@ -182,6 +182,12 @@ flutter:
   generate: true
   uses-material-design: true
 
+  # Flutter 3.44 turns Swift Package Manager on by default, and its resolver
+  # cannot place firebase_storage and google_sign_in_ios together (they want
+  # different gtm-session-fetcher). The app keeps using CocoaPods.
+  config:
+    enable-swift-package-manager: false
+
   # Assets
   assets:
     - assets/legal/
