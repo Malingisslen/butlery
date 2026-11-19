@@ -436,7 +436,7 @@ jobs:
       run: |
         echo "🐧 Building Linux desktop..."
         flutter config --enable-linux-desktop
-        curl -sSIL -o /dev/null -w "onnx tgz: %{http_code}\n" https://github.com/microsoft/onnxruntime/releases/download/v1.28.3/onnxruntime-linux-x64-1.28.3.tgz || true
+        for v in 1.28.3 1.28.2 1.28.1 1.28.0 1.27.0 1.26.0 1.25.0 1.24.0 1.22.0; do curl -sSIL -o /dev/null -w "onnx $v tgz: %{http_code}\n" https://github.com/microsoft/onnxruntime/releases/download/v$v/onnxruntime-linux-x64-$v.tgz || true; done
         flutter build linux --release --dart-define-from-file=.env -v
 
     # BUT-491: macOS desktop build (no codesign — verifies it compiles).
