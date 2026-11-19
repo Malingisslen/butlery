@@ -34,15 +34,22 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
   schedule:
-    # 04:00 UTC nightly — off-peak, and clear of e2e (02:00), adoption (03:00)
+    # 04:00 UTC — off-peak, and clear of e2e (02:00), adoption (03:00)
     # and golden-llm (03:17) so the cross-OS leg does not contend for
-    # runners with the other scheduled jobs.
-    - cron: '0 4 * * *'
+    # runners with the other scheduled jobs. Monday-Saturday is the light
+    # nightly leg (Windows full, macOS views + golden); Sunday is the full
+    # leg including macOS unit + widget. The cross-os-plan job tells them
+    # apart by the exact cron string, so edit both places together.
+    - cron: '0 4 * * 1-6'
+    - cron: '0 4 * * 0'
   workflow_dispatch:
 
+# A scheduled run must not share a group with push runs: main merges every few
+# hours, and cancel-in-progress used to kill the 4-hour nightly each time
+# (11-12 and 11-13 were lost that way).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event_name == 'schedule' && format('-{0}', github.event.schedule) || '' }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 env:
   FLUTTER_VERSION: '3.41.9'
@@ -267,57 +274,43 @@ jobs:
             echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
           fi
 
-  # ── Cross-OS regression matrix (nightly only) ───────────────────────────
-  # macOS + Windows × all suites. Catches the rare OS-specific regression
-  # (path separators, line-endings, locale) without paying for it on every
-  # commit. golden is excluded on Windows (BUT-849: line-ending/encoding noise
-  # on a deterministic JSON suite). The `views (windows)` infra flake
-  # (BUT-1192) lives here now, off the per-commit critical path.
-  cross-os:
-    name: ${{ matrix.suite }} (${{ matrix.os }})${{ (matrix.suite == 'unit' || matrix.suite == 'widget') && format(' shard {0}/8', matrix.shard) || '' }}
+  # ── Cross-OS regression matrix (scheduled) ──────────────────────────────
+  # Catches the rare OS-specific regression (path separators, line-endings,
+  # locale) without paying for it on every commit. golden is excluded on
+  # Windows (BUT-849: line-ending/encoding noise on a deterministic JSON suite).
+  # The `views (windows)` infra flake (BUT-1192) lives here, off the per-commit
+  # critical path.
+  #
+  # BUT-2511: macOS unit + widget hit the 90-minute limit every night from
+  # 2026-11-14 (widget 35-40 min -> 72-87 min while Windows stayed at 25-30),
+  # and waited 1-3.5 h for a runner. So macOS unit + widget run only in the
+  # Sunday leg, in 16 shards with a 150-minute limit; the nightly leg keeps
+  # Windows complete plus macOS views and golden.
+  cross-os-plan:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Matrix split fixture
+        run: bash scripts/__tests__/cross_os_matrix_test.sh
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: bash scripts/cross_os_matrix.sh "$EVENT" "$SCHEDULE" >> "$GITHUB_OUTPUT"
+
+  cross-os:
+    needs: cross-os-plan
+    name: ${{ matrix.suite }} (${{ matrix.os }})${{ matrix.total > 1 && format(' shard {0}/{1}', matrix.shard, matrix.total) || '' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
-        suite: [unit, widget, views, golden]
-        # Sized from run 39320319820 (`gh run view 39320319820`): a third of
-        # unit did not finish inside the old limit on macOS or Windows. Only
-        # unit and widget are split; views and golden run as one shard.
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
-        exclude:
-          - os: windows-latest
-            suite: golden
-          - suite: views
-            shard: 1
-          - suite: views
-            shard: 2
-          - suite: views
-            shard: 3
-          - suite: views
-            shard: 4
-          - suite: views
-            shard: 5
-          - suite: views
-            shard: 6
-          - suite: views
-            shard: 7
-          - suite: golden
-            shard: 1
-          - suite: golden
-            shard: 2
-          - suite: golden
-            shard: 3
-          - suite: golden
-            shard: 4
-          - suite: golden
-            shard: 5
-          - suite: golden
-            shard: 6
-          - suite: golden
-            shard: 7
+        include: ${{ fromJSON(needs.cross-os-plan.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: ${{ matrix.os == 'macos-latest' && 150 || 90 }}
 
     steps:
       - uses: actions/checkout@v6
@@ -346,7 +339,7 @@ jobs:
       - name: Run ${{ matrix.suite }} tests
         shell: bash
         env:
-          TOTAL_SHARDS: ${{ (matrix.suite == 'unit' || matrix.suite == 'widget') && 8 || 1 }}
+          TOTAL_SHARDS: ${{ matrix.total }}
         run: |
           echo "Running test/${{ matrix.suite }} shard ${{ matrix.shard }} of ${TOTAL_SHARDS} on ${{ matrix.os }}..."
           max_attempts=2
