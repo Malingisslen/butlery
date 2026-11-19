@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 
 export async function probePersonalShoppingLists(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -39,7 +39,7 @@ export async function probePersonalShoppingLists(
 }
 
 export async function probeSharedShoppingLists(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -100,7 +100,7 @@ export async function probeSharedShoppingLists(
 }
 
 export async function probeSharedListAttribution(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

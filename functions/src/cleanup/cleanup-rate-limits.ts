@@ -15,7 +15,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 // CRIT-7: Constants for safe batch processing
 const BATCH_SIZE = 500; // Firestore maximum per batch commit
@@ -39,7 +39,7 @@ const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (Cloud Functions timeo
 export const cleanupOldRateLimits = onSchedule(
   { schedule: "0 3 * * 0", timeZone: "UTC" },
   async () => {
-    await cleanupOldRateLimitsCore(admin.firestore());
+    await cleanupOldRateLimitsCore(getFirestore());
   }
 );
 
@@ -59,12 +59,12 @@ export interface CleanupRateLimitsResult {
  * path and deleted nothing while `system_rate_limits` grew without bound.
  */
 export async function cleanupOldRateLimitsCore(
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<CleanupRateLimitsResult> {
   const startTime = Date.now();
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 90); // 90 days ago
-  const cutoff = admin.firestore.Timestamp.fromDate(cutoffDate);
+  const cutoff = Timestamp.fromDate(cutoffDate);
 
   logger.info(
     `Starting rate limit cleanup, deleting system_rate_limits buckets ` +

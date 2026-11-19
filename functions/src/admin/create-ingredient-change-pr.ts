@@ -21,7 +21,7 @@
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
@@ -76,14 +76,14 @@ export interface IngredientChangePrResult {
 }
 
 export interface CreateIngredientChangePrDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   rateLimit: (subject: string, operation: string) => Promise<void>;
   connect: () => Promise<RepoClient>;
   now: () => Date;
   runId: () => string;
 }
 
-const ts = (ms: number) => admin.firestore.Timestamp.fromMillis(ms);
+const ts = (ms: number) => Timestamp.fromMillis(ms);
 
 export async function handleCreateIngredientChangePr(
   request: CallableRequest<unknown>,
@@ -167,7 +167,7 @@ export const createIngredientChangePr = onCall(
     secrets: [githubAppPrivateKey],
   },
   async (request) => {
-    const db = admin.firestore();
+    const db = getFirestore();
     return handleCreateIngredientChangePr(request, {
       db,
       rateLimit: (subject, operation) => enforceRateLimit(subject, operation),
@@ -178,7 +178,7 @@ export const createIngredientChangePr = onCall(
   },
 );
 
-function lockRef(db: admin.firestore.Firestore) {
+function lockRef(db: Firestore) {
   return db.collection(Collections.ingredientChangeLocks).doc(LOCK_DOC);
 }
 
@@ -186,11 +186,11 @@ function lockRef(db: admin.firestore.Firestore) {
  * A lock past `expiresAt` belongs to a run that died; it is taken over. It
  * names the run, never the admin, so nothing in it outlives an erasure.
  */
-export async function acquireLock(db: admin.firestore.Firestore, runId: string, now: Date): Promise<void> {
+export async function acquireLock(db: Firestore, runId: string, now: Date): Promise<void> {
   const ref = lockRef(db);
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    const expiresAt = snap.get("expiresAt") as admin.firestore.Timestamp | undefined;
+    const expiresAt = snap.get("expiresAt") as Timestamp | undefined;
     if (snap.exists && expiresAt && expiresAt.toMillis() > now.getTime() && snap.get("owner") !== runId) {
       throw new HttpsError("failed-precondition", "locked");
     }
@@ -198,7 +198,7 @@ export async function acquireLock(db: admin.firestore.Firestore, runId: string, 
   });
 }
 
-export async function releaseLock(db: admin.firestore.Firestore, runId: string): Promise<void> {
+export async function releaseLock(db: Firestore, runId: string): Promise<void> {
   const ref = lockRef(db);
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -208,9 +208,9 @@ export async function releaseLock(db: admin.firestore.Firestore, runId: string):
 
 // Ingredient proposals carry no `kind`; a word-list proposal (step D) is
 // left to occasion-change-pr.ts.
-const isIngredientProposal = (d: admin.firestore.QueryDocumentSnapshot) => d.get("kind") == null;
+const isIngredientProposal = (d: QueryDocumentSnapshot) => d.get("kind") == null;
 
-async function byStatus(db: admin.firestore.Firestore, status: string) {
+async function byStatus(db: Firestore, status: string) {
   // Word-list proposals share the collection, so the read leaves room for
   // them before the cap is judged on ingredient proposals alone.
   const snap = await db.collection(Collections.ingredientChangeRequests)
@@ -221,8 +221,8 @@ async function byStatus(db: admin.firestore.Firestore, status: string) {
   return snap.docs.filter(isIngredientProposal);
 }
 
-function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedProposal {
-  const createdAt = doc.get("createdAt") as admin.firestore.Timestamp | undefined;
+function toQueued(doc: QueryDocumentSnapshot): QueuedProposal {
+  const createdAt = doc.get("createdAt") as Timestamp | undefined;
   return {
     id: doc.id,
     ingredientId: String(doc.get("ingredientId") ?? ""),
@@ -233,7 +233,7 @@ function toQueued(doc: admin.firestore.QueryDocumentSnapshot): QueuedProposal {
 }
 
 export async function runIngredientChangePr(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   github: RepoClient,
   now: Date,
 ): Promise<Omit<IngredientChangePrResult, "occasion" | "occasionError">> {
@@ -250,8 +250,8 @@ export async function runIngredientChangePr(
     expected: "inReview",
     data: {
       status: "pending",
-      prNumber: admin.firestore.FieldValue.delete(),
-      expireAt: admin.firestore.FieldValue.delete(),
+      prNumber: FieldValue.delete(),
+      expireAt: FieldValue.delete(),
     },
   })));
 
@@ -312,7 +312,7 @@ export async function runIngredientChangePr(
 }
 
 function outcomeWrite(plan: ChangePlan, id: string, prNumber: number | null, now: Date): Record<string, unknown> {
-  const del = admin.firestore.FieldValue.delete();
+  const del = FieldValue.delete();
   const o = plan.outcomes.get(id)!;
   if (o.kind === "apply") {
     return {
@@ -320,7 +320,7 @@ function outcomeWrite(plan: ChangePlan, id: string, prNumber: number | null, now
       prNumber,
       csvValue: del,
       reason: del,
-      expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS),
+      expireAt: Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS),
     };
   }
   if (o.kind === "conflict") {
@@ -329,7 +329,7 @@ function outcomeWrite(plan: ChangePlan, id: string, prNumber: number | null, now
       reason: o.reason,
       csvValue: o.csvValue ?? del,
       prNumber: del,
-      expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS),
+      expireAt: Timestamp.fromMillis(now.getTime() + REVIEW_RETENTION_MS),
     };
   }
   return {
@@ -337,7 +337,7 @@ function outcomeWrite(plan: ChangePlan, id: string, prNumber: number | null, now
     reason: o.reason,
     csvValue: del,
     prNumber: del,
-    expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + REJECTED_RETENTION_MS),
+    expireAt: Timestamp.fromMillis(now.getTime() + REJECTED_RETENTION_MS),
   };
 }
 
@@ -375,7 +375,7 @@ type RunRecord =
 
 /** Best-effort: never throws, so it cannot mask the run's own result or error. */
 async function writeRunRecord(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   record: RunRecord,
   now: Date,
@@ -386,7 +386,7 @@ async function writeRunRecord(
   try {
     await db.collection(Collections.ingredientChangeRuns).doc().set({
       adminUidHash: hashUid(uid),
-      ranAt: admin.firestore.FieldValue.serverTimestamp(),
+      ranAt: FieldValue.serverTimestamp(),
       outcome: record.outcome,
       errorCode: record.outcome === "failed" ? record.errorCode : null,
       prNumber: r ? r.prNumber : null,
@@ -401,7 +401,7 @@ async function writeRunRecord(
         }
         : null,
       occasionErrorCode: occasionError,
-      expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + RUN_RETENTION_MS),
+      expireAt: Timestamp.fromMillis(now.getTime() + RUN_RETENTION_MS),
     });
   } catch (err) {
     logger.error("ingredient_change_pr run record failed", {

@@ -16,14 +16,14 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onCall, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
 import { clampLimit } from "../shared/validate-limit";
 import { hashUid } from "../shared/hash-uid";
 import { ALLERGEN_RELEVANT_PROPERTIES } from "../shared/allergen-properties";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Minimum distinct users before an alias is auto-approved. */
 const ALIAS_APPROVAL_THRESHOLD = 3;
@@ -60,7 +60,7 @@ function normalizeForDocId(name: string): string {
  * Returns the ingredient doc ID if found, null otherwise.
  */
 async function findIngredientByName(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   name: string
 ): Promise<{ id: string; docId: string } | null> {
   const normalized = normalizeIngredientName(name);
@@ -127,7 +127,7 @@ async function findIngredientByName(
  * lookup for docs the backfill sync hasn't stamped yet (fail toward review).
  */
 async function findIngredientByNormalizedName(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   name: string
 ): Promise<{ id: string } | null> {
   const normalized = normalizeIngredientName(name);
@@ -166,7 +166,7 @@ export const analyzeCorrections = onDocumentCreated(
  * 3-user quorum + hold-for-review paths without the Functions runtime.
  */
 export async function processCorrectionEvent(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   data: Record<string, unknown>
 ): Promise<void> {
   {
@@ -240,7 +240,7 @@ export async function processCorrectionEvent(
  * Aggregate correction stats by domain and tier.
  */
 async function aggregateDomainStats(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   params: {
     domain: string;
     successfulTier: string;
@@ -260,25 +260,25 @@ async function aggregateDomainStats(
   await docRef.set(
     {
       domain: params.domain,
-      totalCorrections: admin.firestore.FieldValue.increment(1),
-      titleCorrections: admin.firestore.FieldValue.increment(
+      totalCorrections: FieldValue.increment(1),
+      titleCorrections: FieldValue.increment(
         params.titleCorrection ? 1 : 0
       ),
-      ingredientCorrections: admin.firestore.FieldValue.increment(
+      ingredientCorrections: FieldValue.increment(
         params.ingredientCorrectionCount
       ),
-      instructionCorrections: admin.firestore.FieldValue.increment(
+      instructionCorrections: FieldValue.increment(
         params.instructionCorrectionCount
       ),
-      portionCorrections: admin.firestore.FieldValue.increment(
+      portionCorrections: FieldValue.increment(
         params.portionsCorrection ? 1 : 0
       ),
-      timeCorrections: admin.firestore.FieldValue.increment(
+      timeCorrections: FieldValue.increment(
         params.timeCorrection ? 1 : 0
       ),
-      lastCorrectionAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastCorrectionAt: FieldValue.serverTimestamp(),
       [`tierBreakdown.${params.successfulTier}`]:
-        admin.firestore.FieldValue.increment(1),
+        FieldValue.increment(1),
     },
     { merge: true }
   );
@@ -290,12 +290,12 @@ async function aggregateDomainStats(
  * createdAt, or read error counts as immature (BUT-1468, Trust & Safety).
  */
 async function isMatureAccount(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string
 ): Promise<boolean> {
   try {
     const snap = await db.collection("users").doc(userId).get();
-    const createdAt = snap.data()?.createdAt as admin.firestore.Timestamp | undefined;
+    const createdAt = snap.data()?.createdAt as Timestamp | undefined;
     if (!createdAt || typeof createdAt.toMillis !== "function") return false;
     return Date.now() - createdAt.toMillis() >= ACCOUNT_MATURITY_MS;
   } catch (error) {
@@ -328,7 +328,7 @@ type HoldCheck =
  * fails closed for the current event (no auto-write happens on `retry`).
  */
 async function determineHoldReason(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   targetIngredientId: string,
   originalName: string
 ): Promise<HoldCheck> {
@@ -370,7 +370,7 @@ async function determineHoldReason(
  * admin approve/revoke path therefore always acts on the right ingredient.
  */
 async function processAliasCandidate(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   params: {
     originalName: string;
     correctedName: string;
@@ -410,9 +410,9 @@ async function processAliasCandidate(
     if (doc.exists && docData) {
       // Update existing alias candidate
       tx.update(aliasRef, {
-        userIds: admin.firestore.FieldValue.arrayUnion(params.userId),
-        count: admin.firestore.FieldValue.increment(1),
-        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+        userIds: FieldValue.arrayUnion(params.userId),
+        count: FieldValue.increment(1),
+        lastSeen: FieldValue.serverTimestamp(),
       });
 
       // Only pending candidates auto-advance. approved is done; held waits
@@ -434,7 +434,7 @@ async function processAliasCandidate(
             tx.update(aliasRef, {
               status: "held_for_review",
               heldReason: holdCheck.reason,
-              heldAt: admin.firestore.FieldValue.serverTimestamp(),
+              heldAt: FieldValue.serverTimestamp(),
             });
             logger.info(
               `Held alias for review (${holdCheck.reason}): "${alias}" → ` +
@@ -445,10 +445,10 @@ async function processAliasCandidate(
 
           tx.update(aliasRef, {
             status: "approved",
-            approvedAt: admin.firestore.FieldValue.serverTimestamp(),
+            approvedAt: FieldValue.serverTimestamp(),
           });
           tx.update(db.collection("ingredients").doc(ingredient.id), {
-            learnedAliasesSv: admin.firestore.FieldValue.arrayUnion(alias),
+            learnedAliasesSv: FieldValue.arrayUnion(alias),
           });
 
           logger.info(
@@ -465,8 +465,8 @@ async function processAliasCandidate(
         ingredientId: ingredient.id,
         userIds: [params.userId],
         count: 1,
-        firstSeen: admin.firestore.FieldValue.serverTimestamp(),
-        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+        firstSeen: FieldValue.serverTimestamp(),
+        lastSeen: FieldValue.serverTimestamp(),
         status: "pending",
       });
     }

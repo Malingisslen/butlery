@@ -19,7 +19,7 @@
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { requireAdmin } from "../shared/require-admin";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
@@ -82,7 +82,7 @@ export function nextUntil(now: Date, firstFrozenAt: Date): Date {
 }
 
 function toDate(value: unknown): Date | null {
-  return value instanceof admin.firestore.Timestamp ? value.toDate() : null;
+  return value instanceof Timestamp ? value.toDate() : null;
 }
 
 export type FreezeOutcome =
@@ -91,14 +91,14 @@ export type FreezeOutcome =
 
 /** Test seam — accepts an injected Firestore and clock. */
 export async function runFreezeWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   adminUid: string,
   req: FreezeRequest,
   now: Date = new Date(),
 ): Promise<FreezeOutcome> {
   const evidenceRef = db.collection(REPORT_EVIDENCE).doc(req.reportId);
   const reportRef = db.collection(REPORTS).doc(req.reportId);
-  const ts = admin.firestore.Timestamp.fromDate;
+  const ts = Timestamp.fromDate;
 
   return db.runTransaction(async (tx): Promise<FreezeOutcome> => {
     const [evidence, report] = await Promise.all([tx.get(evidenceRef), tx.get(reportRef)]);
@@ -114,9 +114,9 @@ export async function runFreezeWithDb(
     const reporterId = report.get("reporterId");
     const reporterGone = !report.exists || typeof reporterId !== "string" || reporterId.length === 0;
     const stripFacts = reporterGone
-      ? Object.fromEntries(REPORTER_FACTS.map((f) => [f, admin.firestore.FieldValue.delete()]))
+      ? Object.fromEntries(REPORTER_FACTS.map((f) => [f, FieldValue.delete()]))
       : {};
-    const frozen = evidence.get("frozen") as admin.firestore.DocumentData | undefined;
+    const frozen = evidence.get("frozen") as DocumentData | undefined;
     const audit = (operation: "moderation_evidence_frozen" | "moderation_evidence_extended" |
       "moderation_evidence_released", metadata: Record<string, unknown>) =>
       stageModerationAudit(db, tx, { actorUid: adminUid, operation, reportId: req.reportId, metadata });
@@ -149,7 +149,7 @@ export async function runFreezeWithDb(
         "frozen.frozenAt": ts(now),
         "frozen.frozenBy": adminUid,
         "frozen.until": ts(until),
-        "frozen.extensions": admin.firestore.FieldValue.increment(1),
+        "frozen.extensions": FieldValue.increment(1),
         expireAt: ts(until),
         ...stripFacts,
       });
@@ -173,7 +173,7 @@ export async function runFreezeWithDb(
       tx.delete(evidenceRef);
     } else {
       tx.update(evidenceRef, {
-        frozen: admin.firestore.FieldValue.delete(),
+        frozen: FieldValue.delete(),
         expireAt: ts(plainExpiry),
       });
     }
@@ -211,7 +211,7 @@ export const freezeReportEvidence = onCall(
     enforceAppCheck: true,
   },
   (request) => {
-    const db = admin.firestore();
+    const db = getFirestore();
     return handleFreezeReportEvidence(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
       run: (adminUid, req) => runFreezeWithDb(db, adminUid, req),
@@ -231,16 +231,16 @@ export const FROZEN_EVIDENCE_RESOURCE = REPORT_EVIDENCE;
  * Reads every copy naming [uid]: an unfrozen one goes with its report.
  */
 export async function frozenEvidenceRetained(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
-): Promise<{ resourceType: string; legalBasis: string; holdUntil: admin.firestore.Timestamp;
+): Promise<{ resourceType: string; legalBasis: string; holdUntil: Timestamp;
   provisional: boolean } | null> {
   const snap = await db.collection(REPORT_EVIDENCE).where("contentOwnerId", "==", uid).get();
   let latest: Date | null = null;
   const bases = new Set<string>();
   for (const doc of snap.docs) {
     if (!isFrozenEvidence(doc.data())) continue;
-    const frozen = doc.get("frozen") as admin.firestore.DocumentData;
+    const frozen = doc.get("frozen") as DocumentData;
     const first = toDate(frozen.firstFrozenAt) ?? toDate(frozen.frozenAt);
     if (!first) continue;
     const cap = freezeCap(first);
@@ -251,7 +251,7 @@ export async function frozenEvidenceRetained(
   return {
     resourceType: FROZEN_EVIDENCE_RESOURCE,
     legalBasis: [...bases].sort().join("; "),
-    holdUntil: admin.firestore.Timestamp.fromDate(latest),
+    holdUntil: Timestamp.fromDate(latest),
     provisional: false,
   };
 }

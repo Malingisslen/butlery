@@ -17,7 +17,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { DEEP_LINK_PAGE, deleteDeepLinkDocs } from "../shared/deep-links";
 
@@ -34,7 +34,7 @@ export const MAX_DEEP_LINKS_PER_RUN = 20_000;
 export const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000;
 
 export interface DeepLinkSweepOptions {
-  now?: admin.firestore.Timestamp;
+  now?: Timestamp;
   maxRows?: number;
   maxExecutionMs?: number;
   /** Wall clock for the deadline; injectable so a test can run it out. */
@@ -52,14 +52,14 @@ export interface DeepLinkSweepResult {
  * cursor is needed and a stopped run loses nothing.
  */
 export async function pruneExpiredDeepLinks(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   options: DeepLinkSweepOptions = {},
 ): Promise<DeepLinkSweepResult> {
-  const now = options.now ?? admin.firestore.Timestamp.now();
+  const now = options.now ?? Timestamp.now();
   const maxRows = options.maxRows ?? MAX_DEEP_LINKS_PER_RUN;
   const maxExecutionMs = options.maxExecutionMs ?? MAX_EXECUTION_TIME_MS;
   const clock = options.clock ?? Date.now;
-  const cutoff = admin.firestore.Timestamp.fromMillis(
+  const cutoff = Timestamp.fromMillis(
     now.toMillis() - DEEP_LINK_RETENTION_DAYS * 24 * 60 * 60 * 1000,
   );
   const startedAt = clock();
@@ -102,7 +102,7 @@ export const cleanupExpiredDeepLinks = onSchedule(
   { schedule: "30 3 * * *", timeZone: "UTC", timeoutSeconds: 540 },
   async () => {
     try {
-      await pruneExpiredDeepLinks(admin.firestore());
+      await pruneExpiredDeepLinks(getFirestore());
     } catch (e) {
       logger.error("deep_links retention failed", e);
       throw e;

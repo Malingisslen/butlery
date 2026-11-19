@@ -25,7 +25,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, Transaction, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   cutGroupMenuPlanAccess,
@@ -39,7 +39,7 @@ import {
   SystemGroupEvent,
 } from "./group-system-message";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export interface RemoveChatGroupMemberRequest {
   groupId: string;
@@ -171,8 +171,8 @@ export const ADMIN_REMOVAL_AUDIT_OPERATION = "group_member_removed";
  * `stageMemberRemoval` without passing through here.
  */
 function stageAdminRemovalAudit(
-  tx: admin.firestore.Transaction,
-  db: admin.firestore.Firestore,
+  tx: Transaction,
+  db: Firestore,
   entry: {
     actorUid: string;
     targetUid: string;
@@ -186,7 +186,7 @@ function stageAdminRemovalAudit(
     resourceType: Collections.chatGroups,
     resourceId: entry.groupId,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       actor: entry.actorUid,
       targetUid: entry.targetUid,
@@ -197,7 +197,7 @@ function stageAdminRemovalAudit(
 
 /** Dependency-injected core — exposed for tests with a fake Firestore. */
 export async function removeChatGroupMemberWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   groupId: string,
   targetUid: string,
@@ -257,7 +257,7 @@ export async function removeChatGroupMemberWithDeps(
       groupId,
       conversationId,
       uid: targetUid,
-      removedAt: admin.firestore.Timestamp.now(),
+      removedAt: Timestamp.now(),
       // BUT-1856: somebody decided this person is out — themselves, or an
       // admin. The meal-vote category sync must not undo that decision on the
       // next poll just because they are still listed in the social group.
@@ -357,7 +357,7 @@ export {
  * failing their "leave" because cleanup stumbled would be the wrong answer.
  */
 async function deleteGroupMenuPlans(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   groupKey: string,
 ): Promise<void> {
   try {
@@ -428,7 +428,7 @@ async function deleteGroupMenuPlans(
  * stumbled would be the wrong answer to give a person trying to get out.
  */
 async function deleteEmptyGroup(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   groupId: string,
   conversationId: string,
 ): Promise<void> {

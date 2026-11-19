@@ -36,7 +36,7 @@
  * daily doc holds pool keys and counts only, and expires after RETENTION_DAYS.
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { CANONICAL_EVENTS_SUBCOLLECTION } from "../ratings/canonical-rating-aggregation";
 import { CANONICAL_STATS_COLLECTION } from "../ratings/update-pooled-rating-stats";
@@ -182,21 +182,21 @@ export function evaluatePool(
 }
 
 export interface PoolVelocityDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   nowMs: number;
   dateStr: string;
 }
 
 // The parent is spelled as a literal so the reset's analytics writer scan can resolve it.
-function daysCollection(db: admin.firestore.Firestore) {
+function daysCollection(db: Firestore) {
   return db.collection("analytics").doc("pool_velocity").collection(POOL_VELOCITY_DAYS);
 }
 
 async function readActivity(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   nowMs: number,
 ): Promise<{ byPool: Map<string, PoolActivity>; overflow: boolean }> {
-  const since48 = admin.firestore.Timestamp.fromMillis(nowMs - 2 * DAY_MS);
+  const since48 = Timestamp.fromMillis(nowMs - 2 * DAY_MS);
   const since24Ms = nowMs - DAY_MS;
   const snap = await db
     .collectionGroup(CANONICAL_EVENTS_SUBCOLLECTION)
@@ -210,7 +210,7 @@ async function readActivity(
     const data = doc.data();
     const poolKey = data.poolKey;
     const value = data.ratingValue;
-    const createdMs = (data.createdAt as admin.firestore.Timestamp | undefined)?.toMillis?.();
+    const createdMs = (data.createdAt as Timestamp | undefined)?.toMillis?.();
     if (typeof poolKey !== "string" || typeof value !== "number" || createdMs == null) continue;
     const a = byPool.get(poolKey) ?? { votes24h: 0, sum24h: 0, votes48h: 0 };
     a.votes48h++;
@@ -229,14 +229,14 @@ async function readActivity(
  * with no doc (the job did not run) is skipped, never guessed.
  */
 async function readBaselines(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   dateStr: string,
   poolKeys: string[],
 ): Promise<Map<string, number[]>> {
   const out = new Map<string, number[]>();
   if (poolKeys.length === 0) return out;
   const snap = await daysCollection(db)
-    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
+    .orderBy(FieldPath.documentId(), "desc")
     .limit(BASELINE_DAYS + 1)
     .get();
   const days = snap.docs
@@ -253,7 +253,7 @@ async function readBaselines(
 }
 
 async function readStats(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   poolKeys: string[],
 ): Promise<Map<string, PoolStatsSnapshot>> {
   const out = new Map<string, PoolStatsSnapshot>();
@@ -289,7 +289,7 @@ export async function runDetectPoolVelocity(deps: PoolVelocityDeps): Promise<Poo
   await daysCollection(db).doc(dateStr).set({
     date: dateStr,
     counts,
-    expireAt: admin.firestore.Timestamp.fromMillis(nowMs + RETENTION_DAYS * DAY_MS),
+    expireAt: Timestamp.fromMillis(nowMs + RETENTION_DAYS * DAY_MS),
   });
 
   const stats = await readStats(db, poolKeys);

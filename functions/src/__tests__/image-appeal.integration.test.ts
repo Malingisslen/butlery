@@ -23,7 +23,9 @@ process.env.FIREBASE_STORAGE_EMULATOR_HOST = STORAGE_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: PROJECT_ID, storageBucket: BUCKET });
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const RUN = Date.now().toString(36);
 const OWNER = `owner-${RUN}`;
@@ -70,7 +72,7 @@ async function run(): Promise<void> {
     ],
     "firebase emulators:start --only firestore,storage --project demo-test",
   );
-  if (!admin.apps.length) admin.initializeApp({ projectId: PROJECT_ID, storageBucket: BUCKET });
+  if (!getApps().length) initializeApp({ projectId: PROJECT_ID, storageBucket: BUCKET });
   /* eslint-disable @typescript-eslint/no-require-imports */
   const { handleFinalizedObject } = require("../storage/moderate-upload");
   const { casePointerPath, newImageReportId } = require("../storage/image-decision");
@@ -81,8 +83,8 @@ async function run(): Promise<void> {
   const { onReportCreated } = require("../feedback/on-report-created");
   /* eslint-enable @typescript-eslint/no-require-imports */
 
-  const db = admin.firestore();
-  const bucket = admin.storage().bucket(BUCKET);
+  const db = getFirestore();
+  const bucket = getStorage().bucket(BUCKET);
   const annotateCalls: string[] = [];
   let laterEvent: Record<string, unknown> = {};
   let explicit = true;

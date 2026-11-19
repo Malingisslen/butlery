@@ -13,7 +13,7 @@
  * Run with: npx ts-node src/__tests__/violation-alert.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import {
   __resetViolationAlertCacheForTest,
   ABUSE_ALERT_EVENT_TYPE,
@@ -26,7 +26,7 @@ import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 type Doc = Record<string, unknown>;
 
 interface FakeDb {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   docs: Map<string, Doc>;
   created: { path: string; data: Doc }[];
   reads: () => number;
@@ -75,7 +75,7 @@ function fakeDb(opts: { failTransactions?: boolean } = {}): FakeDb {
       };
       return fn(tx);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return {
     db,
     docs,
@@ -194,7 +194,7 @@ const cases: UnitCase[] = [
       const fake = fakeDb();
       await deny(fake, 1);
       const updatedAt = fake.docs.get(COUNTER)?.updatedAt;
-      assertEqual(updatedAt instanceof admin.firestore.Timestamp, true, "Timestamp");
+      assertEqual(updatedAt instanceof Timestamp, true, "Timestamp");
     },
   },
   {
@@ -215,9 +215,9 @@ const cases: UnitCase[] = [
       const fake = fakeDb();
       fake.docs.set("system_rate_limits/user-a_structureRecipe", {
         tokens: 0,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "structureRecipe",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
       });
       __setFirestoreForTest(fake.db);
       try {

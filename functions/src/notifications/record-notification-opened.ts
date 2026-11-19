@@ -47,7 +47,7 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const TTL_DAYS = 30;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -69,7 +69,7 @@ export interface RecordNotificationOpenedResponse {
  * without spinning up a callable harness.
  */
 export interface RecordOpenedDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
@@ -78,7 +78,7 @@ export async function runRecordNotificationOpened(
   req: RecordNotificationOpenedRequest,
   deps: RecordOpenedDeps = {}
 ): Promise<RecordNotificationOpenedResponse> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? new Date();
 
   // Validate. Payloads come from clients on bad networks — be strict.
@@ -123,8 +123,8 @@ export async function runRecordNotificationOpened(
     notificationId: req.notificationId,
     notificationType: req.notificationType,
     route: req.route ?? null,
-    openedAt: admin.firestore.Timestamp.fromDate(now),
-    expireAt: admin.firestore.Timestamp.fromDate(expireAt),
+    openedAt: Timestamp.fromDate(now),
+    expireAt: Timestamp.fromDate(expireAt),
   });
 
   return { success: true, recorded: true };

@@ -10,9 +10,9 @@
  * Run: npx ts-node src/__tests__/cleanup-row-images.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-cleanup-row-images" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-cleanup-row-images" });
 }
 
 const {

@@ -10,11 +10,12 @@ const PROJECT_ID = "butlery-signup-allowlist-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import {
   INVITE_COLLECTION,
@@ -36,7 +37,7 @@ function check(name: string, ok: boolean, detail?: string): void {
 }
 
 const deps = firestoreAllowlistDeps(db);
-const ts = admin.firestore.Timestamp;
+const ts = Timestamp;
 
 async function invite(email: string, expireInMs: number): Promise<void> {
   await db.collection(INVITE_COLLECTION).doc(email).set({

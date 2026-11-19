@@ -15,7 +15,7 @@
  * This must never throw and never fail an import: a capture error is swallowed.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { scrubPii } from "./pii-scrubber";
 
@@ -31,7 +31,7 @@ const COLLECTION = "llm_response_samples";
 const ENABLE_CACHE_MS = 5 * 60 * 1000;
 let cachedEnable: { value: boolean; at: number } | undefined;
 
-async function captureEnabled(db: admin.firestore.Firestore): Promise<boolean> {
+async function captureEnabled(db: Firestore): Promise<boolean> {
   const now = Date.now();
   if (cachedEnable && now - cachedEnable.at < ENABLE_CACHE_MS) {
     return cachedEnable.value;
@@ -94,19 +94,19 @@ const orNull = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
 export async function captureLlmSample(
   sample: LlmSampleInput,
   // Test seam — production uses the default Admin SDK Firestore handle.
-  // Resolved lazily INSIDE the try below: a default-param `admin.firestore()`
+  // Resolved lazily INSIDE the try below: a default-param `getFirestore()`
   // is evaluated at call time, before the try, so a missing default app (unit
   // tests) or an unreachable Firestore would escape the best-effort guard and
   // take down the import. Keeping the handle lazy honours "never a failure
   // surface for an import" (see the catch).
-  dbOverride?: admin.firestore.Firestore
+  dbOverride?: Firestore
 ): Promise<void> {
   try {
-    const db = dbOverride ?? admin.firestore();
+    const db = dbOverride ?? getFirestore();
     if (!(await captureEnabled(db))) return;
 
     const scrubbedOutput = scrubPii(sample.rawLlmResponse);
-    const expireAt = admin.firestore.Timestamp.fromMillis(
+    const expireAt = Timestamp.fromMillis(
       Date.now() + RETENTION_DAYS * 24 * 60 * 60 * 1000
     );
 
@@ -142,7 +142,7 @@ export async function captureLlmSample(
               photoAiFallback: orNull(sample.photoAiFallback),
             }
           : {}),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         expireAt,
       });
   } catch (err) {

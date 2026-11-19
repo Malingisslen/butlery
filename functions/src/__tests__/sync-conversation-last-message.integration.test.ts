@@ -63,7 +63,8 @@ process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: PROJECT_ID });
 
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const RUN = Date.now().toString(36);
 const CONV = `conv-${RUN}`;
@@ -95,11 +96,11 @@ async function run(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID });
   }
-  const db = admin.firestore();
-  // Import AFTER initializeApp so the module's admin.firestore() binds to the
+  const db = getFirestore();
+  // Import AFTER initializeApp so the module's getFirestore() binds to the
   // emulator-configured default app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const {
@@ -116,8 +117,8 @@ async function run(): Promise<void> {
    */
   async function fireWritten(
     messageId: string,
-    before: admin.firestore.DocumentSnapshot,
-    after: admin.firestore.DocumentSnapshot,
+    before: DocumentSnapshot,
+    after: DocumentSnapshot,
   ): Promise<void> {
     await syncConversationLastMessage.run({
       params: { messageId },
@@ -149,7 +150,7 @@ async function run(): Promise<void> {
     return (snap.data()?.lastMessage as Record<string, unknown> | null) ?? null;
   }
 
-  const ts = (ms: number) => admin.firestore.Timestamp.fromMillis(ms);
+  const ts = (ms: number) => Timestamp.fromMillis(ms);
   const T1 = 1_700_000_000_000;
   const T2 = T1 + 60_000;
 
@@ -403,7 +404,7 @@ async function run(): Promise<void> {
 
   // Held between J1 and J2: the snapshot as it looked BEFORE the guard marked
   // it. This is precisely what an in-flight create-side invocation is holding.
-  let staleCreateSnapshot: admin.firestore.DocumentSnapshot | null = null;
+  let staleCreateSnapshot: DocumentSnapshot | null = null;
 
   // J1: the guard's own mark reaches this trigger as an UPDATE whose `after`
   // already says `duplicateBlocked`. A row the trigger sees carrying that mark

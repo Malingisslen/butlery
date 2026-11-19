@@ -34,7 +34,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const TTL_DAYS = 30;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -46,7 +46,7 @@ export interface NotificationSendEventOpts {
   notificationType: string;
   channel: NotificationChannel;
   /** Test seam. */
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   /** Test seam. */
   now?: Date;
 }
@@ -58,16 +58,16 @@ export interface NotificationSendEventOpts {
 export async function recordNotificationSendEvent(
   opts: NotificationSendEventOpts
 ): Promise<void> {
-  const db = opts.db ?? admin.firestore();
+  const db = opts.db ?? getFirestore();
   const now = opts.now ?? new Date();
   const expireAt = new Date(now.getTime() + TTL_DAYS * MS_PER_DAY);
   try {
     await db.collection("notification_send_events").add({
       userId: opts.userId,
       notificationType: opts.notificationType,
-      sentAt: admin.firestore.Timestamp.fromDate(now),
+      sentAt: Timestamp.fromDate(now),
       channel: opts.channel,
-      expireAt: admin.firestore.Timestamp.fromDate(expireAt),
+      expireAt: Timestamp.fromDate(expireAt),
     });
   } catch (err) {
     logger.warn("recordNotificationSendEvent failed (non-fatal)", {

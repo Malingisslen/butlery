@@ -16,7 +16,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Query, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
@@ -24,13 +24,13 @@ import { buildNotificationPayload } from "../shared/notification-payload";
 import { evaluateSendGate } from "../shared/notification-gate";
 import { recordNotificationSendEvent } from "../shared/notification-send-events";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 const USER_BATCH_SIZE = 100;
 
 /** Injection seam for tests — mirrors `RunDeps` in `daily-snapshots.ts`. */
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
@@ -50,10 +50,10 @@ export function wantsActivityDigest(digestFrequency: unknown): boolean {
  * composite throws FAILED_PRECONDITION and stops the whole run.
  */
 export function digestActivityQueries(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
-  since: admin.firestore.Timestamp,
-): Record<"recipes" | "comments" | "ratings" | "shares", admin.firestore.Query> {
+  since: Timestamp,
+): Record<"recipes" | "comments" | "ratings" | "shares", Query> {
   return {
     recipes: db.collection("users").doc(userId).collection("recipes")
       .where("core.createdAt", ">=", since),
@@ -77,9 +77,9 @@ export async function runWeeklyActivityDigest(
     const db = deps.db ?? getDb();
     const now =
       deps.now != null
-        ? admin.firestore.Timestamp.fromMillis(deps.now.getTime())
-        : admin.firestore.Timestamp.now();
-    const sevenDaysAgo = admin.firestore.Timestamp.fromMillis(
+        ? Timestamp.fromMillis(deps.now.getTime())
+        : Timestamp.now();
+    const sevenDaysAgo = Timestamp.fromMillis(
       now.toMillis() - 7 * 24 * 60 * 60 * 1000
     );
 

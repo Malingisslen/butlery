@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore, QuerySnapshot } from "firebase-admin/firestore";
 import { BATCH_LIMIT } from "./batch-update";
 
 /**
@@ -6,8 +6,8 @@ import { BATCH_LIMIT } from "./batch-update";
  * Returns the number of documents deleted.
  */
 export async function batchDeleteDocs(
-  db: admin.firestore.Firestore,
-  snapshot: admin.firestore.QuerySnapshot
+  db: Firestore,
+  snapshot: QuerySnapshot
 ): Promise<number> {
   let deleted = 0;
   let batch = db.batch();

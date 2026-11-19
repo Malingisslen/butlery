@@ -11,7 +11,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS, reportCountsAgainstOwner } from "./report-status";
 import { DECISION_RETENTION_DAYS, MODERATION_DECISIONS } from "./report-decision";
@@ -88,13 +88,13 @@ export const submitAppeal = onCall(
   (request) =>
     handleSubmitAppeal(request, {
       rateLimit: (uid, operation) => enforceRateLimit(uid, operation),
-      run: (uid, input) => runSubmitAppealWithDb(admin.firestore(), uid, input),
+      run: (uid, input) => runSubmitAppealWithDb(getFirestore(), uid, input),
     }),
 );
 
 /** Test seam — accepts an injected Firestore and clock. */
 export async function runSubmitAppealWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   input: SubmitAppealInput,
   now: Date = new Date(),
@@ -121,7 +121,7 @@ export async function runSubmitAppealWithDb(
     const kind = decision.get("decision");
     if (
       !decision.exists ||
-      !(decidedAt instanceof admin.firestore.Timestamp) ||
+      !(decidedAt instanceof Timestamp) ||
       !isDecision(kind) ||
       !appealAdmits(role, isClosedReportStatus(data?.status), kind)
     ) {
@@ -137,7 +137,7 @@ export async function runSubmitAppealWithDb(
       role,
       [APPELLANT_ID]: uid,
       text,
-      createdAt: admin.firestore.Timestamp.fromDate(now),
+      createdAt: Timestamp.fromDate(now),
       status: "open",
       answeredAt: null,
       answeredBy: null,
@@ -152,10 +152,10 @@ export async function runSubmitAppealWithDb(
  */
 function appealExpireAt(
   decisionExpireAt: unknown,
-  decidedAt: admin.firestore.Timestamp,
-): admin.firestore.Timestamp {
-  if (decisionExpireAt instanceof admin.firestore.Timestamp) return decisionExpireAt;
-  return admin.firestore.Timestamp.fromMillis(
+  decidedAt: Timestamp,
+): Timestamp {
+  if (decisionExpireAt instanceof Timestamp) return decisionExpireAt;
+  return Timestamp.fromMillis(
     decidedAt.toMillis() + DECISION_RETENTION_DAYS * 24 * 60 * 60 * 1000,
   );
 }

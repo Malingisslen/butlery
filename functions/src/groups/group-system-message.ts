@@ -24,7 +24,7 @@
  * never writes that row.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 
 export enum SystemGroupEvent {
@@ -66,10 +66,10 @@ function contentFor(params: GroupSystemMessageParams): string {
  * the `syncConversationLastMessage` trigger read these rows unchanged.
  */
 export async function writeGroupSystemMessage(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   params: GroupSystemMessageParams,
 ): Promise<void> {
-  const now = admin.firestore.FieldValue.serverTimestamp();
+  const now = FieldValue.serverTimestamp();
   await db.collection(Collections.messages).add({
     conversationId: params.conversationId,
     senderId: "system",

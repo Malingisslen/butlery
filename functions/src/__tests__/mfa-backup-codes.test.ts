@@ -17,7 +17,8 @@
  * Run: npx ts-node src/__tests__/mfa-backup-codes.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { HttpsError } from "firebase-functions/v2/https";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
@@ -59,7 +60,7 @@ import {
   verifyIdpFirstFactorWithIdentityToolkit,
 } from "../account/mfa-backup-codes";
 
-if (admin.apps.length === 0) admin.initializeApp({ projectId: "demo-mfa" });
+if (getApps().length === 0) initializeApp({ projectId: "demo-mfa" });
 
 const EMAIL = "anna@example.com";
 const PASSWORD = "correct horse";
@@ -565,9 +566,9 @@ function recoveryCases(v: Variant): UnitCase[] {
         );
         for (const p of paths) {
           const expiresAt = h.fake.read(p)?.expiresAt;
-          assertEqual(expiresAt instanceof admin.firestore.Timestamp, true, `${p} expiresAt`);
+          assertEqual(expiresAt instanceof Timestamp, true, `${p} expiresAt`);
           assertEqual(
-            (expiresAt as admin.firestore.Timestamp).toMillis() > T0,
+            (expiresAt as Timestamp).toMillis() > T0,
             true,
             `${p} expires in the future`,
           );

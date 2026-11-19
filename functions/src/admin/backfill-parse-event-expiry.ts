@@ -19,7 +19,7 @@
  *   npm run backfill-parse-event-expiry -- --project <id>           # stamp missing expireAt
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { computeExpireAt } from "../events/log-parse-event";
 import { initializeAdminApp } from "./admin-init";
 
@@ -30,12 +30,12 @@ const MAX_BATCH_OPS = 400;
 async function main(): Promise<void> {
   const dryRun = process.argv.includes("--dry-run");
   initializeAdminApp();
-  const db = admin.firestore();
+  const db = getFirestore();
 
   let scanned = 0;
   let stamped = 0;
   let alreadyExpiredWindow = 0;
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | null = null;
+  let lastDoc: QueryDocumentSnapshot | null = null;
 
   // `expireAt` missing can't be queried directly (Firestore doesn't index
   // absent fields), so paginate the whole collection by document ID. Pre-beta
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   for (;;) {
     let query = db
       .collection("parse_events")
-      .orderBy(admin.firestore.FieldPath.documentId())
+      .orderBy(FieldPath.documentId())
       .limit(PAGE_SIZE);
     if (lastDoc) query = query.startAfter(lastDoc);
 
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
       // Anchor the window at the event's own server timestamp; fall back to
       // `now` for the odd doc without one (still bounds retention).
       const baseMs =
-        data.timestamp instanceof admin.firestore.Timestamp
+        data.timestamp instanceof Timestamp
           ? data.timestamp.toMillis()
           : Date.now();
       const expireAt = computeExpireAt(baseMs);

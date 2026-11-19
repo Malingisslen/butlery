@@ -26,7 +26,7 @@
  * helpers below; the verdict lives in `computeBlockedMembers`.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { isValidDocId } from "../shared/valid-doc-id";
 
 export interface MinorAdmissionInput {
@@ -98,7 +98,7 @@ export const MAX_CHAT_GROUP_MEMBERS = 100;
 
 /** Reads `isMinor` for each candidate uid via a single batched getAll. */
 export async function readIsMinor(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uids: string[],
 ): Promise<Record<string, boolean>> {
   const out: Record<string, boolean> = {};
@@ -120,7 +120,7 @@ export async function readIsMinor(
  * CHILD has added the adult, which is not the protection.
  */
 export async function readInviterFriendships(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   minorUids: string[],
   inviterUid: string | null,
 ): Promise<Record<string, boolean>> {
@@ -142,7 +142,7 @@ export async function readInviterFriendships(
  * `computeBlockedMembers` reads as "no identifiable inviter" and fails safe on.
  */
 export async function readAdderFriendships(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   minorUids: string[],
   adderOf: (uid: string) => string | null,
 ): Promise<Record<string, boolean>> {
@@ -177,7 +177,7 @@ export async function readAdderFriendships(
  * a junk entry is the only move that keeps it from stranding.)
  */
 export async function findInadmissibleMembers(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   inviterUid: string | null,
   candidates: string[],
 ): Promise<string[]> {

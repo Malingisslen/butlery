@@ -7,7 +7,7 @@
  * them can still be there.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 /** The subcollection under each link (`reset-collection-lists.ts` names it too). */
 const CLICKS = "clicks";
@@ -20,8 +20,8 @@ export const DEEP_LINK_PAGE = 500;
  * failed commit throws, so a caller never reports a link deleted that is not.
  */
 export async function deleteDeepLinkDocs(
-  db: admin.firestore.Firestore,
-  links: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  links: QueryDocumentSnapshot[],
 ): Promise<void> {
   if (links.length === 0) return;
   if (links.length > DEEP_LINK_PAGE) {

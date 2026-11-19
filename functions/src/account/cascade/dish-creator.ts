@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../../shared/hash-uid";
 
@@ -70,8 +70,8 @@ function withoutUid(node: unknown, uid: string): unknown {
  * whole `menuSnapshot` is rewritten, so it must be rewritten from a fresh read.
  */
 export async function scrubDishCreator(
-  db: admin.firestore.Firestore,
-  docs: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  docs: QueryDocumentSnapshot[],
   uid: string,
   label: string,
 ): Promise<void> {

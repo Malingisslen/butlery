@@ -2,7 +2,7 @@
  * Pure logic for the ingredient sync (BUT-1467).
  *
  * Extracted from sync-ingredients.ts so the safety contracts are unit-testable:
- * the script itself calls admin.initializeApp() + main() at import time and
+ * the script itself calls initializeApp() + main() at import time and
  * cannot be imported by tests.
  *
  * Safety contracts encoded here (see sync-ingredients-diff.test.ts):
@@ -18,7 +18,7 @@
  *    reach production allergen verdicts unreviewed.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { ALLERGEN_RELEVANT_PROPERTIES } from "../shared/allergen-properties";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import {
@@ -86,7 +86,7 @@ export interface IngredientDoc {
   searchTerms: string[];
   normalizedNames: string[];
   status: string;
-  updatedAt: admin.firestore.FieldValue;
+  updatedAt: FieldValue;
   seasonAvailability?: string[];
   priceCategory?: string;
   carbonFootprintCategory?: string;
@@ -135,7 +135,7 @@ export interface SyncReport {
  */
 export function deriveLearnedAliasesAtRisk(
   report: SyncReport,
-  currentData: Map<string, admin.firestore.DocumentData>
+  currentData: Map<string, DocumentData>
 ): Array<{ id: string; aliases: string[] }> {
   const atRisk: Array<{ id: string; aliases: string[] }> = [];
   for (const r of report.removed) {
@@ -220,7 +220,7 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
       [swedish, ...aliasesSv].map((n) => stripDiacritics(n.toLowerCase().trim()))
     ),
     status: row.status?.trim() || "validated",
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
   };
 
   // Only add new fields if they have values (sparse storage)
@@ -239,7 +239,7 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
 export { listEquals } from "./ingredient-compare";
 
 export function hasChanges(
-  current: admin.firestore.DocumentData,
+  current: DocumentData,
   newData: IngredientDoc
 ): boolean {
   const a = comparableIngredient(current);
@@ -289,7 +289,7 @@ export function parseCsvLine(line: string): string[] {
  *   learned aliases are stranded outside every report.
  */
 export function needsLifecycleHealing(
-  current: admin.firestore.DocumentData,
+  current: DocumentData,
   incoming: IngredientDoc
 ): boolean {
   if (incoming.status !== "deleted") {
@@ -310,7 +310,7 @@ export const SOFT_DELETE_TTL_DAYS = 30;
  *   deletedAt/expireAt exactly like removal-by-omission does
  */
 export function buildUpdatePayload(
-  current: admin.firestore.DocumentData,
+  current: DocumentData,
   incoming: IngredientDoc,
   now: Date = new Date()
 ): Record<string, unknown> {
@@ -318,12 +318,12 @@ export function buildUpdatePayload(
 
   if (incoming.status !== "deleted") {
     if (current.deletedAt != null || current.expireAt != null) {
-      payload.deletedAt = admin.firestore.FieldValue.delete();
-      payload.expireAt = admin.firestore.FieldValue.delete();
+      payload.deletedAt = FieldValue.delete();
+      payload.expireAt = FieldValue.delete();
     }
   } else if (current.expireAt == null) {
-    payload.deletedAt = admin.firestore.FieldValue.serverTimestamp();
-    payload.expireAt = admin.firestore.Timestamp.fromDate(
+    payload.deletedAt = FieldValue.serverTimestamp();
+    payload.expireAt = Timestamp.fromDate(
       new Date(now.getTime() + SOFT_DELETE_TTL_DAYS * 24 * 60 * 60 * 1000)
     );
   }
@@ -337,7 +337,7 @@ export function buildUpdatePayload(
   ];
   for (const field of clearable) {
     if (!(field in payload) && current[field] !== undefined) {
-      payload[field] = admin.firestore.FieldValue.delete();
+      payload[field] = FieldValue.delete();
     }
   }
 
@@ -346,7 +346,7 @@ export function buildUpdatePayload(
 
 export function calculateDiff(
   csvData: IngredientRow[],
-  currentData: Map<string, admin.firestore.DocumentData>
+  currentData: Map<string, DocumentData>
 ): Diff {
   const toAdd: string[] = [];
   const toUpdate: string[] = [];
@@ -386,7 +386,7 @@ export function calculateDiff(
 
 /** True when this update revives a soft-deleted doc. */
 export function isResurrection(
-  current: admin.firestore.DocumentData,
+  current: DocumentData,
   incoming: IngredientDoc
 ): boolean {
   return current.status === "deleted" && incoming.status !== "deleted";
@@ -402,7 +402,7 @@ function dedupe(values: string[]): string[] {
 
 export function buildSyncReport(
   diff: Diff,
-  currentData: Map<string, admin.firestore.DocumentData>,
+  currentData: Map<string, DocumentData>,
   options: { dryRun: boolean; now?: Date }
 ): SyncReport {
   const updated: SyncReportEntry[] = [];

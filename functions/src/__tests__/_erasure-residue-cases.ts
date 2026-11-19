@@ -8,13 +8,13 @@
  * section's cap, where it has one.
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import { FakeFirestore } from "./_fake-firestore";
 
 export const UID = "requester-uid";
 export const OTHER = "other-uid";
 export const THIRD = "third-uid";
-export const T0 = admin.firestore.Timestamp.fromMillis(1_700_000_000_000);
+export const T0 = Timestamp.fromMillis(1_700_000_000_000);
 export const T0_ISO = new Date(1_700_000_000_000).toISOString();
 export const STRAY = { strayKey: "stray-value" };
 

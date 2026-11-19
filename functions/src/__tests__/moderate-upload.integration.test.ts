@@ -52,7 +52,9 @@ process.env.FIREBASE_CONFIG = JSON.stringify({
   storageBucket: BUCKET,
 });
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const RUN = Date.now().toString(36);
 const UPLOADER = `uploader-${RUN}`;
@@ -94,10 +96,10 @@ function assert(cond: boolean, msg: string): void {
 // ---------------------------------------------------------------------------
 
 function db() {
-  return admin.firestore();
+  return getFirestore();
 }
 function bucket() {
-  return admin.storage().bucket(BUCKET);
+  return getStorage().bucket(BUCKET);
 }
 
 async function auditRowsFor(resourceId: string) {
@@ -232,10 +234,10 @@ async function run(): Promise<void> {
     "firebase emulators:start --only firestore,storage --project demo-test",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID, storageBucket: BUCKET });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID, storageBucket: BUCKET });
   }
-  // Import AFTER initializeApp so the module's admin.* calls bind to the
+  // Import AFTER initializeApp so the module's calls bind to the
   // emulator-configured default app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { moderateUpload } = require("../storage/moderate-upload");

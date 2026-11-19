@@ -16,7 +16,7 @@
  * `isAccountMatured()` in firestore.rules changes, change this too.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
 /**
@@ -83,7 +83,7 @@ export function isGuestCaller(auth: CallerAuth | undefined): boolean {
  * `'createdAt' in ...` conjunct.
  */
 export async function assertAccountMatured(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   auth: CallerAuth | undefined,
 ): Promise<void> {
   if (!auth) {
@@ -94,7 +94,7 @@ export async function assertAccountMatured(
   const snap = await db.doc(`users/${auth.uid}`).get();
   const createdAt = snap.exists ? snap.get("createdAt") : null;
   const createdMs =
-    createdAt instanceof admin.firestore.Timestamp
+    createdAt instanceof Timestamp
       ? createdAt.toMillis()
       : null;
   if (createdMs === null || Date.now() - createdMs < ACCOUNT_MATURITY_MS) {

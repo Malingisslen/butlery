@@ -9,7 +9,7 @@
  * `firestore.rules` has no block for it.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, DocumentSnapshot, Firestore } from "firebase-admin/firestore";
 
 export const MODERATION_APPEALS = "moderation_appeals";
 
@@ -40,10 +40,10 @@ export function appealId(reportId: string, role: AppealRole): string {
 }
 
 export function appealRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportId: string,
   role: AppealRole,
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db.collection(MODERATION_APPEALS).doc(appealId(reportId, role));
 }
 
@@ -76,11 +76,11 @@ export function canHoldAppeal(reportId: string, role: AppealRole): boolean {
  * cannot hold an appeal is skipped rather than read.
  */
 export async function readAppeals(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   reportIds: string[],
   role: AppealRole,
   fieldMask: string[],
-): Promise<Map<string, admin.firestore.DocumentSnapshot>> {
+): Promise<Map<string, DocumentSnapshot>> {
   const ids = reportIds.filter((id) => canHoldAppeal(id, role));
   if (ids.length === 0) return new Map();
   const snaps = await db.getAll(...ids.map((id) => appealRef(db, id, role)), { fieldMask });
@@ -89,7 +89,7 @@ export async function readAppeals(
 
 /** The appellant the report names for [role], or null once it names nobody. */
 export function appellantOf(
-  report: admin.firestore.DocumentData | undefined,
+  report: DocumentData | undefined,
   role: AppealRole,
 ): string | null {
   const uid = role === "reporter" ? report?.reporterId : report?.contentOwnerId;

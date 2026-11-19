@@ -14,7 +14,7 @@
  */
 
 import { createHash } from "crypto";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, Firestore, Query } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 
 /**
@@ -39,9 +39,9 @@ export interface HouseholdMemberEntry {
 }
 
 export function groupDocRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   ref: GroupRef,
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db
     .collection(Collections.users).doc(ref.ownerId)
     .collection(Collections.friendCategories).doc(ref.groupId);
@@ -53,9 +53,9 @@ export function groupDocRef(
  * someone else created cannot borrow a stranger's group by naming it.
  */
 export function linkedHouseholdsQuery(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   ref: GroupRef,
-): admin.firestore.Query {
+): Query {
   // Equality filters only, so the automatic single-field indexes serve it.
   return db
     .collection(Collections.households)
@@ -64,7 +64,7 @@ export function linkedHouseholdsQuery(
 }
 
 export function isOwnedLink(
-  data: admin.firestore.DocumentData | undefined,
+  data: DocumentData | undefined,
   ref: GroupRef,
 ): boolean {
   return data?.createdBy === ref.ownerId &&
@@ -86,7 +86,7 @@ export function householdIdForGroup(ref: GroupRef): string {
 }
 
 export function membersOf(
-  data: admin.firestore.DocumentData | undefined,
+  data: DocumentData | undefined,
 ): HouseholdMemberEntry[] {
   const raw = Array.isArray(data?.members) ? data?.members as unknown[] : [];
   return raw.filter((m): m is HouseholdMemberEntry =>
@@ -95,7 +95,7 @@ export function membersOf(
 }
 
 export function memberIdsOf(
-  data: admin.firestore.DocumentData | undefined,
+  data: DocumentData | undefined,
 ): string[] {
   const raw = Array.isArray(data?.memberUserIds)
     ? data?.memberUserIds as unknown[]
@@ -105,10 +105,10 @@ export function memberIdsOf(
 
 /** `{householdId}_{userId}`, the allergen share's document id. */
 export function shareDocRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   householdId: string,
   userId: string,
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db.collection(Collections.householdAllergenShares)
     .doc(`${householdId}_${userId}`);
 }

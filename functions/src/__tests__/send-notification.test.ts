@@ -15,7 +15,8 @@
  * Run with: npx ts-node src/__tests__/send-notification.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
+import { BatchResponse, MulticastMessage } from "firebase-admin/messaging";
 import {
   assertBatchValid,
   dispatchNotification,
@@ -34,7 +35,7 @@ interface PrefAwareCall {
 }
 
 interface SilentCall {
-  message: admin.messaging.MulticastMessage;
+  message: MulticastMessage;
 }
 
 interface TestState {
@@ -65,8 +66,8 @@ function makeDeps(state: TestState) {
       return state.prefAwareResult;
     },
     silentSend: async (
-      message: admin.messaging.MulticastMessage
-    ): Promise<admin.messaging.BatchResponse> => {
+      message: MulticastMessage
+    ): Promise<BatchResponse> => {
       state.silentCalls.push({ message });
       return {
         responses: [{ success: true, messageId: "fake-msg-id" }],
@@ -473,7 +474,7 @@ async function runPreflightTests(): Promise<number> {
  * `system_events` add into `auditWrites`.
  */
 function makeExhaustedBucketDb(operationType: string): {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   auditWrites: Record<string, unknown>[];
 } {
   const auditWrites: Record<string, unknown>[] = [];
@@ -482,9 +483,9 @@ function makeExhaustedBucketDb(operationType: string): {
   // even one token cannot be paid for and the deny path must run.
   let bucket: Record<string, unknown> | undefined = {
     tokens: 0,
-    lastRefill: admin.firestore.Timestamp.now(),
+    lastRefill: Timestamp.now(),
     operationType,
-    updatedAt: admin.firestore.Timestamp.now(),
+    updatedAt: Timestamp.now(),
   };
   const db = {
     collection: (collectionName: string) => ({
@@ -509,7 +510,7 @@ function makeExhaustedBucketDb(operationType: string): {
           bucket = { ...data };
         },
       }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 
   return { db, auditWrites };
 }

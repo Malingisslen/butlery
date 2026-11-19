@@ -6,9 +6,9 @@
  * A credit is the triple (dish id, `createdBy`, title).
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData } from "firebase-admin/firestore";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 export interface DishCredit {
   dishId: string | null;

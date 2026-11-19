@@ -5,9 +5,10 @@
  * Run: npx ts-node src/__tests__/moderation-appeals-export.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-moderation-appeals-export" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-moderation-appeals-export" });
 }
 
 import { HttpsError } from "firebase-functions/v2/https";
@@ -20,9 +21,9 @@ const exporter = require("../exports/moderation-appeals") as typeof import("../e
 const UID = "requester-uid";
 const OTHER = "other-uid";
 const MOD = "moderator-uid";
-const T1 = admin.firestore.Timestamp.fromDate(new Date("2026-10-02T10:00:00Z"));
-const T2 = admin.firestore.Timestamp.fromDate(new Date("2026-10-03T10:00:00Z"));
-const T3 = admin.firestore.Timestamp.fromDate(new Date("2026-10-04T10:00:00Z"));
+const T1 = Timestamp.fromDate(new Date("2026-10-02T10:00:00Z"));
+const T2 = Timestamp.fromDate(new Date("2026-10-03T10:00:00Z"));
+const T3 = Timestamp.fromDate(new Date("2026-10-04T10:00:00Z"));
 
 function assertTrue(condition: boolean, msg: string): void {
   if (!condition) throw new Error(msg);

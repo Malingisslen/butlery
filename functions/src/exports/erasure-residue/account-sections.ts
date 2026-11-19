@@ -5,7 +5,7 @@
  * Each section's query is the predicate of the cascade step named beside it.
  */
 
-import * as admin from "firebase-admin";
+import { CollectionReference, DocumentReference, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Collections } from "../../shared/collections";
 import { OCCASION_LIST_KEYS } from "../../admin/occasion-vocabulary";
 import { hashUid } from "../../shared/hash-uid";
@@ -30,7 +30,7 @@ import {
 export interface SectionDef {
   name: string;
   read: (
-    database: admin.firestore.Firestore,
+    database: Firestore,
     uid: string,
     bucket: () => FileLister,
   ) => Promise<Row[]>;
@@ -253,7 +253,7 @@ export const WITHDRAWN_PROPOSAL_KEYS: Allowlist = scalars(
 );
 
 async function ingredientChangeRequestRows(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const col = database.collection(Collections.ingredientChangeRequests);
@@ -283,7 +283,7 @@ async function ingredientChangeRequestRows(
 }
 
 function rowsWithId(
-  docs: admin.firestore.QueryDocumentSnapshot[],
+  docs: QueryDocumentSnapshot[],
   keys: Allowlist,
   idKey = "id",
 ): Row[] {
@@ -294,7 +294,7 @@ function rowsWithId(
 }
 
 async function oneDoc(
-  ref: admin.firestore.DocumentReference,
+  ref: DocumentReference,
   keys: Allowlist,
 ): Promise<Row[]> {
   const snap = await ref.get();
@@ -315,7 +315,7 @@ export const RETENTION_SECTION_OF: Readonly<
 };
 
 async function eventRows(
-  events: admin.firestore.CollectionReference,
+  events: CollectionReference,
   uid: string,
   keys: Allowlist,
 ): Promise<Row[]> {

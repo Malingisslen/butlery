@@ -21,11 +21,12 @@
  *     node scripts/measure-launch-risks.js --project <id>
  */
 
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 const { requireProject } = require("../lib/admin/require-project");
 
-admin.initializeApp({ projectId: requireProject() });
-const db = admin.firestore();
+initializeApp({ projectId: requireProject() });
+const db = getFirestore();
 
 const GET_ALL_CHUNK = 100;
 

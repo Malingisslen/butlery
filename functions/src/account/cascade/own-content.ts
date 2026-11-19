@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -33,7 +33,7 @@ import { batchDeleteAll } from "./core";
 // at a recipe. The probe now counts the subcollection. Deleter stays a superset
 // of the probe, which is the invariant that matters.
 export async function deleteRecipes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const [sub, top] = await Promise.all([
@@ -45,7 +45,7 @@ export async function deleteRecipes(
 }
 
 export async function deleteMenus(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // Subcollection menus under users/{uid}
@@ -70,7 +70,7 @@ export async function deleteMenus(
       inbound.docs,
       (batch, doc) => {
         batch.update(doc.ref, {
-          sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+          sharedToUserIds: FieldValue.arrayRemove(uid),
         });
       },
       { label: "scrubInboundMenus", strict: false },
@@ -80,7 +80,7 @@ export async function deleteMenus(
 }
 
 export async function deletePersonalTags(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -93,7 +93,7 @@ export async function deletePersonalTags(
 }
 
 export async function deletePersonalTagGroups(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -106,7 +106,7 @@ export async function deletePersonalTagGroups(
 }
 
 export async function deleteTagOverridesLog(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // BUT-1473: top-level, userId-keyed allergen tag-override corrections
@@ -124,7 +124,7 @@ export async function deleteTagOverridesLog(
 export const PARSING_CORRECTIONS_PAGE = 500;
 
 export async function deleteParsingCorrections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // Linked PII: userId plus the raw ingredient and instruction lines the user
@@ -134,7 +134,7 @@ export async function deleteParsingCorrections(
 }
 
 export async function deleteParseEvents(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // The import log: userId plus the sanitized page address of each import.
@@ -144,7 +144,7 @@ export async function deleteParseEvents(
 }
 
 async function deleteUserRowsPaged(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: string,
   uid: string,
 ): Promise<boolean> {
@@ -176,7 +176,7 @@ async function deleteUserRowsPaged(
 }
 
 export async function deleteCookSnaps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db
@@ -188,7 +188,7 @@ export async function deleteCookSnaps(
 }
 
 export async function deleteActivityEvents(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // BUT-2350: events carry `actorId` (`ActivityEvent.toFirestore`, and the
@@ -204,7 +204,7 @@ export async function deleteActivityEvents(
 export const TEMPLATE_SWEEP_PAGE = 500;
 
 export async function deleteShoppingListTemplates(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // BUT-2354: a public template is readable by every signed-in user and
@@ -239,7 +239,7 @@ export async function deleteShoppingListTemplates(
  * `clicks` with it.
  */
 export async function deleteDeepLinks(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   let previous: Set<string> | null = null;
@@ -298,7 +298,7 @@ export const MAX_SUGGESTION_SWEEP_ROWS = 2000;
  * else would notice it failing.
  */
 export async function deleteIngredientSuggestions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // BUT-2038: DECLINES above the cap rather than truncating, the same verdict
@@ -352,7 +352,7 @@ export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
  * then also reports.
  */
 export async function deleteRecipeSuggestions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   for (const field of ["suggesterId", "ownerId"] as const) {

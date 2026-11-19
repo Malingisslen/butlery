@@ -6,8 +6,8 @@
  * `cleanupUserSocialData(userId)`. The trigger itself can't be fired in a unit
  * test, so we exercise the extracted core against a REAL Firestore emulator.
  *
- * The cascade reads/writes via the module-level `db = admin.firestore()`. With
- * `FIRESTORE_EMULATOR_HOST` set BEFORE `admin.initializeApp` and the module
+ * The cascade reads/writes via the module-level `db = getFirestore()`. With
+ * `FIRESTORE_EMULATOR_HOST` set BEFORE `initializeApp` and the module
  * required afterwards, that `db` is emulator-bound — so no Firestore parameter
  * is needed. The Admin SDK bypasses rules → seeding is plain writes.
  *
@@ -40,7 +40,8 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const RUN = Date.now().toString(36);
 
@@ -66,10 +67,10 @@ async function run_(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID });
   }
-  const db = admin.firestore();
+  const db = getFirestore();
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { cleanupUserSocialData } = require("../cleanup/on-user-deleted");
@@ -256,7 +257,7 @@ async function run_(): Promise<void> {
     status: "in_review",
   });
   await db.collection("erasure_holds").doc(heldUser).set({
-    holdUntil: admin.firestore.Timestamp.fromDate(
+    holdUntil: Timestamp.fromDate(
       new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
     ),
     legalBasis: "GDPR Art. 17(3)(e)",

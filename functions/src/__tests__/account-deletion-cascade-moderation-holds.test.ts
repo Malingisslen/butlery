@@ -6,7 +6,7 @@
  * Run with: npx ts-node src/__tests__/account-deletion-cascade-moderation-holds.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import {
   USER_MODERATION,
   type DeletionResult,
@@ -87,7 +87,7 @@ function holdStore(status: string): FakeFirestore {
     reporterId: OTHER,
     // Written when the REPORT was filed, so it expires long before a hold
     // placed today would.
-    expireAt: admin.firestore.Timestamp.fromDate(new Date("2026-10-01")),
+    expireAt: Timestamp.fromDate(new Date("2026-10-01")),
   });
   s.set("system_events/content_report_rep1", {
     type: "content_report",
@@ -205,15 +205,15 @@ async function scenario_holdPushesReportHistoryTtlForward(): Promise<void> {
   store.set(`user_moderation/${OTHER}/report_history/rep2`, {
     reportId: "rep2",
     reporterId: THIRD,
-    expireAt: admin.firestore.Timestamp.fromDate(new Date("2026-10-01")),
+    expireAt: Timestamp.fromDate(new Date("2026-10-01")),
   });
 
   const now = new Date("2026-09-09T00:00:00Z");
   const { retained } = await applyErasureHold(asDb(store), UID, now);
-  const holdUntil = retained[0].holdUntil as admin.firestore.Timestamp;
+  const holdUntil = retained[0].holdUntil as Timestamp;
 
   const held = store.get(`user_moderation/${UID}/report_history/rep1`) as {
-    expireAt: admin.firestore.Timestamp;
+    expireAt: Timestamp;
   };
   check(
     "a held row's expireAt is pushed out to holdUntil",
@@ -228,7 +228,7 @@ async function scenario_holdPushesReportHistoryTtlForward(): Promise<void> {
 
   const untouched = store.get(
     `user_moderation/${OTHER}/report_history/rep2`,
-  ) as { expireAt: admin.firestore.Timestamp };
+  ) as { expireAt: Timestamp };
   check(
     "somebody else's row keeps its own clock",
     untouched.expireAt.toMillis() === new Date("2026-10-01").getTime(),
@@ -278,7 +278,7 @@ async function scenario_heldRecordIsNotCountedAsResidual(): Promise<void> {
     {
       resourceType: "user_moderation",
       legalBasis: "GDPR Art. 17(3)(e)",
-      holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
+      holdUntil: Timestamp.fromDate(new Date("2027-03-08")),
       provisional: false,
     },
   ];
@@ -319,7 +319,7 @@ async function scenario_heldRecordIsNotCountedAsResidual(): Promise<void> {
       {
         resourceType: "some_other_hold",
         legalBasis: "GDPR Art. 17(3)(b)",
-        holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
+        holdUntil: Timestamp.fromDate(new Date("2027-03-08")),
         provisional: false,
       },
     ],
@@ -514,7 +514,7 @@ async function scenario_holdKeepsContentOwnerIdOnReports(): Promise<void> {
   const held = holdStore("in_review");
   seedAppeals(held);
   held.set(`erasure_holds/${UID}`, {
-    holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
+    holdUntil: Timestamp.fromDate(new Date("2027-03-08")),
     legalBasis: "GDPR Art. 17(3)(e)",
   });
   await anonymizeReportsUnlessHeldWithDb(asDb(held), UID);
@@ -886,7 +886,7 @@ async function scenario_holdSweepRespectsItsBounds(): Promise<void> {
   const many = new FakeFirestore();
   for (let i = 0; i <= MAX_ERASURE_HOLD_SWEEP_ROWS; i++) {
     many.set(`erasure_holds/u${i}`, {
-      holdUntil: admin.firestore.Timestamp.fromDate(new Date("2020-01-01")),
+      holdUntil: Timestamp.fromDate(new Date("2020-01-01")),
     });
   }
   const declined = await sweepErasureHolds(asDb(many), new Date());
@@ -905,10 +905,10 @@ async function scenario_holdSweepRespectsItsBounds(): Promise<void> {
   //    `examined` must count what was actually looked at rather than the page.
   const two = new FakeFirestore();
   two.set("erasure_holds/a", {
-    holdUntil: admin.firestore.Timestamp.fromDate(new Date("2020-01-01")),
+    holdUntil: Timestamp.fromDate(new Date("2020-01-01")),
   });
   two.set("erasure_holds/b", {
-    holdUntil: admin.firestore.Timestamp.fromDate(new Date("2020-01-01")),
+    holdUntil: Timestamp.fromDate(new Date("2020-01-01")),
   });
   const deferred = await sweepErasureHolds(asDb(two), new Date(), 0);
   check(
@@ -930,7 +930,7 @@ async function scenario_holdSweepRespectsItsBounds(): Promise<void> {
     huge.set(`user_moderation/${UID}/report_history/r${i}`, {
       reportId: `r${i}`,
       reporterId: OTHER,
-      expireAt: admin.firestore.Timestamp.fromDate(new Date("2026-10-01")),
+      expireAt: Timestamp.fromDate(new Date("2026-10-01")),
     });
   }
   const capped = await applyErasureHold(asDb(huge), UID);
@@ -948,7 +948,7 @@ async function scenario_holdSweepRespectsItsBounds(): Promise<void> {
     "the rows keep their own clock — a partial push is worse than none",
     (
       huge.get(`user_moderation/${UID}/report_history/r0`) as {
-        expireAt: admin.firestore.Timestamp;
+        expireAt: Timestamp;
       }
     ).expireAt.toMillis() === new Date("2026-10-01").getTime(),
     "some rows were pushed above the cap",
@@ -964,7 +964,7 @@ async function scenario_oneBadHoldDoesNotStallTheSweep(): Promise<void> {
   const { sweepErasureHolds } = require("../moderation/erasure-hold");
 
   const store = new FakeFirestore();
-  const past = admin.firestore.Timestamp.fromDate(new Date("2020-01-01"));
+  const past = Timestamp.fromDate(new Date("2020-01-01"));
   store.set("erasure_holds/aaa", { holdUntil: past });
   store.set("erasure_holds/bbb", { holdUntil: past });
 

@@ -12,7 +12,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import {
   LLM_COST_CEILINGS,
@@ -68,7 +68,7 @@ function fakeDb(
       };
       return fn(tx);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return {
     deps: (now) => ({ db: () => db, now: () => now }),
     stored: () => stored,
@@ -144,7 +144,7 @@ const cases: UnitCase[] = [
         true,
         `every access is the ledger doc, got ${JSON.stringify(db.paths)}`
       );
-      const expire = s?.expireAt as admin.firestore.Timestamp;
+      const expire = s?.expireAt as Timestamp;
       assertEqual(
         expire.toMillis(),
         FEB_02_1200.getTime() + 40 * 24 * 60 * 60 * 1000,
@@ -161,7 +161,7 @@ const cases: UnitCase[] = [
         costThisMonth: 0.2,
         monthKey: "2026-02",
         operationsThisMonth: 7,
-        expireAt: admin.firestore.Timestamp.fromMillis(0),
+        expireAt: Timestamp.fromMillis(0),
       });
       await withCostLedger(async () => ({ estimatedCost: 0.003 }), db.deps(FEB_02_1200))(authed("u1"));
       const s = db.stored();
@@ -169,7 +169,7 @@ const cases: UnitCase[] = [
       approx(s?.costThisMonth, 0.203, "costThisMonth");
       assertEqual(s?.operationsThisMonth, 8, "operations");
       assertEqual(
-        (s?.expireAt as admin.firestore.Timestamp).toMillis() > FEB_02_1200.getTime(),
+        (s?.expireAt as Timestamp).toMillis() > FEB_02_1200.getTime(),
         true,
         "expireAt moved forward"
       );

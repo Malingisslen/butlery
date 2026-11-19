@@ -14,7 +14,8 @@
  */
 
 import { randomUUID } from "crypto";
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { logger } from "firebase-functions/logger";
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import type { Bucket, File } from "@google-cloud/storage";
@@ -60,7 +61,7 @@ export async function caseObjects(bucket: Bucket, ownerUid: string, reportId: st
 }
 
 export interface RestoreDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   bucket: Bucket;
 }
 
@@ -122,7 +123,7 @@ export async function restoreCase(
         resourceType: "storage_object",
         resourceId: path,
         granted: true,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
         metadata: { reason: "appeal_reversed", reportId: input.reportId, restored: ours },
       });
     } catch (err) {
@@ -136,8 +137,8 @@ export async function restoreCase(
 /** The part of the trigger event the handler reads. */
 export interface AppealEvent {
   data?: {
-    before: { data(): admin.firestore.DocumentData | undefined };
-    after: { data(): admin.firestore.DocumentData | undefined };
+    before: { data(): DocumentData | undefined };
+    after: { data(): DocumentData | undefined };
   };
 }
 
@@ -174,7 +175,7 @@ export async function handleAppealAnswered(event: AppealEvent, deps: RestoreDeps
 export const onImageAppealAnswered = onDocumentUpdated(
   { document: `${MODERATION_APPEALS}/{appealId}`, retry: true },
   (event) =>
-    handleAppealAnswered(event, { db: admin.firestore(), bucket: admin.storage().bucket() }),
+    handleAppealAnswered(event, { db: getFirestore(), bucket: getStorage().bucket() }),
 );
 
 export interface SweepDeps extends RestoreDeps {
@@ -275,10 +276,10 @@ async function sweepOne(
 }
 
 export async function runQuarantineSweep(): Promise<void> {
-  const db = admin.firestore();
+  const db = getFirestore();
   const result = await sweepQuarantine({
     db,
-    bucket: admin.storage().bucket(),
+    bucket: getStorage().bucket(),
     push: (notices) => pushNotices(notices, defaultPushDeps(db)),
   });
   if (result.deferred > 0) logger.warn("quarantine_sweep_deferred", { ...result });

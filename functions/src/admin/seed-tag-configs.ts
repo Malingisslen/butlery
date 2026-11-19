@@ -18,14 +18,14 @@
  * gain or lose.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
 import { initializeAdminApp } from "./admin-init";
 
 initializeAdminApp();
 
-const db = admin.firestore();
+const db = getFirestore();
 
 const ALL_CONFIG_TYPES = ["allergens", "dietary", "cuisines", "properties", "display"];
 
@@ -102,7 +102,7 @@ async function seedTagConfigs() {
       }
 
       // Add upload timestamp
-      data.uploadedAt = admin.firestore.FieldValue.serverTimestamp();
+      data.uploadedAt = FieldValue.serverTimestamp();
 
       // Upload to Firestore
       await db.collection("tag_configs").doc(configType).set(data);

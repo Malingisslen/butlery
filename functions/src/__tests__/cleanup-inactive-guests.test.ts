@@ -9,16 +9,17 @@
  * Run: npx ts-node src/__tests__/cleanup-inactive-guests.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-inactive-guests" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-inactive-guests" });
 }
 import type { UserRecord } from "firebase-admin/auth";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 
 // Required after initializeApp: request-account-deletion builds a module-level
-// `admin.firestore()`.
+// `getFirestore()`.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sweep = require("../cleanup/cleanup-inactive-guests") as typeof import("../cleanup/cleanup-inactive-guests");
 const {
@@ -375,7 +376,7 @@ const cases: UnitCase[] = [
       await deps.requeue("guest-1", NOW);
       const doc = store.read("account_deletion_requests/guest-1") as Record<string, unknown> | undefined;
       if (!doc) throw new Error("no request written");
-      const ms = (v: unknown) => (v as admin.firestore.Timestamp).toMillis();
+      const ms = (v: unknown) => (v as Timestamp).toMillis();
       assertEqual(ms(doc.requestedAt), NOW, "requestedAt");
       assertEqual(ms(doc.scheduledFor), NOW, "scheduledFor is now, so it is due at once");
       assertEqual(doc.reason, GUEST_INACTIVE_REASON, "reason");

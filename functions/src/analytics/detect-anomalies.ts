@@ -39,7 +39,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { PoolAnomaly, runDetectPoolVelocity } from "./detect-pool-velocity";
 
 /**
@@ -111,11 +111,11 @@ export const MONITORED_SERIES: readonly MonitoredSeries[] = [
 ];
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
   /** Test seam for the pooled-ratings alarm (BUT-1517). */
   poolVelocity?: (args: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     nowMs: number;
     dateStr: string;
   }) => Promise<PoolAnomaly[]>;
@@ -123,7 +123,7 @@ export interface RunDeps {
   poolAlarmBudgetMs?: number;
 }
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Format a UTC `yyyy-mm-dd` from a millisecond timestamp. */
 export function formatUtcDate(ms: number): string {
@@ -148,7 +148,7 @@ export interface AnomalyEntry {
 export interface AnomalyReport {
   date: string;
   anomalies: AnomalyEntry[];
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 /**
@@ -222,7 +222,7 @@ function readNumericField(
  * run-day date string, so we return the raw points keyed by date.
  */
 async function readSeries(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   group: string,
   field: string,
 ): Promise<SeriesPoint[]> {
@@ -230,7 +230,7 @@ async function readSeries(
     .collection("analytics")
     .doc(group)
     .collection("daily")
-    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
+    .orderBy(FieldPath.documentId(), "desc")
     .limit(SERIES_WINDOW)
     .get();
 
@@ -249,7 +249,7 @@ export async function runDetectAnomalies(
   const db = deps.db ?? getDb();
   const nowMs = deps.now != null ? deps.now.getTime() : Date.now();
   const dateStr = formatUtcDate(nowMs);
-  const computedAt = admin.firestore.Timestamp.fromMillis(nowMs);
+  const computedAt = Timestamp.fromMillis(nowMs);
 
   logger.info("detect_anomalies_start", { date: dateStr });
 

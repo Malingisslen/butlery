@@ -10,7 +10,7 @@
  *     node scripts/repair-feature-retention.js --project <id> --from 2026-10-04 --to 2026-10-18 [--apply]
  */
 
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
 
 function arg(name) {
   const i = process.argv.indexOf(name);
@@ -23,7 +23,7 @@ async function main() {
     RepairProbeError,
   } = require("../lib/analytics/repair-feature-retention");
   const { requireProject } = require("../lib/admin/require-project");
-  admin.initializeApp({ projectId: requireProject() });
+  initializeApp({ projectId: requireProject() });
   const from = arg("--from");
   const to = arg("--to");
   if (!from || !to) throw new Error("--from and --to are required");

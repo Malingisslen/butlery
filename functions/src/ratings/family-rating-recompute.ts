@@ -2,13 +2,13 @@
  * Decision helpers for the `onFamilyRatingUpdated` public-aggregation trigger.
  *
  * Extracted from index.ts so the recompute gate is unit-testable without
- * importing the whole functions entrypoint (which runs `admin.initializeApp`
+ * importing the whole functions entrypoint (which runs `initializeApp`
  * and pulls in every LLM module). index.ts imports both helpers.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData } from "firebase-admin/firestore";
 
-type Data = admin.firestore.DocumentData | undefined;
+type Data = DocumentData | undefined;
 
 /** True when a family_ratings doc is a non-account diner-profile rating. */
 export function isProfileRating(data: Data): boolean {

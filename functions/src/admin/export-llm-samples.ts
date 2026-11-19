@@ -29,7 +29,7 @@
  * Default output: ../scripts/llm-samples/data/llm_response_samples.json
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -64,7 +64,7 @@ export interface ExportedSample {
 
 /** Firestore Timestamp → ISO string; null when absent or unrecognised. */
 function toIso(value: unknown): string | null {
-  if (value instanceof admin.firestore.Timestamp) {
+  if (value instanceof Timestamp) {
     return value.toDate().toISOString();
   }
   return null;
@@ -84,7 +84,7 @@ function orNull<T>(v: T | undefined): T | null {
  */
 export function projectSample(
   id: string,
-  data: admin.firestore.DocumentData
+  data: DocumentData
 ): ExportedSample {
   return {
     id,
@@ -134,7 +134,7 @@ export function sortSamples(samples: ExportedSample[]): ExportedSample[] {
  * argv parsing, the JSON write, and the summary log.
  */
 export async function runExportLlmSamplesWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   opts: { mode?: string } = {}
 ): Promise<ExportedSample[]> {
   // Equality-only filter — no composite index needed (auto single-field index).
@@ -151,7 +151,7 @@ export async function runExportLlmSamplesWithDb(
 
 async function main(): Promise<void> {
   initializeAdminApp();
-  const db = admin.firestore();
+  const db = getFirestore();
 
   const args = process.argv.slice(2);
 

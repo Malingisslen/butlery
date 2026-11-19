@@ -11,7 +11,7 @@
  */
 
 import { HttpsError } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { BASE_BRANCH, BranchCommit, CommitFileSpec, GitHubError, PullRequest, RepoClient } from "./github-app";
 
@@ -39,7 +39,7 @@ export type PullState = "open" | "merged" | "closed";
 
 /** Writes [data] on each doc whose status is still [expected]; returns how many were left alone. */
 export async function writeIfStatus(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   writes: Array<{ id: string; expected: string; data: Record<string, unknown> }>,
 ): Promise<number> {
   let skipped = 0;
@@ -65,7 +65,7 @@ export const pullState = (pull: PullRequest): PullState =>
 /** Every PR the given `inReview` proposals name, by number. */
 export async function namedPulls(
   github: RepoClient,
-  inReview: readonly admin.firestore.QueryDocumentSnapshot[],
+  inReview: readonly QueryDocumentSnapshot[],
 ): Promise<Map<number, PullRequest>> {
   const pulls = new Map<number, PullRequest>();
   const numbers = new Set(inReview.map((d) => d.get("prNumber")).filter((n): n is number => typeof n === "number"));
@@ -76,7 +76,7 @@ export async function namedPulls(
 /** The state of every PR the given `inReview` proposals name. */
 export async function pullStates(
   github: RepoClient,
-  inReview: readonly admin.firestore.QueryDocumentSnapshot[],
+  inReview: readonly QueryDocumentSnapshot[],
 ): Promise<Map<number, PullState>> {
   const pulls = await namedPulls(github, inReview);
   return new Map([...pulls].map(([n, pull]) => [n, pullState(pull)]));

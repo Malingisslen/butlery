@@ -19,7 +19,7 @@
  *   the automatic index serves.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 
@@ -53,7 +53,7 @@ export function __resetViolationAlertCacheForTest(): void {
  * a count that only has to reach a threshold.
  */
 export async function recordViolation(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   operationType: string,
   dayKey: string,
@@ -82,7 +82,7 @@ export async function recordViolation(
           {
             dayKey,
             count,
-            updatedAt: admin.firestore.Timestamp.fromDate(now),
+            updatedAt: Timestamp.fromDate(now),
             ...(crossed ? { alertedDayKey: dayKey } : {}),
           },
           { merge: true }
@@ -97,8 +97,8 @@ export async function recordViolation(
             operationType,
             // The admin ops-log tab orders by `executedAt`; a row carrying
             // only `timestamp` never shows there.
-            executedAt: admin.firestore.FieldValue.serverTimestamp(),
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            executedAt: FieldValue.serverTimestamp(),
+            timestamp: FieldValue.serverTimestamp(),
           });
         }
         return crossed ? ("crossed" as const) : ("counted" as const);

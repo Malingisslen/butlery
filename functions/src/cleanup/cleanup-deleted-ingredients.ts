@@ -11,7 +11,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { requireAdmin } from "../shared/require-admin";
 
 // Configuration
@@ -31,7 +31,7 @@ const BATCH_SIZE = 500; // Firestore batch limit
 export const cleanupDeletedIngredients = onSchedule(
   { schedule: "0 4 * * 1", timeZone: "UTC" },
   async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
 
     logger.info("Starting deleted ingredient cleanup...");
 
@@ -39,7 +39,7 @@ export const cleanupDeletedIngredients = onSchedule(
       // Calculate cutoff date for permanent deletion
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - SOFT_DELETE_GRACE_PERIOD_DAYS);
-      const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
+      const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
       logger.info(
         `Deleting ingredients soft-deleted before ${cutoffDate.toISOString()}`
@@ -61,7 +61,7 @@ export const cleanupDeletedIngredients = onSchedule(
         staleRecipesFound: staleRecipesCount,
         gracePeriodDays: SOFT_DELETE_GRACE_PERIOD_DAYS,
         cutoffDate: cutoffDate.toISOString(),
-        executedAt: admin.firestore.FieldValue.serverTimestamp(),
+        executedAt: FieldValue.serverTimestamp(),
       };
 
       await db.collection("system_events").add(cleanupLog);
@@ -82,8 +82,8 @@ export const cleanupDeletedIngredients = onSchedule(
  * Hard-delete ingredients that have been soft-deleted past the grace period.
  */
 async function hardDeleteOldIngredients(
-  db: admin.firestore.Firestore,
-  cutoffTimestamp: admin.firestore.Timestamp
+  db: Firestore,
+  cutoffTimestamp: Timestamp
 ): Promise<number> {
   const ingredientsRef = db.collection("ingredients");
 
@@ -148,7 +148,7 @@ const STALE_TAG_MARKERS = [
 
 /** Count recipes carrying any stale marker, across every user's subcollection. */
 async function countByMarkers(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   markers: readonly string[]
 ): Promise<number> {
   const counts = await Promise.all(
@@ -173,7 +173,7 @@ async function countByMarkers(
  * core.tagResult.generatorVersion is declared in firestore.indexes.json.
  */
 async function countStaleRecipes(
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<number> {
   const staleCount = await countByMarkers(db, STALE_TAG_MARKERS);
   const failedCount = await countByMarkers(db, ["failed"]);
@@ -194,7 +194,7 @@ export const getDeletedIngredientStats = onCall(
   async (request: CallableRequest) => {
     requireAdmin(request);
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     try {
       // Count soft-deleted ingredients

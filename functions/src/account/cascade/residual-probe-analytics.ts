@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { RETENTION_ANALYTICS_PARENTS } from "./own-account-data";
 
 export async function probeNotificationEffectiveness(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -47,7 +47,7 @@ export async function probeNotificationEffectiveness(
 }
 
 export async function probeFeatureRetention(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -89,7 +89,7 @@ export async function probeFeatureRetention(
 }
 
 export async function probeRetentionAnalytics(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

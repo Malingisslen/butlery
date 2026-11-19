@@ -27,7 +27,7 @@
  * ```
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, Timestamp, getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
@@ -71,9 +71,9 @@ export interface RateLimitCheckResult {
 
 interface StoredRateLimit {
   tokens: number;
-  lastRefill: admin.firestore.Timestamp;
+  lastRefill: Timestamp;
   operationType: string;
-  updatedAt: admin.firestore.Timestamp;
+  updatedAt: Timestamp;
   /** BUT-1477: UTC day key the daily counter belongs to (optional — absent on
    * docs written before the daily cap shipped; treated as a fresh day). */
   dayKey?: string;
@@ -463,16 +463,16 @@ function getConfig(operationType: string): RateLimitConfig {
  * be exercised without an emulator. Production never sets this; pass null to
  * restore the real Admin SDK handle. Mirrors __resetGlobalLimitsCacheForTest.
  */
-let firestoreForTest: admin.firestore.Firestore | null = null;
+let firestoreForTest: Firestore | null = null;
 
 export function __setFirestoreForTest(
-  db: admin.firestore.Firestore | null
+  db: Firestore | null
 ): void {
   firestoreForTest = db;
 }
 
-function getFirestore(): admin.firestore.Firestore {
-  return firestoreForTest ?? admin.firestore();
+function getFirestore(): Firestore {
+  return firestoreForTest ?? getAdminFirestore();
 }
 
 /**
@@ -483,7 +483,7 @@ function getFirestore(): admin.firestore.Firestore {
 function getRateLimitRef(
   userId: string,
   operationType: string
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return getFirestore()
     .collection("system_rate_limits")
     .doc(`${userId}_${operationType}`);
@@ -671,9 +671,9 @@ export async function checkRateLimit(
       const newTokens = currentTokens - tokensRequired;
       const updateData: Partial<StoredRateLimit> = {
         tokens: newTokens,
-        lastRefill: admin.firestore.Timestamp.fromDate(refillAnchor),
+        lastRefill: Timestamp.fromDate(refillAnchor),
         operationType,
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: dailyCap.dayKey,
         dailyCount: dailyCap.priorDailyCount + 1,
       };
@@ -744,7 +744,7 @@ async function logRateLimitViolation(
     : recordViolation(getFirestore(), userId, operationType, utcDayKey(now), now);
 
   try {
-    // BUT-1692: `getFirestore()`, not `admin.firestore()` directly. This row is
+    // BUT-1692: `getFirestore()`, not `getAdminFirestore()` directly. This row is
     // the whole reason callers must go through `enforceRateLimit` rather than
     // `checkRateLimit` + a local throw, so a test has to be able to observe it;
     // bypassing the seam made the audit write assertable only against a live
@@ -755,7 +755,7 @@ async function logRateLimitViolation(
       operationType,
       remainingTokens: result.remainingTokens,
       retryAfterMs: result.retryAfterMs,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
     });
   } catch (error) {
     // Don't fail the request if logging fails
@@ -813,7 +813,7 @@ async function loadGlobalLimits(): Promise<GlobalLimits> {
   try {
     const data = globalLimitsLoaderForTest
       ? await globalLimitsLoaderForTest()
-      : (await admin.firestore().doc("system/config").get()).data();
+      : (await getAdminFirestore().doc("system/config").get()).data();
     cachedGlobalLimits = {
       hourly: readPositiveNumber(
         data,
@@ -860,8 +860,8 @@ export async function checkGlobalLimit(): Promise<boolean> {
   const { hourly: hourlyLimit, daily: dailyLimit } = await loadGlobalLimits();
 
   try {
-    const limitsRef = admin.firestore().doc("system/llmLimits");
-    const result = await admin.firestore().runTransaction(async (tx) => {
+    const limitsRef = getAdminFirestore().doc("system/llmLimits");
+    const result = await getAdminFirestore().runTransaction(async (tx) => {
       const doc = await tx.get(limitsRef);
       const now = new Date();
       const currentHour = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}`;
@@ -882,7 +882,7 @@ export async function checkGlobalLimit(): Promise<boolean> {
         hourlyCount: hourlyCount + 1,
         dayKey: currentDay,
         dailyCount: dailyCount + 1,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
 
       return { hourly: hourlyCount + 1, daily: dailyCount + 1 };

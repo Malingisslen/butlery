@@ -20,13 +20,13 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 import { ADMIN_REMOVAL_AUDIT_OPERATION } from "../groups/remove-chat-group-member";
 import { Collections } from "../shared/collections";
 import { isValidDocId } from "../shared/valid-doc-id";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /** Cap on entries returned per call. Sized so a single call fits the
  * default callable response budget; pagination handles deeper histories. */
@@ -125,7 +125,7 @@ export async function runExportAuditLogs(
  * `runExportAuditLogs`.
  */
 export async function runExportAuditLogsWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   req: ExportAuditLogsRequest
 ): Promise<ExportAuditLogsResponse> {
@@ -143,7 +143,7 @@ export async function runExportAuditLogsWithDb(
         "`before` must be a valid ISO-8601 timestamp."
       );
     }
-    query = query.startAfter(admin.firestore.Timestamp.fromDate(beforeDate));
+    query = query.startAfter(Timestamp.fromDate(beforeDate));
   }
 
   const snapshot = await query.get();
@@ -199,7 +199,7 @@ export async function runExportAuditLogsWithDb(
  * `chat_groups`, and `select` keeps a planted large row out of memory.
  */
 async function exportRemovedFromGroups(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string
 ): Promise<RemovedFromGroupsSection> {
   try {
@@ -213,7 +213,7 @@ async function exportRemovedFromGroups(
     const all: RemovedFromGroupRow[] = snapshot.docs.flatMap((doc) => {
       const data = doc.data();
       if (data.resourceType !== Collections.chatGroups) return [];
-      if (!(data.timestamp instanceof admin.firestore.Timestamp)) return [];
+      if (!(data.timestamp instanceof Timestamp)) return [];
       return [
         {
           timestamp: data.timestamp.toDate().toISOString(),
@@ -243,7 +243,7 @@ async function exportRemovedFromGroups(
 
 function isoTimestamp(tsRaw: unknown): string {
   if (tsRaw && typeof (tsRaw as { toDate?: unknown }).toDate === "function") {
-    return (tsRaw as admin.firestore.Timestamp).toDate().toISOString();
+    return (tsRaw as Timestamp).toDate().toISOString();
   }
   if (typeof tsRaw === "string") return tsRaw;
   return "unknown";

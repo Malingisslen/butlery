@@ -30,7 +30,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { logAnalyticsEvent } from "../shared/analytics-server";
 
@@ -39,7 +39,7 @@ const MAX_PER_RUN = 200;
 export const MAX_ATTEMPTS = 5;
 
 export interface DeliverDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
   /** Test seam — defaults to the prefs-aware FCM helper. */
   send?: typeof sendPushToUserRespectingPreferences;
@@ -56,10 +56,10 @@ export interface DeliverResult {
 export async function runDeliverScheduledNotifications(
   deps: DeliverDeps = {}
 ): Promise<DeliverResult> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? new Date();
   const send = deps.send ?? sendPushToUserRespectingPreferences;
-  const nowTs = admin.firestore.Timestamp.fromDate(now);
+  const nowTs = Timestamp.fromDate(now);
 
   const dueSnap = await db
     .collection("scheduled_notifications")
@@ -90,7 +90,7 @@ export async function runDeliverScheduledNotifications(
       const attemptsBefore = (d.attempts as number | undefined) ?? 0;
       tx.update(doc.ref, {
         status: "delivered",
-        deliveredAt: admin.firestore.Timestamp.fromDate(now),
+        deliveredAt: Timestamp.fromDate(now),
         attempts: attemptsBefore + 1,
       });
       return { attemptsBefore };

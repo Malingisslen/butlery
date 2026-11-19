@@ -10,12 +10,14 @@
  * Run: npx ts-node src/__tests__/finish-guest-upgrade.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
+import { Auth } from "firebase-admin/auth";
+import { getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-finish-guest-upgrade" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-finish-guest-upgrade" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -50,7 +52,7 @@ interface Store {
   reads: string[];
 }
 
-function makeDb(store: Store): admin.firestore.Firestore {
+function makeDb(store: Store): Firestore {
   return {
     doc(p: string) {
       return {
@@ -81,7 +83,7 @@ function makeDb(store: Store): admin.firestore.Firestore {
         },
       };
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 interface AuthState {
@@ -91,7 +93,7 @@ interface AuthState {
 }
 
 /** Claims written by setCustomUserClaims are what the next getUser returns. */
-function makeAuth(state: AuthState): admin.auth.Auth {
+function makeAuth(state: AuthState): Auth {
   return {
     async getUser() {
       return { customClaims: state.claims };
@@ -103,7 +105,7 @@ function makeAuth(state: AuthState): admin.auth.Auth {
     async deleteUser(uid: string) {
       state.deleted.push(uid);
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
 function fixture(stored?: Record<string, unknown>, uid = "uid-up") {

@@ -22,7 +22,7 @@
  * document is still standing at the end.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 
 /**
  * Where the flag lives.
@@ -86,7 +86,7 @@ export interface ResetKillSwitchState {
  * when that never runs.
  */
 export async function readResetKillSwitch(
-  db: admin.firestore.Firestore,
+  db: Firestore,
 ): Promise<ResetKillSwitchState> {
   const snap = await db.doc(RESET_KILL_SWITCH_PATH).get();
   if (!snap.exists) return { exists: false, active: false, expired: false };
@@ -117,7 +117,7 @@ export async function readResetKillSwitch(
 }
 
 function toMillis(value: unknown): number | undefined {
-  if (value instanceof admin.firestore.Timestamp) return value.toMillis();
+  if (value instanceof Timestamp) return value.toMillis();
   if (typeof value === "number") return value;
   return undefined;
 }
@@ -128,7 +128,7 @@ function toMillis(value: unknown): number | undefined {
  * against.
  */
 export async function setResetKillSwitch(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   runId: string,
   ttlMinutes: number = RESET_KILL_SWITCH_TTL_MINUTES,
 ): Promise<void> {
@@ -139,8 +139,8 @@ export async function setResetKillSwitch(
   await db.doc(RESET_KILL_SWITCH_PATH).set({
     active: true,
     runId,
-    startedAt: admin.firestore.Timestamp.fromMillis(now),
-    expiresAt: admin.firestore.Timestamp.fromMillis(now + ttlMinutes * 60_000),
+    startedAt: Timestamp.fromMillis(now),
+    expiresAt: Timestamp.fromMillis(now + ttlMinutes * 60_000),
   });
 }
 
@@ -159,7 +159,7 @@ export async function setResetKillSwitch(
  * answer.
  */
 export async function clearResetKillSwitch(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   runId?: string,
 ): Promise<boolean> {
   const ref = db.doc(RESET_KILL_SWITCH_PATH);

@@ -30,7 +30,7 @@
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import {
   captureThenWithdraw,
   withdrawReporterCredit,
@@ -42,7 +42,7 @@ import {
 } from "../middleware/rate_limiter";
 import { hashUid } from "../shared/hash-uid";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /** Marker TTL — aligns with the 180-day audit-log retention. */
 const MARKER_RETENTION_DAYS = 180;
@@ -63,7 +63,7 @@ export interface ReportData {
  * same [eventId]: the strike counter is incremented at most once per event.
  */
 export async function processReport(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   params: { reportId: string; eventId: string; report: ReportData },
 ): Promise<void> {
   const { reportId, eventId, report } = params;
@@ -101,8 +101,8 @@ export async function processReport(
       tx.set(
         moderationRef,
         {
-          totalReports: admin.firestore.FieldValue.increment(1),
-          lastReportedAt: admin.firestore.FieldValue.serverTimestamp(),
+          totalReports: FieldValue.increment(1),
+          lastReportedAt: FieldValue.serverTimestamp(),
         },
         { merge: true },
       );
@@ -130,14 +130,14 @@ export async function processReport(
         // kept for — spotting a person who reports the same target over and
         // over — is deliberately not being built (ADR-0015 / BUT-2046), so
         // keeping them indefinitely would be storage without a purpose.
-        expireAt: admin.firestore.Timestamp.fromDate(
+        expireAt: Timestamp.fromDate(
           new Date(Date.now() + MARKER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
         ),
       });
       tx.set(markerRef, {
         reportId,
-        processedAt: admin.firestore.FieldValue.serverTimestamp(),
-        expireAt: admin.firestore.Timestamp.fromDate(
+        processedAt: FieldValue.serverTimestamp(),
+        expireAt: Timestamp.fromDate(
           new Date(Date.now() + MARKER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
         ),
       });
@@ -159,7 +159,7 @@ export async function processReport(
           {
             type: "moderation_threshold_reached",
             severity: "critical",
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            timestamp: FieldValue.serverTimestamp(),
             details: {
               userId: contentOwnerId,
               totalReports,
@@ -180,7 +180,7 @@ export async function processReport(
       {
         type: "content_report",
         severity: "warning",
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
         details: {
           reportId,
           reporterId,
@@ -219,7 +219,7 @@ export interface ReportAdmission {
  * more than a few extra writes.
  */
 export async function admitReport(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   params: { reportId: string; reporterId: string; reason: string },
   check: (
     userId: string,
@@ -253,7 +253,7 @@ export async function admitReport(
         userIdHash,
         operationType: operation,
         firstReportId: reportId,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
       });
     return { process: false, page: true };
   } catch (err) {
@@ -286,7 +286,7 @@ const defaultDeps: ReportDeps = {
 
 /** The trigger's body after parsing; `deps` is a test seam. */
 export async function handleReport(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   params: { reportId: string; eventId: string; report: ReportData },
   deps: ReportDeps = defaultDeps,
 ): Promise<void> {

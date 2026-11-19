@@ -15,7 +15,7 @@
  *   npm run backfill-retention-expiry -- --project <id> --collection feedback
  */
 
-import * as admin from "firebase-admin";
+import { FieldPath, Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { initializeAdminApp } from "./admin-init";
 import { planStamp, RETENTION_TARGETS, RetentionTarget } from "./backfill-retention-expiry-core";
 
@@ -31,19 +31,19 @@ interface Tally {
 }
 
 async function backfill(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   target: RetentionTarget,
   apply: boolean,
   nowMs: number,
 ): Promise<Tally> {
   const tally: Tally = { scanned: 0, stamp: 0, alreadyExpired: 0, fallback: 0 };
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | null = null;
+  let lastDoc: QueryDocumentSnapshot | null = null;
 
   // A missing field cannot be queried, so the whole collection is paged by id.
   for (;;) {
     let query = db
       .collection(target.collection)
-      .orderBy(admin.firestore.FieldPath.documentId())
+      .orderBy(FieldPath.documentId())
       .limit(PAGE_SIZE);
     if (lastDoc) query = query.startAfter(lastDoc);
     const page = await query.get();
@@ -61,7 +61,7 @@ async function backfill(
       if (!apply) continue;
 
       batch.update(doc.ref, {
-        expireAt: admin.firestore.Timestamp.fromMillis(plan.expireAtMs),
+        expireAt: Timestamp.fromMillis(plan.expireAtMs),
       });
       ops++;
       if (ops >= MAX_BATCH_OPS) {
@@ -97,7 +97,7 @@ async function main(): Promise<void> {
   const apply = argv.includes("--apply");
   const targets = selectedTargets(argv);
   initializeAdminApp();
-  const db = admin.firestore();
+  const db = getFirestore();
   const nowMs = Date.now();
 
   console.log(apply ? "Mode: APPLY (writes expireAt)" : "Mode: DRY-RUN (no writes)");

@@ -8,12 +8,12 @@
  * it measures.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 
 export async function recordRatingReads(
   docsRead: number,
-  db: admin.firestore.Firestore = admin.firestore(),
+  db: Firestore = getFirestore(),
   now: Date = new Date()
 ): Promise<void> {
   if (docsRead <= 0) return;
@@ -24,7 +24,7 @@ export async function recordRatingReads(
       .collection("daily")
       .doc(now.toISOString().slice(0, 10))
       .set(
-        { docsRead: admin.firestore.FieldValue.increment(docsRead) },
+        { docsRead: FieldValue.increment(docsRead) },
         { merge: true }
       );
   } catch (err) {

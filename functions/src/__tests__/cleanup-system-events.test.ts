@@ -15,16 +15,16 @@
  *
  * Run: npx ts-node src/__tests__/cleanup-system-events.test.ts
  *
- * Pattern follows `cleanup-audit-logs.test.ts` — a fake admin.firestore()
+ * Pattern follows `cleanup-audit-logs.test.ts` — a fake getFirestore()
  * shape driven by an in-memory store, no emulator. The Admin SDK bypasses
  * security rules by design, so there are none in scope here.
  */
 
 // firebase-admin module-level imports require an initialized default app even
 // when the fake db is what actually runs.
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-system-events-retention" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-system-events-retention" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

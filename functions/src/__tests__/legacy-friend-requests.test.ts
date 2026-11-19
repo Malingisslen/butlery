@@ -18,14 +18,14 @@
  * has to run by hand. Named rather than left to be assumed from this file's
  * existence.
  */
-import * as admin from "firebase-admin";
+import { getApps, initializeApp } from "firebase-admin/app";
 
-// `on-user-deleted.ts` calls `admin.firestore()` at module scope, so the app
+// `on-user-deleted.ts` calls `getFirestore()` at module scope, so the app
 // must exist before it is required — the same shape the cascade suite uses.
 // No credentials are needed: every Firestore call in this file goes through the
 // injected fake, never through this app.
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-legacy-requests" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-legacy-requests" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

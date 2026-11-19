@@ -1,10 +1,10 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 import { learnedAliasesCollection } from "./learned-aliases";
 
 export async function probeUserIdCollections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   // `recipes` is NOT in this list, and must never be added back. These probes are
@@ -56,7 +56,7 @@ export async function probeUserIdCollections(
 }
 
 export async function probeOwnerFieldCollections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -157,7 +157,7 @@ export async function probeOwnerFieldCollections(
 }
 
 export async function probeOwnRecipes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

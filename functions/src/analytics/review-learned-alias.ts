@@ -20,16 +20,16 @@
 
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, Transaction, getFirestore } from "firebase-admin/firestore";
 import { requireAdmin } from "../shared/require-admin";
 import { hashUid } from "../shared/hash-uid";
 
 const ALIAS_COLLECTION = ["analytics", "ingredients", "learned_aliases"] as const;
 
 function aliasRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   aliasDocId: string
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db
     .collection(ALIAS_COLLECTION[0])
     .doc(ALIAS_COLLECTION[1])
@@ -38,8 +38,8 @@ function aliasRef(
 }
 
 function stageAuditRow(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   params: {
     adminUid: string;
     operation: "alias_approve" | "alias_reject" | "alias_revoke";
@@ -59,7 +59,7 @@ function stageAuditRow(
     resourceType: "learned_aliases",
     resourceId: params.aliasDocId,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: {
       actor: "admin",
       ingredientId: params.ingredientId,
@@ -76,7 +76,7 @@ function stageAuditRow(
  * re-rejecting a rejected one is a no-op returning the current status.
  */
 export async function performAliasReview(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   params: { aliasDocId: string; decision: "approve" | "reject"; adminUid: string }
 ): Promise<{ status: string }> {
   return db.runTransaction(async (tx) => {
@@ -125,14 +125,14 @@ export async function performAliasReview(
         );
       }
       tx.update(db.collection("ingredients").doc(ingredientId), {
-        learnedAliasesSv: admin.firestore.FieldValue.arrayUnion(alias),
+        learnedAliasesSv: FieldValue.arrayUnion(alias),
       });
     }
 
     tx.update(ref, {
       status: targetStatus,
       reviewedBy: hashUid(params.adminUid),
-      reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+      reviewedAt: FieldValue.serverTimestamp(),
     });
 
     stageAuditRow(db, tx, {
@@ -153,7 +153,7 @@ export async function performAliasReview(
  * production. Idempotent (arrayRemove + repeated status set are safe).
  */
 export async function performAliasRevoke(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   params: { aliasDocId: string; adminUid: string }
 ): Promise<{ status: string }> {
   return db.runTransaction(async (tx) => {
@@ -192,13 +192,13 @@ export async function performAliasRevoke(
     const ingredientSnap = await tx.get(db.collection("ingredients").doc(ingredientId));
     if (ingredientSnap.exists) {
       tx.update(db.collection("ingredients").doc(ingredientId), {
-        learnedAliasesSv: admin.firestore.FieldValue.arrayRemove(alias),
+        learnedAliasesSv: FieldValue.arrayRemove(alias),
       });
     }
     tx.update(ref, {
       status: "revoked",
       revokedBy: hashUid(params.adminUid),
-      revokedAt: admin.firestore.FieldValue.serverTimestamp(),
+      revokedAt: FieldValue.serverTimestamp(),
     });
 
     stageAuditRow(db, tx, {
@@ -223,7 +223,7 @@ export const reviewLearnedAlias = onCall(async (request: CallableRequest) => {
       "Expected {aliasDocId, decision: 'approve'|'reject'}"
     );
   }
-  const result = await performAliasReview(admin.firestore(), {
+  const result = await performAliasReview(getFirestore(), {
     aliasDocId,
     decision,
     adminUid: request.auth!.uid,
@@ -238,7 +238,7 @@ export const revokeLearnedAlias = onCall(async (request: CallableRequest) => {
   if (!aliasDocId) {
     throw new HttpsError("invalid-argument", "Expected {aliasDocId}");
   }
-  const result = await performAliasRevoke(admin.firestore(), {
+  const result = await performAliasRevoke(getFirestore(), {
     aliasDocId,
     adminUid: request.auth!.uid,
   });

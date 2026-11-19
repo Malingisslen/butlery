@@ -15,7 +15,7 @@
  * stored or returned.
  */
 
-import * as admin from "firebase-admin";
+import { getAuth } from "firebase-admin/auth";
 import { logger } from "firebase-functions/logger";
 
 /** How the first factor answered. */
@@ -144,7 +144,7 @@ export async function verifyFirstFactorWithIdentityToolkit(
   apiKey: string,
   fetchFn: typeof fetch = fetch,
   lookupUid: (email: string) => Promise<string> = async (e) =>
-    (await admin.auth().getUserByEmail(e)).uid,
+    (await getAuth().getUserByEmail(e)).uid,
 ): Promise<FirstFactor> {
   if (!apiKey) return { outcome: "unavailable" };
   const body = await callIdentityToolkit(
@@ -199,8 +199,8 @@ export async function verifyIdpFirstFactorWithIdentityToolkit(
 ): Promise<FirstFactor> {
   const fetchFn = seams.fetchFn ?? fetch;
   const lookupUid =
-    seams.lookupUid ?? (async (e: string) => (await admin.auth().getUserByEmail(e)).uid);
-  const deleteUser = seams.deleteUser ?? ((uid: string) => admin.auth().deleteUser(uid));
+    seams.lookupUid ?? (async (e: string) => (await getAuth().getUserByEmail(e)).uid);
+  const deleteUser = seams.deleteUser ?? ((uid: string) => getAuth().deleteUser(uid));
   if (!apiKey || !requestUri) return { outcome: "unavailable" };
 
   const postBody = new URLSearchParams({

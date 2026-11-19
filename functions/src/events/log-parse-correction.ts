@@ -33,12 +33,12 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, redactionRatio } from "../llm/pii-scrubber";
 import { VALID_CORRECTION_TIERS } from "../shared/parse-tier-vocabulary";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * BUT-1486: the accepted `sourceTier` set is now sourced from the canonical
@@ -218,8 +218,8 @@ export const logParseCorrection = onCall(
 
     const doc = {
       ...result.doc,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      expireAt: admin.firestore.Timestamp.fromMillis(
+      createdAt: FieldValue.serverTimestamp(),
+      expireAt: Timestamp.fromMillis(
         Date.now() + CORRECTION_RETENTION_MS
       ),
     };

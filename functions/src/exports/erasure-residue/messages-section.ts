@@ -15,7 +15,7 @@
  * sender, so its text is the sender's.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, Firestore } from "firebase-admin/firestore";
 import { Collections } from "../../shared/collections";
 import {
   Allowlist,
@@ -45,14 +45,14 @@ export const POLL_KEYS: Allowlist = {
   options: { list: scalars("id", "text") },
 };
 
-function conversationIdOf(doc: admin.firestore.DocumentSnapshot): string | null {
+function conversationIdOf(doc: DocumentSnapshot): string | null {
   const id = doc.get("conversationId");
   return typeof id === "string" && id.length > 0 ? id : null;
 }
 
 /** The conversation ids among `ids` whose document is gone or does not list `uid`. */
 async function leftConversations(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   ids: Set<string>,
   uid: string,
 ): Promise<Set<string>> {
@@ -69,7 +69,7 @@ async function leftConversations(
   return left;
 }
 
-function messageRow(doc: admin.firestore.DocumentSnapshot, uid: string): Row {
+function messageRow(doc: DocumentSnapshot, uid: string): Row {
   const data = doc.data() ?? {};
   if (data.senderId !== uid) {
     return { messageId: doc.id, sent_by_you: false, names_you_as_poll_creator: true };
@@ -82,7 +82,7 @@ function messageRow(doc: admin.firestore.DocumentSnapshot, uid: string): Row {
 }
 
 async function messagesInLeftConversations(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<Row[]> {
   const messages = database.collection(Collections.messages);
@@ -105,7 +105,7 @@ async function messagesInLeftConversations(
     if (id !== null) conversationIds.add(id);
   }
   const left = await leftConversations(database, conversationIds, uid);
-  const inLeft = (doc: admin.firestore.DocumentSnapshot): boolean => {
+  const inLeft = (doc: DocumentSnapshot): boolean => {
     const id = conversationIdOf(doc);
     return id !== null && left.has(id);
   };

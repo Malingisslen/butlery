@@ -17,13 +17,13 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Injection seam for tests — mirrors `RunDeps` in `daily-snapshots.ts`. */
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
@@ -49,10 +49,10 @@ export async function runCorrelateNotificationEffectiveness(
     const db = deps.db ?? getDb();
     const now =
       deps.now != null
-        ? admin.firestore.Timestamp.fromMillis(deps.now.getTime())
-        : admin.firestore.Timestamp.now();
+        ? Timestamp.fromMillis(deps.now.getTime())
+        : Timestamp.now();
     const nowMs = now.toMillis();
-    const twentyFourHoursAgo = admin.firestore.Timestamp.fromMillis(
+    const twentyFourHoursAgo = Timestamp.fromMillis(
       nowMs - 24 * MS_PER_HOUR
     );
 
@@ -71,7 +71,7 @@ export async function runCorrelateNotificationEffectiveness(
       const typeStats: Record<string, TypeStats> = {};
       let totalProcessed = 0;
       let anyNotifications = false;
-      let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+      let lastDoc: QueryDocumentSnapshot | undefined;
 
       for (;;) {
         let pageQuery = base.limit(PAGE_SIZE);
@@ -111,7 +111,7 @@ export async function runCorrelateNotificationEffectiveness(
         for (const notifDoc of page.docs) {
           const notifData = notifDoc.data();
           const userId = notifData.userId as string;
-          const sentAt = notifData.sentAt as admin.firestore.Timestamp;
+          const sentAt = notifData.sentAt as Timestamp;
           const notifType = (notifData.type as string) || "unknown";
 
           if (!userId || !sentAt) {
@@ -121,7 +121,7 @@ export async function runCorrelateNotificationEffectiveness(
           // Look up user from this page's pre-fetched map
           const userData = userMap.get(userId);
           const lastActiveAt = userData?.lastActiveAt as
-            | admin.firestore.Timestamp
+            | Timestamp
             | undefined;
 
           let wasOpened = false;

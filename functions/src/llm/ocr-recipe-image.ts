@@ -5,7 +5,7 @@
  * a structured recipe using Gemini's native multimodal capabilities.
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { withGuestImportQuota } from "./guest-import-quota";
 import { withAiConsent } from "./ai-consent";
@@ -359,7 +359,7 @@ async function defaultIsAiDisabled(): Promise<boolean> {
   // checked inside `runStructureRecipe` (the OCR retry path passes
   // through it), so OCR vision can stay live even when the parser is
   // paused.
-  const configDoc = await admin.firestore().doc("system/config").get();
+  const configDoc = await getFirestore().doc("system/config").get();
   return configDoc.exists && configDoc.data()?.aiEnabled === false;
 }
 

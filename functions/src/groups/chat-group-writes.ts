@@ -24,7 +24,7 @@
  * than a property of how Firestore resolves sentinels.
  */
 
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, Transaction } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 
 /**
@@ -76,15 +76,15 @@ function resolveAdminIds(
  * documents would be the second writer, and the drift would start at birth.
  */
 export function stageGroupCreation(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   params: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     groupId: string;
     conversationId: string;
     name: string;
     creatorUid: string;
     members: ChatGroupMember[];
-    joinedAt: admin.firestore.Timestamp;
+    joinedAt: Timestamp;
     /**
      * Who administers the group. Defaults to the creator alone. `ensureCategoryChat`
      * passes the caller AND the social group's owner, so the chat keeps an admin
@@ -171,15 +171,15 @@ export function stageGroupCreation(
  * for the members the `chat_groups` document still lists.
  */
 export function stageConversation(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   params: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     groupId: string;
     conversationId: string;
     name: string;
     creatorUid: string;
     members: ChatGroupMember[];
-    joinedAt: admin.firestore.Timestamp;
+    joinedAt: Timestamp;
   },
 ): void {
   const { db, groupId, conversationId, name, creatorUid, members, joinedAt } =
@@ -188,7 +188,7 @@ export function stageConversation(
   const memberIds = members.map((m) => m.uid);
   const displayNames: Record<string, string> = {};
   const avatarUrls: Record<string, string | null> = {};
-  const stamps: Record<string, admin.firestore.Timestamp> = {};
+  const stamps: Record<string, Timestamp> = {};
   for (const member of members) {
     displayNames[member.uid] = member.displayName;
     avatarUrls[member.uid] = member.avatarUrl;
@@ -225,15 +225,15 @@ export function stageConversation(
  * silently overwrites the first's stamps.
  */
 export function stageMemberAdditions(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   params: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     groupId: string;
     conversationId: string;
     members: ChatGroupMember[];
     /** Who is seating them — the identity the safety backstop checks against. */
     addedBy: string;
-    joinedAt: admin.firestore.Timestamp;
+    joinedAt: Timestamp;
     /**
      * BUT-1856: true when the meal-vote category sync is seating them, so a
      * later sync may take them out again. An explicit invitation leaves it
@@ -249,25 +249,25 @@ export function stageMemberAdditions(
   const convoRef = db.collection(Collections.conversations).doc(conversationId);
 
   const groupUpdate: Record<string, unknown> = {
-    memberIds: admin.firestore.FieldValue.arrayUnion(
+    memberIds: FieldValue.arrayUnion(
       ...members.map((m) => m.uid),
     ),
     // BUT-1856: an explicit seat clears the departure tombstone. Somebody
     // deliberately invited this person back, which is exactly the act the
     // tombstone is meant to let through; only the automatic category sync is
     // meant to be blocked by it.
-    departedUserIds: admin.firestore.FieldValue.arrayRemove(
+    departedUserIds: FieldValue.arrayRemove(
       ...members.map((m) => m.uid),
     ),
     updatedAt: joinedAt,
   };
   if (params.categorySeated) {
-    groupUpdate.categorySeatedUserIds = admin.firestore.FieldValue.arrayUnion(
+    groupUpdate.categorySeatedUserIds = FieldValue.arrayUnion(
       ...members.map((m) => m.uid),
     );
   }
   const convoUpdate: Record<string, unknown> = {
-    participantIds: admin.firestore.FieldValue.arrayUnion(
+    participantIds: FieldValue.arrayUnion(
       ...members.map((m) => m.uid),
     ),
     updatedAt: joinedAt,
@@ -298,13 +298,13 @@ export function stageMemberAdditions(
  * would silently pin their old cut-off if they ever rejoined.
  */
 export function stageMemberRemoval(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   params: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     groupId: string;
     conversationId: string;
     uid: string;
-    removedAt: admin.firestore.Timestamp;
+    removedAt: Timestamp;
     /**
      * BUT-1856: record that this person is OUT by their own or an admin's
      * decision, so the meal-vote category sync never seats them again.
@@ -327,26 +327,26 @@ export function stageMemberRemoval(
   const convoRef = db.collection(Collections.conversations).doc(conversationId);
 
   const groupUpdate: Record<string, unknown> = {
-    memberIds: admin.firestore.FieldValue.arrayRemove(uid),
+    memberIds: FieldValue.arrayRemove(uid),
     // A departing admin loses the right with the membership. Kept in the same
     // write so there is never an instant where someone administers a group they
     // are not in.
-    adminIds: admin.firestore.FieldValue.arrayRemove(uid),
+    adminIds: FieldValue.arrayRemove(uid),
     updatedAt: removedAt,
-    [`memberDisplayNames.${uid}`]: admin.firestore.FieldValue.delete(),
-    [`memberAvatarUrls.${uid}`]: admin.firestore.FieldValue.delete(),
-    [`memberAddedBy.${uid}`]: admin.firestore.FieldValue.delete(),
-    categorySeatedUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+    [`memberDisplayNames.${uid}`]: FieldValue.delete(),
+    [`memberAvatarUrls.${uid}`]: FieldValue.delete(),
+    [`memberAddedBy.${uid}`]: FieldValue.delete(),
+    categorySeatedUserIds: FieldValue.arrayRemove(uid),
     ...(tombstone
-      ? { departedUserIds: admin.firestore.FieldValue.arrayUnion(uid) }
+      ? { departedUserIds: FieldValue.arrayUnion(uid) }
       : {}),
   };
   const convoUpdate: Record<string, unknown> = {
-    participantIds: admin.firestore.FieldValue.arrayRemove(uid),
+    participantIds: FieldValue.arrayRemove(uid),
     updatedAt: removedAt,
   };
   for (const map of PER_USER_CONVERSATION_MAPS) {
-    convoUpdate[`${map}.${uid}`] = admin.firestore.FieldValue.delete();
+    convoUpdate[`${map}.${uid}`] = FieldValue.delete();
   }
 
   tx.update(groupRef, groupUpdate);

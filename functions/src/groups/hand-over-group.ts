@@ -31,7 +31,8 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { Collections } from "../shared/collections";
 import { assertAgeCompliant } from "../shared/caller-eligibility";
 import { enforceRateLimit } from "../middleware/rate_limiter";
@@ -89,13 +90,13 @@ export const handOverGroup = onCall<HandOverGroupRequest>(
     assertAgeCompliant(request.auth);
     await enforceRateLimit(request.auth.uid, "handOverGroup");
     return handOverGroupWithDeps(
-      admin.firestore(),
+      getFirestore(),
       request.auth.uid,
       { groupId, newOwnerId },
       {
         isAgeCompliant: async (uid) => {
           try {
-            return (await admin.auth().getUser(uid)).customClaims?.ageCompliant === true;
+            return (await getAuth().getUser(uid)).customClaims?.ageCompliant === true;
           } catch (err) {
             const code = (err as { code?: string }).code;
             if (code === "auth/user-not-found" || code === "auth/invalid-uid") return false;
@@ -115,7 +116,7 @@ function stringList(value: unknown): string[] {
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function handOverGroupWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   request: HandOverGroupRequest,
   deps: HandOverGroupDeps,
@@ -127,7 +128,7 @@ export async function handOverGroupWithDeps(
   const oldRef = groupDocRef(db, { ownerId: callerUid, groupId });
   const newRef = groupDocRef(db, { ownerId: newOwnerId, groupId });
   const oldLink = { ownerId: callerUid, groupId };
-  const now = admin.firestore.Timestamp.now();
+  const now = Timestamp.now();
 
   // Outside the transaction: an Auth read cannot be part of it, and the claim
   // only changes by a deliberate server action.
@@ -223,7 +224,7 @@ export async function handOverGroupWithDeps(
           .filter((m) => m.userId !== callerUid)
           .map((m) => m.userId === newOwnerId ? { ...m, permission: "admin" } : m),
         memberUserIds: memberIdsOf(data).filter((id) => id !== callerUid),
-        [`memberPermissions.${callerUid}`]: admin.firestore.FieldValue.delete(),
+        [`memberPermissions.${callerUid}`]: FieldValue.delete(),
         [`memberPermissions.${newOwnerId}`]: "admin",
         updatedAt: now,
       });

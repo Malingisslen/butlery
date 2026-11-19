@@ -154,11 +154,12 @@ async function main() {
   const { requireProject } = require("../lib/admin/require-project");
   const project = requireProject({ allowed: [STAGING_PROJECT] });
 
-  const admin = require("firebase-admin");
-  admin.initializeApp({ projectId: project });
+  const { applicationDefault, initializeApp } = require("firebase-admin/app");
+  const { getFirestore } = require("firebase-admin/firestore");
+  initializeApp({ projectId: project });
 
   const listServices = async () => {
-    const { access_token: token } = await admin.credential.applicationDefault().getAccessToken();
+    const { access_token: token } = await applicationDefault().getAccessToken();
     const url = `https://${REGION}-run.googleapis.com/apis/serving.knative.dev/v1/namespaces/${project}/services`;
     const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
     if (!res.ok) throw new Error(`Cloud Run list failed: HTTP ${res.status}`);
@@ -170,7 +171,7 @@ async function main() {
     injectFailure,
     listServices,
     fetchFn: (url, init) => fetch(url, init),
-    db: admin.firestore(),
+    db: getFirestore(),
   });
 
   for (const r of results) console.log(`${r.ok ? "PASS" : "FAIL"} ${r.name}: ${r.detail}`);

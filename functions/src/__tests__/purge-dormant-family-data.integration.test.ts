@@ -12,14 +12,15 @@
  *   ts-node src/__tests__/purge-dormant-family-data.integration.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 process.env.FIRESTORE_EMULATOR_HOST =
   process.env.FIRESTORE_EMULATOR_HOST ?? "localhost:8080";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-family-purge" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-family-purge" });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -32,7 +33,7 @@ const RUN = Date.now().toString(36);
 const NOW = new Date(Date.UTC(2027, 0, 15));
 const DAY = 24 * 60 * 60 * 1000;
 const ts = (msFromNow: number) =>
-  admin.firestore.Timestamp.fromMillis(NOW.getTime() + msFromNow);
+  Timestamp.fromMillis(NOW.getTime() + msFromNow);
 const dormant = ts(-800 * DAY); // > 24 months ago
 const recent = ts(-10 * DAY);
 
@@ -45,8 +46,8 @@ function assert(cond: boolean, msg: string): void {
 async function seedHousehold(
   id: string,
   opts: {
-    activity: admin.firestore.Timestamp;
-    scheduledAt?: admin.firestore.Timestamp;
+    activity: Timestamp;
+    scheduledAt?: Timestamp;
     member: string;
   }
 ): Promise<void> {

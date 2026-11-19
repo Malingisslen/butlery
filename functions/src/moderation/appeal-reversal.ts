@@ -10,7 +10,7 @@
  * do every read before its first write.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, Transaction } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { MODERATION_DECISIONS } from "./report-decision";
 import { appealRef, canHoldAppeal } from "./appeals";
@@ -28,11 +28,11 @@ const PUBLIC_PROFILES = "public_profiles";
 export const OTHER_HIDE_PAGE = 50;
 
 export interface ReversalPlan {
-  historyRef: admin.firestore.DocumentReference;
+  historyRef: DocumentReference;
   historyExists: boolean;
-  moderationRef: admin.firestore.DocumentReference;
+  moderationRef: DocumentReference;
   totalReports: number;
-  profileRef: admin.firestore.DocumentReference | null;
+  profileRef: DocumentReference | null;
   unhide: boolean;
 }
 
@@ -42,8 +42,8 @@ export interface ReversalEffects {
 }
 
 export async function readReversal(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   reportId: string,
   ownerId: string,
   decision: unknown,
@@ -53,7 +53,7 @@ export async function readReversal(
   const [history, moderation] = await Promise.all([tx.get(historyRef), tx.get(moderationRef)]);
   const total = moderation.get("totalReports");
 
-  let profileRef: admin.firestore.DocumentReference | null = null;
+  let profileRef: DocumentReference | null = null;
   let unhide = false;
   if (decision === "profile_hidden") {
     profileRef = db.collection(PUBLIC_PROFILES).doc(ownerId);
@@ -84,8 +84,8 @@ export async function readReversal(
  * moves onto the record).
  */
 async function anotherHideStands(
-  db: admin.firestore.Firestore,
-  tx: admin.firestore.Transaction,
+  db: Firestore,
+  tx: Transaction,
   reportId: string,
   ownerId: string,
 ): Promise<boolean> {
@@ -121,14 +121,14 @@ async function anotherHideStands(
 }
 
 export function applyReversal(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   plan: ReversalPlan,
 ): ReversalEffects {
   if (plan.historyExists) {
     tx.delete(plan.historyRef);
     if (plan.totalReports > 0) {
       tx.update(plan.moderationRef, {
-        totalReports: admin.firestore.FieldValue.increment(-1),
+        totalReports: FieldValue.increment(-1),
       });
     }
   }

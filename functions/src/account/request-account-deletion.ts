@@ -16,7 +16,7 @@
  *   3. Cascade module (`account-deletion-cascade.ts`) deletes the user's
  *      own-data across ~25 Firestore collections, run as Admin SDK.
  *   4. Storage prefixes `users/{uid}/` and `quarantine/users/{uid}/` are wiped.
- *   5. `admin.auth().deleteUser(uid)` runs LAST. This fires the existing
+ *   5. `getAuth().deleteUser(uid)` runs LAST. This fires the existing
  *      `onUserDeleted` v1 auth trigger which handles cross-user cleanup
  *      (reverse friendships, group memberships, friend counts, presence
  *      rows, notification queues, content tombstones, report anonymization,
@@ -34,7 +34,9 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth, getAuth } from "firebase-admin/auth";
+import { Storage, getStorage } from "firebase-admin/storage";
 import {
   DeletionResult,
   runStep,
@@ -108,7 +110,7 @@ import {
 } from "../moderation/report-status";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /** Re-auth window: ID token `auth_time` must be within this many seconds. */
 export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
@@ -172,7 +174,7 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
     // A token minted before a guest upgraded still says anonymous until it
     // expires, so the exemption is confirmed against the Auth record.
     const linkedProviders = isGuestCaller(request.auth)
-      ? (await admin.auth().getUser(request.auth.uid)).providerData.length
+      ? (await getAuth().getUser(request.auth.uid)).providerData.length
       : 0;
     assertRecentSignIn(request.auth, Math.floor(Date.now() / 1000), linkedProviders);
 
@@ -222,7 +224,7 @@ export function assertRecentSignIn(
  * sends none, and the one the user gave when scheduling is on the request.
  */
 export async function resolveDeletionReason(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   raw: unknown,
 ): Promise<string> {
@@ -246,8 +248,8 @@ export async function runAccountDeletion(
   return runAccountDeletionWithDeps(
     {
       db,
-      auth: admin.auth(),
-      storage: admin.storage(),
+      auth: getAuth(),
+      storage: getStorage(),
     },
     uid,
     email,
@@ -256,7 +258,7 @@ export async function runAccountDeletion(
 }
 
 export async function deleteAccountDeletionRequest(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<boolean> {
   await database
@@ -268,9 +270,9 @@ export async function deleteAccountDeletionRequest(
 
 /** Dependency-injected core — exposed for tests. */
 export interface DeletionDeps {
-  db: admin.firestore.Firestore;
-  auth: admin.auth.Auth;
-  storage: admin.storage.Storage;
+  db: Firestore;
+  auth: Auth;
+  storage: Storage;
 }
 
 export async function runAccountDeletionWithDeps(
@@ -307,7 +309,7 @@ export async function runAccountDeletionWithDeps(
   try {
     await erasureMarker.set({
       startedAtMs: markerStartedAtMs,
-      expireAt: admin.firestore.Timestamp.fromMillis(
+      expireAt: Timestamp.fromMillis(
         markerStartedAtMs + 2 * ERASURE_MARKER_WINDOW_MS,
       ),
     });
@@ -649,7 +651,7 @@ export async function runAccountDeletionWithDeps(
  * walk for us.
  */
 export async function deleteUserStorageFiles(
-  storage: admin.storage.Storage,
+  storage: Storage,
   uid: string,
 ): Promise<boolean> {
   // Sequential, users/ first: an in-flight quarantine copy needs its source,
@@ -684,7 +686,7 @@ export async function deleteUserStorageFiles(
  * `deletion_audit_logs` continue to work.
  */
 async function writeDeletionAuditLog(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   email: string,
   reason: string,
@@ -693,7 +695,7 @@ async function writeDeletionAuditLog(
   // BUT-920: a guest has no address; its row says so rather than carry the
   // hash of an empty string every guest would share.
   const emailHash = email ? await sha256Hash(email) : null;
-  const expireAt = admin.firestore.Timestamp.fromDate(
+  const expireAt = Timestamp.fromDate(
     new Date(Date.now() + AUDIT_LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000),
   );
   const docRef = await database.collection("deletion_audit_logs").add({
@@ -702,7 +704,7 @@ async function writeDeletionAuditLog(
     reason,
     deletedCollections: result.deletedCollections,
     failedCollections: result.failedCollections,
-    deletionTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+    deletionTimestamp: FieldValue.serverTimestamp(),
     expireAt,
     // Unchanged, and deliberately so: `gdprCompliant` is driven by
     // `failedCollections` ALONE. A lawful hold is recorded beside it, never

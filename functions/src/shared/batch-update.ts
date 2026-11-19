@@ -3,7 +3,7 @@
  * Handles paginated Firestore batch writes within the 500-op limit.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, DocumentSnapshot, FieldPath, FieldValue, Firestore, Query, QueryDocumentSnapshot, WriteBatch } from "firebase-admin/firestore";
 import { logger as v1Logger } from "firebase-functions/v1";
 
 export const BATCH_LIMIT = 500;
@@ -12,9 +12,9 @@ export const BATCH_LIMIT = 500;
  * Batch-update all docs matching a query with the same update map.
  */
 export async function batchUpdateQuery(
-  query: admin.firestore.Query,
+  query: Query,
   updates: Record<string, unknown>,
-  db: admin.firestore.Firestore
+  db: Firestore
 ): Promise<number> {
   const snapshot = await query.get();
   if (snapshot.empty) return 0;
@@ -58,15 +58,15 @@ export async function batchUpdateQuery(
  * write batch). Returns the total number of docs updated.
  */
 export async function batchUpdateQueryPaginated(
-  baseQuery: admin.firestore.Query,
+  baseQuery: Query,
   updates: Record<string, unknown>,
-  db: admin.firestore.Firestore,
+  db: Firestore,
   pageSize: number = BATCH_LIMIT
 ): Promise<number> {
   const limit = Math.min(Math.max(1, pageSize), BATCH_LIMIT);
-  const ordered = baseQuery.orderBy(admin.firestore.FieldPath.documentId());
+  const ordered = baseQuery.orderBy(FieldPath.documentId());
 
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let lastDoc: QueryDocumentSnapshot | undefined;
   let total = 0;
 
   for (;;) {
@@ -96,9 +96,9 @@ export async function batchUpdateQueryPaginated(
  * Batch-update docs matching a query with per-doc update maps.
  */
 export async function batchUpdateDocs(
-  query: admin.firestore.Query,
-  db: admin.firestore.Firestore,
-  getUpdates: (doc: admin.firestore.DocumentSnapshot) => Record<string, unknown>
+  query: Query,
+  db: Firestore,
+  getUpdates: (doc: DocumentSnapshot) => Record<string, unknown>
 ): Promise<number> {
   const docs = (await query.get()).docs;
   if (docs.length === 0) return 0;
@@ -145,10 +145,10 @@ export async function batchUpdateDocs(
  * of commits that succeeded. A re-run on already-scrubbed data returns 0.
  */
 export async function cascadeArrayRemove(
-  query: admin.firestore.Query,
+  query: Query,
   field: string,
   value: unknown,
-  db: admin.firestore.Firestore,
+  db: Firestore,
   opts: {
     bestEffort?: boolean;
     onChunkFailure?: (err: unknown) => void;
@@ -161,15 +161,15 @@ export async function cascadeArrayRemove(
      * blow the 500-op cap.
      */
     onItemOp?: (
-      batch: admin.firestore.WriteBatch,
-      doc: admin.firestore.QueryDocumentSnapshot,
+      batch: WriteBatch,
+      doc: QueryDocumentSnapshot,
     ) => void;
   } = {}
 ): Promise<number> {
   const snapshot = await query.get();
   if (snapshot.empty) return 0;
 
-  const removeOp = admin.firestore.FieldValue.arrayRemove(value);
+  const removeOp = FieldValue.arrayRemove(value);
   let total = 0;
   let batch = db.batch();
   let batchCount = 0;
@@ -241,9 +241,9 @@ export async function cascadeArrayRemove(
  * "matched and attempted" metrics in cascade results.
  */
 export async function commitInChunks<T>(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   items: readonly T[],
-  mutate: (batch: admin.firestore.WriteBatch, item: T) => void,
+  mutate: (batch: WriteBatch, item: T) => void,
   opts: { label: string; strict?: boolean; opsPerItem?: number }
 ): Promise<number> {
   if (items.length === 0) return 0;
@@ -288,9 +288,9 @@ export async function commitInChunks<T>(
  * Type-safe alternative to batchUpdateDocs when working with refs directly.
  */
 export async function batchUpdateRefs(
-  refs: admin.firestore.DocumentReference[],
-  getUpdates: (ref: admin.firestore.DocumentReference) => Record<string, unknown>,
-  db: admin.firestore.Firestore
+  refs: DocumentReference[],
+  getUpdates: (ref: DocumentReference) => Record<string, unknown>,
+  db: Firestore
 ): Promise<number> {
   if (refs.length === 0) return 0;
 

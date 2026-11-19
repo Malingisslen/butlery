@@ -12,7 +12,7 @@
  * Run with: npx ts-node src/__tests__/llm-sample-capture.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import {
   captureLlmSample,
   domainFromUrl,
@@ -28,7 +28,7 @@ interface AddedDoc {
 function fakeDb(opts: {
   configData?: Record<string, unknown>;
   throwOnAdd?: boolean;
-}): { db: admin.firestore.Firestore; added: AddedDoc[] } {
+}): { db: Firestore; added: AddedDoc[] } {
   const added: AddedDoc[] = [];
   const db = {
     doc: (_path: string) => ({
@@ -44,7 +44,7 @@ function fakeDb(opts: {
         return { id: "fake-id" };
       },
     }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, added };
 }
 
@@ -75,7 +75,7 @@ const cases: UnitCase[] = [
       assertEqual(d.promptVersion, "2.1.0", "promptVersion stored");
       assertEqual(d.promptSource, null, "omitted field coalesced to null");
       assertEqual(d.experimentBucket, null, "omitted bucket coalesced to null");
-      if (!(d.expireAt instanceof admin.firestore.Timestamp)) {
+      if (!(d.expireAt instanceof Timestamp)) {
         throw new Error("expireAt must be a Firestore Timestamp (TTL field)");
       }
       // 30-day retention default, in the future.

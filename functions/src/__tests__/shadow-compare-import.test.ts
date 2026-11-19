@@ -11,9 +11,10 @@
  * Run: npx ts-node src/__tests__/shadow-compare-import.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-shadow-compare" });
+import { Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-shadow-compare" });
 }
 
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
@@ -34,6 +35,7 @@ import {
 import * as sampleCapture from "../llm/llm-sample-capture";
 import * as geminiClient from "../llm/gemini-client";
 import { runStructureRecipe } from "../llm/structure-recipe";
+import { __resetPromptsCacheForTests, getPromptsConfig } from "../llm/prompts-config";
 import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import type { RunStructureRecipeDeps } from "../llm/structure-recipe";
@@ -128,7 +130,7 @@ function fakeCaptureDb() {
     collection: (name: string) => ({
       add: async (data: Record<string, unknown>) => { added.push({ __collection: name, ...data }); },
     }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, added };
 }
 
@@ -329,7 +331,7 @@ const cases: UnitCase[] = [
             }),
           };
         },
-      }) as unknown as admin.firestore.Firestore;
+      }) as unknown as Firestore;
       assertEqual(await hasAiConsentIn(consentDb({ purposes: { aiProcessing: true } }), "user-1"), true, "true");
       assertEqual(await hasAiConsentIn(consentDb({ purposes: { aiProcessing: "yes" } }), "user-1"), false, "truthy string");
       assertEqual(await hasAiConsentIn(consentDb({ purposes: { aiProcessing: false } }), "user-1"), false, "false");
@@ -361,6 +363,9 @@ const cases: UnitCase[] = [
         tags: [],
       });
       let captured = 0;
+      // Prime the prompts cache so the call never reads the real system/prompts doc.
+      __resetPromptsCacheForTests();
+      await getPromptsConfig({ loader: async () => undefined });
       try {
         mutableClient.getGeminiClient = () => ({} as unknown as VertexAI);
         mutableClient.getTextModel = () => ({

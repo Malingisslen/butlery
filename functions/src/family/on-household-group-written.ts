@@ -18,7 +18,7 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   GroupRef,
@@ -38,7 +38,7 @@ export interface ReconcileResult {
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function reconcileGroupHousehold(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   ref: GroupRef,
 ): Promise<ReconcileResult> {
   return db.runTransaction(async (tx) => {
@@ -63,16 +63,16 @@ export async function reconcileGroupHousehold(
       const update: Record<string, unknown> = {
         members: membersOf(data).filter((m) => !departing.includes(m.userId)),
         memberUserIds: memberIdsOf(data).filter((id) => !departing.includes(id)),
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
       };
       for (const id of departing) {
-        update[`memberPermissions.${id}`] = admin.firestore.FieldValue.delete();
+        update[`memberPermissions.${id}`] = FieldValue.delete();
         // Deleting a share that does not exist is a no-op, so no read first.
         tx.delete(shareDocRef(db, doc.id, id));
       }
       if (!stillHousehold) {
-        update.sourceGroupId = admin.firestore.FieldValue.delete();
-        update.sourceGroupOwnerId = admin.firestore.FieldValue.delete();
+        update.sourceGroupId = FieldValue.delete();
+        update.sourceGroupOwnerId = FieldValue.delete();
       }
       tx.update(doc.ref, update);
       removed.push(...departing);
@@ -100,7 +100,7 @@ export const onHouseholdGroupWritten = onDocumentWritten(
     if (before?.isHousehold !== true && after?.isHousehold !== true) return;
 
     const ref = { ownerId: event.params.ownerId, groupId: event.params.groupId };
-    const result = await reconcileGroupHousehold(admin.firestore(), ref);
+    const result = await reconcileGroupHousehold(getFirestore(), ref);
     if (result.removed.length > 0 || result.unlinked) {
       logger.info("[onHouseholdGroupWritten] reconciled", {
         owner_prefix: ref.ownerId.slice(0, 6),

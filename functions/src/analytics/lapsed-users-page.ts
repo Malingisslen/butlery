@@ -9,7 +9,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, QueryDocumentSnapshot, Timestamp, WriteBatch } from "firebase-admin/firestore";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
 import { buildNotificationPayload } from "../shared/notification-payload";
@@ -32,8 +32,8 @@ export interface LapsedThreshold {
 }
 
 export interface PageDeps {
-  db: admin.firestore.Firestore;
-  now: admin.firestore.Timestamp;
+  db: Firestore;
+  now: Timestamp;
   resolveVariant: (uid: string, thresholdType: string) => string;
   fetchCopy: (
     thresholdType: string,
@@ -41,7 +41,7 @@ export interface PageDeps {
   ) => Promise<{ title: string; body: string }>;
   resolveContext: (
     userId: string,
-    userData: admin.firestore.DocumentData,
+    userData: DocumentData,
   ) => Promise<ContextualCopy | null>;
   sendPush: typeof sendPushToUserRespectingPreferences;
   gate: typeof evaluateSendGate;
@@ -66,7 +66,7 @@ interface PerUser {
   contextKey: string | null;
   /** BUT-1428: the user's existing `lastWinBackSentAt`, if any, so the
    *  bridge write can avoid clobbering a still-un-attributed earlier send. */
-  existingWinBackSentAt?: admin.firestore.Timestamp;
+  existingWinBackSentAt?: Timestamp;
   /** The `lastActiveAt` this detection is for, as millis: part of the doc ids
    *  below, so a page that is processed twice overwrites its rows instead of
    *  adding a second notification. */
@@ -82,8 +82,8 @@ interface PerUser {
 export async function processLapsedPage(
   deps: PageDeps,
   threshold: LapsedThreshold,
-  docs: admin.firestore.QueryDocumentSnapshot[],
-  cursorWrite: (batch: admin.firestore.WriteBatch) => void,
+  docs: QueryDocumentSnapshot[],
+  cursorWrite: (batch: WriteBatch) => void,
 ): Promise<PageResult> {
   const { db, now } = deps;
   const nowMs = now.toMillis();
@@ -95,9 +95,9 @@ export async function processLapsedPage(
     const variant = deps.resolveVariant(userDoc.id, threshold.type);
     const data = userDoc.data();
     const existingWinBackSentAt = data.lastWinBackSentAt as
-      | admin.firestore.Timestamp
+      | Timestamp
       | undefined;
-    const lapseKey = (data.lastActiveAt as admin.firestore.Timestamp).toMillis();
+    const lapseKey = (data.lastActiveAt as Timestamp).toMillis();
     // BUT-934: try contextual copy first; fall back to the A/B variant
     // copy when no signal applies. The variant is still recorded so the
     // deterministic bucket is preserved; contextKey marks contextual

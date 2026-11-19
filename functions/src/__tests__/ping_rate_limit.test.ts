@@ -10,9 +10,10 @@
  * Run with: npx ts-node src/__tests__/ping_rate_limit.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-ping-rate-limit" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-ping-rate-limit" });
 }
 
 import { enforcePingRateLimit } from "../triggers/ping_onCreate";
@@ -37,8 +38,8 @@ interface FakeDoc {
   data: Record<string, unknown>;
 }
 
-const ts = (ms: number): admin.firestore.Timestamp =>
-  admin.firestore.Timestamp.fromMillis(ms);
+const ts = (ms: number): Timestamp =>
+  Timestamp.fromMillis(ms);
 
 class FakeFirestore {
   public docs = new Map<string, Record<string, unknown>>();

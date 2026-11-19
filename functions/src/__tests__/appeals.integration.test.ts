@@ -12,11 +12,12 @@ const PROJECT_ID = "butlery-appeals-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { MODERATION_DECISIONS } from "../moderation/report-decision";
@@ -35,7 +36,7 @@ const OWNER = `own${RUN}`;
 const STRANGER = `str${RUN}`;
 const DECIDED = new Date("2026-10-01T10:00:00Z");
 const DEADLINE_MS = DECIDED.getTime() + 183 * 86_400_000;
-const EXPIRE = admin.firestore.Timestamp.fromDate(new Date("2027-10-01T10:00:00Z"));
+const EXPIRE = Timestamp.fromDate(new Date("2027-10-01T10:00:00Z"));
 const TEXT = "Jag håller inte med om beslutet.";
 
 let run = 0;
@@ -77,7 +78,7 @@ async function caseOf(opts: {
     contentId: `content${id}`,
     reason: opts.reason ?? "spam",
     status: opts.status ?? "closed",
-    createdAt: admin.firestore.Timestamp.fromMillis(opts.createdAtMs ?? Date.UTC(2026, 8, 1) + seq),
+    createdAt: Timestamp.fromMillis(opts.createdAtMs ?? Date.UTC(2026, 8, 1) + seq),
   });
   if (opts.decision !== null) {
     await db.collection(MODERATION_DECISIONS).doc(id).set({
@@ -86,7 +87,7 @@ async function caseOf(opts: {
       motivation: "removed_spam",
       contentType: opts.contentType ?? "recipe",
       moderatorId: `mod${RUN}`,
-      decidedAt: admin.firestore.Timestamp.fromDate(DECIDED),
+      decidedAt: Timestamp.fromDate(DECIDED),
       expireAt: EXPIRE,
     });
   }

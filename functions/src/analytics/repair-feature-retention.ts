@@ -28,7 +28,7 @@
  * and adjusted after it would lose one of the two.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import {
   featureProbeQueries,
   WAU_7D,
@@ -48,7 +48,7 @@ const REPAIRED_FLAGS: readonly RepairedFlag[] = ["cooked", "shared"];
 type FlagCounts = Record<RepairedFlag, number>;
 
 export interface RepairOptions {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   /** First UTC day to re-probe, `yyyy-mm-dd`. */
   from: string;
   /** Last UTC day to re-probe, `yyyy-mm-dd`; must be a finished day. */
@@ -120,7 +120,7 @@ function zero(): FlagCounts {
 type DayRows = Map<string, Record<RepairedFlag, boolean>>;
 
 async function readRowsForDay(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   day: string,
 ): Promise<DayRows> {
   const snap = await db
@@ -158,7 +158,7 @@ function seenInWindow(
 export async function repairFeatureRetentionFlags(
   options: RepairOptions,
 ): Promise<RepairReport> {
-  const db = options.db ?? admin.firestore();
+  const db = options.db ?? getFirestore();
   const fromMs = parseDay(options.from);
   const toMs = parseDay(options.to);
   const nowMs = (options.now ?? new Date()).getTime();
@@ -217,8 +217,8 @@ export async function repairFeatureRetentionFlags(
     const day = formatDay(ms);
     const rows = after.get(day) ?? new Map();
     const flips = zero();
-    const dayStart = admin.firestore.Timestamp.fromMillis(ms);
-    const dayEnd = admin.firestore.Timestamp.fromMillis(ms + MS_PER_DAY);
+    const dayStart = Timestamp.fromMillis(ms);
+    const dayEnd = Timestamp.fromMillis(ms + MS_PER_DAY);
     for (const [userId, row] of rows) {
       const missing = REPAIRED_FLAGS.filter((f) => !row[f]);
       if (missing.length === 0) continue;
@@ -319,7 +319,7 @@ export async function repairFeatureRetentionFlags(
       patch,
     );
   }
-  const repairedAt = admin.firestore.Timestamp.fromMillis(nowMs);
+  const repairedAt = Timestamp.fromMillis(nowMs);
   for (const update of aggregateUpdates) {
     batch.update(update.ref, { ...update.fields, repairedAt });
   }

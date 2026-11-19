@@ -10,7 +10,8 @@
  * the copy already in the state it wants and moves the counter by nothing.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentSnapshot, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../shared/collections";
@@ -31,7 +32,7 @@ import {
   wantsProfile,
 } from "./public-recipe-copy";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 /** What the owner's account allows, read once per event outside the transaction. */
 export interface OwnerStanding {
@@ -63,7 +64,7 @@ export interface SyncResult {
 
 export async function readOwnerStanding(uid: string): Promise<OwnerStanding | null> {
   try {
-    const user = await admin.auth().getUser(uid);
+    const user = await getAuth().getUser(uid);
     return {
       ageCompliant: user.customClaims?.ageCompliant === true,
       guest: user.providerData.length === 0 && !user.email,
@@ -76,11 +77,11 @@ export async function readOwnerStanding(uid: string): Promise<OwnerStanding | nu
   }
 }
 
-function matured(userDoc: admin.firestore.DocumentSnapshot, standing: OwnerStanding, nowMs: number) {
+function matured(userDoc: DocumentSnapshot, standing: OwnerStanding, nowMs: number) {
   if (standing.emailVerified) return true;
   const createdAt = userDoc.get("createdAt");
   return (
-    createdAt instanceof admin.firestore.Timestamp &&
+    createdAt instanceof Timestamp &&
     nowMs - createdAt.toMillis() >= ACCOUNT_MATURITY_MS
   );
 }
@@ -112,9 +113,9 @@ export class PublicPhotosPendingError extends Error {
 function refusalFor(
   data: Data | null,
   standing: OwnerStanding | null,
-  userDoc: admin.firestore.DocumentSnapshot,
-  profile: admin.firestore.DocumentSnapshot,
-  marker: admin.firestore.DocumentSnapshot,
+  userDoc: DocumentSnapshot,
+  profile: DocumentSnapshot,
+  marker: DocumentSnapshot,
   nowMs: number,
 ): Refusal | undefined {
   if (!data) return "recipe-gone";
@@ -155,7 +156,7 @@ const PRUNE_GRACE_MS = 10_000;
  * no longer exists, which refuses like an erased account.
  */
 export async function reconcilePublicRecipe(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   recipeId: string,
   standing: OwnerStanding | null,
@@ -217,7 +218,7 @@ export async function reconcilePublicRecipe(
       ) {
         tx.update(recipeRef, {
           "core.showOnProfile": false,
-          "core.showOnProfileChangedAt": admin.firestore.FieldValue.serverTimestamp(),
+          "core.showOnProfileChangedAt": FieldValue.serverTimestamp(),
         });
       }
       if (!copy.exists) return { action: "unchanged", refusal };
@@ -228,7 +229,7 @@ export async function reconcilePublicRecipe(
         const current = profile.get("publicRecipeCount");
         if (typeof current === "number" && current > 0) {
           tx.update(profileRef, {
-            publicRecipeCount: admin.firestore.FieldValue.increment(-1),
+            publicRecipeCount: FieldValue.increment(-1),
           });
         }
       }
@@ -248,11 +249,11 @@ export async function reconcilePublicRecipe(
       ...built,
       imageUrls,
       thumbnailUrl,
-      syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+      syncedAt: FieldValue.serverTimestamp(),
     });
     if (!copy.exists) {
       tx.update(profileRef, {
-        publicRecipeCount: admin.firestore.FieldValue.increment(1),
+        publicRecipeCount: FieldValue.increment(1),
       });
     }
     return { action: "written" };
@@ -268,7 +269,7 @@ export async function reconcilePublicRecipe(
  * delivery that prunes last cannot delete the photos a newer one wrote.
  */
 async function prunePublicPhotos(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   recipeId: string,
   images: PublicImageStore,
@@ -306,7 +307,7 @@ export const syncPublicRecipe = onDocumentWritten(
     const { uid, recipeId } = event.params;
     try {
       const standing = await readOwnerStanding(uid);
-      const result = await reconcilePublicRecipe(admin.firestore(), uid, recipeId, standing);
+      const result = await reconcilePublicRecipe(getFirestore(), uid, recipeId, standing);
       logger.info("public_recipe.sync", { event: "public_recipe.sync", recipeId, ...result });
     } catch (err) {
       // Code and name only: a Storage error's message names the object path,

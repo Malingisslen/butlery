@@ -43,7 +43,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentReference, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -51,11 +51,11 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const RECIPE_SCAN_CAP = 5000;
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Format a UTC `yyyy-mm-dd` from a millisecond timestamp. */
 export function formatUtcDate(ms: number): string {
@@ -89,12 +89,12 @@ interface DayWindow {
   dateStr: string;
   startMs: number;
   endMs: number;
-  dayStart: admin.firestore.Timestamp;
-  dayEnd: admin.firestore.Timestamp;
-  computedAt: admin.firestore.Timestamp;
+  dayStart: Timestamp;
+  dayEnd: Timestamp;
+  computedAt: Timestamp;
 }
 
-function resolveDayWindow(deps: RunDeps): { db: admin.firestore.Firestore } & DayWindow {
+function resolveDayWindow(deps: RunDeps): { db: Firestore } & DayWindow {
   const db = deps.db ?? getDb();
   const nowMs = deps.now != null ? deps.now.getTime() : Date.now();
   const startMs = startOfUtcDay(nowMs);
@@ -104,9 +104,9 @@ function resolveDayWindow(deps: RunDeps): { db: admin.firestore.Firestore } & Da
     dateStr: formatUtcDate(startMs),
     startMs,
     endMs,
-    dayStart: admin.firestore.Timestamp.fromMillis(startMs),
-    dayEnd: admin.firestore.Timestamp.fromMillis(endMs),
-    computedAt: admin.firestore.Timestamp.fromMillis(nowMs),
+    dayStart: Timestamp.fromMillis(startMs),
+    dayEnd: Timestamp.fromMillis(endMs),
+    computedAt: Timestamp.fromMillis(nowMs),
   };
 }
 
@@ -117,10 +117,10 @@ function bump(obj: Record<string, number>, key: string): void {
 
 /** Reference to `analytics/{group}/daily/{date}` (4 segments = a doc). */
 export function dailyDocRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   group: string,
   dateStr: string,
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db.collection("analytics").doc(group).collection("daily").doc(dateStr);
 }
 
@@ -135,7 +135,7 @@ export interface ImportHealthSnapshot {
   byDomain: Record<string, { success: number; failure: number }>;
   totalSuccess: number;
   totalFailure: number;
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 export async function runImportHealthSnapshot(
@@ -207,7 +207,7 @@ export interface RecipeMethodSnapshot {
     social: number;
     manual: number;
   };
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 /** Map a stored `sourceArtefact.type` string to a dashboard method bucket. */
@@ -294,7 +294,7 @@ export interface ParsingCorrectionsSnapshot {
   date: string;
   total: number;
   byDomain: Record<string, number>;
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 export async function runParsingCorrectionsSnapshot(
@@ -346,7 +346,7 @@ export interface OpsSnapshot {
   byType: Record<string, number>;
   totalEvents: number;
   totalDeleted: number;
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 export async function runOpsSnapshot(
@@ -409,7 +409,7 @@ export interface FeedbackSnapshot {
   date: string;
   total: number;
   byCategory: Record<string, number>;
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 export async function runFeedbackSnapshot(

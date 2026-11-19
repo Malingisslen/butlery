@@ -14,11 +14,12 @@ const PROJECT_ID = "butlery-report-evidence-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, DocumentReference, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { withdrawReporterCredit } from "../moderation/menu-dish-credit";
 import {
@@ -60,13 +61,13 @@ async function report(
     contentOwnerId: OWNER,
     reason: "abuse",
     status: "new",
-    createdAt: admin.firestore.Timestamp.fromDate(NOW),
+    createdAt: Timestamp.fromDate(NOW),
     ...extra,
   });
   return id;
 }
 
-async function evidence(id: string): Promise<admin.firestore.DocumentData | undefined> {
+async function evidence(id: string): Promise<DocumentData | undefined> {
   return (await db.collection(REPORT_EVIDENCE).doc(id).get()).data();
 }
 
@@ -99,7 +100,7 @@ async function recipes(): Promise<void> {
   check("the copy names no reporter", ev !== undefined && !("reporterId" in ev));
   check(
     `the copy expires ${EVIDENCE_RETENTION_DAYS} days after capture`,
-    (ev?.expireAt as admin.firestore.Timestamp | undefined)?.toMillis() ===
+    (ev?.expireAt as Timestamp | undefined)?.toMillis() ===
       NOW.getTime() + EVIDENCE_RETENTION_DAYS * 86400000,
   );
 
@@ -351,7 +352,7 @@ async function handlers(): Promise<void> {
     !("createdBy" in (await menu.get()).data()?.menuSnapshot.Middag[0]),
   );
 
-  const write = async (id: string, change: (ref: admin.firestore.DocumentReference) => Promise<unknown>) => {
+  const write = async (id: string, change: (ref: DocumentReference) => Promise<unknown>) => {
     const ref = db.collection("reports").doc(id);
     const before = await ref.get();
     await change(ref);
@@ -363,9 +364,9 @@ async function handlers(): Promise<void> {
   check("an open report's copy survives a status move", (await evidence(created)) !== undefined);
 
   for (const [name, change] of [
-    ["closing the case", (ref: admin.firestore.DocumentReference) => ref.update({ status: "closed" })],
-    ["deleting the report", (ref: admin.firestore.DocumentReference) => ref.delete()],
-    ["anonymising the owner", (ref: admin.firestore.DocumentReference) => ref.update({ contentOwnerId: null })],
+    ["closing the case", (ref: DocumentReference) => ref.update({ status: "closed" })],
+    ["deleting the report", (ref: DocumentReference) => ref.delete()],
+    ["anonymising the owner", (ref: DocumentReference) => ref.update({ contentOwnerId: null })],
   ] as const) {
     const id = await report("comment", `c${RUN}`);
     await captureReportEvidence(db, id, NOW);

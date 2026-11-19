@@ -37,7 +37,7 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, DocumentSnapshot, FieldValue, Firestore, UpdateData, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
 import { accountExists, isUsableUidSegment } from "./sync-block-mirror";
@@ -61,7 +61,7 @@ export const ERASURE_MARKER_WINDOW_MS = 60 * 60 * 1000;
 
 /** Whether a marker read from `erasures_in_progress` still stops a release. */
 export function erasureUnderway(
-  marker: admin.firestore.DocumentSnapshot,
+  marker: DocumentSnapshot,
   nowMs: number = Date.now(),
 ): boolean {
   if (!marker.exists) return false;
@@ -74,7 +74,7 @@ export function erasureUnderway(
 
 /** What `blockHeld.<uid>` stores, so the unblock can put it back. */
 export interface HeldEntry {
-  member: admin.firestore.DocumentData | null;
+  member: DocumentData | null;
   /** Their permission when held; null when the hold took nothing from the recipe. */
   recipePermission: string | null;
   /** Whether the recipe recorded grants for them, so the unblock adds `'direct'` back. */
@@ -83,8 +83,8 @@ export interface HeldEntry {
 
 const DIRECT = "direct";
 
-type Db = admin.firestore.Firestore;
-type Ref = admin.firestore.DocumentReference;
+type Db = Firestore;
+type Ref = DocumentReference;
 
 /**
  * A uid used inside a dotted update key. The Admin SDK refuses a string field
@@ -107,7 +107,7 @@ function blockRefs(db: Db, a: string, b: string): [Ref, Ref] {
   ];
 }
 
-function recipeRefFor(db: Db, row: admin.firestore.DocumentData): Ref | null {
+function recipeRefFor(db: Db, row: DocumentData): Ref | null {
   if (row.contentType !== "recipe") return null;
   const owner = row.sharedByUserId;
   const recipeId = row.originalRecipeId;
@@ -163,8 +163,8 @@ export async function holdRow(db: Db, rowRef: Ref, other: string): Promise<boole
     };
 
     tx.update(rowRef, {
-      sharedToUserIds: admin.firestore.FieldValue.arrayRemove(other),
-      blockHeldUserIds: admin.firestore.FieldValue.arrayUnion(other),
+      sharedToUserIds: FieldValue.arrayRemove(other),
+      blockHeldUserIds: FieldValue.arrayUnion(other),
       [`blockHeld.${other}`]: entry,
     });
     if (member.exists) tx.delete(memberRef);
@@ -174,8 +174,8 @@ export async function holdRow(db: Db, rowRef: Ref, other: string): Promise<boole
         otherGrants.length > 0
           ? { [`socialData.grants.${other}`]: otherGrants }
           : {
-            [`socialData.memberPermissions.${other}`]: admin.firestore.FieldValue.delete(),
-            [`socialData.grants.${other}`]: admin.firestore.FieldValue.delete(),
+            [`socialData.memberPermissions.${other}`]: FieldValue.delete(),
+            [`socialData.grants.${other}`]: FieldValue.delete(),
           },
       );
     }
@@ -214,15 +214,15 @@ export async function releaseRow(db: Db, rowRef: Ref, other: string): Promise<bo
     const restoreRecipe = social?.ownerId === sharer;
 
     tx.update(rowRef, {
-      sharedToUserIds: admin.firestore.FieldValue.arrayUnion(other),
-      blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(other),
-      [`blockHeld.${other}`]: admin.firestore.FieldValue.delete(),
+      sharedToUserIds: FieldValue.arrayUnion(other),
+      blockHeldUserIds: FieldValue.arrayRemove(other),
+      [`blockHeld.${other}`]: FieldValue.delete(),
     });
     if (entry?.member) tx.set(memberRef, entry.member);
     if (recipeRef && restoreRecipe && entry) {
       // Only what the hold took: a permission someone set while the block
       // stood is newer than the one saved here, and other grants stay.
-      const restore: admin.firestore.UpdateData<admin.firestore.DocumentData> = {};
+      const restore: UpdateData<DocumentData> = {};
       if (social?.memberPermissions?.[other] === undefined) {
         restore[`socialData.memberPermissions.${other}`] = entry.recipePermission;
       }
@@ -309,8 +309,8 @@ export async function releasePair(
  * them safely. Read from the fields, like `blockedIdFromEvent`.
  */
 export function pairFromEvent(
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined,
+  before: DocumentData | undefined,
+  after: DocumentData | undefined,
 ): { blockerId: string; blockedId: string } | null {
   const source = after ?? before;
   const blockerId = source?.blockerId;
@@ -329,8 +329,8 @@ export type BlockEventOutcome =
 /** The trigger's body, with the database and Auth check passed in. */
 export async function handleBlockEvent(
   db: Db,
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined,
+  before: DocumentData | undefined,
+  after: DocumentData | undefined,
   ownerExists: (uid: string) => Promise<boolean> = accountExists,
 ): Promise<BlockEventOutcome> {
   const pair = pairFromEvent(before, after);
@@ -366,7 +366,7 @@ export const holdSharesOnBlock = onDocumentWritten(
   },
   async (event) => {
     await handleBlockEvent(
-      admin.firestore(),
+      getFirestore(),
       event.data?.before?.data(),
       event.data?.after?.data(),
     );

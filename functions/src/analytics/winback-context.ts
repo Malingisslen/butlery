@@ -18,7 +18,7 @@
  * never blocking the send.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../shared/collections";
 
@@ -53,7 +53,7 @@ interface RecentShare {
 }
 
 export interface ResolveContextDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   /** Current time in ms; injected for deterministic recency tests. */
   now?: number;
   /** Test seam: override the friend-share lookup entirely. */
@@ -71,7 +71,7 @@ function firstName(displayName: string): string {
 }
 
 function toMillis(value: unknown): number | null {
-  if (value instanceof admin.firestore.Timestamp) return value.toMillis();
+  if (value instanceof Timestamp) return value.toMillis();
   if (value instanceof Date) return value.getTime();
   if (typeof value === "number") return value;
   return null;
@@ -89,7 +89,7 @@ function toMillis(value: unknown): number | null {
  * older too, so we stop.
  */
 export async function loadRecentShareDefault(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   nowMs: number,
 ): Promise<RecentShare | null> {
@@ -132,7 +132,7 @@ export async function loadRecentShareDefault(
  */
 export async function resolveContextualWinbackCopy(
   userId: string,
-  userData: admin.firestore.DocumentData,
+  userData: DocumentData,
   deps: ResolveContextDeps = {},
 ): Promise<ContextualCopy | null> {
   const nowMs = deps.now ?? Date.now();
@@ -143,7 +143,7 @@ export async function resolveContextualWinbackCopy(
     const loader = deps.loadRecentShare
       ? deps.loadRecentShare
       : (uid: string) =>
-          loadRecentShareDefault(deps.db ?? admin.firestore(), uid, nowMs);
+          loadRecentShareDefault(deps.db ?? getFirestore(), uid, nowMs);
     const share = await loader(userId);
     if (share) {
       return {

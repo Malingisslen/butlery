@@ -48,7 +48,10 @@
  *   npm run reset-user-data -- --project <id>           # live; asks for the phrase
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
+import { getStorage } from "firebase-admin/storage";
+import { getApp } from "firebase-admin/app";
 import * as readline from "readline";
 import { randomUUID } from "crypto";
 import { initializeAdminApp } from "./admin-init";
@@ -144,7 +147,7 @@ async function promptUser(question: string): Promise<string> {
 }
 
 async function deleteCollection(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collectionPath: string,
   dryRun: boolean
 ): Promise<number> {
@@ -175,7 +178,7 @@ async function deleteCollection(
  * Recursively delete a document and all its subcollections (any depth).
  */
 async function deleteDocRecursive(
-  docRef: admin.firestore.DocumentReference,
+  docRef: DocumentReference,
   subCounts: Record<string, number>,
   dryRun: boolean,
   maybeRefreshKillSwitch: () => Promise<void>
@@ -203,7 +206,7 @@ async function deleteDocRecursive(
 }
 
 async function deleteWithSubcollections(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   target: CollectionTarget,
   dryRun: boolean,
   maybeRefreshKillSwitch: () => Promise<void>
@@ -261,7 +264,7 @@ async function recordRunOutOfBand(
   args: string[],
   jobsToPause: JobName[],
 ): Promise<void> {
-  const bucket = admin.storage().bucket(`${projectId}.firebasestorage.app`);
+  const bucket = getStorage().bucket(`${projectId}.firebasestorage.app`);
   await bucket.file(`ops/resets/${runId}.json`).save(
     JSON.stringify(
       {
@@ -287,7 +290,7 @@ async function recordRunOutOfBand(
 }
 
 async function runPhases(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   projectId: string,
   dryRun: boolean,
   /**
@@ -307,12 +310,12 @@ async function runPhases(
 
   let pageToken: string | undefined;
   do {
-    const result = await admin.auth().listUsers(1000, pageToken);
+    const result = await getAuth().listUsers(1000, pageToken);
     const uids = result.users.map((u) => u.uid);
     totalAuthDeleted += uids.length;
 
     if (!dryRun && uids.length > 0) {
-      const deleteResult = await admin.auth().deleteUsers(uids);
+      const deleteResult = await getAuth().deleteUsers(uids);
       if (deleteResult.failureCount > 0) {
         // Recorded, not just printed: a surviving Auth account means Phase 2
         // deleted the data of a user who can still sign in.
@@ -394,7 +397,7 @@ async function runPhases(
   console.log("Phase 3: Firebase Storage");
   let totalStorageFiles = 0;
 
-  const bucket = admin.storage().bucket(`${projectId}.firebasestorage.app`);
+  const bucket = getStorage().bucket(`${projectId}.firebasestorage.app`);
 
   // Per PREFIX, not around the loop. A single try meant a failure on `users/`
   // abandoned `shared/` and `feedback/` silently, and the recorded message
@@ -456,7 +459,7 @@ async function runPhases(
  * `ops/resets/{runId}.json` in the Storage bucket, which nothing here reads.)
  */
 async function verifyReset(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   totals: PhaseTotals,
   runId: string,
   scheduler: { api: SchedulerApi; projectId: string; pausedJobs: JobName[] },
@@ -608,14 +611,14 @@ async function main() {
 
   initializeAdminApp();
 
-  const db = admin.firestore();
+  const db = getFirestore();
   // Resolved to a STRING here, and refused if it is not one. The old
   // expression fell back to `options.credential`, an object, and every later
   // use went through `String(...)` — which would have produced a bucket named
   // `[object Object].firebasestorage.app` and a baffling failure inside the
   // run record, before Phase 1 but after the operator had typed the
   // confirmation phrase.
-  const projectId = admin.app().options.projectId;
+  const projectId = getApp().options.projectId;
   if (typeof projectId !== "string" || projectId.length === 0) {
     console.error(
       "REFUSED: could not resolve the Firebase project id from the " +

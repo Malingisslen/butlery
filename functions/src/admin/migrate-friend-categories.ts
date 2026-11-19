@@ -37,7 +37,7 @@
  *   npx ts-node src/admin/migrate-friend-categories.ts --project <id> --live
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { initializeAdminApp } from "./admin-init";
 
 const LEGACY = "friendCategories";
@@ -64,7 +64,7 @@ export interface MigrationOutcome {
  * cover. Which of two divergent rows wins is a person's call, not this script's.
  */
 export async function migrateUser(
-  userDoc: admin.firestore.DocumentReference,
+  userDoc: DocumentReference,
   live: boolean,
 ): Promise<MigrationOutcome> {
   const out: MigrationOutcome = {
@@ -117,7 +117,7 @@ export async function migrateUser(
 async function main(): Promise<void> {
   const live = process.argv.includes("--live");
   initializeAdminApp();
-  const db = admin.firestore();
+  const db = getFirestore();
 
   console.log(live ? "LIVE RUN" : "DRY RUN — nothing is written");
   const totals: MigrationOutcome = {

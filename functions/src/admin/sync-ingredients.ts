@@ -22,7 +22,7 @@
  *   --allow-allergen-removal "<reason>"  (--ci) lift only the allergen stop
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Timestamp, UpdateData, getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
@@ -50,7 +50,7 @@ import { PRODUCTION_PROJECT } from "./require-project";
 
 const projectId = initializeAdminApp().options.projectId;
 
-const db = admin.firestore();
+const db = getFirestore();
 
 type Options = SyncOptions;
 
@@ -306,7 +306,7 @@ async function logSyncEvent(
     resurrections: report.resurrections.length,
     healed: report.healed.length,
     reportFile: path.basename(reportPath),
-    executedAt: admin.firestore.FieldValue.serverTimestamp(),
+    executedAt: FieldValue.serverTimestamp(),
   });
 }
 
@@ -395,7 +395,7 @@ async function main(): Promise<void> {
   // Load current Firestore data
   console.log("\n📥 Loading current Firestore data...");
   const snapshot = await db.collection("ingredients").get();
-  const currentData = new Map<string, admin.firestore.DocumentData>();
+  const currentData = new Map<string, DocumentData>();
   snapshot.docs.forEach((doc) => {
     currentData.set(doc.id, doc.data());
   });
@@ -518,7 +518,7 @@ async function main(): Promise<void> {
     const payload = buildUpdatePayload(currentData.get(id)!, diff.newData.get(id)!);
     batch.update(
       db.collection("ingredients").doc(id),
-      payload as unknown as admin.firestore.UpdateData<admin.firestore.DocumentData>
+      payload as unknown as UpdateData<DocumentData>
     );
     batchCount++;
     if (batchCount >= maxBatchSize) {
@@ -530,8 +530,8 @@ async function main(): Promise<void> {
   for (const id of diff.toRemove) {
     batch.update(db.collection("ingredients").doc(id), {
       status: "deleted",
-      deletedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expireAt: admin.firestore.Timestamp.fromDate(
+      deletedAt: FieldValue.serverTimestamp(),
+      expireAt: Timestamp.fromDate(
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       ),
     });

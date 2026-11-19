@@ -13,7 +13,7 @@
 
 import { onDocumentWrittenWithAuthContext } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, getFirestore } from "firebase-admin/firestore";
 import { isValidDocId } from "../shared/valid-doc-id";
 import { isPersonAuth } from "./report-decision";
 import { REPORTS } from "./report-status";
@@ -24,7 +24,7 @@ import {
   stripCredits,
 } from "./menu-dish-creator";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 /** The part of the trigger event the handler reads. */
 export interface MenuDishCreatorEvent {
@@ -38,7 +38,7 @@ export interface MenuDishCreatorEvent {
 }
 
 export interface MenuDishCreatorDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
 }
 
 export type MenuDishCreatorOutcome =
@@ -62,7 +62,7 @@ function writerMayRead(recipe: Data, writerUid: string): boolean {
 
 /** The credits among [credits] that the named person's own recipe does not back. */
 async function unbacked(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   menuId: string,
   writerUid: string,
   credits: DishCredit[],
@@ -176,6 +176,6 @@ export async function handleMenuDishCreator(
 export const onMenuDishCreatorWrite = onDocumentWrittenWithAuthContext(
   { document: "shared_content/{contentId}", retry: true },
   async (event) => {
-    await handleMenuDishCreator(event, { db: admin.firestore() });
+    await handleMenuDishCreator(event, { db: getFirestore() });
   },
 );

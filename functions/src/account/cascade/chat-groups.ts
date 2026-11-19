@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 // BUT-1838: the single writer of chat-group membership. Imported rather than
@@ -47,7 +47,7 @@ import { batchDeleteAll } from "./core";
 export const MAX_CHAT_GROUPS_PER_USER = 200;
 
 export async function deleteChatGroupMemberships(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   // FIRST, so the membership sweep declining below cannot take the two
@@ -70,7 +70,7 @@ export async function deleteChatGroupMemberships(
   }
 
   let complete = true;
-  const removedAt = admin.firestore.Timestamp.now();
+  const removedAt = Timestamp.now();
 
   for (const groupDoc of snap.docs) {
     try {
@@ -166,21 +166,21 @@ export async function deleteChatGroupMemberships(
  * that reported success would certify an erasure it did not perform.
  */
 async function clearUnreachableChatGroupResiduals(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const legs = [
     {
       field: "departedUserIds",
       op: "array-contains" as const,
-      patch: { departedUserIds: admin.firestore.FieldValue.arrayRemove(uid) },
+      patch: { departedUserIds: FieldValue.arrayRemove(uid) },
     },
     {
       field: "sourceCategoryOwnerId",
       op: "==" as const,
       patch: {
-        sourceCategoryId: admin.firestore.FieldValue.delete(),
-        sourceCategoryOwnerId: admin.firestore.FieldValue.delete(),
+        sourceCategoryId: FieldValue.delete(),
+        sourceCategoryOwnerId: FieldValue.delete(),
       },
     },
   ];

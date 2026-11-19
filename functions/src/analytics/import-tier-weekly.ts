@@ -23,7 +23,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { isoWeekLabel } from "../scheduled/north-star-weekly";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -81,7 +81,7 @@ export interface Shift {
 }
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
   /** Test seam for WEEK_ROW_CAP. */
   rowCap?: number;
@@ -110,7 +110,7 @@ function emptyChannel(): ChannelStats {
 /** Folds one event's fields into its channel's counts. */
 export function addEvent(
   byChannel: Record<string, ChannelStats>,
-  data: admin.firestore.DocumentData
+  data: DocumentData
 ): void {
   const channel =
     typeof data.channel === "string" && data.channel.length > 0
@@ -139,7 +139,7 @@ export function addEvent(
 }
 
 async function readWeek(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   start: Date,
   cap: number
 ): Promise<WeekStats> {
@@ -148,8 +148,8 @@ async function readWeek(
   // or per site.
   const snap = await db
     .collection("parse_events")
-    .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(start))
-    .where("timestamp", "<", admin.firestore.Timestamp.fromDate(end))
+    .where("timestamp", ">=", Timestamp.fromDate(start))
+    .where("timestamp", "<", Timestamp.fromDate(end))
     .select("channel", "outcome", "successfulTier", "usedLlm", "estimatedCostUsd", "timestamp")
     .limit(cap + 1)
     .get();
@@ -243,7 +243,7 @@ function summarise(week: WeekStats) {
 export async function runImportTierWeekly(
   deps: RunDeps = {}
 ): Promise<{ current: WeekStats; previous: WeekStats; shifts: Shift[] }> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? new Date();
 
   const currentStart = new Date(isoWeekStart(now).getTime() - 7 * MS_PER_DAY);
@@ -264,11 +264,11 @@ export async function runImportTierWeekly(
       previous: summarise(previous),
       designGoals: DESIGN_GOALS,
       shifts,
-      computedAt: admin.firestore.Timestamp.fromDate(now),
+      computedAt: Timestamp.fromDate(now),
     });
 
   if (shifts.length > 0) {
-    const at = admin.firestore.Timestamp.fromDate(now);
+    const at = Timestamp.fromDate(now);
     // A fixed id, so a rerun of the same week leaves one row.
     await db
       .collection("system_events")

@@ -7,7 +7,7 @@
  */
 
 import * as assert from "assert";
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import {
   planStamp,
   readBaseMillis,
@@ -49,7 +49,7 @@ test("targets cover the four collections with a 365-day window", () => {
 
 test("a row that already has expireAt is not touched", () => {
   const plan = planStamp(
-    { timestamp: admin.firestore.Timestamp.fromMillis(NOW), expireAt: admin.firestore.Timestamp.fromMillis(NOW) },
+    { timestamp: Timestamp.fromMillis(NOW), expireAt: Timestamp.fromMillis(NOW) },
     target("parsing_corrections"),
     NOW,
   );
@@ -59,7 +59,7 @@ test("a row that already has expireAt is not touched", () => {
 test("a Timestamp creation time anchors the window", () => {
   const created = NOW - 10 * DAY;
   const plan = planStamp(
-    { timestamp: admin.firestore.Timestamp.fromMillis(created) },
+    { timestamp: Timestamp.fromMillis(created) },
     target("tag_overrides_log"),
     NOW,
   );
@@ -79,7 +79,7 @@ test("feedback's ISO-string createdAt anchors the window", () => {
 
 test("a row older than its window is counted as deleted on stamping", () => {
   const plan = planStamp(
-    { createdAt: admin.firestore.Timestamp.fromMillis(NOW - 400 * DAY) },
+    { createdAt: Timestamp.fromMillis(NOW - 400 * DAY) },
     target("parse_corrections_v2"),
     NOW,
   );
@@ -88,7 +88,7 @@ test("a row older than its window is counted as deleted on stamping", () => {
 
 test("a row exactly one window old counts as expired", () => {
   const plan = planStamp(
-    { timestamp: admin.firestore.Timestamp.fromMillis(NOW - 365 * DAY) },
+    { timestamp: Timestamp.fromMillis(NOW - 365 * DAY) },
     target("parsing_corrections"),
     NOW,
   );
@@ -108,7 +108,7 @@ test("a row without a readable creation time gets a full window from now", () =>
 });
 
 test("readBaseMillis reads Timestamp, Date and ISO string, and nothing else", () => {
-  assert.strictEqual(readBaseMillis(admin.firestore.Timestamp.fromMillis(NOW)), NOW);
+  assert.strictEqual(readBaseMillis(Timestamp.fromMillis(NOW)), NOW);
   assert.strictEqual(readBaseMillis(new Date(NOW)), NOW);
   assert.strictEqual(readBaseMillis(new Date(NOW).toISOString()), NOW);
   assert.strictEqual(readBaseMillis(null), null);

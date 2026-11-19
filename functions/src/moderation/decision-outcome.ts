@@ -4,7 +4,7 @@
  * (`my-content-decisions.ts`). Keys only; the app owns the text.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { appealDeadlineFrom, AppealRole, AppealStatus } from "./appeals";
 import { Decision, MODERATOR_ACTIONS } from "./report-decision";
 import { resolveMotivation } from "./motivation";
@@ -50,10 +50,10 @@ export function isDecision(value: unknown): value is Decision {
 }
 
 function iso(value: unknown): string | null {
-  return value instanceof admin.firestore.Timestamp ? value.toDate().toISOString() : null;
+  return value instanceof Timestamp ? value.toDate().toISOString() : null;
 }
 
-function appealViewFrom(snap: admin.firestore.DocumentSnapshot | undefined): AppealView | null {
+function appealViewFrom(snap: DocumentSnapshot | undefined): AppealView | null {
   if (!snap?.exists) return null;
   const status = snap.get("status");
   const submittedAt = iso(snap.get("createdAt"));
@@ -77,14 +77,14 @@ function appealViewFrom(snap: admin.firestore.DocumentSnapshot | undefined): App
  * decision's default, through the same function the close uses.
  */
 export function outcomeFrom(
-  decisionSnap: admin.firestore.DocumentSnapshot,
-  appealSnap: admin.firestore.DocumentSnapshot | undefined,
+  decisionSnap: DocumentSnapshot,
+  appealSnap: DocumentSnapshot | undefined,
   admission: { role: AppealRole; closed: boolean },
 ): Outcome | null {
   if (!decisionSnap.exists) return null;
   const decision = decisionSnap.get("decision");
   const decidedAt = decisionSnap.get("decidedAt");
-  if (!isDecision(decision) || !(decidedAt instanceof admin.firestore.Timestamp)) return null;
+  if (!isDecision(decision) || !(decidedAt instanceof Timestamp)) return null;
   return {
     reportId: decisionSnap.id,
     decision,
@@ -92,7 +92,7 @@ export function outcomeFrom(
     decidedAt: decidedAt.toDate().toISOString(),
     appealDeadline: appealDeadlineFrom(decidedAt.toDate()).toISOString(),
     appeal: appealViewFrom(appealSnap),
-    revised: decisionSnap.get("revisedAt") instanceof admin.firestore.Timestamp,
+    revised: decisionSnap.get("revisedAt") instanceof Timestamp,
     appealable: appealAdmits(admission.role, admission.closed, decision),
   };
 }

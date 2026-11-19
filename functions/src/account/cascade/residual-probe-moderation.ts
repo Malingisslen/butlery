@@ -1,9 +1,9 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { USER_MODERATION, REPORT_HISTORY } from "./moderation";
 
 export async function probeModerationRecords(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   held: boolean,
 ): Promise<number> {

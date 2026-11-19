@@ -12,9 +12,10 @@
  * Run with: npx ts-node src/__tests__/rating-aggregation.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-rating-debounce" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-rating-debounce" });
 }
 
 import {
@@ -167,8 +168,8 @@ class FakeFirestore {
   }
 }
 
-const ts = (ms: number): admin.firestore.Timestamp =>
-  admin.firestore.Timestamp.fromMillis(ms);
+const ts = (ms: number): Timestamp =>
+  Timestamp.fromMillis(ms);
 
 async function debounceCoalescesBurst(): Promise<void> {
   const db = new FakeFirestore();

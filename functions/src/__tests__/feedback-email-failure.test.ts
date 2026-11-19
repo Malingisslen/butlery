@@ -8,7 +8,7 @@
  * Run: npx ts-node src/__tests__/feedback-email-failure.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { readFileSync } from "fs";
 import { join } from "path";
 import {
@@ -38,7 +38,7 @@ interface CapturedWrite {
 }
 
 function fakeDb(onSet?: () => void): {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   writes: CapturedWrite[];
 } {
   const writes: CapturedWrite[] = [];
@@ -51,7 +51,7 @@ function fakeDb(onSet?: () => void): {
         },
       }),
     }),
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, writes };
 }
 
@@ -169,7 +169,7 @@ async function run_(): Promise<void> {
     };
     const NOW = 1_700_000_000_000;
     const stamped = await stampRetentionIfMissing(ref, { category: "bug" }, NOW);
-    const stamp = updates[0]?.expireAt as admin.firestore.Timestamp | undefined;
+    const stamp = updates[0]?.expireAt as Timestamp | undefined;
     check(
       "a feedback row without expireAt is stamped a year ahead",
       stamped === true && stamp?.toMillis() === NOW + FEEDBACK_RETENTION_MS,
@@ -186,7 +186,7 @@ async function run_(): Promise<void> {
       "a row the client already stamped is left alone",
       (await stampRetentionIfMissing(
         ref,
-        { expireAt: admin.firestore.Timestamp.fromMillis(NOW) },
+        { expireAt: Timestamp.fromMillis(NOW) },
         NOW
       )) === false && updates.length === 0,
     );

@@ -13,11 +13,12 @@ const PROJECT_ID = "butlery-moderation-decision-notices-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { MODERATION_DECISIONS, recordDecision } from "../moderation/report-decision";
 import {
@@ -56,7 +57,7 @@ let seq = 0;
 async function closedReport(
   extra: Record<string, unknown> = {},
   fixedId?: string,
-): Promise<{ id: string; data: admin.firestore.DocumentData }> {
+): Promise<{ id: string; data: DocumentData }> {
   const id = fixedId ?? `n${RUN}${seq++}`;
   const data = {
     reporterId: REPORTER,
@@ -65,14 +66,14 @@ async function closedReport(
     contentOwnerId: OWNER,
     reason: "spam",
     status: "closed",
-    createdAt: admin.firestore.Timestamp.fromDate(NOW),
+    createdAt: Timestamp.fromDate(NOW),
     ...extra,
   };
   await db.collection("reports").doc(id).set(data);
   return { id, data };
 }
 
-function decide(id: string, data: admin.firestore.DocumentData) {
+function decide(id: string, data: DocumentData) {
   return recordDecision(db, {
     reportId: id,
     report: data,
@@ -89,7 +90,7 @@ async function motivationOf(id: string): Promise<unknown> {
 const reporterRowId = (reportId: string) => `moderation_${noticeKey(reportId)}_reporter`;
 const ownerRowId = (reportId: string) => `moderation_${noticeKey(reportId)}_owner`;
 
-async function row(id: string): Promise<admin.firestore.DocumentData | undefined> {
+async function row(id: string): Promise<DocumentData | undefined> {
   return (await db.collection(NOTIFICATION_HISTORY).doc(id).get()).data();
 }
 

@@ -8,7 +8,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as admin from "firebase-admin";
+import { Timestamp, Transaction } from "firebase-admin/firestore";
 import {
   APPLIED_RETENTION_MS,
   formatMarkAppliedSummary,
@@ -31,7 +31,7 @@ const ingredient = {
 };
 
 function store(): FakeFirestore {
-  const s = new FakeFirestore({ now: admin.firestore.Timestamp.fromDate(NOW) });
+  const s = new FakeFirestore({ now: Timestamp.fromDate(NOW) });
   s.seed("ingredients/garlic", ingredient);
   return s;
 }
@@ -81,8 +81,8 @@ const cases: UnitCase[] = [
       assertEqual(JSON.stringify(counts), '{"inReview":2,"applied":1,"notYet":1,"skipped":0}', "counts");
       const done = s.read(`${COL}/done`)!;
       assertEqual(done.status, "applied", "applied");
-      assertEqual((done.appliedAt as admin.firestore.Timestamp).toMillis(), NOW.getTime(), "server time");
-      assertEqual((done.expireAt as admin.firestore.Timestamp).toMillis() - NOW.getTime(), APPLIED_RETENTION_MS, "expiry");
+      assertEqual((done.appliedAt as Timestamp).toMillis(), NOW.getTime(), "server time");
+      assertEqual((done.expireAt as Timestamp).toMillis() - NOW.getTime(), APPLIED_RETENTION_MS, "expiry");
       assertEqual(done.prNumber, 101, "PR number kept");
       assertEqual(s.read(`${COL}/open`)?.status, "inReview", "not yet synced");
       assertEqual(s.read(`${COL}/pending`)?.status, "pending", "pending untouched");
@@ -97,7 +97,7 @@ const cases: UnitCase[] = [
       const racing = new Proxy(s.db, {
         get(target, prop, receiver) {
           if (prop === "runTransaction") {
-            return (fn: (tx: admin.firestore.Transaction) => Promise<unknown>) => {
+            return (fn: (tx: Transaction) => Promise<unknown>) => {
               s.seed(`${COL}/gone`, { ...s.read(`${COL}/gone`)!, status: "withdrawn" });
               return real(fn);
             };

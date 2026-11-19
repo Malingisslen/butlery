@@ -26,12 +26,12 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { hashUid } from "../shared/hash-uid";
 import { assertNotGuest } from "../shared/caller-eligibility";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 export interface SetProfileSearchabilityRequest {
   /** Desired discoverability. `true` opts the caller into people-search. */
@@ -88,7 +88,7 @@ export const setProfileSearchability =
  * nameless result; failing closed keeps profile creation on its one path.
  */
 export async function setProfileSearchabilityWithDeps(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   callerUid: string,
   searchable: boolean,
 ): Promise<SetProfileSearchabilityResponse> {
@@ -105,7 +105,7 @@ export async function setProfileSearchabilityWithDeps(
   await profileRef.set(
     {
       isSearchable: searchable,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true },
   );

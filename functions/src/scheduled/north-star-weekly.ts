@@ -30,7 +30,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { logAnalyticsEvent } from "../shared/analytics-server";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -47,9 +47,9 @@ export interface NorthStarMetrics {
   retentionW1: number;
   retentionW2: number;
   retentionW3: number;
-  computedAt: admin.firestore.Timestamp;
-  weekStart: admin.firestore.Timestamp;
-  weekEnd: admin.firestore.Timestamp;
+  computedAt: Timestamp;
+  weekStart: Timestamp;
+  weekEnd: Timestamp;
   isoWeek: string;
 }
 
@@ -60,7 +60,7 @@ interface WindowAgg {
 }
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
@@ -91,12 +91,12 @@ export function isoWeekLabel(date: Date): string {
  * the cursor reads its value from each page's last document.
  */
 async function fetchWindowAgg(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   from: Date,
   to: Date
 ): Promise<WindowAgg> {
-  const fromTs = admin.firestore.Timestamp.fromDate(from);
-  const toTs = admin.firestore.Timestamp.fromDate(to);
+  const fromTs = Timestamp.fromDate(from);
+  const toTs = Timestamp.fromDate(to);
   // We don't constrain by `eventType` here — wau needs every event. We
   // filter cook-only at aggregation time.
   const base = db
@@ -108,7 +108,7 @@ async function fetchWindowAgg(
 
   const users = new Set<string>();
   let cooks = 0;
-  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let lastDoc: QueryDocumentSnapshot | undefined;
 
   for (;;) {
     let page = base.limit(EVENTS_PAGE_SIZE);
@@ -156,7 +156,7 @@ function retentionFraction(
 }
 
 export async function runNorthStarWeekly(deps: RunDeps = {}): Promise<NorthStarMetrics> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const now = deps.now ?? new Date();
 
   // Window: past 7 days ending at `now`. We aggregate over this window
@@ -193,9 +193,9 @@ export async function runNorthStarWeekly(deps: RunDeps = {}): Promise<NorthStarM
     retentionW1,
     retentionW2,
     retentionW3,
-    computedAt: admin.firestore.Timestamp.fromDate(now),
-    weekStart: admin.firestore.Timestamp.fromDate(w0Start),
-    weekEnd: admin.firestore.Timestamp.fromDate(w0End),
+    computedAt: Timestamp.fromDate(now),
+    weekStart: Timestamp.fromDate(w0Start),
+    weekEnd: Timestamp.fromDate(w0End),
     isoWeek,
   };
 

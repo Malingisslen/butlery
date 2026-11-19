@@ -9,7 +9,7 @@
 import { FakeFirestore } from "./_fake-firestore";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
 import { cleanUserFromLearnedAliases } from "../account/cascade/learned-aliases";
-import type * as admin from "firebase-admin";
+import type { Firestore } from "firebase-admin/firestore";
 
 const UID = "erased-uid";
 const OTHER = "other-uid";
@@ -20,7 +20,7 @@ const COL = "analytics/ingredients/learned_aliases";
  * contended or unavailable document takes. Counts every transaction run.
  */
 function failingOn(store: FakeFirestore, failing: (path: string) => boolean): {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   runs: () => number;
 } {
   const inner = store.db as unknown as {

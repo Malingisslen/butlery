@@ -21,7 +21,7 @@
  * invisible to `count()`, which counts documents.
  */
 
-import type * as admin from "firebase-admin";
+import type { CollectionReference, DocumentReference, Firestore } from "firebase-admin/firestore";
 import { isKeptAnalyticsSeries } from "./reset-collection-lists";
 
 export const ANALYTICS_COLLECTION = "analytics";
@@ -73,8 +73,8 @@ export interface AnalyticsResidue {
  */
 export const KEPT_PARENT_FIELDS = new Set<string>(["lastRunAt"]);
 
-type Db = admin.firestore.Firestore;
-type DocRef = admin.firestore.DocumentReference;
+type Db = Firestore;
+type DocRef = DocumentReference;
 
 export interface PruneOptions {
   /** The script's kill-switch cursor, threaded into the per-document loop. */
@@ -99,7 +99,7 @@ async function walkAnalytics(
   visit: {
     sub: (
       parent: DocRef,
-      sub: admin.firestore.CollectionReference,
+      sub: CollectionReference,
       docs: DocRef[],
     ) => Promise<void>;
     parent?: (parent: DocRef) => Promise<void>;

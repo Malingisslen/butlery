@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -19,7 +19,7 @@ interface Leg {
   field: string;
   value: string;
   // The fields this doc holds [value] in, to null.
-  cleared: (doc: admin.firestore.QueryDocumentSnapshot) => string[];
+  cleared: (doc: QueryDocumentSnapshot) => string[];
 }
 
 /**
@@ -37,7 +37,7 @@ interface Leg {
  * up what is left, since every scrubbed document drops out of its query.
  */
 export async function scrubIngredientChangeRequestAuthors(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const uidHash = hashUid(uid);
@@ -46,7 +46,7 @@ export async function scrubIngredientChangeRequestAuthors(
       collection: Collections.ingredientChangeRequests,
       field,
       value: uid,
-      cleared: (doc: admin.firestore.QueryDocumentSnapshot) =>
+      cleared: (doc: QueryDocumentSnapshot) =>
         PROPOSAL_UID_FIELDS.filter((f) => doc.get(f) === uid),
     })),
     {

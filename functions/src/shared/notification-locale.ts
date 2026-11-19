@@ -8,7 +8,7 @@
  * which is what every push carried before this existed.
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 
 export const NOTIFICATION_LOCALES = ["sv", "en"] as const;
 export type NotificationLocale = (typeof NOTIFICATION_LOCALES)[number];
@@ -58,8 +58,7 @@ export function usableLocalized(raw: unknown): LocalizedTexts {
 export async function readRecipientLocale(
   userId: string
 ): Promise<NotificationLocale | null> {
-  const snap = await admin
-    .firestore()
+  const snap = await getFirestore()
     .collection("users")
     .doc(userId)
     .collection("settings")

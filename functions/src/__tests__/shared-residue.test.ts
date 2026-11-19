@@ -10,9 +10,10 @@
  * Run: npx ts-node src/__tests__/shared-residue.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-shared-residue" });
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-shared-residue" });
 }
 
 import * as fs from "fs";
@@ -31,7 +32,7 @@ const UID = "requester-uid";
 const OTHER = "other-uid";
 const THIRD = "third-uid";
 const LISTS = "unified_shared_shopping_lists";
-const T0 = admin.firestore.Timestamp.fromMillis(1_700_000_000_000);
+const T0 = Timestamp.fromMillis(1_700_000_000_000);
 const T0_ISO = new Date(1_700_000_000_000).toISOString();
 
 function run(db: FakeFirestore) {
@@ -268,7 +269,7 @@ const cases: UnitCase[] = [
     fn: async () => {
       const item = residue.projectItem(
         mineRow({
-          note: admin.firestore().doc("users/x"),
+          note: getFirestore().doc("users/x"),
           category: { nested: { deeper: OTHER } },
           unit: [OTHER],
           priority: null,
@@ -298,7 +299,7 @@ const cases: UnitCase[] = [
             unit: "l",
             category: "Mejeri",
             note: null,
-            at: admin.firestore.Timestamp.fromDate(new Date(T0_ISO)),
+            at: Timestamp.fromDate(new Date(T0_ISO)),
             editedByUserId: OTHER,
             nested: { who: OTHER },
           },

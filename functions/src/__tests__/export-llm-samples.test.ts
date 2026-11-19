@@ -20,9 +20,10 @@
  * rules-test harness adds no value here.
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-export-llm-samples" });
+import { Firestore, Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-export-llm-samples" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -65,12 +66,12 @@ function docData(d: SeedDoc): Record<string, unknown> {
     createdAt:
       d.createdAtMs === undefined || d.createdAtMs === null
         ? undefined
-        : admin.firestore.Timestamp.fromMillis(d.createdAtMs),
+        : Timestamp.fromMillis(d.createdAtMs),
     ...(d.extra ?? {}),
   };
 }
 
-function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
+function makeFakeDb(store: FakeStore): Firestore {
   function buildQuery(filter: { mode?: string }) {
     return {
       where(field: string, op: string, value: unknown) {
@@ -99,7 +100,7 @@ function makeFakeDb(store: FakeStore): admin.firestore.Firestore {
     collection(_name: string) {
       return buildQuery({});
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 interface TestCase {

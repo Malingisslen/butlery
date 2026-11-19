@@ -32,7 +32,7 @@
 
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, Transaction, getFirestore } from "firebase-admin/firestore";
 import { logSafeConversationId } from "../shared/log-safe-conversation-id";
 import { Collections } from "../shared/collections";
 import { cutGroupMenuPlanAccess } from "../groups/group-menu-access";
@@ -68,17 +68,17 @@ export const MAX_GROUP_PARTICIPANTS = 100;
  * per-inviter gate before it could seat anyone again.
  *
  * Exported only so a test can hold that: the trigger itself reads
- * `admin.firestore()` and has no seam, and the absent argument is a decision at
+ * `getFirestore()` and has no seam, and the absent argument is a decision at
  * THIS call site that no assertion on `stageMemberRemoval`'s default can pin.
  */
 export function stageBackstopRemovals(
-  tx: admin.firestore.Transaction,
+  tx: Transaction,
   params: {
-    db: admin.firestore.Firestore;
+    db: Firestore;
     groupId: string;
     conversationId: string;
     uids: string[];
-    removedAt: admin.firestore.Timestamp;
+    removedAt: Timestamp;
   },
 ): void {
   const { db, groupId, conversationId, uids, removedAt } = params;
@@ -136,7 +136,7 @@ export const enforceGroupMinorMembership = onDocumentWritten(
       return isValidDocId(v) ? v : null;
     };
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const isMinor = await readIsMinor(db, memberIds);
     const minorUids = memberIds.filter((u) => isMinor[u]);
     if (minorUids.length === 0) return;
@@ -178,7 +178,7 @@ export const enforceGroupMinorMembership = onDocumentWritten(
       },
     );
 
-    const removedAt = admin.firestore.Timestamp.now();
+    const removedAt = Timestamp.now();
     try {
       await db.runTransaction(async (tx) => {
         // Read the group inside the transaction so a concurrent legitimate

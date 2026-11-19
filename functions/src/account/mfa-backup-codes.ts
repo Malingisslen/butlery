@@ -54,7 +54,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
+import { getApp } from "firebase-admin/app";
 import {
   StoredCode,
   buildStoredCodes,
@@ -95,7 +97,7 @@ export const BACKUP_CODES_COLLECTION = "mfa_backup_codes";
 // --- recovery ----------------------------------------------------------------
 
 export interface RecoveryDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   /** The HMAC pepper. Empty means not configured: recovery fails closed. */
   pepper: string;
   verifyFirstFactor(proof: FirstFactorProof): Promise<FirstFactor>;
@@ -252,7 +254,7 @@ export async function runMfaRecovery(
 // --- unenrolment -------------------------------------------------------------
 
 export interface ClearDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   enrolledFactorCount(uid: string): Promise<number>;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
@@ -291,7 +293,7 @@ export async function runClearBackupCodes(
 // --- generation --------------------------------------------------------------
 
 export interface GenerateDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
 }
@@ -348,7 +350,7 @@ function readSecret(secret: ReturnType<typeof defineSecret>): string {
 
 /** Epoch millis of each enrolled second factor; an unreadable time is left out. */
 async function enrollmentTimesOf(uid: string): Promise<number[]> {
-  const factors = (await admin.auth().getUser(uid)).multiFactor?.enrolledFactors ?? [];
+  const factors = (await getAuth().getUser(uid)).multiFactor?.enrolledFactors ?? [];
   const times = factors.map((f) => Date.parse(f.enrollmentTime ?? ""));
   if (times.some((t) => !Number.isFinite(t))) {
     // Otherwise indistinguishable from a stale set in the audit log.
@@ -363,11 +365,11 @@ async function writeAudit(entry: Record<string, unknown>): Promise<void> {
   try {
     // `operation` + a server `timestamp` are what the 180-day purge filters
     // on (audit_logs/purge-expired.ts); nothing secret is in [entry].
-    await admin.firestore().collection("audit_logs").add({
+    await getFirestore().collection("audit_logs").add({
       ...entry,
       operation: entry.action,
       resourceType: "mfa",
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
     });
   } catch (err) {
     logger.error("[mfa-backup-codes] audit write failed", {
@@ -397,7 +399,7 @@ export const generateMfaBackupCodes = onCall(
     }
     return runGenerateBackupCodes(
       {
-        db: admin.firestore(),
+        db: getFirestore(),
         audit: writeAudit,
         now: () => Date.now(),
       },
@@ -421,23 +423,23 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
     }
     return runMfaRecovery(
       {
-        db: admin.firestore(),
+        db: getFirestore(),
         pepper: readSecret(recoveryPepper),
         verifyFirstFactor: (proof) =>
           verifyFirstFactorProof(
             proof,
             readSecret(identityToolkitApiKey),
             projectAuthHandlerUri(
-              process.env.GCLOUD_PROJECT ?? admin.app().options.projectId,
+              process.env.GCLOUD_PROJECT ?? getApp().options.projectId,
             ),
           ),
         enrollmentTimes: enrollmentTimesOf,
         removeSecondFactors: async (uid) => {
-          await admin.auth().updateUser(uid, {
+          await getAuth().updateUser(uid, {
             multiFactor: { enrolledFactors: null },
           });
         },
-        revokeSessions: (uid) => admin.auth().revokeRefreshTokens(uid),
+        revokeSessions: (uid) => getAuth().revokeRefreshTokens(uid),
         audit: writeAudit,
         now: () => Date.now(),
       },
@@ -463,9 +465,9 @@ export const clearMfaBackupCodes = onCall(
     }
     return runClearBackupCodes(
       {
-        db: admin.firestore(),
+        db: getFirestore(),
         enrolledFactorCount: async (uid) =>
-          (await admin.auth().getUser(uid)).multiFactor?.enrolledFactors
+          (await getAuth().getUser(uid)).multiFactor?.enrolledFactors
             ?.length ?? 0,
         audit: writeAudit,
         now: () => Date.now(),

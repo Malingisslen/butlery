@@ -12,9 +12,10 @@
  * Run: npx ts-node src/__tests__/cleanup-deep-links.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-deep-links-retention" });
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-deep-links-retention" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -84,7 +85,7 @@ function fakeDb(store: Store) {
     collection(name: string) {
       if (name !== "deep_links") throw new Error(`unexpected collection ${name}`);
       return {
-        where(field: string, op: string, cutoff: admin.firestore.Timestamp) {
+        where(field: string, op: string, cutoff: Timestamp) {
           return {
             limit(n: number) {
               return {
@@ -94,7 +95,7 @@ function fakeDb(store: Store) {
                     const value = (store.docs.get(p) as Data)[field];
                     return (
                       op === "<" &&
-                      value instanceof admin.firestore.Timestamp &&
+                      value instanceof Timestamp &&
                       value.toMillis() < cutoff.toMillis()
                     );
                   });
@@ -129,8 +130,8 @@ function record(name: string, ok: boolean, detail = ""): void {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const NOW = admin.firestore.Timestamp.fromMillis(Date.UTC(2026, 10, 1, 12));
-const daysAgo = (d: number) => admin.firestore.Timestamp.fromMillis(NOW.toMillis() - d * DAY_MS);
+const NOW = Timestamp.fromMillis(Date.UTC(2026, 10, 1, 12));
+const daysAgo = (d: number) => Timestamp.fromMillis(NOW.toMillis() - d * DAY_MS);
 
 async function deletesOldLinksWithClicksAndKeepsYoungOnes(): Promise<void> {
   const store = new Store();

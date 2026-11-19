@@ -10,13 +10,14 @@ const PROJECT_ID = "butlery-acquisition-counter-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
+import { DocumentData, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import * as fs from "fs";
 import * as path from "path";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import {
   MEDIUM_ALLOWLIST,
@@ -31,7 +32,7 @@ import {
   type AuthAccount,
 } from "../analytics/acquisition-counter";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 const RUN = Date.now().toString(36);
 let seq = 0;
@@ -53,7 +54,7 @@ function check(name: string, ok: boolean, detail?: string): void {
 async function newAccount(uid: string): Promise<AuthAccount> {
   const row = await db.collection("users").doc(uid).collection("acquisition").doc("current").get();
   const ts = row.get("firstSeenAt");
-  const at = ts instanceof admin.firestore.Timestamp ? ts.toMillis() : Date.now();
+  const at = ts instanceof Timestamp ? ts.toMillis() : Date.now();
   return { providerData: [{ providerId: "password" }], metadata: { creationTime: new Date(at - 3600_000).toUTCString() } };
 }
 
@@ -79,7 +80,7 @@ async function seed(
   if (consent !== null) await user.collection("consent").doc("current").set(consent);
   await user.collection("acquisition").doc("current").set({
     ...attribution,
-    firstSeenAt: admin.firestore.Timestamp.fromDate(new Date(firstSeenIso)),
+    firstSeenAt: Timestamp.fromDate(new Date(firstSeenIso)),
   });
 }
 
@@ -93,7 +94,7 @@ const event = (uid: string) => ({ uid, eventTime: new Date().toISOString() });
 function strings(value: unknown, out: string[] = []): string[] {
   if (typeof value === "string") out.push(value);
   else if (Array.isArray(value)) value.forEach((v) => strings(v, out));
-  else if (value && typeof value === "object" && !(value instanceof admin.firestore.Timestamp)) {
+  else if (value && typeof value === "object" && !(value instanceof Timestamp)) {
     for (const [k, v] of Object.entries(value)) {
       out.push(k);
       strings(v, out);
@@ -120,7 +121,7 @@ async function counted(): Promise<void> {
   );
   check(
     "the source row is stamped countedAt",
-    (await source(uid))?.countedAt instanceof admin.firestore.Timestamp,
+    (await source(uid))?.countedAt instanceof Timestamp,
     JSON.stringify(await source(uid)),
   );
 
@@ -291,7 +292,7 @@ async function enabledHandler(): Promise<void> {
   check(
     "the exported handler counts the row on the day of firstSeenAt",
     doc?.total === 1 && doc?.bySource?.instagram === 1 &&
-      (await source(uid))?.countedAt instanceof admin.firestore.Timestamp,
+      (await source(uid))?.countedAt instanceof Timestamp,
     `${JSON.stringify(doc)} ${JSON.stringify(await source(uid))}`,
   );
 }

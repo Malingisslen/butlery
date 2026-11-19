@@ -8,7 +8,7 @@
  * scanned the next time those bytes arrive.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 
 /** Server-only; firestore.rules' default deny keeps clients out. */
@@ -103,7 +103,7 @@ export interface ScanResult {
 }
 
 export interface ScanDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   annotate: SafeSearchAnnotate;
   /** Seam: the unit suite does not wait out real seconds. */
   sleep?: (ms: number) => Promise<void>;
@@ -146,14 +146,14 @@ function verdictOf(snap: { exists: boolean; get(field: string): unknown }): Scan
  * the copy fires reads it.
  */
 export async function overrideVerdict(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   key: string,
 ): Promise<void> {
   await db.collection(SAFE_SEARCH_SCANS).doc(key).set(
     {
       explicit: false,
       overriddenBy: APPEAL_OVERRIDE,
-      overriddenAt: admin.firestore.FieldValue.serverTimestamp(),
+      overriddenAt: FieldValue.serverTimestamp(),
     },
     { merge: true },
   );
@@ -166,7 +166,7 @@ function leaseIsLive(snap: { exists: boolean; get(field: string): unknown }): bo
 
 /** A cached verdict, or whether this caller now holds the claim. */
 async function waitForVerdict(
-  ref: admin.firestore.DocumentReference,
+  ref: DocumentReference,
   sleep: (ms: number) => Promise<void>
 ): Promise<{ verdict: ScanResult | null; claimed: boolean }> {
   for (let poll = 0; poll <= POLLS; poll++) {
@@ -235,7 +235,7 @@ export async function scanOnce(input: ScanInput, deps: ScanDeps): Promise<ScanRe
       await ref.set({
         ...scores,
         explicit,
-        scannedAt: admin.firestore.FieldValue.serverTimestamp(),
+        scannedAt: FieldValue.serverTimestamp(),
       });
     } catch (err) {
       logger.warn("[safeSearch] cache write failed; verdict still applied", {

@@ -11,7 +11,8 @@
  * Prints counts and bytes per folder, never user ids or file names.
  */
 
-import * as admin from "firebase-admin";
+import { CollectionReference, Firestore, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { initializeAdminApp } from "./admin-init";
 import {
   assertScanPlausible,
@@ -35,8 +36,8 @@ const GET_CHUNK = 300;
  * reference. A walk that reads too much only keeps more files.
  */
 async function harvestTree(
-  db: admin.firestore.Firestore,
-  collections: admin.firestore.CollectionReference[],
+  db: Firestore,
+  collections: CollectionReference[],
   keep: Set<string>,
 ): Promise<number> {
   let reads = 0;
@@ -66,8 +67,8 @@ async function main(): Promise<void> {
     );
   }
   const projectId = initializeAdminApp().options.projectId;
-  const db = admin.firestore();
-  const bucket = admin.storage().bucket(`${projectId}.firebasestorage.app`);
+  const db = getFirestore();
+  const bucket = getStorage().bucket(`${projectId}.firebasestorage.app`);
 
   const keep = new Set<string>();
   const reads = await harvestTree(db, await db.listCollections(), keep);

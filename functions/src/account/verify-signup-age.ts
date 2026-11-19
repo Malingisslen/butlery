@@ -40,13 +40,14 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth, getAuth } from "firebase-admin/auth";
 import { hashUid } from "../shared/hash-uid";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isGuestCaller } from "../shared/caller-eligibility";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /** ADR-0001. Kept in sync with `OnboardingViewModel.minAgeYears` (Dart) and
  *  `UserProfile`'s birthYear invariant. */
@@ -155,7 +156,7 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
     await enforceIpAuditCap(db, ip);
 
     return runVerifySignupAgeWithDeps(
-      { db, auth: admin.auth() },
+      { db, auth: getAuth() },
       uid,
       birthYear,
       { guest: isGuestCaller(request.auth) },
@@ -164,8 +165,8 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
 );
 
 export interface VerifySignupAgeDeps {
-  db: admin.firestore.Firestore;
-  auth: admin.auth.Auth;
+  db: Firestore;
+  auth: Auth;
 }
 
 /** Required rather than defaulted: a caller that forgot it would hand a guest
@@ -297,7 +298,7 @@ export async function runVerifySignupAgeWithDeps(
  * `setLifecycleStage` defense-in-depth) stay tracked separately.
  */
 async function writeComplianceArtifacts(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   birthYear: number,
   isMinor: boolean,
@@ -319,7 +320,7 @@ export async function runVerifySignupAge(
   mode: VerifySignupAgeMode,
 ): Promise<VerifySignupAgeResponse> {
   return runVerifySignupAgeWithDeps(
-    { db, auth: admin.auth() },
+    { db, auth: getAuth() },
     uid,
     birthYear,
     mode,
@@ -347,7 +348,7 @@ export async function runVerifySignupAge(
  * consent retention bucket.
  */
 export async function writeComplianceAudit(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
   birthYear: number,
   event?: "guest_upgrade",
@@ -365,7 +366,7 @@ export async function writeComplianceAudit(
         isAgeCompliant: true,
         birthDecade: birthDecade(birthYear),
         ...(event ? { event } : {}),
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
       },
       { merge: true },
     );
@@ -378,13 +379,13 @@ export async function writeComplianceAudit(
  * 15 (Legal condition).
  */
 async function writeRejectionAudit(
-  database: admin.firestore.Firestore,
+  database: Firestore,
 ): Promise<void> {
   await database.collection("audit_logs").add({
     operation: "age_verification_rejected",
     reason: "under_minimum_age",
     basis: "dataskyddslag_2_4",
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
   });
 }
 
@@ -394,7 +395,7 @@ async function writeRejectionAudit(
  * to bill the audit collection unbounded.
  */
 export async function enforceIpAuditCap(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   ip: string,
 ): Promise<void> {
   const hour = Math.floor(Date.now() / (60 * 60 * 1000));
@@ -415,7 +416,7 @@ export async function enforceIpAuditCap(
         {
           count: count + 1,
           // TTL field so a cleanup job / policy can reap stale buckets.
-          expireAt: admin.firestore.Timestamp.fromDate(
+          expireAt: Timestamp.fromDate(
             new Date(Date.now() + 2 * 60 * 60 * 1000),
           ),
         },

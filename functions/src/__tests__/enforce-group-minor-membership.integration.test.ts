@@ -48,7 +48,8 @@ process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: PROJECT_ID });
 
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const RUN = Date.now().toString(36);
 
@@ -70,11 +71,11 @@ async function run(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID });
   }
-  const db = admin.firestore();
-  // Import AFTER initializeApp so the module's admin.firestore() binds to the
+  const db = getFirestore();
+  // Import AFTER initializeApp so the module's getFirestore() binds to the
   // emulator-configured default app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const {
@@ -101,7 +102,7 @@ async function run(): Promise<void> {
   async function seedFriend(minorUid: string, adderUid: string): Promise<void> {
     seededUsers.add(minorUid);
     await userRef(minorUid).collection("friends").doc(adderUid).set({
-      createdAt: admin.firestore.Timestamp.now(),
+      createdAt: Timestamp.now(),
     });
   }
 
@@ -117,7 +118,7 @@ async function run(): Promise<void> {
   ): Promise<string> {
     seededGroups.push(groupId);
     const convId = groupId;
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     const perUid = <T>(value: T): Record<string, T> =>
       Object.fromEntries(members.map((uid) => [uid, value]));
 
@@ -320,8 +321,8 @@ async function run(): Promise<void> {
       "the second pass must change nothing",
     );
     assert(
-      (afterSecond.updatedAt as admin.firestore.Timestamp).isEqual(
-        afterFirst.updatedAt as admin.firestore.Timestamp,
+      (afterSecond.updatedAt as Timestamp).isEqual(
+        afterFirst.updatedAt as Timestamp,
       ),
       "the second pass must not even stamp updatedAt — it wrote nothing",
     );

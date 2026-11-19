@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -20,7 +20,7 @@ import { scrubDishCreator } from "./dish-creator";
  * [removeRealtimeParticipation]).
  */
 export async function deleteRealtimeMenus(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const owned = await db
@@ -47,7 +47,7 @@ export async function deleteRealtimeMenus(
  * the pair the rules require to stay in step.
  */
 export async function deleteRealtimeResources(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const votesCleared = await deleteLiveMenuVotes(db, uid);
@@ -84,7 +84,7 @@ export const MAX_LIVE_MENU_VOTE_SWEEP_ROWS = 2000;
  * in `probeResidualData` reads the same rows.
  */
 export async function deleteLiveMenuVotes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const ballots = await liveMenuBallotRows(db, uid);
@@ -114,7 +114,7 @@ export async function deleteLiveMenuVotes(
 }
 
 /** True for `realtime_resources/{id}`, and for nothing nested deeper. */
-function isLiveMenuParent(ref: admin.firestore.DocumentReference): boolean {
+function isLiveMenuParent(ref: DocumentReference): boolean {
   return (
     ref.parent.id === Collections.realtimeResources && ref.parent.parent === null
   );
@@ -126,9 +126,9 @@ function isLiveMenuParent(ref: admin.firestore.DocumentReference): boolean {
  * exceeds the cap.
  */
 export async function liveMenuBallotRows(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
-): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
+): Promise<QueryDocumentSnapshot[] | null> {
   const snap = await db
     .collectionGroup(Collections.liveMenuVotes)
     .where("userId", "==", uid)
@@ -158,8 +158,8 @@ export async function liveMenuBallotRows(
  * Recorded rather than silently skipped.
  */
 async function removeVoteEntries(
-  db: admin.firestore.Firestore,
-  menus: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  menus: QueryDocumentSnapshot[],
   uid: string,
 ): Promise<void> {
   for (const menu of menus) {
@@ -176,7 +176,7 @@ async function removeVoteEntries(
       carrying,
       (batch, voteDoc) => {
         batch.update(voteDoc.ref, {
-          [`votes.${uid}`]: admin.firestore.FieldValue.delete(),
+          [`votes.${uid}`]: FieldValue.delete(),
         });
       },
       { label: "removeVoteEntries", strict: false },
@@ -212,8 +212,8 @@ const REALTIME_CHILD_COLLECTIONS = ["presence", "votes"] as const;
  * it. The reverse order is precisely how an orphan is created.
  */
 async function deleteRealtimeDocsWithChildren(
-  db: admin.firestore.Firestore,
-  docs: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  docs: QueryDocumentSnapshot[],
 ): Promise<void> {
   if (docs.length === 0) return;
   for (const doc of docs) {
@@ -252,10 +252,10 @@ async function deleteRealtimeDocsWithChildren(
  * further down (see [removeVoteEntries]).
  */
 async function removeRealtimeParticipation(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: string,
   uid: string,
-): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+): Promise<QueryDocumentSnapshot[]> {
   const joined = await db
     .collection(collection)
     .where("participantIds", "array-contains", uid)
@@ -284,8 +284,8 @@ async function removeRealtimeParticipation(
     notOwned,
     (batch, doc) => {
       batch.update(doc.ref, {
-        participantIds: admin.firestore.FieldValue.arrayRemove(uid),
-        [`participants.${uid}`]: admin.firestore.FieldValue.delete(),
+        participantIds: FieldValue.arrayRemove(uid),
+        [`participants.${uid}`]: FieldValue.delete(),
       });
     },
     { label: `removeRealtimeParticipation:${collection}`, strict: false },
@@ -315,7 +315,7 @@ async function removeRealtimeParticipation(
  * them; a scrub of a deleted document throws NOT_FOUND.
  */
 async function scrubLastEditor(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: string,
   uid: string,
 ): Promise<void> {

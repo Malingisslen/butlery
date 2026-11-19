@@ -185,7 +185,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { hashUid } from "../shared/hash-uid";
 
@@ -229,15 +229,15 @@ export interface DailyAggregate {
   wau7d: Record<FeatureFlag, number>;
   /** Rolling 28-day window — serves as the MAU proxy. */
   wau28d: Record<FeatureFlag, number>;
-  computedAt: admin.firestore.Timestamp;
+  computedAt: Timestamp;
 }
 
 export interface RunDeps {
-  db?: admin.firestore.Firestore;
+  db?: Firestore;
   now?: Date;
 }
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /** Format a UTC `yyyy-mm-dd` from a millisecond timestamp. */
 export function formatUtcDate(ms: number): string {
@@ -288,10 +288,10 @@ export type ProbeLabel = FeatureFlag | "shoppedShared";
  * test all read exactly the same queries.
  */
 export function featureProbeQueries(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
-  dayStart: admin.firestore.Timestamp,
-  dayEnd: admin.firestore.Timestamp,
+  dayStart: Timestamp,
+  dayEnd: Timestamp,
 ): Record<ProbeLabel, FirebaseFirestore.Query> {
   return {
     cooked: db
@@ -351,10 +351,10 @@ export function featureProbeQueries(
  * run.
  */
 async function probeUserFeatureFlags(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
-  dayStart: admin.firestore.Timestamp,
-  dayEnd: admin.firestore.Timestamp,
+  dayStart: Timestamp,
+  dayEnd: Timestamp,
 ): Promise<Omit<UserDailyFlags, "userId" | "date">> {
   const safeProbe = async (
     label: ProbeLabel,
@@ -418,7 +418,7 @@ async function probeUserFeatureFlags(
 
 /** Read a previously-written per-user-per-day flag doc, if any. */
 async function readUserDailyFlags(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   userId: string,
   dateStr: string,
 ): Promise<Pick<UserDailyFlags, FeatureFlag> | null> {
@@ -460,10 +460,10 @@ export async function runComputeFeatureRetention(
   const probeEndMs = probeStartMs + MS_PER_DAY;
   const dateStr = formatUtcDate(probeStartMs);
 
-  const dayStart = admin.firestore.Timestamp.fromMillis(probeStartMs);
-  const dayEnd = admin.firestore.Timestamp.fromMillis(probeEndMs);
+  const dayStart = Timestamp.fromMillis(probeStartMs);
+  const dayEnd = Timestamp.fromMillis(probeEndMs);
   const wau28StartMs = probeStartMs - (WAU_28D - 1) * MS_PER_DAY;
-  const activeCutoff = admin.firestore.Timestamp.fromMillis(wau28StartMs);
+  const activeCutoff = Timestamp.fromMillis(wau28StartMs);
 
   logger.info("compute_feature_retention_start", { date: dateStr });
 
@@ -586,7 +586,7 @@ export async function runComputeFeatureRetention(
     dau,
     wau7d,
     wau28d,
-    computedAt: admin.firestore.Timestamp.fromMillis(nowMs),
+    computedAt: Timestamp.fromMillis(nowMs),
   });
 
   logger.info("compute_feature_retention_complete", {

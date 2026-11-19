@@ -35,7 +35,7 @@
  * regressions to a specific prompt revision.
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import {
   PROMPT_VERSION as FALLBACK_PROMPT_VERSION,
@@ -268,7 +268,7 @@ function isOlderThanCompiled(remoteVersion: string): boolean {
 async function defaultPromptsLoader(): Promise<
   Record<string, unknown> | undefined
 > {
-  const snap = await admin.firestore().doc(PROMPTS_DOC_PATH).get();
+  const snap = await getFirestore().doc(PROMPTS_DOC_PATH).get();
   if (!snap.exists) return undefined;
   return snap.data();
 }

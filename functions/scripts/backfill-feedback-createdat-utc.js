@@ -29,15 +29,16 @@
 
 'use strict';
 
-const admin = require('firebase-admin');
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 const { requireProject } = require('../lib/admin/require-project');
 
 const args = process.argv.slice(2);
 const COMMIT = args.includes('--commit');
 
 const PROJECT_ID = requireProject();
-admin.initializeApp({ projectId: PROJECT_ID });
-const db = admin.firestore();
+initializeApp({ projectId: PROJECT_ID });
+const db = getFirestore();
 
 /**
  * True when `s` already carries timezone information (a trailing `Z` or a `±HH:MM`

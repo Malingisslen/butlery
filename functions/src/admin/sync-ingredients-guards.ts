@@ -8,7 +8,7 @@
  * changed row count, or a dropped allergen property.
  */
 
-import type * as admin from "firebase-admin";
+import type { DocumentData } from "firebase-admin/firestore";
 import { IngredientRow, listEquals, SyncReport } from "./sync-ingredients-core";
 
 export const CI_MAX_CHANGED_ROWS = 50;
@@ -109,7 +109,7 @@ const isDeleted = (status: unknown): boolean => status === "deleted";
 export function evaluateCiGuards(
   report: SyncReport,
   csvRows: readonly IngredientRow[],
-  currentData: ReadonlyMap<string, admin.firestore.DocumentData>,
+  currentData: ReadonlyMap<string, DocumentData>,
   options: Pick<SyncOptions, "allowLargeReason" | "allowAllergenRemovalReason">
 ): GuardDecision {
   const { added, updated, removed } = report.counts;

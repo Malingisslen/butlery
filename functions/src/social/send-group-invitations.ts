@@ -19,7 +19,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   assertAccountMatured,
@@ -29,7 +29,7 @@ import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
 import { resolveMemberProfiles } from "../groups/member-profiles";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export const MAX_INVITEES_PER_CALL = 50;
 export const MAX_MESSAGE_LENGTH = 500;
@@ -109,7 +109,7 @@ export const sendGroupInvitations = onCall<SendGroupInvitationsRequest>(
 
 /** Dependency-injected core, exposed for the emulator integration test. */
 export async function sendGroupInvitationsWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   groupId: string,
   userIds: string[],
@@ -143,7 +143,7 @@ export async function sendGroupInvitationsWithDeps(
     pending.docs
       .filter((d) => {
         const expiresAt = d.get("expiresAt");
-        return expiresAt instanceof admin.firestore.Timestamp &&
+        return expiresAt instanceof Timestamp &&
           expiresAt.toMillis() > nowMs;
       })
       .map((d) => d.get("toUserId")),
@@ -171,8 +171,8 @@ export async function sendGroupInvitationsWithDeps(
     ]);
     const snaps = await db.getAll(...refs);
     const [sender] = await resolveMemberProfiles(db, [callerUid]);
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = admin.firestore.Timestamp.fromMillis(
+    const now = Timestamp.now();
+    const expiresAt = Timestamp.fromMillis(
       now.toMillis() + EXPIRY_MS,
     );
     const batch = db.batch();

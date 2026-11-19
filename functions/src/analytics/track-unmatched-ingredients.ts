@@ -21,13 +21,13 @@
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onCall, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentSnapshot, FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
 import { clampLimit } from "../shared/validate-limit";
 import { scrubPii } from "../llm/pii-scrubber";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export const UNMATCHED_SHOWN_MIN_COUNT = 3;
 export const UNMATCHED_RETENTION_DAYS = 365;
@@ -35,9 +35,9 @@ const MAX_NAME_LENGTH = 60;
 
 // Spelled as literal chains: erasure-collection-coverage finds collections
 // only through `.collection("<literal>")`.
-const statsDoc = (db: admin.firestore.Firestore) =>
+const statsDoc = (db: Firestore) =>
   db.collection("analytics").doc("ingredients");
-const unmatchedCol = (db: admin.firestore.Firestore) =>
+const unmatchedCol = (db: Firestore) =>
   db.collection("analytics").doc("ingredients").collection("unmatched");
 
 /** Matches Dart-side normalization in ingredient_lookup_service.dart. */
@@ -63,7 +63,7 @@ export function dayKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function unknownsOf(data: admin.firestore.DocumentData | undefined): string[] {
+function unknownsOf(data: DocumentData | undefined): string[] {
   const raw = data?.core?.tagResult?.unknownIngredients;
   return Array.isArray(raw) ? raw.filter((n): n is string => typeof n === "string") : [];
 }
@@ -74,15 +74,15 @@ function unknownsOf(data: admin.firestore.DocumentData | undefined): string[] {
  * `count` is a ranking signal and not a recipe tally.
  */
 export function newlyUnknown(
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined
+  before: DocumentData | undefined,
+  after: DocumentData | undefined
 ): string[] {
   const seen = new Set(unknownsOf(before));
   return [...new Set(unknownsOf(after))].filter((n) => !seen.has(n));
 }
 
 export async function recordUnmatched(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   names: string[],
   now: Date
 ): Promise<{ recorded: number; skipped: number }> {
@@ -107,7 +107,7 @@ export async function recordUnmatched(
       ref: unmatchedCol(db).doc(key),
     }));
     const statsSnap = skipped > 0 ? await tx.get(statsRef) : null;
-    const snaps: admin.firestore.DocumentSnapshot[] = [];
+    const snaps: DocumentSnapshot[] = [];
     for (const e of entries) snaps.push(await tx.get(e.ref));
 
     entries.forEach((e, i) => {
@@ -118,19 +118,19 @@ export async function recordUnmatched(
       // Older documents can carry recipe ids and timestamps; a write removes
       // them so no stored name stays linked to a recipe.
       tx.update(e.ref, {
-        count: admin.firestore.FieldValue.increment(1),
+        count: FieldValue.increment(1),
         lastSeenDay: today,
         ...(snaps[i].get("firstSeenDay") ? {} : { firstSeenDay: today }),
-        exampleRecipes: admin.firestore.FieldValue.delete(),
-        firstSeen: admin.firestore.FieldValue.delete(),
-        lastSeen: admin.firestore.FieldValue.delete(),
+        exampleRecipes: FieldValue.delete(),
+        firstSeen: FieldValue.delete(),
+        lastSeen: FieldValue.delete(),
       });
     });
 
     if (statsSnap) {
       if (statsSnap.exists) {
         tx.update(statsRef, {
-          skippedPiiCount: admin.firestore.FieldValue.increment(skipped),
+          skippedPiiCount: FieldValue.increment(skipped),
         });
       } else {
         tx.set(statsRef, { skippedPiiCount: skipped });
@@ -141,9 +141,9 @@ export async function recordUnmatched(
 }
 
 export async function handleRecipeWrite(
-  db: admin.firestore.Firestore,
-  before: admin.firestore.DocumentData | undefined,
-  after: admin.firestore.DocumentData | undefined,
+  db: Firestore,
+  before: DocumentData | undefined,
+  after: DocumentData | undefined,
   now: Date
 ): Promise<void> {
   if (after === undefined) return;
@@ -176,7 +176,7 @@ export const trackUnmatchedIngredients = onDocumentWritten(
  * small document per distinct unknown name.
  */
 export async function pruneUnmatchedIngredients(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   now: Date
 ): Promise<number> {
   const cutoff = dayKey(new Date(now.getTime() - UNMATCHED_RETENTION_DAYS * 86_400_000));

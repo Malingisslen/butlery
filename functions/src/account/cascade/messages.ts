@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -10,7 +10,7 @@ import {
 } from "./message-side-records";
 
 export async function deleteMessages(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const own = await db
@@ -136,14 +136,14 @@ export async function deleteMessages(
  * tombstone that row gets, and only when the departing user is its sender.
  */
 function buildGroupDepartureUpdate(
-  convoDoc: admin.firestore.DocumentSnapshot,
+  convoDoc: DocumentSnapshot,
   uid: string,
 ): Record<string, unknown> {
   const update: Record<string, unknown> = {
-    participantIds: admin.firestore.FieldValue.arrayRemove(uid),
+    participantIds: FieldValue.arrayRemove(uid),
   };
   for (const map of PER_USER_CONVERSATION_MAPS) {
-    update[`${map}.${uid}`] = admin.firestore.FieldValue.delete();
+    update[`${map}.${uid}`] = FieldValue.delete();
   }
 
   const last = (convoDoc.data() ?? {}).lastMessage as

@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldPath, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../../shared/hash-uid";
 import { scrubWithOneReread, cappedReread } from "./core";
@@ -15,7 +15,7 @@ export const MAX_RECIPE_MEMBER_SWEEP_ROWS = 2000;
 
 /** True for a document in the erased user's own `users/{uid}/recipes`. */
 function isOwnRecipe(
-  ref: admin.firestore.DocumentReference,
+  ref: DocumentReference,
   uid: string,
 ): boolean {
   const owner = ref.parent.parent;
@@ -38,14 +38,14 @@ function isOwnRecipe(
  * chunk.
  */
 export async function scrubRecipeMemberPermissions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const read = () =>
     db
       .collectionGroup("recipes")
       .where(
-        new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+        new FieldPath("socialData", "memberPermissions", uid),
         "!=",
         null,
       )
@@ -60,7 +60,7 @@ export async function scrubRecipeMemberPermissions(
     );
     return false;
   }
-  const othersRecipe = (doc: admin.firestore.QueryDocumentSnapshot) =>
+  const othersRecipe = (doc: QueryDocumentSnapshot) =>
     !isOwnRecipe(doc.ref, uid);
   const rows = snap.docs.filter(othersRecipe);
   if (rows.length === 0) return true;
@@ -78,10 +78,10 @@ export async function scrubRecipeMemberPermissions(
       (batch, doc) => {
         batch.update(
           doc.ref,
-          new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
-          admin.firestore.FieldValue.delete(),
-          new admin.firestore.FieldPath("socialData", "grants", uid),
-          admin.firestore.FieldValue.delete(),
+          new FieldPath("socialData", "memberPermissions", uid),
+          FieldValue.delete(),
+          new FieldPath("socialData", "grants", uid),
+          FieldValue.delete(),
         );
       },
       "scrubRecipeMemberPermissions",
@@ -127,7 +127,7 @@ export const MAX_COMMENT_REACTION_SWEEP_ROWS = 2000;
  * declines or fails does not stop the others, and fails the step.
  */
 export async function scrubCommentReactions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   let ok = true;
@@ -141,7 +141,7 @@ export async function scrubCommentReactions(
         op: "array-contains",
         cap: MAX_COMMENT_REACTION_SWEEP_ROWS,
       },
-      { [`reactions.${key}`]: admin.firestore.FieldValue.arrayRemove(uid) },
+      { [`reactions.${key}`]: FieldValue.arrayRemove(uid) },
       `scrubCommentReactions:${key}`,
     );
     if (!swept) ok = false;
@@ -159,7 +159,7 @@ export const MAX_MESSAGE_REACTION_SWEEP_ROWS = 2000;
  * and fails the step.
  */
 export async function scrubMessageReactions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   let ok = true;
@@ -173,7 +173,7 @@ export async function scrubMessageReactions(
         op: "array-contains",
         cap: MAX_MESSAGE_REACTION_SWEEP_ROWS,
       },
-      { [`reactions.${key}`]: admin.firestore.FieldValue.arrayRemove(uid) },
+      { [`reactions.${key}`]: FieldValue.arrayRemove(uid) },
       `scrubMessageReactions:${key}`,
     );
     if (!swept) ok = false;

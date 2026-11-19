@@ -16,7 +16,8 @@
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { dailyDocRef, formatUtcDate } from "./daily-snapshots";
 
 // Kill switch: false makes the deployed trigger count nothing.
@@ -95,7 +96,7 @@ export function bucketFor(raw: unknown, allowlist: ReadonlySet<string>): Bucket 
   return allowlist.has(value) ? { key: value, unmapped: false } : { key: OTHER, unmapped: true };
 }
 
-export function normaliseAttribution(raw: admin.firestore.DocumentData | undefined): {
+export function normaliseAttribution(raw: DocumentData | undefined): {
   source: Bucket;
   medium: Bucket;
 } {
@@ -126,7 +127,7 @@ export interface AuthAccount {
 }
 
 export interface AcquisitionCountDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   /** Returns null when the account no longer exists. */
   getAccount: (uid: string) => Promise<AuthAccount | null>;
 }
@@ -152,7 +153,7 @@ export async function countAcquisition(
   const createdMs = Date.parse(account.metadata.creationTime ?? "");
   const sourceRef = db.collection("users").doc(event.uid).collection("acquisition").doc("current");
   const consentRef = db.collection("users").doc(event.uid).collection("consent").doc("current");
-  const inc = admin.firestore.FieldValue.increment;
+  const inc = FieldValue.increment;
 
   const outcome = await db.runTransaction(async (tx): Promise<AcquisitionCountOutcome> => {
     const [source, consent] = await tx.getAll(sourceRef, consentRef);
@@ -161,7 +162,7 @@ export async function countAcquisition(
     if (!consent.exists || consent.get("purposes.analytics") !== true) return "no_consent";
 
     const firstSeenAt = source.get("firstSeenAt");
-    const ms = firstSeenAt instanceof admin.firestore.Timestamp
+    const ms = firstSeenAt instanceof Timestamp
       ? firstSeenAt.toMillis()
       : Date.parse(event.eventTime);
     const rowMs = Number.isFinite(ms) ? ms : Date.now();
@@ -189,7 +190,7 @@ export async function countAcquisition(
       },
       { merge: true },
     );
-    tx.update(sourceRef, { countedAt: admin.firestore.FieldValue.serverTimestamp() });
+    tx.update(sourceRef, { countedAt: FieldValue.serverTimestamp() });
     return "counted";
   });
 
@@ -209,7 +210,7 @@ export const onAcquisitionCreated = onDocumentCreated(
     }
     await countAcquisition(
       { uid: event.params.uid, eventTime: event.time },
-      { db: admin.firestore(), getAccount: (uid) => accountLookup(uid) },
+      { db: getFirestore(), getAccount: (uid) => accountLookup(uid) },
     );
   },
 );
@@ -238,7 +239,7 @@ export async function getAuthAccountWith(
 }
 
 function getAuthAccount(uid: string): Promise<AuthAccount | null> {
-  return getAuthAccountWith(admin.auth(), uid);
+  return getAuthAccountWith(getAuth(), uid);
 }
 
 /**
@@ -248,9 +249,9 @@ function getAuthAccount(uid: string): Promise<AuthAccount | null> {
  * per thousand matching index entries and never reads a uid.
  */
 export async function runAcquisitionEligibleSnapshot(
-  deps: { db?: admin.firestore.Firestore; now?: Date } = {},
+  deps: { db?: Firestore; now?: Date } = {},
 ): Promise<number> {
-  const db = deps.db ?? admin.firestore();
+  const db = deps.db ?? getFirestore();
   const date = formatUtcDate((deps.now ?? new Date()).getTime());
   const agg = await db
     .collectionGroup("consent")

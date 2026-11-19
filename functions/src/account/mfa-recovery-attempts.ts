@@ -3,7 +3,7 @@
  * does any work. Split out of `mfa-backup-codes.ts` (500-line rule).
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, Timestamp } from "firebase-admin/firestore";
 import { createHmac } from "crypto";
 
 export const RECOVERY_ATTEMPTS_COLLECTION = "mfa_recovery_attempts";
@@ -121,7 +121,7 @@ export function uidAttemptKey(uid: string): string {
   return `uid_${uid}`;
 }
 
-function parseAttempts(data: admin.firestore.DocumentData | undefined): AttemptState {
+function parseAttempts(data: DocumentData | undefined): AttemptState {
   if (!data) return NO_ATTEMPTS;
   return {
     failures: typeof data.failures === "number" ? data.failures : 0,
@@ -137,7 +137,7 @@ function parseAttempts(data: admin.firestore.DocumentData | undefined): AttemptS
  * the account counter).
  */
 export async function reserveAttempt(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   key: string,
   policy: AttemptPolicy,
   now: number,
@@ -151,7 +151,7 @@ export async function reserveAttempt(
     const next = recordFailure(state, now, policy);
     tx.set(ref, {
       ...next,
-      expiresAt: admin.firestore.Timestamp.fromMillis(attemptExpiry(next, policy)),
+      expiresAt: Timestamp.fromMillis(attemptExpiry(next, policy)),
     });
     return { allowed: true, retryAfterMs: 0 };
   });

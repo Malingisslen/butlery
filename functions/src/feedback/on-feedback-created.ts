@@ -7,7 +7,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { hashUid } from "../shared/hash-uid";
 
 // Resend API key for transactional email. Set with:
@@ -54,10 +54,10 @@ export async function stampRetentionIfMissing(
   data: FirebaseFirestore.DocumentData,
   nowMs: number = Date.now()
 ): Promise<boolean> {
-  if (!ref || data.expireAt instanceof admin.firestore.Timestamp) return false;
+  if (!ref || data.expireAt instanceof Timestamp) return false;
   try {
     await ref.update({
-      expireAt: admin.firestore.Timestamp.fromMillis(
+      expireAt: Timestamp.fromMillis(
         nowMs + FEEDBACK_RETENTION_MS
       ),
     });
@@ -158,7 +158,7 @@ async function notifyByEmail(
 export async function recordEmailFailure(
   feedbackId: string,
   reason: string,
-  db: admin.firestore.Firestore = admin.firestore()
+  db: Firestore = getFirestore()
 ): Promise<void> {
   try {
     await db
@@ -170,7 +170,7 @@ export async function recordEmailFailure(
           severity: "warning",
           feedbackId,
           reason,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          timestamp: FieldValue.serverTimestamp(),
         },
         { merge: true }
       );

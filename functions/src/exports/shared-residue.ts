@@ -24,7 +24,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, DocumentSnapshot, FieldPath, Firestore, QueryDocumentSnapshot, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import {
@@ -33,7 +33,7 @@ import {
 } from "../account/account-deletion-cascade";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 export const RATE_LIMIT_KEY = "exportSharedResidue";
 export const TOO_LARGE_ERROR_CODE = "shared-residue-too-large";
@@ -182,7 +182,7 @@ export async function runExportSharedResidue(
 
 /** Test seam — accepts an injected Firestore. */
 export async function runExportSharedResidueWithDb(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
 ): Promise<ExportSharedResidueResponse> {
   const lists = await findLeftLists(database, uid);
@@ -233,7 +233,7 @@ function decline(uid: string, bound: string, observed: number): never {
 }
 
 /** Owner or current member: the client section already exports the list. */
-function stillHeldBy(data: admin.firestore.DocumentData, uid: string): boolean {
+function stillHeldBy(data: DocumentData, uid: string): boolean {
   if (data.ownerId === uid) return true;
   const perms = data.memberPermissions;
   return isPlainObject(perms) && perms[uid] != null;
@@ -245,9 +245,9 @@ function stillHeldBy(data: admin.firestore.DocumentData, uid: string): boolean {
  * items of the lists the requester still holds are never loaded.
  */
 async function findLeftLists(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
-): Promise<admin.firestore.DocumentSnapshot[]> {
+): Promise<DocumentSnapshot[]> {
   const lists = database.collection(Collections.unifiedSharedShoppingLists);
   const snaps = await Promise.all([
     lists.where("contributorUserIds", "array-contains", uid),
@@ -259,7 +259,7 @@ async function findLeftLists(
       .get(),
   ));
 
-  const left = new Map<string, admin.firestore.DocumentReference>();
+  const left = new Map<string, DocumentReference>();
   for (const snap of snaps) {
     if (snap.size > MAX_RAW_LIST_READS) {
       decline(uid, "raw_list_reads", snap.size);
@@ -281,10 +281,10 @@ async function findLeftLists(
  * erasure deletes with the share.
  */
 async function findSharedContentItemRows(
-  database: admin.firestore.Firestore,
+  database: Firestore,
   uid: string,
-): Promise<Map<string, admin.firestore.QueryDocumentSnapshot>> {
-  const rows = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+): Promise<Map<string, QueryDocumentSnapshot>> {
+  const rows = new Map<string, QueryDocumentSnapshot>();
 
   // Personal-list rows share the `items` group id and their owner may write
   // any uid into them, so without this range anyone could push the raw read
@@ -298,8 +298,8 @@ async function findSharedContentItemRows(
       database
         .collectionGroup("items")
         .where(field, "==", uid)
-        .where(admin.firestore.FieldPath.documentId(), ">=", sharedContentFrom)
-        .where(admin.firestore.FieldPath.documentId(), "<", sharedContentTo)
+        .where(FieldPath.documentId(), ">=", sharedContentFrom)
+        .where(FieldPath.documentId(), "<", sharedContentTo)
         .limit(MAX_RAW_ITEM_READS + 1)
         .get(),
     ),
@@ -339,7 +339,7 @@ async function findSharedContentItemRows(
 }
 
 function projectLeftList(
-  snap: admin.firestore.DocumentSnapshot,
+  snap: DocumentSnapshot,
   uid: string,
 ): LeftListExport | null {
   const data = snap.data();
@@ -411,7 +411,7 @@ function exportValue(value: unknown): unknown {
   ) {
     return value;
   }
-  if (value instanceof admin.firestore.Timestamp) {
+  if (value instanceof Timestamp) {
     return value.toDate().toISOString();
   }
   return undefined;

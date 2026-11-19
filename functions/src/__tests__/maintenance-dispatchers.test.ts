@@ -31,10 +31,10 @@
  * Run with: npx ts-node src/__tests__/maintenance-dispatchers.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { getApps, initializeApp } from "firebase-admin/app";
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({ projectId: "butlery-test-maintenance-dispatchers" });
+if (getApps().length === 0) {
+  initializeApp({ projectId: "butlery-test-maintenance-dispatchers" });
 }
 
 import {

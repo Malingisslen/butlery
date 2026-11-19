@@ -10,7 +10,7 @@
  *
  * The Admin SDK bypasses rules, so seeding is plain writes. Pointing Admin at
  * the emulator only needs `FIRESTORE_EMULATOR_HOST` set BEFORE
- * `admin.initializeApp`.
+ * `initializeApp`.
  *
  * Per-run isolation: the emulator persists data across runs, so we use a unique
  * PROJECT_ID per suite plus a per-run id suffix on every seeded user.
@@ -30,7 +30,8 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 // Per-run suffix so re-runs against a non-wiped emulator don't collide.
 const RUN = Date.now().toString(36);
@@ -57,10 +58,10 @@ async function run_(): Promise<void> {
     "bash .claude/hooks/ensure-firestore-emulator.sh",
   );
 
-  if (!admin.apps.length) {
-    admin.initializeApp({ projectId: PROJECT_ID });
+  if (!getApps().length) {
+    initializeApp({ projectId: PROJECT_ID });
   }
-  const db = admin.firestore();
+  const db = getFirestore();
 
   // Import AFTER initializeApp so the module binds to the emulator default app.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -68,10 +69,10 @@ async function run_(): Promise<void> {
     cleanupOldRateLimitsCore,
   } = require("../cleanup/cleanup-rate-limits");
 
-  const daysAgo = (n: number): admin.firestore.Timestamp => {
+  const daysAgo = (n: number): Timestamp => {
     const d = new Date();
     d.setDate(d.getDate() - n);
-    return admin.firestore.Timestamp.fromDate(d);
+    return Timestamp.fromDate(d);
   };
 
   // ── Seed: an OLD bucket (100 days) and a FRESH one (1 day) in the live

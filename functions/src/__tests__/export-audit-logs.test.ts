@@ -18,9 +18,10 @@
  * harness adds no value here.
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-export-audit" });
+import { Firestore, Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-export-audit" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -48,12 +49,12 @@ interface FakeStore {
   docs: SeedDoc[];
 }
 
-type FakeTimestamp = admin.firestore.Timestamp;
+type FakeTimestamp = Timestamp;
 
 // A real Timestamp: the removal section drops any row whose timestamp is not
 // one, so a look-alike would make every removal fixture vanish.
 function ts(ms: number): FakeTimestamp {
-  return admin.firestore.Timestamp.fromMillis(ms);
+  return Timestamp.fromMillis(ms);
 }
 
 function resolvePath(d: SeedDoc, field: string): unknown {
@@ -71,7 +72,7 @@ function resolvePath(d: SeedDoc, field: string): unknown {
 function makeFakeDb(
   store: FakeStore,
   opts: { failOn?: string } = {}
-): admin.firestore.Firestore {
+): Firestore {
   function buildQuery(filter: {
     equals: Array<[string, unknown]>;
     descByTs?: boolean;
@@ -147,7 +148,7 @@ function makeFakeDb(
     collection(_name: string) {
       return buildQuery({ equals: [] });
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
 }
 
 interface TestCase {

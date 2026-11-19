@@ -8,15 +8,15 @@
 
 import { onDocumentUpdatedWithAuthContext } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentData, Firestore, getFirestore } from "firebase-admin/firestore";
 import { closesReport, recordDecision } from "./report-decision";
 import { defaultPushDeps, Notice, pushNotices } from "./moderation-notices";
 
 /** The part of the trigger event the handler reads. */
 export interface ReportDecisionEvent {
   data?: {
-    before: { data(): admin.firestore.DocumentData | undefined };
-    after: { data(): admin.firestore.DocumentData | undefined };
+    before: { data(): DocumentData | undefined };
+    after: { data(): DocumentData | undefined };
   };
   params: { reportId: string };
   time: string;
@@ -25,7 +25,7 @@ export interface ReportDecisionEvent {
 }
 
 export interface ReportDecisionDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   push: (notices: Notice[]) => Promise<void>;
 }
 
@@ -62,7 +62,7 @@ export async function handleReportDecision(
 export const onReportDecision = onDocumentUpdatedWithAuthContext(
   { document: "reports/{reportId}", retry: true },
   (event) => {
-    const db = admin.firestore();
+    const db = getFirestore();
     return handleReportDecision(event, {
       db,
       push: (notices) => pushNotices(notices, defaultPushDeps(db)),

@@ -10,7 +10,7 @@
  * nothing left to do.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import { columnSpec, columnValuesEqual, docValueForColumn, isEditableColumn } from "./ingredient-compare";
 import type { IngredientDoc } from "./sync-ingredients-core";
@@ -26,7 +26,7 @@ export const APPLIED_STAMP_KEYS = ["appliedAt"] as const;
  * new value. The writer trims what it writes, and csvToFirestore fills a
  * blank `english` from `swedish`, so both are read the way the sync reads them.
  */
-export function proposalIsApplied(changes: unknown, stored: admin.firestore.DocumentData | undefined): boolean {
+export function proposalIsApplied(changes: unknown, stored: DocumentData | undefined): boolean {
   if (!stored || changes === null || typeof changes !== "object" || Array.isArray(changes)) return false;
   const entries = Object.entries(changes as Record<string, unknown>);
   if (entries.length === 0) return false;
@@ -52,7 +52,7 @@ export interface MarkAppliedCounts {
 }
 
 export async function markAppliedProposals(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   now: Date,
 ): Promise<MarkAppliedCounts> {
   const col = db.collection(Collections.ingredientChangeRequests);
@@ -70,8 +70,8 @@ export async function markAppliedProposals(
       if (!proposalIsApplied(fresh.get("changes"), ingredient.data())) return "notYet" as const;
       tx.update(col.doc(doc.id), {
         status: "applied",
-        appliedAt: admin.firestore.FieldValue.serverTimestamp(),
-        expireAt: admin.firestore.Timestamp.fromMillis(now.getTime() + APPLIED_RETENTION_MS),
+        appliedAt: FieldValue.serverTimestamp(),
+        expireAt: Timestamp.fromMillis(now.getTime() + APPLIED_RETENTION_MS),
       });
       return "applied" as const;
     });

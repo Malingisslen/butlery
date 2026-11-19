@@ -13,11 +13,12 @@
  *     node scripts/measure-data-sizes.js --project <id>
  */
 
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
+const { Timestamp, getFirestore } = require("firebase-admin/firestore");
 const { requireProject } = require("../lib/admin/require-project");
 
-admin.initializeApp({ projectId: requireProject() });
-const db = admin.firestore();
+initializeApp({ projectId: requireProject() });
+const db = getFirestore();
 
 // Same test as backfill-feedback-createdat-utc.js, so a zero here means that
 // script has nothing to rewrite.
@@ -55,7 +56,7 @@ async function feedbackTimezones() {
     if (typeof v === "string") {
       if (hasZoneInfo(v)) zoned++;
       else zoneless++;
-    } else if (v instanceof admin.firestore.Timestamp) {
+    } else if (v instanceof Timestamp) {
       timestamp++;
     } else {
       other++;

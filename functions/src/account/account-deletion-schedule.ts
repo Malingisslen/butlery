@@ -19,7 +19,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth, getAuth } from "firebase-admin/auth";
+import { getStorage } from "firebase-admin/storage";
 import { Collections } from "../shared/collections";
 import { isGuestCaller } from "../shared/caller-eligibility";
 import {
@@ -77,7 +79,7 @@ function requireRecentLogin(auth: {
 }
 
 async function setDeletionClaim(
-  auth: admin.auth.Auth,
+  auth: Auth,
   uid: string,
   scheduledFor: number | null,
 ): Promise<void> {
@@ -104,13 +106,13 @@ export async function scheduleAccountDeletionWithDeps(
   const { scheduledFor, created } = await deps.db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const existing = snap.exists ? snap.get("scheduledFor") : null;
-    if (existing instanceof admin.firestore.Timestamp) {
+    if (existing instanceof Timestamp) {
       return { scheduledFor: existing.toMillis(), created: false };
     }
     const at = nowMs + DELETION_GRACE_DAYS * DAY_MS;
     tx.set(ref, {
-      requestedAt: admin.firestore.Timestamp.fromMillis(nowMs),
-      scheduledFor: admin.firestore.Timestamp.fromMillis(at),
+      requestedAt: Timestamp.fromMillis(nowMs),
+      scheduledFor: Timestamp.fromMillis(at),
       reason,
     });
     return { scheduledFor: at, created: true };
@@ -185,7 +187,7 @@ export async function runDueAccountDeletionsWithDeps(
 ): Promise<DueRunSummary> {
   const due = await deps.db
     .collection(Collections.accountDeletionRequests)
-    .where("scheduledFor", "<=", admin.firestore.Timestamp.fromMillis(nowMs))
+    .where("scheduledFor", "<=", Timestamp.fromMillis(nowMs))
     .orderBy("scheduledFor")
     .limit(MAX_PER_RUN)
     .get();
@@ -203,13 +205,13 @@ export async function runDueAccountDeletionsWithDeps(
       if (!snap.exists) return null;
       const started = snap.get("processingStartedAt");
       if (
-        started instanceof admin.firestore.Timestamp &&
+        started instanceof Timestamp &&
         nowMs - started.toMillis() < LEASE_MS
       ) {
         return null;
       }
       tx.update(doc.ref, {
-        processingStartedAt: admin.firestore.Timestamp.fromMillis(nowMs),
+        processingStartedAt: Timestamp.fromMillis(nowMs),
       });
       const reason = snap.get("reason");
       const attempts = snap.get("attempts");
@@ -310,7 +312,7 @@ export const scheduleAccountDeletion = onCall<{ reason?: string }>(
         ? raw.trim().slice(0, MAX_REASON_LENGTH)
         : "user_request";
     return scheduleAccountDeletionWithDeps(
-      { db: admin.firestore(), auth: admin.auth() },
+      { db: getFirestore(), auth: getAuth() },
       request.auth.uid,
       reason,
       Date.now(),
@@ -328,7 +330,7 @@ export const cancelAccountDeletion = onCall(
       throw new HttpsError("unauthenticated", "Sign-in required.");
     }
     return cancelAccountDeletionWithDeps(
-      { db: admin.firestore(), auth: admin.auth() },
+      { db: getFirestore(), auth: getAuth() },
       request.auth.uid,
     );
   },
@@ -348,9 +350,9 @@ export const runDueAccountDeletions = onSchedule(
   async () => {
     await runDueAccountDeletionsWithDeps(
       {
-        db: admin.firestore(),
-        auth: admin.auth(),
-        storage: admin.storage(),
+        db: getFirestore(),
+        auth: getAuth(),
+        storage: getStorage(),
       },
       Date.now(),
     );

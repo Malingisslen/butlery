@@ -23,7 +23,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getRemoteConfig } from "firebase-admin/remote-config";
 
 /** RC key — mirrors FeatureFlags.enablePooledRatings on the Flutter side. */
 export const POOLED_RATINGS_FLAG = "enable_pooled_ratings";
@@ -50,7 +50,7 @@ export interface PooledFlagDeps {
 }
 
 async function defaultLoader(): Promise<boolean> {
-  const template = await admin.remoteConfig().getTemplate();
+  const template = await getRemoteConfig().getTemplate();
   const param = template.parameters?.[POOLED_RATINGS_FLAG] as
     | { defaultValue?: { value?: string } }
     | undefined;

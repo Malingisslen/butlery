@@ -14,7 +14,7 @@
  * photo import must not be counted twice.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentSnapshot, FieldValue, Firestore, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../shared/collections";
@@ -33,14 +33,14 @@ function utcDayKey(now: Date): string {
 const IMPORT_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 export interface GuestQuotaDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   now: () => Date;
   /** `system/config.guestDailyImportLimit`, else the default. */
   loadDailyLimit: () => Promise<number>;
 }
 
 async function defaultLoadDailyLimit(
-  db: admin.firestore.Firestore,
+  db: Firestore,
 ): Promise<number> {
   try {
     const v = (await db.doc("system/config").get()).get(
@@ -83,7 +83,7 @@ interface HeldImport {
   spent: boolean;
 }
 
-function readQuota(snap: admin.firestore.DocumentSnapshot): {
+function readQuota(snap: DocumentSnapshot): {
   ids: string[];
   held: Record<string, HeldImport>;
   calls: number;
@@ -143,7 +143,7 @@ export async function consumeGuestCall(
       tx.set(dailyRef, {
         dayKey: day,
         dailyCount: dailyCount + 1,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
       shared = { count: dailyCount + 1, limit: dailyLimit };
       held[importId] = { open: 1, day, spent: false };
@@ -155,7 +155,7 @@ export async function consumeGuestCall(
       importIds: newImport ? [...ids, importId] : ids,
       imports: held,
       calls: calls + 1,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
     return { newImport, importId };
   });
@@ -202,13 +202,13 @@ export async function refundGuestCall(
       importIds: nextIds,
       imports: held,
       calls: spent ? calls : Math.max(0, calls - 1),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
     if (dailySnap && dailySnap.get("dayKey") === refundDay) {
       tx.set(dailyRef, {
         dayKey: refundDay,
         dailyCount: Math.max(0, (dailySnap.get("dailyCount") ?? 0) - 1),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     }
   });
@@ -229,7 +229,7 @@ export function withGuestImportQuota<
 ): (request: CallableRequest<TRequest>) => Promise<TResponse> {
   return async (request) => {
     if (!isGuestRequest(request.auth)) return handler(request);
-    const db = depsOverride?.db ?? admin.firestore();
+    const db = depsOverride?.db ?? getFirestore();
     const deps: GuestQuotaDeps = {
       db,
       now: depsOverride?.now ?? (() => new Date()),

@@ -15,15 +15,16 @@
  *   ts-node src/__tests__/family-rating-aggregation.integration.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 
 const EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? "localhost:8080";
 process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-family-rating-agg" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-family-rating-agg" });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -52,7 +53,7 @@ async function seedUserRating(
     recipeId,
     userId,
     rating,
-    createdAt: admin.firestore.Timestamp.now(),
+    createdAt: Timestamp.now(),
   });
 }
 
@@ -70,8 +71,8 @@ async function seedFamilyRating(
     memberType,
     stars,
     enteredByUid: "someone",
-    createdAt: admin.firestore.Timestamp.now(),
-    lastUpdatedAt: admin.firestore.Timestamp.now(),
+    createdAt: Timestamp.now(),
+    lastUpdatedAt: Timestamp.now(),
   });
 }
 

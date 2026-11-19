@@ -14,7 +14,8 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { hashUid } from "../shared/hash-uid";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { CallerAuth, assertNotGuest } from "../shared/caller-eligibility";
@@ -61,11 +62,11 @@ export const finishGuestUpgrade = onCall(
     const uid = request.auth.uid;
     await enforceRateLimit(uid, "finishGuestUpgrade");
     await enforceIpAuditCap(
-      admin.firestore(),
+      getFirestore(),
       request.rawRequest?.ip ?? "unknown",
     );
     return runFinishGuestUpgradeWithDeps(
-      { db: admin.firestore(), auth: admin.auth() },
+      { db: getFirestore(), auth: getAuth() },
       request.auth,
     );
   },

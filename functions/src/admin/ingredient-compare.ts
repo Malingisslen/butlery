@@ -7,7 +7,7 @@
  * matches the CSV" are decided by the same normalisation.
  */
 
-import type * as admin from "firebase-admin";
+import type { DocumentData } from "firebase-admin/firestore";
 import type { IngredientDoc } from "./sync-ingredients-core";
 
 export type ColumnKind = "text" | "list" | "number";
@@ -105,7 +105,7 @@ function comparableList(value: unknown): string[] {
  * null into blank for the proposal check.
  */
 export function comparableIngredient(
-  doc: IngredientDoc | admin.firestore.DocumentData
+  doc: IngredientDoc | DocumentData
 ): ComparableIngredient {
   const source = doc as Record<string, unknown>;
   const out: Record<string, unknown> = {};

@@ -22,15 +22,16 @@
  * Run with: npx ts-node src/__tests__/ensure-category-chat.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 import { ensureCategoryChatWithDeps } from "../groups/ensure-category-chat";
 import { addChatGroupMembersWithDeps } from "../groups/add-chat-group-members";
 import { removeChatGroupMemberWithDeps } from "../groups/remove-chat-group-member";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-ensure-category-chat" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-ensure-category-chat" });
 }
 
 interface CapturedError {
@@ -56,7 +57,7 @@ async function capture(fn: () => Promise<unknown>): Promise<CapturedError> {
 const OWNER = "owner";
 const FRIEND = "friend";
 const CAT = "cat-1";
-const EARLIER = admin.firestore.Timestamp.fromMillis(1_500_000_000_000);
+const EARLIER = Timestamp.fromMillis(1_500_000_000_000);
 
 function seedPerson(fake: FakeFirestore, uid: string, isMinor = false): void {
   fake.seed(`users/${uid}`, { isMinor });

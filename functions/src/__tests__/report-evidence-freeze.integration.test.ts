@@ -11,11 +11,12 @@ const PROJECT_ID = "butlery-report-evidence-freeze-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import {
@@ -36,7 +37,7 @@ const MOD = `mod${RUN}`;
 const REPORTER = `rep${RUN}`;
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = new Date();
-const ts = admin.firestore.Timestamp.fromDate;
+const ts = Timestamp.fromDate;
 
 let run = 0;
 let failed = 0;
@@ -91,11 +92,11 @@ async function openCase(
   return { id, owner };
 }
 
-async function copy(id: string): Promise<admin.firestore.DocumentData | undefined> {
+async function copy(id: string): Promise<DocumentData | undefined> {
   return (await db.collection(REPORT_EVIDENCE).doc(id).get()).data();
 }
 
-async function report(id: string): Promise<admin.firestore.DocumentData | undefined> {
+async function report(id: string): Promise<DocumentData | undefined> {
   return (await db.collection("reports").doc(id).get()).data();
 }
 
@@ -217,7 +218,7 @@ async function deletionPaths(): Promise<void> {
 
   const anon = await openCase({ facts: { claimedCreatorIsReporter: false } });
   await freeze(anon.id);
-  const reason = await write(anon.id, { reporterId: admin.firestore.FieldValue.delete() });
+  const reason = await write(anon.id, { reporterId: FieldValue.delete() });
   const a = await copy(anon.id);
   check("reporter leaving an open report strips facts on a frozen copy",
     reason === "reporter_left_frozen" && a !== undefined && !("claimedCreatorIsReporter" in a));
@@ -231,7 +232,7 @@ async function deletionPaths(): Promise<void> {
     lb !== undefined && !("claimedCreatorIsReporter" in lb));
 
   const unfrozenAnon = await openCase({ facts: { claimedCreatorIsReporter: true } });
-  await write(unfrozenAnon.id, { reporterId: admin.firestore.FieldValue.delete() });
+  await write(unfrozenAnon.id, { reporterId: FieldValue.delete() });
   check("an unfrozen copy keeps its facts while its case is open",
     (await copy(unfrozenAnon.id))?.claimedCreatorIsReporter === true);
 

@@ -20,7 +20,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Collections } from "../shared/collections";
 import {
   assertAccountMatured,
@@ -36,7 +36,7 @@ import { stageGroupCreation, type ChatGroupMember } from "./chat-group-writes";
 import { resolveMemberProfiles } from "./member-profiles";
 import { writeGroupSystemMessage, SystemGroupEvent } from "./group-system-message";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 export const MAX_GROUP_NAME_LENGTH = 100;
 
@@ -107,7 +107,7 @@ export const createChatGroup = onCall<CreateChatGroupRequest>(
 
 /** Dependency-injected core — exposed for tests with a fake Firestore. */
 export async function createChatGroupWithDeps(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   callerUid: string,
   name: string,
   memberIds: string[],
@@ -155,7 +155,7 @@ export async function createChatGroupWithDeps(
     options?.groupId === undefined ? groups.doc() : groups.doc(options.groupId);
   const groupId = groupRef.id;
   const conversationId = groupRef.id;
-  const joinedAt = admin.firestore.Timestamp.now();
+  const joinedAt = Timestamp.now();
 
   await db.runTransaction(async (tx) => {
     if (options?.groupId !== undefined) {

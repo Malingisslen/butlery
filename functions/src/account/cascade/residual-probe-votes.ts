@@ -1,10 +1,10 @@
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { Collections } from "../../shared/collections";
 import { liveMenuBallotRows } from "./realtime";
 
 export async function probePollVotes(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;
@@ -43,7 +43,7 @@ export async function probePollVotes(
 }
 
 export async function probeLiveMenuBallots(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   let residual = 0;

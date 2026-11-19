@@ -11,11 +11,12 @@ const PROJECT_ID = "butlery-sync-public-recipe-integration";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { DocumentData, FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 import {
   PUBLIC_COPY_KEYS,
@@ -33,7 +34,7 @@ import {
   reconcilePublicRecipe,
 } from "../recipes/sync-public-recipe";
 
-type Data = admin.firestore.DocumentData;
+type Data = DocumentData;
 
 const RUN = Date.now().toString(36);
 let seq = 0;
@@ -93,7 +94,7 @@ const sync = (uid: string, id: string, standing: OwnerStanding | null) =>
   reconcilePublicRecipe(db, uid, id, standing, images);
 
 const ADULT: OwnerStanding = { ageCompliant: true, guest: false, emailVerified: true };
-const OLD = admin.firestore.Timestamp.fromMillis(Date.now() - 48 * 60 * 60 * 1000);
+const OLD = Timestamp.fromMillis(Date.now() - 48 * 60 * 60 * 1000);
 
 function ownImage(uid: string, name = "a.jpg"): string {
   const object = encodeURIComponent(`users/${uid}/recipes/${name}`);
@@ -152,7 +153,7 @@ const countOf = async (uid: string) => (await db.doc(`public_profiles/${uid}`).g
 /** Every key anywhere in [value]. */
 function keysDeep(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) value.forEach((v) => keysDeep(v, out));
-  else if (value && typeof value === "object" && !(value instanceof admin.firestore.Timestamp)) {
+  else if (value && typeof value === "object" && !(value instanceof Timestamp)) {
     for (const [k, v] of Object.entries(value)) {
       out.add(k);
       keysDeep(v, out);
@@ -196,7 +197,7 @@ async function pure(): Promise<void> {
   );
   check(
     "a cook count change alone needs no work",
-    !copyInputsChanged(recipe(uid), recipe(uid, { cookCount: 8, lastCookedAt: admin.firestore.Timestamp.now() })),
+    !copyInputsChanged(recipe(uid), recipe(uid, { cookCount: 8, lastCookedAt: Timestamp.now() })),
   );
   check("a title change needs work", copyInputsChanged(recipe(uid), recipe(uid, { title: "Bullar" })));
   check(
@@ -245,7 +246,7 @@ async function scenarios(): Promise<void> {
     const uid = nextUid();
     await seedOwner(uid);
     await recipeRef(uid, "r").set(recipe(uid, { isPublic: true }));
-    await recipeRef(uid, "r").update({ "core.showOnProfile": admin.firestore.FieldValue.delete() });
+    await recipeRef(uid, "r").update({ "core.showOnProfile": FieldValue.delete() });
     const r = await sync(uid, "r", ADULT);
     check("an old client's isPublic:true alone publishes nothing", r.refusal === "not-requested" && !(await copyRef(uid, "r").get()).exists);
   }
@@ -264,7 +265,7 @@ async function scenarios(): Promise<void> {
     ["a minor", { isMinor: true }, {}, ADULT, null, "minor"],
     ["an account without the age claim", {}, {}, { ...ADULT, ageCompliant: false }, null, "age"],
     ["a guest", {}, {}, { ...ADULT, guest: true }, null, "guest"],
-    ["an unverified account younger than an hour", { createdAt: admin.firestore.Timestamp.now() }, {}, { ...ADULT, emailVerified: false }, null, "not-matured"],
+    ["an unverified account younger than an hour", { createdAt: Timestamp.now() }, {}, { ...ADULT, emailVerified: false }, null, "not-matured"],
     ["an Auth account that is gone", {}, {}, null, null, "account-gone"],
     ["a collaborative recipe", {}, {}, ADULT, { socialData: { memberPermissions: { friend: "view" } } }, "shared"],
     ["a shared recipe type", {}, {}, ADULT, { type: 1 }, "shared"],
@@ -337,9 +338,9 @@ async function scenarios(): Promise<void> {
     check(
       "sharing turns the owner's profile choice off",
       shared.get("core.showOnProfile") === false &&
-        shared.get("core.showOnProfileChangedAt") instanceof admin.firestore.Timestamp,
+        shared.get("core.showOnProfileChangedAt") instanceof Timestamp,
     );
-    const stamp = shared.get("core.showOnProfileChangedAt") as admin.firestore.Timestamp;
+    const stamp = shared.get("core.showOnProfileChangedAt") as Timestamp;
     const again = await sync(uid, "r", ADULT);
     check(
       "the trigger's own write is a no-op",

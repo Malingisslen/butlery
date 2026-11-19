@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
@@ -10,8 +10,8 @@ import { Collections } from "../../shared/collections";
  * caller is about to delete, and nothing could ever reach them again.
  */
 async function deleteListItems(
-  db: admin.firestore.Firestore,
-  listRef: admin.firestore.DocumentReference,
+  db: Firestore,
+  listRef: DocumentReference,
 ): Promise<void> {
   const items = await listRef.collection("items").get();
   if (items.docs.length === 0) return;
@@ -22,7 +22,7 @@ async function deleteListItems(
 }
 
 export async function deleteShoppingLists(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const userRef = db.collection("users").doc(uid);
@@ -185,7 +185,7 @@ export async function deleteShoppingLists(
         .where("lastActivityByUserId", "==", uid)
         .get(),
     ]);
-  const sharedRefs = new Map<string, admin.firestore.DocumentReference>();
+  const sharedRefs = new Map<string, DocumentReference>();
   for (const doc of [
     ...keyedShared.docs,
     ...ownedShared.docs,
@@ -297,7 +297,7 @@ export async function deleteShoppingLists(
         // left to do.
         if (Object.prototype.hasOwnProperty.call(perms, uid)) {
           update[`memberPermissions.${uid}`] =
-            admin.firestore.FieldValue.delete();
+            FieldValue.delete();
         }
 
         // BUT-1725: the trail that FOUND this list is itself a raw uid on a
@@ -307,7 +307,7 @@ export async function deleteShoppingLists(
         const contributors = data.contributorUserIds;
         if (Array.isArray(contributors) && contributors.includes(uid)) {
           update.contributorUserIds =
-            admin.firestore.FieldValue.arrayRemove(uid);
+            FieldValue.arrayRemove(uid);
         }
 
         if (Object.keys(update).length > 0) {

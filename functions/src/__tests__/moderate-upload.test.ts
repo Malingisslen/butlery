@@ -26,9 +26,9 @@ process.env.FIREBASE_CONFIG = JSON.stringify({
   storageBucket: "butlery-test-moderate-upload.appspot.com",
 });
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-moderate-upload" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-moderate-upload" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

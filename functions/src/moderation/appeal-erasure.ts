@@ -10,14 +10,14 @@
  * an OPEN case; an appeal exists only on a closed one.
  */
 
-import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../shared/batch-update";
 import { APPELLANT_ID, MODERATION_APPEALS } from "./appeals";
 
 /** The cascade step. STRICT: a failed chunk throws, so the step is reported failed. */
 export async function deleteAppealsByAppellant(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   const snap = await db
@@ -40,7 +40,7 @@ export async function deleteAppealsByAppellant(
  * and the steps after it must still run. A failure is logged.
  */
 export async function deleteAppealsByAppellantWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<number> {
   try {

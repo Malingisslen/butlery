@@ -13,13 +13,13 @@
  * Run with: npx ts-node src/__tests__/presence-cascade.test.ts
  */
 
-// firebase-admin's module-level `admin.firestore()` call in
+// firebase-admin's module-level `getFirestore()` call in
 // `on-user-deleted.ts` requires an initialized default app. We don't actually
 // USE that app — `cleanupPresenceRowsWithDb` is the test seam and accepts an
 // injected stub — but the import-time side-effect must succeed.
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-cascade" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-cascade" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -212,7 +212,7 @@ async function scenario_purgesAllUserRowsAcrossBothPresenceCollections(): Promis
   // Cast through unknown — this stub deliberately implements only the
   // narrow Firestore surface the implementation touches.
   const removed = await cleanupPresenceRowsWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -277,7 +277,7 @@ async function scenario_emptyResultsetCommitIsSkipped(): Promise<void> {
   });
 
   const removed = await cleanupPresenceRowsWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     "user_with_no_presence"
   );
 
@@ -315,7 +315,7 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   }
 
   const removed = await cleanupPresenceRowsWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 

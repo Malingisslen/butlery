@@ -19,7 +19,7 @@
  *       and the failure surfaced is the GLOBAL one, not the per-user one).
  *
  * __setFirestoreForTest feeds checkRateLimit's per-user doc. checkGlobalLimit
- * reads admin.firestore() directly (no test app exists here, so it fail-closes
+ * reads getFirestore() directly (no test app exists here, so it fail-closes
  * to a global denial); we observe only whether it was ENTERED — via its loader
  * seam — which is all the ordering claim needs, and case (1) proves it is not
  * entered at all on a per-user denial.
@@ -27,7 +27,7 @@
  * Run with: npx ts-node src/__tests__/rate-limiter-withratelimit-ordering.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { Firestore, Timestamp } from "firebase-admin/firestore";
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import {
   __resetGlobalLimitsCacheForTest,
@@ -48,7 +48,7 @@ function authedRequest(uid: string): CallableRequest<unknown> {
 }
 
 interface PerUserDbHandle {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   writes: Record<string, unknown>[];
 }
 
@@ -79,7 +79,7 @@ function fakePerUserDb(
       };
       return fn(tx);
     },
-  } as unknown as admin.firestore.Firestore;
+  } as unknown as Firestore;
   return { db, writes };
 }
 
@@ -91,9 +91,9 @@ const cases: UnitCase[] = [
       // first call is denied by the per-user check.
       const perUser = fakePerUserDb({
         tokens: 10,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "structureRecipe",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: liveTodayKey(),
         dailyCount: 100,
       });
@@ -148,9 +148,9 @@ const cases: UnitCase[] = [
     fn: async () => {
       const perUser = fakePerUserDb({
         tokens: 10,
-        lastRefill: admin.firestore.Timestamp.now(),
+        lastRefill: Timestamp.now(),
         operationType: "structureRecipe",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
         dayKey: liveTodayKey(),
         dailyCount: 41, // well under the cap → per-user check allows
       });

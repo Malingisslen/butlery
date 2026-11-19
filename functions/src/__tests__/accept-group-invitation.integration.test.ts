@@ -19,11 +19,12 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -101,11 +102,11 @@ async function seed(
     await db
       .collection("users").doc(s.owner)
       .collection("friends").doc(s.invitee)
-      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+      .set({ addedAt: FieldValue.serverTimestamp() });
     await db
       .collection("users").doc(s.invitee)
       .collection("friends").doc(s.owner)
-      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+      .set({ addedAt: FieldValue.serverTimestamp() });
   }
   await db.collection("social_requests").doc(s.invitationId).set({
     type: "groupInvitation",
@@ -173,7 +174,7 @@ async function run_(): Promise<void> {
     await db
       .collection("users").doc(s.invitee)
       .collection("friends").doc(s.owner)
-      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+      .set({ addedAt: FieldValue.serverTimestamp() });
     await expectThrows(
       "refuses when only the invitee's own list names the inviter",
       () => acceptGroupInvitationWithDeps(db, s.invitee, s.invitationId),
@@ -186,7 +187,7 @@ async function run_(): Promise<void> {
     await db
       .collection("users").doc(s.owner)
       .collection("friends").doc(s.invitee)
-      .set({ addedAt: admin.firestore.FieldValue.serverTimestamp() });
+      .set({ addedAt: FieldValue.serverTimestamp() });
     await expectThrows(
       "refuses when only the inviter's own list names the invitee",
       () => acceptGroupInvitationWithDeps(db, s.invitee, s.invitationId),

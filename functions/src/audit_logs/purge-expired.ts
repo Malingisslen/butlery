@@ -24,7 +24,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 
 /** Days. 24 months ≈ 730 days. Picked to cover any in-flight Art 7(1)
  *  challenge across a typical complaint-resolution horizon. */
@@ -113,9 +113,9 @@ interface PurgeCategoryResult {
  * `cutoff`. Returns the count deleted.
  */
 export async function purgeAuditCategoryWithDb(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   category: "consent" | "general" | "short",
-  cutoff: admin.firestore.Timestamp,
+  cutoff: Timestamp,
   options: { batchSize?: number; maxDocs?: number } = {}
 ): Promise<number> {
   const batchSize = options.batchSize ?? BATCH_SIZE;
@@ -182,10 +182,10 @@ export async function purgeAuditCategoryWithDb(
   return deleted;
 }
 
-function cutoffFor(daysAgo: number): admin.firestore.Timestamp {
+function cutoffFor(daysAgo: number): Timestamp {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
-  return admin.firestore.Timestamp.fromDate(date);
+  return Timestamp.fromDate(date);
 }
 
 export const purgeExpiredAuditLogs = onSchedule(
@@ -195,7 +195,7 @@ export const purgeExpiredAuditLogs = onSchedule(
     region: "europe-west1",
   },
   async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
 
     const consentCutoff = cutoffFor(CONSENT_RETENTION_DAYS);
     const generalCutoff = cutoffFor(GENERAL_RETENTION_DAYS);
@@ -255,7 +255,7 @@ export const purgeExpiredAuditLogs = onSchedule(
       await db.collection("system_events").add({
         type: "audit_log_retention_purge",
         results,
-        executedAt: admin.firestore.FieldValue.serverTimestamp(),
+        executedAt: FieldValue.serverTimestamp(),
       });
 
       for (const r of results) {

@@ -9,7 +9,7 @@
  * exits 0 when there is nothing to do. The decision is in mark-applied-core.ts.
  */
 
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import * as fs from "fs";
 import { initializeAdminApp } from "./admin-init";
 import { formatMarkAppliedSummary, markAppliedProposals } from "./mark-applied-core";
@@ -18,7 +18,7 @@ import { formatMarkAppliedSummary, markAppliedProposals } from "./mark-applied-c
 initializeAdminApp();
 
 async function main(): Promise<void> {
-  const counts = await markAppliedProposals(admin.firestore(), new Date());
+  const counts = await markAppliedProposals(getFirestore(), new Date());
   console.log(
     `inReview=${counts.inReview} applied=${counts.applied} notYet=${counts.notYet} skipped=${counts.skipped}`,
   );

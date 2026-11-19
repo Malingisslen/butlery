@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { stageCascadeAuditEntry } from "../../cleanup/cascade-audit-log";
@@ -26,7 +26,7 @@ const MAX_SYSTEM_EVENT_SWEEP_ROWS = 2000;
  * The report a `content_report_<reportId>` row is about. The trigger writes the
  * id both into `details.reportId` and into the document id.
  */
-function reportIdOfEvent(doc: admin.firestore.QueryDocumentSnapshot): string {
+function reportIdOfEvent(doc: QueryDocumentSnapshot): string {
   return (
     (doc.get("details.reportId") as string | undefined) ??
     doc.id.replace(/^content_report_/, "")
@@ -69,7 +69,7 @@ function reportIdOfEvent(doc: admin.firestore.QueryDocumentSnapshot): string {
  * pass the block mirror has for the same race.
  */
 export async function deleteModerationSystemEvents(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
   /**
    * BUT-2046 follow-up. Under a legal hold every row ABOUT this person is kept:
@@ -91,7 +91,7 @@ export async function deleteModerationSystemEvents(
   /** Runs one capped leg. Returns null when the leg declined. */
   const sweep = async (
     field: string,
-  ): Promise<admin.firestore.QueryDocumentSnapshot[] | null> => {
+  ): Promise<QueryDocumentSnapshot[] | null> => {
     const snap = await db
       .collection(SYSTEM_EVENTS)
       .where(field, "==", uid)
@@ -111,10 +111,10 @@ export async function deleteModerationSystemEvents(
   // depends on `held` — see the array below. `details.userId` is queried rather than the document id
   // rebuilt, so a threshold row whose id ever differs from the convention is
   // still reached, and no audit row is staged for a document that never existed.
-  const deletions: admin.firestore.QueryDocumentSnapshot[] = [];
+  const deletions: QueryDocumentSnapshot[] = [];
   const deletedIds = new Set<string>();
   // Reporter rows whose case is still open: kept, with the reporter removed.
-  const reporterAnonymizations: admin.firestore.QueryDocumentSnapshot[] = [];
+  const reporterAnonymizations: QueryDocumentSnapshot[] = [];
   const legs = held
     ? (["details.reporterId"] as const)
     : (["details.userId", "details.reporterId"] as const);
@@ -169,7 +169,7 @@ export async function deleteModerationSystemEvents(
       (batch, doc) => {
         batch.update(doc.ref, {
           "details.reporterId": null,
-          reporterErasedAt: admin.firestore.FieldValue.serverTimestamp(),
+          reporterErasedAt: FieldValue.serverTimestamp(),
         });
         stageCascadeAuditEntry(db, batch, {
           subjectUserId: uid,
@@ -230,7 +230,7 @@ export async function deleteModerationSystemEvents(
           batch.update(doc.ref, {
             "details.contentOwnerId": null,
             contentOwnerAnonymizedAt:
-              admin.firestore.FieldValue.serverTimestamp(),
+              FieldValue.serverTimestamp(),
           });
           stageCascadeAuditEntry(db, batch, {
             subjectUserId: uid,
@@ -276,7 +276,7 @@ const MAX_REPORT_HISTORY_SWEEP_ROWS = 2000;
  * survived. The order is kept anyway because it costs nothing.
  */
 export async function deleteModerationRecord(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const parent = db.collection(USER_MODERATION).doc(uid);
@@ -353,7 +353,7 @@ export async function deleteModerationRecord(
  * document is reached by `admin/migrate-report-history.ts` and by nothing else.
  */
 export async function deleteReportHistoryByReporter(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string,
 ): Promise<boolean> {
   const snap = await db

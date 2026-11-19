@@ -17,9 +17,10 @@
  * Run with: npx ts-node src/__tests__/but753-legacy-sharedwith-cascade.test.ts
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-but753" });
+import { FieldValue } from "firebase-admin/firestore";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-but753" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -28,7 +29,7 @@ const {
 } = require("../cleanup/on-user-deleted");
 
 /**
- * Sentinel marker that mimics admin.firestore.FieldValue.arrayRemove
+ * Sentinel marker that mimics FieldValue.arrayRemove
  * without depending on the real SDK's internal type. The fake batch
  * recognises this marker and applies the array-remove semantics on commit.
  */
@@ -46,11 +47,11 @@ function isArrayRemoveOp(v: unknown): v is ArrayRemoveOp {
 }
 
 /**
- * Hijack `admin.firestore.FieldValue.arrayRemove` so the SUT's call
+ * Hijack `FieldValue.arrayRemove` so the SUT's call
  * produces our recognisable marker. The real SDK is not available in
  * this minimal test setup (no app initialised against a live project).
  */
-(admin.firestore.FieldValue as unknown as {
+(FieldValue as unknown as {
   arrayRemove: (...values: unknown[]) => ArrayRemoveOp;
 }).arrayRemove = (...values: unknown[]) => ({
   [ARRAY_REMOVE_MARKER]: true,
@@ -199,7 +200,7 @@ async function scenario_scrubsTargetUserPreservesOthers(): Promise<void> {
   });
 
   const removed = await cleanupLegacySharedWithArraysWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     userB
   );
 
@@ -248,11 +249,11 @@ async function scenario_idempotentRerun(): Promise<void> {
   });
 
   const removed1 = await cleanupLegacySharedWithArraysWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     userB
   );
   const removed2 = await cleanupLegacySharedWithArraysWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     userB
   );
 
@@ -285,7 +286,7 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   }
 
   const removed = await cleanupLegacySharedWithArraysWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 
@@ -336,7 +337,7 @@ async function scenario_failedChunkContinues(): Promise<void> {
   db.failNextCommit = true; // first commit will throw
 
   const removed = await cleanupLegacySharedWithArraysWithDb(
-    db as unknown as import("firebase-admin").firestore.Firestore,
+    db as unknown as import("firebase-admin/firestore").Firestore,
     targetUid
   );
 

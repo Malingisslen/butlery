@@ -27,7 +27,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 
 export const DEFAULT_TIMEZONE = "Europe/Stockholm";
 
@@ -59,7 +59,7 @@ export interface QuietHoursDecision {
  */
 export async function loadQuietHoursConfig(
   userId: string,
-  db: admin.firestore.Firestore = admin.firestore()
+  db: Firestore = getFirestore()
 ): Promise<QuietHoursConfig> {
   try {
     const snap = await db

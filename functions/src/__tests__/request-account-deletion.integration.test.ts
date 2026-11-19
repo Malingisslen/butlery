@@ -28,7 +28,7 @@
  *     1:1 → deleted.
  *
  * The cascade uses the Admin SDK; pointing the Admin SDK at the emulator only
- * needs `FIRESTORE_EMULATOR_HOST` set BEFORE `admin.initializeApp`. The Admin
+ * needs `FIRESTORE_EMULATOR_HOST` set BEFORE `initializeApp`. The Admin
  * SDK bypasses security rules, so seeding is plain writes (no
  * withSecurityRulesDisabled — that is a rules-unit-testing concept).
  *
@@ -54,11 +54,14 @@ process.env.FIRESTORE_EMULATOR_HOST = EMULATOR_HOST;
 process.env.GCLOUD_PROJECT = PROJECT_ID;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: PROJECT_ID });
+import { Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth } from "firebase-admin/auth";
+import { Storage } from "firebase-admin/storage";
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: PROJECT_ID });
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
@@ -82,15 +85,15 @@ const THIRD = `third-${RUN}`;
 // Injected fakes — auth + storage are NOT under test here.
 // ---------------------------------------------------------------------------
 
-function fakeAuth(): admin.auth.Auth {
+function fakeAuth(): Auth {
   return {
     async deleteUser(_uid: string) {
       // no-op: auth deletion is covered by the contract test.
     },
-  } as unknown as admin.auth.Auth;
+  } as unknown as Auth;
 }
 
-function fakeStorage(): admin.storage.Storage {
+function fakeStorage(): Storage {
   return {
     bucket() {
       return {
@@ -99,7 +102,7 @@ function fakeStorage(): admin.storage.Storage {
         },
       };
     },
-  } as unknown as admin.storage.Storage;
+  } as unknown as Storage;
 }
 
 // ---------------------------------------------------------------------------
@@ -825,7 +828,7 @@ async function seedFixtures(): Promise<void> {
     .set({ ingredientId: "gurka", status: "withdrawn", createdBy: OTHER, withdrawnBy: OTHER });
 
   // --- BUT-2329: a frozen report copy naming target is kept and disclosed ---
-  const firstFrozen = admin.firestore.Timestamp.fromDate(new Date("2026-11-01T00:00:00Z"));
+  const firstFrozen = Timestamp.fromDate(new Date("2026-11-01T00:00:00Z"));
   await db.collection("report_evidence").doc(`ev-frozen-${RUN}`).set({
     contentOwnerId: TARGET,
     outcome: "captured",
@@ -1873,8 +1876,8 @@ test("unified_shopping_lists: deleteShoppingLists is idempotent on re-run (retry
 // The first commit `deleteShoppingLists` makes is the item chunk of whichever
 // personal list `listDocuments()` returns first.
 function failFirstBatchCommit(
-  real: admin.firestore.Firestore,
-): admin.firestore.Firestore {
+  real: Firestore,
+): Firestore {
   let armed = true;
   const bindTo = <T extends object>(target: T, value: unknown) =>
     typeof value === "function" ? value.bind(target) : value;

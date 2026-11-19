@@ -12,7 +12,7 @@
  */
 
 import { createHash, randomUUID } from "crypto";
-import * as admin from "firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 import { Collections } from "../shared/collections";
 
 /** Where an owner's Storage download URL points. */
@@ -73,7 +73,7 @@ const TOKEN_KEY = "firebaseStorageDownloadTokens";
 export const storageImageStore: PublicImageStore = {
   async ensure(uid, recipeId, sourceUrl) {
     const source = parseDownloadUrl(sourceUrl);
-    const bucket = admin.storage().bucket();
+    const bucket = getStorage().bucket();
     // The app's own bucket only: the URL is owner-written, and the function's
     // service account can read buckets the owner cannot.
     if (!source || source.bucket !== bucket.name) return null;
@@ -106,7 +106,7 @@ export const storageImageStore: PublicImageStore = {
   },
 
   async prune(uid, recipeId, keep, createdBeforeMs) {
-    const bucket = admin.storage().bucket();
+    const bucket = getStorage().bucket();
     const [files] = await bucket.getFiles({ prefix: publicImagePrefix(uid, recipeId) });
     const unwanted = files.filter((f) => !keep.has(f.name));
     const old = unwanted.filter((f) => {

@@ -20,7 +20,7 @@
  *   - One person with several accounts gets several ceilings.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
@@ -61,24 +61,24 @@ export function utcMonthKey(now: Date): string {
 }
 
 export interface LedgerDeps {
-  db?: () => admin.firestore.Firestore;
+  db?: () => Firestore;
   now?: () => Date;
 }
 
 function resolve(deps?: LedgerDeps): {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   now: Date;
 } {
   return {
-    db: (deps?.db ?? (() => admin.firestore()))(),
+    db: (deps?.db ?? (() => getFirestore()))(),
     now: (deps?.now ?? (() => new Date()))(),
   };
 }
 
 function ledgerRef(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   uid: string
-): admin.firestore.DocumentReference {
+): DocumentReference {
   return db
     .collection("users")
     .doc(uid)
@@ -94,7 +94,7 @@ export interface LedgerSpend {
 
 /** What the stored doc means at `now`: a stale day or month key counts as 0. */
 export function spendAt(
-  data: admin.firestore.DocumentData | undefined,
+  data: DocumentData | undefined,
   now: Date
 ): LedgerSpend {
   const sameMonth = data?.monthKey === utcMonthKey(now);
@@ -187,8 +187,8 @@ export async function recordLlmCost(
         costThisMonth: spend.month + cost,
         monthKey: utcMonthKey(now),
         operationsThisMonth: spend.operationsThisMonth + 1,
-        updatedAt: admin.firestore.Timestamp.fromDate(now),
-        expireAt: admin.firestore.Timestamp.fromMillis(
+        updatedAt: Timestamp.fromDate(now),
+        expireAt: Timestamp.fromMillis(
           now.getTime() + EXPIRE_AFTER_MS
         ),
       });

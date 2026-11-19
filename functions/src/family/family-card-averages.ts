@@ -4,17 +4,17 @@
  * `purge-dormant-family-data.ts` to keep that file under the 500-line limit.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, DocumentReference, DocumentSnapshot, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { commitInChunks } from "../shared/batch-update";
 
 /** Firestore's getAll rejects an empty arg list; page it so an unbounded
  * candidate set (a heavy rater leaving) never builds one oversized read. */
 async function getAllChunked(
-  db: admin.firestore.Firestore,
-  refs: admin.firestore.DocumentReference[]
-): Promise<admin.firestore.DocumentSnapshot[]> {
+  db: Firestore,
+  refs: DocumentReference[]
+): Promise<DocumentSnapshot[]> {
   const CHUNK = 300;
-  const out: admin.firestore.DocumentSnapshot[] = [];
+  const out: DocumentSnapshot[] = [];
   for (let i = 0; i < refs.length; i += CHUNK) {
     out.push(...(await db.getAll(...refs.slice(i, i + CHUNK))));
   }
@@ -22,7 +22,7 @@ async function getAllChunked(
 }
 
 /** A recipe copy already carries a denormalised family pill worth refreshing. */
-function hasDenormFamilyValue(data: admin.firestore.DocumentData | undefined): boolean {
+function hasDenormFamilyValue(data: DocumentData | undefined): boolean {
   const core = data?.core as Record<string, unknown> | undefined;
   return core != null &&
     (core.familyRatingCount != null || core.familyAverage != null);
@@ -38,9 +38,9 @@ function hasDenormFamilyValue(data: admin.firestore.DocumentData | undefined): b
  * leaves the pill to self-heal on the next in-app rating.
  */
 export async function recomputeDenormalisedAverages(
-  db: admin.firestore.Firestore,
-  orphans: admin.firestore.QueryDocumentSnapshot[],
-  survivors: admin.firestore.QueryDocumentSnapshot[],
+  db: Firestore,
+  orphans: QueryDocumentSnapshot[],
+  survivors: QueryDocumentSnapshot[],
   memberUserIds: string[]
 ): Promise<void> {
   const affectedRecipeIds = new Set<string>();
@@ -63,7 +63,7 @@ export async function recomputeDenormalisedAverages(
     byRecipe.set(rid, agg);
   }
 
-  const refs: admin.firestore.DocumentReference[] = [];
+  const refs: DocumentReference[] = [];
   for (const uid of memberUserIds) {
     for (const rid of affectedRecipeIds) {
       refs.push(

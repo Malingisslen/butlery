@@ -6,7 +6,7 @@
  * reaches the response, at any depth.
  */
 
-import * as admin from "firebase-admin";
+import { DocumentReference, DocumentSnapshot, Firestore, Query, QueryDocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../../shared/hash-uid";
 
@@ -69,7 +69,7 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
     typeof value === "object" &&
     value !== null &&
     !Array.isArray(value) &&
-    !(value instanceof admin.firestore.Timestamp)
+    !(value instanceof Timestamp)
   );
 }
 
@@ -87,7 +87,7 @@ export function exportValue(value: unknown): unknown {
   ) {
     return value;
   }
-  if (value instanceof admin.firestore.Timestamp) {
+  if (value instanceof Timestamp) {
     return value.toDate().toISOString();
   }
   return undefined;
@@ -137,10 +137,10 @@ export function scalars(...keys: string[]): Allowlist {
  * read asks for one more than the cap so the decline never truncates.
  */
 export async function cappedDocs(
-  query: admin.firestore.Query,
+  query: Query,
   cap: number,
   bound: string,
-): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+): Promise<QueryDocumentSnapshot[]> {
   const snap = await query.limit(cap + 1).get();
   if (snap.size > cap) throw new Decline(bound, snap.size);
   return snap.docs;
@@ -148,11 +148,11 @@ export async function cappedDocs(
 
 /** `getAll` in slices, so one call never carries an unbounded argument list. */
 export async function getAllInChunks(
-  database: admin.firestore.Firestore,
-  refs: admin.firestore.DocumentReference[],
+  database: Firestore,
+  refs: DocumentReference[],
   fieldMask?: string[],
-): Promise<admin.firestore.DocumentSnapshot[]> {
-  const out: admin.firestore.DocumentSnapshot[] = [];
+): Promise<DocumentSnapshot[]> {
+  const out: DocumentSnapshot[] = [];
   for (let i = 0; i < refs.length; i += 100) {
     const slice = refs.slice(i, i + 100);
     const snaps = fieldMask

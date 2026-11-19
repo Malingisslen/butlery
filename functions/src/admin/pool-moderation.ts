@@ -19,7 +19,8 @@
  * free text.
  */
 
-import * as admin from "firebase-admin";
+import { AggregateField, FieldValue, Firestore, Query, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { logger } from "firebase-functions/logger";
 import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { requireAdmin } from "../shared/require-admin";
@@ -67,7 +68,7 @@ export interface AccountFacts {
 }
 
 export interface PoolModerationDeps {
-  db: admin.firestore.Firestore;
+  db: Firestore;
   nowMs: () => number;
   /** uid → facts; a uid missing from the map is a deleted account. */
   lookupAccounts: (uids: string[]) => Promise<Map<string, AccountFacts>>;
@@ -83,17 +84,17 @@ export function parsePoolKey(data: unknown): string {
   return raw.poolKey;
 }
 
-function eventsForPool(db: admin.firestore.Firestore, poolKey: string): admin.firestore.Query {
+function eventsForPool(db: Firestore, poolKey: string): Query {
   return db.collectionGroup(CANONICAL_EVENTS_SUBCOLLECTION).where("poolKey", "==", poolKey);
 }
 
-async function countWhere(q: admin.firestore.Query): Promise<number> {
+async function countWhere(q: Query): Promise<number> {
   const snap = await q.count().get();
   return snap.data().count;
 }
 
 async function writeAudit(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   adminUid: string,
   operation: string,
   poolKey: string,
@@ -105,7 +106,7 @@ async function writeAudit(
     resourceType: "canonical_recipe_stats",
     resourceId: poolKey,
     granted: true,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    timestamp: FieldValue.serverTimestamp(),
     metadata: { actor: adminUid, ...extra },
   });
 }
@@ -129,8 +130,8 @@ export async function inspectPool(
   // The real numbers, also while quarantined (the public doc then says 0).
   const totals = await events
     .aggregate({
-      count: admin.firestore.AggregateField.count(),
-      average: admin.firestore.AggregateField.average("ratingValue"),
+      count: AggregateField.count(),
+      average: AggregateField.average("ratingValue"),
     })
     .get();
   const count = totals.data().count;
@@ -146,7 +147,7 @@ export async function inspectPool(
   // Every createdAt query is ordered DESC so all of them share the one
   // (poolKey ASC, createdAt DESC) collection-group index.
   const newestFirst = events.orderBy("createdAt", "desc");
-  const since = (ms: number) => admin.firestore.Timestamp.fromMillis(now - ms);
+  const since = (ms: number) => Timestamp.fromMillis(now - ms);
   const votes24h = await countWhere(newestFirst.where("createdAt", ">=", since(DAY_MS)));
   const votes7d = await countWhere(newestFirst.where("createdAt", ">=", since(7 * DAY_MS)));
 
@@ -215,7 +216,7 @@ export async function setPoolQuarantine(
       poolKey: input.poolKey,
       quarantined: true,
       reasonCode: input.reasonCode,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
   } else {
     await ref.delete();
@@ -241,7 +242,7 @@ async function lookupAccountsWithAuth(uids: string[]): Promise<Map<string, Accou
   const out = new Map<string, AccountFacts>();
   const unique = [...new Set(uids)];
   for (let i = 0; i < unique.length; i += 100) {
-    const res = await admin.auth().getUsers(unique.slice(i, i + 100).map((uid) => ({ uid })));
+    const res = await getAuth().getUsers(unique.slice(i, i + 100).map((uid) => ({ uid })));
     for (const user of res.users) {
       const created = user.metadata?.creationTime;
       const createdMs = created ? new Date(created).getTime() : NaN;
@@ -255,7 +256,7 @@ async function lookupAccountsWithAuth(uids: string[]): Promise<Map<string, Accou
 }
 
 function productionDeps(): PoolModerationDeps {
-  const db = admin.firestore();
+  const db = getFirestore();
   return {
     db,
     nowMs: () => Date.now(),

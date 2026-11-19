@@ -14,7 +14,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const admin = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
+const { FieldValue, getFirestore } = require("firebase-admin/firestore");
 
 const projectId = process.env.GCLOUD_PROJECT || "";
 const missing = ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"].filter(
@@ -33,12 +34,12 @@ const ingredientsFile = path.join(repoRoot, "scripts/crf/data/firebase_ingredien
 const tagConfigDir = path.join(repoRoot, "scripts/output/tagConfigs");
 const TAG_CONFIGS = ["allergens", "dietary", "cuisines", "properties", "display"];
 
-admin.initializeApp({ projectId });
-const db = admin.firestore();
+initializeApp({ projectId });
+const db = getFirestore();
 
 async function seedIngredients() {
   const ingredients = JSON.parse(fs.readFileSync(ingredientsFile, "utf8"));
-  const now = admin.firestore.FieldValue.serverTimestamp();
+  const now = FieldValue.serverTimestamp();
   for (let i = 0; i < ingredients.length; i += 450) {
     const batch = db.batch();
     for (const ingredient of ingredients.slice(i, i + 450)) {

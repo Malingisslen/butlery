@@ -17,9 +17,9 @@
  * `batchDeleteDocs` runs against the fake `batch()`/`ref.delete()` shape.
  */
 
-import * as admin from "firebase-admin";
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-notif-cleanup" });
+import { getApps, initializeApp } from "firebase-admin/app";
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-notif-cleanup" });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

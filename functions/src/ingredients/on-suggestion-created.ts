@@ -10,11 +10,11 @@
 
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { hashUid } from "../shared/hash-uid";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 /**
  * Interface for ingredient suggestion documents.
@@ -35,12 +35,12 @@ interface IngredientSuggestion {
   suggestedProperties?: string[];
   recipeContext?: string;
   status: "pending" | "approved" | "rejected" | "cancelled";
-  createdAt: admin.firestore.Timestamp;
-  reviewedAt?: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  reviewedAt?: Timestamp;
   reviewedBy?: string;
   reviewNotes?: string;
   // Metadata added by this function
-  notifiedAt?: admin.firestore.Timestamp;
+  notifiedAt?: Timestamp;
   sourceApp?: string;
 }
 
@@ -83,7 +83,7 @@ export const onSuggestionCreated = onDocumentCreated(
           return false;
         }
         tx.update(docRef, {
-          notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+          notifiedAt: FieldValue.serverTimestamp(),
           sourceApp: "butlery-mobile",
         });
         return true;

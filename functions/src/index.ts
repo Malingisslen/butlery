@@ -15,7 +15,7 @@
 import { setGlobalOptions } from "firebase-functions/v2/options";
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import { scheduleRatingAggregation } from "./ratings/rating-aggregation";
 import {
   mirrorRatingToPool,
@@ -93,7 +93,7 @@ import {
 // or this repo can prove.
 setGlobalOptions({ region: "europe-west1", maxInstances: 3 });
 
-admin.initializeApp();
+initializeApp();
 
 // LLM Functions - Vertex AI / Gemini integration
 export { structureRecipe } from "./llm/structure-recipe";
@@ -178,7 +178,7 @@ export { onUserDeleted } from "./cleanup/on-user-deleted";
 
 // BUT-788: server-side account-deletion callable. Replaces the prior
 // client-side `firebaseAuth.user.delete()` + 30-collection Flutter cascade.
-// Runs own-data cleanup under Admin SDK, then calls `admin.auth().deleteUser`
+// Runs own-data cleanup under Admin SDK, then calls `getAuth().deleteUser`
 // which triggers `onUserDeleted` for cross-user cleanup.
 export { requestAccountDeletion } from "./account/request-account-deletion";
 export {

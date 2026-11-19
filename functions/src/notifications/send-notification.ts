@@ -13,7 +13,8 @@
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
+import { BatchResponse, MulticastMessage, getMessaging } from "firebase-admin/messaging";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isAllowedUrl } from "../shared/url-safety";
 import {
@@ -117,7 +118,7 @@ export const sendNotification = onCall(
     // Authorization: verify caller can send to target user
     if (callerUid !== targetUserId) {
       // Check friendship (direct document lookup — O(1))
-      const friendDoc = await admin.firestore()
+      const friendDoc = await getFirestore()
         .collection('users').doc(callerUid)
         .collection('friends').doc(targetUserId)
         .get();
@@ -125,12 +126,12 @@ export const sendNotification = onCall(
       if (!friendDoc.exists) {
         // Check pending friend request in either direction
         const [sentRequest, receivedRequest] = await Promise.all([
-          admin.firestore()
+          getFirestore()
             .collection('social_requests')
             .where('fromUserId', '==', callerUid)
             .where('toUserId', '==', targetUserId)
             .limit(1).get(),
-          admin.firestore()
+          getFirestore()
             .collection('social_requests')
             .where('fromUserId', '==', targetUserId)
             .where('toUserId', '==', callerUid)
@@ -222,8 +223,8 @@ export interface DispatchOptions {
   preferenceAwareSend?: typeof sendPushToUserRespectingPreferences;
   /** Test seam: override the silent-path admin send. */
   silentSend?: (
-    message: admin.messaging.MulticastMessage
-  ) => Promise<admin.messaging.BatchResponse>;
+    message: MulticastMessage
+  ) => Promise<BatchResponse>;
   /** Test seam: override the token lookup. */
   getTokens?: typeof getActiveTokensForUser;
   /**
@@ -250,7 +251,7 @@ export async function dispatchNotification(
     silent,
     getLocale,
     preferenceAwareSend = sendPushToUserRespectingPreferences,
-    silentSend = (msg) => admin.messaging().sendEachForMulticast(msg),
+    silentSend = (msg) => getMessaging().sendEachForMulticast(msg),
     getTokens = getActiveTokensForUser,
     gate = evaluateSendGate,
     recordEvent = recordNotificationSendEvent,
@@ -392,8 +393,8 @@ interface DispatchSilentOpts {
   targetUserId: string;
   data?: Record<string, string>;
   silentSend: (
-    message: admin.messaging.MulticastMessage
-  ) => Promise<admin.messaging.BatchResponse>;
+    message: MulticastMessage
+  ) => Promise<BatchResponse>;
   getTokens: typeof getActiveTokensForUser;
 }
 
@@ -415,7 +416,7 @@ async function dispatchSilent(
   // Silent pushes go through the schema funnel too (BUT-641). Even
   // background-sync payloads need a `route`/`notificationType` so the
   // client can dispatch the work and attribute it for analytics.
-  const message: admin.messaging.MulticastMessage = {
+  const message: MulticastMessage = {
     tokens,
     data: sanitizeData(payload, undefined),
     android: {
@@ -639,7 +640,7 @@ export const sendNotificationBatch = onCall(
 
       for (const targetId of uniqueTargets) {
         // Check friendship (direct document lookup — O(1))
-        const friendDoc = await admin.firestore()
+        const friendDoc = await getFirestore()
           .collection('users').doc(callerUid)
           .collection('friends').doc(targetId)
           .get();
@@ -647,12 +648,12 @@ export const sendNotificationBatch = onCall(
         if (!friendDoc.exists) {
           // Check pending friend request in either direction
           const [sentRequest, receivedRequest] = await Promise.all([
-            admin.firestore()
+            getFirestore()
               .collection('social_requests')
               .where('fromUserId', '==', callerUid)
               .where('toUserId', '==', targetId)
               .limit(1).get(),
-            admin.firestore()
+            getFirestore()
               .collection('social_requests')
               .where('fromUserId', '==', targetId)
               .where('toUserId', '==', callerUid)

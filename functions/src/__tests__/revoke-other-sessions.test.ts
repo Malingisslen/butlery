@@ -4,7 +4,7 @@
  * Run: npx ts-node src/__tests__/revoke-other-sessions.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
@@ -16,8 +16,8 @@ import {
   runRevokeOtherSessions,
 } from "../account/revoke-other-sessions";
 
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: "butlery-test-revoke-other-sessions" });
+if (!getApps().length) {
+  initializeApp({ projectId: "butlery-test-revoke-other-sessions" });
 }
 
 const SECRET_TOKEN = "SECRET.CUSTOM.TOKEN";

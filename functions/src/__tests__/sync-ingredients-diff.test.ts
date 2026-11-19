@@ -14,7 +14,7 @@
  * Run with: npx ts-node src/__tests__/sync-ingredients-diff.test.ts
  */
 
-import * as admin from "firebase-admin";
+import { DocumentData, FieldValue, Timestamp } from "firebase-admin/firestore";
 import {
   ALLERGEN_BLOCK_PROPERTIES,
   buildSyncReport,
@@ -103,12 +103,12 @@ const cases: UnitCase[] = [
       // Pin the DELETE sentinel specifically — serverTimestamp() would also
       // pass an instanceof check but would stamp instead of clear.
       assertEqual(
-        (payload.deletedAt as admin.firestore.FieldValue).isEqual(admin.firestore.FieldValue.delete()),
+        (payload.deletedAt as FieldValue).isEqual(FieldValue.delete()),
         true,
         "deletedAt cleared with delete() sentinel"
       );
       assertEqual(
-        (payload.expireAt as admin.firestore.FieldValue).isEqual(admin.firestore.FieldValue.delete()),
+        (payload.expireAt as FieldValue).isEqual(FieldValue.delete()),
         true,
         "expireAt cleared with delete() sentinel"
       );
@@ -136,9 +136,9 @@ const cases: UnitCase[] = [
       const incoming = csvToFirestore(row({ id: "beer", swedish: "öl", status: "deleted" }));
       const current = { status: "validated", learnedAliasesSv: ["folköl"] };
       const payload = buildUpdatePayload(current, incoming, new Date("2026-07-03T00:00:00Z"));
-      assertEqual(payload.expireAt instanceof admin.firestore.Timestamp, true, "expireAt stamped");
+      assertEqual(payload.expireAt instanceof Timestamp, true, "expireAt stamped");
       assertEqual(
-        (payload.expireAt as admin.firestore.Timestamp).toDate().toISOString(),
+        (payload.expireAt as Timestamp).toDate().toISOString(),
         "2026-08-02T00:00:00.000Z",
         "30-day TTL");
       // And its learned aliases show up in the at-risk derivation.
@@ -156,12 +156,12 @@ const cases: UnitCase[] = [
       const current = { status: "validated", notesSv: "gammal anteckning", avgPriceSek: 12.5 };
       const payload = buildUpdatePayload(current, incoming);
       assertEqual(
-        (payload.notesSv as admin.firestore.FieldValue).isEqual(admin.firestore.FieldValue.delete()),
+        (payload.notesSv as FieldValue).isEqual(FieldValue.delete()),
         true,
         "blanked notesSv explicitly deleted"
       );
       assertEqual(
-        (payload.avgPriceSek as admin.firestore.FieldValue).isEqual(admin.firestore.FieldValue.delete()),
+        (payload.avgPriceSek as FieldValue).isEqual(FieldValue.delete()),
         true,
         "blanked avgPriceSek explicitly deleted"
       );
@@ -268,7 +268,7 @@ const cases: UnitCase[] = [
   {
     name: "soft-deleted row re-added in CSV lands in toUpdate (not toAdd) and is reported as resurrection",
     fn: async () => {
-      const current = new Map<string, admin.firestore.DocumentData>([
+      const current = new Map<string, DocumentData>([
         ["beer", { status: "deleted", properties: ["contains-gluten"], aliasesSv: [], swedish: "öl", english: "beer", group: "other" }],
       ]);
       const diff = calculateDiff(
@@ -284,7 +284,7 @@ const cases: UnitCase[] = [
   {
     name: "report flags removal of an allergen-relevant property",
     fn: async () => {
-      const current = new Map<string, admin.firestore.DocumentData>([
+      const current = new Map<string, DocumentData>([
         ["beer", { status: "validated", properties: ["contains-gluten", "processed"], aliasesSv: [], swedish: "öl", english: "beer", group: "other" }],
       ]);
       const diff = calculateDiff(
@@ -304,7 +304,7 @@ const cases: UnitCase[] = [
   {
     name: "report does NOT flag removal of a non-allergen property",
     fn: async () => {
-      const current = new Map<string, admin.firestore.DocumentData>([
+      const current = new Map<string, DocumentData>([
         ["carrot", { status: "validated", properties: ["plant-based", "needs-cooking"], aliasesSv: [], swedish: "morot", english: "carrot", group: "vegetable" }],
       ]);
       const diff = calculateDiff(
@@ -319,7 +319,7 @@ const cases: UnitCase[] = [
   {
     name: "report lists learned aliases at risk when a row is removed from the Sheet",
     fn: async () => {
-      const current = new Map<string, admin.firestore.DocumentData>([
+      const current = new Map<string, DocumentData>([
         ["beer", { status: "validated", properties: [], aliasesSv: [], learnedAliasesSv: ["folköl"], swedish: "öl", english: "beer", group: "other" }],
         ["carrot", { status: "validated", properties: [], aliasesSv: [], swedish: "morot", english: "carrot", group: "vegetable" }],
       ]);
@@ -340,7 +340,7 @@ const cases: UnitCase[] = [
     name: "unchanged rows produce no report noise",
     fn: async () => {
       const incoming = csvToFirestore(row({ id: "carrot", swedish: "morot", group: "vegetable", properties: "plant-based" }));
-      const current = new Map<string, admin.firestore.DocumentData>([
+      const current = new Map<string, DocumentData>([
         ["carrot", {
           status: "validated",
           properties: ["plant-based"],

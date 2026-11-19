@@ -68,7 +68,8 @@ import {
   CallableRequest,
 } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { DocumentReference, FieldPath, FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Auth, getAuth } from "firebase-admin/auth";
 
 import { requireAdmin } from "../shared/require-admin";
 import { computePoolKey } from "../ratings/canonical-pool-key";
@@ -86,7 +87,7 @@ const BATCH_SIZE = 450;
 // short-circuits first. Re-invoke while hasMore to continue past this.
 const MAX_BATCHES_PER_INVOCATION = 23;
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore();
 
 interface BackfillRequest {
   /** Scan + log without writing; ignores the flag gate. Default false. */
@@ -131,12 +132,12 @@ interface BackfillResponse {
  * alongside the callable wrapper. All IO through the injected `db`/`auth`.
  */
 export async function runCanonicalRatingsBackfill(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   options: {
     dryRun: boolean;
     maxRatings: number;
     startAfter?: string;
-    auth?: admin.auth.Auth;
+    auth?: Auth;
     now?: () => number;
     computeKey?: (title: string, ingredients: string[]) => string | null;
   }
@@ -148,7 +149,7 @@ export async function runCanonicalRatingsBackfill(
   const now = options.now ?? (() => Date.now());
   const computeKey = options.computeKey ?? computePoolKey;
   // Reuse the live mirror's maturity gate through its deps shape.
-  const gateDeps = { db, auth: options.auth ?? admin.auth() };
+  const gateDeps = { db, auth: options.auth ?? getAuth() };
 
   let mirrored = 0;
   let skippedIdentical = 0;
@@ -175,7 +176,7 @@ export async function runCanonicalRatingsBackfill(
     const batchStartCursor = lastDocId;
     let query = db
       .collection("recipe_ratings")
-      .orderBy(admin.firestore.FieldPath.documentId())
+      .orderBy(FieldPath.documentId())
       .limit(BATCH_SIZE);
     if (lastDocId) query = query.startAfter(lastDocId);
 
@@ -190,11 +191,11 @@ export async function runCanonicalRatingsBackfill(
     // accepted-deviations edge #1). Collapsing BEFORE writing removes the
     // same-batch double-`set` that made a collision pool oscillate across runs.
     interface Resolved {
-      ref: admin.firestore.DocumentReference;
+      ref: DocumentReference;
       poolKey: string;
       ratingValue: number;
       recipeId: string;
-      createdAt: admin.firestore.Timestamp | admin.firestore.FieldValue;
+      createdAt: Timestamp | FieldValue;
     }
     const winners = new Map<string, Resolved>();
     let cutoffHit = false;
@@ -267,9 +268,9 @@ export async function runCanonicalRatingsBackfill(
       // truthful for a historical event; no reader depends on it today), else
       // serverTimestamp — guarded so a malformed createdAt never rides through.
       const createdAt =
-        data.createdAt instanceof admin.firestore.Timestamp
+        data.createdAt instanceof Timestamp
           ? data.createdAt
-          : admin.firestore.FieldValue.serverTimestamp();
+          : FieldValue.serverTimestamp();
 
       // Later doc-id overwrites earlier ⇒ last-write winner for this pool.
       // Key delimiter is "/": both uid and poolKey are Firestore document IDs,

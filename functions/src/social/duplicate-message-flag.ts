@@ -31,7 +31,7 @@
  * conditional rollout would be invisible to the server.
  *
  * KNOWN DUPLICATION, counted rather than estimated. Grepping
- * `admin.remoteConfig()` across `functions/src` finds exactly FOUR callers:
+ * `getRemoteConfig()` across `functions/src` finds exactly FOUR callers:
  * `shared/notification-rc-flags.ts` (fails open), `ratings/pooled-ratings-flag.ts`
  * (throws), `analytics/winback-variant.ts`, and this one.
  *
@@ -50,7 +50,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { getRemoteConfig } from "firebase-admin/remote-config";
 
 /** RC key. Server-only — no Flutter client reads this one. */
 export const CHAT_DUPLICATE_GUARD_FLAG = "enable_chat_duplicate_guard";
@@ -93,7 +93,7 @@ export interface ChatGuardFlagDeps {
 }
 
 async function defaultLoader(): Promise<boolean> {
-  const template = await admin.remoteConfig().getTemplate();
+  const template = await getRemoteConfig().getTemplate();
   const param = template.parameters?.[CHAT_DUPLICATE_GUARD_FLAG] as
     | { defaultValue?: { value?: string } }
     | undefined;

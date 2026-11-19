@@ -28,7 +28,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { FieldValue, Firestore, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { pruneUnmatchedIngredients } from "../analytics/track-unmatched-ingredients";
 
 const SYSTEM_EVENTS = "system_events";
@@ -64,15 +64,15 @@ export const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000;
  * indexes. Before this, `system_events` had no index entries at all.
  */
 export async function pruneRateLimitViolations(
-  db: admin.firestore.Firestore,
-  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now()
+  db: Firestore,
+  now: Timestamp = Timestamp.now()
 ): Promise<number> {
   const startTime = Date.now();
   const cutoffDate = new Date(now.toMillis());
   cutoffDate.setDate(
     cutoffDate.getDate() - RATE_LIMIT_VIOLATION_RETENTION_DAYS
   );
-  const cutoff = admin.firestore.Timestamp.fromDate(cutoffDate);
+  const cutoff = Timestamp.fromDate(cutoffDate);
 
   logger.info(
     `Starting system_events retention: deleting ${PRUNED_TYPE} rows older ` +
@@ -148,8 +148,8 @@ export async function pruneRateLimitViolations(
  * as `audit_logs/purge-expired.ts`.
  */
 export async function runSystemEventsCleanup(
-  db: admin.firestore.Firestore,
-  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now(),
+  db: Firestore,
+  now: Timestamp = Timestamp.now(),
   pruneUnmatched: typeof pruneUnmatchedIngredients = pruneUnmatchedIngredients
 ): Promise<number> {
   const totalDeleted = await pruneRateLimitViolations(db, now);
@@ -157,7 +157,7 @@ export async function runSystemEventsCleanup(
   await db.collection(SYSTEM_EVENTS).add({
     type: "system_events_cleanup",
     totalDeleted,
-    executedAt: admin.firestore.FieldValue.serverTimestamp(),
+    executedAt: FieldValue.serverTimestamp(),
   });
 
   // Rides this weekly slot so the unknown-ingredient tally needs no scheduler
@@ -189,7 +189,7 @@ export const cleanupOldSystemEvents = onSchedule(
   { schedule: "0 4 * * 0", timeZone: "UTC", timeoutSeconds: 540 },
   async () => {
     try {
-      await runSystemEventsCleanup(admin.firestore());
+      await runSystemEventsCleanup(getFirestore());
     } catch (e) {
       logger.error("system_events retention failed", e);
       throw e;
