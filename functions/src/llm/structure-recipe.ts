@@ -455,7 +455,9 @@ export async function runStructureRecipe(
 
     const recipe = parseRecipeResponse(content, promptVersion);
     if (!recipe) {
-      logger.error("[structureRecipe] Failed to parse response:", content);
+      logger.error("[structureRecipe] Failed to parse response", {
+        contentLength: content.length,
+      });
       emitTiming(false, { reason: "recipe_parse_failed", ...tokenExtras });
       return {
         success: false,
@@ -471,9 +473,10 @@ export async function runStructureRecipe(
       recipe.source = cleanSourceUrl;
     }
 
-    logger.info(
-      `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
-    );
+    logger.info("[structureRecipe] Successfully extracted recipe", {
+      ingredientCount: recipe.ingredients.length,
+      cost: actualCost,
+    });
 
     emitTiming(true, { ingredientCount: recipe.ingredients.length, ...tokenExtras });
     return {

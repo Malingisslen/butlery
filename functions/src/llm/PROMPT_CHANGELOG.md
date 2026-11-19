@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v3.3.0 — 2026-10-09 (current)
+## v4.0.0 — 2026-11-19 (current)
+
+**What changed:** The photo call answers with a new schema, `PHOTO_RECIPES_SCHEMA` (`{ recipes: [...] }`, each item `RECIPE_SCHEMA`'s fields with a nullable `title` and an optional `continuesFromPreviousPage`), used by `getVisionModel` and the NOT_FOUND fallback (`getPhotoFallbackModel`), with its own output cap `PHOTO_MAX_TOKENS`. The printed and handwritten photo prompts gain `ALL_RECIPES_RULE`: read every recipe on the image as its own entry in `recipes`, and return a part that continues a recipe from a previous page first, with `continuesFromPreviousPage=true` and an empty title. The photo user prompt asks for all recipes. `RECIPE_SCHEMA`, `MAX_TOKENS` and the text, URL, spoken and ingredient-line prompts are unchanged.
+
+**Why:** Plan "läsa alla recept på en fotosida", Del 2 (Malin 2026-11-19): the photo reader had room for one recipe, so a page with two lost one.
+
+**Expected impact:** `ocr_recipe_image.complete` carries `recipeCount`, `droppedRecipeCount` and `finishReason`; pages with several recipes return them all. MAJOR bump: output schema change. A `system/prompts` doc below 4.0.0 is no longer served (BUT-2317 check), so the compiled photo prompts apply until the doc is raised; the parser also accepts a one-recipe answer.
+
+**Linked metrics / tickets:** Plan `flera-recept-plan.md` conditions 2.1–2.5. Watch `recipeCount`, `droppedRecipeCount` and `finishReason=MAX_TOKENS` on `ocr_recipe_image.complete`.
+
+---
+
+## v3.3.0 — 2026-10-09
 
 **What changed:** New `OCR_RETRY_SYSTEM_PROMPT_RULES`, appended to the extraction system prompt (`recipeExtractionSystemPrompt`, compiled or Firestore-overridden) only when `runStructureRecipe` is called with `fromImageOcr: true`, which only the OCR rawText retry (`ocr-retry.ts`) sets; the `structureRecipe` callable drops the flag. The rules say the text was read from an image, that an `[oläsligt]` marker already in it must never be replaced by a guess, and then repeat the image prompts' `UNREADABLE_RULE` word for word (same constant). No schema change. Separately, `prompts-config.ts` no longer serves a `system/prompts` doc whose `promptVersion` is older than `PROMPT_VERSION` (or is not semver); it falls back to the compiled prompts and logs once per cache window.
 

@@ -418,7 +418,10 @@ async function testStaleDocDoesNotShadowCompiled(): Promise<void> {
     "\n[9] BUT-2317: doc older than compiled PROMPT_VERSION → fallback",
   );
 
-  const olderMinor = bumped(1, -1);
+  // An x.0.0 version has no older minor in its own major.
+  const [compiledMajor, compiledMinor] = FALLBACK_PROMPT_VERSION.split(".").map(Number);
+  const olderMinor =
+    compiledMinor > 0 ? bumped(1, -1) : `${compiledMajor - 1}.99.99`;
   const staleCases: Array<[string, string]> = [
     ["older minor", olderMinor],
     ["older major", "0.9.9"],

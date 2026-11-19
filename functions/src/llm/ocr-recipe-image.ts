@@ -20,16 +20,16 @@ import {
 import type {
   GenerateContentRequest,
   GenerateContentResponse,
+  GenerativeModel,
   Part,
 } from "@google-cloud/vertexai";
 import {
   getGeminiClient,
-  getTextModel,
+  getPhotoFallbackModel,
   getVisionClient,
   getVisionModel,
   pricingForModel,
   extractResponseText,
-  parseRecipeResponse,
   calculateGeminiCost,
   ExtractedRecipe,
   IMAGE_OCR_SYSTEM_PROMPT,
@@ -40,6 +40,12 @@ import {
   type ModelProfile,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
+import {
+  legacyRecipe,
+  normalizeFinishReason,
+  parsePhotoRecipesResponse,
+  type PhotoRecipe,
+} from "./photo-recipes";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import {
   withRateLimit,
@@ -88,7 +94,12 @@ interface OcrRecipeImageRequest {
 
 interface OcrRecipeImageResponse {
   success: boolean;
+  /** For apps that read one recipe: see `legacyRecipe`. */
   recipe?: ExtractedRecipe;
+  /** Every recipe read, in page order; `[recipe]` when the retry produced it. */
+  recipes?: PhotoRecipe[];
+  /** Recipes the photo answer held that are not in `recipes`. */
+  droppedRecipeCount?: number;
   /** Raw OCR text if extraction failed but text was readable */
   rawText?: string;
   error?: string;
@@ -241,6 +252,8 @@ export interface OcrPerformResult {
    * compiling; absent is read as VISION_MODEL.
    */
   modelId?: string;
+  /** The candidate's finish reason, one of the SDK's `FinishReason` values. */
+  finishReason?: string;
 }
 
 /** One generateContent call on a profile. Injectable so tests can drive the
@@ -250,13 +263,15 @@ export type OcrModelCall = (
   request: GenerateContentRequest
 ) => Promise<GenerateContentResponse>;
 
-const callVertexProfile: OcrModelCall = async (profile, request) => {
-  const model =
-    profile === VISION_PROFILE
-      ? getVisionModel(getVisionClient())
-      : getTextModel(getGeminiClient());
-  return (await model.generateContent(request)).response;
-};
+/** The photo model for a profile; the fallback keeps TEXT_PROFILE's client. */
+export function photoModelFor(profile: ModelProfile): GenerativeModel {
+  return profile === VISION_PROFILE
+    ? getVisionModel(getVisionClient())
+    : getPhotoFallbackModel(getGeminiClient());
+}
+
+const callVertexProfile: OcrModelCall = async (profile, request) =>
+  (await photoModelFor(profile).generateContent(request)).response;
 
 /**
  * True when Vertex answered 404 / NOT_FOUND, which is how it reports a model
@@ -279,7 +294,7 @@ export async function defaultPerformOcr(
 ): Promise<OcrPerformResult> {
   // Build user prompt — scrub context text for PII
   let userPrompt =
-    "Läs texten i denna bild och extrahera receptet. Svara med JSON.";
+    "Läs texten i denna bild och extrahera alla recept. Svara med JSON.";
   if (args.context) {
     userPrompt += `\n\nKontext: ${scrubPii(args.context)}`;
   }
@@ -351,6 +366,7 @@ export async function defaultPerformOcr(
       cachedContentTokenCount: usage?.cachedContentTokenCount,
     },
     modelId: profile.id,
+    finishReason: normalizeFinishReason(response.candidates?.[0]?.finishReason),
   };
 }
 
@@ -405,6 +421,8 @@ export async function runOcrRecipeImage(
   // The model that answered the photo call. Starts as the vision model so
   // exits before the call name the model that would have been used.
   let ocrModelId: string = VISION_MODEL;
+  // Spread into the complete event, so no recipe text goes in here.
+  let photoCounts: Record<string, unknown> = {};
 
   // BUT-626: mutable variables captured by emitTiming. Assigned after
   // getPromptsConfig() resolves; undefined for early validation exits.
@@ -421,6 +439,7 @@ export async function runOcrRecipeImage(
       promptTokenCount: ocrUsage?.promptTokenCount,
       candidatesTokenCount: ocrUsage?.candidatesTokenCount,
       cachedContentTokenCount: ocrUsage?.cachedContentTokenCount,
+      ...photoCounts,
       ...(extra ?? {}),
       // BUT-626: emit promptVersion + bucket in the SAME event for per-bucket,
       // per-version analytics in one query. Spread LAST so these authoritative
@@ -528,6 +547,7 @@ export async function runOcrRecipeImage(
       cost: ocrCost,
       usage,
       modelId: usedModelId,
+      finishReason,
     } = await performOcr({
       imageBase64,
       imageUrl,
@@ -538,6 +558,7 @@ export async function runOcrRecipeImage(
     });
     ocrUsage = usage;
     ocrModelId = usedModelId ?? VISION_MODEL;
+    if (finishReason !== undefined) photoCounts = { finishReason };
 
     if (!content) {
       logger.error("[ocrRecipeImage] Empty response from Gemini");
@@ -575,20 +596,25 @@ export async function runOcrRecipeImage(
       candidatesTokenCount: usage?.candidatesTokenCount,
     });
 
-    // Try to parse as structured recipe
-    const recipe = parseRecipeResponse(content, promptVersion);
-    if (recipe) {
-      logger.info(
-        `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${ocrCost.toFixed(6)})`
-      );
+    const parsed = parsePhotoRecipesResponse(content, promptVersion, finishReason);
+    photoCounts = {
+      ...photoCounts,
+      recipeCount: parsed.recipes.length,
+      droppedRecipeCount: parsed.droppedRecipeCount,
+      salvaged: parsed.salvaged,
+    };
+    if (parsed.recipes.length > 0) {
+      const recipe = legacyRecipe(parsed.recipes);
       emitTiming(true, {
-        ingredientCount: recipe.ingredients.length,
+        ingredientCount: recipe?.ingredients.length,
         retryCount: 0,
         retryOutcome: null,
       });
       return {
         success: true,
         recipe,
+        recipes: parsed.recipes,
+        droppedRecipeCount: parsed.droppedRecipeCount,
         estimatedCost: ocrCost,
         promptVersion,
         retryCount: 0,
@@ -623,6 +649,7 @@ export async function runOcrRecipeImage(
     });
 
     if (retryResult.recipe) {
+      photoCounts = { ...photoCounts, recipeCount: 1 };
       emitTiming(true, {
         ingredientCount: retryResult.recipe.ingredients.length,
         retryCount: retryResult.retryCount,
@@ -631,6 +658,8 @@ export async function runOcrRecipeImage(
       return {
         success: true,
         recipe: retryResult.recipe,
+        recipes: [retryResult.recipe],
+        droppedRecipeCount: parsed.droppedRecipeCount,
         rawText: content,
         estimatedCost: totalCost,
         promptVersion: retryResult.promptVersion ?? promptVersion,
@@ -652,6 +681,7 @@ export async function runOcrRecipeImage(
       success: false,
       rawText: content,
       error: "Kunde inte strukturera texten som ett recept.",
+      droppedRecipeCount: parsed.droppedRecipeCount,
       estimatedCost: totalCost,
       promptVersion: retryResult.promptVersion ?? promptVersion,
       retryCount: retryResult.retryCount,
