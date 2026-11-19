@@ -1,0 +1,15 @@
+name: tmp onnx probe
+on:
+  push:
+    branches: [claude/project-thread-yw51di]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          u=https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz
+          curl -sSL -D - -o /dev/null "$u" | grep -iE "^(HTTP|location|server)" || true
+          curl -sSL -o /dev/null -w "microsoft 1.22 GET %{http_code} %{size_download}\n" "$u" || true
+          curl -sSL -o /dev/null -w "org-onnxruntime 1.22 GET %{http_code}\n" https://github.com/onnxruntime/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz || true
+          curl -sSL -o /dev/null -w "control gh cli %{http_code}\n" https://github.com/cli/cli/releases/download/v2.40.0/gh_2.40.0_checksums.txt || true
+          curl -sSL -o /dev/null -w "release page %{http_code}\n" https://github.com/microsoft/onnxruntime/releases/tag/v1.22.0 || true
