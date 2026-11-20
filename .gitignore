@@ -109,6 +109,7 @@ nul
 
 # One-off scripts
 *.py
+!.claude/hooks/parse_hook_json.py
 !scripts/crf/train_crf.py
 !scripts/ner/train_bert_ner.py
 !scripts/ner/distill_to_student.py

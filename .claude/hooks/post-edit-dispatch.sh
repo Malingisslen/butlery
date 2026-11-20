@@ -86,7 +86,7 @@ run() {
 # control, which is precisely the failure that control exists to find.
 if [[ "${BUTLERY_HOOK_GATES:-on}" == "off" ]]; then
   if [[ -n "$FILE" && "$FILE" == *.dart ]]; then
-    { dart format "$FILE" 2>/dev/null || true; } 1>&2
+    { dart format "$FILE" >/dev/null 2>&1 || true; }
   fi
   for s in safety-skill-trigger.sh file-size-guard.sh rules-change-detector.sh \
            regenerate-l10n.sh drift-version-guard.sh firestore-index-verifier.sh \
@@ -113,7 +113,7 @@ if [[ -n "$NF" && "$NF" == "$NR"/* ]]; then REL="${NF#"$NR"/}"; else REL="${NF#/
 #    entry's stdout is now shared with safety-skill-trigger.sh's JSON payload.
 #    At most ONE script in this chain may write to stdout.
 if [[ -n "$FILE" && "$FILE" == *.dart ]]; then
-  { dart format "$FILE" 2>/dev/null || true; } 1>&2
+  { dart format "$FILE" >/dev/null 2>&1 || true; }
 fi
 
 if [[ -n "$FILE" ]]; then

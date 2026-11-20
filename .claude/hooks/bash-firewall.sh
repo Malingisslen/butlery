@@ -19,6 +19,10 @@ if [ -z "$COMMAND" ]; then
   exit 0
 fi
 
+# Quoted text (a message, a grep pattern, an echo) is not a command; matching it
+# blocked harmless calls that merely mentioned a dangerous one.
+COMMAND=$(printf '%s' "$COMMAND" | sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
+
 # Check against dangerous patterns
 BLOCKED=""
 
@@ -47,8 +51,9 @@ if echo "$COMMAND" | grep -qE 'rm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+(~/|/\s|/\*
   BLOCKED="rm -rf on home/root/current directory"
 fi
 
-# Force push to any branch (not just main/master which deny list catches)
-if echo "$COMMAND" | grep -qE 'git\s+push\s+.*(-f|--force)\b'; then
+# Force push to any branch (not just main/master which deny list catches).
+# --force-with-lease refuses when the remote moved, so it is not caught here.
+if echo "$COMMAND" | grep -qE 'git\s+push\s+(.*\s)?(-f|--force)(\s|$)'; then
   BLOCKED="git push --force can overwrite remote history"
 fi
 

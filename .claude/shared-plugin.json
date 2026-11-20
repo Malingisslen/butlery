@@ -486,6 +486,9 @@
       "memoryIndexMaxChars": 7000
     }
   },
+  "repoHooksBridge": {
+    "include": ["preview-gate.sh", "bash-firewall.sh", "post-edit-dispatch.sh"]
+  },
   "preview": {
     "templatePath": "docs/design/previews/_butlery-template.html",
     "tokensDoc": "docs/design/butlery-mockup-reference.md",
