@@ -3241,9 +3241,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialPending => 'Väntande';
 
   @override
-  String get commonUser => 'Användare';
-
-  @override
   String get commonDone => 'Klar';
 
   @override
@@ -5981,9 +5978,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get socialCouldNotCreateProfile => 'Kunde inte skapa användarprofil';
-
-  @override
   String get socialCouldNotUpdateLike => 'Kunde inte uppdatera gilla-markering';
 
   @override
@@ -6081,9 +6075,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialSendMessage => 'Skicka meddelande';
-
-  @override
-  String get socialUserProfileCreated => 'Användarprofil skapad';
 
   @override
   String get shoppingAddToShoppingList => 'Lägg till i inköpslista';

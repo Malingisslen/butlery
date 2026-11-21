@@ -4,6 +4,8 @@ import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/profile_field.dart';
+export 'package:butlery/models/profile_field.dart';
 
 /// Repository interface for user profile data operations and management.
 /// This interface extends the base Repository pattern to provide specialized
@@ -34,7 +36,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 ///   displayName: 'John Doe',
 ///   email: 'john@example.com',
 /// );
-/// await userRepo.saveProfile(profile);
+/// await userRepo.saveProfile(profile, fields: ProfileField.all);
 /// // Search for users
 /// final searchResults = await userRepo.searchProfiles('john');
 /// for (final user in searchResults) {
@@ -45,24 +47,14 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 /// await userRepo.updateFCMToken(userId, fcmToken);
 /// ```
 abstract class UserRepository extends Repository<UserProfile> {
-  /// Persist the given profile (create or update).
-  ///
-  /// [writeHouseholdSize] (BUT-1322 review): when false, the `householdSize`
-  /// key is OMITTED from the private-settings merge write so the stored value
-  /// survives. An in-memory null is ambiguous — it can mean "cleared" or
-  /// "settings sub-doc read failed/degraded" — and only the editing surface
-  /// knows the user's intent. Callers that did not deliberately change the
-  /// field must pass false, or an unrelated profile save after a degraded
-  /// load would silently wipe the stored setting.
-  ///
-  /// [writeAvatarUrl]: when false, the `avatarUrl` key is OMITTED from the
-  /// merge, so a save that never touched the picture cannot put a stale copy
-  /// back over one set meanwhile on this or another device. Only the editing
-  /// surface, or a deliberate removal, passes true.
+  /// Persist the given profile (create or update), writing only the keys of
+  /// [fields] (BUT-2513). A field the save did not change must be left out:
+  /// this device's copy can be older than the server's, and after a failed
+  /// settings read its settings are empty. The first save of a new profile
+  /// passes [ProfileField.all].
   Future<void> saveProfile(
     UserProfile profile, {
-    bool writeHouseholdSize,
-    bool writeAvatarUrl,
+    required Set<ProfileField> fields,
   });
 
   /// Sets the profile picture to [url] only if the profile still holds
@@ -82,7 +74,7 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// public_profiles — deliberately NOT cache-first (see the implementation).
   ///
   /// BUT-1637: [UserService.createOrUpdateProfile] uses this to decide whether
-  /// to restore a minor's opt-in after a full-document save clobbers
+  /// to restore a minor's opt-in after a save writes
   /// `public_profiles.isSearchable` (the [UserProfile.toFirestore] chokepoint).
   /// A cache-first read could report a stale `true` after the user opted out on
   /// another device, which would let an unrelated save silently re-grant

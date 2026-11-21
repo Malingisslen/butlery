@@ -32,7 +32,11 @@
   `userIdHash` + coarse `birthDecade`, never raw birthYear.
 - `isSearchable` for minors has ONE chokepoint (`UserProfile.toFirestore()`), backed by an
   explicit rules hard-deny on a minor setting it true server-side — a legacy `true` isn't
-  force-corrected by the rule itself, only the next full save. `isMinor` must be mirrored
+  force-corrected by the rule itself, only by a save whose field set names `isSearchable`:
+  since BUT-2513 `saveProfile` writes only the keys of its `Set<ProfileField>`, so "the next
+  full save corrects it" no longer holds for any key — grade every "a save fixes the stored
+  value" argument against the CALLER'S field set (`_changedFields`), not the serializer.
+  `isMinor` must be mirrored
   via `public_profiles`/settings, never left only on `users/{uid}` (see the two-doc
   architecture fact); a save must re-read the AUTHORITATIVE server value before it can make
   a minor MORE discoverable.

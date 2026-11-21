@@ -10,6 +10,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -101,6 +102,7 @@ void main() {
                 joinedAt: DateTime.utc(2026, 1, 1),
                 lastActiveAt: DateTime.utc(2026, 1, 1),
               ),
+              fields: ProfileField.all,
             )
             .then((_) => saved = true);
 
@@ -130,6 +132,7 @@ void main() {
                 joinedAt: DateTime.utc(2026, 1, 1),
                 lastActiveAt: DateTime.utc(2026, 1, 1),
               ),
+              fields: ProfileField.all,
             )
             .then((_) => saved = true);
 

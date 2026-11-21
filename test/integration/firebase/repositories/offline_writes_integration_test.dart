@@ -12,6 +12,7 @@
 @Tags(['integration', 'firebase'])
 library;
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -347,6 +348,7 @@ void main() {
                 joinedAt: DateTime.utc(2026, 1, 1),
                 lastActiveAt: DateTime.utc(2026, 1, 1),
               ),
+              fields: ProfileField.all,
             )
             .timeout(_offlineBudget);
         await repo.setShowNutritionStrip(_uid, true).timeout(_offlineBudget);

@@ -6,16 +6,12 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Recipe social action handler
-/// Handles social features: sharing to friends/groups and user profile management.
+/// Handles social features: sharing to friends/groups.
 class RecipeSocialHandler {
   /// Show social sharing dialog
   static Future<void> showSocialShareDialog(BuildContext context) async {
@@ -51,36 +47,5 @@ class RecipeSocialHandler {
         ),
       ),
     );
-  }
-
-  /// Create user profile if missing
-  static Future<void> createUserProfile(BuildContext context) async {
-    if (!context.mounted) return;
-
-    final authService = ServiceLocator.get<AuthService>();
-    final userService = ServiceLocator.get<UserService>();
-    final currentUserId = authService.currentUserId;
-
-    if (currentUserId == null) return;
-
-    // Get display name from UserService's current user profile or use a default
-    final displayName =
-        userService.currentUserProfile?.displayName ?? context.l10n.commonUser;
-
-    try {
-      await userService.createOrUpdateProfile(
-        displayName: displayName,
-        isSearchable: true,
-        allowEmailSearch: false,
-      );
-      if (!context.mounted) return;
-      SnackBarUtils.showSuccess(context, context.l10n.socialUserProfileCreated);
-    } catch (e) {
-      if (!context.mounted) return;
-      SnackBarUtils.showFailure(
-        context,
-        what: context.l10n.socialCouldNotCreateProfile,
-      );
-    }
   }
 }

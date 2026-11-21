@@ -4,6 +4,7 @@
 /// search capabilities, FCM token management, and permission validation.
 library;
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'
@@ -176,7 +177,7 @@ void main() {
         final profile = _createUserProfile('user-123');
 
         // Act
-        await repository.saveProfile(profile);
+        await repository.saveProfile(profile, fields: ProfileField.all);
 
         // Assert
         final doc = await fakeFirestore
@@ -202,7 +203,10 @@ void main() {
             'email': 'old@example.com',
           });
 
-          await repository.saveProfile(_createUserProfile('user-123'));
+          await repository.saveProfile(
+            _createUserProfile('user-123'),
+            fields: ProfileField.all,
+          );
 
           final data =
               (await fakeFirestore
@@ -241,7 +245,7 @@ void main() {
         final staleEdit = _createUserProfile(
           userId,
         ).copyWith(displayName: 'Renamed User');
-        await repository.saveProfile(staleEdit);
+        await repository.saveProfile(staleEdit, fields: ProfileField.all);
 
         final publicDoc = await fakeFirestore
             .collection('public_profiles')
@@ -505,7 +509,7 @@ void main() {
         const userId = 'user-123';
         final profile = _createUserProfile(userId).copyWith(householdSize: 5);
 
-        await repository.saveProfile(profile);
+        await repository.saveProfile(profile, fields: ProfileField.all);
 
         final settings = await fakeFirestore
             .collection('users')
@@ -534,17 +538,18 @@ void main() {
       });
 
       test(
-        'saveProfile with writeHouseholdSize:false preserves the stored '
+        'saveProfile without the householdSize field preserves the stored '
         'value — a degraded (null) profile can not wipe it (BUT-1322 review)',
         () async {
           // The confirmed wipe bug: fetchProfile swallows a failed settings-doc
           // read into householdSize=null; a later UNRELATED save (e.g. bio) must
           // NOT clear the persisted setting. The service passes
-          // writeHouseholdSize:false whenever the field was not edited, which
+          // no householdSize field whenever the field was not edited, which
           // drops the key from the merge so the stored value survives.
           const userId = 'user-123';
           await repository.saveProfile(
             _createUserProfile(userId).copyWith(householdSize: 5),
+            fields: ProfileField.all,
           );
 
           // Simulate the degraded in-memory profile (household size lost) doing
@@ -553,7 +558,7 @@ void main() {
             _createUserProfile(
               userId,
             ).copyWith(displayName: 'Ny', householdSize: null),
-            writeHouseholdSize: false,
+            fields: {ProfileField.displayName},
           );
 
           expect(
@@ -562,9 +567,10 @@ void main() {
             reason: 'an untouched save must leave the stored setting intact',
           );
 
-          // And a deliberate clear (writeHouseholdSize:true, null) DOES wipe it.
+          // And a deliberate clear (householdSize named, null) DOES wipe it.
           await repository.saveProfile(
             _createUserProfile(userId).copyWith(householdSize: null),
+            fields: ProfileField.all,
           );
           expect(
             (await repository.fetchProfile(userId))!.householdSize,
@@ -588,6 +594,7 @@ void main() {
 
           await repository.saveProfile(
             _createUserProfile(userId).copyWith(bio: 'Hej'),
+            fields: ProfileField.all,
           );
 
           final publicDoc = await fakeFirestore
@@ -600,11 +607,12 @@ void main() {
         },
       );
 
-      test('saveProfile with writeAvatarUrl:false leaves the stored picture, '
+      test('saveProfile without the avatarUrl field leaves the stored picture, '
           'and a deliberate null still clears it (BUT-2294)', () async {
         const userId = 'user-123';
         await repository.saveProfile(
           _createUserProfile(userId).copyWith(avatarUrl: 'https://img/new.jpg'),
+          fields: ProfileField.all,
         );
 
         await repository.saveProfile(
@@ -612,7 +620,7 @@ void main() {
             displayName: 'Ny',
             avatarUrl: 'https://img/stale.jpg',
           ),
-          writeAvatarUrl: false,
+          fields: {ProfileField.displayName},
         );
         var stored = await fakeFirestore
             .collection('public_profiles')
@@ -623,6 +631,7 @@ void main() {
 
         await repository.saveProfile(
           _createUserProfile(userId).copyWith(avatarUrl: null),
+          fields: ProfileField.all,
         );
         stored = await fakeFirestore
             .collection('public_profiles')
@@ -1759,6 +1768,7 @@ void main() {
           _createUserProfile(
             userId,
           ).copyWith(bio: 'Ny bio', newRecipesShowOnProfile: true),
+          fields: ProfileField.all,
         );
 
         expect(

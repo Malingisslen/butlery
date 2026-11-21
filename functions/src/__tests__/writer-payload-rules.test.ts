@@ -9,6 +9,8 @@
  *     evaluated.
  *   - `deep_links`: `createShortUrl`'s create, and the BUT-2463 limbs: a get
  *     by code, no list, no update, delete by the creator, no `clicks` access.
+ *   - `public_profiles` and `users/{uid}/settings/preferences`: the partial
+ *     merges `saveProfile` sends since BUT-2513.
  *
  * The `users/{uid}/counters` writer has its own suite
  * (`shared-content-counters-rules.test.ts`).
@@ -30,7 +32,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp, Timestamp } from "firebase/firestore";
+import { deleteField, serverTimestamp, Timestamp } from "firebase/firestore";
 
 // MUTATION-PROBE SEAM (same contract as poll-votes-rules.test.ts).
 const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-writer-payloads";
@@ -248,6 +250,119 @@ test("deep_links clicks: a READ is DENIED, even to the link's creator", async ()
   });
   await assertFails(clicksCol(UID).get());
   await assertFails(clicksCol(UID).doc("c1").get());
+});
+
+// BUT-2513: `FirebaseUserRepository.saveProfile` merge-writes only the keys of
+// the fields a save names (`ProfileField.publicPart` / `settingsPart`), plus
+// `lastActiveAt` and `schemaVersion` on the profile and the `email` and `bio`
+// cleanup deletes. These are the two maps a rename and "klar med
+// introduktionen" send.
+const profileDoc = (uid = UID) =>
+  env.authenticatedContext(uid).firestore().doc(`public_profiles/${uid}`);
+const settingsDoc = (uid = UID) =>
+  env
+    .authenticatedContext(uid)
+    .firestore()
+    .doc(`users/${uid}/settings/preferences`);
+
+function renamePayload(): Record<string, unknown> {
+  return {
+    displayName: "Anna Ny",
+    displayNameLower: "anna ny",
+    lastActiveAt: Timestamp.now(),
+    schemaVersion: 1,
+    email: deleteField(),
+  };
+}
+
+function onboardingSettingsPayload(): Record<string, unknown> {
+  return { hasCompletedOnboarding: true, bio: deleteField() };
+}
+
+async function seedProfile(
+  isMinor: boolean,
+  isSearchable = !isMinor
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await db.doc(`users/${UID}`).set({ uid: UID, isMinor });
+    await db.doc(`public_profiles/${UID}`).set({
+      displayName: "Anna",
+      displayNameLower: "anna",
+      isSearchable,
+      allowEmailSearch: false,
+      bio: "Om mig från en annan telefon",
+      cookingSkillLevel: "advanced",
+      schemaVersion: 1,
+    });
+    await db.doc(`users/${UID}/settings/preferences`).set({
+      allergenPreferences: { trackedAllergens: ["milk"], trackedDietary: [] },
+      notificationsEnabled: false,
+      isMinor,
+    });
+  });
+}
+
+test("public_profiles: a rename's partial merge is ALLOWED and keeps the other fields", async () => {
+  await seedProfile(false);
+  await assertSucceeds(profileDoc().set(renamePayload(), { merge: true }));
+  const stored = (await profileDoc().get()).data();
+  if (stored?.bio !== "Om mig från en annan telefon" ||
+      stored?.cookingSkillLevel !== "advanced" ||
+      stored?.displayName !== "Anna Ny") {
+    throw new Error(`unexpected profile after rename: ${JSON.stringify(stored)}`);
+  }
+});
+
+test("public_profiles: a minor's rename, which leaves isSearchable out, is ALLOWED", async () => {
+  await seedProfile(true);
+  await assertSucceeds(profileDoc().set(renamePayload(), { merge: true }));
+});
+
+// A rename leaves isSearchable out, so a minor whose stored value is a legacy
+// true can rename only because the BUT-1626 check reads the diff.
+test("public_profiles: a minor's rename over a stored isSearchable true is ALLOWED", async () => {
+  await seedProfile(true, true);
+  await assertSucceeds(profileDoc().set(renamePayload(), { merge: true }));
+});
+
+test("public_profiles: the same minor rename setting isSearchable true is DENIED", async () => {
+  await seedProfile(true);
+  await assertFails(
+    profileDoc().set({ ...renamePayload(), isSearchable: true }, { merge: true })
+  );
+});
+
+test("public_profiles: the same rename carrying allergenPreferences is DENIED", async () => {
+  await seedProfile(false);
+  await assertFails(
+    profileDoc().set(
+      { ...renamePayload(), allergenPreferences: { trackedAllergens: [] } },
+      { merge: true }
+    )
+  );
+});
+
+test("settings: the introduction's partial merge is ALLOWED and keeps the allergens", async () => {
+  await seedProfile(true);
+  await assertSucceeds(
+    settingsDoc().set(onboardingSettingsPayload(), { merge: true })
+  );
+  const stored = (await settingsDoc().get()).data();
+  if (JSON.stringify(stored?.allergenPreferences?.trackedAllergens) !== '["milk"]' ||
+      stored?.notificationsEnabled !== false) {
+    throw new Error(`unexpected settings after merge: ${JSON.stringify(stored)}`);
+  }
+});
+
+test("settings: the same merge changing isMinor is DENIED", async () => {
+  await seedProfile(true);
+  await assertFails(
+    settingsDoc().set(
+      { ...onboardingSettingsPayload(), isMinor: false },
+      { merge: true }
+    )
+  );
 });
 
 async function run(): Promise<void> {

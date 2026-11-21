@@ -77,8 +77,7 @@ void main() {
     when(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).thenAnswer((_) async {});
 
@@ -108,8 +107,7 @@ void main() {
     verify(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).called(1);
     expect(service.currentUserProfile, isNotNull);

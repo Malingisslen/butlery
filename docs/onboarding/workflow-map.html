@@ -3382,7 +3382,7 @@
     {
       "id": "flow-auth-4",
       "label": "onboarding",
-      "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Familj & hushåll > Portioner som standard (döpt om från ”Meny och smak” i BUT-1594, som samtidigt flyttade kök/skicklighet-reglagen till profilredigeringens ”cooking identity”-sektion — denna vy hette tidigare menu_taste_view.dart, sedan Mer, omtänkt del 2 arket lib/views/family/household_portions_sheet.dart). BUT-1939: exempelmenyn sås inte alls om veckan inte gick att läsa — idempotensvakten (hoppa över om veckan redan har innehåll) kunde inte se skillnad på en tom vecka och en misslyckad läsning.",
+      "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-2513: completeOnboardingWithPreferences skriver bara hasCompletedOnboarding, de valda allergenerna och, för en minderårig, isSearchable. BUT-1939: exempelmenyn sås inte alls om veckan inte gick att läsa — idempotensvakten (hoppa över om veckan redan har innehåll) kunde inte se skillnad på en tom vecka och en misslyckad läsning.",
       "features": [
         "AUTH-07",
         "AUTH-08"
@@ -3412,7 +3412,7 @@
         {
           "from": "svc-user",
           "to": "ds-users",
-          "payload": "saveProfile(updated, writeHouseholdSize:false) — sparar allergener/kostpreferenser + markerar onboarding klar; BUT-1322-flaggan skyddar en ev. redan satt hushållsstorlek från att raderas av detta anrop",
+          "payload": "saveProfile(updated, fields: {hasCompletedOnboarding, allergenPreferences om valda}) — sparar bara de namngivna fälten (BUT-2513)",
           "transport": "Firestore write",
           "verified": true
         },
@@ -5394,7 +5394,7 @@
         {
           "from": "svc-user",
           "to": "repo-user",
-          "payload": "saveProfile(profile, writeHouseholdSize: false) — sentinel otouched i detta flöde, så nyckeln householdSize utelämnas ur settings-merget och en ev. tidigare sparad hushållsstorlek skrivs inte över. BUT-1629: för en minderårig nollar UserProfile.toFirestore isSearchable vid varje sparning; svc-user gör därför en villkorad återförsäkran (setMinorSearchable) efter lyckad sparning som återställer en BEFINTLIG opt-in men aldrig beviljar en ny",
+          "payload": "saveProfile(profile, fields: …) — bara fälten sparningen ändrar skrivs (BUT-2513); ett fält som inte ändrats behåller serverns värde. BUT-1629: en sparning som skriver isSearchable för en minderårig nollar det, och svc-user gör en villkorad återförsäkran (setMinorSearchable) som återställer en BEFINTLIG opt-in men aldrig beviljar en ny",
           "transport": "method call",
           "verified": true
         },

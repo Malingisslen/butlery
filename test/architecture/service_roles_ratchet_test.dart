@@ -39,7 +39,6 @@ const _userServiceImporters = <String>{
   'lib/views/auth/guest_upgrade_view.dart',
   'lib/views/mina_recept_view.dart',
   'lib/views/more/app_settings_view.dart',
-  'lib/views/recipe_detail/handlers/recipe_social_handler.dart',
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart',
   'lib/views/recipe_detail/recipe_detail_tablet_content.dart',
   'lib/views/recipe_detail_view.dart',
