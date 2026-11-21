@@ -187,8 +187,8 @@ class MultiRecipeSplitter {
   }
 
   /// How many recipes [text] appears to hold: the title-like lines that open
-  /// a recipe, by the same rule [split] uses to open a block, counted even
-  /// when [split] declines the page or discards the block afterwards.
+  /// a recipe, counted even when [split] declines the page or discards the
+  /// block afterwards.
   ///
   /// A line that names a component of a recipe ("Sås", "Till servering",
   /// "Garnering", or anything ending in a colon) is a sub-section and never
@@ -223,8 +223,10 @@ class MultiRecipeSplitter {
     var hasInstructions = false;
     for (var p = 0; p < neLines.length; p++) {
       final line = neLines[p].text;
+      // Headings do not end in a full stop; sentences do.
       if (_isTitleish(line) &&
           !RecipeSectionDetector.isSectionHeader(line) &&
+          !line.endsWith('.') &&
           _ingredientClusterAhead(neLines, p)) {
         if (count == 0 || (hasIngredients && hasInstructions)) {
           count++;
@@ -235,7 +237,9 @@ class MultiRecipeSplitter {
       if (RecipeSectionDetector.looksLikeIngredient(line)) {
         hasIngredients = true;
       }
-      if (_isInstructional(line)) hasInstructions = true;
+      // A recipe's method follows its ingredients; prose above them is the
+      // introduction, not the method.
+      if (hasIngredients && _isInstructional(line)) hasInstructions = true;
     }
     return count;
   }

@@ -95,6 +95,43 @@ För toppingen:
       expect(MultiRecipeSplitter.countCandidates(text), 1);
     });
 
+    test('an introduction above the ingredients is not the method', () {
+      // Prose before the first ingredient introduces the dish; counting it as
+      // the method made the next component heading look like a new recipe.
+      const text = '''
+Äppelpaj
+
+Blanda gärna olika sorters äpplen i pajen.
+4 portioner
+
+Havretäcke
+2 dl havregryn
+1 dl mjöl
+100 g smör
+
+Äppelröra
+4 st äpplen
+1 msk socker
+1 tsk kanel
+
+Gör så här
+Sätt ugnen på 200 grader. Grädda pajen i 30 minuter.
+''';
+
+      expect(MultiRecipeSplitter.countCandidates(text), 1);
+    });
+
+    test('a sentence ending in a full stop does not open a recipe', () {
+      const text = '''
+$_first
+Passar bra till kaffet.
+2 dl grädde
+1 msk socker
+''';
+
+      expect(MultiRecipeSplitter.countCandidates(text), 1);
+    });
+
     test('counts a page the splitter itself declines', () {
       // The second recipe has no instructions, so split() hands the page back
       // whole while the count still sees both titles.

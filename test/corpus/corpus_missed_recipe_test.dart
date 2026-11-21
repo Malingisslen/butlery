@@ -17,10 +17,11 @@
 /// fragment` entries (a sliver of the next recipe is not a recipe the user
 /// wants, so a card for it would be unneeded). Never the splitter's own output.
 ///
-/// Each input is scored separately: the stored `ocr.txt`, and, for pages that
-/// have one, the text of the ML Kit capture (`layout-mlkit.json`). Both stand
-/// in for what the phone reads; neither is the phone. No geometry is passed,
-/// matching the code default of `enable_layout_recipe_split`.
+/// Each input is scored separately: the stored `ocr.txt` without geometry,
+/// and the text of each layout capture (`layout-mlkit.json`,
+/// `layout-winocr.json`) WITH its geometry, as the photo screen passes ML Kit's
+/// when `enable_layout_recipe_split` is on. Each stands in for what the phone
+/// reads; none is the phone.
 @Tags(['corpus-tools'])
 library;
 
@@ -50,8 +51,17 @@ class _Page {
   final String book;
   final String imageId;
   final int gold;
+  final int tails;
   final String text;
-  const _Page(this.book, this.imageId, this.gold, this.text);
+  final DocumentLayout? layout;
+  const _Page(
+    this.book,
+    this.imageId,
+    this.gold,
+    this.tails,
+    this.text, [
+    this.layout,
+  ]);
 }
 
 class _Outcome {
@@ -74,6 +84,8 @@ class _Outcome {
     'book': page.book,
     'page': page.imageId,
     'gold': page.gold,
+    'tails': page.tails,
+    'layout': page.layout != null,
     'found': found,
     'textCandidates': textCandidates,
     'blocksTried': blocksTried,
@@ -92,8 +104,13 @@ Map<String, dynamic>? _readJson(String path) {
 }
 
 /// Pages with verified gold, keyed `book/imageId`, valued by the number of
-/// verified entries that are not frame-cut fragments.
-Map<String, int> _goldCounts(CorpusPaths paths, List<String> books) {
+/// verified entries that are not frame-cut fragments. [tails] gets, per page,
+/// how many of those are `frameCut: tail`.
+Map<String, int> _goldCounts(
+  CorpusPaths paths,
+  List<String> books,
+  Map<String, int> tails,
+) {
   final counts = <String, int>{};
   for (final book in books) {
     for (final entry in paths.recipeEntries(book)) {
@@ -103,6 +120,7 @@ Map<String, int> _goldCounts(CorpusPaths paths, List<String> books) {
       counts.putIfAbsent(key, () => 0);
       if (gold['frameCut'] == 'fragment') continue;
       counts[key] = counts[key]! + 1;
+      if (gold['frameCut'] == 'tail') tails[key] = (tails[key] ?? 0) + 1;
     }
   }
   return counts;
@@ -113,21 +131,31 @@ String? _ocrTextOf(CorpusPaths paths, String book, String imageId) {
   return f.existsSync() ? f.readAsStringSync() : null;
 }
 
-String? _mlkitTextOf(CorpusPaths paths, String book, String imageId) {
-  final m = _readJson(paths.ocrLayout(book, imageId, engine: 'mlkit'));
+PageLayout? _layoutOf(
+  CorpusPaths paths,
+  String book,
+  String imageId,
+  String engine,
+) {
+  final m = _readJson(paths.ocrLayout(book, imageId, engine: engine));
   if (m == null) return null;
   try {
     final page = PageLayout.fromJson(m);
-    if (page.lines.isEmpty) return null;
-    return DocumentLayout([page]).text;
+    return page.lines.isEmpty ? null : page;
   } catch (_) {
     return null;
   }
 }
 
-/// The text the photo screen parses for one page: the same page preparation
-/// `recombineAndParse` runs before `autoParseOcrText`.
-String _asPhotoPage(String text) => prepareScreenPages([PageText(text)]).text;
+/// The text and geometry the photo screen parses for one page: the same page
+/// preparation `recombineAndParse` runs before `autoParseOcrText`.
+(String, DocumentLayout?) _asPhotoPage(String text, {PageLayout? layout}) {
+  final prepared = prepareScreenPages([PageText(text, layout: layout)]);
+  return (
+    prepared.text,
+    layout == null ? null : DocumentLayout(prepared.layouts),
+  );
+}
 
 String _pct(int n, int of) =>
     of == 0 ? '-' : '${(100 * n / of).toStringAsFixed(1)} % ($n av $of)';
@@ -140,6 +168,12 @@ String _report(String label, List<_Outcome> outcomes) {
       .toList();
   final b = StringBuffer()
     ..writeln('== $label: ${outcomes.length} sidor ==')
+    ..writeln(
+      '  varav sidor där facit har en svans (frameCut: tail): '
+      '${outcomes.where((o) => o.page.tails > 0).length}; '
+      'för få och facit har svans: '
+      '${short.where((o) => o.page.tails > 0).length} av ${short.length}',
+    )
     ..writeln(
       '  sidor med ett recept: ${single.length}, '
       'sidor där telefonen fick för få: ${short.length}, '
@@ -196,12 +230,14 @@ void main() {
           .books()
           .map((d) => d.path.replaceAll('\\', '/').split('/').last)
           .toList();
-      final gold = _goldCounts(paths, books);
+      final tails = <String, int>{};
+      final gold = _goldCounts(paths, books, tails);
       final manager = ImportManager(_NoopPersonalOps());
 
       Future<_Outcome> score(_Page page) async {
         final result = await manager.autoParseMulti(
           page.text,
+          layout: page.layout,
           // Pure measurement: no quota check and no parse event per page.
           channel: null,
           reflow: true,
@@ -214,7 +250,11 @@ void main() {
         );
       }
 
-      final byInput = <String, List<_Outcome>>{'ocr.txt': [], 'ML Kit': []};
+      final byInput = <String, List<_Outcome>>{
+        'ocr.txt': [],
+        'ML Kit med geometri': [],
+        'winocr med geometri': [],
+      };
       var noAnswerKey = 0;
       for (final MapEntry(key: key, value: count) in gold.entries) {
         if (count == 0) {
@@ -222,16 +262,25 @@ void main() {
           continue;
         }
         final [book, imageId] = key.split('/');
+        final pageTails = tails[key] ?? 0;
         final ocr = _ocrTextOf(paths, book, imageId);
         if (ocr != null) {
+          final (text, _) = _asPhotoPage(ocr);
           byInput['ocr.txt']!.add(
-            await score(_Page(book, imageId, count, _asPhotoPage(ocr))),
+            await score(_Page(book, imageId, count, pageTails, text)),
           );
         }
-        final mlkit = _mlkitTextOf(paths, book, imageId);
-        if (mlkit != null) {
-          byInput['ML Kit']!.add(
-            await score(_Page(book, imageId, count, _asPhotoPage(mlkit))),
+        for (final (label, engine) in [
+          ('ML Kit med geometri', 'mlkit'),
+          ('winocr med geometri', 'winocr'),
+        ]) {
+          final page = _layoutOf(paths, book, imageId, engine);
+          if (page == null) continue;
+          final (text, layout) = _asPhotoPage(page.text, layout: page);
+          byInput[label]!.add(
+            await score(
+              _Page(book, imageId, count, pageTails, text, layout),
+            ),
           );
         }
       }
@@ -242,8 +291,7 @@ void main() {
           'Sidor utan annat än fragment i facit (hoppade): $noAnswerKey',
         )
         ..writeln(
-          'Ersättnings-OCR: varken ocr.txt eller ML Kit-fångsten är '
-          'telefonens egen läsning i appen.',
+          'Ersättnings-OCR: ingen av indatan är telefonens egen läsning i appen.',
         );
       for (final MapEntry(key: label, value: outcomes) in byInput.entries) {
         text.writeln(_report(label, outcomes));
