@@ -53,6 +53,7 @@ create_policy_if_missing() {
   fi
 
   gcloud alpha monitoring policies create \
+    --project="$PROJECT_ID" \
     --policy-from-file="$json_file" \
     --quiet >/dev/null
   echo "  [ok]   '$display_name' created"
