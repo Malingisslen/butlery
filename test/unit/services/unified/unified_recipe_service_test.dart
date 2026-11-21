@@ -1394,6 +1394,32 @@ void main() {
         );
       });
 
+      /// Proves: disposing the service, which is what the container does at
+      /// sign-out, drops an initialize that is still reading the cache.
+      test('initialize in flight at dispose is dropped', () async {
+        final cacheRead = Completer<List<String>>();
+        when(
+          () => mockCacheDao.getJsonKeys(any(), any()),
+        ).thenAnswer((_) => cacheRead.future);
+        final stale = RecipeFactory.buildPersonal(
+          id: 'forra-kontots-recept',
+          title: 'Förra kontots recept',
+        );
+        when(
+          () => mockCacheDao.getJson(any(), any(), 'forra-kontots-recept'),
+        ).thenAnswer((_) async => jsonEncode(stale.toJson()));
+
+        final inFlight = service.initialize();
+        await Future<void>.delayed(Duration.zero);
+        service.dispose();
+        cacheRead.complete(['forra-kontots-recept']);
+        await inFlight;
+
+        expect(service.recipes, isEmpty);
+        expect(service.isInitialized, isFalse);
+        verifyNever(() => mockAuthRepository.authStateChanges());
+      });
+
       /// Proves: a recipe reload that a sign-in started and that is still
       /// reading the cache when the service is reset for logout does not put
       /// that account's recipes back in the list.

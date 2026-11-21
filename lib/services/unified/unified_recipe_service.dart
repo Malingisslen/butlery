@@ -152,8 +152,8 @@ class UnifiedRecipeService
   /// cache loading and sync — the auth handler's reload would be redundant.
   bool _initializing = false;
 
-  // Bumped by [resetForLogout]; a load started under an older value belongs to
-  // an account that has since signed out and is dropped.
+  // A load started under an older value belongs to an account that has since
+  // signed out and is dropped.
   int _generation = 0;
 
   // Cached unmodifiable views — invalidated on every _recipes mutation
@@ -1174,6 +1174,8 @@ class UnifiedRecipeService
   }
 
   void dispose() {
+    _generation++;
+    if (_areModulesInitialized()) _authHandler.cancelInFlight();
     _authSubscription?.cancel();
     _queueSentSubscription?.cancel();
     _queueDroppedSubscription?.cancel();
