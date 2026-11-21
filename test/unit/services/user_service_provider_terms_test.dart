@@ -207,8 +207,7 @@ void main() {
       when(
         () => repo.saveProfile(
           any(),
-          writeHouseholdSize: any(named: 'writeHouseholdSize'),
-          writeAvatarUrl: any(named: 'writeAvatarUrl'),
+          fields: any(named: 'fields'),
         ),
       ).thenAnswer((invocation) async {
         order.add('profile');
@@ -247,8 +246,7 @@ void main() {
     when(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).thenThrow(Exception('unavailable'));
 
@@ -260,8 +258,7 @@ void main() {
     when(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).thenAnswer((_) async {});
     await service.retryLoadProfile();
@@ -280,8 +277,7 @@ void main() {
             'Anna Andersson',
           ),
         ),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     );
   });
@@ -292,8 +288,7 @@ void main() {
       when(
         () => repo.saveProfile(
           any(),
-          writeHouseholdSize: any(named: 'writeHouseholdSize'),
-          writeAvatarUrl: any(named: 'writeAvatarUrl'),
+          fields: any(named: 'fields'),
         ),
       ).thenAnswer((_) async {});
       when(

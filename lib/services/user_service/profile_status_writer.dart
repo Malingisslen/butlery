@@ -166,9 +166,7 @@ class ProfileStatusWriter {
       );
       await _repository.saveProfile(
         updated,
-        writeHouseholdSize:
-            false, // onboarding never edits it (BUT-1322 review)
-        writeAvatarUrl: false,
+        fields: const {ProfileField.hasCompletedOnboarding},
       );
 
       _port.profile = updated;
@@ -207,8 +205,13 @@ class ProfileStatusWriter {
     );
     await _repository.saveProfile(
       updated,
-      writeHouseholdSize: false, // onboarding never edits it (BUT-1322 review)
-      writeAvatarUrl: false,
+      fields: {
+        ProfileField.hasCompletedOnboarding,
+        if (preferences != null) ProfileField.allergenPreferences,
+        if (onboardingSkippedAt != null) ProfileField.onboardingSkippedAt,
+        // A minor is kept out of search from the start (BUT-1454).
+        if (updated.isMinor) ProfileField.isSearchable,
+      },
     );
 
     _port.profile = updated;

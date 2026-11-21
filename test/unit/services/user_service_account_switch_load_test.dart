@@ -72,8 +72,7 @@ void main() {
     when(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).thenAnswer((_) async {});
   });
@@ -156,8 +155,7 @@ void main() {
     verifyNever(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     );
     verifyNever(() => repo.recordTermsAcceptance(any(), any()));
@@ -193,7 +191,7 @@ void main() {
     final minorAnna = _profile(
       'uid-anna',
       'Anna',
-    ).copyWith(isMinor: true, isSearchable: true);
+    ).copyWith(isMinor: true, isSearchable: false);
     when(
       () => repo.fetchProfile('uid-anna'),
     ).thenAnswer((_) async => minorAnna);
@@ -204,8 +202,7 @@ void main() {
     when(
       () => repo.saveProfile(
         any(),
-        writeHouseholdSize: any(named: 'writeHouseholdSize'),
-        writeAvatarUrl: any(named: 'writeAvatarUrl'),
+        fields: any(named: 'fields'),
       ),
     ).thenAnswer((_) => save.future);
     final searchability = _MockSearchability();
@@ -217,7 +214,11 @@ void main() {
     await service.initialize();
     expect(service.currentUserProfile?.isMinor, isTrue);
 
-    final saving = service.createOrUpdateProfile(displayName: 'Anna B');
+    final saving = service.createOrUpdateProfile(
+      displayName: 'Anna B',
+      // Only a save that writes searchability re-asserts it (BUT-2513).
+      isSearchable: true,
+    );
     await pumpEventQueue();
     signedIn = bo;
     save.complete();
@@ -232,7 +233,7 @@ void main() {
     final minorAnna = _profile(
       'uid-anna',
       'Anna',
-    ).copyWith(isMinor: true, isSearchable: true);
+    ).copyWith(isMinor: true, isSearchable: false);
     when(
       () => repo.fetchProfile('uid-anna'),
     ).thenAnswer((_) async => minorAnna);
@@ -246,7 +247,11 @@ void main() {
 
     final service = buildService(searchability: searchability);
     await service.initialize();
-    await service.createOrUpdateProfile(displayName: 'Anna B');
+    await service.createOrUpdateProfile(
+      displayName: 'Anna B',
+      // Only a save that writes searchability re-asserts it (BUT-2513).
+      isSearchable: true,
+    );
 
     verify(() => searchability.setSearchable(true)).called(1);
     expect(service.currentUserProfile?.displayName, 'Anna B');

@@ -9,6 +9,7 @@
 @Tags(['integration', 'firebase'])
 library;
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -86,7 +87,7 @@ void main() {
             .withName('Test User')
             .build();
 
-        await repository.saveProfile(profile);
+        await repository.saveProfile(profile, fields: ProfileField.all);
 
         final pub = await publicData(testUserId);
         expect(pub?['displayName'], 'Test User');
@@ -110,6 +111,7 @@ void main() {
               .withName('Test User')
               .withEmail('test@example.com')
               .build(),
+          fields: ProfileField.all,
         );
 
         expect((await publicData(testUserId))?.containsKey('email'), isFalse);
@@ -129,6 +131,7 @@ void main() {
               .withName('Renamed')
               .withFriendCount(0)
               .build(),
+          fields: ProfileField.all,
         );
 
         final pub = await publicData(testUserId);
@@ -141,7 +144,7 @@ void main() {
         final other = UserBuilder().withId('someone-else').build();
 
         await expectLater(
-          repository.saveProfile(other),
+          repository.saveProfile(other, fields: ProfileField.all),
           throwsA(isA<PermissionDeniedException>()),
         );
         expect((await publicDoc('someone-else').get(server)).exists, isFalse);

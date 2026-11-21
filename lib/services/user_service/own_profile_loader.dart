@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:firebase_auth/firebase_auth.dart' show User;
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -74,7 +75,25 @@ class OwnProfileLoader with ErrorHandlingMixin {
       if (!_isStillSignedInAs(user.uid)) return null;
 
       UserProfile profile;
+      // BUT-2513: the fields this save changes, and so writes. The held
+      // profile can be older than the server's, so a field written unchanged
+      // would put its old value back.
+      final Set<ProfileField> fields;
       if (existingProfile != null) {
+        fields = _changedFields(
+          existingProfile,
+          displayName: displayName,
+          avatarUrl: avatarUrl,
+          isSearchable: isSearchable,
+          allowEmailSearch: allowEmailSearch,
+          cookingSkillLevel: cookingSkillLevel,
+          cuisineAffinities: cuisineAffinities,
+          bio: bio,
+          showOnlineStatus: showOnlineStatus,
+          shareActivityToFeed: shareActivityToFeed,
+          activityFeedEventTypes: activityFeedEventTypes,
+          householdSize: householdSize,
+        );
         // Only pass cooking identity fields when caller provides them,
         // so other callers (auto-creation, social handler) don't wipe them.
         profile = existingProfile.copyWith(
@@ -120,6 +139,7 @@ class OwnProfileLoader with ErrorHandlingMixin {
           profile = profile.copyWith(householdSize: householdSize as int?);
         }
       } else {
+        fields = ProfileField.all;
         final now = clock.now();
         profile = UserProfile(
           uid: user.uid,
@@ -156,15 +176,15 @@ class OwnProfileLoader with ErrorHandlingMixin {
       }
 
       // BUT-1637 (data-safety): decide whether the post-save re-assert may
-      // restore this minor's discoverability BEFORE the save below clobbers it.
+      // restore this minor's discoverability.
       // Read the AUTHORITATIVE server value — not the possibly-stale in-memory
       // `existingProfile` — so an opt-out made on another device can never be
       // silently re-granted by an unrelated profile edit, and an explicit
       // `isSearchable:false` on THIS save is honoured. Fail closed: a read the
       // server can't answer (offline) leaves the minor not searchable.
+      final writesSearchable = fields.contains(ProfileField.isSearchable);
       var minorReassertSearchable = false;
-      var minorSearchabilityReadFailed = false;
-      if (profile.isMinor && isSearchable != false) {
+      if (profile.isMinor && writesSearchable && isSearchable != false) {
         try {
           minorReassertSearchable = await _repository.fetchPersistedSearchable(
             user.uid,
@@ -174,32 +194,22 @@ class OwnProfileLoader with ErrorHandlingMixin {
             'Could not read persisted minor searchability; leaving it off: $e',
           );
           minorReassertSearchable = false;
-          minorSearchabilityReadFailed = true;
         }
       }
 
       if (!_isStillSignedInAs(user.uid)) return null;
 
-      // BUT-1322 (review): only write the householdSize key when the caller
-      // deliberately set/cleared it — see UserRepository.saveProfile.
-      await _repository.saveProfile(
-        profile,
-        writeHouseholdSize: !identical(householdSize, _unset),
-        writeAvatarUrl: !identical(avatarUrl, _unset),
-      );
+      await _repository.saveProfile(profile, fields: fields);
 
       // BUT-1629: [UserProfile.toFirestore] forces `isSearchable:false` for a
       // minor — deliberately, so no client write can make one discoverable.
-      // The side effect is that EVERY full-document profile save silently
-      // revokes an opted-in minor's discoverability, whatever the save was
-      // actually about (bio, avatar, household size…). Compensate here, at the
-      // same layer as the chokepoint, so all three call sites inherit it
-      // instead of each having to remember.
+      // A save that writes it compensates here, at the same layer as the
+      // chokepoint.
       var savedProfile = profile;
       // The searchability callable acts on whoever is signed in NOW, so after
       // a switch it would re-assert the other account's discoverability.
       if (!_isStillSignedInAs(user.uid)) return savedProfile;
-      if (profile.isMinor) {
+      if (profile.isMinor && writesSearchable) {
         // Gated on [minorReassertSearchable] — the fresh, server-authoritative
         // pre-save value. This restores an EXISTING opt-in, never grants a new
         // one, and can never re-grant one the user disabled elsewhere.
@@ -210,17 +220,9 @@ class OwnProfileLoader with ErrorHandlingMixin {
         // toggle that renders the opposite of reality is worse than the
         // revocation itself.
         savedProfile = profile.copyWith(isSearchable: actuallySearchable);
-        // Surface the revocation whenever it was NOT the user's intent on this
-        // save: either the re-assert callable failed, OR the pre-save server
-        // read failed while the (stale) in-memory value said they were opted in
-        // — otherwise an opted-in minor silently loses discoverability on an
-        // unrelated bio/avatar edit and must rediscover the toggle. A minor who
-        // was already not-searchable gets no spurious error (the stale-value
-        // guard), and the profile still saves fail-closed either way.
-        final staleOptedIn = existingProfile?.isSearchable == true;
+        // Surface the revocation when the re-assert callable failed.
         final revokedUnintentionally =
-            (minorReassertSearchable && !actuallySearchable) ||
-            (minorSearchabilityReadFailed && staleOptedIn);
+            minorReassertSearchable && !actuallySearchable;
         if (revokedUnintentionally && _isStillSignedInAs(user.uid)) {
           _port.setError(AppLocale.current.errorCouldNotUpdateSearchability);
         }
@@ -243,6 +245,44 @@ class OwnProfileLoader with ErrorHandlingMixin {
       _port.setLoading(false);
     }
   }
+
+  /// The fields of [base] this save changes. A field passed as the sentinel
+  /// is left alone. The always-passed ones (the name, the switches) count
+  /// only when they differ from [base], since the form shows [base]'s value
+  /// for every field the user did not touch.
+  static Set<ProfileField> _changedFields(
+    UserProfile base, {
+    required String displayName,
+    required Object? avatarUrl,
+    required bool? isSearchable,
+    required bool? allowEmailSearch,
+    required Object? cookingSkillLevel,
+    required Object? cuisineAffinities,
+    required Object? bio,
+    required bool? showOnlineStatus,
+    required bool? shareActivityToFeed,
+    required Map<String, bool>? activityFeedEventTypes,
+    required Object? householdSize,
+  }) => {
+    if (displayName != base.displayName) ProfileField.displayName,
+    if (!identical(avatarUrl, _unset)) ProfileField.avatarUrl,
+    if (isSearchable != null && isSearchable != base.isSearchable)
+      ProfileField.isSearchable,
+    if (allowEmailSearch != null && allowEmailSearch != base.allowEmailSearch)
+      ProfileField.allowEmailSearch,
+    if (!identical(cookingSkillLevel, _unset)) ProfileField.cookingSkillLevel,
+    if (!identical(cuisineAffinities, _unset)) ProfileField.cuisineAffinities,
+    if (!identical(bio, _unset)) ProfileField.bio,
+    if (showOnlineStatus != null && showOnlineStatus != base.showOnlineStatus)
+      ProfileField.showOnlineStatus,
+    if (shareActivityToFeed != null &&
+        shareActivityToFeed != base.shareActivityToFeed)
+      ProfileField.shareActivityToFeed,
+    if (activityFeedEventTypes != null &&
+        !mapEquals(activityFeedEventTypes, base.activityFeedEventTypes))
+      ProfileField.activityFeedEventTypes,
+    if (!identical(householdSize, _unset)) ProfileField.householdSize,
+  };
 
   Future<void>? _loadInFlight;
   String? _loadInFlightUid;

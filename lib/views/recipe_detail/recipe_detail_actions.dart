@@ -189,11 +189,6 @@ class RecipeDetailActions {
     await RecipeSocialHandler.showSocialShareDialog(context);
   }
 
-  /// Create user profile if missing
-  Future<void> createUserProfile(BuildContext context) async {
-    await RecipeSocialHandler.createUserProfile(context);
-  }
-
   /// Generate shopping list from recipe
   Future<void> generateShoppingListFromRecipe(BuildContext context) async {
     await RecipeShoppingHandler.generateShoppingListFromRecipe(

@@ -61,7 +61,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 ///   displayName: 'John Doe',
 ///   isSearchable: true,
 /// );
-/// await userRepo.saveProfile(profile);
+/// await userRepo.saveProfile(profile, fields: ProfileField.all);
 /// // Search for users
 /// final results = await userRepo.searchProfiles('john');
 /// // Update notifications
@@ -150,16 +150,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     return userId == resourceId;
   }
 
-  /// Create or update the current user's profile.
-  ///
-  /// [writeHouseholdSize] — see [UserRepository.saveProfile]: false omits the
-  /// key from the settings merge so a degraded (null) in-memory value can't
-  /// wipe the stored setting on an unrelated profile save.
+  /// Create or update the current user's profile, writing only the keys of
+  /// [fields]; see [UserRepository.saveProfile].
   @override
   Future<void> saveProfile(
     UserProfile profile, {
-    bool writeHouseholdSize = true,
-    bool writeAvatarUrl = true,
+    required Set<ProfileField> fields,
   }) async {
     // Validate user is updating their own profile
     final currentUser = requireCurrentUserId();
@@ -176,28 +172,23 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       resourceType: 'user_profile',
     );
 
-    // BUT-1285: write only owner-editable public fields with merge, so we never
-    // clobber friendsCount (mutated by friend-creation transactions) or
-    // moderator-owned isHidden/hiddenAt. A full set() with a stale in-memory
-    // profile would silently revert a concurrent friend's count, and a stale
-    // isHidden:false would trip the rules' diff() guard and reject every edit a
-    // moderation-hidden user tries to make. Acceptance (BUT-1285): the write
-    // uses toFirestoreEditable(), which excludes friendsCount/isHidden/hiddenAt
-    // (see the regression guard in firebase_user_repository_test.dart).
-    final data = profile.toFirestoreEditable();
-    data['displayNameLower'] = profile.displayName.toLowerCase();
-    if (!writeAvatarUrl) data.remove('avatarUrl');
+    // BUT-1285: toFirestoreEditable() leaves out server-owned fields
+    // (friendsCount, isHidden/hiddenAt, publicRecipeCount, birthYear), so the
+    // rules' diff() guard never sees them change.
+    final editable = profile.toFirestoreEditable()
+      ..['displayNameLower'] = profile.displayName.toLowerCase();
+    final data = ProfileField.publicPart(editable, fields);
     // BUT-2264: clears an address an older save left on the public document.
     data['email'] = FieldValue.delete();
-    final settings = profile.toPrivateSettings();
+    // A merge write keeps every key it does not name, so leaving a field out
+    // keeps the stored value.
+    final settings = ProfileField.settingsPart(
+      profile.toPrivateSettings(),
+      fields,
+    );
     // BUT-2509: removes the copy of "Om mig" older apps kept here. It is not
     // published.
     settings['bio'] = FieldValue.delete();
-    if (!writeHouseholdSize) {
-      // Merge-writes only skip ABSENT keys — an explicit null would clear the
-      // stored value. Dropping the key preserves it.
-      settings.remove('householdSize');
-    }
     final writes = Future.wait([
       collection.doc(profile.uid).set(data, SetOptions(merge: true)),
       _settingsDoc(profile.uid).set(settings, SetOptions(merge: true)),

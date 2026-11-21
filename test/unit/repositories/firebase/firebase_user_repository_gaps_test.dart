@@ -16,6 +16,7 @@
 /// - deletePublicProfile / deleteUserRootDoc
 library;
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,7 +83,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
 
-      await repo.saveProfile(_profile());
+      await repo.saveProfile(_profile(), fields: ProfileField.all);
 
       final publicDoc = await firestore
           .collection('public_profiles')
@@ -104,7 +105,7 @@ void main() {
       final repo = _repo(FakeFirebaseFirestore(), authedUserId: _bob);
 
       expect(
-        () => repo.saveProfile(_profile()),
+        () => repo.saveProfile(_profile(), fields: ProfileField.all),
         throwsA(anything),
       );
     });

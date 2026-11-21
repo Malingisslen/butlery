@@ -4,6 +4,7 @@
 /// For Firebase-specific tests, see integration tests.
 library;
 
+import 'package:butlery/models/profile_field.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_support/base_unit_test.dart';
@@ -54,14 +55,16 @@ void main() {
 
         // Stub the repository method
         when(
-          () => mockRepository.saveProfile(profile),
+          () => mockRepository.saveProfile(profile, fields: ProfileField.all),
         ).thenAnswer((_) async {});
 
         // Act
-        await mockRepository.saveProfile(profile);
+        await mockRepository.saveProfile(profile, fields: ProfileField.all);
 
         // Assert
-        verify(() => mockRepository.saveProfile(profile)).called(1);
+        verify(
+          () => mockRepository.saveProfile(profile, fields: ProfileField.all),
+        ).called(1);
       });
 
       test('should fetch profile by ID', () async {

@@ -934,7 +934,7 @@ void main() {
           'a plain null that would wipe the stored setting', () async {
         // Wipe-prevention at the VM boundary: a save that touches ONLY another
         // field must forward the household as UserService.householdSizeUntouched
-        // so the service omits the settings-doc key (writeHouseholdSize:false).
+        // so the service omits the settings-doc key (no householdSize field).
         // If the VM regressed to passing edited.householdSize (in-memory null,
         // possibly a degraded settings-read) unconditionally, the analytics
         // assertion above would still pass — but the field would reach the

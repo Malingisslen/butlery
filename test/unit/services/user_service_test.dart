@@ -1,3 +1,4 @@
+import 'package:butlery/models/profile_field.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -333,8 +334,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as UserProfile);
@@ -401,8 +401,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as UserProfile);
@@ -460,8 +459,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer(
           (_) async {},
@@ -480,10 +478,176 @@ void main() {
         verify(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).called(1);
+      });
+
+      group('only the changed fields are written (BUT-2513)', () {
+        late List<Set<ProfileField>> written;
+
+        setUp(() {
+          written = [];
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => testProfile);
+          when(
+            () => mockUserRepository.saveProfile(
+              any(),
+              fields: any(named: 'fields'),
+            ),
+          ).thenAnswer((invocation) async {
+            written.add(
+              invocation.namedArguments[#fields] as Set<ProfileField>,
+            );
+          });
+        });
+
+        test('the profile form re-sending every switch unchanged writes '
+            'only the field the user changed', () async {
+          await userService.createOrUpdateProfile(
+            displayName: testProfile.displayName,
+            isSearchable: testProfile.isSearchable,
+            allowEmailSearch: testProfile.allowEmailSearch,
+            showOnlineStatus: testProfile.showOnlineStatus,
+            shareActivityToFeed: testProfile.shareActivityToFeed,
+            activityFeedEventTypes: Map.of(testProfile.activityFeedEventTypes),
+            bio: 'Ny text',
+          );
+
+          expect(written.single, {ProfileField.bio});
+        });
+
+        test('a changed switch and name are written', () async {
+          await userService.createOrUpdateProfile(
+            displayName: 'Nytt namn',
+            isSearchable: !testProfile.isSearchable,
+            showOnlineStatus: !testProfile.showOnlineStatus,
+          );
+
+          expect(written.single, {
+            ProfileField.displayName,
+            ProfileField.isSearchable,
+            ProfileField.showOnlineStatus,
+          });
+        });
+
+        test('finishing the introduction writes only that, and allergens '
+            'only when the user chose some', () async {
+          // Puts the profile in memory, as a load does.
+          await userService.createOrUpdateProfile(displayName: 'Test User');
+          written.clear();
+
+          await userService.markOnboardingComplete();
+          await userService.completeOnboardingWithPreferences(null);
+          await userService.completeOnboardingWithPreferences(
+            const UserAllergenPreferences(
+              trackedAllergens: {'milk'},
+              trackedDietary: {},
+            ),
+          );
+
+          expect(written, [
+            {ProfileField.hasCompletedOnboarding},
+            {ProfileField.hasCompletedOnboarding},
+            {
+              ProfileField.hasCompletedOnboarding,
+              ProfileField.allergenPreferences,
+            },
+          ]);
+        });
+
+        // Each passed or changed field reaches the write on its own, so a
+        // field the loader forgot to name would be an edit silently unsaved.
+        final singleFieldSaves =
+            <ProfileField, Future<UserProfile?> Function(UserService)>{
+              ProfileField.allowEmailSearch: (u) => u.createOrUpdateProfile(
+                displayName: 'Test User',
+                allowEmailSearch: !testProfile.allowEmailSearch,
+              ),
+              ProfileField.shareActivityToFeed: (u) => u.createOrUpdateProfile(
+                displayName: 'Test User',
+                shareActivityToFeed: !testProfile.shareActivityToFeed,
+              ),
+              ProfileField.activityFeedEventTypes: (u) =>
+                  u.createOrUpdateProfile(
+                    displayName: 'Test User',
+                    activityFeedEventTypes: const {'recipeCreated': false},
+                  ),
+              ProfileField.householdSize: (u) => u.createOrUpdateProfile(
+                displayName: 'Test User',
+                householdSize: 4,
+              ),
+              ProfileField.cookingSkillLevel: (u) => u.createOrUpdateProfile(
+                displayName: 'Test User',
+                cookingSkillLevel: CookingSkillLevel.advanced,
+              ),
+              ProfileField.cuisineAffinities: (u) => u.createOrUpdateProfile(
+                displayName: 'Test User',
+                cuisineAffinities: const <String>[],
+              ),
+            };
+        for (final entry in singleFieldSaves.entries) {
+          test(
+            'a save of ${entry.key.name} writes exactly that field',
+            () async {
+              await entry.value(userService);
+              expect(written.single, {entry.key});
+            },
+          );
+        }
+
+        test('clearing the household size is written too', () async {
+          await userService.createOrUpdateProfile(
+            displayName: 'Test User',
+            householdSize: null,
+          );
+          expect(written.single, {ProfileField.householdSize});
+        });
+
+        test('a skipped introduction writes when it was skipped', () async {
+          await userService.createOrUpdateProfile(displayName: 'Test User');
+          written.clear();
+
+          await userService.completeOnboardingWithPreferences(
+            null,
+            onboardingSkippedAt: DateTime.utc(2026, 11, 21),
+          );
+
+          expect(written.single, {
+            ProfileField.hasCompletedOnboarding,
+            ProfileField.onboardingSkippedAt,
+          });
+        });
+
+        test('a minor finishing the introduction writes searchability, so '
+            'the profile starts out of search (BUT-1454)', () async {
+          await userService.createOrUpdateProfile(displayName: 'Test User');
+          written.clear();
+
+          await userService.completeOnboardingWithPreferences(
+            null,
+            isMinor: true,
+          );
+
+          expect(written.single, {
+            ProfileField.hasCompletedOnboarding,
+            ProfileField.isSearchable,
+          });
+        });
+
+        test(
+          'the first save of a missing profile writes every field',
+          () async {
+            when(
+              () => mockUserRepository.fetchProfile('test_user_123'),
+            ).thenAnswer((_) async => null);
+
+            await userService.createOrUpdateProfile(displayName: 'Ny');
+
+            expect(written.single, ProfileField.all);
+          },
+        );
       });
 
       test('a save that never mentions the picture keeps it and does not write '
@@ -497,8 +661,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
 
@@ -510,8 +673,10 @@ void main() {
         verify(
           () => mockUserRepository.saveProfile(
             any(that: isA<UserProfile>()),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: false,
+            fields: any(
+              named: 'fields',
+              that: isNot(contains(ProfileField.avatarUrl)),
+            ),
           ),
         ).called(1);
       });
@@ -533,8 +698,7 @@ void main() {
           when(
             () => mockUserRepository.saveProfile(
               any(),
-              writeHouseholdSize: any(named: 'writeHouseholdSize'),
-              writeAvatarUrl: any(named: 'writeAvatarUrl'),
+              fields: any(named: 'fields'),
             ),
           ).thenAnswer((inv) async {
             saved.add(inv.positionalArguments.first as UserProfile);
@@ -591,8 +755,7 @@ void main() {
           when(
             () => mockUserRepository.saveProfile(
               any(),
-              writeHouseholdSize: any(named: 'writeHouseholdSize'),
-              writeAvatarUrl: any(named: 'writeAvatarUrl'),
+              fields: any(named: 'fields'),
             ),
           ).thenAnswer((_) async {});
 
@@ -605,8 +768,10 @@ void main() {
           verify(
             () => mockUserRepository.saveProfile(
               any(that: isA<UserProfile>()),
-              writeHouseholdSize: any(named: 'writeHouseholdSize'),
-              writeAvatarUrl: true,
+              fields: any(
+                named: 'fields',
+                that: contains(ProfileField.avatarUrl),
+              ),
             ),
           ).called(1);
         },
@@ -618,8 +783,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -654,8 +818,7 @@ void main() {
         verifyNever(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         );
       });
@@ -671,8 +834,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
       });
@@ -696,8 +858,7 @@ void main() {
               verify(
                     () => mockUserRepository.saveProfile(
                       captureAny(),
-                      writeHouseholdSize: any(named: 'writeHouseholdSize'),
-                      writeAvatarUrl: any(named: 'writeAvatarUrl'),
+                      fields: any(named: 'fields'),
                     ),
                   ).captured.single
                   as UserProfile;
@@ -725,8 +886,7 @@ void main() {
             verify(
                   () => mockUserRepository.saveProfile(
                     captureAny(),
-                    writeHouseholdSize: any(named: 'writeHouseholdSize'),
-                    writeAvatarUrl: any(named: 'writeAvatarUrl'),
+                    fields: any(named: 'fields'),
                   ),
                 ).captured.single
                 as UserProfile;
@@ -744,8 +904,7 @@ void main() {
             verify(
                   () => mockUserRepository.saveProfile(
                     captureAny(),
-                    writeHouseholdSize: any(named: 'writeHouseholdSize'),
-                    writeAvatarUrl: any(named: 'writeAvatarUrl'),
+                    fields: any(named: 'fields'),
                   ),
                 ).captured.single
                 as UserProfile;
@@ -872,8 +1031,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -896,8 +1054,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -926,8 +1083,7 @@ void main() {
         verifyNever(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         );
       });
@@ -943,8 +1099,7 @@ void main() {
           verifyNever(
             () => mockUserRepository.saveProfile(
               any(),
-              writeHouseholdSize: any(named: 'writeHouseholdSize'),
-              writeAvatarUrl: any(named: 'writeAvatarUrl'),
+              fields: any(named: 'fields'),
             ),
           );
         },
@@ -2200,13 +2355,11 @@ void main() {
       });
     });
 
-    // BUT-1637: a minor's full-document profile save clobbers
+    // BUT-1637: a minor's profile save that writes isSearchable clobbers
     // public_profiles.isSearchable to false (the toFirestore chokepoint), so
     // UserService re-asserts a genuine opt-in through the Admin-SDK callable.
     // The re-assert must read the AUTHORITATIVE server value, never the
-    // possibly-stale in-memory profile — otherwise an unrelated save (a bio
-    // edit) could silently re-grant discoverability the user turned off on
-    // another device. Every test pins the same invariant: a save can never
+    // possibly-stale in-memory profile. Every test pins the same invariant: a save can never
     // make a minor MORE discoverable than the server currently says they are.
     group('minor searchability cross-device safety (BUT-1637)', () {
       late _MockProfileSearchabilityService mockSearchability;
@@ -2231,8 +2384,7 @@ void main() {
         when(
           () => mockUserRepository.saveProfile(
             any(),
-            writeHouseholdSize: any(named: 'writeHouseholdSize'),
-            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            fields: any(named: 'fields'),
           ),
         ).thenAnswer((_) async {});
 
@@ -2248,30 +2400,53 @@ void main() {
       });
 
       test(
-        'an unrelated save does NOT re-grant a minor who opted out on another '
-        'device — the fresh server value wins over the stale in-memory copy',
+        'an unrelated save writes no searchability, reads nothing and calls '
+        'nothing, so it cannot revoke or re-grant (BUT-2513)',
         () async {
-          // The stale local/cached profile still says searchable:true …
+          // The stale copy says searchable; the server may say otherwise.
           when(
             () => mockUserRepository.fetchProfile('test_user_123'),
           ).thenAnswer((_) async => minor(isSearchable: true));
-          // … but the authoritative server value is false (opted out elsewhere).
-          when(
-            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
-          ).thenAnswer((_) async => false);
 
-          // A save about something else (a bio edit) — searchable not passed.
-          final result = await userService.createOrUpdateProfile(
+          await userService.createOrUpdateProfile(
             displayName: 'Anna',
             bio: 'Hej',
           );
 
-          expect(
-            result?.isSearchable,
-            isFalse,
-            reason:
-                'the save must reflect the server opt-out, not the stale copy',
+          verify(
+            () => mockUserRepository.saveProfile(
+              any(),
+              fields: any(
+                named: 'fields',
+                that: isNot(contains(ProfileField.isSearchable)),
+              ),
+            ),
+          ).called(1);
+          verifyNever(
+            () => mockUserRepository.fetchPersistedSearchable(any()),
           );
+          verifyNever(() => mockSearchability.setSearchable(any()));
+          expect(userService.hasError, isFalse);
+        },
+      );
+
+      test(
+        'a save that writes searchability does NOT re-grant a minor who '
+        'opted out on another device: the server value wins',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: false));
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenAnswer((_) async => false);
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            isSearchable: true,
+          );
+
+          expect(result?.isSearchable, isFalse);
           verifyNever(() => mockSearchability.setSearchable(any()));
         },
       );
@@ -2298,19 +2473,19 @@ void main() {
       );
 
       test(
-        'a legitimate opt-in is restored after an unrelated save clobbers it',
+        'an opt-in the server holds is restored after a save writes '
+        'searchability',
         () async {
           when(
             () => mockUserRepository.fetchProfile('test_user_123'),
-          ).thenAnswer((_) async => minor(isSearchable: true));
-          // The server confirms the minor is currently opted in.
+          ).thenAnswer((_) async => minor(isSearchable: false));
           when(
             () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
           ).thenAnswer((_) async => true);
 
           final result = await userService.createOrUpdateProfile(
             displayName: 'Anna',
-            bio: 'Hej',
+            isSearchable: true,
           );
 
           expect(result?.isSearchable, isTrue);
@@ -2324,18 +2499,17 @@ void main() {
         () async {
           when(
             () => mockUserRepository.fetchProfile('test_user_123'),
-          ).thenAnswer((_) async => minor(isSearchable: true));
+          ).thenAnswer((_) async => minor(isSearchable: false));
           when(
             () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
           ).thenAnswer((_) async => true);
-          // The callable leg fails — the opt-in cannot be restored.
           when(
             () => mockSearchability.setSearchable(any()),
           ).thenAnswer((_) async => false);
 
           final result = await userService.createOrUpdateProfile(
             displayName: 'Anna',
-            bio: 'Hej',
+            isSearchable: true,
           );
 
           expect(
@@ -2348,36 +2522,8 @@ void main() {
       );
 
       test(
-        'a server-read failure fails closed, never re-grants, and (since the '
-        'stale value was opted-in) surfaces the revocation',
+        'a server-read failure fails closed and never re-grants',
         () async {
-          when(
-            () => mockUserRepository.fetchProfile('test_user_123'),
-          ).thenAnswer((_) async => minor(isSearchable: true));
-          when(
-            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
-          ).thenThrow(Exception('offline'));
-
-          final result = await userService.createOrUpdateProfile(
-            displayName: 'Anna',
-            bio: 'Hej',
-          );
-
-          expect(result?.isSearchable, isFalse);
-          verifyNever(() => mockSearchability.setSearchable(any()));
-          // BUT-1565 salvage (cross-file review): an opted-in minor whose
-          // server read fails must NOT be silently opted out — they get told,
-          // so they can re-enable rather than silently vanishing from search.
-          expect(userService.hasError, isTrue);
-        },
-      );
-
-      test(
-        'a server-read failure on an already-not-searchable minor surfaces NO '
-        'spurious error (ordinary bio edit stays clean)',
-        () async {
-          // Stale in-memory value says NOT searchable → a failed read must not
-          // pester a minor who never opted in with a discoverability error.
           when(
             () => mockUserRepository.fetchProfile('test_user_123'),
           ).thenAnswer((_) async => minor(isSearchable: false));
@@ -2387,10 +2533,11 @@ void main() {
 
           final result = await userService.createOrUpdateProfile(
             displayName: 'Anna',
-            bio: 'Hej',
+            isSearchable: true,
           );
 
           expect(result?.isSearchable, isFalse);
+          verifyNever(() => mockSearchability.setSearchable(any()));
           expect(userService.hasError, isFalse);
         },
       );
