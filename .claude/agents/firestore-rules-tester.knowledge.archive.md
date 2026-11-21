@@ -6382,3 +6382,20 @@ Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
   without isMinor + no claim ALLOW; stranger friendsCount +1 on a minor's over-long-bio profile ALLOW,
   with bio added DENY; admin hide on the same ALLOW, with `bio: null` added DENY.
 - Client truncation is Dart `String.length` (UTF-16 units), the same unit as rules `size()`.
+
+## 2026-11-21 — BUT-2513 writer-payload-rules (saveProfile partial merges), commit-gate review
+- Six new cases in `writer-payload-rules.test.ts`; rules unchanged (md5 87d37959...). Baseline 23/23.
+- Slice-scoped mutants, each 22/23 killing only its own deny: update-limb `|| !accountIsMinor(userId))`
+  -> `|| true)` kills the minor isSearchable:true deny; `'allergenPreferences'` dropped from the
+  update deny-list kills the allergen deny; settings `isMinor` equality dropped kills the isMinor deny.
+  `false &&` on both update limbs -> 20/23, killing the three new allows.
+- Survivor: the isSearchable conjunct respelled from `diff().affectedKeys().hasAny(['isSearchable'])`
+  to `!('isSearchable' in request.resource.data)` -> writer-payload 23/23 AND age-gate 72/72 (age-gate
+  probed through a sed copy, `import * as path` deleted to avoid TS6133). The minor-rename allow seeds
+  `isSearchable: !isMinor` (false), so it cannot separate the two spellings; a minor with a stored
+  legacy `true` renaming without isSearchable (the shape the partial merge now sends) is ALLOWED by
+  the real rules and unpinned. Same shape as the BUT-2246 principle in the vacuity chapter.
+- Follow-up same day: the coordinator added "a minor's rename over a stored isSearchable true is
+  ALLOWED" (`seedProfile(true, true)`); deny twin keeps the default false seed. Re-measured on staged
+  bytes (index == worktree, md5 7a3265ca...): real 24/24; presence mutant 23/24 killing only the new
+  case; deny-always 20/24 killing the four allows. Gap closed.

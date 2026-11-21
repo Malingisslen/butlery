@@ -11539,3 +11539,27 @@ Staged diff in `logPermissionCheck`: `if (metadata != null) ...metadata,` -> `..
 Staged diff moved the `ExportResourceType` enum's terminating `;` from its own line onto
 `shoppingListTemplates('shopping_list_templates')`. Token stream unchanged; worktree bytes
 equal index bytes. No guard, query, projection, cap or resource tag changed. No new principle.
+
+## 2026-11-21 — BUT-2513 partial profile saves (`ProfileField`), verified clean
+
+`saveProfile(profile, {required Set<ProfileField> fields})` now merge-writes only the named
+fields' keys (+ `lastActiveAt`, `schemaVersion`, `email` delete, settings `bio` delete).
+`OwnProfileLoader._changedFields` adds always-passed args only when they differ from the
+held base; create branch passes `ProfileField.all`. Minor re-assert runs only when the save
+writes `isSearchable`; the removed "stale opted-in + failed read" branch was unreachable
+(read runs only when requested is true and the field is written only when it differs from
+base, so base was false). Rules: guest `isSearchable == false` is evaluated on the post-merge
+doc; minor `isSearchable:true` deny and `bioAllowed` are diff-gated, so partial merges keep
+both controls. Public `bio` arrived with BUT-2509 behind `mayShowNameOnSharedDishes`
+(isMinor != true), so no minor public bio exists for the old `bio: isMinor ? null : bio`
+full save to have cleaned up. Clone is shallow, so the history half is from `git log -S` in
+a graft only.
+
+Superseded in the pii-logging-platform chapter, retired verbatim: "a legacy `true` isn't
+force-corrected by the rule itself, only the next full save."
+
+Residuals noted (non-blocking, pre-existing): create branch still writes every settings key
+when the public profile read returns null (a self-deleted public doc nulls stored
+allergens); `lastActiveAt` is written on every save even with `showOnlineStatus:false`; a
+stale device's privacy toggle display is no longer reconciled by a save (the newest choice
+now wins on the server in both directions).
