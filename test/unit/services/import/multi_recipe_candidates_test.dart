@@ -122,7 +122,8 @@ Sätt ugnen på 200 grader. Grädda pajen i 30 minuter.
     });
 
     test('a sentence ending in a full stop does not open a recipe', () {
-      const text = '''
+      const text =
+          '''
 $_first
 Passar bra till kaffet.
 2 dl grädde

@@ -10,16 +10,14 @@ import '../../infrastructure/builders/recipe_builder.dart';
 
 void main() {
   final recipes = [
-    RecipeBuilder()
-        .withId('a')
-        .withTitle('Pannkakor')
-        .withIngredients(['3 dl vetemjöl', '2 ägg'])
-        .build(),
-    RecipeBuilder()
-        .withId('b')
-        .withTitle('Våfflor')
-        .withIngredients(['4 dl vetemjöl', '4 dl mjölk'])
-        .build(),
+    RecipeBuilder().withId('a').withTitle('Pannkakor').withIngredients([
+      '3 dl vetemjöl',
+      '2 ägg',
+    ]).build(),
+    RecipeBuilder().withId('b').withTitle('Våfflor').withIngredients([
+      '4 dl vetemjöl',
+      '4 dl mjölk',
+    ]).build(),
   ];
 
   Future<void> pump(WidgetTester tester, {required bool readByAi}) =>
