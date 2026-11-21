@@ -5012,12 +5012,6 @@ abstract class AppLocalizations {
   /// **'Väntande'**
   String get socialPending;
 
-  /// No description provided for @commonUser.
-  ///
-  /// In sv, this message translates to:
-  /// **'Användare'**
-  String get commonUser;
-
   /// No description provided for @commonDone.
   ///
   /// In sv, this message translates to:
@@ -9392,12 +9386,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{Inga kommentarer} =1{1 kommentar} other{{count} kommentarer}}'**
   String socialCommentsCount(int count);
 
-  /// No description provided for @socialCouldNotCreateProfile.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte skapa användarprofil'**
-  String get socialCouldNotCreateProfile;
-
   /// No description provided for @socialCouldNotUpdateLike.
   ///
   /// In sv, this message translates to:
@@ -9547,12 +9535,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Skicka meddelande'**
   String get socialSendMessage;
-
-  /// No description provided for @socialUserProfileCreated.
-  ///
-  /// In sv, this message translates to:
-  /// **'Användarprofil skapad'**
-  String get socialUserProfileCreated;
 
   /// No description provided for @shoppingAddToShoppingList.
   ///

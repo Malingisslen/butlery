@@ -3286,9 +3286,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialPending => 'Pending';
 
   @override
-  String get commonUser => 'User';
-
-  @override
   String get commonDone => 'Done';
 
   @override
@@ -6065,9 +6062,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get socialCouldNotCreateProfile => 'Could not create user profile';
-
-  @override
   String get socialCouldNotUpdateLike => 'Could not update like';
 
   @override
@@ -6164,9 +6158,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialSendMessage => 'Send message';
-
-  @override
-  String get socialUserProfileCreated => 'User profile created';
 
   @override
   String get shoppingAddToShoppingList => 'Add to shopping list';

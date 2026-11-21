@@ -2213,7 +2213,6 @@
   "socialReceived": "Mottagna",
   "socialAccepted": "Accepterade",
   "socialPending": "Väntande",
-  "commonUser": "Användare",
   "commonDone": "Klar",
   "commonClearError": "Rensa fel",
   "commonClearSearch": "Rensa sökning",
@@ -4050,7 +4049,6 @@
       }
     }
   },
-  "socialCouldNotCreateProfile": "Kunde inte skapa användarprofil",
   "socialCouldNotUpdateLike": "Kunde inte uppdatera gilla-markering",
   "socialFriendRemoved": "{name} borttagen från vänlista",
   "@socialFriendRemoved": {
@@ -4104,7 +4102,6 @@
   "socialMustBeLoggedInToLike": "Du måste vara inloggad för att gilla",
   "socialNoCommentsYet": "Inga kommentarer än",
   "socialSendMessage": "Skicka meddelande",
-  "socialUserProfileCreated": "Användarprofil skapad",
   "shoppingAddToShoppingList": "Lägg till i inköpslista",
   "shoppingCouldNotAddIngredients": "Kunde inte lägga till ingredienser i inköpslistan",
   "shoppingCouldNotCreateOrSelectList": "Kunde inte skapa eller välja inköpslista",

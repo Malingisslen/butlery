@@ -2207,7 +2207,6 @@
   "socialReceived": "Received",
   "socialAccepted": "Accepted",
   "socialPending": "Pending",
-  "commonUser": "User",
   "commonDone": "Done",
   "commonClearError": "Clear error",
   "commonClearSearch": "Clear search",
@@ -4028,7 +4027,6 @@
       }
     }
   },
-  "socialCouldNotCreateProfile": "Could not create user profile",
   "socialCouldNotUpdateLike": "Could not update like",
   "socialFriendRemoved": "{name} removed from friend list",
   "@socialFriendRemoved": {
@@ -4082,7 +4080,6 @@
   "socialMustBeLoggedInToLike": "You must be signed in to like",
   "socialNoCommentsYet": "No comments yet",
   "socialSendMessage": "Send message",
-  "socialUserProfileCreated": "User profile created",
   "shoppingAddToShoppingList": "Add to shopping list",
   "shoppingCouldNotAddIngredients": "Could not add ingredients to the shopping list",
   "shoppingCouldNotCreateOrSelectList": "Could not create or select shopping list",
