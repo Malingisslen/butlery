@@ -115,6 +115,8 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
 
   void seed(UnifiedShoppingList list) => _lists[list.id] = list;
 
+  void clearLists() => _lists.clear();
+
   void emitCollab(List<UnifiedShoppingList> lists) =>
       _collabController.add(lists);
 
@@ -126,8 +128,16 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() =>
       _collabController.stream;
 
+  /// When set, [readAll] answers only after the gate opens, with the lists
+  /// that existed when it was CALLED — a read still in flight at sign-out.
+  Completer<void>? readAllGate;
+
   @override
-  Future<List<UnifiedShoppingList>> readAll() async => _lists.values.toList();
+  Future<List<UnifiedShoppingList>> readAll() async {
+    final snapshot = _lists.values.toList();
+    await readAllGate?.future;
+    return snapshot;
+  }
 
   @override
   Future<UnifiedShoppingList> create(UnifiedShoppingList entity) async {
@@ -1268,6 +1278,72 @@ void main() {
       expect(service.activeListId, isNull);
       expect(service.currentState, isA<ShoppingStateLoading>());
     });
+
+    /// Proves: a load still waiting on Firestore when the account signs out
+    /// does not put that account's lists in memory, and the next account's
+    /// initialize runs a load of its own instead of being skipped.
+    test(
+      'a load in flight at sign-out is dropped, next account loads',
+      () async {
+        fakeRepo.seed(
+          UnifiedShoppingList(
+            id: 'old-account-list',
+            name: 'Förra kontots lista',
+            ownerId: 'old-uid',
+            ownerDisplayName: 'Gammal',
+          ),
+        );
+        fakeRepo.readAllGate = Completer<void>();
+        final stale = service.initialize();
+        await Future<void>.delayed(Duration.zero);
+
+        service.resetForLogout();
+        fakeRepo.readAllGate!.complete();
+        await stale;
+
+        expect(service.lists, isEmpty);
+        expect(service.activeListId, isNull);
+        expect(service.isInitialized, isFalse);
+
+        fakeRepo.readAllGate = null;
+        await service.initialize();
+        expect(service.lists.map((l) => l.id), ['old-account-list']);
+        expect(service.isInitialized, isTrue);
+      },
+    );
+
+    /// Proves: after a completed initialize and a sign-out, the next
+    /// account's initialize loads its own lists instead of being skipped by
+    /// the "already initialized" early return.
+    test(
+      'initialize after sign-out loads the next account, not skipped',
+      () async {
+        fakeRepo.seed(
+          UnifiedShoppingList(
+            id: 'first-account-list',
+            name: 'Första kontot',
+            ownerId: 'uid-1',
+            ownerDisplayName: 'Ett',
+          ),
+        );
+        await service.initialize();
+        expect(service.isInitialized, isTrue);
+
+        service.resetForLogout();
+        fakeRepo.clearLists();
+        fakeRepo.seed(
+          UnifiedShoppingList(
+            id: 'second-account-list',
+            name: 'Andra kontot',
+            ownerId: 'uid-2',
+            ownerDisplayName: 'Två',
+          ),
+        );
+        await service.initialize();
+
+        expect(service.lists.map((l) => l.id), ['second-account-list']);
+      },
+    );
 
     /// Proves: dispose closes the state subject — calling notifyListeners
     /// afterwards must not throw "Cannot add to closed StreamController".

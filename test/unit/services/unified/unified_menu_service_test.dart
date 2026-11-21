@@ -776,6 +776,32 @@ void main() {
         expect(service.error, isNull);
         expect(service.currentState, isA<MenuStateLoading>());
       });
+
+      /// Proves: a menu load still waiting on Firestore when the account
+      /// signs out does not put that account's menus back in memory or mark
+      /// the service initialized, so the next account loads its own.
+      test('a load in flight at sign-out is dropped', () async {
+        await _seedOwnedMenu(
+          fakeFirestore,
+          ownerId: permissionService.currentUserId!,
+          title: 'Förra kontots meny',
+        );
+
+        // Two turns lets the load start and reach its first Firestore read.
+        final stale = service.initialize();
+        for (var i = 0; i < 2; i++) {
+          await Future<void>.value();
+        }
+        service.resetForLogout();
+        await stale;
+
+        expect(service.menus, isEmpty);
+        expect(service.isInitialized, isFalse);
+        expect(service.isLoading, isFalse);
+
+        await service.initialize();
+        expect(service.menus.map((m) => m.menuTitle), ['Förra kontots meny']);
+      });
     });
 
     // ---------------------------------------------------------------------
