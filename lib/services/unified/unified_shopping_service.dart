@@ -374,6 +374,7 @@ class UnifiedShoppingService
   }
 
   Future<void> initialize() async {
+    final generation = _initialization.generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -382,6 +383,7 @@ class UnifiedShoppingService
         _initialization.initialize(),
         _categoryPreferences.load(),
       ]);
+      if (!_initialization.isCurrent(generation)) return;
       _startCollaborativeStream();
     } catch (e) {
       // Record the error so _emitState can surface a ShoppingStateError when
@@ -389,10 +391,14 @@ class UnifiedShoppingService
       // path silently emits an empty ShoppingStateData (lists:[], error:null)
       // and the UI shows an empty list instead of an error state.
       AppLogger.error('Failed to initialize shopping service', e);
-      _error = AppLocale.current.shoppingCouldNotLoadLists;
+      if (_initialization.isCurrent(generation)) {
+        _error = AppLocale.current.shoppingCouldNotLoadLists;
+      }
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (_initialization.isCurrent(generation)) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -417,6 +423,7 @@ class UnifiedShoppingService
 
   /// Load lists - alias for initialize for compatibility
   Future<void> loadLists() async {
+    final generation = _initialization.generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -424,10 +431,14 @@ class UnifiedShoppingService
       await _initialization.loadLists();
     } catch (e) {
       AppLogger.error('Failed to load shopping lists', e);
-      _error = AppLocale.current.shoppingCouldNotLoadLists;
+      if (_initialization.isCurrent(generation)) {
+        _error = AppLocale.current.shoppingCouldNotLoadLists;
+      }
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (_initialization.isCurrent(generation)) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -876,6 +887,8 @@ class UnifiedShoppingService
   }
 
   void resetForLogout() {
+    _initialization.reset();
+    _isLoading = false;
     _collaborativeStreamSub?.cancel();
     _collaborativeStreamSub = null;
     stopFirebaseSync();

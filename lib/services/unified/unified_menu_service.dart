@@ -83,6 +83,10 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   bool _isLoading = false;
   String? _error;
 
+  // Bumped by [resetForLogout]; a load that was started under an older value
+  // belongs to an account that has since signed out and is dropped.
+  int _generation = 0;
+
   final _stateSubject = BehaviorSubject<MenuServiceState>.seeded(
     const MenuStateLoading(),
   );
@@ -138,22 +142,28 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     }
 
     await safeExecute(() async {
+      final generation = _generation;
       _isLoading = true;
       notifyListeners();
 
       try {
         // Load existing menus
         await _loadMenus();
+        if (generation != _generation) return;
 
         _isInitialized = true;
         AppLogger.success('✅ UnifiedMenuService initialization complete');
       } catch (e) {
-        _error = 'Failed to initialize menu service: $e';
+        if (generation == _generation) {
+          _error = 'Failed to initialize menu service: $e';
+        }
         AppLogger.error('Failed to initialize UnifiedMenuService', e);
         rethrow;
       } finally {
-        _isLoading = false;
-        notifyListeners();
+        if (generation == _generation) {
+          _isLoading = false;
+          notifyListeners();
+        }
       }
     });
   }
@@ -167,6 +177,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         AppLogger.debug('No user ID available for loading menus');
         return;
       }
+      final generation = _generation;
 
       _menus.clear();
 
@@ -175,6 +186,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
           .collection(FirestoreCollections.menus)
           .where('sharedByUserId', isEqualTo: userId)
           .get();
+      if (generation != _generation) return;
 
       for (final doc in querySnapshot.docs) {
         try {
@@ -194,6 +206,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
               .collection(collection)
               .where('participantIds', arrayContains: userId)
               .get();
+          if (generation != _generation) return;
 
           for (final doc in snapshot.docs) {
             try {
@@ -250,19 +263,25 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   /// Refresh menus from Firebase (bypasses initialization guard)
   Future<void> refresh() async {
     await safeExecute(() async {
+      final generation = _generation;
       _isLoading = true;
       notifyListeners();
 
       try {
         await _loadMenus();
+        if (generation != _generation) return;
         AppLogger.success('✅ Menus refreshed successfully');
       } catch (e) {
-        _error = 'Failed to refresh menus: $e';
+        if (generation == _generation) {
+          _error = 'Failed to refresh menus: $e';
+        }
         AppLogger.error('Failed to refresh menus', e);
         rethrow;
       } finally {
-        _isLoading = false;
-        notifyListeners();
+        if (generation == _generation) {
+          _isLoading = false;
+          notifyListeners();
+        }
       }
     });
   }
@@ -635,6 +654,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     },
   ).displayName;
   void resetForLogout() {
+    _generation++;
+    _isLoading = false;
     _menus.clear();
     _isInitialized = false;
     _error = null;

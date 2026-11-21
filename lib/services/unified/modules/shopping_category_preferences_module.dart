@@ -18,9 +18,15 @@ class ShoppingCategoryPreferencesModule {
 
   bool get isLoaded => _preferences != null;
 
+  // Bumped by [reset]; a load that finishes after a sign-out must not put the
+  // previous account's preferences back.
+  int _generation = 0;
+
   Future<void> load() async {
-    _preferences = await _repository.getPreferences();
-    _preferences ??= CategoryPreferences();
+    final generation = _generation;
+    final loaded = await _repository.getPreferences();
+    if (generation != _generation) return;
+    _preferences = loaded ?? CategoryPreferences();
   }
 
   /// Get the user's category override for an item, or null if none exists
@@ -123,6 +129,7 @@ class ShoppingCategoryPreferencesModule {
   }
 
   void reset() {
+    _generation++;
     _preferences = null;
     _listOrders.clear();
   }

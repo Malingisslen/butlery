@@ -19,6 +19,10 @@ class ShoppingInitializationModule {
 
   bool _isInitialized = false;
 
+  // Bumped by [reset]. A load started under an older value belongs to an
+  // account that has since signed out, so what it brings back is dropped.
+  int _generation = 0;
+
   ShoppingInitializationModule({
     required this.authRepository,
     required this.shoppingRepository,
@@ -31,6 +35,19 @@ class ShoppingInitializationModule {
   });
 
   bool get isInitialized => _isInitialized;
+
+  /// Called when the account signs out: lets the next account load afresh and
+  /// makes any load still waiting on Firestore discard its answer.
+  void reset() {
+    _generation++;
+    _isInitialized = false;
+  }
+
+  /// True while the load that captured [generation] still belongs to the
+  /// signed-in account.
+  bool isCurrent(int generation) => generation == _generation;
+
+  int get generation => _generation;
 
   Future<void> initialize() async {
     // Early return if already initialized to prevent clearing local state
@@ -56,8 +73,11 @@ class ShoppingInitializationModule {
         getCacheHelper().setCurrentUser(currentUser.uid);
       }
 
+      final generation = _generation;
       await loadLists();
+      if (!isCurrent(generation)) return;
       await _restoreActiveList();
+      if (!isCurrent(generation)) return;
       _isInitialized = true;
     } catch (e) {
       _isInitialized = false;
@@ -68,7 +88,9 @@ class ShoppingInitializationModule {
   Future<void> loadLists() async {
     try {
       // Use shoppingRepository which includes both personal AND collaborative lists
+      final generation = _generation;
       final loadedLists = await shoppingRepository.readAll();
+      if (!isCurrent(generation)) return;
       lists.clear();
       lists.addAll(loadedLists);
 
@@ -104,9 +126,11 @@ class ShoppingInitializationModule {
 
       // Try to load saved active list ID only if no active list is currently set
       const activeListKey = 'active_list_id';
+      final generation = _generation;
       final savedActiveListId = await getCacheHelper().loadActiveId(
         activeListKey,
       );
+      if (!isCurrent(generation)) return;
 
       if (savedActiveListId != null &&
           lists.any((list) => list.id == savedActiveListId)) {
