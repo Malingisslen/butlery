@@ -102,6 +102,7 @@ import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
 import { cleanUserFromLearnedAliases } from "./cascade/learned-aliases";
 import { scrubIngredientChangeRequestAuthors } from "./cascade/ingredient-change-requests";
 import { Collections } from "../shared/collections";
+import { reportOnDemandOutcome } from "./erasure-alert-log";
 import { CallerAuth, isGuestCaller } from "../shared/caller-eligibility";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
@@ -182,7 +183,9 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
     const email = request.auth.token.email ?? "";
     const reason = await resolveDeletionReason(db, uid, request.data?.reason);
 
-    return runAccountDeletion(uid, email, reason);
+    const result = await runAccountDeletion(uid, email, reason);
+    reportOnDemandOutcome(uid, result);
+    return result;
   },
 );
 

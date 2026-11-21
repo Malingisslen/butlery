@@ -1,5 +1,6 @@
 import { DocumentReference, FieldValue, Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
+import { logLegFailure } from "./core";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
 
@@ -54,17 +55,14 @@ export async function deleteShoppingLists(
   const personalRefs = await userRef
     .collection(Collections.unifiedShoppingLists)
     .listDocuments();
-  // STRICT on the items, best-effort on the parents. Swallowing an item-chunk
+  // STRICT on the items. Swallowing an item-chunk
   // failure would strand item docs under a list reference this function is
   // about to delete. Same reasoning as `deleteFamilyData`: losing the parent
   // handle strands unreachable PII, so failing loudly beats partial cleanup.
   //
   // Throwing makes `runStep` mark `shopping_lists` failed with the residual
   // still on disk and DISCOVERABLE — `listDocuments()` finds it again even
-  // though the parent is gone. There is no automatic retry: the callable
-  // deletes the auth user unconditionally (`request-account-deletion.ts`), so
-  // the real remediation is a human reading `deletion_audit_logs` for
-  // `gdprCompliant: false` and acting on it with the Admin SDK.
+  // though the parent is gone.
   //
   // Accumulate rather than letting the first failure escape: `deleteListItems`
   // is strict, and an unguarded loop would abort the whole step before the
@@ -72,6 +70,7 @@ export async function deleteShoppingLists(
   // every co-member's list. A list whose items failed keeps its PARENT too, so
   // `listDocuments()` finds it again on a remediation run.
   const failedPersonal = new Set<string>();
+  let parentDeletesFailed = 0;
   for (const listRef of personalRefs) {
     try {
       await deleteListItems(db, listRef);
@@ -91,12 +90,17 @@ export async function deleteShoppingLists(
       });
     }
   }
-  await commitInChunks(
-    db,
-    personalRefs.filter((ref) => !failedPersonal.has(ref.id)),
-    (batch, ref) => batch.delete(ref),
-    { label: "deletePersonalLists", strict: false },
-  );
+  try {
+    await commitInChunks(
+      db,
+      personalRefs.filter((ref) => !failedPersonal.has(ref.id)),
+      (batch, ref) => batch.delete(ref),
+      { label: "deletePersonalLists", strict: "attempt-all" },
+    );
+  } catch (err) {
+    parentDeletesFailed++;
+    logLegFailure("deletePersonalLists", uid, err);
+  }
 
   // LAST, deliberately: this leg is strict too, and the pre-rename path is
   // the one that can hold nothing (no rule grants it). Sweeping it first
@@ -123,12 +127,17 @@ export async function deleteShoppingLists(
       });
     }
   }
-  await commitInChunks(
-    db,
-    legacyRefs.filter((ref) => !failedLegacy.has(ref.id)),
-    (batch, ref) => batch.delete(ref),
-    { label: "deleteLegacyShoppingLists", strict: false },
-  );
+  try {
+    await commitInChunks(
+      db,
+      legacyRefs.filter((ref) => !failedLegacy.has(ref.id)),
+      (batch, ref) => batch.delete(ref),
+      { label: "deleteLegacyShoppingLists", strict: "attempt-all" },
+    );
+  } catch (err) {
+    parentDeletesFailed++;
+    logLegFailure("deleteLegacyShoppingLists", uid, err);
+  }
 
   // Scrub the deleted user out of collaborative lists other members keep.
   //
@@ -325,13 +334,14 @@ export async function deleteShoppingLists(
     }
   }
   const failedItems = failedPersonal.size + failedLegacy.size;
-  if (failedShared.length > 0 || failedItems > 0) {
+  if (failedShared.length > 0 || failedItems > 0 || parentDeletesFailed > 0) {
     // One throw, AFTER every leg has run: `runStep` records the step failed and
     // the audit row lands with `gdprCompliant: false`, which is the signal a
     // human acts on.
     throw new Error(
       `shopping-list erasure incomplete: ${failedItems} list(s) kept their ` +
-        `items, ${failedShared.length} shared list(s) unscrubbed`,
+        `items, ${failedShared.length} shared list(s) unscrubbed, ` +
+        `${parentDeletesFailed} list delete leg(s) failed`,
     );
   }
   return true;

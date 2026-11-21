@@ -164,11 +164,6 @@ export const RETENTION_ANALYTICS_PARENTS = ["retention", "lapsed_users"] as cons
  * equality needs no composite index.
  *
  * Neither parent has an aggregate sibling to preserve.
- *
- * The per-parent catch below covers the QUERY only. `batchDeleteAll` commits
- * non-strict, so a failed chunk is still swallowed and this function can return
- * true with rows left behind — which is why the matching leg in
- * `probeResidualData` is the load-bearing half, not this one.
  */
 export async function deleteRetentionAnalytics(
   db: Firestore,
@@ -228,11 +223,6 @@ export async function deleteRetentionAnalytics(
  * aggregate and is deliberately NOT touched: Art. 17 does not reach it, and
  * nothing recomputes it from these rows, so erasing a departed user here
  * changes no stored rate.
- *
- * As with `deleteRetentionAnalytics`, the load-bearing half is the matching leg
- * in `probeResidualData`, not this function: `batchDeleteAll` commits
- * non-strict, so a failed chunk is swallowed and this can return true with rows
- * left behind.
  */
 export async function deleteNotificationEffectiveness(
   db: Firestore,

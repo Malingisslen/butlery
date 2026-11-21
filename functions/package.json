@@ -213,6 +213,7 @@
     "test:account-deletion-cascade-moderation-events": "ts-node src/__tests__/account-deletion-cascade-moderation-events.test.ts",
     "test:account-deletion-cascade-moderation-reporters": "ts-node src/__tests__/account-deletion-cascade-moderation-reporters.test.ts",
     "test:account-deletion-cascade-messages": "ts-node src/__tests__/account-deletion-cascade-messages.test.ts",
+    "test:account-erasure-silent-failures": "ts-node src/__tests__/account-erasure-silent-failures.test.ts",
     "test:account-deletion-cascade-polls-reactions": "ts-node src/__tests__/account-deletion-cascade-polls-reactions.test.ts",
     "test:account-deletion-cascade-realtime-menus": "ts-node src/__tests__/account-deletion-cascade-realtime-menus.test.ts",
     "test:account-deletion-cascade-blocks": "ts-node src/__tests__/account-deletion-cascade-blocks.test.ts",

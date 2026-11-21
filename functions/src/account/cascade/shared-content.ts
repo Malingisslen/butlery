@@ -1,7 +1,7 @@
 import { DocumentReference, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
-import { batchDeleteAll, scrubWithOneReread } from "./core";
+import { batchDeleteAll, logLegFailure, scrubWithOneReread } from "./core";
 import { scrubDishCreator } from "./dish-creator";
 
 export async function removeFromSharedContent(
@@ -89,7 +89,16 @@ export async function removeFromSharedContent(
   // snapshot, and the asymmetry is deliberate: the update writes a stranger's
   // parent document, while a `members` row naming this user should go wherever
   // it sits.
-  await batchDeleteAll(db, members.docs);
+  //
+  // A failed delete here or of the engagements below must not stop the rest
+  // of the step, which is independent of both; it fails the step at the end.
+  let rowDeletesOk = true;
+  try {
+    await batchDeleteAll(db, members.docs);
+  } catch (err) {
+    rowDeletesOk = false;
+    logLegFailure("shared_content members", uid, err);
+  }
 
   if (membershipDocs.size > 0) {
     await commitInChunks(
@@ -107,7 +116,12 @@ export async function removeFromSharedContent(
   logger.info("[deletion-cascade] shared_content membership scrub", {
     scrubbed: membershipDocs.size,
   });
-  await batchDeleteAll(db, engagements.docs);
+  try {
+    await batchDeleteAll(db, engagements.docs);
+  } catch (err) {
+    rowDeletesOk = false;
+    logLegFailure("shared_content engagements", uid, err);
+  }
 
   // Delete shared_content owned by uid (subcollections first). Queried BEFORE
   // the item scrub so the scrub can skip these parents: their rows are deleted
@@ -160,7 +174,7 @@ export async function removeFromSharedContent(
   // false into `failedCollections` and `gdprCompliant: false` — the only thing claim-lint:ok moved unchanged, BUT-2113
   // that can contradict a clean audit row, since no probe leg reaches these
   // item rows.
-  return itemScrub.ok && orphanedParents.size === 0;
+  return itemScrub.ok && orphanedParents.size === 0 && rowDeletesOk;
 }
 
 /** The four fields on an item row that name a person by uid. */

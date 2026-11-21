@@ -3,7 +3,7 @@ import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
 import { DEEP_LINK_PAGE, deleteDeepLinkDocs } from "../../shared/deep-links";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, runLegs } from "./core";
 
 // The SUBCOLLECTION read is what erases a real user's recipes: `users/{uid}/recipes` claim-lint:ok moved unchanged, BUT-2113
 // is the only shape any production writer uses. Every `FirestoreCollections.recipes` claim-lint:ok moved unchanged, BUT-2113
@@ -48,35 +48,39 @@ export async function deleteMenus(
   db: Firestore,
   uid: string,
 ): Promise<boolean> {
-  // Subcollection menus under users/{uid}
-  const sub = await db.collection("users").doc(uid).collection("menus").get();
-  await batchDeleteAll(db, sub.docs);
-
-  // BUT-746: top-level shared menus owned by uid.
-  const owned = await db
-    .collection("menus")
-    .where("sharedByUserId", "==", uid)
-    .get();
-  await batchDeleteAll(db, owned.docs);
-
-  // BUT-747: scrub uid from sharedToUserIds on inbound menus.
-  const inbound = await db
-    .collection("menus")
-    .where("sharedToUserIds", "array-contains", uid)
-    .get();
-  if (inbound.docs.length > 0) {
-    await commitInChunks(
-      db,
-      inbound.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, {
-          sharedToUserIds: FieldValue.arrayRemove(uid),
-        });
-      },
-      { label: "scrubInboundMenus", strict: false },
-    );
-  }
-  return true;
+  return runLegs("menus", uid, [
+    // Subcollection menus under users/{uid}
+    async () => {
+      const sub = await db.collection("users").doc(uid).collection("menus").get();
+      await batchDeleteAll(db, sub.docs);
+    },
+    // BUT-746: top-level shared menus owned by uid.
+    async () => {
+      const owned = await db
+        .collection("menus")
+        .where("sharedByUserId", "==", uid)
+        .get();
+      await batchDeleteAll(db, owned.docs);
+    },
+    // BUT-747: scrub uid from sharedToUserIds on inbound menus.
+    async () => {
+      const inbound = await db
+        .collection("menus")
+        .where("sharedToUserIds", "array-contains", uid)
+        .get();
+      if (inbound.docs.length === 0) return;
+      await commitInChunks(
+        db,
+        inbound.docs,
+        (batch, doc) => {
+          batch.update(doc.ref, {
+            sharedToUserIds: FieldValue.arrayRemove(uid),
+          });
+        },
+        { label: "scrubInboundMenus", strict: false },
+      );
+    },
+  ]);
 }
 
 export async function deletePersonalTags(
@@ -158,9 +162,6 @@ async function deleteUserRowsPaged(
     if (snap.empty) return true;
     const paths = new Set(snap.docs.map((d) => d.ref.path));
     const prior: Set<string> | null = previous;
-    // batchDeleteAll swallows a failed chunk, so a full page that cannot be
-    // deleted comes back unchanged; without this the loop re-reads it until
-    // the callable times out and the later cascade steps never run.
     if (prior !== null && [...paths].every((p) => prior.has(p))) {
       logger.error("[deletion-cascade] paged delete did not shrink; stopping", {
         collection,
@@ -347,35 +348,36 @@ export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
  * shared with may suggest), so a large count is no sign of a bug in this
  * user's data, and declining would let someone else hold this user's erasure
  * in a failed state. It pages through each leg in batches of
- * [RECIPE_SUGGESTION_SWEEP_PAGE] until the leg is empty. It returns false only
- * when a page makes no progress (its deletes did not land), which the probe
- * then also reports.
+ * [RECIPE_SUGGESTION_SWEEP_PAGE] until the leg is empty.
  */
 export async function deleteRecipeSuggestions(
   db: Firestore,
   uid: string,
 ): Promise<boolean> {
-  for (const field of ["suggesterId", "ownerId"] as const) {
-    let previous: Set<string> | null = null;
-    for (;;) {
-      const snap = await db
-        .collection("recipe_suggestions")
-        .where(field, "==", uid)
-        .limit(RECIPE_SUGGESTION_SWEEP_PAGE)
-        .get();
-      if (snap.empty) break;
-      const paths = new Set(snap.docs.map((doc) => doc.ref.path));
-      const prior: Set<string> | null = previous;
-      if (prior !== null && [...paths].every((path) => prior.has(path))) {
-        logger.error(
-          "[deletion-cascade] recipe-suggestion page did not shrink; stopping",
-          { uid_prefix: uid.slice(0, 6), leg: field, rows: snap.size },
-        );
-        return false;
+  return runLegs(
+    "recipe_suggestions",
+    uid,
+    (["suggesterId", "ownerId"] as const).map((field) => async () => {
+      let previous: Set<string> | null = null;
+      for (;;) {
+        const snap = await db
+          .collection("recipe_suggestions")
+          .where(field, "==", uid)
+          .limit(RECIPE_SUGGESTION_SWEEP_PAGE)
+          .get();
+        if (snap.empty) return true;
+        const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+        const prior: Set<string> | null = previous;
+        if (prior !== null && [...paths].every((path) => prior.has(path))) {
+          logger.error(
+            "[deletion-cascade] recipe-suggestion page did not shrink; stopping",
+            { uid_prefix: uid.slice(0, 6), leg: field, rows: snap.size },
+          );
+          return false;
+        }
+        previous = paths;
+        await batchDeleteAll(db, snap.docs);
       }
-      previous = paths;
-      await batchDeleteAll(db, snap.docs);
-    }
-  }
-  return true;
+    }),
+  );
 }

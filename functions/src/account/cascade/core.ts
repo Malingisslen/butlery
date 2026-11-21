@@ -1,6 +1,6 @@
 import { Firestore, QueryDocumentSnapshot, QuerySnapshot, Timestamp, WriteBatch } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
-import { commitInChunks } from "../../shared/batch-update";
+import { ChunkCommitError, commitInChunks } from "../../shared/batch-update";
 
 /**
  * One thing kept, and why — the Art. 12(4) notice is rendered from this.
@@ -62,11 +62,21 @@ export async function runStep(
     result.errors.push(
       `${name}: ${err instanceof Error ? err.message : String(err)}`,
     );
-    logger.error(`[deletion-cascade] step ${name} failed`, { err });
+    // Classified, never the raw error: a Firestore message embeds the document
+    // path, which carries a uid.
+    logger.error(`[deletion-cascade] step ${name} failed`, {
+      errCode: (err as { code?: number | string } | null)?.code ?? "unknown",
+      errName: err instanceof Error ? err.name : typeof err,
+      ...chunkDetail(err),
+    });
   }
 }
 
-/** Batch-delete every doc, chunked at `BATCH_LIMIT` (500) ops/batch. */
+/**
+ * Batch-delete every doc, chunked at `BATCH_LIMIT` (500) ops/batch. Every chunk
+ * is attempted; if any failed it throws a `ChunkCommitError` afterwards, so a
+ * caller deleting a parent after this must not reach that delete (BUT-2512).
+ */
 export async function batchDeleteAll(
   db: Firestore,
   docs: QueryDocumentSnapshot[],
@@ -74,8 +84,47 @@ export async function batchDeleteAll(
   if (docs.length === 0) return;
   await commitInChunks(db, docs, (batch, doc) => batch.delete(doc.ref), {
     label: "batchDeleteAll",
-    strict: false,
+    strict: "attempt-all",
   });
+}
+
+export function chunkDetail(err: unknown): Record<string, unknown> {
+  return err instanceof ChunkCommitError
+    ? { chunkCodes: err.codes, failedChunks: err.failedChunks }
+    : {};
+}
+
+/** Log a failed leg a caller caught itself: codes only, never the raw error. */
+export function logLegFailure(label: string, uid: string, err: unknown): void {
+  logger.error(`[deletion-cascade] ${label}: a leg failed`, {
+    uid_prefix: uid.slice(0, 6),
+    errCode: (err as { code?: number | string } | null)?.code ?? "unknown",
+    errName: err instanceof Error ? err.name : typeof err,
+    ...chunkDetail(err),
+  });
+}
+
+/**
+ * Run independent legs of one step in order. A leg that throws or returns
+ * `false` does not stop the legs after it; the step reports `false` at the end.
+ * Only a classified code is logged: a Firestore error message embeds the
+ * document path, which carries a uid (BUT-2512).
+ */
+export async function runLegs(
+  label: string,
+  uid: string,
+  legs: ReadonlyArray<() => Promise<unknown>>,
+): Promise<boolean> {
+  let ok = true;
+  for (const leg of legs) {
+    try {
+      if ((await leg()) === false) ok = false;
+    } catch (err) {
+      ok = false;
+      logLegFailure(label, uid, err);
+    }
+  }
+  return ok;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { FieldPath, Firestore } from "firebase-admin/firestore";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, logLegFailure, runLegs } from "./core";
 
 /**
  * The `users/{uid}` subcollections `onUserDeleted` (cleanupContentGuardSubcollections)
@@ -298,11 +298,24 @@ export async function deleteUserSubcollections(
   // `notificationCounters` + `recentContentHashes` are intentionally NOT
   // included — `onUserDeleted` (cleanupContentGuardSubcollections) owns
   // those and runs automatically after `getAuth().deleteUser(uid)`.
+  //
+  // Each subcollection, and the sweep below, is its own leg: one failed delete
+  // must not leave the rest standing (BUT-2512).
   const subs = USER_SUBCOLLECTIONS;
-  for (const name of subs) {
-    const snap = await userDoc.collection(name).get();
-    await batchDeleteAll(db, snap.docs);
-  }
+  const subsOk = await runLegs(
+    "user_subcollections",
+    uid,
+    subs.map((name) => async () => {
+      try {
+        const snap = await userDoc.collection(name).get();
+        await batchDeleteAll(db, snap.docs);
+        return true;
+      } catch (err) {
+        logLegFailure(`user_subcollections ${name}`, uid, err);
+        return false;
+      }
+    }),
+  );
 
   // BUT-1390: THESE rate-limit buckets live at the TOP-LEVEL
   // `system_rate_limits` collection (doc id `${uid}_${operation}`), so they
@@ -321,15 +334,19 @@ export async function deleteUserSubcollections(
   // range collapses to the single (nonexistent) id `${uid}_` and erases nothing.
   // Do not "tidy" it away. The `_` separator additionally prevents matching a
   // different user whose uid is a prefix of this one. No field filter/index needed.
-  const rlSnap = await db
-    .collection("system_rate_limits")
-    .orderBy(FieldPath.documentId())
-    .startAt(`${uid}_`)
-    .endAt(`${uid}_`)
-    .get();
-  await batchDeleteAll(db, rlSnap.docs);
+  const rlOk = await runLegs("system_rate_limits", uid, [
+    async () => {
+      const rlSnap = await db
+        .collection("system_rate_limits")
+        .orderBy(FieldPath.documentId())
+        .startAt(`${uid}_`)
+        .endAt(`${uid}_`)
+        .get();
+      await batchDeleteAll(db, rlSnap.docs);
+    },
+  ]);
 
-  return true;
+  return subsOk && rlOk;
 }
 
 export async function deleteUserProfile(

@@ -247,10 +247,7 @@ async function scenario_retentionAnalyticsRowsAreErased(): Promise<void> {
 }
 
 /**
- * The probe leg for the two analytics parents. Without this the leg is
- * decoration: `batchDeleteAll` commits non-strict, so a swallowed chunk failure
- * leaves rows behind while `deleteRetentionAnalytics` still returns true — the
- * probe is the only thing that can contradict it. claim-lint:ok moved unchanged, BUT-2113
+ * The probe leg for the two analytics parents.
  *
  * Both parents separately, because a probe that catches one and misses the
  * other still certifies a bad erasure clean.
@@ -325,12 +322,15 @@ async function scenario_parseEventsErasedPagedAndProbed(): Promise<void> {
     stuck.set(`parse_events/mine-${i}`, { userId: UID });
   }
   stuck.batchFailures.set("parse_events/mine-7", 13);
-  const stuckOk = await deleteParseEvents(asDb(stuck), UID);
+  const stuckOutcome = await deleteParseEvents(asDb(stuck), UID).then(
+    (value: boolean) => `returned ${value}`,
+    (err: Error) => `threw ${err.name}`,
+  );
   check(
-    "a full import-log page that cannot be deleted stops and reports failure",
-    stuckOk === false &&
+    "a full import-log page that cannot be deleted stops and fails the step",
+    stuckOutcome === "threw ChunkCommitError" &&
       stuck.idsIn("parse_events").length === PARSING_CORRECTIONS_PAGE,
-    `returned ${stuckOk}`,
+    stuckOutcome,
   );
 
   // Also the shape of a row written by an import still running on another
@@ -390,12 +390,15 @@ async function scenario_parsingCorrectionsErasedPagedAndProbed(): Promise<void> 
     stuck.set(`parsing_corrections/mine-${i}`, { userId: UID });
   }
   stuck.batchFailures.set("parsing_corrections/mine-7", 13);
-  const stuckOk = await deleteParsingCorrections(asDb(stuck), UID);
+  const stuckOutcome = await deleteParsingCorrections(asDb(stuck), UID).then(
+    (value: boolean) => `returned ${value}`,
+    (err: Error) => `threw ${err.name}`,
+  );
   check(
-    "a full page that cannot be deleted stops and reports failure",
-    stuckOk === false &&
+    "a full page that cannot be deleted stops and fails the step",
+    stuckOutcome === "threw ChunkCommitError" &&
       stuck.idsIn("parsing_corrections").length === PARSING_CORRECTIONS_PAGE,
-    `returned ${stuckOk}`,
+    stuckOutcome,
   );
 
   const dirty = new FakeFirestore();
@@ -444,11 +447,7 @@ async function scenario_retentionAnalyticsWithNoRowsSucceeds(): Promise<void> {
 /**
  * BUT-2028: `ingredient_suggestions` is erased, and the probe SEES a leftover.
  *
- * Both halves in one scenario because they only mean anything together — the
- * deleter's own success value is `true` below the cap (it comes from
- * `batchDeleteAll` -> `commitInChunks(strict: false)`, which swallows a failed
- * chunk), so nothing but the probe can tell a completed sweep from a silently
- * dropped one.
+ * Both halves in one scenario because they only mean anything together.
  *
  * The other-user row is what makes the delete assertion non-vacuous: an
  * unfiltered sweep passes "the user's row is gone" just as easily.

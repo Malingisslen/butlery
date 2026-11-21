@@ -219,6 +219,22 @@ export async function cascadeArrayRemove(
   return total;
 }
 
+/** What `commitInChunks` throws in "attempt-all" mode: counts and codes only. */
+export class ChunkCommitError extends Error {
+  constructor(
+    readonly label: string,
+    readonly failedChunks: number,
+    readonly totalChunks: number,
+    readonly codes: string[],
+  ) {
+    super(
+      `${label}: ${failedChunks} of ${totalChunks} chunk(s) failed ` +
+        `(codes: ${codes.join(",")})`,
+    );
+    this.name = "ChunkCommitError";
+  }
+}
+
 /**
  * BUT-816: chunked best-effort/strict batch commit over an arbitrary item
  * list. Each item is fed to `mutate(batch, item)` which queues `opts.opsPerItem`
@@ -230,6 +246,10 @@ export async function cascadeArrayRemove(
  *     `opts.label` and the next chunk proceeds. The cascade caller is
  *     responsible for providing an idempotent retry path.
  *   - true: a failed chunk re-throws. Use when partial state is unsafe.
+ *   - "attempt-all": every chunk is attempted, then one `ChunkCommitError`
+ *     is thrown if any failed. Nothing about a failure is logged here: a
+ *     Firestore error message embeds the document path, which on the erasure
+ *     path carries a uid, so the error keeps only the codes.
  *
  * `opts.opsPerItem` (default 1) — declare when the mutate callback stages
  * more than one batch op per item. BUT-886 added this: cascade audit callers
@@ -244,7 +264,11 @@ export async function commitInChunks<T>(
   database: Firestore,
   items: readonly T[],
   mutate: (batch: WriteBatch, item: T) => void,
-  opts: { label: string; strict?: boolean; opsPerItem?: number }
+  opts: {
+    label: string;
+    strict?: boolean | "attempt-all";
+    opsPerItem?: number;
+  }
 ): Promise<number> {
   if (items.length === 0) return 0;
 
@@ -254,10 +278,21 @@ export async function commitInChunks<T>(
   let batch = database.batch();
   let batchCount = 0;
   let queued = 0;
+  let totalChunks = 0;
+  const failedCodes: string[] = [];
 
   const commitChunk = async (): Promise<void> => {
     if (batchCount === 0) return;
-    if (opts.strict) {
+    totalChunks++;
+    if (opts.strict === "attempt-all") {
+      try {
+        await batch.commit();
+      } catch (err) {
+        failedCodes.push(
+          String((err as { code?: number | string } | null)?.code ?? "unknown"),
+        );
+      }
+    } else if (opts.strict) {
       await batch.commit();
     } else {
       try {
@@ -280,6 +315,14 @@ export async function commitInChunks<T>(
   }
   await commitChunk();
 
+  if (failedCodes.length > 0) {
+    throw new ChunkCommitError(
+      opts.label,
+      failedCodes.length,
+      totalChunks,
+      failedCodes,
+    );
+  }
   return queued;
 }
 

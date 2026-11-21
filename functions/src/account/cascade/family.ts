@@ -1,6 +1,10 @@
-import { FieldValue, Firestore } from "firebase-admin/firestore";
+import {
+  FieldValue,
+  Firestore,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { commitInChunks } from "../../shared/batch-update";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, logLegFailure } from "./core";
 
 /**
  * BUT family Phase 5 item 15 — family-rating data, with the §5b edge cases.
@@ -33,126 +37,142 @@ export async function deleteFamilyData(
     .where("memberUserIds", "array-contains", uid)
     .get();
 
+  // One household's failure must not skip the others; the failed one is left
+  // naming the uid, so the next run finds it again.
+  let complete = true;
   for (const hhDoc of households.docs) {
-    const data = hhDoc.data();
-    const hid = hhDoc.id;
-    const memberUserIds = Array.isArray(data.memberUserIds)
-      ? (data.memberUserIds as unknown[]).filter((id) => typeof id === "string")
-      : [];
-    const remaining = (memberUserIds as string[]).filter((id) => id !== uid);
-    // BUT-2267: a household linked to the erased user's own group ends the way
-    // `onHouseholdGroupWritten` ends it when that group is deleted — the
-    // others removed, their shares deleted — and the erased owner was its
-    // last member, so it is torn down. Same end state whichever runs first;
-    // never re-pointed to a joined `view` member.
-    const ownsGroupLink = data.createdBy === uid &&
-      data.sourceGroupOwnerId === uid;
-
-    if (remaining.length === 0 || ownsGroupLink) {
-      // Shares first, and awaited: once the household doc is gone a retry
-      // cannot find these rows again.
-      for (let i = 0; ownsGroupLink && i < remaining.length; i += 400) {
-        const batch = db.batch();
-        for (const id of remaining.slice(i, i + 400)) {
-          batch.delete(db.collection("household_allergen_shares")
-            .doc(`${hid}_${id}`));
-        }
-        await batch.commit();
-      }
-      // Sole member → tear the whole household down. Delete children with
-      // strict:true so a failed chunk THROWS (→ family_data marked failed →
-      // household doc NOT deleted → uid stays in memberUserIds → the retry
-      // re-matches and re-attempts). Losing the household handle would strand
-      // unreachable child PII, so here failing loudly beats partial cleanup.
-      const [diners, allRatings] = await Promise.all([
-        db.collection("diner_profiles").where("householdId", "==", hid).get(),
-        db.collection("family_ratings").where("householdId", "==", hid).get(),
-      ]);
-      const childDocs = [...diners.docs, ...allRatings.docs];
-      if (childDocs.length > 0) {
-        await commitInChunks(
-          db,
-          childDocs,
-          (batch, doc) => batch.delete(doc.ref),
-          { label: "deleteFamilyHousehold", strict: true },
-        );
-      }
-      await hhDoc.ref.delete();
-      continue;
+    try {
+      await eraseFromHousehold(db, uid, hhDoc);
+    } catch (err) {
+      complete = false;
+      logLegFailure("family_data household", uid, err);
     }
-
-    // Others remain. RETRY-SAFETY ORDERING: every child mutation below is keyed
-    // on householdId + field equality (independent of uid's array membership),
-    // so it re-runs cleanly on retry — AS LONG AS the household membership scrub
-    // (which removes uid from the re-entry query) is the LAST mutation. Do not
-    // reorder the household update above the child cleanup.
-
-    // 1. Delete only the departing user's own verdicts.
-    const ownRatings = await db
-      .collection("family_ratings")
-      .where("householdId", "==", hid)
-      .where("memberId", "==", uid)
-      .get();
-    await batchDeleteAll(db, ownRatings.docs);
-
-    // 2. Re-home diner profiles the departing user created (never orphan — §5b).
-    const myDiners = await db
-      .collection("diner_profiles")
-      .where("householdId", "==", hid)
-      .where("createdBy", "==", uid)
-      .get();
-    if (myDiners.docs.length > 0) {
-      await commitInChunks(
-        db,
-        myDiners.docs,
-        (batch, doc) => batch.update(doc.ref, { createdBy: remaining[0] }),
-        { label: "rehomeDinerProfiles", strict: false },
-      );
-    }
-
-    // 3. Scrub proxy attribution on verdicts they entered FOR OTHER members so
-    // no rating is left pointing at a deleted user (own verdicts already gone).
-    const enteredByMe = await db
-      .collection("family_ratings")
-      .where("householdId", "==", hid)
-      .where("enteredByUid", "==", uid)
-      .get();
-    const proxyForOthers = enteredByMe.docs.filter(
-      (d) => d.data().memberId !== uid,
-    );
-    if (proxyForOthers.length > 0) {
-      await commitInChunks(
-        db,
-        proxyForOthers,
-        (batch, doc) => batch.update(doc.ref, { enteredByUid: "deleted" }),
-        { label: "scrubProxyAttribution", strict: false },
-      );
-    }
-
-    // 4. LAST: remove them from the household; re-point createdBy if theirs.
-    // This is the only mutation that changes the re-entry query, so it runs claim-lint:ok moved unchanged, BUT-2113
-    // after all child cleanup — a transient failure above leaves uid in
-    // memberUserIds and the retry re-discovers everything.
-    const members = Array.isArray(data.members)
-      ? (data.members as unknown[])
-          .filter((m) => m && typeof m === "object")
-          .map((m) => ({ ...(m as Record<string, unknown>) }))
-          .filter((m) => m.userId !== uid)
-      : [];
-    const newCreatedBy = data.createdBy === uid ? remaining[0] : data.createdBy;
-    // BUT-2267: a household linked to the erased user's group names them in
-    // `sourceGroupOwnerId`. The group goes with them, so the link does too.
-    const ownGroupLink = data.sourceGroupOwnerId === uid ? {
-      sourceGroupId: FieldValue.delete(),
-      sourceGroupOwnerId: FieldValue.delete(),
-    } : {};
-    await hhDoc.ref.update({
-      members,
-      memberUserIds: FieldValue.arrayRemove(uid),
-      [`memberPermissions.${uid}`]: FieldValue.delete(),
-      createdBy: newCreatedBy,
-      ...ownGroupLink,
-    });
   }
-  return true;
+  return complete;
+}
+
+async function eraseFromHousehold(
+  db: Firestore,
+  uid: string,
+  hhDoc: QueryDocumentSnapshot,
+): Promise<void> {
+  const data = hhDoc.data();
+  const hid = hhDoc.id;
+  const memberUserIds = Array.isArray(data.memberUserIds)
+    ? (data.memberUserIds as unknown[]).filter((id) => typeof id === "string")
+    : [];
+  const remaining = (memberUserIds as string[]).filter((id) => id !== uid);
+  // BUT-2267: a household linked to the erased user's own group ends the way
+  // `onHouseholdGroupWritten` ends it when that group is deleted — the
+  // others removed, their shares deleted — and the erased owner was its
+  // last member, so it is torn down. Same end state whichever runs first;
+  // never re-pointed to a joined `view` member.
+  const ownsGroupLink = data.createdBy === uid &&
+    data.sourceGroupOwnerId === uid;
+
+  if (remaining.length === 0 || ownsGroupLink) {
+    // Shares first, and awaited: once the household doc is gone a retry
+    // cannot find these rows again.
+    for (let i = 0; ownsGroupLink && i < remaining.length; i += 400) {
+      const batch = db.batch();
+      for (const id of remaining.slice(i, i + 400)) {
+        batch.delete(db.collection("household_allergen_shares")
+          .doc(`${hid}_${id}`));
+      }
+      await batch.commit();
+    }
+    // Sole member → tear the whole household down. Delete children with
+    // strict:true so a failed chunk THROWS (→ family_data marked failed →
+    // household doc NOT deleted → uid stays in memberUserIds → the retry
+    // re-matches and re-attempts). Losing the household handle would strand
+    // unreachable child PII, so here failing loudly beats partial cleanup.
+    const [diners, allRatings] = await Promise.all([
+      db.collection("diner_profiles").where("householdId", "==", hid).get(),
+      db.collection("family_ratings").where("householdId", "==", hid).get(),
+    ]);
+    const childDocs = [...diners.docs, ...allRatings.docs];
+    if (childDocs.length > 0) {
+      await commitInChunks(
+        db,
+        childDocs,
+        (batch, doc) => batch.delete(doc.ref),
+        { label: "deleteFamilyHousehold", strict: true },
+      );
+    }
+    await hhDoc.ref.delete();
+    return;
+  }
+
+  // Others remain. RETRY-SAFETY ORDERING: every child mutation below is keyed
+  // on householdId + field equality (independent of uid's array membership),
+  // so it re-runs cleanly on retry — AS LONG AS the household membership scrub
+  // (which removes uid from the re-entry query) is the LAST mutation. Do not
+  // reorder the household update above the child cleanup.
+
+  // 1. Delete only the departing user's own verdicts.
+  const ownRatings = await db
+    .collection("family_ratings")
+    .where("householdId", "==", hid)
+    .where("memberId", "==", uid)
+    .get();
+  await batchDeleteAll(db, ownRatings.docs);
+
+  // 2. Re-home diner profiles the departing user created (never orphan — §5b).
+  const myDiners = await db
+    .collection("diner_profiles")
+    .where("householdId", "==", hid)
+    .where("createdBy", "==", uid)
+    .get();
+  if (myDiners.docs.length > 0) {
+    await commitInChunks(
+      db,
+      myDiners.docs,
+      (batch, doc) => batch.update(doc.ref, { createdBy: remaining[0] }),
+      { label: "rehomeDinerProfiles", strict: false },
+    );
+  }
+
+  // 3. Scrub proxy attribution on verdicts they entered FOR OTHER members so
+  // no rating is left pointing at a deleted user (own verdicts already gone).
+  const enteredByMe = await db
+    .collection("family_ratings")
+    .where("householdId", "==", hid)
+    .where("enteredByUid", "==", uid)
+    .get();
+  const proxyForOthers = enteredByMe.docs.filter(
+    (d) => d.data().memberId !== uid,
+  );
+  if (proxyForOthers.length > 0) {
+    await commitInChunks(
+      db,
+      proxyForOthers,
+      (batch, doc) => batch.update(doc.ref, { enteredByUid: "deleted" }),
+      { label: "scrubProxyAttribution", strict: false },
+    );
+  }
+
+  // 4. LAST: remove them from the household; re-point createdBy if theirs.
+  // This is the only mutation that changes the re-entry query, so it runs claim-lint:ok moved unchanged, BUT-2113
+  // after all child cleanup — a transient failure above leaves uid in
+  // memberUserIds and the retry re-discovers everything.
+  const members = Array.isArray(data.members)
+    ? (data.members as unknown[])
+        .filter((m) => m && typeof m === "object")
+        .map((m) => ({ ...(m as Record<string, unknown>) }))
+        .filter((m) => m.userId !== uid)
+    : [];
+  const newCreatedBy = data.createdBy === uid ? remaining[0] : data.createdBy;
+  // BUT-2267: a household linked to the erased user's group names them in
+  // `sourceGroupOwnerId`. The group goes with them, so the link does too.
+  const ownGroupLink = data.sourceGroupOwnerId === uid ? {
+    sourceGroupId: FieldValue.delete(),
+    sourceGroupOwnerId: FieldValue.delete(),
+  } : {};
+  await hhDoc.ref.update({
+    members,
+    memberUserIds: FieldValue.arrayRemove(uid),
+    [`memberPermissions.${uid}`]: FieldValue.delete(),
+    createdBy: newCreatedBy,
+    ...ownGroupLink,
+  });
 }

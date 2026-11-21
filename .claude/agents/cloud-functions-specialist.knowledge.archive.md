@@ -21602,3 +21602,18 @@ parity vectors ("Kött och bullar", "Kött 123 bullar", "Choklad goda kaka", "Mi
 Re-probed scratch copies of the staged blob against both fixtures: M1 parity 3 fails, M2 1,
 M3 1, guard-removal 1 — all killed; BASE 0/0. Suites: parity 25/25, adversarial 27/27,
 word lists 7/7. Prior blocking finding closed.
+
+### 2026-11-21 — BUT-2512: batchDeleteAll throws; scheduler classifies Auth-already-gone [gdpr-erasure]
+`batchDeleteAll` moved to `commitInChunks(strict:"attempt-all")`: every chunk is attempted,
+then a `ChunkCommitError` (codes only) throws, so `runStep` reports the step failed instead
+of a swallowed chunk passing as a clean erasure. Callers that delete a parent after its
+children now stop before the parent on a child failure (the parent is the next run's
+handle); independent legs run through `runLegs`. Retired bullet text (gdpr-erasure chapter):
+"Bound the retry: a re-run after `auth.deleteUser` already succeeded gets
+`auth/user-not-found`, which the cascade records as `auth_deletion` failed, so it returns
+`success:false` on every later run." — the cascade still returns that, but the scheduler now
+counts Auth-already-gone-only as erased and logs `ERASURE_GAVE_UP_LOG` at give-up. Known
+residual: a give-up whose request-doc delete also failed is re-claimed after LEASE_MS and
+can log the give-up line again.
+Also retired from the gdpr-erasure probe bullet: "and `strict:false` swallows a failed
+chunk, so the probe is the ONLY contradiction to `return true`" — `batchDeleteAll` now throws.

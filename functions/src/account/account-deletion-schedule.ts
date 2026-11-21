@@ -23,6 +23,7 @@ import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import { Auth, getAuth } from "firebase-admin/auth";
 import { getStorage } from "firebase-admin/storage";
 import { Collections } from "../shared/collections";
+import { logErasureGaveUp } from "./erasure-alert-log";
 import { isGuestCaller } from "../shared/caller-eligibility";
 import {
   DeletionDeps,
@@ -47,9 +48,8 @@ const LEASE_MS = 15 * 60 * 1000;
 export const RUN_BUDGET_MS = 400 * 1000;
 
 /**
- * Runs that may end incomplete before the request is given up. Bounded,
- * because a re-run after a successful Auth delete reports `auth_deletion`
- * failed every time. Each run leaves its `gdprCompliant` audit row.
+ * Runs that may end incomplete before the request is given up. Each run
+ * leaves its `gdprCompliant` audit row.
  */
 export const MAX_ATTEMPTS = 3;
 
@@ -231,9 +231,12 @@ export async function runDueAccountDeletionsWithDeps(
     }
 
     let email = "";
+    let authAlreadyGone = false;
     try {
       email = (await deps.auth.getUser(uid)).email ?? "";
     } catch (err) {
+      authAlreadyGone =
+        (err as { code?: string }).code === "auth/user-not-found";
       // An Auth account already gone still has data to erase.
       logger.warn("[runDueAccountDeletions] auth user unavailable", {
         uid_prefix: uid.slice(0, 6),
@@ -248,7 +251,7 @@ export async function runDueAccountDeletionsWithDeps(
         email,
         claimed.reason,
       );
-      if (result.success) {
+      if (result.success || onlyAuthWasAlreadyGone(result, authAlreadyGone)) {
         summary.erased++;
         continue;
       }
@@ -260,7 +263,9 @@ export async function runDueAccountDeletionsWithDeps(
         failedCollections: result.failedCollections,
         attempt,
       });
-      if (attempt < MAX_ATTEMPTS) {
+      if (attempt >= MAX_ATTEMPTS) {
+        logErasureGaveUp(uid, result.failedCollections, attempt);
+      } else {
         try {
           await doc.ref.set({
             requestedAt: claimed.requestedAt,
@@ -285,6 +290,23 @@ export async function runDueAccountDeletionsWithDeps(
   }
   logger.info("[runDueAccountDeletions] run complete", summary);
   return summary;
+}
+
+/**
+ * BUT-2512: a re-run after an earlier run deleted the Auth account always
+ * records `auth_deletion` failed, so without this a retry that erased
+ * everything else could never count as done. Scheduler only: the callable's
+ * `success` is unchanged (ACCEPTED_DEVIATIONS, BUT-2047 named residual).
+ */
+export function onlyAuthWasAlreadyGone(
+  result: { failedCollections: readonly string[] },
+  authAlreadyGone: boolean,
+): boolean {
+  return (
+    authAlreadyGone &&
+    result.failedCollections.length === 1 &&
+    result.failedCollections[0] === "auth_deletion"
+  );
 }
 
 export const scheduleAccountDeletion = onCall<{ reason?: string }>(
