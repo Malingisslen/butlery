@@ -335,6 +335,35 @@ async function scenario_failedPollVoteDeleteDoesNotStopTheCreatorScrub(): Promis
   );
 }
 
+/** One household's verdict delete fails: the next household is still erased. */
+async function scenario_failedHouseholdDoesNotStopTheNext(): Promise<void> {
+  const db = new FakeFirestore();
+  for (const hid of ["h1", "h2"]) {
+    db.set(`households/${hid}`, {
+      memberUserIds: [UID, OTHER],
+      members: [{ userId: UID }, { userId: OTHER }],
+      memberPermissions: { [UID]: "edit", [OTHER]: "admin" },
+      createdBy: OTHER,
+    });
+    db.set(`family_ratings/${hid}-mine`, { householdId: hid, memberId: UID });
+  }
+  db.batchFailures.set("family_ratings/h1-mine", 13);
+
+  const ok = await cascade.deleteFamilyData(asDb(db), UID);
+  check("a failed household reports the step incomplete", ok === false, `returned ${ok}`);
+  const ids = (hid: string) => db.get(`households/${hid}`)?.memberUserIds as string[] | undefined;
+  check(
+    "…the failed household still names the erased user for the next run",
+    ids("h1")?.includes(UID) === true,
+    JSON.stringify(ids("h1")),
+  );
+  check(
+    "…while the next household is still erased",
+    ids("h2")?.includes(UID) === false && !db.has("family_ratings/h2-mine"),
+    JSON.stringify(ids("h2")),
+  );
+}
+
 /** The owned weekly plans' delete fails: the group-plan scrub still runs. */
 async function scenario_failedOwnedWeekPlanDoesNotStopTheGroupScrub(): Promise<void> {
   const db = new FakeFirestore();
@@ -433,6 +462,7 @@ async function main(): Promise<void> {
   await scenario_failedMenuLegDoesNotStopTheRest();
   await scenario_failedOwnedWeekPlanDoesNotStopTheGroupScrub();
   await scenario_failedPollVoteDeleteDoesNotStopTheCreatorScrub();
+  await scenario_failedHouseholdDoesNotStopTheNext();
   scenario_reRunWithAuthAlreadyGone();
   scenario_alertPolicyFiltersOnTheLoggedText();
   scenario_onDemandOutcomeLogsOnlyWhenIncomplete();

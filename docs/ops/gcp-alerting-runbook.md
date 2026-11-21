@@ -200,9 +200,11 @@ attempt, or when an erasure the user started in the app ends incomplete. Some
 of that person's data is still stored. GDPR gives one month from the request
 to finish it.
 
-1. In Firestore, open `deletion_audit_logs`, filter `gdprCompliant == false`,
-   and find the newest row whose `userId` starts with the `uid_prefix` in the
-   alert's log line. `failedCollections` names what was left.
+1. In Logs Explorer, list every log line matching the policy's filter since
+   the incident opened: one notification can cover several people. For each
+   `uid_prefix`, open `deletion_audit_logs` in Firestore, filter
+   `gdprCompliant == false`, and find the newest row whose `userId` starts
+   with it. `failedCollections` names what was left.
 2. Re-run the erasure: create `account_deletion_requests/{userId}` with
    `scheduledFor` = now (a Timestamp), `requestedAt` = now, `attempts` = 0 and
    `reason` = "manual re-run". The hourly `runDueAccountDeletions` runs the
@@ -211,6 +213,9 @@ to finish it.
    `failedCollections` should be empty or only `auth_deletion` (the Auth
    account was already gone). If the same step fails again, the cause is in
    the function logs for `[deletion-cascade]` at that time.
+
+An erasure that throws or times out before it returns writes neither line, so
+this alert does not fire for it.
 
 ---
 
