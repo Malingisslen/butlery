@@ -5,6 +5,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -1357,6 +1358,102 @@ void main() {
                 'the _recipeById index must be cleared even though '
                 'resetForLogout does not route through notifyListeners',
           );
+        },
+      );
+    });
+
+    group('a load that outlives a sign-out (BUT-2517)', () {
+      /// Proves: an initialize still reading the device cache when the account
+      /// signs out does not put that account's recipes back in memory or mark
+      /// the service initialized, so the next account starts from its own cache.
+      test('initialize in flight at sign-out is dropped', () async {
+        final cacheRead = Completer<List<String>>();
+        when(
+          () => mockCacheDao.getJsonKeys(any(), any()),
+        ).thenAnswer((_) => cacheRead.future);
+        final stale = RecipeFactory.buildPersonal(
+          id: 'forra-kontots-recept',
+          title: 'Förra kontots recept',
+        );
+        when(
+          () => mockCacheDao.getJson(any(), any(), 'forra-kontots-recept'),
+        ).thenAnswer((_) async => jsonEncode(stale.toJson()));
+
+        final inFlight = service.initialize();
+        await Future<void>.delayed(Duration.zero);
+        service.resetForLogout();
+        cacheRead.complete(['forra-kontots-recept']);
+        await inFlight;
+
+        expect(service.recipes, isEmpty);
+        expect(service.getRecipeById('forra-kontots-recept'), isNull);
+        expect(service.isInitialized, isFalse);
+        expect(service.isLoading, isFalse);
+        verifyNever(
+          () => mockAuthRepository.authStateChanges(),
+        );
+      });
+
+      /// Proves: disposing the service, which is what the container does at
+      /// sign-out, drops an initialize that is still reading the cache.
+      test('initialize in flight at dispose is dropped', () async {
+        final cacheRead = Completer<List<String>>();
+        when(
+          () => mockCacheDao.getJsonKeys(any(), any()),
+        ).thenAnswer((_) => cacheRead.future);
+        final stale = RecipeFactory.buildPersonal(
+          id: 'forra-kontots-recept',
+          title: 'Förra kontots recept',
+        );
+        when(
+          () => mockCacheDao.getJson(any(), any(), 'forra-kontots-recept'),
+        ).thenAnswer((_) async => jsonEncode(stale.toJson()));
+
+        final inFlight = service.initialize();
+        await Future<void>.delayed(Duration.zero);
+        service.dispose();
+        cacheRead.complete(['forra-kontots-recept']);
+        await inFlight;
+
+        expect(service.recipes, isEmpty);
+        expect(service.isInitialized, isFalse);
+        verifyNever(() => mockAuthRepository.authStateChanges());
+      });
+
+      /// Proves: a recipe reload that a sign-in started and that is still
+      /// reading the cache when the service is reset for logout does not put
+      /// that account's recipes back in the list.
+      test(
+        'a reload started by a sign-in is dropped by the sign-out reset',
+        () async {
+          final authEvents = StreamController<User?>();
+          when(
+            () => mockAuthRepository.authStateChanges(),
+          ).thenAnswer((_) => authEvents.stream);
+          await service.initialize();
+
+          final cacheRead = Completer<List<String>>();
+          when(
+            () => mockCacheDao.getJsonKeys(any(), any()),
+          ).thenAnswer((_) => cacheRead.future);
+          final stale = RecipeFactory.buildPersonal(
+            id: 'forra-kontots-recept',
+            title: 'Förra kontots recept',
+          );
+          when(
+            () => mockCacheDao.getJson(any(), any(), 'forra-kontots-recept'),
+          ).thenAnswer((_) async => jsonEncode(stale.toJson()));
+
+          authEvents.add(
+            MockFactory.createMockUser(uid: 'test_user_123') as User?,
+          );
+          await Future<void>.delayed(Duration.zero);
+          service.resetForLogout();
+          cacheRead.complete(['forra-kontots-recept']);
+          await Future<void>.delayed(const Duration(milliseconds: 400));
+
+          expect(service.recipes, isEmpty);
+          await authEvents.close();
         },
       );
     });

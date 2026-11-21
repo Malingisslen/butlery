@@ -152,6 +152,10 @@ class UnifiedRecipeService
   /// cache loading and sync — the auth handler's reload would be redundant.
   bool _initializing = false;
 
+  // A load started under an older value belongs to an account that has since
+  // signed out and is dropped.
+  int _generation = 0;
+
   // Cached unmodifiable views — invalidated on every _recipes mutation
   List<Recipe>? _cachedUnmodifiable;
   List<Recipe>? _cachedPersonal;
@@ -602,6 +606,7 @@ class UnifiedRecipeService
       return;
     }
 
+    final generation = _generation;
     try {
       AppLogger.info(
         '🔄 [UnifiedRecipeService.initialize] Starting initialization (early return guard active)...',
@@ -616,6 +621,7 @@ class UnifiedRecipeService
       // Wait for modules to be initialized if not already
       if (!_areModulesInitialized()) {
         await Future.delayed(const Duration(milliseconds: 50));
+        if (generation != _generation) return;
         if (!_areModulesInitialized()) {
           AppLogger.warning('Modules not initialized, initializing now...');
           _initializeModules();
@@ -624,6 +630,7 @@ class UnifiedRecipeService
 
       // Initialize cache and load cached recipes
       final cachedRecipes = await _cacheModule.initializeCache();
+      if (generation != _generation) return;
       _recipes.clear();
       _recipes.addAll(cachedRecipes);
 
@@ -654,12 +661,14 @@ class UnifiedRecipeService
       // Start Firebase sync if authenticated
       if (_authRepository.currentUser != null) {
         await _cacheModule.startFirebaseSync();
+        if (generation != _generation) return;
 
         // BUG-003 FIX: On web, cache is stubbed so we load directly from Firebase
         if (kIsWeb) {
           final userId = _authRepository.currentUserId;
           if (userId != null) {
             await loadWebRecipesBounded(userId);
+            if (generation != _generation) return;
           }
         } else {
           // BUT-198: startFirebaseSync returns immediately (listeners + background fetch).
@@ -680,10 +689,12 @@ class UnifiedRecipeService
       AppLogger.error(
         '❌ [UnifiedRecipeService] Initialization failed: $e\n$stackTrace',
       );
-      _initializing = false;
-      _setError(AppLocale.current.errorCouldNotLoadRecipes);
-      _isLoading = false;
-      notifyListeners();
+      if (generation == _generation) {
+        _initializing = false;
+        _setError(AppLocale.current.errorCouldNotLoadRecipes);
+        _isLoading = false;
+        notifyListeners();
+      }
       rethrow; // CRITICAL: Propagate failure to bootstrap system
     }
   }
@@ -707,9 +718,11 @@ class UnifiedRecipeService
   @visibleForTesting
   Future<void> loadWebRecipesBounded(String userId) async {
     try {
+      final generation = _generation;
       final firebaseRecipes = await _getRecipeRepository()
           .fetchUserRecipes(userId)
           .timeout(webRecipeFetchTimeout);
+      if (generation != _generation) return;
       _recipes.clear();
       _recipes.addAll(firebaseRecipes);
       AppLogger.info(
@@ -1130,6 +1143,9 @@ class UnifiedRecipeService
   /// Reset state for logout. Allows re-initialization for a new user session.
   /// Safe to call mid-operation — cancels subscriptions/timers first, then clears state.
   void resetForLogout() {
+    _generation++;
+    _initializing = false;
+    if (_areModulesInitialized()) _authHandler.cancelInFlight();
     // Cancel subscriptions first to prevent callbacks during reset
     _authSubscription?.cancel();
     _authSubscription = null;
@@ -1158,6 +1174,8 @@ class UnifiedRecipeService
   }
 
   void dispose() {
+    _generation++;
+    if (_areModulesInitialized()) _authHandler.cancelInFlight();
     _authSubscription?.cancel();
     _queueSentSubscription?.cancel();
     _queueDroppedSubscription?.cancel();

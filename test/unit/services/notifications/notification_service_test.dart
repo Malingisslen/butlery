@@ -4,6 +4,7 @@
 /// content, preferences, offline, batch, FCM token, analytics.
 library;
 
+import 'dart:async';
 import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -455,6 +456,39 @@ void main() {
         verify(() => built.first.initialize()).called(1);
         verify(() => built.last.initialize()).called(1);
       });
+
+      /// Proves: a start-up still waiting on FCM when the account signs out
+      /// does not mark the service initialized afterwards, so the next
+      /// account's start-up runs instead of being skipped as "already done".
+      test(
+        'a start-up in flight at sign-out does not block the next one',
+        () async {
+          when(() => tokenManager.cleanup()).thenAnswer((_) async {});
+          final fcmGate = Completer<void>();
+          var fcmStarts = 0;
+          when(
+            () => fcm.initialize(
+              onMessageReceived: any(named: 'onMessageReceived'),
+              onMessageOpenedApp: any(named: 'onMessageOpenedApp'),
+              consentService: any(named: 'consentService'),
+            ),
+          ).thenAnswer((_) {
+            fcmStarts++;
+            return fcmStarts == 1 ? fcmGate.future : Future<void>.value();
+          });
+          final service = buildWith(_FakeConsent(false));
+
+          final stale = service.initialize();
+          await Future<void>.delayed(Duration.zero);
+          await service.resetForLogout();
+          fcmGate.complete();
+          await stale;
+
+          await service.initialize();
+
+          expect(fcmStarts, 2, reason: 'the next account must start its own');
+        },
+      );
 
       test('a failed start is retried on the next grant', () async {
         var attempts = 0;
