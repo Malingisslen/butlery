@@ -47,6 +47,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 
+import '../../tools/corpus/block_drafts.dart';
 import '../../tools/corpus/corpus_models.dart';
 import '../../tools/corpus/corpus_paths.dart';
 import '../infrastructure/di/test_service_locator.dart';
@@ -193,6 +194,26 @@ void main() {
             ingredientParser,
             ocr.text,
           );
+
+          // A page with gold blocks keeps its cut: draft only (never gold), and
+          // only when the parser's count matches, else nothing is written.
+          final blocks = goldBlocks(recipeDir);
+          if (blocks.isNotEmpty) {
+            final paired = pairBlocksWithDrafts(blocks, drafts);
+            if (paired.isEmpty) {
+              stdout.writeln(
+                'Gold blocks $bookSlug/$recipeId: ${blocks.length} blocks, '
+                'parser found ${drafts.length} - no draft written',
+              );
+            }
+            paired.forEach((blockId, draft) {
+              File(
+                paths.draftBlock(bookSlug, recipeId, blockId),
+              ).writeAsStringSync(encodeJsonPretty(draft.toJson()));
+            });
+            processed++;
+            continue;
+          }
 
           if (drafts.length == 1) {
             // Single-recipe page → flat layout (draft.json/gold.json at the image
