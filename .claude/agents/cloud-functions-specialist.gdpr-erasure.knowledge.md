@@ -134,9 +134,10 @@
   reports failure by RETURNING. A work-queue doc the cascade deletes itself (the
   `account_deletion_requests` tier-2 step) is therefore gone on exactly the runs that need
   a retry, and a lease that is released only "on throw" covers just a crash or timeout.
-  Bound the retry: a re-run after `auth.deleteUser` already succeeded gets
-  `auth/user-not-found`, which the cascade records as `auth_deletion` failed, so it
-  returns `success:false` on every later run.
+  Bound the retry, and classify Auth BEFORE the run: a re-run after `auth.deleteUser`
+  succeeded still returns `success:false` (`auth_deletion`), so the scheduler reads
+  `getUser` first and counts that one shape as erased (`onlyAuthWasAlreadyGone`); an
+  Auth outage stays a failure. Giving up must LOG the alert line (BUT-2512).
   A sweep that DISCOVERS subjects through Auth (`listUsers`) loses one the moment the
   cascade's Auth delete succeeds, so on `success:false` WITHOUT `auth_deletion` it hands
   the uid to `account_deletion_requests` (due now, `attempts:1`) for
@@ -179,8 +180,7 @@
   projection collapses it); witnesses are ROSTERS (readers) only, never a discovery
   handle (`contributorUserIds`). Binds EVERY server writer that can empty a roster;
   its NON-delete branch rewrites projections PER KEY and drops the whole-field key.
-  A leg with no DIRTY fixture is mutation-invisible and `strict:false` swallows
-  a failed chunk, so the probe is the ONLY contradiction to `return true` — leg
+  A leg with no DIRTY fixture is mutation-invisible — leg
   and scenario ship in one edit, and DELETING the leg must redden BOTH the
   targeted fixture and "no failed collections". A probe ERROR ADDS to residual (a sentinel,
   never a count), never aborts; one try/catch per leg.

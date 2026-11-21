@@ -4,6 +4,7 @@ import { batchUpdateRefs } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
 import {
   batchDeleteAll,
+  logLegFailure,
   scrubWithOneReread,
   cappedReread,
   updateWith,
@@ -118,8 +119,7 @@ export const MAX_BLOCK_SWEEP_ROWS = 2000;
  * `probeResidualData` did not see it either, and the reason is simply that no
  * leg of that probe named the collection — it queries top-level collections by
  * field as well as enumerating subcollections, so being top-level was never the
- * obstacle. Two legs ship in this same change, because a sweep that reports on
- * itself through `commitInChunks(strict:false)` needs an independent check.
+ * obstacle. Two legs ship in this same change.
  *
  * BOTH directions are erased, and the second one deserves its own sentence
  * because it deletes a row another living user created. A block naming a
@@ -157,7 +157,12 @@ export async function deleteBlocks(
       continue;
     }
 
-    await batchDeleteAll(db, snap.docs);
+    try {
+      await batchDeleteAll(db, snap.docs);
+    } catch (err) {
+      complete = false;
+      logLegFailure(`blocks ${field}`, uid, err);
+    }
   }
 
   return complete;

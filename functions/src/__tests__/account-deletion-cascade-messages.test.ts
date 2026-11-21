@@ -452,8 +452,45 @@ async function scenario_failedMirrorScrubKeepsTheRetryHandle(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2512: the 1:1 thread's delete fails. Before the fix the failure was
+ * swallowed, the conversation was deleted anyway and the step reported
+ * success, leaving both messages behind with no handle. Now the step reports
+ * failure, the conversation stays (still naming the erased user), and a
+ * second run deletes everything.
+ */
+async function scenario_failedDirectThreadDeleteKeepsTheConversation(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/c-fail", { participantIds: [UID, OTHER] });
+  seedMessage(db, "f1", "c-fail", UID);
+  seedMessage(db, "f2", "c-fail", OTHER);
+  db.batchFailures.set("messages/f2", 14);
+
+  const first = await deleteMessages(asDb(db), UID);
+  check("run 1: a failed thread delete reports failure", first === false, `returned ${first}`);
+  check(
+    "run 1: the conversation is NOT deleted",
+    db.has("conversations/c-fail"),
+  );
+  check(
+    "run 1: it still names the erased user, so the next run finds it",
+    ((db.get("conversations/c-fail") as DocData)?.participantIds as string[] | undefined)
+      ?.includes(UID) === true,
+  );
+
+  db.batchFailures.clear();
+  const second = await deleteMessages(asDb(db), UID);
+  check("run 2: reports success", second === true, `returned ${second}`);
+  check(
+    "run 2: conversation and both messages are gone",
+    !db.has("conversations/c-fail") && db.idsIn("messages").length === 0,
+    `left: ${JSON.stringify(db.idsIn("messages"))}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
+  await scenario_failedDirectThreadDeleteKeepsTheConversation();
   await scenario_readsTopLevelNotSubcollection();
   await scenario_groupThreadIsAnonymizedNotGutted();
   await scenario_groupConversationDocumentIsScrubbed();

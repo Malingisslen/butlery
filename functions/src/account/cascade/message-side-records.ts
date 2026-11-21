@@ -3,7 +3,7 @@ import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
 import { logSafeConversationId } from "../../shared/log-safe-conversation-id";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, logLegFailure } from "./core";
 
 /**
  * BUT-1766: chat messages live in the TOP-LEVEL `messages` collection, keyed by
@@ -138,7 +138,12 @@ export async function deletePollVotes(
     );
     complete = false;
   } else {
-    await batchDeleteAll(db, votes.docs);
+    try {
+      await batchDeleteAll(db, votes.docs);
+    } catch (err) {
+      complete = false;
+      logLegFailure("poll_votes", uid, err);
+    }
   }
 
   // Runs even when the vote sweep declined: the two residues are independent,

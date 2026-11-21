@@ -145,12 +145,9 @@ async function scenario_pollVotesAndAuthorshipAreErased(): Promise<void> {
 /**
  * BUT-1801: the residual probe must SEE both poll residues.
  *
- * `deletePollVotes` deletes votes through `commitInChunks(strict:false)`, which
- * catches a whole failed chunk and lets the step return success anyway — only
- * the cap can falsify it. And the creator scrub, before BUT-1801, was one atomic
+ * The creator scrub, before BUT-1801, was one atomic
  * batch, so a single message deleted by a sibling step took the whole chunk with
- * it, silently. In both cases the step reports a clean erasure over rows that are
- * still there. The probe is the only thing that can contradict that, and it had claim-lint:ok moved unchanged, BUT-2113
+ * it, silently. The probe is the only thing that can contradict that, and it had claim-lint:ok moved unchanged, BUT-2113
  * no leg for either — the same shape as the `participants` gap BUT-1822 found.
  *
  * Two residues, asserted separately, because a probe that catches one and misses

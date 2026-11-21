@@ -119,11 +119,8 @@ export async function probeOwnerKeyedDocs(
     // `metadata.subjectUserId` entry earlier in this same list proves a nested
     // equality filter needs no declared index.
     [Collections.messages, "metadata.poll.creatorId", "=="],
-    // BUT-1917: `blocks`, BOTH directions. `deleteBlocks` sweeps through
-    // `batchDeleteAll` -> `commitInChunks(strict:false)`, which swallows a
-    // failed chunk and lets the step return success — so without these two the
-    // sweep self-reports clean over rows whose DOCUMENT ID is the erased uid.
-    // These legs are also uncapped, so they still fire when the sweep DECLINED
+    // BUT-1917: `blocks`, BOTH directions.
+    // These legs are uncapped, so they still fire when the sweep DECLINED
     // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
     [Collections.blocks, "blockerId", "=="],
     [Collections.blocks, "blockedId", "=="],

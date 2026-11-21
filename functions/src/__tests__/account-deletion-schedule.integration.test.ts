@@ -40,6 +40,27 @@ const {
 } = require("../account/account-deletion-schedule");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { resolveDeletionReason } = require("../account/request-account-deletion");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { ERASURE_GAVE_UP_LOG } = require("../account/erasure-alert-log");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const functionsLogger = require("firebase-functions/logger").logger;
+
+/** Every `logger.error` call made while `run` runs. */
+async function captureErrorLogs(
+  run: () => Promise<unknown>,
+): Promise<Array<{ message: unknown; data: unknown }>> {
+  const original = functionsLogger.error;
+  const seen: Array<{ message: unknown; data: unknown }> = [];
+  functionsLogger.error = (message: unknown, data: unknown) => {
+    seen.push({ message, data });
+  };
+  try {
+    await run();
+  } finally {
+    functionsLogger.error = original;
+  }
+  return seen;
+}
 
 const RUN = Date.now().toString(36);
 const NOW = Date.UTC(2026, 9, 10, 12, 0, 0);
@@ -52,8 +73,10 @@ interface FakeAuthState {
   deleted: string[];
   failClaimsFor?: string;
   failDeleteFor?: Set<string>;
-  /** getUser answers auth/user-not-found for these uids. */
+  /** getUser and deleteUser answer auth/user-not-found for these uids. */
   missingUsers?: Set<string>;
+  /** getUser throws this code for the uid (an Auth outage, not a missing user). */
+  getUserError?: Map<string, string>;
   /** The request's `processingStartedAt` as the run saw it, keyed by uid. */
   seenLease?: Map<string, number | null>;
 }
@@ -61,6 +84,8 @@ interface FakeAuthState {
 function fakeAuth(state: FakeAuthState): Auth {
   return {
     async getUser(uid: string) {
+      const code = state.getUserError?.get(uid);
+      if (code) throw Object.assign(new Error("auth down"), { code });
       if (state.missingUsers?.has(uid)) {
         throw Object.assign(new Error("no user"), { code: "auth/user-not-found" });
       }
@@ -87,6 +112,9 @@ function fakeAuth(state: FakeAuthState): Auth {
       state.revoked.push(uid);
     },
     async deleteUser(uid: string) {
+      if (state.missingUsers?.has(uid)) {
+        throw Object.assign(new Error("no user"), { code: "auth/user-not-found" });
+      }
       if (state.failDeleteFor?.has(uid)) throw new Error("auth unavailable");
       state.deleted.push(uid);
     },
@@ -377,11 +405,16 @@ test("runDue: an account already gone from Auth is still erased, and its audit r
 
   const auth = newAuthState();
   auth.missingUsers = new Set([uid]);
-  await runDueAccountDeletionsWithDeps(
+  const summary = await runDueAccountDeletionsWithDeps(
     { db, auth: fakeAuth(auth), storage: fakeStorage() },
     NOW,
   );
 
+  assert(
+    summary.erased === 1 && summary.failed === 0,
+    `must count as erased: ${JSON.stringify(summary)}`,
+  );
+  assert(!(await exists(`${REQUESTS}/${uid}`)), "the request must not come back");
   assert(!(await exists(`users/${uid}`)), "profile must be erased");
   const audit = await db
     .collection("deletion_audit_logs")
@@ -440,6 +473,74 @@ test("runDue: the last allowed attempt gives up instead of looping", async () =>
   );
   assert(summary.failed === 1, `must report the failure: ${JSON.stringify(summary)}`);
   assert(!(await exists(`${REQUESTS}/${uid}`)), "a spent request must not come back");
+});
+
+test("runDue: an Auth outage is not mistaken for an Auth account already gone", async () => {
+  await clearEmulator();
+  const uid = `authdown-${RUN}`;
+  const ts = Timestamp.fromMillis;
+  await db.doc(`${REQUESTS}/${uid}`).set({
+    requestedAt: ts(NOW - 8 * DAY_MS),
+    scheduledFor: ts(NOW - DAY_MS),
+    reason: "orsak",
+  });
+  const auth = newAuthState();
+  auth.getUserError = new Map([[uid, "auth/internal-error"]]);
+  auth.failDeleteFor = new Set([uid]);
+  const summary = await runDueAccountDeletionsWithDeps(
+    { db, auth: fakeAuth(auth), storage: fakeStorage() },
+    NOW,
+  );
+  assert(summary.failed === 1, `must report the failure: ${JSON.stringify(summary)}`);
+  const back = await db.doc(`${REQUESTS}/${uid}`).get();
+  assert(back.exists && back.get("attempts") === 1, "the request must be put back");
+});
+
+test("runDue: giving up logs the line the erasure alert fires on", async () => {
+  await clearEmulator();
+  const uid = `gaveup-log-${RUN}`;
+  const ts = Timestamp.fromMillis;
+  await db.doc(`${REQUESTS}/${uid}`).set({
+    requestedAt: ts(NOW - 8 * DAY_MS),
+    scheduledFor: ts(NOW - DAY_MS),
+    reason: "orsak",
+    attempts: MAX_ATTEMPTS - 1,
+  });
+  const auth = newAuthState();
+  auth.failDeleteFor = new Set([uid]);
+  const logged = await captureErrorLogs(() =>
+    runDueAccountDeletionsWithDeps(
+      { db, auth: fakeAuth(auth), storage: fakeStorage() },
+      NOW,
+    ),
+  );
+  const line = logged.find((l) => l.message === ERASURE_GAVE_UP_LOG);
+  assert(line !== undefined, `no give-up line in ${JSON.stringify(logged.map((l) => l.message))}`);
+  const payload = JSON.stringify(line?.data);
+  assert(!payload.includes(uid), `the give-up line must carry a uid prefix only: ${payload}`);
+});
+
+test("runDue: an attempt before the last does not log the give-up line", async () => {
+  await clearEmulator();
+  const uid = `early-${RUN}`;
+  const ts = Timestamp.fromMillis;
+  await db.doc(`${REQUESTS}/${uid}`).set({
+    requestedAt: ts(NOW - 8 * DAY_MS),
+    scheduledFor: ts(NOW - DAY_MS),
+    reason: "orsak",
+  });
+  const auth = newAuthState();
+  auth.failDeleteFor = new Set([uid]);
+  const logged = await captureErrorLogs(() =>
+    runDueAccountDeletionsWithDeps(
+      { db, auth: fakeAuth(auth), storage: fakeStorage() },
+      NOW,
+    ),
+  );
+  assert(
+    !logged.some((l) => l.message === ERASURE_GAVE_UP_LOG),
+    "a retry that will still run must not fire the alert",
+  );
 });
 
 test("resolveDeletionReason: a given reason wins, else the stored one, else the default", async () => {

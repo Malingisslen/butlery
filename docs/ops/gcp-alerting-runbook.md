@@ -30,6 +30,7 @@ activation:
 | `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
 | `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
 | Moderation x2, Import tier shift | LIVE, enabled, routed to channel | same listing, 3 more policies from the script |
+| `Account erasure incomplete` (BUT-2512) | IN SCRIPT, not yet verified live | run the script, then `policies list` |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
 | Firebase Auth failure-rate alert | NOT SHIPPED | legacy metric retired — see "Deferred policies" below |
 | Budget alerts (separate flow) | TODO | GCP Console > Billing > Budgets |
@@ -189,6 +190,27 @@ gcloud alpha monitoring policies list \
 gcloud alpha monitoring policies delete <policy-resource-name>
 # Then re-run the script.
 ```
+
+---
+
+## Account erasure incomplete
+
+Fires when a scheduled account erasure gives up after its last automatic
+attempt, or when an erasure the user started in the app ends incomplete. Some
+of that person's data is still stored. GDPR gives one month from the request
+to finish it.
+
+1. In Firestore, open `deletion_audit_logs`, filter `gdprCompliant == false`,
+   and find the newest row whose `userId` starts with the `uid_prefix` in the
+   alert's log line. `failedCollections` names what was left.
+2. Re-run the erasure: create `account_deletion_requests/{userId}` with
+   `scheduledFor` = now (a Timestamp), `requestedAt` = now, `attempts` = 0 and
+   `reason` = "manual re-run". The hourly `runDueAccountDeletions` runs the
+   whole erasure again, also when the Auth account is already gone.
+3. An hour later, check for a new `deletion_audit_logs` row for that `userId`.
+   `failedCollections` should be empty or only `auth_deletion` (the Auth
+   account was already gone). If the same step fails again, the cause is in
+   the function logs for `[deletion-cascade]` at that time.
 
 ---
 

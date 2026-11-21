@@ -61,7 +61,7 @@ create_policy_if_missing() {
 # ----------------------------------------------------------------------------
 # Policy 1: Cloud Functions error rate >5% over 5min
 # ----------------------------------------------------------------------------
-echo "[1/5] Cloud Functions error rate..."
+echo "[1/6] Cloud Functions error rate..."
 cat > "$WORKDIR/cf-error.json" <<EOF
 {
   "displayName": "Cloud Functions - High Error Rate",
@@ -93,7 +93,7 @@ create_policy_if_missing "Cloud Functions - High Error Rate" "$WORKDIR/cf-error.
 # ----------------------------------------------------------------------------
 # Policy 2: Cloud Functions p99 execution time >10s
 # ----------------------------------------------------------------------------
-echo "[2/5] Cloud Functions latency..."
+echo "[2/6] Cloud Functions latency..."
 cat > "$WORKDIR/cf-latency.json" <<EOF
 {
   "displayName": "Cloud Functions - High Latency",
@@ -126,7 +126,7 @@ create_policy_if_missing "Cloud Functions - High Latency" "$WORKDIR/cf-latency.j
 # ----------------------------------------------------------------------------
 # Policy 3: Moderation - report needs review
 # ----------------------------------------------------------------------------
-echo "[3/5] Moderation - report needs review..."
+echo "[3/6] Moderation - report needs review..."
 cat > "$WORKDIR/moderation_review_needed.json" <<EOF
 {
   "displayName": "Moderation - report needs review",
@@ -154,7 +154,7 @@ create_policy_if_missing "Moderation - report needs review" "$WORKDIR/moderation
 # ----------------------------------------------------------------------------
 # Policy 4: Moderation - ingredient suggestion needs review
 # ----------------------------------------------------------------------------
-echo "[4/5] Moderation - ingredient suggestion needs review..."
+echo "[4/6] Moderation - ingredient suggestion needs review..."
 cat > "$WORKDIR/ingredient_suggestion_review_needed.json" <<EOF
 {
   "displayName": "Moderation - ingredient suggestion needs review",
@@ -182,7 +182,7 @@ create_policy_if_missing "Moderation - ingredient suggestion needs review" "$WOR
 # ----------------------------------------------------------------------------
 # Policy 5: Import - tier distribution shift (BUT-2243)
 # ----------------------------------------------------------------------------
-echo "[5/5] Import - tier distribution shift..."
+echo "[5/6] Import - tier distribution shift..."
 cat > "$WORKDIR/import_tier_distribution_shift.json" <<EOF
 {
   "displayName": "Import - tier distribution shift",
@@ -206,6 +206,37 @@ cat > "$WORKDIR/import_tier_distribution_shift.json" <<EOF
 }
 EOF
 create_policy_if_missing "Import - tier distribution shift" "$WORKDIR/import_tier_distribution_shift.json"
+
+# ----------------------------------------------------------------------------
+# Policy 6: Account erasure incomplete (BUT-2512)
+# ----------------------------------------------------------------------------
+# The two message strings are ERASURE_GAVE_UP_LOG and
+# ERASURE_ON_DEMAND_INCOMPLETE_LOG in functions/src/account/erasure-alert-log.ts;
+# a test fails if they drift apart.
+echo "[6/6] Account erasure incomplete..."
+cat > "$WORKDIR/account_erasure_incomplete.json" <<EOF
+{
+  "displayName": "Account erasure incomplete",
+  "documentation": {
+    "content": "An account erasure ended with personal data left behind. See docs/ops/gcp-alerting-runbook.md, section 'Account erasure incomplete'. GDPR deadline: one month from the request.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [{
+    "displayName": "account erasure incomplete logged",
+    "conditionMatchedLog": {
+      "filter": "jsonPayload.message=\"[account-erasure] scheduled erasure gave up incomplete\" OR jsonPayload.message=\"[account-erasure] on-demand erasure incomplete\""
+    }
+  }],
+  "alertStrategy": {
+    "notificationRateLimit": {"period": "300s"},
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
+}
+EOF
+create_policy_if_missing "Account erasure incomplete" "$WORKDIR/account_erasure_incomplete.json"
 
 
 # Two Firebase-product alerts (Firestore read rate, Auth failure rate) are
@@ -233,6 +264,7 @@ EXPECTED=(
   "Moderation - report needs review"
   "Moderation - ingredient suggestion needs review"
   "Import - tier distribution shift"
+  "Account erasure incomplete"
 )
 PRESENT="$(existing_policies)"
 MISSING=()

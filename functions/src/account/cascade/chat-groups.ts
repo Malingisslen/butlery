@@ -5,7 +5,7 @@ import { Collections } from "../../shared/collections";
 // re-implemented — a second spelling of "remove this member" on a GDPR path is
 // a contract to keep in sync.
 import { stageMemberRemoval } from "../../groups/chat-group-writes";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, chunkDetail } from "./core";
 
 /**
  * BUT-1838: erase the user's chat-group membership.
@@ -19,7 +19,7 @@ import { batchDeleteAll } from "./core";
  * conversation carrying a `groupId`, and this leg does the whole removal
  * through the shared writer.
  *
- * Three things happen per group, in this order:
+ * Two things happen per group that lives on:
  *
  *  1. **`createdBy` is re-homed** to a surviving admin (or member) when the
  *     erased user created a group that lives on. Same move `deleteFamilyData`
@@ -30,8 +30,9 @@ import { batchDeleteAll } from "./core";
  *     transaction that clears `memberIds`, `adminIds`, both display maps,
  *     `memberAddedBy`, the conversation's `participantIds`, all five uid-keyed
  *     conversation maps (including `memberSince`).
- *  3. **An emptied group is taken down**: its thread, its conversation and the
- *     group document.
+ *
+ * An emptied group is taken down instead: its thread first, then its
+ * conversation and the group document. Neither step above runs for it.
  *
  * Capped like every other sweep here. Above the cap it DECLINES rather than
  * truncating: a partial pass that reported success would certify an erasure it
@@ -96,6 +97,22 @@ export async function deleteChatGroupMemberships(
         : [];
       const survivors = memberIds.filter((u) => u !== uid);
 
+      if (survivors.length === 0) {
+        // Thread FIRST, while the group still names the uid in `memberIds`: if
+        // the thread delete fails, the group stays findable and the next run
+        // finishes it. Removing the membership first would leave an empty group
+        // no query by uid can reach again (BUT-2512). Nobody else can add a
+        // member to a group whose only member is the one being erased.
+        const thread = await db
+          .collection(Collections.messages)
+          .where("conversationId", "==", conversationId)
+          .get();
+        await batchDeleteAll(db, thread.docs);
+        await db.collection(Collections.conversations).doc(conversationId).delete();
+        await groupDoc.ref.delete();
+        continue;
+      }
+
       await db.runTransaction(async (tx) => {
         const fresh = await tx.get(groupDoc.ref);
         if (!fresh.exists) return;
@@ -106,7 +123,7 @@ export async function deleteChatGroupMemberships(
           uid,
           removedAt,
         });
-        if (survivors.length > 0 && data.createdBy === uid) {
+        if (data.createdBy === uid) {
           // Prefer a surviving ADMIN so the group keeps someone who can act on
           // it; fall back to any survivor rather than leaving a raw uid behind.
           const survivingAdmin = adminIds.find(
@@ -117,23 +134,13 @@ export async function deleteChatGroupMemberships(
           });
         }
       });
-
-      if (survivors.length === 0) {
-        const thread = await db
-          .collection(Collections.messages)
-          .where("conversationId", "==", conversationId)
-          .get();
-        await batchDeleteAll(db, thread.docs);
-        await db.collection(Collections.conversations).doc(conversationId).delete();
-        await groupDoc.ref.delete();
-      }
-
     } catch (e) {
       complete = false;
       logger.error("[deletion-cascade] chat-group removal failed", {
         uid_prefix: uid.slice(0, 6),
         errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
         errName: (e as Error | null)?.name,
+        ...chunkDetail(e),
       });
     }
   }

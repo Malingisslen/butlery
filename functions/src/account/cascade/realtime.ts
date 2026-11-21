@@ -2,7 +2,7 @@ import { DocumentReference, FieldValue, Firestore, QueryDocumentSnapshot } from 
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, runLegs } from "./core";
 import { scrubDishCreator } from "./dish-creator";
 
 /**
@@ -23,11 +23,15 @@ export async function deleteRealtimeMenus(
   db: Firestore,
   uid: string,
 ): Promise<boolean> {
-  const owned = await db
-    .collection(Collections.realtimeMenus)
-    .where("ownerId", "==", uid)
-    .get();
-  await deleteRealtimeDocsWithChildren(db, owned.docs);
+  // A failed owned-menu delete must not stop the scrubs on other people's
+  // menus, which are independent of it (BUT-2512).
+  const ownedDeleted = await runLegs("realtime_menus", uid, [async () => {
+    const owned = await db
+      .collection(Collections.realtimeMenus)
+      .where("ownerId", "==", uid)
+      .get();
+    await deleteRealtimeDocsWithChildren(db, owned.docs);
+  }]);
 
   await scrubLastEditor(db, Collections.realtimeMenus, uid);
   const stillJoined = await removeRealtimeParticipation(
@@ -36,7 +40,7 @@ export async function deleteRealtimeMenus(
     uid,
   );
   await removeVoteEntries(db, stillJoined, uid);
-  return true;
+  return ownedDeleted;
 }
 
 /**
@@ -52,15 +56,17 @@ export async function deleteRealtimeResources(
 ): Promise<boolean> {
   const votesCleared = await deleteLiveMenuVotes(db, uid);
 
-  const owned = await db
-    .collection(Collections.realtimeResources)
-    .where("ownerId", "==", uid)
-    .get();
-  await deleteRealtimeDocsWithChildren(db, owned.docs);
+  const ownedDeleted = await runLegs("realtime_resources", uid, [async () => {
+    const owned = await db
+      .collection(Collections.realtimeResources)
+      .where("ownerId", "==", uid)
+      .get();
+    await deleteRealtimeDocsWithChildren(db, owned.docs);
+  }]);
 
   await scrubLastEditor(db, Collections.realtimeResources, uid);
   await removeRealtimeParticipation(db, Collections.realtimeResources, uid);
-  return votesCleared;
+  return votesCleared && ownedDeleted;
 }
 
 export const MAX_LIVE_MENU_VOTE_SWEEP_ROWS = 2000;
@@ -207,7 +213,7 @@ const REALTIME_CHILD_COLLECTIONS = ["presence", "votes"] as const;
  * `deletedCollections` and the audit row would certify `gdprCompliant: true`
  * over a document still holding the deleted user's uid.
  *
- * Children first and STRICT, parent best-effort: if the child sweep cannot
+ * Children first and STRICT: if the child sweep cannot
  * complete, the parent must stay so a retry can still find the children through
  * it. The reverse order is precisely how an orphan is created.
  */
@@ -245,8 +251,7 @@ async function deleteRealtimeDocsWithChildren(
  * resource.data.participantIds` — so leaving it is a dangling grant for an
  * account that no longer exists.
  *
- * Owned documents are excluded: the sibling leg has already deleted them, and
- * an update against a deleted document throws NOT_FOUND.
+ * Owned documents are excluded.
  *
  * Returns the non-owned documents it cleaned, so a caller can reach one level
  * further down (see [removeVoteEntries]).
@@ -311,8 +316,7 @@ async function removeRealtimeParticipation(
  * model (`RealtimeResource`), so a null would fail the `as String` cast on read
  * for every remaining participant.
  *
- * Owned documents are excluded because the sibling leg has already deleted
- * them; a scrub of a deleted document throws NOT_FOUND.
+ * Owned documents are excluded.
  */
 async function scrubLastEditor(
   db: Firestore,

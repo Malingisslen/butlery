@@ -1,7 +1,7 @@
 import { FieldPath, FieldValue, Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { commitInChunks } from "../../shared/batch-update";
 import { Collections } from "../../shared/collections";
-import { batchDeleteAll } from "./core";
+import { batchDeleteAll, logLegFailure } from "./core";
 
 export async function deleteWeeklyMenuPlans(
   db: Firestore,
@@ -11,7 +11,14 @@ export async function deleteWeeklyMenuPlans(
     .collection("weekly_menu_plans")
     .where("userId", "==", uid)
     .get();
-  await batchDeleteAll(db, owned.docs);
+  // Not allowed to stop the group-plan scrub below, which is independent.
+  let ownedDeleted = true;
+  try {
+    await batchDeleteAll(db, owned.docs);
+  } catch (err) {
+    ownedDeleted = false;
+    logLegFailure("weekly_menu_plans owned", uid, err);
+  }
 
   // Scrub uid from group plans. If a plan ends up empty, delete it.
   //
@@ -237,7 +244,7 @@ export async function deleteWeeklyMenuPlans(
       { label: "scrubGroupWeeklyMenuPlans", strict: false },
     );
   }
-  return true;
+  return ownedDeleted;
 }
 
 export async function deletePantryItems(

@@ -343,10 +343,55 @@ async function scenario_failedEmptiedGroupTeardownReportsIncomplete(): Promise<v
     db.has("chat_groups/g-shell"),
   );
   check(
-    "…while the membership cut still landed",
-    Array.isArray((db.get("chat_groups/g-shell") as DocData)?.memberIds) &&
-      ((db.get("chat_groups/g-shell") as DocData).memberIds as string[]).length === 0,
+    "…and it still names the erased user, so the next run can find it",
+    ((db.get("chat_groups/g-shell") as DocData)?.memberIds as string[] | undefined)
+      ?.includes(UID) === true,
     `memberIds: ${JSON.stringify((db.get("chat_groups/g-shell") as DocData)?.memberIds)}`,
+  );
+}
+
+/**
+ * BUT-2512: the emptied group's THREAD delete fails. The step reports
+ * incomplete, nothing above the thread is deleted, the group still names the
+ * erased user, and a second run finds it and finishes. Before the fix the
+ * membership was cut first and the failed delete swallowed, so the step
+ * reported success over a thread no query by uid could reach again.
+ */
+async function scenario_failedEmptiedGroupThreadIsFinishedByTheNextRun(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { deleteChatGroupMemberships } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  seedChatGroup(db, "g-left", "cg-left", {
+    members: [UID],
+    admins: [UID],
+    createdBy: UID,
+  });
+  seedMessage(db, "gl1", "cg-left", UID);
+  seedMessage(db, "gl2", "cg-left", OTHER);
+  db.batchFailures.set("messages/gl2", 14);
+
+  const first = await deleteChatGroupMemberships(asDb(db), UID);
+  check("run 1: a failed thread delete reports INCOMPLETE", first === false, `returned ${first}`);
+  check(
+    "run 1: the group and conversation are left standing",
+    db.has("chat_groups/g-left") && db.has("conversations/cg-left"),
+  );
+  check(
+    "run 1: the group still names the erased user",
+    ((db.get("chat_groups/g-left") as DocData)?.memberIds as string[] | undefined)
+      ?.includes(UID) === true,
+    `memberIds: ${JSON.stringify((db.get("chat_groups/g-left") as DocData)?.memberIds)}`,
+  );
+
+  db.batchFailures.clear();
+  const second = await deleteChatGroupMemberships(asDb(db), UID);
+  check("run 2: reports complete", second === true, `returned ${second}`);
+  check(
+    "run 2: thread, conversation and group are all gone",
+    db.idsIn("messages").length === 0 &&
+      !db.has("conversations/cg-left") &&
+      !db.has("chat_groups/g-left"),
+    `messages left: ${JSON.stringify(db.idsIn("messages"))}`,
   );
 }
 
@@ -624,6 +669,7 @@ async function main(): Promise<void> {
   await scenario_chatGroupMembershipIsErasedEverywhere();
   await scenario_createdByIsReHomedWhenTheCreatorIsErased();
   await scenario_emptiedChatGroupIsTakenDown();
+  await scenario_failedEmptiedGroupThreadIsFinishedByTheNextRun();
   await scenario_failedEmptiedGroupTeardownReportsIncomplete();
   await scenario_implausibleChatGroupCountDeclines();
   await scenario_departureTombstoneIsErased();

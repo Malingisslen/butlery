@@ -29,10 +29,7 @@ const {
 /**
  * BUT-1917: both `blocks` legs of the residual probe.
  *
- * `deleteBlocks` sweeps through `batchDeleteAll` -> `commitInChunks(strict:
- * false)`, which swallows a failed chunk and lets the step return success — so
- * without these legs the sweep self-reports clean over rows whose document id
- * is the erased uid. They also fire when the sweep DECLINED above the cap and
+ * They also fire when the sweep DECLINED above the cap and
  * deleted nothing, which is the state the decline deliberately leaves behind.
  *
  * One document per case, reachable by exactly ONE leg, so deleting either leg

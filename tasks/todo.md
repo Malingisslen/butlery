@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-21): BUT-2512, misslyckat borttag vid kontoradering ska aldrig vara tyst
+
+Se `tasks/but-2512-plan.md` (kopia i /mnt/project-files/lansering/but-2512-plan.md). Godkänd av Malin via kort 2026-11-21 13:05 UTC ("Ja, bygg enligt planen").
+
 # Aktiv plan (2026-11-12): BUT-2329, spara textkopian längre i allvarliga ärenden
 
 Se `tasks/but-2329-plan.md`. Godkänd av Malin via kort 2026-11-12.
