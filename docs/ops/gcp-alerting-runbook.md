@@ -30,7 +30,7 @@ activation:
 | `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
 | `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-03: enabled=True |
 | Moderation x2, Import tier shift | LIVE, enabled, routed to channel | same listing, 3 more policies from the script |
-| `Account erasure incomplete` (BUT-2512) | IN SCRIPT, not yet verified live | run the script, then `policies list` |
+| `Account erasure incomplete` (BUT-2512) | LIVE, enabled, routed to channel | `policies list --project=butlery-prod` 2026-11-21: enabled=True |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
 | Firebase Auth failure-rate alert | NOT SHIPPED | legacy metric retired — see "Deferred policies" below |
 | Budget alerts (separate flow) | TODO | GCP Console > Billing > Budgets |
