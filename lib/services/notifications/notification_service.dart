@@ -73,6 +73,9 @@ class NotificationService extends BaseService {
   late NotificationAnalyticsManager _analyticsManager;
 
   bool _isInitialized = false;
+  // Bumped when the modules are torn down; a start-up begun under an older value
+  // belongs to an account that has signed out and must not mark the next one done.
+  int _generation = 0;
   bool _modulesCreated = false;
   bool _tokenManagerStarted = false;
 
@@ -184,6 +187,7 @@ class NotificationService extends BaseService {
       () async {
         // Initialize modules for current user on first init
         _initializeModules();
+        final generation = _generation;
 
         AppLogger.info(
           '🔔 Initializing NotificationService coordinator for user: ${_userId.maskedUserId}',
@@ -197,6 +201,7 @@ class NotificationService extends BaseService {
           onMessageOpenedApp: _handleMessageOpened,
           consentService: consentService,
         );
+        if (generation != _generation) return;
         // BUT-1006: FCMService is app-singleton; ConsentService + the
         // foreground callbacks belong to the current user scope. On a
         // re-login, `initialize` returns early via `_isInitialized` and
@@ -209,6 +214,7 @@ class NotificationService extends BaseService {
           onMessageOpenedApp: _handleMessageOpened,
           consentService: consentService,
         );
+        if (generation != _generation) return;
 
         // BUT-754: subscribe a parallel consent listener for FCMTokenManager
         // cleanup on revoke. FCMService owns its own SDK + Firestore + memory
@@ -226,11 +232,15 @@ class NotificationService extends BaseService {
           AppLogger.error('❌ NotificationService: token manager failed', e);
         }
 
+        if (generation != _generation) return;
+
         // Process any pending batches
         await _batchManager.processAllPendingBatches();
+        if (generation != _generation) return;
 
         // Process offline queue if any notifications are queued
         await _offlineManager.processOfflineQueue();
+        if (generation != _generation) return;
 
         _isInitialized = true;
         AppLogger.success(
@@ -813,6 +823,8 @@ class NotificationService extends BaseService {
     // been lazily created via _ensureModulesCreated() without full FCM init.
     if (!_modulesCreated) return;
 
+    // Before the awaits below, so a start-up that resumes meanwhile is dropped.
+    _generation++;
     try {
       await _preferenceManager.clearLocalStorage();
       await _tokenManager?.cleanup();
@@ -836,6 +848,7 @@ class NotificationService extends BaseService {
   }
 
   Future<void> _disposeModules() async {
+    _generation++;
     _subscribedConsentService?.removeListener(_handleConsentChange);
     _subscribedConsentService = null;
     _batchManager.dispose();

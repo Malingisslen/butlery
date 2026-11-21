@@ -19,6 +19,10 @@ class RecipeAuthStateHandler {
   final void Function(bool) setLoading;
   final void Function() notifyListeners;
 
+  // Bumped on every auth change and by [cancelInFlight]; a reload started under
+  // an older value belongs to an account that has since changed and is dropped.
+  int _generation = 0;
+
   RecipeAuthStateHandler({
     required this.cacheModule,
     required this.authRepository,
@@ -35,6 +39,7 @@ class RecipeAuthStateHandler {
       '🔍 [UnifiedRecipeService] Auth state changed - User ID: ${userId ?? 'NULL'}',
     );
 
+    _generation++;
     cacheModule.onAuthStateChanged(userId);
 
     if (userId == null) {
@@ -53,8 +58,11 @@ class RecipeAuthStateHandler {
     }
   }
 
+  void cancelInFlight() => _generation++;
+
   /// Reload user-specific recipes when user logs in.
   Future<void> reloadUserRecipes(String userId) async {
+    final generation = _generation;
     try {
       AppLogger.info(
         '🔍 [UnifiedRecipeService] Starting user recipe reload for: ${userId.maskedUserId}',
@@ -70,6 +78,7 @@ class RecipeAuthStateHandler {
       // Reload from cache (contains user-specific data)
       AppLogger.info('🔍 [UnifiedRecipeService] Reloading from cache...');
       final cachedRecipes = await cacheModule.initializeCache();
+      if (generation != _generation) return;
       _takeCached(cachedRecipes);
 
       AppLogger.info(
@@ -82,10 +91,12 @@ class RecipeAuthStateHandler {
           '🔍 [UnifiedRecipeService] Starting Firebase sync for authenticated user',
         );
         await cacheModule.startFirebaseSync();
+        if (generation != _generation) return;
 
         // BUG-003 FIX: On web, cache is stubbed so we load directly from Firebase
         if (kIsWeb && fetchRecipesFromFirebase != null) {
           final firebaseRecipes = await fetchRecipesFromFirebase!(userId);
+          if (generation != _generation) return;
           recipes.clear();
           recipes.addAll(firebaseRecipes);
           AppLogger.info(
@@ -95,9 +106,11 @@ class RecipeAuthStateHandler {
           // Additional safety delay to ensure all async cache writes complete
           // startFirebaseSync already waits 300ms, but we add extra buffer for large datasets
           await Future.delayed(const Duration(milliseconds: 300));
+          if (generation != _generation) return;
 
           // Reload from cache after initial fetch has populated it
           final fetchedRecipes = await cacheModule.initializeCache();
+          if (generation != _generation) return;
           _takeCached(fetchedRecipes);
           AppLogger.info(
             '🔍 [UnifiedRecipeService] 📦 Reloaded ${fetchedRecipes.length} recipes from cache after sync',
@@ -112,6 +125,7 @@ class RecipeAuthStateHandler {
       notifyListeners();
     } catch (e) {
       AppLogger.error('🔍 [UnifiedRecipeService] ❌ Recipe reload failed: $e');
+      if (generation != _generation) return;
       setError(AppLocale.current.errorCouldNotLoadRecipes);
       setLoading(false);
       notifyListeners();
