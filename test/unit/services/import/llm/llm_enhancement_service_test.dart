@@ -718,6 +718,60 @@ void main() {
       expect(success.confidence, 0.8);
     });
 
+    test(
+      'two recipes on the photo reach the result, first one as recipe',
+      () async {
+        llm.ocrResponse = OcrRecipeImageResponse(
+          success: true,
+          recipe: _extracted(title: 'Andra'),
+          recipes: [
+            const ExtractedRecipe(
+              title: '',
+              ingredients: [],
+              instructions: ['Fortsätt'],
+              continuesFromPreviousPage: true,
+            ),
+            _extracted(title: 'Andra'),
+          ],
+          estimatedCost: 0.04,
+          droppedRecipeCount: 2,
+        );
+
+        final result = await service.extractFromImage(
+          Uint8List.fromList([1, 2, 3]),
+        );
+
+        final success = result as ImportSuccess;
+        final ai = success.aiRecipes!;
+        expect(ai.recipes.map((r) => r.title), ['', 'Andra']);
+        expect(ai.droppedRecipeCount, 2);
+        expect(identical(ai.recipes.first, success.recipe), isTrue);
+        expect(ai.firstContinuesFromPreviousPage, isTrue);
+      },
+    );
+
+    test(
+      'an old server answer gives a one-recipe list equal to recipe',
+      () async {
+        llm.ocrResponse = OcrRecipeImageResponse(
+          success: true,
+          recipe: _extracted(title: 'Ensam'),
+          estimatedCost: 0.04,
+        );
+
+        final success =
+            await service.extractFromImage(Uint8List.fromList([1]))
+                as ImportSuccess;
+
+        expect(success.aiRecipes!.recipes, hasLength(1));
+        expect(
+          identical(success.aiRecipes!.recipes.first, success.recipe),
+          isTrue,
+        );
+        expect(success.aiRecipes!.firstContinuesFromPreviousPage, isFalse);
+      },
+    );
+
     /// If the LLM couldn't structure a recipe but returned raw OCR text,
     /// we surface that as ImportNeedsAssistance so the user can fix it
     /// manually. The image bytes must be threaded through unchanged

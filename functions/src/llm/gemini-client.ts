@@ -28,7 +28,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "3.3.0";
+export const PROMPT_VERSION = "4.0.0";
 
 /**
  * Vertex AI region — EU data residency (BUT-607).
@@ -122,24 +122,34 @@ export function getTextModel(client: VertexAI): GenerativeModel {
   });
 }
 
-/**
- * Get the photo-reading model: same schema, temperature and token cap as
- * `getTextModel`, plus VISION_PROFILE's extras (thinking level).
- */
-export function getVisionModel(client: VertexAI): GenerativeModel {
+function photoModel(client: VertexAI, profile: ModelProfile): GenerativeModel {
   // SDK 1.12.0's GenerationConfig type has no `thinkingConfig`; the SDK
   // forwards generationConfig to the API as JSON, so the extra key arrives.
   const generationConfig: GenerationConfig & Record<string, unknown> = {
     temperature: TEMPERATURE,
-    maxOutputTokens: MAX_TOKENS,
+    maxOutputTokens: PHOTO_MAX_TOKENS,
     responseMimeType: "application/json",
-    responseSchema: RECIPE_SCHEMA,
-    ...VISION_PROFILE.generationConfigExtras,
+    responseSchema: PHOTO_RECIPES_SCHEMA,
+    ...profile.generationConfigExtras,
   };
-  return client.getGenerativeModel({
-    model: VISION_PROFILE.id,
-    generationConfig,
-  });
+  return client.getGenerativeModel({ model: profile.id, generationConfig });
+}
+
+/**
+ * Get the photo-reading model: the photo schema and token cap, plus
+ * VISION_PROFILE's extras (thinking level).
+ */
+export function getVisionModel(client: VertexAI): GenerativeModel {
+  return photoModel(client, VISION_PROFILE);
+}
+
+/**
+ * The photo call's NOT_FOUND fallback: TEXT_PROFILE's model, read with the
+ * photo schema and token cap. Pass `getGeminiClient()`, whose location is
+ * TEXT_PROFILE's.
+ */
+export function getPhotoFallbackModel(client: VertexAI): GenerativeModel {
+  return photoModel(client, TEXT_PROFILE);
 }
 
 /**
@@ -287,6 +297,38 @@ const INGREDIENT_LINES_SCHEMA: Schema = {
   required: ["ingredients"],
 };
 
+/** Most recipes one photo answer may return; the schema SDK has no maxItems. */
+export const PHOTO_MAX_RECIPES = 6;
+
+/** Photo calls only: every recipe on the image, each in RECIPE_SCHEMA's shape. */
+export const PHOTO_RECIPES_SCHEMA: Schema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    recipes: {
+      type: SchemaType.ARRAY,
+      description: "Every recipe on the image, in reading order",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          ...RECIPE_SCHEMA.properties,
+          title: {
+            type: SchemaType.STRING,
+            description: "Recipe title in Swedish; empty when the image starts mid-recipe",
+            nullable: true,
+          },
+          continuesFromPreviousPage: {
+            type: SchemaType.BOOLEAN,
+            description: "True when this part continues a recipe from a previous page",
+            nullable: true,
+          },
+        },
+        required: ["title", "ingredients", "instructions", "tags"],
+      },
+    },
+  },
+  required: ["recipes"],
+};
+
 // =============================================================================
 // Swedish Recipe Prompts
 // =============================================================================
@@ -318,6 +360,9 @@ const INGREDIENT_GROUP_RULE =
 // so the marker must match
 // UnreadLineDetector.unreadMarker in the app byte for byte.
 export const UNREADABLE_MARKER = "[oläsligt]";
+// Photo prompts only: their answer follows PHOTO_RECIPES_SCHEMA.
+const ALL_RECIPES_RULE =
+  '- Läs varje recept på bilden som ett eget recept i "recipes", i den ordning de står. Börjar bilden mitt i ett recept (ingen rubrik, fortsättning från föregående sida): lägg den delen först, med continuesFromPreviousPage=true och tom title';
 const UNREADABLE_RULE = `- Gissa aldrig en ingrediens du inte kan läsa. Går ett ord eller en hel ingrediensrad inte att läsa, skriv exakt ${UNREADABLE_MARKER} där det oläsliga står (bara "${UNREADABLE_MARKER}" som name för en hel rad). Är mängden oläslig: sätt amount till null och skriv ${UNREADABLE_MARKER} i preparation. Hoppa inte över raden`;
 
 // BUT-2317: the OCR retry hands an image reader's raw text to the text
@@ -425,6 +470,7 @@ export const IMAGE_OCR_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på at
 VIKTIGT:
 - Läs all text i bilden noggrant
 - Identifiera receptets titel, ingredienser och instruktioner
+${ALL_RECIPES_RULE}
 - Hantera handskriven text om möjligt
 ${UNREADABLE_RULE}
 - Svara med valid JSON som matchar schemat
@@ -448,6 +494,7 @@ VIKTIGT:
 - Extrahera hellre delvis än att vägra: hoppa inte över hela raden och avbryt inte extraktionen
 ${UNREADABLE_RULE}
 - Identifiera receptets titel, ingredienser och instruktioner
+${ALL_RECIPES_RULE}
 - Svara med valid JSON som matchar schemat (exakt samma format som för tryckta recept)
 ${INGREDIENT_GROUP_RULE}
 
@@ -852,7 +899,11 @@ export function parseRecipeResponse(
 
     return recipe;
   } catch (error) {
-    console.error("Failed to parse recipe response:", error);
+    // The error name only: a JSON SyntaxError message quotes the answer.
+    console.error(
+      "Failed to parse recipe response:",
+      error instanceof Error ? error.name : typeof error
+    );
     return null;
   }
 }
@@ -932,6 +983,9 @@ export const VISION_MODEL = "gemini-3.1-flash-lite";
 
 /** Maximum tokens for responses */
 export const MAX_TOKENS = 2000;
+
+/** Photo calls only: a page can hold several recipes. */
+export const PHOTO_MAX_TOKENS = 4000;
 
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;

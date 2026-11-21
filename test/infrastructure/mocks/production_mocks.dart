@@ -4505,6 +4505,18 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   @override
   bool get canReadPages => false;
 
+  @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  /// Set to make the multi-recipe picker say the AI read the photo.
+  bool recipesReadByAiValue = false;
+
+  @override
+  bool get recipesReadByAi => recipesReadByAiValue;
+
   // All methods left without implementation to allow stubbing with when()
 }
 

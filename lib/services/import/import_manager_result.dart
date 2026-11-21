@@ -3,6 +3,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 
 /// Result of import manager operation
@@ -43,12 +44,20 @@ class ImportManagerResult {
   /// [ImportResult.errorCode] so the screen can pick its text by code.
   final ImportErrorCode? errorCode;
 
+  /// Set by the photo AI reading only; `aiRecipes.recipes.first` is [recipe].
+  final PhotoAiRecipes? aiRecipes;
+
   ImportManagerResult.success(
     this.recipe, {
     this.strategy,
     this.warnings,
     this.metadata,
-  }) : isSuccess = true,
+    this.aiRecipes,
+  }) : assert(
+         aiRecipes == null || identical(aiRecipes.recipes.first, recipe),
+         'aiRecipes.recipes.first must be the recipe',
+       ),
+       isSuccess = true,
        errorMessage = null,
        errorCode = null,
        availableStrategies = null,
@@ -68,7 +77,8 @@ class ImportManagerResult {
     this.availableStrategies,
     this.metadata,
     this.errorCode,
-  }) : isSuccess = false,
+  }) : aiRecipes = null,
+       isSuccess = false,
        needsAssistance = false,
        extractedText = null,
        suggestedTitle = null,
@@ -86,7 +96,8 @@ class ImportManagerResult {
     this.likelyIngredientLines,
     this.strategy,
     this.metadata,
-  }) : isSuccess = false,
+  }) : aiRecipes = null,
+       isSuccess = false,
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
@@ -100,7 +111,8 @@ class ImportManagerResult {
   /// `suggestedAction` instead of fabricating defaults from the message.
   /// (BUT-1144)
   ImportManagerResult.rateLimit(RateLimitDenied details)
-    : isSuccess = false,
+    : aiRecipes = null,
+      isSuccess = false,
       recipe = null,
       errorMessage = details.message,
       strategy = 'rate_limited',
@@ -132,6 +144,7 @@ class ImportManagerResult {
       sourceUrl = r.sourceUrl,
       likelyIngredientLines = r.likelyIngredientLines,
       rateLimitDenied = r.rateLimitDenied,
+      aiRecipes = r.aiRecipes,
       errorCode = r.errorCode;
 
   /// This result, carrying a model call an earlier strategy of the same

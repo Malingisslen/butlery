@@ -36,6 +36,15 @@ class _MockHeirloomBridge extends Mock implements HeirloomBridge {}
 // reaches noSuchMethod and fails the test loudly.
 class _ReadFakeViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
+  @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  @override
+  Future<void> askAiToRead() async {}
+
   _ReadFakeViewModel(this.recipes);
 
   final List<Recipe> recipes;

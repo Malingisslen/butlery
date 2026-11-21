@@ -21191,6 +21191,35 @@ class AppLocalizationsSv extends AppLocalizations {
   String get photoAiOfferDecline => 'Nej, jag skriver själv';
 
   @override
+  String get photoAiOfferMayHaveMissed =>
+      'Det verkar finnas fler recept på sidan än telefonen hittade.';
+
+  @override
+  String get photoAiOfferDeclineThanks => 'Nej tack';
+
+  @override
+  String get importPreviewReadByAi =>
+      'AI läste fotot. Kontrollera recepten innan du sparar.';
+
+  @override
+  String get photoAiAskToRead => 'Saknas något? Låt AI läsa fotot.';
+
+  @override
+  String photoAiDroppedRecipes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept kunde inte läsas.',
+      one: 'Ett recept kunde inte läsas.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get photoAiCapWriteByHand =>
+      'Du kan skriva in receptet själv i stället.';
+
+  @override
   String shoppingMergeUnresolvedRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

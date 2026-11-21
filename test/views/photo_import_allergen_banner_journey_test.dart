@@ -70,6 +70,7 @@ void main() {
     required List<Recipe> recipes,
     required bool saveOk,
     Set<String> tracked = const {},
+    bool readByAi = false,
   }) {
     final vm = mocks.MockPhotoImportViewModel();
     vm.setPhotoImportState(
@@ -80,6 +81,7 @@ void main() {
     );
     when(() => vm.saveSelectedRecipes(any())).thenAnswer((_) async => saveOk);
     when(() => vm.clearPhoto()).thenReturn(null);
+    vm.recipesReadByAiValue = readByAi;
     when(() => vm.dispose()).thenReturn(null);
     TestServiceLocator.registerMock<PhotoImportViewModel>(vm);
 
@@ -136,6 +138,32 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(confirmBtn);
     await tester.pumpAndSettle();
+  }
+
+  for (final readByAi in [true, false]) {
+    testWidgets('the picker says AI read the photo only when it did '
+        '(readByAi: $readByAi)', (tester) async {
+      arrange(
+        recipes: [_recipe('Pasta', const {}), _recipe('Sallad', const {})],
+        saveOk: true,
+        readByAi: readByAi,
+      );
+      await tester.pumpWidget(_wrap(const PhotoImportView()));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PhotoImportView)),
+      );
+      final multiBtn = find.text(l10n.importMultipleRecipesFound(2));
+      await tester.ensureVisible(multiBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(multiBtn);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n.importPreviewReadByAi),
+        readByAi ? findsOneWidget : findsNothing,
+      );
+    });
   }
 
   testWidgets('an untracked contained allergen surfaces the setup banner', (

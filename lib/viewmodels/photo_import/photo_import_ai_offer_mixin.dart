@@ -15,6 +15,19 @@ enum PhotoAiOfferReason {
 
   /// Handwriting, which only the AI reading handles.
   handwriting,
+
+  /// The person pressed "Saknas något?" under a recipe the phone did find.
+  userAsked,
+
+  /// The phone found fewer recipes than the page seems to hold.
+  mayHaveMissedRecipes;
+
+  /// The phone already has a recipe from the photo, so the pages it read are
+  /// read again by the AI and declining leaves what it found untouched.
+  bool get hasPhoneRecipes => this == userAsked || this == mayHaveMissedRecipes;
+
+  /// Pages the phone read are sent too, not only the ones it could not read.
+  bool get readsEveryPage => this == noRecipeFound || hasPhoneRecipes;
 }
 
 /// The offer to send a photo to the AI reading (consent variant B, Malin
@@ -24,6 +37,7 @@ enum PhotoAiOfferReason {
 mixin PhotoImportAiOfferMixin on ImportBaseViewModel {
   PhotoAiOfferReason? _aiOffer;
   bool _aiConsentGiven = false;
+  bool _missedOfferMade = false;
 
   /// Test seams for the consent store.
   @visibleForTesting
@@ -54,6 +68,19 @@ mixin PhotoImportAiOfferMixin on ImportBaseViewModel {
     _aiOffer = reason;
     notifyListeners();
   }
+
+  /// The offer that the page seems to hold more recipes, made at most once per
+  /// photo session and never again after the person declined it.
+  @protected
+  Future<void> offerMissedRecipesOnce() async {
+    if (_missedOfferMade || _aiOffer != null) return;
+    _missedOfferMade = true;
+    await offerAi(PhotoAiOfferReason.mayHaveMissedRecipes);
+  }
+
+  /// A new photo session may make the offer again.
+  @protected
+  void forgetMissedRecipeOffer() => _missedOfferMade = false;
 
   /// Takes the pending offer away and returns its reason.
   @protected

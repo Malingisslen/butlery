@@ -121,6 +121,7 @@ class PhotoLlmVision {
     if (llmResult is ImportSuccess) {
       return ImportResult.success(
         llmResult.recipe,
+        aiRecipes: llmResult.aiRecipes,
         metadata: {
           'strategy': handwritten
               ? 'Photo Import (LLM Vision, handwritten)'

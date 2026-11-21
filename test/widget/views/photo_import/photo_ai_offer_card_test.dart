@@ -30,6 +30,8 @@ void main() {
     PhotoAiOfferReason.noRecipeFound:
         'Telefonen läste texten men hittade inget recept i den.',
     PhotoAiOfferReason.handwriting: 'Handskrivna recept kan bara läsas av AI.',
+    PhotoAiOfferReason.mayHaveMissedRecipes:
+        'Det verkar finnas fler recept på sidan än telefonen hittade.',
   };
 
   for (final entry in lines.entries) {
@@ -38,6 +40,40 @@ void main() {
       expect(find.text(entry.value), findsOneWidget);
     });
   }
+
+  testWidgets('userAsked has no reason line and declines with "Nej tack"', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _card(reason: PhotoAiOfferReason.userAsked, consented: true),
+    );
+
+    for (final line in lines.values) {
+      expect(find.text(line), findsNothing);
+    }
+    expect(find.text('Nej tack'), findsOneWidget);
+    expect(find.text('Nej, jag skriver själv'), findsNothing);
+    expect(find.text('Ja, skicka fotot'), findsOneWidget);
+  });
+
+  testWidgets(
+    'a reason without a recipe on the phone keeps "jag skriver själv"',
+    (tester) async {
+      await tester.pumpWidget(_card(reason: PhotoAiOfferReason.noRecipeFound));
+
+      expect(find.text('Nej, jag skriver själv'), findsOneWidget);
+      expect(find.text('Nej tack'), findsNothing);
+    },
+  );
+
+  testWidgets('mayHaveMissedRecipes declines with "Nej tack"', (tester) async {
+    await tester.pumpWidget(
+      _card(reason: PhotoAiOfferReason.mayHaveMissedRecipes),
+    );
+
+    expect(find.text('Nej tack'), findsOneWidget);
+    expect(find.text('Nej, jag skriver själv'), findsNothing);
+  });
 
   testWidgets('not consented shows the consent sentence', (tester) async {
     await tester.pumpWidget(_card());

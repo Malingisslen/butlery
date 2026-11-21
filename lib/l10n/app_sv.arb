@@ -17713,6 +17713,35 @@
   "@photoAiOfferDecline": {
     "description": "Photo import AI offer: decline button, manual entry"
   },
+  "photoAiOfferMayHaveMissed": "Det verkar finnas fler recept på sidan än telefonen hittade.",
+  "@photoAiOfferMayHaveMissed": {
+    "description": "Photo import AI offer: the page seems to hold more recipes than the phone found"
+  },
+  "photoAiOfferDeclineThanks": "Nej tack",
+  "@photoAiOfferDeclineThanks": {
+    "description": "Photo import AI offer: decline button when the phone already found a recipe and nothing needs typing"
+  },
+  "importPreviewReadByAi": "AI läste fotot. Kontrollera recepten innan du sparar.",
+  "@importPreviewReadByAi": {
+    "description": "Multi-recipe picker: line under the counts when every recipe came from an AI reading of a photo"
+  },
+  "photoAiAskToRead": "Saknas något? Låt AI läsa fotot.",
+  "@photoAiAskToRead": {
+    "description": "Photo import: quiet text button under a recipe the phone found; opens the AI reading offer"
+  },
+  "photoAiDroppedRecipes": "{count, plural, =1{Ett recept kunde inte läsas.} other{{count} recept kunde inte läsas.}}",
+  "@photoAiDroppedRecipes": {
+    "description": "Photo import: notice when the AI reading saw recipes it could not read",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoAiCapWriteByHand": "Du kan skriva in receptet själv i stället.",
+  "@photoAiCapWriteByHand": {
+    "description": "Photo import: added after the daily AI limit message; the recipe can be typed in by hand"
+  },
   "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 rätt kunde inte räknas med} other{{count} rätter kunde inte räknas med}}, eftersom receptet inte finns kvar.",
   "@shoppingMergeUnresolvedRecipes": {
     "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",

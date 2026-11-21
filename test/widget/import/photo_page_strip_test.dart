@@ -30,6 +30,15 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 /// test; the strip only needs the page list + the three actions.
 class _FakeStripViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
+  @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  @override
+  Future<void> askAiToRead() async {}
+
   _FakeStripViewModel({
     required int pageCount,
     this.isProcessing = false,

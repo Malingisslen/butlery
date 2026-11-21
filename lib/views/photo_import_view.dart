@@ -259,6 +259,7 @@ class _PhotoImportViewContent extends StatelessWidget {
         builder: (_) => BatchImportPreview(
           recipes: viewModel.parsedRecipes,
           backTo: context.l10n.importFromPhoto,
+          readByAi: viewModel.recipesReadByAi,
         ),
       ),
     );
@@ -580,7 +581,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             : () => _navigateToTextImport(context, viewModel),
                         isExpanded: true,
                       ),
-                    const SizedBox(height: AppDimensions.space16),
+                    PhotoAiExtrasSection(viewModel: viewModel),
                   ],
                 ],
               ),

@@ -864,6 +864,18 @@
       "path": "lib/services/import/photo_llm_vision.dart"
     },
     {
+      "id": "svc-photo-recipe-merge",
+      "label": "Sammanfogning av AI-lästa recept över sidor",
+      "context": "service",
+      "path": "lib/services/import/photo_recipe_merge.dart"
+    },
+    {
+      "id": "svc-missed-recipe-check",
+      "label": "Kontroll: kan telefonen ha missat recept?",
+      "context": "service",
+      "path": "lib/services/import/missed_recipe_check.dart"
+    },
+    {
       "id": "cf-ocr-recipe-image",
       "label": "ocrRecipeImage (Gemini Vision)",
       "context": "cloud-function",
@@ -3979,7 +3991,7 @@
     {
       "id": "flow-imp-1",
       "label": "Fotoimport (OCR)",
-      "description": "Kamera/galleri-bild läses först på telefonen (ML Kit) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Kan telefonen inte läsa en sida, hittar den inget recept, eller är handskriven-togglen på, frågar appen innan fotot skickas till Gemini Vision (ocrRecipeImage); servern kör den bara med AI-samtycke.",
+      "description": "Kamera/galleri-bild läses först på telefonen (ML Kit) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Kan telefonen inte läsa en sida, hittar den inget recept, eller är handskriven-togglen på, frågar appen innan fotot skickas till Gemini Vision (ocrRecipeImage); servern kör den bara med AI-samtycke. Efter en lyckad telefonläsning kan användaren själv be om AI-läsning (\"Saknas något? Låt AI läsa fotot.\"), och samtyckeskortet visas en gång per fotosession när sidan verkar innehålla fler recept än telefonen hittade. AI läser alla recept på sidan och de går rakt in i receptlistan.",
       "features": [
         "IMP-04",
         "ENG-09"
@@ -4042,6 +4054,13 @@
           "verified": true
         },
         {
+          "from": "vm-photo-import",
+          "to": "svc-missed-recipe-check",
+          "payload": "Antal receptkandidater (MultiRecipeSplitter.countCandidates mot försökta block) jämförs med antalet recept telefonen hittade; verkar sidan hålla fler visas AI-samtyckeskortet en gång per fotosession (skäl mayHaveMissedRecipes). AI körs aldrig utan användarens ja; knappen \"Saknas något?\" ger skälet userAsked.",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
           "from": "v-photo-import",
           "to": "v-recipe-form",
           "payload": "“Fortsätt” med exakt ett tolkat recept → receptet går direkt till formuläret (handOffRecipeToForm i recipe_form_handoff.dart, samma överlämning som textimporten), utan att texten tolkas en gång till",
@@ -4086,7 +4105,7 @@
         {
           "from": "svc-llm-enhancement",
           "to": "cf-ocr-recipe-image",
-          "payload": "imageBase64 + handskriven-flagga",
+          "payload": "imageBase64 + handskriven-flagga (fotoschemat: upp till 6 recept per sida, max 4000 svarstoken)",
           "transport": "https-callable",
           "verified": true
         },
@@ -4107,8 +4126,15 @@
         {
           "from": "cf-ocr-recipe-image",
           "to": "svc-photo-llm-vision",
-          "payload": "ExtractedRecipe / rå text / fel (terminalt, ingen reservväg)",
+          "payload": "recipes[] (varje recept kan bära continuesFromPreviousPage; recipe = första titlade receptet för gamla appar), recipeCount, droppedRecipeCount, finishReason / rå text / fel. Klipps svaret vid token-taket räddas de kompletta recepten. Reservmodellen (europe-west4) använder samma fotoschema. Inga titlar loggas.",
           "transport": "https-response",
+          "verified": true
+        },
+        {
+          "from": "svc-photo-llm-vision",
+          "to": "svc-photo-recipe-merge",
+          "payload": "Sidornas PhotoAiRecipes i sidordning; ett recept som fortsätter från föregående sida fogas till förra sidans sista recept, annars blir varje recept en egen post. Resultatet går direkt in i receptlistan utan att göras om till text och delas igen.",
+          "transport": "method-call",
           "verified": true
         },
         {

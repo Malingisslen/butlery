@@ -26,6 +26,15 @@ final _sv = AppLocalizationsSv();
 class _EmptyPhotoImportViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
   @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  @override
+  Future<void> askAiToRead() async {}
+
+  @override
   Future<PhotoImportDraft?> loadPersistedDraft() async => null;
   @override
   bool get hasImage => false;

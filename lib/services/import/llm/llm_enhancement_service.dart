@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -174,13 +175,20 @@ class LlmEnhancementService extends BaseService {
         isHandwritten: isHandwritten,
       );
 
-      if (response.success && response.recipe != null) {
-        final recipe = _extractedToRecipe(response.recipe!);
+      if (response.success && response.recipes.isNotEmpty) {
+        final recipes = response.recipes.map(_extractedToRecipe).toList();
+        final recipe = recipes.first;
         AppLogger.info(
-          'LlmEnhancementService: Successfully extracted "${recipe.title}" from image',
+          'LlmEnhancementService: Successfully extracted ${recipes.length} recipe(s) from image',
         );
         return ImportSuccess(
           recipe: recipe,
+          aiRecipes: PhotoAiRecipes(
+            recipes,
+            firstContinuesFromPreviousPage:
+                response.recipes.first.continuesFromPreviousPage,
+            droppedRecipeCount: response.droppedRecipeCount,
+          ),
           confidence: 0.8,
           pipeline: 'photo',
           tier: 4, // LLM vision is the final tier

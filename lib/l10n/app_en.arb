@@ -17699,6 +17699,35 @@
   "@photoAiOfferDecline": {
     "description": "Photo import AI offer: decline button, manual entry"
   },
+  "photoAiOfferMayHaveMissed": "There seem to be more recipes on the page than the phone found.",
+  "@photoAiOfferMayHaveMissed": {
+    "description": "Photo import AI offer: the page seems to hold more recipes than the phone found"
+  },
+  "photoAiOfferDeclineThanks": "No thanks",
+  "@photoAiOfferDeclineThanks": {
+    "description": "Photo import AI offer: decline button when the phone already found a recipe and nothing needs typing"
+  },
+  "importPreviewReadByAi": "AI read the photo. Check the recipes before you save.",
+  "@importPreviewReadByAi": {
+    "description": "Multi-recipe picker: line under the counts when every recipe came from an AI reading of a photo"
+  },
+  "photoAiAskToRead": "Missing something? Let AI read the photo.",
+  "@photoAiAskToRead": {
+    "description": "Photo import: quiet text button under a recipe the phone found; opens the AI reading offer"
+  },
+  "photoAiDroppedRecipes": "{count, plural, =1{One recipe could not be read.} other{{count} recipes could not be read.}}",
+  "@photoAiDroppedRecipes": {
+    "description": "Photo import: notice when the AI reading saw recipes it could not read",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "photoAiCapWriteByHand": "You can type the recipe in yourself instead.",
+  "@photoAiCapWriteByHand": {
+    "description": "Photo import: added after the daily AI limit message; the recipe can be typed in by hand"
+  },
   "shoppingMergeUnresolvedRecipes": "{count, plural, =1{1 dish} other{{count} dishes}} could not be counted because the recipe no longer exists.",
   "@shoppingMergeUnresolvedRecipes": {
     "description": "Notice in the week-menu shopping merge sheet: dishes whose recipe was deleted are left out of the list.",

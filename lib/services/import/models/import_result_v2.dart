@@ -3,6 +3,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 
 /// Sealed class hierarchy for import results.
 ///
@@ -62,6 +63,9 @@ class ImportSuccess extends ImportResultV2 {
   /// Additional metadata about the extraction
   final Map<String, dynamic>? metadata;
 
+  /// Set by the photo AI reading only; `aiRecipes.recipes.first` is [recipe].
+  final PhotoAiRecipes? aiRecipes;
+
   const ImportSuccess({
     required this.recipe,
     required this.confidence,
@@ -72,6 +76,7 @@ class ImportSuccess extends ImportResultV2 {
     this.usedLlm = false,
     this.requiresReview = false,
     this.metadata,
+    this.aiRecipes,
   });
 
   /// Create from legacy ImportManagerResult

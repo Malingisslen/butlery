@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 
 /// Strategy pattern interface for recipe import (text, URL, photo, archive).
 abstract class ImportStrategy {
@@ -27,21 +28,33 @@ class ImportResult {
   /// Null on success and assistance, and on a failure no cause was found for.
   final ImportErrorCode? errorCode;
 
-  ImportResult.success(this.recipe, {this.warnings, this.metadata})
-    : isSuccess = true,
-      errorMessage = null,
-      errorCode = null,
-      needsAssistance = false,
-      extractedText = null,
-      suggestedTitle = null,
-      likelyIngredientLines = null;
+  /// Set by the photo AI reading only; `aiRecipes.recipes.first` is [recipe].
+  final PhotoAiRecipes? aiRecipes;
+
+  ImportResult.success(
+    this.recipe, {
+    this.warnings,
+    this.metadata,
+    this.aiRecipes,
+  }) : assert(
+         aiRecipes == null || identical(aiRecipes.recipes.first, recipe),
+         'aiRecipes.recipes.first must be the recipe',
+       ),
+       isSuccess = true,
+       errorMessage = null,
+       errorCode = null,
+       needsAssistance = false,
+       extractedText = null,
+       suggestedTitle = null,
+       likelyIngredientLines = null;
 
   ImportResult.failure(
     this.errorMessage, {
     this.warnings,
     this.metadata,
     this.errorCode,
-  }) : isSuccess = false,
+  }) : aiRecipes = null,
+       isSuccess = false,
        recipe = null,
        needsAssistance = false,
        extractedText = null,
@@ -53,7 +66,8 @@ class ImportResult {
     this.suggestedTitle,
     this.likelyIngredientLines,
     this.metadata,
-  }) : isSuccess = false,
+  }) : aiRecipes = null,
+       isSuccess = false,
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
@@ -69,7 +83,8 @@ class ImportResult {
       extractedText = r.extractedText,
       suggestedTitle = r.suggestedTitle,
       likelyIngredientLines = r.likelyIngredientLines,
-      errorCode = r.errorCode;
+      errorCode = r.errorCode,
+      aiRecipes = r.aiRecipes;
 
   /// The same result with [extra] merged over its metadata.
   ImportResult withMetadata(Map<String, dynamic> extra) =>

@@ -36,6 +36,15 @@ import '../../infrastructure/helpers/offline_banner_support.dart';
 /// the switch actually mutates state (the behaviour under test).
 class _FakePhotoImportViewModel extends ChangeNotifier
     implements PhotoImportViewModel {
+  @override
+  int get droppedRecipeCount => 0;
+
+  @override
+  bool get canAskAiToRead => false;
+
+  @override
+  Future<void> askAiToRead() async {}
+
   _FakePhotoImportViewModel({this.canToggleHandwritten = true});
 
   bool _isHandwritten = false;
