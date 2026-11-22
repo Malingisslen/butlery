@@ -8,7 +8,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/services/import/parsers/unread_line_detector.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
@@ -69,6 +76,7 @@ void main() {
     List<String> ingredients = const ['1 dl mjöl'],
     List<String> steps = const ['Blanda.'],
   }) => RecipeFactory.build(
+    id: 'ai_${title.isEmpty ? 'untitled' : title}',
     title: title,
     ingredients: ingredients,
     instructions: steps,
@@ -293,6 +301,79 @@ void main() {
       expect(vm.droppedRecipeCount, 0);
     },
   );
+
+  group('review snapshots for every AI-read recipe', () {
+    late ParsedRecipeCache cache;
+
+    setUp(() {
+      // tryGet is null without an initialised container, which would make
+      // capture a silent no-op and these tests vacuous.
+      prod.ServiceLocator.initialize(DIContainer());
+      cache = ParsedRecipeCache();
+      TestServiceLocator.registerSingleton<ParsedRecipeCache>(cache);
+    });
+
+    tearDown(() {
+      TestServiceLocator.unregister<ParsedRecipeCache>();
+      prod.ServiceLocator.reset();
+    });
+
+    test(
+      'a second recipe on the page keeps its unread line for the review',
+      () async {
+        const unread = '${UnreadLineDetector.unreadMarker} smör';
+        visionAnswers([
+          answer([
+            recipe('Ett'),
+            recipe('Två', ingredients: ['2 dl mjölk', unread]),
+          ]),
+        ]);
+
+        await readThroughOffer(1);
+
+        expect(vm.parsedRecipes, hasLength(2));
+        final snapshot = cache.retrieve(vm.parsedRecipes[1].id);
+        expect(snapshot, isNotNull);
+        expect(
+          snapshot!.metadata.parserVersion,
+          ImportCorrectionSnapshot.reviewParserVersion,
+        );
+        expect(snapshot.metadata.source, ImportSource.photo);
+        final rows = snapshot.ingredients.value!;
+        expect(rows.map((r) => r.originalLine), ['2 dl mjölk', unread]);
+        expect(rows.last.confidence, ParseConfidence.failed);
+        expect(rows.first.confidence, isNot(ParseConfidence.failed));
+        expect(cache.contains(vm.parsedRecipes.first.id), isTrue);
+      },
+    );
+
+    test(
+      'a recipe joined across pages has a snapshot of the joined lines',
+      () async {
+        visionAnswers([
+          answer([
+            recipe('Bröd', ingredients: ['5 dl mjöl'], steps: ['Knåda.']),
+          ]),
+          answer([
+            recipe(
+              '',
+              ingredients: ['${UnreadLineDetector.unreadMarker} salt'],
+              steps: ['Grädda.'],
+            ),
+          ], continues: true),
+        ]);
+
+        await readThroughOffer(2);
+
+        final joined = vm.parsedRecipe!;
+        expect(joined.ingredients, hasLength(2));
+        final snapshot = cache.retrieve(joined.id)!;
+        final rows = snapshot.ingredients.value!;
+        expect(rows.map((r) => r.originalLine), joined.ingredients);
+        expect(rows.last.confidence, ParseConfidence.failed);
+      },
+    );
+  });
 
   test(
     'through the real manager and strategy the list and recipe agree',

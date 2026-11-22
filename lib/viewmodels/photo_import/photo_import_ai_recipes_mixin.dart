@@ -1,9 +1,14 @@
 import 'dart:collection';
 
+import 'package:butlery/core/providers/application_provider.dart'
+    show ServiceLocator;
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/models/photo_ai_recipes.dart';
 import 'package:butlery/services/import/photo_recipe_merge.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_state_mixin.dart';
 import 'package:flutter/foundation.dart';
@@ -43,12 +48,28 @@ mixin PhotoImportAiRecipesMixin on ImportBaseViewModel, PhotoImportStateMixin {
       ..clear()
       ..addAll(recipes);
     _droppedRecipeCount = pages.fold(0, (n, p) => n + p.droppedRecipeCount);
+    _captureSnapshots(recipes);
     if (recipes.length == 1) {
       setParsedRecipe(recipes.first);
     } else {
       notifyListeners();
     }
     return recipes;
+  }
+
+  // The import strategy stores a snapshot for the first recipe of a page only,
+  // and a recipe joined across pages no longer has that page's lines. The
+  // editor shows the review of unread lines only from a snapshot matching the
+  // recipe it opens, so every recipe gets one built from what is shown.
+  void _captureSnapshots(List<Recipe> recipes) {
+    final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
+    for (final recipe in recipes) {
+      ImportCorrectionSnapshot.capture(
+        recipe,
+        source: ImportSource.photo,
+        cache: cache,
+      );
+    }
   }
 
   /// A recipe list a reading that is not the AI's replaced.
