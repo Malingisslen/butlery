@@ -182,3 +182,9 @@
   owner key or rest on per-account ids, and (3) is its expiry PRUNE-ON-READ, which deletes
   from disk only when some later write rewrites the map — never call that "dropped after N
   days" for retention purposes.
+- A PROVENANCE flag (`settingsMerged`) set on an entity the client CONSTRUCTS rather than
+  reads is a claim that this code wrote or read the whole settings set. When a branch stops
+  writing those fields (a field-set narrowed to `publicOnly`, a read-failed fallback), the
+  flag must go false or the entity must be re-read, or `ownMenuPreferences` turns a null
+  allergen set into "declared none". Grade every constructor call that sets such a flag
+  against the field set the same branch writes.

@@ -11563,3 +11563,33 @@ when the public profile read returns null (a self-deleted public doc nulls store
 allergens); `lastActiveAt` is written on every save even with `showOnlineStatus:false`; a
 stale device's privacy toggle display is no longer reconciled by a save (the newest choice
 now wins on the server in both directions).
+
+## 2026-11-22 — BUT-2515 review (publicOnly re-create of a missing public profile)
+
+Staged: `ProfileField.publicOnly`, `UserRepository.settingsDocumentExists`,
+`OwnProfileLoader._fieldsForNewProfile`. Write side is correct: publicOnly keeps every
+settings key out of `saveProfile`. Two blocking defects found:
+1. The in-memory profile the create branch builds still says `settingsMerged: true` with
+   null allergens on the publicOnly and the read-failed branches, and is installed in
+   `_port.profile` + cached. `HouseholdService.ownMenuPreferences` reads that as "declared no
+   allergies" (`UserAllergenPreferences.none`), so the menu generator drops the user's STORED
+   allergens for the session — the exact population BUT-2515 protects. The existing test
+   "a profile the service CREATES is settings-merged" now reaches the publicOnly branch via
+   an unstubbed mocktail throw and pins the defect.
+2. `settingsDocumentExists` uses a default-source `get()`; under persistence a never-cached
+   doc offline answers `exists == false` without error, so the fresh-device-offline case
+   picks `ProfileField.all` and the queued merge overwrites stored settings on reconnect.
+   Needs `Source.server` (fake ignores GetOptions; pin with a mocked DocumentReference).
+Principle added to reads-cache-offline chapter: a provenance flag on a CONSTRUCTED entity.
+
+## 2026-11-22 — BUT-2515 re-review
+
+Source.server on `settingsDocumentExists` closes the earlier High. The read-back fix leaves
+one hole. When the existence check THROWS (offline), the loader still reads back through
+`fetchProfile`. That method reads its settings with the default source, which offline answers
+from the local view. That view already holds the settings merge-set `saveProfile` just queued
+(`{bio: delete}`), so `exists == true`, data `{}`, and the result is `settingsMerged: true`
+with null allergens: "declared none" again. The new test stubs `fetchProfile` to throw after
+the save, which production does not do on that path, so it pins a branch production cannot
+reach. Fix: skip the read-back on the unknown branch, or keep `settingsMerged` false unless
+the existence check returned true. Not measured on an emulator.

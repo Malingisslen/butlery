@@ -216,4 +216,45 @@ void main() {
       expect(settings[key], equals(expected[key]), reason: key);
     }
   });
+
+  // BUT-2515: the public profile is gone but the settings were kept; making
+  // the profile again must not write the new-profile defaults over them.
+  test('re-making a missing profile with the public-only fields keeps the '
+      'stored allergies, language and onboarding', () async {
+    final db = FakeFirebaseFirestore();
+    final repo = _repo(db);
+    final stored = _newer();
+    await repo.saveProfile(stored, fields: ProfileField.all);
+    await db.collection('public_profiles').doc(_uid).delete();
+    expect(await repo.settingsDocumentExists(_uid), isTrue);
+
+    final fresh = UserProfile(
+      uid: _uid,
+      displayName: 'Alice',
+      email: 'alice@example.com',
+      joinedAt: DateTime.utc(2026, 11, 22),
+      lastActiveAt: DateTime.utc(2026, 11, 22),
+      settingsMerged: true,
+    );
+    await repo.saveProfile(fresh, fields: ProfileField.publicOnly);
+
+    final settings = await _storedSettings(db);
+    final expected = stored.toPrivateSettings();
+    for (final key in [
+      'allergenPreferences',
+      'preferredLocale',
+      'householdSize',
+      'hasCompletedOnboarding',
+    ]) {
+      expect(settings[key], equals(expected[key]), reason: key);
+    }
+    expect((await _storedPublic(db))['displayName'], 'Alice');
+  });
+
+  test('a user with no settings document is told so', () async {
+    expect(
+      await _repo(FakeFirebaseFirestore()).settingsDocumentExists(_uid),
+      isFalse,
+    );
+  });
 }

@@ -70,6 +70,12 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Fetch a profile by id.
   Future<UserProfile?> fetchProfile(String userId);
 
+  /// Whether the signed-in user's private settings document exists. A missing
+  /// public profile can sit beside saved settings (BUT-2515); the caller
+  /// that re-creates the profile must then leave those settings alone.
+  /// Throws when the server cannot be reached.
+  Future<bool> settingsDocumentExists(String userId);
+
   /// Authoritative SERVER read of a user's current `isSearchable` flag from
   /// public_profiles — deliberately NOT cache-first (see the implementation).
   ///

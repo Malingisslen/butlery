@@ -56,6 +56,12 @@ enum ProfileField {
   /// Every field, for the first save of a profile that does not exist yet.
   static Set<ProfileField> get all => values.toSet();
 
+  /// Every field on the public profile, for re-creating a missing public
+  /// profile beside a settings document that already exists: the settings
+  /// are the user's, and a first-save default would overwrite them.
+  static Set<ProfileField> get publicOnly =>
+      values.where((field) => field.settingsKeys.isEmpty).toSet();
+
   /// The part of [doc] (the profile document's map) that a save of [fields]
   /// writes.
   static Map<String, dynamic> publicPart(
