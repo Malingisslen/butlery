@@ -233,4 +233,12 @@ class RecipeEntry {
 
   /// Stable per-recipe id, e.g. `scan_007` (flat) or `scan_007/recipe-02`.
   String get recipeId => blockId == null ? imageId : '$imageId/$blockId';
+
+  /// Marker the re-derive step leaves when the parser produced no recipe that
+  /// matches this gold. The eval scores such an entry as missed (all zeros)
+  /// instead of skipping it.
+  String get missedPath => draftPath.replaceFirst(
+    RegExp(r'draft\.json$'),
+    'draft.missed.json',
+  );
 }

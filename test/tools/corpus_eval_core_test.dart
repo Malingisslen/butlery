@@ -84,6 +84,46 @@ void main() {
     });
   });
 
+  group('missed recipes', () {
+    late Directory root;
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('corpus_missed_');
+      final page = Directory('${root.path}/book/img1')
+        ..createSync(recursive: true);
+      File('${page.path}/gold.json').writeAsStringSync(
+        jsonEncode({
+          'verified': true,
+          'title': 'Soppa',
+          'ingredients': [
+            {'name': 'vatten', 'originalLine': '1 liter vatten'},
+          ],
+          'instructions': ['Koka.'],
+        }),
+      );
+      File('${page.path}/draft.missed.json').writeAsStringSync('{}');
+    });
+    tearDown(() => root.deleteSync(recursive: true));
+
+    test('is scored as zero instead of skipped', () {
+      final load = loadEntries(CorpusPaths(root.path));
+      expect(load.skipped, isEmpty);
+      final report = scoreEntry(load.entries.single);
+      expect(report.missed, isTrue);
+      expect(report.score.ingredientNames.f1, 0);
+      expect(report.score.instructions.f1, 0);
+    });
+
+    test('the summary counts it and keeps a found-only mean beside', () {
+      final good = loadEntries(paths).entries.first;
+      final missed = loadEntries(CorpusPaths(root.path)).entries.single;
+      final summary = summarize([scoreEntry(good), scoreEntry(missed)]);
+      expect(summary.count, 2);
+      expect(summary.missed, 1);
+      expect(summary.meanIngredientNameF1, closeTo(0.5, 1e-9));
+      expect(summary.foundIngredientNameF1, 1.0);
+    });
+  });
+
   group('appendTrendLine', () {
     late Directory tmp;
     setUp(() => tmp = Directory.systemTemp.createTempSync('corpus_trend'));

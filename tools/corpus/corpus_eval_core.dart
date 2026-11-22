@@ -24,12 +24,17 @@ class CorpusEntry {
   final GoldRecipe prediction;
   final String ocrText;
 
+  /// True when the parser produced no recipe matching this gold. [prediction]
+  /// is then empty, so every F1 scores zero rather than the entry vanishing.
+  final bool missed;
+
   const CorpusEntry({
     required this.bookSlug,
     required this.recipeId,
     required this.gold,
     required this.prediction,
     required this.ocrText,
+    this.missed = false,
   });
 }
 
@@ -39,12 +44,14 @@ class RecipeReport {
   final String recipeId;
   final RecipeScore score;
   final TokenRecallResult ocrRecall;
+  final bool missed;
 
   const RecipeReport({
     required this.bookSlug,
     required this.recipeId,
     required this.score,
     required this.ocrRecall,
+    this.missed = false,
   });
 }
 
@@ -87,10 +94,20 @@ CorpusLoad loadEntries(CorpusPaths paths) {
         continue;
       }
 
-      final prediction = _readRecipe(File(entry.draftPath));
+      var prediction = _readRecipe(File(entry.draftPath));
+      var missed = false;
       if (prediction == null) {
-        skipped.add('$label: draft.json (prediction) missing');
-        continue;
+        if (!File(entry.missedPath).existsSync()) {
+          skipped.add('$label: draft.json (prediction) missing');
+          continue;
+        }
+        missed = true;
+        prediction = const GoldRecipe(
+          verified: false,
+          title: '',
+          ingredients: [],
+          instructions: [],
+        );
       }
 
       final ocrFile = File(entry.ocrTextPath);
@@ -103,6 +120,7 @@ CorpusLoad loadEntries(CorpusPaths paths) {
           gold: gold,
           prediction: prediction,
           ocrText: ocrText,
+          missed: missed,
         ),
       );
     }
@@ -116,6 +134,7 @@ RecipeReport scoreEntry(CorpusEntry entry) => RecipeReport(
   recipeId: entry.recipeId,
   score: scoreRecipe(entry.gold, entry.prediction),
   ocrRecall: goldTokenRecall(entry.gold, entry.ocrText),
+  missed: entry.missed,
 );
 
 /// Corpus-level means. Scalar accuracies (portions/time) are computed only
@@ -123,6 +142,13 @@ RecipeReport scoreEntry(CorpusEntry entry) => RecipeReport(
 /// [portionsAsserted] / [timeAsserted] for the denominators.
 class CorpusSummary {
   final int count;
+
+  /// Of [count], how many the parser produced no matching recipe for. They are
+  /// scored as zeros in every mean below except the `found*` ones.
+  final int missed;
+  final double foundIngredientNameF1;
+  final double foundIngredientFullF1;
+  final double foundInstructionF1;
   final double titleMatchRate;
   final double meanTitleSimilarity;
   final double meanIngredientNameF1;
@@ -136,6 +162,10 @@ class CorpusSummary {
 
   const CorpusSummary({
     required this.count,
+    this.missed = 0,
+    this.foundIngredientNameF1 = 0,
+    this.foundIngredientFullF1 = 0,
+    this.foundInstructionF1 = 0,
     required this.titleMatchRate,
     required this.meanTitleSimilarity,
     required this.meanIngredientNameF1,
@@ -150,6 +180,10 @@ class CorpusSummary {
 
   Map<String, dynamic> toJson() => {
     'count': count,
+    'missed': missed,
+    'foundIngredientNameF1': _round(foundIngredientNameF1),
+    'foundIngredientFullF1': _round(foundIngredientFullF1),
+    'foundInstructionF1': _round(foundInstructionF1),
     'titleMatchRate': _round(titleMatchRate),
     'meanTitleSimilarity': _round(meanTitleSimilarity),
     'meanIngredientNameF1': _round(meanIngredientNameF1),
@@ -185,6 +219,10 @@ CorpusSummary summarize(List<RecipeReport> reports) {
   double mean(double Function(RecipeReport) f) =>
       reports.map(f).reduce((a, b) => a + b) / n;
 
+  final found = reports.where((r) => !r.missed).toList();
+  double meanOfFound(double Function(RecipeReport) f) =>
+      found.isEmpty ? 0 : found.map(f).reduce((a, b) => a + b) / found.length;
+
   final portionsScored = reports
       .where((r) => r.score.portionsMatch != null)
       .toList();
@@ -195,6 +233,10 @@ CorpusSummary summarize(List<RecipeReport> reports) {
 
   return CorpusSummary(
     count: n,
+    missed: reports.where((r) => r.missed).length,
+    foundIngredientNameF1: meanOfFound((r) => r.score.ingredientNames.f1),
+    foundIngredientFullF1: meanOfFound((r) => r.score.ingredientsFull.f1),
+    foundInstructionF1: meanOfFound((r) => r.score.instructions.f1),
     titleMatchRate: rate(reports, (r) => r.score.titleMatch),
     meanTitleSimilarity: mean((r) => r.score.titleSimilarity),
     meanIngredientNameF1: mean((r) => r.score.ingredientNames.f1),
@@ -219,7 +261,10 @@ String formatReport(
 ) {
   final b = StringBuffer();
   b.writeln('=== Cookbook corpus eval ===');
-  b.writeln('Scored recipes: ${summary.count}   Skipped: ${skipped.length}');
+  b.writeln(
+    'Scored recipes: ${summary.count} (${summary.missed} of them missed by '
+    'the parser, scored as zero)   Skipped: ${skipped.length}',
+  );
   b.writeln('');
   if (reports.isNotEmpty) {
     b.writeln('Per-recipe (ingredient name-F1 / full-F1 / OCR-recall):');
@@ -241,6 +286,12 @@ String formatReport(
   b.writeln('  Ingredient full-F1   : ${_pct(summary.meanIngredientFullF1)}');
   b.writeln('  Instruction F1       : ${_pct(summary.meanInstructionF1)}');
   b.writeln('  OCR token recall     : ${_pct(summary.meanOcrRecall)}');
+  b.writeln(
+    '  Only recipes the parser found (${summary.count - summary.missed}): '
+    'name ${_pct(summary.foundIngredientNameF1)}, '
+    'full ${_pct(summary.foundIngredientFullF1)}, '
+    'steps ${_pct(summary.foundInstructionF1)}',
+  );
   b.writeln(
     '  Portions accuracy    : ${_pct(summary.portionsAccuracy)} '
     '(${summary.portionsAsserted} asserted)',
@@ -278,6 +329,7 @@ File writeReportJson(
         for (final r in reports)
           {
             'recipe': '${r.bookSlug}/${r.recipeId}',
+            'missed': r.missed,
             'ingredientNameF1': _round(r.score.ingredientNames.f1),
             'ingredientFullF1': _round(r.score.ingredientsFull.f1),
             'instructionF1': _round(r.score.instructions.f1),
@@ -306,6 +358,10 @@ File appendTrendLine(
     'date': date,
     'parserVersion': parserVersion,
     'verified': summary.count,
+    'missed': summary.missed,
+    'foundIngredientNameF1': _round(summary.foundIngredientNameF1),
+    'foundIngredientFullF1': _round(summary.foundIngredientFullF1),
+    'foundInstructionF1': _round(summary.foundInstructionF1),
     'ingredientNameF1': _round(summary.meanIngredientNameF1),
     'ingredientFullF1': _round(summary.meanIngredientFullF1),
     'instructionF1': _round(summary.meanInstructionF1),

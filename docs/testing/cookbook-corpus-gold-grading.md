@@ -27,16 +27,18 @@ New scans go through five steps. The point is a trend line for the deterministic
    where the rubric says so. The proposal stays `verified: false`.
 4. **Malin approves.** Only Malin flips `verified: true`. An entry nobody approved is
    skipped by the eval and listed as such, so it can never move the trend.
-5. **Eval.** `dart run tools/corpus_eval.dart` scores the verified entries and appends ONE
-   line to `butlery-corpus/_reports/trend.jsonl`:
-   `date`, `parserVersion` (read from `recipe_parser_service.dart`), `verified` (entries
-   scored), `ingredientNameF1`, `ingredientFullF1`, `instructionF1`, `ocrRecall`.
+5. **Measure.** After any change to the recipe reading, run `dart run tools/corpus_measure.dart`
+   from the repo root. It re-derives `draft.json` for every verified entry from the stored
+   OCR text (free), gives each entry the parser recipe with the most text in common (never
+   by position), and scores them with `tools/corpus_eval.dart`, which appends ONE line to
+   `butlery-corpus/_reports/trend.jsonl`. An entry no parser recipe resembles gets a
+   `draft.missed.json` marker and scores zero; the trend line carries `missed` and
+   `found*` means beside the headline ones.
 
 Reading the trend: lines are comparable only while the verified set is the same size, so
-compare `verified` before reading a movement in the F1s. After a parser change, re-run step 2
-(free, OCR is cached) before step 5, or `draft.json` still holds the old parser's answer.
-The file lives outside the repo and outside `llm_response_samples`, so a BUT-2028 reset does
-not wipe it.
+compare `verified` before reading a movement in the F1s. Lines before `missed` existed
+scored only entries that had a draft, so they are a different population. The file lives
+outside the repo and outside `llm_response_samples`, so a BUT-2028 reset does not wipe it.
 
 ## The unit of grading
 
