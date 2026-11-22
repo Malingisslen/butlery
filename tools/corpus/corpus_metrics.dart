@@ -7,6 +7,7 @@
 library;
 
 import 'corpus_models.dart';
+import 'ingredient_core_name.dart';
 
 /// Precision / recall / F1 for a set-style comparison.
 class Prf {
@@ -79,6 +80,9 @@ class TokenRecallResult {
 /// [ingredientNames] scores name-only recall (did we find the right items?);
 /// [ingredientsFull] additionally requires matching quantity+unit (did we
 /// parse the structure?). The gap between them localizes parser weakness.
+/// Both compare the core name ([ingredientCoreName]). [ingredientDetails] scores
+/// the words the core leaves out (preparation, alternative, size, asides); it is
+/// null when the facit has none, so such a recipe does not count as perfect.
 class RecipeScore {
   final bool titleMatch;
   final double titleSimilarity;
@@ -87,6 +91,7 @@ class RecipeScore {
   final Prf ingredientNames;
   final Prf ingredientsFull;
   final Prf instructions;
+  final Prf? ingredientDetails;
 
   const RecipeScore({
     required this.titleMatch,
@@ -96,6 +101,7 @@ class RecipeScore {
     required this.ingredientNames,
     required this.ingredientsFull,
     required this.instructions,
+    this.ingredientDetails,
   });
 }
 
@@ -224,11 +230,30 @@ TokenRecallResult goldTokenRecall(GoldRecipe gold, String ocrText) {
   );
 }
 
-String _ingredientNameKey(GoldIngredient i) => normalizeText(i.name);
+String _ingredientNameKey(GoldIngredient i) => ingredientCoreName(i.name);
 
 String _ingredientFullKey(GoldIngredient i) =>
-    '${normalizeText(i.name)}|${_normalizeQuantity(i.quantity)}'
+    '${ingredientCoreName(i.name)}|${_normalizeQuantity(i.quantity)}'
     '|${normalizeText(i.unit ?? '')}';
+
+List<String> _detailTokens(GoldIngredient i) => ingredientDetailTokens(
+  i.name,
+  [i.name, i.size ?? '', i.preparation ?? ''].join(' '),
+);
+
+/// Pooled over the recipe, like the instructions: the facit and the parser put
+/// the same words in different fields ("hackad" in the name or in the
+/// preparation), so only whether the words came along is compared.
+Prf? _ingredientDetailF1(GoldRecipe gold, GoldRecipe predicted) {
+  final goldTokens = gold.ingredients.expand(_detailTokens).toList();
+  if (goldTokens.isEmpty) return null;
+  final predTokens = predicted.ingredients.expand(_detailTokens).toList();
+  return Prf.from(
+    matched: _multisetMatch(goldTokens, predTokens),
+    goldCount: goldTokens.length,
+    predCount: predTokens.length,
+  );
+}
 
 /// Token-level F1 over ALL instruction text pooled together — segmentation-
 /// invariant. A whole-string set match scores 0 when the parser splits steps
@@ -290,5 +315,6 @@ RecipeScore scoreRecipe(GoldRecipe gold, GoldRecipe predicted) {
     ingredientNames: nameF1,
     ingredientsFull: fullF1,
     instructions: instrF1,
+    ingredientDetails: _ingredientDetailF1(gold, predicted),
   );
 }

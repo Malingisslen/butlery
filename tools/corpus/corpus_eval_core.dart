@@ -154,6 +154,11 @@ class CorpusSummary {
   final double meanIngredientNameF1;
   final double meanIngredientFullF1;
   final double meanInstructionF1;
+
+  /// Over the [detailScored] recipes whose facit says more about an ingredient
+  /// than its core name; a missed recipe counts as zero here too.
+  final double meanIngredientDetailF1;
+  final int detailScored;
   final double meanOcrRecall;
   final int portionsAsserted;
   final double portionsAccuracy;
@@ -171,6 +176,8 @@ class CorpusSummary {
     required this.meanIngredientNameF1,
     required this.meanIngredientFullF1,
     required this.meanInstructionF1,
+    this.meanIngredientDetailF1 = 0,
+    this.detailScored = 0,
     required this.meanOcrRecall,
     required this.portionsAsserted,
     required this.portionsAccuracy,
@@ -189,6 +196,8 @@ class CorpusSummary {
     'meanIngredientNameF1': _round(meanIngredientNameF1),
     'meanIngredientFullF1': _round(meanIngredientFullF1),
     'meanInstructionF1': _round(meanInstructionF1),
+    'meanIngredientDetailF1': _round(meanIngredientDetailF1),
+    'detailScored': detailScored,
     'meanOcrRecall': _round(meanOcrRecall),
     'portionsAsserted': portionsAsserted,
     'portionsAccuracy': _round(portionsAccuracy),
@@ -227,6 +236,10 @@ CorpusSummary summarize(List<RecipeReport> reports) {
       .where((r) => r.score.portionsMatch != null)
       .toList();
   final timeScored = reports.where((r) => r.score.timeMatch != null).toList();
+  final detailScores = [
+    for (final r in reports)
+      if (r.score.ingredientDetails != null) r.score.ingredientDetails!.f1,
+  ];
 
   double rate(List<RecipeReport> rs, bool Function(RecipeReport) ok) =>
       rs.isEmpty ? 0 : rs.where(ok).length / rs.length;
@@ -242,6 +255,10 @@ CorpusSummary summarize(List<RecipeReport> reports) {
     meanIngredientNameF1: mean((r) => r.score.ingredientNames.f1),
     meanIngredientFullF1: mean((r) => r.score.ingredientsFull.f1),
     meanInstructionF1: mean((r) => r.score.instructions.f1),
+    meanIngredientDetailF1: detailScores.isEmpty
+        ? 0
+        : detailScores.reduce((a, b) => a + b) / detailScores.length,
+    detailScored: detailScores.length,
     meanOcrRecall: mean((r) => r.ocrRecall.recall),
     portionsAsserted: portionsScored.length,
     portionsAccuracy: rate(
@@ -285,6 +302,10 @@ String formatReport(
   b.writeln('  Ingredient name-F1   : ${_pct(summary.meanIngredientNameF1)}');
   b.writeln('  Ingredient full-F1   : ${_pct(summary.meanIngredientFullF1)}');
   b.writeln('  Instruction F1       : ${_pct(summary.meanInstructionF1)}');
+  b.writeln(
+    '  Preparation/alt. F1  : ${_pct(summary.meanIngredientDetailF1)} '
+    '(${summary.detailScored} recipes have one)',
+  );
   b.writeln('  OCR token recall     : ${_pct(summary.meanOcrRecall)}');
   b.writeln(
     '  Only recipes the parser found (${summary.count - summary.missed}): '
@@ -333,6 +354,8 @@ File writeReportJson(
             'ingredientNameF1': _round(r.score.ingredientNames.f1),
             'ingredientFullF1': _round(r.score.ingredientsFull.f1),
             'instructionF1': _round(r.score.instructions.f1),
+            if (r.score.ingredientDetails != null)
+              'ingredientDetailF1': _round(r.score.ingredientDetails!.f1),
             'ocrRecall': _round(r.ocrRecall.recall),
             'ocrMissing': r.ocrRecall.missing,
           },
@@ -365,7 +388,11 @@ File appendTrendLine(
     'ingredientNameF1': _round(summary.meanIngredientNameF1),
     'ingredientFullF1': _round(summary.meanIngredientFullF1),
     'instructionF1': _round(summary.meanInstructionF1),
+    'ingredientDetailF1': _round(summary.meanIngredientDetailF1),
     'ocrRecall': _round(summary.meanOcrRecall),
+    // Bump on any change to ingredientCoreName or its word lists: the names it
+    // produces are the yardstick, and corpus_measure flags a change of key.
+    'nameKey': 'core-1',
   });
   file.writeAsStringSync('$line\n', mode: FileMode.append);
   return file;
