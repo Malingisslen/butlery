@@ -134,7 +134,7 @@ class CrfIngredientParser {
     List<BioLabel> labels,
     String originalLine,
   ) {
-    final spans = _groupSpans(tokens, labels);
+    final spans = _groupSpans(tokens, _withMixedFractions(tokens, labels));
 
     final quantity = spans[_SpanType.qty];
     final unit = spans[_SpanType.unit];
@@ -164,6 +164,27 @@ class CrfIngredientParser {
       preparation: prep,
       confidence: confidence,
     );
+  }
+
+  static final _bareFraction = RegExp(r'^(?:\d+/\d+|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])$');
+
+  /// The model labels the fraction of "3 ½ dl" as other, which turns the
+  /// amount into "3" and silently drops half a unit.
+  static List<BioLabel> _withMixedFractions(
+    List<String> tokens,
+    List<BioLabel> labels,
+  ) {
+    List<BioLabel>? fixed;
+    for (var i = 1; i < tokens.length; i++) {
+      final afterQty =
+          labels[i - 1] == BioLabel.bQty || labels[i - 1] == BioLabel.iQty;
+      final isQty = labels[i] == BioLabel.bQty || labels[i] == BioLabel.iQty;
+      if (afterQty && !isQty && _bareFraction.hasMatch(tokens[i])) {
+        fixed ??= List.of(labels);
+        fixed[i] = BioLabel.iQty;
+      }
+    }
+    return fixed ?? labels;
   }
 
   /// Groups consecutive tokens by their BIO label type into span strings.
