@@ -37,6 +37,14 @@ target 'Runner' do
   use_frameworks! :linkage => :static
   use_modular_headers!
 
+  # download.onnxruntime.ai, where the trunk specs for these two pods download
+  # from, failed TLS on every try from 2026-11-21 (TestFlight run 44918119033).
+  # The C pod takes its xcframework from Microsoft's NuGet package, pinned by
+  # sha256; the Objective-C pod takes its sources from the release tag. Keep
+  # the version equal to flutter_onnxruntime's pin.
+  pod 'onnxruntime-c', :podspec => 'vendor-podspecs/onnxruntime-c.podspec.json'
+  pod 'onnxruntime-objc', :podspec => 'vendor-podspecs/onnxruntime-objc.podspec.json'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
   target 'RunnerTests' do
