@@ -36,7 +36,7 @@ import * as sampleCapture from "../llm/llm-sample-capture";
 import * as geminiClient from "../llm/gemini-client";
 import { runStructureRecipe } from "../llm/structure-recipe";
 import { __resetPromptsCacheForTests, getPromptsConfig } from "../llm/prompts-config";
-import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
+import type { GeminiClient, GeminiModel } from "../llm/gemini-sdk";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import type { RunStructureRecipeDeps } from "../llm/structure-recipe";
 
@@ -346,8 +346,8 @@ const cases: UnitCase[] = [
       // The CJS emit resolves these exports through the module object at call
       // time, as in gemini-cache-telemetry.test.ts.
       const mutableClient = geminiClient as {
-        getGeminiClient: () => VertexAI;
-        getTextModel: (client: VertexAI) => GenerativeModel;
+        getGeminiClient: () => GeminiClient;
+        getTextModel: (client: GeminiClient) => GeminiModel;
       };
       const mutableCapture = sampleCapture as { captureLlmSample: typeof captureLlmSample };
       const originals = {
@@ -367,15 +367,13 @@ const cases: UnitCase[] = [
       __resetPromptsCacheForTests();
       await getPromptsConfig({ loader: async () => undefined });
       try {
-        mutableClient.getGeminiClient = () => ({} as unknown as VertexAI);
+        mutableClient.getGeminiClient = () => ({} as unknown as GeminiClient);
         mutableClient.getTextModel = () => ({
           generateContent: async () => ({
-            response: {
-              candidates: [{ content: { role: "model", parts: [{ text: recipeJson }] } }],
-              usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
-            },
+            candidates: [{ content: { role: "model", parts: [{ text: recipeJson }] } }],
+            usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
           }),
-        } as unknown as GenerativeModel);
+        } as unknown as GeminiModel);
         mutableCapture.captureLlmSample = async () => { captured++; };
         const run = (suppressSampleCapture?: boolean) => runStructureRecipe(
           { text: "Pannkakor: 3 dl mjölk. Vispa ihop allt. Stek i smör.", mode: "extract" },

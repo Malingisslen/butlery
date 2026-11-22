@@ -5,7 +5,7 @@
  * Callers log the counts this parser returns.
  */
 
-import { FinishReason } from "@google-cloud/vertexai";
+import { FinishReason } from "./gemini-sdk";
 import {
   parseRecipeResponse,
   stripCodeFences,

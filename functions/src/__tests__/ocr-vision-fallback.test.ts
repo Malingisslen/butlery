@@ -7,20 +7,22 @@
  */
 
 import {
-  ClientError,
-  GoogleApiError,
-  GoogleGenerativeAIError,
-  type GenerateContentResponse,
-} from "@google-cloud/vertexai";
+  geminiApiError,
+  type GeminiResponse,
+} from "../llm/gemini-sdk";
+import { captureRequests, stubGeminiAuth } from "./_gemini-test-seams";
 import { logger } from "firebase-functions/logger";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
 import {
   defaultPerformOcr,
+  isModelNotFoundError,
+  photoModelFor,
   runOcrRecipeImage,
   type OcrModelCall,
   type OcrPerformResult,
 } from "../llm/ocr-recipe-image";
 import {
+  getVisionClient,
   MODEL_ID,
   TEXT_PROFILE,
   TEXT_MODEL,
@@ -58,7 +60,7 @@ const RECIPE_JSON = JSON.stringify({
   source: null,
 });
 
-function okResponse(): GenerateContentResponse {
+function okResponse(): GeminiResponse {
   return {
     candidates: [
       { index: 0, content: { role: "model", parts: [{ text: RECIPE_JSON }] } },
@@ -66,15 +68,13 @@ function okResponse(): GenerateContentResponse {
     // Large enough to clear the 0.01 floor, so the two price tables give
     // different costs.
     usageMetadata: { promptTokenCount: 100_000, candidatesTokenCount: 10_000 },
-  } as GenerateContentResponse;
+  } as GeminiResponse;
 }
 
-// The shape the SDK's throwErrorIfNotOK builds for a 4xx answer.
-function vertexClientError(code: number, status: string): ClientError {
-  const body = { error: { code, message: "model not served", status } };
-  return new ClientError(
-    `got status: ${code} ${status}. ${JSON.stringify(body)}`,
-    new GoogleApiError(body.error.message, code, status, undefined),
+function vertexClientError(code: number, status: string): Error {
+  return geminiApiError(
+    code,
+    JSON.stringify({ error: { code, message: "model not served", status } }),
   );
 }
 
@@ -171,10 +171,44 @@ const cases: UnitCase[] = [
     name: "a 5xx from Vertex does not fall back",
     fn: async () => {
       const { call, profiles } = recordingCall(
-        new GoogleGenerativeAIError("got status: 500 Internal Server Error. {}"),
+        vertexClientError(500, "INTERNAL"),
       );
       await expectRejects(defaultPerformOcr(ARGS, call), "rejects");
       assertEqual(profiles.length, 1, "calls");
+    },
+  },
+  {
+    name: "a plain error that only mentions 404 does not fall back",
+    fn: async () => {
+      const { call, profiles } = recordingCall(
+        new Error("got status: 404 Not Found. {}"),
+      );
+      await expectRejects(defaultPerformOcr(ARGS, call), "rejects");
+      assertEqual(profiles.length, 1, "calls");
+    },
+  },
+  {
+    name: "the error the library throws for a real 404 answer is recognised",
+    fn: async () => {
+      process.env.GOOGLE_CLOUD_PROJECT = "ocr-vision-fallback-test";
+      let thrown: unknown;
+      const model = photoModelFor(VISION_PROFILE);
+      // photoModelFor builds on the cached vision client.
+      stubGeminiAuth(getVisionClient());
+      await captureRequests(
+        () =>
+          model
+            .generateContent({ contents: [{ role: "user", parts: [{ text: "hej" }] }] })
+            .catch((e) => {
+              thrown = e;
+            }),
+        () =>
+          new Response(
+            JSON.stringify({ error: { code: 404, message: "not found", status: "NOT_FOUND" } }),
+            { status: 404, headers: { "content-type": "application/json" } },
+          ),
+      );
+      assertEqual(isModelNotFoundError(thrown), true, "404 recognised");
     },
   },
   {

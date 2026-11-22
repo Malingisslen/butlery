@@ -24,6 +24,7 @@ import {
   MODEL_ID,
   OCR_RETRY_SYSTEM_PROMPT_RULES,
 } from "./gemini-client";
+import { describeError } from "./gemini-sdk";
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -322,14 +323,13 @@ export async function runStructureRecipe(
     );
 
     // Call Vertex AI Gemini (EU residency — see VERTEX_LOCATION)
-    const result = await model.generateContent({
+    const response = await model.generateContent({
       contents: [
         { role: "user", parts: [{ text: userPrompt }] },
       ],
       systemInstruction: systemPrompt,
     });
 
-    const response = result.response;
     const content = extractResponseText(response);
 
     // BUT-1032: implicit-cache observability. Raw token counts from Vertex,
@@ -492,7 +492,7 @@ export async function runStructureRecipe(
     // Do NOT add retry/loop logic here — stacking server retries with client
     // retries multiplies Gemini API load under the same rate-limit window.
     // See docs/architecture/ADR-001-gemini-retry-policy.md.
-    logger.error("[structureRecipe] Error:", error);
+    logger.error("[structureRecipe] Error:", describeError(error));
 
     if (error instanceof HttpsError) {
       emitTiming(false, { reason: "https_error", code: error.code });

@@ -5,7 +5,7 @@
  * Run: npx ts-node src/__tests__/ocr-photo-logs.test.ts
  */
 
-import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
+import type { GeminiClient, GeminiModel } from "../llm/gemini-sdk";
 import type { Firestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/logger";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
@@ -75,24 +75,22 @@ function opts(performOcr: () => Promise<OcrPerformResult>) {
 /** Runs `fn` with the text model answering `text`; returns how often it was called. */
 async function withTextModel(text: string, fn: () => Promise<void>): Promise<number> {
   const mutable = geminiClient as {
-    getGeminiClient: () => VertexAI;
-    getTextModel: (client: VertexAI) => GenerativeModel;
+    getGeminiClient: () => GeminiClient;
+    getTextModel: (client: GeminiClient) => GeminiModel;
   };
   const originals = { client: mutable.getGeminiClient, model: mutable.getTextModel };
   let calls = 0;
-  mutable.getGeminiClient = () => ({}) as VertexAI;
+  mutable.getGeminiClient = () => ({}) as GeminiClient;
   mutable.getTextModel = () =>
     ({
       generateContent: async () => {
         calls++;
         return {
-          response: {
-            candidates: [{ content: { role: "model", parts: [{ text }] } }],
-            usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1 },
-          },
+          candidates: [{ content: { role: "model", parts: [{ text }] } }],
+          usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1 },
         };
       },
-    }) as unknown as GenerativeModel;
+    }) as unknown as GeminiModel;
   try {
     await fn();
   } finally {

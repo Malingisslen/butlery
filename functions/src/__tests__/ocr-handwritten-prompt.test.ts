@@ -35,7 +35,7 @@ import {
   UNREADABLE_MARKER,
 } from "../llm/gemini-client";
 import * as geminiClient from "../llm/gemini-client";
-import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
+import type { GeminiClient, GeminiModel } from "../llm/gemini-sdk";
 import {
   __test__ as structureRecipeInternals,
   runStructureRecipe,
@@ -317,8 +317,8 @@ function testOcrRetryKeepsUnreadableMarker(): void {
 // hijack as gemini-cache-telemetry.test.ts.
 async function testRunStructureRecipeSendsRetryRules(): Promise<void> {
   const mutable = geminiClient as {
-    getGeminiClient: () => VertexAI;
-    getTextModel: (client: VertexAI) => GenerativeModel;
+    getGeminiClient: () => GeminiClient;
+    getTextModel: (client: GeminiClient) => GeminiModel;
   };
   const originalGetClient = geminiClient.getGeminiClient;
   const originalGetTextModel = geminiClient.getTextModel;
@@ -341,21 +341,19 @@ async function testRunStructureRecipeSendsRetryRules(): Promise<void> {
     generateContent: async (req: { systemInstruction?: unknown }) => {
       instructions.push(req.systemInstruction);
       return {
-        response: {
-          candidates: [
-            { content: { role: "model", parts: [{ text: recipeJson }] } },
-          ],
-          usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1 },
-        },
+        candidates: [
+          { content: { role: "model", parts: [{ text: recipeJson }] } },
+        ],
+        usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1 },
       };
     },
-  } as unknown as GenerativeModel;
+  } as unknown as GeminiModel;
 
   try {
     // Fill the prompts cache with the compiled bundle so no Firestore read runs.
     __resetPromptsCacheForTests();
     await getPromptsConfig({ loader: async () => undefined });
-    mutable.getGeminiClient = () => ({}) as unknown as VertexAI;
+    mutable.getGeminiClient = () => ({}) as unknown as GeminiClient;
     mutable.getTextModel = () => fakeModel;
 
     const text = `Pannkakor: ${UNREADABLE_MARKER} dl mjölk, 2 ägg. Vispa ihop allt.`;

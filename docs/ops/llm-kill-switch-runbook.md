@@ -302,3 +302,9 @@ cd functions && npm run test:kill-switch
   (per BUT-614) — no further migration required. Task resolved as
   no-op cleanup verification; kill-switch + structureRecipe + ocr
   test suites unchanged.
+- **2026-11-22 (Malin's decision, same day):** SUPERSEDES "swapped Cloud
+  Functions LLM SDK to `@google-cloud/vertexai`" and "the project's chosen
+  SDK is `@google-cloud/vertexai` … no further migration required": the
+  Cloud Functions LLM client is `@google/genai` 3.0.0, imported only by
+  `functions/src/llm/gemini-sdk.ts`; it calls Vertex AI on the v1 API with
+  the base URL pinned per EU location (`europe-west4`, `eu`).

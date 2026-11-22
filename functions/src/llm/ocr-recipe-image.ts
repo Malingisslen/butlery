@@ -17,12 +17,14 @@ import {
   OcrUrlValidationResult,
   OcrUrlRejectionReason,
 } from "../shared/ocr-url-validator";
-import type {
-  GenerateContentRequest,
-  GenerateContentResponse,
-  GenerativeModel,
-  Part,
-} from "@google-cloud/vertexai";
+import {
+  describeError,
+  geminiErrorStatus,
+  type GeminiModel,
+  type GeminiRequest,
+  type GeminiResponse,
+  type Part,
+} from "./gemini-sdk";
 import {
   getGeminiClient,
   getPhotoFallbackModel,
@@ -271,32 +273,25 @@ export interface OcrPerformResult {
  * NOT_FOUND fallback without Vertex. */
 export type OcrModelCall = (
   profile: ModelProfile,
-  request: GenerateContentRequest
-) => Promise<GenerateContentResponse>;
+  request: GeminiRequest
+) => Promise<GeminiResponse>;
 
 /** The photo model for a profile; the fallback keeps TEXT_PROFILE's client. */
-export function photoModelFor(profile: ModelProfile): GenerativeModel {
+export function photoModelFor(profile: ModelProfile): GeminiModel {
   return profile === VISION_PROFILE
     ? getVisionModel(getVisionClient())
     : getPhotoFallbackModel(getGeminiClient());
 }
 
-const callVertexProfile: OcrModelCall = async (profile, request) =>
-  (await photoModelFor(profile).generateContent(request)).response;
+const callVertexProfile: OcrModelCall = (profile, request) =>
+  photoModelFor(profile).generateContent(request);
 
 /**
  * True when Vertex answered 404 / NOT_FOUND, which is how it reports a model
- * that this project is not served (or that was retired). The SDK wraps the
- * API error as `cause` on a ClientError.
+ * that this project is not served (or that was retired).
  */
 export function isModelNotFoundError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const cause = (error as { cause?: { code?: unknown; status?: unknown } })
-    .cause;
-  if (cause && (cause.code === 404 || cause.status === "NOT_FOUND")) {
-    return true;
-  }
-  return error.message.includes("got status: 404 ");
+  return geminiErrorStatus(error) === 404;
 }
 
 export async function defaultPerformOcr(
@@ -324,7 +319,7 @@ export async function defaultPerformOcr(
     userPrompt
   );
 
-  const request: GenerateContentRequest = {
+  const request: GeminiRequest = {
     contents: [{ role: "user", parts }],
     systemInstruction: args.systemPrompt ?? IMAGE_OCR_SYSTEM_PROMPT,
   };
@@ -333,7 +328,7 @@ export async function defaultPerformOcr(
   // only on NOT_FOUND, so a staging project without the vision model, or an
   // early retirement, still reads photos. Every other error propagates.
   let profile: ModelProfile = VISION_PROFILE;
-  let response: GenerateContentResponse;
+  let response: GeminiResponse;
   try {
     response = await callModel(VISION_PROFILE, request);
   } catch (error) {
@@ -349,11 +344,7 @@ export async function defaultPerformOcr(
 
   const content = extractResponseText(response) ?? "";
 
-  // SDK 1.12.0's UsageMetadata type has no `thoughtsTokenCount`; the API
-  // still returns it for thinking-capable models.
-  const usage = response.usageMetadata as
-    | (GenerateContentResponse["usageMetadata"] & { thoughtsTokenCount?: number })
-    | undefined;
+  const usage = response.usageMetadata;
   // The 0.01 floor is deliberate: the ledger charges photos conservatively.
   const cost = calculateGeminiCost(usage, 0.01, pricingForModel(profile.id));
   if (profile === VISION_PROFILE && (usage?.thoughtsTokenCount ?? 0) > 0) {
@@ -747,7 +738,7 @@ export async function runOcrRecipeImage(
       modelId: ocrModelId,
     };
   } catch (error) {
-    logger.error("[ocrRecipeImage] Error:", error);
+    logger.error("[ocrRecipeImage] Error:", describeError(error));
 
     if (error instanceof HttpsError) {
       emitTiming(false, { reason: "https_error", code: error.code });
