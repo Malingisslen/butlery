@@ -7,7 +7,7 @@
 ///
 /// Every key of [UserProfile.toFirestoreEditable] and
 /// [UserProfile.toPrivateSettings] belongs to exactly one field, except
-/// [alwaysWrittenPublicKeys]. `profile_field_test.dart` fails when a new key
+/// [alwaysWrittenPublicKeys] and [lastActiveAtKey]. `profile_field_test.dart` fails when a new key
 /// is not listed.
 enum ProfileField {
   displayName(publicKeys: ['displayName', 'displayNameLower']),
@@ -47,11 +47,11 @@ enum ProfileField {
   /// Keys on the private settings document `users/{uid}/settings/preferences`.
   final List<String> settingsKeys;
 
-  /// Written by every save: when the owner was last active, and the shape.
-  static const List<String> alwaysWrittenPublicKeys = [
-    'lastActiveAt',
-    'schemaVersion',
-  ];
+  /// Written by every save: the shape. [lastActiveAtKey] is written too, but
+  /// only while the owner shows their online status (BUT-2516).
+  static const List<String> alwaysWrittenPublicKeys = ['schemaVersion'];
+
+  static const String lastActiveAtKey = 'lastActiveAt';
 
   /// Every field, for the first save of a profile that does not exist yet.
   static Set<ProfileField> get all => values.toSet();
@@ -63,6 +63,8 @@ enum ProfileField {
     Set<ProfileField> fields,
   ) => _pick(doc, [
     ...alwaysWrittenPublicKeys,
+    // A hidden status must not leak through when the owner was last active.
+    if (doc['showOnlineStatus'] != false) lastActiveAtKey,
     for (final field in fields) ...field.publicKeys,
   ]);
 

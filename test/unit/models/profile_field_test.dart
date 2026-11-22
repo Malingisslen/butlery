@@ -22,10 +22,13 @@ void main() {
   ];
 
   test('the profile document keys are each listed once', () {
-    final keys = {
-      ...profile.toFirestoreEditable().keys,
-      'displayNameLower',
-    }..removeAll(ProfileField.alwaysWrittenPublicKeys);
+    final keys =
+        {
+            ...profile.toFirestoreEditable().keys,
+            'displayNameLower',
+          }
+          ..removeAll(ProfileField.alwaysWrittenPublicKeys)
+          ..remove(ProfileField.lastActiveAtKey);
     final named = listed((f) => f.publicKeys);
     expect(named.toSet(), equals(keys));
     expect(named.length, keys.length, reason: 'a key listed twice');
@@ -41,11 +44,34 @@ void main() {
   test('an empty field set writes only the always-written keys', () {
     expect(
       ProfileField.publicPart(profile.toFirestoreEditable(), const {}).keys,
-      unorderedEquals(ProfileField.alwaysWrittenPublicKeys),
+      unorderedEquals([
+        ...ProfileField.alwaysWrittenPublicKeys,
+        ProfileField.lastActiveAtKey,
+      ]),
     );
     expect(
       ProfileField.settingsPart(profile.toPrivateSettings(), const {}),
       isEmpty,
     );
+  });
+
+  test('a save writes lastActiveAt only while the online status is shown', () {
+    final shown = profile.copyWith(showOnlineStatus: true);
+    final hidden = profile.copyWith(showOnlineStatus: false);
+    for (final fields in [
+      const <ProfileField>{},
+      {ProfileField.bio},
+      ProfileField.all,
+    ]) {
+      expect(
+        ProfileField.publicPart(shown.toFirestoreEditable(), fields),
+        contains('lastActiveAt'),
+      );
+      expect(
+        ProfileField.publicPart(hidden.toFirestoreEditable(), fields),
+        isNot(contains('lastActiveAt')),
+        reason: 'hidden status must not write lastActiveAt',
+      );
+    }
   });
 }
