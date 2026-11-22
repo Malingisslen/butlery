@@ -84,8 +84,16 @@ String _delta(Map<String, dynamic>? before, Map<String, dynamic> after) {
     ('Ingredient name', 'ingredientNameF1'),
     ('Full ingredient', 'ingredientFullF1'),
     ('Instructions   ', 'instructionF1'),
+    ('Preparation/alt', 'ingredientDetailF1'),
   ]) {
     b.writeln('$label: ${pct(after[key])}${change(key)}');
+  }
+  if (before != null && before['nameKey'] != after['nameKey']) {
+    b.writeln(
+      'Note: the previous trend line compared ingredient names another way '
+      '(nameKey ${before['nameKey'] ?? 'whole name'}), so the change above is '
+      'a change of yardstick, not of the parser.',
+    );
   }
   if (before != null && before['missed'] == null) {
     b.writeln(
