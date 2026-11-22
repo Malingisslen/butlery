@@ -156,7 +156,7 @@ class CrfIngredientParser {
     }
 
     return ParsedIngredient(
-      name: rawName ?? originalLine.trim(),
+      name: rawName ?? _remainderAfterAmount(tokens, labels, originalLine),
       originalLine: originalLine,
       quantity: quantity,
       unit: unit,
@@ -164,6 +164,34 @@ class CrfIngredientParser {
       preparation: prep,
       confidence: confidence,
     );
+  }
+
+  /// With no NAME span the name is what remains after amount, unit, size and
+  /// preparation, so the amount is not repeated inside the name.
+  static String _remainderAfterAmount(
+    List<String> tokens,
+    List<BioLabel> labels,
+    String originalLine,
+  ) {
+    final words = <String>[];
+    for (var i = 0; i < tokens.length; i++) {
+      final type = _spanTypeFor(labels[i]);
+      if (type == _SpanType.qty ||
+          type == _SpanType.unit ||
+          type == _SpanType.size ||
+          type == _SpanType.prep) {
+        continue;
+      }
+      words.add(tokens[i]);
+    }
+    final remainder = words
+        .join(' ')
+        .replaceAll(' ,', ',')
+        .replaceAll('( ', '(')
+        .replaceAll(' )', ')')
+        .trim();
+    final hasWord = RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(remainder);
+    return hasWord ? remainder : originalLine.trim();
   }
 
   static final _bareFraction = RegExp(r'^(?:\d+/\d+|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])$');
