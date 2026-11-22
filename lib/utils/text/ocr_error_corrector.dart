@@ -50,7 +50,11 @@ class OcrErrorCorrector {
   /// 2. A correction candidate is found within edit distance <= 2
   /// 3. The candidate IS a known ingredient or unit
   static String correctLine(String line) {
-    final words = line.split(RegExp(r'\s+'));
+    // Printed "2½" survives OCR as "21/2": the whole number and the fraction
+    // run together. Only the leading amount is read this way.
+    final words = line
+        .replaceFirstMapped(_gluedMixedFraction, (m) => '${m[1]} ${m[2]}')
+        .split(RegExp(r'\s+'));
     final corrected = <String>[];
 
     for (final word in words) {
@@ -72,6 +76,8 @@ class OcrErrorCorrector {
   static List<String> correctLines(List<String> lines) {
     return lines.map(correctLine).toList();
   }
+
+  static final _gluedMixedFraction = RegExp(r'^(\d)([13]/[248])(?=\s)');
 
   static final _numericPattern = RegExp(
     r'^[\d,./\-\u00BD\u00BC\u00BE\u2153\u2154\u215B\u215C\u215D\u215E]+$',

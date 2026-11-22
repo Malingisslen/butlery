@@ -112,10 +112,25 @@ String normalizeText(String s) => s
 List<String> tokenize(String s) =>
     normalizeText(s).split(' ').where((t) => t.length > 1).toList();
 
-/// Quantities normalize on their own track: decimal comma → dot, drop spaces,
-/// so "1,5" / "1.5" / "1 .5" collapse together.
-String _normalizeQuantity(String? q) =>
-    (q ?? '').replaceAll(',', '.').replaceAll(RegExp(r'\s+'), '');
+const _unicodeFractions = {
+  '½': '1/2',
+  '¼': '1/4',
+  '¾': '3/4',
+  '⅓': '1/3',
+  '⅔': '2/3',
+  '⅛': '1/8',
+};
+
+/// "½" and "1/2", "1 ½" and "1½", "1–2" and "1-2" are the same amount; the
+/// facit keeps whichever form the page printed, so comparing the strings
+/// would count a correct read as a miss.
+String _normalizeQuantity(String? q) {
+  var out = (q ?? '').replaceAll(',', '.').replaceAll('–', '-');
+  _unicodeFractions.forEach((glyph, ascii) {
+    out = out.replaceAll(glyph, ' $ascii');
+  });
+  return out.replaceAll(RegExp(r'\s+'), '');
+}
 
 int _multisetMatch(Iterable<String> gold, Iterable<String> pred) {
   final counts = <String, int>{};

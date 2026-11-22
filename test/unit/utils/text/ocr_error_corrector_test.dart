@@ -82,5 +82,14 @@ void main() {
         expect(corrected, ['2 dl morot', '1 msk olja']);
       });
     });
+
+    test('reads a whole number glued to its fraction as a mixed amount', () {
+      expect(
+        OcrErrorCorrector.correctLine('21/2 dl grädde'),
+        '2 1/2 dl grädde',
+      );
+      expect(OcrErrorCorrector.correctLine('11/4 dl mjölk'), '1 1/4 dl mjölk');
+      expect(OcrErrorCorrector.correctLine('1/2 dl mjölk'), '1/2 dl mjölk');
+    });
   });
 }
