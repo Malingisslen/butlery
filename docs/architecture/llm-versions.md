@@ -11,8 +11,7 @@ export const VISION_MODEL = "gemini-3.1-flash-lite";
 ```
 
 Text calls use `TEXT_PROFILE` (`VERTEX_LOCATION`); the recipe-photo call
-(`ocrRecipeImage`) uses `VISION_PROFILE` (`VISION_LOCATION` via
-`VISION_API_ENDPOINT`), and falls back to `TEXT_PROFILE` only when Vertex
+(`ocrRecipeImage`) uses `VISION_PROFILE` (`VISION_LOCATION`), and falls back to `TEXT_PROFILE` only when Vertex
 answers NOT_FOUND.
 
 `MODEL_ID` is exported separately so analytics events stamp the actual model

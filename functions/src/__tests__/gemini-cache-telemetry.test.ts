@@ -15,7 +15,7 @@
  */
 
 import { logger } from "firebase-functions/logger";
-import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
+import type { GeminiClient, GeminiModel } from "../llm/gemini-sdk";
 import * as geminiClient from "../llm/gemini-client";
 import { calculateGeminiCost } from "../llm/gemini-client";
 import { runStructureRecipe } from "../llm/structure-recipe";
@@ -155,8 +155,8 @@ const logCase: UnitCase = {
     // structure-recipe resolves them via the module object at call time —
     // same hijack pattern as the logger capture in ocr-validation.test.ts.
     const mutable = geminiClient as {
-      getGeminiClient: () => VertexAI;
-      getTextModel: (client: VertexAI) => GenerativeModel;
+      getGeminiClient: () => GeminiClient;
+      getTextModel: (client: GeminiClient) => GeminiModel;
     };
 
     const recipeJson = JSON.stringify({
@@ -176,18 +176,16 @@ const logCase: UnitCase = {
 
     const fakeModel = {
       generateContent: async () => ({
-        response: {
-          candidates: [
-            { content: { role: "model", parts: [{ text: recipeJson }] } },
-          ],
-          usageMetadata: {
-            promptTokenCount: 5000,
-            candidatesTokenCount: 1000,
-            cachedContentTokenCount: 4000,
-          },
+        candidates: [
+          { content: { role: "model", parts: [{ text: recipeJson }] } },
+        ],
+        usageMetadata: {
+          promptTokenCount: 5000,
+          candidatesTokenCount: 1000,
+          cachedContentTokenCount: 4000,
         },
       }),
-    } as unknown as GenerativeModel;
+    } as unknown as GeminiModel;
 
     try {
       (logger as unknown as { info: (...args: unknown[]) => void }).info = (
@@ -198,7 +196,7 @@ const logCase: UnitCase = {
           meta: args[1] as Record<string, unknown> | undefined,
         });
       };
-      mutable.getGeminiClient = () => ({} as unknown as VertexAI);
+      mutable.getGeminiClient = () => ({} as unknown as GeminiClient);
       mutable.getTextModel = () => fakeModel;
 
       const result = await runStructureRecipe(

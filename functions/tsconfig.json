@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "node20",
     "moduleResolution": "node16",
     "noImplicitReturns": true,
     "noUnusedLocals": true,

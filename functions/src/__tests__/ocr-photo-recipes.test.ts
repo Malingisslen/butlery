@@ -3,11 +3,8 @@
  * Run: npx ts-node src/__tests__/ocr-photo-recipes.test.ts
  */
 
-import type {
-  GenerateContentResponse,
-  GenerativeModel,
-  VertexAI,
-} from "@google-cloud/vertexai";
+import type { GeminiResponse } from "../llm/gemini-sdk";
+import { requestTheModelSends } from "./_gemini-test-seams";
 import { logger } from "firebase-functions/logger";
 import { runTests, UnitCase, assertEqual } from "./_unit-runner";
 import {
@@ -115,27 +112,7 @@ function completeEvent(): Record<string, unknown> | undefined {
   return logged.filter((l) => l.message === "ocr_recipe_image.complete").pop()?.meta;
 }
 
-async function requestBody(
-  client: VertexAI,
-  model: (client: VertexAI) => GenerativeModel,
-): Promise<{ url: URL; body: Record<string, unknown> }> {
-  (client as unknown as { googleAuth: { getAccessToken: () => Promise<string> } })
-    .googleAuth.getAccessToken = async () => "test-token";
-  const realFetch = globalThis.fetch;
-  let url = "";
-  let body = "{}";
-  globalThis.fetch = (async (input: unknown, init?: { body?: unknown }) => {
-    url = String(input);
-    body = String(init?.body ?? "{}");
-    throw new Error("stop after capturing the request");
-  }) as typeof fetch;
-  try {
-    await model(client).generateContent("hej").catch(() => undefined);
-  } finally {
-    globalThis.fetch = realFetch;
-  }
-  return { url: new URL(url), body: JSON.parse(body) };
-}
+const requestBody = requestTheModelSends;
 
 interface SentConfig {
   maxOutputTokens?: number;
@@ -469,7 +446,7 @@ const cases: UnitCase[] = [
         sent = JSON.stringify(request.contents);
         return {
           candidates: [{ index: 0, finishReason: "MAX_TOKENS", content: { role: "model", parts: [{ text: TWO_RECIPES }] } }],
-        } as unknown as GenerateContentResponse;
+        } as unknown as GeminiResponse;
       };
       const r = await defaultPerformOcr({ imageBase64: "/9j/AAAA" }, call);
       assertEqual(sent.includes("extrahera alla recept"), true, "user prompt");
@@ -493,7 +470,7 @@ const cases: UnitCase[] = [
         ({
           candidates: [{ index: 0, content: { role: "model", parts: [{ text: TWO_RECIPES }] } }],
           usageMetadata: { promptTokenCount: 3000, candidatesTokenCount: 4000, thoughtsTokenCount: 2000 },
-        }) as unknown as GenerateContentResponse;
+        }) as unknown as GeminiResponse;
       const r = await defaultPerformOcr({ imageBase64: "/9j/AAAA" }, call);
       // 3000 * 0.275 / 1e6 + (4000 + 2000) * 1.65 / 1e6
       assertEqual(Math.abs(r.cost - 0.010725) < 1e-9, true, `cost ${r.cost}`);

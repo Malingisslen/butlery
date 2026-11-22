@@ -4,7 +4,7 @@
  * This module provides:
  * - Two model profiles, both inside the EU (GDPR Chapter V — EU data residency):
  *   TEXT_PROFILE (VERTEX_LOCATION) for every text call, and VISION_PROFILE
- *   (VISION_LOCATION via VISION_API_ENDPOINT) for the recipe-photo call
+ *   (VISION_LOCATION) for the recipe-photo call
  * - Vertex AI clients cached per profile, so the photo client never shares
  *   the text client's location or endpoint
  * - Service-account auth via Application Default Credentials (no API key)
@@ -17,15 +17,18 @@
  * parsers, and exported function signatures are preserved so call sites are unchanged.
  */
 
-import {
-  VertexAI,
-  GenerativeModel,
-  SchemaType,
-  type Schema,
-  type GenerateContentResponse,
-  type GenerationConfig,
-} from "@google-cloud/vertexai";
 import { logger } from "firebase-functions/logger";
+import {
+  bindModel,
+  createVertexClient,
+  ThinkingLevel,
+  Type,
+  type GeminiClient,
+  type GeminiModel,
+  type GeminiModelConfig,
+  type GeminiResponse,
+  type Schema,
+} from "./gemini-sdk";
 
 /** Prompt version — bump on any prompt change for traceability */
 export const PROMPT_VERSION = "4.1.0";
@@ -41,22 +44,18 @@ export const PROMPT_VERSION = "4.1.0";
 export const VERTEX_LOCATION = "europe-west4";
 
 /**
- * Photo-reading location. VISION_MODEL is served only on Google's EU
- * multi-region, which the SDK cannot reach by `location` alone (it would
- * build a `<location>-aiplatform.googleapis.com` host that does not exist),
- * so the endpoint is pinned too. Both are constants with no env override:
- * the photo call must never move to `global` or any location outside the EU.
+ * Photo-reading location: Google's EU multi-region. A constant with no env override: the photo call
+ * must never move to `global` or any location outside the EU.
  */
 export const VISION_LOCATION = "eu";
-export const VISION_API_ENDPOINT = "aiplatform.eu.rep.googleapis.com";
 
 // Singleton client instance — keyed by resolved project id so test overrides
 // (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.
-let vertexClient: VertexAI | null = null;
+let vertexClient: GeminiClient | null = null;
 let vertexClientProject: string | null = null;
-// Separate cache: a VertexAI instance carries its location and endpoint, so
-// reusing the text client would send photos to the text region.
-let visionClient: VertexAI | null = null;
+// Separate cache: a client carries its location, so reusing the text client
+// would send photos to the text region.
+let visionClient: GeminiClient | null = null;
 let visionClientProject: string | null = null;
 
 /**
@@ -81,10 +80,10 @@ function resolveProjectId(): string {
  * Get or create the Vertex AI client instance.
  * Authentication: Application Default Credentials (Cloud Functions service account).
  */
-export function getGeminiClient(): VertexAI {
+export function getGeminiClient(): GeminiClient {
   const project = resolveProjectId();
   if (!vertexClient || vertexClientProject !== project) {
-    vertexClient = new VertexAI({ project, location: VERTEX_LOCATION });
+    vertexClient = createVertexClient(project, VERTEX_LOCATION);
     vertexClientProject = project;
   }
   return vertexClient;
@@ -94,14 +93,10 @@ export function getGeminiClient(): VertexAI {
  * Get or create the Vertex AI client for the recipe-photo call
  * (VISION_PROFILE). Same auth as `getGeminiClient`.
  */
-export function getVisionClient(): VertexAI {
+export function getVisionClient(): GeminiClient {
   const project = resolveProjectId();
   if (!visionClient || visionClientProject !== project) {
-    visionClient = new VertexAI({
-      project,
-      location: VISION_PROFILE.location,
-      apiEndpoint: VISION_PROFILE.apiEndpoint,
-    });
+    visionClient = createVertexClient(project, VISION_PROFILE.location);
     visionClientProject = project;
   }
   return visionClient;
@@ -110,36 +105,30 @@ export function getVisionClient(): VertexAI {
 /**
  * Get a Gemini model configured for text tasks.
  */
-export function getTextModel(client: VertexAI): GenerativeModel {
-  return client.getGenerativeModel({
-    model: TEXT_MODEL,
-    generationConfig: {
-      temperature: TEMPERATURE,
-      maxOutputTokens: MAX_TOKENS,
-      responseMimeType: "application/json",
-      responseSchema: RECIPE_SCHEMA,
-    },
+export function getTextModel(client: GeminiClient): GeminiModel {
+  return bindModel(client, TEXT_MODEL, {
+    temperature: TEMPERATURE,
+    maxOutputTokens: MAX_TOKENS,
+    responseMimeType: "application/json",
+    responseSchema: RECIPE_SCHEMA,
   });
 }
 
-function photoModel(client: VertexAI, profile: ModelProfile): GenerativeModel {
-  // SDK 1.12.0's GenerationConfig type has no `thinkingConfig`; the SDK
-  // forwards generationConfig to the API as JSON, so the extra key arrives.
-  const generationConfig: GenerationConfig & Record<string, unknown> = {
+function photoModel(client: GeminiClient, profile: ModelProfile): GeminiModel {
+  return bindModel(client, profile.id, {
     temperature: TEMPERATURE,
     maxOutputTokens: PHOTO_MAX_TOKENS,
     responseMimeType: "application/json",
     responseSchema: PHOTO_RECIPES_SCHEMA,
-    ...profile.generationConfigExtras,
-  };
-  return client.getGenerativeModel({ model: profile.id, generationConfig });
+    ...profile.configExtras,
+  });
 }
 
 /**
  * Get the photo-reading model: the photo schema and token cap, plus
  * VISION_PROFILE's extras (thinking level).
  */
-export function getVisionModel(client: VertexAI): GenerativeModel {
+export function getVisionModel(client: GeminiClient): GeminiModel {
   return photoModel(client, VISION_PROFILE);
 }
 
@@ -148,40 +137,34 @@ export function getVisionModel(client: VertexAI): GenerativeModel {
  * photo schema and token cap. Pass `getGeminiClient()`, whose location is
  * TEXT_PROFILE's.
  */
-export function getPhotoFallbackModel(client: VertexAI): GenerativeModel {
+export function getPhotoFallbackModel(client: GeminiClient): GeminiModel {
   return photoModel(client, TEXT_PROFILE);
 }
 
 /**
  * Get a Gemini model configured for ingredient line parsing.
  */
-export function getIngredientLinesModel(client: VertexAI): GenerativeModel {
-  return client.getGenerativeModel({
-    model: TEXT_MODEL,
-    generationConfig: {
-      temperature: TEMPERATURE,
-      maxOutputTokens: INGREDIENT_LINE_MAX_TOKENS,
-      responseMimeType: "application/json",
-      responseSchema: INGREDIENT_LINES_SCHEMA,
-    },
+export function getIngredientLinesModel(client: GeminiClient): GeminiModel {
+  return bindModel(client, TEXT_MODEL, {
+    temperature: TEMPERATURE,
+    maxOutputTokens: INGREDIENT_LINE_MAX_TOKENS,
+    responseMimeType: "application/json",
+    responseSchema: INGREDIENT_LINES_SCHEMA,
   });
 }
 
 /**
- * Extract plain text from a Vertex AI GenerateContentResponse.
- *
- * The Google AI Studio SDK exposed `response.text()` as a helper; Vertex AI's
- * response is a plain data object, so callers previously using `response.text()`
- * must now go through this helper.
+ * Extract plain text from a Gemini response: every text part of the first
+ * candidate, joined.
  */
-export function extractResponseText(response: GenerateContentResponse): string {
+export function extractResponseText(response: GeminiResponse): string {
   const candidate = response.candidates?.[0];
   if (!candidate) return "";
   const parts = candidate.content?.parts ?? [];
   const texts: string[] = [];
   for (const part of parts) {
-    if (typeof (part as { text?: unknown }).text === "string") {
-      texts.push((part as { text: string }).text);
+    if (typeof part.text === "string") {
+      texts.push(part.text);
     }
   }
   return texts.join("");
@@ -193,29 +176,29 @@ export function extractResponseText(response: GenerateContentResponse): string {
 
 /** Schema for a single extracted ingredient */
 const INGREDIENT_SCHEMA: Schema = {
-  type: SchemaType.OBJECT,
+  type: Type.OBJECT,
   properties: {
     amount: {
-      type: SchemaType.NUMBER,
+      type: Type.NUMBER,
       description: "Quantity as number, or 0 if unknown",
       nullable: true,
     },
     unit: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Unit string (dl, msk, g, etc.) or null",
       nullable: true,
     },
     name: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Ingredient name in Swedish",
     },
     preparation: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Preparation method (hackad, riven, etc.) or null",
       nullable: true,
     },
     section: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description:
         "Ingredient group heading exactly as the source groups it " +
         "(Deg, Fyllning, Glasyr, ...) or null when ungrouped. Never repeat " +
@@ -229,54 +212,54 @@ const INGREDIENT_SCHEMA: Schema = {
 
 /** Schema for a full recipe response — enforced server-side by Gemini */
 const RECIPE_SCHEMA: Schema = {
-  type: SchemaType.OBJECT,
+  type: Type.OBJECT,
   properties: {
     title: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Recipe title in Swedish",
     },
     description: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Short description (max 300 chars)",
       nullable: true,
     },
     portions: {
-      type: SchemaType.NUMBER,
+      type: Type.NUMBER,
       description: "Number of portions",
       nullable: true,
     },
     prepTimeMinutes: {
-      type: SchemaType.NUMBER,
+      type: Type.NUMBER,
       description: "Preparation time in minutes",
       nullable: true,
     },
     cookTimeMinutes: {
-      type: SchemaType.NUMBER,
+      type: Type.NUMBER,
       description: "Cooking time in minutes",
       nullable: true,
     },
     ingredients: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       items: INGREDIENT_SCHEMA,
       description: "List of ingredients",
     },
     instructions: {
-      type: SchemaType.ARRAY,
-      items: { type: SchemaType.STRING },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
       description: "Step-by-step instructions",
     },
     tags: {
-      type: SchemaType.ARRAY,
-      items: { type: SchemaType.STRING },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
       description: "Recipe tags",
     },
     difficulty: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Difficulty: easy, medium, or hard",
       nullable: true,
     },
     source: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Source URL or reference",
       nullable: true,
     },
@@ -286,10 +269,10 @@ const RECIPE_SCHEMA: Schema = {
 
 /** Schema for ingredient lines mode — returns array of ingredients */
 const INGREDIENT_LINES_SCHEMA: Schema = {
-  type: SchemaType.OBJECT,
+  type: Type.OBJECT,
   properties: {
     ingredients: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       items: INGREDIENT_SCHEMA,
       description: "Parsed ingredient objects in same order as input",
     },
@@ -297,27 +280,27 @@ const INGREDIENT_LINES_SCHEMA: Schema = {
   required: ["ingredients"],
 };
 
-/** Most recipes one photo answer may return; the schema SDK has no maxItems. */
+/** Most recipes one photo answer may return. */
 export const PHOTO_MAX_RECIPES = 6;
 
 /** Photo calls only: every recipe on the image, each in RECIPE_SCHEMA's shape. */
 export const PHOTO_RECIPES_SCHEMA: Schema = {
-  type: SchemaType.OBJECT,
+  type: Type.OBJECT,
   properties: {
     recipes: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       description: "Every recipe on the image, in reading order",
       items: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
           ...RECIPE_SCHEMA.properties,
           title: {
-            type: SchemaType.STRING,
+            type: Type.STRING,
             description: "Recipe title in Swedish; empty when the image starts mid-recipe",
             nullable: true,
           },
           continuesFromPreviousPage: {
-            type: SchemaType.BOOLEAN,
+            type: Type.BOOLEAN,
             description: "True when this part continues a recipe from a previous page",
             nullable: true,
           },
@@ -959,9 +942,7 @@ function validateDifficulty(
  * the retired id, so every recipe-import text/vision call was failing in
  * production. Migrated to `gemini-2.5-flash-lite`, the doc-recommended
  * cost-parity replacement for the 2.0-flash tier: GA on Vertex, natively
- * multimodal, and supports systemInstruction + responseSchema structured output. The
- * @google-cloud/vertexai SDK forwards this id as a plain string to the
- * endpoint, so it's a drop-in. Thinking is off by default on flash-lite — we
+ * multimodal, and supports systemInstruction + responseSchema structured output. Thinking is off by default on flash-lite — we
  * deliberately do not set `thinkingConfig` (keeps cost/latency at the 2.0-flash
  * tier).
  *
@@ -1021,9 +1002,7 @@ export const VISION_PRICING: ModelPricing = {
 export interface ModelProfile {
   id: string;
   location: string;
-  /** Set when the SDK cannot derive the host from `location`. */
-  apiEndpoint?: string;
-  generationConfigExtras?: Record<string, unknown>;
+  configExtras?: Pick<GeminiModelConfig, "thinkingConfig">;
 }
 
 export const TEXT_PROFILE: ModelProfile = {
@@ -1034,10 +1013,9 @@ export const TEXT_PROFILE: ModelProfile = {
 export const VISION_PROFILE: ModelProfile = {
   id: VISION_MODEL,
   location: VISION_LOCATION,
-  apiEndpoint: VISION_API_ENDPOINT,
   // The photo prompt needs no reasoning, and thinking tokens bill at the
   // output rate.
-  generationConfigExtras: { thinkingConfig: { thinkingLevel: "MINIMAL" } },
+  configExtras: { thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL } },
 };
 
 const PRICING_BY_MODEL: Record<string, ModelPricing> = {

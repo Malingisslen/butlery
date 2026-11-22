@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-22): byt serverns AI-bibliotek till `@google/genai`
+
+Se `tasks/genai-migration-plan.md` (kopia i /mnt/project-files/ocr/genai-bytesplan.md). Beslut av Malin via kort 2026-11-22 23:27 ("Ja, som eget steg nu"); panelen (sex roller) godkände med villkor 2026-11-22, villkoren står i planen.
+
 # Aktiv plan (2026-11-22): omfråga när ett fotorecept saknar ingredienser
 
 Se `tasks/ocr-ingredient-retry-plan.md` (kopia i /mnt/project-files/ocr/ingrediens-omfraga-plan.md). Beteendet och kostnaden godkända av Malin via kort 2026-11-21 14:29 ("Ja, i ett senare steg"); panelen (sju roller) godkände med villkor 2026-11-22, villkoren står i planen.
