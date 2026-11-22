@@ -258,6 +258,7 @@ async function testOcrRetryInheritsParserKill(): Promise<void> {
     // the retry to skipped_global_limit — a pre-existing breakage from BUT-1561
     // (global-cap seam was never injected here) that the BUT-1655 per-user seam
     // addition surfaced and now fixes at root.
+    checkIngredientRetryUserLimit: async () => true,
     checkUserLimit: async () => true,
     checkGlobalLimit: async () => true,
     structureRecipe: async () => ({

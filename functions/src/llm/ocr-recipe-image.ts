@@ -60,6 +60,7 @@ import {
   runOcrRetry,
   RetryOutcome,
 } from "./ocr-retry";
+import { runIngredientRetry } from "./ocr-ingredient-retry";
 import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 // =============================================================================
@@ -206,6 +207,14 @@ export interface OcrCoreOptions {
    * path. Production resolves to `checkRateLimit(userId, 'structureRecipe')`.
    */
   checkUserLimit?: () => Promise<boolean>;
+  /**
+   * Test seam for the per-user cap on the ingredient retry. Production
+   * resolves to `checkRateLimit(userId, 'ocrRecipeImage')`: the retry is a
+   * second photo call, so it spends from the photo bucket.
+   */
+  checkIngredientRetryUserLimit?: () => Promise<boolean>;
+  /** Test seam: the ingredient retry's timeout. */
+  ingredientRetryTimeout?: (ms: number) => Promise<"timeout">;
   /** Test seam: clock. Default `Date.now`. */
   now?: () => number;
 }
@@ -228,6 +237,8 @@ export interface OcrPerformArgs {
    * Optional so older test seams remain valid.
    */
   locale?: string;
+  /** Replaces the default "read every recipe" user prompt (the ingredient retry). */
+  userPrompt?: string;
 }
 
 export interface OcrPerformResult {
@@ -294,6 +305,7 @@ export async function defaultPerformOcr(
 ): Promise<OcrPerformResult> {
   // Build user prompt — scrub context text for PII
   let userPrompt =
+    args.userPrompt ??
     "Läs texten i denna bild och extrahera alla recept. Svara med JSON.";
   if (args.context) {
     userPrompt += `\n\nKontext: ${scrubPii(args.context)}`;
@@ -408,6 +420,10 @@ export async function runOcrRecipeImage(
     opts.checkUserLimit ??
     (() =>
       checkRateLimit(opts.userId, "structureRecipe").then((r) => r.allowed));
+  const ingredientRetryUserLimitCheck =
+    opts.checkIngredientRetryUserLimit ??
+    (() =>
+      checkRateLimit(opts.userId, "ocrRecipeImage").then((r) => r.allowed));
   const now = opts.now ?? Date.now;
 
   const ocrStartMs = now();
@@ -597,14 +613,34 @@ export async function runOcrRecipeImage(
     });
 
     const parsed = parsePhotoRecipesResponse(content, promptVersion, finishReason);
+    const ingredientRetry = await runIngredientRetry(
+      {
+        parsed,
+        photoArgs: { imageBase64, imageUrl, mimeType, systemPrompt: ocrSystemPrompt, locale },
+        // The same test buildContentParts uses to pick the photo source.
+        isUrl: !imageBase64,
+        startMs: ocrStartMs,
+        promptVersion,
+      },
+      {
+        performOcr,
+        checkUserLimit: ingredientRetryUserLimitCheck,
+        checkGlobalLimit: globalLimitCheck,
+        now,
+        timeout: opts.ingredientRetryTimeout,
+      }
+    );
+    const photoCost = ocrCost + ingredientRetry.cost;
+    const pageRecipes = ingredientRetry.recipes;
     photoCounts = {
       ...photoCounts,
-      recipeCount: parsed.recipes.length,
-      droppedRecipeCount: parsed.droppedRecipeCount,
+      recipeCount: pageRecipes.length,
+      droppedRecipeCount: ingredientRetry.droppedRecipeCount,
       salvaged: parsed.salvaged,
+      ...ingredientRetry.logFields,
     };
-    if (parsed.recipes.length > 0) {
-      const recipe = legacyRecipe(parsed.recipes);
+    if (pageRecipes.length > 0) {
+      const recipe = legacyRecipe(pageRecipes);
       emitTiming(true, {
         ingredientCount: recipe?.ingredients.length,
         retryCount: 0,
@@ -613,9 +649,31 @@ export async function runOcrRecipeImage(
       return {
         success: true,
         recipe,
-        recipes: parsed.recipes,
-        droppedRecipeCount: parsed.droppedRecipeCount,
-        estimatedCost: ocrCost,
+        recipes: pageRecipes,
+        droppedRecipeCount: ingredientRetry.droppedRecipeCount,
+        estimatedCost: photoCost,
+        promptVersion,
+        retryCount: 0,
+        retryOutcome: null,
+        modelId: ocrModelId,
+      };
+    }
+
+    // The ingredient retry already re-read the photo; the structureRecipe
+    // retry only sees the first answer's text, which lacks the ingredients,
+    // and would push past the app's 60 s wait.
+    if (ingredientRetry.attempted) {
+      emitTiming(false, {
+        reason: "parse_failed_after_ingredient_retry",
+        retryCount: 0,
+        retryOutcome: null,
+      });
+      return {
+        success: false,
+        rawText: content,
+        error: "Kunde inte strukturera texten som ett recept.",
+        droppedRecipeCount: ingredientRetry.droppedRecipeCount,
+        estimatedCost: photoCost,
         promptVersion,
         retryCount: 0,
         retryOutcome: null,
@@ -636,7 +694,7 @@ export async function runOcrRecipeImage(
       locale,
     });
 
-    const totalCost = ocrCost + retryResult.additionalCost;
+    const totalCost = photoCost + retryResult.additionalCost;
     const elapsedMsTotal = now() - ocrStartMs;
 
     // Structured observability log — answers "what % of OCR retries

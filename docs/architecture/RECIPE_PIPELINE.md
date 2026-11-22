@@ -41,7 +41,9 @@
 │ ocrRecipeImage returns every recipe on the page (`recipes[]`, flagged with   │
 │ `continuesFromPreviousPage`; `recipe` stays as the first for old apps) and   │
 │ rescues complete recipes when the answer is cut at the token cap; the app    │
-│ joins continuations across pages (photo_recipe_merge.dart).                  │
+│ joins continuations across pages (photo_recipe_merge.dart). A titled recipe  │
+│ that came back without ingredients gets one more photo call for just those   │
+│ recipes (ocr-ingredient-retry.ts).                                           │
 │ PII scrub both sides (shared fixture), kill switches, prompt                 │
 │ A/B infra (built, no experiment live), per-call sample capture (write-only,  │
 │ 30d TTL).                                                                    │

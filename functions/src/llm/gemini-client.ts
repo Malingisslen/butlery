@@ -28,7 +28,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "4.0.0";
+export const PROMPT_VERSION = "4.1.0";
 
 /**
  * Vertex AI region — EU data residency (BUT-607).

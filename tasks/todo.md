@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-22): omfråga när ett fotorecept saknar ingredienser
+
+Se `tasks/ocr-ingredient-retry-plan.md` (kopia i /mnt/project-files/ocr/ingrediens-omfraga-plan.md). Beteendet och kostnaden godkända av Malin via kort 2026-11-21 14:29 ("Ja, i ett senare steg"); panelen (sju roller) godkände med villkor 2026-11-22, villkoren står i planen.
+
 # Aktiv plan (2026-11-21): BUT-2512, misslyckat borttag vid kontoradering ska aldrig vara tyst
 
 Se `tasks/but-2512-plan.md` (kopia i /mnt/project-files/lansering/but-2512-plan.md). Godkänd av Malin via kort 2026-11-21 13:05 UTC ("Ja, bygg enligt planen").

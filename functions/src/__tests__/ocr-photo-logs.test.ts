@@ -62,6 +62,7 @@ function opts(performOcr: () => Promise<OcrPerformResult>) {
     performOcr,
     isAiDisabled: async () => false,
     checkGlobalLimit: async () => true,
+    checkIngredientRetryUserLimit: async () => true,
     checkUserLimit: async () => true,
     now: () => 1000,
     structureRecipe: (req: Parameters<typeof runStructureRecipe>[0], hash: string) =>

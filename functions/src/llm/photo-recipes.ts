@@ -24,6 +24,20 @@ export interface ParsedPhotoRecipes {
   droppedRecipeCount: number;
   /** True when the answer was cut at the token cap and complete recipes were salvaged. */
   salvaged: boolean;
+  /** Each kept recipe's index in the answer's array, parallel to `recipes`. */
+  recipePositions: number[];
+  /**
+   * Titled, non-continuation recipes dropped only because no ingredient came
+   * back. Every one also counts in `droppedRecipeCount`. Never logged: titles
+   * are page text.
+   */
+  missingIngredients: MissingIngredientsRecipe[];
+}
+
+export interface MissingIngredientsRecipe {
+  title: string;
+  /** Index in the answer's array, so a recovered recipe keeps its page place. */
+  position: number;
 }
 
 const FINISH_REASONS: ReadonlySet<string> = new Set(Object.values(FinishReason));
@@ -116,6 +130,25 @@ const PLACEHOLDER_INGREDIENT = "__continuation_placeholder__";
  * continuation may have an empty title and needs one valid ingredient OR one
  * non-empty step; a recipe without a title is kept only as a continuation.
  */
+/**
+ * The title of an item that is a valid titled recipe in every way except
+ * that it has no ingredients, or null. Borrowing one placeholder ingredient
+ * tells "only the ingredients are missing" apart from every other rejection.
+ */
+function titleMissingOnlyIngredients(item: unknown, promptVersion?: string): string | null {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+  const obj = item as Record<string, unknown>;
+  if (obj.continuesFromPreviousPage === true) return null;
+  const title = typeof obj.title === "string" ? obj.title.trim() : "";
+  if (!title) return null;
+  if (Array.isArray(obj.ingredients) && obj.ingredients.length > 0) return null;
+  const withPlaceholder = parseRecipeResponse(
+    JSON.stringify({ ...obj, ingredients: [{ name: PLACEHOLDER_INGREDIENT }] }),
+    promptVersion
+  );
+  return withPlaceholder ? withPlaceholder.title : null;
+}
+
 function validatePhotoRecipe(item: unknown, promptVersion?: string): PhotoRecipe | null {
   if (!item || typeof item !== "object" || Array.isArray(item)) return null;
   const obj = item as Record<string, unknown>;
@@ -174,7 +207,13 @@ export function parsePhotoRecipesResponse(
   } catch {
     // The parse error is not logged: its message can quote the answer.
     if (finishReason !== FinishReason.MAX_TOKENS) {
-      return { recipes: [], droppedRecipeCount: 0, salvaged: false };
+      return {
+        recipes: [],
+        droppedRecipeCount: 0,
+        salvaged: false,
+        recipePositions: [],
+        missingIngredients: [],
+      };
     }
     const salvage = salvageTruncated(jsonStr);
     items = salvage.items;
@@ -183,15 +222,28 @@ export function parsePhotoRecipesResponse(
   }
 
   const recipes: PhotoRecipe[] = [];
-  for (const item of items) {
+  const recipePositions: number[] = [];
+  const missingIngredients: MissingIngredientsRecipe[] = [];
+  items.forEach((item, position) => {
     const recipe = validatePhotoRecipe(item, promptVersion);
     if (!recipe || recipes.length >= PHOTO_MAX_RECIPES) {
       dropped++;
-      continue;
+      if (!recipe) {
+        const title = titleMissingOnlyIngredients(item, promptVersion);
+        if (title !== null) missingIngredients.push({ title, position });
+      }
+      return;
     }
     recipes.push(recipe);
-  }
-  return { recipes, droppedRecipeCount: dropped, salvaged: salvaged && recipes.length > 0 };
+    recipePositions.push(position);
+  });
+  return {
+    recipes,
+    droppedRecipeCount: dropped,
+    salvaged: salvaged && recipes.length > 0,
+    recipePositions,
+    missingIngredients,
+  };
 }
 
 /**

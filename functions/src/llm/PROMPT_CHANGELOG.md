@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v4.0.0 — 2026-11-19 (current)
+## v4.1.0 — 2026-11-22 (current)
+
+**What changed:** New compiled-in user prompt `INGREDIENT_RETRY_USER_PROMPT` (`ocr-ingredient-retry.ts`), sent with the same photo, system prompt (printed or handwritten) and model as the first photo call, only when that call's answer held titled recipes without ingredients. It asks for just those recipes, with their ingredient lists, and lists their titles in a `<titlar>` block marked as data. It is never read from `system/prompts`. The first photo call's prompts are unchanged.
+
+**Why:** Malin 2026-11-21 (card, "Ja, i ett senare steg"): a recipe that came back without ingredients was dropped and the app said "Ett recept kunde inte läsas.".
+
+**Expected impact:** Some dropped recipes come back. MINOR bump: added prompt, same schema.
+
+**Linked metrics / tickets:** Watch `missingIngredientsCount`, `ingredientRetryOutcome` and `ingredientRetryRecoveredCount` on `ocr_recipe_image.complete`.
+
+---
+
+## v4.0.0 — 2026-11-19
 
 **What changed:** The photo call answers with a new schema, `PHOTO_RECIPES_SCHEMA` (`{ recipes: [...] }`, each item `RECIPE_SCHEMA`'s fields with a nullable `title` and an optional `continuesFromPreviousPage`), used by `getVisionModel` and the NOT_FOUND fallback (`getPhotoFallbackModel`), with its own output cap `PHOTO_MAX_TOKENS`. The printed and handwritten photo prompts gain `ALL_RECIPES_RULE`: read every recipe on the image as its own entry in `recipes`, and return a part that continues a recipe from a previous page first, with `continuesFromPreviousPage=true` and an empty title. The photo user prompt asks for all recipes. `RECIPE_SCHEMA`, `MAX_TOKENS` and the text, URL, spoken and ingredient-line prompts are unchanged.
 

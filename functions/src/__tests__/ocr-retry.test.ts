@@ -568,6 +568,7 @@ function makeOcrSeams(opts: {
     // BUT-1655: same reasoning for the per-user-cap seam — otherwise the
     // production checkRateLimit resolver hits an unconnected Firestore, fails
     // closed, and short-circuits every retry to skipped_user_limit.
+    checkIngredientRetryUserLimit: async () => true,
     checkUserLimit: async () => true,
     now: () => {
       if (opts.nowSeq) {
