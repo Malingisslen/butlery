@@ -72,6 +72,9 @@ void main() {
     when(() => auth.registrationDisplayNameFor(any())).thenReturn(null);
     when(() => repo.ensureBaseUserDocument(any())).thenAnswer((_) async {});
     when(
+      () => repo.settingsDocumentExists(any()),
+    ).thenAnswer((_) async => false);
+    when(
       () => repo.recordTermsAcceptance(any(), any()),
     ).thenAnswer((_) async {});
     when(

@@ -148,6 +148,10 @@ void main() {
         ),
       );
 
+      when(
+        () => mockUserRepository.settingsDocumentExists(any()),
+      ).thenAnswer((_) async => false);
+
       // Register mocks for automatic reset
       BaseUnitTest.registerMocks([mockUserRepository, mockAuthRepository]);
     });
@@ -642,12 +646,48 @@ void main() {
             when(
               () => mockUserRepository.fetchProfile('test_user_123'),
             ).thenAnswer((_) async => null);
+            when(
+              () => mockUserRepository.settingsDocumentExists('test_user_123'),
+            ).thenAnswer((_) async => false);
 
             await userService.createOrUpdateProfile(displayName: 'Ny');
 
             expect(written.single, ProfileField.all);
           },
         );
+
+        test('a missing profile beside saved settings is made without '
+            'touching the settings (BUT-2515)', () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockUserRepository.settingsDocumentExists('test_user_123'),
+          ).thenAnswer((_) async => true);
+
+          await userService.createOrUpdateProfile(displayName: 'Ny');
+
+          expect(written.single, ProfileField.publicOnly);
+          expect(
+            written.single.any((f) => f.settingsKeys.isNotEmpty),
+            isFalse,
+            reason: 'allergies and other saved settings must stay as they are',
+          );
+        });
+
+        test('when it cannot be told whether settings exist, they are left '
+            'alone (BUT-2515)', () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockUserRepository.settingsDocumentExists('test_user_123'),
+          ).thenThrow(Exception('unavailable'));
+
+          await userService.createOrUpdateProfile(displayName: 'Ny');
+
+          expect(written.single, ProfileField.publicOnly);
+        });
       });
 
       test('a save that never mentions the picture keeps it and does not write '
@@ -798,6 +838,69 @@ void main() {
         expect(result?.settingsMerged, isTrue);
         expect(result?.allergenPreferences, isNull);
         expect(userService.currentUserProfile?.settingsMerged, isTrue);
+      });
+
+      test('a profile made beside saved settings reads them back, so the menu '
+          'filters on the stored allergens (BUT-2515)', () async {
+        final stored = testProfile.copyWith(
+          settingsMerged: true,
+          allergenPreferences: const UserAllergenPreferences(
+            trackedAllergens: {'gluten'},
+            trackedDietary: {},
+          ),
+        );
+        var saved = false;
+        when(
+          () => mockUserRepository.settingsDocumentExists('test_user_123'),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            fields: any(named: 'fields'),
+          ),
+        ).thenAnswer((_) async => saved = true);
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => saved ? stored : null);
+
+        final result = await userService.createOrUpdateProfile(
+          displayName: 'Ny användare',
+        );
+
+        expect(result?.allergenPreferences?.trackedAllergens, {'gluten'});
+        expect(
+          userService.currentUserProfile?.allergenPreferences?.trackedAllergens,
+          {'gluten'},
+        );
+      });
+
+      test('a profile made beside settings it could not read back is not '
+          'marked settings-merged, so the allergen floor applies '
+          '(BUT-2515)', () async {
+        var saved = false;
+        when(
+          () => mockUserRepository.settingsDocumentExists('test_user_123'),
+        ).thenThrow(Exception('offline'));
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            fields: any(named: 'fields'),
+          ),
+        ).thenAnswer((_) async => saved = true);
+        // Offline, production answers from the cache: the settings document
+        // the save just created is empty, which reads as merged and none.
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async =>
+              saved ? testProfile.copyWith(settingsMerged: true) : null,
+        );
+
+        final result = await userService.createOrUpdateProfile(
+          displayName: 'Ny användare',
+        );
+
+        expect(result, isNotNull);
+        expect(result?.settingsMerged, isFalse);
+        expect(userService.currentUserProfile?.settingsMerged, isFalse);
       });
 
       test('should not update profile when not authenticated', () async {

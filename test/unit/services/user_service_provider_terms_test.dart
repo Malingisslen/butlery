@@ -78,6 +78,9 @@ void main() {
     when(() => auth.authStateChanges()).thenAnswer((_) => const Stream.empty());
     when(() => repo.fetchProfile(any())).thenAnswer((_) async => null);
     when(() => repo.ensureBaseUserDocument(any())).thenAnswer((_) async {});
+    when(
+      () => repo.settingsDocumentExists(any()),
+    ).thenAnswer((_) async => false);
   });
 
   tearDown(() async {

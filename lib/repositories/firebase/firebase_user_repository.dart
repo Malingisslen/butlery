@@ -255,6 +255,22 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   static String? _nonEmpty(Object? value) =>
       value is String && value.isNotEmpty ? value : null;
 
+  @override
+  Future<bool> settingsDocumentExists(String userId) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'read settings',
+    );
+    // Server only: a document never cached on this device reads as missing
+    // offline, and the caller would then overwrite settings it cannot see.
+    final snap = await _settingsDoc(
+      userId,
+    ).get(const GetOptions(source: Source.server));
+    return snap.exists;
+  }
+
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
   ///
   /// Uses cache-first strategy since profile display is non-critical

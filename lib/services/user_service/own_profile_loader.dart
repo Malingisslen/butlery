@@ -1,5 +1,4 @@
 import 'package:clock/clock.dart';
-import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:firebase_auth/firebase_auth.dart' show User;
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -13,6 +12,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/account/terms_acceptance.dart';
 import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/own_profile_fields.dart';
 import 'package:butlery/services/user_service/own_profile_port.dart';
 import 'package:butlery/services/user_service/user_settings_writer.dart';
 
@@ -79,9 +79,12 @@ class OwnProfileLoader with ErrorHandlingMixin {
       // profile can be older than the server's, so a field written unchanged
       // would put its old value back.
       final Set<ProfileField> fields;
+      var firstSettingsWritten = true;
+      var settingsKnownToExist = false;
       if (existingProfile != null) {
-        fields = _changedFields(
+        fields = changedProfileFields(
           existingProfile,
+          unset: _unset,
           displayName: displayName,
           avatarUrl: avatarUrl,
           isSearchable: isSearchable,
@@ -139,7 +142,11 @@ class OwnProfileLoader with ErrorHandlingMixin {
           profile = profile.copyWith(householdSize: householdSize as int?);
         }
       } else {
-        fields = ProfileField.all;
+        final plan = await planNewProfileFields(_repository, user.uid);
+        fields = plan.fields;
+        settingsKnownToExist = plan.settingsExist;
+        firstSettingsWritten = fields.any((f) => f.settingsKeys.isNotEmpty);
+        if (!_isStillSignedInAs(user.uid)) return null;
         final now = clock.now();
         profile = UserProfile(
           uid: user.uid,
@@ -153,11 +160,10 @@ class OwnProfileLoader with ErrorHandlingMixin {
           joinedAt: now,
           lastActiveAt: now,
           isOnline: true,
-          // This service is writing the first settings doc right now, so the
-          // settings ARE known: empty. Left false, the menu would treat the
-          // whole first session as a failed read and filter by the
-          // common-allergen floor (HouseholdService.ownMenuPreferences).
-          settingsMerged: true,
+          // Left false, the menu would treat the whole first session as a
+          // failed read and filter by the common-allergen floor
+          // (HouseholdService.ownMenuPreferences).
+          settingsMerged: firstSettingsWritten,
           showOnlineStatus: showOnlineStatus ?? true,
           shareActivityToFeed: shareActivityToFeed ?? true,
           activityFeedEventTypes: activityFeedEventTypes ?? const {},
@@ -200,6 +206,22 @@ class OwnProfileLoader with ErrorHandlingMixin {
       if (!_isStillSignedInAs(user.uid)) return null;
 
       await _repository.saveProfile(profile, fields: fields);
+      // Saved settings were left alone, so this copy does not know them:
+      // read them back, or leave it unmerged so the allergen floor applies.
+      // Only when the server confirmed they exist: otherwise a read-back
+      // answers from the local cache with an empty document and reports
+      // "no allergies".
+      if (settingsKnownToExist) {
+        try {
+          final withSettings = await _repository.fetchProfile(user.uid);
+          if (withSettings != null) {
+            profile = withSettings.copyWith(email: user.email.orEmpty());
+          }
+        } catch (e) {
+          AppLogger.warning('Could not read back saved settings: $e');
+        }
+        if (!_isStillSignedInAs(user.uid)) return null;
+      }
 
       // BUT-1629: [UserProfile.toFirestore] forces `isSearchable:false` for a
       // minor — deliberately, so no client write can make one discoverable.
@@ -245,44 +267,6 @@ class OwnProfileLoader with ErrorHandlingMixin {
       _port.setLoading(false);
     }
   }
-
-  /// The fields of [base] this save changes. A field passed as the sentinel
-  /// is left alone. The always-passed ones (the name, the switches) count
-  /// only when they differ from [base], since the form shows [base]'s value
-  /// for every field the user did not touch.
-  static Set<ProfileField> _changedFields(
-    UserProfile base, {
-    required String displayName,
-    required Object? avatarUrl,
-    required bool? isSearchable,
-    required bool? allowEmailSearch,
-    required Object? cookingSkillLevel,
-    required Object? cuisineAffinities,
-    required Object? bio,
-    required bool? showOnlineStatus,
-    required bool? shareActivityToFeed,
-    required Map<String, bool>? activityFeedEventTypes,
-    required Object? householdSize,
-  }) => {
-    if (displayName != base.displayName) ProfileField.displayName,
-    if (!identical(avatarUrl, _unset)) ProfileField.avatarUrl,
-    if (isSearchable != null && isSearchable != base.isSearchable)
-      ProfileField.isSearchable,
-    if (allowEmailSearch != null && allowEmailSearch != base.allowEmailSearch)
-      ProfileField.allowEmailSearch,
-    if (!identical(cookingSkillLevel, _unset)) ProfileField.cookingSkillLevel,
-    if (!identical(cuisineAffinities, _unset)) ProfileField.cuisineAffinities,
-    if (!identical(bio, _unset)) ProfileField.bio,
-    if (showOnlineStatus != null && showOnlineStatus != base.showOnlineStatus)
-      ProfileField.showOnlineStatus,
-    if (shareActivityToFeed != null &&
-        shareActivityToFeed != base.shareActivityToFeed)
-      ProfileField.shareActivityToFeed,
-    if (activityFeedEventTypes != null &&
-        !mapEquals(activityFeedEventTypes, base.activityFeedEventTypes))
-      ProfileField.activityFeedEventTypes,
-    if (!identical(householdSize, _unset)) ProfileField.householdSize,
-  };
 
   Future<void>? _loadInFlight;
   String? _loadInFlightUid;
