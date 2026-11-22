@@ -724,7 +724,9 @@ jobs:
   request-verify:
     name: Request the staging verdict
     needs: deploy
-    if: ${{ needs.deploy.result == 'success' && (inputs.environment || 'production') == 'staging' && (inputs.target == 'functions' || inputs.target == 'all' || inputs.target == 'rules') }}
+    # A staging run skips staging-gate, and a skipped ancestor skips this job
+    # unless the condition carries a status function.
+    if: ${{ !cancelled() && needs.deploy.result == 'success' && (inputs.environment || 'production') == 'staging' && (inputs.target == 'functions' || inputs.target == 'all' || inputs.target == 'rules') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

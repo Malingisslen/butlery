@@ -263,7 +263,7 @@ jobs:
             const data = JSON.parse(report);
             
             let comment = `## 🏗️ Architecture Validation Report\n\n`;
-            comment += `**Status**: ${context.job.status === 'success' ? '✅ PASSED' : '❌ FAILED'}\n\n`;
+            comment += `**Status**: ${'${{ job.status }}' === 'success' ? '✅ PASSED' : '❌ FAILED'}\n\n`;
             comment += `### 📊 Compliance Metrics\n`;
             comment += `- **Total Files**: ${data.stats.total_files}\n`;
             comment += `- **Firebase Compliance**: ${data.summary.compliance_rates.firebase}%\n`;

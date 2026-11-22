@@ -10,6 +10,7 @@ import 'dart:io';
 /// Configuration constants
 const int maxFileLines = 500;
 const String libDir = 'lib';
+final largeFileSentinel = RegExp(r'^//\s*claude:large-file-ok');
 
 /// Violation types
 enum ViolationType {
@@ -68,6 +69,14 @@ Future<void> main() async {
       .where((f) => !f.path.contains('.freezed.dart'))
       .toList();
 
+  // Same exemption rule as .claude/hooks/file-size-guard.sh: a basename in
+  // backticks in the accepted list, or the sentinel near the top of the file.
+  // Without it every PR report repeats files whose size is already decided.
+  final acceptedListFile = File('docs/architecture/ACCEPTED_LARGE_FILES.md');
+  final acceptedList = acceptedListFile.existsSync()
+      ? acceptedListFile.readAsStringSync()
+      : '';
+
   totalFiles = dartFiles.length;
   print('Scanning $totalFiles Dart files...');
   print('');
@@ -78,7 +87,11 @@ Future<void> main() async {
     final lineCount = lines.length;
 
     // Check 1: File size (500 line limit)
-    if (lineCount > maxFileLines) {
+    final basename = relativePath.split('/').last;
+    final sizeAccepted =
+        acceptedList.contains('`$basename`') ||
+        lines.take(10).any(largeFileSentinel.hasMatch);
+    if (lineCount > maxFileLines && !sizeAccepted) {
       fileSizeViolations++;
       violations.add(
         Violation(
@@ -101,6 +114,11 @@ Future<void> main() async {
       // Check for direct FirebaseFirestore.instance usage
       if (line.contains('FirebaseFirestore.instance') &&
           !relativePath.contains('repository') &&
+          // Configuring the singleton is this file's job; architecture_test
+          // exempts it for the same reason.
+          !relativePath.endsWith(
+            'lib/core/bootstrap/firestore_bootstrap.dart',
+          ) &&
           !relativePath.contains('_repository.dart')) {
         firestoreViolations++;
         violations.add(
