@@ -21617,3 +21617,17 @@ residual: a give-up whose request-doc delete also failed is re-claimed after LEA
 can log the give-up line again.
 Also retired from the gdpr-erasure probe bullet: "and `strict:false` swallows a failed
 chunk, so the probe is the ONLY contradiction to `return true`" — `batchDeleteAll` now throws.
+
+### 2026-11-22 — ingredient retry: URL-skip bypass and cap displacement [llm]
+Gate review of the `ocrRecipeImage` ingredient retry (`ocr-ingredient-retry.ts`). First pass
+failed with 2 blocking findings, both confirmed by a scratchpad probe through `runOcrRecipeImage`:
+(1) `isUrl: imageUrl !== undefined && imageBase64 === undefined` let `{imageUrl, imageBase64: ""}`
+and `{..., imageBase64: null}` send the validated URL a second time (probe: `calls=2
+secondUrl=…`), breaking the panel's BUT-425 condition; the only URL test called
+`runIngredientRetry` directly with `isUrl: true`. (2) `mergeRecovered` sorted and sliced to
+`PHOTO_MAX_RECIPES`, so with 6 valid + 1 missing earlier on the page the recovered recipe pushed
+R6 out and `droppedRecipeCount` read 0 (probe: `titles=R0,R1,M,R3,R4,R5 dropped=0`).
+Also flagged: duplicate-only skip logged `none` with no call. Coordinator fixed all
+(`isUrl: !imageBase64`, free-slot merge, `skipped_cap`, `skipped_duplicate_titles`, original title
+restored, `<`/`>` stripped) with mutation probes; re-review re-ran the probe: `calls=1` for both
+URL shapes, `titles=R0,R1,R3,R4,R5,R6 dropped=1`. 24/24, other OCR suites green, tsc clean.

@@ -67,6 +67,15 @@
   treats any line matching `^\s*(?:\/\/\/?|\*)` as a comment, string literal or not, so a
   doc-reference strip from such a prompt line would reach no reviewer. Prompts use `- `
   bullets; flag a `* ` bullet in a template literal.
+- **A skip for one input KIND must use the predicate the request builder uses to PICK that
+  kind.** `buildContentParts` takes base64 when truthy, else the URL, so a skip keyed on
+  `imageBase64 === undefined` let `imageBase64: ""`/`null` + `imageUrl` re-send the URL.
+  Write `isUrl: !imageBase64`, and pin it end-to-end through `runOcrRecipeImage` (a test
+  calling the helper with `isUrl: true` stays green with the wiring broken).
+- **A merge-back under a cap fills only the FREE slots.** Sort-then-slice pushes out items
+  already read and `dropped - added` misses them; skip the extra call when the cap is
+  already full (`skipped_cap`). Every no-call skip gets its own outcome value, never the
+  one a sent call uses, or a recovered/none ratio counts calls that never happened.
 
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `main()` at import — extract pure cores to test.

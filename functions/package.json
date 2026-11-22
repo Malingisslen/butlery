@@ -246,6 +246,7 @@
     "test:gemini-model-pricing": "ts-node src/__tests__/gemini-model-pricing.test.ts",
     "test:ocr-vision-fallback": "ts-node src/__tests__/ocr-vision-fallback.test.ts",
     "test:ocr-photo-recipes": "ts-node src/__tests__/ocr-photo-recipes.test.ts",
+    "test:ocr-ingredient-retry": "ts-node src/__tests__/ocr-ingredient-retry.test.ts",
     "test:ocr-photo-logs": "ts-node src/__tests__/ocr-photo-logs.test.ts",
     "test:web-origins": "ts-node src/__tests__/web-origins.test.ts",
     "test:locale-instruction": "ts-node src/__tests__/locale-instruction.test.ts",

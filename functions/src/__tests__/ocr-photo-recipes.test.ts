@@ -98,6 +98,7 @@ function seams(ocr: () => Promise<OcrPerformResult>, retryRecipe?: unknown) {
       performOcr: ocr,
       isAiDisabled: async () => false,
       checkGlobalLimit: async () => true,
+      checkIngredientRetryUserLimit: async () => true,
       checkUserLimit: async () => true,
       now: () => 1000,
       structureRecipe: async (req: { text: string }) => {
