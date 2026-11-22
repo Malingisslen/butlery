@@ -79,25 +79,6 @@
         "objectivec/include/ort_custom_op_registration.h",
         "objectivec/include/onnxruntime.h",
         "objectivec/ort_value.mm"
-      ],
-      "testspecs": [
-        {
-          "name": "Tests",
-          "test_type": "unit",
-          "source_files": [
-            "objectivec/test/assert_arc_enabled.mm",
-            "objectivec/test/test_utils.mm",
-            "objectivec/test/test_utils.h",
-            "objectivec/test/assertion_utils.h",
-            "objectivec/test/ort_session_test.mm",
-            "objectivec/test/ort_value_test.mm",
-            "objectivec/test/ort_env_test.mm"
-          ],
-          "resources": [
-            "objectivec/test/testdata/single_add.basic.ort",
-            "objectivec/test/testdata/identity_string.ort"
-          ]
-        }
       ]
     }
   ]
