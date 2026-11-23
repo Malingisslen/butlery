@@ -19,6 +19,7 @@ import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
+import 'package:butlery/services/import/parsers/ingredient_row_judge.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -542,6 +543,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return _isQuantityRow(lines[i + 1]);
   }
 
+  int _rowsAbove(List<String> lines, int i) =>
+      lines.take(i).where(_isQuantityRow).length;
+
+  /// A row with a measured row right above and right below it: the writer's
+  /// own list, so its name is not a fragment of something else.
+  bool _betweenQuantityRows(List<String> lines, int i) =>
+      i > 0 &&
+      i + 1 < lines.length &&
+      _isQuantityRow(lines[i - 1]) &&
+      _isQuantityRow(lines[i + 1]);
+
   /// A row that opens with a count or amount ("12 lasagneplattor",
   /// "1 rund formfranska", "- 2 tomater"), whether or not a unit follows.
   /// Yield labels ("4 portioner") are not rows, and a sentence that happens
@@ -786,6 +798,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
     }
 
+    final readsAsRecipe =
+        lines
+            .where(
+              (l) =>
+                  _isQuantityRow(l) ||
+                  IngredientRowJudge.judge(l) == RowVerdict.ingredient,
+            )
+            .length >=
+        3;
+
     // STAGE 3: LINE-BY-LINE CLASSIFICATION WITH SCORING
     bool inIngredients = false;
     bool inInstructions = false;
@@ -801,7 +823,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // whole-line reading replaces what STAGE 1's pattern cut out of it,
     // unless that was the same ingredient: STAGE 1 keeps a written range
     // ("0,5-1 dl") that the line parser's preprocessing narrows.
-    void takeIngredient(int line, String text, {bool rescued = false}) {
+    void takeIngredient(
+      int line,
+      String text, {
+      bool rescued = false,
+      bool vouched = false,
+    }) {
       final measured = [
         for (final r in ingredients)
           if (r.line == line) r,
@@ -819,7 +846,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       ingredients
         ..removeWhere((r) => r.line == line)
         ..add(
-          _IngredientRow(line, text, section: currentSection, rescued: rescued),
+          _IngredientRow(
+            line,
+            text,
+            section: currentSection,
+            rescued: rescued,
+            vouched: vouched,
+          ),
         );
     }
 
@@ -999,6 +1032,35 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         continue;
       }
 
+      final verdict = IngredientRowJudge.judge(line);
+      if (verdict == RowVerdict.noise) continue;
+      // Prose the photo's columns put among the rows is a step wherever it
+      // sits, and it does not end the ingredient list around it. Only a page
+      // that already reads as a recipe gets it: a page of plain prose with one
+      // quantity line in it is not a method.
+      if (verdict == RowVerdict.step && !_isQuantityRow(line)) {
+        if (listStarted &&
+            (instructions.isNotEmpty ||
+                (readsAsRecipe && _rowsAbove(lines, i) >= 2))) {
+          final instruction = _parseInstructionLine(line);
+          if (instruction != null && instruction.length > 10) {
+            takeStep(line, instruction);
+          }
+          afterIngredientRow = false;
+          continue;
+        }
+      }
+      if (verdict == RowVerdict.ingredient) {
+        final ingredient = _parseIngredientLine(line);
+        if (ingredient != null &&
+            RecipeSectionDetector.isValidIngredient(ingredient)) {
+          takeIngredient(i, ingredient);
+          afterIngredientRow = true;
+        }
+        continue;
+      }
+
+      var structuralRow = false;
       final score = RecipeSectionDetector.instructionScore(line);
       // The sentence splitter cuts one step into several, and a plain
       // sentence once the method has begun ("Forma till biffar och stek
@@ -1019,7 +1081,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (RecipeSectionDetector.isValidIngredient(line)) {
           final ingredient = _parseIngredientLine(line);
           if (ingredient != null) {
-            takeIngredient(i, ingredient);
+            takeIngredient(i, ingredient, vouched: true);
             afterIngredientRow = true;
           }
         }
@@ -1047,18 +1109,27 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           takeStep(line, instruction);
         }
         afterIngredientRow = false;
-      } else if (RecipeSectionDetector.looksLikeIngredient(line) ||
-          _isQuantityRow(line) ||
-          _opensIngredientParagraph(lines, i, startsBlock) ||
-          _isBareRowInIngredientBlock(
-            line,
-            startsBlock[i],
-            afterIngredientRow,
-          )) {
+      } else if (verdict != RowVerdict.step &&
+          (RecipeSectionDetector.looksLikeIngredient(line) ||
+              _isQuantityRow(line) ||
+              (structuralRow = _opensIngredientParagraph(
+                lines,
+                i,
+                startsBlock,
+              )) ||
+              _isBareRowInIngredientBlock(
+                line,
+                startsBlock[i],
+                afterIngredientRow,
+              ))) {
         final ingredient = _parseIngredientLine(line);
         if (ingredient != null &&
             RecipeSectionDetector.isValidIngredient(ingredient)) {
-          takeIngredient(i, ingredient);
+          takeIngredient(
+            i,
+            ingredient,
+            vouched: structuralRow || _betweenQuantityRows(lines, i),
+          );
           afterIngredientRow = true;
         }
       } else if (description.isEmpty &&
@@ -1199,12 +1270,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         continue;
       }
 
+      if (!row.rescued &&
+          !row.vouched &&
+          !IngredientRowJudge.isPlausibleBareRow(row.text)) {
+        continue;
+      }
+
       final name = _extractIngredientNameOnly(row.text.toLowerCase().trim());
       // An amount with nothing named after it ("30 st" from "ca 30 st").
       if (name.isEmpty) continue;
       final at = [
         for (var i = 0; i < kept.length; i++)
-          if (keptNames[i] == name && kept[i].section == row.section) i,
+          if (keptNames[i] == name &&
+              kept[i].section == row.section &&
+              !IngredientRowJudge.differentAmounts(kept[i].text, row.text))
+            i,
       ];
       if (at.isEmpty) {
         kept.add(row);
@@ -1579,8 +1659,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
 /// An ingredient row and the source line it was read from.
 class _IngredientRow {
-  _IngredientRow(this.line, this.text, {this.section, this.rescued = false})
-    : seq = _next++;
+  _IngredientRow(
+    this.line,
+    this.text, {
+    this.section,
+    this.rescued = false,
+    this.vouched = false,
+  }) : seq = _next++;
 
   static var _next = 0;
 
@@ -1590,6 +1675,10 @@ class _IngredientRow {
 
   /// BUT-1727: a bare gluten row kept by the colon carve-out.
   final bool rescued;
+
+  /// Read under an explicit ingredient heading, where the writer vouches for
+  /// every row, so a row with no amount and no food word still stays.
+  final bool vouched;
 
   /// Insertion order: `List.sort` is not stable, and rows from one line keep
   /// the order they were read in.
