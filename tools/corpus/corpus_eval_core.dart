@@ -393,6 +393,9 @@ File appendTrendLine(
     // Bump on any change to ingredientCoreName or its word lists: the names it
     // produces are the yardstick, and corpus_measure flags a change of key.
     'nameKey': 'core-1',
+    // The text the parser is fed: `app-reflow` rejoins wrapped lines as the
+    // photo path does. A trend line without the key was read without reflow.
+    'reader': 'app-reflow',
   });
   file.writeAsStringSync('$line\n', mode: FileMode.append);
   return file;
