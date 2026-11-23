@@ -8,6 +8,7 @@ import 'package:butlery/services/parsing/ner/ner_model_manager.dart';
 /// Mock NER service that returns predetermined predictions.
 class MockOnnxNerService extends OnnxNerService {
   NerPrediction? nextPrediction;
+  List<List<String>> seenWords = [];
   bool _available = true;
 
   MockOnnxNerService() : super();
@@ -19,6 +20,7 @@ class MockOnnxNerService extends OnnxNerService {
 
   @override
   Future<NerPrediction?> predict(List<String> words) async {
+    seenWords.add(words);
     return nextPrediction;
   }
 
@@ -26,6 +28,7 @@ class MockOnnxNerService extends OnnxNerService {
   Future<List<NerPrediction?>> predictBatch(
     List<List<String>> wordsList,
   ) async {
+    seenWords.addAll(wordsList);
     return wordsList.map((words) {
       if (words.isEmpty) return null;
       return nextPrediction;
@@ -68,6 +71,29 @@ void main() {
       nerService: mockNerService,
       modelManager: mockModelManager,
     );
+  });
+
+  group('amount cleanups shared with the CRF reader', () {
+    test(
+      'parseLine hands the model a range whose dash the photo dropped',
+      () async {
+        mockNerService.nextPrediction = NerPrediction(
+          labels: [BioLabel.bQty, BioLabel.bUnit, BioLabel.bName],
+          confidence: 0.95,
+        );
+        await parser.parseLine('4 6 dl rödvin');
+        expect(mockNerService.seenWords.single, ['4-6', 'dl', 'rödvin']);
+      },
+    );
+
+    test('parseLines drops a stray bracket after the amount', () async {
+      mockNerService.nextPrediction = NerPrediction(
+        labels: [BioLabel.bQty, BioLabel.bUnit, BioLabel.bName],
+        confidence: 0.95,
+      );
+      await parser.parseLines(['1}, dl mjölk']);
+      expect(mockNerService.seenWords.single, ['1', 'dl', 'mjölk']);
+    });
   });
 
   group('parseLine', () {

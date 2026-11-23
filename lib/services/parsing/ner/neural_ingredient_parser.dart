@@ -81,7 +81,9 @@ class NeuralIngredientParser {
   Future<ParsedIngredient?> parseLine(String line) async {
     if (!_nerService.isAvailable) return null;
 
-    final tokens = CrfIngredientParser.tokenize(line.trim());
+    final tokens = CrfIngredientParser.tokenize(
+      CrfIngredientParser.withReadableAmount(line.trim()),
+    );
     if (tokens.isEmpty) return null;
 
     final prediction = await _nerService.predict(tokens);
@@ -113,7 +115,11 @@ class NeuralIngredientParser {
     if (!_nerService.isAvailable) return {};
 
     final allTokens = lines
-        .map((l) => CrfIngredientParser.tokenize(l.trim()))
+        .map(
+          (l) => CrfIngredientParser.tokenize(
+            CrfIngredientParser.withReadableAmount(l.trim()),
+          ),
+        )
         .toList();
 
     final predictions = await _nerService.predictBatch(allTokens);
