@@ -9,6 +9,7 @@ library;
 
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/yield_layout.dart';
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Joins each wrapped line to its continuation. Idempotent: a second pass
@@ -32,6 +33,7 @@ String reflowWrappedLines(String text) {
           lines[j],
           inStep: inStep,
           after: j + 1 < lines.length ? lines[j + 1] : '',
+          afterNext: j + 2 < lines.length ? lines[j + 2] : '',
         )) {
       current = _join(current, lines[j]);
       j++;
@@ -66,6 +68,7 @@ bool _continues(
   String next, {
   required bool inStep,
   required String after,
+  required String afterNext,
 }) {
   final a = line.trimRight();
   final b = next.trim();
@@ -73,7 +76,9 @@ bool _continues(
   // is not a new row. What ends it is anything that is a row of its own;
   // a line in capitals is a credit or heading, not more of the method.
   if (inStep) {
-    if (_titleAfterFinishedSentence(a, b, after.trim())) return false;
+    if (_titleAfterFinishedSentence(a, b, after.trim(), afterNext.trim())) {
+      return false;
+    }
     return b.isNotEmpty &&
         _hasLowercase.hasMatch(b) &&
         !stepMarker.hasMatch(b) &&
@@ -122,12 +127,23 @@ bool _continues(
 /// sentence and before a line that starts a new one, is the next recipe's
 /// title: a step has no title in the middle of it. A lowercase line after it
 /// would mean the capital only opened a wrapped sentence.
-bool _titleAfterFinishedSentence(String a, String b, String after) {
+bool _titleAfterFinishedSentence(
+  String a,
+  String b,
+  String after,
+  String afterNext,
+) {
   if (!_terminal.hasMatch(a) || _terminal.hasMatch(b)) return false;
-  if (!_startsUppercase(b) || after.isEmpty || _startsLowercase(after)) {
-    return false;
+  if (!_startsUppercase(b) || after.isEmpty) return false;
+  if (b.split(_whitespace).length > 3) return false;
+  // A lowercase line under a short capitalised one is normally the rest of a
+  // wrapped sentence, unless a yield line follows it: then both are one title
+  // set on two lines ("Fredriks" / "böcklingsmörgås" / "4 stycken").
+  if (_startsLowercase(after)) {
+    return after.split(_whitespace).length <= 3 &&
+        YieldLayout.isYieldLine(afterNext);
   }
-  return b.split(_whitespace).length <= 3;
+  return true;
 }
 
 /// An OCR reader can capitalise the first word of a wrapped line ("…hacka
