@@ -1,6 +1,9 @@
+import 'package:meta/meta.dart';
+
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
+import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// Converts BIO label sequences into structured ParsedIngredient objects.
 ///
@@ -59,6 +62,8 @@ class CrfIngredientParser {
       (m) => '${m[1]} ${m[2]}',
     );
 
+    cleaned = withWrittenRange(cleaned);
+
     // Strip purpose clauses ("till stekning", "till garnering")
     cleaned = cleaned.replaceFirst(_purposeClause, '');
     // Strip "efter smak/behov" phrases
@@ -77,6 +82,21 @@ class CrfIngredientParser {
     _relabelFreshnessAsName(tokens, labels);
 
     return assembleFromLabels(tokens, labels, line);
+  }
+
+  static const _amountPart =
+      r'(?:\d+\s+(?:\d+/\d+|[½¼¾⅓⅔⅛])|\d+(?:[.,]\d+)?(?:/\d+)?|[½¼¾⅓⅔⅛])';
+  static final _leadingRange = RegExp(
+    '^($_amountPart)\\s*[-–—]\\s*($_amountPart)(?=\\s|\$)',
+  );
+
+  /// A range at the start of the line is one amount ("6–8 ägg", "3 – 4"):
+  /// the model sees a spaced dash as a break and keeps only one end.
+  @visibleForTesting
+  static String withWrittenRange(String line) {
+    final m = _leadingRange.firstMatch(line);
+    if (m == null) return line;
+    return '${m[1]}-${m[2]}${line.substring(m.end)}';
   }
 
   /// Parses multiple ingredient lines, filtering out group headers.
@@ -131,13 +151,22 @@ class CrfIngredientParser {
   /// Handles paren suppression and Swedish "och" bridging.
   static ParsedIngredient assembleFromLabels(
     List<String> tokens,
-    List<BioLabel> labels,
+    List<BioLabel> decoded,
     String originalLine,
   ) {
-    final spans = _groupSpans(tokens, _withMixedFractions(tokens, labels));
+    final labels = _withUnitAfterAmount(
+      tokens,
+      _withMixedFractions(tokens, decoded),
+    );
+    final spans = _groupSpans(tokens, labels);
 
-    final quantity = spans[_SpanType.qty];
-    final unit = spans[_SpanType.unit];
+    var quantity = spans[_SpanType.qty];
+    var unit = spans[_SpanType.unit];
+    // A fraction the model took for the unit ("½ röd chili") is the amount.
+    if (unit != null && _bareFraction.hasMatch(unit)) {
+      quantity = quantity == null ? unit : '$quantity $unit';
+      unit = null;
+    }
     final size = spans[_SpanType.size];
     final rawName = spans[_SpanType.name];
     final prep = spans[_SpanType.prep];
@@ -155,8 +184,19 @@ class CrfIngredientParser {
       confidence = ParseConfidence.low;
     }
 
+    var finalName =
+        rawName ?? _remainderAfterAmount(tokens, labels, originalLine);
+    // "1 knippa persilja": a bunch, a batch or a pouch is counted like a unit.
+    if (unit == null && quantity != null) {
+      final head = _countingUnit.firstMatch(finalName);
+      if (head != null && finalName.length > head.end) {
+        unit = head[1];
+        finalName = finalName.substring(head.end);
+      }
+    }
+
     return ParsedIngredient(
-      name: rawName ?? _remainderAfterAmount(tokens, labels, originalLine),
+      name: finalName,
       originalLine: originalLine,
       quantity: quantity,
       unit: unit,
@@ -194,6 +234,11 @@ class CrfIngredientParser {
     return hasWord ? remainder : originalLine.trim();
   }
 
+  static final _countingUnit = RegExp(
+    r'^(knippa|sats|klase|klasar|påse|påsar|kuvert)\s+',
+    caseSensitive: false,
+  );
+
   static final _bareFraction = RegExp(r'^(?:\d+/\d+|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])$');
 
   /// The model labels the fraction of "3 ½ dl" as other, which turns the
@@ -215,6 +260,34 @@ class CrfIngredientParser {
     return fixed ?? labels;
   }
 
+  /// The model leaves a plain unit inside the name when the ingredient after
+  /// it is a word it has not seen ("2 dl vinbärsgelé"): a known unit straight
+  /// after the amount is the unit.
+  static List<BioLabel> _withUnitAfterAmount(
+    List<String> tokens,
+    List<BioLabel> labels,
+  ) {
+    if (labels.contains(BioLabel.bUnit)) return labels;
+    for (var i = 1; i < tokens.length; i++) {
+      final afterQty =
+          labels[i - 1] == BioLabel.bQty || labels[i - 1] == BioLabel.iQty;
+      final isQty = labels[i] == BioLabel.bQty || labels[i] == BioLabel.iQty;
+      if (!afterQty ||
+          isQty ||
+          !UnitDefinitions.isKnownUnit(tokens[i].toLowerCase())) {
+        continue;
+      }
+      final fixed = List.of(labels);
+      fixed[i] = BioLabel.bUnit;
+      // The rest of the old name span continues as the name.
+      if (i + 1 < tokens.length && fixed[i + 1] == BioLabel.iName) {
+        fixed[i + 1] = BioLabel.bName;
+      }
+      return fixed;
+    }
+    return labels;
+  }
+
   /// Groups consecutive tokens by their BIO label type into span strings.
   /// Filters out punctuation-only tokens and parenthetical content to prevent
   /// comma/paren artifacts in QTY/UNIT spans.
@@ -226,6 +299,8 @@ class CrfIngredientParser {
     List<BioLabel> labels,
   ) {
     final result = <_SpanType, List<String>>{};
+    final lastIndex = <_SpanType, int>{};
+    final firstIndex = <_SpanType, int>{};
 
     // Track parenthesis depth to suppress QTY/UNIT inside parens
     var parenDepth = 0;
@@ -243,9 +318,22 @@ class CrfIngredientParser {
           final suppress =
               parenDepth > 0 &&
               (type == _SpanType.qty || type == _SpanType.unit);
-          if (!suppress) {
+          // A second amount further along the line ("2 dl mjöl + 4 dl vatten",
+          // "4 äggvitor, ca 1 dl") belongs to another part of the line, not
+          // to this ingredient's amount.
+          final laterAmount =
+              ((type == _SpanType.qty || type == _SpanType.unit) &&
+                  result.containsKey(type) &&
+                  lastIndex[type] != i - 1) ||
+              (type == _SpanType.unit &&
+                  firstIndex.containsKey(_SpanType.name) &&
+                  firstIndex.containsKey(_SpanType.qty) &&
+                  firstIndex[_SpanType.qty]! < firstIndex[_SpanType.name]!);
+          if (!suppress && !laterAmount) {
             result.putIfAbsent(type, () => []).add(tokens[i]);
             lastType = type;
+            lastIndex[type] = i;
+            firstIndex.putIfAbsent(type, () => i);
           }
         }
       } else if (tokens[i].toLowerCase() == 'och' && lastType != null) {

@@ -320,8 +320,11 @@ class IngredientProcessor {
   /// final cleaned = IngredientProcessor.preprocessOnly(raw);
   /// // Returns: "5 dl mjölk"
   /// ```
-  static String preprocessOnly(String rawText) {
-    return IngredientPreprocessor.preprocess(rawText).cleaned;
+  static String preprocessOnly(String rawText, {bool keepRanges = false}) {
+    return IngredientPreprocessor.preprocess(
+      rawText,
+      keepRanges: keepRanges,
+    ).cleaned;
   }
 
   /// Helper: Check if preprocessing would modify the text
