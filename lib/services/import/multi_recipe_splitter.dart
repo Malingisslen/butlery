@@ -150,6 +150,7 @@ class MultiRecipeSplitter {
     var hasIngredients = false;
     var hasInstructions = false;
     var hasYield = false;
+    var methodAfterRows = false;
     final texts = [for (final l in neLines) l.text];
 
     for (var p = 0; p < neLines.length; p++) {
@@ -162,7 +163,9 @@ class MultiRecipeSplitter {
           opensAtProse) {
         if (boundaries.isEmpty) {
           boundaries.add(line.rawIndex);
-        } else if (hasIngredients && hasInstructions ||
+        } else if (hasIngredients &&
+                hasInstructions &&
+                (methodAfterRows || !_isComponentHeading(line.text)) ||
             // Two yield lines before any method: the page prints both
             // ingredient lists first, and `distributeMethods` below pairs
             // the methods up afterwards.
@@ -171,6 +174,7 @@ class MultiRecipeSplitter {
           hasIngredients = false;
           hasInstructions = false;
           hasYield = false;
+          methodAfterRows = false;
         }
       }
       if (YieldLayout.isYieldLine(line.text)) hasYield = true;
@@ -180,6 +184,7 @@ class MultiRecipeSplitter {
       }
       if (_isInstructional(line.text)) {
         hasInstructions = true;
+        if (hasIngredients) methodAfterRows = true;
       }
     }
 
@@ -364,6 +369,15 @@ class MultiRecipeSplitter {
     if (perPage.any((n) => n > _maxLayoutBlocksPerPage)) return null;
 
     return blocks;
+  }
+
+  /// "Kaka", "Smuldeg", "Till fyllningen": a short name that heads one part of
+  /// a recipe. It does not open a second recipe while the rows above it have
+  /// had no method after them; the page's introduction can read like one, so
+  /// an instruction signal alone is not that method.
+  bool _isComponentHeading(String line) {
+    final t = line.trim();
+    return !t.endsWith('.') && t.split(RegExp(r'\s+')).length <= 3;
   }
 
   /// A heading-like line: short, capitalised, and NOT a header/ingredient/

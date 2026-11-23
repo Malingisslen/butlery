@@ -596,4 +596,31 @@ void main() {
       });
     }
   });
+
+  group('instructionScore opens on the whole verb in a short phrase', () {
+    for (final row in [
+      'riven muskotnöt',
+      'hackad persilja',
+      'vispad grädde',
+      'strösocker',
+    ]) {
+      test('"$row" is not a step', () {
+        expect(RecipeSectionDetector.instructionScore(row), lessThan(2));
+      });
+    }
+
+    test('the verb itself still is', () {
+      expect(RecipeSectionDetector.instructionScore('Riv potatisen'), 3);
+      expect(RecipeSectionDetector.instructionScore('Rör om'), 3);
+    });
+
+    test('a long sentence opening on a participle keeps the stem match', () {
+      expect(
+        RecipeSectionDetector.instructionScore(
+          'Vispad grädde kan ibland vara gott att tillsätta glasyren',
+        ),
+        greaterThanOrEqualTo(2),
+      );
+    });
+  });
 }

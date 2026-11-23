@@ -382,4 +382,14 @@ void main() {
       },
     );
   });
+
+  test('a bulleted tip that stops on "eller" takes its last words', () {
+    const page =
+        '• testa topping som honungsrostade nötter eller\n'
+        'riven choklad';
+    expect(
+      reflowWrappedLines(page),
+      '• testa topping som honungsrostade nötter eller riven choklad',
+    );
+  });
 }

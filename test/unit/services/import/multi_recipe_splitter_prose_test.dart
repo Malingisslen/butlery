@@ -129,4 +129,31 @@ Lägg skivorna i en skål. Smält 50 g smör i en panna och rör i 2 msk persilj
       expect(MultiRecipeSplitter().split(page), hasLength(2));
     });
   });
+
+  group('a component heading does not open a second recipe', () {
+    // Introduction that reads like a method, then two component lists, then
+    // the one method: "Kaka" heads the second list of the same recipe.
+    const page = '''
+Fruktkaka med körsbär och fröströssel
+En saftig fruktkaka tryfferad av romkörsbär och toppad med ett krispigt lager av vallmo-, solros- och sesamfrö. Många fruktkakor brukar bli saftigare och godare efter ett par dagar, men denna smakar bäst när den är relativt nybakad.
+Strössel
+½ dl sesamfrö
+½ dl blå vallmofrö
+½ dl solrosfrö
+2 msk brun farin
+50 g rumsvarmt smör
+Kaka
+150 g rumsvarmt smör
+1 ½ dl brun farin
+3 ägg
+3 dl vetemjöl
+2 tsk bakpulver
+Mät upp de torra ingredienserna till strösslet i en bunke. Tillsätt smöret och arbeta ihop till en kladdig massa.
+Rör smöret till kakan mjukt tillsammans med farinet. Tillsätt ett ägg i taget och rör ihop till en lös smet.
+Häll smeten i en limpform och strö över fröströsslet. Grädda i nedre delen av ugnen i 175 grader i ca 55 minuter.''';
+
+    test('the page stays one block', () {
+      expect(MultiRecipeSplitter().split(page), hasLength(1));
+    });
+  });
 }

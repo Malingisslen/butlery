@@ -23,7 +23,8 @@ class InlineBulletListSplitter {
   // An uppercase start means a new section ("Ca 1675 kJ", "Gör så här").
   // A one-letter start is OCR noise for "1" or "l", not a section.
   // A line opening with a bullet is the next item of the run.
-  static final _continuation = RegExp(r'^(?:[a-zåäö•]|\d(?!\.)|[A-ZÅÄÖ]\s)');
+  // A line opening with a slash is the rest of an item ("3/4" / "/ vatten").
+  static final _continuation = RegExp(r'^(?:[a-zåäö•/]|\d(?!\.)|[A-ZÅÄÖ]\s)');
 
   static const _minBullets = 2;
 
