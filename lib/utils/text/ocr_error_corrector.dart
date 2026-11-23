@@ -53,6 +53,8 @@ class OcrErrorCorrector {
     // Printed "2½" survives OCR as "21/2": the whole number and the fraction
     // run together. Only the leading amount is read this way.
     final words = line
+        .replaceFirst(_strayBeforeFraction, '')
+        .replaceFirstMapped(_percentAsHalf, (m) => '${m[1]}½')
         .replaceFirstMapped(_gluedMixedFraction, (m) => '${m[1]} ${m[2]}')
         .split(RegExp(r'\s+'));
     final corrected = <String>[];
@@ -76,6 +78,20 @@ class OcrErrorCorrector {
   static List<String> correctLines(List<String> lines) {
     return lines.map(correctLine).toList();
   }
+
+  // The reader prints the half sign as "%" ("% dl", "1% dl") and sometimes
+  // prefixes a stray letter ("v½ dl"). Both only count when a measuring unit
+  // follows, so "1% mjölk" is left alone.
+  static const _unitAhead =
+      r'(?=\s+(?:dl|di|d/|d|msk|tsk|krm|l|liter|kg|g|st)(?:\s|$))';
+  static final _percentAsHalf = RegExp(
+    r'^(\d?)%½?' + _unitAhead,
+    caseSensitive: false,
+  );
+  static final _strayBeforeFraction = RegExp(
+    r'^[vV](?=[½¼¾]' + _unitAhead + r')',
+    caseSensitive: false,
+  );
 
   static final _gluedMixedFraction = RegExp(r'^(\d)([13]/[248])(?=\s)');
 

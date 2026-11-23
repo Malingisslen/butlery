@@ -91,5 +91,15 @@ void main() {
       expect(OcrErrorCorrector.correctLine('11/4 dl mjölk'), '1 1/4 dl mjölk');
       expect(OcrErrorCorrector.correctLine('1/2 dl mjölk'), '1/2 dl mjölk');
     });
+
+    test('reads a percent sign before a unit as the half sign', () {
+      expect(OcrErrorCorrector.correctLine('% dl sirap'), '½ dl sirap');
+      expect(OcrErrorCorrector.correctLine('1% dl socker'), '1½ dl socker');
+      expect(OcrErrorCorrector.correctLine('1%½ dl socker'), '1½ dl socker');
+      expect(OcrErrorCorrector.correctLine('v½ dl mjölk'), '½ dl mjölk');
+      expect(OcrErrorCorrector.correctLine('1% mjölk'), '1% mjölk');
+      expect(OcrErrorCorrector.correctLine('% grädde'), '% grädde');
+      expect(OcrErrorCorrector.correctLine('v½ grädde'), 'v½ grädde');
+    });
   });
 }
