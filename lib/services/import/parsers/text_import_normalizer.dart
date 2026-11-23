@@ -2,6 +2,7 @@
 /// Extracted from text_import_strategy.dart for better organization.
 
 import 'package:butlery/services/import/layout/line_reflow.dart';
+import 'package:butlery/services/import/parsers/ingredient_line_splitter.dart';
 import 'package:butlery/services/import/parsers/inline_bullet_list_splitter.dart';
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
@@ -200,8 +201,8 @@ class TextImportNormalizer {
   /// Combines all normalization steps for recipe text.
   static String preprocessText(String input) {
     String processed =
-        InlineBulletListSplitter.split(
-          joinHyphenatedWords(input),
+        IngredientLineSplitter.process(
+          InlineBulletListSplitter.split(joinHyphenatedWords(input)),
         ).replaceAll(
           RegExp(r'\n[ \t]*\n(?:[ \t]*\n)*'),
           '\n$_paragraphMarker\n',

@@ -1423,7 +1423,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), '');
     cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), '');
-    cleaned = IngredientProcessor.preprocessOnly(cleaned);
+    cleaned = IngredientProcessor.preprocessOnly(cleaned, keepRanges: true);
     // Repair systematic OCR misreads (e.g. "4 di" -> "4 dl"). Gate-safe: only
     // swaps a token when the result is a known unit/ingredient, so clean
     // manual/social input is left untouched.

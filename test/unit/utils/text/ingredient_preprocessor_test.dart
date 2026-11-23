@@ -455,4 +455,19 @@ void main() {
       });
     });
   });
+
+  test('keepRanges leaves a written range as written', () {
+    expect(
+      IngredientPreprocessor.preprocess('6-8 ägg', keepRanges: true).cleaned,
+      '6-8 ägg',
+    );
+    expect(
+      IngredientPreprocessor.preprocess(
+        '1 1/2 - 2 dl mjölk',
+        keepRanges: true,
+      ).cleaned,
+      '1 1/2-2 dl mjölk',
+    );
+    expect(IngredientPreprocessor.preprocess('6-8 ägg').cleaned, '8 ägg');
+  });
 }
