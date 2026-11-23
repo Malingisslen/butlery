@@ -39,7 +39,7 @@ Reading the trend: lines are comparable only while the verified set is the same 
 compare `verified` before reading a movement in the F1s. Lines before `missed` existed
 scored only entries that had a draft, so they are a different population. Lines with a
 different `nameKey` compared ingredient names another way (none: the whole facit wording;
-`core-1`: the core name, with preparation words and alternatives scored apart), so they are a
+`core-1`: the core name, with preparation words and alternatives scored apart; `core-2`: also without state and size words and a leading measure word), so they are a
 different yardstick. The file lives
 outside the repo and outside `llm_response_samples`, so a BUT-2028 reset does not wipe it.
 

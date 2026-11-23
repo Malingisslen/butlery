@@ -38,11 +38,21 @@ void main() {
       expect(ingredientCoreName('honung alternativt sirap'), 'honung');
     });
 
-    test('a word that names a product before the name stays', () {
-      expect(ingredientCoreName('kokt skinka'), 'kokt skinka');
-      expect(ingredientCoreName('frysta bär'), 'frysta bär');
-      expect(ingredientCoreName('grovt salt'), 'grovt salt');
-      expect(ingredientCoreName('fint salt'), 'fint salt');
+    test(
+      'a state word before the name is dropped, a fineness adverb stays',
+      () {
+        expect(ingredientCoreName('kokt skinka'), 'skinka');
+        expect(ingredientCoreName('frysta bär'), 'bär');
+        expect(ingredientCoreName('kallt smör'), 'smör');
+        expect(ingredientCoreName('torkad timjan'), 'timjan');
+        expect(ingredientCoreName('grovt salt'), 'grovt salt');
+        expect(ingredientCoreName('fint salt'), 'fint salt');
+      },
+    );
+
+    test('a measure word at the front is dropped', () {
+      expect(ingredientCoreName('knippa persilja'), 'persilja');
+      expect(ingredientCoreName('skivor bacon'), 'bacon');
     });
 
     test('the same word after a comma is a preparation', () {
@@ -55,9 +65,11 @@ void main() {
       expect(ingredientCoreName('äpplen (ca 500 g)'), 'äpplen');
     });
 
-    test('keeps colour, size and kind, which name another product', () {
+    test('keeps colour and kind, which name another product; drops size', () {
       expect(ingredientCoreName('röd paprika'), 'röd paprika');
-      expect(ingredientCoreName('stor potatis'), 'stor potatis');
+      expect(ingredientCoreName('gul lök'), 'gul lök');
+      expect(ingredientCoreName('stor potatis'), 'potatis');
+      expect(ingredientCoreName('medelstora ägg'), 'ägg');
     });
 
     test('a comma that separates two ingredients is kept', () {

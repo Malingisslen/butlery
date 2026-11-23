@@ -13,8 +13,9 @@ import 'corpus_metrics.dart';
 
 /// Owned by the yardstick on purpose. Reusing the parser's own word list would
 /// let a change to that list move the score without the parser reading better.
-/// Colour, size and kind ("gul lök", "stor", "fast") stay in the core: they name
-/// a different product, not a different preparation.
+/// Colour and kind ("gul lök", "fast") stay in the core: they name a different
+/// product, not a different preparation. State and size are in
+/// [stateAndSizeWords].
 const preparationWords = {
   'avrunna',
   'avrunnen',
@@ -115,8 +116,7 @@ const preparationWords = {
   'eventuellt',
 };
 
-/// Words that are a preparation after a comma ("potatis, kokt") and part of the
-/// product before the name ("kokt skinka", "frysta bär", "varm choklad").
+/// Words that are a preparation after a comma ("potatis, kokt").
 const _preparationAfterComma = {
   'fryst',
   'frysta',
@@ -128,6 +128,53 @@ const _preparationAfterComma = {
   'varm',
   'varma',
   'varmt',
+};
+
+/// State and size the facit writes into the name while the app keeps them as a
+/// separate attribute ("kallt smör" is "smör", "stora ägg" is "ägg"). Colour and
+/// kind stay: "gul lök" is another product.
+const stateAndSizeWords = {
+  'fryst',
+  'frysta',
+  'kall',
+  'kalla',
+  'kallt',
+  'kokt',
+  'kokta',
+  'varm',
+  'varma',
+  'varmt',
+  'torkad',
+  'torkade',
+  'torkat',
+  'mjölig',
+  'mjöliga',
+  'mjöligt',
+  'valfri',
+  'valfria',
+  'valfritt',
+  'stor',
+  'stora',
+  'stort',
+  'medelstor',
+  'medelstora',
+  'medelstort',
+  'liten',
+  'lilla',
+  'små',
+  'litet',
+};
+
+/// Measures the facit sometimes keeps in the name and the app reads as the unit.
+/// Only dropped at the front, and never when nothing else would remain.
+const _leadingMeasureWords = {
+  'knippa',
+  'knippen',
+  'blad',
+  'skiva',
+  'skivor',
+  'kilo',
+  'kg',
 };
 
 /// "Fint hackad" is a preparation, "fint salt" a product.
@@ -165,6 +212,10 @@ String ingredientCoreName(String name) {
   final kept = <String>[
     for (var i = 0; i < head.length; i++)
       if (!preparationWords.contains(head[i]) &&
+          !stateAndSizeWords.contains(head[i]) &&
+          !(i == 0 &&
+              head.length > 1 &&
+              _leadingMeasureWords.contains(head[i])) &&
           !(_preparationAdverbs.contains(head[i]) &&
               i + 1 < head.length &&
               preparationWords.contains(head[i + 1])))

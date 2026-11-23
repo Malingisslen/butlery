@@ -163,7 +163,7 @@ void main() {
         closeTo(summary.meanIngredientFullF1, 0.0001),
       );
       expect(second.keys, containsAll(['instructionF1', 'ocrRecall']));
-      expect(second['nameKey'], 'core-1');
+      expect(second['nameKey'], 'core-2');
       expect(second.keys, contains('ingredientDetailF1'));
     });
   });
