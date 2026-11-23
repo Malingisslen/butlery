@@ -422,10 +422,34 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     r'fräs|sjud|tillsätt|smaksätt|strö|vänd|ta|låt|förvärm|sätt|börja|gör|'
     r'ställ|skala|hacka|riv|strimla|marinera|krydda|toppa|garnera|pressa|'
     r'skölj|dela|mixa|pensla|forma|baka|rosta|grilla|fyll|kavla|hetta|'
-    r'skiva|tärna|bryn|smaka)'
+    r'skiva|tärna|bryn|smaka|mät|arbeta|kärna|rensa|bryt|smula|fördela|mosa|'
+    r'passera|sila|tryck|ansa|sänk|klicka|lyft|vispa|fortsätt|sprid|kör|'
+    r'ringla|skumma|täck|dra|skjut|stäng|öppna|tillaga|lös)'
     r'(?=[\s,])',
     caseSensitive: false,
   );
+
+  // Opening on a preposition or conjunction means the line continues a
+  // sentence; "Smör till stekning." opens on its ingredient and stays a row,
+  // so its allergen is still tagged.
+  static final _sentenceContinuation = RegExp(
+    r'^(?:och|eller|med|samt|till|i|på|av|för|att|som|då|så|men|över|under|'
+    r'tills|när|om|efter|innan|utan|sedan|därefter|dessutom)\s',
+    caseSensitive: false,
+  );
+
+  /// A line that ends its sentence and carries no amount is method text a
+  /// column break cut loose ("och peppar.", "med lite salt och svartpeppar."),
+  /// never a row, however many ingredient words it holds. Before the first
+  /// row it is the page's own prose and is left alone.
+  bool _isSentenceTail(String line, {required bool rowsSeen}) {
+    final text = line.trim();
+    return rowsSeen &&
+        _sentenceContinuation.hasMatch(text) &&
+        text.endsWith('.') &&
+        !text.contains(RegExp(r'\d')) &&
+        text.split(_whitespace).length >= 3;
+  }
 
   bool _opensMethod(String line) {
     final text = line.trim();
@@ -1016,7 +1040,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           stepGoesOn ||
           // Under rows with no heading over them, "Skiva löken och stek den
           // mjuk i smör." is a step that ends on an ingredient word.
-          (listStarted && _opensMethod(line))) {
+          (listStarted && _opensMethod(line)) ||
+          _isSentenceTail(line, rowsSeen: listStarted)) {
         final instruction = _parseInstructionLine(line);
         if (instruction != null && instruction.length > 10) {
           takeStep(line, instruction);
