@@ -1,3 +1,4 @@
+import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/import/prose_layout.dart';
 import 'package:butlery/services/import/yield_layout.dart';
@@ -42,6 +43,19 @@ class RecipeTitlePicker {
     r'\b(sidan|sid\.|bild|foto|ovan|nedan)\b',
     caseSensitive: false,
   );
+
+  /// Labels a recipe card or social post prints above its facts. They head a
+  /// block of the page, never the recipe.
+  static const _cardLabels = {
+    'recept',
+    'tillagningstid',
+    'förberedelsetid',
+    'tid',
+    'portioner',
+    'ingredienser',
+    'näringsvärde',
+    'svårighetsgrad',
+  };
 
   static final _terminalPunctuation = RegExp(r'[.,:;!?]$');
 
@@ -151,6 +165,11 @@ class RecipeTitlePicker {
     if (t.contains(RegExp(r'[\d:]'))) return false;
     if (!t.contains(RegExp(r'[A-Za-zÅÄÖåäöÉé]{4}'))) return false;
     if (ProseLayout.isTailLabel(t)) return false;
+    if (_cardLabels.contains(t.toLowerCase())) return false;
+    if (HeadingWordLists.isPageFurniture(t) ||
+        HeadingWordLists.looksLikeHandle(t)) {
+      return false;
+    }
     if (_terminalPunctuation.hasMatch(t)) return false;
     if (_pageReference.hasMatch(t)) return false;
     final first = t[0];

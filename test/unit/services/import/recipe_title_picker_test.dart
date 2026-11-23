@@ -96,4 +96,18 @@ void main() {
       isNull,
     );
   });
+
+  test('card labels and social chrome above the facts are never the title', () {
+    expect(
+      photo([
+        'Gillas av anna_k och andra',
+        'Recept',
+        'Tillagningstid',
+        '15-20min',
+        '4-5 portioner',
+        '2 dl mjölk',
+      ]),
+      isNull,
+    );
+  });
 }
