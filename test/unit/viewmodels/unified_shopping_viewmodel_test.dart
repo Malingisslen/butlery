@@ -23,6 +23,7 @@ import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/category_preferences.dart';
+import 'package:butlery/models/list_category_order.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 
@@ -113,6 +114,10 @@ void main() {
     registerFallbackValue(ShoppingListFactory.buildItem());
     registerFallbackValue(<UnifiedShoppingItem>[]);
     registerFallbackValue(ConsentPurpose.analytics);
+    registerFallbackValue(CategoryPreferences());
+    registerFallbackValue(
+      ListCategoryOrder(listId: 'l', categoryOrder: const []),
+    );
   });
 
   setUp(() {
@@ -1410,6 +1415,88 @@ void main() {
 
     test('returns null for an item with nothing saved', () {
       expect(viewModel.savedCategoryFor('Kaffe'), isNull);
+    });
+  });
+
+  // BUT-2489: with a store picked the arranged order belongs to the store;
+  // with none it belongs to the list, as before. Real module, mocked repo.
+  group('store category order (BUT-2489)', () {
+    late _MockCategoryPreferencesRepository repository;
+    late ShoppingCategoryPreferencesModule preferences;
+
+    setUp(() async {
+      repository = _MockCategoryPreferencesRepository();
+      when(repository.getPreferences).thenAnswer((_) async => null);
+      when(() => repository.savePreferences(any())).thenAnswer((_) async {});
+      when(
+        () => repository.saveListCategoryOrder(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => repository.deleteListCategoryOrder(any()),
+      ).thenAnswer((_) async {});
+      preferences = ShoppingCategoryPreferencesModule(repository: repository);
+      await preferences.load();
+      when(
+        () => mockShoppingService.categoryPreferences,
+      ).thenReturn(preferences);
+    });
+
+    test(
+      'saving with a store picked changes the store, not the list',
+      () async {
+        await viewModel.addStoreAndSelect('ICA');
+        await viewModel.saveCategoryOrder([ShoppingCategory.dairy]);
+
+        expect(viewModel.activeStore!.categoryOrder, [ShoppingCategory.dairy]);
+        expect(viewModel.categoryOrder, [ShoppingCategory.dairy]);
+        verifyNever(() => repository.saveListCategoryOrder(any()));
+      },
+    );
+
+    test('saving with no store changes the list, not any store', () async {
+      await viewModel.addStoreAndSelect('ICA');
+      await viewModel.selectStore(null);
+      await viewModel.saveCategoryOrder([ShoppingCategory.dairy]);
+
+      verify(() => repository.saveListCategoryOrder(any())).called(1);
+      expect(viewModel.shoppingStores.single.categoryOrder, isEmpty);
+    });
+
+    test('reset with a store picked clears the store order only', () async {
+      await viewModel.addStoreAndSelect('ICA');
+      await viewModel.saveCategoryOrder([ShoppingCategory.dairy]);
+      await viewModel.resetListCategoryOrder();
+
+      expect(viewModel.activeStore!.categoryOrder, isEmpty);
+      verifyNever(() => repository.deleteListCategoryOrder(any()));
+    });
+
+    test('reset with no store removes the list order', () async {
+      await viewModel.resetListCategoryOrder();
+
+      verify(() => repository.deleteListCategoryOrder(testListId)).called(1);
+    });
+
+    test('a refused store name leaves the picked store as it was', () async {
+      await viewModel.addStoreAndSelect('ICA');
+      final picked = viewModel.activeStore!.id;
+
+      expect(await viewModel.addStoreAndSelect('   '), isFalse);
+      expect(viewModel.activeStore!.id, picked);
+      expect(await viewModel.addStoreAndSelect('Willys'), isTrue);
+      expect(viewModel.activeStore!.name, 'Willys');
+    });
+
+    test('picking and removing a store notifies listeners', () async {
+      var notified = 0;
+      viewModel.addListener(() => notified++);
+      await viewModel.addStoreAndSelect('ICA');
+      final afterAdd = notified;
+      await viewModel.deleteStore(viewModel.activeStore!.id);
+
+      expect(notified, greaterThan(afterAdd));
+      expect(viewModel.activeStore, isNull);
+      expect(viewModel.shoppingStores, isEmpty);
     });
   });
 

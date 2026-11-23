@@ -11000,6 +11000,78 @@ abstract class AppLocalizations {
   /// **'Spara ordning'**
   String get shoppingSaveOrder;
 
+  /// No description provided for @shoppingStoreChipNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj butik'**
+  String get shoppingStoreChipNone;
+
+  /// No description provided for @shoppingStoreChip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butik: {name}'**
+  String shoppingStoreChip(String name);
+
+  /// No description provided for @shoppingStorePickerTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilken butik?'**
+  String get shoppingStorePickerTitle;
+
+  /// No description provided for @shoppingStoreNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen butik'**
+  String get shoppingStoreNone;
+
+  /// No description provided for @shoppingStoreNoneSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listans egen ordning'**
+  String get shoppingStoreNoneSubtitle;
+
+  /// No description provided for @shoppingStoreAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny butik'**
+  String get shoppingStoreAdd;
+
+  /// No description provided for @shoppingStoreAddHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butikens namn, till exempel ICA Maxi'**
+  String get shoppingStoreAddHint;
+
+  /// No description provided for @shoppingStoreLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan spara högst {max} butiker'**
+  String shoppingStoreLimit(int max);
+
+  /// No description provided for @shoppingStoreDeleteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort butiken?'**
+  String get shoppingStoreDeleteTitle;
+
+  /// No description provided for @shoppingStoreDeleteMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} och dess ordning tas bort. Dina listor ändras inte.'**
+  String shoppingStoreDeleteMessage(String name);
+
+  /// No description provided for @shoppingStoreDeleteConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get shoppingStoreDeleteConfirm;
+
+  /// No description provided for @shoppingStoreOrderTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordning i {name}'**
+  String shoppingStoreOrderTitle(String name);
+
   /// No description provided for @shoppingItemMoved.
   ///
   /// In sv, this message translates to:

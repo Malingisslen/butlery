@@ -15,12 +15,14 @@ import 'package:butlery/widgets/common/surfaces/butlery_swatch.dart';
 
 /// Bottom sheet for reordering shopping list categories via drag handles.
 class CategoryOrderSheet extends StatefulWidget {
+  final String? title;
   final List<String> currentOrder;
   final Future<void> Function(List<String>) onSave;
   final Future<void> Function()? onReset;
 
   const CategoryOrderSheet({
     super.key,
+    this.title,
     required this.currentOrder,
     required this.onSave,
     this.onReset,
@@ -28,6 +30,7 @@ class CategoryOrderSheet extends StatefulWidget {
 
   static Future<void> show(
     BuildContext context, {
+    String? title,
     required List<String> currentOrder,
     required Future<void> Function(List<String>) onSave,
     Future<void> Function()? onReset,
@@ -35,6 +38,7 @@ class CategoryOrderSheet extends StatefulWidget {
     return showButlerySheet<void>(
       context: context,
       builder: (_) => CategoryOrderSheet(
+        title: title,
         currentOrder: currentOrder,
         onSave: onSave,
         onReset: onReset,
@@ -88,7 +92,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                 vertical: AppDimensions.space8,
               ),
               child: ButlerySheetHeader(
-                title: context.l10n.shoppingCategoryOrderTitle,
+                title: widget.title ?? context.l10n.shoppingCategoryOrderTitle,
                 trailing: widget.onReset == null
                     ? null
                     : ButleryTextButton(

@@ -7096,6 +7096,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingSaveOrder => 'Save order';
 
   @override
+  String get shoppingStoreChipNone => 'Choose store';
+
+  @override
+  String shoppingStoreChip(String name) {
+    return 'Store: $name';
+  }
+
+  @override
+  String get shoppingStorePickerTitle => 'Which store?';
+
+  @override
+  String get shoppingStoreNone => 'No store';
+
+  @override
+  String get shoppingStoreNoneSubtitle => 'The list\'s own order';
+
+  @override
+  String get shoppingStoreAdd => 'New store';
+
+  @override
+  String get shoppingStoreAddHint => 'Store name, for example ICA Maxi';
+
+  @override
+  String shoppingStoreLimit(int max) {
+    return 'You can save at most $max stores';
+  }
+
+  @override
+  String get shoppingStoreDeleteTitle => 'Remove the store?';
+
+  @override
+  String shoppingStoreDeleteMessage(String name) {
+    return '$name and its order are removed. Your lists are not changed.';
+  }
+
+  @override
+  String get shoppingStoreDeleteConfirm => 'Remove';
+
+  @override
+  String shoppingStoreOrderTitle(String name) {
+    return 'Order in $name';
+  }
+
+  @override
   String shoppingItemMoved(String category) {
     return 'Moved to $category';
   }

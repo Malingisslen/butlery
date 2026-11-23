@@ -7001,6 +7001,50 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingSaveOrder => 'Spara ordning';
 
   @override
+  String get shoppingStoreChipNone => 'Välj butik';
+
+  @override
+  String shoppingStoreChip(String name) {
+    return 'Butik: $name';
+  }
+
+  @override
+  String get shoppingStorePickerTitle => 'Vilken butik?';
+
+  @override
+  String get shoppingStoreNone => 'Ingen butik';
+
+  @override
+  String get shoppingStoreNoneSubtitle => 'Listans egen ordning';
+
+  @override
+  String get shoppingStoreAdd => 'Ny butik';
+
+  @override
+  String get shoppingStoreAddHint => 'Butikens namn, till exempel ICA Maxi';
+
+  @override
+  String shoppingStoreLimit(int max) {
+    return 'Du kan spara högst $max butiker';
+  }
+
+  @override
+  String get shoppingStoreDeleteTitle => 'Ta bort butiken?';
+
+  @override
+  String shoppingStoreDeleteMessage(String name) {
+    return '$name och dess ordning tas bort. Dina listor ändras inte.';
+  }
+
+  @override
+  String get shoppingStoreDeleteConfirm => 'Ta bort';
+
+  @override
+  String shoppingStoreOrderTitle(String name) {
+    return 'Ordning i $name';
+  }
+
+  @override
   String shoppingItemMoved(String category) {
     return 'Flyttade till $category';
   }

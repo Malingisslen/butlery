@@ -4661,6 +4661,46 @@
   "shoppingCategoryOrderTitle": "Category order",
   "shoppingResetOrder": "Reset",
   "shoppingSaveOrder": "Save order",
+  "shoppingStoreChipNone": "Choose store",
+  "shoppingStoreChip": "Store: {name}",
+  "@shoppingStoreChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStorePickerTitle": "Which store?",
+  "shoppingStoreNone": "No store",
+  "shoppingStoreNoneSubtitle": "The list's own order",
+  "shoppingStoreAdd": "New store",
+  "shoppingStoreAddHint": "Store name, for example ICA Maxi",
+  "shoppingStoreLimit": "You can save at most {max} stores",
+  "@shoppingStoreLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingStoreDeleteTitle": "Remove the store?",
+  "shoppingStoreDeleteMessage": "{name} and its order are removed. Your lists are not changed.",
+  "@shoppingStoreDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStoreDeleteConfirm": "Remove",
+  "shoppingStoreOrderTitle": "Order in {name}",
+  "@shoppingStoreOrderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingItemMoved": "Moved to {category}",
   "@shoppingItemMoved": {
     "placeholders": {

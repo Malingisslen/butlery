@@ -4684,6 +4684,46 @@
   "shoppingCategoryOrderTitle": "Kategoriordning",
   "shoppingResetOrder": "Återställ",
   "shoppingSaveOrder": "Spara ordning",
+  "shoppingStoreChipNone": "Välj butik",
+  "shoppingStoreChip": "Butik: {name}",
+  "@shoppingStoreChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStorePickerTitle": "Vilken butik?",
+  "shoppingStoreNone": "Ingen butik",
+  "shoppingStoreNoneSubtitle": "Listans egen ordning",
+  "shoppingStoreAdd": "Ny butik",
+  "shoppingStoreAddHint": "Butikens namn, till exempel ICA Maxi",
+  "shoppingStoreLimit": "Du kan spara högst {max} butiker",
+  "@shoppingStoreLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingStoreDeleteTitle": "Ta bort butiken?",
+  "shoppingStoreDeleteMessage": "{name} och dess ordning tas bort. Dina listor ändras inte.",
+  "@shoppingStoreDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStoreDeleteConfirm": "Ta bort",
+  "shoppingStoreOrderTitle": "Ordning i {name}",
+  "@shoppingStoreOrderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingItemMoved": "Flyttade till {category}",
   "@shoppingItemMoved": {
     "placeholders": {
