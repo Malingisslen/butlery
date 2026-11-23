@@ -132,7 +132,11 @@ class TextImportNormalizer {
     // Pattern 3: Split before "X portioner" patterns mid-text
     result = result.replaceAllMapped(
       RegExp(r'([a-zåäö]{2,})\s*(\d+\s*portioner?\b)', caseSensitive: false),
-      (m) => '${m.group(1)}\n${m.group(2)}',
+      // "Till 4 portioner behövs:" is one heading, not a stray word "Till"
+      // above a yield line.
+      (m) => const {'till', 'för'}.contains(m.group(1)!.toLowerCase())
+          ? m.group(0)!
+          : '${m.group(1)}\n${m.group(2)}',
     );
 
     // Pattern 3b: Split AFTER "X portioner" when followed by uppercase (section header)

@@ -617,4 +617,15 @@ void main() {
       );
     });
   });
+
+  test('"Till 4 portioner behövs:" stays one line', () {
+    final out = TextImportNormalizer.splitConcatenatedIngredients(
+      'Locarnopotatis\nTill 4 portioner behövs:\n1 kg potatis',
+    );
+    expect(out, contains('Till 4 portioner behövs:'));
+    expect(
+      TextImportNormalizer.splitConcatenatedIngredients('middag4 portioner'),
+      'middag\n4 portioner',
+    );
+  });
 }

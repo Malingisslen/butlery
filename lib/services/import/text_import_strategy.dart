@@ -11,6 +11,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
@@ -102,7 +103,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // parses from `preprocessed`.
       final result = await _parseTextToRecipe(
         preprocessed,
-        normalized,
+        // A title the page broke at a hyphen ("Roquefort-" / "potatis") reads
+        // whole here, as it does in the body, so the body copy of it is
+        // recognised and consumed instead of becoming an ingredient.
+        joinHyphenatedWords(normalized),
         // Raw input: normalizeText strips ★ with the rest of the symbol
         // block, so a rating written as stars is gone afterwards.
         rating: extractRating(input),

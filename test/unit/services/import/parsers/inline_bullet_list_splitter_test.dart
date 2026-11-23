@@ -56,4 +56,28 @@ void main() {
       '1. Koka mjölken.',
     );
   });
+
+  test('a run continues over a line that opens with a bullet and splits a dot '
+      'glued to a word before a quantity', () {
+    const input =
+        'Till 4 portioner behövs:\n'
+        '800 g potatis • 60 g roquefortost. 1 1/4 dl\n'
+        'grädde - 3 msk vinäger • salt\n'
+        '• peppar - 1 tsk senap\n'
+        'Ca 2310 kJ';
+    expect(
+      InlineBulletListSplitter.split(input).split('\n'),
+      [
+        'Till 4 portioner behövs:',
+        '800 g potatis',
+        '60 g roquefortost',
+        '1 1/4 dl grädde',
+        '3 msk vinäger',
+        'salt',
+        'peppar',
+        '1 tsk senap',
+        'Ca 2310 kJ',
+      ],
+    );
+  });
 }
