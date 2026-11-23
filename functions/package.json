@@ -243,6 +243,7 @@
     "test:ingredient-change-requests-erasure": "ts-node src/__tests__/ingredient-change-requests-erasure.test.ts",
     "test:ai-cap-signal": "ts-node src/__tests__/ai-cap-signal.test.ts",
     "test:vertex-region": "ts-node src/__tests__/vertex-region.test.ts",
+    "test:image-base64": "ts-node src/__tests__/image-base64.test.ts",
     "test:gemini-model-pricing": "ts-node src/__tests__/gemini-model-pricing.test.ts",
     "test:ocr-vision-fallback": "ts-node src/__tests__/ocr-vision-fallback.test.ts",
     "test:ocr-photo-recipes": "ts-node src/__tests__/ocr-photo-recipes.test.ts",
