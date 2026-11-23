@@ -44,6 +44,39 @@ void main() {
         );
       });
 
+      test('a row ending on a word that needs a noun takes the line below', () {
+        expect(
+          IngredientRowJoiner.join('2 msk neutral rapsolja till', 'stekning'),
+          '2 msk neutral rapsolja till stekning',
+        );
+        expect(
+          IngredientRowJoiner.join('24 små tomater, gärna i olika', 'färger'),
+          '24 små tomater, gärna i olika färger',
+        );
+      });
+
+      test('an amount, unit and describing words take the name below', () {
+        expect(
+          IngredientRowJoiner.join('1 msk koncentrerad', 'grönsaksfond'),
+          '1 msk koncentrerad grönsaksfond',
+        );
+        expect(
+          IngredientRowJoiner.join('3 msk mjukt', 'smör'),
+          '3 msk mjukt smör',
+        );
+        expect(
+          IngredientRowJoiner.join('2 msk hackade, syltade', 'apelsinskal'),
+          '2 msk hackade, syltade apelsinskal',
+        );
+      });
+
+      test('a row that names its ingredient is not joined to a bare word', () {
+        expect(IngredientRowJoiner.join('3 dl salt', 'peppar'), isNull);
+        expect(IngredientRowJoiner.join('100 g choklad', 'Garnering'), isNull);
+        expect(IngredientRowJoiner.join('2 dl sallad', 'dressing'), isNull);
+        expect(IngredientRowJoiner.join('2 msk smör', 'apelsinskal'), isNull);
+      });
+
       test('two complete rows stay two rows', () {
         expect(IngredientRowJoiner.join('1 tsk salt', 'svartpeppar'), isNull);
         expect(IngredientRowJoiner.join('2 dl vatten', '1 msk smör'), isNull);

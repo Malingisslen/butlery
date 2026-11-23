@@ -62,6 +62,7 @@ class CrfIngredientParser {
       (m) => '${m[1]} ${m[2]}',
     );
 
+    cleaned = withoutStrayBracket(cleaned);
     cleaned = withWrittenRange(cleaned);
 
     // Strip purpose clauses ("till stekning", "till garnering")
@@ -89,14 +90,58 @@ class CrfIngredientParser {
   static final _leadingRange = RegExp(
     '^($_amountPart)\\s*[-–—]\\s*($_amountPart)(?=\\s|\$)',
   );
+  // The dash the print had between two whole numbers can drop out of the
+  // photo ("4 6 dl rödvin"); a second number no larger than twice the first
+  // is the other end of the range, not part of the name.
+  static final _spacedRange = RegExp(
+    r'^(\d{1,2})\s+(\d{1,2})(?=\s+\p{L})',
+    unicode: true,
+  );
+  static final _strayBracket = RegExp(r'^(\d+)\s*[}\]|]+[,.]?(?=\s)');
+  static const _unicodeFractions = {
+    '½': '1/2',
+    '¼': '1/4',
+    '¾': '3/4',
+    '⅓': '1/3',
+    '⅔': '2/3',
+    '⅛': '1/8',
+  };
+
+  /// A bracket the camera read where a fraction stood ("1}, dl mjölk") is
+  /// dropped, so the amount is not left inside the name.
+  @visibleForTesting
+  static String withoutStrayBracket(String line) {
+    final m = _strayBracket.firstMatch(line);
+    if (m == null) return line;
+    return '${m[1]}${line.substring(m.end)}';
+  }
 
   /// A range at the start of the line is one amount ("6–8 ägg", "3 – 4"):
   /// the model sees a spaced dash as a break and keeps only one end.
   @visibleForTesting
   static String withWrittenRange(String line) {
     final m = _leadingRange.firstMatch(line);
-    if (m == null) return line;
-    return '${m[1]}-${m[2]}${line.substring(m.end)}';
+    if (m != null) {
+      // A mixed number's unicode fraction ("1 ½-2") loses its half in the
+      // model; the slash form survives.
+      final low = m[1]!.contains(' ') ? _asciiFraction(m[1]!) : m[1]!;
+      return '$low-${m[2]}${line.substring(m.end)}';
+    }
+    final spaced = _spacedRange.firstMatch(line);
+    if (spaced != null) {
+      final low = int.parse(spaced[1]!);
+      final high = int.parse(spaced[2]!);
+      if (high > low && high <= low * 2) {
+        return '$low-$high${line.substring(spaced.end)}';
+      }
+    }
+    return line;
+  }
+
+  static String _asciiFraction(String amount) {
+    var out = amount;
+    _unicodeFractions.forEach((k, v) => out = out.replaceAll(k, v));
+    return out;
   }
 
   /// Parses multiple ingredient lines, filtering out group headers.
