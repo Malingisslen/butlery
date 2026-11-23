@@ -62,8 +62,7 @@ class CrfIngredientParser {
       (m) => '${m[1]} ${m[2]}',
     );
 
-    cleaned = withoutStrayBracket(cleaned);
-    cleaned = withWrittenRange(cleaned);
+    cleaned = withReadableAmount(cleaned);
 
     // Strip purpose clauses ("till stekning", "till garnering")
     cleaned = cleaned.replaceFirst(_purposeClause, '');
@@ -106,6 +105,11 @@ class CrfIngredientParser {
     '⅔': '2/3',
     '⅛': '1/8',
   };
+
+  /// The amount cleanups both readers share, so a photographed row reads the
+  /// same whichever one handles it.
+  static String withReadableAmount(String line) =>
+      withWrittenRange(withoutStrayBracket(line));
 
   /// A bracket the camera read where a fraction stood ("1}, dl mjölk") is
   /// dropped, so the amount is not left inside the name.
