@@ -14,13 +14,22 @@ class YieldLayout {
     caseSensitive: false,
   );
 
+  // A bare piece count ("4 stycken") is how a book of small items prints its
+  // yield. Anchored to the whole line so an ingredient row ("4 st ägg") is
+  // never read as one.
+  static final _pieceYieldLine = RegExp(
+    r'^(?:till\s+|för\s+)?\d+(?:\s*[-–]\s*\d+)?\s*(?:stycken|st)\.?$',
+    caseSensitive: false,
+  );
+
   // The two middle characters tolerate OCR noise ("Gốr sd här").
   static final _methodHeader = RegExp(
     r'^g.{1,2}r\s+s.{1,2}\s+h.{1,2}r\b',
     caseSensitive: false,
   );
 
-  static bool isYieldLine(String line) => _yieldLine.hasMatch(line.trim());
+  static bool isYieldLine(String line) =>
+      _yieldLine.hasMatch(line.trim()) || _pieceYieldLine.hasMatch(line.trim());
 
   static bool isMethodHeader(String line) =>
       _methodHeader.hasMatch(line.trim());
