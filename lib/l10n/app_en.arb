@@ -10211,49 +10211,6 @@
   "@unnamedSharedList": {
     "description": "BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data)."
   },
-  "parseConfidenceTitle": "Parse quality per ingredient",
-  "@parseConfidenceTitle": {
-    "description": "BUT-1244: section heading in the parse-confidence review widget shown after recipe import."
-  },
-  "parseConfidenceReviewCountSubtitle": "{count, plural, =1{1 may need a check} other{{count} may need a check}}",
-  "@parseConfidenceReviewCountSubtitle": {
-    "description": "BUT-1244 redesign: subtitle shown when one or more ingredients are not high-confidence (medium + low + failed). Only rendered when count > 0.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "format": "decimalPattern"
-      }
-    }
-  },
-  "parseConfidenceOriginalPrefix": "Original: {line}",
-  "@parseConfidenceOriginalPrefix": {
-    "description": "BUT-1244: prefix shown before the original source line when a user expands an ingredient row.",
-    "placeholders": {
-      "line": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yToggleConfidenceSection": "Show or hide",
-  "@a11yToggleConfidenceSection": {
-    "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yConfidenceHigh": "high parse quality",
-  "@a11yConfidenceHigh": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — high confidence."
-  },
-  "a11yConfidenceMedium": "medium parse quality",
-  "@a11yConfidenceMedium": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — medium confidence."
-  },
-  "a11yConfidenceLow": "low parse quality",
-  "@a11yConfidenceLow": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — low confidence."
-  },
-  "a11yConfidenceFailed": "unknown parse quality",
-  "@a11yConfidenceFailed": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — failed/unknown confidence."
-  },
   "recipeRelatedSectionTitle": "Related recipes",
   "@recipeRelatedSectionTitle": {
     "description": "BUT-1057: heading for the related-recipes section in recipe detail and edit form."
@@ -11747,26 +11704,26 @@
   "cookingNoStepsBodyNoIngredients": "Nobody has written how to make it yet. Write the steps and you can cook from here.",
   "cookingNoStepsWrite": "Write the steps",
   "cookingNoStepsShopping": "To the shopping list",
-  "parseConfidenceConfirm": "Correct",
-  "parseConfidenceConfirmed": "Confirmed",
-  "a11yParseConfidenceConfirm": "Confirm the line {line}",
-  "@a11yParseConfidenceConfirm": {
-    "placeholders": {
-      "line": {
-        "type": "String"
-      }
-    }
-  },
-  "parseConfidencePendingSave": "{count, plural, =1{Confirm 1 line before you save} other{Confirm {count} lines before you save}}",
-  "@parseConfidencePendingSave": {
+  "unreadIngredientEmpty": "Could not be read, fill in",
+  "unreadIngredientPartial": "Only part could be read, fill in the rest",
+  "unreadSaveTitle": "{count, plural, =1{One line is missing} other{{count} lines are missing}}",
+  "@unreadSaveTitle": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "parseConfidenceUnreadLine": "The line could not be read",
-  "a11yParseConfidenceUnreadLine": "A line that could not be read",
+  "unreadSaveBody": "{count, plural, =1{One ingredient line could not be read and is not filled in. Save anyway?} other{Some ingredient lines could not be read and are not filled in. Save anyway?}}",
+  "@unreadSaveBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unreadSaveFillIn": "Fill in",
+  "unreadSaveAnyway": "Save anyway",
   "importReadPages": "{count, plural, =1{Read 1 page} other{Read {count} pages}}",
   "@importReadPages": {
     "placeholders": {

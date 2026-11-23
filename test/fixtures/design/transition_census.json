@@ -304,11 +304,11 @@
       "flow": "03",
       "status": "TESTED",
       "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
-      "test_name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
+      "test_name": "a line that could not be read is empty in the editor and marked until the user edits it",
       "tests": [
         {
           "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
-          "name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
+          "name": "a line that could not be read is empty in the editor and marked until the user edits it",
           "group": "TR::FLOW::03::foto-ocr::otolkad-text"
         },
         {
@@ -317,37 +317,37 @@
           "group": "TR::FLOW::03::foto-ocr::otolkad-text"
         },
         {
-          "file": "test/widget/recipe/parse_confidence_review_test.dart",
-          "name": "a failed line is shown empty and marked, and one tap shows the raw line"
+          "file": "test/widget/widgets/sectioned_ingredient_list_builder_test.dart",
+          "name": "a marked empty line shows the note and the hint"
         }
       ],
       "ticket": null,
-      "reason": "Photo, text and voice imports store a snapshot with per-line confidence; a garbled amount or the image reader's [oläsligt] marker is a failed row, emptied in the editor and marked in the review (BUT-2158)."
+      "reason": "Photo, text and voice imports store a snapshot with per-line confidence; a garbled amount or the image reader's [oläsligt] marker is a failed row, emptied in the editor and marked on its row until the user edits it (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
       "flow": "03",
       "status": "TESTED",
       "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
-      "test_name": "each low or failed row waits until it is confirmed",
+      "test_name": "a low row from a text import is left as read, not marked",
       "tests": [
         {
           "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
-          "name": "each low or failed row waits until it is confirmed",
-          "group": "P6-U03 import review gates Spara"
-        },
-        {
-          "file": "test/widget/recipe/parse_confidence_review_test.dart",
-          "name": "a low row carries Stämmer; confirming reports that row"
+          "name": "a low row from a text import is left as read, not marked",
+          "group": "TR::FLOW::03::granska::fält-med-låg-säkerhet"
         },
         {
           "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
-          "name": "a low row from a text import waits for Stämmer",
+          "name": "medium and high rows are not marked",
           "group": "TR::FLOW::03::granska::fält-med-låg-säkerhet"
+        },
+        {
+          "file": "test/widget/views/skriv_sjalv_unread_lines_test.dart",
+          "name": "Spara asks about an unread line, Fyll i does not save"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer. Photo, text and voice imports reach the gate too (BUT-2158)."
+      "reason": "Only rows the reader could not read are marked; Spara stays enabled and asks before saving with one left. Low rows are left as read (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::receptet-finns-redan",

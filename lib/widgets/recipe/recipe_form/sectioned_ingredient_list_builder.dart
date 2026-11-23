@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -123,7 +125,13 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     if (row is HeadingRow) {
       return _buildHeadingRow(context, index, row.id);
     }
-    return _buildLineRow(context, index, lineIndex, headings);
+    return _buildLineRow(
+      context,
+      index,
+      lineIndex,
+      headings,
+      unread: (row as LineRow).unread,
+    );
   }
 
   Widget _buildHeadingRow(BuildContext context, int rowIndex, String id) {
@@ -199,14 +207,14 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     BuildContext context,
     int rowIndex,
     int lineIndex,
-    List<({String id, String label})> headings,
-  ) {
+    List<({String id, String label})> headings, {
+    required bool unread,
+  }) {
     // Defensive: never index past the supplied controllers.
     if (lineIndex >= lineControllers.length) {
       return SizedBox.shrink(key: ValueKey('ing_line_missing_$rowIndex'));
     }
-    return ButleryFieldRow(
-      key: ValueKey('ing_line_$lineIndex'),
+    final fieldRow = ButleryFieldRow(
       children: [
         ReorderableDragStartListener(
           index: rowIndex,
@@ -221,7 +229,9 @@ class SectionedIngredientListBuilder extends StatelessWidget {
         Expanded(
           child: ButleryRowField(
             controller: lineControllers[lineIndex],
-            hintText: '$label ${lineIndex + 1}',
+            hintText: unread && lineControllers[lineIndex].text.trim().isEmpty
+                ? context.l10n.unreadIngredientEmpty
+                : '$label ${lineIndex + 1}',
             maxLength: maxLength,
             onChanged: (value) => _handleLineChange(lineIndex, value),
           ),
@@ -244,6 +254,49 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 context.l10n.recipeIngredient,
               ),
               onPressed: () => onRemoveLine(lineIndex),
+            ),
+          ),
+      ],
+    );
+
+    // One stable structure for marked and unmarked rows: the field keeps its
+    // state (focus, cursor) when the mark clears on the first keystroke.
+    final cs = Theme.of(context).colorScheme;
+    final warningColor = context.modeColors.warning;
+    final noteText = lineControllers[lineIndex].text.trim().isEmpty
+        ? context.l10n.unreadIngredientEmpty
+        : context.l10n.unreadIngredientPartial;
+    return Column(
+      key: ValueKey('ing_line_$lineIndex'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: unread
+                ? BorderDirectional(
+                    start: BorderSide(color: warningColor, width: 4),
+                  )
+                : null,
+          ),
+          child: fieldRow,
+        ),
+        if (unread)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.space8,
+              top: AppDimensions.space4,
+              bottom: AppDimensions.space4,
+            ),
+            // Merged so a screen reader reads the note as one phrase.
+            child: Semantics(
+              container: true,
+              child: InlineWarning(
+                key: ValueKey('ing_unread_note_$lineIndex'),
+                icon: ButleryIcons.triangleAlert,
+                color: warningColor,
+                textColor: AppModeColors.textWarning(cs.brightness),
+                text: noteText,
+              ),
             ),
           ),
       ],

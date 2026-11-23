@@ -22846,54 +22846,6 @@ abstract class AppLocalizations {
   /// **'(Namnlös lista)'**
   String get unnamedSharedList;
 
-  /// BUT-1244: section heading in the parse-confidence review widget shown after recipe import.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tolkningskvalitet per ingrediens'**
-  String get parseConfidenceTitle;
-
-  /// BUT-1244 redesign: subtitle shown when one or more ingredients are not high-confidence (medium + low + failed). Only rendered when count > 0.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 kan behöva en koll} other{{count} kan behöva en koll}}'**
-  String parseConfidenceReviewCountSubtitle(int count);
-
-  /// BUT-1244: prefix shown before the original source line when a user expands an ingredient row.
-  ///
-  /// In sv, this message translates to:
-  /// **'Original: {line}'**
-  String parseConfidenceOriginalPrefix(String line);
-
-  /// BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa eller dölj'**
-  String get a11yToggleConfidenceSection;
-
-  /// BUT-1244 redesign: confidence word for screen readers — high confidence.
-  ///
-  /// In sv, this message translates to:
-  /// **'hög tolkningskvalitet'**
-  String get a11yConfidenceHigh;
-
-  /// BUT-1244 redesign: confidence word for screen readers — medium confidence.
-  ///
-  /// In sv, this message translates to:
-  /// **'medel tolkningskvalitet'**
-  String get a11yConfidenceMedium;
-
-  /// BUT-1244 redesign: confidence word for screen readers — low confidence.
-  ///
-  /// In sv, this message translates to:
-  /// **'låg tolkningskvalitet'**
-  String get a11yConfidenceLow;
-
-  /// BUT-1244 redesign: confidence word for screen readers — failed/unknown confidence.
-  ///
-  /// In sv, this message translates to:
-  /// **'okänd tolkningskvalitet'**
-  String get a11yConfidenceFailed;
-
   /// BUT-1057: heading for the related-recipes section in recipe detail and edit form.
   ///
   /// In sv, this message translates to:
@@ -25750,41 +25702,41 @@ abstract class AppLocalizations {
   /// **'Till inköpslistan'**
   String get cookingNoStepsShopping;
 
-  /// No description provided for @parseConfidenceConfirm.
+  /// No description provided for @unreadIngredientEmpty.
   ///
   /// In sv, this message translates to:
-  /// **'Stämmer'**
-  String get parseConfidenceConfirm;
+  /// **'Kunde inte läsas, fyll i'**
+  String get unreadIngredientEmpty;
 
-  /// No description provided for @parseConfidenceConfirmed.
+  /// No description provided for @unreadIngredientPartial.
   ///
   /// In sv, this message translates to:
-  /// **'Bekräftad'**
-  String get parseConfidenceConfirmed;
+  /// **'Bara en del kunde läsas, fyll i resten'**
+  String get unreadIngredientPartial;
 
-  /// No description provided for @a11yParseConfidenceConfirm.
+  /// No description provided for @unreadSaveTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Bekräfta raden {line}'**
-  String a11yParseConfidenceConfirm(String line);
+  /// **'{count, plural, =1{En rad saknas} other{{count} rader saknas}}'**
+  String unreadSaveTitle(int count);
 
-  /// No description provided for @parseConfidencePendingSave.
+  /// No description provided for @unreadSaveBody.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}'**
-  String parseConfidencePendingSave(int count);
+  /// **'{count, plural, =1{En ingrediensrad kunde inte läsas och är inte ifylld. Spara ändå?} other{Några ingrediensrader kunde inte läsas och är inte ifyllda. Spara ändå?}}'**
+  String unreadSaveBody(int count);
 
-  /// No description provided for @parseConfidenceUnreadLine.
+  /// No description provided for @unreadSaveFillIn.
   ///
   /// In sv, this message translates to:
-  /// **'Raden kunde inte läsas'**
-  String get parseConfidenceUnreadLine;
+  /// **'Fyll i'**
+  String get unreadSaveFillIn;
 
-  /// No description provided for @a11yParseConfidenceUnreadLine.
+  /// No description provided for @unreadSaveAnyway.
   ///
   /// In sv, this message translates to:
-  /// **'Rad som inte kunde läsas'**
-  String get a11yParseConfidenceUnreadLine;
+  /// **'Spara ändå'**
+  String get unreadSaveAnyway;
 
   /// No description provided for @importReadPages.
   ///

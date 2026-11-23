@@ -145,6 +145,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// range collapsing, etc.) is deferred to the import pipeline only.
   void updateIngredient(int index, String value) {
     state.ingredientsManager.updateAt(index, value);
+    // Any edit settles the line: the user has now seen and filled it.
+    if (state.ingredientSectionState.clearLineUnread(index)) notifyListeners();
   }
 
   /// Add new ingredient (respects max limit)

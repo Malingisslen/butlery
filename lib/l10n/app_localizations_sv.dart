@@ -14731,44 +14731,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get unnamedSharedList => '(Namnlös lista)';
 
   @override
-  String get parseConfidenceTitle => 'Tolkningskvalitet per ingrediens';
-
-  @override
-  String parseConfidenceReviewCountSubtitle(int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String countString = countNumberFormat.format(count);
-
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$countString kan behöva en koll',
-      one: '1 kan behöva en koll',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String parseConfidenceOriginalPrefix(String line) {
-    return 'Original: $line';
-  }
-
-  @override
-  String get a11yToggleConfidenceSection => 'Visa eller dölj';
-
-  @override
-  String get a11yConfidenceHigh => 'hög tolkningskvalitet';
-
-  @override
-  String get a11yConfidenceMedium => 'medel tolkningskvalitet';
-
-  @override
-  String get a11yConfidenceLow => 'låg tolkningskvalitet';
-
-  @override
-  String get a11yConfidenceFailed => 'okänd tolkningskvalitet';
-
-  @override
   String get recipeRelatedSectionTitle => 'Relaterade recept';
 
   @override
@@ -16706,32 +16668,40 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookingNoStepsShopping => 'Till inköpslistan';
 
   @override
-  String get parseConfidenceConfirm => 'Stämmer';
+  String get unreadIngredientEmpty => 'Kunde inte läsas, fyll i';
 
   @override
-  String get parseConfidenceConfirmed => 'Bekräftad';
+  String get unreadIngredientPartial =>
+      'Bara en del kunde läsas, fyll i resten';
 
   @override
-  String a11yParseConfidenceConfirm(String line) {
-    return 'Bekräfta raden $line';
-  }
-
-  @override
-  String parseConfidencePendingSave(int count) {
+  String unreadSaveTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Bekräfta $count rader innan du sparar',
-      one: 'Bekräfta 1 rad innan du sparar',
+      other: '$count rader saknas',
+      one: 'En rad saknas',
     );
     return '$_temp0';
   }
 
   @override
-  String get parseConfidenceUnreadLine => 'Raden kunde inte läsas';
+  String unreadSaveBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Några ingrediensrader kunde inte läsas och är inte ifyllda. Spara ändå?',
+      one: 'En ingrediensrad kunde inte läsas och är inte ifylld. Spara ändå?',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get a11yParseConfidenceUnreadLine => 'Rad som inte kunde läsas';
+  String get unreadSaveFillIn => 'Fyll i';
+
+  @override
+  String get unreadSaveAnyway => 'Spara ändå';
 
   @override
   String importReadPages(int count) {
