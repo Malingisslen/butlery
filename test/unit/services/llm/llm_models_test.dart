@@ -4,6 +4,7 @@
 /// llm_exception_from_firebase_test.dart.
 library;
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -133,35 +134,13 @@ void main() {
       expect(r.toJson()['isHandwritten'], isTrue);
     });
 
-    test('base64 encoder produces a 4-char-per-3-byte-block output', () {
-      // NOTE: The hand-rolled encoder in this file has divergent padding
-      // behavior from RFC 4648 — pinning exact output for boundary
-      // lengths is brittle. We assert only the length invariant:
-      // output length = 4 * ceil(input/3).
-      expect(
-        OcrRecipeImageRequest.fromBytes(
-          Uint8List.fromList([0xFF]),
-        ).imageBase64!.length,
-        4,
-      );
-      expect(
-        OcrRecipeImageRequest.fromBytes(
-          Uint8List.fromList([0xFF, 0xD8]),
-        ).imageBase64!.length,
-        4,
-      );
-      expect(
-        OcrRecipeImageRequest.fromBytes(
-          Uint8List.fromList([0xFF, 0xD8, 0xFF]),
-        ).imageBase64!.length,
-        4,
-      );
-      expect(
-        OcrRecipeImageRequest.fromBytes(
-          Uint8List.fromList(List.filled(6, 0xFF)),
-        ).imageBase64!.length,
-        8,
-      );
+    test('fromBytes base64 decodes back to the same bytes at every length', () {
+      for (var n = 0; n <= 7; n++) {
+        final bytes = Uint8List.fromList(List.generate(n, (i) => 0xF0 + i));
+        final encoded = OcrRecipeImageRequest.fromBytes(bytes).imageBase64!;
+        expect(base64Decode(encoded), bytes, reason: 'length $n');
+        expect(encoded, base64Encode(bytes), reason: 'length $n');
+      }
     });
   });
 

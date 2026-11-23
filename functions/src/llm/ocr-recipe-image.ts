@@ -42,6 +42,7 @@ import {
   type ModelProfile,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
+import { prepareImageBase64 } from "./image-base64";
 import {
   legacyRecipe,
   normalizeFinishReason,
@@ -396,8 +397,14 @@ export async function runOcrRecipeImage(
   opts: OcrCoreOptions
 ): Promise<OcrRecipeImageResponse> {
   const { data, authUidHash } = opts;
-  const { imageBase64, imageUrl, mimeType, context, locale, isHandwritten } =
-    data;
+  const {
+    imageBase64: suppliedBase64,
+    imageUrl,
+    mimeType,
+    context,
+    locale,
+    isHandwritten,
+  } = data;
   const performOcr = opts.performOcr ?? defaultPerformOcr;
   const isAiDisabled = opts.isAiDisabled ?? defaultIsAiDisabled;
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
@@ -458,7 +465,7 @@ export async function runOcrRecipeImage(
   };
 
   // Validate input
-  if (!imageBase64 && !imageUrl) {
+  if (!suppliedBase64 && !imageUrl) {
     emitTiming(false, { reason: "missing_image_input" });
     throw new HttpsError(
       "invalid-argument",
@@ -498,12 +505,30 @@ export async function runOcrRecipeImage(
   }
 
   // Validate image size (base64 is ~33% larger than binary)
-  if (imageBase64 && imageBase64.length > 10 * 1024 * 1024) {
+  if (suppliedBase64 && suppliedBase64.length > 10 * 1024 * 1024) {
     emitTiming(false, { reason: "image_too_large" });
     throw new HttpsError(
       "invalid-argument",
       "Bilden är för stor (max 7.5 MB)."
     );
+  }
+
+  // Every later use (the photo call, the ingredient retry) reads this one
+  // canonical string.
+  let imageBase64: string | undefined;
+  if (suppliedBase64) {
+    const prepared = prepareImageBase64(suppliedBase64);
+    if (prepared === null) {
+      emitTiming(false, { reason: "invalid_image_base64" });
+      throw new HttpsError("invalid-argument", "Bilden kunde inte läsas.");
+    }
+    if (prepared.repaired) {
+      logger.warn("[ocrRecipeImage] client base64 repaired", {
+        event: "ocr_recipe_image.base64_repaired",
+        jpegEndRestored: prepared.jpegEndRestored,
+      });
+    }
+    imageBase64 = prepared.base64;
   }
 
   try {

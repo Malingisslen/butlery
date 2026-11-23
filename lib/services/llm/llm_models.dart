@@ -4,6 +4,7 @@
 /// - functions/src/llm/structure-recipe.ts
 /// - functions/src/llm/ocr-recipe-image.ts
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -110,7 +111,7 @@ class OcrRecipeImageRequest {
     bool isHandwritten = false,
   }) {
     return OcrRecipeImageRequest(
-      imageBase64: _encodeBase64(bytes),
+      imageBase64: base64Encode(bytes),
       mimeType: mimeType ?? _detectMimeType(bytes),
       context: context,
       locale: locale,
@@ -142,27 +143,6 @@ class OcrRecipeImageRequest {
       if (locale != null) 'locale': locale,
       'isHandwritten': isHandwritten,
     };
-  }
-
-  static String _encodeBase64(Uint8List bytes) {
-    // Use standard base64 encoding
-    const chars =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    final buffer = StringBuffer();
-    int i = 0;
-    while (i < bytes.length) {
-      final b1 = bytes[i++];
-      final b2 = i < bytes.length ? bytes[i++] : 0;
-      final b3 = i < bytes.length ? bytes[i++] : 0;
-
-      buffer.write(chars[(b1 >> 2) & 0x3F]);
-      buffer.write(chars[((b1 << 4) | (b2 >> 4)) & 0x3F]);
-      buffer.write(
-        i - 1 < bytes.length ? chars[((b2 << 2) | (b3 >> 6)) & 0x3F] : '=',
-      );
-      buffer.write(i < bytes.length ? chars[b3 & 0x3F] : '=');
-    }
-    return buffer.toString();
   }
 
   static String _detectMimeType(Uint8List bytes) {

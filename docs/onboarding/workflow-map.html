@@ -4112,7 +4112,7 @@
         {
           "from": "cf-ocr-recipe-image",
           "to": "ext-gemini",
-          "payload": "Vision-prompt (handskriven-tunad systemprompt); kom ett recept med titel utan ingredienser frågas samma foto en gång till efter just de recepten (ocr-ingredient-retry.ts)",
+          "payload": "Bilden som kanonisk base64 (felkodad base64 från äldre appar rättas, annat än base64 nekas före anropet; image-base64.ts) + vision-prompt (handskriven-tunad systemprompt); kom ett recept med titel utan ingredienser frågas samma foto en gång till efter just de recepten (ocr-ingredient-retry.ts)",
           "transport": "HTTPS (Vertex AI, EU-multiregion eu)",
           "verified": true
         },
