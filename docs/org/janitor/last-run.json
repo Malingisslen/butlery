@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-11-09",
+  "lastRun": "2026-11-23",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
+  "worldWatchRoles": 3,
   "retroDue": false,
-  "acceptRate": 0.795,
-  "notes": "No stale dossiers, no world-watch findings, both retros already logged, accept rate down from 0.98 to 0.795 but still above the 0.5 floor; archived 2 shipped plan files"
+  "acceptRate": 0.723,
+  "notes": "No stale dossiers. All 3 due world-watch roles scanned (Security Architect, Legal Counsel, Release/App-Store Compliance Manager); nothing new and material found beyond already-open issues #223/#224/#234/#235/#1293 -- no new tickets filed. Accept rate 0.723 over 30 days (healthy, above floor) on a deeper history fetch than prior runs. No plan files to archive. Last week's run (2026-11-16) never reached main (branch protection) and is still parked -- now 2 weeks unmerged, see issue #1294."
 }
