@@ -139,6 +139,38 @@ abstract final class IngredientRowJudge {
     return RowVerdict.undecided;
   }
 
+  // A row naming an allergen carrier is never dropped on its shape alone.
+  static final _allergenCarrier = RegExp(
+    r'mjölk|mjöl|grädde|\bost|ost\b|kvarg|yoghurt|fil\b|ägg|vete|råg|korn|'
+    r'havre|gryn|nöt|mandel|sesam|soja|fisk|lax|torsk|sill|räk|mussl|kräft|'
+    r'skaldjur|selleri|senap|lupin|jäst|smör|margarin|bröd|pasta|bulgur|'
+    r'couscous|gluten|laktos|panerad|kex|knäcke|bullar|deg',
+    caseSensitive: false,
+  );
+
+  // A row that names any known food is never dropped on its shape alone: the
+  // allergen it carries would go with it.
+  static bool _namesFood(String text) {
+    final lower = text.toLowerCase();
+    return _allergenCarrier.hasMatch(lower) ||
+        _foodWord.hasMatch(lower) ||
+        IngredientCategorizer.categorize(lower) != ShoppingCategory.other;
+  }
+
+  static final _endsMidSentence = RegExp(
+    r'\s(?:och|i|en|ett|som|att|men)$',
+    caseSensitive: false,
+  );
+
+  /// A row cut off in the middle of a sentence that names no food: a column
+  /// of method text that happens to open with an amount.
+  static bool endsMidSentence(String line) {
+    final text = _unwrap(line);
+    return text.split(_whitespace).length >= 4 &&
+        _endsMidSentence.hasMatch(text) &&
+        !_namesFood(text);
+  }
+
   /// Whether a row with no amount can stay in the ingredient list: a short
   /// phrase with no verb in it ("salt", "smör till formen", "färska blåbär").
   static bool isPlausibleBareRow(String line) {

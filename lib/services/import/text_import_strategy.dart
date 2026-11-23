@@ -20,6 +20,7 @@ import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
+import 'package:butlery/services/import/parsers/ingredient_row_joiner.dart';
 import 'package:butlery/services/import/parsers/ingredient_row_judge.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
@@ -1181,7 +1182,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     ingredients.sort(
       (a, b) => a.line != b.line ? a.line - b.line : a.seq - b.seq,
     );
-    final keptRows = _deduplicateIngredients(ingredients);
+    final keptRows = _deduplicateIngredients(_joinBrokenRows(ingredients));
     final cleanedIngredients = [for (final row in keptRows) row.text];
     final sections = [for (final row in keptRows) row.section];
     final cleanedInstructions = _joinParagraphSteps(
@@ -1260,6 +1261,33 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return (recipe: recipe, confidences: structured.confidences);
   }
 
+  List<_IngredientRow> _joinBrokenRows(List<_IngredientRow> rows) {
+    final joined = <_IngredientRow>[];
+    for (final row in rows) {
+      final above = joined.isEmpty ? null : joined.last;
+      final text =
+          above == null ||
+              row.line - above.line > 1 ||
+              IngredientRowJudge.endsMidSentence(above.text)
+          ? null
+          : above.section != row.section
+          ? null
+          : IngredientRowJoiner.join(above.text, row.text);
+      if (text == null) {
+        joined.add(row);
+        continue;
+      }
+      joined[joined.length - 1] = _IngredientRow(
+        row.line,
+        text,
+        section: above!.section,
+        rescued: above.rescued,
+        vouched: above.vouched,
+      );
+    }
+    return joined;
+  }
+
   /// Drops filtered-out rows and repeats of a row, keeping the fuller one.
   /// Only rows under the same heading are compared: a sauce's "Salt" and
   /// "1 tsk timjan" are not the patties' "salt o peppar" and "0,5 tsk
@@ -1281,6 +1309,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (!row.rescued &&
           !row.vouched &&
           !IngredientRowJudge.isPlausibleBareRow(row.text)) {
+        continue;
+      }
+      if (!row.rescued && IngredientRowJudge.endsMidSentence(row.text)) {
         continue;
       }
 
