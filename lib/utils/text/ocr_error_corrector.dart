@@ -23,6 +23,29 @@ class OcrErrorCorrector {
     'di': 'dl',
   };
 
+  /// What a reader prints for a letter it could not make out: the dotless i,
+  /// an l read as i, a v read as u, and a Swedish vowel missing its marks or
+  /// carrying the wrong ones. A word is only changed when exactly one of these
+  /// single swaps lands on a known ingredient, and never a short word, where
+  /// one swap too easily reaches another real word.
+  static const _lookAlikes = <String, List<String>>{
+    '\u0131': ['i'],
+    'i': ['l'],
+    'u': ['v'],
+    '\u00fc': ['\u00e4', '\u00f6'],
+    'a': ['\u00e5', '\u00e4'],
+    'o': ['\u00f6', '\u00e5'],
+    '\u0103': ['\u00e5', '\u00e4'],
+    '\u0105': ['\u00e4', '\u00e5'],
+    '\u00e2': ['\u00e5', '\u00e4'],
+    '\u00e4': ['\u00e5'],
+  };
+  static const _minLookAlikeLength = 5;
+
+  /// Real words one look-alike swap away from an ingredient ("plättar",
+  /// "långa"); the swap would turn a correct word into the wrong one.
+  static const _realWords = {'platt', 'plattar', 'langa'};
+
   /// Single-character confusions.
   static const _charConfusions = <String, List<String>>{
     '0': ['o', 'ö'], // zero -> lowercase o
@@ -136,6 +159,9 @@ class OcrErrorCorrector {
       }
     }
 
+    final restored = _restoreLookAlike(lower);
+    if (restored != null) return _preserveCase(word, restored);
+
     // Try removing common OCR artifacts (stray punctuation, digit prefixes)
     final cleaned = lower.replaceAll(RegExp(r'^[^a-z\u00E5\u00E4\u00F6]+'), '');
     if (cleaned != lower && cleaned.length >= 3 && _isKnown(cleaned)) {
@@ -143,6 +169,25 @@ class OcrErrorCorrector {
     }
 
     return word;
+  }
+
+  static String? _restoreLookAlike(String lower) {
+    if (lower.length < _minLookAlikeLength || _realWords.contains(lower)) {
+      return null;
+    }
+    String? found;
+    for (var i = 0; i < lower.length; i++) {
+      final replacements = _lookAlikes[lower[i]];
+      if (replacements == null) continue;
+      for (final replacement in replacements) {
+        final candidate =
+            lower.substring(0, i) + replacement + lower.substring(i + 1);
+        if (!_isKnown(candidate)) continue;
+        if (found != null && found != candidate) return null;
+        found = candidate;
+      }
+    }
+    return found;
   }
 
   /// Check if word is a known ingredient or unit.
