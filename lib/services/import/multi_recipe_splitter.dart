@@ -1,5 +1,6 @@
 import 'package:butlery/services/import/layout/heading_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/yield_layout.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 
 /// Splits a single OCR/text blob that contains SEVERAL recipes (a cookbook
@@ -145,20 +146,28 @@ class MultiRecipeSplitter {
     final boundaries = <int>[]; // indices into rawLines where a block starts
     var hasIngredients = false;
     var hasInstructions = false;
+    var hasYield = false;
 
     for (var p = 0; p < neLines.length; p++) {
       final line = neLines[p];
+      final opensAtYield = _opensAtYield(neLines, p);
 
-      if (_isTitleish(line.text) && _ingredientClusterAhead(neLines, p)) {
+      if (_isTitleish(line.text) && _ingredientClusterAhead(neLines, p) ||
+          opensAtYield) {
         if (boundaries.isEmpty) {
           boundaries.add(line.rawIndex);
-        } else if (hasIngredients && hasInstructions) {
-          // Current block is complete → this title opens a new recipe.
+        } else if (hasIngredients && hasInstructions ||
+            // Two yield lines before any method: the page prints both
+            // ingredient lists first, and `distributeMethods` below pairs
+            // the methods up afterwards.
+            opensAtYield && hasYield && hasIngredients) {
           boundaries.add(line.rawIndex);
           hasIngredients = false;
           hasInstructions = false;
+          hasYield = false;
         }
       }
+      if (YieldLayout.isYieldLine(line.text)) hasYield = true;
 
       if (RecipeSectionDetector.looksLikeIngredient(line.text)) {
         hasIngredients = true;
@@ -181,7 +190,11 @@ class MultiRecipeSplitter {
       if (block.isNotEmpty) blocks.add(block);
     }
 
-    final valid = blocks.where(_isCompleteRecipeBlock).toList();
+    // Page furniture ("Fina soppor och mustiga") can open a block of its own;
+    // it must not count as a recipe waiting for a method.
+    final valid = YieldLayout.distributeMethods(
+      blocks.where((b) => b.length >= _minBlockChars).toList(),
+    ).where(_isCompleteRecipeBlock).toList();
     if (valid.length < 2 || valid.length > _maxBlocks) return [input];
     return valid;
   }
@@ -353,6 +366,22 @@ class MultiRecipeSplitter {
     final first = t[0];
     return first == first.toUpperCase() && first != first.toLowerCase();
   }
+
+  /// How far past a title its yield line may sit: an introduction paragraph
+  /// ("Här är receptet till …") often comes between the two.
+  static const int _yieldLookahead = 14;
+
+  /// A title the ingredient-word test refused, or whose ingredients sit too
+  /// far below it, accepted because a yield line and an ingredient cluster
+  /// follow. Cookbooks about one ingredient name most recipes after it
+  /// ("Locarnopotatis"), and [_isTitleish] reads those as ingredient lines.
+  bool _opensAtYield(List<_Line> neLines, int from) =>
+      YieldLayout.isHeadlineAbove(
+        [for (final l in neLines) l.text],
+        from,
+        _yieldLookahead,
+        (yieldAt) => _ingredientClusterAhead(neLines, yieldAt),
+      );
 
   /// An instruction signal — a "Gör så här" style header or a line that scores
   /// as a cooking step.

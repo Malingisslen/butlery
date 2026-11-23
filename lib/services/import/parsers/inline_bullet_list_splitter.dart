@@ -13,11 +13,17 @@ class InlineBulletListSplitter {
 
   // Spaced dashes and dots are separators only outside a number range
   // ("2 - 3 msk"); unspaced hyphens belong to the words.
-  static final _separator = RegExp(r'\s*•\s*|(?<!\d)\s+[-–.]\s+');
+  // A dot glued to the word before it also separates when a quantity follows
+  // ("roquefortost. 1 1/4 dl grädde"): a sentence never continues with a digit
+  // inside an ingredient run.
+  static final _separator = RegExp(
+    r'\s*•\s*|(?<!\d)\s+[-–.]\s+|(?<=[a-zåäö])\.\s+(?=\d)',
+  );
 
   // An uppercase start means a new section ("Ca 1675 kJ", "Gör så här").
   // A one-letter start is OCR noise for "1" or "l", not a section.
-  static final _continuation = RegExp(r'^(?:[a-zåäö]|\d(?!\.)|[A-ZÅÄÖ]\s)');
+  // A line opening with a bullet is the next item of the run.
+  static final _continuation = RegExp(r'^(?:[a-zåäö•]|\d(?!\.)|[A-ZÅÄÖ]\s)');
 
   static const _minBullets = 2;
 
@@ -36,8 +42,14 @@ class InlineBulletListSplitter {
         end++;
       }
       final run = lines.sublist(i + 1, end);
+      if (run.isEmpty) {
+        i = end;
+        continue;
+      }
       final joined = run.join(' ');
-      if ('•'.allMatches(joined).length >= _minBullets) {
+      // A list that already opens with a bullet is one item per line.
+      if (!run.first.startsWith('•') &&
+          '•'.allMatches(joined).length >= _minBullets) {
         out.addAll(
           joined
               .split(_separator)
