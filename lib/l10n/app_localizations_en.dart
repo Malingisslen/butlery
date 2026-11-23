@@ -4895,6 +4895,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuVoteSuggestAlternative => 'Suggest alternative';
 
   @override
+  String get menuSuggestGetButton => 'Get suggestions';
+
+  @override
+  String menuSuggestTitle(String day) {
+    return 'Suggestions for $day';
+  }
+
+  @override
+  String get menuSuggestIntro =>
+      'From your own recipes. Lock a card you like and swap the rest.';
+
+  @override
+  String get menuSuggestShowOthers => 'Show others';
+
+  @override
+  String get menuSuggestLockCard => 'Lock';
+
+  @override
+  String get menuSuggestUnlockCard => 'Unlock';
+
+  @override
+  String menuSuggestPlaceOnDay(String day) {
+    return 'Add to $day';
+  }
+
+  @override
+  String get menuSuggestPickOne => 'Pick a card';
+
+  @override
+  String get menuSuggestEmptyTitle => 'No more suggestions';
+
+  @override
+  String get menuSuggestEmptyBody =>
+      'No more recipes fit. Add more recipes to get more suggestions.';
+
+  @override
   String get menuVoteResolved => 'Vote resolved';
 
   @override

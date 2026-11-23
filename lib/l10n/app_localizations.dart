@@ -7538,6 +7538,66 @@ abstract class AppLocalizations {
   /// **'Föreslå alternativ'**
   String get menuVoteSuggestAlternative;
 
+  /// No description provided for @menuSuggestGetButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Få förslag'**
+  String get menuSuggestGetButton;
+
+  /// No description provided for @menuSuggestTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag för {day}'**
+  String menuSuggestTitle(String day);
+
+  /// No description provided for @menuSuggestIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur dina egna recept. Lås ett kort du gillar och byt ut resten.'**
+  String get menuSuggestIntro;
+
+  /// No description provided for @menuSuggestShowOthers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa andra'**
+  String get menuSuggestShowOthers;
+
+  /// No description provided for @menuSuggestLockCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lås'**
+  String get menuSuggestLockCard;
+
+  /// No description provided for @menuSuggestUnlockCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lås upp'**
+  String get menuSuggestUnlockCard;
+
+  /// No description provided for @menuSuggestPlaceOnDay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg på {day}'**
+  String menuSuggestPlaceOnDay(String day);
+
+  /// No description provided for @menuSuggestPickOne.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ett kort'**
+  String get menuSuggestPickOne;
+
+  /// No description provided for @menuSuggestEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag'**
+  String get menuSuggestEmptyTitle;
+
+  /// No description provided for @menuSuggestEmptyBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept passar just nu. Lägg till fler recept så kommer det förslag.'**
+  String get menuSuggestEmptyBody;
+
   /// No description provided for @menuVoteResolved.
   ///
   /// In sv, this message translates to:
