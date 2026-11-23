@@ -4,6 +4,7 @@
 /// inside another's ("mjölk" in "kokosmjölk") must not be dropped.
 library;
 
+import 'package:butlery/services/import/recipe_title_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
@@ -192,6 +193,24 @@ Koka pastan enligt anvisningen på paketet.''');
     test('a shared-compound hyphen does not cut the title', () async {
       final recipe = await parse('Potatis- och purjolökssoppa\n$body');
       expect(recipe.title, 'Potatis- och purjolökssoppa');
+    });
+
+    test('a page that opens on the foot of another recipe is named by the '
+        'heading above its ingredients', () async {
+      const page = '''
+att avocadon inte mörknat). Krydda med salt
+dl gräddfil eller naturell yoghurt och rör såsen slät.
+Kryddgårdssås
+Det här är kanske ingen vardagssås eftersom den är så pass fet.
+För 4 kan man ta:
+2 dl gräddfil
+1 tsk salt
+Blanda allt och servera kall.''';
+      final photo = await strategy.import(
+        page,
+        options: {RecipeTitlePicker.photoPageOption: true},
+      );
+      expect(photo.recipe!.title, 'Kryddgårdssås');
     });
 
     test('a title dash still cuts off a tagline', () async {

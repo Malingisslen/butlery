@@ -11,6 +11,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/import/recipe_title_picker.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -111,6 +112,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // Raw input: normalizeText strips ★ with the rest of the symbol
         // block, so a rating written as stars is gone afterwards.
         rating: extractRating(input),
+        photoPage: options?[RecipeTitlePicker.photoPageOption] == true,
       );
 
       if (result == null) {
@@ -281,9 +283,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9åäö]'), '');
 
   /// Extract title from Instagram-style text
-  String _extractTitleFromText(String text) {
+  String _extractTitleFromText(String text, {bool photoPage = false}) {
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
     if (lines.isEmpty) return '';
+
+    final headingAboveIngredients = RecipeTitlePicker.pick([
+      for (final l in lines) l.trim(),
+    ], photoPage: photoPage);
+    if (headingAboveIngredients != null) return headingAboveIngredients;
 
     // BUT-2455: a pasted web or magazine page opens with its furniture
     // ("Hoppa till recept", a breadcrumb, an issue number, a section word in
@@ -702,6 +709,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     String text,
     String titleSource, {
     double? rating,
+    bool photoPage = false,
   }) async {
     // Blank lines are dropped from `lines`, but WHERE they were is kept: a
     // line that opens a block after a blank is how a colon-less heading
@@ -749,7 +757,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final ingredients = _extractIngredientsByMeasurement(lines);
 
     // STAGE 2: EXTRACT TITLE (from titleSource — the un-mangled original)
-    recipeName = _extractTitleFromText(titleSource);
+    recipeName = _extractTitleFromText(titleSource, photoPage: photoPage);
     // A heading claimed as a last-resort title still groups the rows under
     // it, so STAGE 3 must not consume its line as the title.
     var titleIsAlsoGroup = false;

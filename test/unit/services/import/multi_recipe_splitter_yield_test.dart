@@ -92,4 +92,51 @@ och låt koka i 20 minuter.''';
     final blocks = ['A\n2 dl mjöl', 'B\n3 dl mjöl\nGör så här: Rör ihop.'];
     expect(YieldLayout.distributeMethods(blocks), blocks);
   });
+
+  test('a heading over its yield line opens a recipe whose ingredient row OCR '
+      'damaged', () {
+    // Corpus page potatisratter/PXL_20260602_192920502, as photographed.
+    const page =
+        'Grön sås\n'
+        'Till 4 portioner behövs:\n'
+        '5 hårdkokta ägg • 1 1/4 dl olja • 1-2 tsk cit-\n'
+        'ronsaft • 1/2 | gräddfil - ca 150 g färska\n'
+        'kryddörter (gurkört, dill, körvel, libbsticka,\n'
+        'persilja, pimpinella, ängssyra, gräslök, cit-\n'
+        'ronmeliss) - 1 nypa socker • salt• vitpeppar\n'
+        'Ca 2350 kJ/560 kcal per portion\n'
+        '• Tillagningstid: 25 minuter\n'
+        'Gör så här: Ta gulorna ur de hårdkokta äg-\n'
+        'gen och mosa dem med en gaffel i en skäl.\n'
+        'Rör i lite i taget av oljan, citronsaften och\n'
+        'gräddfilen. • Skölj kryddörterna, skaka av\n'
+        'vattnet väl och ta bort grova stjälkar. Fin-\n'
+        'hacka örterna och rör ner dem i såsen.\n'
+        'Smaka av såsen med socker, salt och peppar.\n'
+        'Mitt tips Ta vara på den hård-\n'
+        'kokta äggvitan och använd den till nå-\n'
+        'got annat eller finhacka den och\n'
+        'blanda den i såsen. Använd libbsticka\n'
+        'sparsamt annars slår den lätt ihjäl\n'
+        'smaken av de andra örterna.\n'
+        'Kumminpotatis\n'
+        'Till 4 portioner behövs:\n'
+        '• 75 g smör\n'
+        't kgsmu jarska poratsar • kummin: grovsal\n'
+        'Till bakpläten: smör\n'
+        'Ca 1530 k.J/365 kcal per portion\n'
+        '• Tillagningstid: 50 minuter\n'
+        'Gör sả hãr: Tvätta, torka och skär potati-\n'
+        'sara mitt itu. • Värm ugnen till 200°.\n'
+        'en bakplåt med smör. • Tryck potatisarnas\n'
+        'snittyta i kummin och salt och ställ potati-\n'
+        'sara med den kryddade sidan neråt på bak-\n'
+        'plâten. Smält smöret och pensla potatisarnas\n'
+        'ovansida. Baka i ugnen i 30-40 minuter.\n'
+        'Lämpliga tillbehör: Kesosåser eller blandad\n'
+        'sallad\n';
+    final blocks = MultiRecipeSplitter().split(page);
+    expect(blocks, hasLength(2));
+    expect(blocks[1], startsWith('Kumminpotatis'));
+  });
 }

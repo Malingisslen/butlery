@@ -16,6 +16,7 @@ import 'package:butlery/services/import/caption_rules_reader.dart';
 import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/line_reflow.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
+import 'package:butlery/services/import/recipe_title_picker.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
@@ -1001,7 +1002,11 @@ class ImportManager {
       final result = await _autoParseOnly(
         block,
         preferredStrategy: preferredStrategy,
-        options: options,
+        // Reflow is asked for only by the photo path, whose blocks may open
+        // on text that belongs to the recipe before them.
+        options: reflow
+            ? {...?options, RecipeTitlePicker.photoPageOption: true}
+            : options,
       );
       results.add(result);
       if (result.isSuccess && result.recipe != null) {
