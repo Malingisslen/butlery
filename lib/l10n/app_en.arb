@@ -18245,5 +18245,11 @@
   "adminPoolChangeFailed": "Could not change the rating. Try again.",
   "adminPoolQuarantined": "The rating is switched off.",
   "adminPoolLifted": "The rating is switched back on.",
-  "adminPoolLoading": "Fetching the rating …"
+  "adminPoolLoading": "Fetching the rating …",
+  "menuQuickPicksTitle": "Quick picks",
+  "menuQuickFastTitle": "Quick week",
+  "menuQuickFastSubtitle": "Recipes of 30 minutes or less",
+  "menuQuickPantryTitle": "Use what I have at home",
+  "menuQuickPantrySubtitle": "Recipes that fit your pantry first",
+  "menuQuickPantryNothing": "Nothing in your pantry fits your recipes yet, so the week was chosen as usual."
 }

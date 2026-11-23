@@ -22237,4 +22237,23 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminPoolLoading => 'Hämtar betyget …';
+
+  @override
+  String get menuQuickPicksTitle => 'Snabbval';
+
+  @override
+  String get menuQuickFastTitle => 'Snabb vecka';
+
+  @override
+  String get menuQuickFastSubtitle => 'Recept på max 30 minuter';
+
+  @override
+  String get menuQuickPantryTitle => 'Använd det jag har hemma';
+
+  @override
+  String get menuQuickPantrySubtitle => 'Recept som passar ditt skafferi först';
+
+  @override
+  String get menuQuickPantryNothing =>
+      'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.';
 }

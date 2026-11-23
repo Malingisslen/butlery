@@ -22432,4 +22432,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminPoolLoading => 'Fetching the rating …';
+
+  @override
+  String get menuQuickPicksTitle => 'Quick picks';
+
+  @override
+  String get menuQuickFastTitle => 'Quick week';
+
+  @override
+  String get menuQuickFastSubtitle => 'Recipes of 30 minutes or less';
+
+  @override
+  String get menuQuickPantryTitle => 'Use what I have at home';
+
+  @override
+  String get menuQuickPantrySubtitle => 'Recipes that fit your pantry first';
+
+  @override
+  String get menuQuickPantryNothing =>
+      'Nothing in your pantry fits your recipes yet, so the week was chosen as usual.';
 }

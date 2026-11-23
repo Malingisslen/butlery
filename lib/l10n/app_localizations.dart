@@ -34151,6 +34151,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar betyget …'**
   String get adminPoolLoading;
+
+  /// No description provided for @menuQuickPicksTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbval'**
+  String get menuQuickPicksTitle;
+
+  /// No description provided for @menuQuickFastTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabb vecka'**
+  String get menuQuickFastTitle;
+
+  /// No description provided for @menuQuickFastSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept på max 30 minuter'**
+  String get menuQuickFastSubtitle;
+
+  /// No description provided for @menuQuickPantryTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd det jag har hemma'**
+  String get menuQuickPantryTitle;
+
+  /// No description provided for @menuQuickPantrySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept som passar ditt skafferi först'**
+  String get menuQuickPantrySubtitle;
+
+  /// No description provided for @menuQuickPantryNothing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.'**
+  String get menuQuickPantryNothing;
 }
 
 class _AppLocalizationsDelegate

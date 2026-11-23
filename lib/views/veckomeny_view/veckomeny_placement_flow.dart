@@ -23,7 +23,7 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
   Future<void> setViewMode(VeckomenyViewMode mode);
   void markRevealing();
 
-  Future<void> generateMenu() async {
+  Future<void> generateMenu({bool pantryFocus = false}) async {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
@@ -45,7 +45,10 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
     }
 
     // BUT-2157: a cancelled run places nothing, so the week stays as it was.
-    final end = await menuVm.generateMenu(promptController.text);
+    final end = await menuVm.generateMenu(
+      promptController.text,
+      pantryFocus: pantryFocus,
+    );
     if (!mounted || end != MenuGenerationEnd.completed) return;
 
     // P6-U01: "Inga recept matchar" is drawn in Lista
@@ -71,6 +74,10 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
         showCloseButton: true,
       );
       return;
+    }
+
+    if (pantryFocus && menuVm.hasMenu && menuVm.pantryFocusFoundNothing) {
+      SnackBarUtils.showInfo(context, context.l10n.menuQuickPantryNothing);
     }
 
     if (menuVm.hasMenu && !menuVm.hasError) {

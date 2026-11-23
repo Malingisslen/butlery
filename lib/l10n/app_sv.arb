@@ -18259,5 +18259,11 @@
   "adminPoolChangeFailed": "Det gick inte att ändra betyget. Försök igen.",
   "adminPoolQuarantined": "Betyget är avstängt.",
   "adminPoolLifted": "Betyget är påslaget igen.",
-  "adminPoolLoading": "Hämtar betyget …"
+  "adminPoolLoading": "Hämtar betyget …",
+  "menuQuickPicksTitle": "Snabbval",
+  "menuQuickFastTitle": "Snabb vecka",
+  "menuQuickFastSubtitle": "Recept på max 30 minuter",
+  "menuQuickPantryTitle": "Använd det jag har hemma",
+  "menuQuickPantrySubtitle": "Recept som passar ditt skafferi först",
+  "menuQuickPantryNothing": "Inget i skafferiet passar dina recept än, så veckan är vald som vanligt."
 }
