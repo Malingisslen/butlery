@@ -26,7 +26,13 @@ String reflowWrappedLines(String text) {
     var current = lines[i];
     final inStep = stepMarker.hasMatch(current.trim());
     var j = i + 1;
-    while (j < lines.length && _continues(current, lines[j], inStep: inStep)) {
+    while (j < lines.length &&
+        _continues(
+          current,
+          lines[j],
+          inStep: inStep,
+          after: j + 1 < lines.length ? lines[j + 1] : '',
+        )) {
       current = _join(current, lines[j]);
       j++;
     }
@@ -55,13 +61,19 @@ String joinHyphenatedWords(String text) {
 }
 
 /// Whether [next] is the rest of [line] rather than a line of its own.
-bool _continues(String line, String next, {required bool inStep}) {
+bool _continues(
+  String line,
+  String next, {
+  required bool inStep,
+  required String after,
+}) {
   final a = line.trimRight();
   final b = next.trim();
   // A numbered step runs until the next marker, so a new sentence inside it
   // is not a new row. What ends it is anything that is a row of its own;
   // a line in capitals is a credit or heading, not more of the method.
   if (inStep) {
+    if (_titleAfterFinishedSentence(a, b, after.trim())) return false;
     return b.isNotEmpty &&
         _hasLowercase.hasMatch(b) &&
         !stepMarker.hasMatch(b) &&
@@ -103,6 +115,18 @@ bool _continues(String line, String next, {required bool inStep}) {
     return b.split(_whitespace).length >= 3;
   }
   return false;
+}
+
+/// A short capitalised line with no sentence end, after a line that ended a
+/// sentence and before a line that starts a new one, is the next recipe's
+/// title: a step has no title in the middle of it. A lowercase line after it
+/// would mean the capital only opened a wrapped sentence.
+bool _titleAfterFinishedSentence(String a, String b, String after) {
+  if (!_terminal.hasMatch(a) || _terminal.hasMatch(b)) return false;
+  if (!_startsUppercase(b) || after.isEmpty || _startsLowercase(after)) {
+    return false;
+  }
+  return b.split(_whitespace).length <= 3;
 }
 
 /// An OCR reader can capitalise the first word of a wrapped line ("…hacka

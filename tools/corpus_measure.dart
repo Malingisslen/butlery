@@ -95,6 +95,13 @@ String _delta(Map<String, dynamic>? before, Map<String, dynamic> after) {
       'a change of yardstick, not of the parser.',
     );
   }
+  if (before != null && before['reader'] != after['reader']) {
+    b.writeln(
+      'Note: the previous trend line fed the parser text '
+      '${before['reader'] ?? 'without line reflow'}'
+      ', so the change above is a change of reader, not of the parser.',
+    );
+  }
   if (before != null && before['missed'] == null) {
     b.writeln(
       'Note: the previous trend line was scored before missed recipes counted '

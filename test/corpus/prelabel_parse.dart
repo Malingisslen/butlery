@@ -19,7 +19,9 @@ Future<List<GoldRecipe>> parseOcrToDrafts(
 ) async {
   List<Recipe> recipes = const [];
   try {
-    final result = await importManager.autoParseMulti(ocrText);
+    // The photo path asks for reflow (photo_import_read_mixin), so the
+    // corpus must too or it scores text the app never parses.
+    final result = await importManager.autoParseMulti(ocrText, reflow: true);
     recipes = result.successfulRecipes;
   } catch (_) {
     // Fall through to the title-only fallback below.
