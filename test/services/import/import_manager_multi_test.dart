@@ -47,6 +47,30 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
+    const headerPage = '''
+Potatis på flera sätt
+Buljongpotatis
+Till 4 portioner behövs:
+2 dl vatten
+500 g oxbringa
+Gör så här:
+Koka allt i vattnet och servera varmt.''';
+
+    test('only a photographed page (reflow) is named by the heading under '
+        'its page header', () async {
+      final photo = await importManager.autoParseMulti(
+        headerPage,
+        reflow: true,
+        channel: null,
+      );
+      final pasted = await importManager.autoParseMulti(
+        headerPage,
+        channel: null,
+      );
+      expect(photo.successfulRecipes.single.title, 'Buljongpotatis');
+      expect(pasted.successfulRecipes.single.title, 'Potatis på flera sätt');
+    });
+
     const threeRecipePage = '''
 Pannkakor
 Ingredienser:

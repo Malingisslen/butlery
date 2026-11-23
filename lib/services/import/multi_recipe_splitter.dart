@@ -397,6 +397,9 @@ class MultiRecipeSplitter {
   /// ("Här är receptet till …") often comes between the two.
   static const int _yieldLookahead = 14;
 
+  /// A yield line this close under a heading belongs to that heading.
+  static const int _titleToYieldLines = 2;
+
   /// A title the ingredient-word test refused, or whose ingredients sit too
   /// far below it, accepted because a yield line and an ingredient cluster
   /// follow. Cookbooks about one ingredient name most recipes after it
@@ -406,7 +409,15 @@ class MultiRecipeSplitter {
         [for (final l in neLines) l.text],
         from,
         _yieldLookahead,
-        (yieldAt) => _ingredientClusterAhead(neLines, yieldAt),
+        (yieldAt) => _ingredientClusterAhead(
+          neLines,
+          yieldAt,
+          // A heading set directly over its yield line is a recipe even when
+          // OCR left only one readable ingredient row below.
+          minAmounts: yieldAt - from <= _titleToYieldLines
+              ? 1
+              : _minIngredientLines,
+        ),
       );
 
   /// An instruction signal — a "Gör så här" style header or a line that scores
@@ -418,7 +429,14 @@ class MultiRecipeSplitter {
   /// True when the next [_lookahead] non-empty lines after [from] contain an
   /// ingredient header or at least two ingredient-like lines — i.e. this title
   /// is actually introducing a recipe, not a stray capitalised line.
-  bool _ingredientClusterAhead(List<_Line> neLines, int from) {
+  ///
+  /// [minAmounts] is lowered where a yield line already vouches for the
+  /// recipe: its one damaged ingredient row is then still enough.
+  bool _ingredientClusterAhead(
+    List<_Line> neLines,
+    int from, {
+    int minAmounts = _minIngredientLines,
+  }) {
     var count = 0;
     final end = (from + 1 + _lookahead).clamp(0, neLines.length);
     for (var p = from + 1; p < end; p++) {
@@ -426,7 +444,7 @@ class MultiRecipeSplitter {
       if (RecipeSectionDetector.isIngredientHeader(t)) return true;
       if (_measurement.hasMatch(t)) {
         count++;
-        if (count >= _minIngredientLines) return true;
+        if (count >= minAmounts) return true;
       }
     }
     return false;
