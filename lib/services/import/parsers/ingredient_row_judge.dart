@@ -76,6 +76,9 @@ abstract final class IngredientRowJudge {
     'kokos|konjak|likör|vin\\b|vete|råg|korn|havre|dinkel|gryn|couscous|'
     'bulgur|selleri|lupin|räk|mussl|kräft|skaldjur|fisk|sill|lax|torsk|'
     'sardell|ansjovis|gelatin|jäst|bakpulver|stärkelse|maizena|arrowrot|tofu|'
+    'rädis|ingefära|wasabi|fänkål|rödbet|palsternack|kålrot|purjo|squash|'
+    'aubergine|avokado|majs|linser|kikärt|nori|mirin|harissa|curry|chili|'
+    'spenat|ruccola|mynta|salvia|kardemumma|muskot|kummin|saffran|vitlök|'
     'tahini|pesto|hummus|tamari|tempeh|seitan|quorn|edamame|miso',
   );
 

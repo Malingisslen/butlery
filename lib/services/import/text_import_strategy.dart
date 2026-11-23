@@ -543,6 +543,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return _isQuantityRow(lines[i + 1]);
   }
 
+  int _rowsAbove(List<String> lines, int i) =>
+      lines.take(i).where(_isQuantityRow).length;
+
   /// A row with a measured row right above and right below it: the writer's
   /// own list, so its name is not a fragment of something else.
   bool _betweenQuantityRows(List<String> lines, int i) =>
@@ -1036,7 +1039,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // that already reads as a recipe gets it: a page of plain prose with one
       // quantity line in it is not a method.
       if (verdict == RowVerdict.step && !_isQuantityRow(line)) {
-        if (listStarted && (instructions.isNotEmpty || readsAsRecipe)) {
+        if (listStarted &&
+            (instructions.isNotEmpty ||
+                (readsAsRecipe && _rowsAbove(lines, i) >= 2))) {
           final instruction = _parseInstructionLine(line);
           if (instruction != null && instruction.length > 10) {
             takeStep(line, instruction);
