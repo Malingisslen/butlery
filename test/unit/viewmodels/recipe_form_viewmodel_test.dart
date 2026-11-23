@@ -1455,6 +1455,16 @@ void main() {
           expect(vm.ingredients.take(2), ['2 ägg', '']);
           expect(vm.pendingParseConfirmations, 1);
         });
+
+        test('a line read in part keeps the part that was read', () {
+          final vm = openTemplate(
+            imported(const ['2 ägg', '3 dl [oläsligt]', '[oläsligt] smör']),
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.ingredients.take(3), ['2 ägg', '3 dl', 'smör']);
+          expect(vm.pendingParseConfirmations, 2);
+        });
       });
 
       group('TR::FLOW::03::granska::fält-med-låg-säkerhet', () {

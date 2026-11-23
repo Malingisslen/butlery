@@ -39,6 +39,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 // Import for feedback loop
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Import for per-ingredient confidence review (BUT-925)
@@ -232,9 +233,9 @@ class RecipeFormViewModel extends BaseViewModel
     }
   }
 
-  /// Hands the snapshot's lines to the review and empties each editor line
-  /// the reader could not read: the line is shown empty and marked, never as
-  /// guessed text. The snapshot's rows are the
+  /// Hands the snapshot's lines to the review and cuts each editor line the
+  /// reader could not read down to [_readablePart], never guessed text. The
+  /// snapshot's rows are the
   /// non-empty lines of [recipe], in order; a snapshot that no longer matches
   /// them is not shown, so a mismatch can never empty the wrong line.
   void _showImportReview(Recipe recipe, ParsedRecipe parsed) {
@@ -252,9 +253,24 @@ class RecipeFormViewModel extends BaseViewModel
     _state.setImportReviewRows(rows);
     for (var row = 0; row < rows.length; row++) {
       if (rows[row].confidence == ParseConfidence.failed) {
-        _state.ingredientsManager.updateAt(lineIndices[row], '');
+        _state.ingredientsManager.updateAt(
+          lineIndices[row],
+          _readablePart(rows[row].originalLine),
+        );
       }
     }
+  }
+
+  // Where the image reader marked only part of a line as unread, the rest was
+  // read and is kept, so the user fills in only what is missing (Malin
+  // 2026-11-23). A line whose amount came out garbled has no marker to cut
+  // at, so it is emptied whole.
+  static String _readablePart(String line) {
+    if (!line.contains(UnreadLineDetector.unreadMarker)) return '';
+    return line
+        .replaceAll(UnreadLineDetector.unreadMarker, ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   Recipe? get originalRecipe => _state.originalRecipe;
