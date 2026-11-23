@@ -67,7 +67,12 @@ class PreprocessingResult {
 class IngredientPreprocessor {
   IngredientPreprocessor._();
 
-  static PreprocessingResult preprocess(String rawText) {
+  /// [keepRanges] leaves a written range ("6-8 ägg") as it is written: the
+  /// range is what the recipe states, and the amount can read both ends of it.
+  static PreprocessingResult preprocess(
+    String rawText, {
+    bool keepRanges = false,
+  }) {
     final original = rawText;
     var text = rawText.trim().toLowerCase();
 
@@ -95,7 +100,7 @@ class IngredientPreprocessor {
     text = result1.text;
     hadApproximation = result1.modified;
 
-    final result2 = _normalizeRanges(text);
+    final result2 = _normalizeRanges(text, keepRanges: keepRanges);
     text = result2.text;
     hadRange = result2.modified;
     final rangeMin = result2.min;
@@ -203,7 +208,7 @@ class IngredientPreprocessor {
 
   /// Normalize ranges to maximum value ("3-5" → "5"), preserving min/max.
   static ({String text, bool modified, double? min, double? max})
-  _normalizeRanges(String text) {
+  _normalizeRanges(String text, {bool keepRanges = false}) {
     var modified = false;
     var result = text;
     double? rangeMin;
@@ -220,7 +225,7 @@ class IngredientPreprocessor {
         rangeMin ??= double.tryParse(minStr.replaceAll(',', '.'));
         rangeMax ??= double.tryParse(maxStr.replaceAll(',', '.'));
         modified = true;
-        return maxStr;
+        return keepRanges ? '${minStr.trim()}-${maxStr.trim()}' : maxStr;
       });
     }
 
@@ -233,7 +238,7 @@ class IngredientPreprocessor {
         rangeMin ??= double.tryParse(minStr);
         rangeMax ??= double.tryParse(maxStr);
         modified = true;
-        return maxStr;
+        return keepRanges ? '$minStr-$maxStr' : maxStr;
       });
     }
 

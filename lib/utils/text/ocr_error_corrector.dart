@@ -78,17 +78,47 @@ class OcrErrorCorrector {
     final words = line
         .replaceFirst(_strayBeforeFraction, '')
         .replaceFirstMapped(_percentAsHalf, (m) => '${m[1]}½')
+        .replaceFirst(_strayOne, '1')
+        .replaceFirst(_doubledLitre, '1 l ')
         .replaceFirstMapped(_gluedMixedFraction, (m) => '${m[1]} ${m[2]}')
         .split(RegExp(r'\s+'));
+    // A bare "i" ahead of a known ingredient is the digit 1 ("i morot"); ahead
+    // of anything else it can be the preposition of a sub-heading ("I botten").
+    if (words.length > 1 &&
+        (words.first == 'i' || words.first == 'I') &&
+        KnownIngredients.isKnown(words[1].toLowerCase())) {
+      words[0] = '1';
+    }
     final corrected = <String>[];
 
-    for (final word in words) {
+    for (var w = 0; w < words.length; w++) {
+      final word = words[w];
+      final isLast = w == words.length - 1;
       // A lone "d" after an amount is a "dl" whose l the reader lost; no
       // Swedish unit is spelled "d".
       if (word == 'd' &&
           corrected.isNotEmpty &&
           _numericPattern.hasMatch(corrected.last)) {
         corrected.add('dl');
+        continue;
+      }
+      // "d/" and "al" are what a reader prints for the "dl" after an amount;
+      // neither is a Swedish unit, and "al" is only a unit when a word follows.
+      if ((word == 'd/' || word == 'al') &&
+          corrected.isNotEmpty &&
+          _numericPattern.hasMatch(corrected.last) &&
+          (word == 'd/' || !isLast)) {
+        corrected.add('dl');
+        continue;
+      }
+      // The litre sign read as "i", "|" or "/" after an amount, ahead of the
+      // liquid it measures ("½ | gräddfil", "1 ½ / vatten").
+      if ((word == 'i' || word == '|' || word == '/') &&
+          corrected.isNotEmpty &&
+          _numericPattern.hasMatch(corrected.last) &&
+          !isLast &&
+          _litreAhead.hasMatch(words[w + 1])) {
+        corrected.add('l');
         continue;
       }
       corrected.add(_correctWord(word));
@@ -113,6 +143,21 @@ class OcrErrorCorrector {
   );
   static final _strayBeforeFraction = RegExp(
     r'^[vV](?=[½¼¾]' + _unitAhead + r')',
+    caseSensitive: false,
+  );
+
+  // A one read as the letter i or l ("i dl kakao"). Only ahead of a measuring
+  // unit, where no Swedish word "i" or "l" can stand.
+  static final _strayOne = RegExp(
+    r'^[ilI|](?=\s+(?:dl|msk|tsk|krm|kg|g|st|liter)(?:\s|$))',
+  );
+
+  // "11 köttbuljong" is "1 l köttbuljong": the unit's l printed as a second 1.
+  static final _doubledLitre = RegExp(
+    r'^11\s+(?=(?:vatten|mjölk|grädde|[a-zåäö]*buljong|[a-zåäö]*fond|vin)(?:\s|$))',
+  );
+  static final _litreAhead = RegExp(
+    r'^(?:vatten|mjölk|grädde|gräddfil|filmjölk|yoghurt|[a-zåäö]*buljong|[a-zåäö]*fond|vin|olja)(?:\s|$)',
     caseSensitive: false,
   );
 

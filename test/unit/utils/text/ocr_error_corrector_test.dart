@@ -136,4 +136,36 @@ void main() {
       });
     });
   });
+
+  group('an amount the reader garbled', () {
+    test('a one read as the letter i or l', () {
+      expect(OcrErrorCorrector.correctLine('i dl kakao'), '1 dl kakao');
+      expect(OcrErrorCorrector.correctLine('i morot'), '1 morot');
+      expect(OcrErrorCorrector.correctLine('i botten'), 'i botten');
+      expect(OcrErrorCorrector.correctLine('½ i vinäger'), '½ i vinäger');
+      expect(OcrErrorCorrector.correctLine('i en kastrull'), 'i en kastrull');
+    });
+
+    test('dl read as d/ or al, litre read as i, | or /', () {
+      expect(OcrErrorCorrector.correctLine('5½ d/ vetemjöl'), '5½ dl vetemjöl');
+      expect(
+        OcrErrorCorrector.correctLine('4 al tjock grädde'),
+        '4 dl tjock grädde',
+      );
+      expect(OcrErrorCorrector.correctLine('½ | gräddfil'), '½ l gräddfil');
+      expect(OcrErrorCorrector.correctLine('1 ½ / vatten'), '1 ½ l vatten');
+      expect(
+        OcrErrorCorrector.correctLine('1/2 i köttbuljong'),
+        '1/2 l köttbuljong',
+      );
+    });
+
+    test('11 ahead of a liquid is 1 l, ahead of a countable is left', () {
+      expect(
+        OcrErrorCorrector.correctLine('11 köttbuljong'),
+        '1 l köttbuljong',
+      );
+      expect(OcrErrorCorrector.correctLine('11 äpplen'), '11 äpplen');
+    });
+  });
 }
