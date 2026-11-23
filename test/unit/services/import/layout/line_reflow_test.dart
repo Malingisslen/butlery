@@ -20,6 +20,66 @@ void main() {
       );
     });
 
+    group('a title after a step that read as numbered', () {
+      // OCR made "Tid: ca 1 timme" into "1: ca 1 timme", which opens a step.
+      test('stays on its own line when a new sentence follows it', () {
+        const text =
+            '1: ca 1 timme\n'
+            'a och finriv potatisen. • Röt\n'
+            'd sockret och äggen.\n'
+            'Potatisefterrätter\n'
+            'Blanda i saltet, citronskalet och keson.';
+        expect(
+          reflowWrappedLines(text).split('\n'),
+          [
+            '1: ca 1 timme a och finriv potatisen. • Röt d sockret och äggen.',
+            'Potatisefterrätter',
+            'Blanda i saltet, citronskalet och keson.',
+          ],
+        );
+      });
+
+      test('short finished sentences in one step stay one step', () {
+        expect(
+          reflowWrappedLines('1. Blanda allt.\nServera varmt.\nTa av värmen.'),
+          '1. Blanda allt. Servera varmt. Ta av värmen.',
+        );
+      });
+
+      test('a short capitalised last line of a step joins it', () {
+        expect(
+          reflowWrappedLines('1. Smält smöret.\nSmaklig måltid'),
+          '1. Smält smöret. Smaklig måltid',
+        );
+      });
+
+      test('a title of three words splits, one of four words joins', () {
+        expect(
+          reflowWrappedLines(
+            '1. Smält smöret.\nGrön örtsås special\nBlanda allt väl.',
+          ).split('\n'),
+          ['1. Smält smöret.', 'Grön örtsås special', 'Blanda allt väl.'],
+        );
+        expect(
+          reflowWrappedLines(
+            '1. Smält smöret.\nTillsätt mjölet och rör\nBlanda allt väl.',
+          ),
+          '1. Smält smöret. Tillsätt mjölet och rör Blanda allt väl.',
+        );
+      });
+
+      test('a capital that only opens a wrapped sentence still joins', () {
+        const text =
+            '1. Smält smöret.\n'
+            'Tillsätt mjölet\n'
+            'och rör om.';
+        expect(
+          reflowWrappedLines(text),
+          '1. Smält smöret. Tillsätt mjölet och rör om.',
+        );
+      });
+    });
+
     group('inside a numbered step', () {
       const method = [
         'Gör såhär',
