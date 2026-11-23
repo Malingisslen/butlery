@@ -367,4 +367,55 @@ void main() {
       addTearDown(s.dispose);
     });
   });
+  group('unread marks', () {
+    List<bool> marks(IngredientSectionState s) => [
+      for (final r in s.rows.whereType<LineRow>()) r.unread,
+    ];
+
+    test('mark one line, clear it, and count what is left', () {
+      final s = IngredientSectionState()..seedFromStructured(const [], 3);
+      addTearDown(s.dispose);
+
+      s.markLineUnread(1);
+      s.markLineUnread(2);
+      expect(marks(s), [false, true, true]);
+      expect(s.unreadLineCount, 2);
+
+      expect(s.clearLineUnread(1), isTrue);
+      expect(s.clearLineUnread(1), isFalse);
+      expect(marks(s), [false, false, true]);
+      expect(s.unreadLineCount, 1);
+    });
+
+    test('a mark stays on its line through removal and move', () {
+      final s = IngredientSectionState()..seedFromStructured(const [], 3);
+      addTearDown(s.dispose);
+      s.markLineUnread(2);
+
+      s.onLineRemoved(0);
+      expect(marks(s), [false, true]);
+
+      s.moveRow(1, 0);
+      expect(marks(s), [true, false]);
+    });
+
+    test('marking a line that does not exist changes nothing', () {
+      final s = IngredientSectionState()..seedFromStructured(const [], 1);
+      addTearDown(s.dispose);
+
+      s.markLineUnread(5);
+
+      expect(s.unreadLineCount, 0);
+    });
+
+    test('reseeding drops the marks', () {
+      final s = IngredientSectionState()..seedFromStructured(const [], 2);
+      addTearDown(s.dispose);
+      s.markLineUnread(0);
+
+      s.seedFromStructured(const [], 2);
+
+      expect(s.unreadLineCount, 0);
+    });
+  });
 }

@@ -31,7 +31,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `tag_result.dart` | 947 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 906 | Shopping list model — serialization, member permissions, sync status |
 | `conversation.dart` | 510 | Conversation model — serialization, participant and read-status tracking, plus the BUT-1838 history cut-off the list row and search filter both go through. Sat at exactly 500 until BUT-1854 (2026-09-11) made the cut-off's comparison shared with the Art. 15 export; that comparison was moved OUT to `history_cutoff.dart` rather than kept here, so what remains over the limit is the delegation and its import. Splitting further would separate `canReadMessageAt`, `historyQueryStartFor` and `joinedLaterAt` — three questions about one stamp that are only correct read together. |
-| `recipe_form_state.dart` | 1008 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. Refreshed 2026-10-08: measured 1011 before BUT-2158 and 1021 after it added `importReviewRows`. |
+| `recipe_form_state.dart` | 1054 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. Refreshed 2026-10-08: measured 1011 before BUT-2158 and 1021 after it added `importReviewRows`. |
 | `unified_shopping_item.dart` | 942 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 625 | Realtime menu model with collaboration operations |
@@ -175,7 +175,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,428 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 405 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 1005 | Recipe creation screen — refactored from 836. |
+| `skriv_sjalv_recept_view.dart` | 1012 | Recipe creation screen — refactored from 836. |
 | `personal_tag_rule_dialog.dart` | 834 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |
@@ -195,7 +195,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 711 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 463 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
-| `recipe_form_viewmodel.dart` | 945 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. Refreshed 2026-10-08: measured 915 before BUT-2158 and 940 after it added the import review from a confidence snapshot. |
+| `recipe_form_viewmodel.dart` | 934 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. Refreshed 2026-10-08: measured 915 before BUT-2158 and 940 after it added the import review from a confidence snapshot. |
 | `personal_tag_selector.dart` | 577 | Tag picker widget |
 | `adaptive_navigation.dart` | 341 | Bottom nav / side nav adaptive widget |
 | `universal_image_manager.dart` | 590 | Image management widget |

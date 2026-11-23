@@ -21,8 +21,13 @@ class HeadingRow extends IngredientRow {
 
 /// A placeholder for "the next ingredient line" — its text and controller are
 /// owned by the ingredients FormFieldsManager, matched by order.
+///
+/// [unread] marks a line an import could not read; the flag lives on the row
+/// (not on the text controller) because rows move with reorder and removal
+/// while controllers are rebuilt by the line manager.
 class LineRow extends IngredientRow {
-  const LineRow();
+  final bool unread;
+  const LineRow({this.unread = false});
 }
 
 /// Owns the ordered heading/line row list and the heading text controllers for
@@ -81,6 +86,24 @@ class IngredientSectionState {
     // A recipe with no lines still shows one line slot (matches the form's
     // "always one empty field" contract).
     if (_rows.whereType<LineRow>().isEmpty) _rows.add(const LineRow());
+  }
+
+  /// Number of lines still marked unread.
+  int get unreadLineCount =>
+      _rows.whereType<LineRow>().where((r) => r.unread).length;
+
+  /// Marks the [lineIndex]-th line as unread. No-op when out of range.
+  void markLineUnread(int lineIndex) => _setUnread(lineIndex, true);
+
+  /// Clears the mark on the [lineIndex]-th line. Returns whether it changed.
+  bool clearLineUnread(int lineIndex) => _setUnread(lineIndex, false);
+
+  bool _setUnread(int lineIndex, bool unread) {
+    final rowIndex = _rowIndexForLine(lineIndex);
+    if (rowIndex == null) return false;
+    if ((_rows[rowIndex] as LineRow).unread == unread) return false;
+    _rows[rowIndex] = LineRow(unread: unread);
+    return true;
   }
 
   /// Appends a heading at the end (after the last line). No-op past the cap.

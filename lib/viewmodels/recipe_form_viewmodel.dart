@@ -7,7 +7,6 @@
 // lib/viewmodels/recipe_form_viewmodel.dart
 
 import 'package:butlery/core/utils/borrowed_image.dart';
-import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,7 +43,6 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 
 // Import for per-ingredient confidence review (BUT-925)
 import 'package:butlery/models/parsing/field_result.dart';
-import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 
 // Import for tagging validation preview
@@ -233,9 +231,8 @@ class RecipeFormViewModel extends BaseViewModel
     }
   }
 
-  /// Hands the snapshot's lines to the review and cuts each editor line the
-  /// reader could not read down to [_readablePart], never guessed text. The
-  /// snapshot's rows are the
+  /// Cuts each editor line the reader could not read down to [_readablePart],
+  /// never guessed text, and marks it unread. The snapshot's rows are the
   /// non-empty lines of [recipe], in order; a snapshot that no longer matches
   /// them is not shown, so a mismatch can never empty the wrong line.
   void _showImportReview(Recipe recipe, ParsedRecipe parsed) {
@@ -250,13 +247,13 @@ class RecipeFormViewModel extends BaseViewModel
     for (var row = 0; row < rows.length; row++) {
       if (rows[row].originalLine != lines[lineIndices[row]]) return;
     }
-    _state.setImportReviewRows(rows);
     for (var row = 0; row < rows.length; row++) {
       if (rows[row].confidence == ParseConfidence.failed) {
         _state.ingredientsManager.updateAt(
           lineIndices[row],
           _readablePart(rows[row].originalLine),
         );
+        _state.ingredientSectionState.markLineUnread(lineIndices[row]);
       }
     }
   }
@@ -369,54 +366,10 @@ class RecipeFormViewModel extends BaseViewModel
   List<String> get fieldsNeedingImprovement =>
       _state.originalParsedRecipe?.fieldsNeedingImprovement ?? [];
 
-  /// Per-ingredient parse confidence for the confidence review widget (BUT-925).
-  ///
-  /// Populated for imported recipes whose parse, or whose snapshot with
-  /// per-line confidence (BUT-2158), is still in [ParsedRecipeCache]. Returns
-  /// null for manually-entered recipes or when the cache entry expired.
-  List<ParsedIngredient>? get parsedIngredients =>
-      _state.originalParsedRecipe?.ingredients.value ?? _state.importReviewRows;
-
-  /// P6-U03: rows of the import review the user has confirmed, kept by
-  /// object identity — never by position or text (two identical lines are
-  /// two rows). Reset when another parse arrives.
-  final Set<ParsedIngredient> _confirmedParseRows =
-      Set<ParsedIngredient>.identity();
-  Object? _confirmedParseSource;
-
-  void _syncConfirmedParseRows() {
-    final Object? source =
-        _state.originalParsedRecipe ?? _state.importReviewRows;
-    if (!identical(source, _confirmedParseSource)) {
-      _confirmedParseRows.clear();
-      _confirmedParseSource = source;
-    }
-  }
-
-  /// Whether the user confirmed [row] in the import review.
-  bool isParseRowConfirmed(ParsedIngredient row) {
-    _syncConfirmedParseRows();
-    return _confirmedParseRows.contains(row);
-  }
-
-  /// Confirms a low- or failed-confidence row.
-  void confirmParseRow(ParsedIngredient row) {
-    _syncConfirmedParseRows();
-    if (_confirmedParseRows.add(row)) notifyListeners();
-  }
-
-  /// Low- and failed-confidence rows still waiting for confirmation. Spara
-  /// stays disabled while this is above zero, and the view says how many
-  /// are left (Q-P6-E03).
-  int get pendingParseConfirmations {
-    _syncConfirmedParseRows();
-    final rows = parsedIngredients;
-    if (rows == null) return 0;
-    return rows
-        .where(ParseConfidenceReview.needsConfirmation)
-        .where((row) => !_confirmedParseRows.contains(row))
-        .length;
-  }
+  /// Ingredient lines the import could not read and the user has not touched
+  /// since. Spara stays enabled; the view asks before saving with any left.
+  int get unreadIngredientLinesLeft =>
+      _state.ingredientSectionState.unreadLineCount;
 
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;

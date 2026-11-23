@@ -14834,44 +14834,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unnamedSharedList => '(Unnamed list)';
 
   @override
-  String get parseConfidenceTitle => 'Parse quality per ingredient';
-
-  @override
-  String parseConfidenceReviewCountSubtitle(int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String countString = countNumberFormat.format(count);
-
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$countString may need a check',
-      one: '1 may need a check',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String parseConfidenceOriginalPrefix(String line) {
-    return 'Original: $line';
-  }
-
-  @override
-  String get a11yToggleConfidenceSection => 'Show or hide';
-
-  @override
-  String get a11yConfidenceHigh => 'high parse quality';
-
-  @override
-  String get a11yConfidenceMedium => 'medium parse quality';
-
-  @override
-  String get a11yConfidenceLow => 'low parse quality';
-
-  @override
-  String get a11yConfidenceFailed => 'unknown parse quality';
-
-  @override
   String get recipeRelatedSectionTitle => 'Related recipes';
 
   @override
@@ -16829,32 +16791,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookingNoStepsShopping => 'To the shopping list';
 
   @override
-  String get parseConfidenceConfirm => 'Correct';
+  String get unreadIngredientEmpty => 'Could not be read, fill in';
 
   @override
-  String get parseConfidenceConfirmed => 'Confirmed';
+  String get unreadIngredientPartial =>
+      'Only part could be read, fill in the rest';
 
   @override
-  String a11yParseConfidenceConfirm(String line) {
-    return 'Confirm the line $line';
-  }
-
-  @override
-  String parseConfidencePendingSave(int count) {
+  String unreadSaveTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Confirm $count lines before you save',
-      one: 'Confirm 1 line before you save',
+      other: '$count lines are missing',
+      one: 'One line is missing',
     );
     return '$_temp0';
   }
 
   @override
-  String get parseConfidenceUnreadLine => 'The line could not be read';
+  String unreadSaveBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Some ingredient lines could not be read and are not filled in. Save anyway?',
+      one:
+          'One ingredient line could not be read and is not filled in. Save anyway?',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get a11yParseConfidenceUnreadLine => 'A line that could not be read';
+  String get unreadSaveFillIn => 'Fill in';
+
+  @override
+  String get unreadSaveAnyway => 'Save anyway';
 
   @override
   String importReadPages(int count) {

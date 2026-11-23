@@ -10327,49 +10327,6 @@
   "@unnamedSharedList": {
     "description": "BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data). Replaces the literal '?' character."
   },
-  "parseConfidenceTitle": "Tolkningskvalitet per ingrediens",
-  "@parseConfidenceTitle": {
-    "description": "BUT-1244: section heading in the parse-confidence review widget shown after recipe import."
-  },
-  "parseConfidenceReviewCountSubtitle": "{count, plural, =1{1 kan behöva en koll} other{{count} kan behöva en koll}}",
-  "@parseConfidenceReviewCountSubtitle": {
-    "description": "BUT-1244 redesign: subtitle shown when one or more ingredients are not high-confidence (medium + low + failed). Only rendered when count > 0.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "format": "decimalPattern"
-      }
-    }
-  },
-  "parseConfidenceOriginalPrefix": "Original: {line}",
-  "@parseConfidenceOriginalPrefix": {
-    "description": "BUT-1244: prefix shown before the original source line when a user expands an ingredient row.",
-    "placeholders": {
-      "line": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yToggleConfidenceSection": "Visa eller dölj",
-  "@a11yToggleConfidenceSection": {
-    "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yConfidenceHigh": "hög tolkningskvalitet",
-  "@a11yConfidenceHigh": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — high confidence."
-  },
-  "a11yConfidenceMedium": "medel tolkningskvalitet",
-  "@a11yConfidenceMedium": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — medium confidence."
-  },
-  "a11yConfidenceLow": "låg tolkningskvalitet",
-  "@a11yConfidenceLow": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — low confidence."
-  },
-  "a11yConfidenceFailed": "okänd tolkningskvalitet",
-  "@a11yConfidenceFailed": {
-    "description": "BUT-1244 redesign: confidence word for screen readers — failed/unknown confidence."
-  },
   "recipeRelatedSectionTitle": "Relaterade recept",
   "@recipeRelatedSectionTitle": {
     "description": "BUT-1057: heading for the related-recipes section in recipe detail and edit form."
@@ -12061,26 +12018,26 @@
   "cookingNoStepsBodyNoIngredients": "Ingen har skrivit hur det görs än. Skriv stegen, så kan du laga härifrån.",
   "cookingNoStepsWrite": "Skriv stegen",
   "cookingNoStepsShopping": "Till inköpslistan",
-  "parseConfidenceConfirm": "Stämmer",
-  "parseConfidenceConfirmed": "Bekräftad",
-  "a11yParseConfidenceConfirm": "Bekräfta raden {line}",
-  "@a11yParseConfidenceConfirm": {
-    "placeholders": {
-      "line": {
-        "type": "String"
-      }
-    }
-  },
-  "parseConfidencePendingSave": "{count, plural, =1{Bekräfta 1 rad innan du sparar} other{Bekräfta {count} rader innan du sparar}}",
-  "@parseConfidencePendingSave": {
+  "unreadIngredientEmpty": "Kunde inte läsas, fyll i",
+  "unreadIngredientPartial": "Bara en del kunde läsas, fyll i resten",
+  "unreadSaveTitle": "{count, plural, =1{En rad saknas} other{{count} rader saknas}}",
+  "@unreadSaveTitle": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "parseConfidenceUnreadLine": "Raden kunde inte läsas",
-  "a11yParseConfidenceUnreadLine": "Rad som inte kunde läsas",
+  "unreadSaveBody": "{count, plural, =1{En ingrediensrad kunde inte läsas och är inte ifylld. Spara ändå?} other{Några ingrediensrader kunde inte läsas och är inte ifyllda. Spara ändå?}}",
+  "@unreadSaveBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unreadSaveFillIn": "Fyll i",
+  "unreadSaveAnyway": "Spara ändå",
   "importReadPages": "{count, plural, =1{Läs av 1 sida} other{Läs av {count} sidor}}",
   "@importReadPages": {
     "placeholders": {

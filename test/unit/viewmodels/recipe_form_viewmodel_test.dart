@@ -24,8 +24,7 @@ import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/field_result.dart';
-import 'package:butlery/models/parsing/parsed_ingredient.dart';
-import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -1304,81 +1303,6 @@ void main() {
       });
     });
 
-    // P6-U03 (flow 03): low- and failed-confidence rows must be confirmed
-    // before Spara, with a count of how many are left
-    // (Q-P6-E03).
-    group('P6-U03 import review gates Spara', () {
-      ParsedRecipe parsedWith(List<ParsedIngredient> rows) => ParsedRecipe(
-        title: FieldResult.success('Pannkakor'),
-        portions: FieldResult.success(4),
-        ingredients: FieldResult(
-          value: rows,
-          confidence: ParseConfidence.medium,
-        ),
-        instructions: FieldResult.success(const ['Vispa.']),
-        totalTime: const FieldResult(confidence: ParseConfidence.failed),
-        metadata: ParseMetadata(
-          source: ImportSource.url,
-          parserVersion: '1.0',
-          timestamp: DateTime.utc(2026),
-          totalParseTime: Duration.zero,
-          tierResults: const [],
-        ),
-      );
-
-      test('only high-confidence rows: nothing waits', () {
-        viewModel.state.setOriginalParsedRecipe(
-          parsedWith([
-            const ParsedIngredient(
-              name: 'mjöl',
-              originalLine: '3 dl mjöl',
-              confidence: ParseConfidence.high,
-            ),
-          ]),
-        );
-
-        expect(viewModel.pendingParseConfirmations, 0);
-      });
-
-      ParsedIngredient row(String name, String line, ParseConfidence c) =>
-          ParsedIngredient(name: name, originalLine: line, confidence: c);
-
-      test('each low or failed row waits until it is confirmed', () {
-        final rows = [
-          row('mjölk', '6 dl mjölk', ParseConfidence.low),
-          // Same text, another row: identity is the row, never its text.
-          row('mjölk', '6 dl mjölk', ParseConfidence.low),
-          row('', '2 ?? salt', ParseConfidence.failed),
-        ];
-        viewModel.state.setOriginalParsedRecipe(parsedWith(rows));
-
-        expect(viewModel.pendingParseConfirmations, 3);
-
-        viewModel.confirmParseRow(rows[0]);
-        expect(viewModel.pendingParseConfirmations, 2);
-        expect(viewModel.isParseRowConfirmed(rows[0]), isTrue);
-        expect(viewModel.isParseRowConfirmed(rows[1]), isFalse);
-
-        viewModel.confirmParseRow(rows[1]);
-        viewModel.confirmParseRow(rows[2]);
-        expect(viewModel.pendingParseConfirmations, 0);
-      });
-
-      test('a new parse starts the confirmations over', () {
-        const low = ParsedIngredient(
-          name: 'ägg',
-          originalLine: '3 ägg',
-          confidence: ParseConfidence.low,
-        );
-        viewModel.state.setOriginalParsedRecipe(parsedWith(const [low]));
-        viewModel.confirmParseRow(low);
-        expect(viewModel.pendingParseConfirmations, 0);
-
-        viewModel.state.setOriginalParsedRecipe(parsedWith(const [low]));
-        expect(viewModel.pendingParseConfirmations, 1);
-      });
-    });
-
     // BUT-2158 (flow 03): photo, text and voice imports reach the review
     // through a snapshot carrying per-line confidence.
     group('BUT-2158 import review from a confidence snapshot', () {
@@ -1424,9 +1348,19 @@ void main() {
         );
       }
 
+      List<int> unreadLines(RecipeFormViewModel vm) {
+        final lines = vm.state.ingredientSectionState.rows
+            .whereType<LineRow>()
+            .toList();
+        return [
+          for (var i = 0; i < lines.length; i++)
+            if (lines[i].unread) i,
+        ];
+      }
+
       group('TR::FLOW::03::foto-ocr::otolkad-text', () {
-        test('a line that could not be read is empty in the editor, marked in '
-            'the review, and stays pending until confirmed', () {
+        test('a line that could not be read is empty in the editor and '
+            'marked until the user edits it', () {
           final vm = openTemplate(
             imported(const ['3 dl vetemjöl', '} dl potatismjöl', '2 ägg']),
             confidences: const [
@@ -1438,14 +1372,12 @@ void main() {
           addTearDown(vm.dispose);
 
           expect(vm.ingredients.take(3), ['3 dl vetemjöl', '', '2 ägg']);
-          final unread = vm.parsedIngredients!
-              .where((r) => r.confidence == ParseConfidence.failed)
-              .toList();
-          expect(unread.map((r) => r.originalLine), ['} dl potatismjöl']);
-          expect(vm.pendingParseConfirmations, 1);
+          expect(unreadLines(vm), [1]);
+          expect(vm.unreadIngredientLinesLeft, 1);
 
-          vm.confirmParseRow(unread.single);
-          expect(vm.pendingParseConfirmations, 0);
+          vm.updateIngredient(1, '3 dl potatismjöl');
+          expect(unreadLines(vm), isEmpty);
+          expect(vm.unreadIngredientLinesLeft, 0);
         });
 
         test('the image reader\'s marker is emptied the same way', () {
@@ -1453,7 +1385,7 @@ void main() {
           addTearDown(vm.dispose);
 
           expect(vm.ingredients.take(2), ['2 ägg', '']);
-          expect(vm.pendingParseConfirmations, 1);
+          expect(unreadLines(vm), [1]);
         });
 
         test('a line read in part keeps the part that was read', () {
@@ -1463,12 +1395,84 @@ void main() {
           addTearDown(vm.dispose);
 
           expect(vm.ingredients.take(3), ['2 ägg', '3 dl', 'smör']);
-          expect(vm.pendingParseConfirmations, 2);
+          expect(vm.unreadIngredientLinesLeft, 2);
+        });
+
+        test('editing one marked line clears only that line', () {
+          final vm = openTemplate(
+            imported(const ['[oläsligt] mjöl', '2 ägg', '3 dl [oläsligt]']),
+          );
+          addTearDown(vm.dispose);
+          expect(unreadLines(vm), [0, 2]);
+
+          vm.updateIngredient(2, '3 dl mjölk');
+
+          expect(unreadLines(vm), [0]);
+          expect(vm.unreadIngredientLinesLeft, 1);
+        });
+
+        test('editing an unmarked line leaves the marks alone', () {
+          final vm = openTemplate(imported(const ['2 ägg', '[oläsligt]']));
+          addTearDown(vm.dispose);
+
+          vm.updateIngredient(0, '3 ägg');
+
+          expect(unreadLines(vm), [1]);
+        });
+
+        test('a mark follows its line through a reorder', () {
+          final vm = openTemplate(
+            imported(const ['2 ägg', '[oläsligt]', '1 dl mjölk']),
+          );
+          addTearDown(vm.dispose);
+
+          vm.moveIngredientRow(1, 0);
+          expect(vm.ingredients.take(3), ['', '2 ägg', '1 dl mjölk']);
+          expect(unreadLines(vm), [0]);
+
+          vm.moveIngredientRow(0, 3);
+          expect(vm.ingredients.take(3), ['2 ägg', '1 dl mjölk', '']);
+          expect(unreadLines(vm), [2]);
+        });
+
+        test('a mark follows its line when an earlier line is removed', () {
+          final vm = openTemplate(
+            imported(const ['2 ägg', '1 dl mjölk', '[oläsligt]']),
+          );
+          addTearDown(vm.dispose);
+          expect(unreadLines(vm), [2]);
+
+          vm.removeIngredient(0);
+
+          expect(unreadLines(vm), [1]);
+          expect(vm.unreadIngredientLinesLeft, 1);
+        });
+
+        test('removing the marked line takes its mark with it', () {
+          final vm = openTemplate(imported(const ['2 ägg', '[oläsligt]']));
+          addTearDown(vm.dispose);
+
+          vm.removeIngredient(1);
+
+          expect(vm.unreadIngredientLinesLeft, 0);
+        });
+
+        test('a mark follows its line when moved under a heading', () {
+          final vm = openTemplate(imported(const ['2 ägg', '[oläsligt]']));
+          addTearDown(vm.dispose);
+          final headingId = vm.state.addIngredientHeading()!;
+
+          vm.moveIngredientLineToSection(1, headingId);
+
+          expect(vm.unreadIngredientLinesLeft, 1);
+          // The line lands under the heading, after the trailing empty line.
+          expect(vm.ingredients.take(3), ['2 ägg', '', '']);
+          expect(unreadLines(vm), [2]);
         });
       });
 
       group('TR::FLOW::03::granska::fält-med-låg-säkerhet', () {
-        test('a low row from a text import waits for Stämmer', () {
+        test('a low row from a text import is left as read, not marked', () {
           final vm = openTemplate(
             imported(const ['3 dl vetemjöl', 'en skvätt grädde']),
             confidences: const [ParseConfidence.high, ParseConfidence.low],
@@ -1476,15 +1480,24 @@ void main() {
           addTearDown(vm.dispose);
 
           expect(vm.ingredients.take(2), ['3 dl vetemjöl', 'en skvätt grädde']);
-          expect(vm.pendingParseConfirmations, 1);
+          expect(vm.unreadIngredientLinesLeft, 0);
         });
 
-        test('a snapshot without confidence shows no review', () {
+        test('medium and high rows are not marked', () {
+          final vm = openTemplate(
+            imported(const ['3 dl vetemjöl', '2 ägg']),
+            confidences: const [ParseConfidence.medium, ParseConfidence.high],
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.unreadIngredientLinesLeft, 0);
+        });
+
+        test('a snapshot without confidence marks nothing', () {
           final vm = openTemplate(imported(const ['3 dl vetemjöl', '2 ägg']));
           addTearDown(vm.dispose);
 
-          expect(vm.parsedIngredients, isNull);
-          expect(vm.pendingParseConfirmations, 0);
+          expect(vm.unreadIngredientLinesLeft, 0);
         });
       });
 
@@ -1492,7 +1505,7 @@ void main() {
         'an import is written with the fractions the recipe page shows',
         () {
           test(
-            'the editor shows 1 ½ and the review still matches its lines',
+            'the editor shows 1 ½ and the mark still sits on its line',
             () {
               final vm = openTemplate(
                 imported(const ['1,5 dl mjölk', '} dl potatismjöl', '2 ägg']),
@@ -1505,7 +1518,7 @@ void main() {
               addTearDown(vm.dispose);
 
               expect(vm.ingredients.take(3), ['1 ½ dl mjölk', '', '2 ägg']);
-              expect(vm.pendingParseConfirmations, 1);
+              expect(unreadLines(vm), [1]);
             },
           );
 
@@ -1564,7 +1577,7 @@ void main() {
         addTearDown(vm.dispose);
 
         expect(vm.ingredients.take(3), ['2 ägg', '', '']);
-        expect(vm.pendingParseConfirmations, 1);
+        expect(unreadLines(vm), [2]);
       });
 
       test('a snapshot whose lines differ from the recipe empties nothing', () {
@@ -1582,8 +1595,7 @@ void main() {
         addTearDown(vm.dispose);
 
         expect(vm.ingredients.take(2), ['4 dl vetemjöl', '} dl potatismjöl']);
-        expect(vm.parsedIngredients, isNull);
-        expect(vm.pendingParseConfirmations, 0);
+        expect(vm.unreadIngredientLinesLeft, 0);
       });
     });
   });

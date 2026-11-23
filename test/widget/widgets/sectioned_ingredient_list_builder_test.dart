@@ -340,4 +340,67 @@ void main() {
     expect(find.widgetWithText(TextFormField, '5 dl vetemjöl'), findsOneWidget);
     expect(find.widgetWithText(TextFormField, '75 g smör'), findsOneWidget);
   });
+  group('unread lines', () {
+    const partial = 'Bara en del kunde läsas, fyll i resten';
+    const empty = 'Kunde inte läsas, fyll i';
+
+    testWidgets('a marked line with text says only part was read', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(unread: true), LineRow()],
+          lineControllers: [line1, line2],
+        ),
+      );
+
+      expect(find.byKey(const ValueKey('ing_unread_note_0')), findsOneWidget);
+      expect(find.text(partial), findsOneWidget);
+      expect(find.text(empty), findsNothing);
+      expect(find.byKey(const ValueKey('ing_unread_note_1')), findsNothing);
+    });
+
+    testWidgets('a marked empty line shows the note and the hint', (
+      tester,
+    ) async {
+      final blank = TextEditingController();
+      addTearDown(blank.dispose);
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(), LineRow(unread: true)],
+          lineControllers: [line1, blank],
+        ),
+      );
+
+      expect(find.byKey(const ValueKey('ing_unread_note_1')), findsOneWidget);
+      // The note and the empty field's hint carry the same sentence.
+      expect(find.text(empty), findsNWidgets(2));
+      expect(find.text(partial), findsNothing);
+    });
+
+    testWidgets('unmarked lines show no note', (tester) async {
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(), LineRow()],
+          lineControllers: [line1, line2],
+        ),
+      );
+
+      expect(find.text(empty), findsNothing);
+      expect(find.text(partial), findsNothing);
+    });
+
+    testWidgets('the note is exposed to screen readers', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(unread: true)],
+          lineControllers: [line1],
+        ),
+      );
+
+      expect(find.bySemanticsLabel(RegExp(partial)), findsOneWidget);
+      handle.dispose();
+    });
+  });
 }
