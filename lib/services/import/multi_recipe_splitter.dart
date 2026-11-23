@@ -1,5 +1,6 @@
 import 'package:butlery/services/import/layout/heading_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/prose_layout.dart';
 import 'package:butlery/services/import/yield_layout.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 
@@ -50,6 +51,8 @@ class MultiRecipeSplitter {
 
   /// A complete block needs at least this many ingredient-like lines.
   static const int _minIngredientLines = 2;
+
+  static const int _minTailSteps = 4;
 
   static final _leadingDigit = RegExp(r'^\s*\d');
 
@@ -147,13 +150,16 @@ class MultiRecipeSplitter {
     var hasIngredients = false;
     var hasInstructions = false;
     var hasYield = false;
+    final texts = [for (final l in neLines) l.text];
 
     for (var p = 0; p < neLines.length; p++) {
       final line = neLines[p];
       final opensAtYield = _opensAtYield(neLines, p);
+      final opensAtProse = ProseLayout.opensRecipe(texts, p);
 
       if (_isTitleish(line.text) && _ingredientClusterAhead(neLines, p) ||
-          opensAtYield) {
+          opensAtYield ||
+          opensAtProse) {
         if (boundaries.isEmpty) {
           boundaries.add(line.rawIndex);
         } else if (hasIngredients && hasInstructions ||
@@ -177,6 +183,11 @@ class MultiRecipeSplitter {
       }
     }
 
+    if (boundaries.isNotEmpty &&
+        _opensWithRecipeTail(neLines, boundaries.first)) {
+      boundaries.insert(0, neLines.first.rawIndex);
+    }
+
     if (boundaries.length < 2) return [input];
 
     // Slice rawLines into blocks at the boundary indices.
@@ -197,6 +208,20 @@ class MultiRecipeSplitter {
     ).where(_isCompleteRecipeBlock).toList();
     if (valid.length < 2 || valid.length > _maxBlocks) return [input];
     return valid;
+  }
+
+  /// True when the text above [firstBoundary] is a recipe of its own: the foot
+  /// of the page's first recipe, whose title sits on the previous page. Several
+  /// method lines is the evidence, since furniture and folios never carry them.
+  bool _opensWithRecipeTail(List<_Line> neLines, int firstBoundary) {
+    var steps = 0;
+    var quantities = 0;
+    for (final l in neLines) {
+      if (l.rawIndex >= firstBoundary) break;
+      if (_isInstructional(l.text)) steps++;
+      if (_measurement.hasMatch(l.text)) quantities++;
+    }
+    return steps >= _minTailSteps && quantities >= _minIngredientLines;
   }
 
   /// How many recipes [text] appears to hold: the title-like lines that open
@@ -350,6 +375,7 @@ class MultiRecipeSplitter {
     // Colon-terminated lines are sub-section headers ("För såsen:", "Gräddsås:",
     // "Ingredienser:"), never recipe titles.
     if (t.endsWith(':')) return false;
+    if (ProseLayout.isTailLabel(t)) return false;
     // NB: deliberately not using `isGarbage`. The digit/length/header guards
     // here cover the noise cases.
     if (RecipeSectionDetector.isIngredientHeader(t)) return false;
@@ -421,7 +447,9 @@ class MultiRecipeSplitter {
     var ingredientLines = 0;
     var hasIngredientHeader = false;
     var instructional = false;
+    var hasYield = false;
     for (final l in lines) {
+      if (YieldLayout.isYieldLine(l)) hasYield = true;
       if (RecipeSectionDetector.isIngredientHeader(l)) {
         hasIngredientHeader = true;
       }
@@ -436,7 +464,9 @@ class MultiRecipeSplitter {
     // lines now count on their own and this is a genuine OR, not a workaround.)
     final hasIngredients =
         hasIngredientHeader || ingredientLines >= _minIngredientLines;
-    return hasIngredients && instructional;
+    // A yield line plus ingredients is a recipe whose method the page printed
+    // elsewhere, so the block is kept rather than costing the whole split.
+    return hasIngredients && (instructional || hasYield);
   }
 }
 
