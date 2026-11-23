@@ -62,7 +62,7 @@ class MultiRecipeSplitter {
   /// "Smält smör", so the loose check would falsely see an ingredient cluster
   /// after a sub-header and split one recipe in two.
   static final _measurement = RegExp(
-    r'\d+(?:[,.]\d+)?\s*(dl|cl|ml|l|kg|hg|g|msk|tsk|st|krm|burk|pkt|påse|klyfta)\b',
+    r'\d+(?:[,.]\d+)?\s*(dl|cl|ml|l|kg|hg|g|msk|tsk|st|krm|burk|pkt|påse|klyfta|skiv(?:a|or))\b',
     caseSensitive: false,
   );
 
@@ -431,6 +431,12 @@ class MultiRecipeSplitter {
           minAmounts: yieldAt - from <= _titleToYieldLines
               ? 1
               : _minIngredientLines,
+          // A book that prints a blurb between the yield and the rows needs
+          // the longer reach; the yield line itself is the evidence a recipe
+          // follows.
+          lookahead: yieldAt - from <= _titleToYieldLines
+              ? _yieldLookahead
+              : _lookahead,
         ),
       );
 
@@ -450,9 +456,10 @@ class MultiRecipeSplitter {
     List<_Line> neLines,
     int from, {
     int minAmounts = _minIngredientLines,
+    int lookahead = _lookahead,
   }) {
     var count = 0;
-    final end = (from + 1 + _lookahead).clamp(0, neLines.length);
+    final end = (from + 1 + lookahead).clamp(0, neLines.length);
     for (var p = from + 1; p < end; p++) {
       final t = neLines[p].text;
       if (RecipeSectionDetector.isIngredientHeader(t)) return true;
