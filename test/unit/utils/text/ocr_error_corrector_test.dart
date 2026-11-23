@@ -101,5 +101,39 @@ void main() {
       expect(OcrErrorCorrector.correctLine('% grädde'), '% grädde');
       expect(OcrErrorCorrector.correctLine('v½ grädde'), 'v½ grädde');
     });
+
+    group('letters the reader could not make out', () {
+      test('restores the marks a Swedish vowel lost', () {
+        expect(
+          OcrErrorCorrector.correctLine('7 dl vetemjol'),
+          '7 dl vetemjöl',
+        );
+        expect(OcrErrorCorrector.correctLine('2 dl gradde'), '2 dl grädde');
+        expect(
+          OcrErrorCorrector.correctLine('2 msk strosocker'),
+          '2 msk strösocker',
+        );
+      });
+
+      test('reads the dotless i and a stray mark as what they stand for', () {
+        expect(OcrErrorCorrector.correctLine('persılja'), 'persilja');
+        expect(OcrErrorCorrector.correctLine('blåbăr'), 'blåbär');
+        expect(OcrErrorCorrector.correctLine('3 üggulor'), '3 äggulor');
+      });
+
+      test('reads an i for the l and a u for the v', () {
+        expect(OcrErrorCorrector.correctLine('halion'), 'hallon');
+        expect(
+          OcrErrorCorrector.correctLine('2 vitlökskiyftor'),
+          '2 vitlöksklyftor',
+        );
+        expect(OcrErrorCorrector.correctLine('3 ägguitor'), '3 äggvitor');
+      });
+
+      test('leaves a short word and a real word one swap away alone', () {
+        expect(OcrErrorCorrector.correctLine('kal'), 'kal');
+        expect(OcrErrorCorrector.correctLine('platt'), 'platt');
+      });
+    });
   });
 }
