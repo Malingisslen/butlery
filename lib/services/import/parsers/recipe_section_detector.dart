@@ -261,6 +261,17 @@ class RecipeSectionDetector {
     return false;
   }
 
+  static bool _startsWithWord(String lower, String word) {
+    if (!lower.startsWith(word)) return false;
+    if (lower.length == word.length) return true;
+    return !_swedishLetter.hasMatch(lower[word.length]);
+  }
+
+  static bool _isProseLength(String lower) =>
+      lower.trim().split(RegExp(r'\s+')).length > 4;
+
+  static final _swedishLetter = RegExp(r'[a-zåäöéü]');
+
   /// Calculate instruction likelihood score
   static int instructionScore(String text) {
     int score = 0;
@@ -299,7 +310,16 @@ class RecipeSectionDetector {
       'marinera',
       'toppa',
     ];
-    if (actionVerbs.any((verb) => lower.startsWith(verb))) score += 3;
+    // A short phrase must open on the whole verb: "riven muskotnöt", "hackad
+    // dill" and "strösocker" are ingredient rows, not the verbs they begin
+    // with. A longer line keeps the stem match, since a sentence that opens
+    // on a participle ("Vispad grädde kan ibland vara gott …") is method prose.
+    final opensOnVerb = actionVerbs.any(
+      (verb) =>
+          lower.startsWith(verb) &&
+          (_startsWithWord(lower, verb) || _isProseLength(lower)),
+    );
+    if (opensOnVerb) score += 3;
 
     // +2: Contains time indicator
     if (RegExp(

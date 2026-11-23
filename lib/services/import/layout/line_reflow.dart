@@ -96,6 +96,7 @@ bool _continues(
   // and neither is a line that reads as a step: "Gratinera på 225 grader"
   // holds a "225 g".
   if (!stepMarker.hasMatch(a.trim()) &&
+      !_isBulletSentence(a) &&
       RecipeSectionDetector.looksLikeIngredient(a) &&
       RecipeSectionDetector.instructionScore(a) < 2) {
     return false;
@@ -175,6 +176,14 @@ bool _isListHeading(String line) {
   if (RecipeSectionDetector.isInstructionHeader(lower)) return true;
   return false;
 }
+
+/// A long bulleted line that stops on a word no sentence
+/// ends on ("• testa topping som honungsrostade nötter eller"): a tip, not an
+/// ingredient row that happens to name a food.
+bool _isBulletSentence(String a) =>
+    _bullet.hasMatch(a) &&
+    _danglingWord.hasMatch(a) &&
+    a.split(_whitespace).length >= 5;
 
 bool _startsLowercase(String s) => _lowerFirst.hasMatch(s);
 bool _startsUppercase(String s) => _upperFirst.hasMatch(s);

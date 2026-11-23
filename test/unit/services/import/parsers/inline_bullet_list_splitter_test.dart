@@ -80,4 +80,16 @@ void main() {
       ],
     );
   });
+
+  test('a line that opens with a slash continues the run: OCR cut a fraction '
+      'at the column edge', () {
+    const input =
+        'Till 4 portioner behövs:\n'
+        '8 stora potatisar • 1 lök • 2 vitlöksklyftor • 3/4\n'
+        '/ vatten • 5 pepparkorn • 1 lagerblad • salt\n'
+        'Ca 1 110 kJ/265 kcal per portion';
+    final out = InlineBulletListSplitter.split(input).split('\n');
+    expect(out, containsAll(['5 pepparkorn', '1 lagerblad', 'salt']));
+    expect(out.last, 'Ca 1 110 kJ/265 kcal per portion');
+  });
 }
