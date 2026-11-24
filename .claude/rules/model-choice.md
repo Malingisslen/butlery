@@ -17,6 +17,11 @@ push reading down to cheaper models.
   below), and a Sonnet or Opus agent reviews its diff before it is committed.
 - **Security, GDPR, Firestore rules, Cloud Functions and plans stay on Opus.** Their
   agents pin `model: opus` so they never follow a smaller main model.
+- **A Sonnet thread does that Opus work through the `opus-builder` agent** (Malin
+  2026-11-24). It does not stop, and it does not ask for a separate Opus thread. The
+  Sonnet lead runs the stakeholder router, the Fable consult, the plan gate, the commit
+  gates and the PR. `opus-builder` writes the plan text and makes every edit in the Opus
+  areas, including fixes after review. The lead does not edit those paths itself.
 - **Fable as the main model only when Malin asks for it.**
 - **Fable advises, as Malin's interpreter** (trial, Malin 2026-11-11; she decides on
   2026-11-18 whether it stays). Malin is not a developer. When she asks for something new
