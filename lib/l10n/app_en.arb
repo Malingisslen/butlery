@@ -18634,5 +18634,116 @@
   "shoppingHintsDisclaimer": "Reminders can be missing. Always read the label.",
   "@shoppingHintsDisclaimer": {
     "description": "BUT-2494: line at the top of a shopping list whenever an allergy reminder shows (Malin 2026-11-24, ADR-0044)"
+  },
+  "lunchboxSheetTitle": "Lunch {day}",
+  "@lunchboxSheetTitle": {
+    "description": "BUT-2486: title of the lunchbox sheet; day is the weekday name.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "lunchboxSourceLeftovers": "Leftovers from yesterday",
+  "@lunchboxSourceLeftovers": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxLeftoversFrom": "{dish}, yesterday's dinner",
+  "@lunchboxLeftoversFrom": {
+    "description": "BUT-2486: subtitle of the leftovers row.",
+    "placeholders": {
+      "dish": {
+        "type": "String"
+      }
+    }
+  },
+  "lunchboxLeftoversNone": "No dinner yesterday",
+  "@lunchboxLeftoversNone": {
+    "description": "BUT-2486: leftovers row when the day before has no middag."
+  },
+  "lunchboxLeftoversPreviousWeek": "Sunday's dinner – pick the dish",
+  "@lunchboxLeftoversPreviousWeek": {
+    "description": "BUT-2486: Monday's leftovers come from last week's Sunday, which is not read, so the user picks the dish."
+  },
+  "lunchboxSourcePrepDay": "From the prep day",
+  "@lunchboxSourcePrepDay": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxPickDish": "Pick a dish",
+  "@lunchboxPickDish": {
+    "description": "BUT-2486: subtitle of a source row with no dish chosen yet."
+  },
+  "lunchboxSourceSuggestion": "Suggested by the app",
+  "@lunchboxSourceSuggestion": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxSuitsSubtitle": "Suits a lunchbox",
+  "@lunchboxSuitsSubtitle": {
+    "description": "BUT-2486: subtitle on a suggested recipe."
+  },
+  "lunchboxNoSuggestions": "No recipes are marked as lunchbox dishes yet",
+  "@lunchboxNoSuggestions": {
+    "description": "BUT-2486: suggestion row when no recipe suits."
+  },
+  "lunchboxTakersHeading": "Who takes a box",
+  "@lunchboxTakersHeading": {
+    "description": "BUT-2486: heading over the people list."
+  },
+  "lunchboxTakersHint": "None chosen means the whole household",
+  "@lunchboxTakersHint": {
+    "description": "BUT-2486: under the people list."
+  },
+  "lunchboxPortionsLabel": "Number of boxes",
+  "@lunchboxPortionsLabel": {
+    "description": "BUT-2486: stepper label."
+  },
+  "lunchboxSave": "Save lunchbox",
+  "@lunchboxSave": {
+    "description": "BUT-2486: primary button of the sheet."
+  },
+  "lunchboxRemove": "No lunchbox",
+  "@lunchboxRemove": {
+    "description": "BUT-2486: removes the day's lunchbox."
+  },
+  "lunchboxRemovedUndo": "Lunchbox removed",
+  "@lunchboxRemovedUndo": {
+    "description": "BUT-2486: snackbar with Ångra after removing a lunchbox."
+  },
+  "lunchboxSaveFailed": "Could not save the lunchbox",
+  "@lunchboxSaveFailed": {
+    "description": "BUT-2486: the viewmodel's failure text, shown whole as the error."
+  },
+  "lunchboxMark": "Lunchbox",
+  "@lunchboxMark": {
+    "description": "BUT-2486: mark on a calendar lunch cell that is a lunchbox, and its legend entry."
+  },
+  "lunchboxUnjudgedMark": "Not checked for allergies",
+  "@lunchboxUnjudgedMark": {
+    "description": "BUT-2486: mark on a lunchbox whose dish cannot be checked; never shown as safe."
+  },
+  "lunchboxNoDish": "Dish missing",
+  "@lunchboxNoDish": {
+    "description": "BUT-2486: lunch cell title when the box's dish cannot be found."
+  },
+  "menuSelectorLunchbox": "Lunchbox",
+  "@menuSelectorLunchbox": {
+    "description": "BUT-2486: action in the lunch recipe picker that opens the lunchbox sheet."
+  },
+  "a11yLunchboxOpen": "Change the lunchbox on {day}",
+  "@a11yLunchboxOpen": {
+    "description": "BUT-2486: screen-reader label of a lunchbox cell; the dish name is read from the visible text.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yLunchboxFewer": "Fewer boxes",
+  "@a11yLunchboxFewer": {
+    "description": "BUT-2486: stepper minus."
+  },
+  "a11yLunchboxMore": "More boxes",
+  "@a11yLunchboxMore": {
+    "description": "BUT-2486: stepper plus."
   }
 }

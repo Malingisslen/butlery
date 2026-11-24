@@ -11,7 +11,6 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
@@ -32,13 +31,10 @@ import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/views/recurring_day_rules/recurring_day_rule_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
@@ -46,10 +42,11 @@ import 'package:butlery/widgets/menu/day_suggestion_sheet.dart';
 import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
+import 'package:butlery/widgets/menu/calendar/lunchbox_flow.dart';
+import 'package:butlery/widgets/menu/calendar/move_target_sheet.dart';
 import 'package:butlery/widgets/menu/calendar/ovrigt_sheet.dart';
 import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
-import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Embeddable calendar widget. Reads `WeeklyMenuPlanViewModel` from the
 /// surrounding `MultiProvider` (set up by `VeckomenyView`).
@@ -167,7 +164,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlanViewModel vm,
     WeeklyMenuPlan plan,
   ) {
-    if (plan.isEmpty && !vm.hasOverflow) {
+    if (plan.isEmpty && plan.lunchboxes.isEmpty && !vm.hasOverflow) {
       return _buildEmptyHint(context);
     }
 
@@ -246,6 +243,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           ),
           onTapOvrigt: (d) => _onTapOvrigt(context, vm, plan, d),
           onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
+          onTapLunchbox: (d) => _openLunchbox(context, vm, d),
           onTapDay: (d) => unawaited(showRecurringDayRuleSheet(context, d)),
           ruleDays: _ruleDays,
         ),
@@ -344,7 +342,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlanViewModel vm,
   ) async {
     if (vm.selectedCount == 0) return;
-    final target = await _showMoveTargetSheet(context);
+    final target = await showMoveTargetSheet(context, plan: vm.plan);
     if (target == null || !context.mounted) return;
     final moved = await vm.bulkMoveSelected(
       toDay: target.$1,
@@ -364,55 +362,6 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     );
   }
 
-  /// Day + slot target picker for bulk-move. Returns null on dismiss.
-  Future<(DayOfWeek, MealSlot)?> _showMoveTargetSheet(
-    BuildContext context,
-  ) async {
-    return showButlerySheet<(DayOfWeek, MealSlot)>(
-      context: context,
-      builder: (sheetContext) {
-        final cs = Theme.of(sheetContext).colorScheme;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.space16),
-                child: Text(
-                  sheetContext.l10n.weeklyMenuMoveSheetTitle,
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final day in DayOfWeek.values)
-                        for (final slot in MealSlot.values)
-                          ButleryItemRow(
-                            leading: ButleryIcon(
-                              ButleryIcons.utensils,
-                              color: cs.secondary,
-                            ),
-                            title: '${day.displayLabel} · ${slot.displayLabel}',
-                            onTap: () =>
-                                Navigator.of(sheetContext).pop((day, slot)),
-                          ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _onTapEmptySlot(
     BuildContext context,
     WeeklyMenuPlanViewModel vm,
@@ -422,6 +371,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final picked = await RecipeSelectionDialogs.showMenuRecipeSelector(
       context,
       categoryName: slot.displayLabel,
+      onLunchbox: slot == MealSlot.lunch
+          ? () => _openLunchbox(context, vm, day)
+          : null,
       onSuggest: slot.isMulti || vm.plan == null
           ? null
           : () async {
@@ -438,6 +390,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     if (picked == null || picked.isEmpty || !context.mounted) return;
     await _placePicked(context, vm, day, slot, picked);
   }
+
+  Future<void> _openLunchbox(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+    DayOfWeek day,
+  ) => openLunchboxFlow(context, vm: vm, day: day, roster: _roster);
 
   Future<void> _placePicked(
     BuildContext context,

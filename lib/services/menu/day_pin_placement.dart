@@ -36,6 +36,7 @@ abstract final class DayPinPlacement {
     required List<WeeklyMenuPlanEntry> entries,
     required int anchorIndex,
     required bool Function(Recipe recipe, DayOfWeek day, MealSlot slot) allowed,
+    required bool Function(DayOfWeek day, MealSlot slot) slotBlocked,
     required WeeklyMenuPlanEntry Function(
       DayOfWeek day,
       MealSlot slot,
@@ -54,7 +55,9 @@ abstract final class DayPinPlacement {
       final day = DayOfWeek.values[dayIdx];
       final slot = mapMealTypeToSlot(slotKey);
       bool occupied() =>
-          !slot.isMulti && entries.any((e) => e.day == day && e.slot == slot);
+          !slot.isMulti &&
+          (slotBlocked(day, slot) ||
+              entries.any((e) => e.day == day && e.slot == slot));
 
       if (pin.fromRule) {
         final candidates = recipes

@@ -23,6 +23,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -39,7 +40,9 @@ import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
+import 'package:butlery/widgets/menu/calendar/lunchbox_sheet.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -1576,6 +1579,162 @@ void main() {
 
         expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
         expect(find.byType(BottomSheet), findsOneWidget);
+      });
+
+      testWidgets('the picker for an empty lunch offers "Matlåda", which '
+          'opens the lunchbox sheet; the middag picker does not (BUT-2486)', (
+        tester,
+      ) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: const [], isLoading: false),
+        );
+        when(() => recipeService.recipes).thenReturn(const []);
+        await pumpOvrigt(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('test-menu-slot-mon-middag')),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('menu-selector-lunchbox')),
+          findsNothing,
+        );
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.byKey(const ValueKey('test-menu-slot-tue-lunch')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('menu-selector-lunchbox')));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
+        expect(find.byType(LunchboxSheet), findsOneWidget);
+        expect(find.text('Lunch tisdag'), findsOneWidget);
+      });
+
+      /// A week whose Monday middag is "Linsgryta", plus [boxes], on screen,
+      /// with every save captured into the returned list.
+      Future<List<WeeklyMenuPlan>> pumpLunchWeek(
+        WidgetTester tester, {
+        Map<DayOfWeek, Lunchbox> boxes = const {},
+        bool withMiddag = true,
+      }) async {
+        final plan = _plan(
+          weekStart: DateTime(2026, 4, 13),
+          entries: [
+            if (withMiddag)
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'm1',
+                recipeId: 'r-stew',
+                title: 'Linsgryta',
+              ),
+          ],
+        ).copyWith(lunchboxes: boxes);
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        final saved = <WeeklyMenuPlan>[];
+        when(() => service.saveRevision(any())).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+        });
+        when(() => recipeService.recipes).thenReturn(const []);
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+        return saved;
+      }
+
+      testWidgets('leftovers chosen through "Matlåda" are saved as Tuesday\'s '
+          'box and drawn in the lunch cell (BUT-2486)', (tester) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: const [], isLoading: false),
+        );
+        final saved = await pumpLunchWeek(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('test-menu-slot-tue-lunch')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('menu-selector-lunchbox')));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('lunchbox-source-leftovers')),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('lunchbox-save')));
+        await tester.pumpAndSettle();
+
+        final box = saved.single.lunchboxes[DayOfWeek.tue]!;
+        expect(box.source, LunchboxSource.leftovers);
+        expect(box.fromDay, DayOfWeek.mon);
+        expect(find.byType(LunchboxSheet), findsNothing);
+        // The middag and the box that follows it.
+        expect(find.text('Linsgryta'), findsNWidgets(2));
+      });
+
+      testWidgets('a box\'s cell opens its sheet; "Ingen matlåda" removes it '
+          'and "Ångra" puts it back (BUT-2486)', (tester) async {
+        final saved = await pumpLunchWeek(
+          tester,
+          boxes: {
+            DayOfWeek.tue: const Lunchbox(
+              source: LunchboxSource.leftovers,
+              fromDay: DayOfWeek.mon,
+              portions: 2,
+            ),
+          },
+        );
+
+        await tester.tap(find.text('Linsgryta').last);
+        await tester.pumpAndSettle();
+        expect(find.byType(LunchboxSheet), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('lunchbox-remove')));
+        await tester.pumpAndSettle();
+
+        expect(saved, hasLength(1));
+        expect(saved.first.lunchboxes, isEmpty);
+        expect(find.text('Linsgryta'), findsOneWidget);
+
+        await tester.tap(find.text('Ångra'));
+        await tester.pumpAndSettle();
+
+        expect(saved, hasLength(2));
+        expect(saved.last.lunchboxes[DayOfWeek.tue]!.portions, 2);
+        expect(find.text('Linsgryta'), findsNWidgets(2));
+      });
+
+      testWidgets('a week holding only a box still draws the calendar, not '
+          'the empty hint (BUT-2486)', (tester) async {
+        await pumpLunchWeek(
+          tester,
+          withMiddag: false,
+          boxes: {
+            DayOfWeek.tue: const Lunchbox(
+              source: LunchboxSource.suggestion,
+              recipeId: 'r-soup',
+              recipeTitle: 'Soppa',
+            ),
+          },
+        );
+
+        expect(find.byType(CalendarWeekTable), findsOneWidget);
       });
 
       testWidgets('a dish picked for an empty cell is confirmed first when it '

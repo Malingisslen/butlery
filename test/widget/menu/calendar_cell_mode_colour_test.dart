@@ -97,6 +97,7 @@ void main() {
               onTapEmptySlot: (_, _) {},
               onTapRecipe: (_, {presentServings}) {},
               onTapOvrigt: (_) {},
+              onTapLunchbox: (_) {},
               roster: const [],
               onTapPresence: (_, _) {},
             ),

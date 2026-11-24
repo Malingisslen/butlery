@@ -81,6 +81,7 @@ Widget _dayCell(
       onTapEmptySlot: (_, _) {},
       onTapRecipe: (_, {presentServings}) {},
       onTapOvrigt: (_) {},
+      onTapLunchbox: (_) {},
       roster: roster,
       onTapPresence: (_, _) {},
     ),

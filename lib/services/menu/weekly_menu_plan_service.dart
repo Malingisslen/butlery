@@ -550,7 +550,7 @@ class WeeklyMenuPlanService extends BaseService {
             e.slot == src.slot &&
             e.recipeId == src.recipeId,
       );
-      if (duplicate) continue;
+      if (duplicate || dest.hasLunchboxAt(src.day, src.slot)) continue;
       newEntries.add(
         WeeklyMenuPlanEntry.create(
           day: src.day,
@@ -769,6 +769,7 @@ class WeeklyMenuPlanService extends BaseService {
       entries: mutableEntries,
       anchorIndex: anchorIndex,
       allowed: allowed,
+      slotBlocked: base.hasLunchboxAt,
       entryFor: (day, slot, recipe) =>
           _entryFor(day: day, slot: slot, recipe: recipe),
     );
@@ -808,9 +809,9 @@ class WeeklyMenuPlanService extends BaseService {
         DayOfWeek? firstFreeDay(Recipe recipe, {required bool honourDislikes}) {
           for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
             final candidate = DayOfWeek.values[i];
-            final occupied = mutableEntries.any(
-              (e) => e.day == candidate && e.slot == slot,
-            );
+            final occupied =
+                base.hasLunchboxAt(candidate, slot) ||
+                mutableEntries.any((e) => e.day == candidate && e.slot == slot);
             if (occupied) continue;
             if (!allowed(recipe, candidate, slot)) continue;
             if (honourDislikes &&
@@ -835,7 +836,7 @@ class WeeklyMenuPlanService extends BaseService {
         for (final recipe in unplaced) {
           final day = firstFreeDay(recipe, honourDislikes: false);
           if (day == null) {
-            if (_hasFreeDay(mutableEntries, slot, anchorIndex)) {
+            if (_hasFreeDay(base, mutableEntries, slot, anchorIndex)) {
               allergenBlocked = true;
             }
             overflow.add(recipe);
@@ -869,14 +870,17 @@ class WeeklyMenuPlanService extends BaseService {
     );
   }
 
-  /// Whether [slot] still has a free day from [anchorIndex] on.
+  /// Whether [slot] still has a free day from [anchorIndex] on. A day whose
+  /// lunch is a lunchbox in [base] is not free.
   static bool _hasFreeDay(
+    WeeklyMenuPlan base,
     List<WeeklyMenuPlanEntry> entries,
     MealSlot slot,
     int anchorIndex,
   ) {
     for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
       final day = DayOfWeek.values[i];
+      if (base.hasLunchboxAt(day, slot)) continue;
       if (!entries.any((e) => e.day == day && e.slot == slot)) return true;
     }
     return false;
@@ -926,8 +930,7 @@ class WeeklyMenuPlanService extends BaseService {
         // cursor until we find an empty day or fall off the end of the week.
         while (dayIdx <= DayOfWeek.sun.index) {
           final candidate = DayOfWeek.values[dayIdx];
-          final occupied = plan.entriesAt(candidate, slot).isNotEmpty;
-          if (!occupied) break;
+          if (!plan.isOccupied(candidate, slot)) break;
           dayIdx++;
         }
         if (dayIdx > DayOfWeek.sun.index) {
@@ -956,7 +959,8 @@ class WeeklyMenuPlanService extends BaseService {
   /// Placement follows [addEntry] semantics per target: single-slot targets
   /// (lunch/middag) replace any existing occupant — the user explicitly
   /// tapped that cell in the picker, so replacement is deliberate — while
-  /// övrigt targets append. Duplicate targets are applied once.
+  /// övrigt targets append. Duplicate targets are applied once, and a lunch
+  /// that is a lunchbox is not placed (see [addEntry]).
   ///
   /// Returns the number of targets actually placed (0 short-circuits
   /// without touching the repository).
@@ -974,16 +978,20 @@ class WeeklyMenuPlanService extends BaseService {
 
     // toSet() dedupes record-equal targets, preserving first-seen order.
     final unique = targets.toSet();
+    var placed = 0;
     for (final target in unique) {
-      plan = addEntry(
+      final updated = addEntry(
         plan: plan,
         day: target.day,
         slot: target.slot,
         recipe: recipe,
       );
+      if (identical(updated, plan)) continue;
+      plan = updated;
+      placed++;
     }
-    await save(plan);
-    return unique.length;
+    if (placed > 0) await save(plan);
+    return placed;
   }
 
   /// BUT-1988: the presence merge, applied to a plan the CALLER already holds.
@@ -1053,13 +1061,15 @@ class WeeklyMenuPlanService extends BaseService {
   }
 
   /// Add a single recipe to a (day, slot). For lunch/middag, replaces any
-  /// existing entry; for övrigt, appends a new entry.
+  /// existing entry; for övrigt, appends a new entry. A lunch that is a
+  /// lunchbox returns [plan] itself: the box is not replaced by a dish.
   WeeklyMenuPlan addEntry({
     required WeeklyMenuPlan plan,
     required DayOfWeek day,
     required MealSlot slot,
     required Recipe recipe,
   }) {
+    if (plan.hasLunchboxAt(day, slot)) return plan;
     final updated = List<WeeklyMenuPlanEntry>.from(plan.entries);
     if (!slot.isMulti) {
       updated.removeWhere((e) => e.day == day && e.slot == slot);
@@ -1069,7 +1079,8 @@ class WeeklyMenuPlanService extends BaseService {
   }
 
   /// Move a single entry by id to a new (day, slot). For single-recipe
-  /// targets, swaps with the occupant if any. Self-drop is a no-op.
+  /// targets, swaps with the occupant if any. Self-drop is a no-op, and so
+  /// is a move onto a lunch that is a lunchbox, which cannot be swapped.
   WeeklyMenuPlan moveEntry({
     required WeeklyMenuPlan plan,
     required String entryId,
@@ -1081,6 +1092,7 @@ class WeeklyMenuPlanService extends BaseService {
       orElse: () => throw StateError('Entry $entryId not found'),
     );
     if (source.day == toDay && source.slot == toSlot) return plan;
+    if (plan.hasLunchboxAt(toDay, toSlot)) return plan;
 
     final updated = List<WeeklyMenuPlanEntry>.from(plan.entries);
     updated.removeWhere((e) => e.id == entryId);

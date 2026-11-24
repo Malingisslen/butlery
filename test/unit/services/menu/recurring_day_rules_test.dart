@@ -2,6 +2,7 @@
 // a parsed prompt, generation and placement.
 import 'dart:math';
 
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -376,6 +377,36 @@ void main() {
         );
       },
     );
+
+    test('a lunchbox is that day\'s lunch, so a lunch rule is dropped', () {
+      final lunchRule = RecurringDayRule.create(
+        day: DayOfWeek.mon,
+        meal: MealSlot.lunch,
+        food: RecurringFood.fisk,
+      );
+      final boxed = WeeklyMenuPlan.empty(userId: 'u', date: mon).withLunchbox(
+        DayOfWeek.mon,
+        const Lunchbox(
+          source: LunchboxSource.prepDay,
+          recipeId: 'chili',
+          recipeTitle: 'Chili',
+        ),
+      );
+      final result = plans.distributeFromGeneratedMenu(
+        generated: {
+          'lunch': [fish, ...fillers],
+        },
+        weekStart: mon,
+        existing: boxed,
+        now: mon.subtract(const Duration(days: 3)),
+        dayPins: [_pinFor(lunchRule)],
+      );
+      expect(result.plan.entryAt(DayOfWeek.mon, MealSlot.lunch), isNull);
+      expect(
+        result.plan.entries.map((e) => e.recipeId),
+        isNot(contains('fish')),
+      );
+    });
 
     test('a typed pin that cannot be placed still falls through', () {
       // Control for the test above: the drop is a rule-pin rule only.

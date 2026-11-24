@@ -65,6 +65,57 @@ class CalendarAllergenMark extends StatelessWidget {
   }
 }
 
+/// A lunch that is a lunchbox (BUT-2486).
+class CalendarLunchboxMark extends StatelessWidget {
+  const CalendarLunchboxMark({super.key});
+
+  static const Key markKey = ValueKey('calendar-lunchbox-mark');
+
+  @override
+  Widget build(BuildContext context) {
+    final label = context.l10n.lunchboxMark;
+    return Tooltip(
+      message: label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        label: label,
+        child: ButleryIcon(
+          ButleryIcons.clipboard,
+          key: markKey,
+          size: AppDimensions.iconSize14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
+/// A lunchbox whose dish could not be checked against the allergens of the
+/// people taking it (BUT-2486). Says so in words, never passes as safe.
+class CalendarUnjudgedMark extends StatelessWidget {
+  const CalendarUnjudgedMark({super.key});
+
+  static const Key markKey = ValueKey('calendar-unjudged-mark');
+
+  @override
+  Widget build(BuildContext context) {
+    final label = context.l10n.lunchboxUnjudgedMark;
+    return Tooltip(
+      message: label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        label: label,
+        child: ButleryIcon(
+          ButleryIcons.circleHelp,
+          key: markKey,
+          size: AppDimensions.iconSize14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
 /// How many are home, drawn only when it is not everyone.
 class CalendarPresenceMark extends StatelessWidget {
   const CalendarPresenceMark({super.key, required this.count});
@@ -129,17 +180,25 @@ class CalendarLegend extends StatelessWidget {
     required this.showNew,
     required this.showAllergen,
     required this.showPresence,
+    this.showLunchbox = false,
+    this.showUnjudged = false,
   });
 
   final bool showNew;
   final bool showAllergen;
   final bool showPresence;
+  final bool showLunchbox;
+  final bool showUnjudged;
 
   static const Key legendKey = ValueKey('calendar-legend');
 
   @override
   Widget build(BuildContext context) {
-    if (!showNew && !showAllergen && !showPresence) {
+    if (!showNew &&
+        !showAllergen &&
+        !showPresence &&
+        !showLunchbox &&
+        !showUnjudged) {
       return const SizedBox.shrink();
     }
     final l10n = context.l10n;
@@ -187,6 +246,24 @@ class CalendarLegend extends StatelessWidget {
                 color: color,
               ),
               l10n.weeklyMenuLegendPresence,
+            ),
+          if (showLunchbox)
+            entry(
+              ButleryIcon(
+                ButleryIcons.clipboard,
+                size: AppDimensions.iconSize14,
+                color: color,
+              ),
+              l10n.lunchboxMark,
+            ),
+          if (showUnjudged)
+            entry(
+              ButleryIcon(
+                ButleryIcons.circleHelp,
+                size: AppDimensions.iconSize14,
+                color: color,
+              ),
+              l10n.lunchboxUnjudgedMark,
             ),
         ],
       ),

@@ -34979,6 +34979,150 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Påminnelser kan saknas. Läs alltid innehållet.'**
   String get shoppingHintsDisclaimer;
+
+  /// BUT-2486: title of the lunchbox sheet; day is the weekday name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunch {day}'**
+  String lunchboxSheetTitle(String day);
+
+  /// BUT-2486: lunchbox source row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rester från i går'**
+  String get lunchboxSourceLeftovers;
+
+  /// BUT-2486: subtitle of the leftovers row.
+  ///
+  /// In sv, this message translates to:
+  /// **'{dish}, gårdagens middag'**
+  String lunchboxLeftoversFrom(String dish);
+
+  /// BUT-2486: leftovers row when the day before has no middag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen middag i går'**
+  String get lunchboxLeftoversNone;
+
+  /// BUT-2486: Monday's leftovers come from last week's Sunday, which is not read, so the user picks the dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Söndagens middag – välj rätten'**
+  String get lunchboxLeftoversPreviousWeek;
+
+  /// BUT-2486: lunchbox source row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från lagardagen'**
+  String get lunchboxSourcePrepDay;
+
+  /// BUT-2486: subtitle of a source row with no dish chosen yet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj rätt'**
+  String get lunchboxPickDish;
+
+  /// BUT-2486: lunchbox source row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag från appen'**
+  String get lunchboxSourceSuggestion;
+
+  /// BUT-2486: subtitle on a suggested recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Passar som matlåda'**
+  String get lunchboxSuitsSubtitle;
+
+  /// BUT-2486: suggestion row when no recipe suits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept är märkta som matlåda än'**
+  String get lunchboxNoSuggestions;
+
+  /// BUT-2486: heading over the people list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vem tar låda'**
+  String get lunchboxTakersHeading;
+
+  /// BUT-2486: under the people list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen vald betyder hela hushållet'**
+  String get lunchboxTakersHint;
+
+  /// BUT-2486: stepper label.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal lådor'**
+  String get lunchboxPortionsLabel;
+
+  /// BUT-2486: primary button of the sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara matlåda'**
+  String get lunchboxSave;
+
+  /// BUT-2486: removes the day's lunchbox.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen matlåda'**
+  String get lunchboxRemove;
+
+  /// BUT-2486: snackbar with Ångra after removing a lunchbox.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlådan togs bort'**
+  String get lunchboxRemovedUndo;
+
+  /// BUT-2486: the viewmodel's failure text, shown whole as the error.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara matlådan'**
+  String get lunchboxSaveFailed;
+
+  /// BUT-2486: mark on a calendar lunch cell that is a lunchbox, and its legend entry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlåda'**
+  String get lunchboxMark;
+
+  /// BUT-2486: mark on a lunchbox whose dish cannot be checked; never shown as safe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ej bedömd för allergier'**
+  String get lunchboxUnjudgedMark;
+
+  /// BUT-2486: lunch cell title when the box's dish cannot be found.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätt saknas'**
+  String get lunchboxNoDish;
+
+  /// BUT-2486: action in the lunch recipe picker that opens the lunchbox sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlåda'**
+  String get menuSelectorLunchbox;
+
+  /// BUT-2486: screen-reader label of a lunchbox cell; the dish name is read from the visible text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra matlådan på {day}'**
+  String a11yLunchboxOpen(String day);
+
+  /// BUT-2486: stepper minus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Färre lådor'**
+  String get a11yLunchboxFewer;
+
+  /// BUT-2486: stepper plus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler lådor'**
+  String get a11yLunchboxMore;
 }
 
 class _AppLocalizationsDelegate
