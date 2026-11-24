@@ -6399,3 +6399,16 @@ Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
   ALLOWED" (`seedProfile(true, true)`); deny twin keeps the default false seed. Re-measured on staged
   bytes (index == worktree, md5 7a3265ca...): real 24/24; presence mutant 23/24 killing only the new
   case; deny-always 20/24 killing the four allows. Gap closed.
+
+## 2026-11-24 — BUT-2486 part 1, `weekly_menu_plans.weekLunchboxesBounded()` (create + update)
+- Staged suite 64/64. Limb-scoped mutants: drop from create kills L2+L3 only; drop from update
+  kills L4 only; drop the `!('lunchboxes' in ...)` arm kills six legacy allows (W1, W3, R1, R5, R6, R7).
+- `is map` deletion: 64/64. Unreachable, not a gap: `.keys()` exists only on a map, so any non-map
+  CEL-errors and denies with or without the guard.
+- Pre-state misspelling on the update limb only (`resource.data.lunchboxes` in place of the request
+  side): 64/64. It would refuse a week's first lunchbox and allow a non-weekday key on a week already
+  storing valid ones. Added L6 (add valid on a week without lunchboxes, allow twin of L4) and L7
+  (non-weekday key on a week storing valid ones, deny twin of L5): 66/66 real; the mutant now dies
+  64/66 killing exactly L6+L7; update-drop kills L4+L7; create-drop unchanged (L2+L3).
+- Writer check: `WeeklyMenuPlan.toFirestore` omits the key when empty, `serializeAll` keys on
+  `DayOfWeek.name` (mon..sun), the scrub sends `FieldValue.delete()` when absent; no writer sends null.

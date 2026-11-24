@@ -7017,3 +7017,17 @@ No code writes, deletes, sweeps, probes or exports `conversations/{id}/participa
 `removeChatGroupMember` delete the conversation without a roster check. butlery-prod held 0
 rows (measure-production.yml, run 43131610396). Rows left in staging are test data and are
 not cleaned.
+
+## Weekly-menu lunchboxes (BUT-2486, 2026-11-24)
+
+`WeeklyMenuPlan.lunchboxes` is written with the whole week by `FirebaseWeeklyMenuPlanRepository.save`
+(`set(toFirestore)`).
+- An app from before BUT-2486 parses the week without the field and its next save drops
+  every lunchbox. Accepted: closed test group, no guard.
+- `weekLunchboxesBounded()` in `firestore.rules` allows `lunchboxes` only as a map keyed by
+  weekday names. A box's contents are not checked, the same decision as `entries`.
+- `takerIds` holds roster member ids, the key space of `presenceBySlot`. Nothing removes
+  another household member's id from the owner's weeks when that member erases their
+  account, as for presence; the weeks are deleted with the owner's account and exported
+  whole. Default taken, awaiting Malin.
+

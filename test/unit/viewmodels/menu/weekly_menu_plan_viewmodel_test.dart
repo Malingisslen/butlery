@@ -22,6 +22,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -1014,6 +1015,45 @@ void main() {
             containsAll(['r-a', 'r-b']),
           );
           expect(viewModel.plan, same(remote));
+        },
+      );
+
+      test(
+        'keepMine writes my lunchboxes, not the server\'s (BUT-2486)',
+        () async {
+          // Both sides carry a box, on different days, so a write that kept the
+          // server's boxes or merged the two would show.
+          final mine = stored.copyWith(
+            lunchboxes: {
+              DayOfWeek.mon: const Lunchbox(
+                source: LunchboxSource.prepDay,
+                recipeId: 'r-mine-box',
+                takerIds: ['a'],
+              ),
+            },
+          );
+          final theirs = remote.copyWith(
+            lunchboxes: {
+              DayOfWeek.thu: const Lunchbox(
+                source: LunchboxSource.suggestion,
+                recipeId: 'r-their-box',
+              ),
+            },
+          );
+          final conflict = WeekConflict(
+            local: mine.nextRevision(),
+            remote: theirs,
+          );
+          when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+            saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+          });
+
+          expect(await viewModel.keepMine(conflict), isTrue);
+
+          final boxes = saved.single.lunchboxes;
+          expect(boxes.keys, [DayOfWeek.mon]);
+          expect(boxes[DayOfWeek.mon]!.recipeId, 'r-mine-box');
+          expect(boxes[DayOfWeek.mon]!.takerIds, ['a']);
         },
       );
 

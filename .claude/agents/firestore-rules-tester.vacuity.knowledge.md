@@ -180,6 +180,11 @@
   input. Measured (BUT-1904): the three original tests survived that mutant whole; the case
   that killed it was the sender writing the field itself. Pin the field-moving payload
   beside the field-preserving one on every pre-state conjunct, immutability guards included.
+  **The mirror binds a POST-state validator on an update limb**: its denies must include one
+  against a document whose STORED value is already valid, and its allows one that ADDS the
+  field to a document lacking it. Measured on `weekly_menu_plans.lunchboxes` (BUT-2486): with
+  only an add-bad deny (stored absent, so a `resource.data` spelling CEL-errors and still
+  denies) and a valid-to-valid allow, re-spelling the check on `resource.data` left 64/64.
 - **A one-shot gate keyed on a CLIENT-WRITABLE flag must be tested from the state the attacker
   can RE-ARM, not from the state the app leaves behind.** `isPendingImage(resource.data)` is
   `pendingImage == true && imageUrl == null` (BUT-2294). The suite's "never re-pointed" deny was

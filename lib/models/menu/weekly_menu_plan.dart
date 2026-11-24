@@ -5,6 +5,8 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/slot_member_map.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:uuid/uuid.dart';
 
@@ -260,6 +262,10 @@ class WeeklyMenuPlan {
   /// either side queued.
   final String? baseRevId;
 
+  /// BUT-2486: the days whose lunch is a lunchbox. Docs saved before this
+  /// field parse to an empty map.
+  final Map<DayOfWeek, Lunchbox> lunchboxes;
+
   const WeeklyMenuPlan({
     required this.id,
     required this.userId,
@@ -272,6 +278,7 @@ class WeeklyMenuPlan {
     this.awayBySlot = const {},
     this.revId,
     this.baseRevId,
+    this.lunchboxes = const {},
   });
 
   /// Creates an empty plan for the ISO week containing [date].
@@ -377,6 +384,7 @@ class WeeklyMenuPlan {
     int? schemaVersion,
     Map<DayOfWeek, Map<MealSlot, List<String>>>? presenceBySlot,
     Map<DayOfWeek, Map<MealSlot, List<String>>>? awayBySlot,
+    Map<DayOfWeek, Lunchbox>? lunchboxes,
   }) {
     return WeeklyMenuPlan(
       id: id,
@@ -388,6 +396,7 @@ class WeeklyMenuPlan {
       schemaVersion: schemaVersion ?? this.schemaVersion,
       presenceBySlot: presenceBySlot ?? this.presenceBySlot,
       awayBySlot: awayBySlot ?? this.awayBySlot,
+      lunchboxes: lunchboxes ?? this.lunchboxes,
       revId: revId,
       baseRevId: baseRevId,
     );
@@ -405,6 +414,7 @@ class WeeklyMenuPlan {
     schemaVersion: schemaVersion,
     presenceBySlot: presenceBySlot,
     awayBySlot: awayBySlot,
+    lunchboxes: lunchboxes,
     revId: const Uuid().v4(),
     baseRevId: revId,
   );
@@ -420,19 +430,11 @@ class WeeklyMenuPlan {
       if (revId != null) 'revId': revId,
       if (baseRevId != null) 'baseRevId': baseRevId,
       if (presenceBySlot.isNotEmpty)
-        'presenceBySlot': presenceBySlot.map(
-          (day, bySlot) => MapEntry(
-            day.name,
-            bySlot.map((slot, memberIds) => MapEntry(slot.name, memberIds)),
-          ),
-        ),
+        'presenceBySlot': serializeSlotMemberMap(presenceBySlot),
       if (awayBySlot.isNotEmpty)
-        'awayBySlot': awayBySlot.map(
-          (day, bySlot) => MapEntry(
-            day.name,
-            bySlot.map((slot, memberIds) => MapEntry(slot.name, memberIds)),
-          ),
-        ),
+        'awayBySlot': serializeSlotMemberMap(awayBySlot),
+      if (lunchboxes.isNotEmpty)
+        'lunchboxes': Lunchbox.serializeAll(lunchboxes),
     };
   }
 
@@ -455,37 +457,11 @@ class WeeklyMenuPlan {
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
-      presenceBySlot: _parsePresenceBySlot(data['presenceBySlot']),
-      awayBySlot: _parsePresenceBySlot(data['awayBySlot']),
+      presenceBySlot: parseSlotMemberMap(data['presenceBySlot']),
+      awayBySlot: parseSlotMemberMap(data['awayBySlot']),
+      lunchboxes: Lunchbox.parseAll(data['lunchboxes']),
       revId: SerializationUtils.safeNullableString(data, 'revId'),
       baseRevId: SerializationUtils.safeNullableString(data, 'baseRevId'),
     );
-  }
-
-  /// Tolerant parse of a per-(day, slot) member map (presence or away). Malformed keys/values
-  /// are dropped rather than corrupting another slot's selection; an unknown
-  /// day or slot name is skipped (not defaulted onto another key). An empty
-  /// inner map for a day is not retained.
-  static Map<DayOfWeek, Map<MealSlot, List<String>>> _parsePresenceBySlot(
-    dynamic raw,
-  ) {
-    if (raw is! Map) return const {};
-    final result = <DayOfWeek, Map<MealSlot, List<String>>>{};
-    raw.forEach((dayKey, bySlot) {
-      if (dayKey is! String || bySlot is! Map) return;
-      final day = DayOfWeek.values.where((d) => d.name == dayKey).firstOrNull;
-      if (day == null) return;
-      final slots = <MealSlot, List<String>>{};
-      bySlot.forEach((slotKey, value) {
-        if (slotKey is! String || value is! List) return;
-        final slot = MealSlot.values
-            .where((s) => s.name == slotKey)
-            .firstOrNull;
-        if (slot == null) return;
-        slots[slot] = value.whereType<String>().toList();
-      });
-      if (slots.isNotEmpty) result[day] = slots;
-    });
-    return result;
   }
 }

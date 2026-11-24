@@ -213,6 +213,13 @@ const _knowinglyUncovered = <_Uncovered>[
     'households nutritionAmountChoices entry — NutritionAmountChoice.toMap',
     'function nutritionAmountValueValid(',
   ),
+  // BUT-2486: the allowlist is over the keys of the week's `lunchboxes` map
+  // (weekday names, `DayOfWeek.name` in `Lunchbox.serializeAll`), not over the
+  // document's keys.
+  _Uncovered(
+    'weekly_menu_plans lunchboxes — weekday keys',
+    'function weekLunchboxesBounded(',
+  ),
   // BUT-2522: the allowlist is the `menuKeys()` function, not an inline list,
   // so `_allowlistAfter` cannot read it. It is compared for EQUALITY against
   // `SharedMenu.toFirestore()` by `menu_rules_key_allowlist_test.dart`.
@@ -617,9 +624,11 @@ void main() {
     // BUT-2522 added three on menus: the create's keys().hasOnly(menuKeys())
     // (in _knowinglyUncovered), and the owner update's addedKeys().hasOnly and
     // changedKeys().hasOnly, set differences outside the payload comparison.
+    // BUT-2486 added one: the keys().hasOnly over the weekday keys of a week's
+    // `lunchboxes` map (in _knowinglyUncovered).
     expect(
       'hasOnly('.allMatches(rules).length,
-      68,
+      69,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

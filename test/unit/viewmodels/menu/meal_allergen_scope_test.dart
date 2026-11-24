@@ -10,6 +10,7 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/profile_lookup.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -81,6 +82,7 @@ class _FakeHousehold extends Fake implements HouseholdService {
   bool inHousehold = true;
   bool wholeReadThrows = false;
   int? mealReadThrowsOnCall;
+  bool mealReadDegraded = false;
   int mealReads = 0;
 
   static const accountPrefs = {
@@ -112,6 +114,22 @@ class _FakeHousehold extends Fake implements HouseholdService {
   ) async {
     mealReads++;
     if (mealReads == mealReadThrowsOnCall) throw StateError('profile read');
+    if (mealReadDegraded) {
+      // What the real service answers when a member's profile cannot be
+      // read: their allergens widened with the floor, roster incomplete.
+      return HouseholdAllergenAggregate.degraded(
+        preferences: HouseholdService.widenWithSafetyFloor(
+          UserAllergenPreferences(
+            trackedAllergens: {
+              for (final id in memberIds)
+                ...?accountPrefs[id]?.trackedAllergens,
+            },
+            trackedDietary: const {},
+          ),
+        ),
+        missingMemberIds: memberIds.toList(),
+      );
+    }
     return HouseholdAllergenAggregate.complete(
       UserAllergenPreferences(
         trackedAllergens: {
@@ -279,6 +297,150 @@ void main() {
         ..mealScopedIds = (_) async => throw StateError('offline');
       final pool = await g.getAvailableRecipesAsync();
       expect(pool.map((r) => r.id), ['safe']);
+    });
+  });
+
+  group('MealAllergenScope lunchboxes (BUT-2486)', () {
+    const milk = UserAllergenPreferences(
+      trackedAllergens: {'mjölk'},
+      trackedDietary: {},
+    );
+    final milkDish = _dish('milk', allergen: {'mjölk': TriState.contains});
+    // Free of both allergens in play, so it passes every filter below.
+    final plainDish = _dish(
+      'plain',
+      allergen: {'nötter': TriState.free, 'mjölk': TriState.free},
+    );
+
+    WeeklyMenuPlan week({
+      Map<DayOfWeek, Lunchbox> boxes = const {},
+      List<WeeklyMenuPlanEntry> entries = const [],
+    }) => WeeklyMenuPlan.empty(
+      userId: 'u1',
+      date: DateTime(2026, 3, 2),
+    ).copyWith(entries: entries, lunchboxes: boxes);
+
+    test('a box with no takers entry follows the household', () {
+      final scope = MealAllergenScope(household: _nuts);
+      expect(scope.safeForLunchbox(_nutDish, DayOfWeek.mon), isFalse);
+      expect(scope.safeForLunchbox(plainDish, DayOfWeek.mon), isTrue);
+    });
+
+    test('takers who stand alone are judged by their own allergens only; '
+        'the household\'s are ignored', () {
+      final scope = MealAllergenScope(
+        household: _nuts,
+        byLunchbox: {
+          DayOfWeek.mon: const LunchboxTakerPrefs(milk, alone: true),
+        },
+      );
+
+      expect(scope.safeForLunchbox(_nutDish, DayOfWeek.mon), isTrue);
+      expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+      // Another day has no takers entry and still follows the household.
+      expect(scope.safeForLunchbox(_nutDish, DayOfWeek.tue), isFalse);
+    });
+
+    test('takers who do not stand alone must pass the household AND their '
+        'own allergens', () {
+      final scope = MealAllergenScope(
+        household: _nuts,
+        byLunchbox: {
+          DayOfWeek.mon: const LunchboxTakerPrefs(milk, alone: false),
+        },
+      );
+
+      expect(scope.safeForLunchbox(_nutDish, DayOfWeek.mon), isFalse);
+      expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+      expect(scope.safeForLunchbox(plainDish, DayOfWeek.mon), isTrue);
+    });
+
+    test('a taker\'s allergen still flags when the household filter tracks '
+        'nothing', () {
+      final scope = MealAllergenScope(
+        household: _nothing,
+        byLunchbox: {
+          DayOfWeek.mon: const LunchboxTakerPrefs(milk, alone: false),
+        },
+      );
+
+      expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+      expect(scope.safeForLunchbox(_nutDish, DayOfWeek.mon), isTrue);
+    });
+
+    test('same-week leftovers are judged by the middag they follow', () {
+      final plan = week(
+        boxes: {
+          DayOfWeek.tue: const Lunchbox(
+            source: LunchboxSource.leftovers,
+            fromDay: DayOfWeek.mon,
+          ),
+        },
+        entries: [
+          WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipeId: 'milk',
+            recipeTitle: 'milk',
+          ),
+        ],
+      );
+      final scope = MealAllergenScope(
+        household: _nothing,
+        byLunchbox: {
+          DayOfWeek.tue: const LunchboxTakerPrefs(milk, alone: true),
+        },
+      );
+
+      final verdicts = scope.lunchboxVerdicts(
+        plan,
+        (id) => id == 'milk' ? milkDish : null,
+      );
+
+      expect(verdicts.unsafe, {DayOfWeek.tue});
+      expect(verdicts.unjudged, isEmpty);
+    });
+
+    test('a safe box is in neither set, an unknown recipe or a leftovers box '
+        'with no middag is unjudged and never unsafe', () {
+      final plan = week(
+        boxes: {
+          DayOfWeek.mon: const Lunchbox(
+            source: LunchboxSource.prepDay,
+            recipeId: 'plain',
+          ),
+          DayOfWeek.tue: const Lunchbox(
+            source: LunchboxSource.suggestion,
+            recipeId: 'deleted',
+          ),
+          DayOfWeek.wed: const Lunchbox(
+            source: LunchboxSource.leftovers,
+            fromDay: DayOfWeek.tue,
+          ),
+          DayOfWeek.thu: const Lunchbox(source: LunchboxSource.prepDay),
+          DayOfWeek.fri: const Lunchbox(
+            source: LunchboxSource.prepDay,
+            recipeId: 'nuts',
+          ),
+        },
+      );
+      final scope = MealAllergenScope(household: _nuts);
+
+      final verdicts = scope.lunchboxVerdicts(
+        plan,
+        (id) => switch (id) {
+          'plain' => plainDish,
+          'nuts' => _nutDish,
+          _ => null,
+        },
+      );
+
+      expect(verdicts.unsafe, {DayOfWeek.fri});
+      expect(verdicts.unjudged, {
+        DayOfWeek.tue,
+        DayOfWeek.wed,
+        DayOfWeek.thu,
+      });
     });
   });
 
@@ -533,6 +695,128 @@ void main() {
       expect(scope.household.trackedAllergens, expected.trackedAllergens);
       expect(scope.household.trackedAllergens, contains('selleri'));
       expect(scope.household.includeUnknownInMenu, isFalse);
+    });
+
+    group('lunchbox takers (BUT-2486)', () {
+      // A floor allergen no one in the fake household tracks, so only the
+      // floor can make a dish containing it unsafe.
+      final floorOnlyAllergen =
+          HouseholdService.widenWithSafetyFloor(
+            UserAllergenPreferences.none,
+          ).trackedAllergens.difference(const {
+            'selleri',
+            'mjölk',
+            'sesam',
+            'fisk',
+          }).first;
+      final floorAllergens = HouseholdService.widenWithSafetyFloor(
+        UserAllergenPreferences.none,
+      ).trackedAllergens;
+      final floorDish = _dish(
+        'floor',
+        allergen: {floorOnlyAllergen: TriState.contains},
+      );
+      final milkDish = _dish('milk', allergen: {'mjölk': TriState.contains});
+
+      WeeklyMenuPlan boxPlan() =>
+          WeeklyMenuPlan.empty(
+            userId: 'u1',
+            date: DateTime(2026, 3, 2),
+          ).copyWith(
+            lunchboxes: {
+              DayOfWeek.mon: const Lunchbox(
+                source: LunchboxSource.prepDay,
+                recipeId: 'x',
+                takerIds: ['u2'],
+              ),
+            },
+          );
+
+      test('read takers stand alone: their allergens, no floor, no '
+          'household', () async {
+        final scope = await resolve(plan: boxPlan());
+
+        expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+        expect(scope.safeForLunchbox(floorDish, DayOfWeek.mon), isTrue);
+        expect(
+          scope.safeForLunchbox(
+            _dish('sesam', allergen: {'sesam': TriState.contains}),
+            DayOfWeek.mon,
+          ),
+          isTrue,
+        );
+      });
+
+      test('takers whose profile read degrades get their allergens plus '
+          'the floor, and the household filter too', () async {
+        household.mealReadDegraded = true;
+
+        final scope = await resolve(plan: boxPlan());
+
+        expect(household.mealReads, 1);
+        expect(scope.safeForLunchbox(floorDish, DayOfWeek.mon), isFalse);
+        expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+        // isComplete: false means not alone, so a household allergen the
+        // taker's own list lacks still flags.
+        expect(
+          scope.safeForLunchbox(
+            _dish('sesam', allergen: {'sesam': TriState.contains}),
+            DayOfWeek.mon,
+          ),
+          isFalse,
+        );
+      });
+
+      test('a read that throws gives the whole household widened with the '
+          'floor, not the floor alone', () async {
+        household.mealReadThrowsOnCall = 1;
+        final householdOnly = const {
+          'selleri',
+          'mjölk',
+          'sesam',
+          'fisk',
+        }.difference(floorAllergens);
+        expect(householdOnly, isNotEmpty, reason: 'fixture premise');
+        final householdOnlyDish = _dish(
+          'hh',
+          allergen: {householdOnly.first: TriState.contains},
+        );
+
+        final scope = await resolve(plan: boxPlan());
+
+        expect(household.mealReads, 1);
+        expect(scope.safeForLunchbox(floorDish, DayOfWeek.mon), isFalse);
+        expect(
+          scope.safeForLunchbox(householdOnlyDish, DayOfWeek.mon),
+          isFalse,
+        );
+      });
+
+      test('with household allergens switched off, a named taker\'s allergen '
+          'the user lacks still makes the box unsafe', () async {
+        useProfile(householdAllergens: false);
+
+        final scope = await resolve(plan: boxPlan());
+
+        expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+      });
+
+      test('with the per-meal choice off a named taker is judged with the '
+          'household filter, not alone', () async {
+        useProfile(scope: false);
+
+        final scope = await resolve(plan: boxPlan());
+
+        // Household has fisk; u2's own list does not. Alone would pass it.
+        expect(
+          scope.safeForLunchbox(
+            _dish('fish', allergen: {'fisk': TriState.contains}),
+            DayOfWeek.mon,
+          ),
+          isFalse,
+        );
+        expect(scope.safeForLunchbox(milkDish, DayOfWeek.mon), isFalse);
+      });
     });
   });
 }
