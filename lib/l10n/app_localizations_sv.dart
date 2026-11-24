@@ -280,6 +280,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipeNotAddedLunchboxDays =>
+      'Lunchen är en matlåda de dagarna, så receptet lades inte till';
+
+  @override
   String get menuPlaceAutoButton => 'Placera automatiskt i kalendern';
 
   @override
@@ -1578,6 +1582,17 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get menuShoppingScaledToPresence =>
       'Mängderna följer vilka som är hemma';
+
+  @override
+  String menuShoppingLunchboxPortions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Listan räknar med $count extra portioner till lunch',
+      one: 'Listan räknar med 1 extra portion till lunch',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get menuClear => 'Rensa meny';

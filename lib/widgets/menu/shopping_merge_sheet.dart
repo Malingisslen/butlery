@@ -163,6 +163,16 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
               ),
             ),
           ],
+          if (widget.source.lunchboxPortions > 0) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Text(
+              l.menuShoppingLunchboxPortions(widget.source.lunchboxPortions),
+              key: const ValueKey('shopping-merge-lunchbox-portions'),
+              style: AppTextStyles.captionBase.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
           if (merge.unresolvedRecipes > 0) ...[
             const SizedBox(height: AppDimensions.space12),
             _UnresolvedRecipes(count: merge.unresolvedRecipes),

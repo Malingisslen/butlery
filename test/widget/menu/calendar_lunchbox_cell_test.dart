@@ -26,6 +26,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -196,6 +197,29 @@ void main() {
     );
     expect(taps, [DayOfWeek.tue]);
     handle.dispose();
+  });
+
+  testWidgets('a lunchbox cell accepts no dropped dish, unlike a dish cell '
+      'beside it', (tester) async {
+    await pumpWeek(
+      tester,
+      const Lunchbox(source: LunchboxSource.leftovers, fromDay: DayOfWeek.mon),
+    );
+    final dropTarget = find.byType(DragTarget<CalendarDragPayload>);
+
+    expect(
+      find.ancestor(
+        of: find.byKey(CalendarLunchboxMark.markKey),
+        matching: dropTarget,
+      ),
+      findsNothing,
+    );
+    // Control: the Monday middag cell is a drop target, so the finder can
+    // see one.
+    expect(
+      find.ancestor(of: find.text('freedish').first, matching: dropTarget),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a dish the box\'s takers cannot eat is marked, and the legend '

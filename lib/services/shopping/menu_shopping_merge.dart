@@ -60,6 +60,7 @@ class MenuShoppingSource {
     this.origin = ShoppingRowOrigin.plan,
     this.unresolvedRecipes = 0,
     this.scaledMeals = 0,
+    this.lunchboxPortions = 0,
   });
 
   /// A day in the week whose generated list receives the rows.
@@ -74,6 +75,9 @@ class MenuShoppingSource {
   final int recipeCount;
   final int unresolvedRecipes;
   final int scaledMeals;
+
+  /// BUT-2486: lunchbox portions the list buys for ("2 extra portioner").
+  final int lunchboxPortions;
 
   bool get isEmpty => placements.isEmpty;
 }

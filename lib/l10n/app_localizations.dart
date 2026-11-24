@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Receptet lades till på 1 plats i veckomenyn} other{Receptet lades till på {count} platser i veckomenyn}}'**
   String recipeAddedToMenuSlots(int count);
 
+  /// BUT-2486: snackbar when adding a recipe to the menu from its detail view placed it nowhere, because every chosen lunch is a lunchbox.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunchen är en matlåda de dagarna, så receptet lades inte till'**
+  String get recipeNotAddedLunchboxDays;
+
   /// BUT-1241: primary button in the lista-result footer — runs auto-distribution onto the week grid.
   ///
   /// In sv, this message translates to:
@@ -2425,6 +2431,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Mängderna följer vilka som är hemma'**
   String get menuShoppingScaledToPresence;
+
+  /// BUT-2486: line in the week's shopping merge sheet when lunchboxes add portions to the list (leftovers cook a bigger middag, prep-day and suggested boxes are bought).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Listan räknar med 1 extra portion till lunch} other{Listan räknar med {count} extra portioner till lunch}}'**
+  String menuShoppingLunchboxPortions(int count);
 
   /// No description provided for @menuClear.
   ///

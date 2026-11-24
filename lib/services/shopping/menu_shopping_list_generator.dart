@@ -13,6 +13,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest;
+import 'package:butlery/services/shopping/lunchbox_shopping_portions.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/shopping/menu_shopping_generation_result.dart';
 import 'package:butlery/services/shopping/menu_shopping_links.dart';
@@ -108,7 +109,7 @@ class MenuShoppingListGenerator extends BaseService {
         );
       }
       final plan = read.plan;
-      if (plan.entries.isEmpty) {
+      if (plan.entries.isEmpty && plan.lunchboxes.isEmpty) {
         return MenuShoppingSource(
           week: date,
           placements: const [],
@@ -120,7 +121,10 @@ class MenuShoppingListGenerator extends BaseService {
       // scale + aggregate PER PLACEMENT. The same recipe planned at two
       // (day, slot) cells contributes its ingredients twice — each scaled to
       // that meal's present count.
-      final distinctIds = plan.entries.map((e) => e.recipeId).toSet();
+      final distinctIds = {
+        ...plan.entries.map((e) => e.recipeId),
+        ...LunchboxShoppingPortions.recipeIdsOf(plan),
+      };
       final recipeById = <String, Recipe>{};
       for (final id in distinctIds) {
         final resolved = recipeService.getRecipeById(id);
@@ -134,6 +138,7 @@ class MenuShoppingListGenerator extends BaseService {
         );
       }
 
+      final boxes = LunchboxShoppingPortions.of(plan, (id) => recipeById[id]);
       var scaledMeals = 0;
       final placements = <ScaledRecipe>[];
       for (final entry in plan.entries) {
@@ -141,14 +146,19 @@ class MenuShoppingListGenerator extends BaseService {
         if (recipe == null) continue; // unresolved — already counted above
         final factor = _presenceFactor(plan, entry, recipe);
         if (factor != 1.0) scaledMeals++;
-        placements.add((recipe: recipe, factor: factor));
+        placements.add((
+          recipe: recipe,
+          factor: factor + _lunchboxFactor(entry, recipe, boxes),
+        ));
       }
+      placements.addAll(boxes.placements);
       return MenuShoppingSource(
         week: date,
         placements: List.unmodifiable(placements),
         recipeCount: recipeById.length,
         unresolvedRecipes: unresolved,
         scaledMeals: scaledMeals,
+        lunchboxPortions: boxes.portions,
       );
     }, operationName: 'sourceForWeek');
   }
@@ -450,5 +460,19 @@ class MenuShoppingListGenerator extends BaseService {
       fallback: portions,
     );
     return servings / portions;
+  }
+
+  /// BUT-2486: what leftovers boxes add to a middag's factor, kept apart from
+  /// presence so "Mängderna följer vilka som är hemma" stays about presence.
+  double _lunchboxFactor(
+    WeeklyMenuPlanEntry entry,
+    Recipe recipe,
+    LunchboxShoppingPortions boxes,
+  ) {
+    if (entry.slot != MealSlot.middag) return 0;
+    final extra = boxes.extraMiddagPortions[entry.day];
+    final portions = recipe.portions;
+    if (extra == null || portions == null || portions <= 0) return 0;
+    return extra / portions;
   }
 }

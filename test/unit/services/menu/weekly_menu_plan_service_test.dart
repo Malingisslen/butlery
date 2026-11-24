@@ -1,6 +1,7 @@
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/menu/parsed_menu_request.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -1105,6 +1106,35 @@ void main() {
             'restoreWeek must replace, not merge — a merge would resurrect '
             'the just-cleared entry A on undo.',
       );
+    });
+  });
+
+  group('restoreWeek and lunchboxes (BUT-2486)', () {
+    test('a lunch dish on a day that became a lunchbox is dropped, the '
+        'other entries come back', () {
+      WeeklyMenuPlanEntry entry(DayOfWeek day, MealSlot slot, String id) =>
+          WeeklyMenuPlanEntry.create(
+            day: day,
+            slot: slot,
+            recipeId: id,
+            recipeTitle: id,
+          );
+      final lunchOnBoxDay = entry(DayOfWeek.mon, MealSlot.lunch, 'a');
+      final middagOnBoxDay = entry(DayOfWeek.mon, MealSlot.middag, 'b');
+      final lunchElsewhere = entry(DayOfWeek.tue, MealSlot.lunch, 'c');
+      final current = _emptyPlan(mon).withLunchbox(
+        DayOfWeek.mon,
+        const Lunchbox(source: LunchboxSource.suggestion, recipeId: 'x'),
+      );
+
+      final restored = service.restoreWeek(current, [
+        lunchOnBoxDay,
+        middagOnBoxDay,
+        lunchElsewhere,
+      ]);
+
+      expect(restored.entries, [middagOnBoxDay, lunchElsewhere]);
+      expect(restored.lunchboxes.keys, [DayOfWeek.mon]);
     });
   });
 

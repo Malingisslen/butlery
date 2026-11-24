@@ -69,6 +69,7 @@ Future<_Harness> _open(
   bool updatesList = false,
   bool emptyWeek = false,
   int unresolvedRecipes = 0,
+  int lunchboxPortions = 0,
 }) async {
   final harness = _Harness();
   tester.view.physicalSize = const Size(1200, 2400);
@@ -91,6 +92,7 @@ Future<_Harness> _open(
                   placements: emptyWeek ? const [] : _source.placements,
                   recipeCount: _source.recipeCount,
                   unresolvedRecipes: unresolvedRecipes,
+                  lunchboxPortions: lunchboxPortions,
                 ),
                 pantry: pantry,
                 retryPantry: () async {
@@ -118,6 +120,24 @@ Finder _hero(String label) => find.descendant(
 );
 
 void main() {
+  testWidgets('a week with lunchbox portions says the list counts them; '
+      'without any the line is absent', (tester) async {
+    await _open(tester, lunchboxPortions: 2);
+    final line = find.byKey(const ValueKey('shopping-merge-lunchbox-portions'));
+    expect(line, findsOneWidget);
+    expect(
+      tester.widget<Text>(line).data,
+      'Listan räknar med 2 extra portioner till lunch',
+    );
+
+    await tester.pumpWidget(const SizedBox());
+    await _open(tester);
+    expect(
+      find.byKey(const ValueKey('shopping-merge-lunchbox-portions')),
+      findsNothing,
+    );
+  });
+
   testWidgets('summary first: the line, the three figures '
       '(TR::FLOW::02::veckomeny::till-inköpslistan)', (tester) async {
     await _open(

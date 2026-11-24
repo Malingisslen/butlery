@@ -27,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -1854,6 +1855,112 @@ void main() {
           () => shoppingService.undoPersonalMerge(any(), any(), any()),
         );
       });
+    });
+  });
+  group('lunchboxes in the shopping list (BUT-2486)', () {
+    const mjol = RecipeIngredient(
+      amount: 8,
+      unit: 'dl',
+      name: 'mjöl',
+      raw: '8 dl mjöl',
+    );
+
+    test('a middag is cooked bigger for leftovers: factor '
+        '(4+2)/4', () async {
+      final plan =
+          _planWith([
+            _entry('r1', DayOfWeek.mon, MealSlot.middag),
+          ]).withLunchbox(
+            DayOfWeek.tue,
+            const Lunchbox(
+              source: LunchboxSource.leftovers,
+              fromDay: DayOfWeek.mon,
+              portions: 2,
+            ),
+          );
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(plan));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', 4, const [mjol]),
+        ],
+        isInitialized: true,
+      );
+
+      final source = await generator.sourceForWeek(_date);
+
+      expect(source, isNotNull, reason: 'unauthenticated trap or read failed');
+      expect(source!.placements.single.factor, 1.5);
+      expect(source.lunchboxPortions, 2);
+      // Boxes are not presence: the sheet must not say amounts follow who is
+      // home when nobody marked presence.
+      expect(source.scaledMeals, 0);
+    });
+
+    test('leftovers boxes scale only the middag of their day, not its '
+        'lunch', () async {
+      final plan =
+          _planWith([
+            _entry('lunchdish', DayOfWeek.mon, MealSlot.lunch),
+            _entry('r1', DayOfWeek.mon, MealSlot.middag),
+          ]).withLunchbox(
+            DayOfWeek.tue,
+            const Lunchbox(
+              source: LunchboxSource.leftovers,
+              fromDay: DayOfWeek.mon,
+              portions: 2,
+            ),
+          );
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(plan));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('lunchdish', 4, const [mjol]),
+          _recipeWithPortions('r1', 4, const [mjol]),
+        ],
+        isInitialized: true,
+      );
+
+      final source = await generator.sourceForWeek(_date);
+
+      final factors = {
+        for (final p in source!.placements) p.recipe.id: p.factor,
+      };
+      expect(factors, {'lunchdish': 1.0, 'r1': 1.5});
+    });
+
+    test('a week with only a suggestion box is not empty and buys the '
+        'box portions', () async {
+      final plan = _planWith(const []).withLunchbox(
+        DayOfWeek.wed,
+        const Lunchbox(
+          source: LunchboxSource.suggestion,
+          recipeId: 'boxrecipe',
+          portions: 2,
+        ),
+      );
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(plan));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('boxrecipe', 4, const [mjol]),
+        ],
+        isInitialized: true,
+      );
+
+      final source = await generator.sourceForWeek(_date);
+
+      expect(source, isNotNull);
+      expect(source!.isEmpty, isFalse);
+      // The recipe appears on no entry, so only a lookup of the box's own
+      // dish through the recipe service can have produced this placement.
+      expect(source.placements.single.recipe.id, 'boxrecipe');
+      expect(source.placements.single.factor, 0.5);
+      expect(source.lunchboxPortions, 2);
+      verify(() => menuService.readWeek(any())).called(1);
     });
   });
 }

@@ -125,7 +125,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `url_import_strategy.dart` | 619 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 649 | Single-concern auto-save + draft management for recipe form |
 | `recipe_member_manager.dart` | 652 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
-| `weekly_menu_plan_service.dart` | 1153 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
+| `weekly_menu_plan_service.dart` | 1182 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 578 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 527 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 492 | Direct-collaboration coordinator extending base; single shopping-list domain |
