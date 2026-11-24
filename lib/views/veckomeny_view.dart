@@ -29,6 +29,8 @@ import 'package:butlery/widgets/menu/veckomeny_draft_resume_card.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
     show VeckomenyDialogs;
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
+import 'package:butlery/widgets/menu/templates/week_template_actions.dart';
+import 'package:butlery/widgets/menu/templates/week_template_save_dialog.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_body.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_placement_flow.dart';
@@ -37,7 +39,7 @@ import 'package:butlery/views/veckomeny_view/veckomeny_shopping_flow.dart';
 export 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 
 /// The week menu's root-bar overflow actions.
-enum _VeckomenyRootAction { load, save, clear }
+enum _VeckomenyRootAction { load, saveTemplate, save, clear }
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -410,13 +412,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
           switch (action) {
             case _VeckomenyRootAction.load:
               unawaited(
-                VeckomenyDialogs.showLoadMenuBottomSheet(
+                showTemplatesAndSavedMenus(
                   context,
                   viewModel: viewModel,
+                  calendar: context.read<WeeklyMenuPlanViewModel>(),
                   onTemplateSelected: (prompt) {
                     _promptController.text = prompt;
                     setState(() {});
                   },
+                ),
+              );
+            case _VeckomenyRootAction.saveTemplate:
+              unawaited(
+                showSaveWeekTemplateDialog(
+                  context,
+                  context.read<WeeklyMenuPlanViewModel>(),
                 ),
               );
             case _VeckomenyRootAction.save:
@@ -437,7 +447,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
             ButleryMenuChoice<_VeckomenyRootAction>(
               value: _VeckomenyRootAction.load,
               icon: ButleryIcons.folder,
-              label: context.l10n.menuLoadSaved,
+              label: context.l10n.weekTemplatesAndSavedMenus,
+            ),
+          if (widget.realtimeMenuId == null &&
+              context.watch<WeeklyMenuPlanViewModel>().hasEntries)
+            ButleryMenuChoice<_VeckomenyRootAction>(
+              value: _VeckomenyRootAction.saveTemplate,
+              icon: ButleryIcons.calendar,
+              label: context.l10n.weekTemplateSaveAction,
             ),
           if (viewModel.hasMenu)
             ButleryMenuChoice<_VeckomenyRootAction>(

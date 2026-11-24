@@ -1580,9 +1580,6 @@ class AppLocalizationsSv extends AppLocalizations {
       'Mängderna följer vilka som är hemma';
 
   @override
-  String get menuLoadSaved => 'Ladda sparad meny';
-
-  @override
   String get menuClear => 'Rensa meny';
 
   @override
@@ -2999,9 +2996,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareAlreadySharingList => 'Delar redan listan';
-
-  @override
-  String get menuSavedMenus => 'Sparade menyer';
 
   @override
   String get menuNoSavedMenus => 'Inga sparade menyer';
@@ -22336,4 +22330,171 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get menuQuickPantryNothing =>
       'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.';
+
+  @override
+  String get weekTemplateSaveAction => 'Spara veckan som mall';
+
+  @override
+  String get weekTemplateSaveTitle => 'Spara som mall';
+
+  @override
+  String get weekTemplatePreviewLoading => 'Kontrollerar mot dem som äter …';
+
+  @override
+  String get weekTemplateNameRequired => 'Ge mallen ett namn';
+
+  @override
+  String get weekTemplateWholeWeek => 'Hela veckan';
+
+  @override
+  String weekTemplateWholeWeekSummary(int days, int dishes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dagar',
+      one: '1 dag',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      dishes,
+      locale: localeName,
+      other: '$dishes rätter',
+      one: '1 rätt',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get weekTemplateSaveButton => 'Spara mall';
+
+  @override
+  String weekTemplateSaved(String name) {
+    return 'Mallen $name är sparad';
+  }
+
+  @override
+  String get weekTemplateSaveFailed => 'Mallen kunde inte sparas';
+
+  @override
+  String get weekTemplatesAndSavedMenus => 'Mallar och sparade menyer';
+
+  @override
+  String get weekTemplateSectionMine => 'Mina mallar';
+
+  @override
+  String get weekTemplateSectionSavedMenus => 'Sparade menyer';
+
+  @override
+  String weekTemplateRowSubtitle(int dishes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      dishes,
+      locale: localeName,
+      other: '$dishes rätter',
+      one: '1 rätt',
+    );
+    return 'Hel vecka · $_temp0';
+  }
+
+  @override
+  String get weekTemplateUse => 'Använd';
+
+  @override
+  String get weekTemplateRename => 'Döp om';
+
+  @override
+  String get weekTemplateRenameTitle => 'Döp om mallen';
+
+  @override
+  String get weekTemplateRenameFailed => 'Mallen kunde inte döpas om';
+
+  @override
+  String get weekTemplatePreviewOverline => 'Förhandsvisning';
+
+  @override
+  String weekTemplateDishLine(String day, String title) {
+    return '$day: $title';
+  }
+
+  @override
+  String weekTemplateDishLineWithMeal(String day, String meal, String title) {
+    return '$day $meal: $title';
+  }
+
+  @override
+  String get weekTemplateMissing => 'Saknas';
+
+  @override
+  String get weekTemplateMissingHint =>
+      'Receptet är raderat, välj nytt i kalendern';
+
+  @override
+  String weekTemplateContains(String allergens) {
+    return 'Innehåller $allergens';
+  }
+
+  @override
+  String get weekTemplateNotForEveryone => 'Passar inte alla';
+
+  @override
+  String get weekTemplateUnchecked => 'Ej kontrollerat';
+
+  @override
+  String get weekTemplateDisliked => 'Någon ogillar den';
+
+  @override
+  String weekTemplateWeekChip(int week) {
+    return 'Vecka $week';
+  }
+
+  @override
+  String weekTemplateApplyButton(int week) {
+    return 'Lägg på vecka $week';
+  }
+
+  @override
+  String weekTemplateOverlapTitle(int week) {
+    return 'Vecka $week har redan rätter';
+  }
+
+  @override
+  String get weekTemplateOverlapBody =>
+      'Vill du fylla bara de tomma platserna eller ersätta rätterna där mallen har en rätt?';
+
+  @override
+  String get weekTemplateFillEmpty => 'Fyll tomma platser';
+
+  @override
+  String get weekTemplateReplaceAll => 'Ersätt allt';
+
+  @override
+  String weekTemplateApplied(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter lades på vecka $week',
+      one: '1 rätt lades på vecka $week',
+      zero: 'Inget lades på – platserna var redan fyllda',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weekTemplateAppliedMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter saknas, välj nya i kalendern',
+      one: '1 rätt saknas, välj ny i kalendern',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekTemplateApplyFailed => 'Mallen kunde inte läggas på';
+
+  @override
+  String get weekTemplatePreviewFailed =>
+      'Veckan kunde inte läsas – försök igen';
+
+  @override
+  String get weekTemplateUndoFailed => 'Det gick inte att ångra';
 }

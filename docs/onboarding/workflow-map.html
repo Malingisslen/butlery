@@ -294,6 +294,12 @@
       "path": "lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart"
     },
     {
+      "id": "vm-week-template",
+      "label": "WeekTemplateViewModel",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/menu/week_template_viewmodel.dart"
+    },
+    {
       "id": "vm-recipe-selection",
       "label": "RecipeSelectionViewModel",
       "context": "viewmodel",
@@ -4791,6 +4797,27 @@
           "from": "vm-weekly-plan",
           "to": "svc-weekly-plan",
           "payload": "copyWeek: kopierar varje post med nytt id, hoppar över redan befintliga dubbletter, och bär per-pass-närvaron vidare (även från en närvaro-endast källvecka) — BUT-1611. BUT-1993 (2026-09-02): utloggad KASTAR nu i stället för att returnera 0 — 0 betyder ”inget att kopiera” och renderades som ”allt finns redan nästa vecka”, alltså ett lyckat-meddelande för en vecka som aldrig lästes. En äkta tom källvecka ger fortfarande 0 och framgångsrutan.",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-veckomeny",
+          "to": "vm-week-template",
+          "payload": "BUT-2522 veckomall: ”Spara veckan som mall”, och ”Mallar och sparade menyer” → Använd: förhandsvisning på vald vecka med samma allergikontroll som manuell placering, per dag och pass (ManualAddCheck.findingAt + MealAllergenScope.prefsAt; ett oläsbart recept eller okänt allergen visas ”Ej kontrollerat”, aldrig som säkert), sedan ”Fyll tomma platser” eller ”Ersätt allt” (bara platserna mallen täcker) med Ångra",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-week-template",
+          "to": "ds-menus",
+          "payload": "MenuStorage.saveWeekTemplate/renameMenu: en mall är ett eget odelat menus-dokument (templateKind 'week', templateEntries); UnifiedMenuService hoppar över mallar, så delningslistorna ser dem aldrig",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "vm-week-template",
+          "to": "svc-weekly-plan",
+          "payload": "saveRevisionQueued(plan.nextRevision()) — en vecka som ändrats på en annan enhet nekas i stället för att skrivas över; Ångra tar bort det som lades på och lägger tillbaka det som ersattes, om platsen inte fyllts igen",
           "transport": "method call",
           "verified": true
         }

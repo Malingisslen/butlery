@@ -110,25 +110,39 @@ class ManualAddCheck {
   }) {
     final findings = <ManualAddFinding>[];
     for (final recipe in recipes) {
-      final contains = <String>[];
-      final unchecked = <String>[];
-      for (final allergen in prefs.trackedAllergens) {
-        final status = AllergenVerdict.forAllergen(recipe, allergen).effective;
-        if (status == TriState.contains) contains.add(allergen);
-        if (status == TriState.unknown) unchecked.add(allergen);
-      }
-      final finding = ManualAddFinding(
-        recipe: recipe,
-        containsAllergens: contains..sort(),
-        uncheckedAllergens: unchecked..sort(),
-        disliked: dislikes.avoids(
-          recipe,
-          DayOfWeek.mon,
-          mapMealTypeToSlot(recipe.mealType),
-        ),
+      final finding = findingAt(
+        recipe,
+        prefs: prefs,
+        dislikes: dislikes,
+        day: DayOfWeek.mon,
+        slot: mapMealTypeToSlot(recipe.mealType),
       );
       if (!finding.isEmpty) findings.add(finding);
     }
     return findings;
+  }
+
+  /// The same verdict for one placed dish (BUT-2522): [prefs] are what the
+  /// people eating that meal avoid, and dislikes are judged at that meal.
+  static ManualAddFinding findingAt(
+    Recipe recipe, {
+    required UserAllergenPreferences prefs,
+    required MealDislikes dislikes,
+    required DayOfWeek day,
+    required MealSlot slot,
+  }) {
+    final contains = <String>[];
+    final unchecked = <String>[];
+    for (final allergen in prefs.trackedAllergens) {
+      final status = AllergenVerdict.forAllergen(recipe, allergen).effective;
+      if (status == TriState.contains) contains.add(allergen);
+      if (status == TriState.unknown) unchecked.add(allergen);
+    }
+    return ManualAddFinding(
+      recipe: recipe,
+      containsAllergens: contains..sort(),
+      uncheckedAllergens: unchecked..sort(),
+      disliked: dislikes.avoids(recipe, day, slot),
+    );
   }
 }
