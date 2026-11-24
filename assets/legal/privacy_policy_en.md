@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 13, 2026
-**Version:** 1.37
+**Last updated:** November 24, 2026
+**Version:** 1.38
 
 ---
 
@@ -36,6 +36,7 @@ We collect the following types of personal data when you use Butlery:
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
 - **Social features:** Friends, shares, messages
 - **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
+- **Cooked recipes:** When you tap "Cooked today", we store which recipe it was and when. After cooking you can also write a rating from 1 to 5 and a note, and they are stored with that cooking. Only you can see your cooked recipes, ratings and notes. They are not shared with friends or anyone else, and they are included in the data export. They are deleted when you delete your account.
 - **Communications:** Messages you send to us or other users
 - **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone. Feedback is kept for about 12 months and is deleted earlier if you delete your account.
 
@@ -293,6 +294,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Cooked recipes, with the rating and note you add after cooking | Until you delete the account | Performance of contract |
 | Recipes you show on your profile (what others see, with separate photo copies) | Until you stop showing the recipe, delete it or delete your account | Performance of contract |
 | Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
