@@ -169,6 +169,10 @@ class MenuGenerator {
   /// the menu on screen still came from the unread generation.
   bool lastRecencyReadFailed = false;
 
+  /// True when the last pantry-first generation found no recipe the pantry
+  /// covers at all, so the week was drawn as usual.
+  bool lastPantryFocusFoundNothing = false;
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   ///
   /// A run cancelled while the preferences are read leaves [lastPoolStats]
@@ -265,6 +269,7 @@ class MenuGenerator {
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String prompt, {
     bool Function()? isCancelled,
+    bool pantryFocus = false,
   }) async {
     await ensureRecipeServiceInitialized();
     _stopIfCancelled(isCancelled);
@@ -286,8 +291,13 @@ class MenuGenerator {
     _stopIfCancelled(isCancelled);
     lastRecencyReadFailed = recent.readFailed;
     final recentIds = recent.ids;
-    final scoringContext = await _buildScoringContext(pool);
+    final scoringContext = await _buildScoringContext(
+      pool,
+      pantryFocus: pantryFocus,
+    );
     _stopIfCancelled(isCancelled);
+    lastPantryFocusFoundNothing =
+        pantryFocus && scoringContext.pantryMatchByRecipeId.isEmpty;
 
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
@@ -335,7 +345,10 @@ class MenuGenerator {
   /// The pantry overlap is fetched ONCE here (a single batch call over the
   /// whole [pool]) and memoised into a map, so the per-candidate weight
   /// function never touches async work.
-  Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
+  Future<MenuScoringContext> _buildScoringContext(
+    List<Recipe> pool, {
+    bool pantryFocus = false,
+  }) async {
     // The pantry, pooled and dislike reads are independent I/O — start all
     // before awaiting any so generation waits for the slowest, not the sum.
     final pantryFuture = MenuScoringReads.buildPantryMatch(_userService, pool);
@@ -349,6 +362,7 @@ class MenuGenerator {
       pantryMatchByRecipeId: pantryMatch,
       pooledStatsByRecipeId: pooledStats,
       dislikedRecipeIds: disliked,
+      pantryFocus: pantryFocus,
     );
   }
 

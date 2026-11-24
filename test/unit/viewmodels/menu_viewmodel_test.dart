@@ -197,6 +197,25 @@ void main() {
     // -- Generation -----------------------------------------------------------
 
     group('Menu Generation', () {
+      test('BUT-2498: a retry stays pantry-first only for the prompt that '
+          'was run pantry-first', () async {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => testMenuSnapshot);
+
+        await viewModel.generateMenu('5 middagar', pantryFocus: true);
+        expect(viewModel.pantryFocusFor(' 5 middagar '), isTrue);
+        expect(viewModel.pantryFocusFor('vegetariskt'), isFalse);
+
+        await viewModel.generateMenu('5 middagar');
+        expect(viewModel.pantryFocusFor('5 middagar'), isFalse);
+      });
+
       test('should generate menu with valid prompt', () async {
         const prompt = 'Vegetarisk veckomeny';
         when(

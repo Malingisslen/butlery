@@ -283,6 +283,16 @@ class MenuViewModel extends BaseViewModel {
     }
   }
 
+  String? _pantryFocusPrompt;
+
+  /// Whether a retry of [prompt] should stay pantry-first: only the prompt
+  /// the last pantry-first generation was run for.
+  bool pantryFocusFor(String prompt) =>
+      _pantryFocusPrompt != null && prompt.trim() == _pantryFocusPrompt;
+
+  /// The last pantry-first generation found nothing the pantry covers.
+  bool get pantryFocusFoundNothing => _generator.lastPantryFocusFoundNothing;
+
   /// P6-U01: the last generation matched nothing, or null.
   MenuNoMatchOutcome? get noMatchOutcome => hasMenu ? null : _noMatch;
 
@@ -439,7 +449,10 @@ class MenuViewModel extends BaseViewModel {
   ///   'Vegetarisk veckomeny för familj med barn som gillar pasta',
   /// );
   /// ```
-  Future<MenuGenerationEnd> generateMenu(String prompt) async {
+  Future<MenuGenerationEnd> generateMenu(
+    String prompt, {
+    bool pantryFocus = false,
+  }) async {
     _leaveLiveMenu();
     // BUT-2362: someone's allergens may have changed since the last read.
     _householdAllergens = null;
@@ -453,6 +466,7 @@ class MenuViewModel extends BaseViewModel {
     final run = _runs.start(_screenNow());
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
+    _pantryFocusPrompt = pantryFocus ? prompt.trim() : null;
     _requestedByMealType = const {};
     _noMatch = null;
 
@@ -468,6 +482,7 @@ class MenuViewModel extends BaseViewModel {
         _generator.generateMenuFromPrompt(
           prompt.trim(),
           isCancelled: run.isCancelled,
+          pantryFocus: pantryFocus,
         ),
       );
       if (generatedMenu.isEmpty) {
