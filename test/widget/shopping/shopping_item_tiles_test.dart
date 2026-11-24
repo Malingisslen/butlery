@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/shopping/shopping_row.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hint_box.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
+import 'package:butlery/viewmodels/shopping/shopping_dietary_hints_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -1061,6 +1065,72 @@ void main() {
           find.byType(AnimatedSwitcher),
         );
         expect(animatedSwitcher.duration, AppMotion.micro);
+      });
+    });
+
+    group('allergy reminder under the row (BUT-2494)', () {
+      late ChangeNotifier source;
+      late ShoppingDietaryHintsController controller;
+
+      setUp(() {
+        SharedPreferences.setMockInitialValues({});
+        source = ChangeNotifier();
+        controller = ShoppingDietaryHintsController(
+          loadChoices: () async => {'laktos'},
+          lookup: (names) async => [
+            for (final _ in names) {'contains-lactose', 'dairy'},
+          ],
+          currentUserId: () => 'alice',
+        );
+      });
+
+      tearDown(() {
+        controller.dispose();
+        source.dispose();
+      });
+
+      // The scope is fed the OPEN copy of the row in both cases, so the
+      // controller holds a hint for the id and only the tile's own
+      // `isCompleted` can keep the box off a ticked row.
+      Future<void> pumpTile(
+        WidgetTester tester, {
+        required UnifiedShoppingItem shown,
+        required bool completed,
+      }) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ShoppingDietaryHintsScope(
+              source: source,
+              rows: () => [shown.copyWith(bought: false)],
+              controller: controller,
+              child: ShoppingItemTile(
+                item: shown,
+                isCompleted: completed,
+                onItemTap: (_) {},
+                onEditItem: (_) {},
+                onDeleteItem: (_) {},
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('an open row shows its reminder', (tester) async {
+        await pumpTile(tester, shown: basicItem, completed: false);
+
+        expect(find.byType(ShoppingDietaryHintBox), findsOneWidget);
+        expect(
+          find.text('Laktos i hushållet, välj laktosfri'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('a ticked-off row shows none', (tester) async {
+        await pumpTile(tester, shown: completedItem, completed: true);
+
+        expect(find.text(rowText(completedItem)), findsOneWidget);
+        expect(find.byType(ShoppingDietaryHintBox), findsNothing);
       });
     });
 

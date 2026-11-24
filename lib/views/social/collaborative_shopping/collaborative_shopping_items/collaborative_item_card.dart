@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operatio
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 import 'package:butlery/widgets/shopping/shopping_row.dart';
 import 'package:flutter/material.dart';
 
@@ -53,6 +54,11 @@ class CollaborativeItemCard extends StatelessWidget {
           note: item.note,
           checked: item.bought,
           muted: greyed,
+          below: shoppingDietaryHintsBelow(
+            context,
+            item,
+            completed: item.bought,
+          ),
           onTap: viewModel.canView ? () => onToggleItem(item.id) : null,
           semanticLabel: item.displayText,
           trailing: _buildTrailing(context),

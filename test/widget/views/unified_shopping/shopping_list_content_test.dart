@@ -11,12 +11,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/utils/snackbar_utils.dart'
     show InkSnackBarAction, SnackBarConfig;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/viewmodels/shopping/shopping_dietary_hints_controller.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 import '../../../infrastructure/factories/shopping_list_factory.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -246,6 +249,100 @@ void main() {
       await tester.pump();
 
       expect(added, 1);
+    });
+  });
+
+  // BUT-2494: the list carries one disclaimer at its top whenever a row shows
+  // a reminder, and none otherwise.
+  group('the allergy-reminder disclaimer (BUT-2494)', () {
+    const disclaimer = 'Påminnelser kan saknas. Läs alltid innehållet.';
+    final butter = ShoppingListFactory.buildItem(
+      id: 'b1',
+      name: 'Smör',
+      category: ShoppingCategory.dairy,
+      addedAt: DateTime(2026, 10, 5, 9),
+    );
+
+    Future<void> pumpList(
+      WidgetTester tester, {
+      required Set<String>? butterProperties,
+    }) async {
+      SharedPreferences.setMockInitialValues({});
+      final vm = _MockVm();
+      when(() => vm.isLoading).thenReturn(false);
+      when(() => vm.hasError).thenReturn(false);
+      when(() => vm.activeList).thenReturn(
+        ShoppingListFactory.build(
+          id: 'list',
+          items: [butter],
+          createdAt: butter.addedAt,
+          updatedAt: butter.addedAt,
+        ),
+      );
+      when(() => vm.hasItems).thenReturn(true);
+      when(() => vm.items).thenReturn([butter]);
+      when(
+        () => vm.categoryOrder,
+      ).thenReturn(ShoppingCategory.defaultStoreOrder);
+      when(() => vm.boughtItems).thenReturn(0);
+      when(() => vm.canEditActiveList).thenReturn(true);
+
+      final source = ChangeNotifier();
+      final controller = ShoppingDietaryHintsController(
+        loadChoices: () async => {'laktos'},
+        lookup: (names) async => [for (final _ in names) butterProperties],
+        currentUserId: () => 'alice',
+      );
+      addTearDown(() {
+        controller.dispose();
+        source.dispose();
+      });
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: ShoppingDietaryHintsScope(
+            source: source,
+            rows: () => [butter],
+            controller: controller,
+            child: ShoppingListContentWidget(
+              viewModel: vm,
+              onItemTap: (_) {},
+              onEditItem: (_) {},
+              onDeleteItem: (_) {},
+              onCreateList: () {},
+              onAddItem: () {},
+              onClearCompleted: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows above the rows when a row has a reminder', (
+      tester,
+    ) async {
+      await pumpList(tester, butterProperties: {'contains-lactose', 'dairy'});
+
+      expect(find.textContaining('Smör'), findsOneWidget);
+      expect(find.text('Laktos i hushållet, välj laktosfri'), findsOneWidget);
+      expect(find.text(disclaimer), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text(disclaimer)).dy,
+        lessThan(tester.getTopLeft(find.textContaining('Smör')).dy),
+      );
+    });
+
+    testWidgets('is absent when no row has a reminder', (tester) async {
+      await pumpList(tester, butterProperties: null);
+
+      // Positive control: the same row is drawn, just with nothing to remind.
+      expect(find.textContaining('Smör'), findsOneWidget);
+      expect(find.text('Laktos i hushållet, välj laktosfri'), findsNothing);
+      expect(find.text(disclaimer), findsNothing);
     });
   });
 }
