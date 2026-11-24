@@ -67,8 +67,7 @@ export const MAX_GROUP_PARTICIPANTS = 100;
  * minor seated by a NON-friend, and the meal-vote category sync re-runs the same
  * per-inviter gate before it could seat anyone again.
  *
- * Exported only so a test can hold that: the trigger itself reads
- * `getFirestore()` and has no seam, and the absent argument is a decision at
+ * Exported only so a test can hold that: the absent argument is a decision at
  * THIS call site that no assertion on `stageMemberRemoval`'s default can pin.
  */
 export function stageBackstopRemovals(
@@ -96,142 +95,215 @@ export const enforceGroupMinorMembership = onDocumentWritten(
   // no removals at all on the next pass.
   { document: "chat_groups/{groupId}", retry: true },
   async (event) => {
+    const before = event.data?.before;
     const after = event.data?.after;
-    if (!after?.exists) return; // group deleted — nothing left to protect
-    const data = after.data() ?? {};
-    const groupId = event.params.groupId;
-
-    // Sanitise for USE (the reads below splice uids into document paths), and
-    // judge on the sanitised list here — unlike the old conversations trigger,
-    // which had to gate on the RAW length because `passesMinorDmGate` in
-    // firestore.rules fired at raw size 2 and a padded list could slip between
-    // the two layers. Rules do read this document's membership (the group's
-    // read gates on `uid in memberIds`), but never for a size decision, and no
-    // client may write the list — so there is no second layer to stay in step
-    // with and no padding attack to defeat.
-    const rawMemberIds: unknown[] = Array.isArray(data.memberIds)
-      ? (data.memberIds as unknown[])
-      : [];
-    const memberIds = rawMemberIds.filter(isValidDocId);
-    if (memberIds.length === 0) return;
-
-    if (memberIds.length > MAX_GROUP_PARTICIPANTS) {
-      // The callables cap membership at the same number, so this is only
-      // reachable if something wrote the document without asking them — which is
-      // precisely the case this trigger exists for. Refuse the fan-out and alert
-      // rather than pay an unbounded, retry-replayed read bill.
-      logger.error(
-        "[enforceGroupMinorMembership] implausible group size; refusing the read fan-out",
-        { groupId, memberCount: memberIds.length },
-      );
-      return;
-    }
-
-    const rawAddedBy =
-      data.memberAddedBy && typeof data.memberAddedBy === "object"
-        ? (data.memberAddedBy as Record<string, unknown>)
-        : {};
-    const adderOf = (uid: string): string | null => {
-      const v = rawAddedBy[uid];
-      return isValidDocId(v) ? v : null;
-    };
-
-    const db = getFirestore();
-    const isMinor = await readIsMinor(db, memberIds);
-    const minorUids = memberIds.filter((u) => isMinor[u]);
-    if (minorUids.length === 0) return;
-
-    const inviterIsFriendOf = await readAdderFriendships(
-      db,
-      minorUids,
-      adderOf,
-    );
-
-    const toRemove = computeBlockedMembers({
-      candidates: memberIds,
-      inviterOf: adderOf,
-      isMinor,
-      inviterIsFriendOf,
+    await enforceGroupMinorMembershipCore({
+      db: getFirestore(),
+      before: before?.exists ? (before.data() ?? {}) : undefined,
+      after: after?.exists ? (after.data() ?? {}) : undefined,
+      groupId: event.params.groupId,
     });
-    if (toRemove.length === 0) return;
-
-    const conversationId =
-      typeof data.conversationId === "string" ? data.conversationId : null;
-    if (!isValidDocId(conversationId)) {
-      // Nothing to cut access to, and no path to build. Loud rather than
-      // silent: a group with members and no conversation is a shape no code
-      // path here produces.
-      logger.error(
-        "[enforceGroupMinorMembership] group has no usable conversationId",
-        { groupId, removedCount: toRemove.length },
-      );
-      return;
-    }
-
-    logger.warn(
-      "[enforceGroupMinorMembership] removing non-friend-added minors",
-      {
-        groupId,
-        conversationId: logSafeConversationId(conversationId),
-        removedCount: toRemove.length,
-        remaining: memberIds.length - toRemove.length,
-      },
-    );
-
-    const removedAt = Timestamp.now();
-    try {
-      await db.runTransaction(async (tx) => {
-        // Read the group inside the transaction so a concurrent legitimate
-        // removal cannot be clobbered, and so a group deleted between the event
-        // and this write is a no-op rather than a resurrection: `tx.update` on a
-        // missing document throws NOT_FOUND, which the catch below treats as
-        // success.
-        const fresh = await tx.get(
-          db.collection(Collections.chatGroups).doc(groupId),
-        );
-        if (!fresh.exists) return;
-        stageBackstopRemovals(tx, {
-          db,
-          groupId,
-          conversationId,
-          uids: toRemove,
-          removedAt,
-        });
-      });
-    } catch (e) {
-      // NOT_FOUND (grpc 5) is DETERMINISTIC — the group or its conversation was
-      // deleted while this ran — and rethrowing it would hand a `retry:true`
-      // trigger an error to loop on forever, re-billing the read fan-out each
-      // time. The access cut is moot when the documents are gone.
-      if ((e as { code?: number } | null)?.code !== 5) throw e;
-      logger.info(
-        "[enforceGroupMinorMembership] group already gone; skipping the cut",
-        { groupId },
-      );
-    }
-
-    // BUT-2005: the menu access cut, OUTSIDE the transaction above. Until this
-    // the eviction removed a minor from the group and the conversation and left
-    // their read AND write access to every one of the group's weekly menu plans
-    // intact — so a minor evicted FOR THEIR OWN PROTECTION could still read what
-    // the group was planning and change it.
-    //
-    // Outside, because `cutGroupMenuPlanAccess` does its own non-transactional
-    // reads and chunked writes: called from inside the transaction body, a
-    // contention retry would re-run them.
-    //
-    // A NULL actor, so a promotion this triggers writes no `editTrail` row.
-    // Malin's call, 2026-09-09: the row would be written only by this path, on
-    // a document every plan participant can read, beside a uid that just
-    // vanished with no `memberLeft` row — the same durable inference the absent
-    // `tombstone` above refuses (BUT-1856). The promotion is logged instead.
-    await cutGroupMenuPlanAccess(
-      db,
-      conversationId,
-      toRemove,
-      null,
-      "enforceGroupMinorMembership",
-    );
-
   },
 );
+
+type GroupData = Record<string, unknown>;
+
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((v, i) => sameValue(v, b[i]))
+    );
+  }
+  if (
+    a === null ||
+    b === null ||
+    typeof a !== "object" ||
+    typeof b !== "object" ||
+    a.constructor !== Object ||
+    b.constructor !== Object
+  ) {
+    // Unequal primitives, and anything that is not a plain map, count as
+    // changed, so the full check runs.
+    return false;
+  }
+  const ak = Object.keys(a as GroupData);
+  const bk = Object.keys(b as GroupData);
+  return (
+    ak.length === bk.length &&
+    ak.every(
+      (k) =>
+        Object.prototype.hasOwnProperty.call(b, k) &&
+        sameValue((a as GroupData)[k], (b as GroupData)[k]),
+    )
+  );
+}
+
+/**
+ * BUT-2490: true when a write left `memberIds` (element for element, in order)
+ * and `memberAddedBy` exactly as they were. A create has no [before] and is
+ * never unchanged.
+ */
+export function membershipUnchanged(
+  before: GroupData | undefined,
+  after: GroupData,
+): boolean {
+  if (before === undefined) return false;
+  return (
+    sameValue(before.memberIds, after.memberIds) &&
+    sameValue(before.memberAddedBy, after.memberAddedBy)
+  );
+}
+
+/**
+ * The trigger's body, with the database passed in. [before] and [after] are
+ * the document's data, `undefined` where the document does not exist.
+ */
+export async function enforceGroupMinorMembershipCore(params: {
+  db: Firestore;
+  before: GroupData | undefined;
+  after: GroupData | undefined;
+  groupId: string;
+}): Promise<void> {
+  const { db, before, after: data, groupId } = params;
+  if (data === undefined) return; // group deleted — nothing left to protect
+  // A write that leaves the membership as it was seats nobody, so it is not
+  // judged again and reads nothing (BUT-2490: a rules save would otherwise
+  // read every member's user document). A retried event carries the same
+  // before/after as the run that failed, so it takes the same branch.
+  if (membershipUnchanged(before, data)) return;
+
+  // Sanitise for USE (the reads below splice uids into document paths), and
+  // judge on the sanitised list here — unlike the old conversations trigger,
+  // which had to gate on the RAW length because `passesMinorDmGate` in
+  // firestore.rules fired at raw size 2 and a padded list could slip between
+  // the two layers. Rules do read this document's membership (the group's
+  // read gates on `uid in memberIds`), but never for a size decision, and no
+  // client may write the list — so there is no second layer to stay in step
+  // with and no padding attack to defeat.
+  const rawMemberIds: unknown[] = Array.isArray(data.memberIds)
+    ? (data.memberIds as unknown[])
+    : [];
+  const memberIds = rawMemberIds.filter(isValidDocId);
+  if (memberIds.length === 0) return;
+
+  if (memberIds.length > MAX_GROUP_PARTICIPANTS) {
+    // The callables cap membership at the same number, so this is only
+    // reachable if something wrote the document without asking them — which is
+    // precisely the case this trigger exists for. Refuse the fan-out and alert
+    // rather than pay an unbounded, retry-replayed read bill.
+    logger.error(
+      "[enforceGroupMinorMembership] implausible group size; refusing the read fan-out",
+      { groupId, memberCount: memberIds.length },
+    );
+    return;
+  }
+
+  const rawAddedBy =
+    data.memberAddedBy && typeof data.memberAddedBy === "object"
+      ? (data.memberAddedBy as Record<string, unknown>)
+      : {};
+  const adderOf = (uid: string): string | null => {
+    const v = rawAddedBy[uid];
+    return isValidDocId(v) ? v : null;
+  };
+
+  const isMinor = await readIsMinor(db, memberIds);
+  const minorUids = memberIds.filter((u) => isMinor[u]);
+  if (minorUids.length === 0) return;
+
+  const inviterIsFriendOf = await readAdderFriendships(
+    db,
+    minorUids,
+    adderOf,
+  );
+
+  const toRemove = computeBlockedMembers({
+    candidates: memberIds,
+    inviterOf: adderOf,
+    isMinor,
+    inviterIsFriendOf,
+  });
+  if (toRemove.length === 0) return;
+
+  const conversationId =
+    typeof data.conversationId === "string" ? data.conversationId : null;
+  if (!isValidDocId(conversationId)) {
+    // Nothing to cut access to, and no path to build. Loud rather than
+    // silent: a group with members and no conversation is a shape no code
+    // path here produces.
+    logger.error(
+      "[enforceGroupMinorMembership] group has no usable conversationId",
+      { groupId, removedCount: toRemove.length },
+    );
+    return;
+  }
+
+  logger.warn(
+    "[enforceGroupMinorMembership] removing non-friend-added minors",
+    {
+      groupId,
+      conversationId: logSafeConversationId(conversationId),
+      removedCount: toRemove.length,
+      remaining: memberIds.length - toRemove.length,
+    },
+  );
+
+  const removedAt = Timestamp.now();
+  try {
+    await db.runTransaction(async (tx) => {
+      // Read the group inside the transaction so a concurrent legitimate
+      // removal cannot be clobbered, and so a group deleted between the event
+      // and this write is a no-op rather than a resurrection: `tx.update` on a
+      // missing document throws NOT_FOUND, which the catch below treats as
+      // success.
+      const fresh = await tx.get(
+        db.collection(Collections.chatGroups).doc(groupId),
+      );
+      if (!fresh.exists) return;
+      stageBackstopRemovals(tx, {
+        db,
+        groupId,
+        conversationId,
+        uids: toRemove,
+        removedAt,
+      });
+    });
+  } catch (e) {
+    // NOT_FOUND (grpc 5) is DETERMINISTIC — the group or its conversation was
+    // deleted while this ran — and rethrowing it would hand a `retry:true`
+    // trigger an error to loop on forever, re-billing the read fan-out each
+    // time. The access cut is moot when the documents are gone.
+    if ((e as { code?: number } | null)?.code !== 5) throw e;
+    logger.info(
+      "[enforceGroupMinorMembership] group already gone; skipping the cut",
+      { groupId },
+    );
+  }
+
+  // BUT-2005: the menu access cut, OUTSIDE the transaction above. Until this
+  // the eviction removed a minor from the group and the conversation and left
+  // their read AND write access to every one of the group's weekly menu plans
+  // intact — so a minor evicted FOR THEIR OWN PROTECTION could still read what
+  // the group was planning and change it.
+  //
+  // Outside, because `cutGroupMenuPlanAccess` does its own non-transactional
+  // reads and chunked writes: called from inside the transaction body, a
+  // contention retry would re-run them.
+  //
+  // A NULL actor, so a promotion this triggers writes no `editTrail` row.
+  // Malin's call, 2026-09-09: the row would be written only by this path, on
+  // a document every plan participant can read, beside a uid that just
+  // vanished with no `memberLeft` row — the same durable inference the absent
+  // `tombstone` above refuses (BUT-1856). The promotion is logged instead.
+  await cutGroupMenuPlanAccess(
+    db,
+    conversationId,
+    toRemove,
+    null,
+    "enforceGroupMinorMembership",
+  );
+}
