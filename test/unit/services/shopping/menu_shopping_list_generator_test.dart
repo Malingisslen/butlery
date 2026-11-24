@@ -1865,7 +1865,7 @@ void main() {
       raw: '8 dl mjöl',
     );
 
-    test('a middag is cooked bigger for next day leftovers: factor '
+    test('a middag is cooked bigger for leftovers: factor '
         '(4+2)/4', () async {
       final plan =
           _planWith([
@@ -1893,7 +1893,42 @@ void main() {
       expect(source, isNotNull, reason: 'unauthenticated trap or read failed');
       expect(source!.placements.single.factor, 1.5);
       expect(source.lunchboxPortions, 2);
-      expect(source.scaledMeals, 1);
+      // Boxes are not presence: the sheet must not say amounts follow who is
+      // home when nobody marked presence.
+      expect(source.scaledMeals, 0);
+    });
+
+    test('leftovers boxes scale only the middag of their day, not its '
+        'lunch', () async {
+      final plan =
+          _planWith([
+            _entry('lunchdish', DayOfWeek.mon, MealSlot.lunch),
+            _entry('r1', DayOfWeek.mon, MealSlot.middag),
+          ]).withLunchbox(
+            DayOfWeek.tue,
+            const Lunchbox(
+              source: LunchboxSource.leftovers,
+              fromDay: DayOfWeek.mon,
+              portions: 2,
+            ),
+          );
+      when(
+        () => menuService.readWeek(any()),
+      ).thenAnswer((_) async => _read(plan));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('lunchdish', 4, const [mjol]),
+          _recipeWithPortions('r1', 4, const [mjol]),
+        ],
+        isInitialized: true,
+      );
+
+      final source = await generator.sourceForWeek(_date);
+
+      final factors = {
+        for (final p in source!.placements) p.recipe.id: p.factor,
+      };
+      expect(factors, {'lunchdish': 1.0, 'r1': 1.5});
     });
 
     test('a week with only a suggestion box is not empty and buys the '

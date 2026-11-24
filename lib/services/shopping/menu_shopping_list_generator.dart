@@ -144,9 +144,12 @@ class MenuShoppingListGenerator extends BaseService {
       for (final entry in plan.entries) {
         final recipe = recipeById[entry.recipeId];
         if (recipe == null) continue; // unresolved — already counted above
-        final factor = _presenceFactor(plan, entry, recipe, boxes);
+        final factor = _presenceFactor(plan, entry, recipe);
         if (factor != 1.0) scaledMeals++;
-        placements.add((recipe: recipe, factor: factor));
+        placements.add((
+          recipe: recipe,
+          factor: factor + _lunchboxFactor(entry, recipe, boxes),
+        ));
       }
       placements.addAll(boxes.placements);
       return MenuShoppingSource(
@@ -439,12 +442,14 @@ class MenuShoppingListGenerator extends BaseService {
   ///   by the whole household regardless of who's home — the BUT-1611→BUT-1625
   ///   exemption, applied to quantities here rather than candidate scoping);
   /// - the recipe has no usable authored serving count (can't form a ratio —
-  ///   the same guard cooking mode uses, BUT-1322).
+  ///   the same guard cooking mode uses, BUT-1322); or
+  /// - presence is unset/empty, so [WeeklyMenuPlan.servingsFor] falls back to
+  ///   the recipe's own portions (→ factor 1.0).
+  /// Otherwise factor = present count / authored portions.
   double _presenceFactor(
     WeeklyMenuPlan plan,
     WeeklyMenuPlanEntry entry,
     Recipe recipe,
-    LunchboxShoppingPortions boxes,
   ) {
     if (entry.slot.isMulti) return 1.0; // övrigt
     final portions = recipe.portions;
@@ -454,10 +459,20 @@ class MenuShoppingListGenerator extends BaseService {
       entry.slot,
       fallback: portions,
     );
-    // BUT-2486: leftovers boxes are cooked with this middag.
-    final boxPortions = entry.slot == MealSlot.middag
-        ? boxes.extraMiddagPortions[entry.day] ?? 0
-        : 0;
-    return (servings + boxPortions) / portions;
+    return servings / portions;
+  }
+
+  /// BUT-2486: what leftovers boxes add to a middag's factor, kept apart from
+  /// presence so "Mängderna följer vilka som är hemma" stays about presence.
+  double _lunchboxFactor(
+    WeeklyMenuPlanEntry entry,
+    Recipe recipe,
+    LunchboxShoppingPortions boxes,
+  ) {
+    if (entry.slot != MealSlot.middag) return 0;
+    final extra = boxes.extraMiddagPortions[entry.day];
+    final portions = recipe.portions;
+    if (extra == null || portions == null || portions <= 0) return 0;
+    return extra / portions;
   }
 }
