@@ -369,6 +369,141 @@ test("menus: owner can update menu to add schemaVersion (BUT-648)", async () => 
   );
 });
 
+// ============================================================================
+// MENUS — BUT-2522 key allowlist (M22–M30)
+// ============================================================================
+
+/** Every top-level key `SharedMenu.toFirestore()` writes for a week
+ *  template, plus `sharedToUserIds` from `MenuStorage.saveWeekTemplate`.
+ *  The Dart suite `menu_rules_key_allowlist_test.dart` pins this set against
+ *  the model. */
+function fullTemplateBody(ownerUid: string): Record<string, unknown> {
+  return {
+    sharedByUserId: ownerUid,
+    sharedByDisplayName: "Malin",
+    sharedAt: new Date(),
+    shareMessage: null,
+    viewCount: 0,
+    engagementCount: 0,
+    dismissalCount: 0,
+    isOriginalReference: false,
+    copyOnWriteTriggered: false,
+    originalOwnerStaticCopyId: null,
+    activeCollaboratorCount: 0,
+    menuTitle: "Vardagsvecka",
+    menuSnapshot: {},
+    totalRecipeCount: 2,
+    categories: [],
+    allowCollaboration: false,
+    realtimeMenuId: "rt-1",
+    schemaVersion: 1,
+    templateKind: "week",
+    templateEntries: [
+      { day: "mon", slot: "middag", recipeId: "r1", recipeTitle: "Pasta" },
+    ],
+    sharedToUserIds: [],
+  };
+}
+
+// M22: ALLOW — the full template write the app makes.
+test("menus: owner creates a week template with every key the app writes (BUT-2522)", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-keys-template").set(fullTemplateBody(OWNER_UID))
+  );
+});
+
+// M23: ALLOW — a saved menu (no template keys, no sharedToUserIds).
+test("menus: owner creates a saved menu without template keys (BUT-2522)", async () => {
+  const body = fullTemplateBody(OWNER_UID);
+  delete body.templateKind;
+  delete body.templateEntries;
+  delete body.sharedToUserIds;
+  delete body.realtimeMenuId;
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(ctx.firestore().doc("menus/m-keys-menu").set(body));
+});
+
+// M24: DENY — create with one key outside the list. M22 is its control: the
+// same body without `junk` is allowed.
+test("menus: create with a key outside the list is refused (BUT-2522)", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc("menus/m-keys-extra").set({
+      ...fullTemplateBody(OWNER_UID),
+      junk: "x",
+    })
+  );
+});
+
+// M25: DENY — owner update that adds a key outside the list.
+test("menus: owner update adding a key outside the list is refused (BUT-2522)", async () => {
+  await seedMenu("m-keys-upd-extra", validMenuBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc("menus/m-keys-upd-extra").update({
+      menuTitle: "ny",
+      junk: "x",
+    })
+  );
+});
+
+// M26: ALLOW — control for M25: the same update without the extra key.
+test("menus: owner update with listed keys only is allowed (BUT-2522)", async () => {
+  await seedMenu("m-keys-upd-ok", validMenuBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-keys-upd-ok").update({ menuTitle: "ny" })
+  );
+});
+
+// M27: ALLOW — a document that already holds a key outside the list can
+// still be renamed: the check bounds what a write adds or changes.
+test("menus: owner can rename a menu that already holds an unlisted key (BUT-2522)", async () => {
+  await seedMenu("m-keys-legacy", validMenuBody(OWNER_UID, { legacyKey: 1 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-keys-legacy").update({ menuTitle: "ny" })
+  );
+});
+
+// M28: DENY — changing that unlisted key's value is refused.
+test("menus: owner cannot change the value of an unlisted key (BUT-2522)", async () => {
+  await seedMenu("m-keys-legacy-chg", validMenuBody(OWNER_UID, { legacyKey: 1 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc("menus/m-keys-legacy-chg").update({ legacyKey: 2 })
+  );
+});
+
+// M29: ALLOW — removing an unlisted key is allowed (cleanup).
+test("menus: owner can remove an unlisted key (BUT-2522)", async () => {
+  // `sharedAt` must not change (cannotModify), so both writes carry one date.
+  const sharedAt = new Date("2026-11-01T12:00:00Z");
+  await seedMenu(
+    "m-keys-legacy-del",
+    validMenuBody(OWNER_UID, { sharedAt, legacyKey: 1 })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-keys-legacy-del").set(
+      validMenuBody(OWNER_UID, { sharedAt })
+    )
+  );
+});
+
+// M30: ALLOW — `MenuStorage.markMenuAsModified`'s write.
+test("menus: owner can mark a menu as modified (BUT-2522)", async () => {
+  await seedMenu("m-keys-modified", validMenuBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-keys-modified").update({
+      isModified: true,
+      modifiedAt: new Date(),
+    })
+  );
+});
+
 async function run(): Promise<void> {
   console.log("menus rules tests (BUT-746 + BUT-747)");
   console.log("=====================================\n");

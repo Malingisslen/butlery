@@ -6,6 +6,7 @@ library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -162,7 +163,10 @@ void main() {
   testWidgets('offers no "load saved menu" in the root bar menu', (
     tester,
   ) async {
-    await openLive(tester);
+    // BUT-2522: the calendar holds dishes, so only the live menu keeps
+    // "Spara veckan som mall" away.
+    h.seedWeek(2);
+    await withClock(Clock.fixed(flowMonday), () => openLive(tester));
 
     await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
     await tester.pumpAndSettle();
@@ -215,6 +219,30 @@ void main() {
 
     expect(find.byType(TextField), findsWidgets);
     expect(find.byType(ConflictBanner), findsNothing);
+  });
+
+  Future<void> openRootMenuOnMonday(WidgetTester tester) =>
+      withClock(Clock.fixed(flowMonday), () async {
+        await h.pump(tester, home: const VeckomenyView());
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
+        await tester.pumpAndSettle();
+      });
+
+  testWidgets('a personal week with dishes offers "Spara veckan som mall" '
+      '(BUT-2522)', (tester) async {
+    h.seedWeek(2);
+    await openRootMenuOnMonday(tester);
+
+    expect(find.text('Spara veckan som mall'), findsOneWidget);
+  });
+
+  testWidgets('an empty personal week does not offer "Spara veckan som mall" '
+      '(BUT-2522)', (tester) async {
+    await openRootMenuOnMonday(tester);
+
+    expect(find.text('Mallar och sparade menyer'), findsOneWidget);
+    expect(find.text('Spara veckan som mall'), findsNothing);
   });
 
   test('the router reads the menu id from the route arguments', () {
