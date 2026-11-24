@@ -7,6 +7,7 @@ import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 
 /// The signed-in user's own profile, read-only. Listen for changes.
@@ -151,6 +152,9 @@ abstract interface class OwnProfileEditor {
 
   /// See `UserSettingsWriter.setNewRecipesShowOnProfile`.
   Future<bool> setNewRecipesShowOnProfile(bool enabled);
+
+  /// See `UserSettingsWriter.setRecurringDayRules`.
+  Future<bool> setRecurringDayRules(List<RecurringDayRule> rules);
 
   /// See `UserSettingsWriter.markPantryAutoAddPrompted`.
   Future<void> markPantryAutoAddPrompted();

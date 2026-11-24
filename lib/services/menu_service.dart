@@ -9,6 +9,7 @@ import 'package:clock/clock.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/menu/parsed_menu_request.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -19,6 +20,7 @@ import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/protein_category.dart';
+import 'package:butlery/services/menu/recurring_rule_pins.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
@@ -27,11 +29,31 @@ import 'package:butlery/services/tagging/config/cuisine_config.dart';
 ///
 /// Example: "tre frukoster och två middagar" → 3 breakfast + 2 dinner recipes
 class MenuService extends BaseService {
-  MenuService({LexiconProvider? lexiconProvider, Random? random})
-    : _lexiconProvider = lexiconProvider,
-      _random = random ?? Random();
+  MenuService({
+    LexiconProvider? lexiconProvider,
+    Random? random,
+    List<RecurringDayRule> Function()? recurringRules,
+  }) : _lexiconProvider = lexiconProvider,
+       _random = random ?? Random(),
+       _recurringRules = recurringRules;
 
   final LexiconProvider? _lexiconProvider;
+
+  /// The signed-in user's saved weekly rules (BUT-2490), read at each parse
+  /// so a rule saved a second ago counts. Null or throwing means none.
+  final List<RecurringDayRule> Function()? _recurringRules;
+
+  List<RecurringDayRule> _rulesNow() {
+    try {
+      return _recurringRules?.call() ?? const [];
+    } catch (e) {
+      AppLogger.warning('Recurring day rules skipped (${e.runtimeType})');
+      return const [];
+    }
+  }
+
+  ParsedMenuRequest _withRules(ParsedMenuRequest parsed) =>
+      RecurringRulePins.merge(parsed, _rulesNow());
   Lexicon? _cachedLexicon;
 
   /// RNG for weighted recipe selection. Injectable + seedable so tests can make
@@ -64,25 +86,71 @@ class MenuService extends BaseService {
     Set<String> recentlyUsedRecipeIds = const {},
     MenuScoringContext scoringContext = MenuScoringContext.empty,
   }) async {
-    final lexicon = await _loadLexicon();
-    if (lexicon == null) return {};
-    final parsed = MenuConstraintParser.parse(input, lexicon);
-    if (parsed.isEmpty) return {};
-    return generateMenuFromParsedRequest(
-      parsed,
+    final outcome = await _generateFromPrompt(
+      input,
       allRecipes,
-      recentlyUsedRecipeIds: recentlyUsedRecipeIds,
-      scoringContext: scoringContext,
+      recentlyUsedRecipeIds,
+      scoringContext,
+      applyRules: true,
+    );
+    _lastUnmatchedRuleIds = outcome.unmatchedRuleIds;
+    return outcome.menu;
+  }
+
+  List<String> _lastUnmatchedRuleIds = const [];
+
+  /// The saved rules (BUT-2490) the last [generateMenuFromPrompt] found no
+  /// recipe for, by id, so the week menu can say which fixed day it skipped.
+  List<String> get lastUnmatchedRuleIds => _lastUnmatchedRuleIds;
+
+  /// [generateMenuFromPrompt] without the user's saved weekly rules: a live
+  /// menu other people share is not theirs to steer.
+  Future<Map<String, List<Recipe>>> generateMenuFromPromptWithoutRules(
+    String input,
+    List<Recipe> allRecipes, {
+    Set<String> recentlyUsedRecipeIds = const {},
+    MenuScoringContext scoringContext = MenuScoringContext.empty,
+  }) async => (await _generateFromPrompt(
+    input,
+    allRecipes,
+    recentlyUsedRecipeIds,
+    scoringContext,
+    applyRules: false,
+  )).menu;
+
+  Future<MenuGenerationOutcome> _generateFromPrompt(
+    String input,
+    List<Recipe> allRecipes,
+    Set<String> recentlyUsedRecipeIds,
+    MenuScoringContext scoringContext, {
+    required bool applyRules,
+  }) async {
+    final lexicon = await _loadLexicon();
+    if (lexicon == null) return MenuGenerationOutcome.empty;
+    final parsed = MenuConstraintParser.parse(input, lexicon);
+    if (parsed.isEmpty) return MenuGenerationOutcome.empty;
+    final unmatched = <String>[];
+    final menu = await _generateGuarded(
+      applyRules ? _withRules(parsed) : parsed,
+      allRecipes,
+      recentlyUsedRecipeIds,
+      scoringContext,
+      unmatched,
+    );
+    return MenuGenerationOutcome(
+      menu: menu,
+      unmatchedRuleIds: List.unmodifiable(unmatched),
     );
   }
 
   /// Returns the last parsed request for the given prompt, or null if no
   /// lexicon is available. Used by the ViewModel to expose the extraction
-  /// trace to the chip strip UI.
+  /// trace to the chip strip UI, and to place the generated week: it carries
+  /// the saved rules' pins as generation did, so the two agree.
   Future<ParsedMenuRequest?> parsePrompt(String input) async {
     final lexicon = await _loadLexicon();
     if (lexicon == null) return null;
-    return MenuConstraintParser.parse(input, lexicon);
+    return _withRules(MenuConstraintParser.parse(input, lexicon));
   }
 
   /// Modest rating boost ceiling. A 5★ recipe gets at most this multiplier;
@@ -446,13 +514,28 @@ class MenuService extends BaseService {
     List<Recipe> allRecipes, {
     Set<String> recentlyUsedRecipeIds = const {},
     MenuScoringContext scoringContext = MenuScoringContext.empty,
-  }) async {
+  }) => _generateGuarded(
+    parsed,
+    allRecipes,
+    recentlyUsedRecipeIds,
+    scoringContext,
+    null,
+  );
+
+  Future<Map<String, List<Recipe>>> _generateGuarded(
+    ParsedMenuRequest parsed,
+    List<Recipe> allRecipes,
+    Set<String> recentlyUsedRecipeIds,
+    MenuScoringContext scoringContext,
+    List<String>? unmatchedRuleIds,
+  ) async {
     return await executeServiceOperation(
           () async => _generateFromParsedInternal(
             parsed,
             allRecipes,
             recentlyUsedRecipeIds,
             scoringContext,
+            unmatchedRuleIds,
           ),
           operationName: 'Generate menu from parsed request',
           defaultValue: <String, List<Recipe>>{},
@@ -466,6 +549,7 @@ class MenuService extends BaseService {
     List<Recipe> allRecipes,
     Set<String> recentlyUsedRecipeIds,
     MenuScoringContext scoringContext,
+    List<String>? unmatchedRuleIds,
   ) {
     final globallyOk = allRecipes
         .where((r) => _passesGlobals(r, parsed))
@@ -486,7 +570,7 @@ class MenuService extends BaseService {
 
     // Day pins land first (so tacofredag wins over generic selection).
     for (final pin in parsed.dayPins) {
-      final pool = globallyOk
+      var pool = globallyOk
           .where(
             (r) =>
                 fitsMealSlot(r.mealType, pin.mealType) &&
@@ -494,7 +578,20 @@ class MenuService extends BaseService {
                 !usedIds.contains(r.id),
           )
           .toList();
-      if (pool.isEmpty) continue;
+      if (pool.isEmpty) {
+        if (pin.fromRule && pin.ruleId != null) {
+          unmatchedRuleIds?.add(pin.ruleId!);
+        }
+        continue;
+      }
+      if (pin.fromRule) {
+        // A rule asks for the same kind of dish every week, so a dish from
+        // this or last week's plan is left out while another one fits.
+        final fresh = pool
+            .where((r) => !recentlyUsedRecipeIds.contains(r.id))
+            .toList();
+        if (fresh.isNotEmpty) pool = fresh;
+      }
       final pick = _weightedSelect(
         pool,
         1,
@@ -649,6 +746,11 @@ class MenuService extends BaseService {
     return true;
   }
 
+  /// Whether [r] meets [c], with the same trust-guarded reads generation
+  /// uses. Placement asks it to find a saved rule's dish (BUT-2490).
+  static bool matchesConstraint(Recipe r, RecipeConstraint c) =>
+      _matchesConstraint(r, c);
+
   static bool _matchesConstraint(Recipe r, RecipeConstraint c) {
     if (c.isUnconstrained) return true;
     final tr = r.tagResult;
@@ -684,6 +786,10 @@ class MenuService extends BaseService {
     if (c.maxTimeMinutes != null) {
       final t = r.core.timeMinutes;
       if (t == null || t > c.maxTimeMinutes!) return false;
+    }
+    if (c.proteinCategory != null &&
+        ProteinCategory.categoryOf(r) != c.proteinCategory) {
+      return false;
     }
     return true;
   }

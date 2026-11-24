@@ -56,6 +56,10 @@ class RecipeConstraint {
   final Set<String> excludedTags;
   final Set<String> requiredCuisines;
   final int? maxTimeMinutes;
+
+  /// A `ProteinCategory` value ("fish", "poultry"); a saved weekly rule's
+  /// Fisk and Kyckling (BUT-2490). The prompt parser never sets it.
+  final String? proteinCategory;
   final bool isSoft;
 
   const RecipeConstraint({
@@ -66,6 +70,7 @@ class RecipeConstraint {
     this.excludedTags = const {},
     this.requiredCuisines = const {},
     this.maxTimeMinutes,
+    this.proteinCategory,
     this.isSoft = false,
   });
 
@@ -75,7 +80,8 @@ class RecipeConstraint {
       requiredTags.isEmpty &&
       excludedTags.isEmpty &&
       requiredCuisines.isEmpty &&
-      maxTimeMinutes == null;
+      maxTimeMinutes == null &&
+      proteinCategory == null;
 }
 
 /// A recipe that should land on a specific weekday slot regardless of the
@@ -86,10 +92,20 @@ class DayPin {
   final String mealType;
   final RecipeConstraint constraint;
 
+  /// True for a pin made from a saved weekly rule (BUT-2490), false for one
+  /// the user typed. A rule pin that cannot be placed is dropped, never
+  /// moved to another day: the rule is about that day.
+  final bool fromRule;
+
+  /// The rule's id when [fromRule].
+  final String? ruleId;
+
   const DayPin({
     required this.weekdayIndex,
     required this.mealType,
     required this.constraint,
+    this.fromRule = false,
+    this.ruleId,
   });
 }
 

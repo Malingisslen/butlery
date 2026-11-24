@@ -1,10 +1,12 @@
 // lib/viewmodels/menu/menu_generator.dart
 
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
+import 'package:butlery/services/menu/recurring_rule_pins.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -173,6 +175,17 @@ class MenuGenerator {
   /// covers at all, so the week was drawn as usual.
   bool lastPantryFocusFoundNothing = false;
 
+  /// BUT-2490: the saved weekly rules the last [generateMenuFromPrompt]
+  /// found no recipe for. Empty when the user has no active rule.
+  List<RecurringDayRule> lastUnmatchedRules = const [];
+
+  List<RecurringDayRule> get _activeRules => [
+    for (final rule
+        in _userService.currentUserProfile?.recurringDayRules ??
+            const <RecurringDayRule>[])
+      if (rule.isActive) rule,
+  ];
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   ///
   /// A run cancelled while the preferences are read leaves [lastPoolStats]
@@ -271,6 +284,8 @@ class MenuGenerator {
     bool Function()? isCancelled,
     bool pantryFocus = false,
   }) async {
+    // A failed or cancelled run must not repeat the last run's misses.
+    lastUnmatchedRules = const [];
     await ensureRecipeServiceInitialized();
     _stopIfCancelled(isCancelled);
 
@@ -305,6 +320,10 @@ class MenuGenerator {
       recentlyUsedRecipeIds: recentIds,
       scoringContext: scoringContext,
     );
+    final rules = _activeRules;
+    lastUnmatchedRules = rules.isEmpty
+        ? const []
+        : RecurringRulePins.rulesFor(_menuService.lastUnmatchedRuleIds, rules);
 
     // P6-U01: nothing matched is an outcome, not an error.
     // An empty LIBRARY is still the error above.
@@ -367,11 +386,17 @@ class MenuGenerator {
   }
 
   /// Regenerate specific menu section using the original prompt if available.
+  ///
+  /// The saved weekly rules (BUT-2490) steer it only when it re-runs the
+  /// user's own prompt and [applyRecurringRules] is true: a live menu is
+  /// shared, and the count-only fallback prompt already counts the rules'
+  /// dishes, so adding them again would grow the section.
   Future<List<Recipe>?> regenerateMenuSection(
     String section,
     Map<String, List<Recipe>> currentMenu, {
     String? originalPrompt,
     bool Function()? isCancelled,
+    bool applyRecurringRules = true,
   }) async {
     _stopIfCancelled(isCancelled);
 
@@ -400,12 +425,22 @@ class MenuGenerator {
     final scoringContext = await _buildScoringContext(pool);
     _stopIfCancelled(isCancelled);
 
-    final newRecipes = await _menuService.generateMenuFromPrompt(
-      prompt,
-      pool,
-      recentlyUsedRecipeIds: recentIds,
-      scoringContext: scoringContext,
-    );
+    // With no active rule the two calls draw the same menu.
+    final withRules =
+        (applyRecurringRules && originalPrompt != null) || _activeRules.isEmpty;
+    final newRecipes = withRules
+        ? await _menuService.generateMenuFromPrompt(
+            prompt,
+            pool,
+            recentlyUsedRecipeIds: recentIds,
+            scoringContext: scoringContext,
+          )
+        : await _menuService.generateMenuFromPromptWithoutRules(
+            prompt,
+            pool,
+            recentlyUsedRecipeIds: recentIds,
+            scoringContext: scoringContext,
+          );
 
     if (newRecipes.containsKey(section)) {
       return newRecipes[section];

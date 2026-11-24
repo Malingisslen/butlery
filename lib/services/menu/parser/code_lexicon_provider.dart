@@ -362,8 +362,9 @@ class CodeLexiconProvider implements LexiconProvider {
     'bullar': 'bröd',
     'pytt': 'pytt',
     'pannkakor': 'pannkakor',
-    'tacos': 'tacos',
-    'taco': 'tacos',
+    // The tagger emits `taco` (Phase1MethodCalculator.calculateDishTypeTags).
+    'tacos': 'taco',
+    'taco': 'taco',
     'risotto': 'risotto',
     'lasagne': 'lasagne',
     'kyckling': 'kyckling',
@@ -454,7 +455,7 @@ class CodeLexiconProvider implements LexiconProvider {
   // on '|' when it reads these. Cheaper than a custom value type and keeps
   // the lexicon shape uniform.
   static const Map<String, String> _dayIdioms = {
-    'tacofredag': '5|tacos|middag',
+    'tacofredag': '5|taco|middag',
     'fredagsmys': '5|fredagsmys|middag',
   };
 

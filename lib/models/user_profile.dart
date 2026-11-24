@@ -8,6 +8,7 @@ import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
 /// Cooking skill level for user profile.
@@ -103,6 +104,11 @@ class UserProfile with JsonSerializableMixin {
   /// once so it never re-nags. Defaults false.
   final bool pantryAutoAddPrompted;
 
+  /// BUT-2490: saved weekly rules ("Fasta dagar"). Private, in the settings
+  /// sub-doc, written only by its own single-field set
+  /// (`setRecurringDayRules`), never by a whole-profile save.
+  final List<RecurringDayRule> recurringDayRules;
+
   /// BUT-1322: how many people the user usually cooks for. When set, the
   /// portion scaler opens pre-set to this value (recipe detail, cooking mode,
   /// add-to-shopping); the manual scaler stays the explicit override. Null =
@@ -188,6 +194,7 @@ class UserProfile with JsonSerializableMixin {
     this.showNutritionStrip = false,
     this.newRecipesShowOnProfile = false,
     this.pantryAutoAddPrompted = false,
+    this.recurringDayRules = const [],
     this.householdSize,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
@@ -261,6 +268,7 @@ class UserProfile with JsonSerializableMixin {
     bool? showNutritionStrip,
     bool? newRecipesShowOnProfile,
     bool? pantryAutoAddPrompted,
+    List<RecurringDayRule>? recurringDayRules,
     Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
@@ -313,6 +321,7 @@ class UserProfile with JsonSerializableMixin {
           newRecipesShowOnProfile ?? this.newRecipesShowOnProfile,
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
+      recurringDayRules: recurringDayRules ?? this.recurringDayRules,
       householdSize: householdSize == _sentinel
           ? this.householdSize
           : householdSize as int?,
@@ -528,6 +537,9 @@ class UserProfile with JsonSerializableMixin {
       'showNutritionStrip': showNutritionStrip,
       'newRecipesShowOnProfile': newRecipesShowOnProfile,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
+      RecurringDayRules.field: RecurringDayRules.toFirestoreList(
+        recurringDayRules,
+      ),
       'householdSize': householdSize,
       // Notification fields
       'fcmToken': fcmToken,
@@ -629,6 +641,9 @@ class UserProfile with JsonSerializableMixin {
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         data,
         'pantryAutoAddPrompted',
+      ),
+      recurringDayRules: RecurringDayRules.fromFirestoreList(
+        data[RecurringDayRules.field],
       ),
       householdSize: parseHouseholdSize(data['householdSize']),
       // Notification fields
@@ -751,6 +766,9 @@ class UserProfile with JsonSerializableMixin {
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         json,
         'pantryAutoAddPrompted',
+      ),
+      recurringDayRules: RecurringDayRules.fromFirestoreList(
+        json[RecurringDayRules.field],
       ),
       householdSize: parseHouseholdSize(json['householdSize']),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),

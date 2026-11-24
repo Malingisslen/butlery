@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/views/recurring_day_rules/recurring_day_rules_view.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -80,6 +82,21 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
       SnackBarUtils.showInfo(context, context.l10n.menuQuickPantryNothing);
     }
 
+    final unmatchedNotice = menuVm.hasMenu
+        ? recurringRuleUnmatchedNotice(
+            context.l10n,
+            menuVm.unmatchedRules,
+            DayOfWeek.fromDateTime(clock.now()),
+          )
+        : null;
+    // In the calendar the placement receipt clears the snackbars, so the
+    // notice queues behind it instead of going first.
+    final placesInCalendar =
+        viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu;
+    if (unmatchedNotice != null && !placesInCalendar) {
+      _showUnmatchedNotice(unmatchedNotice);
+    }
+
     if (menuVm.hasMenu && !menuVm.hasError) {
       markRevealing();
     }
@@ -98,9 +115,25 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
           unawaited(menuVm.markDraftSaved());
           if (!mounted) return;
           if (placed > 0) showAutoPlacedToast(placed);
+          if (unmatchedNotice != null) {
+            _showUnmatchedNotice(unmatchedNotice);
+          }
         },
       );
     }
+  }
+
+  void _showUnmatchedNotice(String message) {
+    SnackBarUtils.showInfo(
+      context,
+      message,
+      actionLabel: context.l10n.recurringRuleShow,
+      onAction: () => unawaited(
+        Navigator.of(context).push<void>(
+          MaterialPageRoute(builder: (_) => const RecurringDayRulesView()),
+        ),
+      ),
+    );
   }
 
   /// BUT-2157: "Avbryt planeringen" puts the earlier screen back and hands

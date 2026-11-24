@@ -14,6 +14,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -1713,6 +1715,46 @@ void main() {
         expect(
           (await repository.fetchProfile(userId))!.showNutritionStrip,
           isFalse,
+        );
+      });
+
+      // BUT-2490: the saved weekly rules share the settings sub-doc.
+      test('setRecurringDayRules stores the list in the settings doc only, '
+          'keeps its sibling field, and survives a fetch', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await settingsRef(userId).set({'hasSeenActivityFeedHint': true});
+        final rule = RecurringDayRule.create(
+          day: DayOfWeek.tue,
+          meal: MealSlot.middag,
+          quick: true,
+        );
+
+        await repository.setRecurringDayRules(userId, [rule]);
+
+        final settings = (await settingsRef(userId).get()).data()!;
+        expect(settings[RecurringDayRules.field], [rule.toFirestore()]);
+        expect(settings['hasSeenActivityFeedHint'], isTrue);
+        final publicDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(
+          publicDoc.data()!.containsKey(RecurringDayRules.field),
+          isFalse,
+        );
+        expect(
+          (await repository.fetchProfile(userId))!.recurringDayRules,
+          [rule],
+        );
+
+        await repository.setRecurringDayRules(userId, const []);
+        expect(
+          (await repository.fetchProfile(userId))!.recurringDayRules,
+          isEmpty,
         );
       });
 

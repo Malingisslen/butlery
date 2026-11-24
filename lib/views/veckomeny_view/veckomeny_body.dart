@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
+import 'package:butlery/widgets/menu/recurring_rules_entry_band.dart';
 import 'package:butlery/widgets/menu/veckomeny_cloche_reveal.dart';
 import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
@@ -90,6 +91,7 @@ class VeckomenyBody extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         spacing: AppDimensions.space12,
                         children: [
+                          const RecurringRulesEntryBand(),
                           VeckomenyViewModeToggle(
                             mode: viewMode,
                             onSelect: (mode) => unawaited(onSetViewMode(mode)),

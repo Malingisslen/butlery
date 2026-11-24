@@ -20,6 +20,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/services/menu/day_pin_placement.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
@@ -723,6 +724,10 @@ class WeeklyMenuPlanService extends BaseService {
   /// place left goes to the overflow tray. Unlike a dislike, this decides
   /// whether a dish is placed.
   ///
+  /// **Saved weekly rules (BUT-2490):** see [DayPinPlacement.place]; a rule's
+  /// dish is placed on its day or dropped, and the dishes a placed rule
+  /// pushes out of a full week do not go to the tray.
+  ///
   /// [now] is injected for testability — defaults to the ambient clock.
   WeeklyMenuDistributionResult distributeFromGeneratedMenu({
     required Map<String, List<Recipe>> generated,
@@ -756,46 +761,18 @@ class WeeklyMenuPlanService extends BaseService {
     final overflow = <Recipe>[];
     final overflowMealTypes = <String, String>{};
 
-    // Day pins (e.g. tacofredag) land first — they claim their weekday
-    // before the generic chronological fill. Pinned recipes come from the
-    // generated map; the pin's tag is matched against recipe tags.
-    final pinnedRecipeIds = <String>{};
-    for (final pin in dayPins) {
-      final slotKey = pin.mealType;
-      final recipes = generated[slotKey];
-      if (recipes == null) continue;
-      final match = recipes
-          .where(
-            (r) =>
-                !pinnedRecipeIds.contains(r.id) &&
-                (pin.constraint.requiredTags.isEmpty ||
-                    (r.tagResult?.hasAllTags(pin.constraint.requiredTags) ??
-                        false)),
-          )
-          .firstOrNull;
-      if (match == null) continue;
-      // weekdayIndex is 1-based (Mon=1), DayOfWeek is 0-based index.
-      final dayIdx = (pin.weekdayIndex - 1).clamp(0, DayOfWeek.sun.index);
-      // BUT-1668: a pin must respect the today-anchor. Pinning "tacofredag"
-      // on a Saturday would place a recipe on a day that already passed, so
-      // skip the pin and let the recipe fall through to the chronological
-      // fill. anchorIndex is 0 for any non-current week, so future weeks are
-      // unaffected.
-      if (dayIdx < anchorIndex) continue;
-      final day = DayOfWeek.values[dayIdx];
-      final slot = mapMealTypeToSlot(slotKey);
-      // BUT-1241: a pin must not double-stack an occupied single slot
-      // (e.g. the user already hand-placed Friday middag in the manual
-      // placement flow). Skip the pin and let the recipe fall through to
-      // the chronological fill instead.
-      if (!slot.isMulti &&
-          mutableEntries.any((e) => e.day == day && e.slot == slot)) {
-        continue;
-      }
-      if (!allowed(match, day, slot)) continue;
-      pinnedRecipeIds.add(match.id);
-      mutableEntries.add(_entryFor(day: day, slot: slot, recipe: match));
-    }
+    // Day pins (tacofredag, saved weekly rules) claim their weekday before
+    // the generic chronological fill.
+    final pinning = DayPinPlacement.place(
+      pins: dayPins,
+      generated: generated,
+      entries: mutableEntries,
+      anchorIndex: anchorIndex,
+      allowed: allowed,
+      entryFor: (day, slot, recipe) =>
+          _entryFor(day: day, slot: slot, recipe: recipe),
+    );
+    final pinnedRecipeIds = pinning.consumedIds;
 
     for (final entry in generated.entries) {
       final slot = mapMealTypeToSlot(entry.key);
@@ -871,11 +848,18 @@ class WeeklyMenuPlanService extends BaseService {
     }
 
     final newPlan = base.copyWith(entries: mutableEntries);
+    final kept = DayPinPlacement.withoutRuleSurplus(
+      overflow,
+      overflowMealTypes,
+      pinning.rulePinsPlaced,
+    );
+    final keptIds = {for (final r in kept) r.id};
+    overflowMealTypes.removeWhere((id, _) => !keptIds.contains(id));
     return WeeklyMenuDistributionResult(
       plan: newPlan,
-      overflow: overflow,
+      overflow: kept,
       overflowMealTypes: overflowMealTypes,
-      overflowReason: overflow.isEmpty
+      overflowReason: kept.isEmpty
           ? null
           : WeeklyMenuOverflowReason(
               weekStart: normalizedWeekStart,

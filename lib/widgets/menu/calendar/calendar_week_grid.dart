@@ -13,6 +13,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
 
@@ -33,6 +36,8 @@ class CalendarWeekGrid extends StatelessWidget {
     required this.todayIndex,
     required this.cellBuilder,
     this.footer,
+    this.onTapDay,
+    this.markedDays = const {},
   });
 
   final DateTime weekStart;
@@ -41,6 +46,12 @@ class CalendarWeekGrid extends StatelessWidget {
   final int todayIndex;
   final CalendarCellBuilder cellBuilder;
   final Widget? footer;
+
+  /// A tap on a day's name, or null where the days are not tappable.
+  final void Function(DayOfWeek day)? onTapDay;
+
+  /// Days a saved weekly rule governs (BUT-2490), drawn with a small mark.
+  final Set<DayOfWeek> markedDays;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +91,8 @@ class CalendarWeekGrid extends StatelessWidget {
                       day: day,
                       date: weekStart.add(Duration(days: day.index)),
                       isToday: day.index == todayIndex,
+                      hasRule: markedDays.contains(day),
+                      onTap: onTapDay == null ? null : () => onTapDay!(day),
                     ),
                   ),
                   for (final slot in MealSlot.values)
@@ -130,11 +143,15 @@ class _DayLabel extends StatelessWidget {
     required this.day,
     required this.date,
     required this.isToday,
+    required this.hasRule,
+    required this.onTap,
   });
 
   final DayOfWeek day;
   final DateTime date;
   final bool isToday;
+  final bool hasRule;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -144,20 +161,44 @@ class _DayLabel extends StatelessWidget {
       color: color,
       letterSpacing: 1,
     );
-    return Padding(
+    final label = Padding(
       padding: const EdgeInsets.only(top: AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(day.displayLabel.toUpperCase(), style: style),
-          Text('${date.day}', style: style.copyWith(letterSpacing: 0)),
+          // The mark sits by the date: the name column is too narrow to share
+          // a line between the name and a glyph.
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppDimensions.space4,
+            children: [
+              Text('${date.day}', style: style.copyWith(letterSpacing: 0)),
+              if (hasRule)
+                ButleryIcon(
+                  ButleryIcons.refreshCw,
+                  size: AppDimensions.space12,
+                  color: color,
+                  semanticLabel: context.l10n.recurringRuleMarkLabel,
+                ),
+            ],
+          ),
           if (isToday)
             Text(
               context.l10n.weeklyMenuTodayBadge.toUpperCase(),
               style: style.copyWith(color: cs.onSecondaryContainer),
             ),
         ],
+      ),
+    );
+    if (onTap == null) return label;
+    return Semantics(
+      button: true,
+      label: context.l10n.recurringRuleMakeFixed,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(onTap: onTap, child: label),
       ),
     );
   }

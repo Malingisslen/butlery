@@ -3,6 +3,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/family/own_allergen_share_mirror.dart';
@@ -318,6 +319,41 @@ class UserSettingsWriter {
     final current = _port.profile;
     if (current != null && current.uid == userId) {
       _port.profile = current.copyWith(newRecipesShowOnProfile: enabled);
+      _port.cacheProfile(userId, _port.profile!);
+    }
+    _port.notifyListeners();
+    return true;
+  }
+
+  /// BUT-2490: persist the saved weekly rules, then update the in-memory
+  /// profile and notify. False on failure, so the screen can say it did not
+  /// save; the profile then keeps the rules it had.
+  Future<bool> setRecurringDayRules(List<RecurringDayRule> rules) async {
+    final userId = _port.userId;
+    final profile = _port.profile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot save recurring day rules - no current user');
+      return false;
+    }
+    // The write replaces the stored array, and the caller built [rules] from
+    // the profile. Without a settings read that list is a default, not the
+    // user's rules, so writing it would erase them (BUT-1663).
+    if (!profile.settingsMerged) {
+      AppLogger.warning(
+        '⚠️ Cannot save recurring day rules - settings were not read',
+      );
+      return false;
+    }
+    try {
+      await _repository.setRecurringDayRules(userId, rules);
+    } catch (e) {
+      AppLogger.error('❌ Failed to save recurring day rules', e);
+      return false;
+    }
+    // Re-read after the await: a sign-out may have replaced the profile.
+    final current = _port.profile;
+    if (current != null && current.uid == userId) {
+      _port.profile = current.copyWith(recurringDayRules: rules);
       _port.cacheProfile(userId, _port.profile!);
     }
     _port.notifyListeners();
