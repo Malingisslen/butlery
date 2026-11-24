@@ -1090,6 +1090,33 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 
 </div>
 
+<h2>Shopping reminders</h2>
+<div class="lib-grid">
+
+  <!-- ShoppingDietaryHintBox — allergy reminder under an open shopping row -->
+  <div class="lib-item-full">
+    <div class="lib-label">ShoppingDietaryHintBox</div>
+    <div class="lib-class">ShoppingDietaryHintBox (BUT-2494) · lib/widgets/shopping/shopping_dietary_hint_box.dart · passed as ShoppingRow(below:), outside the row's tap area; ShoppingDietaryHintsNotice sits at the top of the list while any box shows</div>
+    <div class="lib-demo">
+      <div style="background:var(--cream);padding:16px;max-width:360px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Påminnelser kan saknas. Läs alltid innehållet.</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0"><span style="width:20px;height:20px;border:2px solid var(--green-dark)"></span><span style="font-size:15px">Crème fraiche</span></div>
+        <div style="margin-left:32px;display:flex;align-items:center;gap:12px;min-height:48px;padding:0 4px 0 12px;background:var(--cream-dark);border-radius:4px">
+          <span class="mi" style="color:var(--saffron, #d9a400)">warning_amber</span>
+          <span style="flex:1;font-size:13px">Laktos i hushållet, välj laktosfri</span>
+          <span class="mi" title="Inte aktuellt" style="width:48px;text-align:center">check</span>
+        </div>
+        <div style="margin:8px 0 0 32px;display:flex;align-items:center;gap:12px;min-height:48px;padding:0 4px 0 12px;background:var(--cream-dark);border-radius:4px">
+          <span class="mi" style="color:var(--saffron, #d9a400)">warning_amber</span>
+          <span style="flex:1;font-size:13px">Innehåller ofta mjölk, kolla innehållet</span>
+          <span class="mi" title="Inte aktuellt" style="width:48px;text-align:center">check</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <style>
 @keyframes pulse-dot {
   0%, 100% { transform: scale(1); opacity: 1; }

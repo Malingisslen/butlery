@@ -1925,7 +1925,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdAllergenShareConfirmBody =>
-      'Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Today Butlery guesses on your behalf – it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household\'s menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.';
+      'Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them and the shopping list can remind you about items that often contain them. Today Butlery guesses on your behalf – it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom, not in the reminders either, which only household members see and never anyone else on a shared shopping list.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household\'s menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.';
 
   @override
   String get householdAllergenShareConfirmAction => 'Share';
@@ -22795,4 +22795,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekTemplateUndoFailed => 'Could not undo';
+
+  @override
+  String get shoppingHintChooseLactoseFree =>
+      'Lactose in the household, choose lactose-free';
+
+  @override
+  String get shoppingHintChooseGlutenFree =>
+      'Gluten in the household, choose gluten-free';
+
+  @override
+  String shoppingHintCheckContents(String allergen) {
+    return 'Often contains $allergen, check the label';
+  }
+
+  @override
+  String get shoppingHintDismiss => 'Not relevant';
+
+  @override
+  String shoppingHintDismissed(String item) {
+    return 'Reminder hidden for $item';
+  }
+
+  @override
+  String get householdAllergenShareRenewSubtitle =>
+      'Approve the new text so your choices also count on the shopping list';
+
+  @override
+  String get householdAllergenShareRenewAction => 'Read and approve';
+
+  @override
+  String familyAllergenConsentTextV2(String name) {
+    return 'I explicitly consent to $name\'s allergy and dietary data (health data) being stored and used for the household\'s menus and for reminders on the shopping list.';
+  }
+
+  @override
+  String familyAllergenConsentRenewText(String name) {
+    return 'I explicitly consent to $name\'s allergy data also being used for reminders on the household\'s shopping list.';
+  }
+
+  @override
+  String get shoppingHintsDisclaimer =>
+      'Reminders can be missing. Always read the label.';
 }

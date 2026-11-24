@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/shopping/dismissed_dietary_hints_store.dart';
 import 'package:butlery/services/shopping/store_order_learner.dart';
 import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_io.dart'
@@ -127,6 +128,35 @@ void main() {
     expect(prefs.getKeys(), _everyDraft().keys.toSet());
     expect(prefs.containsKey(FirestoreCacheWipe.requestKey), isFalse);
   });
+
+  // Which allergy reminders a person dismissed says what their household
+  // avoids, so it must not outlive the account on a shared phone (BUT-2494).
+  for (final reason in DeviceCleanupReason.values) {
+    test(
+      'a $reason clears every account\'s dismissed shopping reminders',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          ..._everyDraft(),
+          '${DismissedDietaryHintsStore.keyPrefix}alice': ['i1|laktos'],
+          '${DismissedDietaryHintsStore.keyPrefix}bob': ['i2|gluten'],
+        });
+
+        await LocalUserDataRegistry.clearDrafts(
+          userId: 'alice',
+          reason: reason,
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getKeys().where(
+            (k) => k.startsWith(DismissedDietaryHintsStore.keyPrefix),
+          ),
+          isEmpty,
+        );
+        expect(prefs.containsKey('unrelated_setting'), isTrue);
+      },
+    );
+  }
 
   test('an explicit sign-out deletes the staged photo draft file', () async {
     final dir = Directory.systemTemp.createTempSync('draft_img_');

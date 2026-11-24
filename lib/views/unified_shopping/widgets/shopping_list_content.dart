@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_picker_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 /// Main content area for shopping list.
 ///
@@ -311,7 +312,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     ];
 
     final widgets = <Widget>[
-      // Pending items by category
+      const ShoppingDietaryHintsNotice(),
       ...pendingSections,
 
       // Completed items section

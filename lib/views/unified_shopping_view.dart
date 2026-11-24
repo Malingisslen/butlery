@@ -54,6 +54,7 @@ import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_view.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
@@ -109,13 +110,17 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
         ChangeNotifierProvider.value(value: _viewModel),
         ChangeNotifierProvider.value(value: _selection),
       ],
-      child: Consumer<UnifiedShoppingViewModel>(
-        builder: (context, viewModel, child) => ListenableBuilder(
-          listenable: Listenable.merge([
-            _pantrySelection,
-            ?_pantryViewModel,
-          ]),
-          builder: (context, _) => _buildScaffold(context, viewModel),
+      child: ShoppingDietaryHintsScope(
+        source: _viewModel,
+        rows: () => _viewModel.items,
+        child: Consumer<UnifiedShoppingViewModel>(
+          builder: (context, viewModel, child) => ListenableBuilder(
+            listenable: Listenable.merge([
+              _pantrySelection,
+              ?_pantryViewModel,
+            ]),
+            builder: (context, _) => _buildScaffold(context, viewModel),
+          ),
         ),
       ),
     );
