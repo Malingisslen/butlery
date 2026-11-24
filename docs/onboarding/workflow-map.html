@@ -1308,6 +1308,24 @@
       "path": "lib/viewmodels/unified_shopping_viewmodel.dart"
     },
     {
+      "id": "vm-shopping-dietary-hints",
+      "label": "Allergipåminnelser i korgen (controller + scope)",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/shopping/shopping_dietary_hints_controller.dart, lib/widgets/shopping/shopping_dietary_hints_scope.dart, lib/services/shopping/shopping_dietary_hints.dart"
+    },
+    {
+      "id": "vm-household-shopping-choices",
+      "label": "HouseholdShoppingChoices — hushållets val för korgen (v2-samtycke)",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/shopping/household_shopping_choices.dart"
+    },
+    {
+      "id": "svc-dismissed-dietary-hints",
+      "label": "Avfärdade påminnelser (per konto, på enheten)",
+      "context": "service",
+      "path": "lib/services/shopping/dismissed_dietary_hints_store.dart"
+    },
+    {
       "id": "v-create-shared-shopping-list",
       "label": "Skapa delad inköpslista",
       "context": "view",
@@ -3108,7 +3126,9 @@
       ],
       "area": "socialt",
       "features": [
-        "ENG-21", "REC-17", "MENU-17"
+        "ENG-21",
+        "REC-17",
+        "MENU-17"
       ]
     },
     {
@@ -3281,7 +3301,6 @@
           "transport": "Firestore writes",
           "verified": true
         },
-
         {
           "from": "svc-account-deletion",
           "to": "svc-auth",
@@ -3296,7 +3315,6 @@
           "transport": "method call (.write/.clear)",
           "verified": true
         }
-
       ],
       "area": "konto & säkerhet",
       "features": [
@@ -5328,6 +5346,74 @@
       "area": "meny & inköp"
     },
     {
+      "id": "flow-menu-shopping-allergy-reminders",
+      "label": "Allergipåminnelser i inköpslistan",
+      "description": "BUT-2494 (2026-11-24): under en öppen rad i den egna och den delade inköpslistan visas en ruta, t.ex. \"Laktos i hushållet, välj laktosfri\" eller \"Innehåller ofta X, kolla innehållet\", när varans ingrediensdata kan innehålla något hushållet undviker. Allt räknas ut på telefonen och sparas aldrig på listan. Hushållets val är användarens egna inställningar, andras delade allergier under samtycke v2 och barn-/gästprofiler under vårdnadshavarsamtycke v2; ingen golvnivå och en källa som inte kan läsas lägger inte till något. Rutan avfärdas med bock och Ångra; avfärdade påminnelser sparas per konto på enheten och rensas vid utloggning. När en ruta syns står \"Påminnelser kan saknas. Läs alltid innehållet.\" överst.",
+      "features": [
+        "MENU-11",
+        "MENU-13"
+      ],
+      "area": "meny & inköp",
+      "steps": [
+        {
+          "from": "v-shopping-list",
+          "to": "vm-shopping-dietary-hints",
+          "payload": "öppna rader (id, namn) via ShoppingDietaryHintsScope",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-collaborative-shopping",
+          "to": "vm-shopping-dietary-hints",
+          "payload": "öppna rader (activeItems) via ShoppingDietaryHintsScope",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-shopping-dietary-hints",
+          "to": "svc-ingredient-lookup",
+          "payload": "varje varunamn slås upp en gång (hela träffar)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-ingredient-lookup",
+          "to": "ds-ingredients",
+          "payload": "ingrediensegenskaper",
+          "transport": "Firestore read",
+          "verified": true
+        },
+        {
+          "from": "vm-shopping-dietary-hints",
+          "to": "vm-household-shopping-choices",
+          "payload": "hushållets val (egna inställningar färska, resten cachat 10 min per konto)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-household-shopping-choices",
+          "to": "svc-household",
+          "payload": "delade allergier (v2) och barn-/gästprofiler (vårdnadshavarsamtycke v2) via HouseholdLinks",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-shopping-dietary-hints",
+          "to": "svc-dismissed-dietary-hints",
+          "payload": "avfärda / ångra en påminnelse",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-dismissed-dietary-hints",
+          "to": "ds-local-prefs",
+          "payload": "shopping_hint_dismissed_v1_<uid>",
+          "transport": "SharedPreferences",
+          "verified": true
+        }
+      ]
+    },
+    {
       "id": "flow-soc-1",
       "label": "vänner",
       "description": "Skicka/acceptera/avvisa/avbryt vänförfrågan, vänlista, ta bort vän, blockera/avblockera, vängrupper. Sedan pre-release-revisionen B1 skriver klienten aldrig direkt i en annan användares friends-subkollektion — accept går via en Admin SDK-callable som validerar förfrågan och skriver båda sidor, vilket stänger ett hål där en främling kunde skriva sig in i offrets vänlista och läsa dennes cook-snaps/aktivitetsflöde. BUT-1951 (2026-09-05): blockering går att NÅ från appen för första gången. Hela läsvägen och tjänstens skrivmetod fanns sedan tidigare, men ingen vy anropade dem — FriendRequestActions.blockUser var en attrapp med Future.delayed som alltid svarade true, så blockeringslistan i sekretessinställningarna kunde aldrig få poster. Nu finns menyvalet på två ytor (vänprofilen och chattens meny, den senare med en deltagarväljare i gruppchatt) och båda går via FriendsViewModel.blockUser till tjänsten. Bekräftelserutan säger att vänskapen tas bort och inte återställs vid avblockering (klass 2, ui-conventions). BUT-2022 (2026-09-10): blockeringsraden skrivs FÖRST och vänskapen/förfrågningarna städas efteråt — tidigare revs de innan skrivningen, så ett fel gav \"kunde inte blockera\" när den oåterkalleliga delen redan hänt. blockUser svarar nu med ett utfall (blocked / blockedWithCleanupIssues / failed) i stället för en bool, och de ytor som gömmer eller spärrar en blockerad person frågar FriendsViewModel.isBlocked direkt i stället för getFriendshipStatus, vars enum svarar \"vän\" före \"blockerad\".",
@@ -5774,7 +5860,7 @@
         {
           "from": "repo-ratings",
           "to": "ds-recipe-ratings",
-          "payload": "recipe_ratings/{recipeId_userId} set(merge) i en batch; ett första betyg stämplar även users/{uid}/rate_limits/recipe_ratings \u2014 firestore.rules avvisar skrivningen p\u00e5 b\u00e5de create och update n\u00e4r recipeOwnerId finns med och den personen har blockerat den som betygs\u00e4tter",
+          "payload": "recipe_ratings/{recipeId_userId} set(merge) i en batch; ett första betyg stämplar även users/{uid}/rate_limits/recipe_ratings — firestore.rules avvisar skrivningen på både create och update när recipeOwnerId finns med och den personen har blockerat den som betygsätter",
           "transport": "Firestore write",
           "verified": true
         },
@@ -5867,7 +5953,8 @@
         "SOC-13",
         "SOC-14",
         "SOC-15",
-        "SOC-19", "SOC-20"
+        "SOC-19",
+        "SOC-20"
       ]
     },
     {
@@ -6199,7 +6286,7 @@
         {
           "from": "vm-social-group-detail",
           "to": "repo-friend-category",
-          "payload": "handOverGroup (\u00e4garen l\u00e4mnar genom att l\u00e4mna \u00f6ver) \u2014 b\u00e5da \u00e4garvalen erbjuds inte alls n\u00e4r medlemsl\u00e4sningen misslyckats (rosterIncomplete)",
+          "payload": "handOverGroup (ägaren lämnar genom att lämna över) — båda ägarvalen erbjuds inte alls när medlemsläsningen misslyckats (rosterIncomplete)",
           "transport": "call",
           "verified": true
         },
