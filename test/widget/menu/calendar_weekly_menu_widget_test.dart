@@ -1524,6 +1524,60 @@ void main() {
         expect(find.text('Fika'), findsNothing);
       });
 
+      testWidgets('the picker for an empty middag cell offers "Få förslag", '
+          'and the övrigt picker does not', (tester) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: const [], isLoading: false),
+        );
+        await pumpOvrigt(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('test-menu-slot-mon-middag')),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(MenuRecipeSelectionDialog), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('menu-selector-suggest')),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Lägg till rätt'));
+        await tester.pumpAndSettle();
+        expect(find.byType(MenuRecipeSelectionDialog), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('menu-selector-suggest')),
+          findsNothing,
+        );
+      });
+
+      testWidgets('"Få förslag" closes the picker and opens the suggestion '
+          'sheet for that day', (tester) async {
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          MockRecipeListViewModel()
+            ..setRecipeListState(recipes: const [], isLoading: false),
+        );
+        await pumpOvrigt(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('test-menu-slot-mon-middag')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('menu-selector-suggest')));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
+        expect(find.byType(BottomSheet), findsOneWidget);
+      });
+
       testWidgets('a dish picked for an empty cell is confirmed first when it '
           'contains a tracked allergen', (tester) async {
         prod_di.ServiceLocator.initialize(DIContainer());
