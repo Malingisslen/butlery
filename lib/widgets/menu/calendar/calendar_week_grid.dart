@@ -58,11 +58,10 @@ class CalendarWeekGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final dayColumn = _dayColumnWidth(context);
-        // The row spaces its four children by space4, three gaps in all.
         final cellWidth =
             (constraints.maxWidth -
-                (dayColumn - AppDimensions.space4) -
-                AppDimensions.space4 * 3) /
+                dayColumn -
+                AppDimensions.space4 * MealSlot.values.length) /
             MealSlot.values.length;
         return CalendarCellWidth(
           width: cellWidth,
@@ -86,7 +85,7 @@ class CalendarWeekGrid extends StatelessWidget {
                 spacing: AppDimensions.space4,
                 children: [
                   SizedBox(
-                    width: dayColumn - AppDimensions.space4,
+                    width: dayColumn,
                     child: _DayLabel(
                       day: day,
                       date: weekStart.add(Duration(days: day.index)),
@@ -116,7 +115,7 @@ class _MealHeaderRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
-          SizedBox(width: _dayColumnWidth(context)),
+          SizedBox(width: _dayColumnWidth(context) + AppDimensions.space4),
           for (final slot in MealSlot.values)
             Expanded(
               child: Padding(
