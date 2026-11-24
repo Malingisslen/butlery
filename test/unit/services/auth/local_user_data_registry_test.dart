@@ -7,6 +7,7 @@ import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/shopping/dismissed_dietary_hints_store.dart';
+import 'package:butlery/services/shopping/store_order_learner.dart';
 import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_io.dart'
     as image_store;
@@ -24,6 +25,8 @@ Map<String, Object> _everyDraft() {
   values[AutoSaveManager.ownerKeyFor(commentKey)] = 'alice';
   // The notice of what the week menu did to a list names the user's rows.
   values[WeekListFollowNoticeStore.storageKey] = '{}';
+  // What the phone learned about the order the user shops a store in.
+  values[StoreOrderLearner.storageKey] = '{}';
   values['unrelated_setting'] = 'keep';
   return values;
 }

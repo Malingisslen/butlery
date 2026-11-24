@@ -4697,6 +4697,22 @@
   "shoppingStoreNoneSubtitle": "The list's own order",
   "shoppingStoreAdd": "New store",
   "shoppingStoreAddHint": "Store name, for example ICA Maxi",
+  "shoppingOrderSuggestionText": "You usually pick {first} before {second} in {store}. Move it?",
+  "@shoppingOrderSuggestionText": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingOrderSuggestionYes": "Yes",
+  "shoppingOrderSuggestionNo": "No",
   "shoppingStoreLimit": "You can save at most {max} stores",
   "@shoppingStoreLimit": {
     "placeholders": {

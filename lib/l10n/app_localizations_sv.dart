@@ -7054,6 +7054,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingStoreAddHint => 'Butikens namn, till exempel ICA Maxi';
 
   @override
+  String shoppingOrderSuggestionText(
+    String first,
+    String second,
+    String store,
+  ) {
+    return 'Du tar oftast $first före $second i $store. Flytta?';
+  }
+
+  @override
+  String get shoppingOrderSuggestionYes => 'Ja';
+
+  @override
+  String get shoppingOrderSuggestionNo => 'Nej';
+
+  @override
   String shoppingStoreLimit(int max) {
     return 'Du kan spara högst $max butiker';
   }

@@ -16,6 +16,8 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/services/shopping/store_order_learner.dart';
 import 'package:butlery/models/shopping_store.dart';
 import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -138,10 +140,15 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
   late final UserService? _userService = ServiceLocator.tryGet<UserService>();
 
-  UnifiedShoppingViewModel({ConnectivityMonitoringService? connectivity})
-    : _connectivity =
-          connectivity ??
-          ServiceLocator.tryGet<ConnectivityMonitoringService>() {
+  UnifiedShoppingViewModel({
+    ConnectivityMonitoringService? connectivity,
+    StoreOrderLearner? orderLearner,
+  }) : _connectivity =
+           connectivity ??
+           ServiceLocator.tryGet<ConnectivityMonitoringService>(),
+       _orderLearner =
+           orderLearner ??
+           StoreOrderLearner(ServiceLocator.tryGet<SharedPreferences>()) {
     _noticeBaseline = activeList;
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
@@ -464,7 +471,8 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     // Capture the pre-toggle bought-state HERE (the layer that has it) so the
     // pantry policy seam can be fed a faithful wasBought without the low-level
     // module having to grow service/userId dependencies (BUT-1306).
-    final wasBought = items.where((i) => i.id == itemId).firstOrNull?.bought;
+    final tickedItem = items.where((i) => i.id == itemId).firstOrNull;
+    final wasBought = tickedItem?.bought;
 
     final result = await _shoppingService.toggleItemBought(itemId);
     if (result && activeList != null) {
@@ -484,6 +492,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
             itemCount: activeList!.items.length,
           );
         }
+      }
+
+      if (wasBought == false && tickedItem != null) {
+        _learnFromTick(tickedItem.category);
       }
 
       // BUT-1306: live wiring of the checkoff → pantry policy seam. The service
@@ -670,11 +682,69 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   }
 
   Future<bool> clearBoughtItems() async {
+    _orderLearner.endVisit();
     return await _shoppingService.clearBoughtItems();
   }
 
   Future<bool> uncheckAllItems() async {
+    _orderLearner.endVisit();
     return await _shoppingService.uncheckAllItems();
+  }
+
+  final StoreOrderLearner _orderLearner;
+
+  /// Only a tick made here counts, and only with a store picked: a tick by
+  /// someone else on a shared list never passes through this method.
+  void _learnFromTick(String category) {
+    final userId = currentUserId;
+    final store = activeStore;
+    final listId = activeList?.id;
+    if (userId == null || store == null || listId == null) return;
+    unawaited(
+      _orderLearner
+          .recordTick(
+            userId: userId,
+            storeId: store.id,
+            listId: listId,
+            category: category,
+          )
+          .then((_) {
+            if (!isDisposed) notifyListeners();
+          }),
+    );
+  }
+
+  /// The one habit the picked store's order does not follow yet, or null.
+  StoreOrderSuggestion? get orderSuggestion {
+    final userId = currentUserId;
+    final store = activeStore;
+    if (userId == null || store == null) return null;
+    _orderLearner.load(userId);
+    return _orderLearner.suggestionFor(store.id, categoryOrder);
+  }
+
+  /// Moves the suggested category to just before the other one in the store's
+  /// order, then forgets the pair.
+  Future<void> acceptOrderSuggestion() async {
+    final suggestion = orderSuggestion;
+    final store = activeStore;
+    final userId = currentUserId;
+    if (suggestion == null || store == null || userId == null) return;
+    final order = [...categoryOrder]..remove(suggestion.first);
+    order.insert(order.indexOf(suggestion.second), suggestion.first);
+    await saveCategoryOrder(order);
+    await _orderLearner.forgetPair(userId, store.id, suggestion);
+    notifyListeners();
+  }
+
+  /// "No": the pair needs fresh evidence before it is asked again.
+  Future<void> dismissOrderSuggestion() async {
+    final suggestion = orderSuggestion;
+    final store = activeStore;
+    final userId = currentUserId;
+    if (suggestion == null || store == null || userId == null) return;
+    await _orderLearner.forgetPair(userId, store.id, suggestion);
+    notifyListeners();
   }
 
   // ── Category management ──
@@ -737,6 +807,8 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
   Future<void> deleteStore(String storeId) async {
     await _shoppingService.categoryPreferences.deleteStore(storeId);
+    final userId = currentUserId;
+    if (userId != null) await _orderLearner.forgetStore(userId, storeId);
     notifyListeners();
   }
 

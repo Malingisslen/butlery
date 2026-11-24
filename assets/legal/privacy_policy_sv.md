@@ -416,6 +416,7 @@ Butlery är en mobilapplikation och använder inte webbläsarcookies. Istället 
 - **Krypterad lokal databas:** Dina recept och data cachas lokalt med AES-256-krypterad lagring (SQLCipher) för offlineåtkomst
 - **Säker lagring:** Känslig data (krypteringsnycklar) lagras i plattformens säkra lagring (iOS Keychain / Android Keystore)
 - **Bilder som väntar på att skickas:** Bilder du tar eller väljer utan uppkoppling (matbilder, kommentarsbilder, chattbilder och profilbild) sparas tillfälligt i appen på din telefon, utan platsuppgifter, tills de har skickats eller du slänger dem. En bild som inte har skickats slängs automatiskt efter 30 dagar. En chattbild som väntar syns för mottagaren som en ruta utan bild tills den har skickats. Övriga bilder syns för andra först när de har skickats.
+- **Butiksordning som appen lär sig:** När du har valt en butik för inköpslistan räknar appen, bara på din telefon, hur ofta du bockar av en varukategori före en annan, så att den kan föreslå en ordning som passar dig. Inga varor, tider eller listor sparas, inget skickas till oss, och räkningen tas bort när du själv loggar ut eller raderar ditt konto.
 
 Du kan hantera samtycke för databehandling i: **Mer → Integritet och data → Samtycken**
 

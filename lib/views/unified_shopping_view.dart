@@ -32,6 +32,7 @@ import 'package:butlery/services/share_service.dart';
 
 // Focused shopping components implementing facade pattern
 import 'package:butlery/widgets/shopping/shopping_template_browser.dart';
+import 'package:butlery/views/unified_shopping/widgets/order_suggestion_banner.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_notices.dart';
@@ -394,6 +395,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             showListPicker: !useDetailPane(MediaQuery.sizeOf(context)),
           ),
           ShoppingStoreBar(viewModel: viewModel),
+          OrderSuggestionBanner(viewModel: viewModel),
           Expanded(
             child: ShoppingListContent.build(
               context,

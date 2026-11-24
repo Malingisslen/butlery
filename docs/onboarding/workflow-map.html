@@ -2004,6 +2004,12 @@
       "path": "lib/services/shopping/shopping_checkoff_pantry_service.dart"
     },
     {
+      "id": "svc-store-order-learner",
+      "label": "Butiksordning-lärare (räknare på enheten)",
+      "context": "service",
+      "path": "lib/services/shopping/store_order_learner.dart"
+    },
+    {
       "id": "vm-ingredient-search",
       "label": "Ingrediens-sök-vy-modell",
       "context": "viewmodel",
@@ -5340,6 +5346,13 @@
           "to": "ds-shared-content",
           "payload": "skriv delningsrelation",
           "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "vm-unified-shopping",
+          "to": "svc-store-order-learner",
+          "payload": "avbockning med butik vald: räkna kategoripar på telefonen; föreslå en ny ordning efter 5 gånger, Ja sparar butikens ordning",
+          "transport": "method call (SharedPreferences på enheten, rensas vid utloggning)",
           "verified": true
         }
       ],

@@ -415,6 +415,7 @@ Butlery is a mobile application and does not use browser cookies. Instead, we us
 - **Encrypted local database:** Your recipes and data are cached locally using AES-256 encrypted storage (SQLCipher) for offline access
 - **Secure storage:** Sensitive data (encryption keys) is stored in platform-provided secure storage (iOS Keychain / Android Keystore)
 - **Images waiting to be sent:** Images you take or choose while offline (food photos, comment photos, chat images and a profile picture) are kept temporarily in the app on your phone, without location data, until they have been sent or you throw them away. An image that has not been sent is thrown away automatically after 30 days. A chat image that is waiting appears to the recipient as an empty box until it has been sent. Other images are shown to others only after they have been sent.
+- **Store order the app learns:** When you have picked a store for your shopping list, the app counts, on your phone only, how often you tick off one product category before another, so that it can suggest an order that suits you. No products, times or lists are saved, nothing is sent to us, and the count is removed when you log out yourself or delete your account.
 
 You can manage data processing consent in: **More > Privacy and data > Consents**
 
