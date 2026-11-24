@@ -225,8 +225,8 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `selection_app_bar.dart` | 704 | Single-purpose bulk-selection app bar extracted from `mina_recept_view` |
 | `shared_content_actions.dart` | 483 | Static action helper with one responsibility: import/dismiss shared content |
 | `upload_progress_widgets.dart` | 490 | Focused static widget for upload progress UI |
-| `family_member_form_view.dart` | 496 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design |
-| `unified_shopping_view.dart` | 832 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
+| `family_member_form_view.dart` | 534 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design. BUT-2494 added the shopping-list consent renewal tick |
+| `unified_shopping_view.dart` | 837 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
 | `recipe_detail_comments.dart` | 675 | Extracted sub-widget for comments section; single cohesive concern |
 | `collection_stats_view.dart` | 185 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |
 | `user_profile_viewmodel.dart` | — | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |

@@ -43,6 +43,15 @@
 3. Personalise menus (present-aware allergen filtering; rating influence).
 4. **Contribute each rating to the recipe's anonymous public average** (the
    unified public counter). **[DPO]** — see §3 risk R3.
+5. **Shopping-list reminders (added 2026-11-24, BUT-2494, ADR-0044):** remind a
+   household member, on their own device, when an open shopping row is an item
+   that often contains an allergen a diner tracks. Only for profiles whose
+   guardian allergen consent was given under wording `v2`
+   (`DinerProfile.allergensCoverShoppingList`); a `v1` consent keeps purposes
+   1–3 only until the guardian ticks the new text. Nothing is written to the
+   list; the reminder never names the diner. Device flow and the
+   false-negative risk: [`dpia-household-allergen-sharing.md`](dpia-household-allergen-sharing.md)
+   §1.6 and R9.
 
 ### 1.4 Lawful bases (proposed — **[DPO]** to confirm)
 - Name / age band / avatar: **Art. 6(1)(a)** — guardian consent.
@@ -177,3 +186,11 @@ not engineering work.
 - **Decision:** ☑ **Approved**
 - **Conditions / notes:** Retention window set at 24 months with warn-before-
   purge. No further conditions recorded. Feature cleared to launch.
+- **2026-11-24 (BUT-2494):** Malin Gisslén (controller) approved purpose 5 on
+  the condition of a new guardian consent. Guardian consent wording `v2`
+  (`familyAllergenConsentTextV2`): "Jag samtycker uttryckligen till att {name}s
+  allergi- och kostuppgifter (hälsouppgifter) sparas och används för hushållets
+  menyer och för påminnelser på inköpslistan." For an existing `v1` consent the
+  form offers `familyAllergenConsentRenewText`: "Jag samtycker uttryckligen till
+  att {name}s allergiuppgifter även används för påminnelser på hushållets
+  inköpslista." An ordinary edit of the profile keeps the stored version.

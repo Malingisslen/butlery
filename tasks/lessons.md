@@ -4750,3 +4750,9 @@ Date: 2026-11-03
 Trigger: BUT-2502. `beforeSignInAllowlist` släppte igenom registreringens första inloggning bara om `additionalUserInfo.isNewUser` var sann. firebase-functions sätter den bara för `beforeCreate`, så varje registrering med lösenord nekades i prod. Alla enhetstester skickade in flaggan för hand och var gröna. Samma kväll trodde jag att en profilsparning nekades för att appen skickade `isMinor`; granskaren läste `toFirestore()` och visade att nyckeln aldrig skickas. Jag hade läst `toJson()`.
 Rule: Testa plattformens fält genom den riktiga omslagsfunktionen (`.run` med händelsen som emulatorn faktiskt skickar), inte genom ett tal du väljer själv. Innan du säger att en skrivning innehåller en nyckel: skicka den exakta map som skrivvägen bygger (dumpa den ur koden) mot reglerna i emulatorn.
 Example: 2026-11-03 — emulatorn gav samma sekvens som prod; testet genom `.run` rodnar när omslaget återställs till `isNewUser`.
+
+### En versionsstämpel som skrivs om vid varje sparning är inget samtyckesbevis (2026-11-24)
+Date: 2026-11-24
+Trigger: BUT-2494. Samtyckestexten för barnens matprofiler fick version v2 (inköpslistan räknas bara under v2). `_buildConsent` stämplade alltid `currentConsentVersion`, så när en vårdnadshavare sparade en ändring av något annat, t.ex. namnet, blev ett v1-samtycke v2 utan att den nya texten någonsin visats. En granskning hittade det innan något byggts ovanpå.
+Rule: När en samtyckesversion höjs, sök upp VARJE skrivare av versionsfältet och fråga om den kan skriva det utan att användaren just sett och godkänt den texten. Den tidigare versionen förs vidare; bara en ny ruta, en uppgradering eller en uttrycklig förnyelse får skriva den nya.
+Example: 2026-11-24 — `_buildConsent` för vidare `prior.consentVersion`; formuläret visar en egen förnyelseruta (`familyAllergenConsentRenewText`).
