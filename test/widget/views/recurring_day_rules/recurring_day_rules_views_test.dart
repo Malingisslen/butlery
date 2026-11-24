@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -12,10 +13,14 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/messaging/chat_group.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/recurring_day_rules/recurring_day_rule_store.dart';
 import 'package:butlery/viewmodels/recurring_day_rules_viewmodel.dart';
 import 'package:butlery/views/recurring_day_rules/recurring_day_rule_editor_view.dart';
 import 'package:butlery/views/recurring_day_rules/recurring_day_rule_sheet.dart';
@@ -52,6 +57,24 @@ class _FakeUserService extends MockUserService {
     return true;
   }
 }
+
+class _MockGroups extends Mock implements ChatGroupRepository {}
+
+class _MockPermission extends Mock implements PermissionService {}
+
+ChatGroup _group(List<RecurringDayRule> rules) => ChatGroup(
+  id: 'cg1',
+  name: 'Familjen',
+  memberIds: const ['admin', 'member'],
+  adminIds: const ['admin'],
+  memberDisplayNames: const {},
+  memberAvatarUrls: const {},
+  conversationId: 'c1',
+  createdBy: 'admin',
+  createdAt: DateTime.utc(2026, 1, 1),
+  updatedAt: DateTime.utc(2026, 1, 1),
+  recurringDayRules: rules,
+);
 
 RecurringDayRule _rule(
   DayOfWeek day, {
@@ -177,6 +200,132 @@ void main() {
     });
   });
 
+  group('a group\'s rules', () {
+    late _MockGroups groups;
+    final seed = [
+      _rule(DayOfWeek.fri, food: RecurringFood.tacos),
+      _rule(DayOfWeek.sun, food: RecurringFood.soppa).copyWith(paused: true),
+    ];
+
+    Future<void> setUpGroup(String uid) async {
+      await setUpUsers(const []);
+      groups = _MockGroups();
+      when(
+        () => groups.watchGroup('cg1'),
+      ).thenAnswer((_) => const Stream<ChatGroup?>.empty());
+      when(
+        () => groups.setRecurringDayRules(any(), any()),
+      ).thenAnswer((_) async {});
+      final permission = _MockPermission();
+      when(() => permission.currentUserId).thenReturn(uid);
+      GetIt.instance.registerSingleton<ChatGroupRepository>(groups);
+      GetIt.instance.registerSingleton<PermissionService>(permission);
+      prod.ServiceLocator.initialize(DIContainer());
+    }
+
+    RecurringDayRulesView listFor() => RecurringDayRulesView(
+      scope: RecurringRuleScope.group(
+        chatGroupId: 'cg1',
+        groupName: 'Familjen',
+        group: _group(seed),
+      ),
+    );
+
+    setUpAll(() => registerFallbackValue(<RecurringDayRule>[]));
+
+    for (final dark in [false, true]) {
+      testWidgets(
+        'a member reads them: no switch, no swipe, no Ny fast dag, paused '
+        'says so (${dark ? 'dark' : 'light'})',
+        (tester) async {
+          await setUpGroup('member');
+          await pump(tester, listFor(), dark: dark);
+
+          expect(
+            find.text(sv.recurringRulesGroupTitle('Familjen')),
+            findsWidgets,
+          );
+          expect(find.text('Fredag · middag'), findsOneWidget);
+          expect(find.text('Tacos'), findsOneWidget);
+          expect(
+            find.text('Soppa · ${sv.recurringRulePausedShort}'),
+            findsOneWidget,
+          );
+          expect(find.byType(Switch), findsNothing);
+          expect(find.byType(Dismissible), findsNothing);
+          expect(find.text(sv.recurringRulesNew), findsNothing);
+          expect(find.text(sv.recurringRulesGroupMemberInfo), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    testWidgets('an admin gets the same list with switches and Ny fast dag', (
+      tester,
+    ) async {
+      await setUpGroup('admin');
+      await pump(tester, listFor());
+
+      expect(find.byType(Dismissible), findsNWidgets(2));
+      expect(find.text(sv.recurringRulesNew), findsOneWidget);
+      expect(find.text(sv.recurringRulesGroupMemberInfo), findsNothing);
+    });
+
+    testWidgets('a pause saves through the callable, not the profile', (
+      tester,
+    ) async {
+      await setUpGroup('admin');
+      await pump(tester, listFor());
+
+      await tester.tap(find.text('Fredag · middag'));
+      await tester.pumpAndSettle();
+
+      final captured =
+          verify(
+                () => groups.setRecurringDayRules('cg1', captureAny()),
+              ).captured.single
+              as List<RecurringDayRule>;
+      expect(captured.first.paused, isTrue);
+      expect(users.profile.recurringDayRules, isEmpty);
+    });
+
+    testWidgets('a member with no rules is told an admin adds them', (
+      tester,
+    ) async {
+      await setUpGroup('member');
+      await pump(
+        tester,
+        const RecurringDayRulesView(
+          scope: RecurringRuleScope.group(
+            chatGroupId: 'cg1',
+            groupName: 'Familjen',
+          ),
+        ),
+      );
+
+      expect(find.text(sv.recurringRulesGroupEmptyBodyMember), findsOneWidget);
+      expect(find.text(sv.recurringRulesNew), findsNothing);
+    });
+
+    testWidgets('the editor of a group says everyone sees the day', (
+      tester,
+    ) async {
+      await setUpGroup('admin');
+      await pump(
+        tester,
+        const RecurringDayRuleEditorView(
+          scope: RecurringRuleScope.group(
+            chatGroupId: 'cg1',
+            groupName: 'Familjen',
+          ),
+        ),
+      );
+
+      expect(find.text(sv.recurringRuleEditorNoteGroup), findsOneWidget);
+      expect(find.text(sv.recurringRuleEditorNote), findsNothing);
+    });
+  });
+
   group('the editor', () {
     testWidgets('saves a new rule for the preselected day', (tester) async {
       await setUpUsers(const []);
@@ -226,6 +375,25 @@ void main() {
       final rules = users.profile.recurringDayRules;
       expect(rules, hasLength(1));
       expect(rules.single.food, RecurringFood.soppa);
+    });
+
+    testWidgets('editing a paused rule keeps it paused', (tester) async {
+      await setUpUsers([
+        _rule(DayOfWeek.fri, food: RecurringFood.tacos).copyWith(paused: true),
+      ]);
+      await pump(
+        tester,
+        const RecurringDayRuleEditorView(initialDay: DayOfWeek.fri),
+      );
+
+      await tester.tap(find.text(sv.recurringRuleFoodLabel('soppa')));
+      await tester.pump();
+      await tester.tap(find.text(sv.commonSave));
+      await tester.pumpAndSettle();
+
+      final rule = users.profile.recurringDayRules.single;
+      expect(rule.food, RecurringFood.soppa);
+      expect(rule.paused, isTrue);
     });
 
     testWidgets('says so when the save fails', (tester) async {

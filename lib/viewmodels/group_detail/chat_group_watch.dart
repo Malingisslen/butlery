@@ -41,8 +41,10 @@ class ChatGroupWatch {
   /// Points the watch at [conversation]'s group, or tears it down when there
   /// is none. A direct chat, or a group conversation predating BUT-1838, has no
   /// `groupId`; both leave [group] null rather than holding a stale one.
-  void sync(Conversation? conversation) {
-    final groupId = conversation?.groupId;
+  void sync(Conversation? conversation) => syncGroupId(conversation?.groupId);
+
+  /// [sync] for a caller that already holds the group id.
+  void syncGroupId(String? groupId) {
     if (groupId == null) {
       cancel();
       _group = null;

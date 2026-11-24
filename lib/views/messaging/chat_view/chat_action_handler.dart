@@ -379,6 +379,8 @@ class ChatActionHandler {
           groupId: conversationId,
           groupName: conversation?.title ?? context.l10n.groupMenuUntitledGroup,
           currentUserId: userId,
+          chatGroupId: conversation?.groupId,
+          participantIds: conversation?.participantIds ?? const [],
           // Starting a poll lives in the chat this was opened from, so the
           // empty state's call to action simply returns there.
           onStartPoll: () => Navigator.of(context).pop(),

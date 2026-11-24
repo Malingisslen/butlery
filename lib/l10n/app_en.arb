@@ -18596,6 +18596,18 @@
   "@recurringRuleSheetTitle": {"placeholders": {"day": {"type": "String"}}},
   "recurringRuleMarkLabel": "Fixed day",
   "recurringRuleShow": "Show",
+  "groupMenuFixedDayCell": "Fixed day: {kind}",
+  "@groupMenuFixedDayCell": {"description": "BUT-2490: an empty lunch or middag place in the group week that a group rule governs; kind is the rule's food, e.g. Tacos.", "placeholders": {"kind": {"type": "String"}}},
+  "a11yGroupMenuPickFixedDay": "Pick a dish",
+  "@a11yGroupMenuPickFixedDay": {"description": "BUT-2490: screen-reader action on a fixed-day cell in the group week; the visible text names the day's rule."},
+  "recurringRulesGroupTitle": "Fixed days · {name}",
+  "@recurringRulesGroupTitle": {"description": "BUT-2490: title of a group's rule list; name is the group's name.", "placeholders": {"name": {"type": "String"}}},
+  "recurringRulesGroupSection": "The group's rules",
+  "recurringRulesGroupEmptyBodyAdmin": "A fixed day shows for everyone in the group's week menu, for example tacos on Fridays.",
+  "recurringRulesGroupEmptyBodyMember": "The group's admin can add fixed days.",
+  "recurringRulesGroupMemberInfo": "The group's fixed days. Only an admin changes them.",
+  "recurringRuleEditorNoteGroup": "Everyone in the group sees this day in the week menu. Whoever may edit the week menu picks the dish.",
+  "recurringRulePausedShort": "paused",
   "shoppingHintChooseLactoseFree": "Lactose in the household, choose lactose-free",
   "@shoppingHintChooseLactoseFree": {
     "description": "BUT-2494: reminder under a shopping row when the household avoids lactose and the item often contains it. Never names a person."

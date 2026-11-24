@@ -23027,6 +23027,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recurringRuleShow => 'Show';
 
   @override
+  String groupMenuFixedDayCell(String kind) {
+    return 'Fixed day: $kind';
+  }
+
+  @override
+  String get a11yGroupMenuPickFixedDay => 'Pick a dish';
+
+  @override
+  String recurringRulesGroupTitle(String name) {
+    return 'Fixed days · $name';
+  }
+
+  @override
+  String get recurringRulesGroupSection => 'The group\'s rules';
+
+  @override
+  String get recurringRulesGroupEmptyBodyAdmin =>
+      'A fixed day shows for everyone in the group\'s week menu, for example tacos on Fridays.';
+
+  @override
+  String get recurringRulesGroupEmptyBodyMember =>
+      'The group\'s admin can add fixed days.';
+
+  @override
+  String get recurringRulesGroupMemberInfo =>
+      'The group\'s fixed days. Only an admin changes them.';
+
+  @override
+  String get recurringRuleEditorNoteGroup =>
+      'Everyone in the group sees this day in the week menu. Whoever may edit the week menu picks the dish.';
+
+  @override
+  String get recurringRulePausedShort => 'paused';
+
+  @override
   String get shoppingHintChooseLactoseFree =>
       'Lactose in the household, choose lactose-free';
 

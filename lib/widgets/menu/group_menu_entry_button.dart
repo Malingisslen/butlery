@@ -87,6 +87,8 @@ class GroupMenuEntryButton extends StatelessWidget {
           groupId: chosen.id,
           groupName: chosen.title ?? context.l10n.groupMenuUntitledGroup,
           currentUserId: userId,
+          chatGroupId: chosen.groupId,
+          participantIds: chosen.participantIds,
           // No `onStartPoll`: a poll is started in the chat, and this route did
           // not come from one. The empty state then renders its text without a
           // button rather than offering one that goes nowhere.

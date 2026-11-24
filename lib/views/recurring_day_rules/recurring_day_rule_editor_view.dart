@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/recurring_day_rules/recurring_day_rule_store.dart';
 import 'package:butlery/viewmodels/recurring_day_rules_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
@@ -34,14 +35,18 @@ class RecurringDayRuleEditorView extends StatefulWidget {
     this.initialDay,
     this.initialMeal = MealSlot.middag,
     this.viewModel,
+    this.scope = const RecurringRuleScope.personal(),
     super.key,
   });
 
   final DayOfWeek? initialDay;
   final MealSlot initialMeal;
 
-  /// For tests; the app builds its own.
+  /// The list's model when opened from it; without one the editor builds its
+  /// own from [scope].
   final RecurringDayRulesViewModel? viewModel;
+
+  final RecurringRuleScope scope;
 
   @override
   State<RecurringDayRuleEditorView> createState() =>
@@ -60,7 +65,9 @@ class _RecurringDayRuleEditorViewState
   @override
   void initState() {
     super.initState();
-    _vm = widget.viewModel ?? RecurringDayRulesViewModel();
+    _vm =
+        widget.viewModel ??
+        RecurringDayRulesViewModel(store: widget.scope.createStore());
     _day = widget.initialDay ?? DayOfWeek.mon;
     _meal = widget.initialMeal;
     _loadExisting();
@@ -199,7 +206,9 @@ class _RecurringDayRuleEditorViewState
             ]),
             const SizedBox(height: AppDimensions.space24),
             Text(
-              l.recurringRuleEditorNote,
+              widget.scope.isGroup
+                  ? l.recurringRuleEditorNoteGroup
+                  : l.recurringRuleEditorNote,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
