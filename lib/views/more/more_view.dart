@@ -156,6 +156,7 @@ class MoreView extends StatelessWidget {
                 Routes.settingsPersonalTags,
                 namesBack: true,
               ),
+              row(l10n.cookHistoryTitle, Routes.cookHistory),
               row(l10n.moreCollectionStats, Routes.collectionStats),
               row(l10n.trashTitle, Routes.settingsTrash),
             ],

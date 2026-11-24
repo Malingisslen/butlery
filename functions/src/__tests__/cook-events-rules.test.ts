@@ -1,15 +1,15 @@
 /**
- * Firestore rules tests for the recipe_cook_events append-only cook log
+ * Firestore rules tests for the recipe_cook_events cook log
  * (BUT-838).
  *
  * Path: recipe_cook_events/{userId}/events/{eventId}
  *   - read:   owner-only, gated on the {userId} PATH segment alone — this is
  *             what makes the client's countSince aggregate
  *             (where cookedAt >= ts, count()) provable.
- *   - create: owner-only + shape-validated (hasOnly/hasAll
- *             ['recipeId','cookedAt'], recipeId non-empty string <= 200,
- *             cookedAt timestamp).
- *   - update: DENIED for everyone (append-only log).
+ *   - create: owner-only + shape-validated (recipeId non-empty
+ *             string <= 200, cookedAt timestamp, optional details).
+ *   - update: owner-only, and only the after-cook details (rating, note,
+ *             snapId) may change; recipeId/cookedAt stay frozen.
  *   - delete: owner-only.
  *
  * Each test name states the behavior it proves. If a test fails, either the
@@ -49,8 +49,7 @@ const OWNER_UID = "cook-events-owner-uid";
 const OTHER_UID = "cook-events-stranger-uid";
 
 // Per-run token: the emulator persists docs across npm-run invocations, so a
-// fixed-id create-allow test becomes an UPDATE on the 2nd run (and update is
-// `if false` here — guaranteed false failure). See knowledge entry 2026-06-03.
+// fixed-id create-allow test becomes an UPDATE on the 2nd run. See knowledge entry 2026-06-03.
 const RUN = Date.now().toString(36);
 
 let env: RulesTestEnvironment;
@@ -182,14 +181,14 @@ test("cook_events: unauthenticated user cannot create an event", async () => {
   );
 });
 
-// CE8: extra key beyond the two-field allowlist is rejected (keys().hasOnly).
+// CE8: extra key beyond the allowlist is rejected (keys().hasOnly).
 test("cook_events: create with an extra key is rejected", async () => {
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertFails(
     ctx
       .firestore()
       .doc(`${eventsPath(OWNER_UID)}/ce-extra-key`)
-      .set(validEventBody({ note: "smaskigt" }))
+      .set(validEventBody({ bogus: "x" }))
   );
 });
 
@@ -318,27 +317,88 @@ test("cook_events: non-list attendeeMemberIds is rejected", async () => {
 });
 
 // ============================================================================
-// RECIPE COOK EVENTS — update DENIED (append-only log)
+// RECIPE COOK EVENTS — update (owner-only, details only)
 // ============================================================================
 
-// CE15: even the owner cannot update an event — the log is append-only.
-// A shape-valid rewrite is used so the deny is provably the `update: if
-// false` rule, not the create validator.
-test("cook_events: owner cannot update own event (append-only)", async () => {
-  await seedEvent(OWNER_UID, "ce-update-own");
+// CE15: the owner can add the after-cook details to an existing event.
+test("cook_events: owner can add rating, note and snapId", async () => {
+  await seedEvent(OWNER_UID, "ce-update-details");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-update-details`)
+      .update({ rating: 4, note: "mer lime", snapId: "snap-1" })
+  );
+});
+
+// CE15a: the frozen fields cannot change — a shape-valid cookedAt rewrite
+// differs from CE15 only in WHICH key moves, so the deny is the
+// affectedKeys limb.
+test("cook_events: owner cannot change cookedAt or recipeId", async () => {
+  await seedEvent(OWNER_UID, "ce-update-frozen");
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertFails(
     ctx
       .firestore()
-      .doc(`${eventsPath(OWNER_UID)}/ce-update-own`)
+      .doc(`${eventsPath(OWNER_UID)}/ce-update-frozen`)
       .update({ cookedAt: new Date() })
   );
-  // Full-doc set() on an existing doc is an update too — also denied.
   await assertFails(
     ctx
       .firestore()
-      .doc(`${eventsPath(OWNER_UID)}/ce-update-own`)
-      .set(validEventBody())
+      .doc(`${eventsPath(OWNER_UID)}/ce-update-frozen`)
+      .update({ recipeId: "other", rating: 3 })
+  );
+});
+
+// CE15b: details are range-checked on update (control: rating 4 passes in CE15).
+test("cook_events: out-of-range rating, long note and empty snapId are rejected", async () => {
+  await seedEvent(OWNER_UID, "ce-update-bounds");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  const doc = () =>
+    ctx.firestore().doc(`${eventsPath(OWNER_UID)}/ce-update-bounds`);
+  await assertFails(doc().update({ rating: 0 }));
+  await assertFails(doc().update({ rating: 6 }));
+  await assertFails(doc().update({ rating: 3.5 }));
+  await assertFails(doc().update({ note: "x".repeat(501) }));
+  await assertFails(doc().update({ snapId: "" }));
+  // 300 emoji are 300 characters but 600 UTF-16 units; rules count units.
+  await assertFails(doc().update({ note: "😀".repeat(300) }));
+  await assertSucceeds(doc().update({ note: "x".repeat(500) }));
+  await assertSucceeds(doc().update({ rating: 1 }));
+});
+
+// CE15d: attendees stay frozen on update (control: CE15 changes only details).
+test("cook_events: owner cannot change attendeeMemberIds on update", async () => {
+  await seedEvent(
+    OWNER_UID,
+    "ce-update-attendees",
+    validEventBody({ attendeeMemberIds: ["a"] })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-update-attendees`)
+      .update({ attendeeMemberIds: ["b"] })
+  );
+});
+
+// CE15c: create accepts the details with the same bounds.
+test("cook_events: create with valid details passes, invalid rating fails", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-create-details-${RUN}`)
+      .set(validEventBody({ rating: 5, note: "bra", snapId: "s" }))
+  );
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-create-badrating-${RUN}`)
+      .set(validEventBody({ rating: 9 }))
   );
 });
 
@@ -350,7 +410,7 @@ test("cook_events: stranger cannot update another user's event", async () => {
     ctx
       .firestore()
       .doc(`${eventsPath(OWNER_UID)}/ce-update-foreign`)
-      .update({ recipeId: "hijacked" })
+      .update({ rating: 1 })
   );
 });
 

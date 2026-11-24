@@ -18308,6 +18308,65 @@
   "adminPoolQuarantined": "The rating is switched off.",
   "adminPoolLifted": "The rating is switched back on.",
   "adminPoolLoading": "Fetching the rating …",
+  "cookDetailsTitle": "How did it go?",
+  "cookDetailsRatingLabel": "Rating",
+  "cookDetailsNoteLabel": "Note",
+  "cookDetailsNoteHint": "e.g. more lime next time",
+  "cookDetailsSave": "Save",
+  "cookDetailsSkip": "Skip",
+  "cookDetailsRateStars": "Give {count} of 5 stars",
+  "@cookDetailsRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookHistoryTitle": "Cooked recipes",
+  "cookHistoryEmptyTitle": "Nothing cooked yet",
+  "cookHistoryEmptyBody": "When you mark a recipe as cooked it shows up here, with the date, rating and note.",
+  "cookHistoryFilterAll": "All",
+  "cookHistoryFilterFavorites": "Favourites",
+  "cookHistoryFilterMonth": "Last month",
+  "cookHistoryFrequent": "Often cooked",
+  "cookHistoryFrequentSubtitle": "{count, plural, =1{Cooked once} other{Cooked {count} times}} · last {date}",
+  "@cookHistoryFrequentSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cookHistoryUnknownRecipe": "The recipe is no longer there",
+  "cookHistoryLoadMore": "Show more",
+  "cookHistoryLoadError": "The history could not be loaded. Try again.",
+  "cookHistoryRetry": "Try again",
+  "cookHistoryRecipeSummary": "{count, plural, =1{Once} other{{count} times}} · last {date}",
+  "@cookHistoryRecipeSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cookHistoryEventRated": "{date} · rating {rating}",
+  "@cookHistoryEventRated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "cookDetailsSaveFailed": "The rating and note could not be saved.",
   "menuQuickPicksTitle": "Quick picks",
   "menuQuickFastTitle": "Quick week",
   "menuQuickFastSubtitle": "Recipes of 30 minutes or less",

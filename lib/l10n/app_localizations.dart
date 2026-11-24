@@ -34272,6 +34272,138 @@ abstract class AppLocalizations {
   /// **'Hämtar betyget …'**
   String get adminPoolLoading;
 
+  /// No description provided for @cookDetailsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur blev det?'**
+  String get cookDetailsTitle;
+
+  /// No description provided for @cookDetailsRatingLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg'**
+  String get cookDetailsRatingLabel;
+
+  /// No description provided for @cookDetailsNoteLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anteckning'**
+  String get cookDetailsNoteLabel;
+
+  /// No description provided for @cookDetailsNoteHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'t.ex. mer lime nästa gång'**
+  String get cookDetailsNoteHint;
+
+  /// No description provided for @cookDetailsSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get cookDetailsSave;
+
+  /// No description provided for @cookDetailsSkip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hoppa över'**
+  String get cookDetailsSkip;
+
+  /// No description provided for @cookDetailsRateStars.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt {count} av 5 stjärnor'**
+  String cookDetailsRateStars(int count);
+
+  /// No description provided for @cookHistoryTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagade recept'**
+  String get cookHistoryTitle;
+
+  /// No description provided for @cookHistoryEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget lagat än'**
+  String get cookHistoryEmptyTitle;
+
+  /// No description provided for @cookHistoryEmptyBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'När du markerar ett recept som lagat visas det här, med datum, betyg och anteckning.'**
+  String get cookHistoryEmptyBody;
+
+  /// No description provided for @cookHistoryFilterAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla'**
+  String get cookHistoryFilterAll;
+
+  /// No description provided for @cookHistoryFilterFavorites.
+  ///
+  /// In sv, this message translates to:
+  /// **'Favoriter'**
+  String get cookHistoryFilterFavorites;
+
+  /// No description provided for @cookHistoryFilterMonth.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senaste månaden'**
+  String get cookHistoryFilterMonth;
+
+  /// No description provided for @cookHistoryFrequent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagas ofta'**
+  String get cookHistoryFrequent;
+
+  /// No description provided for @cookHistoryFrequentSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Lagad 1 gång} other{Lagad {count} gånger}} · senast {date}'**
+  String cookHistoryFrequentSubtitle(int count, String date);
+
+  /// No description provided for @cookHistoryUnknownRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet finns inte kvar'**
+  String get cookHistoryUnknownRecipe;
+
+  /// No description provided for @cookHistoryLoadMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa fler'**
+  String get cookHistoryLoadMore;
+
+  /// No description provided for @cookHistoryLoadError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Historiken kunde inte hämtas. Försök igen.'**
+  String get cookHistoryLoadError;
+
+  /// No description provided for @cookHistoryRetry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen'**
+  String get cookHistoryRetry;
+
+  /// No description provided for @cookHistoryRecipeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 gång} other{{count} gånger}} · senast {date}'**
+  String cookHistoryRecipeSummary(int count, String date);
+
+  /// No description provided for @cookHistoryEventRated.
+  ///
+  /// In sv, this message translates to:
+  /// **'{date} · betyg {rating}'**
+  String cookHistoryEventRated(String date, String rating);
+
+  /// No description provided for @cookDetailsSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget och anteckningen kunde inte sparas.'**
+  String get cookDetailsSaveFailed;
+
   /// No description provided for @menuQuickPicksTitle.
   ///
   /// In sv, this message translates to:

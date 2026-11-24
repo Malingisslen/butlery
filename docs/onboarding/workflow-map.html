@@ -774,6 +774,36 @@
       "path": "lib/viewmodels/recipe_detail_viewmodel.dart"
     },
     {
+      "id": "svc-recipe-cooking",
+      "label": "RecipeCookingService",
+      "context": "service",
+      "path": "lib/services/recipe/recipe_cooking_service.dart"
+    },
+    {
+      "id": "repo-cook-event",
+      "label": "FirebaseCookEventRepository",
+      "context": "repository",
+      "path": "lib/repositories/firebase/firebase_cook_event_repository.dart"
+    },
+    {
+      "id": "ds-cook-events",
+      "label": "recipe_cook_events",
+      "context": "datastore",
+      "path": "Firestore"
+    },
+    {
+      "id": "v-cook-history",
+      "label": "Lagade recept (historik)",
+      "context": "view",
+      "path": "lib/views/settings/cook_history_view.dart"
+    },
+    {
+      "id": "vm-cook-history",
+      "label": "CookHistoryViewModel",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/cook_history_viewmodel.dart"
+    },
+    {
       "id": "vm-cook-snap",
       "label": "CookSnapViewModel",
       "context": "viewmodel",
@@ -3017,6 +3047,62 @@
           "to": "ds-stats",
           "payload": "aggregat av recipe_ratings + family_ratings",
           "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "v-recipe-detail",
+          "to": "vm-recipe-detail",
+          "payload": "efter “Lagat idag”: arket “Hur blev det?” (betyg bara om ingen i hushållet betygsatt, plus anteckning) → saveCookDetails(rating, note)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-recipe-detail",
+          "to": "svc-recipe-cooking",
+          "payload": "saveCookDetails — betyget speglas best effort till receptets vanliga betyg via rateRecipe",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-recipe-cooking",
+          "to": "repo-cook-event",
+          "payload": "updateCookEventDetails(senaste händelsens id, rating, note) — noten kapas i UTF-16-enheter",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-cook-event",
+          "to": "ds-cook-events",
+          "payload": "update av rating/note/snapId på egen händelse (reglerna låser övriga fält)",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "v-settings",
+          "to": "v-cook-history",
+          "payload": "Mer → Lagade recept (och länk från receptdetaljen)",
+          "transport": "Navigator push",
+          "verified": true
+        },
+        {
+          "from": "v-cook-history",
+          "to": "vm-cook-history",
+          "payload": "load/loadMore — 30 händelser per sida, filter alla/favoriter/senaste månaden",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-cook-history",
+          "to": "repo-cook-event",
+          "payload": "fetchRecent(limit, before) — nyast först, egen användares händelser",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "ds-cook-events",
+          "to": "repo-cook-event",
+          "payload": "en sida CookEvent, engångsläsning",
+          "transport": "Firestore read",
           "verified": true
         }
       ],

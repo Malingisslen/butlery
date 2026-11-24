@@ -25,8 +25,8 @@ import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 /// written — it exists only as a path segment, which is fine for direct
 /// subcollection queries (and the rules key owner access off that segment).
 ///
-/// Events are append-only: created atomically with the recipe's
-/// `core.cookCount` bump (one WriteBatch), never updated. The `countSince`
+/// Events are created atomically with the recipe's
+/// `core.cookCount` bump (one WriteBatch). The `countSince`
 /// aggregate needs only the automatic single-field index on `cookedAt`
 /// (single range constraint, no orderBy/composite) — nothing was added to
 /// firestore.indexes.json.
@@ -97,8 +97,7 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
     String resourceId,
     CookEvent entity,
   ) async {
-    // Append-only log — events are immutable (rules also deny update).
-    return false;
+    return userId == currentUserId;
   }
 
   @override
@@ -109,6 +108,11 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
     // Owner-only: routing scopes deletes to the caller's own subcollection.
     return currentUserId == userId;
   }
+
+  String? _lastLoggedEventId;
+
+  @override
+  String? get lastLoggedEventId => _lastLoggedEventId;
 
   @override
   Future<bool> logCookEvent(
@@ -155,6 +159,7 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
         cookedAt,
       );
       await batch.commit();
+      _lastLoggedEventId = eventRef.id;
 
       AppLogger.info('Cook event logged: $recipeId at $cookedAt');
       return true;
@@ -162,6 +167,59 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
       AppLogger.error('Failed to log cook event for $recipeId: $e', stackTrace);
       return false;
     }
+  }
+
+  @override
+  Future<bool> updateCookEventDetails(
+    String eventId, {
+    int? rating,
+    String? note,
+    String? snapId,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null || eventId.isEmpty) return false;
+    if (rating != null && (rating < 1 || rating > 5)) return false;
+    // A long note is cut, not refused, so it cannot cost the rating sent with
+    // it. The rules count UTF-16 code units, so cut in that unit and never
+    // inside a surrogate pair.
+    var trimmedNote = note?.trim();
+    if (trimmedNote != null && trimmedNote.length > CookEvent.maxNoteLength) {
+      var end = CookEvent.maxNoteLength;
+      final last = trimmedNote.codeUnitAt(end - 1);
+      if (last >= 0xD800 && last <= 0xDBFF) end--;
+      trimmedNote = trimmedNote.substring(0, end);
+    }
+
+    final fields = <String, dynamic>{
+      'rating': ?rating,
+      if (trimmedNote != null && trimmedNote.isNotEmpty) 'note': trimmedNote,
+      if (snapId != null && snapId.isNotEmpty) 'snapId': snapId,
+    };
+    if (fields.isEmpty) return true;
+
+    try {
+      await eventsCollectionForUser(userId).doc(eventId).update(fields);
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update cook event $eventId: $e', stackTrace);
+      return false;
+    }
+  }
+
+  @override
+  Future<List<CookEvent>> fetchRecent({
+    int limit = 30,
+    DateTime? before,
+  }) async {
+    final userId = requireCurrentUserId();
+    Query<Map<String, dynamic>> query = eventsCollectionForUser(
+      userId,
+    ).orderBy('cookedAt', descending: true);
+    if (before != null) {
+      query = query.startAfter([Timestamp.fromDate(before)]);
+    }
+    final snapshot = await query.limit(limit).get();
+    return snapshot.docs.map(fromFirestore).toList();
   }
 
   /// Self-only gate shared by every per-user read: audit-logs the check,

@@ -113,6 +113,7 @@ class Routes {
   // Konto & säkerhet.
   static const String settingsAccountSecurity = '/settings/account-security';
   static const String collectionStats = '/settings/collection-stats';
+  static const String cookHistory = '/settings/cook-history';
   static const String moderatorReview = '/admin/moderation';
   static const String myReports = '/settings/my-reports';
   static const String myContentDecisions = '/settings/my-content-decisions';
@@ -185,6 +186,7 @@ class Routes {
     settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
+    cookHistory,
     settingsTrash,
     myReports,
     myContentDecisions,
@@ -242,6 +244,7 @@ class Routes {
     settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
+    cookHistory,
     moderatorReview,
     settingsAbout,
     settingsLicenses,
@@ -366,6 +369,7 @@ class Routes {
     settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
+    cookHistory,
     moderatorReview,
     settingsAbout,
     settingsLicenses,

@@ -333,6 +333,28 @@ class RecipeDetailViewModel extends BaseViewModel {
         last.day == now.day;
   }
 
+  /// Saves the after-cook sheet onto the event [markAsCooked] just wrote. A
+  /// rating also goes to the recipe's own rating through the same social path
+  /// the family entry mirrors to; that mirror is best-effort (it refuses a
+  /// recipe the user owns) and never fails the saved event.
+  Future<bool> saveCookDetails({int? rating, String? note}) async {
+    final saved = await _cookingService.saveCookDetails(
+      rating: rating,
+      note: note,
+    );
+    if (rating != null) {
+      try {
+        await _recipeService.social.rateRecipe(
+          recipeId: _recipe.id,
+          rating: rating.toDouble(),
+        );
+      } catch (e) {
+        AppLogger.warning('Cook rating mirror failed, event kept: $e');
+      }
+    }
+    return saved;
+  }
+
   Future<bool> markAsCooked({List<String> attendeeMemberIds = const []}) async {
     if (wasCookedToday) return false;
 

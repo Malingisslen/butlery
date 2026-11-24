@@ -60,6 +60,19 @@ class RecipeCookingService extends BaseService {
     return ok;
   }
 
+  /// Attaches the after-cook details to the event [markAsCooked] just wrote.
+  /// Returns false when nothing was logged this session or the write failed.
+  Future<bool> saveCookDetails({int? rating, String? note, String? snapId}) {
+    final id = _cookEventRepository.lastLoggedEventId;
+    if (id == null) return Future.value(false);
+    return _cookEventRepository.updateCookEventDetails(
+      id,
+      rating: rating,
+      note: note,
+      snapId: snapId,
+    );
+  }
+
   /// Test-only: reset the in-memory dedup set.
   void resetSessionGuardForTesting() {
     _cookedThisSession.clear();

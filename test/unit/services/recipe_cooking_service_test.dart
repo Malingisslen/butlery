@@ -212,4 +212,56 @@ void main() {
       },
     );
   });
+
+  group('RecipeCookingService.saveCookDetails', () {
+    late _MockCookEventRepository repo;
+    late RecipeCookingService service;
+
+    setUp(() {
+      repo = _MockCookEventRepository();
+      service = RecipeCookingService(cookEventRepository: repo);
+    });
+
+    test('writes onto the event the repository last logged', () async {
+      when(() => repo.logCookEvent(any(), any())).thenAnswer((_) async => true);
+      when(() => repo.lastLoggedEventId).thenReturn('evt-9');
+      when(
+        () => repo.updateCookEventDetails(
+          any(),
+          rating: any(named: 'rating'),
+          note: any(named: 'note'),
+          snapId: any(named: 'snapId'),
+        ),
+      ).thenAnswer((_) async => true);
+
+      await service.markAsCooked('r1');
+      final ok = await service.saveCookDetails(rating: 4, note: 'mer lime');
+
+      expect(ok, isTrue);
+      verify(
+        () => repo.updateCookEventDetails(
+          'evt-9',
+          rating: 4,
+          note: 'mer lime',
+          snapId: null,
+        ),
+      ).called(1);
+    });
+
+    test('writes nothing when no event id is known', () async {
+      when(() => repo.lastLoggedEventId).thenReturn(null);
+
+      final ok = await service.saveCookDetails(rating: 5);
+
+      expect(ok, isFalse);
+      verifyNever(
+        () => repo.updateCookEventDetails(
+          any(),
+          rating: any(named: 'rating'),
+          note: any(named: 'note'),
+          snapId: any(named: 'snapId'),
+        ),
+      );
+    });
+  });
 }

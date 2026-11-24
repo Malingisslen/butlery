@@ -50,6 +50,7 @@ import 'package:butlery/views/family/min_familj_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
+import 'package:butlery/views/settings/cook_history_view.dart';
 import 'package:butlery/views/quick_capture_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
@@ -457,6 +458,13 @@ class AppRouter {
         case Routes.collectionStats:
           return _buildRoute(
             const CollectionStatsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.cookHistory:
+          return _buildRoute(
+            const CookHistoryView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

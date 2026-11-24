@@ -18322,6 +18322,65 @@
   "adminPoolQuarantined": "Betyget är avstängt.",
   "adminPoolLifted": "Betyget är påslaget igen.",
   "adminPoolLoading": "Hämtar betyget …",
+  "cookDetailsTitle": "Hur blev det?",
+  "cookDetailsRatingLabel": "Betyg",
+  "cookDetailsNoteLabel": "Anteckning",
+  "cookDetailsNoteHint": "t.ex. mer lime nästa gång",
+  "cookDetailsSave": "Spara",
+  "cookDetailsSkip": "Hoppa över",
+  "cookDetailsRateStars": "Sätt {count} av 5 stjärnor",
+  "@cookDetailsRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookHistoryTitle": "Lagade recept",
+  "cookHistoryEmptyTitle": "Inget lagat än",
+  "cookHistoryEmptyBody": "När du markerar ett recept som lagat visas det här, med datum, betyg och anteckning.",
+  "cookHistoryFilterAll": "Alla",
+  "cookHistoryFilterFavorites": "Favoriter",
+  "cookHistoryFilterMonth": "Senaste månaden",
+  "cookHistoryFrequent": "Lagas ofta",
+  "cookHistoryFrequentSubtitle": "{count, plural, =1{Lagad 1 gång} other{Lagad {count} gånger}} · senast {date}",
+  "@cookHistoryFrequentSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cookHistoryUnknownRecipe": "Receptet finns inte kvar",
+  "cookHistoryLoadMore": "Visa fler",
+  "cookHistoryLoadError": "Historiken kunde inte hämtas. Försök igen.",
+  "cookHistoryRetry": "Försök igen",
+  "cookHistoryRecipeSummary": "{count, plural, =1{1 gång} other{{count} gånger}} · senast {date}",
+  "@cookHistoryRecipeSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cookHistoryEventRated": "{date} · betyg {rating}",
+  "@cookHistoryEventRated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "cookDetailsSaveFailed": "Betyget och anteckningen kunde inte sparas.",
   "menuQuickPicksTitle": "Snabbval",
   "menuQuickFastTitle": "Snabb vecka",
   "menuQuickFastSubtitle": "Recept på max 30 minuter",

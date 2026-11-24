@@ -95,6 +95,7 @@ final _rows = <String, String>{
   Routes.settingsFamily: _sv.moreFamily,
   Routes.settingsAllergens: _sv.moreAllergens,
   Routes.settingsPersonalTags: _sv.morePersonalTags,
+  Routes.cookHistory: _sv.cookHistoryTitle,
   Routes.collectionStats: _sv.moreCollectionStats,
   Routes.settingsTrash: _sv.trashTitle,
   Routes.settingsAccount: _sv.settingsAccountAreaTitle,
