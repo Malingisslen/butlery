@@ -4830,6 +4830,42 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuVoteSuggestAlternative => 'Föreslå alternativ';
 
   @override
+  String get menuSuggestGetButton => 'Få förslag';
+
+  @override
+  String menuSuggestTitle(String day) {
+    return 'Förslag för $day';
+  }
+
+  @override
+  String get menuSuggestIntro =>
+      'Ur dina egna recept. Lås ett kort du gillar och byt ut resten.';
+
+  @override
+  String get menuSuggestShowOthers => 'Visa andra';
+
+  @override
+  String get menuSuggestLockCard => 'Lås';
+
+  @override
+  String get menuSuggestUnlockCard => 'Lås upp';
+
+  @override
+  String menuSuggestPlaceOnDay(String day) {
+    return 'Lägg på $day';
+  }
+
+  @override
+  String get menuSuggestPickOne => 'Välj ett kort';
+
+  @override
+  String get menuSuggestEmptyTitle => 'Inga förslag';
+
+  @override
+  String get menuSuggestEmptyBody =>
+      'Inga recept passar just nu. Lägg till fler recept så kommer det förslag.';
+
+  @override
   String get menuVoteResolved => 'Omröstning avgjord';
 
   @override
@@ -22237,6 +22273,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminPoolLoading => 'Hämtar betyget …';
+
+  @override
+  String get menuQuickPicksTitle => 'Snabbval';
+
+  @override
+  String get menuQuickFastTitle => 'Snabb vecka';
+
+  @override
+  String get menuQuickFastSubtitle => 'Recept på max 30 minuter';
+
+  @override
+  String get menuQuickPantryTitle => 'Använd det jag har hemma';
+
+  @override
+  String get menuQuickPantrySubtitle => 'Recept som passar ditt skafferi först';
+
+  @override
+  String get menuQuickPantryNothing =>
+      'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.';
 
   @override
   String get weekTemplateSaveAction => 'Spara veckan som mall';

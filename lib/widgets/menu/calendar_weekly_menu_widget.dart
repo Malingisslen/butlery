@@ -22,6 +22,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -36,6 +37,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import 'package:butlery/widgets/menu/day_suggestion_sheet.dart';
 import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
@@ -390,8 +392,30 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final picked = await RecipeSelectionDialogs.showMenuRecipeSelector(
       context,
       categoryName: slot.displayLabel,
+      onSuggest: slot.isMulti || vm.plan == null
+          ? null
+          : () async {
+              final dish = await DaySuggestionSheet.show(
+                context,
+                plan: vm.plan!,
+                day: day,
+                slot: slot,
+              );
+              if (dish == null || !context.mounted) return;
+              await _placePicked(context, vm, day, slot, [dish]);
+            },
     );
     if (picked == null || picked.isEmpty || !context.mounted) return;
+    await _placePicked(context, vm, day, slot, picked);
+  }
+
+  Future<void> _placePicked(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+    DayOfWeek day,
+    MealSlot slot,
+    List<Recipe> picked,
+  ) async {
     // Only the recipes that will actually be placed are checked, in one
     // dialog, before the first assign.
     final toAdd = slot.isMulti ? picked : [picked.first];

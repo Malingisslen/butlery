@@ -48,10 +48,20 @@ class MenuScoringContext {
   /// selectable.
   static const double dislikedWeight = 0.05;
 
+  /// The "Använd det jag har hemma" quick pick: pantry overlap decides the
+  /// draw instead of nudging it, so recipes the pantry covers come first.
+  /// Weights stay above zero, so a thin pool still fills the week.
+  final bool pantryFocus;
+
+  /// A fully covered recipe weighs this many times a recipe the pantry does
+  /// not touch under [pantryFocus].
+  static const double pantryFocusBoost = 9.0;
+
   const MenuScoringContext({
     this.pantryMatchByRecipeId = const {},
     this.pooledStatsByRecipeId = const {},
     this.dislikedRecipeIds = const {},
+    this.pantryFocus = false,
   });
 
   /// A context that applies no personalisation — the identity for the weight
@@ -100,6 +110,13 @@ class MenuScoringContext {
   /// selectable) and exactly 1.0 for [empty]. The cap only clamps the upper end,
   /// so the pooled down-weight (0.85×) is preserved.
   double multiplierFor(Recipe recipe) {
+    if (pantryFocus) {
+      final overlap = (pantryMatchByRecipeId[recipe.id] ?? 0.0).clamp(0.0, 1.0);
+      final focused = 1.0 + overlap * (pantryFocusBoost - 1.0);
+      return dislikedRecipeIds.contains(recipe.id)
+          ? focused * dislikedWeight
+          : focused;
+    }
     final combined = _pantryMultiplier(recipe) * _pooledMultiplier(recipe);
     final capped = combined < maxCombinedBoost ? combined : maxCombinedBoost;
     return dislikedRecipeIds.contains(recipe.id)

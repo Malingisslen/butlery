@@ -36,11 +36,14 @@ class RecipeSelectionDialogs {
   static Future<List<Recipe>?> showMenuRecipeSelector(
     BuildContext context, {
     required String categoryName,
+    VoidCallback? onSuggest,
   }) async {
     return await showDialog<List<Recipe>>(
       context: context,
-      builder: (context) =>
-          MenuRecipeSelectionDialog(categoryName: categoryName),
+      builder: (context) => MenuRecipeSelectionDialog(
+        categoryName: categoryName,
+        onSuggest: onSuggest,
+      ),
     );
   }
 }

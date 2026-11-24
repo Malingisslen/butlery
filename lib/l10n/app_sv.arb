@@ -3219,6 +3219,30 @@
     "description": "BUT-2267: opens Settings, where the allergy-sharing switch is"
   },
   "menuVoteSuggestAlternative": "Föreslå alternativ",
+  "menuSuggestGetButton": "Få förslag",
+  "menuSuggestTitle": "Förslag för {day}",
+  "@menuSuggestTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "menuSuggestIntro": "Ur dina egna recept. Lås ett kort du gillar och byt ut resten.",
+  "menuSuggestShowOthers": "Visa andra",
+  "menuSuggestLockCard": "Lås",
+  "menuSuggestUnlockCard": "Lås upp",
+  "menuSuggestPlaceOnDay": "Lägg på {day}",
+  "@menuSuggestPlaceOnDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "menuSuggestPickOne": "Välj ett kort",
+  "menuSuggestEmptyTitle": "Inga förslag",
+  "menuSuggestEmptyBody": "Inga recept passar just nu. Lägg till fler recept så kommer det förslag.",
   "menuVoteResolved": "Omröstning avgjord",
   "menuVoteWinner": "Vinnare: {recipeName}",
   "@menuVoteWinner": {
@@ -18260,6 +18284,12 @@
   "adminPoolQuarantined": "Betyget är avstängt.",
   "adminPoolLifted": "Betyget är påslaget igen.",
   "adminPoolLoading": "Hämtar betyget …",
+  "menuQuickPicksTitle": "Snabbval",
+  "menuQuickFastTitle": "Snabb vecka",
+  "menuQuickFastSubtitle": "Recept på max 30 minuter",
+  "menuQuickPantryTitle": "Använd det jag har hemma",
+  "menuQuickPantrySubtitle": "Recept som passar ditt skafferi först",
+  "menuQuickPantryNothing": "Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.",
   "weekTemplateSaveAction": "Spara veckan som mall",
   "weekTemplateSaveTitle": "Spara som mall",
   "weekTemplateNameHint": "T.ex. Sommarveckan",

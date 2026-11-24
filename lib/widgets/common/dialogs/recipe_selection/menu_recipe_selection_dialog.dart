@@ -23,9 +23,14 @@ import 'package:butlery/services/search/recipe_search_matcher.dart';
 class MenuRecipeSelectionDialog extends StatefulWidget {
   final String categoryName;
 
+  /// When set, the dialog offers "Få förslag": it closes and calls this, so
+  /// the caller can open its suggestions for the place being filled.
+  final VoidCallback? onSuggest;
+
   const MenuRecipeSelectionDialog({
     super.key,
     required this.categoryName,
+    this.onSuggest,
   });
 
   @override
@@ -67,6 +72,17 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               child: _buildContent(context, viewModel),
             ),
             actions: [
+              if (widget.onSuggest != null)
+                TextButton.icon(
+                  key: const ValueKey('menu-selector-suggest'),
+                  icon: const ButleryIcon(ButleryIcons.shuffle),
+                  label: Text(context.l10n.menuSuggestGetButton),
+                  onPressed: () {
+                    final onSuggest = widget.onSuggest!;
+                    Navigator.pop(context);
+                    onSuggest();
+                  },
+                ),
               const DialogCancelButton(),
               if (_selectedRecipeIds.isNotEmpty)
                 ActionButtons.primaryButton(

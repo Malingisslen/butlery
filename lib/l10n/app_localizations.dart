@@ -7538,6 +7538,66 @@ abstract class AppLocalizations {
   /// **'Föreslå alternativ'**
   String get menuVoteSuggestAlternative;
 
+  /// No description provided for @menuSuggestGetButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Få förslag'**
+  String get menuSuggestGetButton;
+
+  /// No description provided for @menuSuggestTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag för {day}'**
+  String menuSuggestTitle(String day);
+
+  /// No description provided for @menuSuggestIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur dina egna recept. Lås ett kort du gillar och byt ut resten.'**
+  String get menuSuggestIntro;
+
+  /// No description provided for @menuSuggestShowOthers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa andra'**
+  String get menuSuggestShowOthers;
+
+  /// No description provided for @menuSuggestLockCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lås'**
+  String get menuSuggestLockCard;
+
+  /// No description provided for @menuSuggestUnlockCard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lås upp'**
+  String get menuSuggestUnlockCard;
+
+  /// No description provided for @menuSuggestPlaceOnDay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg på {day}'**
+  String menuSuggestPlaceOnDay(String day);
+
+  /// No description provided for @menuSuggestPickOne.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ett kort'**
+  String get menuSuggestPickOne;
+
+  /// No description provided for @menuSuggestEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag'**
+  String get menuSuggestEmptyTitle;
+
+  /// No description provided for @menuSuggestEmptyBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept passar just nu. Lägg till fler recept så kommer det förslag.'**
+  String get menuSuggestEmptyBody;
+
   /// No description provided for @menuVoteResolved.
   ///
   /// In sv, this message translates to:
@@ -34151,6 +34211,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar betyget …'**
   String get adminPoolLoading;
+
+  /// No description provided for @menuQuickPicksTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbval'**
+  String get menuQuickPicksTitle;
+
+  /// No description provided for @menuQuickFastTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabb vecka'**
+  String get menuQuickFastTitle;
+
+  /// No description provided for @menuQuickFastSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept på max 30 minuter'**
+  String get menuQuickFastSubtitle;
+
+  /// No description provided for @menuQuickPantryTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd det jag har hemma'**
+  String get menuQuickPantryTitle;
+
+  /// No description provided for @menuQuickPantrySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept som passar ditt skafferi först'**
+  String get menuQuickPantrySubtitle;
+
+  /// No description provided for @menuQuickPantryNothing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.'**
+  String get menuQuickPantryNothing;
 
   /// No description provided for @weekTemplateSaveAction.
   ///

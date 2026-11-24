@@ -16,6 +16,7 @@ import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
+import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
@@ -46,7 +47,7 @@ class VeckomenyBody extends StatelessWidget {
   final bool revealing;
   final Widget? draftCard;
   final Future<void> Function(VeckomenyViewMode mode) onSetViewMode;
-  final Future<void> Function() onGenerate;
+  final Future<void> Function({bool pantryFocus}) onGenerate;
   final VoidCallback onCancelPlanning;
   final VoidCallback onPromptChanged;
   final VoidCallback onRevealDone;
@@ -128,6 +129,19 @@ class VeckomenyBody extends StatelessWidget {
                               },
                             ),
                           ),
+                          if (!viewModel.hasMenu &&
+                              !viewModel.isGenerating &&
+                              promptController.text.isEmpty &&
+                              !context
+                                  .watch<WeeklyMenuPlanViewModel>()
+                                  .hasEntries)
+                            VeckomenyQuickPicks(
+                              onPick: (prompt, {required pantryFocus}) {
+                                promptController.text = prompt;
+                                onPromptChanged();
+                                unawaited(onGenerate(pantryFocus: pantryFocus));
+                              },
+                            ),
                         ],
                       ),
                     ),
@@ -203,7 +217,14 @@ class VeckomenyBody extends StatelessWidget {
                                             viewModel.votingViewModel,
                                         onRetry:
                                             promptController.text.isNotEmpty
-                                            ? () => unawaited(onGenerate())
+                                            ? () => unawaited(
+                                                onGenerate(
+                                                  pantryFocus: viewModel
+                                                      .pantryFocusFor(
+                                                        promptController.text,
+                                                      ),
+                                                ),
+                                              )
                                             : null,
                                       ),
                               ),
