@@ -213,6 +213,14 @@ const _knowinglyUncovered = <_Uncovered>[
     'households nutritionAmountChoices entry — NutritionAmountChoice.toMap',
     'function nutritionAmountValueValid(',
   ),
+  // BUT-2522: the allowlist is the `menuKeys()` function, not an inline list,
+  // so `_allowlistAfter` cannot read it. It is compared for EQUALITY against
+  // `SharedMenu.toFirestore()` by `menu_rules_key_allowlist_test.dart`.
+  _Uncovered(
+    'menus — SharedMenu.toFirestore, compared in '
+        'menu_rules_key_allowlist_test.dart',
+    'match /menus/{menuId}',
+  ),
 ];
 
 /// Matches the allowlist form this guard covers, tolerating the line wrap the
@@ -603,9 +611,12 @@ void main() {
     // BUT-2110 removed two with the conversation roster block: its create
     // keys().hasOnly (guarded in allowlists until then) and the subject's
     // lastReadAt affectedKeys().hasOnly.
+    // BUT-2522 added three on menus: the create's keys().hasOnly(menuKeys())
+    // (in _knowinglyUncovered), and the owner update's addedKeys().hasOnly and
+    // changedKeys().hasOnly, set differences outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      64,
+      67,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
