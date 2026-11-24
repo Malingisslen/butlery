@@ -102,16 +102,16 @@ void main() {
         'Alla …',
       ]);
 
+      expect(find.text('Som förra veckan'), findsOneWidget);
+
       await tester.tap(find.text('Som förra veckan'));
       await tester.pumpAndSettle();
       expect(fieldText(tester), '4 middagar vegetariskt');
       expect(
-        tester
-            .widget<ButleryFilterChip>(
-              find.widgetWithText(ButleryFilterChip, 'Som förra veckan'),
-            )
-            .selected,
-        isTrue,
+        tester.getSemantics(
+          find.widgetWithText(ButleryFilterChip, 'Som förra veckan'),
+        ),
+        isSemantics(isSelected: true),
       );
 
       await tapGenerate(tester);
