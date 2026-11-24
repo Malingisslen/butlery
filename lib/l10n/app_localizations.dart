@@ -34452,6 +34452,54 @@ abstract class AppLocalizations {
   /// **'Recept som passar ditt skafferi först'**
   String get menuQuickPantrySubtitle;
 
+  /// No description provided for @a11yMenuWhyToggle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa varför rätten föreslogs'**
+  String get a11yMenuWhyToggle;
+
+  /// No description provided for @menuWhyAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför?'**
+  String get menuWhyAction;
+
+  /// No description provided for @menuWhyReasonNotRecent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte på menyn de senaste två veckorna'**
+  String get menuWhyReasonNotRecent;
+
+  /// No description provided for @menuWhyReasonSeasonal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Passar säsongen'**
+  String get menuWhyReasonSeasonal;
+
+  /// No description provided for @menuWhyReasonFamilyFavourite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högt betyg i hushållet'**
+  String get menuWhyReasonFamilyFavourite;
+
+  /// No description provided for @menuWhyReasonPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använder ingredienser du har hemma'**
+  String get menuWhyReasonPantry;
+
+  /// No description provided for @menuWhyChance.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget särskilt skäl: den drogs bland dina recept.'**
+  String get menuWhyChance;
+
+  /// No description provided for @menuUnmetWishNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett önskemål hittade inga recept, så en vanlig rätt valdes i stället.'**
+  String get menuUnmetWishNotice;
+
   /// No description provided for @menuQuickPantryNothing.
   ///
   /// In sv, this message translates to:

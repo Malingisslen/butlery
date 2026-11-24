@@ -22432,6 +22432,32 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuQuickPantrySubtitle => 'Recept som passar ditt skafferi först';
 
   @override
+  String get a11yMenuWhyToggle => 'Visa varför rätten föreslogs';
+
+  @override
+  String get menuWhyAction => 'Varför?';
+
+  @override
+  String get menuWhyReasonNotRecent => 'Inte på menyn de senaste två veckorna';
+
+  @override
+  String get menuWhyReasonSeasonal => 'Passar säsongen';
+
+  @override
+  String get menuWhyReasonFamilyFavourite => 'Högt betyg i hushållet';
+
+  @override
+  String get menuWhyReasonPantry => 'Använder ingredienser du har hemma';
+
+  @override
+  String get menuWhyChance =>
+      'Inget särskilt skäl: den drogs bland dina recept.';
+
+  @override
+  String get menuUnmetWishNotice =>
+      'Ett önskemål hittade inga recept, så en vanlig rätt valdes i stället.';
+
+  @override
   String get menuQuickPantryNothing =>
       'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.';
 

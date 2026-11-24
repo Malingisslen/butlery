@@ -22626,6 +22626,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuQuickPantrySubtitle => 'Recipes that fit your pantry first';
 
   @override
+  String get a11yMenuWhyToggle => 'Show why the dish was suggested';
+
+  @override
+  String get menuWhyAction => 'Why?';
+
+  @override
+  String get menuWhyReasonNotRecent => 'Not on the menu in the last two weeks';
+
+  @override
+  String get menuWhyReasonSeasonal => 'Fits the season';
+
+  @override
+  String get menuWhyReasonFamilyFavourite => 'Rated highly by the family';
+
+  @override
+  String get menuWhyReasonPantry => 'Uses ingredients you have at home';
+
+  @override
+  String get menuWhyChance =>
+      'No particular reason: it was drawn from your recipes.';
+
+  @override
+  String get menuUnmetWishNotice =>
+      'A wish found no recipes, so an ordinary dish was chosen instead.';
+
+  @override
   String get menuQuickPantryNothing =>
       'Nothing in your pantry fits your recipes yet, so the week was chosen as usual.';
 

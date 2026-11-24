@@ -229,6 +229,8 @@ void main() {
       when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
       when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
       when(() => vm.mealAllergenScopeOn).thenReturn(false);
+      when(() => vm.unmetSoftWishCount).thenReturn(0);
+      when(() => vm.canExplainPick(any())).thenReturn(false);
       return Builder(
         builder: (context) => SingleChildScrollView(
           child: MenuContentWidgets.buildMenuSection(

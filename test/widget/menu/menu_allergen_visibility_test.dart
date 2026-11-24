@@ -52,6 +52,8 @@ void main() {
     when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
     when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
     when(() => vm.mealAllergenScopeOn).thenReturn(false);
+    when(() => vm.unmetSoftWishCount).thenReturn(0);
+    when(() => vm.canExplainPick(any())).thenReturn(false);
     when(() => vm.recencyReadFailed).thenReturn(recencyReadFailed);
     return vm;
   }
@@ -87,6 +89,49 @@ void main() {
       expect(find.text('ALLERGENER EJ KONTROLLERADE'), findsOneWidget);
     },
   );
+
+  testWidgets('shows Varför? on an explainable dish and the unmet-wish note', (
+    tester,
+  ) async {
+    final vm = vmWith(
+      hiddenCount: 0,
+      prefSource: MenuPrefSource.singleUser,
+      unknownSoft: false,
+      recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+    );
+    when(() => vm.unmetSoftWishCount).thenReturn(1);
+    when(() => vm.canExplainPick(any())).thenReturn(true);
+    when(() => vm.pickReasonsFor(any())).thenReturn(const []);
+
+    await pumpMenuContent(tester, vm);
+
+    expect(find.text('Varför?'), findsOneWidget);
+    expect(
+      find.text(
+        'Ett önskemål hittade inga recept, så en vanlig rätt valdes i stället.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows neither Varför? nor the note when nothing applies', (
+    tester,
+  ) async {
+    final vm = vmWith(
+      hiddenCount: 0,
+      prefSource: MenuPrefSource.singleUser,
+      unknownSoft: false,
+      recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+    );
+
+    await pumpMenuContent(tester, vm);
+
+    expect(find.text('Varför?'), findsNothing);
+    expect(
+      find.textContaining('Ett önskemål hittade inga recept'),
+      findsNothing,
+    );
+  });
 
   group('earlier weeks unreadable', () {
     const hint = 'Kunde inte läsa tidigare veckor, så rätter kan upprepas.';
