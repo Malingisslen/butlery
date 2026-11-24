@@ -4720,6 +4720,22 @@
   "shoppingStoreNoneSubtitle": "Listans egen ordning",
   "shoppingStoreAdd": "Ny butik",
   "shoppingStoreAddHint": "Butikens namn, till exempel ICA Maxi",
+  "shoppingOrderSuggestionText": "Du tar oftast {first} före {second} i {store}. Flytta?",
+  "@shoppingOrderSuggestionText": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingOrderSuggestionYes": "Ja",
+  "shoppingOrderSuggestionNo": "Nej",
   "shoppingStoreLimit": "Du kan spara högst {max} butiker",
   "@shoppingStoreLimit": {
     "placeholders": {

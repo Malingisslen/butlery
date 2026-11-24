@@ -11090,6 +11090,24 @@ abstract class AppLocalizations {
   /// **'Butikens namn, till exempel ICA Maxi'**
   String get shoppingStoreAddHint;
 
+  /// No description provided for @shoppingOrderSuggestionText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du tar oftast {first} före {second} i {store}. Flytta?'**
+  String shoppingOrderSuggestionText(String first, String second, String store);
+
+  /// No description provided for @shoppingOrderSuggestionYes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ja'**
+  String get shoppingOrderSuggestionYes;
+
+  /// No description provided for @shoppingOrderSuggestionNo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nej'**
+  String get shoppingOrderSuggestionNo;
+
   /// No description provided for @shoppingStoreLimit.
   ///
   /// In sv, this message translates to:
