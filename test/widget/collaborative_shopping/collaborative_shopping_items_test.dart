@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -17,6 +18,9 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
+import 'package:butlery/viewmodels/shopping/shopping_dietary_hints_controller.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hint_box.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/semantics_announcement.dart';
@@ -549,5 +553,75 @@ void main() {
         expect(headerColor('MIN DEL'), cs.onSurface);
       });
     }
+  });
+
+  group('allergy reminders (BUT-2494)', () {
+    const reminder = 'Laktos i hushållet, välj laktosfri';
+    const disclaimer = 'Påminnelser kan saknas. Läs alltid innehållet.';
+
+    // The scope is fed the open rows only, as the view feeds it; a ticked row
+    // is covered by the card's own `completed` argument, so the controller is
+    // also handed an open copy of it to hold a hint for its id.
+    Future<void> pumpList(
+      WidgetTester tester,
+      _FakeCollaborativeShoppingViewModel vm,
+      List<UnifiedShoppingItem> scopeRows,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final source = ChangeNotifier();
+      final controller = ShoppingDietaryHintsController(
+        loadChoices: () async => {'laktos'},
+        lookup: (names) async => [
+          for (final _ in names) {'contains-lactose', 'dairy'},
+        ],
+        currentUserId: () => 'alice',
+      );
+      addTearDown(() {
+        controller.dispose();
+        source.dispose();
+      });
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: ShoppingDietaryHintsScope(
+            source: source,
+            rows: () => scopeRows,
+            controller: controller,
+            child: CollaborativeShoppingItems(
+              viewModel: vm,
+              onToggleItem: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('an open row shows its reminder and the list its notice', (
+      tester,
+    ) async {
+      final butter = _item(id: 'b', name: 'Smör');
+      await pumpList(
+        tester,
+        _FakeCollaborativeShoppingViewModel(items: [butter]),
+        [butter],
+      );
+
+      expect(find.text(reminder), findsOneWidget);
+      expect(find.text(disclaimer), findsOneWidget);
+    });
+
+    testWidgets('a bought row shows no reminder', (
+      tester,
+    ) async {
+      final bought = _item(id: 'b', name: 'Smör', bought: true);
+      await pumpList(
+        tester,
+        _FakeCollaborativeShoppingViewModel(items: [bought]),
+        [_item(id: 'b', name: 'Smör')],
+      );
+
+      expect(find.text('Smör'), findsOneWidget);
+      expect(find.byType(ShoppingDietaryHintBox), findsNothing);
+    });
   });
 }

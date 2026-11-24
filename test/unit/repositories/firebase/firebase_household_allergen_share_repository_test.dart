@@ -329,7 +329,10 @@ void main() {
             .collection('household_allergen_shares')
             .doc('${_householdId}_$_malin')
             .get();
-        expect(stored.data()!['consentVersion'], 'v1');
+        expect(
+          stored.data()!['consentVersion'],
+          HouseholdAllergenShare.currentConsentVersion,
+        );
         expect(
           (stored.data()!['consentGrantedAt'] as Timestamp).toDate().toUtc(),
           DateTime.utc(2026, 8, 12),

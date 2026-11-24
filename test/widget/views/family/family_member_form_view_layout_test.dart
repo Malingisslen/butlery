@@ -9,6 +9,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod_di;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
@@ -251,6 +252,109 @@ void main() {
         findsNWidgets(kProfileColors.length),
       );
       handle.dispose();
+    });
+  });
+
+  group('allergen consent renewal (BUT-2494)', () {
+    final sv = AppLocalizationsSv();
+
+    DinerProfile diner(String version) => DinerProfile(
+      id: 'd1',
+      householdId: 'h1',
+      name: 'Siri',
+      ageBand: DinerAgeBand.adult,
+      avatarColor: kProfileColors.first,
+      createdBy: 'test-user-123',
+      allergenPreferences: const UserAllergenPreferences(
+        trackedAllergens: {'ägg'},
+        trackedDietary: {},
+      ),
+      guardianConsent: GuardianConsent(
+        byUid: 'test-user-123',
+        at: DateTime.utc(2026, 5, 1),
+        consentVersion: version,
+        includesAllergenConsent: true,
+      ),
+    );
+
+    Future<void> open(WidgetTester tester, DinerProfile? existing) async {
+      tester.view.physicalSize = const Size(420, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: FamilyMemberFormView(existing: existing),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Future<DinerProfile> save(WidgetTester tester) async {
+      await tester.tap(find.widgetWithText(ElevatedButton, sv.commonSave));
+      await tester.pumpAndSettle();
+      return verify(() => _dinerRepo.update(captureAny())).captured.single
+          as DinerProfile;
+    }
+
+    final renewRow = find.text(sv.familyAllergenConsentRenewText('Siri'));
+
+    testWidgets('a v1 consent keeps its old wording and offers the new', (
+      tester,
+    ) async {
+      await open(tester, diner('v1'));
+
+      expect(find.text(sv.familyAllergenConsentText('Siri')), findsOneWidget);
+      expect(
+        find.text(sv.familyAllergenConsentTextV2('Siri')),
+        findsNothing,
+      );
+      expect(renewRow, findsOneWidget);
+    });
+
+    testWidgets('a v2 consent offers no renewal', (tester) async {
+      await open(tester, diner('v2'));
+
+      expect(
+        find.text(sv.familyAllergenConsentTextV2('Siri')),
+        findsOneWidget,
+      );
+      expect(renewRow, findsNothing);
+    });
+
+    testWidgets('a new diner sees the v2 text and no renewal', (tester) async {
+      await open(tester, null);
+      await tester.enterText(find.byType(TextField).first, 'Siri');
+      await tester.pump();
+
+      expect(
+        find.text(sv.familyAllergenConsentTextV2('Siri')),
+        findsOneWidget,
+      );
+      expect(find.text(sv.familyAllergenConsentText('Siri')), findsNothing);
+      expect(renewRow, findsNothing);
+    });
+
+    testWidgets('ticking the renewal saves the consent as v2', (tester) async {
+      await open(tester, diner('v1'));
+
+      await tester.tap(renewRow);
+      await tester.pump();
+      final saved = await save(tester);
+
+      expect(saved.guardianConsent?.consentVersion, 'v2');
+      expect(saved.allergensCoverShoppingList, isTrue);
+    });
+
+    testWidgets('saving without ticking it leaves the consent at v1', (
+      tester,
+    ) async {
+      await open(tester, diner('v1'));
+
+      final saved = await save(tester);
+
+      expect(saved.guardianConsent?.consentVersion, 'v1');
+      expect(saved.allergensCoverShoppingList, isFalse);
     });
   });
 }

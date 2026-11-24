@@ -21,6 +21,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items/collaborative_item_card.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items/collaborative_section_header.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items/collaborative_view_mode_toggle.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
 class CollaborativeShoppingItems extends StatelessWidget {
@@ -55,6 +56,12 @@ class CollaborativeShoppingItems extends StatelessWidget {
           seenKey: SwipeHintBanner.shoppingClaimSeenKey,
           icon: ButleryIcons.hand,
           message: context.l10n.shoppingClaimHintText,
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMargin,
+          ),
+          child: ShoppingDietaryHintsNotice(),
         ),
         Expanded(child: _buildBody(context)),
       ],

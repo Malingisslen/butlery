@@ -42,6 +42,21 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   late DinerAgeBand _band;
   late bool _guardianConsent;
   late bool _allergenConsent;
+
+  /// A guardian of a profile consented under the menu-only wording (v1)
+  /// ticking the shopping-list text (BUT-2494). Never pre-ticked.
+  bool _allergenConsentRenewed = false;
+
+  /// The stored allergen consent predates the wording that names the
+  /// shopping list, so the form offers the new text as its own tick.
+  bool get _offersRenewal {
+    final e = widget.existing;
+    return e != null &&
+        e.hasAllergenConsent &&
+        !e.allergensCoverShoppingList &&
+        _allergenConsent;
+  }
+
   late Set<String> _allergens;
   late Set<String> _dislikes;
 
@@ -100,6 +115,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     _band.name,
     _guardianConsent,
     _allergenConsent,
+    _allergenConsentRenewed,
     ([..._allergens]..sort()).join(','),
     ([..._dislikes]..sort()).join(','),
   ].join('|');
@@ -131,6 +147,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       avatarColor: _color,
       guardianConsentGiven: _guardianConsent,
       allergenConsentGiven: _allergenConsent,
+      allergenConsentRenewed: _offersRenewal && _allergenConsentRenewed,
       allergenKeys: _allergens,
       dislikedKeys: _dislikes,
     );
@@ -145,6 +162,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       setState(() {
         _allergens = {};
         _allergenConsent = false;
+        _allergenConsentRenewed = false;
       });
     }
   }
@@ -373,9 +391,15 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ),
         ),
         FormCheckRow(
-          label: l10n.familyAllergenConsentText(
-            _consentName(minorContext: false),
-          ),
+          // The wording the stored consent was given under, while it stands;
+          // a new consent is given to the text that names the shopping list.
+          label: _offersRenewal
+              ? l10n.familyAllergenConsentText(
+                  _consentName(minorContext: false),
+                )
+              : l10n.familyAllergenConsentTextV2(
+                  _consentName(minorContext: false),
+                ),
           value: _allergenConsent,
           onChanged: (v) => setState(() {
             _allergenConsent = v;
@@ -383,6 +407,15 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           }),
           bodyStyle: true,
         ),
+        if (_offersRenewal)
+          FormCheckRow(
+            label: l10n.familyAllergenConsentRenewText(
+              _consentName(minorContext: false),
+            ),
+            value: _allergenConsentRenewed,
+            onChanged: (v) => setState(() => _allergenConsentRenewed = v),
+            bodyStyle: true,
+          ),
         if (_allergenConsent)
           FormCheckGrid(
             items: [

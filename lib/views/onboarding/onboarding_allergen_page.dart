@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/utils/allergen_label.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -30,29 +31,8 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     ...AllergenPreferenceOptions.extendedAllergenKeys,
   ];
 
-  static String _allergenLabel(BuildContext context, String key) {
-    final l10n = context.l10n;
-    return switch (key) {
-      'gluten' => l10n.onboardingAllergenGluten,
-      'mjölk' => l10n.onboardingAllergenMilk,
-      'nötter' => l10n.onboardingAllergenNuts,
-      'ägg' => l10n.onboardingAllergenEgg,
-      'soja' => l10n.onboardingAllergenSoy,
-      'fisk' => l10n.onboardingAllergenFish,
-      'skaldjur' => l10n.onboardingAllergenShellfish,
-      'sesam' => l10n.onboardingAllergenSesame,
-      'laktos' => l10n.onboardingAllergenLactose,
-      'selleri' => l10n.onboardingAllergenCelery,
-      'senap' => l10n.onboardingAllergenMustard,
-      'lupin' => l10n.onboardingAllergenLupin,
-      'sulfiter' => l10n.onboardingAllergenSulfite,
-      'jordnötter' => l10n.onboardingAllergenPeanut,
-      'trädnötter' => l10n.onboardingAllergenTreeNut,
-      'kräftdjur' => l10n.onboardingAllergenCrustacean,
-      'blötdjur' => l10n.onboardingAllergenMollusc,
-      _ => AllergenPreferenceOptions.getAllergenLabel(key),
-    };
-  }
+  static String _allergenLabel(BuildContext context, String key) =>
+      allergenLabel(context.l10n, key);
 
   @override
   Widget build(BuildContext context) {

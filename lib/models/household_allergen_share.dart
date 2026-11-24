@@ -76,7 +76,21 @@ class HouseholdAllergenShare {
   /// The wording version the current consent copy carries. Bump when the text
   /// materially changes what the member is agreeing to; a share written under
   /// an older version stays valid until the controller decides otherwise.
-  static const String currentConsentVersion = 'v1';
+  ///
+  /// v2 (BUT-2494) adds the shopping-list reminder to what the member agrees
+  /// to. A v1 share keeps counting for the weekly menu it was given for.
+  static const String currentConsentVersion = 'v2';
+
+  /// The wordings that name the shopping list. An explicit set rather than an
+  /// ordering: a later wording that drops the shopping list must not count
+  /// just because its number is higher.
+  static const Set<String> shoppingListConsentVersions = {'v2'};
+
+  /// Whether this share may feed the shopping-list reminder (GDPR Art. 5(1)(b),
+  /// 9(2)(a)): a valid consent given under a wording that named that purpose.
+  /// The menu reads [isValidConsent] alone and is untouched by this.
+  bool get coversShoppingList =>
+      isValidConsent && shoppingListConsentVersions.contains(consentVersion);
 
   /// Deterministic id, so a member can hold exactly one share per household and
   /// the rules can derive ownership from the path.

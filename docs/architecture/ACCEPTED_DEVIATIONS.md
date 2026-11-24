@@ -7031,3 +7031,22 @@ not cleaned.
   account, as for presence; the weeks are deleted with the owner's account and exported
   whole. Default taken, awaiting Malin.
 
+## BUT-2494 — allergy reminders on the shopping list (Malin, 2026-11-24)
+
+Decided in ADR-0044 and on two cards to Malin.
+
+- `HouseholdShoppingChoices` deliberately does not use the menu's `resolveHousehold`: no
+  common-allergen floor, and a source that cannot be read (own profile not merged, a failed
+  share read including `HouseholdTooLargeForSharesException`, a failed diner read)
+  contributes nothing. A guessed allergen would put boxes on half the list, and the list
+  carries "Påminnelser kan saknas. Läs alltid innehållet." whenever a box shows. Do not
+  "harmonise" this with the menu's floor.
+- A `household_allergen_shares` row counts only when `coversShoppingList` (valid consent and
+  `consentVersion` in `{'v2'}`), and a diner profile only when `allergensCoverShoppingList`
+  (guardian consent `v2`). The check is in the app. `firestore.rules` is unchanged: any
+  household member can still read a `v1` share, because the menu needs it.
+- Which reminders a user ticked away is kept in `SharedPreferences` only
+  (`shopping_hint_dismissed_v1_<uid>`, row id and allergen key), never on the list, and is
+  cleared at every sign-out, explicit or automatic; account deletion ends with a sign-out.
+  It is not in the Art. 15 export: it is on the device, not with us.
+

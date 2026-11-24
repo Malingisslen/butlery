@@ -122,7 +122,15 @@ class GuardianConsent {
 class DinerProfile {
   /// Current consent-text version. Bump when the consent wording changes so
   /// existing consents can be detected as stale and re-requested.
-  static const String currentConsentVersion = 'v1';
+  ///
+  /// v2 (BUT-2494): the allergen consent also names the shopping-list
+  /// reminder. A v1 consent stays valid for menus.
+  static const String currentConsentVersion = 'v2';
+
+  /// Allergen-consent wordings that name the shopping list. A set, not an
+  /// ordering, for the reason given on
+  /// `HouseholdAllergenShare.shoppingListConsentVersions`.
+  static const Set<String> shoppingListConsentVersions = {'v2'};
 
   final String id;
   final String householdId;
@@ -202,6 +210,13 @@ class DinerProfile {
   /// consent is on record (spec §8 condition 2, unbundled consent).
   bool get hasAllergenConsent =>
       guardianConsent?.includesAllergenConsent ?? false;
+
+  /// Whether this diner's allergens may feed the shopping-list reminder: an
+  /// allergen consent given under a wording that named it (GDPR Art. 9(2)(a),
+  /// Art. 8). Menus read [hasAllergenConsent] alone.
+  bool get allergensCoverShoppingList =>
+      hasAllergenConsent &&
+      shoppingListConsentVersions.contains(guardianConsent?.consentVersion);
 
   static Set<String> _parseStringSet(dynamic value) =>
       value is List ? value.map((e) => e.toString()).toSet() : const <String>{};

@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** November 24, 2026
-**Version:** 1.39
+**Version:** 1.40
 
 ---
 
@@ -149,6 +149,10 @@ These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU 
 **Shared allergies within your household (if you have consented):**
 
 If you choose to share your allergy list with your household, its members — including anyone who joins later — can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Allergy information is health data and is therefore processed on the basis of your **explicit consent (Art. 9(2)(a))**. Sharing is off by default, is per person, and can be withdrawn at any time, upon which the list is deleted immediately. The data never leaves your household, is never shared with third parties, and is not part of any public or aggregated figure.
+
+**Reminders on the shopping list (if the consent covers them):**
+
+If you shared your allergy list with the consent text that names the shopping list, or approved that text later, household members can see a reminder under an item on the shopping list that often contains something the household avoids, for example “Lactose in the household, choose lactose-free”. The same applies to allergies in a child's or guest's diner profile once the guardian has approved the text for the shopping list. A consent given with the earlier text covers the weekly menu only. The reminder is worked out on each person's own phone, is not stored on the list, never says whose allergy it is and is not shown to others who have access to a shared shopping list. Which reminders you have marked “Not relevant” is kept only on your phone and removed when you sign out. An item can lack a reminder even though it contains something the household avoids, so always read the contents.
 
 **Your name on dishes in shared menus (if you have consented):**
 

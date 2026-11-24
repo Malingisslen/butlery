@@ -1894,7 +1894,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdAllergenShareConfirmBody =>
-      'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. I dag gissar Butlery åt dig – den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.';
+      'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem och inköpslistan kan påminna om varor som ofta innehåller dem. I dag gissar Butlery åt dig – den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems, inte heller i påminnelserna, som bara visas för hushållets medlemmar och aldrig för andra på en delad inköpslista.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.';
 
   @override
   String get householdAllergenShareConfirmAction => 'Dela';
@@ -22601,6 +22601,48 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get weekTemplateUndoFailed => 'Det gick inte att ångra';
+
+  @override
+  String get shoppingHintChooseLactoseFree =>
+      'Laktos i hushållet, välj laktosfri';
+
+  @override
+  String get shoppingHintChooseGlutenFree =>
+      'Gluten i hushållet, välj glutenfri';
+
+  @override
+  String shoppingHintCheckContents(String allergen) {
+    return 'Innehåller ofta $allergen, kolla innehållet';
+  }
+
+  @override
+  String get shoppingHintDismiss => 'Inte aktuellt';
+
+  @override
+  String shoppingHintDismissed(String item) {
+    return 'Påminnelsen dold för $item';
+  }
+
+  @override
+  String get householdAllergenShareRenewSubtitle =>
+      'Godkänn den nya texten så räknas dina val även på inköpslistan';
+
+  @override
+  String get householdAllergenShareRenewAction => 'Läs och godkänn';
+
+  @override
+  String familyAllergenConsentTextV2(String name) {
+    return 'Jag samtycker uttryckligen till att ${name}s allergi- och kostuppgifter (hälsouppgifter) sparas och används för hushållets menyer och för påminnelser på inköpslistan.';
+  }
+
+  @override
+  String familyAllergenConsentRenewText(String name) {
+    return 'Jag samtycker uttryckligen till att ${name}s allergiuppgifter även används för påminnelser på hushållets inköpslista.';
+  }
+
+  @override
+  String get shoppingHintsDisclaimer =>
+      'Påminnelser kan saknas. Läs alltid innehållet.';
 
   @override
   String lunchboxSheetTitle(String day) {

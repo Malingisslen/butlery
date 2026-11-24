@@ -290,42 +290,187 @@ void main() {
     });
   });
 
+  void actAs(String uid) {
+    (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+        .setAuthState(
+          user: FakeUser(uid: uid),
+          userId: uid,
+          isAuthenticated: true,
+        );
+    TestServiceLocator.registerSingleton<PermissionService>(
+      MockFactory.createPermissionService(currentUserId: uid),
+    );
+  }
+
+  Future<void> seedDuoHousehold() async {
+    final hh = Household(
+      id: 'hh-duo',
+      name: Household.defaultName,
+      members: [
+        HouseholdMember(
+          userId: _malin,
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2026, 1, 1),
+        ),
+        HouseholdMember(
+          userId: _johan,
+          permission: SharedListPermission.admin,
+          addedAt: DateTime.utc(2026, 1, 1),
+        ),
+      ],
+      createdBy: _malin,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+    );
+    await fs.collection('households').doc(hh.id).set(hh.toFirestore());
+  }
+
+  // BUT-2494: the wording version is what lets a diner's allergens reach the
+  // shopping list, so an edit must not relabel an old consent.
+  group('consent wording version on save', () {
+    Future<DinerProfile> seedV1Liam(MinFamiljViewModel vm) async {
+      await vm.saveFamilyMember(
+        name: 'Liam',
+        ageBand: DinerAgeBand.child,
+        guardianConsentGiven: true,
+        allergenConsentGiven: true,
+        allergenKeys: {'gluten'},
+      );
+      final liam = vm.familyMembers.single;
+      await dinerRepo.update(
+        liam.copyWith(
+          guardianConsent: liam.guardianConsent!.copyWith(consentVersion: 'v1'),
+        ),
+      );
+      await vm.load();
+      final stored = vm.familyMembers.single;
+      expect(stored.guardianConsent!.consentVersion, 'v1');
+      return stored;
+    }
+
+    test('a fresh grant is written under the current wording', () async {
+      final vm = _vm();
+      await vm.load();
+
+      await vm.saveFamilyMember(
+        name: 'Liam',
+        ageBand: DinerAgeBand.child,
+        guardianConsentGiven: true,
+        allergenConsentGiven: true,
+        allergenKeys: {'gluten'},
+      );
+
+      final liam = vm.familyMembers.single;
+      expect(liam.guardianConsent!.consentVersion, 'v2');
+      expect(liam.allergensCoverShoppingList, isTrue);
+    });
+
+    test(
+      'editing a v1 diner without renewing keeps v1, attester and date',
+      () async {
+        final vm = _vm();
+        await vm.load();
+        final v1 = await seedV1Liam(vm);
+
+        await withClock(
+          Clock.fixed(DateTime.utc(2030, 1, 1)),
+          () => vm.saveFamilyMember(
+            existing: v1,
+            name: 'Liam B',
+            ageBand: DinerAgeBand.child,
+            guardianConsentGiven: true,
+            allergenConsentGiven: true,
+            allergenKeys: {'gluten', 'mjölk'},
+          ),
+        );
+
+        final after = vm.familyMembers.single;
+        expect(after.name, 'Liam B');
+        expect(after.guardianConsent!.consentVersion, 'v1');
+        expect(
+          after.guardianConsent!.at.isAtSameMomentAs(v1.guardianConsent!.at),
+          isTrue,
+        );
+        expect(after.allergensCoverShoppingList, isFalse);
+      },
+    );
+
+    test(
+      'ticking the renewal moves a v1 diner to the current wording and '
+      'credits the renewing guardian at the renewal time',
+      () async {
+        await seedDuoHousehold();
+        actAs(_malin);
+        final vmMalin = _vm();
+        await vmMalin.load();
+        final seededAt = DateTime.utc(2026, 6, 1);
+        final v1 = await withClock(
+          Clock.fixed(seededAt),
+          () => seedV1Liam(vmMalin),
+        );
+        expect(v1.guardianConsent!.byUid, _malin);
+
+        actAs(_johan);
+        final vmJohan = _vm();
+        await vmJohan.load();
+        final renewedAt = DateTime.utc(2030, 1, 1);
+        await withClock(
+          Clock.fixed(renewedAt),
+          () => vmJohan.saveFamilyMember(
+            existing: vmJohan.familyMembers.single,
+            name: 'Liam',
+            ageBand: DinerAgeBand.child,
+            guardianConsentGiven: true,
+            allergenConsentGiven: true,
+            allergenConsentRenewed: true,
+            allergenKeys: {'gluten'},
+          ),
+        );
+
+        final after = vmJohan.familyMembers.single;
+        expect(after.guardianConsent!.consentVersion, 'v2');
+        expect(after.allergensCoverShoppingList, isTrue);
+        expect(after.guardianConsent!.byUid, _johan);
+        expect(after.guardianConsent!.at.isAtSameMomentAs(renewedAt), isTrue);
+      },
+    );
+
+    test(
+      'adding allergens to a base-consent diner upgrades to the current wording',
+      () async {
+        final vm = _vm();
+        await vm.load();
+        await vm.saveFamilyMember(
+          name: 'Liam',
+          ageBand: DinerAgeBand.child,
+          guardianConsentGiven: true,
+          allergenConsentGiven: false,
+        );
+        final base = vm.familyMembers.single;
+        await dinerRepo.update(
+          base.copyWith(
+            guardianConsent: base.guardianConsent!.copyWith(
+              consentVersion: 'v1',
+            ),
+          ),
+        );
+        await vm.load();
+
+        await vm.saveFamilyMember(
+          existing: vm.familyMembers.single,
+          name: 'Liam',
+          ageBand: DinerAgeBand.child,
+          guardianConsentGiven: true,
+          allergenConsentGiven: true,
+          allergenKeys: {'gluten'},
+        );
+
+        expect(vm.familyMembers.single.guardianConsent!.consentVersion, 'v2');
+      },
+    );
+  });
+
   group('consent attribution', () {
-    void actAs(String uid) {
-      (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
-          .setAuthState(
-            user: FakeUser(uid: uid),
-            userId: uid,
-            isAuthenticated: true,
-          );
-      TestServiceLocator.registerSingleton<PermissionService>(
-        MockFactory.createPermissionService(currentUserId: uid),
-      );
-    }
-
-    Future<void> seedDuoHousehold() async {
-      final hh = Household(
-        id: 'hh-duo',
-        name: Household.defaultName,
-        members: [
-          HouseholdMember(
-            userId: _malin,
-            permission: SharedListPermission.admin,
-            addedAt: DateTime.utc(2026, 1, 1),
-          ),
-          HouseholdMember(
-            userId: _johan,
-            permission: SharedListPermission.admin,
-            addedAt: DateTime.utc(2026, 1, 1),
-          ),
-        ],
-        createdBy: _malin,
-        createdAt: DateTime.utc(2026, 1, 1),
-        updatedAt: DateTime.utc(2026, 1, 1),
-      );
-      await fs.collection('households').doc(hh.id).set(hh.toFirestore());
-    }
-
     test('isCurrentUser names only the signed-in account', () async {
       await seedDuoHousehold();
 

@@ -26,6 +26,7 @@ import 'package:butlery/views/social/collaborative_shopping/collaborative_shoppi
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_actions.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 
 /// Collaborative shopping view using facade pattern for real-time list coordination.
 class CollaborativeShoppingView extends StatefulWidget {
@@ -147,12 +148,16 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<CollaborativeShoppingViewModel>.value(
       value: _vm,
-      child: _CollaborativeShoppingViewContent(
-        actions: _actions,
-        onToggleItem: _toggleItem,
-        unaddedText: _unaddedText,
-        onCopyUnaddedText: _copyUnaddedText,
-        onCloseUnaddedText: _closeUnaddedText,
+      child: ShoppingDietaryHintsScope(
+        source: _vm,
+        rows: () => _vm.activeItems,
+        child: _CollaborativeShoppingViewContent(
+          actions: _actions,
+          onToggleItem: _toggleItem,
+          unaddedText: _unaddedText,
+          onCopyUnaddedText: _copyUnaddedText,
+          onCloseUnaddedText: _closeUnaddedText,
+        ),
       ),
     );
   }

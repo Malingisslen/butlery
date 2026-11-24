@@ -156,6 +156,68 @@ void main() {
       });
     });
 
+    group('allergensCoverShoppingList', () {
+      DinerProfile withConsent(String version, {bool allergens = true}) =>
+          DinerProfile.create(
+            householdId: 'hh_1',
+            name: 'Liam',
+            ageBand: DinerAgeBand.child,
+            createdBy: 'parent_1',
+            guardianConsent: GuardianConsent(
+              byUid: 'parent_1',
+              at: DateTime(2026, 6, 28),
+              consentVersion: version,
+              includesAllergenConsent: allergens,
+            ),
+          );
+
+      test('a v1 allergen consent counts for menus, not the shopping list', () {
+        final v1 = withConsent('v1');
+
+        expect(v1.hasAllergenConsent, isTrue);
+        expect(v1.allergensCoverShoppingList, isFalse);
+      });
+
+      test('a v2 allergen consent counts for both', () {
+        final v2 = withConsent('v2');
+
+        expect(v2.hasAllergenConsent, isTrue);
+        expect(v2.allergensCoverShoppingList, isTrue);
+      });
+
+      test('a later wording that is not listed covers nothing', () {
+        final v3 = withConsent('v3');
+
+        expect(v3.hasAllergenConsent, isTrue);
+        expect(v3.allergensCoverShoppingList, isFalse);
+      });
+
+      test('v2 base consent without the allergen consent covers neither', () {
+        final baseOnly = withConsent('v2', allergens: false);
+
+        expect(baseOnly.hasAllergenConsent, isFalse);
+        expect(baseOnly.allergensCoverShoppingList, isFalse);
+      });
+
+      test('no consent record covers nothing', () {
+        final guest = DinerProfile.create(
+          householdId: 'hh_1',
+          name: 'Mormor',
+          ageBand: DinerAgeBand.adult,
+          createdBy: 'parent_1',
+        );
+
+        expect(guest.allergensCoverShoppingList, isFalse);
+      });
+
+      test('the wording a new consent is written under covers shopping', () {
+        expect(
+          DinerProfile.shoppingListConsentVersions,
+          contains(DinerProfile.currentConsentVersion),
+        );
+      });
+    });
+
     group('Disliked ingredients', () {
       // Intent: dislikes are edited via copyWith on the VM's update path
       // (existing.copyWith(dislikedIngredients: ...)). These pin the two
