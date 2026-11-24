@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 24 november 2026
-**Version:** 1.39
+**Version:** 1.40
 
 ---
 
@@ -150,6 +150,10 @@ Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom E
 **Delade allergier i hushållet (om du har samtyckt):**
 
 Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar – även de som går med senare – se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
+
+**Påminnelser på inköpslistan (om samtycket gäller dem):**
+
+Har du delat din allergilista med den samtyckestext som nämner inköpslistan, eller godkänt den texten i efterhand, kan hushållets medlemmar få en påminnelse under en vara på inköpslistan som ofta innehåller något hushållet undviker, till exempel ”Laktos i hushållet, välj laktosfri”. Samma gäller allergier i ett barns eller en gästs matprofil när vårdnadshavaren har godkänt texten för inköpslistan. Ett samtycke som gavs med den äldre texten gäller bara veckomenyn. Påminnelsen räknas fram i den egna telefonen, sparas inte på listan, säger aldrig vems allergin är och visas inte för andra som har tillgång till en delad inköpslista. Vilka påminnelser du har markerat som ”Inte aktuellt” sparas bara i telefonen och tas bort när du loggar ut. En vara kan sakna påminnelse fast den innehåller något hushållet undviker, så läs alltid innehållet.
 
 **Ditt namn på rätter i delade menyer (om du har samtyckt):**
 
@@ -444,7 +448,7 @@ Vi kan uppdatera denna policy när:
 Vid väsentliga ändringar:
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 11 november 2026
+**Senaste ändring:** 24 november 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

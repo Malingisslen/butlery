@@ -58,6 +58,11 @@ class _HouseholdAllergenSharingTileState
 
   bool _busy = false;
 
+  /// Shares under a wording that did not name the shopping list (v1). Still a
+  /// valid consent for the weekly menu; the shopping list waits for the member
+  /// to approve the new text (BUT-2494).
+  bool _needsRenewal = false;
+
   /// Read once in [initState] — the widgets layer resolves services there, not
   /// in `build`.
   late final bool _featureEnabled;
@@ -134,6 +139,7 @@ class _HouseholdAllergenSharingTileState
       setState(() {
         _householdId = householdId;
         _isSharing = own != null || corrupt;
+        _needsRenewal = own != null && !own.coversShoppingList;
       });
     } catch (e) {
       // Leaving the row hidden is the honest outcome: we cannot say whether
@@ -169,7 +175,17 @@ class _HouseholdAllergenSharingTileState
     );
   }
 
-  Future<void> _grant() async {
+  /// A v1 sharer approving the v2 text. A consent record is never re-dated by
+  /// an edit, so the new one is a new grant: revoke, then create. If the
+  /// create fails the member is no longer sharing, and the row says so.
+  Future<void> _renew() async {
+    if (_busy) return;
+    final consented = await _confirmShare();
+    if (consented != true || !mounted) return;
+    await _grant(replacing: true);
+  }
+
+  Future<void> _grant({bool replacing = false}) async {
     final householdId = _householdId;
     final shares = ServiceLocator.tryGet<HouseholdAllergenShareRepository>();
     final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
@@ -260,11 +276,20 @@ class _HouseholdAllergenSharingTileState
       // The nested try keeps the replace branch inside the scope that owns
       // `buildShare`; the outer one owns the busy latch.
       try {
+        if (replacing) {
+          await shares.revoke(householdId);
+          if (mounted) setState(() => _isSharing = false);
+        }
         // The consent record is written HERE, in the same act as the list —
         // the timestamp is the moment the member said yes, and the version is
         // the wording they were shown.
         await shares.create(buildShare());
-        if (mounted) setState(() => _isSharing = true);
+        if (mounted) {
+          setState(() {
+            _isSharing = true;
+            _needsRenewal = false;
+          });
+        }
       } on ValidationException {
         // M4: a document already sits there that `getOwn` refused to hand back
         // (its consent record is unreadable), so the switch showed OFF while
@@ -273,7 +298,12 @@ class _HouseholdAllergenSharingTileState
         // replace it: revoke, then write a fresh record.
         await shares.revoke(householdId);
         await shares.create(buildShare());
-        if (mounted) setState(() => _isSharing = true);
+        if (mounted) {
+          setState(() {
+            _isSharing = true;
+            _needsRenewal = false;
+          });
+        }
       }
     } catch (e) {
       AppLogger.warning('Could not share the allergen list: $e');
@@ -326,20 +356,28 @@ class _HouseholdAllergenSharingTileState
     }
 
     final l10n = context.l10n;
+    final renew = sharing && _needsRenewal;
     final row = ButleryListRow.toggle(
       label: l10n.householdAllergenShareTitle,
-      subtitle: sharing
-          ? l10n.householdAllergenShareSubtitleOn
-          : l10n.householdAllergenShareSubtitleOff,
+      subtitle: renew
+          ? l10n.householdAllergenShareRenewSubtitle
+          : (sharing
+                ? l10n.householdAllergenShareSubtitleOn
+                : l10n.householdAllergenShareSubtitleOff),
       checked: sharing,
       onChanged: _onChanged,
     );
-    if (!widget.dividerAbove) return row;
+    if (!widget.dividerAbove && !renew) return row;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const ButleryDivider(spacing: 1),
+        if (widget.dividerAbove) const ButleryDivider(spacing: 1),
         row,
+        if (renew)
+          ButleryListRow(
+            label: l10n.householdAllergenShareRenewAction,
+            onTap: _renew,
+          ),
       ],
     );
   }

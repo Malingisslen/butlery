@@ -76,6 +76,10 @@ class MenuService extends BaseService {
     return loaded;
   }
 
+  /// How many soft wishes of the last generation found no recipe and were
+  /// filled from the unconstrained pool instead (BUT-2523).
+  int? lastSoftFallbackCount = 0;
+
   /// Parses Swedish meal request and returns randomly selected recipes.
   ///
   /// The prompt goes through the deterministic constraint parser (BUT-359).
@@ -125,6 +129,7 @@ class MenuService extends BaseService {
     MenuScoringContext scoringContext, {
     required bool applyRules,
   }) async {
+    lastSoftFallbackCount = 0;
     final lexicon = await _loadLexicon();
     if (lexicon == null) return MenuGenerationOutcome.empty;
     final parsed = MenuConstraintParser.parse(input, lexicon);
@@ -529,6 +534,7 @@ class MenuService extends BaseService {
     MenuScoringContext scoringContext,
     List<String>? unmatchedRuleIds,
   ) async {
+    lastSoftFallbackCount = 0;
     return await executeServiceOperation(
           () async => _generateFromParsedInternal(
             parsed,
@@ -653,6 +659,9 @@ class MenuService extends BaseService {
             recentlyUsedIds: recentlyUsedRecipeIds,
             context: scoringContext,
           );
+          if (selected.isNotEmpty) {
+            lastSoftFallbackCount = (lastSoftFallbackCount ?? 0) + 1;
+          }
         }
         for (final r in selected) {
           usedIds.add(r.id);

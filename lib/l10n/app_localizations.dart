@@ -2963,7 +2963,7 @@ abstract class AppLocalizations {
   /// BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there
   ///
   /// In sv, this message translates to:
-  /// **'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. I dag gissar Butlery åt dig – den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.'**
+  /// **'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem och inköpslistan kan påminna om varor som ofta innehåller dem. I dag gissar Butlery åt dig – den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems, inte heller i påminnelserna, som bara visas för hushållets medlemmar och aldrig för andra på en delad inköpslista.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.'**
   String get householdAllergenShareConfirmBody;
 
   /// BUT-1693: confirm button on the consent dialog
@@ -34452,6 +34452,54 @@ abstract class AppLocalizations {
   /// **'Recept som passar ditt skafferi först'**
   String get menuQuickPantrySubtitle;
 
+  /// No description provided for @a11yMenuWhyToggle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa varför rätten föreslogs'**
+  String get a11yMenuWhyToggle;
+
+  /// No description provided for @menuWhyAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför?'**
+  String get menuWhyAction;
+
+  /// No description provided for @menuWhyReasonNotRecent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte på menyn de senaste två veckorna'**
+  String get menuWhyReasonNotRecent;
+
+  /// No description provided for @menuWhyReasonSeasonal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Passar säsongen'**
+  String get menuWhyReasonSeasonal;
+
+  /// No description provided for @menuWhyReasonFamilyFavourite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högt betyg i hushållet'**
+  String get menuWhyReasonFamilyFavourite;
+
+  /// No description provided for @menuWhyReasonPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använder ingredienser du har hemma'**
+  String get menuWhyReasonPantry;
+
+  /// No description provided for @menuWhyChance.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget särskilt skäl: den drogs bland dina recept.'**
+  String get menuWhyChance;
+
+  /// No description provided for @menuUnmetWishNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett önskemål hittade inga recept, så en vanlig rätt valdes i stället.'**
+  String get menuUnmetWishNotice;
+
   /// No description provided for @menuQuickPantryNothing.
   ///
   /// In sv, this message translates to:
@@ -34871,6 +34919,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa'**
   String get recurringRuleShow;
+
+  /// BUT-2494: reminder under a shopping row when the household avoids lactose and the item often contains it. Never names a person.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laktos i hushållet, välj laktosfri'**
+  String get shoppingHintChooseLactoseFree;
+
+  /// BUT-2494: reminder under a shopping row when the household avoids gluten and the item often contains it. Never names a person.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gluten i hushållet, välj glutenfri'**
+  String get shoppingHintChooseGlutenFree;
+
+  /// BUT-2494: reminder for an allergy with no free variant to pick (nuts, milk protein, fish). allergen is the lower-case allergen name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller ofta {allergen}, kolla innehållet'**
+  String shoppingHintCheckContents(String allergen);
+
+  /// BUT-2494: tooltip and screen-reader name of the tick that dismisses a reminder
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte aktuellt'**
+  String get shoppingHintDismiss;
+
+  /// BUT-2494: snackbar after a reminder was dismissed; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Påminnelsen dold för {item}'**
+  String shoppingHintDismissed(String item);
+
+  /// BUT-2494: shown on the sharing row for a member who shared under the v1 consent text, which covered the weekly menu only
+  ///
+  /// In sv, this message translates to:
+  /// **'Godkänn den nya texten så räknas dina val även på inköpslistan'**
+  String get householdAllergenShareRenewSubtitle;
+
+  /// BUT-2494: button opening the v2 consent dialog for a member who shared under v1
+  ///
+  /// In sv, this message translates to:
+  /// **'Läs och godkänn'**
+  String get householdAllergenShareRenewAction;
+
+  /// BUT-2494: allergen consent v2 for a diner profile; names the shopping-list reminder. Approved wording in docs/legal/family-rating-dpia.md
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag samtycker uttryckligen till att {name}s allergi- och kostuppgifter (hälsouppgifter) sparas och används för hushållets menyer och för påminnelser på inköpslistan.'**
+  String familyAllergenConsentTextV2(String name);
+
+  /// BUT-2494: extra tick for a profile whose allergen consent was given under the menu-only wording (v1)
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag samtycker uttryckligen till att {name}s allergiuppgifter även används för påminnelser på hushållets inköpslista.'**
+  String familyAllergenConsentRenewText(String name);
+
+  /// BUT-2494: line at the top of a shopping list whenever an allergy reminder shows (Malin 2026-11-24, ADR-0044)
+  ///
+  /// In sv, this message translates to:
+  /// **'Påminnelser kan saknas. Läs alltid innehållet.'**
+  String get shoppingHintsDisclaimer;
 }
 
 class _AppLocalizationsDelegate

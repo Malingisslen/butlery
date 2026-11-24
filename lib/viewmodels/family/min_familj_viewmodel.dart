@@ -107,6 +107,7 @@ class MinFamiljViewModel extends BaseViewModel {
     String? avatarColor,
     required bool guardianConsentGiven,
     required bool allergenConsentGiven,
+    bool allergenConsentRenewed = false,
     Set<String> allergenKeys = const {},
     Set<String> dislikedKeys = const {},
   }) async {
@@ -139,6 +140,7 @@ class MinFamiljViewModel extends BaseViewModel {
         uid: uid,
         needsBaseConsent: ageBand.isMinor || hasAllergens,
         includesAllergens: hasAllergens,
+        renewed: allergenConsentRenewed,
       );
 
       final prefs = hasAllergens
@@ -221,21 +223,29 @@ class MinFamiljViewModel extends BaseViewModel {
   /// (allergen consent newly granted) must credit the current session's user
   /// and stamp now — otherwise a second household admin adding allergens would
   /// be wrongly recorded as consent given by the original consenter. An edit
-  /// that doesn't widen consent scope preserves the original attester + date.
+  /// that doesn't widen consent scope preserves the original attester + date
+  /// AND the wording version it was given under: an edit to a name must not
+  /// relabel a v1 consent as v2, because the version is what decides whether
+  /// the diner's allergens may reach the shopping list (BUT-2494). Only a
+  /// guardian who ticked the new text ([renewed]) moves it to the current one.
   GuardianConsent? _buildConsent({
     required DinerProfile? existing,
     required String uid,
     required bool needsBaseConsent,
     required bool includesAllergens,
+    bool renewed = false,
   }) {
     if (!needsBaseConsent) return null;
     final prior = existing?.guardianConsent;
     final isFreshOrUpgrade =
-        prior == null || (includesAllergens && !prior.includesAllergenConsent);
+        prior == null ||
+        (includesAllergens && (!prior.includesAllergenConsent || renewed));
     return GuardianConsent(
       byUid: isFreshOrUpgrade ? uid : prior.byUid,
       at: isFreshOrUpgrade ? clock.now() : prior.at,
-      consentVersion: DinerProfile.currentConsentVersion,
+      consentVersion: isFreshOrUpgrade
+          ? DinerProfile.currentConsentVersion
+          : prior.consentVersion,
       includesAllergenConsent: includesAllergens,
     );
   }

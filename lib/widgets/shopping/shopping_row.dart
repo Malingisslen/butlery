@@ -50,8 +50,14 @@ class ShoppingRow extends StatefulWidget {
     this.semanticIdentifier,
     this.semanticLabel,
     this.tapKey,
+    this.below,
     super.key,
   });
+
+  /// Where the name starts, measured from the row's leading edge: past the
+  /// tick box and its gap. Content set under the name lines up with it.
+  static const double textInset =
+      ButleryCheckbox.boxSize + AppDimensions.space12;
 
   final String name;
 
@@ -84,6 +90,10 @@ class ShoppingRow extends StatefulWidget {
 
   /// Key of the tappable area, for tests.
   final Key? tapKey;
+
+  /// Drawn under the row, outside its tap area and its semantics node, so a
+  /// control in it is its own target (the allergy reminder, BUT-2494).
+  final Widget? below;
 
   @override
   State<ShoppingRow> createState() => _ShoppingRowState();
@@ -156,91 +166,95 @@ class _ShoppingRowState extends State<ShoppingRow>
                 )
               : Border(bottom: BorderSide(color: cs.outlineVariant)),
         ),
-        child: Semantics(
-          identifier: widget.semanticIdentifier,
-          label:
-              widget.semanticLabel ??
-              (widget.selectionMode
-                  ? context.l10n.a11yShoppingSelectItem
-                  : (widget.checked
-                        ? context.l10n.a11yShoppingItemChecked
-                        : context.l10n.a11yShoppingItemUnchecked)),
-          button: true,
-          checked: widget.selectionMode ? null : widget.checked,
-          selected: widget.selectionMode ? selected : null,
-          enabled: widget.onTap != null,
-          child: Material(
-            type: MaterialType.transparency,
-            child: PressFill(
-              surface: PressSurface.base,
-              child: InkWell(
-                key: widget.tapKey,
-                onTap: widget.onTap,
-                onLongPress: widget.onLongPress,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: AppDimensions.minTouchTarget,
-                  ),
-                  child: Row(
-                    children: [
-                      if (widget.selectionMode) ...[
-                        ButleryIcon(
-                          selected
-                              ? ButleryIcons.circleCheck
-                              : ButleryIcons.circle,
-                          color: selected ? cs.onSurface : cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+        child: _withBelow(
+          Semantics(
+            identifier: widget.semanticIdentifier,
+            label:
+                widget.semanticLabel ??
+                (widget.selectionMode
+                    ? context.l10n.a11yShoppingSelectItem
+                    : (widget.checked
+                          ? context.l10n.a11yShoppingItemChecked
+                          : context.l10n.a11yShoppingItemUnchecked)),
+            button: true,
+            checked: widget.selectionMode ? null : widget.checked,
+            selected: widget.selectionMode ? selected : null,
+            enabled: widget.onTap != null,
+            child: Material(
+              type: MaterialType.transparency,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  key: widget.tapKey,
+                  onTap: widget.onTap,
+                  onLongPress: widget.onLongPress,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
+                    ),
+                    child: Row(
+                      children: [
+                        if (widget.selectionMode) ...[
+                          ButleryIcon(
+                            selected
+                                ? ButleryIcons.circleCheck
+                                : ButleryIcons.circle,
+                            color: selected
+                                ? cs.onSurface
+                                : cs.onSurfaceVariant,
+                            size: AppDimensions.iconSizeM,
+                          ),
+                          const SizedBox(width: AppDimensions.space12),
+                        ],
+                        _box(context, cs),
                         const SizedBox(width: AppDimensions.space12),
-                      ],
-                      _box(context, cs),
-                      const SizedBox(width: AppDimensions.space12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            WholeWordText.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: _startWithCapital(widget.name),
-                                  ),
-                                  if (amount != null && amount.isNotEmpty)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              WholeWordText.rich(
+                                TextSpan(
+                                  children: [
                                     TextSpan(
-                                      text: ' $amount',
-                                      style: SpanStyles.colour(
-                                        cs.onSurfaceVariant,
-                                      ),
+                                      text: _startWithCapital(widget.name),
                                     ),
-                                ],
-                              ),
-                              style: AppTextStyles.contentTitle.copyWith(
-                                color: nameColor,
-                                decoration: decoration,
-                              ),
-                              // BUT-2193 (Malin, 2026-10-03): a row may cut a
-                              // long name at the normal text size.
-                              maxLines: largeText ? null : 2,
-                            ),
-                            if (widget.note?.isNotEmpty == true) ...[
-                              const SizedBox(height: AppDimensions.space4),
-                              Text(
-                                widget.note!,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: cs.onSurfaceVariant,
+                                    if (amount != null && amount.isNotEmpty)
+                                      TextSpan(
+                                        text: ' $amount',
+                                        style: SpanStyles.colour(
+                                          cs.onSurfaceVariant,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                style: AppTextStyles.contentTitle.copyWith(
+                                  color: nameColor,
                                   decoration: decoration,
                                 ),
-                                maxLines: largeText ? null : 1,
-                                overflow: largeText
-                                    ? null
-                                    : TextOverflow.ellipsis,
+                                // BUT-2193 (Malin, 2026-10-03): a row may cut a
+                                // long name at the normal text size.
+                                maxLines: largeText ? null : 2,
                               ),
+                              if (widget.note?.isNotEmpty == true) ...[
+                                const SizedBox(height: AppDimensions.space4),
+                                Text(
+                                  widget.note!,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                    decoration: decoration,
+                                  ),
+                                  maxLines: largeText ? null : 1,
+                                  overflow: largeText
+                                      ? null
+                                      : TextOverflow.ellipsis,
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      if (widget.trailing != null) widget.trailing!,
-                    ],
+                        if (widget.trailing != null) widget.trailing!,
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -248,6 +262,16 @@ class _ShoppingRowState extends State<ShoppingRow>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _withBelow(Widget row) {
+    final below = widget.below;
+    if (below == null) return row;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [row, below],
     );
   }
 

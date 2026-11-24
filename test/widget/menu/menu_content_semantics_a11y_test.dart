@@ -36,6 +36,8 @@ void main() {
       when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
       when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
       when(() => vm.mealAllergenScopeOn).thenReturn(false);
+      when(() => vm.unmetSoftWishCount).thenReturn(0);
+      when(() => vm.canExplainPick(any())).thenReturn(false);
 
       final recipe = RecipeFactory.build(
         id: 'r1',
@@ -78,6 +80,8 @@ void main() {
       when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
       when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
       when(() => vm.mealAllergenScopeOn).thenReturn(false);
+      when(() => vm.unmetSoftWishCount).thenReturn(0);
+      when(() => vm.canExplainPick(any())).thenReturn(false);
 
       final recipe = RecipeFactory.build(
         id: 'r1',
@@ -119,6 +123,8 @@ void main() {
     when(() => vm.hasUncheckedTrackedAllergen(any())).thenReturn(false);
     when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
     when(() => vm.mealAllergenScopeOn).thenReturn(false);
+    when(() => vm.unmetSoftWishCount).thenReturn(0);
+    when(() => vm.canExplainPick(any())).thenReturn(false);
 
     final recipe = RecipeFactory.build(
       id: 'r1',

@@ -53,6 +53,15 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/tagging/ingredient_line.dart';
+import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
+import 'package:butlery/viewmodels/shopping/household_shopping_choices.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hint_box.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -79,6 +88,10 @@ const _sanitizedError =
 const _noItemsTitle = 'Inga varor ännu'; // l10n.collaborativeNoItemsYet
 
 const _testListId = 'collaborative_list_123';
+
+class _MockOwnProfile extends Mock implements OwnProfileReader {}
+
+class _MockIngredientLookup extends Mock implements IngredientLookupService {}
 
 void main() {
   late MockUnifiedShoppingService shoppingService;
@@ -1554,5 +1567,92 @@ void main() {
         );
       }
     }
+  });
+
+  // BUT-2494: the view wraps its rows in a ShoppingDietaryHintsScope. The
+  // scope builds its controller from the locator, so these register a
+  // lactose-free viewer and an ingredient lookup that knows butter, and follow
+  // a seeded row to the reminder on screen.
+  group('CollaborativeShoppingView — allergy reminders (BUT-2494)', () {
+    final butter = IngredientData(
+      id: 'butter',
+      swedish: 'Smör',
+      english: 'Butter',
+      group: 'dairy',
+      properties: const {'contains-lactose', 'dairy'},
+    );
+
+    setUp(() {
+      HouseholdShoppingChoices.forget();
+      final profile = _MockOwnProfile();
+      when(() => profile.currentUserProfile).thenReturn(
+        UserProfile(
+          uid: 'test-user-123',
+          displayName: 'Test User',
+          email: 't@example.com',
+          joinedAt: DateTime(2024, 1, 1),
+          lastActiveAt: DateTime(2024, 1, 1),
+          settingsMerged: true,
+          allergenPreferences: const UserAllergenPreferences(
+            trackedAllergens: {'laktos'},
+            trackedDietary: {},
+          ),
+        ),
+      );
+      final lookup = _MockIngredientLookup();
+      when(() => lookup.lookupFromRaw(any())).thenAnswer((call) async {
+        final names = call.positionalArguments.first as List<String>;
+        return IngredientLookupResult(
+          matched: const [],
+          unmatched: const [],
+          coverage: 1,
+          lines: [
+            for (final name in names)
+              IngredientLine(
+                names: [name],
+                ingredients: [butter],
+                known: true,
+              ),
+          ],
+        );
+      });
+      TestServiceLocator.registerMock<OwnProfileReader>(profile);
+      TestServiceLocator.registerMock<IngredientLookupService>(lookup);
+    });
+
+    tearDown(HouseholdShoppingChoices.forget);
+
+    testWidgets('an open row shows the reminder, a bought row does not', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([
+            item('Smör', id: 'open'),
+            item('Gräddfil', id: 'done', bought: true),
+          ]),
+        ],
+        isInitialized: true,
+      );
+
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
+
+      // Positive control: both rows are drawn.
+      expect(find.text('Smör'), findsOneWidget);
+      expect(find.text('Gräddfil'), findsOneWidget);
+      expect(find.text('Laktos i hushållet, välj laktosfri'), findsOneWidget);
+      expect(find.byType(ShoppingDietaryHintBox), findsOneWidget);
+    });
   });
 }

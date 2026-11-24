@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_list_rows.dart';
+import 'package:butlery/widgets/menu/menu_why_section.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
@@ -73,6 +74,7 @@ class MenuContentWidgets {
     return ListView(
       children: [
         MenuListTitle(viewModel: viewModel),
+        if (viewModel.unmetSoftWishCount > 0) const MenuUnmetWishNote(),
         // BUT-1685: a run built on a household roster we could not fully read
         // was filtered by a widened safety floor, not by the family's real
         // allergies — saying "hushållets allergier" would claim a precision

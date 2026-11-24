@@ -80,6 +80,17 @@ beyond the uid the household can already resolve. The household UI shows a
 No secondary purpose. The shared list is **never** used for analytics, never
 leaves the household, and never contributes to any public or aggregate figure.
 
+**SUPERSEDED 2026-11-24 (BUT-2494, ADR-0044).** Retired verbatim: "No secondary
+purpose." A third purpose is added, for shares given under consent wording `v2`
+only:
+
+3. Remind a household member, on their own device, when an open row on the
+   shopping list they are looking at is an item that often contains an allergen
+   the household tracks — the shopping-list purpose. `HouseholdAllergenShare
+   .coversShoppingList` admits a share only when its `consentVersion` is in
+   `shoppingListConsentVersions` (`{'v2'}`); a `v1` share keeps serving purposes
+   1 and 2 and nothing else. The rest of the paragraph above stands.
+
 ### 1.5 Lawful bases
 
 - **Allergens (health):** Art. 9(2)(a) — **explicit consent**, given by the data
@@ -104,6 +115,13 @@ leaves the household, and never contributes to any public or aggregate figure.
 - Not readable by friends, not readable by the wider app, and structurally
   excluded from the world-readable public profile document.
 - No Cloud Function, no LLM, no third party sees the list.
+- **Shopping-list reminders (purpose 3, 2026-11-24):** the viewer's app reads the
+  household's `v2` shares with the same read the menu uses and keeps the union in
+  memory for at most ten minutes. Nothing derived from it is written to the
+  shopping list or its rows, so other people on a shared shopping list never see
+  a reminder. Which reminders the viewer ticked away is kept on the device only
+  (`SharedPreferences`, row id and allergen key, no timestamps) and is cleared at
+  every sign-out, which account deletion ends with.
 
 ---
 
@@ -306,6 +324,18 @@ leaves the household, and never contributes to any public or aggregate figure.
   `FamilyExportManager.exportHouseholdAllergenShares` ships that scope: the Art. 15
   section returns the requester's own shares only.
 
+### R9 — A row without a reminder is read as safe (2026-11-24, BUT-2494)
+- **Risk:** the reminder is a lookup of the item's name in the ingredient data.
+  An unknown name, a brand name or a compound dish gets no box, and a member
+  could take a row without a box as free of the allergen.
+- **Mitigation:** whenever any box shows, the list carries "Påminnelser kan
+  saknas. Läs alltid innehållet." at the top (Malin 2026-11-24); a box says
+  "kolla innehållet" or "välj laktosfri/glutenfri" and never claims a row is
+  safe; unknown names and dish guesses produce no box rather than a guessed one,
+  and the menu's common-allergen floor is deliberately not applied to the list.
+- **Residual:** accepted by the controller (§9, decision 6). Proposed follow-up:
+  an allergen disclaimer in the terms of service.
+
 ---
 
 ## 4. Relationship to the parent DPIA's premise
@@ -409,6 +439,13 @@ is dated 2026-08-12, and `FamilyExportManager.exportHouseholdAllergenShares` shi
    (BUT-1732/1772/1798), which govern display names and shopping rows — the
    asymmetry is the decision, per Malin's recommendation-accepted "ja".
 
+6. **Shopping-list reminders — decided 2026-11-24 (BUT-2494, ADR-0044):**
+   shared lists count in the shopping-list reminder only under the new consent
+   wording `v2`; a `v1` share stays menu-only until its member approves the new
+   text. Children's and guests' diner profiles follow the same rule under a new
+   guardian consent (`DinerProfile` `v2`, see the parent DPIA). No floor on the
+   list (R9).
+
 - **Reviewed & agreed:** ☑ Malin Gisslén (controller)
 - **Date:** 2026-08-12
 - **Decision:** ☑ **Approved**
@@ -438,6 +475,57 @@ normalise them back to `"`.
 | Subtitle, on | Hushållets meny räknar med dina allergier | The household's menu accounts for your allergies |
 
 ### The confirm dialog (shown when turning it ON)
+
+**Current wording: `v2` (2026-11-24, BUT-2494).** The `v1` body further down is
+RETIRED: shares given under it stay valid for the menu only. The `v2` body below
+is byte-identical to `householdAllergenShareConfirmBody` in the ARB files; title
+and buttons are unchanged.
+
+**Body v2 (SV):**
+
+> Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn
+> kan planeras runt dem och inköpslistan kan påminna om varor som ofta innehåller
+> dem. I dag gissar Butlery åt dig – den räknar med fyra vanliga allergier och
+> missar resten.
+>
+> Alla som är med i hushållet ser listan, även den som går med senare.
+>
+> Listan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi
+> som är vems, inte heller i påminnelserna, som bara visas för hushållets
+> medlemmar och aldrig för andra på en delad inköpslista.
+>
+> Kostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela
+> hushållets meny vegansk.
+>
+> Du kan sluta dela när som helst. Då tas listan bort direkt, och menyn går
+> tillbaka till att vara försiktig åt dig.
+
+**Body v2 (EN):**
+
+> Your household can see the allergies and dietary choices you have entered, so
+> the weekly menu can be planned around them and the shopping list can remind you
+> about items that often contain them. Today Butlery guesses on your behalf – it
+> assumes four common allergies and misses the rest.
+>
+> Everyone in the household sees the list, including anyone who joins later.
+>
+> It is shown as one combined list for the whole household. Nobody sees which
+> allergy belongs to whom, not in the reminders either, which only household
+> members see and never anyone else on a shared shopping list.
+>
+> Dietary choices count as a requirement when the menu is planned: if you share
+> “vegan”, the whole household's menu is planned vegan.
+>
+> You can stop sharing at any time. The list is removed immediately and the menu
+> goes back to being cautious on your behalf.
+
+**Renewal (a member whose share is `v1`):** the settings row shows
+"Godkänn den nya texten så räknas dina val även på inköpslistan" / "Approve the
+new text so your choices also count on the shopping list", with the action
+"Läs och godkänn". It opens the same dialog; confirming withdraws the `v1` share
+and grants a new one under `v2`.
+
+**Retired `v1` text (kept as the record of what `v1` shares agreed to):**
 
 **Title (SV):** Dela din allergilista
 **Title (EN):** Share your allergy list

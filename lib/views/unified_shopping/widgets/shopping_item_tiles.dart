@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/shopping/shopping_dietary_hints_scope.dart';
 import 'package:butlery/widgets/shopping/shopping_row.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
@@ -123,6 +124,7 @@ class ShoppingItemTile extends StatelessWidget {
       amount: item.quantityText,
       note: item.note,
       checked: isCompleted,
+      below: shoppingDietaryHintsBelow(context, item, completed: isCompleted),
       selectionMode: selectionMode,
       selected: selected,
       semanticIdentifier: visualIndex != null

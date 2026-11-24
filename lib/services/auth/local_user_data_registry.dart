@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/shopping/dismissed_dietary_hints_store.dart';
 import 'package:butlery/services/shopping/store_order_learner.dart';
 import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_stub.dart'
@@ -68,6 +69,9 @@ class LocalUserDataRegistry {
     required DeviceCleanupReason reason,
     bool firestoreWritesSettled = false,
   }) async {
+    // Health-adjacent and worthless to keep, so it goes on every sign-out,
+    // the automatic one included (BUT-2494).
+    await DismissedDietaryHintsStore.clearAll();
     if (reason == DeviceCleanupReason.automaticSignOut) {
       await _clearLegacyPrefs();
       await FirestoreCacheWipe.cancel();
