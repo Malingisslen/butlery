@@ -1,3 +1,7 @@
+
+# Aktiv plan (2026-11-24): BUT-2486 matlådor, del 1 (datadelen)
+
+Se `tasks/but-2486-del1-plan.md` (kopia i /mnt/project-files/plans/but-2486-del1-plan.md). Malin godkände mockupen och bygget (via koordinatorn 2026-11-24).
 # Aktiv plan (2026-11-23): BUT-2522 veckomall, del 1 (hela veckor)
 
 Se `tasks/but-2522-plan.md` (kopia i /mnt/project-files/but-2522/bygg-del1-plan.md). Malin godkände bygget 2026-11-23 ("låt en fable kolla på planen sedan bygg"), mockupen godkänd samma dag.

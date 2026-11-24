@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
@@ -273,8 +274,9 @@ class FirebaseWeeklyMenuPlanRepository
   /// that was read (`firestore.rules` refuses any other). Returns whether the
   /// week held the recipe.
   ///
-  /// A partial update (only `entries` and the lineage fields), so a field
-  /// another writer added outside `entries` is kept. When the week changed
+  /// A partial update (only `entries`, `lunchboxes` and the lineage fields),
+  /// so a field another writer added outside them is kept. A lunchbox whose
+  /// stored dish is [recipeId] goes too (BUT-2486). When the week changed
   /// between the read and the write the update is refused; it is then read
   /// again from the server and retried, up to [_scrubAttempts] times in all.
   /// After that the refusal is thrown: the recipe itself is already deleted
@@ -287,14 +289,21 @@ class FirebaseWeeklyMenuPlanRepository
     var plan = read;
     for (var attempt = 1; ; attempt++) {
       final kept = plan.entries.where((e) => e.recipeId != recipeId).toList();
-      if (kept.length == plan.entries.length) return false;
+      final scrubbed = plan
+          .copyWith(entries: kept)
+          .withoutLunchboxesOf(recipeId);
+      if (kept.length == plan.entries.length &&
+          scrubbed.lunchboxes.length == plan.lunchboxes.length) {
+        return false;
+      }
       // Run through toFirestore so the entries match the on-disk shape
       // (timestamps, sentinels, etc.).
-      final next = plan.copyWith(entries: kept).nextRevision();
+      final next = scrubbed.nextRevision();
       final asMap = toFirestore(next);
       try {
         await ref.update({
           'entries': asMap['entries'],
+          'lunchboxes': asMap['lunchboxes'] ?? FieldValue.delete(),
           'revId': next.revId,
           'baseRevId': next.baseRevId,
         });

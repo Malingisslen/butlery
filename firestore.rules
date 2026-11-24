@@ -1406,13 +1406,24 @@ service cloud.firestore {
             && request.resource.data.get('baseRevId', null) == resource.data.get('revId', null));
     }
 
+    // BUT-2486: a week's lunchboxes, when present, are a map keyed by
+    // weekday name, at most one per day. What is inside each box is not
+    // checked, as for `entries`. No `get()`.
+    function weekLunchboxesBounded() {
+      return !('lunchboxes' in request.resource.data)
+        || (request.resource.data.lunchboxes is map
+            && request.resource.data.lunchboxes.keys().hasOnly(
+                 ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']));
+    }
+
     match /weekly_menu_plans/{planId} {
       allow read: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*');
 
       allow create: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*')
-        && request.auth.uid == request.resource.data.userId;
+        && request.auth.uid == request.resource.data.userId
+        && weekLunchboxesBounded();
 
       // `'userId'` in `cannotModify` is deliberately redundant with the two
       // `uid == …userId` conjuncts: today they deny a changed owner on their
@@ -1423,7 +1434,8 @@ service cloud.firestore {
         && request.auth.uid == resource.data.userId
         && request.auth.uid == request.resource.data.userId
         && cannotModify(['userId', 'createdAt'])
-        && weekSaveBuiltOnStored();
+        && weekSaveBuiltOnStored()
+        && weekLunchboxesBounded();
 
       allow delete: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*');

@@ -21,12 +21,16 @@ class MealAllergenScope {
   MealAllergenScope({
     required this.household,
     Map<(DayOfWeek, MealSlot), UserAllergenPreferences> byMeal = const {},
-  }) : _byMeal = byMeal;
+    Map<DayOfWeek, LunchboxTakerPrefs> byLunchbox = const {},
+  }) : _byMeal = byMeal,
+       _byLunchbox = byLunchbox;
 
   /// What the whole household avoids: the same set menu generation filters by.
   final UserAllergenPreferences household;
 
   final Map<(DayOfWeek, MealSlot), UserAllergenPreferences> _byMeal;
+
+  final Map<DayOfWeek, LunchboxTakerPrefs> _byLunchbox;
 
   /// Whether any meal follows fewer people than the whole household.
   bool get isScoped => _byMeal.isNotEmpty;
@@ -66,6 +70,37 @@ class MealAllergenScope {
         if (!safeAt(recipe, entry.day, entry.slot)) entry.id,
   };
 
+  /// BUT-2486: whether everyone taking [day]'s lunchbox can eat [recipe],
+  /// whichever source the box has and whether or not they ate the middag it
+  /// came from. Without takers' allergens it follows the household filter.
+  bool safeForLunchbox(Recipe recipe, DayOfWeek day) {
+    final takers = _byLunchbox[day];
+    if (takers != null && takers.alone) return _passes(recipe, takers.prefs);
+    if (!_passes(recipe, household)) return false;
+    return takers == null || _passes(recipe, takers.prefs);
+  }
+
+  /// The days of [plan] whose lunchbox someone taking it cannot eat, and the
+  /// days whose dish could not be judged (no dish, or a recipe [recipeFor]
+  /// cannot find). An unjudged box is never reported as safe.
+  ({Set<DayOfWeek> unsafe, Set<DayOfWeek> unjudged}) lunchboxVerdicts(
+    WeeklyMenuPlan plan,
+    Recipe? Function(String recipeId) recipeFor,
+  ) {
+    final unsafe = <DayOfWeek>{};
+    final unjudged = <DayOfWeek>{};
+    for (final MapEntry(key: day, value: box) in plan.lunchboxes.entries) {
+      final id = box.recipeIdIn(plan);
+      final recipe = id == null ? null : recipeFor(id);
+      if (recipe == null) {
+        unjudged.add(day);
+      } else if (!safeForLunchbox(recipe, day)) {
+        unsafe.add(day);
+      }
+    }
+    return (unsafe: unsafe, unjudged: unjudged);
+  }
+
   static bool _passes(Recipe recipe, UserAllergenPreferences prefs) =>
       MenuGenerator.filterByPrefs([recipe], prefs, allergens: true).isNotEmpty;
 
@@ -88,8 +123,11 @@ class MealAllergenScope {
     required WeeklyMenuPlan? plan,
   }) async {
     final household = await _householdPrefs(userService);
-    if (plan == null || !isOn(userService)) {
-      return MealAllergenScope(household: household);
+    if (plan == null) return MealAllergenScope(household: household);
+    final scoped = isOn(userService);
+    final byLunchbox = await _lunchboxTakers(plan, scoped: scoped);
+    if (!scoped) {
+      return MealAllergenScope(household: household, byLunchbox: byLunchbox);
     }
 
     final accounts =
@@ -112,7 +150,59 @@ class MealAllergenScope {
         if (prefs != null) byMeal[(day, slot)] = prefs;
       }
     }
-    return MealAllergenScope(household: household, byMeal: byMeal);
+    return MealAllergenScope(
+      household: household,
+      byMeal: byMeal,
+      byLunchbox: byLunchbox,
+    );
+  }
+
+  /// The allergens of the people named on each lunchbox, read once per
+  /// distinct set of takers. A box with no takers is left out and follows the
+  /// household. Takers stand [alone] only when the per-meal choice is on and
+  /// every one of them was read; otherwise the box must also pass the
+  /// household filter, so a named taker counts even with household allergens
+  /// switched off.
+  static Future<Map<DayOfWeek, LunchboxTakerPrefs>> _lunchboxTakers(
+    WeeklyMenuPlan plan, {
+    required bool scoped,
+  }) async {
+    if (plan.lunchboxes.isEmpty) return const {};
+    final result = <DayOfWeek, LunchboxTakerPrefs>{};
+    final byTakerSet = <String, PresentDinerPrefs?>{};
+    for (final MapEntry(key: day, value: box) in plan.lunchboxes.entries) {
+      if (box.takerIds.isEmpty) continue;
+      final ids = box.takerIds.toSet().toList()..sort();
+      final key = ids.join('\u0000');
+      final PresentDinerPrefs? read;
+      if (byTakerSet.containsKey(key)) {
+        read = byTakerSet[key];
+      } else {
+        read = await _takerPrefsOrNull(ids);
+        byTakerSet[key] = read;
+      }
+      if (read == null) continue;
+      result[day] = LunchboxTakerPrefs(
+        read.preferences,
+        alone: scoped && read.isComplete,
+      );
+    }
+    return result;
+  }
+
+  /// Null only when the takers cannot be looked up at all (no household,
+  /// signed out). A failure is the whole household plus the common-allergen
+  /// floor, the same as a total failure on the who's-eating path (BUT-2076),
+  /// even with household allergens switched off.
+  static Future<PresentDinerPrefs?> _takerPrefsOrNull(List<String> ids) async {
+    try {
+      return await PresentDinerPrefsResolver(
+        householdLinksFromLocator(),
+      ).resolve(ids);
+    } catch (e) {
+      AppLogger.warning('Lunchbox allergen read failed (${e.runtimeType})');
+      return PresentDinerPrefs(await _householdAndFloor(), isComplete: false);
+    }
   }
 
   static Future<UserAllergenPreferences> _householdPrefs(
@@ -127,6 +217,19 @@ class MealAllergenScope {
       return HouseholdService.widenWithSafetyFloor(
         HouseholdService.ownMenuPreferences(userService.currentUserProfile),
       );
+    }
+  }
+
+  static Future<UserAllergenPreferences> _householdAndFloor() async {
+    final households = ServiceLocator.tryGet<HouseholdService>();
+    if (households == null) return _floorOnly;
+    try {
+      return HouseholdService.widenWithSafetyFloor(
+        (await households.aggregateAllergenPreferences()).preferences,
+      );
+    } catch (e) {
+      AppLogger.warning('Lunchbox household read failed (${e.runtimeType})');
+      return _floorOnly;
     }
   }
 
@@ -174,4 +277,13 @@ class MealAllergenScope {
       return null;
     }
   }
+}
+
+/// The allergens of the people taking one lunchbox (BUT-2486). [alone]: the
+/// box is judged by these alone; otherwise also by the household filter.
+class LunchboxTakerPrefs {
+  const LunchboxTakerPrefs(this.prefs, {required this.alone});
+
+  final UserAllergenPreferences prefs;
+  final bool alone;
 }

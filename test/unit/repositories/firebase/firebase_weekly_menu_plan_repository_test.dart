@@ -27,6 +27,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -312,6 +313,35 @@ void main() {
         IsoWeekUtils.weekIdFor(_alice, IsoWeekUtils.weekStartOf(week1)),
       );
     });
+
+    test(
+      'exports a week\'s lunchboxes with who takes them (BUT-2486)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seed(
+          firestore,
+          _plan(userId: _alice, date: week1).copyWith(
+            lunchboxes: {
+              DayOfWeek.wed: const Lunchbox(
+                source: LunchboxSource.prepDay,
+                recipeId: 'r-prep',
+                recipeTitle: 'Matlåda',
+                takerIds: ['member-a', 'member-b'],
+              ),
+            },
+          ),
+        );
+
+        final exported = await repo.exportAllByUser(_alice);
+
+        final data = exported.single['data'] as Map<String, dynamic>;
+        final boxes = data['lunchboxes'] as Map<String, dynamic>;
+        final wed = boxes['wed'] as Map<String, dynamic>;
+        expect(wed['recipeId'], 'r-prep');
+        expect(wed['takerIds'], ['member-a', 'member-b']);
+      },
+    );
   });
 
   group('save audits refusals only (BUT-1981)', () {
@@ -610,6 +640,128 @@ void main() {
     );
     final kept = await dataOf(untouched.id);
     expect(kept['revId'], untouched.revId, reason: 'not changed, not touched');
+  });
+
+  group('removeRecipeFromAllPlans and lunchboxes (BUT-2486)', () {
+    const prepOfShared = Lunchbox(
+      source: LunchboxSource.prepDay,
+      recipeId: _sharedRecipe,
+      recipeTitle: 'Delad rätt',
+    );
+    const suggestionOfOther = Lunchbox(
+      source: LunchboxSource.suggestion,
+      recipeId: 'recipe-other',
+      recipeTitle: 'Annan rätt',
+    );
+
+    Future<Map<String, dynamic>> dataOf(
+      FakeFirebaseFirestore firestore,
+      String id,
+    ) async =>
+        (await firestore
+                .collection(FirestoreCollections.weeklyMenuPlans)
+                .doc(id)
+                .get())
+            .data()!;
+
+    test('a week whose only hold on the recipe is a stored lunchbox is '
+        'changed, and loses the box', () async {
+      final firestore = FakeFirebaseFirestore();
+      final plan = _plan(userId: _alice, date: week1).copyWith(
+        lunchboxes: {DayOfWeek.wed: prepOfShared},
+      );
+      await _seed(firestore, plan);
+
+      final changed = await _repo(
+        firestore,
+      ).removeRecipeFromAllPlans(userId: _alice, recipeId: _sharedRecipe);
+
+      expect(changed, 1);
+      final data = await dataOf(firestore, plan.id);
+      expect(
+        data.containsKey('lunchboxes'),
+        isFalse,
+        reason: 'the last box going removes the stored field',
+      );
+    });
+
+    test(
+      'a box storing another recipe stays and the week counts as changed',
+      () async {
+        // The fake deep-merges a nested map on update(), so the removal of
+        // the sibling box is not observable here; the sole-box test above
+        // pins removal through FieldValue.delete().
+        final firestore = FakeFirebaseFirestore();
+        final plan = _plan(userId: _alice, date: week1).copyWith(
+          lunchboxes: {
+            DayOfWeek.wed: prepOfShared,
+            DayOfWeek.thu: suggestionOfOther,
+          },
+        );
+        await _seed(firestore, plan);
+
+        final changed = await _repo(
+          firestore,
+        ).removeRecipeFromAllPlans(userId: _alice, recipeId: _sharedRecipe);
+
+        expect(changed, 1);
+        final stored = WeeklyMenuPlan.fromMap(
+          plan.id,
+          await dataOf(firestore, plan.id),
+        );
+        expect(stored.lunchboxes[DayOfWeek.thu]!.recipeId, 'recipe-other');
+      },
+    );
+
+    test('same-week leftovers stay when the middag entry is scrubbed '
+        'from the same week', () async {
+      final firestore = FakeFirebaseFirestore();
+      final plan =
+          _plan(
+            userId: _alice,
+            date: week1,
+            withSharedRecipe: true,
+          ).copyWith(
+            lunchboxes: {
+              DayOfWeek.tue: const Lunchbox(
+                source: LunchboxSource.leftovers,
+                fromDay: DayOfWeek.mon,
+              ),
+            },
+          );
+      await _seed(firestore, plan);
+
+      await _repo(
+        firestore,
+      ).removeRecipeFromAllPlans(userId: _alice, recipeId: _sharedRecipe);
+
+      final stored = WeeklyMenuPlan.fromMap(
+        plan.id,
+        await dataOf(firestore, plan.id),
+      );
+      expect(stored.entries, isEmpty);
+      expect(stored.lunchboxes.keys, [DayOfWeek.tue]);
+    });
+
+    test('a week with neither an entry nor a box of the recipe is not '
+        'touched', () async {
+      final firestore = FakeFirebaseFirestore();
+      final plan = _plan(userId: _alice, date: week1)
+          .copyWith(
+            lunchboxes: {DayOfWeek.thu: suggestionOfOther},
+          )
+          .nextRevision();
+      await _seed(firestore, plan);
+
+      final changed = await _repo(
+        firestore,
+      ).removeRecipeFromAllPlans(userId: _alice, recipeId: _sharedRecipe);
+
+      expect(changed, 0);
+      final data = await dataOf(firestore, plan.id);
+      expect(data['revId'], plan.revId);
+      expect(data['lunchboxes'], isNotEmpty);
+    });
   });
 
   group('removeRecipeFromAllPlans after a stale read (BUT-2215)', () {

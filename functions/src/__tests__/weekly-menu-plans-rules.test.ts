@@ -315,6 +315,127 @@ test("a recipe scrub built on a stale read is denied", async () => {
   );
 });
 
+// L1–L5 (BUT-2486): a week's `lunchboxes` is a map keyed by weekday name.
+const LUNCHBOX = {
+  source: "leftovers",
+  fromDay: "mon",
+  portions: 2,
+  takerIds: ["diner-1"],
+};
+
+test("a week with lunchboxes keyed by weekday is allowed", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNER_UID}_2026-W30`)
+      .set(planBody(OWNER_UID, { lunchboxes: { tue: LUNCHBOX } }))
+  );
+});
+
+test("lunchboxes that are not a map are denied", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNER_UID}_2026-W31`)
+      .set(planBody(OWNER_UID, { lunchboxes: [LUNCHBOX] }))
+  );
+});
+
+test("a lunchbox under a key that is not a weekday is denied", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNER_UID}_2026-W32`)
+      .set(planBody(OWNER_UID, { lunchboxes: { tue: LUNCHBOX, mon2: LUNCHBOX } }))
+  );
+});
+
+test("an update adding a lunchbox under a non-weekday key is denied", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-l" }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({
+        lunchboxes: { day8: LUNCHBOX },
+        revId: "rev-l2",
+        baseRevId: "rev-l",
+      })
+  );
+});
+
+// The recipe scrub's partial update, which writes `lunchboxes` beside
+// `entries` and the lineage fields.
+test("a recipe scrub that also rewrites lunchboxes is allowed", async () => {
+  await seed(
+    OWNED_ID,
+    planBody(OWNER_UID, {
+      revId: "rev-s",
+      entries: [{ recipeId: "r1", day: "mon" }],
+      lunchboxes: { tue: LUNCHBOX, wed: { ...LUNCHBOX, source: "prepDay" } },
+    })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({
+        entries: [],
+        lunchboxes: { tue: LUNCHBOX },
+        revId: "rev-s2",
+        baseRevId: "rev-s",
+      })
+  );
+});
+
+// L6: the allow twin of the non-weekday update deny above. Same seed, verb and
+// lineage; only the key differs. A week without lunchboxes gaining its first.
+test("an update adding a lunchbox under a weekday key is allowed", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-l" }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({
+        lunchboxes: { tue: LUNCHBOX },
+        revId: "rev-l2",
+        baseRevId: "rev-l",
+      })
+  );
+});
+
+// L7: the deny twin of the scrub allow above. Same seed; the written map gains a
+// non-weekday key. The stored lunchboxes are valid, so a check that read the
+// stored map instead of the written one would let this through.
+test("an update to stored lunchboxes adding a non-weekday key is denied", async () => {
+  await seed(
+    OWNED_ID,
+    planBody(OWNER_UID, {
+      revId: "rev-s",
+      entries: [{ recipeId: "r1", day: "mon" }],
+      lunchboxes: { tue: LUNCHBOX, wed: { ...LUNCHBOX, source: "prepDay" } },
+    })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({
+        entries: [],
+        lunchboxes: { tue: LUNCHBOX, day8: LUNCHBOX },
+        revId: "rev-s2",
+        baseRevId: "rev-s",
+      })
+  );
+});
+
 // W4: a userId change is denied. Over-determined on purpose (BUT-1967): the two
 // `request.auth.uid == …userId` conjuncts deny it on their own, so `'userId'`
 // in `cannotModify` is a backstop that cannot be told apart from them here.

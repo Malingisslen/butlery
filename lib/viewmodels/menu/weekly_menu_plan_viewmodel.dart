@@ -553,7 +553,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _weekConflicts.add(WeekConflict(local: sent, remote: e.remote));
   }
 
-  /// BUT-2215: "Behåll min". Writes [conflict]'s dishes and presence over the
+  /// BUT-2215: "Behåll min". Writes [conflict]'s dishes, presence and lunchboxes over the
   /// server's week, keeping the server's `createdAt` (the rules refuse a
   /// changed one) and naming as its base the week it builds on: the one on
   /// screen when the user is still on it, else the server's.
@@ -570,6 +570,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       entries: conflict.local.entries,
       presenceBySlot: conflict.local.presenceBySlot,
       awayBySlot: conflict.local.awayBySlot,
+      lunchboxes: conflict.local.lunchboxes,
     );
     if (!onScreen) {
       // Nothing on screen to update or to report a new conflict on, so any
