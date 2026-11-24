@@ -22429,7 +22429,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuWhyReasonSeasonal => 'Passar säsongen';
 
   @override
-  String get menuWhyReasonFamilyFavourite => 'Högt betyg i familjen';
+  String get menuWhyReasonFamilyFavourite => 'Högt betyg i hushållet';
 
   @override
   String get menuWhyReasonPantry => 'Använder ingredienser du har hemma';

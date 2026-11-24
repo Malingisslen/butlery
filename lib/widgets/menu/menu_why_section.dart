@@ -9,7 +9,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/menu/menu_pick_reasons.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 String menuPickReasonLabel(BuildContext context, MenuPickReason reason) {
@@ -45,28 +47,31 @@ class _MenuWhyToggleState extends State<MenuWhyToggle> {
           button: true,
           expanded: _open,
           excludeSemantics: true,
-          child: InkWell(
-            onTap: () => setState(() => _open = !_open),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ButleryIcon(
-                    _open ? ButleryIcons.chevronUp : ButleryIcons.info,
-                    size: AppDimensions.iconSizeS,
-                    color: cs.onSurface,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Text(
-                    context.l10n.menuWhyAction,
-                    style: AppTextStyles.labelMedium.copyWith(
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: () => setState(() => _open = !_open),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(
+                      _open ? ButleryIcons.chevronUp : ButleryIcons.info,
+                      size: AppDimensions.iconSizeS,
                       color: cs.onSurface,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.space4),
+                    Text(
+                      context.l10n.menuWhyAction,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: cs.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -84,7 +89,7 @@ class _MenuWhyToggleState extends State<MenuWhyToggle> {
                   runSpacing: AppDimensions.space4,
                   children: [
                     for (final r in widget.reasons)
-                      _ReasonChip(label: menuPickReasonLabel(context, r)),
+                      ButleryStaticChip(label: menuPickReasonLabel(context, r)),
                   ],
                 ),
       ],
@@ -120,33 +125,6 @@ class MenuUnmetWishNote extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ReasonChip extends StatelessWidget {
-  const _ReasonChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.space12,
-          vertical: AppDimensions.space4,
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-        ),
       ),
     );
   }

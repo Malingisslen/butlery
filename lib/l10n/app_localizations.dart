@@ -34461,7 +34461,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuWhyReasonFamilyFavourite.
   ///
   /// In sv, this message translates to:
-  /// **'Högt betyg i familjen'**
+  /// **'Högt betyg i hushållet'**
   String get menuWhyReasonFamilyFavourite;
 
   /// No description provided for @menuWhyReasonPantry.
