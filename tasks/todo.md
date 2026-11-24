@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-23): BUT-2522 veckomall, del 1 (hela veckor)
+
+Se `tasks/but-2522-plan.md` (kopia i /mnt/project-files/but-2522/bygg-del1-plan.md). Malin godkände bygget 2026-11-23 ("låt en fable kolla på planen sedan bygg"), mockupen godkänd samma dag.
+
 # Aktiv plan (2026-11-22): byt serverns AI-bibliotek till `@google/genai`
 
 Se `tasks/genai-migration-plan.md` (kopia i /mnt/project-files/ocr/genai-bytesplan.md). Beslut av Malin via kort 2026-11-22 23:27 ("Ja, som eget steg nu"); panelen (sex roller) godkände med villkor 2026-11-22, villkoren står i planen.

@@ -18259,5 +18259,134 @@
   "adminPoolChangeFailed": "Det gick inte att ändra betyget. Försök igen.",
   "adminPoolQuarantined": "Betyget är avstängt.",
   "adminPoolLifted": "Betyget är påslaget igen.",
-  "adminPoolLoading": "Hämtar betyget …"
+  "adminPoolLoading": "Hämtar betyget …",
+  "weekTemplateSaveAction": "Spara veckan som mall",
+  "weekTemplateSaveTitle": "Spara som mall",
+  "weekTemplateNameHint": "T.ex. Sommarveckan",
+  "weekTemplateNameRequired": "Ge mallen ett namn",
+  "weekTemplateWholeWeek": "Hela veckan",
+  "weekTemplateWholeWeekSummary": "{days, plural, =1{1 dag} other{{days} dagar}}, {dishes, plural, =1{1 rätt} other{{dishes} rätter}}",
+  "@weekTemplateWholeWeekSummary": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "dishes": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateSaveButton": "Spara mall",
+  "weekTemplateSaved": "Mallen {name} är sparad",
+  "@weekTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateSaveFailed": "Mallen kunde inte sparas",
+  "weekTemplatesAndSavedMenus": "Mallar och sparade menyer",
+  "weekTemplateSectionMine": "Mina mallar",
+  "weekTemplateSectionSavedMenus": "Sparade menyer",
+  "weekTemplateRowSubtitle": "Hel vecka · {dishes, plural, =1{1 rätt} other{{dishes} rätter}}",
+  "@weekTemplateRowSubtitle": {
+    "placeholders": {
+      "dishes": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateUse": "Använd",
+  "weekTemplateRename": "Döp om",
+  "weekTemplateRenameTitle": "Döp om mallen",
+  "weekTemplateRenameFailed": "Mallen kunde inte döpas om",
+  "weekTemplatePreviewOverline": "Förhandsvisning",
+  "weekTemplateDishLine": "{day}: {title}",
+  "@weekTemplateDishLine": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateDishLineWithMeal": "{day} {meal}: {title}",
+  "@weekTemplateDishLineWithMeal": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateMissing": "Saknas",
+  "weekTemplateMissingHint": "Receptet är raderat, välj nytt i kalendern",
+  "weekTemplateContains": "Innehåller {allergens}",
+  "@weekTemplateContains": {
+    "placeholders": {
+      "allergens": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateNotForEveryone": "Passar inte alla",
+  "weekTemplateUnchecked": "Ej kontrollerat",
+  "weekTemplateDisliked": "Någon ogillar den",
+  "weekTemplateWeekChip": "Vecka {week}",
+  "@weekTemplateWeekChip": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateApplyButton": "Lägg på vecka {week}",
+  "@weekTemplateApplyButton": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateOverlapTitle": "Vecka {week} har redan rätter",
+  "@weekTemplateOverlapTitle": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateOverlapBody": "Vill du fylla bara de tomma platserna eller ersätta rätterna där mallen har en rätt?",
+  "weekTemplateFillEmpty": "Fyll tomma platser",
+  "weekTemplateReplaceAll": "Ersätt allt",
+  "weekTemplateApplied": "{count, plural, =0{Inget lades på – platserna var redan fyllda} =1{1 rätt lades på vecka {week}} other{{count} rätter lades på vecka {week}}}",
+  "@weekTemplateApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateAppliedMissing": "{count, plural, =1{1 rätt saknas, välj ny i kalendern} other{{count} rätter saknas, välj nya i kalendern}}",
+  "@weekTemplateAppliedMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateApplyFailed": "Mallen kunde inte läggas på",
+  "weekTemplatePreviewFailed": "Veckan kunde inte läsas – försök igen",
+  "weekTemplateUndoFailed": "Det gick inte att ångra"
 }

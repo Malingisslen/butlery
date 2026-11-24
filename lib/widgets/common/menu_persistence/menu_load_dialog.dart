@@ -18,6 +18,9 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_shared_with_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
+    show SavedMenuInfo;
+import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 
 /// Bottom sheet for loading a saved menu.
 class LoadMenuBottomSheet extends StatefulWidget {
@@ -26,10 +29,18 @@ class LoadMenuBottomSheet extends StatefulWidget {
   /// Unused — kept for API compatibility during cleanup.
   final ValueChanged<String>? onTemplateSelected;
 
+  /// BUT-2522: opens a week template's preview. The sheet closes first.
+  final ValueChanged<SavedMenuInfo>? onUseWeekTemplate;
+
+  /// BUT-2522: renames a week template; true when it was saved.
+  final Future<bool> Function(String menuId, String name)? onRenameWeekTemplate;
+
   const LoadMenuBottomSheet({
     super.key,
     required this.viewModel,
     this.onTemplateSelected,
+    this.onUseWeekTemplate,
+    this.onRenameWeekTemplate,
   });
 
   @override
@@ -122,9 +133,11 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.space4),
-                Text(
-                  context.l10n.menuSavedMenus,
-                  style: AppTextStyles.headlineSmall,
+                Flexible(
+                  child: Text(
+                    context.l10n.weekTemplatesAndSavedMenus,
+                    style: AppTextStyles.headlineSmall,
+                  ),
                 ),
                 const Spacer(),
                 ButleryTextButton(
@@ -179,15 +192,130 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     );
   }
 
+  bool _isTemplate(dynamic menu) =>
+      menu is SavedMenuInfo && menu.isWeekTemplate;
+
   Widget _buildMenuList() {
-    return ListView.builder(
+    final templates = _savedMenus.where(_isTemplate).toList();
+    final menus = _savedMenus.where((m) => !_isTemplate(m)).toList();
+    return ListView(
       shrinkWrap: true,
-      itemCount: _savedMenus.length,
-      itemBuilder: (context, index) {
-        final menu = _savedMenus[index];
-        return _buildMenuListItem(menu);
-      },
+      children: [
+        if (templates.isNotEmpty) ...[
+          _sectionLabel(context.l10n.weekTemplateSectionMine),
+          for (final template in templates)
+            _buildTemplateListItem(template as SavedMenuInfo),
+          if (menus.isNotEmpty)
+            _sectionLabel(context.l10n.weekTemplateSectionSavedMenus),
+        ],
+        for (final menu in menus) _buildMenuListItem(menu),
+      ],
     );
+  }
+
+  Widget _sectionLabel(String label) => Padding(
+    padding: const EdgeInsets.fromLTRB(
+      AppDimensions.space16,
+      AppDimensions.space12,
+      AppDimensions.space16,
+      AppDimensions.space4,
+    ),
+    child: Text(label.toUpperCase(), style: AppTextStyles.overline),
+  );
+
+  Widget _buildTemplateListItem(SavedMenuInfo template) {
+    final l = context.l10n;
+    return StyledCard(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
+      ),
+      child: ButleryItemRow(
+        leadingIcon: ButleryIcons.calendar,
+        title: template.name,
+        subtitle: l.weekTemplateRowSubtitle(template.templateEntries!.length),
+        trailing: ButleryMenu<String>(
+          semanticLabel: l.rootBarMoreActions,
+          onSelected: (value) => _handleTemplateAction(template, value),
+          choices: [
+            if (widget.onUseWeekTemplate != null)
+              ButleryMenuChoice(
+                value: 'use',
+                label: l.weekTemplateUse,
+                icon: ButleryIcons.calendar,
+              ),
+            if (widget.onRenameWeekTemplate != null)
+              ButleryMenuChoice(
+                value: 'rename',
+                label: l.weekTemplateRename,
+                icon: ButleryIcons.pencil,
+              ),
+            ButleryMenuChoice(
+              value: 'delete',
+              label: l.commonDelete,
+              icon: ButleryIcons.trash2,
+              danger: true,
+            ),
+          ],
+        ),
+        onTap: widget.onUseWeekTemplate == null
+            ? null
+            : () => _useTemplate(template),
+      ),
+    );
+  }
+
+  void _handleTemplateAction(SavedMenuInfo template, String action) {
+    switch (action) {
+      case 'use':
+        _useTemplate(template);
+      case 'rename':
+        _renameTemplate(template);
+      case 'delete':
+        _deleteMenuWithUndo(template);
+    }
+  }
+
+  void _useTemplate(SavedMenuInfo template) {
+    Navigator.pop(context);
+    widget.onUseWeekTemplate?.call(template);
+  }
+
+  Future<void> _renameTemplate(SavedMenuInfo template) async {
+    final rename = widget.onRenameWeekTemplate;
+    if (rename == null) return;
+    final l = context.l10n;
+    final name = await ConfirmationDialogs.showTextInputDialog(
+      context,
+      title: l.weekTemplateRenameTitle,
+      initialValue: template.name,
+      confirmText: l.commonSave,
+      isRequired: true,
+      maxLength: 50,
+    );
+    final trimmed = (name?.trim()).orEmpty();
+    if (trimmed.isEmpty || trimmed == template.name || !mounted) return;
+    final ok = await rename(template.key, trimmed);
+    if (!mounted) return;
+    if (!ok) {
+      SnackBarUtils.showFailure(context, what: l.weekTemplateRenameFailed);
+      return;
+    }
+    final renamed = SavedMenuInfo(
+      key: template.key,
+      name: trimmed,
+      savedDate: template.savedDate,
+      recipeCount: template.recipeCount,
+      comment: template.comment,
+      isOwned: template.isOwned,
+      firebaseId: template.firebaseId,
+      templateEntries: template.templateEntries,
+    );
+    setState(() {
+      _savedMenus = [
+        for (final m in _savedMenus) identical(m, template) ? renamed : m,
+      ];
+    });
   }
 
   Widget _buildMenuListItem(dynamic menu) {

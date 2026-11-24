@@ -22432,4 +22432,171 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminPoolLoading => 'Fetching the rating …';
+
+  @override
+  String get weekTemplateSaveAction => 'Save week as template';
+
+  @override
+  String get weekTemplateSaveTitle => 'Save as template';
+
+  @override
+  String get weekTemplateNameHint => 'E.g. Summer week';
+
+  @override
+  String get weekTemplateNameRequired => 'Give the template a name';
+
+  @override
+  String get weekTemplateWholeWeek => 'Whole week';
+
+  @override
+  String weekTemplateWholeWeekSummary(int days, int dishes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      dishes,
+      locale: localeName,
+      other: '$dishes dishes',
+      one: '1 dish',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get weekTemplateSaveButton => 'Save template';
+
+  @override
+  String weekTemplateSaved(String name) {
+    return 'Template $name saved';
+  }
+
+  @override
+  String get weekTemplateSaveFailed => 'The template could not be saved';
+
+  @override
+  String get weekTemplatesAndSavedMenus => 'Templates and saved menus';
+
+  @override
+  String get weekTemplateSectionMine => 'My templates';
+
+  @override
+  String get weekTemplateSectionSavedMenus => 'Saved menus';
+
+  @override
+  String weekTemplateRowSubtitle(int dishes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      dishes,
+      locale: localeName,
+      other: '$dishes dishes',
+      one: '1 dish',
+    );
+    return 'Whole week · $_temp0';
+  }
+
+  @override
+  String get weekTemplateUse => 'Use';
+
+  @override
+  String get weekTemplateRename => 'Rename';
+
+  @override
+  String get weekTemplateRenameTitle => 'Rename template';
+
+  @override
+  String get weekTemplateRenameFailed => 'The template could not be renamed';
+
+  @override
+  String get weekTemplatePreviewOverline => 'Preview';
+
+  @override
+  String weekTemplateDishLine(String day, String title) {
+    return '$day: $title';
+  }
+
+  @override
+  String weekTemplateDishLineWithMeal(String day, String meal, String title) {
+    return '$day $meal: $title';
+  }
+
+  @override
+  String get weekTemplateMissing => 'Missing';
+
+  @override
+  String get weekTemplateMissingHint =>
+      'The recipe was deleted, pick a new one in the calendar';
+
+  @override
+  String weekTemplateContains(String allergens) {
+    return 'Contains $allergens';
+  }
+
+  @override
+  String get weekTemplateNotForEveryone => 'Not for everyone';
+
+  @override
+  String get weekTemplateUnchecked => 'Not checked';
+
+  @override
+  String get weekTemplateDisliked => 'Someone dislikes it';
+
+  @override
+  String weekTemplateWeekChip(int week) {
+    return 'Week $week';
+  }
+
+  @override
+  String weekTemplateApplyButton(int week) {
+    return 'Apply to week $week';
+  }
+
+  @override
+  String weekTemplateOverlapTitle(int week) {
+    return 'Week $week already has dishes';
+  }
+
+  @override
+  String get weekTemplateOverlapBody =>
+      'Fill only the empty places, or replace the dishes where the template has one?';
+
+  @override
+  String get weekTemplateFillEmpty => 'Fill empty places';
+
+  @override
+  String get weekTemplateReplaceAll => 'Replace all';
+
+  @override
+  String weekTemplateApplied(int count, int week) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes applied to week $week',
+      one: '1 dish applied to week $week',
+      zero: 'Nothing applied – the places were already filled',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weekTemplateAppliedMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes are missing, pick new ones in the calendar',
+      one: '1 dish is missing, pick a new one in the calendar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekTemplateApplyFailed => 'The template could not be applied';
+
+  @override
+  String get weekTemplatePreviewFailed =>
+      'The week could not be read – try again';
+
+  @override
+  String get weekTemplateUndoFailed => 'Could not undo';
 }

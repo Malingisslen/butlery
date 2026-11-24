@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
+    show SavedMenuInfo;
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -44,11 +46,15 @@ class VeckomenyDialogs {
     BuildContext context, {
     required MenuViewModel viewModel,
     ValueChanged<String>? onTemplateSelected,
+    ValueChanged<SavedMenuInfo>? onUseWeekTemplate,
+    Future<bool> Function(String menuId, String name)? onRenameWeekTemplate,
   }) async {
     await LayoutComponents.showLoadMenuDialog(
       context,
       viewModel: viewModel,
       onTemplateSelected: onTemplateSelected,
+      onUseWeekTemplate: onUseWeekTemplate,
+      onRenameWeekTemplate: onRenameWeekTemplate,
     );
   }
 

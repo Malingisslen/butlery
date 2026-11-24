@@ -355,6 +355,32 @@ void main() {
         expect(service.menus.first.menuTitle, 'Mine');
       });
 
+      /// BUT-2522: a week template lives on a `menus` document but is not a
+      /// menu to share, so the share pickers that read this list never see it.
+      test('skips week templates the user owns', () async {
+        await _seedOwnedMenu(fakeFirestore, ownerId: 'user-1', title: 'Meny');
+        final templateId = await _seedOwnedMenu(
+          fakeFirestore,
+          ownerId: 'user-1',
+          title: 'Sommarveckan',
+        );
+        await fakeFirestore.collection('menus').doc(templateId).update({
+          'templateKind': SharedMenu.weekTemplateKind,
+          'templateEntries': [
+            {
+              'day': 'fri',
+              'slot': 'middag',
+              'recipeId': 'pizza',
+              'recipeTitle': 'Pizza',
+            },
+          ],
+        });
+
+        await service.initialize();
+
+        expect(service.menus.map((m) => m.menuTitle), ['Meny']);
+      });
+
       /// Proves: realtime_menus where user is a participant (but NOT
       /// owner) are merged into the loaded list. Skipping this is the
       /// exact bug fix the comment in production code calls out.

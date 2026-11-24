@@ -20,6 +20,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/menu/week_template_entry.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -28,6 +30,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
+import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -158,8 +161,8 @@ void main() {
       await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
       await tester.pumpAndSettle();
 
-      // Swedish locale: "Sparade menyer" + "Stäng"
-      expect(find.text('Sparade menyer'), findsOneWidget);
+      // Swedish locale: "Mallar och sparade menyer" + "Stäng"
+      expect(find.text('Mallar och sparade menyer'), findsOneWidget);
       expect(find.widgetWithText(ButleryTextButton, 'Stäng'), findsOneWidget);
       // Header and empty state both show the folder glyph (P7-U08).
       expect(find.byIcon(ButleryIcons.folder), findsNWidgets(2));
@@ -452,6 +455,146 @@ void main() {
         verify(() => vm.deleteSavedMenu('k1')).called(1);
         expect(find.textContaining('Kunde inte radera meny'), findsOneWidget);
       });
+    });
+  });
+
+  group('LoadMenuBottomSheet week templates (BUT-2522)', () {
+    SavedMenuInfo template() => SavedMenuInfo(
+      key: 't1',
+      name: 'Sommarveckan',
+      savedDate: DateTime(2026, 11, 23),
+      recipeCount: 0,
+      comment: '',
+      templateEntries: const [
+        WeekTemplateEntry(
+          day: DayOfWeek.mon,
+          slot: MealSlot.middag,
+          recipeId: 'r1',
+          recipeTitle: 'Linsgryta',
+        ),
+        WeekTemplateEntry(
+          day: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipeId: 'r2',
+          recipeTitle: 'Laxpasta',
+        ),
+      ],
+    );
+
+    testWidgets('templates and saved menus are listed under their own '
+        'headings', (tester) async {
+      final vm = _vm();
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([_menu(), template()]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('MINA MALLAR'), findsOneWidget);
+      expect(find.text('SPARADE MENYER'), findsOneWidget);
+      expect(find.text('Hel vecka · 2 rätter'), findsOneWidget);
+      final mine = tester.getTopLeft(find.text('Sommarveckan')).dy;
+      final saved = tester.getTopLeft(find.text('Veckomeny')).dy;
+      expect(mine, lessThan(saved));
+    });
+
+    testWidgets('tapping a template hands it to the preview, never to the '
+        'menu loader', (tester) async {
+      final vm = _vm();
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([template()]);
+      SavedMenuInfo? used;
+
+      await tester.pumpWidget(
+        _wrap(
+          LoadMenuBottomSheet(
+            viewModel: vm,
+            onUseWeekTemplate: (t) => used = t,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sommarveckan'));
+      await tester.pumpAndSettle();
+
+      expect(used?.key, 't1');
+      verifyNever(() => vm.loadSavedMenu(any()));
+    });
+
+    testWidgets('renaming a template saves the new name and shows it', (
+      tester,
+    ) async {
+      final vm = _vm();
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([template()]);
+      final renames = <(String, String)>[];
+
+      await tester.pumpWidget(
+        _wrap(
+          LoadMenuBottomSheet(
+            viewModel: vm,
+            onUseWeekTemplate: (_) {},
+            onRenameWeekTemplate: (id, name) async {
+              renames.add((id, name));
+              return true;
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Fler åtgärder').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Döp om'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Vinterveckan');
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+
+      expect(renames, [('t1', 'Vinterveckan')]);
+      expect(find.text('Vinterveckan'), findsOneWidget);
+      expect(find.text('Sommarveckan'), findsNothing);
+    });
+
+    testWidgets('the sheet opened from the week menu passes both template '
+        'actions through', (tester) async {
+      final vm = _vm();
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+      when(() => vm.savedMenus).thenReturn([template()]);
+      final used = <String>[];
+      final renames = <(String, String)>[];
+
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
+                context,
+                viewModel: vm,
+                onUseWeekTemplate: (t) => used.add(t.key),
+                onRenameWeekTemplate: (id, name) async {
+                  renames.add((id, name));
+                  return true;
+                },
+              ),
+              child: const Text('Öppna'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Öppna'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Fler åtgärder').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Döp om'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Vinterveckan');
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vinterveckan'));
+      await tester.pumpAndSettle();
+
+      expect(renames, [('t1', 'Vinterveckan')]);
+      expect(used, ['t1']);
     });
   });
 }

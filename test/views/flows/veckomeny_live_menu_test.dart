@@ -167,7 +167,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ladda sparad meny'), findsNothing);
+    expect(find.text('Mallar och sparade menyer'), findsNothing);
+    expect(find.text('Spara veckan som mall'), findsNothing);
   });
 
   testWidgets('offers no calendar placement for the live menu', (
