@@ -191,6 +191,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       for (final doc in querySnapshot.docs) {
         try {
           final menu = SharedMenu.fromFirestore(doc.data(), doc.id);
+          // BUT-2522: a week template is never shared, so it stays out of
+          // the list every share picker reads.
+          if (menu.isWeekTemplate) continue;
           _menus.add(menu);
         } catch (e) {
           AppLogger.error('Error parsing menu ${doc.id}', e);

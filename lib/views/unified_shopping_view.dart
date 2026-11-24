@@ -40,6 +40,7 @@ import 'package:butlery/views/unified_shopping/widgets/week_list_follow_notice_b
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_lists_pane.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
+import 'package:butlery/views/unified_shopping/widgets/store_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
 import 'package:butlery/views/unified_shopping/widgets/restore_items_sheet.dart';
 
@@ -387,6 +388,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                 : null,
             showListPicker: !useDetailPane(MediaQuery.sizeOf(context)),
           ),
+          ShoppingStoreBar(viewModel: viewModel),
           Expanded(
             child: ShoppingListContent.build(
               context,
@@ -791,6 +793,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   void _showCategoryOrderSheet(UnifiedShoppingViewModel viewModel) {
     CategoryOrderSheet.show(
       context,
+      title: viewModel.activeStore == null
+          ? null
+          : context.l10n.shoppingStoreOrderTitle(viewModel.activeStore!.name),
       currentOrder: viewModel.categoryOrder,
       onSave: (order) async {
         await viewModel.saveCategoryOrder(order);

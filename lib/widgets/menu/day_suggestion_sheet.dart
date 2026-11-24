@@ -43,7 +43,7 @@ class DaySuggestionSheet {
     );
   }
 
-  static Future<List<Recipe>> readPool() => StrictSafePool.read(
+  static Future<List<Recipe>> readPool() async => StrictSafePool.read(
     menuService: ServiceLocator.get<MenuService>(),
     recipeService: ServiceLocator.get<UnifiedRecipeService>(),
     userService: ServiceLocator.get<OwnProfileReader>(),

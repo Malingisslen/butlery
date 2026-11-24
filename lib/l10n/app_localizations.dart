@@ -2426,12 +2426,6 @@ abstract class AppLocalizations {
   /// **'Mängderna följer vilka som är hemma'**
   String get menuShoppingScaledToPresence;
 
-  /// No description provided for @menuLoadSaved.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ladda sparad meny'**
-  String get menuLoadSaved;
-
   /// No description provided for @menuClear.
   ///
   /// In sv, this message translates to:
@@ -4609,12 +4603,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delar redan listan'**
   String get shareAlreadySharingList;
-
-  /// No description provided for @menuSavedMenus.
-  ///
-  /// In sv, this message translates to:
-  /// **'Sparade menyer'**
-  String get menuSavedMenus;
 
   /// No description provided for @menuNoSavedMenus.
   ///
@@ -11059,6 +11047,78 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Spara ordning'**
   String get shoppingSaveOrder;
+
+  /// No description provided for @shoppingStoreChipNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj butik'**
+  String get shoppingStoreChipNone;
+
+  /// No description provided for @shoppingStoreChip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butik: {name}'**
+  String shoppingStoreChip(String name);
+
+  /// No description provided for @shoppingStorePickerTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilken butik?'**
+  String get shoppingStorePickerTitle;
+
+  /// No description provided for @shoppingStoreNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen butik'**
+  String get shoppingStoreNone;
+
+  /// No description provided for @shoppingStoreNoneSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listans egen ordning'**
+  String get shoppingStoreNoneSubtitle;
+
+  /// No description provided for @shoppingStoreAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny butik'**
+  String get shoppingStoreAdd;
+
+  /// No description provided for @shoppingStoreAddHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butikens namn, till exempel ICA Maxi'**
+  String get shoppingStoreAddHint;
+
+  /// No description provided for @shoppingStoreLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan spara högst {max} butiker'**
+  String shoppingStoreLimit(int max);
+
+  /// No description provided for @shoppingStoreDeleteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort butiken?'**
+  String get shoppingStoreDeleteTitle;
+
+  /// No description provided for @shoppingStoreDeleteMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} och dess ordning tas bort. Dina listor ändras inte.'**
+  String shoppingStoreDeleteMessage(String name);
+
+  /// No description provided for @shoppingStoreDeleteConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get shoppingStoreDeleteConfirm;
+
+  /// No description provided for @shoppingStoreOrderTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ordning i {name}'**
+  String shoppingStoreOrderTitle(String name);
 
   /// No description provided for @shoppingItemMoved.
   ///
@@ -34379,6 +34439,228 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.'**
   String get menuQuickPantryNothing;
+
+  /// No description provided for @weekTemplateSaveAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara veckan som mall'**
+  String get weekTemplateSaveAction;
+
+  /// No description provided for @weekTemplateSaveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som mall'**
+  String get weekTemplateSaveTitle;
+
+  /// No description provided for @weekTemplatePreviewLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollerar mot dem som äter …'**
+  String get weekTemplatePreviewLoading;
+
+  /// No description provided for @weekTemplateNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ge mallen ett namn'**
+  String get weekTemplateNameRequired;
+
+  /// No description provided for @weekTemplateWholeWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hela veckan'**
+  String get weekTemplateWholeWeek;
+
+  /// No description provided for @weekTemplateWholeWeekSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{days, plural, =1{1 dag} other{{days} dagar}}, {dishes, plural, =1{1 rätt} other{{dishes} rätter}}'**
+  String weekTemplateWholeWeekSummary(int days, int dishes);
+
+  /// No description provided for @weekTemplateSaveButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara mall'**
+  String get weekTemplateSaveButton;
+
+  /// No description provided for @weekTemplateSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallen {name} är sparad'**
+  String weekTemplateSaved(String name);
+
+  /// No description provided for @weekTemplateSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallen kunde inte sparas'**
+  String get weekTemplateSaveFailed;
+
+  /// No description provided for @weekTemplatesAndSavedMenus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallar och sparade menyer'**
+  String get weekTemplatesAndSavedMenus;
+
+  /// No description provided for @weekTemplateSectionMine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mina mallar'**
+  String get weekTemplateSectionMine;
+
+  /// No description provided for @weekTemplateSectionSavedMenus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparade menyer'**
+  String get weekTemplateSectionSavedMenus;
+
+  /// No description provided for @weekTemplateRowSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hel vecka · {dishes, plural, =1{1 rätt} other{{dishes} rätter}}'**
+  String weekTemplateRowSubtitle(int dishes);
+
+  /// No description provided for @weekTemplateUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd'**
+  String get weekTemplateUse;
+
+  /// No description provided for @weekTemplateRename.
+  ///
+  /// In sv, this message translates to:
+  /// **'Döp om'**
+  String get weekTemplateRename;
+
+  /// No description provided for @weekTemplateRenameTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Döp om mallen'**
+  String get weekTemplateRenameTitle;
+
+  /// No description provided for @weekTemplateRenameFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallen kunde inte döpas om'**
+  String get weekTemplateRenameFailed;
+
+  /// No description provided for @weekTemplatePreviewOverline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förhandsvisning'**
+  String get weekTemplatePreviewOverline;
+
+  /// No description provided for @weekTemplateDishLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'{day}: {title}'**
+  String weekTemplateDishLine(String day, String title);
+
+  /// No description provided for @weekTemplateDishLineWithMeal.
+  ///
+  /// In sv, this message translates to:
+  /// **'{day} {meal}: {title}'**
+  String weekTemplateDishLineWithMeal(String day, String meal, String title);
+
+  /// No description provided for @weekTemplateMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Saknas'**
+  String get weekTemplateMissing;
+
+  /// No description provided for @weekTemplateMissingHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är raderat, välj nytt i kalendern'**
+  String get weekTemplateMissingHint;
+
+  /// No description provided for @weekTemplateContains.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller {allergens}'**
+  String weekTemplateContains(String allergens);
+
+  /// No description provided for @weekTemplateNotForEveryone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Passar inte alla'**
+  String get weekTemplateNotForEveryone;
+
+  /// No description provided for @weekTemplateUnchecked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ej kontrollerat'**
+  String get weekTemplateUnchecked;
+
+  /// No description provided for @weekTemplateDisliked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon ogillar den'**
+  String get weekTemplateDisliked;
+
+  /// No description provided for @weekTemplateWeekChip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week}'**
+  String weekTemplateWeekChip(int week);
+
+  /// No description provided for @weekTemplateApplyButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg på vecka {week}'**
+  String weekTemplateApplyButton(int week);
+
+  /// No description provided for @weekTemplateOverlapTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} har redan rätter'**
+  String weekTemplateOverlapTitle(int week);
+
+  /// No description provided for @weekTemplateOverlapBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du fylla bara de tomma platserna eller ersätta rätterna där mallen har en rätt?'**
+  String get weekTemplateOverlapBody;
+
+  /// No description provided for @weekTemplateFillEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fyll tomma platser'**
+  String get weekTemplateFillEmpty;
+
+  /// No description provided for @weekTemplateReplaceAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ersätt allt'**
+  String get weekTemplateReplaceAll;
+
+  /// No description provided for @weekTemplateApplied.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inget lades på – platserna var redan fyllda} =1{1 rätt lades på vecka {week}} other{{count} rätter lades på vecka {week}}}'**
+  String weekTemplateApplied(int count, int week);
+
+  /// No description provided for @weekTemplateAppliedMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt saknas, välj ny i kalendern} other{{count} rätter saknas, välj nya i kalendern}}'**
+  String weekTemplateAppliedMissing(int count);
+
+  /// No description provided for @weekTemplateApplyFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallen kunde inte läggas på'**
+  String get weekTemplateApplyFailed;
+
+  /// No description provided for @weekTemplatePreviewFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan kunde inte läsas – försök igen'**
+  String get weekTemplatePreviewFailed;
+
+  /// No description provided for @weekTemplateUndoFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att ångra'**
+  String get weekTemplateUndoFailed;
 }
 
 class _AppLocalizationsDelegate

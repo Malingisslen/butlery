@@ -9,6 +9,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
+import 'package:butlery/models/menu/week_template_entry.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -220,6 +222,82 @@ void main() {
           throwsA(isA<StateError>()),
         );
       });
+    });
+  });
+
+  // BUT-2522: a week template is an owned, unshared `menus` document, read
+  // back by the same owner query the saved menus use.
+  group('MenuStorage - Week templates', () {
+    WeekTemplateEntry entry(int i) => WeekTemplateEntry(
+      day: DayOfWeek.mon,
+      slot: MealSlot.ovrigt,
+      recipeId: 'r$i',
+      recipeTitle: 'Rätt $i',
+    );
+
+    Future<Map<String, dynamic>> stored(String id) async =>
+        (await mockFirestoreRepo.firestore.collection('menus').doc(id).get())
+            .data()!;
+
+    test('is saved as an owned, unshared template', () async {
+      final id = await menuStorage.saveWeekTemplate(
+        name: '  Sommarveckan  ',
+        entries: [entry(1)],
+      );
+
+      final data = await stored(id);
+      expect(data['templateKind'], 'week');
+      expect(data['sharedByUserId'], testUserId);
+      expect(data['sharedToUserIds'], isEmpty);
+      expect(data['menuTitle'], 'Sommarveckan');
+      expect(data['templateEntries'], [entry(1).toMap()]);
+    });
+
+    test('stores at most the entry cap', () async {
+      final id = await menuStorage.saveWeekTemplate(
+        name: 'Stor',
+        entries: [
+          for (var i = 0; i <= WeekTemplateEntry.maxEntries; i++) entry(i),
+        ],
+      );
+
+      final data = await stored(id);
+      expect(
+        data['templateEntries'] as List,
+        hasLength(WeekTemplateEntry.maxEntries),
+      );
+    });
+
+    test('loads as a template beside a saved menu that is not one', () async {
+      await menuStorage.saveWeekTemplate(name: 'Mall', entries: [entry(1)]);
+      await menuStorage.saveMenu(
+        menuName: 'Meny',
+        comment: '',
+        menu: createTestMenu(),
+        lastPrompt: '',
+        totalRecipeCount: 3,
+      );
+
+      final byName = {
+        for (final m in await menuStorage.loadUserMenus()) m.name: m,
+      };
+
+      expect(byName['Mall']!.isWeekTemplate, isTrue);
+      expect(byName['Mall']!.templateEntries, [entry(1)]);
+      expect(byName['Meny']!.isWeekTemplate, isFalse);
+    });
+
+    test('rename writes the trimmed title and keeps the dishes', () async {
+      final id = await menuStorage.saveWeekTemplate(
+        name: 'Gammalt',
+        entries: [entry(1)],
+      );
+
+      await menuStorage.renameMenu(id, '  Nytt  ');
+
+      final data = await stored(id);
+      expect(data['menuTitle'], 'Nytt');
+      expect(data['templateEntries'], [entry(1).toMap()]);
     });
   });
 

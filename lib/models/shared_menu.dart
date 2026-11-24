@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/menu/week_template_entry.dart';
 
 /// Shared menu model with copy-on-write collaboration support.
 class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
@@ -25,6 +26,15 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   final bool _copyOnWriteTriggered;
   final String? _originalOwnerStaticCopyId;
   final int _activeCollaboratorCount;
+
+  /// BUT-2522: set on a saved week template, which keeps its dishes in
+  /// [templateEntries] and leaves [menuSnapshot] empty. Null on a menu.
+  final String? templateKind;
+  final List<WeekTemplateEntry> templateEntries;
+
+  static const String weekTemplateKind = 'week';
+
+  bool get isWeekTemplate => templateKind == weekTemplateKind;
 
   /// BUT-648: Schema version for lazy migration on read.
   /// Default 1 — old docs without this field are treated as v1.
@@ -49,6 +59,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     String? originalOwnerStaticCopyId,
     int activeCollaboratorCount = 0,
     this.schemaVersion = 1,
+    this.templateKind,
+    this.templateEntries = const [],
   }) : _isOriginalReference = isOriginalReference,
        _copyOnWriteTriggered = copyOnWriteTriggered,
        _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
@@ -148,6 +160,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       activeCollaboratorCount:
           activeCollaboratorCount ?? this.activeCollaboratorCount,
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      templateKind: templateKind,
+      templateEntries: templateEntries,
     );
   }
 
@@ -297,6 +311,9 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'allowCollaboration': allowCollaboration,
       if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
       'schemaVersion': schemaVersion,
+      if (templateKind != null) 'templateKind': templateKind,
+      if (templateKind != null)
+        'templateEntries': templateEntries.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -447,6 +464,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             cowFields['originalOwnerStaticCopyId'] as String?,
         activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
         schemaVersion: data['schemaVersion'] as int? ?? 1,
+        templateKind: utils.SerializationUtils.safeNullableString(
+          data,
+          'templateKind',
+        ),
+        templateEntries: WeekTemplateEntry.listFrom(data['templateEntries']),
       );
     } catch (e) {
       rethrow;
@@ -471,6 +493,9 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'allowCollaboration': allowCollaboration,
       if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
       'schemaVersion': schemaVersion,
+      if (templateKind != null) 'templateKind': templateKind,
+      if (templateKind != null)
+        'templateEntries': templateEntries.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -514,6 +539,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
           cowFields['originalOwnerStaticCopyId'] as String?,
       activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
       schemaVersion: json['schemaVersion'] as int? ?? 1,
+      templateKind: json['templateKind'] is String
+          ? json['templateKind'] as String
+          : null,
+      templateEntries: WeekTemplateEntry.listFrom(json['templateEntries']),
     );
   }
 

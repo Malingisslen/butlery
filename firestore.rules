@@ -1323,6 +1323,22 @@ service cloud.firestore {
     // MENUS - User's personal menus (Issue #014 aligned)
 
     match /menus/{menuId} {
+      // BUT-2522: the top-level keys the app writes on a saved menu or week
+      // template (`SharedMenu.toFirestore()` plus `sharedToUserIds`,
+      // `isModified`, `modifiedAt`). Create must hold only these; an owner
+      // update may add or change only these, so a document already holding
+      // another key can still be renamed, saved again or cleaned up.
+      function menuKeys() {
+        return ['sharedByUserId', 'sharedByDisplayName', 'sharedAt',
+          'shareMessage', 'viewCount', 'engagementCount', 'dismissalCount',
+          'isOriginalReference', 'copyOnWriteTriggered',
+          'originalOwnerStaticCopyId', 'activeCollaboratorCount',
+          'menuTitle', 'menuSnapshot', 'totalRecipeCount', 'categories',
+          'allowCollaboration', 'schemaVersion', 'realtimeMenuId',
+          'templateKind', 'templateEntries', 'sharedToUserIds',
+          'isModified', 'modifiedAt'];
+      }
+
       // Owner OR recipient can read. Mirrors unified_shared_shopping_lists.
       // BUT-747: recipient access also unblocks the GDPR scrub
       // (recipient must be able to read+update to remove their own UID).
@@ -1335,7 +1351,8 @@ service cloud.firestore {
       // Can create if you're the sharedByUserId
       allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt'])
+        && request.resource.data.keys().hasOnly(menuKeys());
 
       // Owner: full update with the standard immutability guard.
       // Recipient (BUT-747): may ONLY shrink `sharedToUserIds` to remove
@@ -1347,7 +1364,11 @@ service cloud.firestore {
       // and the only element removed must be auth.uid (no booting others).
       allow update: if isAuthenticated() && (
         (request.auth.uid == resource.data.sharedByUserId
-          && cannotModify(['sharedByUserId', 'sharedAt']))
+          && cannotModify(['sharedByUserId', 'sharedAt'])
+          && request.resource.data.diff(resource.data).addedKeys()
+              .hasOnly(menuKeys())
+          && request.resource.data.diff(resource.data).changedKeys()
+              .hasOnly(menuKeys()))
         || (resource.data.sharedToUserIds is list
           && request.resource.data.sharedToUserIds is list
           && request.auth.uid in resource.data.sharedToUserIds

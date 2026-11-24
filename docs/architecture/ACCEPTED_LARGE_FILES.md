@@ -216,7 +216,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `smart_import_viewmodel.dart` | 733 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 461 | Shopping list UI — drag/reorder, categories, collaborative |
 | `cooking_mode_view.dart` | 1444 | Full cooking mode screen — timer, steps, landscape layout (drifted +103 from 585 — BUT-550 reconciled 2026-05-28) |
-| `unified_shopping_viewmodel.dart` | 795 | Shopping list VM — personal + collaborative, sync |
+| `unified_shopping_viewmodel.dart` | 895 | Shopping list VM — personal + collaborative, sync |
 | `recipe_query_viewmodel.dart` | 636 | Recipe search/filter/sort VM with history |
 | `menu_content_widgets.dart` | 313 | **candidate**: multiple static widget builders for distinct menu sections — splittable by section type |
 | `image_gallery_widget.dart` | 507 | Image gallery widget |
@@ -226,7 +226,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shared_content_actions.dart` | 483 | Static action helper with one responsibility: import/dismiss shared content |
 | `upload_progress_widgets.dart` | 490 | Focused static widget for upload progress UI |
 | `family_member_form_view.dart` | 496 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design |
-| `unified_shopping_view.dart` | 824 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
+| `unified_shopping_view.dart` | 832 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
 | `recipe_detail_comments.dart` | 675 | Extracted sub-widget for comments section; single cohesive concern |
 | `collection_stats_view.dart` | 185 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |
 | `user_profile_viewmodel.dart` | — | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |

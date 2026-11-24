@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/category_preferences.dart';
+import 'package:butlery/models/shopping_store.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 void main() {
@@ -112,6 +113,40 @@ void main() {
     test('handles empty / whitespace-only', () {
       expect(CategoryPreferences.normalizeItemName(''), '');
       expect(CategoryPreferences.normalizeItemName('   '), '');
+    });
+  });
+
+  group('stores', () {
+    test('round-trip keeps stores and the store picked per list', () {
+      final prefs = CategoryPreferences(
+        stores: const [
+          ShoppingStore(id: 's1', name: 'ICA', categoryOrder: ['dairy']),
+        ],
+        activeStoreByList: const {'list1': 's1'},
+      );
+      final back = CategoryPreferences.fromFirestore(prefs.toFirestore());
+      expect(back.stores.single.name, 'ICA');
+      expect(back.stores.single.categoryOrder, ['dairy']);
+      expect(back.activeStoreByList, {'list1': 's1'});
+    });
+
+    test('a document from before stores existed has none', () {
+      final back = CategoryPreferences.fromFirestore({
+        'defaultCategoryOrder': ['dairy'],
+      });
+      expect(back.stores, isEmpty);
+      expect(back.activeStoreByList, isEmpty);
+    });
+
+    test('one damaged store row is skipped, the rest are kept', () {
+      final back = CategoryPreferences.fromFirestore({
+        'stores': [
+          {'id': 's1', 'name': 'ICA'},
+          {'name': 'no id'},
+          'junk',
+        ],
+      });
+      expect(back.stores.map((s) => s.id), ['s1']);
     });
   });
 }

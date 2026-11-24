@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
+    show SavedMenuInfo;
 
 // Import all split modules
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
@@ -56,12 +58,16 @@ class LayoutComponents {
     BuildContext context, {
     required MenuViewModel viewModel,
     ValueChanged<String>? onTemplateSelected,
+    ValueChanged<SavedMenuInfo>? onUseWeekTemplate,
+    Future<bool> Function(String menuId, String name)? onRenameWeekTemplate,
   }) {
     return showButlerySheet<void>(
       context: context,
       builder: (context) => LoadMenuBottomSheet(
         viewModel: viewModel,
         onTemplateSelected: onTemplateSelected,
+        onUseWeekTemplate: onUseWeekTemplate,
+        onRenameWeekTemplate: onRenameWeekTemplate,
       ),
     );
   }

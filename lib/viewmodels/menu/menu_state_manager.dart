@@ -3,6 +3,7 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/models/menu/week_template_entry.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for menu state management
@@ -129,6 +130,11 @@ class SavedMenuInfo {
   final bool isOwned;
   final String? firebaseId;
 
+  /// BUT-2522: the dishes of a saved week template; null for a saved menu.
+  final List<WeekTemplateEntry>? templateEntries;
+
+  bool get isWeekTemplate => templateEntries != null;
+
   SavedMenuInfo({
     required this.key,
     required this.name,
@@ -139,6 +145,7 @@ class SavedMenuInfo {
     this.isModified = false,
     this.isOwned = true,
     this.firebaseId,
+    this.templateEntries,
   });
 
   /// Get attribution color type for UI

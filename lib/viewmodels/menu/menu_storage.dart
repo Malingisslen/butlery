@@ -3,6 +3,7 @@
 import 'package:butlery/core/di/attribution_from_locator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/menu/week_template_entry.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -72,6 +73,38 @@ class MenuStorage {
     );
     return docRef.id;
   }
+
+  /// BUT-2522: saves a week template as an owned, unshared `menus` document,
+  /// so the saved-menu list, export and account deletion cover it unchanged.
+  Future<String> saveWeekTemplate({
+    required String name,
+    required List<WeekTemplateEntry> entries,
+  }) async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+    final template = SharedMenu(
+      id: '',
+      sharedByUserId: userId,
+      sharedByDisplayName: attributionSourceFromLocator().displayName,
+      menuTitle: name.trim(),
+      menuSnapshot: const {},
+      templateKind: SharedMenu.weekTemplateKind,
+      templateEntries: entries.take(WeekTemplateEntry.maxEntries).toList(),
+    );
+    final docRef = await _firestoreRepository
+        .collection(FirestoreCollections.menus)
+        .add({...template.toFirestore(), 'sharedToUserIds': <String>[]});
+    return docRef.id;
+  }
+
+  /// Renames a saved menu or template. One field write: the rules let only
+  /// the owner change it, so no ownership read is spent first.
+  Future<void> renameMenu(String menuId, String name) => _firestoreRepository
+      .collection(FirestoreCollections.menus)
+      .doc(menuId)
+      .update({'menuTitle': name.trim()});
 
   /// Legacy method name - delegates to saveMenu
   @Deprecated('Use saveMenu instead')
@@ -182,6 +215,9 @@ class MenuStorage {
               isModified: false,
               isOwned: true,
               firebaseId: doc.id,
+              templateEntries: menu.isWeekTemplate
+                  ? menu.templateEntries
+                  : null,
             ),
           );
         } catch (e) {

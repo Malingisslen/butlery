@@ -1133,7 +1133,6 @@
   "@menuShoppingScaledToPresence": {
     "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
   },
-  "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared.",
   "menuGeneratingOverlay": "Generating your weekly menu …",
@@ -2098,7 +2097,6 @@
   "shareNoGroupsAvailable": "No groups available",
   "shareNoGroupsMatchedSearch": "No groups matched your search",
   "shareAlreadySharingList": "Already sharing list",
-  "menuSavedMenus": "Saved menus",
   "menuNoSavedMenus": "No saved menus",
   "menuCommentHint": "Description or notes about the menu",
   "menuShareWithFriends": "Share with friends",
@@ -4685,6 +4683,46 @@
   "shoppingCategoryOrderTitle": "Category order",
   "shoppingResetOrder": "Reset",
   "shoppingSaveOrder": "Save order",
+  "shoppingStoreChipNone": "Choose store",
+  "shoppingStoreChip": "Store: {name}",
+  "@shoppingStoreChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStorePickerTitle": "Which store?",
+  "shoppingStoreNone": "No store",
+  "shoppingStoreNoneSubtitle": "The list's own order",
+  "shoppingStoreAdd": "New store",
+  "shoppingStoreAddHint": "Store name, for example ICA Maxi",
+  "shoppingStoreLimit": "You can save at most {max} stores",
+  "@shoppingStoreLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingStoreDeleteTitle": "Remove the store?",
+  "shoppingStoreDeleteMessage": "{name} and its order are removed. Your lists are not changed.",
+  "@shoppingStoreDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingStoreDeleteConfirm": "Remove",
+  "shoppingStoreOrderTitle": "Order in {name}",
+  "@shoppingStoreOrderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingItemMoved": "Moved to {category}",
   "@shoppingItemMoved": {
     "placeholders": {
@@ -18334,5 +18372,134 @@
   "menuQuickFastSubtitle": "Recipes of 30 minutes or less",
   "menuQuickPantryTitle": "Use what I have at home",
   "menuQuickPantrySubtitle": "Recipes that fit your pantry first",
-  "menuQuickPantryNothing": "Nothing in your pantry fits your recipes yet, so the week was chosen as usual."
+  "menuQuickPantryNothing": "Nothing in your pantry fits your recipes yet, so the week was chosen as usual.",
+  "weekTemplateSaveAction": "Save week as template",
+  "weekTemplateSaveTitle": "Save as template",
+  "weekTemplatePreviewLoading": "Checking against who is eating …",
+  "weekTemplateNameRequired": "Give the template a name",
+  "weekTemplateWholeWeek": "Whole week",
+  "weekTemplateWholeWeekSummary": "{days, plural, =1{1 day} other{{days} days}}, {dishes, plural, =1{1 dish} other{{dishes} dishes}}",
+  "@weekTemplateWholeWeekSummary": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "dishes": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateSaveButton": "Save template",
+  "weekTemplateSaved": "Template {name} saved",
+  "@weekTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateSaveFailed": "The template could not be saved",
+  "weekTemplatesAndSavedMenus": "Templates and saved menus",
+  "weekTemplateSectionMine": "My templates",
+  "weekTemplateSectionSavedMenus": "Saved menus",
+  "weekTemplateRowSubtitle": "Whole week · {dishes, plural, =1{1 dish} other{{dishes} dishes}}",
+  "@weekTemplateRowSubtitle": {
+    "placeholders": {
+      "dishes": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateUse": "Use",
+  "weekTemplateRename": "Rename",
+  "weekTemplateRenameTitle": "Rename template",
+  "weekTemplateRenameFailed": "The template could not be renamed",
+  "weekTemplatePreviewOverline": "Preview",
+  "weekTemplateDishLine": "{day}: {title}",
+  "@weekTemplateDishLine": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateDishLineWithMeal": "{day} {meal}: {title}",
+  "@weekTemplateDishLineWithMeal": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateMissing": "Missing",
+  "weekTemplateMissingHint": "The recipe was deleted, pick a new one in the calendar",
+  "weekTemplateContains": "Contains {allergens}",
+  "@weekTemplateContains": {
+    "placeholders": {
+      "allergens": {
+        "type": "String"
+      }
+    }
+  },
+  "weekTemplateNotForEveryone": "Not for everyone",
+  "weekTemplateUnchecked": "Not checked",
+  "weekTemplateDisliked": "Someone dislikes it",
+  "weekTemplateWeekChip": "Week {week}",
+  "@weekTemplateWeekChip": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateApplyButton": "Apply to week {week}",
+  "@weekTemplateApplyButton": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateOverlapTitle": "Week {week} already has dishes",
+  "@weekTemplateOverlapTitle": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateOverlapBody": "Fill only the empty places, or replace the dishes where the template has one?",
+  "weekTemplateFillEmpty": "Fill empty places",
+  "weekTemplateReplaceAll": "Replace all",
+  "weekTemplateApplied": "{count, plural, =0{Nothing applied – the places were already filled} =1{1 dish applied to week {week}} other{{count} dishes applied to week {week}}}",
+  "@weekTemplateApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateAppliedMissing": "{count, plural, =1{1 dish is missing, pick a new one in the calendar} other{{count} dishes are missing, pick new ones in the calendar}}",
+  "@weekTemplateAppliedMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekTemplateApplyFailed": "The template could not be applied",
+  "weekTemplatePreviewFailed": "The week could not be read – try again",
+  "weekTemplateUndoFailed": "Could not undo"
 }
