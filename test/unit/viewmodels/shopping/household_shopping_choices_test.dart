@@ -322,9 +322,12 @@ void main() {
             updatedAt: DateTime(2026),
           ),
         );
+        stubShares([
+          _share('anna', {'senap'}),
+        ]);
 
-        expect(await load(), {'lupin', 'sesam'});
-        expect(await load(), isNot(contains('selleri')));
+        expect(await load(), {'lupin', 'senap'});
+        verify(() => shares.getByHousehold(_hh)).called(2);
       },
     );
 
