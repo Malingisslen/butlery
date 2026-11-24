@@ -2426,12 +2426,6 @@ abstract class AppLocalizations {
   /// **'Mängderna följer vilka som är hemma'**
   String get menuShoppingScaledToPresence;
 
-  /// No description provided for @menuLoadSaved.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ladda sparad meny'**
-  String get menuLoadSaved;
-
   /// No description provided for @menuClear.
   ///
   /// In sv, this message translates to:
@@ -4609,12 +4603,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delar redan listan'**
   String get shareAlreadySharingList;
-
-  /// No description provided for @menuSavedMenus.
-  ///
-  /// In sv, this message translates to:
-  /// **'Sparade menyer'**
-  String get menuSavedMenus;
 
   /// No description provided for @menuNoSavedMenus.
   ///
@@ -34260,11 +34248,11 @@ abstract class AppLocalizations {
   /// **'Spara som mall'**
   String get weekTemplateSaveTitle;
 
-  /// No description provided for @weekTemplateNameHint.
+  /// No description provided for @weekTemplatePreviewLoading.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. Sommarveckan'**
-  String get weekTemplateNameHint;
+  /// **'Kontrollerar mot dem som äter …'**
+  String get weekTemplatePreviewLoading;
 
   /// No description provided for @weekTemplateNameRequired.
   ///

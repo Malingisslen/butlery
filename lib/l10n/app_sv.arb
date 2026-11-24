@@ -1139,7 +1139,6 @@
   "@menuShoppingScaledToPresence": {
     "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
   },
-  "menuLoadSaved": "Ladda sparad meny",
   "menuClear": "Rensa meny",
   "menuShared": "Veckomenyn är delad.",
   "menuGeneratingOverlay": "Genererar din veckomeny …",
@@ -2104,7 +2103,6 @@
   "shareNoGroupsAvailable": "Inga grupper tillgängliga",
   "shareNoGroupsMatchedSearch": "Inga grupper matchade din sökning",
   "shareAlreadySharingList": "Delar redan listan",
-  "menuSavedMenus": "Sparade menyer",
   "menuNoSavedMenus": "Inga sparade menyer",
   "menuCommentHint": "Beskrivning eller noteringar om menyn",
   "menuShareWithFriends": "Dela med vänner",
@@ -18292,7 +18290,7 @@
   "menuQuickPantryNothing": "Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.",
   "weekTemplateSaveAction": "Spara veckan som mall",
   "weekTemplateSaveTitle": "Spara som mall",
-  "weekTemplateNameHint": "T.ex. Sommarveckan",
+  "weekTemplatePreviewLoading": "Kontrollerar mot dem som äter …",
   "weekTemplateNameRequired": "Ge mallen ett namn",
   "weekTemplateWholeWeek": "Hela veckan",
   "weekTemplateWholeWeekSummary": "{days, plural, =1{1 dag} other{{days} dagar}}, {dishes, plural, =1{1 rätt} other{{dishes} rätter}}",

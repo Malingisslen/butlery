@@ -1610,9 +1610,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuShoppingScaledToPresence => 'Amounts follow who\'s home';
 
   @override
-  String get menuLoadSaved => 'Load saved menu';
-
-  @override
   String get menuClear => 'Clear menu';
 
   @override
@@ -3044,9 +3041,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareAlreadySharingList => 'Already sharing list';
-
-  @override
-  String get menuSavedMenus => 'Saved menus';
 
   @override
   String get menuNoSavedMenus => 'No saved menus';
@@ -22495,7 +22489,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekTemplateSaveTitle => 'Save as template';
 
   @override
-  String get weekTemplateNameHint => 'E.g. Summer week';
+  String get weekTemplatePreviewLoading => 'Checking against who is eating …';
 
   @override
   String get weekTemplateNameRequired => 'Give the template a name';

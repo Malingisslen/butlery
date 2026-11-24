@@ -1133,7 +1133,6 @@
   "@menuShoppingScaledToPresence": {
     "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
   },
-  "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared.",
   "menuGeneratingOverlay": "Generating your weekly menu …",
@@ -2098,7 +2097,6 @@
   "shareNoGroupsAvailable": "No groups available",
   "shareNoGroupsMatchedSearch": "No groups matched your search",
   "shareAlreadySharingList": "Already sharing list",
-  "menuSavedMenus": "Saved menus",
   "menuNoSavedMenus": "No saved menus",
   "menuCommentHint": "Description or notes about the menu",
   "menuShareWithFriends": "Share with friends",
@@ -18278,7 +18276,7 @@
   "menuQuickPantryNothing": "Nothing in your pantry fits your recipes yet, so the week was chosen as usual.",
   "weekTemplateSaveAction": "Save week as template",
   "weekTemplateSaveTitle": "Save as template",
-  "weekTemplateNameHint": "E.g. Summer week",
+  "weekTemplatePreviewLoading": "Checking against who is eating …",
   "weekTemplateNameRequired": "Give the template a name",
   "weekTemplateWholeWeek": "Whole week",
   "weekTemplateWholeWeekSummary": "{days, plural, =1{1 day} other{{days} days}}, {dishes, plural, =1{1 dish} other{{dishes} dishes}}",

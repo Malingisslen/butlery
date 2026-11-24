@@ -1580,9 +1580,6 @@ class AppLocalizationsSv extends AppLocalizations {
       'Mängderna följer vilka som är hemma';
 
   @override
-  String get menuLoadSaved => 'Ladda sparad meny';
-
-  @override
   String get menuClear => 'Rensa meny';
 
   @override
@@ -2999,9 +2996,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareAlreadySharingList => 'Delar redan listan';
-
-  @override
-  String get menuSavedMenus => 'Sparade menyer';
 
   @override
   String get menuNoSavedMenus => 'Inga sparade menyer';
@@ -22300,7 +22294,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get weekTemplateSaveTitle => 'Spara som mall';
 
   @override
-  String get weekTemplateNameHint => 'T.ex. Sommarveckan';
+  String get weekTemplatePreviewLoading => 'Kontrollerar mot dem som äter …';
 
   @override
   String get weekTemplateNameRequired => 'Ge mallen ett namn';

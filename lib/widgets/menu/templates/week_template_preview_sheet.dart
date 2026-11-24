@@ -248,7 +248,7 @@ class _WeekTemplatePreviewSheetState extends State<WeekTemplatePreviewSheet> {
     }
     if (_vm.isLoading) {
       return StateWidget.loading(
-        message: context.l10n.weekTemplatePreviewOverline,
+        message: context.l10n.weekTemplatePreviewLoading,
       );
     }
     return ListView(

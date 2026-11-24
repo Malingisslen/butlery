@@ -93,7 +93,6 @@ class _WeekTemplateSaveDialogState extends State<WeekTemplateSaveDialog> {
                   maxLength: 50,
                   style: fieldTextStyle(context, enabled: !_saving),
                   errorBuilder: FieldErrorLine.builder,
-                  decoration: InputDecoration(hintText: l.weekTemplateNameHint),
                   validator: (v) => (v?.trim().isEmpty ?? true)
                       ? l.weekTemplateNameRequired
                       : null,
