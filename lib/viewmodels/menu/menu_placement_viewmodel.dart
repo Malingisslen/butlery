@@ -251,7 +251,7 @@ class MenuPlacementViewModel extends BaseViewModel {
     final item = selectedItem;
     final current = _plan;
     if (item == null || current == null || slot != item.slot) return false;
-    return slot.isMulti || current.entryAt(day, slot) == null;
+    return slot.isMulti || !current.isOccupied(day, slot);
   }
 
   /// Place the selected item on [day] (slot is implied by the item).

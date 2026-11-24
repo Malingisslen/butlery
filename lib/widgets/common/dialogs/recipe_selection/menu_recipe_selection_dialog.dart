@@ -27,10 +27,15 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
   /// the caller can open its suggestions for the place being filled.
   final VoidCallback? onSuggest;
 
+  /// When set, the dialog offers "Matlåda" (BUT-2486): it closes and calls
+  /// this, so the caller can open the lunchbox sheet for the lunch.
+  final VoidCallback? onLunchbox;
+
   const MenuRecipeSelectionDialog({
     super.key,
     required this.categoryName,
     this.onSuggest,
+    this.onLunchbox,
   });
 
   @override
@@ -81,6 +86,17 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     final onSuggest = widget.onSuggest!;
                     Navigator.pop(context);
                     onSuggest();
+                  },
+                ),
+              if (widget.onLunchbox != null)
+                TextButton.icon(
+                  key: const ValueKey('menu-selector-lunchbox'),
+                  icon: const ButleryIcon(ButleryIcons.clipboard),
+                  label: Text(context.l10n.menuSelectorLunchbox),
+                  onPressed: () {
+                    final onLunchbox = widget.onLunchbox!;
+                    Navigator.pop(context);
+                    onLunchbox();
                   },
                 ),
               const DialogCancelButton(),

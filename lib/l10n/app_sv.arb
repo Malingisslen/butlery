@@ -18599,5 +18599,116 @@
   "shoppingHintsDisclaimer": "Påminnelser kan saknas. Läs alltid innehållet.",
   "@shoppingHintsDisclaimer": {
     "description": "BUT-2494: line at the top of a shopping list whenever an allergy reminder shows (Malin 2026-11-24, ADR-0044)"
+  },
+  "lunchboxSheetTitle": "Lunch {day}",
+  "@lunchboxSheetTitle": {
+    "description": "BUT-2486: title of the lunchbox sheet; day is the weekday name.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "lunchboxSourceLeftovers": "Rester från i går",
+  "@lunchboxSourceLeftovers": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxLeftoversFrom": "{dish}, gårdagens middag",
+  "@lunchboxLeftoversFrom": {
+    "description": "BUT-2486: subtitle of the leftovers row.",
+    "placeholders": {
+      "dish": {
+        "type": "String"
+      }
+    }
+  },
+  "lunchboxLeftoversNone": "Ingen middag i går",
+  "@lunchboxLeftoversNone": {
+    "description": "BUT-2486: leftovers row when the day before has no middag."
+  },
+  "lunchboxLeftoversPreviousWeek": "Söndagens middag – välj rätten",
+  "@lunchboxLeftoversPreviousWeek": {
+    "description": "BUT-2486: Monday's leftovers come from last week's Sunday, which is not read, so the user picks the dish."
+  },
+  "lunchboxSourcePrepDay": "Från lagardagen",
+  "@lunchboxSourcePrepDay": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxPickDish": "Välj rätt",
+  "@lunchboxPickDish": {
+    "description": "BUT-2486: subtitle of a source row with no dish chosen yet."
+  },
+  "lunchboxSourceSuggestion": "Förslag från appen",
+  "@lunchboxSourceSuggestion": {
+    "description": "BUT-2486: lunchbox source row."
+  },
+  "lunchboxSuitsSubtitle": "Passar som matlåda",
+  "@lunchboxSuitsSubtitle": {
+    "description": "BUT-2486: subtitle on a suggested recipe."
+  },
+  "lunchboxNoSuggestions": "Inga recept är märkta som matlåda än",
+  "@lunchboxNoSuggestions": {
+    "description": "BUT-2486: suggestion row when no recipe suits."
+  },
+  "lunchboxTakersHeading": "Vem tar låda",
+  "@lunchboxTakersHeading": {
+    "description": "BUT-2486: heading over the people list."
+  },
+  "lunchboxTakersHint": "Ingen vald betyder hela hushållet",
+  "@lunchboxTakersHint": {
+    "description": "BUT-2486: under the people list."
+  },
+  "lunchboxPortionsLabel": "Antal lådor",
+  "@lunchboxPortionsLabel": {
+    "description": "BUT-2486: stepper label."
+  },
+  "lunchboxSave": "Spara matlåda",
+  "@lunchboxSave": {
+    "description": "BUT-2486: primary button of the sheet."
+  },
+  "lunchboxRemove": "Ingen matlåda",
+  "@lunchboxRemove": {
+    "description": "BUT-2486: removes the day's lunchbox."
+  },
+  "lunchboxRemovedUndo": "Matlådan togs bort",
+  "@lunchboxRemovedUndo": {
+    "description": "BUT-2486: snackbar with Ångra after removing a lunchbox."
+  },
+  "lunchboxSaveFailed": "Kunde inte spara matlådan",
+  "@lunchboxSaveFailed": {
+    "description": "BUT-2486: the viewmodel's failure text, shown whole as the error."
+  },
+  "lunchboxMark": "Matlåda",
+  "@lunchboxMark": {
+    "description": "BUT-2486: mark on a calendar lunch cell that is a lunchbox, and its legend entry."
+  },
+  "lunchboxUnjudgedMark": "Ej bedömd för allergier",
+  "@lunchboxUnjudgedMark": {
+    "description": "BUT-2486: mark on a lunchbox whose dish cannot be checked; never shown as safe."
+  },
+  "lunchboxNoDish": "Rätt saknas",
+  "@lunchboxNoDish": {
+    "description": "BUT-2486: lunch cell title when the box's dish cannot be found."
+  },
+  "menuSelectorLunchbox": "Matlåda",
+  "@menuSelectorLunchbox": {
+    "description": "BUT-2486: action in the lunch recipe picker that opens the lunchbox sheet."
+  },
+  "a11yLunchboxOpen": "Ändra matlådan på {day}",
+  "@a11yLunchboxOpen": {
+    "description": "BUT-2486: screen-reader label of a lunchbox cell; the dish name is read from the visible text.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yLunchboxFewer": "Färre lådor",
+  "@a11yLunchboxFewer": {
+    "description": "BUT-2486: stepper minus."
+  },
+  "a11yLunchboxMore": "Fler lådor",
+  "@a11yLunchboxMore": {
+    "description": "BUT-2486: stepper plus."
   }
 }

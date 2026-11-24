@@ -93,6 +93,8 @@ class WeekTemplateApply {
       final day = dish.entry.day;
       final slot = dish.entry.slot;
       final place = (day, slot);
+      // A lunchbox is that day's lunch (BUT-2486); a dish would sit under it.
+      if (plan.hasLunchboxAt(day, slot)) continue;
 
       if (mode == WeekTemplateApplyMode.replace && cleared.add(place)) {
         final taken = entries.where((e) => _at(e, day, slot)).toList();
@@ -135,6 +137,7 @@ class WeekTemplateApply {
     final keptIds = entries.map((e) => e.id).toSet();
     for (final e in result.removedEntries) {
       if (keptIds.contains(e.id)) continue;
+      if (current.hasLunchboxAt(e.day, e.slot)) continue;
       if (_occupied(entries, e.day, e.slot, e.recipeId)) continue;
       entries.add(e);
     }
