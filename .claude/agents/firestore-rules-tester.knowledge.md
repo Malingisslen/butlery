@@ -33,6 +33,7 @@ chapter over 20,000.
 | `/shopping_list_templates`, `/menu_templates` (block REMOVED; every client op denied) | `shopping-list-templates-rules.test.ts`, `menu-templates-rules.test.ts` | `test:rules:shopping-list-templates`, `test:rules:menu-templates` |
 | BUT-920 guest mode: every `!isGuest()` limb, `isAgeCompliant()`'s guest clause, `/guest_quotas` | `guest-mode-rules.test.ts` | `test:rules:guest-mode` |
 | `/ingredient_change_requests` (admin read/create, withdraw-only update) | `ingredient-change-requests-rules.test.ts` | `test:rules:ingredient-change-requests` |
+| `users/{uid}/meal_boxes` (owner-only, guest's own uid) | `meal-boxes-rules.test.ts` | `test:rules:meal-boxes` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---
@@ -89,8 +90,6 @@ chapter over 20,000.
   get(users/{uid}).data.get('isMinor', false)==true`. Same pattern for any "allowed only
   if a seeded relationship doc exists" gate — pair a no-doc deny with the identical
   actor+body succeeding once the doc is seeded.
-- Chained `.get(field, default)` is safe-by-construction against an absent PARENT map;
-  CEL `in` on a map checks KEYS only, never values.
 
 ### `hasOnly` / allow-list coverage
 - **`hasOnly` bounds a document's SHAPE, not its VALUES** — passing the key-set check

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -42,6 +43,7 @@ void main() {
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
     registerFallbackValue(_FakeWeeklyMenuPlan());
+    registerFallbackValue(<MealBoxTake>[]);
   });
 
   tearDownAll(() async {
@@ -62,6 +64,9 @@ void main() {
       ),
     );
     when(() => repo.save(any())).thenAnswer((_) async {});
+    when(
+      () => repo.saveWithMealBoxTakes(any(), any()),
+    ).thenAnswer((_) async {});
     (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
         .setAuthState(userId: 'u');
     service = WeeklyMenuPlanService(repository: repo, userService: userService);
@@ -150,6 +155,67 @@ void main() {
               as WeeklyMenuPlan;
       expect(saved.entries, hasLength(1));
       expect(saved.lunchboxes.keys, [DayOfWeek.fri]);
+    });
+  });
+
+  group('saveRevision and fridge boxes (BUT-2486 part 5)', () {
+    final stockBox = MealBox(
+      id: 'box1',
+      recipeId: 'chili',
+      recipeTitle: 'Chili',
+      location: MealBoxLocation.fridge,
+      storedOn: DateTime(2026, 4, 1),
+      count: 3,
+    );
+
+    test('a stock lunch added since previous saves with one take and not '
+        'through save', () async {
+      final previous = WeeklyMenuPlan.empty(userId: 'u', date: mon);
+      final plan = previous.copyWith(
+        lunchboxes: {DayOfWeek.tue: Lunchbox.fromStock(stockBox, portions: 2)},
+      );
+
+      await service.saveRevision(plan, previous: previous);
+
+      final captured =
+          verify(
+                () => repo.saveWithMealBoxTakes(plan, captureAny()),
+              ).captured.single
+              as List<MealBoxTake>;
+      expect(captured, hasLength(1));
+      expect(captured.single.boxId, 'box1');
+      expect(captured.single.key, '2026-04-07');
+      expect(captured.single.portions, 2);
+      verifyNever(() => repo.save(any()));
+    });
+
+    test(
+      'without previous nothing is compared, even with a stock lunch',
+      () async {
+        final plan = WeeklyMenuPlan.empty(userId: 'u', date: mon).copyWith(
+          lunchboxes: {DayOfWeek.tue: Lunchbox.fromStock(stockBox)},
+        );
+
+        await service.saveRevision(plan);
+
+        verify(() => repo.save(plan)).called(1);
+        verifyNever(() => repo.saveWithMealBoxTakes(any(), any()));
+      },
+    );
+
+    test('with previous but no stock change it saves the plain way', () async {
+      final previous = WeeklyMenuPlan.empty(
+        userId: 'u',
+        date: mon,
+      ).copyWith(lunchboxes: {DayOfWeek.tue: Lunchbox.fromStock(stockBox)});
+      final plan = previous.copyWith(
+        lunchboxes: {...previous.lunchboxes, DayOfWeek.wed: _box},
+      );
+
+      await service.saveRevision(plan, previous: previous);
+
+      verify(() => repo.save(plan)).called(1);
+      verifyNever(() => repo.saveWithMealBoxTakes(any(), any()));
     });
   });
 }

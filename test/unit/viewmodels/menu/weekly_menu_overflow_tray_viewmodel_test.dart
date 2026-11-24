@@ -157,7 +157,9 @@ void main() {
     recipes = _MockRecipes();
     when(() => recipes.stateStream).thenAnswer((_) => const Stream.empty());
     when(() => service.overflowTrayOwnerId).thenReturn('malin');
-    when(() => service.saveRevision(any())).thenAnswer((_) async {});
+    when(
+      () => service.saveRevision(any(), previous: any(named: 'previous')),
+    ).thenAnswer((_) async {});
     when(
       () => service.readWeek(any()),
     ).thenAnswer(
@@ -276,6 +278,7 @@ void main() {
               _nextMonday,
             ),
           ),
+          previous: any(named: 'previous'),
         ),
       ).called(1);
     });
@@ -299,7 +302,9 @@ void main() {
     wedTest('a refused save puts the tray back', () async {
       final vm = await generated();
       stubNextWeek();
-      when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
+      when(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenThrow(Exception('denied'));
 
       final moved = await vm.placeOverflowInNextWeek();
 
@@ -323,7 +328,9 @@ void main() {
 
       expect(await vm.placeOverflowInNextWeek(), isNull);
       expect(vm.overflow, hasLength(2));
-      verifyNever(() => service.saveRevision(any()));
+      verifyNever(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      );
     });
   });
 
@@ -485,7 +492,9 @@ void main() {
           clearInteractions(service);
           expect(await later.placeOverflowInNextWeek(), isNull);
         });
-        verifyNever(() => service.saveRevision(any()));
+        verifyNever(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        );
         verifyNever(
           () => service.distributeFromGeneratedMenu(
             generated: any(named: 'generated'),

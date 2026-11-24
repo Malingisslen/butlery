@@ -4,6 +4,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/shopping/lunchbox_shopping_portions.dart';
@@ -189,6 +190,31 @@ void main() {
         'noportions',
       });
     });
+  });
+
+  test('a box from the fridge or freezer buys nothing, even for a recipe '
+      'with authored portions', () {
+    final stock = Lunchbox.fromStock(
+      MealBox(
+        id: 'box1',
+        recipeId: 'chili',
+        recipeTitle: 'Chili',
+        location: MealBoxLocation.freezer,
+        storedOn: DateTime(2026, 6, 1),
+        count: 4,
+      ),
+      portions: 2,
+    );
+    final plan = _plan(
+      middagar: [(DayOfWeek.mon, 'chili')],
+    ).withLunchbox(DayOfWeek.tue, stock);
+
+    final result = LunchboxShoppingPortions.of(plan, lookup);
+
+    expect(result.placements, isEmpty);
+    expect(result.extraMiddagPortions, isEmpty);
+    expect(result.portions, 0);
+    expect(LunchboxShoppingPortions.recipeIdsOf(plan), isEmpty);
   });
 
   test('a week without boxes is empty', () {

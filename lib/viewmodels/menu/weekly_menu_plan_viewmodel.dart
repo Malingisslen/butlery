@@ -576,7 +576,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // lasts the whole outage and allows exactly one offline edit.
     _publishInFlight = false;
     try {
-      await _service.saveRevision(next);
+      await _service.saveRevision(next, previous: previous);
     } on WeekPlanConflictException catch (e) {
       _adoptConflict(next, e);
       rethrow;
@@ -627,7 +627,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (!onScreen) {
       // Nothing on screen to update or to report a new conflict on, so any
       // failure here, a conflict included, is the snackbar's to report.
-      await _service.saveRevision(mine.nextRevision());
+      await _service.saveRevision(mine.nextRevision(), previous: base);
       return true;
     }
     clearError();

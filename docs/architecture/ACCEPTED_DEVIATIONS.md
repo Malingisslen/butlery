@@ -7031,6 +7031,26 @@ not cleaned.
   account, as for presence; the weeks are deleted with the owner's account and exported
   whole. Default taken, awaiting Malin.
 
+## Fridge and freezer boxes (BUT-2486 part 5, 2026-11-24)
+
+`users/{uid}/meal_boxes/{id}` holds a cooked dish kept as boxes: `count` (set by the user) and
+`takes`, one key per planned lunch date naming how many boxes that lunch takes. A lunch taken
+from a box is a lunchbox stored as previous-week leftovers plus `mealBoxId`,
+`mealBoxLocation` and `mealBoxStoredOn`.
+- The take is written by `WeeklyMenuPlanService.saveRevision` in the same batch as the week,
+  only when the caller passes the week it replaced (`previous:`); the week menu's own edits
+  and "Behåll min" do. A save that passes no `previous` writes no take.
+- An app from before part 5 that saves the week drops those three fields and keeps a plain
+  previous-week leftover, which it neither buys nor counts; the box's take for that date
+  stands until the date passes and is folded into `count`.
+- `withoutLunchboxesOf` keeps a lunchbox from a box when its recipe is deleted; the box keeps
+  its own `recipeTitle`, and the allergen mark is "ej bedömd" without the recipe.
+- The rules bound `takes` to 60 keys and do not check its entries; `count` may be absent on a
+  box a take recreated. Giving a lunch back on a box the user deleted also recreates it, with
+  no `count` and no `takes`; `MealBoxService` removes such a box 30 days after its `updatedAt`.
+- What is left can differ from what is really in the fridge or freezer; the user corrects it
+  with +/−. No server-side reconciliation.
+
 ## BUT-2494 — allergy reminders on the shopping list (Malin, 2026-11-24)
 
 Decided in ADR-0044 and on two cards to Malin.

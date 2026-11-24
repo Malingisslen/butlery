@@ -36,6 +36,8 @@ enum ExportResourceType {
   userOverwrittenVersions('users/{uid}/overwritten_versions'),
   // BUT-907: deleted own recipes kept 30 days.
   userTrash('users/{uid}/trash'),
+  // BUT-2486 part 5: fridge and freezer boxes.
+  userMealBoxes('users/{uid}/meal_boxes'),
   // Steg 10E: the profile copies of recipes the user chose to show.
   userPublicRecipes('users/{uid}/public_recipes'),
   userNotifications('user_notifications'),
@@ -770,6 +772,22 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .collection(FirestoreCollections.userTrash),
     userId,
     ExportResourceType.userTrash,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/meal_boxes` — the user's fridge and freezer boxes and the
+  /// lunches planned from them (BUT-2486 part 5). Exported because the
+  /// deletion cascade erases it (Art. 15 ⊇ Art. 17).
+  Future<List<Map<String, dynamic>>> exportMealBoxes(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.mealBoxes),
+    userId,
+    ExportResourceType.userMealBoxes,
     limit: maxDocuments,
   );
 

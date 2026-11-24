@@ -149,7 +149,9 @@ void main() {
     setUp(() {
       service = _MockWeeklyMenuPlanService();
       recipeService = _MockUnifiedRecipeService();
-      when(() => service.saveRevision(any())).thenAnswer((_) async {});
+      when(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenAnswer((_) async {});
       // The view model listens to the recipe list from its constructor.
       when(
         () => recipeService.stateStream,
@@ -936,7 +938,9 @@ void main() {
 
       testWidgets('a REFUSED clear shows no success snackbar', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenThrow(Exception('denied'));
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -948,7 +952,9 @@ void main() {
       // that never shows the snackbar at all.
       testWidgets('a successful clear does show it', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -1129,7 +1135,9 @@ void main() {
         expect(find.text('RECIPE PAGE'), findsOneWidget);
         // Nobody is marked away, so no portion count rides along.
         expect(pushed?.arguments, isNot(isA<Map<String, Object?>>()));
-        verifyNever(() => service.saveRevision(any()));
+        verifyNever(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
 
       testWidgets('it carries the number of people home as servings', (
@@ -1185,7 +1193,9 @@ void main() {
         final handle = tester.ensureSemantics();
         // BUT-1988: presence publishes from the resident plan and SAVES, so
         // the refusal to stage is the save's.
-        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester);
 
@@ -1197,7 +1207,9 @@ void main() {
       // that never shows the notice at all.
       testWidgets('a successful presence save does show it', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester);
 
@@ -1214,7 +1226,9 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'Hela dagen');
 
@@ -1226,7 +1240,9 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'Hela dagen');
 
@@ -1240,7 +1256,10 @@ void main() {
       // other test reads what the view hands the viewmodel.
       Future<WeeklyMenuPlan> savedPlan() async {
         final captured = verify(
-          () => service.saveRevision(captureAny()),
+          () => service.saveRevision(
+            captureAny(),
+            previous: any(named: 'previous'),
+          ),
         ).captured;
         return captured.last as WeeklyMenuPlan;
       }
@@ -1248,7 +1267,9 @@ void main() {
       testWidgets('"denna måltid" with Ester unchecked stores Ester as away '
           'and Malin as present, for that one meal only', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester, uncheck: ['Ester']);
 
@@ -1264,7 +1285,9 @@ void main() {
       testWidgets('"hela dagen" with Ester unchecked stores Ester as away '
           'on every presence slot of the day', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(
           tester,
@@ -1288,7 +1311,9 @@ void main() {
       testWidgets('everyone picked stores nobody as away and no presence '
           'selection', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester);
 
@@ -1641,7 +1666,9 @@ void main() {
           (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
         );
         final saved = <WeeklyMenuPlan>[];
-        when(() => service.saveRevision(any())).thenAnswer((inv) async {
+        when(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
         });
         when(() => recipeService.recipes).thenReturn(const []);
@@ -1779,7 +1806,9 @@ void main() {
         await tester.tap(find.text('Avbryt'));
         await tester.pumpAndSettle();
 
-        verifyNever(() => service.saveRevision(any()));
+        verifyNever(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        );
         expect(find.text('Surdegsbröd'), findsNothing);
       });
 
@@ -2017,7 +2046,9 @@ void main() {
       when(
         () => recipeService.stateStream,
       ).thenAnswer((_) => const Stream.empty());
-      when(() => service.saveRevision(any())).thenAnswer((_) async {});
+      when(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenAnswer((_) async {});
 
       // Use a week in the past so the "today" badge doesn't render (the
       // badge path uses DateTime.now() and would make the golden
