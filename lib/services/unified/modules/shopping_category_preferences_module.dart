@@ -198,7 +198,15 @@ class ShoppingCategoryPreferencesModule {
     if (_listOrders.containsKey(listId)) {
       return _listOrders[listId]!.categoryOrder;
     }
+    final generation = _generation;
     final order = await _repository.getListCategoryOrder(listId);
+    // A read that finishes after a sign-out must not put the previous
+    // account's order back.
+    if (generation != _generation) return getEffectiveCategoryOrder(listId);
+    // An order the user saved while this read was in flight is newer.
+    if (_listOrders.containsKey(listId)) {
+      return _listOrders[listId]!.categoryOrder;
+    }
     if (order != null) {
       _listOrders[listId] = order;
       return order.categoryOrder;

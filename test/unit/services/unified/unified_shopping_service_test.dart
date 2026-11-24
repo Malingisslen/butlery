@@ -263,8 +263,14 @@ class _FakeCategoryPreferencesRepository extends Fake
   @override
   Future<void> savePreferences(CategoryPreferences prefs) async {}
 
+  /// Served for every list id, as a stored `list_category_orders` doc would be.
+  List<String>? storedListOrder;
+
   @override
-  Future<ListCategoryOrder?> getListCategoryOrder(String listId) async => null;
+  Future<ListCategoryOrder?> getListCategoryOrder(String listId) async =>
+      storedListOrder == null
+      ? null
+      : ListCategoryOrder(listId: listId, categoryOrder: storedListOrder!);
 
   @override
   Future<void> saveListCategoryOrder(ListCategoryOrder order) async {}
@@ -584,6 +590,36 @@ void main() {
       );
       expect(result, isFalse);
       expect(fakeRepo.addedItems, isEmpty);
+    });
+  });
+
+  // BUT-2489 follow-up: the list's saved order lives in its own document and
+  // nothing read it back, so after a restart the arranged order was ignored.
+  group('saved list category order', () {
+    test('is read back for the active list', () async {
+      fakePrefsRepo.storedListOrder = [ShoppingCategory.dairy];
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        service.categoryPreferences.getEffectiveCategoryOrder(listId),
+        [ShoppingCategory.dairy],
+      );
+    });
+
+    test('is not re-read for a list already loaded', () async {
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+      await Future<void>.delayed(Duration.zero);
+      fakePrefsRepo.storedListOrder = [ShoppingCategory.dairy];
+      await service.setActiveList(listId);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        service.categoryPreferences.getEffectiveCategoryOrder(listId),
+        ShoppingCategory.defaultStoreOrder,
+      );
     });
   });
 
