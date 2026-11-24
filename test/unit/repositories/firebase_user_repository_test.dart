@@ -14,6 +14,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -1758,6 +1759,39 @@ void main() {
         );
       });
 
+      // BUT-2529: the saved wishes and the last wish share the settings sub-doc.
+      test(
+        'setSavedMenuWishes and setLastMenuWish store their fields in the '
+        'settings doc only, keep a sibling field, and survive a fetch',
+        () async {
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
+          await settingsRef(userId).set({'hasSeenActivityFeedHint': true});
+          const wish = MenuWish(id: 'w1', name: 'Fisk', text: 'Fisk två dagar');
+          const last = LastMenuWish(text: '7 middagar', pantryFocus: true);
+
+          await repository.setSavedMenuWishes(userId, [wish]);
+          await repository.setLastMenuWish(userId, last);
+
+          final settings = (await settingsRef(userId).get()).data()!;
+          expect(settings[MenuWishes.field], [wish.toFirestore()]);
+          expect(settings[LastMenuWish.field], last.toFirestore());
+          expect(settings['hasSeenActivityFeedHint'], isTrue);
+          final publicDoc = await fakeFirestore
+              .collection('public_profiles')
+              .doc(userId)
+              .get();
+          expect(publicDoc.data()!.containsKey(MenuWishes.field), isFalse);
+          expect(publicDoc.data()!.containsKey(LastMenuWish.field), isFalse);
+          final profile = (await repository.fetchProfile(userId))!;
+          expect(profile.savedMenuWishes, [wish]);
+          expect(profile.lastMenuWish, last);
+        },
+      );
+
       test('setNewRecipesShowOnProfile stores the flag in the settings doc '
           'only, keeps its sibling field, and survives a fetch', () async {
         await _seedUserProfile(
@@ -1823,6 +1857,25 @@ void main() {
           'nothing', () async {
         await expectLater(
           repository.setNewRecipesShowOnProfile('other-user', true),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect((await settingsRef('other-user').get()).exists, isFalse);
+        expect((await settingsRef(userId).get()).exists, isFalse);
+      });
+
+      test('setSavedMenuWishes and setLastMenuWish for another uid are '
+          'denied and write nothing (validateSelfOperation)', () async {
+        await expectLater(
+          repository.setSavedMenuWishes('other-user', const [
+            MenuWish(id: 'w1', name: 'Fisk', text: 'Fisk'),
+          ]),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        await expectLater(
+          repository.setLastMenuWish(
+            'other-user',
+            const LastMenuWish(text: '7 middagar'),
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
         expect((await settingsRef('other-user').get()).exists, isFalse);

@@ -435,6 +435,218 @@ test(
 );
 
 // ============================================================================
+// SETTINGS — the week menu's saved wishes and last wish (BUT-2529)
+//
+// `savedMenuWishes`: at most 12 rows of {id, name, text}, id 1..64, name
+// <= 40, text <= 300. `lastMenuWish`: {text <= 300, pantryFocus bool}.
+// ============================================================================
+
+function menuWish(i: number, text = "Barnvänliga middagar, inget starkt") {
+  return { id: `w${i}`, name: "Barnvänligt", text };
+}
+
+function menuWishes(count: number): Record<string, unknown>[] {
+  return Array.from({ length: count }, (_, i) => menuWish(i));
+}
+
+async function wishWrite(
+  label: string,
+  data: Record<string, unknown>,
+  uid = USER_UID
+) {
+  const docPath = `users/${USER_UID}/settings/s-wish-${label}-${RUN}`;
+  await seedDoc(docPath, { notificationsEnabled: true });
+  return env.authenticatedContext(uid).firestore().doc(docPath).set(data, {
+    merge: true,
+  });
+}
+
+test("settings: owner can save 12 menu wishes (the app's write)", async () => {
+  await assertSucceeds(wishWrite("12", { savedMenuWishes: menuWishes(12) }));
+});
+
+test(
+  "settings: a full settings doc (14 rules, 12 wishes, last wish) still takes other writes",
+  async () => {
+    // Every settings update re-checks the whole stored document, so the
+    // fullest legal one must stay under the rules' expression budget.
+    const docPath = `users/${USER_UID}/settings/s-wish-full-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      recurringDayRules: dayRules(14),
+      savedMenuWishes: menuWishes(12).map((w, i) => ({
+        ...w,
+        id: `w${i}`.padEnd(64, "x"),
+        name: "n".repeat(40),
+        text: "t".repeat(300),
+      })),
+      lastMenuWish: { text: "t".repeat(300), pantryFocus: true },
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx.firestore().doc(docPath).set({ showNutritionStrip: true }, { merge: true })
+    );
+  }
+);
+
+test("settings: a 13th menu wish is refused", async () => {
+  await assertFails(wishWrite("13", { savedMenuWishes: menuWishes(13) }));
+});
+
+test("settings: a menu wish over 300 characters is refused", async () => {
+  await assertSucceeds(
+    wishWrite("300", { savedMenuWishes: [menuWish(0, "a".repeat(300))] })
+  );
+  await assertFails(
+    wishWrite("301", { savedMenuWishes: [menuWish(0, "a".repeat(301))] })
+  );
+});
+
+test("settings: a menu wish in the last allowed row is checked too", async () => {
+  const rows = menuWishes(12);
+  rows[11] = menuWish(11, "a".repeat(301));
+  await assertFails(wishWrite("row12", { savedMenuWishes: rows }));
+});
+
+test("settings: a menu wish with an extra key is refused", async () => {
+  await assertFails(
+    wishWrite("extra", {
+      savedMenuWishes: [{ ...menuWish(0), pantryFocus: true }],
+    })
+  );
+});
+
+test("settings: a menu wish name over 40 characters is refused", async () => {
+  await assertFails(
+    wishWrite("name41", {
+      savedMenuWishes: [{ ...menuWish(0), name: "n".repeat(41) }],
+    })
+  );
+});
+
+test("settings: menu wishes that are not a list are refused", async () => {
+  await assertFails(wishWrite("map", { savedMenuWishes: { a: menuWish(0) } }));
+});
+
+test("settings: owner can store the last menu wish (the app's write)", async () => {
+  await assertSucceeds(
+    wishWrite("last", {
+      lastMenuWish: { text: "7 middagar", pantryFocus: true },
+    })
+  );
+});
+
+test("settings: a last menu wish with other keys or long text is refused", async () => {
+  await assertFails(
+    wishWrite("last-key", {
+      lastMenuWish: { text: "7 middagar", pantryFocus: false, by: "x" },
+    })
+  );
+  await assertFails(
+    wishWrite("last-long", {
+      lastMenuWish: { text: "a".repeat(301), pantryFocus: false },
+    })
+  );
+  await assertFails(
+    wishWrite("last-flag", {
+      lastMenuWish: { text: "7 middagar", pantryFocus: "yes" },
+    })
+  );
+});
+
+// The app clamps text by UTF-16 code units, so a 300-unit non-ASCII text
+// must pass: 300 "å" is 600 UTF-8 bytes, and the emoji is two units.
+const NON_ASCII_300 = "å".repeat(300);
+const EMOJI_END_300 = "a".repeat(298) + "😀";
+
+test("settings: a 300-unit menu wish text of å is allowed", async () => {
+  await assertSucceeds(
+    wishWrite("aring300", { savedMenuWishes: [menuWish(0, NON_ASCII_300)] })
+  );
+});
+
+test("settings: a 300-unit menu wish text ending in an emoji is allowed", async () => {
+  await assertSucceeds(
+    wishWrite("emoji300", { savedMenuWishes: [menuWish(0, EMOJI_END_300)] })
+  );
+});
+
+test("settings: a 300-unit last wish text of å is allowed", async () => {
+  await assertSucceeds(
+    wishWrite("last-aring300", {
+      lastMenuWish: { text: NON_ASCII_300, pantryFocus: false },
+    })
+  );
+});
+
+test("settings: a 300-unit last wish text ending in an emoji is allowed", async () => {
+  await assertSucceeds(
+    wishWrite("last-emoji300", {
+      lastMenuWish: { text: EMOJI_END_300, pantryFocus: false },
+    })
+  );
+});
+
+// The app's merge-set creates the settings doc when it is absent, so the
+// create limb carries its own copy of the bound.
+async function wishCreate(label: string, data: Record<string, unknown>) {
+  const docPath = `users/${USER_UID}/settings/s-wish-create-${label}-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(docPath).delete();
+  });
+  return env.authenticatedContext(USER_UID).firestore().doc(docPath).set(data, {
+    merge: true,
+  });
+}
+
+test("settings: menu wishes are bounded when the settings doc is created", async () => {
+  await assertFails(wishCreate("13", { savedMenuWishes: menuWishes(13) }));
+  await assertFails(
+    wishCreate("last-long", {
+      lastMenuWish: { text: "a".repeat(301), pantryFocus: false },
+    })
+  );
+  await assertSucceeds(wishCreate("12", { savedMenuWishes: menuWishes(12) }));
+  await assertSucceeds(
+    wishCreate("last", { lastMenuWish: { text: "7 middagar", pantryFocus: false } })
+  );
+});
+
+test("settings: a menu wish id over 64 characters is refused", async () => {
+  await assertSucceeds(
+    wishWrite("id64", { savedMenuWishes: [{ ...menuWish(0), id: "i".repeat(64) }] })
+  );
+  await assertFails(
+    wishWrite("id65", { savedMenuWishes: [{ ...menuWish(0), id: "i".repeat(65) }] })
+  );
+});
+
+// `.size()` also answers on a map, so only a non-string text with few keys
+// reaches the `is string` checks.
+test("settings: a menu wish or last wish whose text is not a string is refused", async () => {
+  await assertFails(
+    wishWrite("text-map", { savedMenuWishes: [{ ...menuWish(0), text: { a: 1 } }] })
+  );
+  await assertFails(
+    wishWrite("last-text-map", {
+      lastMenuWish: { text: { a: 1 }, pantryFocus: false },
+    })
+  );
+});
+
+// An empty map skips every per-row check, so it reaches `is list` alone.
+test("settings: an empty map in place of the menu wishes list is refused", async () => {
+  await assertFails(wishWrite("empty-map", { savedMenuWishes: {} }));
+});
+
+test("settings: another user cannot write your menu wishes", async () => {
+  await assertFails(
+    wishWrite("cross", { savedMenuWishes: menuWishes(1) }, OTHER_UID)
+  );
+  await assertSucceeds(wishWrite("own", { savedMenuWishes: menuWishes(1) }));
+});
+
+// ============================================================================
 // SETTINGS — users/{uid}/settings/{settingId} isMinor immutability (BUT-674)
 // (4 assertions across 4 tests)
 //

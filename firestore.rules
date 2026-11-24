@@ -933,6 +933,36 @@ service cloud.firestore {
                 && request.resource.data.recurringDayRules.size() <= 14);
         }
 
+        // BUT-2529: the week menu's saved wishes, at most 12 as
+        // `MenuWishes.maxWishes`, each {id, name, text} within the app's
+        // lengths; and the last wish, {text, pantryFocus}. The text is free
+        // text, so every row is bounded here rather than trusted from the app.
+        function menuWishOk(w, i) {
+          return i >= w.size()
+            || (w[i].keys().hasOnly(['id', 'name', 'text'])
+                && w[i].get('text', 0) is string
+                && w[i].text.size() <= 300
+                && w[i].get('name', '').size() <= 40
+                && w[i].get('id', '').size() <= 64);
+        }
+
+        function menuWishesBounded() {
+          let d = request.resource.data;
+          let w = d.get('savedMenuWishes', []);
+          let last = d.get('lastMenuWish', null);
+          return w is list && w.size() <= 12
+            && menuWishOk(w, 0) && menuWishOk(w, 1) && menuWishOk(w, 2)
+            && menuWishOk(w, 3) && menuWishOk(w, 4) && menuWishOk(w, 5)
+            && menuWishOk(w, 6) && menuWishOk(w, 7) && menuWishOk(w, 8)
+            && menuWishOk(w, 9) && menuWishOk(w, 10) && menuWishOk(w, 11)
+            && (last == null
+                || (last is map
+                    && last.keys().hasOnly(['text', 'pantryFocus'])
+                    && last.get('text', null) is string
+                    && last.text.size() <= 300
+                    && last.get('pantryFocus', false) is bool));
+        }
+
         // Client create must not carry birthYear or isMinor at all — both are
         // CF-set (BUT-674 mirrors isMinor here so the client profile can read it
         // for analytics minimization; a client that could forge isMinor:false
@@ -940,7 +970,8 @@ service cloud.firestore {
         allow create: if isOwner(userId)
           && request.resource.data.get('birthYear', null) == null
           && request.resource.data.get('isMinor', null) == null
-          && recurringDayRulesBounded();
+          && recurringDayRulesBounded()
+          && menuWishesBounded();
 
         // Client update must leave birthYear and isMinor exactly as the CF set
         // them (or absent if not yet set). Comparing post-write to existing denies
@@ -950,7 +981,8 @@ service cloud.firestore {
              == resource.data.get('birthYear', null)
           && request.resource.data.get('isMinor', null)
              == resource.data.get('isMinor', null)
-          && recurringDayRulesBounded();
+          && recurringDayRulesBounded()
+          && menuWishesBounded();
 
         allow delete: if isOwner(userId);
       }

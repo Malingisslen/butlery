@@ -34,6 +34,7 @@ import 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_placement_flow.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_root_actions.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_shopping_flow.dart';
+import 'package:butlery/views/veckomeny_view/veckomeny_wish_flow.dart';
 
 export 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 
@@ -82,6 +83,7 @@ class _VeckomenyViewContent extends StatefulWidget {
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
     with
         VeckomenyPlacementFlow<_VeckomenyViewContent>,
+        VeckomenyWishFlow<_VeckomenyViewContent>,
         VeckomenyShoppingFlow<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
   final FocusNode _promptFocusNode = FocusNode();
@@ -102,6 +104,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
   void markRevealing() => setState(() => _revealing = true);
 
   MenuWishFill? _activeFill;
+
+  @override
+  MenuWishFill? get activeFill => _activeFill;
+
+  @override
+  bool get remembersWishes => widget.realtimeMenuId == null;
 
   @override
   bool get fillPantryFocus => _activeFill?.pantryFocus ?? false;
@@ -143,6 +151,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
 
   @override
   void dispose() {
+    disposeWishFlow();
     _promptController.removeListener(_onPromptChanged);
     _promptController.dispose();
     _promptFocusNode.dispose();
@@ -159,7 +168,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
     if (mounted) setState(() {});
   }
 
-  void _pickWish(MenuWishFill fill) {
+  @override
+  void pickWish(MenuWishFill fill) {
     _promptController.text = fill.text;
     _promptController.selection = TextSelection.collapsed(
       offset: fill.text.length,
@@ -388,7 +398,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
         onCancelPlanning: cancelPlanning,
         onPromptChanged: () => setState(() {}),
         activeWishSourceId: _activeFill?.sourceId,
-        onPickWish: _pickWish,
+        onPickWish: pickWish,
+        wishes: wishesVm,
+        onOpenAllWishes: () => unawaited(openWishesSheet()),
         onOpenSavedWeeks: _openSavedWeeks,
         onRevealDone: () {
           if (mounted) setState(() => _revealing = false);

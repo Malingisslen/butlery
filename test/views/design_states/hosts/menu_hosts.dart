@@ -22,9 +22,11 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 
+import '../../../helpers/fake_menu_wish_profile.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -131,6 +133,9 @@ Widget _veckomeny(
     () => persistence.setVeckomenyViewMode(any()),
   ).thenAnswer((_) async {});
   TestServiceLocator.registerMock<PersistenceService>(persistence);
+  final wishes = FakeMenuWishProfile();
+  TestServiceLocator.registerMock<OwnProfileReader>(wishes);
+  TestServiceLocator.registerMock<OwnProfileEditor>(wishes);
   return const VeckomenyView();
 }
 

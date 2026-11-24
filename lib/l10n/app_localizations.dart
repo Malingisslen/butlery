@@ -35129,6 +35129,90 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Fler lådor'**
   String get a11yLunchboxMore;
+
+  /// BUT-2529: shown when the saved week-menu wishes are full
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan spara högst {count} önskemål. Ta bort ett först.'**
+  String menuWishLimit(int count);
+
+  /// BUT-2529: a saved week-menu wish could not be written
+  ///
+  /// In sv, this message translates to:
+  /// **'Önskemålet kunde inte sparas'**
+  String get menuWishSaveFailed;
+
+  /// BUT-2529: the chip and sheet row that bring back last week's wish
+  ///
+  /// In sv, this message translates to:
+  /// **'Som förra veckan'**
+  String get menuWishLastTitle;
+
+  /// BUT-2529: the chip that opens the wishes sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla …'**
+  String get menuWishAllChip;
+
+  /// BUT-2529: title of the sheet with saved wishes
+  ///
+  /// In sv, this message translates to:
+  /// **'Mina önskemål'**
+  String get menuWishesSheetTitle;
+
+  /// BUT-2529: row action that renames a saved wish chip
+  ///
+  /// In sv, this message translates to:
+  /// **'Döp om'**
+  String get menuWishRename;
+
+  /// BUT-2529: title of the dialog that renames a saved wish
+  ///
+  /// In sv, this message translates to:
+  /// **'Döp om önskemålet'**
+  String get menuWishRenameTitle;
+
+  /// BUT-2529: label of the name field in the rename dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Namn på knappen'**
+  String get menuWishNameLabel;
+
+  /// BUT-2529: snackbar after a saved wish was removed; pairs with commonUndo
+  ///
+  /// In sv, this message translates to:
+  /// **'Önskemålet togs bort'**
+  String get menuWishRemoved;
+
+  /// BUT-2529: empty state of the saved wishes list
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga sparade önskemål än. När du har skapat en meny kan du spara önskemålet till nästa vecka.'**
+  String get menuWishesEmpty;
+
+  /// BUT-2529: heading over the two built-in wishes in the sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbyggda'**
+  String get menuWishesBuiltInTitle;
+
+  /// BUT-2529: note under the built-in wishes in the sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknas fram för veckans återstående dagar varje gång.'**
+  String get menuWishesBuiltInNote;
+
+  /// BUT-2529: snackbar after a menu was made from typed text; action is commonSave
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara önskemålet till nästa vecka?'**
+  String get menuWishSavePrompt;
+
+  /// BUT-2529: snackbar after the wish was saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Önskemålet sparat'**
+  String get menuWishSaved;
 }
 
 class _AppLocalizationsDelegate

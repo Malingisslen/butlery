@@ -28,6 +28,12 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
   /// Pantry flag of the ready-made wish still sitting in the prompt field.
   bool get fillPantryFocus;
 
+  /// Runs once for a generation from the prompt field that produced a menu.
+  Future<void> afterMenuGenerated({
+    required String text,
+    required bool pantryFocus,
+  });
+
   /// The one place that decides the pantry flag: an explicit argument wins,
   /// otherwise the wish chip that filled the field, so the prompt row's
   /// Generera carries it too.
@@ -53,9 +59,10 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
       if (!confirmed || !mounted) return;
     }
 
+    final promptText = promptController.text;
     // BUT-2157: a cancelled run places nothing, so the week stays as it was.
     final end = await menuVm.generateMenu(
-      promptController.text,
+      promptText,
       pantryFocus: wantPantry,
     );
     if (!mounted || end != MenuGenerationEnd.completed) return;
@@ -104,7 +111,8 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
       _showUnmatchedNotice(unmatchedNotice);
     }
 
-    if (menuVm.hasMenu && !menuVm.hasError) {
+    final produced = menuVm.hasMenu && !menuVm.hasError;
+    if (produced) {
       markRevealing();
     }
 
@@ -127,6 +135,10 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
           }
         },
       );
+    }
+
+    if (produced && mounted) {
+      await afterMenuGenerated(text: promptText, pantryFocus: wantPantry);
     }
   }
 

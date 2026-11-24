@@ -10,6 +10,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
@@ -402,6 +403,14 @@ class UserService extends ChangeNotifier
   @override
   Future<bool> setRecurringDayRules(List<RecurringDayRule> rules) =>
       _settings.setRecurringDayRules(rules);
+
+  @override
+  Future<bool> setSavedMenuWishes(List<MenuWish> wishes) =>
+      _settings.setSavedMenuWishes(wishes);
+
+  @override
+  Future<void> rememberLastMenuWish(LastMenuWish wish) =>
+      _settings.rememberLastMenuWish(wish);
 
   @override
   Future<void> markPantryAutoAddPrompted() =>
