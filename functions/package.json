@@ -307,7 +307,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "@google-cloud/vision": "6.2.0",
-    "@google/genai": "3.0.0",
+    "@google/genai": "3.6.1",
     "firebase-admin": "14.5.1",
     "firebase-functions": "7.4.0",
     "p-limit": "^3.1.0"
