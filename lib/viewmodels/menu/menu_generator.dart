@@ -15,6 +15,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
 import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
+import 'package:butlery/services/menu/menu_pick_reasons.dart';
 import 'package:butlery/viewmodels/menu/menu_generator/menu_pool_models.dart';
 import 'package:butlery/viewmodels/menu/menu_generator/menu_pool_prefs.dart';
 import 'package:butlery/viewmodels/menu/menu_generator/menu_scoring_reads.dart';
@@ -173,6 +174,19 @@ class MenuGenerator {
   /// covers at all, so the week was drawn as usual.
   bool lastPantryFocusFoundNothing = false;
 
+  /// How many soft wishes of the last generation found nothing and were
+  /// filled from the whole pool (BUT-2523).
+  int lastUnmetSoftWishCount = 0;
+
+  /// What the last generation or re-roll knew, so a dish can be explained
+  /// without another read. Null before any generation.
+  MenuPickSignals? lastPickSignals;
+
+  /// The dishes the generator itself drew (a full run or a section re-roll).
+  /// A swapped-in or hand-edited dish is not here, so it is never explained
+  /// as if it had been drawn.
+  final Set<String> drawnRecipeIds = {};
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   ///
   /// A run cancelled while the preferences are read leaves [lastPoolStats]
@@ -305,6 +319,15 @@ class MenuGenerator {
       recentlyUsedRecipeIds: recentIds,
       scoringContext: scoringContext,
     );
+    lastUnmetSoftWishCount = _menuService.lastSoftFallbackCount ?? 0;
+    drawnRecipeIds
+      ..clear()
+      ..addAll(generatedMenu.values.expand((l) => l).map((r) => r.id));
+    lastPickSignals = MenuPickSignals.now(
+      recentIds: recentIds,
+      recentKnown: !recent.readFailed,
+      context: scoringContext,
+    );
 
     // P6-U01: nothing matched is an outcome, not an error.
     // An empty LIBRARY is still the error above.
@@ -405,6 +428,9 @@ class MenuGenerator {
       pool,
       recentlyUsedRecipeIds: recentIds,
       scoringContext: scoringContext,
+    );
+    drawnRecipeIds.addAll(
+      (newRecipes[section] ?? const <Recipe>[]).map((r) => r.id),
     );
 
     if (newRecipes.containsKey(section)) {

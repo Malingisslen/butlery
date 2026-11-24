@@ -16,6 +16,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/menu_pick_reasons.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -293,6 +294,24 @@ class MenuViewModel extends BaseViewModel {
   /// The last pantry-first generation found nothing the pantry covers.
   bool get pantryFocusFoundNothing => _generator.lastPantryFocusFoundNothing;
 
+  /// Soft wishes of the last generation that found no recipe (BUT-2523).
+  int get unmetSoftWishCount => hasMenu ? _generator.lastUnmetSoftWishCount : 0;
+
+  /// Whether the menu on screen came from a generation this session, so a
+  /// dish can be explained.
+  bool canExplainPick(Recipe recipe) =>
+      !isLiveMenu &&
+      _generator.lastPickSignals != null &&
+      _generator.drawnRecipeIds.contains(recipe.id);
+
+  /// Why [recipe] was suggested, from the signals of the last generation.
+  /// Empty when nothing can be proven (a loaded menu, or pure chance).
+  List<MenuPickReason> pickReasonsFor(Recipe recipe) {
+    final signals = _generator.lastPickSignals;
+    if (signals == null || isLiveMenu) return const [];
+    return MenuPickReasons.forRecipe(recipe, signals);
+  }
+
   /// P6-U01: the last generation matched nothing, or null.
   MenuNoMatchOutcome? get noMatchOutcome => hasMenu ? null : _noMatch;
 
@@ -439,6 +458,9 @@ class MenuViewModel extends BaseViewModel {
   void _forgetPoolStats() {
     _generator.lastPoolStats = null;
     _generator.lastRecencyReadFailed = false;
+    _generator.lastPickSignals = null;
+    _generator.drawnRecipeIds.clear();
+    _generator.lastUnmetSoftWishCount = 0;
   }
 
   /// Generates menu from AI prompt

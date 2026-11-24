@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/recipe_thumbnail.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
+import 'package:butlery/widgets/menu/menu_why_section.dart';
 
 /// "Din veckomeny" with the number of dishes beside it.
 class MenuListTitle extends StatelessWidget {
@@ -247,6 +248,10 @@ class MenuListRow extends StatelessWidget {
                                   ),
                                 ?note,
                               ],
+                            ),
+                          if (viewModel.canExplainPick(recipe))
+                            MenuWhyToggle(
+                              reasons: viewModel.pickReasonsFor(recipe),
                             ),
                         ],
                       ),
