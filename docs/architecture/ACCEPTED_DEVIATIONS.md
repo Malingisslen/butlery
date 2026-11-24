@@ -7070,3 +7070,36 @@ Decided in ADR-0044 and on two cards to Malin.
   cleared at every sign-out, explicit or automatic; account deletion ends with a sign-out.
   It is not in the Art. 15 export: it is on the device, not with us.
 
+
+## BUT-2490 — a group's fixed days (2026-11-24)
+
+A group admin saves the group's fixed days through the `setGroupRecurringDayRules`
+callable (`functions/src/groups/set-group-recurring-day-rules.ts`), which writes
+`chat_groups/{groupId}.recurringDayRules` under the Admin SDK and nothing else on the
+document.
+
+- **The rows are checked by the callable only.** `checkRecurringDayRules`
+  (`functions/src/groups/recurring-day-rules.ts`) refuses the whole list unless it holds
+  at most 14 rows, each a plain object with no key outside `id, weekday, meal, kind, value,
+  quick, paused`, weekday an integer 1–7, meal `lunch` or `middag`, kind `tag`,
+  `proteinCategory`, `dietary` or `quick`, a non-quick kind with one of the six foods of
+  `RecurringFood` under its own kind, a quick kind with an empty value and `quick: true`,
+  boolean flags, `id` equal to `<weekday>-<meal>`, and no repeated `id`. It stores rows
+  rebuilt from the checked fields. `firestore.rules` does not check the rows, because rules
+  cannot iterate a list, and its `chat_groups` block is unchanged: the only client update
+  limb is the admin rename (`name`, `updatedAt`), so a client write of `recurringDayRules`
+  is refused (`chat-groups-rules.test.ts`). The same choice as every other group write: a
+  callable, not a widened update rule.
+- **A group with no admin left keeps its fixed days.** A departing admin is removed from
+  `adminIds` with no promotion, so such a group's rules stay readable by every member and
+  changeable by nobody until the group is deleted.
+- **Every member can read the fixed days.** The `chat_groups` read rule is membership; the
+  rows carry no author, uid or timestamp.
+- **`enforceGroupMinorMembership` skips writes that change no membership.**
+  `membershipUnchanged` is true when the event has a `before` and `memberIds` (element for
+  element) and `memberAddedBy` are equal in `before` and `after`; the trigger then returns
+  before any read. Before this, every write to a group document with members read one
+  `users/{uid}` document per member (up to 100), so a rules save would have cost a read per
+  member. What changes for child safety: a write that changes neither field no longer gives
+  a group a second check after a failed run; `retry: true` is what re-runs a failed run.
+  Awaiting the child-safety stakeholder's decision.

@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 
 /// A group people chat in, stored at `chat_groups/{groupId}`.
 ///
@@ -42,6 +43,11 @@ class ChatGroup {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// The group's fixed days (BUT-2490), saved by an admin through the
+  /// `setGroupRecurringDayRules` callable. Rows this version cannot use are
+  /// dropped.
+  final List<RecurringDayRule> recurringDayRules;
+
   const ChatGroup({
     required this.id,
     required this.name,
@@ -53,6 +59,7 @@ class ChatGroup {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    this.recurringDayRules = const [],
   });
 
   bool isMember(String userId) => memberIds.contains(userId);
@@ -84,6 +91,9 @@ class ChatGroup {
       createdBy: SerializationUtils.safeString(data, 'createdBy'),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
+      recurringDayRules: RecurringDayRules.fromFirestoreList(
+        data[RecurringDayRules.field],
+      ),
     );
   }
 

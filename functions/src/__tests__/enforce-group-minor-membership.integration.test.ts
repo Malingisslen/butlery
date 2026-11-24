@@ -158,13 +158,27 @@ async function run(): Promise<void> {
    * `{ params: { groupId }, data: { before, after } }`. `afterSnapshot` runs
    * between reading the snapshot and running the handler — the only way to stage
    * a document that vanishes mid-flight.
+   *
+   * `before` is a missing document, so the event is the group's CREATE, which
+   * is how `seedGroup` wrote it. A `before` equal to `after` is a write that
+   * changed no membership, and the trigger returns on that before reading
+   * (BUT-2490); `fireUnchanged` sends that shape.
    */
   async function fire(
     groupId: string,
     afterSnapshot?: () => Promise<void>,
   ): Promise<void> {
+    const before = await groupRef(`never-written-${RUN}`).get();
     const snap = await groupRef(groupId).get();
     if (afterSnapshot) await afterSnapshot();
+    await enforceGroupMinorMembership.run({
+      params: { groupId },
+      data: { before, after: snap },
+    });
+  }
+
+  async function fireUnchanged(groupId: string): Promise<void> {
+    const snap = await groupRef(groupId).get();
     await enforceGroupMinorMembership.run({
       params: { groupId },
       data: { before: snap, after: snap },
@@ -505,6 +519,31 @@ async function run(): Promise<void> {
       !(minor in (plan.memberPermissions as Record<string, unknown>)),
       "…and out of memberPermissions",
     );
+  });
+
+  // 11. BUT-2490: a write that leaves `memberIds` and `memberAddedBy` as they
+  //     were is not judged again, through the real wrapper and real emulator
+  //     snapshots. The minor below WOULD be evicted by the full check (case 1's
+  //     fixture), so this pins the accepted deviation, not an accident.
+  test("a write that changes no membership does not re-judge the group", async () => {
+    const gid = `grp-unchanged-${RUN}`;
+    const minor = `minor-unchanged-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(minor, true);
+    await seedGroup(gid, [creator, minor], {
+      [creator]: creator,
+      [minor]: creator,
+    });
+
+    await fireUnchanged(gid);
+
+    const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
+    assert(memberIds.includes(minor), "the unchanged-membership event evicts nobody");
+
+    await fire(gid);
+
+    const after = (await groupRef(gid).get()).data()!.memberIds as string[];
+    assert(!after.includes(minor), "control: the same group as a create event is judged");
   });
 
   let failed = 0;

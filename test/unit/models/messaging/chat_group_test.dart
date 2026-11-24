@@ -13,6 +13,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/menu/recurring_day_rule.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/messaging/chat_group.dart';
 
 const _groupId = 'chat-group-1';
@@ -233,6 +235,70 @@ void main() {
         expect(group.isMember(_admin), isFalse);
       },
     );
+  });
+
+  group('recurringDayRules (BUT-2490)', () {
+    final tacoFriday = RecurringDayRule.create(
+      day: DayOfWeek.fri,
+      meal: MealSlot.middag,
+      food: RecurringFood.tacos,
+    );
+    final quickMonday = RecurringDayRule.create(
+      day: DayOfWeek.mon,
+      meal: MealSlot.lunch,
+      quick: true,
+    );
+
+    test('reads the stored rules', () async {
+      final firestore = FakeFirebaseFirestore();
+      final group = ChatGroup.fromFirestore(
+        await _read(
+          firestore,
+          _wellFormed()
+            ..['recurringDayRules'] = RecurringDayRules.toFirestoreList([
+              tacoFriday,
+              quickMonday,
+            ]),
+        ),
+      );
+
+      expect(group.recurringDayRules, [tacoFriday, quickMonday]);
+    });
+
+    test('drops rows this version cannot use and keeps the rest', () async {
+      final firestore = FakeFirebaseFirestore();
+      final group = ChatGroup.fromFirestore(
+        await _read(
+          firestore,
+          _wellFormed()
+            ..['recurringDayRules'] = <Object?>[
+              'not a row',
+              {...tacoFriday.toFirestore(), 'value': 'pizza'},
+              {...quickMonday.toFirestore(), 'weekday': 9},
+              tacoFriday.toFirestore(),
+            ],
+        ),
+      );
+
+      expect(group.recurringDayRules, [tacoFriday]);
+    });
+
+    test('an absent or non-list field reads as no rules', () async {
+      final firestore = FakeFirebaseFirestore();
+      final absent = ChatGroup.fromFirestore(
+        await _read(firestore, _wellFormed()),
+      );
+      final wrongType = ChatGroup.fromFirestore(
+        await _read(
+          firestore,
+          _wellFormed()..['recurringDayRules'] = 'fish',
+          id: 'chat-group-2',
+        ),
+      );
+
+      expect(absent.recurringDayRules, isEmpty);
+      expect(wrongType.recurringDayRules, isEmpty);
+    });
   });
 
   group('identity', () {

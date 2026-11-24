@@ -451,6 +451,33 @@ test("chat_groups: a group admin cannot add an unknown field", async () => {
   );
 });
 
+// G23b: DENY — BUT-2490: a group ADMIN writes `recurringDayRules` from the
+// client, with a canonical row. Same actor and document as G11/G12; only the
+// key differs. The rows are written by `setGroupRecurringDayRules`, which
+// checks each row; rules cannot iterate a list, so a client write of the field
+// must stay refused.
+test("chat_groups: a group admin cannot write recurringDayRules from the client", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`chat_groups/${GROUP_ID}`)
+      .update({
+        recurringDayRules: [
+          {
+            id: "5-middag",
+            weekday: 5,
+            meal: "middag",
+            kind: "tag",
+            value: "taco",
+            quick: false,
+            paused: false,
+          },
+        ],
+      })
+  );
+});
+
 // ============================================================================
 // CHAT GROUPS — name validation
 // ============================================================================

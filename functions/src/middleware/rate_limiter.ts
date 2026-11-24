@@ -157,6 +157,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 10,
     refillIntervalMs: 60000,
   },
+  // BUT-2490. A group admin saves the whole rule list; each save also fires
+  // `enforceGroupMinorMembership` once.
+  setGroupRecurringDayRules: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
   // BUT-2264. Each call answers whether one address is findable, so the
   // daily cap is what limits trying a list of addresses.
   findUserByEmail: {

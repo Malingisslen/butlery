@@ -146,6 +146,9 @@ export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-mem
 export { createChatGroup } from "./groups/create-chat-group";
 export { addChatGroupMembers } from "./groups/add-chat-group-members";
 export { removeChatGroupMember } from "./groups/remove-chat-group-member";
+// BUT-2490: a group admin saves the group's recurring-day rules. It writes no
+// membership field.
+export { setGroupRecurringDayRules } from "./groups/set-group-recurring-day-rules";
 // BUT-1856: the meal-vote poll's entry point. Resolve-or-create, so a social
 // group gets ONE chat instead of one per poll. It creates through
 // `createChatGroupWithDeps`, so the gate above binds it too.
