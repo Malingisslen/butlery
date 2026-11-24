@@ -196,8 +196,10 @@ void main() {
         expect(h.repository.saves, isEmpty);
         expect(find.text(_sv.menuPlaceAutoButton), findsOneWidget);
         expect(find.text(_sv.menuPlaceManualButton), findsOneWidget);
-        // D-04: no undo on the result, and no 30 s window anywhere.
-        expect(find.byType(SnackBar), findsNothing);
+        // D-04: no undo on the result, and no 30 s window anywhere. The one
+        // snackbar is BUT-2529's offer to save the typed wish.
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(find.text(_sv.menuWishSavePrompt), findsOneWidget);
         expect(find.text('Ångra'), findsNothing);
 
         await tester.tap(find.text(_sv.menuPlaceAutoButton));

@@ -20,6 +20,7 @@ import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
+import 'package:butlery/viewmodels/menu_wishes_viewmodel.dart';
 import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart';
 import 'package:butlery/widgets/menu/veckomeny_save_week_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
@@ -43,6 +44,8 @@ class VeckomenyBody extends StatelessWidget {
     required this.onPromptChanged,
     required this.onRevealDone,
     required this.onPickWish,
+    this.wishes,
+    this.onOpenAllWishes,
     required this.onOpenSavedWeeks,
     this.activeWishSourceId,
   });
@@ -60,6 +63,11 @@ class VeckomenyBody extends StatelessWidget {
   final VoidCallback onPromptChanged;
   final VoidCallback onRevealDone;
   final ValueChanged<MenuWishFill> onPickWish;
+
+  /// The saved wishes and last week's wish; without it only the built-ins
+  /// show.
+  final MenuWishesViewModel? wishes;
+  final VoidCallback? onOpenAllWishes;
   final VoidCallback onOpenSavedWeeks;
 
   /// The wish chip whose fill is still in the prompt field.
@@ -149,10 +157,22 @@ class VeckomenyBody extends StatelessWidget {
                                   .hasEntries) ...[
                             // Shown with text in the field too, so the chip
                             // that made the fill stays visible as selected.
-                            VeckomenyQuickPicks(
-                              activeSourceId: activeWishSourceId,
-                              onPick: onPickWish,
-                            ),
+                            if (wishes case final wishes?)
+                              ListenableBuilder(
+                                listenable: wishes,
+                                builder: (context, _) => VeckomenyQuickPicks(
+                                  activeSourceId: activeWishSourceId,
+                                  onPick: onPickWish,
+                                  lastWish: wishes.lastWish,
+                                  savedWishes: wishes.wishes,
+                                  onOpenAll: onOpenAllWishes,
+                                ),
+                              )
+                            else
+                              VeckomenyQuickPicks(
+                                activeSourceId: activeWishSourceId,
+                                onPick: onPickWish,
+                              ),
                             ButleryListRow(
                               label: context.l10n.menuSavedWeeksRow,
                               leading: ButleryIcons.folder,

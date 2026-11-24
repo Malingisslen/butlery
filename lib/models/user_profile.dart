@@ -8,6 +8,7 @@ import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
@@ -109,6 +110,12 @@ class UserProfile with JsonSerializableMixin {
   /// (`setRecurringDayRules`), never by a whole-profile save.
   final List<RecurringDayRule> recurringDayRules;
 
+  /// BUT-2529: the week menu's saved wishes and the wish the last menu was
+  /// generated from. Same settings sub-doc and same single-field writes as
+  /// [recurringDayRules].
+  final List<MenuWish> savedMenuWishes;
+  final LastMenuWish? lastMenuWish;
+
   /// BUT-1322: how many people the user usually cooks for. When set, the
   /// portion scaler opens pre-set to this value (recipe detail, cooking mode,
   /// add-to-shopping); the manual scaler stays the explicit override. Null =
@@ -195,6 +202,8 @@ class UserProfile with JsonSerializableMixin {
     this.newRecipesShowOnProfile = false,
     this.pantryAutoAddPrompted = false,
     this.recurringDayRules = const [],
+    this.savedMenuWishes = const [],
+    this.lastMenuWish,
     this.householdSize,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
@@ -269,6 +278,8 @@ class UserProfile with JsonSerializableMixin {
     bool? newRecipesShowOnProfile,
     bool? pantryAutoAddPrompted,
     List<RecurringDayRule>? recurringDayRules,
+    List<MenuWish>? savedMenuWishes,
+    LastMenuWish? lastMenuWish,
     Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
@@ -322,6 +333,8 @@ class UserProfile with JsonSerializableMixin {
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
       recurringDayRules: recurringDayRules ?? this.recurringDayRules,
+      savedMenuWishes: savedMenuWishes ?? this.savedMenuWishes,
+      lastMenuWish: lastMenuWish ?? this.lastMenuWish,
       householdSize: householdSize == _sentinel
           ? this.householdSize
           : householdSize as int?,
@@ -540,6 +553,8 @@ class UserProfile with JsonSerializableMixin {
       RecurringDayRules.field: RecurringDayRules.toFirestoreList(
         recurringDayRules,
       ),
+      MenuWishes.field: MenuWishes.toFirestoreList(savedMenuWishes),
+      LastMenuWish.field: lastMenuWish?.toFirestore(),
       'householdSize': householdSize,
       // Notification fields
       'fcmToken': fcmToken,
@@ -645,6 +660,8 @@ class UserProfile with JsonSerializableMixin {
       recurringDayRules: RecurringDayRules.fromFirestoreList(
         data[RecurringDayRules.field],
       ),
+      savedMenuWishes: MenuWishes.fromFirestoreList(data[MenuWishes.field]),
+      lastMenuWish: LastMenuWish.fromFirestore(data[LastMenuWish.field]),
       householdSize: parseHouseholdSize(data['householdSize']),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
@@ -770,6 +787,8 @@ class UserProfile with JsonSerializableMixin {
       recurringDayRules: RecurringDayRules.fromFirestoreList(
         json[RecurringDayRules.field],
       ),
+      savedMenuWishes: MenuWishes.fromFirestoreList(json[MenuWishes.field]),
+      lastMenuWish: LastMenuWish.fromFirestore(json[LastMenuWish.field]),
       householdSize: parseHouseholdSize(json['householdSize']),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(

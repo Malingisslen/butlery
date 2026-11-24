@@ -7,6 +7,7 @@ import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 
@@ -155,6 +156,12 @@ abstract interface class OwnProfileEditor {
 
   /// See `UserSettingsWriter.setRecurringDayRules`.
   Future<bool> setRecurringDayRules(List<RecurringDayRule> rules);
+
+  /// See `UserSettingsWriter.setSavedMenuWishes`.
+  Future<bool> setSavedMenuWishes(List<MenuWish> wishes);
+
+  /// See `UserSettingsWriter.rememberLastMenuWish`.
+  Future<void> rememberLastMenuWish(LastMenuWish wish);
 
   /// See `UserSettingsWriter.markPantryAutoAddPrompted`.
   Future<void> markPantryAutoAddPrompted();

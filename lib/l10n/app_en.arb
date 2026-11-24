@@ -18766,5 +18766,66 @@
   "a11yLunchboxMore": "More boxes",
   "@a11yLunchboxMore": {
     "description": "BUT-2486: stepper plus."
+  },
+  "menuWishLimit": "You can save at most {count} wishes. Remove one first.",
+  "@menuWishLimit": {
+    "description": "BUT-2529: shown when the saved week-menu wishes are full",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuWishSaveFailed": "The wish could not be saved",
+  "@menuWishSaveFailed": {
+    "description": "BUT-2529: a saved week-menu wish could not be written"
+  },
+  "menuWishLastTitle": "As last week",
+  "@menuWishLastTitle": {
+    "description": "BUT-2529: the chip and sheet row that bring back last week's wish"
+  },
+  "menuWishAllChip": "All …",
+  "@menuWishAllChip": {
+    "description": "BUT-2529: the chip that opens the wishes sheet"
+  },
+  "menuWishesSheetTitle": "My wishes",
+  "@menuWishesSheetTitle": {
+    "description": "BUT-2529: title of the sheet with saved wishes"
+  },
+  "menuWishRename": "Rename",
+  "@menuWishRename": {
+    "description": "BUT-2529: row action that renames a saved wish chip"
+  },
+  "menuWishRenameTitle": "Rename the wish",
+  "@menuWishRenameTitle": {
+    "description": "BUT-2529: title of the dialog that renames a saved wish"
+  },
+  "menuWishNameLabel": "Name on the chip",
+  "@menuWishNameLabel": {
+    "description": "BUT-2529: label of the name field in the rename dialog"
+  },
+  "menuWishRemoved": "The wish was removed",
+  "@menuWishRemoved": {
+    "description": "BUT-2529: snackbar after a saved wish was removed; pairs with commonUndo"
+  },
+  "menuWishesEmpty": "You have no saved wishes yet. After you have made a menu you can save the wish for next week.",
+  "@menuWishesEmpty": {
+    "description": "BUT-2529: empty state of the saved wishes list"
+  },
+  "menuWishesBuiltInTitle": "Built in",
+  "@menuWishesBuiltInTitle": {
+    "description": "BUT-2529: heading over the two built-in wishes in the sheet"
+  },
+  "menuWishesBuiltInNote": "Worked out each time for the days left of the week.",
+  "@menuWishesBuiltInNote": {
+    "description": "BUT-2529: note under the built-in wishes in the sheet"
+  },
+  "menuWishSavePrompt": "Save the wish for next week?",
+  "@menuWishSavePrompt": {
+    "description": "BUT-2529: snackbar after a menu was made from typed text; action is commonSave"
+  },
+  "menuWishSaved": "Wish saved",
+  "@menuWishSaved": {
+    "description": "BUT-2529: snackbar after the wish was saved"
   }
 }

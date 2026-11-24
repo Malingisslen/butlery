@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** November 24, 2026
-**Version:** 1.41
+**Version:** 1.42
 
 ---
 
@@ -38,6 +38,7 @@ We collect the following types of personal data when you use Butlery:
 - **Share links:** When you share a recipe or a shopping list with a link, or invite a friend with a link, we create a short link. It stores your user id, the link address (which also contains your user id) and when the link was created. The short link is deleted automatically after 14 days, and when you delete your account. Your short links are included in the data export. A link you have already sent cannot be taken back from the recipient.
 - **Cooked recipes:** When you tap "Cooked today", we store which recipe it was and when. After cooking you can also write a rating from 1 to 5 and a note, and they are stored with that cooking. Only you can see your cooked recipes, ratings and notes. They are not shared with friends or anyone else, and they are included in the data export. They are deleted when you delete your account.
 - **Fixed days:** If you save a fixed day in the weekly menu, for example fish on Mondays, we store the weekday, the meal, the kind of food or evening you chose and whether it is paused. It is only used to choose recipes for your weekly menu. Only you can see your fixed days. They are included in your data export and are deleted when you remove them or delete your account.
+- **Saved weekly-menu wishes:** If you save a wish for the weekly menu, for example “Child-friendly dinners, nothing spicy”, we store the name and the text you wrote. We also store your latest wish so that you can choose “Same as last week”. The text is free, so it can contain things you write yourself about diet or health, for example that someone eats gluten-free. The wishes are only used to fill in the weekly menu, only you see them, they are included in the data export and they are deleted when you remove them or delete the account. The latest wish is overwritten the next time you ask for a menu with a different wish.
 - **Communications:** Messages you send to us or other users
 - **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone. Feedback is kept for about 12 months and is deleted earlier if you delete your account.
 
@@ -301,6 +302,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Cooked recipes, with the rating and note you add after cooking | Until you delete the account | Performance of contract |
 | Fixed days in the weekly menu | Until you remove them or delete the account | Performance of contract |
+| Saved weekly-menu wishes | Until you remove them or delete the account | Performance of contract |
 | Recipes you show on your profile (what others see, with separate photo copies) | Until you stop showing the recipe, delete it or delete your account | Performance of contract |
 | Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |

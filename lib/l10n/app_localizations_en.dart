@@ -23147,4 +23147,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yLunchboxMore => 'More boxes';
+
+  @override
+  String menuWishLimit(int count) {
+    return 'You can save at most $count wishes. Remove one first.';
+  }
+
+  @override
+  String get menuWishSaveFailed => 'The wish could not be saved';
+
+  @override
+  String get menuWishLastTitle => 'As last week';
+
+  @override
+  String get menuWishAllChip => 'All …';
+
+  @override
+  String get menuWishesSheetTitle => 'My wishes';
+
+  @override
+  String get menuWishRename => 'Rename';
+
+  @override
+  String get menuWishRenameTitle => 'Rename the wish';
+
+  @override
+  String get menuWishNameLabel => 'Name on the chip';
+
+  @override
+  String get menuWishRemoved => 'The wish was removed';
+
+  @override
+  String get menuWishesEmpty =>
+      'You have no saved wishes yet. After you have made a menu you can save the wish for next week.';
+
+  @override
+  String get menuWishesBuiltInTitle => 'Built in';
+
+  @override
+  String get menuWishesBuiltInNote =>
+      'Worked out each time for the days left of the week.';
+
+  @override
+  String get menuWishSavePrompt => 'Save the wish for next week?';
+
+  @override
+  String get menuWishSaved => 'Wish saved';
 }

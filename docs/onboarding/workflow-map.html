@@ -378,6 +378,18 @@
       "path": "lib/viewmodels/recurring_day_rules_viewmodel.dart"
     },
     {
+      "id": "v-menu-wishes",
+      "label": "Färdiga önskemål (chip-rad + Mina önskemål)",
+      "context": "view",
+      "path": "lib/widgets/menu/veckomeny_quick_picks.dart, lib/widgets/menu/menu_wishes_sheet.dart, lib/views/veckomeny_view/veckomeny_wish_flow.dart"
+    },
+    {
+      "id": "vm-menu-wishes",
+      "label": "MenuWishesViewModel",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/menu_wishes_viewmodel.dart, lib/models/menu/menu_wish.dart"
+    },
+    {
       "id": "svc-recurring-rule-pins",
       "label": "Fasta dagar — regel till pin (RecurringDayRule + RecurringRulePins)",
       "context": "service",
@@ -2727,7 +2739,7 @@
     {
       "id": "flow2",
       "label": "generera veckomeny",
-      "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool. BUT-1465 (2026-07-11): hushållsunionen går nu att stänga av per användare (Inställningar > household_allergen_filter_tile.dart), med ett child-safety-bekräftelsesteg som namnger allergenerna som slutar filtreras — av faller tillbaka till den egna användarens preferenser, aldrig ofiltrerat. BUT-1594 (samma sprint) tog bort kök/skicklighet som viktningssignaler i poängsättningen — se flow-menu-1 för den nuvarande formeln. Röstinmatning (MENU-16, kb-whisper-planen 2026-07-12): en mikrofonknapp i promptfältet (VoicePromptButton → VoiceCaptureService, lib/services/voice/) spelar in push-to-talk, transkriberar PÅ ENHETEN med KB-Whisper (GGML via whisper.cpp, modellen OTA-levererad + SHA-256-fail-closed av WhisperModelManager) och lägger texten REDIGERBAR i samma fält — därefter identisk väg som skriven text. Ljudet raderas efter transkribering och laddas aldrig upp; nekad mikrofon lämnar skrivvägen orörd. Talspråksstöd i parsern: utfyllnadsord strippas och självrättelser (”tre, nej fyra middagar”) löses sist-vinner i text_normalizer.dart, pinnat av spoken_prompt_golden_test.dart. BUT-1668 (2026-07-25): en fastnålad rätt placeras aldrig på en veckodag som redan passerat — i innevarande vecka hoppas dagar före dagens ankardag över och receptet faller igenom till den kronologiska fyllningen i stället för att tappas. BUT-1663 (2026-07-25): hushållsunionen skiljer nu på fyra fall i stället för två — deklarerade allergener, ett medvetet tomt allergiformulär (räknas som INGA allergener, bara för den inloggade själv), en medlem vars allergener inte FÅR läsas (annan kontoinnehavare — privat settings-dokument, owner-read-only; behåller vanlig-allergen-golvet) och en LÄSNING SOM MISSLYCKADES (försiktigt läge: golvet plus includeUnknownInMenu=false plus ofullständig roster). En medlem vars profil inte finns kvar (raderat konto) degraderar inte längre för alltid. BUT-2523: varje genererad rätt får ett ”Varför?” (MenuPickReasons, bara skäl som signalerna belägger; inte för bytta rätter), och en mjuk önskan som saknar träff och tyst föll tillbaka räknas och visas som en rad överst.",
+      "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool. BUT-1465 (2026-07-11): hushållsunionen går nu att stänga av per användare (Inställningar > household_allergen_filter_tile.dart), med ett child-safety-bekräftelsesteg som namnger allergenerna som slutar filtreras — av faller tillbaka till den egna användarens preferenser, aldrig ofiltrerat. BUT-1594 (samma sprint) tog bort kök/skicklighet som viktningssignaler i poängsättningen — se flow-menu-1 för den nuvarande formeln. Röstinmatning (MENU-16, kb-whisper-planen 2026-07-12): en mikrofonknapp i promptfältet (VoicePromptButton → VoiceCaptureService, lib/services/voice/) spelar in push-to-talk, transkriberar PÅ ENHETEN med KB-Whisper (GGML via whisper.cpp, modellen OTA-levererad + SHA-256-fail-closed av WhisperModelManager) och lägger texten REDIGERBAR i samma fält — därefter identisk väg som skriven text. Ljudet raderas efter transkribering och laddas aldrig upp; nekad mikrofon lämnar skrivvägen orörd. Talspråksstöd i parsern: utfyllnadsord strippas och självrättelser (”tre, nej fyra middagar”) löses sist-vinner i text_normalizer.dart, pinnat av spoken_prompt_golden_test.dart. BUT-1668 (2026-07-25): en fastnålad rätt placeras aldrig på en veckodag som redan passerat — i innevarande vecka hoppas dagar före dagens ankardag över och receptet faller igenom till den kronologiska fyllningen i stället för att tappas. BUT-1663 (2026-07-25): hushållsunionen skiljer nu på fyra fall i stället för två — deklarerade allergener, ett medvetet tomt allergiformulär (räknas som INGA allergener, bara för den inloggade själv), en medlem vars allergener inte FÅR läsas (annan kontoinnehavare — privat settings-dokument, owner-read-only; behåller vanlig-allergen-golvet) och en LÄSNING SOM MISSLYCKADES (försiktigt läge: golvet plus includeUnknownInMenu=false plus ofullständig roster). En medlem vars profil inte finns kvar (raderat konto) degraderar inte längre för alltid. BUT-2523: varje genererad rätt får ett ”Varför?” (MenuPickReasons, bara skäl som signalerna belägger; inte för bytta rätter), och en mjuk önskan som saknar träff och tyst föll tillbaka räknas och visas som en rad överst. BUT-2529: på en tom vecka fyller chip-raden ”Färdiga önskemål” promptfältet, och efter en lyckad generering kan önskemålet sparas — se flow2-menu-wishes.",
       "steps": [
         {
           "from": "v-veckomeny",
@@ -2900,6 +2912,63 @@
           "from": "svc-user",
           "to": "vm-recurring-day-rules",
           "payload": "true efter lyckad skrivning; den inlästa profilen uppdateras (copyWith recurringDayRules) och lyssnare notifieras, så listan och bandets antal ritas om. false vid fel",
+          "transport": "in-memory return",
+          "verified": true
+        }
+      ],
+      "area": "meny & inköp"
+    },
+    {
+      "id": "flow2-menu-wishes",
+      "label": "spara & återanvänd önskemål (veckomenyns prompt)",
+      "description": "BUT-2529: på en tom vecka visar raden ”Färdiga önskemål” (VeckomenyQuickPicks) fyra slags chips: de inbyggda ”Snabb vecka” och ”Använd det jag har hemma” (räknas fram varje gång av koden, lagras aldrig), ”Som förra veckan” (fältet lastMenuWish {text, pantryFocus}), användarens sparade önskemål (fältet savedMenuWishes, lista av {id, name, text}, högst 12, text högst 300 tecken, namn högst 40) och ”Alla …” som öppnar arket ”Mina önskemål” (byt namn, ta bort med Ångra). Ett chip fyller bara promptfältet — det genererar ingenting; därefter är vägen densamma som för skriven text (flow2). Efter en lyckad generering från fältet anropar VeckomenyWishFlow.afterMenuGenerated MenuWishesViewModel.rememberLast, som skriver lastMenuWish bara när den ändrats och aldrig för en oredigerad inbyggd chip (dess antal rätter räknas från veckodagen och vore gammalt nästa vecka). Därefter frågar en snackbar ”Spara önskemålet till nästa vecka?”; Spara skriver savedMenuWishes. Båda fälten ligger i users/{uid}/settings/preferences och skrivs med ett eget set(merge) på ett enda fält; de läses med profilen, utan extra läsning. UserSettingsWriter.setSavedMenuWishes vägrar skriva om inställningarna inte lästs in (settingsMerged), eftersom skrivningen ersätter hela listan (BUT-1663); misslyckas den returneras false och profilen behåller sina önskemål. Gränserna prövas i modellen (MenuWishes) före skrivning och av firestore.rules menuWishesBounded(). Export: hela settings-samlingen exporteras (FirebaseDataExportRepository.exportUserSettings); radering: deleteUserPreferences i functions/src/account/cascade/user-subcollections.ts.",
+      "steps": [
+        {
+          "from": "v-veckomeny",
+          "to": "v-menu-wishes",
+          "payload": "tom vecka → chip-raden ”Färdiga önskemål” (VeckomenyQuickPicks) ritas med inbyggda chips, ”Som förra veckan”, sparade önskemål och ”Alla …”; ett tryck fyller promptfältet (pickWish) och genererar inte",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-menu-wishes",
+          "to": "vm-menu-wishes",
+          "payload": "”Alla …” öppnar arket ”Mina önskemål” (showMenuWishesSheet): rename(wish, name) / remove(wish) med undoRemove (Ångra); ett borttaget önskemål döljs direkt medan skrivningen pågår",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-veckomeny",
+          "to": "vm-menu-wishes",
+          "payload": "efter lyckad generering från fältet: rememberLast(text, pantryFocus, unchangedBuiltIn) — skriver inget om texten är tom, oförändrad mot lastMenuWish eller en oredigerad inbyggd chip; därefter snackbar ”Spara önskemålet till nästa vecka?” → Spara → save(text)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-menu-wishes",
+          "to": "svc-user",
+          "payload": "setSavedMenuWishes(wishes) / rememberLastMenuWish(wish) via OwnProfileEditor → UserSettingsWriter (setSavedMenuWishes nekas utan inloggad användare eller inläst inställningsdokument; rememberLastMenuWish skriver inget om värdet redan är lagrat)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-user",
+          "to": "repo-user",
+          "payload": "setSavedMenuWishes(userId, wishes) / setLastMenuWish(userId, wish) — validateSelfOperation (bara den egna användaren) + audit-logg set_saved_menu_wishes",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-user",
+          "to": "ds-users",
+          "payload": "users/{uid}/settings/preferences: fältet savedMenuWishes respektive lastMenuWish (ett enda fält, set med merge, köas offline via awaitOrLeaveQueued); begränsat av firestore.rules menuWishesBounded()",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "svc-user",
+          "to": "vm-menu-wishes",
+          "payload": "true efter lyckad skrivning; den inlästa profilen uppdateras (copyWith savedMenuWishes / lastMenuWish) och lyssnare notifieras, så chip-raden och arket ritas om. false vid fel — felet visas som ”kunde inte sparas”",
           "transport": "in-memory return",
           "verified": true
         }

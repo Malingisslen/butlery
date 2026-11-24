@@ -1,3 +1,4 @@
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/profile_field.dart';
@@ -2450,6 +2451,104 @@ void main() {
         expect(ok, isTrue);
         expect(userService.currentUserProfile, isNull);
       });
+    });
+
+    group('setSavedMenuWishes and rememberLastMenuWish (BUT-2529)', () {
+      const wishes = [MenuWish(id: 'a', name: 'Barn', text: 'Barnvänliga')];
+      const last = LastMenuWish(text: '7 middagar', pantryFocus: true);
+
+      setUp(() {
+        registerFallbackValue(<MenuWish>[]);
+        registerFallbackValue(const LastMenuWish(text: 'x'));
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile.copyWith(settingsMerged: true));
+      });
+
+      test('a profile whose settings were not read returns false without a '
+          'write, so an empty list cannot replace the stored wishes', () async {
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+        await userService.initialize();
+        expect(userService.currentUserProfile!.settingsMerged, isFalse);
+
+        final ok = await userService.setSavedMenuWishes(wishes);
+
+        expect(ok, isFalse);
+        verifyNever(() => mockUserRepository.setSavedMenuWishes(any(), any()));
+      });
+
+      test('saves, puts the wishes on the profile and notifies', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setSavedMenuWishes(any(), any()),
+        ).thenAnswer((_) async {});
+        await pumpEventQueue();
+        var notifications = 0;
+        userService.addListener(() => notifications++);
+
+        final ok = await userService.setSavedMenuWishes(wishes);
+
+        expect(ok, isTrue);
+        verify(
+          () => mockUserRepository.setSavedMenuWishes('test_user_123', wishes),
+        ).called(1);
+        expect(userService.currentUserProfile!.savedMenuWishes, wishes);
+        expect(notifications, 1);
+      });
+
+      test('a refused write returns false and keeps the old wishes', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setSavedMenuWishes(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+
+        final ok = await userService.setSavedMenuWishes(wishes);
+
+        expect(ok, isFalse);
+        expect(userService.currentUserProfile!.savedMenuWishes, isEmpty);
+      });
+
+      test(
+        'the last wish is written once and a repeat writes nothing',
+        () async {
+          await userService.initialize();
+          when(
+            () => mockUserRepository.setLastMenuWish(any(), any()),
+          ).thenAnswer((_) async {});
+
+          await userService.rememberLastMenuWish(last);
+          await userService.rememberLastMenuWish(last);
+
+          verify(
+            () => mockUserRepository.setLastMenuWish('test_user_123', last),
+          ).called(1);
+          expect(userService.currentUserProfile!.lastMenuWish, last);
+        },
+      );
+
+      test(
+        'a refused last-wish write leaves the profile without one',
+        () async {
+          await userService.initialize();
+          when(
+            () => mockUserRepository.setLastMenuWish(any(), any()),
+          ).thenThrow(Exception('permission-denied'));
+
+          await userService.rememberLastMenuWish(last);
+
+          expect(userService.currentUserProfile!.lastMenuWish, isNull);
+        },
+      );
     });
 
     group('setShowNutritionStrip (BUT-643)', () {

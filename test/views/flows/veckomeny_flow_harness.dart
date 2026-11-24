@@ -45,11 +45,13 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
+import '../../helpers/fake_menu_wish_profile.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -226,6 +228,9 @@ class VeckomenyFlowHarness {
   late final MockUnifiedRecipeService _recipes;
   final FlowConnectivity connectivity = FlowConnectivity();
 
+  /// The saved wishes and last week's wish; seed before the view is pumped.
+  late FakeMenuWishProfile wishProfile;
+
   /// Registers every seam. Call from setUp.
   ///
   /// [readDislikes] stands in for the household roster read: memberId → what
@@ -254,6 +259,9 @@ class VeckomenyFlowHarness {
     ).copyWith(settingsMerged: true);
     final users = _Users(user);
     TestServiceLocator.registerMock<UserService>(users);
+    wishProfile = FakeMenuWishProfile(base: user);
+    TestServiceLocator.registerMock<OwnProfileReader>(wishProfile);
+    TestServiceLocator.registerMock<OwnProfileEditor>(wishProfile);
 
     final recipes = _recipes = MockUnifiedRecipeService()
       ..setRecipeState(
