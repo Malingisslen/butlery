@@ -37,6 +37,13 @@ class RecipeMenuHandler {
         targets: selection.targets,
       );
       if (!context.mounted) return;
+      if (added == 0) {
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.recipeNotAddedLunchboxDays,
+        );
+        return;
+      }
       SnackBarUtils.showSuccess(
         context,
         context.l10n.recipeAddedToMenuSlots(added),

@@ -1152,11 +1152,18 @@ class WeeklyMenuPlanService extends BaseService {
   /// Restore [entries] onto [plan], replacing whatever is there now.
   /// Used by the undo path after clearWeek: the VM snapshots the pre-clear
   /// entries list and passes it here if the user taps "Ångra" within 7 s.
+  /// A lunch dish on a day that became a lunchbox meanwhile stays out, so a
+  /// box and a lunch dish never share a day (BUT-2486).
   WeeklyMenuPlan restoreWeek(
     WeeklyMenuPlan plan,
     List<WeeklyMenuPlanEntry> entries,
   ) {
-    return plan.copyWith(entries: entries);
+    return plan.copyWith(
+      entries: [
+        for (final e in entries)
+          if (!plan.hasLunchboxAt(e.day, e.slot)) e,
+      ],
+    );
   }
 
   WeeklyMenuPlanEntry _entryFor({

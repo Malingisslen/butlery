@@ -292,6 +292,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipeNotAddedLunchboxDays =>
+      'Lunch is a lunchbox on those days, so the recipe wasn\'t added';
+
+  @override
   String get menuPlaceAutoButton => 'Place automatically in the calendar';
 
   @override
@@ -1608,6 +1612,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuShoppingScaledToPresence => 'Amounts follow who\'s home';
+
+  @override
+  String menuShoppingLunchboxPortions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The list counts $count extra portions for lunch',
+      one: 'The list counts 1 extra portion for lunch',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get menuClear => 'Clear menu';

@@ -26,6 +26,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -377,6 +378,38 @@ void main() {
         isFalse,
         reason: 'wrong slot for the selected item',
       );
+    });
+
+    test('a day holding a lunchbox takes no lunch dish but still a middag '
+        '(BUT-2486)', () async {
+      final withBox = _plan().withLunchbox(
+        DayOfWeek.mon,
+        const Lunchbox(source: LunchboxSource.suggestion, recipeId: 'x'),
+      );
+      when(
+        () => service.readWeek(any()),
+      ).thenAnswer((_) async => _read(withBox));
+
+      final lunchVm = buildVm(
+        generated: {
+          'lunch': [_recipe('l1')],
+        },
+      );
+      await lunchVm.init();
+      expect(
+        lunchVm.isEligible(DayOfWeek.mon, MealSlot.lunch),
+        isFalse,
+        reason: 'the box is mon lunch',
+      );
+      expect(lunchVm.isEligible(DayOfWeek.tue, MealSlot.lunch), isTrue);
+
+      final middagVm = buildVm(
+        generated: {
+          'middag': [_recipe('m1', mealType: 'middag')],
+        },
+      );
+      await middagVm.init();
+      expect(middagVm.isEligible(DayOfWeek.mon, MealSlot.middag), isTrue);
     });
 
     test('nothing is eligible without a selection', () async {

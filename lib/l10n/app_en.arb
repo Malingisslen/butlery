@@ -232,6 +232,10 @@
       }
     }
   },
+  "recipeNotAddedLunchboxDays": "Lunch is a lunchbox on those days, so the recipe wasn't added",
+  "@recipeNotAddedLunchboxDays": {
+    "description": "BUT-2486: snackbar when adding a recipe to the menu from its detail view placed it nowhere, because every chosen lunch is a lunchbox."
+  },
   "menuPlaceAutoButton": "Place automatically in the calendar",
   "@menuPlaceAutoButton": {
     "description": "BUT-1241: primary button in the lista-result footer — runs auto-distribution onto the week grid."
@@ -1132,6 +1136,15 @@
   "menuShoppingScaledToPresence": "Amounts follow who's home",
   "@menuShoppingScaledToPresence": {
     "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
+  },
+  "menuShoppingLunchboxPortions": "{count, plural, =1{The list counts 1 extra portion for lunch} other{The list counts {count} extra portions for lunch}}",
+  "@menuShoppingLunchboxPortions": {
+    "description": "BUT-2486: line in the week's shopping merge sheet when lunchboxes add portions to the list (leftovers cook a bigger middag, prep-day and suggested boxes are bought).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared.",
