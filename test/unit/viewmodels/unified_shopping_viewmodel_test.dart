@@ -1,5 +1,7 @@
 // test/unit/viewmodels/unified_shopping_viewmodel_test.dart
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
@@ -26,6 +28,8 @@ import 'package:butlery/models/category_preferences.dart';
 import 'package:butlery/models/list_category_order.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
+import 'package:butlery/services/shopping/store_order_learner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -125,6 +129,12 @@ void main() {
 
     mockShoppingService = MockUnifiedShoppingService();
     mockPermissionService = FakePermissionService();
+    // A tick reads the picked store, so the service always has preferences.
+    when(() => mockShoppingService.categoryPreferences).thenReturn(
+      ShoppingCategoryPreferencesModule(
+        repository: _MockCategoryPreferencesRepository(),
+      ),
+    );
 
     // Configure state
     mockShoppingService.setShoppingState(
@@ -1497,6 +1507,154 @@ void main() {
       expect(notified, greaterThan(afterAdd));
       expect(viewModel.activeStore, isNull);
       expect(viewModel.shoppingStores, isEmpty);
+    });
+  });
+
+  // BUT-2489 slice 3: ticks made here with a store picked teach the store's
+  // order; the habit comes back as one suggestion.
+  group('order suggestion after ticking (BUT-2489)', () {
+    late _MockCategoryPreferencesRepository repository;
+    late ShoppingCategoryPreferencesModule preferences;
+    late StoreOrderLearner learner;
+    final meatItem = ShoppingListFactory.buildItem(
+      id: 'meat-1',
+      name: 'Fil\u00e9',
+      category: ShoppingCategory.meat,
+    );
+    final dairyItem = ShoppingListFactory.buildItem(
+      id: 'dairy-1',
+      name: 'Mj\u00f6lk',
+      category: ShoppingCategory.dairy,
+    );
+    final list = ShoppingListFactory.build(
+      id: testListId,
+      name: 'Veckans inkop',
+      ownerId: testUserId,
+      items: [meatItem, dairyItem],
+    );
+
+    // One shop: meat first, then dairy.
+    Future<void> shop() async {
+      await viewModel.uncheckAllItems();
+      await viewModel.toggleItemBought(meatItem.id);
+      await viewModel.toggleItemBought(dairyItem.id);
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      learner = StoreOrderLearner(await SharedPreferences.getInstance());
+      repository = _MockCategoryPreferencesRepository();
+      when(repository.getPreferences).thenAnswer((_) async => null);
+      when(() => repository.savePreferences(any())).thenAnswer((_) async {});
+      preferences = ShoppingCategoryPreferencesModule(repository: repository);
+      await preferences.load();
+      when(
+        () => mockShoppingService.categoryPreferences,
+      ).thenReturn(preferences);
+      mockShoppingService.setShoppingState(
+        lists: [list],
+        personalLists: [list],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+      when(
+        () => mockShoppingService.uncheckAllItems(),
+      ).thenAnswer((_) async => true);
+      viewModel.dispose();
+      viewModel = UnifiedShoppingViewModel(orderLearner: learner);
+    });
+
+    test('ticks with no store picked teach nothing', () async {
+      for (var i = 0; i < StoreOrderLearner.minTicks; i++) {
+        await shop();
+      }
+      await viewModel.addStoreAndSelect('ICA');
+
+      expect(viewModel.orderSuggestion, isNull);
+    });
+
+    test(
+      'a habit the order does not follow is suggested, and Ja moves it',
+      () async {
+        await viewModel.addStoreAndSelect('ICA');
+        for (var i = 0; i < StoreOrderLearner.minTicks; i++) {
+          await shop();
+        }
+
+        final suggestion = viewModel.orderSuggestion!;
+        expect(suggestion.first, ShoppingCategory.meat);
+        expect(suggestion.second, ShoppingCategory.dairy);
+
+        await viewModel.acceptOrderSuggestion();
+        final order = viewModel.activeStore!.categoryOrder;
+        expect(
+          order.indexOf(ShoppingCategory.meat),
+          order.indexOf(ShoppingCategory.dairy) - 1,
+        );
+        expect(viewModel.orderSuggestion, isNull);
+      },
+    );
+
+    test('Nej asks nothing more until fresh evidence', () async {
+      await viewModel.addStoreAndSelect('ICA');
+      for (var i = 0; i < StoreOrderLearner.minTicks; i++) {
+        await shop();
+      }
+      await viewModel.dismissOrderSuggestion();
+
+      expect(viewModel.orderSuggestion, isNull);
+      expect(viewModel.activeStore!.categoryOrder, isEmpty);
+    });
+
+    test('a removed store takes its habit with it', () async {
+      await viewModel.addStoreAndSelect('ICA');
+      for (var i = 0; i < StoreOrderLearner.minTicks; i++) {
+        await shop();
+      }
+      final id = viewModel.activeStore!.id;
+      final order = viewModel.categoryOrder;
+      expect(learner.suggestionFor(id, order), isNotNull);
+
+      await viewModel.deleteStore(id);
+
+      expect(learner.suggestionFor(id, order), isNull);
+    });
+
+    test(
+      'Ja forgets the pair, so a later reorder is not asked again',
+      () async {
+        await viewModel.addStoreAndSelect('ICA');
+        for (var i = 0; i < StoreOrderLearner.minTicks; i++) {
+          await shop();
+        }
+        await viewModel.acceptOrderSuggestion();
+        await viewModel.saveCategoryOrder([
+          ShoppingCategory.dairy,
+          ShoppingCategory.meat,
+        ]);
+
+        expect(viewModel.orderSuggestion, isNull);
+      },
+    );
+
+    test('clearing the bought items starts a new visit', () async {
+      when(
+        () => mockShoppingService.clearBoughtItems(),
+      ).thenAnswer((_) async => true);
+      await viewModel.addStoreAndSelect('ICA');
+      await viewModel.toggleItemBought(meatItem.id);
+      await viewModel.clearBoughtItems();
+      await viewModel.toggleItemBought(dairyItem.id);
+      await Future<void>.delayed(Duration.zero);
+
+      final stored = jsonDecode(
+        (await SharedPreferences.getInstance()).getString(
+          StoreOrderLearner.storageKey,
+        )!,
+      );
+      expect(stored['stores'], isEmpty);
     });
   });
 
