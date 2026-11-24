@@ -25,7 +25,14 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
   Future<void> setViewMode(VeckomenyViewMode mode);
   void markRevealing();
 
-  Future<void> generateMenu({bool pantryFocus = false}) async {
+  /// Pantry flag of the ready-made wish still sitting in the prompt field.
+  bool get fillPantryFocus;
+
+  /// The one place that decides the pantry flag: an explicit argument wins,
+  /// otherwise the wish chip that filled the field, so the prompt row's
+  /// Generera carries it too.
+  Future<void> generateMenu({bool? pantryFocus}) async {
+    final wantPantry = pantryFocus ?? fillPantryFocus;
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
@@ -49,7 +56,7 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
     // BUT-2157: a cancelled run places nothing, so the week stays as it was.
     final end = await menuVm.generateMenu(
       promptController.text,
-      pantryFocus: pantryFocus,
+      pantryFocus: wantPantry,
     );
     if (!mounted || end != MenuGenerationEnd.completed) return;
 
@@ -78,7 +85,7 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
       return;
     }
 
-    if (pantryFocus && menuVm.hasMenu && menuVm.pantryFocusFoundNothing) {
+    if (wantPantry && menuVm.hasMenu && menuVm.pantryFocusFoundNothing) {
       SnackBarUtils.showInfo(context, context.l10n.menuQuickPantryNothing);
     }
 

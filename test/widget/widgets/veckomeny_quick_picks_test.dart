@@ -4,6 +4,7 @@ import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
 import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart';
 import 'package:clock/clock.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -49,14 +50,18 @@ void main() {
   );
 
   group('VeckomenyQuickPicks', () {
-    Future<List<(String, bool)>> pump(WidgetTester tester) async {
-      final picks = <(String, bool)>[];
-      await withClock(Clock.fixed(DateTime(2026, 11, 25)), () async {
+    Future<List<MenuWishFill>> pump(
+      WidgetTester tester, {
+      DateTime? now,
+      String? activeSourceId,
+    }) async {
+      final picks = <MenuWishFill>[];
+      await withClock(Clock.fixed(now ?? DateTime(2026, 11, 25)), () async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: VeckomenyQuickPicks(
-              onPick: (prompt, {required pantryFocus}) =>
-                  picks.add((prompt, pantryFocus)),
+              activeSourceId: activeSourceId,
+              onPick: picks.add,
             ),
           ),
         );
@@ -64,44 +69,81 @@ void main() {
       return picks;
     }
 
-    testWidgets('shows both picks, and no pick for one pan', (tester) async {
+    testWidgets('shows the heading and both chips, and none for one pan', (
+      tester,
+    ) async {
       await pump(tester);
+      expect(find.text('FÄRDIGA ÖNSKEMÅL'), findsOneWidget);
       expect(find.text('Snabb vecka'), findsOneWidget);
       expect(find.text('Använd det jag har hemma'), findsOneWidget);
       expect(find.textContaining('panna'), findsNothing);
     });
 
-    testWidgets('Snabb vecka asks for fast dinners, without pantry focus', (
+    testWidgets('Snabb vecka hands over fast dinners, without pantry focus', (
       tester,
     ) async {
       final picks = await pump(tester);
       await tester.tap(find.text('Snabb vecka'));
-      expect(picks, [('5 middagar snabba', false)]);
+      expect(picks, [
+        const MenuWishFill(
+          text: '5 middagar snabba',
+          pantryFocus: false,
+          sourceId: VeckomenyQuickPicks.fastSourceId,
+        ),
+      ]);
     });
 
-    testWidgets('on a Sunday both picks ask for one dinner, in the singular', (
+    testWidgets('on a Sunday both chips ask for one dinner, in the singular', (
       tester,
     ) async {
-      final picks = <(String, bool)>[];
-      await withClock(Clock.fixed(DateTime(2026, 11, 29)), () async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: VeckomenyQuickPicks(
-              onPick: (prompt, {required pantryFocus}) =>
-                  picks.add((prompt, pantryFocus)),
-            ),
-          ),
-        );
-      });
+      final picks = await pump(tester, now: DateTime(2026, 11, 29));
       await tester.tap(find.text('Snabb vecka'));
       await tester.tap(find.text('Använd det jag har hemma'));
-      expect(picks, [('1 middag snabba', false), ('1 middag', true)]);
+      expect(picks.map((p) => (p.text, p.pantryFocus)), [
+        ('1 middag snabba', false),
+        ('1 middag', true),
+      ]);
     });
 
-    testWidgets('the pantry pick sets the pantry focus', (tester) async {
+    testWidgets('the pantry chip sets the pantry focus', (tester) async {
       final picks = await pump(tester);
       await tester.tap(find.text('Använd det jag har hemma'));
-      expect(picks, [('5 middagar', true)]);
+      expect(picks.single.text, '5 middagar');
+      expect(picks.single.pantryFocus, isTrue);
+      expect(picks.single.sourceId, VeckomenyQuickPicks.pantrySourceId);
+    });
+
+    testWidgets('only the chip named by activeSourceId is selected', (
+      tester,
+    ) async {
+      await pump(tester, activeSourceId: VeckomenyQuickPicks.pantrySourceId);
+      bool selected(String label) => tester
+          .widget<FilterChip>(find.widgetWithText(FilterChip, label))
+          .selected;
+      expect(selected('Använd det jag har hemma'), isTrue);
+      expect(selected('Snabb vecka'), isFalse);
+    });
+
+    testWidgets('a chip is a selectable button for a screen reader', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pump(tester, activeSourceId: VeckomenyQuickPicks.fastSourceId);
+      expect(
+        tester.getSemantics(find.widgetWithText(FilterChip, 'Snabb vecka')),
+        matchesSemantics(
+          label: 'Snabb vecka',
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          isFocusable: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+        ),
+      );
+      handle.dispose();
     });
   });
 }

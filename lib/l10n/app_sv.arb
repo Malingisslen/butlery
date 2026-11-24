@@ -18410,11 +18410,20 @@
     }
   },
   "cookDetailsSaveFailed": "Betyget och anteckningen kunde inte sparas.",
-  "menuQuickPicksTitle": "Snabbval",
+  "menuQuickPicksTitle": "Färdiga önskemål",
+  "@menuQuickPicksTitle": {
+    "description": "Heading over the ready-made wish chips on an empty week menu"
+  },
+  "menuSavedWeeksRow": "Börja från en sparad vecka",
+  "@menuSavedWeeksRow": {
+    "description": "Row on an empty week menu that opens saved weeks and templates"
+  },
+  "weekTemplateSaveWeekButton": "Spara veckan",
+  "@weekTemplateSaveWeekButton": {
+    "description": "Button under the calendar week that saves the week as a template"
+  },
   "menuQuickFastTitle": "Snabb vecka",
-  "menuQuickFastSubtitle": "Recept på max 30 minuter",
   "menuQuickPantryTitle": "Använd det jag har hemma",
-  "menuQuickPantrySubtitle": "Recept som passar ditt skafferi först",
   "a11yMenuWhyToggle": "Visa varför rätten föreslogs",
   "menuWhyAction": "Varför?",
   "menuWhyReasonNotRecent": "Inte på menyn de senaste två veckorna",
@@ -18424,7 +18433,6 @@
   "menuWhyChance": "Inget särskilt skäl: den drogs bland dina recept.",
   "menuUnmetWishNotice": "Ett önskemål hittade inga recept, så en vanlig rätt valdes i stället.",
   "menuQuickPantryNothing": "Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.",
-  "weekTemplateSaveAction": "Spara veckan som mall",
   "weekTemplateSaveTitle": "Spara som mall",
   "weekTemplatePreviewLoading": "Kontrollerar mot dem som äter …",
   "weekTemplateNameRequired": "Ge mallen ett namn",

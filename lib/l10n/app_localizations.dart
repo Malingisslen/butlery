@@ -34434,11 +34434,23 @@ abstract class AppLocalizations {
   /// **'Betyget och anteckningen kunde inte sparas.'**
   String get cookDetailsSaveFailed;
 
-  /// No description provided for @menuQuickPicksTitle.
+  /// Heading over the ready-made wish chips on an empty week menu
   ///
   /// In sv, this message translates to:
-  /// **'Snabbval'**
+  /// **'Färdiga önskemål'**
   String get menuQuickPicksTitle;
+
+  /// Row on an empty week menu that opens saved weeks and templates
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja från en sparad vecka'**
+  String get menuSavedWeeksRow;
+
+  /// Button under the calendar week that saves the week as a template
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara veckan'**
+  String get weekTemplateSaveWeekButton;
 
   /// No description provided for @menuQuickFastTitle.
   ///
@@ -34446,23 +34458,11 @@ abstract class AppLocalizations {
   /// **'Snabb vecka'**
   String get menuQuickFastTitle;
 
-  /// No description provided for @menuQuickFastSubtitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recept på max 30 minuter'**
-  String get menuQuickFastSubtitle;
-
   /// No description provided for @menuQuickPantryTitle.
   ///
   /// In sv, this message translates to:
   /// **'Använd det jag har hemma'**
   String get menuQuickPantryTitle;
-
-  /// No description provided for @menuQuickPantrySubtitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recept som passar ditt skafferi först'**
-  String get menuQuickPantrySubtitle;
 
   /// No description provided for @a11yMenuWhyToggle.
   ///
@@ -34517,12 +34517,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.'**
   String get menuQuickPantryNothing;
-
-  /// No description provided for @weekTemplateSaveAction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Spara veckan som mall'**
-  String get weekTemplateSaveAction;
 
   /// No description provided for @weekTemplateSaveTitle.
   ///
