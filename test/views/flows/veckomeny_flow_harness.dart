@@ -26,6 +26,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -86,6 +87,13 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
     if (error != null) throw error;
     return plans[IsoWeekUtils.weekIdFor(userId, weekStart)];
   }
+
+  /// Box takes are not kept here; the week is what these flows read.
+  @override
+  Future<void> saveWithMealBoxTakes(
+    WeeklyMenuPlan plan,
+    List<MealBoxTake> takes,
+  ) => save(plan);
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {

@@ -16,6 +16,7 @@ import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
 import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -1627,6 +1628,12 @@ class _NoopMenuRepo implements WeeklyMenuPlanRepository {
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {}
+
+  @override
+  Future<void> saveWithMealBoxTakes(
+    WeeklyMenuPlan plan,
+    List<MealBoxTake> takes,
+  ) async {}
 
   @override
   Future<int> deleteAllByUser(String userId) async => 0;

@@ -62,6 +62,13 @@
   every per-item check, while a non-empty string already CEL-errors in the item checks.
   Measured on `occasionWordsOk` (2026-11-04): with `is list` deleted, the suite stayed green
   until `oldWords: ""` / `oldWords: {}` were added, and those are the only cases it kills.
+  **A numeric bound masks `is int` the same way**: `"2" >= 0` CEL-errors, so a string count
+  denies with the guard deleted; only a value the bound ACCEPTS (`2.5`) pins it. Measured on
+  `meal_boxes` (BUT-2486 part 5): `is int`, `is map` (beside `size() <= 60`, fed `3`) and both
+  `is string` guards survived deletion 24/24; `2.5`, `[1]`/`"abc"`, `["r"]`, `["Chili"]` each
+  killed exactly its own mutant.
+- Chained `.get(field, default)` is safe-by-construction against an absent PARENT map;
+  CEL `in` on a map checks KEYS only, never values.
 - **A ±1 STEP rule is THREE disjuncts (unchanged / +1 / −1) and needs one mutant PER
   DISJUNCT; the one with no production writer stays green when deleted.** Measured on
   `users/{uid}/counters` (BUT-2100): deleting the `−1` disjunct from the stranger arm left

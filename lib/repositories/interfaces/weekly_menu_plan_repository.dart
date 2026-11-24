@@ -1,4 +1,5 @@
 import 'package:butlery/core/exceptions/repository_exception.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 
 /// Repository interface for per-user weekly menu plans.
@@ -23,6 +24,13 @@ abstract class WeeklyMenuPlanRepository {
   /// them with `nextRevision()` (BUT-2215). Throws [WeekPlanConflictException]
   /// when the stored week is no longer the copy [plan] was built on.
   Future<void> save(WeeklyMenuPlan plan);
+
+  /// [save], with the fridge and freezer box takes the save makes in the same
+  /// batch, so a refused week refuses its takes too (BUT-2486 part 5).
+  Future<void> saveWithMealBoxTakes(
+    WeeklyMenuPlan plan,
+    List<MealBoxTake> takes,
+  );
 
   /// Delete every weekly plan owned by [userId] (for GDPR cascade).
   /// Returns the number of documents deleted.

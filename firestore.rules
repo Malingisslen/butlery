@@ -982,6 +982,34 @@ service cloud.firestore {
           && pantryWriteValid(userId);
       }
 
+      // BUT-2486 part 5: cooked food kept as boxes in the fridge or freezer.
+      // Owner-only and, like the pantry, open to a guest's own uid. `count` is
+      // absent on a box a lunch take recreated; `takes` maps a lunch date to
+      // the boxes it takes, its entries unchecked beyond the bound.
+      function mealBoxWriteValid() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['recipeId', 'recipeTitle', 'location',
+            'storedOn', 'count', 'takes', 'updatedAt'])
+          && (!('recipeId' in data)
+              || (data.recipeId is string && data.recipeId.size() <= 128))
+          && data.recipeTitle is string
+          && data.recipeTitle.size() >= 1 && data.recipeTitle.size() <= 200
+          && data.location in ['fridge', 'freezer']
+          && data.storedOn is timestamp
+          && (!('count' in data)
+              || (data.count is int && data.count >= 0 && data.count <= 99))
+          && (!('takes' in data)
+              || (data.takes is map && data.takes.size() <= 60))
+          && data.updatedAt == request.time;
+      }
+
+      match /meal_boxes/{boxId} {
+        allow read, delete: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId
+          && mealBoxWriteValid();
+      }
+
       // User's shopping category preferences (BUT-379)
       match /category_preferences/{prefId} {
         allow read, write: if isOwner(userId);

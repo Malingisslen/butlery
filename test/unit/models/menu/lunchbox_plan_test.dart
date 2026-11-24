@@ -4,6 +4,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -287,6 +288,92 @@ void main() {
         DayOfWeek.fri,
         DayOfWeek.mon,
       });
+    });
+  });
+
+  group('lunchboxes from the fridge or freezer', () {
+    final stockBox = MealBox(
+      id: 'box1',
+      recipeId: 'r-stock',
+      recipeTitle: 'Gryta i frysen',
+      location: MealBoxLocation.freezer,
+      storedOn: DateTime(2026, 1, 2),
+      count: 4,
+    );
+
+    test('fromStock is stored as previous-week leftovers with the dish', () {
+      final box = Lunchbox.fromStock(stockBox, portions: 2, takerIds: ['a']);
+      final map = box.toMap();
+
+      expect(map['source'], 'leftovers');
+      expect(map['fromPreviousWeek'], isTrue);
+      expect(map['recipeId'], 'r-stock');
+      expect(map['recipeTitle'], 'Gryta i frysen');
+      expect(map['portions'], 2);
+      expect(box.isFromStock, isTrue);
+    });
+
+    test('mealBoxId, location and stored date survive the week document', () {
+      final back = _roundTrip(
+        _week(
+          lunchboxes: {DayOfWeek.wed: Lunchbox.fromStock(stockBox)},
+        ),
+      ).lunchboxes[DayOfWeek.wed]!;
+
+      expect(back.mealBoxId, 'box1');
+      expect(back.mealBoxLocation, MealBoxLocation.freezer);
+      expect(back.mealBoxStoredOn, DateTime(2026, 1, 2));
+      expect(back.isFromStock, isTrue);
+      expect(back.source, LunchboxSource.leftovers);
+      expect(back.fromPreviousWeek, isTrue);
+    });
+
+    test('a box missing its stored date or its title is not from stock', () {
+      final noDate = Lunchbox(
+        source: LunchboxSource.leftovers,
+        fromPreviousWeek: true,
+        recipeTitle: 'Gryta',
+        mealBoxId: 'box1',
+      );
+      final noTitle = Lunchbox(
+        source: LunchboxSource.leftovers,
+        fromPreviousWeek: true,
+        mealBoxId: 'box1',
+        mealBoxStoredOn: DateTime(2026, 1, 2),
+      );
+
+      expect(noDate.isFromStock, isFalse);
+      expect(noTitle.isFromStock, isFalse);
+    });
+
+    test('a box whose id is not a plain document id is not from stock', () {
+      final box = Lunchbox(
+        source: LunchboxSource.leftovers,
+        fromPreviousWeek: true,
+        recipeTitle: 'Gryta',
+        mealBoxId: 'a/b',
+        mealBoxStoredOn: DateTime(2026, 1, 2),
+      );
+
+      expect(box.isFromStock, isFalse);
+    });
+
+    test('withoutLunchboxesOf keeps a stock box of the deleted recipe but '
+        'removes a plain suggestion box of it', () {
+      final week = _week(
+        lunchboxes: {
+          DayOfWeek.tue: Lunchbox.fromStock(stockBox),
+          DayOfWeek.wed: const Lunchbox(
+            source: LunchboxSource.suggestion,
+            recipeId: 'r-stock',
+            recipeTitle: 'Förslag',
+          ),
+        },
+      );
+
+      final next = week.withoutLunchboxesOf('r-stock');
+
+      expect(next.lunchboxes.keys, [DayOfWeek.tue]);
     });
   });
 

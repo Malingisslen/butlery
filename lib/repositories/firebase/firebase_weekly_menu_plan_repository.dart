@@ -7,6 +7,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/meal_box.dart';
+import 'package:butlery/repositories/firebase/firebase_meal_box_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
@@ -115,7 +117,14 @@ class FirebaseWeeklyMenuPlanRepository
   }
 
   @override
-  Future<void> save(WeeklyMenuPlan plan) async {
+  Future<void> save(WeeklyMenuPlan plan) =>
+      saveWithMealBoxTakes(plan, const []);
+
+  @override
+  Future<void> saveWithMealBoxTakes(
+    WeeklyMenuPlan plan,
+    List<MealBoxTake> takes,
+  ) async {
     // Deterministic upsert on `{uid}_{ISO week}`.
     //
     // Resolved BEFORE the gate, not inside the refusal branch: it is the only
@@ -151,7 +160,22 @@ class FirebaseWeeklyMenuPlanRepository
       );
     }
     try {
-      await collection.doc(plan.id).set(toFirestore(plan));
+      if (takes.isEmpty) {
+        await collection.doc(plan.id).set(toFirestore(plan));
+      } else {
+        // One batch: the week's rule decides the takes as well, also when a
+        // queued save is refused late, and offline both wait in one write.
+        final batch = firestore.batch()
+          ..set(collection.doc(plan.id), toFirestore(plan));
+        for (final take in takes) {
+          batch.set(
+            FirebaseMealBoxRepository.takeRef(firestore, plan.userId, take),
+            FirebaseMealBoxRepository.takeWriteMap(take),
+            SetOptions(merge: true),
+          );
+        }
+        await batch.commit();
+      }
     } on FirebaseException catch (e) {
       if (e.code != 'permission-denied') rethrow;
       final stored = await _storedAfterRefusal(plan);

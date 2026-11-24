@@ -10,6 +10,11 @@ import 'package:butlery/core/di/modules/tagging_module.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_meal_box_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/meal_box_repository.dart';
+import 'package:butlery/services/menu/meal_box_service.dart';
 
 import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
@@ -30,6 +35,8 @@ class PantryModule implements DIModule {
     IngredientMatchService,
     PantryService,
     ShoppingCheckoffPantryService,
+    MealBoxRepository,
+    MealBoxService,
   ];
 
   // Priority between TaggingModule (5) and ContentModule (10) so the
@@ -59,6 +66,12 @@ class PantryModule implements DIModule {
       dispose: (s) => s.dispose(),
     );
 
+    // BUT-2486 part 5: fridge and freezer boxes sit beside the pantry.
+    container.registerLazySingleton<MealBoxService>(
+      () => MealBoxService(repository: app<MealBoxRepository>()),
+      dispose: (s) => s.dispose(),
+    );
+
     // BUT-1306: the policy seam wired from shopping-list checkoff. Resolved
     // lazily, so UserService (registered by SocialModule, priority 20 — after
     // this module's priority 7) is available by the time the first checkoff
@@ -78,6 +91,12 @@ class PantryModule implements DIModule {
       // every call so it doesn't need to be torn down on logout.
       container.registerLazySingleton<PantryRepository>(
         () => FirebasePantryRepository(),
+      );
+      container.registerLazySingleton<MealBoxRepository>(
+        () => FirebaseMealBoxRepository(
+          authRepository: container<AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
       );
     } catch (e) {
       throw DIModuleException(

@@ -214,7 +214,9 @@ void main() {
 
     setUp(() {
       service = _MockService();
-      when(() => service.saveRevision(any())).thenAnswer((_) async {});
+      when(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenAnswer((_) async {});
       when(() => service.overflowTrayOwnerId).thenReturn(null);
       when(() => service.readWeek(any())).thenAnswer(
         (_) async =>
