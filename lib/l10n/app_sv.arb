@@ -18792,5 +18792,66 @@
   "a11yLunchboxMore": "Fler lådor",
   "@a11yLunchboxMore": {
     "description": "BUT-2486: stepper plus."
+  },
+  "menuWishLimit": "Du kan spara högst {count} önskemål. Ta bort ett först.",
+  "@menuWishLimit": {
+    "description": "BUT-2529: shown when the saved week-menu wishes are full",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuWishSaveFailed": "Önskemålet kunde inte sparas",
+  "@menuWishSaveFailed": {
+    "description": "BUT-2529: a saved week-menu wish could not be written"
+  },
+  "menuWishLastTitle": "Som förra veckan",
+  "@menuWishLastTitle": {
+    "description": "BUT-2529: the chip and sheet row that bring back last week's wish"
+  },
+  "menuWishAllChip": "Alla …",
+  "@menuWishAllChip": {
+    "description": "BUT-2529: the chip that opens the wishes sheet"
+  },
+  "menuWishesSheetTitle": "Mina önskemål",
+  "@menuWishesSheetTitle": {
+    "description": "BUT-2529: title of the sheet with saved wishes"
+  },
+  "menuWishRename": "Döp om",
+  "@menuWishRename": {
+    "description": "BUT-2529: row action that renames a saved wish chip"
+  },
+  "menuWishRenameTitle": "Döp om önskemålet",
+  "@menuWishRenameTitle": {
+    "description": "BUT-2529: title of the dialog that renames a saved wish"
+  },
+  "menuWishNameLabel": "Namn på knappen",
+  "@menuWishNameLabel": {
+    "description": "BUT-2529: label of the name field in the rename dialog"
+  },
+  "menuWishRemoved": "Önskemålet togs bort",
+  "@menuWishRemoved": {
+    "description": "BUT-2529: snackbar after a saved wish was removed; pairs with commonUndo"
+  },
+  "menuWishesEmpty": "Du har inga sparade önskemål än. När du har skapat en meny kan du spara önskemålet till nästa vecka.",
+  "@menuWishesEmpty": {
+    "description": "BUT-2529: empty state of the saved wishes list"
+  },
+  "menuWishesBuiltInTitle": "Inbyggda",
+  "@menuWishesBuiltInTitle": {
+    "description": "BUT-2529: heading over the two built-in wishes in the sheet"
+  },
+  "menuWishesBuiltInNote": "Räknas fram för veckans återstående dagar varje gång.",
+  "@menuWishesBuiltInNote": {
+    "description": "BUT-2529: note under the built-in wishes in the sheet"
+  },
+  "menuWishSavePrompt": "Spara önskemålet till nästa vecka?",
+  "@menuWishSavePrompt": {
+    "description": "BUT-2529: snackbar after a menu was made from typed text; action is commonSave"
+  },
+  "menuWishSaved": "Önskemålet sparat",
+  "@menuWishSaved": {
+    "description": "BUT-2529: snackbar after the wish was saved"
   }
 }

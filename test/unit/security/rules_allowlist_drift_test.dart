@@ -220,6 +220,18 @@ const _knowinglyUncovered = <_Uncovered>[
     'weekly_menu_plans lunchboxes — weekday keys',
     'function weekLunchboxesBounded(',
   ),
+  // BUT-2529: the allowlists are over the keys of one saved-wish row in the
+  // settings document's `savedMenuWishes` list (`MenuWish.toFirestore`) and
+  // over the keys of its `lastMenuWish` map (`LastMenuWish.toFirestore`), not
+  // over the document's keys.
+  _Uncovered(
+    'users/{uid}/settings savedMenuWishes row — MenuWish.toFirestore',
+    'function menuWishOk(',
+  ),
+  _Uncovered(
+    'users/{uid}/settings lastMenuWish — LastMenuWish.toFirestore',
+    'function menuWishesBounded(',
+  ),
   // BUT-2522: the allowlist is the `menuKeys()` function, not an inline list,
   // so `_allowlistAfter` cannot read it. It is compared for EQUALITY against
   // `SharedMenu.toFirestore()` by `menu_rules_key_allowlist_test.dart`.
@@ -628,9 +640,12 @@ void main() {
     // `lunchboxes` map (in _knowinglyUncovered).
     // BUT-2486 part 5 added users/{uid}/meal_boxes: one keys().hasOnly in
     // mealBoxWriteValid(), guarded in allowlists.
+    // BUT-2529 added two on the settings document: the keys().hasOnly over a
+    // `savedMenuWishes` row and the one over `lastMenuWish` (both in
+    // _knowinglyUncovered).
     expect(
       'hasOnly('.allMatches(rules).length,
-      70,
+      72,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

@@ -2,6 +2,7 @@ import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -176,6 +177,14 @@ abstract class UserRepository extends Repository<UserProfile> {
     String userId,
     List<RecurringDayRule> rules,
   );
+
+  /// BUT-2529: persist the week menu's saved wishes as one field of the
+  /// private settings doc, replacing the whole list.
+  Future<void> setSavedMenuWishes(String userId, List<MenuWish> wishes);
+
+  /// BUT-2529: persist the wish the last menu was generated from, as one
+  /// field of the private settings doc.
+  Future<void> setLastMenuWish(String userId, LastMenuWish wish);
 
   /// BUT-2221: a targeted
   /// `update()` of the flag and a server-stamped change time, which the rules

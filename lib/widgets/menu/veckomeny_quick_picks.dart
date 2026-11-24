@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
@@ -42,15 +43,27 @@ class VeckomenyQuickPicks extends StatelessWidget {
     super.key,
     required this.onPick,
     this.activeSourceId,
+    this.lastWish,
+    this.savedWishes = const [],
+    this.onOpenAll,
   });
 
   static const String fastSourceId = 'builtin-fast';
   static const String pantrySourceId = 'builtin-pantry';
+  static const String lastSourceId = 'last';
+
+  static String savedSourceId(MenuWish wish) => 'wish:${wish.id}';
 
   final ValueChanged<MenuWishFill> onPick;
 
   /// The chip whose fill is still in the field, shown as selected.
   final String? activeSourceId;
+
+  final LastMenuWish? lastWish;
+  final List<MenuWish> savedWishes;
+
+  /// Null leaves the "Alla …" chip out.
+  final VoidCallback? onOpenAll;
 
   /// One dinner for each day left of the ISO week, today included.
   @visibleForTesting
@@ -79,6 +92,24 @@ class VeckomenyQuickPicks extends StatelessWidget {
           sourceId: pantrySourceId,
         ),
       ),
+      if (lastWish case final last?)
+        (
+          label: l10n.menuWishLastTitle,
+          fill: MenuWishFill(
+            text: last.text,
+            pantryFocus: last.pantryFocus,
+            sourceId: lastSourceId,
+          ),
+        ),
+      for (final wish in savedWishes)
+        (
+          label: wish.name,
+          fill: MenuWishFill(
+            text: wish.text,
+            pantryFocus: false,
+            sourceId: savedSourceId(wish),
+          ),
+        ),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,6 +125,13 @@ class VeckomenyQuickPicks extends StatelessWidget {
                 label: pick.label,
                 selected: activeSourceId == pick.fill.sourceId,
                 onSelected: (_) => onPick(pick.fill),
+              ),
+            if (onOpenAll != null)
+              ButleryFilterChip(
+                key: const ValueKey('wish-chip-all'),
+                label: l10n.menuWishAllChip,
+                selected: false,
+                onSelected: (_) => onOpenAll!(),
               ),
           ],
         ),

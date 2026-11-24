@@ -3,6 +3,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -358,6 +359,60 @@ class UserSettingsWriter {
     }
     _port.notifyListeners();
     return true;
+  }
+
+  /// BUT-2529: persist the week menu's saved wishes, then update the
+  /// in-memory profile and notify. False on failure; the profile then keeps
+  /// the wishes it had.
+  Future<bool> setSavedMenuWishes(List<MenuWish> wishes) async {
+    final userId = _port.userId;
+    final profile = _port.profile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot save menu wishes - no current user');
+      return false;
+    }
+    // The write replaces the stored array and [wishes] was built from the
+    // profile, which holds a default list until settings were read
+    // (BUT-1663).
+    if (!profile.settingsMerged) {
+      AppLogger.warning('⚠️ Cannot save menu wishes - settings were not read');
+      return false;
+    }
+    try {
+      await _repository.setSavedMenuWishes(userId, wishes);
+    } catch (e) {
+      AppLogger.error('❌ Failed to save menu wishes', e);
+      return false;
+    }
+    final current = _port.profile;
+    if (current != null && current.uid == userId) {
+      _port.profile = current.copyWith(savedMenuWishes: wishes);
+      _port.cacheProfile(userId, _port.profile!);
+    }
+    _port.notifyListeners();
+    return true;
+  }
+
+  /// BUT-2529: remember the wish a menu was generated from, for "Som förra
+  /// veckan". Writes nothing when it equals the stored one, so a repeat
+  /// generation costs no write.
+  Future<void> rememberLastMenuWish(LastMenuWish wish) async {
+    final userId = _port.userId;
+    final profile = _port.profile;
+    if (userId == null || profile == null) return;
+    if (profile.lastMenuWish == wish) return;
+    try {
+      await _repository.setLastMenuWish(userId, wish);
+    } catch (e) {
+      AppLogger.error('❌ Failed to remember the last menu wish', e);
+      return;
+    }
+    final current = _port.profile;
+    if (current != null && current.uid == userId) {
+      _port.profile = current.copyWith(lastMenuWish: wish);
+      _port.cacheProfile(userId, _port.profile!);
+    }
+    _port.notifyListeners();
   }
 
   /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,

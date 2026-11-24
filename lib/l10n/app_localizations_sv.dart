@@ -22986,4 +22986,50 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yLunchboxMore => 'Fler lådor';
+
+  @override
+  String menuWishLimit(int count) {
+    return 'Du kan spara högst $count önskemål. Ta bort ett först.';
+  }
+
+  @override
+  String get menuWishSaveFailed => 'Önskemålet kunde inte sparas';
+
+  @override
+  String get menuWishLastTitle => 'Som förra veckan';
+
+  @override
+  String get menuWishAllChip => 'Alla …';
+
+  @override
+  String get menuWishesSheetTitle => 'Mina önskemål';
+
+  @override
+  String get menuWishRename => 'Döp om';
+
+  @override
+  String get menuWishRenameTitle => 'Döp om önskemålet';
+
+  @override
+  String get menuWishNameLabel => 'Namn på knappen';
+
+  @override
+  String get menuWishRemoved => 'Önskemålet togs bort';
+
+  @override
+  String get menuWishesEmpty =>
+      'Du har inga sparade önskemål än. När du har skapat en meny kan du spara önskemålet till nästa vecka.';
+
+  @override
+  String get menuWishesBuiltInTitle => 'Inbyggda';
+
+  @override
+  String get menuWishesBuiltInNote =>
+      'Räknas fram för veckans återstående dagar varje gång.';
+
+  @override
+  String get menuWishSavePrompt => 'Spara önskemålet till nästa vecka?';
+
+  @override
+  String get menuWishSaved => 'Önskemålet sparat';
 }

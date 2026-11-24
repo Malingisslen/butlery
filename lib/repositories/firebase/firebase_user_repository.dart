@@ -7,6 +7,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/models/menu/menu_wish.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -353,6 +354,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             recurringDayRules: RecurringDayRules.fromFirestoreList(
               s[RecurringDayRules.field],
             ),
+            // BUT-2529: same settings sub-doc, parsed as untrusted input.
+            savedMenuWishes: MenuWishes.fromFirestoreList(
+              s[MenuWishes.field],
+            ),
+            lastMenuWish: LastMenuWish.fromFirestore(s[LastMenuWish.field]),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable
@@ -1018,6 +1024,57 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_recurring_day_rules',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setSavedMenuWishes(
+    String userId,
+    List<MenuWish> wishes,
+  ) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set saved-menu-wishes',
+    );
+
+    await awaitOrLeaveQueued(
+      _settingsDoc(userId).set({
+        MenuWishes.field: MenuWishes.toFirestoreList(wishes),
+      }, SetOptions(merge: true)),
+      what: 'saved menu wishes',
+    );
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_saved_menu_wishes',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setLastMenuWish(String userId, LastMenuWish wish) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set last-menu-wish',
+    );
+
+    await awaitOrLeaveQueued(
+      _settingsDoc(userId).set({
+        LastMenuWish.field: wish.toFirestore(),
+      }, SetOptions(merge: true)),
+      what: 'last menu wish',
+    );
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_last_menu_wish',
       granted: true,
     );
   }
