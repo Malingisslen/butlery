@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/shopping/store_order_learner.dart';
 import 'package:butlery/services/shopping/week_list_follow_notice.dart';
 import 'package:butlery/viewmodels/photo_import/draft_image_store_stub.dart'
     if (dart.library.io) 'package:butlery/viewmodels/photo_import/draft_image_store_io.dart'
@@ -108,6 +109,7 @@ class LocalUserDataRegistry {
         ],
         ...prefs.getKeys().where((k) => k.startsWith(commentDraftKeyPrefix)),
         WeekListFollowNoticeStore.storageKey,
+        StoreOrderLearner.storageKey,
         ...legacyUserPrefsKeys,
       };
       for (final key in doomed) {
