@@ -4895,6 +4895,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuVoteSuggestAlternative => 'Suggest alternative';
 
   @override
+  String get menuSuggestGetButton => 'Get suggestions';
+
+  @override
+  String menuSuggestTitle(String day) {
+    return 'Suggestions for $day';
+  }
+
+  @override
+  String get menuSuggestIntro =>
+      'From your own recipes. Lock a card you like and swap the rest.';
+
+  @override
+  String get menuSuggestShowOthers => 'Show others';
+
+  @override
+  String get menuSuggestLockCard => 'Lock';
+
+  @override
+  String get menuSuggestUnlockCard => 'Unlock';
+
+  @override
+  String menuSuggestPlaceOnDay(String day) {
+    return 'Add to $day';
+  }
+
+  @override
+  String get menuSuggestPickOne => 'Pick a card';
+
+  @override
+  String get menuSuggestEmptyTitle => 'No more suggestions';
+
+  @override
+  String get menuSuggestEmptyBody =>
+      'No more recipes fit. Add more recipes to get more suggestions.';
+
+  @override
   String get menuVoteResolved => 'Vote resolved';
 
   @override
@@ -22520,4 +22556,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookDetailsSaveFailed => 'The rating and note could not be saved.';
+
+  @override
+  String get menuQuickPicksTitle => 'Quick picks';
+
+  @override
+  String get menuQuickFastTitle => 'Quick week';
+
+  @override
+  String get menuQuickFastSubtitle => 'Recipes of 30 minutes or less';
+
+  @override
+  String get menuQuickPantryTitle => 'Use what I have at home';
+
+  @override
+  String get menuQuickPantrySubtitle => 'Recipes that fit your pantry first';
+
+  @override
+  String get menuQuickPantryNothing =>
+      'Nothing in your pantry fits your recipes yet, so the week was chosen as usual.';
 }

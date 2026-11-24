@@ -158,6 +158,20 @@ void main() {
       );
     });
 
+    test('BUT-2498: a pantry-first generation reaches the scoring context, '
+        'a normal one does not', () async {
+      mockMenuService.setGenerateMenuResult(createTestMenu());
+
+      await menuGenerator.generateMenuFromPrompt('5 middagar');
+      expect(mockMenuService.lastScoringContext?.pantryFocus, isFalse);
+
+      await menuGenerator.generateMenuFromPrompt(
+        '5 middagar',
+        pantryFocus: true,
+      );
+      expect(mockMenuService.lastScoringContext?.pantryFocus, isTrue);
+    });
+
     test('should throw error when no recipes available', () async {
       mockRecipeService.setRecipeState(
         recipes: [],
