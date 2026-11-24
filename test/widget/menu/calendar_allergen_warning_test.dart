@@ -145,6 +145,7 @@ void main() {
             onTapEmptySlot: (_, _) {},
             onTapRecipe: (_, {presentServings}) {},
             onTapOvrigt: (_) {},
+            onTapLunchbox: (_) {},
             roster: roster ?? [_member('a'), _member('b')],
             onTapPresence: (day, slot) => presenceTaps.add((day, slot)),
           ),

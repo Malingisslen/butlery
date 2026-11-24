@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -21,6 +22,7 @@ import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/weekly_allergen_marks.dart';
+import 'package:butlery/viewmodels/menu/weekly_lunchboxes.dart';
 
 /// P6-U02: the re-entrancy sentinel of [WeeklyMenuPlanViewModel
 /// .applyShoppingMerge]. Compare with [identical].
@@ -470,6 +472,56 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Recipe? resolveForNavigation(String recipeId) =>
       _recipeService.getRecipeById(recipeId);
 
+  /// BUT-2486: [day]'s lunchbox on the week on screen, or null.
+  Lunchbox? lunchboxAt(DayOfWeek day) => _plan?.lunchboxes[day];
+
+  /// BUT-2486: the name of [day]'s lunchbox dish, or null when it has none.
+  String? lunchboxTitle(DayOfWeek day) {
+    final plan = _plan;
+    final box = plan?.lunchboxes[day];
+    if (plan == null || box == null) return null;
+    return WeeklyLunchboxes.titleOf(box, plan, _recipeService.getRecipeById);
+  }
+
+  /// BUT-2486: the allergen verdict on [day]'s lunchbox, null without a box.
+  /// Without allergen marks wired, a box is never drawn as judged.
+  LunchboxVerdict? lunchboxVerdict(DayOfWeek day) {
+    final marks = _allergenMarks;
+    if (marks != null) return marks.lunchboxVerdict(_plan, day);
+    return lunchboxAt(day) == null ? null : LunchboxVerdict.unjudged;
+  }
+
+  /// BUT-2486: the loaded recipes that suit a lunchbox. No read is made.
+  List<Recipe> get lunchboxSuggestions =>
+      WeeklyLunchboxes.suggestions(_recipeService.recipes);
+
+  /// BUT-2486: [box] becomes [day]'s lunch (replacing a lunch dish there).
+  Future<bool> setLunchbox(DayOfWeek day, Lunchbox box) =>
+      _writeLunchboxes((plan) => plan.withLunchbox(day, box));
+
+  /// BUT-2486: "Ingen matlåda". False when the day had no box to remove.
+  Future<bool> clearLunchbox(DayOfWeek day) => _writeLunchboxes(
+    (plan) =>
+        plan.lunchboxes.containsKey(day) ? plan.withoutLunchbox(day) : plan,
+  );
+
+  Future<bool> _writeLunchboxes(
+    WeeklyMenuPlan Function(WeeklyMenuPlan plan) edit,
+  ) async {
+    if (_readFailed) return false;
+    final current = _plan;
+    if (current == null) return false;
+    final updated = edit(current);
+    if (identical(updated, current)) return false;
+    return _executeWrite(
+      () async {
+        if (isDisposed) return;
+        await _publishThenSave(updated, current);
+      },
+      errorPrefix: AppLocale.current.lunchboxSaveFailed,
+    );
+  }
+
   /// BUT-1975: `executeAsyncVoid` minus the loading flag, for WRITES.
   ///
   /// Reads own `isLoading`; writes must not, or an unacked write leaves the
@@ -889,14 +941,16 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }) async {
     final current = _plan;
     if (current == null) return false;
+    final updated = _service.addEntry(
+      plan: current,
+      day: day,
+      slot: slot,
+      recipe: recipe,
+    );
+    // A lunch that is a lunchbox takes no dish (BUT-2486): nothing was placed.
+    if (identical(updated, current)) return false;
     return _executeWrite(
       () async {
-        final updated = _service.addEntry(
-          plan: current,
-          day: day,
-          slot: slot,
-          recipe: recipe,
-        );
         if (isDisposed) return;
         await _publishThenSave(updated, current);
       },

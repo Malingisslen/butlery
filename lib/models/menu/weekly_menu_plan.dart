@@ -313,10 +313,16 @@ class WeeklyMenuPlan {
 
   /// Whether [day]/[slot] is occupied. For multi slots, "occupied" means
   /// at least one entry exists; the distribution algorithm handles multi
-  /// vs single semantics separately.
+  /// vs single semantics separately. A lunchbox (BUT-2486) is that day's
+  /// lunch, so its lunch is occupied even without an entry.
   bool isOccupied(DayOfWeek day, MealSlot slot) {
-    return entryAt(day, slot) != null;
+    return entryAt(day, slot) != null || hasLunchboxAt(day, slot);
   }
+
+  /// Whether [day]/[slot] is a lunch that is a lunchbox (BUT-2486). No dish
+  /// may be placed there: the calendar draws only the box.
+  bool hasLunchboxAt(DayOfWeek day, MealSlot slot) =>
+      slot == MealSlot.lunch && lunchboxes.containsKey(day);
 
   bool get isEmpty => entries.isEmpty;
   bool get isNotEmpty => entries.isNotEmpty;

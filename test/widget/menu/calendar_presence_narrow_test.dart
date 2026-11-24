@@ -125,6 +125,7 @@ Future<void> _pumpWeek(
             onTapEmptySlot: (_, _) {},
             onTapRecipe: (_, {presentServings}) {},
             onTapOvrigt: (_) {},
+            onTapLunchbox: (_) {},
             onTapPresence: (_, _) {},
           ),
         ),

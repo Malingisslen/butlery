@@ -22795,4 +22795,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekTemplateUndoFailed => 'Could not undo';
+
+  @override
+  String lunchboxSheetTitle(String day) {
+    return 'Lunch $day';
+  }
+
+  @override
+  String get lunchboxSourceLeftovers => 'Leftovers from yesterday';
+
+  @override
+  String lunchboxLeftoversFrom(String dish) {
+    return '$dish, yesterday\'s dinner';
+  }
+
+  @override
+  String get lunchboxLeftoversNone => 'No dinner yesterday';
+
+  @override
+  String get lunchboxLeftoversPreviousWeek =>
+      'Sunday\'s dinner – pick the dish';
+
+  @override
+  String get lunchboxSourcePrepDay => 'From the prep day';
+
+  @override
+  String get lunchboxPickDish => 'Pick a dish';
+
+  @override
+  String get lunchboxSourceSuggestion => 'Suggested by the app';
+
+  @override
+  String get lunchboxSuitsSubtitle => 'Suits a lunchbox';
+
+  @override
+  String get lunchboxNoSuggestions =>
+      'No recipes are marked as lunchbox dishes yet';
+
+  @override
+  String get lunchboxTakersHeading => 'Who takes a box';
+
+  @override
+  String get lunchboxTakersHint => 'None chosen means the whole household';
+
+  @override
+  String get lunchboxPortionsLabel => 'Number of boxes';
+
+  @override
+  String get lunchboxSave => 'Save lunchbox';
+
+  @override
+  String get lunchboxRemove => 'No lunchbox';
+
+  @override
+  String get lunchboxRemovedUndo => 'Lunchbox removed';
+
+  @override
+  String get lunchboxSaveFailed => 'Could not save the lunchbox';
+
+  @override
+  String get lunchboxMark => 'Lunchbox';
+
+  @override
+  String get lunchboxUnjudgedMark => 'Not checked for allergies';
+
+  @override
+  String get lunchboxNoDish => 'Dish missing';
+
+  @override
+  String get menuSelectorLunchbox => 'Lunchbox';
+
+  @override
+  String a11yLunchboxOpen(String day) {
+    return 'Change the lunchbox on $day';
+  }
+
+  @override
+  String get a11yLunchboxFewer => 'Fewer boxes';
+
+  @override
+  String get a11yLunchboxMore => 'More boxes';
 }

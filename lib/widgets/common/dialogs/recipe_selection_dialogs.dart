@@ -37,12 +37,14 @@ class RecipeSelectionDialogs {
     BuildContext context, {
     required String categoryName,
     VoidCallback? onSuggest,
+    VoidCallback? onLunchbox,
   }) async {
     return await showDialog<List<Recipe>>(
       context: context,
       builder: (context) => MenuRecipeSelectionDialog(
         categoryName: categoryName,
         onSuggest: onSuggest,
+        onLunchbox: onLunchbox,
       ),
     );
   }

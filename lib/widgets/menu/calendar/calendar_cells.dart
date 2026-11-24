@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/viewmodels/menu/weekly_allergen_marks.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
@@ -32,6 +33,7 @@ class CalendarWeekTable extends StatelessWidget {
     required this.onTapRecipe,
     required this.onTapOvrigt,
     required this.onTapPresence,
+    required this.onTapLunchbox,
   });
 
   final WeeklyMenuPlanViewModel vm;
@@ -47,6 +49,9 @@ class CalendarWeekTable extends StatelessWidget {
   final void Function(DayOfWeek day) onTapOvrigt;
   final PresenceTapCallback onTapPresence;
 
+  /// A tap on a lunch that is a lunchbox (BUT-2486).
+  final void Function(DayOfWeek day) onTapLunchbox;
+
   bool get _family => roster.length > 1;
 
   @override
@@ -58,6 +63,9 @@ class CalendarWeekTable extends StatelessWidget {
           (d) =>
               kPresenceSlots.any((s) => plan.presentMemberIdsFor(d, s) != null),
         );
+    final boxVerdicts = {
+      for (final day in plan.lunchboxes.keys) vm.lunchboxVerdict(day),
+    }.whereType<LunchboxVerdict>().toSet();
     return CalendarWeekGrid(
       weekStart: plan.weekStartDate,
       todayIndex: todayIndex,
@@ -71,11 +79,16 @@ class CalendarWeekTable extends StatelessWidget {
         onTapRecipe: onTapRecipe,
         onTapOvrigt: onTapOvrigt,
         onTapPresence: onTapPresence,
+        onTapLunchbox: onTapLunchbox,
       ).cell(context, slot),
       footer: CalendarLegend(
         showNew: entries.any((e) => vm.isRecentlyPlaced(e.id)),
-        showAllergen: entries.any((e) => vm.isAllergenUnsafe(e.id)),
+        showAllergen:
+            entries.any((e) => vm.isAllergenUnsafe(e.id)) ||
+            boxVerdicts.contains(LunchboxVerdict.unsafe),
         showPresence: showPresence,
+        showLunchbox: boxVerdicts.isNotEmpty,
+        showUnjudged: boxVerdicts.contains(LunchboxVerdict.unjudged),
       ),
     );
   }
@@ -93,6 +106,7 @@ class _DayCells {
     required this.onTapRecipe,
     required this.onTapOvrigt,
     required this.onTapPresence,
+    required this.onTapLunchbox,
   });
 
   final WeeklyMenuPlanViewModel vm;
@@ -104,6 +118,9 @@ class _DayCells {
   final RecipeNavCallback onTapRecipe;
   final void Function(DayOfWeek day) onTapOvrigt;
   final PresenceTapCallback onTapPresence;
+
+  /// A tap on a lunch that is a lunchbox (BUT-2486).
+  final void Function(DayOfWeek day) onTapLunchbox;
 
   Widget cell(BuildContext context, MealSlot slot) =>
       slot == MealSlot.ovrigt ? _ovrigtCell(context) : _mealCell(context, slot);
@@ -118,6 +135,9 @@ class _DayCells {
   }
 
   Widget _mealCell(BuildContext context, MealSlot slot) {
+    if (slot == MealSlot.lunch && plan.lunchboxes.containsKey(day)) {
+      return _lunchboxCell(context);
+    }
     final entry = plan.entryAt(day, slot);
     if (entry == null) {
       return wrapAsDropTarget(
@@ -175,6 +195,26 @@ class _DayCells {
         },
         dragPayload: MovePayload(entry, title: vm.entryTitle(entry)),
       ),
+    );
+  }
+
+  /// A lunch that is a lunchbox. Not a drop target and not draggable: a dish
+  /// dropped here would sit unseen under the box. In selection mode it is
+  /// inert, as a box is not an entry that can be moved.
+  Widget _lunchboxCell(BuildContext context) {
+    final verdict = vm.lunchboxVerdict(day);
+    final l10n = context.l10n;
+    return CalendarDishCell(
+      title: vm.lunchboxTitle(day) ?? l10n.lunchboxNoDish,
+      marks: CalendarCellMarks(
+        lunchbox: true,
+        allergenUnsafe: verdict == LunchboxVerdict.unsafe,
+        unjudged: verdict == LunchboxVerdict.unjudged,
+      ),
+      semanticsLabel: l10n.a11yLunchboxOpen(day.displayLabel),
+      onTap: () {
+        if (!vm.selectionMode) onTapLunchbox(day);
+      },
     );
   }
 

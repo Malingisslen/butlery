@@ -158,10 +158,19 @@ class CalendarCellMarks {
     this.allergenUnsafe = false,
     this.presentCount,
     this.placementOrder,
+    this.lunchbox = false,
+    this.unjudged = false,
   });
 
   final bool isNew;
   final bool allergenUnsafe;
+
+  /// The lunch is a lunchbox (BUT-2486).
+  final bool lunchbox;
+
+  /// The dish could not be checked for allergens, so it is never drawn as
+  /// safe (BUT-2486).
+  final bool unjudged;
 
   /// How many are home; null when it is everyone.
   final int? presentCount;
@@ -175,6 +184,8 @@ class CalendarCellMarks {
   /// from the text scale.
   double get reservedWidth =>
       (allergenUnsafe ? 18.0 : 0) +
+      (unjudged ? 18.0 : 0) +
+      (lunchbox ? 18.0 : 0) +
       (presentCount != null ? 28.0 : 0) +
       (placementOrder != null ? 14.0 : 0);
 }
@@ -232,7 +243,9 @@ class CalendarDishCell extends StatelessWidget {
     final corner = <Widget>[
       if (marks.placementOrder != null)
         PlacementOrderNumber(order: marks.placementOrder!),
+      if (marks.lunchbox) const CalendarLunchboxMark(),
       if (marks.allergenUnsafe) const CalendarAllergenMark(),
+      if (marks.unjudged) const CalendarUnjudgedMark(),
       if (marks.presentCount != null)
         CalendarPresenceMark(count: marks.presentCount!),
       if (marks.isNew) const CalendarNewDot(),

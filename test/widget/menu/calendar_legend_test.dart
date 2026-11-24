@@ -79,6 +79,7 @@ void main() {
               onTapEmptySlot: (_, _) {},
               onTapRecipe: (_, {presentServings}) {},
               onTapOvrigt: (_) {},
+              onTapLunchbox: (_) {},
               roster: roster,
               onTapPresence: (_, _) {},
             ),

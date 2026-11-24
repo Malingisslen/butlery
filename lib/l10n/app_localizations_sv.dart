@@ -22601,4 +22601,82 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get weekTemplateUndoFailed => 'Det gick inte att ångra';
+
+  @override
+  String lunchboxSheetTitle(String day) {
+    return 'Lunch $day';
+  }
+
+  @override
+  String get lunchboxSourceLeftovers => 'Rester från i går';
+
+  @override
+  String lunchboxLeftoversFrom(String dish) {
+    return '$dish, gårdagens middag';
+  }
+
+  @override
+  String get lunchboxLeftoversNone => 'Ingen middag i går';
+
+  @override
+  String get lunchboxLeftoversPreviousWeek => 'Söndagens middag – välj rätten';
+
+  @override
+  String get lunchboxSourcePrepDay => 'Från lagardagen';
+
+  @override
+  String get lunchboxPickDish => 'Välj rätt';
+
+  @override
+  String get lunchboxSourceSuggestion => 'Förslag från appen';
+
+  @override
+  String get lunchboxSuitsSubtitle => 'Passar som matlåda';
+
+  @override
+  String get lunchboxNoSuggestions => 'Inga recept är märkta som matlåda än';
+
+  @override
+  String get lunchboxTakersHeading => 'Vem tar låda';
+
+  @override
+  String get lunchboxTakersHint => 'Ingen vald betyder hela hushållet';
+
+  @override
+  String get lunchboxPortionsLabel => 'Antal lådor';
+
+  @override
+  String get lunchboxSave => 'Spara matlåda';
+
+  @override
+  String get lunchboxRemove => 'Ingen matlåda';
+
+  @override
+  String get lunchboxRemovedUndo => 'Matlådan togs bort';
+
+  @override
+  String get lunchboxSaveFailed => 'Kunde inte spara matlådan';
+
+  @override
+  String get lunchboxMark => 'Matlåda';
+
+  @override
+  String get lunchboxUnjudgedMark => 'Ej bedömd för allergier';
+
+  @override
+  String get lunchboxNoDish => 'Rätt saknas';
+
+  @override
+  String get menuSelectorLunchbox => 'Matlåda';
+
+  @override
+  String a11yLunchboxOpen(String day) {
+    return 'Ändra matlådan på $day';
+  }
+
+  @override
+  String get a11yLunchboxFewer => 'Färre lådor';
+
+  @override
+  String get a11yLunchboxMore => 'Fler lådor';
 }
