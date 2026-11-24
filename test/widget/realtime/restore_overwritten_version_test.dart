@@ -315,9 +315,14 @@ void main() {
       // The week Veckomeny shows comes from weekly_menu_plans, which keeps no
       // overwritten versions; a kept realtime menu is another document, so
       // offering it here would replace something other than what is shown.
-      final week = code('lib/views/veckomeny_view.dart');
+      final week = [
+        code('lib/views/veckomeny_view.dart'),
+        for (final f in Directory('lib/views/veckomeny_view').listSync())
+          if (f is File && f.path.endsWith('.dart')) f.readAsStringSync(),
+      ].join('\n');
+      expect(week, contains('buildVeckomenyRootActions('));
       expect(week, isNot(contains('RestorableVersionsWatcher')));
-      expect(week, isNot(contains('_VeckomenyRootAction.restore')));
+      expect(week, isNot(contains('_RootAction.restore')));
     });
 
     test("recipe detail offers it only on the owner's recipe, by its id", () {

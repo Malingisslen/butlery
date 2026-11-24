@@ -146,12 +146,10 @@ void main() {
     expect(RegExp(r'ButleryMenu<').allMatches(header).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(header), isFalse);
 
-    final week = code('lib/views/veckomeny_view.dart');
-    final headerStart = week.indexOf('List<Widget> _buildHeaderActions(');
-    final weekHeader = week.substring(
-      headerStart,
-      week.indexOf('\n}', headerStart),
-    );
+    final week = code('lib/views/veckomeny_view/veckomeny_root_actions.dart');
+    final headerStart = week.indexOf('List<Widget> buildVeckomenyRootActions(');
+    expect(headerStart, isNonNegative);
+    final weekHeader = week.substring(headerStart);
     expect(RegExp(r'ButleryMenu<').allMatches(weekHeader).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(weekHeader), isFalse);
     expect(weekHeader.contains('GroupMenuEntryButton()'), isTrue);
