@@ -8,6 +8,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -269,6 +270,9 @@ class MenuViewModel extends BaseViewModel {
       if (parsed == null) return const {};
       final counts = <String, int>{};
       for (final pin in parsed.dayPins) {
+        // A saved rule's dish is not one the prompt asked for; a rule with
+        // nothing to pick has its own notice (BUT-2490).
+        if (pin.fromRule) continue;
         final key = pin.mealType.toLowerCase();
         counts[key] = (counts[key] ?? 0) + 1;
       }
@@ -293,6 +297,10 @@ class MenuViewModel extends BaseViewModel {
 
   /// The last pantry-first generation found nothing the pantry covers.
   bool get pantryFocusFoundNothing => _generator.lastPantryFocusFoundNothing;
+
+  /// BUT-2490: the saved weekly rules the last generation found no recipe
+  /// for, so the week menu can say which fixed day it skipped.
+  List<RecurringDayRule> get unmatchedRules => _generator.lastUnmatchedRules;
 
   /// Soft wishes of the last generation that found no recipe (BUT-2523).
   int get unmetSoftWishCount => hasMenu ? _generator.lastUnmetSoftWishCount : 0;
@@ -710,6 +718,7 @@ class MenuViewModel extends BaseViewModel {
               ? _stateManager.lastPrompt
               : null,
           isCancelled: run.isCancelled,
+          applyRecurringRules: !isLiveMenu,
         ),
       );
 

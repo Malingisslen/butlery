@@ -6,6 +6,9 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -253,4 +256,24 @@ void showWeekShoppingListFailure(
     preserved: l10n.menuShoppingListGenerationPreserved,
     action: FailureAction.retry(onRetry),
   );
+}
+
+/// The notice for saved weekly rules (BUT-2490) that found no recipe at all,
+/// or null when there is nothing to say. A rule on a day of this week that
+/// has already passed is left out: the week could not have used it anyway.
+String? recurringRuleUnmatchedNotice(
+  AppLocalizations l,
+  List<RecurringDayRule> unmatched,
+  DayOfWeek today,
+) {
+  final ahead = [
+    for (final rule in unmatched)
+      if (rule.day.index >= today.index) rule,
+  ];
+  if (ahead.isEmpty) return null;
+  if (ahead.length > 1) return l.recurringRuleUnmatchedSeveral;
+  final rule = ahead.single;
+  final noun = l.recurringRuleFoodNoun(rule.food?.name ?? 'none');
+  final food = rule.quick ? l.recurringRuleQuickNoun(noun) : noun;
+  return l.recurringRuleUnmatched(food, rule.day.name);
 }

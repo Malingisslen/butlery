@@ -10,6 +10,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -397,6 +398,10 @@ class UserService extends ChangeNotifier
   @override
   Future<bool> setNewRecipesShowOnProfile(bool enabled) =>
       _settings.setNewRecipesShowOnProfile(enabled);
+
+  @override
+  Future<bool> setRecurringDayRules(List<RecurringDayRule> rules) =>
+      _settings.setRecurringDayRules(rules);
 
   @override
   Future<void> markPantryAutoAddPrompted() =>

@@ -2,6 +2,7 @@ import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/models/search/search_result.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/profile_field.dart';
@@ -168,6 +169,13 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Persist the new-recipes-are-public preference with a targeted
   /// single-field set in the private settings doc.
   Future<void> setNewRecipesShowOnProfile(String userId, bool enabled);
+
+  /// BUT-2490: persist the saved weekly rules ("Fasta dagar") as one field of
+  /// the private settings doc, replacing the whole list.
+  Future<void> setRecurringDayRules(
+    String userId,
+    List<RecurringDayRule> rules,
+  );
 
   /// BUT-2221: a targeted
   /// `update()` of the flag and a server-stamped change time, which the rules

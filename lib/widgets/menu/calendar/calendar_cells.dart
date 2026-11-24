@@ -34,10 +34,18 @@ class CalendarWeekTable extends StatelessWidget {
     required this.onTapOvrigt,
     required this.onTapPresence,
     required this.onTapLunchbox,
+    this.onTapDay,
+    this.ruleDays = const {},
   });
 
   final WeeklyMenuPlanViewModel vm;
   final WeeklyMenuPlan plan;
+
+  /// Opens the day's rule sheet (BUT-2490); null leaves the day names inert.
+  final void Function(DayOfWeek day)? onTapDay;
+
+  /// Days an active saved rule governs, computed by the caller at render.
+  final Set<DayOfWeek> ruleDays;
 
   /// -1 when the visible week is not the current one.
   final int todayIndex;
@@ -69,6 +77,8 @@ class CalendarWeekTable extends StatelessWidget {
     return CalendarWeekGrid(
       weekStart: plan.weekStartDate,
       todayIndex: todayIndex,
+      onTapDay: vm.selectionMode ? null : onTapDay,
+      markedDays: ruleDays,
       cellBuilder: (context, day, slot) => _DayCells(
         vm: vm,
         plan: plan,

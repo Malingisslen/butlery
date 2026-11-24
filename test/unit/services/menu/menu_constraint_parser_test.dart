@@ -3,6 +3,7 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
+import 'package:butlery/services/tagging/phases/tag_phase1_method.dart';
 
 late Lexicon _lex;
 
@@ -338,7 +339,19 @@ void main() {
       final result = p('tacofredag');
       expect(result.dayPins, isNotEmpty);
       expect(result.dayPins.first.weekdayIndex, 5);
-      expect(result.dayPins.first.constraint.requiredTags, contains('tacos'));
+      expect(result.dayPins.first.constraint.requiredTags, contains('taco'));
+    });
+
+    // The pin's tag must be one the tagger actually emits, or tacofredag
+    // matches no auto-tagged recipe at all.
+    test('tacofredag asks for the tag the tagger gives a taco dish', () {
+      final tagged = Phase1MethodCalculator.calculateDishTypeTags(
+        'Tacos med köttfärs',
+      );
+      final pin = p('tacofredag').dayPins.single;
+      expect(tagged.containsAll(pin.constraint.requiredTags), isTrue);
+      final typed = p('fredag tacos').dayPins.single;
+      expect(tagged.containsAll(typed.constraint.requiredTags), isTrue);
     });
 
     test('fredag tacos', () {

@@ -675,28 +675,38 @@ void main() {
 
     // -- P5-U25: fewer dishes than asked is a partial outcome ------------------
     group('P5-U25 partial generation', () {
-      ParsedMenuRequest request(Map<String, int> counts, {int pins = 0}) =>
-          ParsedMenuRequest(
-            slotRequests: [
-              for (final e in counts.entries)
-                SlotRequest(
-                  mealType: e.key,
-                  subRequests: [RecipeConstraint(count: e.value)],
-                ),
-            ],
-            globalAllergenAvoid: const {},
-            globalDietaryRequire: const {},
-            dayPins: [
-              for (var i = 0; i < pins; i++)
-                const DayPin(
-                  weekdayIndex: 5,
-                  mealType: 'middag',
-                  constraint: RecipeConstraint(count: 1),
-                ),
-            ],
-            trace: const ExtractionTrace(),
-            rawPrompt: 'p',
-          );
+      ParsedMenuRequest request(
+        Map<String, int> counts, {
+        int pins = 0,
+        int rulePins = 0,
+      }) => ParsedMenuRequest(
+        slotRequests: [
+          for (final e in counts.entries)
+            SlotRequest(
+              mealType: e.key,
+              subRequests: [RecipeConstraint(count: e.value)],
+            ),
+        ],
+        globalAllergenAvoid: const {},
+        globalDietaryRequire: const {},
+        dayPins: [
+          for (var i = 0; i < pins; i++)
+            const DayPin(
+              weekdayIndex: 5,
+              mealType: 'middag',
+              constraint: RecipeConstraint(count: 1),
+            ),
+          for (var i = 0; i < rulePins; i++)
+            const DayPin(
+              weekdayIndex: 1,
+              mealType: 'middag',
+              constraint: RecipeConstraint(count: 1),
+              fromRule: true,
+            ),
+        ],
+        trace: const ExtractionTrace(),
+        rawPrompt: 'p',
+      );
 
       void answer(Map<String, List<Recipe>> menu, ParsedMenuRequest? parsed) {
         when(
@@ -736,6 +746,16 @@ void main() {
 
         expect(viewModel.partialOutcome!.requested, 3);
         expect(viewModel.partialOutcome!.found, 2);
+      });
+
+      test('a saved rule\'s dish is not counted as asked for', () async {
+        answer({
+          'Middag': [testRecipe, testRecipe2],
+        }, request({'middag': 2}, rulePins: 1));
+
+        await viewModel.generateMenu('2 middagar');
+
+        expect(viewModel.partialOutcome, isNull);
       });
 
       test('everything asked for is not partial', () async {

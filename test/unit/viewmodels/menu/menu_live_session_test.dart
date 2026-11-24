@@ -10,10 +10,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/menu/recurring_day_rule.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
@@ -377,6 +380,7 @@ void main() {
     late MenuViewModel vm;
     late _MockMenuService menuService;
     late MockUnifiedRecipeService recipes;
+    late MockUserService users;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
@@ -390,7 +394,7 @@ void main() {
           isLoading: false,
           error: null,
         );
-      final users = MockUserService();
+      users = MockUserService();
       stubOwnPreferences(
         users,
         const UserAllergenPreferences(
@@ -507,6 +511,58 @@ void main() {
               ).captured.single
               as List<Recipe>;
       expect(written.map((r) => r.id), ['pie']);
+    });
+
+    test('regenerate leaves the user\'s saved weekly rules out of a shared '
+        'menu', () async {
+      registerFallbackValue(<Recipe>[]);
+      registerFallbackValue(const <String>{});
+      registerFallbackValue(MenuScoringContext.empty);
+      when(() => menuService.parsePrompt(any())).thenAnswer((_) async => null);
+      when(
+        () => menuService.generateMenuFromPromptWithoutRules(
+          any(),
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        ),
+      ).thenAnswer(
+        (_) async => {
+          'Middag': [pie],
+        },
+      );
+      // A prompt on the screen and an active rule: only the live flag can
+      // keep the rules out.
+      await vm.generateMenu('3 middagar');
+      when(() => users.currentUserProfile).thenReturn(
+        UserProfile(
+          uid: 'u1',
+          displayName: 'T',
+          email: 't@example.com',
+          joinedAt: DateTime(2026),
+          lastActiveAt: DateTime(2026),
+          settingsMerged: true,
+          recurringDayRules: [
+            RecurringDayRule.create(
+              day: DayOfWeek.mon,
+              meal: MealSlot.middag,
+              food: RecurringFood.fisk,
+            ),
+          ],
+        ),
+      );
+      await openLive();
+
+      await vm.regenerateSection('Middag');
+
+      verify(
+        () => menuService.generateMenuFromPromptWithoutRules(
+          '3 middagar',
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        ),
+      ).called(1);
     });
 
     test('a viewer can neither swap nor regenerate', () async {

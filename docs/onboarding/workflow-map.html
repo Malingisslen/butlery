@@ -198,6 +198,12 @@
       "path": "lib/views/veckomeny_view.dart"
     },
     {
+      "id": "v-recurring-day-rules",
+      "label": "Fasta dagar (lista + redigerare)",
+      "context": "view",
+      "path": "lib/views/recurring_day_rules/recurring_day_rules_view.dart, lib/views/recurring_day_rules/recurring_day_rule_editor_view.dart, lib/views/recurring_day_rules/recurring_day_rule_sheet.dart, lib/widgets/menu/recurring_rules_entry_band.dart"
+    },
+    {
       "id": "v-lunchbox-sheet",
       "label": "Matlådearket (lunch som matlåda)",
       "context": "view",
@@ -364,6 +370,18 @@
       "label": "MenuService — sv. NLP + viktad poäng",
       "context": "service",
       "path": "lib/services/menu_service.dart"
+    },
+    {
+      "id": "vm-recurring-day-rules",
+      "label": "RecurringDayRulesViewModel",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/recurring_day_rules_viewmodel.dart"
+    },
+    {
+      "id": "svc-recurring-rule-pins",
+      "label": "Fasta dagar — regel till pin (RecurringDayRule + RecurringRulePins)",
+      "context": "service",
+      "path": "lib/models/menu/recurring_day_rule.dart, lib/services/menu/recurring_rule_pins.dart, lib/services/menu/day_pin_placement.dart"
     },
     {
       "id": "svc-weekly-plan",
@@ -2770,8 +2788,22 @@
         {
           "from": "vm-menu-generator",
           "to": "svc-menu",
-          "payload": "prompt + allergenfiltrerad pool + nyligen-använda recept-id:n (veckodedup) + scoringContext (skafferi + poolat betyg) → generateMenuFromPrompt. BUT-1594 tog bort köksaffinitet/skicklighet som signaler — menyn dras redan ur användarens egna, smakkurerade recept, så de dubbelräknade smak. BUT-1516 lade till en Bayesian-krympt boost från det poolade ”Butlery-betyget”, men den är helt vilande (enable_pooled_ratings AV i produktion)",
+          "payload": "prompt + allergenfiltrerad pool + nyligen-använda recept-id:n (veckodedup) + scoringContext (skafferi + poolat betyg) → generateMenuFromPrompt. BUT-2490: de aktiva sparade fasta dagarna (currentUserProfile.recurringDayRules, endast icke-pausade) följer med in i anropet — live-/delade menyer går i stället via generateMenuFromPromptWithoutRules, eftersom en meny andra delar inte är användarens att styra. BUT-1594 tog bort köksaffinitet/skicklighet som signaler — menyn dras redan ur användarens egna, smakkurerade recept, så de dubbelräknade smak. BUT-1516 lade till en Bayesian-krympt boost från det poolade ”Butlery-betyget”, men den är helt vilande (enable_pooled_ratings AV i produktion)",
           "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-menu",
+          "to": "svc-recurring-rule-pins",
+          "payload": "MenuConstraintParser (lexikon, ej LLM) tolkar prompten, sedan slår _withRules ihop regelpinnarna med den tolkade förfrågan (BUT-2490): varje aktiv regel (veckodag + måltid + slag och värde, t.ex. en matkategori) blir en fastnålad dag för en måltid som prompten ber om, och en dag + måltid som prompten själv fastnålat vinner över regeln. Pinnarna placeras av day_pin_placement; en regel vars recept-pool är tom hoppas över och dess id returneras som omatchad",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-recurring-rule-pins",
+          "to": "svc-menu",
+          "payload": "ParsedMenuRequest med regelpinnar + lista med omatchade regel-id:n (lastUnmatchedRuleIds)",
+          "transport": "in-memory return",
           "verified": true
         },
         {
@@ -2784,7 +2816,7 @@
         {
           "from": "vm-menu-generator",
           "to": "vm-menu",
-          "payload": "menykarta + MenuPoolStats (antal dolda, UNKNOWN-mjuka recept, prefkälla) → hint-raden om dolda recept och ”allergener okända”-chips i UI:t",
+          "payload": "menykarta + MenuPoolStats (antal dolda, UNKNOWN-mjuka recept, prefkälla) + lastUnmatchedRules (BUT-2490) → hint-raden om dolda recept, ”allergener okända”-chips och notisen om vilken fast dag som hoppades över, i UI:t",
           "transport": "in-memory return",
           "verified": true
         },
@@ -2823,6 +2855,56 @@
         "MENU-16",
         "ENG-12"
       ]
+    },
+    {
+      "id": "flow2-fixed-days",
+      "label": "spara fasta dagar (veckomenyns regler)",
+      "description": "BUT-2490: ”Fasta dagar” är sparade veckoregler (t.ex. fisk på fredagar) som veckomenyns generering lägger in som fastnålade dagar. Listan nås från bandet överst i veckomenyn (RecurringRulesEntryBand) och redigeraren öppnas från listan; båda delar RecurringDayRulesViewModel. Reglerna lagras som fältet recurringDayRules i users/{uid}/settings/preferences och skrivs med ett eget set(merge) — aldrig med en hel profilsparning, eftersom skrivningen ersätter hela listan. UserSettingsWriter vägrar skriva om inställningarna inte lästs in (settingsMerged), så en standardlista aldrig raderar användarens regler (BUT-1663). Misslyckas sparningen returneras false, profilen behåller sina regler och skärmen säger att det inte sparades. Regelgränsen (RecurringDayRules.maxRules) prövas i ViewModel före skrivning.",
+      "steps": [
+        {
+          "from": "v-veckomeny",
+          "to": "v-recurring-day-rules",
+          "payload": "band överst i veckomenyn med antal regler → Navigator.push av RecurringDayRulesView (lista), därifrån redigerare/ark för en dag + måltid",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "v-recurring-day-rules",
+          "to": "vm-recurring-day-rules",
+          "payload": "save(rule) / setPaused(rule, paused) / delete(rule) — upsert/remove på den lagrade listan; en raderad rad döljs direkt medan skrivningen pågår",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-recurring-day-rules",
+          "to": "svc-user",
+          "payload": "setRecurringDayRules(rules) via OwnProfileEditor → UserSettingsWriter; nekas utan inloggad användare eller utan inläst inställningsdokument (settingsMerged)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-user",
+          "to": "repo-user",
+          "payload": "setRecurringDayRules(userId, rules) — validateSelfOperation (bara den egna användaren) + audit-logg set_recurring_day_rules",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-user",
+          "to": "ds-users",
+          "payload": "users/{uid}/settings/preferences: fältet recurringDayRules (set med merge, köas offline via awaitOrLeaveQueued)",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "svc-user",
+          "to": "vm-recurring-day-rules",
+          "payload": "true efter lyckad skrivning; den inlästa profilen uppdateras (copyWith recurringDayRules) och lyssnare notifieras, så listan och bandets antal ritas om. false vid fel",
+          "transport": "in-memory return",
+          "verified": true
+        }
+      ],
+      "area": "meny & inköp"
     },
     {
       "id": "flow3",

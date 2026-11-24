@@ -157,6 +157,7 @@ void main() {
           'lib/views/messaging/chat_view/chat_view_facade.dart',
           'lib/views/messaging/create_group_conversation_view.dart',
           'lib/views/quick_capture_view.dart',
+          'lib/views/recurring_day_rules/recurring_day_rule_editor_view.dart',
           'lib/views/settings/appeal_form_view.dart',
           'lib/views/skriv_sjalv_recept_view.dart',
           'lib/views/social/create_shared_shopping_list_view.dart',

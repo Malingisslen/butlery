@@ -715,7 +715,14 @@ class ContentModule implements DIModule {
 
       // Menu service for meal planning
       container.registerLazySingleton<MenuService>(
-        () => MenuService(lexiconProvider: container<LexiconProvider>()),
+        () => MenuService(
+          lexiconProvider: container<LexiconProvider>(),
+          // BUT-2490: the saved weekly rules live on the own profile; read
+          // at each parse, resolved lazily (UserService registers later).
+          recurringRules: () =>
+              container<UserService>().currentUserProfile?.recurringDayRules ??
+              const [],
+        ),
       );
 
       container.registerLazySingleton<WeeklyMenuPlanRepository>(

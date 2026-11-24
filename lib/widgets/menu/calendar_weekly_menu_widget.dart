@@ -7,6 +7,8 @@
 /// `lib/widgets/menu/calendar/`. This file is the orchestrator only.
 library;
 
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -20,15 +22,18 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
+import 'package:butlery/views/recurring_day_rules/recurring_day_rule_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -63,11 +68,34 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   List<HouseholdRosterMember> _roster = const [];
   bool _overviewExpanded = false;
 
+  // BUT-2490: the day marks follow the saved rules, so they are read from the
+  // profile here at render time and never stored on a plan entry.
+  OwnProfileReader? _userService;
+
   @override
   void initState() {
     super.initState();
+    _userService = ServiceLocator.tryGet<OwnProfileReader>()
+      ?..addListener(_onRulesChanged);
     _loadRoster();
   }
+
+  @override
+  void dispose() {
+    _userService?.removeListener(_onRulesChanged);
+    super.dispose();
+  }
+
+  void _onRulesChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Set<DayOfWeek> get _ruleDays => {
+    for (final rule
+        in _userService?.currentUserProfile?.recurringDayRules ??
+            const <RecurringDayRule>[])
+      if (rule.isActive) rule.day,
+  };
 
   @override
   void didChangeDependencies() {
@@ -216,6 +244,8 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           onTapOvrigt: (d) => _onTapOvrigt(context, vm, plan, d),
           onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
           onTapLunchbox: (d) => _openLunchbox(context, vm, d),
+          onTapDay: (d) => unawaited(showRecurringDayRuleSheet(context, d)),
+          ruleDays: _ruleDays,
         ),
       ],
     );

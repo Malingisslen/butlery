@@ -315,6 +315,126 @@ test(
 );
 
 // ============================================================================
+// SETTINGS — saved weekly rules, `recurringDayRules` (BUT-2490)
+//
+// A list of at most 14 rows.
+// ============================================================================
+
+function dayRule(weekday: number, meal: string): Record<string, unknown> {
+  return {
+    id: `${weekday}-${meal}`,
+    weekday,
+    meal,
+    kind: "quick",
+    value: "",
+    quick: true,
+    paused: false,
+  };
+}
+
+function dayRules(count: number): Record<string, unknown>[] {
+  const rows: Record<string, unknown>[] = [];
+  for (let i = 0; i < count; i++) {
+    rows.push(dayRule((i % 7) + 1, i < 7 ? "middag" : "lunch"));
+  }
+  return rows;
+}
+
+test(
+  "settings: owner can save 14 recurring day rules (the app's write)",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-rules-14-${RUN}`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ recurringDayRules: dayRules(14) }, { merge: true })
+    );
+  }
+);
+
+test(
+  "settings: owner can clear recurring day rules to an empty list",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/preferences`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ recurringDayRules: [] }, { merge: true })
+    );
+  }
+);
+
+test(
+  "settings: a 15th recurring day rule is refused on update",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-rules-15-${RUN}`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ recurringDayRules: dayRules(15) }, { merge: true })
+    );
+  }
+);
+
+test(
+  "settings: a 15th recurring day rule is refused on create",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${USER_UID}/settings/s-rules-create15-${RUN}`)
+        .set({ recurringDayRules: dayRules(15) })
+    );
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${USER_UID}/settings/s-rules-create14-${RUN}`)
+        .set({ recurringDayRules: dayRules(14) })
+    );
+  }
+);
+
+test(
+  "settings: recurring day rules that are not a list are refused",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-rules-map-${RUN}`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ recurringDayRules: { a: dayRule(1, "middag") } }, { merge: true })
+    );
+  }
+);
+
+test(
+  "settings: another user cannot write your recurring day rules",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-rules-cross-${RUN}`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ recurringDayRules: dayRules(1) }, { merge: true })
+    );
+  }
+);
+
+// ============================================================================
 // SETTINGS — users/{uid}/settings/{settingId} isMinor immutability (BUT-674)
 // (4 assertions across 4 tests)
 //

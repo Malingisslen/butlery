@@ -22823,6 +22823,198 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekTemplateUndoFailed => 'Could not undo';
 
   @override
+  String recurringRuleUnmatched(String food, String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'sun': 'Sunday',
+        'other': 'that day',
+      },
+    );
+    return 'No $food found for $_temp0';
+  }
+
+  @override
+  String get recurringRuleUnmatchedSeveral =>
+      'Some fixed days got no recipe this week';
+
+  @override
+  String recurringRuleFoodNoun(String food) {
+    String _temp0 = intl.Intl.selectLogic(
+      food,
+      {
+        'fisk': 'fish recipe',
+        'tacos': 'taco recipe',
+        'vegetariskt': 'vegetarian recipe',
+        'pasta': 'pasta recipe',
+        'soppa': 'soup recipe',
+        'kyckling': 'chicken recipe',
+        'other': 'recipe',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleQuickNoun(String noun) {
+    return 'quick $noun';
+  }
+
+  @override
+  String get recurringRulesTitle => 'Fixed days';
+
+  @override
+  String get recurringRulesSection => 'My menu';
+
+  @override
+  String get recurringRulesNew => 'New fixed day';
+
+  @override
+  String get recurringRulesHint =>
+      'Pause a rule with the switch. Delete it by swiping the row.';
+
+  @override
+  String get recurringRulesEmptyTitle => 'No fixed days yet';
+
+  @override
+  String get recurringRulesEmptyBody =>
+      'A fixed day picks a matching recipe from your own every week, for example fish on Mondays.';
+
+  @override
+  String recurringRulesBandCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fixed days',
+      one: '1 fixed day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleDayLong(String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'sun': 'Sunday',
+        'other': 'the day',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleDayShort(String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'Mon',
+        'tue': 'Tue',
+        'wed': 'Wed',
+        'thu': 'Thu',
+        'fri': 'Fri',
+        'sat': 'Sat',
+        'sun': 'Sun',
+        'other': '-',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recurringRuleMealLunch => 'Lunch';
+
+  @override
+  String get recurringRuleMealDinner => 'Dinner';
+
+  @override
+  String recurringRuleFoodLabel(String food) {
+    String _temp0 = intl.Intl.selectLogic(
+      food,
+      {
+        'fisk': 'Fish',
+        'tacos': 'Tacos',
+        'vegetariskt': 'Vegetarian',
+        'pasta': 'Pasta',
+        'soppa': 'Soup',
+        'kyckling': 'Chicken',
+        'other': 'Recipe',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recurringRuleQuickLabel => 'Quick (under 30 min)';
+
+  @override
+  String get recurringRuleQuickShort => 'Quick';
+
+  @override
+  String get recurringRuleAnyEvening => 'Doesn\'t matter';
+
+  @override
+  String get recurringRuleSectionDay => 'Day';
+
+  @override
+  String get recurringRuleSectionMeal => 'Meal';
+
+  @override
+  String get recurringRuleSectionFood => 'Kind of food';
+
+  @override
+  String get recurringRuleSectionEvening => 'Kind of evening';
+
+  @override
+  String get recurringRuleEditorNote =>
+      'The app picks a matching recipe from yours every week. If none is found the day is skipped and you are told.';
+
+  @override
+  String get recurringRuleNeedChoice => 'Pick a kind of food or Quick';
+
+  @override
+  String get recurringRuleSaveFailed => 'Fixed days could not be saved';
+
+  @override
+  String recurringRuleLimit(int max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max fixed days',
+    );
+    return 'You can have at most $_temp0';
+  }
+
+  @override
+  String get recurringRuleDeleted => 'Fixed day removed';
+
+  @override
+  String get recurringRuleMakeFixed => 'Make fixed every week';
+
+  @override
+  String recurringRuleSheetTitle(String day) {
+    return '$day dinner';
+  }
+
+  @override
+  String get recurringRuleMarkLabel => 'Fixed day';
+
+  @override
+  String get recurringRuleShow => 'Show';
+
+  @override
   String get shoppingHintChooseLactoseFree =>
       'Lactose in the household, choose lactose-free';
 

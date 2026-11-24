@@ -34728,6 +34728,198 @@ abstract class AppLocalizations {
   /// **'Det gick inte att ångra'**
   String get weekTemplateUndoFailed;
 
+  /// BUT-2490: a saved weekly rule found no recipe this week. day is a DayOfWeek name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget {food} hittades för {day, select, mon{måndag} tue{tisdag} wed{onsdag} thu{torsdag} fri{fredag} sat{lördag} sun{söndag} other{dagen}}'**
+  String recurringRuleUnmatched(String food, String day);
+
+  /// No description provided for @recurringRuleUnmatchedSeveral.
+  ///
+  /// In sv, this message translates to:
+  /// **'Några fasta dagar fick inget recept den här veckan'**
+  String get recurringRuleUnmatchedSeveral;
+
+  /// BUT-2490: the noun for a saved rule's food, read inside recurringRuleUnmatched.
+  ///
+  /// In sv, this message translates to:
+  /// **'{food, select, fisk{fiskrecept} tacos{tacorecept} vegetariskt{vegetariskt recept} pasta{pastarecept} soppa{sopprecept} kyckling{kycklingrecept} other{recept}}'**
+  String recurringRuleFoodNoun(String food);
+
+  /// No description provided for @recurringRuleQuickNoun.
+  ///
+  /// In sv, this message translates to:
+  /// **'snabbt {noun}'**
+  String recurringRuleQuickNoun(String noun);
+
+  /// No description provided for @recurringRulesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fasta dagar'**
+  String get recurringRulesTitle;
+
+  /// No description provided for @recurringRulesSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min meny'**
+  String get recurringRulesSection;
+
+  /// No description provided for @recurringRulesNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny fast dag'**
+  String get recurringRulesNew;
+
+  /// No description provided for @recurringRulesHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Pausa en regel med brytaren. Ta bort genom att svepa raden.'**
+  String get recurringRulesHint;
+
+  /// No description provided for @recurringRulesEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga fasta dagar än'**
+  String get recurringRulesEmptyTitle;
+
+  /// No description provided for @recurringRulesEmptyBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'En fast dag väljer varje vecka ett matchande recept ur dina egna, till exempel fisk på måndagar.'**
+  String get recurringRulesEmptyBody;
+
+  /// No description provided for @recurringRulesBandCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 fast dag} other{{count} fasta dagar}}'**
+  String recurringRulesBandCount(int count);
+
+  /// BUT-2490: full weekday name, capitalised; day is a DayOfWeek name.
+  ///
+  /// In sv, this message translates to:
+  /// **'{day, select, mon{Måndag} tue{Tisdag} wed{Onsdag} thu{Torsdag} fri{Fredag} sat{Lördag} sun{Söndag} other{dagen}}'**
+  String recurringRuleDayLong(String day);
+
+  /// BUT-2490: short weekday chip; day is a DayOfWeek name.
+  ///
+  /// In sv, this message translates to:
+  /// **'{day, select, mon{Mån} tue{Tis} wed{Ons} thu{Tors} fri{Fre} sat{Lör} sun{Sön} other{-}}'**
+  String recurringRuleDayShort(String day);
+
+  /// No description provided for @recurringRuleMealLunch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunch'**
+  String get recurringRuleMealLunch;
+
+  /// No description provided for @recurringRuleMealDinner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Middag'**
+  String get recurringRuleMealDinner;
+
+  /// BUT-2490: chip label for a rule's food; food is a RecurringFood name.
+  ///
+  /// In sv, this message translates to:
+  /// **'{food, select, fisk{Fisk} tacos{Tacos} vegetariskt{Vegetariskt} pasta{Pasta} soppa{Soppa} kyckling{Kyckling} other{Recept}}'**
+  String recurringRuleFoodLabel(String food);
+
+  /// No description provided for @recurringRuleQuickLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbt (under 30 min)'**
+  String get recurringRuleQuickLabel;
+
+  /// No description provided for @recurringRuleQuickShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbt'**
+  String get recurringRuleQuickShort;
+
+  /// No description provided for @recurringRuleAnyEvening.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spelar ingen roll'**
+  String get recurringRuleAnyEvening;
+
+  /// No description provided for @recurringRuleSectionDay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dag'**
+  String get recurringRuleSectionDay;
+
+  /// No description provided for @recurringRuleSectionMeal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltid'**
+  String get recurringRuleSectionMeal;
+
+  /// No description provided for @recurringRuleSectionFood.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sorts mat'**
+  String get recurringRuleSectionFood;
+
+  /// No description provided for @recurringRuleSectionEvening.
+  ///
+  /// In sv, this message translates to:
+  /// **'Typ av kväll'**
+  String get recurringRuleSectionEvening;
+
+  /// No description provided for @recurringRuleEditorNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen väljer ett matchande recept ur dina recept varje vecka. Hittas inget hoppas dagen över och du får veta det.'**
+  String get recurringRuleEditorNote;
+
+  /// No description provided for @recurringRuleNeedChoice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj en sorts mat eller Snabbt'**
+  String get recurringRuleNeedChoice;
+
+  /// No description provided for @recurringRuleSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fasta dagar kunde inte sparas'**
+  String get recurringRuleSaveFailed;
+
+  /// No description provided for @recurringRuleLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan ha högst {max, plural, other{{max} fasta dagar}}'**
+  String recurringRuleLimit(int max);
+
+  /// No description provided for @recurringRuleDeleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fast dag borttagen'**
+  String get recurringRuleDeleted;
+
+  /// No description provided for @recurringRuleMakeFixed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör fast varje vecka'**
+  String get recurringRuleMakeFixed;
+
+  /// No description provided for @recurringRuleSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{day} middag'**
+  String recurringRuleSheetTitle(String day);
+
+  /// No description provided for @recurringRuleMarkLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fast dag'**
+  String get recurringRuleMarkLabel;
+
+  /// No description provided for @recurringRuleShow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa'**
+  String get recurringRuleShow;
+
   /// BUT-2494: reminder under a shopping row when the household avoids lactose and the item often contains it. Never names a person.
   ///
   /// In sv, this message translates to:

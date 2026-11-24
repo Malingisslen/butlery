@@ -7,6 +7,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -347,6 +348,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             newRecipesShowOnProfile: SerializationUtils.safeBool(
               s,
               'newRecipesShowOnProfile',
+            ),
+            // BUT-2490: same settings sub-doc; an unreadable row is skipped.
+            recurringDayRules: RecurringDayRules.fromFirestoreList(
+              s[RecurringDayRules.field],
             ),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
@@ -986,6 +991,33 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_show_nutrition_strip',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setRecurringDayRules(
+    String userId,
+    List<RecurringDayRule> rules,
+  ) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set recurring-day-rules',
+    );
+
+    await awaitOrLeaveQueued(
+      _settingsDoc(userId).set({
+        RecurringDayRules.field: RecurringDayRules.toFirestoreList(rules),
+      }, SetOptions(merge: true)),
+      what: 'recurring day rules',
+    );
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_recurring_day_rules',
       granted: true,
     );
   }

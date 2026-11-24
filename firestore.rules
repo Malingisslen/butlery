@@ -924,13 +924,23 @@ service cloud.firestore {
       match /settings/{settingId} {
         allow read: if isOwner(userId);
 
+        // BUT-2490: the saved weekly rules ("Fasta dagar") are a list of at
+        // most 14, one per day and meal, as `RecurringDayRules.maxRules` in the
+        // app. Absent passes, so every other settings write is unaffected.
+        function recurringDayRulesBounded() {
+          return !('recurringDayRules' in request.resource.data)
+            || (request.resource.data.recurringDayRules is list
+                && request.resource.data.recurringDayRules.size() <= 14);
+        }
+
         // Client create must not carry birthYear or isMinor at all — both are
         // CF-set (BUT-674 mirrors isMinor here so the client profile can read it
         // for analytics minimization; a client that could forge isMinor:false
         // would defeat that minimization and mislead any minor-aware client logic).
         allow create: if isOwner(userId)
           && request.resource.data.get('birthYear', null) == null
-          && request.resource.data.get('isMinor', null) == null;
+          && request.resource.data.get('isMinor', null) == null
+          && recurringDayRulesBounded();
 
         // Client update must leave birthYear and isMinor exactly as the CF set
         // them (or absent if not yet set). Comparing post-write to existing denies
@@ -939,7 +949,8 @@ service cloud.firestore {
           && request.resource.data.get('birthYear', null)
              == resource.data.get('birthYear', null)
           && request.resource.data.get('isMinor', null)
-             == resource.data.get('isMinor', null);
+             == resource.data.get('isMinor', null)
+          && recurringDayRulesBounded();
 
         allow delete: if isOwner(userId);
       }

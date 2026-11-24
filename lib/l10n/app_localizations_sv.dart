@@ -22629,6 +22629,198 @@ class AppLocalizationsSv extends AppLocalizations {
   String get weekTemplateUndoFailed => 'Det gick inte att ångra';
 
   @override
+  String recurringRuleUnmatched(String food, String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'måndag',
+        'tue': 'tisdag',
+        'wed': 'onsdag',
+        'thu': 'torsdag',
+        'fri': 'fredag',
+        'sat': 'lördag',
+        'sun': 'söndag',
+        'other': 'dagen',
+      },
+    );
+    return 'Inget $food hittades för $_temp0';
+  }
+
+  @override
+  String get recurringRuleUnmatchedSeveral =>
+      'Några fasta dagar fick inget recept den här veckan';
+
+  @override
+  String recurringRuleFoodNoun(String food) {
+    String _temp0 = intl.Intl.selectLogic(
+      food,
+      {
+        'fisk': 'fiskrecept',
+        'tacos': 'tacorecept',
+        'vegetariskt': 'vegetariskt recept',
+        'pasta': 'pastarecept',
+        'soppa': 'sopprecept',
+        'kyckling': 'kycklingrecept',
+        'other': 'recept',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleQuickNoun(String noun) {
+    return 'snabbt $noun';
+  }
+
+  @override
+  String get recurringRulesTitle => 'Fasta dagar';
+
+  @override
+  String get recurringRulesSection => 'Min meny';
+
+  @override
+  String get recurringRulesNew => 'Ny fast dag';
+
+  @override
+  String get recurringRulesHint =>
+      'Pausa en regel med brytaren. Ta bort genom att svepa raden.';
+
+  @override
+  String get recurringRulesEmptyTitle => 'Inga fasta dagar än';
+
+  @override
+  String get recurringRulesEmptyBody =>
+      'En fast dag väljer varje vecka ett matchande recept ur dina egna, till exempel fisk på måndagar.';
+
+  @override
+  String recurringRulesBandCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fasta dagar',
+      one: '1 fast dag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleDayLong(String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'Måndag',
+        'tue': 'Tisdag',
+        'wed': 'Onsdag',
+        'thu': 'Torsdag',
+        'fri': 'Fredag',
+        'sat': 'Lördag',
+        'sun': 'Söndag',
+        'other': 'dagen',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recurringRuleDayShort(String day) {
+    String _temp0 = intl.Intl.selectLogic(
+      day,
+      {
+        'mon': 'Mån',
+        'tue': 'Tis',
+        'wed': 'Ons',
+        'thu': 'Tors',
+        'fri': 'Fre',
+        'sat': 'Lör',
+        'sun': 'Sön',
+        'other': '-',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recurringRuleMealLunch => 'Lunch';
+
+  @override
+  String get recurringRuleMealDinner => 'Middag';
+
+  @override
+  String recurringRuleFoodLabel(String food) {
+    String _temp0 = intl.Intl.selectLogic(
+      food,
+      {
+        'fisk': 'Fisk',
+        'tacos': 'Tacos',
+        'vegetariskt': 'Vegetariskt',
+        'pasta': 'Pasta',
+        'soppa': 'Soppa',
+        'kyckling': 'Kyckling',
+        'other': 'Recept',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recurringRuleQuickLabel => 'Snabbt (under 30 min)';
+
+  @override
+  String get recurringRuleQuickShort => 'Snabbt';
+
+  @override
+  String get recurringRuleAnyEvening => 'Spelar ingen roll';
+
+  @override
+  String get recurringRuleSectionDay => 'Dag';
+
+  @override
+  String get recurringRuleSectionMeal => 'Måltid';
+
+  @override
+  String get recurringRuleSectionFood => 'Sorts mat';
+
+  @override
+  String get recurringRuleSectionEvening => 'Typ av kväll';
+
+  @override
+  String get recurringRuleEditorNote =>
+      'Appen väljer ett matchande recept ur dina recept varje vecka. Hittas inget hoppas dagen över och du får veta det.';
+
+  @override
+  String get recurringRuleNeedChoice => 'Välj en sorts mat eller Snabbt';
+
+  @override
+  String get recurringRuleSaveFailed => 'Fasta dagar kunde inte sparas';
+
+  @override
+  String recurringRuleLimit(int max) {
+    String _temp0 = intl.Intl.pluralLogic(
+      max,
+      locale: localeName,
+      other: '$max fasta dagar',
+    );
+    return 'Du kan ha högst $_temp0';
+  }
+
+  @override
+  String get recurringRuleDeleted => 'Fast dag borttagen';
+
+  @override
+  String get recurringRuleMakeFixed => 'Gör fast varje vecka';
+
+  @override
+  String recurringRuleSheetTitle(String day) {
+    return '$day middag';
+  }
+
+  @override
+  String get recurringRuleMarkLabel => 'Fast dag';
+
+  @override
+  String get recurringRuleShow => 'Visa';
+
+  @override
   String get shoppingHintChooseLactoseFree =>
       'Laktos i hushållet, välj laktosfri';
 

@@ -4,7 +4,11 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/menu/menu_scoring.dart';
+import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -27,6 +31,10 @@ class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
 
 class _MockPantryService extends Mock implements PantryService {}
+
+// Pure Mock: the shared MockMenuService has concrete bodies, which block
+// when() stubs for the rule-aware members.
+class _RuleMenuService extends Mock implements MenuService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -1504,5 +1512,172 @@ void main() {
         verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
       },
     );
+  });
+
+  group('MenuGenerator - saved weekly rules (BUT-2490)', () {
+    late _RuleMenuService menuService;
+    late MenuGenerator generator;
+
+    final fish = RecurringDayRule.create(
+      day: DayOfWeek.mon,
+      meal: MealSlot.middag,
+      food: RecurringFood.fisk,
+    );
+    final soup = RecurringDayRule.create(
+      day: DayOfWeek.tue,
+      meal: MealSlot.middag,
+      food: RecurringFood.soppa,
+    );
+    final regenerated = <String, List<Recipe>>{
+      'Middag': [RecipeFactory.build(id: 'new', title: 'New')],
+    };
+
+    void userHasRules(List<RecurringDayRule> rules) {
+      when(() => mockUserService.currentUserProfile).thenReturn(
+        UserProfile(
+          uid: 'u1',
+          displayName: 'Test',
+          email: 'test@example.com',
+          joinedAt: DateTime(2026),
+          lastActiveAt: DateTime(2026),
+          settingsMerged: true,
+          recurringDayRules: rules,
+        ),
+      );
+    }
+
+    setUp(() {
+      registerFallbackValue(<Recipe>[]);
+      registerFallbackValue(const <String>{});
+      registerFallbackValue(MenuScoringContext.empty);
+      menuService = _RuleMenuService();
+      generator = MenuGenerator(
+        menuService: menuService,
+        recipeService: mockRecipeService,
+        userService: mockUserService,
+      );
+      when(() => menuService.lastUnmatchedRuleIds).thenReturn(const []);
+      when(
+        () => menuService.generateMenuFromPrompt(
+          any(),
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        ),
+      ).thenAnswer((_) async => regenerated);
+      when(
+        () => menuService.generateMenuFromPromptWithoutRules(
+          any(),
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        ),
+      ).thenAnswer((_) async => regenerated);
+    });
+
+    Future<Map<String, List<Recipe>>> withCall(String prompt) =>
+        menuService.generateMenuFromPrompt(
+          prompt,
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        );
+    Future<Map<String, List<Recipe>>> withoutCall(String prompt) =>
+        menuService.generateMenuFromPromptWithoutRules(
+          prompt,
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        );
+
+    void verifyOnly({required bool withRules, required String prompt}) {
+      verify(
+        () => withRules ? withCall(prompt) : withoutCall(prompt),
+      ).called(1);
+      verifyNever(
+        () => withRules ? withoutCall(prompt) : withCall(prompt),
+      );
+    }
+
+    test('the rules the service found no recipe for are reported, a paused '
+        'one is left out', () async {
+      userHasRules([fish, soup.copyWith(paused: true)]);
+      when(
+        () => menuService.lastUnmatchedRuleIds,
+      ).thenReturn([fish.id, soup.id]);
+
+      await generator.generateMenuFromPrompt('3 middagar');
+
+      expect(generator.lastUnmatchedRules, [fish]);
+    });
+
+    test(
+      'a failed generation does not repeat the last one\'s misses',
+      () async {
+        userHasRules([fish]);
+        when(() => menuService.lastUnmatchedRuleIds).thenReturn([fish.id]);
+        await generator.generateMenuFromPrompt('3 middagar');
+        expect(generator.lastUnmatchedRules, [fish]);
+
+        when(
+          () => menuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenThrow(StateError('boom'));
+
+        await expectLater(
+          generator.generateMenuFromPrompt('3 middagar'),
+          throwsStateError,
+        );
+        expect(generator.lastUnmatchedRules, isEmpty);
+      },
+    );
+
+    test('re-running the user\'s own prompt keeps the rules', () async {
+      userHasRules([fish]);
+
+      await generator.regenerateMenuSection(
+        'Middag',
+        createTestMenu(),
+        originalPrompt: '3 middagar',
+      );
+
+      verifyOnly(withRules: true, prompt: '3 middagar');
+    });
+
+    test('a live menu (applyRecurringRules false) leaves the rules out, '
+        'whatever the prompt', () async {
+      userHasRules([fish]);
+
+      await generator.regenerateMenuSection(
+        'Middag',
+        createTestMenu(),
+        originalPrompt: '3 middagar',
+        applyRecurringRules: false,
+      );
+
+      verifyOnly(withRules: false, prompt: '3 middagar');
+    });
+
+    test('the count-only fallback prompt leaves an active rule out, so its '
+        'dish is not counted twice', () async {
+      userHasRules([fish]);
+
+      await generator.regenerateMenuSection('Middag', createTestMenu());
+
+      verifyOnly(withRules: false, prompt: '1 Middag');
+    });
+
+    test('with no active rule the fallback prompt takes the ordinary '
+        'call', () async {
+      userHasRules([fish.copyWith(paused: true)]);
+
+      await generator.regenerateMenuSection('Middag', createTestMenu());
+
+      verifyOnly(withRules: true, prompt: '1 Middag');
+    });
   });
 }

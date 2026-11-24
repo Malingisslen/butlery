@@ -1,3 +1,5 @@
+import 'package:butlery/models/menu/recurring_day_rule.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/profile_field.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -2340,6 +2342,113 @@ void main() {
         verifyNever(
           () => mockUserRepository.setNewRecipesShowOnProfile(any(), any()),
         );
+      });
+    });
+
+    group('setRecurringDayRules (BUT-2490)', () {
+      final rules = [
+        RecurringDayRule.create(
+          day: DayOfWeek.mon,
+          meal: MealSlot.middag,
+          food: RecurringFood.fisk,
+        ),
+      ];
+
+      setUp(() {
+        registerFallbackValue(<RecurringDayRule>[]);
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile.copyWith(settingsMerged: true));
+      });
+
+      test('a profile whose settings were not read returns false without a '
+          'write, so a default list cannot replace the stored rules', () async {
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+        await userService.initialize();
+        expect(userService.currentUserProfile!.settingsMerged, isFalse);
+        when(
+          () => mockUserRepository.setRecurringDayRules(any(), any()),
+        ).thenAnswer((_) async {});
+
+        final ok = await userService.setRecurringDayRules(rules);
+
+        expect(ok, isFalse);
+        verifyNever(
+          () => mockUserRepository.setRecurringDayRules(any(), any()),
+        );
+        expect(userService.currentUserProfile!.recurringDayRules, isEmpty);
+      });
+
+      test(
+        'saves, puts the rules on the profile and notifies listeners',
+        () async {
+          await userService.initialize();
+          expect(userService.currentUserProfile!.recurringDayRules, isEmpty);
+          when(
+            () => mockUserRepository.setRecurringDayRules(any(), any()),
+          ).thenAnswer((_) async {});
+          await pumpEventQueue();
+          var notifications = 0;
+          userService.addListener(() => notifications++);
+
+          final ok = await userService.setRecurringDayRules(rules);
+
+          expect(ok, isTrue);
+          verify(
+            () => mockUserRepository.setRecurringDayRules(
+              'test_user_123',
+              rules,
+            ),
+          ).called(1);
+          expect(userService.currentUserProfile!.recurringDayRules, rules);
+          expect(notifications, 1);
+        },
+      );
+
+      test('a refused write returns false and the profile keeps its old '
+          'rules', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setRecurringDayRules(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+
+        final ok = await userService.setRecurringDayRules(rules);
+
+        expect(ok, isFalse);
+        expect(userService.currentUserProfile!.recurringDayRules, isEmpty);
+      });
+
+      test('with no profile loaded it returns false without a write', () async {
+        final ok = await userService.setRecurringDayRules(rules);
+
+        expect(ok, isFalse);
+        verifyNever(
+          () => mockUserRepository.setRecurringDayRules(any(), any()),
+        );
+      });
+
+      test('a profile cleared during the write is not patched', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setRecurringDayRules(any(), any()),
+        ).thenAnswer((_) async {
+          userService.resetForLogout();
+        });
+
+        final ok = await userService.setRecurringDayRules(rules);
+
+        expect(ok, isTrue);
+        expect(userService.currentUserProfile, isNull);
       });
     });
 
