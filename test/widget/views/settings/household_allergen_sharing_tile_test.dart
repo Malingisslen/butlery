@@ -107,14 +107,16 @@ Household _household({int memberCount = 2}) => Household(
   updatedAt: DateTime.utc(2026, 1, 1),
 );
 
-HouseholdAllergenShare _share() => HouseholdAllergenShare(
+HouseholdAllergenShare _share({
+  String version = HouseholdAllergenShare.currentConsentVersion,
+}) => HouseholdAllergenShare(
   householdId: _householdId,
   userId: _userId,
   trackedAllergens: const {'ägg'},
   trackedDietary: const {},
   includeUnknownInMenu: true,
   consentGranted: true,
-  consentVersion: HouseholdAllergenShare.currentConsentVersion,
+  consentVersion: version,
   consentGrantedAt: DateTime.utc(2026, 8, 12),
   updatedAt: DateTime.utc(2026, 8, 12),
 );
@@ -692,6 +694,90 @@ void main() {
         isFalse,
         reason: 'the member must never be told they shared when they did not',
       );
+    });
+  });
+
+  group('renewing a v1 share (BUT-2494)', () {
+    final renewRow = find.text(sv.householdAllergenShareRenewAction);
+
+    testWidgets('a v1 share offers the renewal and says the list waits', (
+      tester,
+    ) async {
+      wire(
+        household: _household(),
+        existingShare: _share(version: 'v1'),
+      );
+      await pump(tester);
+
+      expect(renewRow, findsOneWidget);
+      expect(find.text(sv.householdAllergenShareRenewSubtitle), findsOneWidget);
+      expect(find.text(sv.householdAllergenShareSubtitleOn), findsNothing);
+      expect(
+        tester
+            .widget<ButleryListRow>(find.byType(ButleryListRow).first)
+            .checked,
+        isTrue,
+        reason: 'a v1 consent still stands for the menu',
+      );
+    });
+
+    testWidgets('a v2 share gets no renewal row', (tester) async {
+      wire(household: _household(), existingShare: _share());
+      await pump(tester);
+
+      expect(find.text(sv.householdAllergenShareSubtitleOn), findsOneWidget);
+      expect(renewRow, findsNothing);
+    });
+
+    testWidgets('a member not sharing gets no renewal row', (tester) async {
+      wire(household: _household());
+      await pump(tester);
+
+      expect(find.text(sv.householdAllergenShareSubtitleOff), findsOneWidget);
+      expect(renewRow, findsNothing);
+    });
+
+    testWidgets('confirming revokes v1, creates v2, and the row goes', (
+      tester,
+    ) async {
+      wire(
+        household: _household(),
+        existingShare: _share(version: 'v1'),
+      );
+      await pump(tester);
+
+      await tester.tap(renewRow);
+      await tester.pumpAndSettle();
+      expect(find.text(sv.householdAllergenShareConfirmBody), findsOneWidget);
+      await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
+      await tester.pumpAndSettle();
+
+      final calls = verifyInOrder([
+        () => shares.revoke(_householdId),
+        () => shares.create(captureAny()),
+      ]);
+      final written = calls[1].captured.single as HouseholdAllergenShare;
+      expect(written.consentVersion, 'v2');
+      expect(written.coversShoppingList, isTrue);
+      expect(renewRow, findsNothing);
+      expect(find.text(sv.householdAllergenShareSubtitleOn), findsOneWidget);
+    });
+
+    testWidgets('cancelling changes nothing', (tester) async {
+      wire(
+        household: _household(),
+        existingShare: _share(version: 'v1'),
+      );
+      await pump(tester);
+
+      await tester.tap(renewRow);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(sv.commonCancel));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => shares.revoke(any()));
+      verifyNever(() => shares.create(any()));
+      expect(renewRow, findsOneWidget);
     });
   });
 }

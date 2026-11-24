@@ -158,6 +158,51 @@ void main() {
     });
   });
 
+  group('the shopping-list reminder needs a consent that named it', () {
+    // BUT-2494: a v1 consent was given for menus only; it stays valid there
+    // and must not feed the shopping list.
+    HouseholdAllergenShare share(String version, {bool granted = true}) =>
+        HouseholdAllergenShare.fromMap(
+          'hh_u',
+          _doc(consentVersion: version, consentGranted: granted),
+        );
+
+    test('a v1 share is a valid consent for menus but not for shopping', () {
+      final v1 = share('v1');
+
+      expect(v1.isValidConsent, isTrue);
+      expect(v1.coversShoppingList, isFalse);
+    });
+
+    test('a v2 share covers both', () {
+      final v2 = share('v2');
+
+      expect(v2.isValidConsent, isTrue);
+      expect(v2.coversShoppingList, isTrue);
+    });
+
+    test('a later wording that is not listed covers nothing', () {
+      final v3 = share('v3');
+
+      expect(v3.isValidConsent, isTrue);
+      expect(v3.coversShoppingList, isFalse);
+    });
+
+    test('a v2 share whose consent is withdrawn covers neither', () {
+      final withdrawn = share('v2', granted: false);
+
+      expect(withdrawn.isValidConsent, isFalse);
+      expect(withdrawn.coversShoppingList, isFalse);
+    });
+
+    test('the wording a new grant is written under covers shopping', () {
+      expect(
+        HouseholdAllergenShare.shoppingListConsentVersions,
+        contains(HouseholdAllergenShare.currentConsentVersion),
+      );
+    });
+  });
+
   group('wire format', () {
     test('dates are written as Firestore Timestamps, not strings', () {
       // An ISO string cannot be type-checked or bounded against request.time

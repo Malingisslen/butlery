@@ -1385,7 +1385,7 @@
   "@householdAllergenShareConfirmTitle": {
     "description": "BUT-1693: title of the explicit-consent dialog shown when turning sharing ON"
   },
-  "householdAllergenShareConfirmBody": "Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Today Butlery guesses on your behalf – it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household's menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.",
+  "householdAllergenShareConfirmBody": "Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them and the shopping list can remind you about items that often contain them. Today Butlery guesses on your behalf – it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom, not in the reminders either, which only household members see and never anyone else on a shared shopping list.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household's menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.",
   "@householdAllergenShareConfirmBody": {
     "description": "BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there"
   },
@@ -18501,5 +18501,65 @@
   },
   "weekTemplateApplyFailed": "The template could not be applied",
   "weekTemplatePreviewFailed": "The week could not be read – try again",
-  "weekTemplateUndoFailed": "Could not undo"
+  "weekTemplateUndoFailed": "Could not undo",
+  "shoppingHintChooseLactoseFree": "Lactose in the household, choose lactose-free",
+  "@shoppingHintChooseLactoseFree": {
+    "description": "BUT-2494: reminder under a shopping row when the household avoids lactose and the item often contains it. Never names a person."
+  },
+  "shoppingHintChooseGlutenFree": "Gluten in the household, choose gluten-free",
+  "@shoppingHintChooseGlutenFree": {
+    "description": "BUT-2494: reminder under a shopping row when the household avoids gluten and the item often contains it. Never names a person."
+  },
+  "shoppingHintCheckContents": "Often contains {allergen}, check the label",
+  "@shoppingHintCheckContents": {
+    "description": "BUT-2494: reminder for an allergy with no free variant to pick (nuts, milk protein, fish). allergen is the lower-case allergen name.",
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingHintDismiss": "Not relevant",
+  "@shoppingHintDismiss": {
+    "description": "BUT-2494: tooltip and screen-reader name of the tick that dismisses a reminder"
+  },
+  "shoppingHintDismissed": "Reminder hidden for {item}",
+  "@shoppingHintDismissed": {
+    "description": "BUT-2494: snackbar after a reminder was dismissed; pairs with commonUndo.",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "householdAllergenShareRenewSubtitle": "Approve the new text so your choices also count on the shopping list",
+  "@householdAllergenShareRenewSubtitle": {
+    "description": "BUT-2494: shown on the sharing row for a member who shared under the v1 consent text, which covered the weekly menu only"
+  },
+  "householdAllergenShareRenewAction": "Read and approve",
+  "@householdAllergenShareRenewAction": {
+    "description": "BUT-2494: button opening the v2 consent dialog for a member who shared under v1"
+  },
+  "familyAllergenConsentTextV2": "I explicitly consent to {name}'s allergy and dietary data (health data) being stored and used for the household's menus and for reminders on the shopping list.",
+  "@familyAllergenConsentTextV2": {
+    "description": "BUT-2494: allergen consent v2 for a diner profile; names the shopping-list reminder. Approved wording in docs/legal/family-rating-dpia.md",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyAllergenConsentRenewText": "I explicitly consent to {name}'s allergy data also being used for reminders on the household's shopping list.",
+  "@familyAllergenConsentRenewText": {
+    "description": "BUT-2494: extra tick for a profile whose allergen consent was given under the menu-only wording (v1)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingHintsDisclaimer": "Reminders can be missing. Always read the label.",
+  "@shoppingHintsDisclaimer": {
+    "description": "BUT-2494: line at the top of a shopping list whenever an allergy reminder shows (Malin 2026-11-24, ADR-0044)"
+  }
 }
