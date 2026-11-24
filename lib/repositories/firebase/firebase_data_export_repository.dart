@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show protected;
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 
 /// Resource-type tag passed to [validateOwnership] for log/exception
 /// breadcrumbs. Replaces the 16+ stringly-typed `resourceType` literals
@@ -475,10 +476,8 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// BUT-1838: the chat groups the requester belongs to.
   ///
   /// The conversation section already carries the group's NAME (as `title`) and
-  /// its membership (as `participantIds`), so this leg exists for the one fact
-  /// that lives nowhere else and is genuinely about the requester: **who added
-  /// them to the group**. It is deliberately a projection, not the document —
-  /// dumping `chat_groups` would re-export three uid-keyed maps that duplicate
+  /// its membership (as `participantIds`). This leg is deliberately a
+  /// projection, not the document — dumping `chat_groups` would re-export three uid-keyed maps that duplicate
   /// what `conversation_info` already holds, and a second copy of a redaction
   /// decision is how the two drift apart (BUT-1772/BUT-1798).
   ///
@@ -486,6 +485,9 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// can remove people in the app, and their own client may read this whole
   /// document under `firestore.rules`. Other members' `memberAddedBy` entries
   /// are NOT kept — who invited someone else is third-party behaviour.
+  ///
+  /// `recurring_day_rules` is the group's fixed days (BUT-2490), passed
+  /// through the app's parser.
   ///
   /// `memberIds array-contains` is equality-shaped, so the automatic
   /// single-field index serves it; no composite entry is needed.
@@ -511,6 +513,9 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         'created_at': data['createdAt'],
         'admin_ids': data['adminIds'],
         'you_were_added_by': addedBy is Map ? addedBy[userId] : null,
+        'recurring_day_rules': RecurringDayRules.toFirestoreList(
+          RecurringDayRules.fromFirestoreList(data[RecurringDayRules.field]),
+        ),
       };
     }).toList();
   }

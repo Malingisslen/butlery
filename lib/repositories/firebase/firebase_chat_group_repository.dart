@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/messaging/chat_group.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
@@ -165,6 +166,18 @@ class FirebaseChatGroupRepository
         resourceId: groupId,
       );
     }
+  }
+
+  @override
+  Future<void> setRecurringDayRules(
+    String groupId,
+    List<RecurringDayRule> rules,
+  ) async {
+    _requireUserId();
+    await _call('setGroupRecurringDayRules', {
+      'groupId': groupId,
+      'rules': RecurringDayRules.toFirestoreList(rules),
+    });
   }
 
   Future<Map<String, dynamic>> _call(

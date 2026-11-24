@@ -9,10 +9,9 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 ///
 /// The conversations section already carries a group's NAME (as the
 /// conversation `title`), its membership (`participantIds`) and the requester's
-/// own join stamp. This leg exists for the one fact that lives nowhere else and
-/// is genuinely about the requester: **who added them to the group**.
+/// own join stamp.
 ///
-/// It exports a PROJECTION, never the document. Dumping `chat_groups` would
+/// This leg exports a PROJECTION, never the document. Dumping `chat_groups` would
 /// re-export three uid-keyed maps that duplicate what `conversation_info`
 /// already holds — and a second copy of a redaction decision is precisely how
 /// two sections drift apart (BUT-1772/BUT-1798). Other members'

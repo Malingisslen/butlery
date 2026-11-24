@@ -1,5 +1,6 @@
 // lib/repositories/interfaces/chat_group_repository.dart
 
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/messaging/chat_group.dart';
 
 /// Chat groups: read from Firestore, written only by Cloud Functions.
@@ -62,4 +63,12 @@ abstract class ChatGroupRepository {
   /// Removes a member. Omit [userId] to leave the group yourself; removing
   /// anyone else requires admin rights, enforced server-side.
   Future<void> removeMember({required String groupId, String? userId});
+
+  /// Replaces the group's fixed days with [rules] (BUT-2490). Admin-only and
+  /// checked row by row, both server-side. Not queued offline: a failure
+  /// throws.
+  Future<void> setRecurringDayRules(
+    String groupId,
+    List<RecurringDayRule> rules,
+  );
 }

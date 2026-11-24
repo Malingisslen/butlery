@@ -170,14 +170,11 @@ class RecurringDayRule {
   int get hashCode => Object.hash(id, day, meal, kind, value, quick, paused);
 }
 
-/// The rule list as stored on the settings document: at most one rule per
-/// day and meal, at most [maxRules] in all. firestore.rules bounds the list
-/// at the same number.
+/// The rule list: at most one rule per day and meal, at most [maxRules] in all.
 abstract final class RecurringDayRules {
   /// Seven days times lunch and middag.
   static const int maxRules = 14;
 
-  /// The stored field on `users/{uid}/settings/preferences`.
   static const String field = 'recurringDayRules';
 
   /// Reads the stored list; the first rule for a slot wins and the list is

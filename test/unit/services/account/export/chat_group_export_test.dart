@@ -1,10 +1,5 @@
 /// GDPR Article-15 coverage for [ChatGroupExport] (BUT-1838).
 ///
-/// The section exists for ONE fact that lives nowhere else in the bundle:
-/// who added the requester to each chat group. Everything else about the
-/// group is already in `conversation_info`, so this leg is a PROJECTION and
-/// the review question is what it leaves out as much as what it carries.
-///
 /// Driven through the REAL [FirebaseDataExportRepository] over
 /// `FakeFirebaseFirestore`, seeded with the shape the group callables write.
 /// A hand-typed fixture handed to a repository `Fake` could not answer the
@@ -140,6 +135,7 @@ void main() {
         'created_at',
         'admin_ids',
         'you_were_added_by',
+        'recurring_day_rules',
       });
 
       // The three uid-keyed maps `conversation_info` already covers.
