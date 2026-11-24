@@ -3254,7 +3254,7 @@
         {
           "from": "svc-export-managers",
           "to": "ds-users",
-          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till), realtime_resources (BUT-2151, ägd/deltagare; andras visningsnamn stryps) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
+          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till), realtime_resources (BUT-2151, ägd/deltagare; andras visningsnamn stryps), users/{uid}/meal_boxes (BUT-2486 del 5, högst 200) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
           "transport": "Firestore reads",
           "verified": true
         },
@@ -5001,7 +5001,7 @@
         {
           "from": "vm-weekly-plan",
           "to": "svc-weekly-plan",
-          "payload": "plan.withLunchbox/withoutLunchbox → _publishThenSave. Servicens vakter: addEntry, moveEntry, placering på flera mål (räknar bara faktiskt placerade), copyWeek, genereringens fastnålning/fyllning och mallapplicering hoppar över en låddag; manuell placering (isOccupied) behandlar den som upptagen",
+          "payload": "plan.withLunchbox/withoutLunchbox → _publishThenSave. Servicens vakter: addEntry, moveEntry, placering på flera mål (räknar bara faktiskt placerade), copyWeek, genereringens fastnålning/fyllning och mallapplicering hoppar över en låddag; manuell placering (isOccupied) behandlar den som upptagen. En lunch ur en matlåda i kyl/frys: saveRevision(previous:) räknar ut lådans uttag (takes) och skriver dem i samma batch som veckan, users/{uid}/meal_boxes (BUT-2486 del 5)",
           "transport": "method call",
           "verified": true
         },
